@@ -110,8 +110,16 @@
       {:else}
         <NoData>{app.t.noData}</NoData>
       {/if}
-    {:else if app.route.kind === 'print'}
-      <PrintPage {app} ids={app.route.ids} dropped={app.route.dropped} qty={app.route.qty} />
+    {:else if app.route.kind === 'printSet' && app.env.cloud}
+      <!-- A new id remounts the page, so an answer for the old id has no page to land on. -->
+      {#key app.route.id}
+        <PrintPage {app} id={app.route.id} />
+      {/key}
+    {:else if app.route.kind === 'printRetired'}
+      <!-- Every `#/print/...` address since 2026-10-08: nothing is read from it
+           (docs/specs/ROUTES.md). -->
+      <PageTitle title={app.t.printLinkRetired} sub={app.t.printLinkRetiredSub} />
+      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{app.t.toStart}</Button>
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
     {:else if app.route.kind === 'homebrew' && app.homebrew}

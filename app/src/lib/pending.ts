@@ -3,10 +3,13 @@
  * (docs/specs/STATE.md), so it is read back as untrusted data.
  * Pure module. docs/specs/FEATURES.md, "Account". */
 
+import { printEntriesValid, type PrintSetEntry } from './printSet.js';
+
 /** An action a signed-out reader started and a sign-in finishes: reopen the add-to-list
  *  menu of `key` with `ids` ticked (and their taken counts) and, when the reader had typed
  *  one, a new list's `name` in its create slot; save the open shared list (`#/l/` or
- *  `#/s/`); or save a copy of the homebrew item `hid` («Сохранить себе»). */
+ *  `#/s/`); save a copy of the homebrew item `hid` («Сохранить себе»); or make a print set
+ *  of `entries` (`print`; `cut` counts the records past the 180-card cap). */
 export type PendingAction =
   | {
       do: 'addToList';
@@ -16,7 +19,8 @@ export type PendingAction =
       name?: string;
     }
   | { do: 'saveList' }
-  | { do: 'saveItem'; hid: string };
+  | { do: 'saveItem'; hid: string }
+  | { do: 'print'; entries: PrintSetEntry[]; cut?: number };
 
 /** Where a sign-in returns to, and what it finishes there. */
 export interface SignInAfter {
@@ -32,6 +36,28 @@ const IDS_MAX = 180;
 const QTY_MAX = 99;
 /** A list name's bound (`lists.name`). */
 const NAME_MAX = 200;
+/** The most records a print press cuts: past this the action is not one this app writes. */
+const CUT_MAX = 9999;
+
+/** Returns the print action a signed-out press leaves, with `cut` only when over 0. */
+export function printAction({ entries, cut }: { entries: PrintSetEntry[]; cut: number }): {
+  do: 'print';
+  entries: PrintSetEntry[];
+  cut?: number;
+} {
+  return cut > 0 ? { do: 'print', entries, cut } : { do: 'print', entries };
+}
+
+function readPrintAction(r: Record<string, unknown>): PendingAction | null {
+  const { entries, cut } = r;
+  if (!printEntriesValid(entries)) return null;
+  if (cut !== undefined) {
+    if (typeof cut !== 'number' || !Number.isInteger(cut) || cut < 1 || cut > CUT_MAX) {
+      return null;
+    }
+  }
+  return printAction({ entries: entries.map((e) => ({ ...e })), cut: cut ?? 0 });
+}
 
 function readPicked(v: unknown, ids: readonly string[]): Record<string, number> | null {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
@@ -50,6 +76,7 @@ export function readPending(v: unknown): PendingAction | null {
   if (!v || typeof v !== 'object') return null;
   const r = v as Record<string, unknown>;
   if (r['do'] === 'saveList') return { do: 'saveList' };
+  if (r['do'] === 'print') return readPrintAction(r);
   if (r['do'] === 'saveItem') {
     const hid = r['hid'];
     return typeof hid === 'string' && UUID.test(hid) ? { do: 'saveItem', hid } : null;

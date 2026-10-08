@@ -35,7 +35,7 @@
     artBroken: boolean;
     /** Reported back to `PrintPage`/`app.markArtBroken`, the same as
      *  `RecordCard`'s own `onerror` - a print sheet reached directly (a
-     *  shared `#/print/...` address) has no other page that could have
+     *  `#/p/` address) has no other page that could have
      *  already caught a missing picture. */
     onartfail: (id: string) => void;
     /** The list's count for this card - FEATURES.md, Print. */

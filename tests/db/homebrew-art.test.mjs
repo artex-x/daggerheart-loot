@@ -6,7 +6,8 @@
   hourly job queue the Storage API deletes through pg_net with the Vault
   secrets, nothing without them, and a failed call refuses no write; the
   lock per name orders a naming write and a release across two connections;
-  img beside the item in the three reads, #70's share rules kept; the 3x
+  img beside the item in the three reads and get_print_set, #70's share
+  rules kept; a print set keeps no file alive (it names items); the 3x
   timings; no API role reaches the key or the delete. Every seed runs in a
   transaction that rolls back, but for the two-connection case, which
   commits and deletes its rows. docs/specs/META.md, section 3;
@@ -289,6 +290,41 @@ describe('the release asks Storage to delete', () => {
     assert.deepEqual(out.one, [del(p('d')), del(t('d'))]);
     assert.ok(out.bulk.length >= 2, JSON.stringify(out.bulk));
     assert.deepEqual([...new Set(out.bulk.map((r) => r.url))], [url(p('b')), url(t('b'))]);
+  });
+
+  it('keeps no file alive for a print set: the set names the item, and its read drops img with the art', async () => {
+    const out = await rolledBack(async (tx) => {
+      await world(tx);
+      const entries = [{ h: id(18101) }, { h: id(18102), q: 2 }];
+      const sid = await asUser(
+        tx,
+        B,
+        async () =>
+          (await tx`select public.create_print_set(${tx.json(entries)}::jsonb) as v`)[0].v
+      );
+      const read = () =>
+        asUser(tx, B, async () => (await tx`select public.get_print_set(${sid}) as v`)[0].v);
+      const before = await read();
+      const m = await mark(tx);
+      await tx`update public.homebrew_items set art = null where id in (${id(18101)}, ${id(18102)})`;
+      return {
+        before,
+        queue: [...new Set((await queued(tx, m)).map((r) => r.url))],
+        released: await released(tx),
+        after: await read()
+      };
+    });
+    assert.deepEqual(
+      out.before.entries.map((e) => e.img),
+      [p('a'), p('a')]
+    );
+    assert.deepEqual(out.queue, [url(p('a')), url(t('a'))]);
+    assert.deepEqual(out.released, [p('a')]);
+    assert.deepEqual(
+      out.after.entries.map((e) => Object.keys(e).sort().join()),
+      ['hid,item', 'hid,item,q']
+    );
+    assert.equal(out.after.missing, 0);
   });
 
   it("queues every file of an account's items at the account's deletion", async () => {

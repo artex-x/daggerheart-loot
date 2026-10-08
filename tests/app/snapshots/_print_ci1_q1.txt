@@ -1,6 +1,6 @@
 # #/print/ci1-q1
 # route: #/print/ci1-q1
-# why: a print sheet: a loot card with its art beside a weapon card, seven blank places
+# why: an old long print link: the retired page, the address kept
 
 ## ru :: tree
 RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
@@ -25,21 +25,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
-    heading "Печать карточек" [level=1]
-    StaticText "Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=a9921681]
-    button "Назад"
-    button "Отправить на печать"
-    button "Цветная" [pressed=true]
-    button "Чёрно-белая" [pressed=false]
-    button "Обычная" [pressed=true]
-    button "Компактная" [pressed=false]
-    button "Ссылка на набор"
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x18 of 22 same-shape siblings elided
-    heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
-    heading "ПАЛАШ" [level=2]
-    StaticText "Daggerheart"
-    StaticText "Core"
+    heading "Такие ссылки на печать больше не открываются." [level=1]
+    StaticText "Попросите у отправителя новую ссылку вида /#/p/ или войдите и со..." [namelen=85 namehash=3f475e47]
+    link "На главную" [url=#/roll/std]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -59,22 +47,16 @@ daggerheart.com
 Альт. таблицы
 Войти
 К содержимому
-Компактная
 Конфиденциальность
 ЛутDaggerheart
-Назад
-Обычная
+На главную
 Обычные правила
-Отправить на печать
 Поиск
 Сообщества
 Списки
-Ссылка на набор
 Таблицы
 Условия использования
 Установить как приложение
-Цветная
-Чёрно-белая
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
@@ -99,21 +81,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
-    heading "Printing cards" [level=1]
-    StaticText "Cards: 2. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=c59701be]
-    button "Back"
-    button "Send to printer"
-    button "Colour" [pressed=true]
-    button "Black and white" [pressed=false]
-    button "Standard" [pressed=true]
-    button "Compact" [pressed=false]
-    button "Link to this set"
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x18 of 22 same-shape siblings elided
-    heading "PREMIUM BEDROLL" [level=2]
-    heading "BROADSWORD" [level=2]
-    StaticText "Daggerheart"
-    StaticText "Core"
+    heading "Print links of this kind no longer open." [level=1]
+    StaticText "Ask the sender for a new /#/p/ link, or sign in and pick the car..." [namelen=76 namehash=2a3863ec]
+    link "Home" [url=#/roll/std]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -124,24 +94,18 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
 ## en :: controls
 Alt. tables
 Arazo's Artifacts
-Back
-Black and white
-Colour
 Communities
-Compact
 Dragon's Vault
 Dread
 EN
+Home
 Install as an app
-Link to this set
 Lists
 Privacy
 RU
 Search
-Send to printer
 Sign in
 Skip to content
-Standard
 Standard rules
 Tables
 Terms of use

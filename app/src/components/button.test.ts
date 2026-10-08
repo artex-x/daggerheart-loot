@@ -173,8 +173,8 @@ describe('the shared button', () => {
     expect(el).toHaveAttribute('rel', 'noopener');
   });
 
-  it('omits target and rel when sameTab is set - the print link opens in place', () => {
-    render(Button, { href: '#/print/ci1', sameTab: true, children: label });
+  it('omits target and rel when sameTab is set - an in-app link opens in place', () => {
+    render(Button, { href: '#/i/ci1', sameTab: true, children: label });
     const el = screen.getByRole('link', { name: 'Press' });
     expect(el).not.toHaveAttribute('target');
     expect(el).not.toHaveAttribute('rel');

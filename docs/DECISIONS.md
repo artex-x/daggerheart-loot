@@ -15,15 +15,18 @@ deleted.
 ## Index
 
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
+- 2026-10-14 - [The configured bundle ceiling rises to 350 kB](decisions/2026-10-14-the-configured-bundle-ceiling-rises-to-350-kb.md)
 - 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md)
 - 2026-10-08 - [A filter row offers only values the drawn rows answer, on every page](decisions/2026-10-08-a-filter-row-offers-only-values-the-drawn-rows-answer.md)
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
 - 2026-10-08 - [A lists file's homebrew entry may leave out its snapshot](decisions/2026-10-08-a-lists-files-homebrew-entry-may-leave-out-its-snapshot.md)
+- 2026-10-08 - [A print set holds references and lives 90 days after its last open](decisions/2026-10-08-a-print-set-holds-references-and-lives-90.md)
 - 2026-10-08 - [A source chip on `#/tables/homebrew` is the `src` filter with one value](decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md)
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
 - 2026-10-08 - [An own set or rule card holds book items; only its account sees them](decisions/2026-10-08-an-own-card-holds-book-items-the-owner-sees-them.md)
 - 2026-10-08 - [Arazo's Artifacts drop the book's GM notes; aa23 is «Волшебное Зеркало»](decisions/2026-10-08-arazos-artifacts-drop-the-gm-notes-aa23-is-volshebnoe-zerkalo.md)
 - 2026-10-08 - [Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78](decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md)
+- 2026-10-08 - [Every print is a stored set; long print links are retired](decisions/2026-10-08-every-print-is-a-stored-set-long-print.md)
 - 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)
 - 2026-10-08 - [The own-items filter is a labelled switch, «Свои предметы»](decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md)
 - 2026-10-08 - [Workers dispatch read-only Haiku helpers for wide locate and extract work](decisions/2026-10-08-workers-dispatch-read-only-haiku-helpers-for-wide.md)
@@ -207,7 +210,7 @@ deleted.
 - 2026-09-23 - [Vault of Ages Volume 4: the source errata policy](decisions/2026-09-23-vault-of-ages-volume-4-the-source-errata.md)
 - 2026-09-22 - [A feature that swaps a weapon's stat set gets the Versatile second strip](decisions/2026-09-22-a-feature-that-swaps-a-weapons-stat-set.md)
 - 2026-09-22 - [Russian record text: metric distances, the site's lowercase terms, granted adversary features folded in](decisions/2026-09-22-russian-record-text-metric-distances-the-sites-lowercase.md) - superseded in part
-- 2026-09-22 - [The print address carries a list's count as `*<n>` per id](decisions/2026-09-22-the-print-address-carries-a-lists-count-as.md)
+- 2026-09-22 - [The print address carries a list's count as `*<n>` per id](decisions/2026-09-22-the-print-address-carries-a-lists-count-as.md) - superseded
 - 2026-09-22 - [The shared page's top control saves a copy; the selection bar alone adds to a list](decisions/2026-09-22-the-shared-pages-top-control-saves-a-copy.md)
 - 2026-09-19 - [A drop indicator redraws on a row's own note box when one is open](decisions/2026-09-19-a-drop-indicator-redraws-on-a-rows-own.md)
 - 2026-09-19 - [A list drag resolves to a gap, from the document, not to a row](decisions/2026-09-19-a-list-drag-resolves-to-a-gap-from.md)

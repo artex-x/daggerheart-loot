@@ -12,13 +12,15 @@
  * of 5 own items with an own set card, which `#/h/` draws with every relation line.
  * `gm3`'s one list, «Склад», has a players' link with 8 entries, the shared page's
  * filter threshold. `gm4` holds no list and one item in a source at the longest
- * name, which «Склад» links; no state signs in as `gm4`.
+ * name, which «Склад» links; no state signs in as `gm4`. `gm4` made the 13 seeded print
+ * sets, which the goldens open as `gm2` and `gm1`.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
  * longest name. docs/specs/COVERAGE.md, "Test layers". */
 
 import type { BookContent, CardContent, CardKind, HomebrewContent } from '../lib/homebrew.js';
 import type { MoneyMode } from '../lib/money.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { PrintSetEntry } from '../lib/printSet.js';
 import type { Provider } from './types.js';
 
 /** A fixed, valid v4-shaped id: `uuid(1)` is `00000000-0000-4000-8000-000000000001`. */
@@ -603,6 +605,72 @@ const NOTICES: SeedNotice[] = [
   }
 ];
 
+/** A seeded print set; `openedAgoMs` is its last open, back from the port's boot. */
+export interface SeedPrintSet {
+  id: string;
+  owner: SeedUserId;
+  entries: PrintSetEntry[];
+  openedAgoMs: number;
+}
+
+const ks = (...ids: string[]): PrintSetEntry[] => ids.map((k) => ({ k }));
+const run = (prefix: string, n: number): string[] =>
+  Array.from({ length: n }, (_, i) => prefix + String(i + 1));
+const printSet = (id: string, entries: PrintSetEntry[], openedAgoMs = HOUR): SeedPrintSet => ({
+  id,
+  owner: 'gm4',
+  entries,
+  openedAgoMs
+});
+
+/* The sheets the goldens, the sweep, `states.js` and the route fixtures open, by name; a
+   suite makes any other sheet through the fake (`openPrint` in tests/app/lib.js). */
+const PRINT_SETS: SeedPrintSet[] = [
+  printSet('set-twocards', ks('ci1', 'q1')),
+  printSet('set-counted1', [{ k: 'ci1', q: 3 }, { k: 'q1' }]),
+  printSet(
+    'set-ninecard',
+    ks('ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51', 'q35', 'di11')
+  ),
+  printSet(
+    'set-longtext',
+    ks(
+      'voa2_a3',
+      'voa2_a1',
+      'voa2_c4',
+      'voa2_c3',
+      'voa2_t4e',
+      'voa2_t4d',
+      'voa2_c1',
+      'voa2_a6',
+      'di11'
+    )
+  ),
+  printSet('set-tencards', ks(...run('ci', 10))),
+  printSet('set-maxcards', ks(...run('ci', 60), ...run('cc', 60), ...run('hi', 60))),
+  printSet('set-dragonvt', ks('dve19', 'dve20', 'dve26', 'dve30', 'dve50', 'dve54', 'dv14')),
+  printSet(
+    'set-voa4wrst',
+    ks(
+      'voa4_a3',
+      'voa4_t3d',
+      'voa4_t3e',
+      'voa4_t3f',
+      'voa4_a2',
+      'voa4_t1b',
+      'voa4_t2e',
+      'voa4_t4i',
+      'voa4_a1'
+    )
+  ),
+  printSet('set-ownitems', [{ h: AXE_ID }, { h: uuid(512) }]),
+  printSet('set-emberaxe', [{ h: AXE_ID }]),
+  /* `uuid(598)` and `uuid(599)` name no item: a deleted one. */
+  printSet('set-missing1', [{ k: 'ci1' }, { h: uuid(599) }]),
+  printSet('set-allgone1', [{ h: uuid(598) }, { h: uuid(599) }]),
+  printSet('set-expired1', ks('ci1'), 91 * DAY)
+];
+
 export interface Seed {
   users: Record<SeedUserId, SeedUser>;
   defaultUser: SeedUserId;
@@ -610,6 +678,7 @@ export interface Seed {
   shares: SeedShare[];
   homebrew: Record<SeedUserId, SeedHomebrew>;
   notices: SeedNotice[];
+  printSets: SeedPrintSet[];
 }
 
 export const SEED: Seed = {
@@ -618,5 +687,6 @@ export const SEED: Seed = {
   lists: LISTS,
   shares: SHARES,
   homebrew: HOMEBREW,
-  notices: NOTICES
+  notices: NOTICES,
+  printSets: PRINT_SETS
 };

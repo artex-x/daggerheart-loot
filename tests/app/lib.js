@@ -204,11 +204,67 @@ function reporter() {
   };
 }
 
+/** The seeded print sets of `gm4` by name, as `app/src/ports/fake-cloud-seed.ts`
+ *  (`PRINT_SETS`) holds them; a state that reloads opens one of these. */
+const PRINT_SETS = {
+  twoCards: 'set-twocards',
+  counted: 'set-counted1',
+  nine: 'set-ninecard',
+  longText: 'set-longtext',
+  ten: 'set-tencards',
+  max: 'set-maxcards',
+  dragonVault: 'set-dragonvt',
+  voa4: 'set-voa4wrst',
+  ownItems: 'set-ownitems',
+  emberAxe: 'set-emberaxe',
+  missing: 'set-missing1',
+  allGone: 'set-allgone1',
+  expired: 'set-expired1'
+};
+
+/* The retired address's `id[*n]-id` spelling as print set entries; a repeated id keeps
+   its first, as `create_print_set` requires. */
+function printEntries(spec) {
+  if (Array.isArray(spec)) return spec;
+  const seen = new Set();
+  const out = [];
+  for (const token of spec.split('-')) {
+    const [k, n] = token.split('*');
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    const q = Math.min(parseInt(n ?? '', 10) || 0, 99);
+    out.push(q > 1 ? { k, q } : { k });
+  }
+  return out;
+}
+
+/**
+ * Opens a print sheet at its `#/p/<id>`: signs in as `as`, makes the set through the
+ * fake (`spec` is the retired address's spelling or an array of entries), goes to it
+ * and waits until the page leaves «Загружаем...». `gm2` by default: it has no print
+ * layout of its own, so a sheet starts in colour on the standard sheet. A reload empties
+ * the fake, so a case that reloads opens a seeded set (`PRINT_SETS`) instead.
+ */
+async function openPrint(d, spec, { as = 'gm2' } = {}) {
+  await d.open('#/p/', { as });
+  const made = await d.fake('prints.create', printEntries(spec));
+  if (!made || !made.ok)
+    throw new Error('openPrint: the fake refused the set: ' + JSON.stringify(made));
+  await d.go('#/p/' + made.id);
+  for (let i = 0; i < 200; i++) {
+    if ((await d.count('.printbar, .page-sub')) > 0) return made.id;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error('openPrint: #/p/' + made.id + ' never left its loading state');
+}
+
 module.exports = {
   baseUrl,
   fresh,
   sharedPage,
   closeBrowser,
   axe,
-  reporter
+  reporter,
+  PRINT_SETS,
+  openPrint
 };

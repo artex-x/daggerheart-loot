@@ -80,8 +80,8 @@ describe('the tab title', () => {
   });
 
   it('keeps the plain title on a page that is neither a record, a section, nor a list', () => {
-    /* A print sheet lights no tab (`AppState.section` is null for `route.kind
-       === 'print'`) and opens no one's own list either. */
+    /* The retired print page lights no tab (`AppState.section` is null for `route.kind
+       === 'printRetired'`) and opens no one's own list either. */
     render(App, { env: at('#/print/ci1', { data: fakeData(LOOT) }) });
     expect(document.title).toBe('Генератор лута — Daggerheart');
   });

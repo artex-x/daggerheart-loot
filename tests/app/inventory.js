@@ -41,10 +41,6 @@ const path = require('path');
 const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
 /** Quantity and price on the shared page's rows - all three tail shapes. */
 const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
-/** The real catalogue, for the print states that need a route built rather
- *  than typed by hand (the 181-id cap) - generated from `data.js`,
- *  `tests/derived.js` keeps the two equal. */
-const LOOT = require('../../data.json');
 /** A real 640 px square picture for the editor's «Картинка». */
 const ART_FILE = path.join(__dirname, '../../img/ci1.webp');
 
@@ -76,30 +72,37 @@ const HB_AXE_RENAMED = {
   book_id: '00000000-0000-4000-8000-000000000501'
 };
 
-/* The print routes, built once and shared between the states below and the
- * specs that key off their ids by name - `tests/app/print.js`'s own
- * long-text set for LONG. */
-const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
-const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
-const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + String(i + 1)).join('-');
+/* The print sets the states below open, seeded in the fake cloud
+ * (`app/src/ports/fake-cloud-seed.ts`, `PRINT_SETS`): `gm4` made them, and a state
+ * reads one as `gm2`, which has no print layout of its own, or as `gm1`. */
+const TWO = '#/p/set-twocards';
+const COUNTED = '#/p/set-counted1';
+/* Every card shape on one sheet; `tests/app/print.js`'s own `NINE`. */
+const NINE = '#/p/set-ninecard';
+/* The longest texts; `tests/app/print.js`'s own `LONG`. */
+const LONG = '#/p/set-longtext';
+const TEN = '#/p/set-tencards';
 /* Dragon's Vault's own worst cases: Frostwyrd's longest rung, the
  * One/Two-Handed grip mark, the Spellcast trait cell, two second strips
  * (Ember, Steampowered Gauntlets), the set line on both members, and a loot
  * card with a folded GM box. */
-const DV_SET = '#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14';
+const DV_SET = '#/p/set-dragonvt';
 /* Vault of Ages Volume 4's worst cases: the artifact weapon card, the three
  * set members, a consumable artifact, a weapon with a referenced adversary,
  * a folded condition line, and two bulleted lists. */
-const VOA4_SET =
-  '#/print/voa4_a3-voa4_t3d-voa4_t3e-voa4_t3f-voa4_a2-voa4_t1b-voa4_t2e-voa4_t4i-voa4_a1';
-const TOO_MANY =
-  '#/print/' +
-  Object.values(LOOT.items)
-    .flat()
-    .slice(0, 181)
-    .map((x) => x.id)
-    .join('-');
-const TOO_MANY_ID = '#/print/<181 ids> ~ too many';
+const VOA4_SET = '#/p/set-voa4wrst';
+
+/** The print controls' hint, which names them for the driver (`title` wins). */
+const PRINT_HINT = 'Собрать карточки для печати: девять на лист A4';
+
+/** Waits until a `#/p/` page has left «Загружаем...»: its sheet, or its sub. */
+async function sheet(d) {
+  for (let i = 0; i < 200; i++) {
+    if ((await d.count('.printbar, .page-sub')) > 0) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error('a #/p/ state never left its loading line');
+}
 
 /**
  * The packed form of `NOTES_BOTH_KINDS.gm.raw`, pasted rather than computed at
@@ -2184,158 +2187,256 @@ const STATES = [
   {
     id: '#/print/ci1-q1',
     route: '#/print/ci1-q1',
-    why: 'a print sheet: a loot card with its art beside a weapon card, seven blank places'
+    why: 'an old long print link: the retired page, the address kept'
   },
   {
-    id: '#/print/ci1-q1 ~ black and white',
-    route: '#/print/ci1-q1',
+    id: TWO,
+    route: TWO,
+    why: 'a stored print set signed out: the heading, «Войдите, чтобы печатать карточки.» and one «Войти»',
+    enter: sheet
+  },
+  {
+    id: '#/p/bad',
+    route: '#/p/bad',
+    why: 'a malformed set id signed out: the set-not-found sub and «На главную», no read'
+  },
+  {
+    id: '#/p/set-expired1 as gm2',
+    route: '#/p/set-expired1',
+    as: 'gm2',
+    why: 'a set no one opened for 90 days: the set-not-found sub and «На главную», the address kept',
+    enter: sheet
+  },
+  {
+    id: '#/p/set-missing1 as gm2',
+    route: '#/p/set-missing1',
+    as: 'gm2',
+    why: 'a set one of whose items was deleted: one card, and the red note under the bar counting the deleted item',
+    enter: sheet
+  },
+  {
+    id: '#/p/set-allgone1 as gm2',
+    route: '#/p/set-allgone1',
+    as: 'gm2',
+    why: 'a set whose items were all deleted: «Печатать нечего», the note counting two, «На главную»',
+    enter: sheet
+  },
+  {
+    id: TWO + ' as gm2',
+    route: TWO,
+    as: 'gm2',
+    why: 'a print sheet: a loot card with its art beside a weapon card, seven blank places',
+    enter: sheet
+  },
+  {
+    id: TWO + ' ~ black and white as gm2',
+    route: TWO,
+    as: 'gm2',
     why: 'the other layout: no art, the band, the tag and the mark in a row over the name, -bw vectors; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
     }
   },
   {
-    id: '#/print/ci1*3-q1',
-    route: '#/print/ci1*3-q1',
-    why: 'a sheet printed from a counted list entry: the loot card named with " ×3" beside a weapon card with no count'
+    id: COUNTED + ' as gm2',
+    route: COUNTED,
+    as: 'gm2',
+    why: 'a sheet printed from a counted list entry: the loot card named with " ×3" beside a weapon card with no count',
+    enter: sheet
   },
   {
-    id: NINE,
+    id: NINE + ' as gm2',
     route: NINE,
+    as: 'gm2',
     whole: true,
-    why: 'every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule'
+    why: 'every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule',
+    enter: sheet
   },
   {
-    id: NINE + ' ~ black and white',
+    id: NINE + ' ~ black and white as gm2',
     route: NINE,
+    as: 'gm2',
     whole: true,
     why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
     }
   },
   {
-    id: LONG,
+    id: LONG + ' as gm2',
     route: LONG,
+    as: 'gm2',
     whole: true,
-    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue'
+    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue',
+    enter: sheet
   },
   {
-    id: LONG + ' ~ black and white',
+    id: LONG + ' ~ black and white as gm2',
     route: LONG,
+    as: 'gm2',
     whole: true,
     why: 'the same, with the black-and-white padding floor; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
     }
   },
   {
-    id: TEN,
+    id: TEN + ' as gm2',
     route: TEN,
-    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"'
+    as: 'gm2',
+    why: 'a second sheet: eighteen places, eight blank, the second sheet a page break; "Листов A4: 2"',
+    enter: sheet
   },
   {
-    id: TOO_MANY_ID,
-    route: TOO_MANY,
-    why: 'the cap: 180 cards on twenty sheets and the red note about the one left out'
+    id: '#/p/set-maxcards as gm2',
+    route: '#/p/set-maxcards',
+    as: 'gm2',
+    why: 'the cap: 180 cards on twenty sheets, no note',
+    enter: sheet
   },
   {
-    id: DV_SET,
+    id: DV_SET + ' as gm2',
     route: DV_SET,
+    as: 'gm2',
     whole: true,
-    why: "the Dragon's Vault worst cases: Frostwyrd's longest rung, the One/Two-Handed grip mark, the Spellcast trait cell, two second strips (Ember, Steampowered Gauntlets), the set line on both members, and a folded GM box"
+    why: "the Dragon's Vault worst cases: Frostwyrd's longest rung, the One/Two-Handed grip mark, the Spellcast trait cell, two second strips (Ember, Steampowered Gauntlets), the set line on both members, and a folded GM box",
+    enter: sheet
   },
   {
-    id: DV_SET + ' ~ black and white',
+    id: DV_SET + ' ~ black and white as gm2',
     route: DV_SET,
+    as: 'gm2',
     whole: true,
     why: 'the same seven, the other layout; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
     }
   },
   {
-    id: VOA4_SET,
+    id: VOA4_SET + ' as gm2',
     route: VOA4_SET,
+    as: 'gm2',
     whole: true,
-    why: "Volume 4's worst cases: the artifact weapon card, the three set cards, a consumable artifact, a folded condition line, two lists"
+    why: "Volume 4's worst cases: the artifact weapon card, the three set cards, a consumable artifact, a folded condition line, two lists",
+    enter: sheet
   },
   {
-    id: VOA4_SET + ' ~ black and white',
+    id: VOA4_SET + ' ~ black and white as gm2',
     route: VOA4_SET,
+    as: 'gm2',
     whole: true,
     why: 'the same nine, the other layout; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
     }
   },
   {
-    id: '#/print/ci1-q1 ~ compact',
-    route: '#/print/ci1-q1',
+    id: TWO + ' ~ compact as gm2',
+    route: TWO,
+    as: 'gm2',
     why: 'the compact sheet in colour: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Компактная');
     }
   },
   {
-    id: '#/print/ci1-q1 ~ compact black and white',
-    route: '#/print/ci1-q1',
+    id: TWO + ' ~ compact black and white as gm2',
+    route: TWO,
+    as: 'gm2',
     why: 'the compact sheet in black and white: both switches pressed away from their defaults; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
       await d.click('Компактная');
     }
   },
   {
-    id: NINE + ' ~ compact',
+    id: NINE + ' ~ compact as gm2',
     route: NINE,
+    as: 'gm2',
     whole: true,
     why: 'every card shape on the compact sheet, in colour; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Компактная');
     }
   },
   {
-    id: NINE + ' ~ compact black and white',
+    id: NINE + ' ~ compact black and white as gm2',
     route: NINE,
+    as: 'gm2',
     whole: true,
     why: 'every card shape on the compact sheet, in black and white: the grow rung at 44 mm; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
       await d.click('Компактная');
     }
   },
   {
-    id: LONG + ' ~ compact',
+    id: LONG + ' ~ compact as gm2',
     route: LONG,
+    as: 'gm2',
     whole: true,
     why: 'the colour fit ladder at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Компактная');
     }
   },
   {
-    id: LONG + ' ~ compact black and white',
+    id: LONG + ' ~ compact black and white as gm2',
     route: LONG,
+    as: 'gm2',
     whole: true,
     why: 'the black-and-white fit at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Чёрно-белая');
       await d.click('Компактная');
     }
   },
   {
-    id: TEN + ' ~ compact',
+    id: TEN + ' ~ compact as gm2',
     route: TEN,
+    as: 'gm2',
     why: 'ten cards on one compact sheet: sixteen places, six blank, no page break; "Листов A4: 1"; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Компактная');
     }
   },
   {
-    id: '#/print/nope',
-    route: '#/print/nope',
-    why: 'nothing to print: the heading, the note and the way to the lists'
+    id: '#/i/ci1 ~ print signed out',
+    route: '#/i/ci1',
+    why: '«Печать» pressed signed out: the boxed sign-in prompt under the pick row, «Войдите, чтобы печатать карточки.»',
+    enter: async (d) => {
+      await d.click(PRINT_HINT);
+    }
+  },
+  {
+    id: '#/tables ~ a row ticked, print signed out',
+    route: '#/tables',
+    why: "the selection bar's «Печать» pressed signed out: the compact sign-in prompt and «Отмена» in place of the bar's action row",
+    enter: async (d) => {
+      await d.tick(ROW1_CI1);
+      await d.click(PRINT_HINT);
+    }
+  },
+  {
+    id: '#/lists/a ~ print signed out',
+    route: '#/lists/a',
+    storage: seven,
+    why: "the list toolbar's «Печать» pressed signed out: the boxed sign-in prompt under the toolbar",
+    enter: async (d) => {
+      await d.click(PRINT_HINT);
+    }
   },
   {
     id: '#/account',
@@ -3028,49 +3129,55 @@ const STATES = [
     why: "the account's tables view: the grid, where signed out the list is drawn"
   },
   {
-    id: '#/print/ci1-q1 as gm1',
-    route: '#/print/ci1-q1',
+    id: TWO + ' as gm1',
+    route: TWO,
     as: 'gm1',
-    why: "the account's print layout: black and white on the compact sheet, where signed out it is colour on the standard sheet"
+    why: "the account's print layout: black and white on the compact sheet, where gm2 reads colour on the standard sheet",
+    enter: sheet
   },
   {
-    id: '#/print/ci1-q1 ~ colour for this visit as gm1',
-    route: '#/print/ci1-q1',
+    id: TWO + ' ~ colour for this visit as gm1',
+    route: TWO,
     as: 'gm1',
     why: "a page pick away from the account's default: colour on the compact sheet; the note under the bar",
     enter: async (d) => {
+      await sheet(d);
       await d.click('Цветная');
     }
   },
   {
-    id: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa as gm1',
-    route: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa',
+    id: '#/p/set-ownitems as gm1',
+    route: '#/p/set-ownitems',
     as: 'gm1',
-    why: 'two own items on the black-and-white compact sheet: the axe with its stat block, the potion; each source line the path, «Мастерская Ольхи · Холодное оружие» and «Хоумбрю»'
+    why: 'two own items of gm1 in a set another account made, on the black-and-white compact sheet: the axe with its stat block, the potion; each source line the path, «Мастерская Ольхи · Холодное оружие» and «Хоумбрю»',
+    enter: sheet
   },
   {
-    id: '#/print/' + HB_AXE + ' ~ colour for this visit as gm1',
-    route: '#/print/' + HB_AXE,
+    id: '#/p/set-emberaxe ~ colour for this visit as gm1',
+    route: '#/p/set-emberaxe',
     as: 'gm1',
-    why: "an own item's picture on print: the axe's colour card draws its picture (the catalog's ci1.webp, seeded), as print.js pins; print-snapshots re-keys this state to #/p/<id>",
+    why: "an own item's picture on print: the axe's colour card draws its picture (the catalog's ci1.webp, seeded), as print.js pins",
     enter: async (d) => {
+      await sheet(d);
       await d.click('Цветная');
     }
   },
   {
-    id: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa ~ colour for this visit as gm1',
-    route: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa',
+    id: '#/p/set-ownitems ~ colour for this visit as gm1',
+    route: '#/p/set-ownitems',
     as: 'gm1',
     why: 'the same two own items in colour on the compact sheet; the note under the bar',
     enter: async (d) => {
+      await sheet(d);
       await d.click('Цветная');
     }
   },
   {
-    id: '#/print/' + HB_AXE + ' as gm2',
-    route: '#/print/' + HB_AXE,
+    id: '#/p/set-emberaxe as gm2',
+    route: '#/p/set-emberaxe',
     as: 'gm2',
-    why: "gm1's axe as a link in gm2's own list, on the standard colour sheet, its source line the path"
+    why: "gm1's axe in a set made by another account, read by gm2 on the standard colour sheet, its source line the path",
+    enter: sheet
   }
 ];
 

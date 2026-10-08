@@ -50,6 +50,8 @@ import {
   legacySource,
   PACK_MARK,
   parseHash,
+  printSetHash,
+  PRINT_MAX,
   recordUrl,
   sectionHash,
   sharedListHash,
@@ -75,9 +77,22 @@ import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/
 import type { Subset } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
+import {
+  printSetEntries,
+  readPrintSet,
+  type PrintSetEntry,
+  type PrintSetRow
+} from '../lib/printSet.js';
 import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Record_, Section } from '../lib/types.js';
-import type { AuthResult, Env, ListWrite, Provider, Session } from '../ports/index.js';
+import type {
+  AuthResult,
+  Env,
+  ListWrite,
+  PrintSetMade,
+  Provider,
+  Session
+} from '../ports/index.js';
 import { CloudLists } from './cloudLists.svelte.js';
 import { Homebrew } from './homebrew.svelte.js';
 import { ItemView } from './itemView.svelte.js';
@@ -285,6 +300,8 @@ export class AppState {
    *  copy once the account's items are read; forgotten with the pending action
    *  (docs/specs/STATE.md, "Session"). */
   saveItemFor = $state<string | null>(null);
+  /** True while a print control makes a print set. */
+  printing = $state(false);
   /**
    * Where a sign-in prompt's «Войти» came from and what it started - kept
    * while the reader is on `#/account`, handed to the provider redirect by
@@ -1263,6 +1280,93 @@ export class AppState {
     return this.user ? 'cloud' : 'prompt';
   }
 
+  /**
+   * What a print control does: `none` in a build with no sign-in (no control is drawn),
+   * `wait` while the session is unknown, `prompt` signed out, `cloud` signed in
+   * (docs/specs/FEATURES.md, "Print").
+   */
+  get printTarget(): 'none' | 'wait' | 'prompt' | 'cloud' {
+    if (!this.env.cloud) return 'none';
+    if (this.user === undefined) return 'wait';
+    return this.user ? 'cloud' : 'prompt';
+  }
+
+  /** Returns the entries a print of `ids` stores, unknown ids dropped, and how many records
+   *  the 180-card cap cut; a signed-out prompt carries the same in its pending action. */
+  printEntriesOf(
+    ids: readonly string[],
+    qty: Readonly<Record<string, number>> = {}
+  ): { entries: PrintSetEntry[]; cut: number } {
+    const items = ids.flatMap((id) => {
+      const it = this.recordFor(id);
+      return it ? [it] : [];
+    });
+    return printSetEntries(items, qty);
+  }
+
+  /** A print control's press, signed in: stores the cards and their counts as a print set
+   *  and opens its `#/p/<id>`. */
+  async print(
+    ids: readonly string[],
+    qty: Readonly<Record<string, number>> = {}
+  ): Promise<void> {
+    if (!this.env.cloud || !this.user || this.printing) return;
+    const unread = this.homebrew?.status !== 'ready' || this.cloudLists?.status !== 'ready';
+    if (unread && ids.some((id) => isHomebrewKey(id) && !this.recordFor(id))) {
+      this.say((t) => t.hbNotReady, { error: true });
+      return;
+    }
+    const { entries, cut } = this.printEntriesOf(ids, qty);
+    if (!entries.length) return;
+    await this.#makePrint(entries, cut);
+  }
+
+  /* The make of a press and of a pending print. An answer that arrives after a navigation
+     is dropped: the set may exist, and the same sheet pressed again returns it. */
+  async #makePrint(entries: readonly PrintSetEntry[], cut: number): Promise<void> {
+    const cloud = this.env.cloud;
+    if (!cloud || this.printing) return;
+    const at = this.navigations;
+    this.printing = true;
+    let made: PrintSetMade;
+    try {
+      made = await cloud.prints.create(entries);
+    } finally {
+      this.printing = false;
+    }
+    if (this.navigations !== at) return;
+    if (made.ok) {
+      this.go(printSetHash(made.id));
+      if (cut > 0) {
+        this.say((t) =>
+          t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(cut))
+        );
+      }
+      return;
+    }
+    if (made.error === 'limit') {
+      const { key, value } = made;
+      this.say((t) => limitText(key, value, t), { error: true });
+      return;
+    }
+    this.say((t) => t.printSetFailed, { error: true });
+  }
+
+  /** Reads the print set `id` for `#/p/`: its rows in order and the count of deleted items;
+   *  `set` null for a set that opens nothing, and with no sign-in configured. */
+  async loadPrintSet(
+    id: string
+  ): Promise<
+    { ok: false } | { ok: true; set: { rows: PrintSetRow[]; missing: number } | null }
+  > {
+    const cloud = this.env.cloud;
+    if (!cloud) return { ok: true, set: null };
+    const r = await cloud.prints.read(id);
+    if (!r.ok) return { ok: false };
+    if (r.set === null) return { ok: true, set: null };
+    return { ok: true, set: readPrintSet(r.set, (k) => this.index?.byId.has(k) ?? false) };
+  }
+
   /** The store that holds `listId`: the account's, or this browser's. */
   storeFor(listId: string): ListModel {
     return this.cloudLists?.get(listId) ? this.cloudLists : this.lists;
@@ -1350,6 +1454,11 @@ export class AppState {
       /* The item's pick row makes the copy once the account's items are read. */
       this.#pending = null;
       this.saveItemFor = action.hid;
+      return;
+    }
+    if (action.do === 'print') {
+      this.#pending = null;
+      void this.#makePrint(action.entries, action.cut ?? 0);
       return;
     }
     const r = this.route;
@@ -1638,12 +1747,10 @@ export class AppState {
     return this.lang === 'en' ? 'pages/en/' : 'pages/';
   }
 
-  /** The one route kind that reads the data at all: print needs to know
-   *  which ids the cap threw away versus which were simply unknown.
-   *  `$derived` rather than a getter: `Shell`, `App` and every page
+  /** `$derived` rather than a getter: `Shell`, `App` and every page
    *  read this several times per render, and a getter re-parses the hash on
    *  each one. */
-  route: Route = $derived.by(() => parseHash(this.hash, (id) => this.knows(id)));
+  route: Route = $derived.by(() => parseHash(this.hash));
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print
    *  sheet - the live `renderTabs` (app.js 3667-3673) compares against the

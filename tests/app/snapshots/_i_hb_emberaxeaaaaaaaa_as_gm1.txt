@@ -40,7 +40,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     link "Изменить" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   contentinfo ""
     navigation "Страницы сайта"
@@ -118,7 +118,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/i
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     link "Edit" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   contentinfo ""
     navigation "Site pages"

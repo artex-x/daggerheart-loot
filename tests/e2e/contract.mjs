@@ -95,7 +95,7 @@ async function artRequests(env, make, publicUrl, infoUrl) {
   check((await port.auth.deleteAccount()).ok, 'the throwaway account deletion was refused');
 }
 
-/** Runs cases A-R and the real-only checks; throws `contract: <what>`. */
+/** Runs cases A-S and the real-only checks; throws `contract: <what>`. */
 export async function runRealContract(env, admin, member) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const url = env.E2E_SUPABASE_URL;

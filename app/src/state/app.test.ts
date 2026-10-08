@@ -318,7 +318,7 @@ describe('the default print layout', () => {
 
   it('is read at boot', () => {
     const app = new AppState(
-      at('#/print/ci1', {
+      at('#/roll/std', {
         storage: stored({ [PREFS_KEY]: '{"view":"grid","printBw":true,"printCompact":true}' })
       })
     );
@@ -327,18 +327,18 @@ describe('the default print layout', () => {
 
   it("reads live's old { view } shape as colour on the standard sheet", () => {
     const app = new AppState(
-      at('#/print/ci1', { storage: stored({ [PREFS_KEY]: '{"view":"grid"}' }) })
+      at('#/roll/std', { storage: stored({ [PREFS_KEY]: '{"view":"grid"}' }) })
     );
     expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', false, false]);
   });
 
   it('reads broken JSON as the defaults', () => {
-    const app = new AppState(at('#/print/ci1', { storage: stored({ [PREFS_KEY]: '{not' }) }));
+    const app = new AppState(at('#/roll/std', { storage: stored({ [PREFS_KEY]: '{not' }) }));
     expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['list', false, false]);
   });
 
   it('writes the whole key on a press', () => {
-    const env = at('#/print/ci1');
+    const env = at('#/roll/std');
     const app = new AppState(env);
     app.setPrintBW(true);
     expect(env.storage.get(PREFS_KEY)).toBe(
@@ -357,7 +357,7 @@ describe('a page switch lasts the visit', () => {
   const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
   it('changes what is shown and not the default, storing nothing', () => {
-    const env = at('#/print/ci1');
+    const env = at('#/roll/std');
     const app = new AppState(env);
     expect(app.printChanged).toBe(false);
     app.showPrintBW(true);
@@ -374,7 +374,7 @@ describe('a page switch lasts the visit', () => {
   });
 
   it('clears the change when the switch is back on the default', () => {
-    const app = new AppState(at('#/print/ci1'));
+    const app = new AppState(at('#/roll/std'));
     app.showPrintBW(true);
     app.showPrintCompact(true);
     app.showPrintBW(false);
@@ -387,7 +387,7 @@ describe('a page switch lasts the visit', () => {
   });
 
   it("drops a page's pick when the Display section sets the default", () => {
-    const app = new AppState(at('#/print/ci1'));
+    const app = new AppState(at('#/roll/std'));
     app.showPrintBW(true);
     app.showTablesView('grid');
     app.showPrintCompact(true);
@@ -403,7 +403,7 @@ describe('a page switch lasts the visit', () => {
   });
 
   it('starts a new visit from the default over the same storage', () => {
-    const env = at('#/print/ci1', {
+    const env = at('#/roll/std', {
       storage: stored({ [PREFS_KEY]: '{"view":"grid","printBw":true,"printCompact":false}' })
     });
     const first = new AppState(env);
@@ -421,7 +421,7 @@ describe('a page switch lasts the visit', () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const save = vi.spyOn(cloud.prefs, 'save');
     const storage = memoryStorage();
-    const app = new AppState(fakeEnv({ router: memoryRouter('#/print/ci1'), storage, cloud }));
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/std'), storage, cloud }));
     app.start();
     await flush();
     const before = storage.get(PREFS_KEY);
@@ -438,7 +438,7 @@ describe('a page switch lasts the visit', () => {
   it("moves the default on the account's answer and keeps a page's pick", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const storage = memoryStorage();
-    const app = new AppState(fakeEnv({ router: memoryRouter('#/print/ci1'), storage, cloud }));
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/std'), storage, cloud }));
     app.start();
     await flush();
     app.showPrintCompact(false);
@@ -526,36 +526,9 @@ describe('which tab is lit', () => {
        string, and a list route - `l/...` or `lists/...` - is never that string,
        so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
-    expect(new AppState(at('#/print/w1-w2')).section).toBe(null);
+    expect(new AppState(at('#/p/set-twocards')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
-  });
-});
-
-describe('the print route', () => {
-  const loot: Loot = {
-    items: {
-      core_item: [
-        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
-      ]
-    }
-  };
-
-  it('resolves the ids the data knows, and counts nothing dropped', () => {
-    const app = new AppState(at('#/print/ci1-zzz', { data: { load: () => loot } }));
-    const r = app.route;
-    expect(r.kind).toBe('print');
-    if (r.kind === 'print') {
-      expect(r.ids).toEqual(['ci1']);
-      expect(r.dropped).toBe(0);
-    }
-  });
-
-  it('carries no ids when the data never loaded', () => {
-    const app = new AppState(at('#/print/ci1', { data: { load: () => null } }));
-    const r = app.route;
-    expect(r.kind).toBe('print');
-    if (r.kind === 'print') expect(r.ids).toEqual([]);
   });
 });
 
@@ -3655,17 +3628,6 @@ describe('homebrew', () => {
       app.stop();
     });
 
-    it('prints a linked item of an own list, and not a key only a closed share carried', async () => {
-      const gm2 = started(fakeCloud(SEED, 'gm2'), '#/print/' + AXE);
-      await flush();
-      expect(gm2.app.route).toMatchObject({ kind: 'print', ids: [AXE] });
-      gm2.app.stop();
-      const reader = started(fakeCloud(SEED), '#/print/' + AXE);
-      await flush();
-      expect(reader.app.route).toMatchObject({ kind: 'print', ids: [] });
-      reader.app.stop();
-    });
-
     it("links the open share's item on an add from #/s/, and the owner's own item by its id", async () => {
       const cloud = fakeCloud(SEED, 'gm2');
       const { app } = started(cloud, '#/s/player-token-1');
@@ -4281,6 +4243,235 @@ describe('the item page and «Сохранить себе»', () => {
     expect(app.cloudLists?.get(GM2_LIST)?.ids).toEqual(['q23']);
     const notices = await gm2.requests.notices(GM2_LIST);
     expect(notices.ok && notices.notices.find((n) => n.item_key === AXE)?.kind).toBe('deleted');
+    app.stop();
+  });
+});
+
+describe('printing', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const AXE_ID = uuid(511);
+  const GM2 = '00000000-0000-4000-8000-000000000002';
+  const ru = dict('ru');
+  /* 300 catalog records, three times the entries a list holds. */
+  const loot: Loot = {
+    items: {
+      core_item: Array.from({ length: 300 }, (_, i) => ({
+        id: 'ci' + String(i + 1),
+        src: 'core',
+        kind: 'item' as const,
+        en: 'A',
+        ende: '',
+        ru: 'А',
+        rud: '',
+        roll: i + 1
+      })),
+      core_consumable: [
+        {
+          id: 'q1',
+          src: 'core',
+          kind: 'consumable',
+          en: 'B',
+          ende: '',
+          ru: 'Б',
+          rud: '',
+          roll: 1
+        }
+      ]
+    }
+  };
+  const many = (n: number): string[] =>
+    Array.from({ length: n }, (_, i) => 'ci' + String(i + 1));
+  const tooMany = (cut: number): string =>
+    ru.printTooMany.replace('%n', '180').replace('%d', String(cut));
+
+  function started(cloud: CloudPort | null, hash: string, over: Partial<Env> = {}) {
+    const router = memoryRouter(hash);
+    const app = new AppState(
+      fakeEnv({ router, storage: memoryStorage(), cloud, data: { load: () => loot }, ...over })
+    );
+    app.start();
+    return { app, router };
+  }
+
+  async function entriesOf(cloud: CloudPort, hash: string) {
+    const read = await cloud.prints.read(hash.slice('#/p/'.length));
+    return read.ok ? (read.set as { entries: unknown[] } | null)?.entries : undefined;
+  }
+
+  it('names the target of a print control in each state', async () => {
+    expect(started(null, '#/i/ci1').app.printTarget).toBe('none');
+    const out = started(fakeCloud(SEED), '#/i/ci1');
+    expect(out.app.printTarget).toBe('wait');
+    await flush();
+    expect(out.app.printTarget).toBe('prompt');
+    const gm1 = started(fakeCloud(SEED, 'gm1'), '#/i/ci1');
+    await flush();
+    expect(gm1.app.printTarget).toBe('cloud');
+    out.app.stop();
+    gm1.app.stop();
+  });
+
+  it('makes a set with the counts, disabled while it runs, and opens its #/p/ address', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app } = started(cloud, '#/i/ci1');
+    await flush();
+    const run = app.print(['ci1', 'zzz', 'q1'], { ci1: 3, q1: 1 });
+    expect(app.printing).toBe(true);
+    await run;
+    expect(app.printing).toBe(false);
+    expect(app.hash).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    expect(await entriesOf(cloud, app.hash)).toEqual([{ k: 'ci1', q: 3 }, { k: 'q1' }]);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it.each([
+    [181, 1],
+    [300, 120]
+  ])('stores the first 180 of %i records and says how many were cut', async (n, cut) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    await app.print(many(n));
+    expect(await entriesOf(cloud, app.hash)).toHaveLength(180);
+    expect(app.toast?.msg).toBe(tooMany(cut));
+    app.stop();
+  });
+
+  it('says the own items are loading for an unread key and makes nothing', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    vi.spyOn(cloud.homebrew, 'load').mockReturnValue(new Promise(() => undefined));
+    const create = vi.spyOn(cloud.prints, 'create');
+    const { app } = started(cloud, '#/i/ci1');
+    await flush();
+    await app.print(['hb_smithpotionaaaaa', 'ci1']);
+    expect(app.toast).toMatchObject({ msg: ru.hbNotReady, mode: 'err' });
+    expect(create).not.toHaveBeenCalled();
+    expect(app.hash).toBe('#/i/ci1');
+    app.stop();
+  });
+
+  it('says a failed make and the limit, and stays on the page', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { printSets: 1 } });
+    const { app } = started(cloud, '#/i/ci1');
+    await flush();
+    await app.print(['ci1']);
+    app.go('#/i/q1');
+    await app.print(['q1']);
+    expect(app.hash).toBe('#/i/q1');
+    expect(app.toast).toMatchObject({ msg: ru.printSetLimit.replace('%n', '1'), mode: 'err' });
+    cloud.setOffline(true);
+    await app.print(['ci1']);
+    expect(app.hash).toBe('#/i/q1');
+    expect(app.toast).toMatchObject({ msg: ru.printSetFailed, mode: 'err' });
+    app.stop();
+  });
+
+  it('drops the answer of a make that a navigation overtook', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (v: { ok: true; id: string }) => void = () => undefined;
+    vi.spyOn(cloud.prints, 'create').mockReturnValue(
+      new Promise((r) => {
+        answer = r;
+      })
+    );
+    const { app } = started(cloud, '#/i/ci1');
+    await flush();
+    const run = app.print(['ci1']);
+    app.go('#/roll/std');
+    answer({ ok: true, id: 'AbCdEf-_1234' });
+    await run;
+    expect(app.hash).toBe('#/roll/std');
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it("stores only what a players' link shows: a GM-only entry never reaches a set", async () => {
+    const seed: Seed = {
+      ...SEED,
+      lists: {
+        ...SEED.lists,
+        gm1: SEED.lists.gm1.map((l) => ({
+          ...l,
+          entries: l.entries.map((e) =>
+            e.itemKey === AXE ? { ...e, gmOnly: true as const } : e
+          )
+        })),
+        gm2: []
+      }
+    };
+    const cloud = fakeCloud(seed, 'gm2');
+    const { app } = started(cloud, '#/s/player-token-1');
+    await flush();
+    await app.sharedView?.open('player-token-1', GM2);
+    await app.print([AXE, 'q1']);
+    expect(await entriesOf(cloud, app.hash)).toEqual([{ k: 'q1' }]);
+    app.stop();
+  });
+
+  it("prints another account's item from a share link and reads it back after a reload", async () => {
+    const world = fakeCloud(SEED);
+    const { app } = started(world.as('gm2'), '#/s/player-token-1');
+    await flush();
+    await app.sharedView?.open('player-token-1', GM2);
+    await app.print([AXE]);
+    const hash = app.hash;
+    expect(hash).toMatch(/^#\/p\//);
+    app.stop();
+    const reloaded = started(world.as('gm2'), hash);
+    await flush();
+    const read = await reloaded.app.loadPrintSet(hash.slice(4));
+    const row = read.ok ? read.set?.rows[0] : undefined;
+    expect(row && 'record' in row ? [row.record.id, row.record.hid] : null).toEqual([
+      AXE,
+      AXE_ID
+    ]);
+    reloaded.app.stop();
+  });
+
+  it('makes the set a signed-out press left once the sign-in has read the lists', async () => {
+    const { app } = started(fakeCloud(SEED), '#/i/ci1');
+    await flush();
+    const { entries } = app.printEntriesOf(['ci1']);
+    app.askSignIn({ hash: '#/i/ci1', action: { do: 'print', entries, cut: 1 } });
+    await app.signIn('google');
+    await flush();
+    await flush();
+    expect(app.hash).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    expect(app.toast?.msg).toBe(tooMany(1));
+    app.stop();
+  });
+
+  it('says a failed pending make on the page the sign-in returned to', async () => {
+    const cloud = fakeCloud(SEED);
+    vi.spyOn(cloud.prints, 'create').mockResolvedValue({ ok: false, error: 'network' });
+    const { app } = started(cloud, '#/i/ci1');
+    await flush();
+    app.askSignIn({ hash: '#/i/ci1', action: { do: 'print', entries: [{ k: 'ci1' }] } });
+    await app.signIn('google');
+    await flush();
+    await flush();
+    expect(app.hash).toBe('#/i/ci1');
+    expect(app.toast).toMatchObject({ msg: ru.printSetFailed, mode: 'err' });
+    app.stop();
+  });
+
+  it('reads a set for #/p/: none with no cloud, not ok offline, the rows of a seeded set', async () => {
+    expect(await started(null, '#/p/set-twocards').app.loadPrintSet('set-twocards')).toEqual({
+      ok: true,
+      set: null
+    });
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app } = started(cloud, '#/p/set-twocards');
+    await flush();
+    expect(await app.loadPrintSet('set-twocards')).toEqual({
+      ok: true,
+      set: { rows: [{ id: 'ci1' }, { id: 'q1' }], missing: 0 }
+    });
+    expect(await app.loadPrintSet('set-expired1')).toEqual({ ok: true, set: null });
+    cloud.setOffline(true);
+    expect(await app.loadPrintSet('set-twocards')).toEqual({ ok: false });
     app.stop();
   });
 });

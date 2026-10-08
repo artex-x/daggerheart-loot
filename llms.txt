@@ -197,12 +197,12 @@ of two or three usually plays better than assigning one each.
   starting inventory first, then campaign frames. An empty key means "any", so a
   plain table link carries no `f_` part at all. Links written with the old `_`
   separator are still read
-- `#/print/<id>-<id>-...` — a print sheet of those records as cards, nine to an
-  A4 page at 63x88 mm. Reachable from an item page, a list, or a table selection.
-  An opt-in compact sheet prints sixteen 44x63 mm cards per page, in either
-  layout.
-  An id may carry a count as `*<n>`, shown after the card's name:
-  `#/print/ci1*3-q1`
+- `#/p/<id>` - a print sheet stored in a person's account: cards nine to an A4
+  page at 63x88 mm, or sixteen at 44x63 mm on the compact sheet. The 12
+  characters are made by the site when a signed-in person presses «Печать», so
+  you cannot build one, and opening it needs sign-in. Printing needs an
+  account. `#/print/...` links are retired since 2026-10-08 and open a page that
+  says so; do not build one.
 - `#/i/<id>` — one record
 - `#/search` — search
 - `#/l/<payload>` - an old list link, retired: it stops opening on

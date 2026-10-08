@@ -185,6 +185,40 @@ function stampOf(parts) {
       };
     });
     const want = fx.resolves;
+    /* A page whose state waits for the session (`#/p/`) names itself by its heading. */
+    if (want.heading) {
+      const h1 = () =>
+        (
+          document.querySelector('main h1') ?? document.querySelector('h1')
+        )?.textContent?.trim() ?? null;
+      const heading = await rPage
+        .waitForFunction(
+          (t) =>
+            (
+              document.querySelector('main h1') ?? document.querySelector('h1')
+            )?.textContent?.trim() === t,
+          { timeout: 5000 },
+          want.heading
+        )
+        .then(
+          () => want.heading,
+          () => rPage.evaluate(h1)
+        );
+      ok(
+        heading === want.heading,
+        fx.hash + ': heading ' + JSON.stringify(heading) + ', the fixture says ' + want.heading
+      );
+    }
+    /* Every #/p/ state draws one heading, so its sub names the state. */
+    if (want.sub) {
+      const sub = await rPage.evaluate(
+        () => document.querySelector('main .page-sub')?.textContent?.trim() ?? null
+      );
+      ok(
+        sub === want.sub,
+        fx.hash + ': sub ' + JSON.stringify(sub) + ', the fixture says ' + want.sub
+      );
+    }
     ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
     ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
     ok(

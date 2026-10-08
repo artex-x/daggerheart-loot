@@ -405,28 +405,65 @@
   },
   {
     "hash": "#/print/ci1-cc1-q26",
-    "why": "print sheet",
+    "why": "an old long print link, retired on 2026-10-08: the retired print page, the address kept, nothing read from it",
     "resolves": {
       "hash": "#/print/ci1-cc1-q26",
       "tab": null,
       "rows": 0,
-      "printCards": 3,
-      "picked": []
+      "printCards": 0,
+      "picked": [],
+      "heading": "Такие ссылки на печать больше не открываются."
     }
   },
   {
     "hash": "#/print/ci1*3-cc1-q26*150",
-    "why": "a print sheet with a count per card: ci1 reads x3, q26 is clamped to 99, cc1 has none",
+    "why": "an old long print link with counts, retired on 2026-10-08: the same retired page, the counts never read",
     "resolves": {
       "hash": "#/print/ci1*3-cc1-q26*150",
       "tab": null,
       "rows": 0,
-      "printCards": 3,
-      "printQty": {
-        "ci1": 3,
-        "q26": 99
-      },
-      "picked": []
+      "printCards": 0,
+      "picked": [],
+      "heading": "Такие ссылки на печать больше не открываются."
+    }
+  },
+  {
+    "hash": "#/p/set-twocards",
+    "why": "a stored print set, signed out: the print page asks for a sign-in, the address kept",
+    "resolves": {
+      "hash": "#/p/set-twocards",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "heading": "Печать карточек",
+      "sub": "Войдите, чтобы печатать карточки."
+    }
+  },
+  {
+    "hash": "#/p/set-twocards.",
+    "why": "a stray character after the set id is dropped from the read, and the address kept",
+    "resolves": {
+      "hash": "#/p/set-twocards.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "heading": "Печать карточек",
+      "sub": "Войдите, чтобы печатать карточки."
+    }
+  },
+  {
+    "hash": "#/p/short",
+    "why": "a malformed set id (not 12 characters): the set-not-found print page, no read, the address kept",
+    "resolves": {
+      "hash": "#/p/short",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "heading": "Печать карточек",
+      "sub": "Набор не найден: ссылку не открывали 90 дней, или в адресе ошибка."
     }
   },
   {

@@ -44,7 +44,7 @@
      * the prop when a screen needs it.
      */
     href?: string | undefined;
-    /** Omits `target`/`rel` - the print link opens over the current page,
+    /** Omits `target`/`rel` - an in-app link opens over the current page,
      *  the same tab the button click would have used anyway. */
     sameTab?: boolean;
     onclick?: (() => void) | undefined;

@@ -3,13 +3,16 @@
      list, print, «Изменить» on an own item, and «Сохранить себе» on another account's item
      with a line under the row saying what the copy does (docs/specs/FEATURES.md, "Records").
      Signed out the press opens the sign-in prompt under the row, and the copy is made once
-     the sign-in comes back and the account's items are read. */
+     the sign-in comes back and the account's items are read. «Печать» makes a print set
+     and opens `#/p/<id>`; signed out it opens its own sign-in prompt under the row, and the
+     set is made once the sign-in comes back (docs/specs/FEATURES.md, "Print"). */
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import { homebrewItemHash, itemHash, printHash } from '../lib/hash.js';
+  import { homebrewItemHash, itemHash, recordHref } from '../lib/hash.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
+  import { printAction } from '../lib/pending.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -41,6 +44,13 @@
   );
   const toLists = $derived(offered && app.relinkTargets(it).length > 0);
   let asking = $state(false);
+  let printAsking = $state(false);
+
+  function pressPrint(): void {
+    const target = app.printTarget;
+    if (target === 'prompt') printAsking = !printAsking;
+    else if (target === 'cloud') void app.print([it.id]);
+  }
 
   function press(): void {
     const target = app.newListTarget;
@@ -63,9 +73,13 @@
 </script>
 
 <AddToList {app} key={it.id} ids={[it.id]} primary {inModal} />
-{#if owner !== false}
-  <Button size="sm" href={printHash([it.id])} sameTab title={t.printHint}
-    ><Icon name="print" />{t.print}</Button
+{#if app.printTarget !== 'none'}
+  <Button
+    size="sm"
+    title={t.printHint}
+    disabled={app.printing || app.printTarget === 'wait'}
+    expanded={app.printTarget === 'prompt' ? printAsking : undefined}
+    onclick={pressPrint}><Icon name="print" />{t.print}</Button
   >
 {/if}
 {#if app.homebrew?.has(it.id) && !foreign}
@@ -91,6 +105,19 @@
       />
     </div>
   {/if}
+{/if}
+{#if printAsking && app.printTarget === 'prompt'}
+  <div class="saveprompt">
+    <SignInPrompt
+      {app}
+      lead={t.signInToPrint}
+      after={{
+        hash: inModal ? recordHref(it) : app.hash,
+        action: printAction(app.printEntriesOf([it.id]))
+      }}
+      boxed
+    />
+  </div>
 {/if}
 
 <style>

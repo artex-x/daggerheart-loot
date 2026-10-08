@@ -4,7 +4,8 @@
   and a deleted case - requests whose expires_at has passed, decided or
   not, stopped share links over 30 days old with a newer row of their list
   and audience, notices read over an hour ago or unread and made over 30
-  days ago, the job's own runs over 7 days old - the counts it answers, a
+  days ago, the job's own runs over 7 days old, print sets 90 days after
+  their last open - the counts it answers, a
   second call that deletes nothing, no API role that may execute it, a send
   that no longer deletes, and the reversal that removes the job. Every seed,
   call and assertion runs in one transaction that rolls back, so the hourly
@@ -43,6 +44,7 @@ const R = {
   expiredNow: id(7204),
   live: id(7205)
 };
+const S = { old: 'printsetold1', kept: 'printsetkept' };
 const N = {
   read61: id(7401),
   read59: id(7402),
@@ -118,6 +120,9 @@ async function world(tx) {
   await note(N.read59, 'hb_readfiftynineaaa', '59 minutes', '2 days');
   await note(N.made31, 'hb_madethirtyoneaaa', null, '31 days');
   await note(N.made29, 'hb_madetwentynineaa', null, '29 days');
+  await tx`insert into public.print_sets (id, owner_id, entries, digest, opened_at) values
+    (${S.old}, ${A}, '[{"k": "ci1"}]', 'old', now() - interval '90 days 1 minute'),
+    (${S.kept}, ${A}, '[{"k": "ci2"}]', 'kept', now() - interval '89 days')`;
 }
 
 const cleanup = async (tx) => {
@@ -220,6 +225,20 @@ describe('the retentions', () => {
     assert.ok(out.gone >= 1);
   });
 
+  it('deletes a print set 90 days after its last open, and keeps a younger one', async () => {
+    const out = await rolledBack(async (tx) => {
+      await world(tx);
+      const before = await count(tx, 'print_sets');
+      const v = await cleanup(tx);
+      const kept = await tx`select id from public.print_sets
+        where id = any(${Object.values(S)}::text[])`;
+      return { v, gone: before - (await count(tx, 'print_sets')), kept: kept.map((r) => r.id) };
+    });
+    assert.deepEqual(out.kept, [S.kept]);
+    assert.equal(out.v.print_sets, out.gone);
+    assert.ok(out.gone >= 1);
+  });
+
   it("deletes the job's runs that ended over 7 days ago", async () => {
     const out = await rolledBack(async (tx) => {
       const [{ jobid }] =
@@ -256,12 +275,22 @@ describe('the retentions', () => {
       return { first, second: await cleanup(tx) };
     });
     assert.ok(
-      out.first.requests >= 3 && out.first.shares >= 1 && out.first.notices >= 2,
+      out.first.requests >= 3 &&
+        out.first.shares >= 1 &&
+        out.first.notices >= 2 &&
+        out.first.print_sets >= 1,
       JSON.stringify(out.first)
     );
     // files is null: the local stack holds no Vault secret of the file deletion
     // (tests/db/homebrew-art.test.mjs seeds them for its cases).
-    assert.deepEqual(out.second, { requests: 0, shares: 0, runs: 0, notices: 0, files: null });
+    assert.deepEqual(out.second, {
+      requests: 0,
+      shares: 0,
+      runs: 0,
+      notices: 0,
+      files: null,
+      print_sets: 0
+    });
   });
 });
 

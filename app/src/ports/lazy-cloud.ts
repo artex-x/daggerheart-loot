@@ -19,6 +19,7 @@ import type {
   ListWrite,
   PreferencesPort,
   PrefsRead,
+  PrintSetRepository,
   RequestRepository,
   RequestsRead,
   Session,
@@ -163,5 +164,9 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     moveItems: async (items, bookId, section) =>
       (await port())?.homebrew.moveItems(items, bookId, section) ?? UNSENT
   };
-  return { auth, prefs, lists, shares, events, requests, homebrew };
+  const prints: PrintSetRepository = {
+    create: async (entries) => (await port())?.prints.create(entries) ?? UNSENT,
+    read: async (id) => (await port())?.prints.read(id) ?? NO_ITEMS
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew, prints };
 }

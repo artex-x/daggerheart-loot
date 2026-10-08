@@ -120,6 +120,17 @@ database on a schedule").
 | `cron.job_run_details` | 7 days after `end_time` |
 | own picture files of `homebrew-art` that no item names | at the row change that stops naming them, through the Storage API; else the hourly job, 1 hour after the upload, at most 2000 a run |
 | `homebrew_art_released` (the names queued for deletion) | 1 day after `at` |
+| `print_sets` | 90 days after `opened_at`, which an open moves at most once a day |
+
+Printing needs an account. A print set holds references: the ordered
+catalog ids and homebrew item ids of one sheet and their counts, never a
+record, a note, a price or a picture name. Two definer functions for
+`authenticated` only, `create_print_set(jsonb)` and `get_print_set(text)`,
+write and read it; the table has no grant and no policy, and `anon` gains
+nothing. A reader of a set's 12-character id sees the cards as they are
+now, and an item deleted since is left out and counted (`docs/decisions/`,
+2026-10-08, "A print set holds references and lives 90 days after its last
+open").
 
 Homebrew items, their sources and sections, and the author's set and rule
 cards live in the account only: never in the browser's storage, and never
@@ -143,8 +154,11 @@ An own homebrew item may have a picture: two public files of the Supabase
 Storage bucket `homebrew-art` under one random name, `p/<32 hex>.<ext>`
 (640 px) and `t/<32 hex>.<ext>` (160 px), WebP or JPEG, at most 200 KB.
 `homebrew_items.art` stores the name (or a catalog picture's basename),
-never an address, and the three item reads answer it as `img` beside the
-record. Ownership is the object's `owner_id`, which Storage sets from the
+never an address, and the three item reads and `get_print_set` answer it as
+`img` beside the record. Only `homebrew_items.art` names a file: a print set
+holds the item's id and reads its picture at each open; a table that stores
+a picture name extends the release trigger, the job's files block and the
+`lifecycle_files` watch. Ownership is the object's `owner_id`, which Storage sets from the
 session: an item names only an upload of its stored owner, and an upload
 needs room under twice `homebrew_items_per_owner` plus 5 pictures. The
 browser uploads and never deletes: the database deletes a file when no item

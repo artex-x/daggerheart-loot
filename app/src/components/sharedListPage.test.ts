@@ -490,18 +490,56 @@ describe('the taken count and the total', () => {
   });
 
   it('names entries and pieces apart in a live region, and prints the taken counts', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const cloud = fakeCloud(SEED, 'gm2');
+    const env = at('#/l/' + QTY_AND_PRICE.player.payload, { cloud });
+    const { container } = render(App, { env });
     await tickAllAndTakeTwo();
     const summ = container.querySelector('.selsumm');
     expect(summ).toHaveAttribute('aria-live', 'polite');
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 3 позиции · 5 шт.');
     expect(summ?.querySelector('.selx')).toBeNull();
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    expect(within(bar).getByRole('link', { name: 'Печать' })).toHaveAttribute(
-      'href',
-      '#/print/ci1*2-cc21*2-q337'
-    );
     await expectNoA11yViolations(container);
+    const print = within(bar).getByRole('button', { name: 'Печать' });
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
+    await userEvent.click(print);
+    await waitFor(() => {
+      expect(env.router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    });
+    const read = await cloud.prints.read(env.router.hash().slice(4));
+    expect(read).toMatchObject({
+      ok: true,
+      set: { entries: [{ k: 'ci1', q: 2 }, { k: 'cc21', q: 2 }, { k: 'q337' }] }
+    });
+  });
+
+  it('keeps the taken counts in the print a signed-out press leaves for the sign-in', async () => {
+    const cloud = fakeCloud(SEED);
+    const env = at('#/l/' + QTY_AND_PRICE.player.payload, { cloud });
+    const { container } = render(App, { env });
+    await tickAllAndTakeTwo();
+    const bar = document.querySelector('.selbarwrap') as HTMLElement;
+    const print = within(bar).getByRole('button', { name: 'Печать' });
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
+    await userEvent.click(print);
+    expect(within(bar).getByText('Войдите, чтобы печатать карточки.')).toBeInTheDocument();
+    expect(container.querySelector('.selacts')).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Войти' }));
+    expect(env.router.hash()).toBe('#/account');
+    await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
+    await waitFor(() => {
+      expect(env.router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    });
+    const read = await cloud.prints.read(env.router.hash().slice(4));
+    expect(read).toMatchObject({
+      ok: true,
+      set: { entries: [{ k: 'ci1', q: 2 }, { k: 'cc21', q: 2 }, { k: 'q337' }] }
+    });
   });
 
   it('holds a typed count to the quantity, and puts the value back on an emptied commit', async () => {

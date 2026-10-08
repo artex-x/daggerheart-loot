@@ -53,6 +53,7 @@ import type {
 import type { HomebrewImported, HomebrewImportRows } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { PrintSetEntry } from '../lib/printSet.js';
 import type { NoticeRow, OwnerRequest, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
 
@@ -605,8 +606,24 @@ export interface HomebrewRepository {
   ): Promise<HomebrewMoved>;
 }
 
+export type { PrintSetEntry };
+/** A print set made, or why not. */
+export type PrintSetMade = { ok: true; id: string } | Exclude<ListWrite, { ok: true }>;
+/** `set: null` is an id that opens nothing: malformed, unknown, expired, or signed out.
+ *  `set` is the raw answer of `get_print_set`, which the print page reads. */
+export type PrintSetRead = { ok: true; set: unknown } | { ok: false };
+
+/** Stored print sheets by a short id (docs/specs/META.md, section 3), signed in only. */
+export interface PrintSetRepository {
+  /** Stores the sheet for the signed-in reader (`create_print_set`); the same sheet again
+   *  answers the same id. */
+  create(entries: readonly PrintSetEntry[]): Promise<PrintSetMade>;
+  /** The set by its id (`get_print_set`); signed out it answers `set: null` with no call. */
+  read(id: string): Promise<PrintSetRead>;
+}
+
 /** Grows one member per release (R1 auth, R1 prefs, R2 lists and shares, R3 events, R4
- *  requests, R7 homebrew, ...). */
+ *  requests, R7 homebrew, print sets, ...). */
 export interface CloudPort {
   auth: AuthPort;
   prefs: PreferencesPort;
@@ -615,6 +632,7 @@ export interface CloudPort {
   events: EventsPort;
   requests: RequestRepository;
   homebrew: HomebrewRepository;
+  prints: PrintSetRepository;
 }
 
 /**

@@ -334,12 +334,10 @@ const STATES: {
       await press('Снаряжение');
     }
   },
+  /* The sheet's layouts are printPage.test.ts's axe cases. */
   {
-    what: 'a print sheet switched to black and white',
-    route: '#/print/w1-w2',
-    enter: async () => {
-      await press('Чёрно-белая');
-    }
+    what: 'the retired print page',
+    route: '#/print/w1-w2'
   },
   {
     what: 'a GM share link with both notes, signed out',
@@ -686,10 +684,10 @@ const COVERED: Record<string, string> = {
   'ImportLines.svelte':
     "importPanel.test.ts's grouped report and refusals, and homebrewImport.test.ts's refused file",
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
-  'PrintCard.svelte': 'printPage.test.ts, and the black-and-white sheet below',
-  'PrintPage.svelte': 'printPage.test.ts, and the black-and-white sheet below',
+  'PrintCard.svelte': "printPage.test.ts's axe cases of both layouts and sizes",
+  'PrintPage.svelte': "printPage.test.ts's axe cases of the sheet and its states",
   'Seg.svelte':
-    'the frame, on every state here and in shell.test.ts; the tables view switch in tables.test.ts; the print sheet below',
+    'the frame, on every state here and in shell.test.ts; the tables view switch in tables.test.ts; the print sheet in printPage.test.ts',
   'RowMain.svelte':
     "tables.test.ts's sectioned-body axe check, both list-page states below, and a GM-only row in listPage.test.ts",
   'SearchBox.svelte':

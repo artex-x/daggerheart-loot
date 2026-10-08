@@ -1,5 +1,6 @@
 # 2026-09-23 - The compact sheet is an independent size switch for both print layouts, kept in session memory
 
+- Amended by "Every print is a stored set; long print links are retired" (2026-10-08): `#/print/<ids>` is retired.
 - Task: `61`, human decision (find it with `git log --grep="Task: 61"`).
 - Decision: a second print switch, `Обычная` / `Компактная`, beside the
   colour switch: sixteen 44x63 mm cards per A4 sheet in either layout,

@@ -215,35 +215,60 @@ describe('the heading and the action row', () => {
     expect(screen.getByText('3 позиции')).toBeInTheDocument();
   });
 
-  it('shows five actions including the print link, by name', () => {
+  it('shows four actions and no print with no sign-in configured', () => {
     render(App, { env: withA() });
     expect(screen.getByRole('button', { name: 'Ссылка игрокам' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ссылка себе' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
-    const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
-    expect(print).toHaveAttribute('href', '#/print/ci1-cc1*2-q1');
+    expect(
+      screen.queryByTitle('Собрать карточки для печати: девять на лист A4')
+    ).not.toBeInTheDocument();
   });
 
-  it('writes each count over 1 into the print link and leaves the rest bare', () => {
-    const counted: StoredList = {
-      ...listA,
-      meta: { ci1: { qty: 3 }, q1: { qty: 1, gold: 10 } }
-    };
-    render(App, {
-      env: at('#/lists/a', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([counted]) })
-      })
+  it('opens the sign-in prompt under the toolbar signed out, and a second press closes it', async () => {
+    const { container } = render(App, { env: withA('#/lists/a', { cloud: fakeCloud(SEED) }) });
+    const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
+    await waitFor(() => {
+      expect(print).toBeEnabled();
     });
-    const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
-    expect(print).toHaveAttribute('href', '#/print/ci1*3-cc1-q1');
+    expect(print).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(print);
+    expect(print).toHaveAttribute('aria-expanded', 'true');
+    const lead = screen.getByText('Войдите, чтобы печатать карточки.');
+    expect(lead.closest('.signin')).toHaveClass('boxed');
+    await expectNoA11yViolations(container);
+    await userEvent.click(print);
+    expect(screen.queryByText('Войдите, чтобы печатать карточки.')).toBeNull();
   });
 
-  it('has no print link on an empty list', () => {
+  it("stores the list's counts in the set signed in, and opens it", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const router = memoryRouter('#/lists/' + uuid(101));
+    render(App, { env: at('#/lists/' + uuid(101), { router, cloud }) });
+    const print = await screen.findByTitle('Собрать карточки для печати: девять на лист A4');
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
+    await userEvent.click(print);
+    await waitFor(() => {
+      expect(router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    });
+    const read = await cloud.prints.read(router.hash().slice(4));
+    expect(read.ok && (read.set as { entries: unknown[] }).entries).toMatchObject([
+      { k: 'ci1', q: 2 },
+      { k: 'q1' },
+      { k: 'cc1', q: 5 },
+      { hid: uuid(511) }
+    ]);
+  });
+
+  it('has no print control on an empty list', () => {
     const empty: StoredList = { id: 'e', name: 'Пусто', ids: [] };
     render(App, {
       env: at('#/lists/e', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) })
+        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) }),
+        cloud: fakeCloud(SEED)
       })
     });
     expect(

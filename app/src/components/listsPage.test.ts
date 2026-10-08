@@ -998,7 +998,7 @@ describe('the move into the account and the cutoff', () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст и напечатать можно и так.'
+        'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст можно и так.'
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Скрыть' })).toBeNull();

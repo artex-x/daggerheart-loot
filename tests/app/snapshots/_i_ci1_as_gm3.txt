@@ -44,7 +44,7 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm3#/print/ci1]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -128,7 +128,7 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=index.html?as=
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm3#/print/ci1]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

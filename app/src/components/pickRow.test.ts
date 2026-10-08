@@ -3,7 +3,8 @@
  * item's page; (b) «Сохранено» blocks a second copy; (c) the note when a list links the item,
  * and the relinked toast; (d) «Изменить» on the toast; (e) `hbNotReady` while the own items
  * or the lists load, `cloudLoadFailed` after a failed lists read; (f) the relink keeps each entry (state/app.test.ts reads the rows); (g) each refusal's
- * text, and the account's read deciding a lost answer. docs/specs/FEATURES.md, "Records". */
+ * text, and the account's read deciding a lost answer. Then «Печать» in each state of its
+ * target. docs/specs/FEATURES.md, "Records" and "Print". */
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -230,7 +231,7 @@ describe('«Сохранить себе»', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('button', { name: t.saveItem })).toBeInTheDocument();
     expect(within(dialog).getByText(t.saveItemNoteList)).toBeInTheDocument();
-    expect(within(dialog).getByRole('link', { name: t.print })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: t.print })).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
@@ -344,5 +345,101 @@ describe('«Сохранить себе»', () => {
     expect(apply.mock.calls.flat(2).some((op) => (op as { op?: string }).op === 'relink')).toBe(
       false
     );
+  });
+});
+
+describe('«Печать»', () => {
+  const env = (cloud: FakeCloud | null, hash: string) =>
+    fakeEnv({
+      cloud,
+      router: memoryRouter(hash),
+      storage: memoryStorage(),
+      data: fakeData(LOOT)
+    });
+  async function started(cloud: FakeCloud | null, hash = '#/i/q23'): Promise<AppState> {
+    const app = new AppState(env(cloud, hash));
+    app.start();
+    if (cloud) {
+      await waitFor(() => {
+        expect(app.user).not.toBeUndefined();
+      });
+    }
+    return app;
+  }
+  const record = (app: AppState) => {
+    const it = app.recordFor('q23');
+    if (!it) throw new Error('no record');
+    return it;
+  };
+  const printButton = (): HTMLElement | null => screen.queryByRole('button', { name: t.print });
+
+  it('is not drawn with no sign-in configured, and is disabled while the session is unknown', async () => {
+    const none = await started(null);
+    render(PickRow, { app: none, it: record(none) });
+    expect(printButton()).toBeNull();
+    none.stop();
+    cleanup();
+
+    const cloud = fakeCloud(SEED, 'gm2');
+    cloud.auth.session = () => new Promise(() => undefined);
+    const app = new AppState(env(cloud, '#/i/q23'));
+    app.start();
+    render(PickRow, { app, it: record(app) });
+    expect(printButton()).toBeDisabled();
+    app.stop();
+  });
+
+  it('opens the sign-in prompt signed out, and its action makes the set of the card', async () => {
+    const app = await started(fakeCloud(SEED));
+    const { container } = render(PickRow, { app, it: record(app) });
+    const button = printButton() as HTMLElement;
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(button).toHaveAttribute('title', t.printHint);
+    await userEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(t.signInToPrint)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: t.signIn }));
+    expect(app.signInFor).toEqual({
+      hash: '#/i/q23',
+      action: { do: 'print', entries: [{ k: 'q23' }] }
+    });
+    app.stop();
+  });
+
+  it("returns a modal's sign-in to the record's own address, and a second press closes it", async () => {
+    const app = await started(fakeCloud(SEED), '#/tables/core_item');
+    render(PickRow, { app, it: record(app), inModal: true });
+    const button = printButton() as HTMLElement;
+    await userEvent.click(button);
+    await userEvent.click(button);
+    expect(screen.queryByText(t.signInToPrint)).toBeNull();
+    await userEvent.click(button);
+    await userEvent.click(screen.getByRole('button', { name: t.signIn }));
+    expect(app.signInFor?.hash).toBe('#/i/q23');
+    app.stop();
+  });
+
+  it('makes the set signed in and opens it, disabled while it runs', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const app = await started(cloud);
+    const { container } = render(PickRow, { app, it: record(app) });
+    app.printing = true;
+    await waitFor(() => {
+      expect(printButton()).toBeDisabled();
+    });
+    app.printing = false;
+    await waitFor(() => {
+      expect(printButton()).toBeEnabled();
+    });
+    expect(printButton()).not.toHaveAttribute('aria-expanded');
+    await userEvent.click(printButton() as HTMLElement);
+    await waitFor(() => {
+      expect(app.hash).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    });
+    const read = await cloud.prints.read(app.hash.slice(4));
+    expect(read).toMatchObject({ ok: true, set: { entries: [{ k: 'q23' }] } });
+    await expectNoA11yViolations(container);
+    app.stop();
   });
 });

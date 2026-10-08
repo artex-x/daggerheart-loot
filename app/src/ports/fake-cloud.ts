@@ -32,6 +32,7 @@ import {
 } from '../lib/homebrew.js';
 import { isArtName, isOwnArt, newArtName, thumbOf } from '../lib/art.js';
 import type { Prefs } from '../lib/prefs.js';
+import { PRINT_SET_DAYS, PRINT_SET_ID, printEntriesValid } from '../lib/printSet.js';
 import type { NoticeRow, RequestLine, ShortLine } from '../lib/requests.js';
 import {
   SEED,
@@ -61,6 +62,9 @@ import type {
   LiveStatus,
   MoveWrite,
   PreferencesPort,
+  PrintSetEntry,
+  PrintSetMade,
+  PrintSetRepository,
   RequestApplied,
   RequestRepository,
   RequestSent,
@@ -79,7 +83,7 @@ export interface FakeCloudOptions {
   offline?: boolean;
   /** The count limits in place of the database defaults (50 lists, 100 entries, 20
    *  homebrew sources, 100 homebrew items, 100 homebrew cards, 10 pending requests per
-   *  list, 100 lines per request). */
+   *  list, 100 lines per request, 1000 live print sets). */
   limits?: {
     lists?: number;
     entries?: number;
@@ -88,6 +92,7 @@ export interface FakeCloudOptions {
     cards?: number;
     pending?: number;
     lines?: number;
+    printSets?: number;
   };
   /** Whether a subscribe joins (default `true`); `false` keeps every feed on the poll. */
   live?: boolean;
@@ -344,6 +349,30 @@ interface Subscriber {
   joined: boolean;
 }
 
+/** A print set as `print_sets` holds it; `text` is the entries as jsonb prints them, the
+ *  digest and the byte bound in one. */
+interface HeldPrintSet {
+  owner: string;
+  entries: PrintSetEntry[];
+  text: string;
+  openedAt: number;
+}
+
+const DAY_MS = 86_400_000;
+
+/* The entries as jsonb prints them: each entry's keys in the order h, k, q. */
+function printText(entries: readonly PrintSetEntry[]): string {
+  const one = (e: PrintSetEntry): string => {
+    const o = e as { h?: string; k?: string; q?: number };
+    const parts: string[] = [];
+    if (o.h !== undefined) parts.push('"h": ' + JSON.stringify(o.h));
+    if (o.k !== undefined) parts.push('"k": ' + JSON.stringify(o.k));
+    if (o.q !== undefined) parts.push('"q": ' + String(o.q));
+    return '{' + parts.join(', ') + '}';
+  };
+  return '[' + entries.map(one).join(', ') + ']';
+}
+
 const OK: Extract<ListWrite, { ok: true }> = { ok: true };
 const NETWORK: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
 const REFUSED: Extract<ListWrite, { error: 'refused' }> = { ok: false, error: 'refused' };
@@ -488,6 +517,20 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   const maxCards = options.limits?.cards ?? 100;
   const maxPending = options.limits?.pending ?? 10;
   const maxLines = options.limits?.lines ?? 100;
+  const maxPrintSets = options.limits?.printSets ?? 1000;
+  /* Every account's print sets by id, as `print_sets` holds them. */
+  const printSets = new Map<string, HeldPrintSet>(
+    seed.printSets.map((p): [string, HeldPrintSet] => [
+      p.id,
+      {
+        owner: p.owner,
+        entries: p.entries.map((e) => ({ ...e })),
+        text: printText(p.entries),
+        openedAt: boot - p.openedAgoMs
+      }
+    ])
+  );
+  let printed = 0;
   const listeners = new Set<(s: Session | null) => void>();
 
   const user = (): SeedUser | null => (current === null ? null : (users.get(current) ?? null));
@@ -544,6 +587,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       rows.delete(current);
       lists.delete(current);
       homebrewHeld.delete(current);
+      for (const [id, p] of printSets) if (p.owner === current) printSets.delete(id);
       unlink(items);
       releaseArt(held.map((i) => i.art));
       current = null;
@@ -1980,6 +2024,69 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
   };
 
+  /* `create_print_set` and `get_print_set` on `Date.now()`: a set lives 90 days after its
+     last open, which a read moves at most once a day; the same sheet of one account is
+     one set, an expired one revived. */
+  const printRepo: PrintSetRepository = {
+    create(entries): Promise<PrintSetMade> {
+      if (offline || current === null) return Promise.resolve(NETWORK);
+      if (!printEntriesValid(entries)) return Promise.resolve(REFUSED);
+      const text = printText(entries);
+      if (text.length > 16384) return Promise.resolve(REFUSED);
+      const now = Date.now();
+      for (const [id, p] of printSets) {
+        if (p.owner === current && p.text === text) {
+          p.openedAt = now;
+          return Promise.resolve({ ok: true, id });
+        }
+      }
+      let live = 0;
+      for (const p of printSets.values()) {
+        if (p.owner === current && p.openedAt >= now - PRINT_SET_DAYS * DAY_MS) live++;
+      }
+      if (live >= maxPrintSets) {
+        return Promise.resolve({
+          ok: false,
+          error: 'limit',
+          key: 'print_sets_per_owner',
+          value: maxPrintSets
+        });
+      }
+      const id = 'fp' + String(++printed).padStart(10, '0');
+      printSets.set(id, {
+        owner: current,
+        entries: entries.map((e) => ({ ...e })),
+        text,
+        openedAt: now
+      });
+      return Promise.resolve({ ok: true, id });
+    },
+    read(id) {
+      /* Signed out the real port answers before any call, so offline does not matter. */
+      if (current === null) return Promise.resolve({ ok: true, set: null });
+      if (offline) return Promise.resolve({ ok: false });
+      const now = Date.now();
+      const p = PRINT_SET_ID.test(id) ? printSets.get(id) : undefined;
+      if (!p || p.openedAt < now - PRINT_SET_DAYS * DAY_MS) {
+        return Promise.resolve({ ok: true, set: null });
+      }
+      if (p.openedAt < now - DAY_MS) p.openedAt = now;
+      let missing = 0;
+      const out: object[] = [];
+      for (const e of p.entries) {
+        const q = e.q === undefined ? {} : { q: e.q };
+        if ('k' in e) {
+          out.push({ k: e.k, ...q });
+          continue;
+        }
+        const item = recordById(e.h);
+        if (item) out.push({ hid: e.h, item, ...imgOf(e.h), ...q });
+        else missing++;
+      }
+      return Promise.resolve({ ok: true, set: { entries: out, missing } });
+    }
+  };
+
   return {
     auth,
     prefs,
@@ -1988,6 +2095,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     events,
     requests: requestRepo,
     homebrew: homebrewRepo,
+    prints: printRepo,
     setLive(on) {
       live = on;
       if (on) return;
@@ -2073,7 +2181,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         shares: view(shareRepo),
         events: view(events),
         requests: view(requestRepo),
-        homebrew: view(homebrewRepo)
+        homebrew: view(homebrewRepo),
+        prints: view(printRepo)
       };
     }
   };

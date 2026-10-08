@@ -52,6 +52,7 @@ import type {
   ListWrites,
   MoveWrite,
   PreferencesPort,
+  PrintSetRepository,
   Provider,
   RequestDeclined,
   RequestRepository,
@@ -1172,5 +1173,36 @@ export function createCloud(
       }
     }
   };
-  return { auth, prefs, lists, shares, events, requests, homebrew };
+  /* Signed out, neither function is the caller's to run (anon may not execute them), so
+     neither is called: a make reads as a lapsed session, a read as a set that opens nothing. */
+  const prints: PrintSetRepository = {
+    async create(entries) {
+      if (!(await userId())) return { ok: false, error: 'network' };
+      try {
+        const answer = await timed((signal) =>
+          client.rpc('create_print_set', { p_entries: entries }).abortSignal(signal)
+        );
+        const failed = writeOf(answer);
+        if (!failed.ok) return failed;
+        const id: unknown = answer.data;
+        return typeof id === 'string' ? { ok: true, id } : { ok: false, error: 'refused' };
+      } catch {
+        return { ok: false, error: 'network' };
+      }
+    },
+    async read(id) {
+      if (!(await userId())) return { ok: true, set: null };
+      try {
+        const answer = await timed((signal) =>
+          client.rpc('get_print_set', { p_id: id }).abortSignal(signal)
+        );
+        if (answer.error) return { ok: false };
+        const set: unknown = answer.data;
+        return { ok: true, set: set ?? null };
+      } catch {
+        return { ok: false };
+      }
+    }
+  };
+  return { auth, prefs, lists, shares, events, requests, homebrew, prints };
 }

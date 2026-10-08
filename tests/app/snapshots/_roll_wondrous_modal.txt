@@ -19,7 +19,7 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/w1]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
 
 ## ru :: controls
 Arazo's Artifacts
@@ -75,7 +75,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/w1]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
 
 ## en :: controls
 Add to list

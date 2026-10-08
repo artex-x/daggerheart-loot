@@ -33,7 +33,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
     button "Войти"
     StaticText "Списки в этом браузере только для чтения с 26 октября 2026 года."
-    StaticText "Войдите - они перенесутся в аккаунт, и их снова можно будет прав..." [namelen=112 namehash=45898194]
+    StaticText "Войдите - они перенесутся в аккаунт, и их снова можно будет прав..." [namelen=99 namehash=0ca30b57]
     link "Клад дракона, 7 позиций" [url=index.html?today=2026-10-26#/lists/a]
       StaticText "Клад дракона"
       StaticText "7 позиций"
@@ -106,7 +106,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10
     StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
     button "Sign in"
     StaticText "Lists in this browser are read-only from 26 October 2026."
-    StaticText "Sign in and they move to your account, where you can edit them a..." [namelen=111 namehash=8c0f0911]
+    StaticText "Sign in and they move to your account, where you can edit them a..." [namelen=99 namehash=28c5ce19]
     link "Клад дракона, 7 items" [url=index.html?today=2026-10-26#/lists/a]
       StaticText "Клад дракона"
       StaticText "7 items"

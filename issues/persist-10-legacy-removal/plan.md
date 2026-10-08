@@ -241,6 +241,17 @@ At dispatch the planner refresh does, in order:
    D64 line; if D61 is still under "Legacy removal", name it to the owner
    (it is not R10's). Re-read D24, D62, D63.
 5. Re-measure the gate costs on the host (context.md, "Command costs").
+6. `print-snapshots` shipped (2026-10-14): every print is a stored set at
+   `#/p/<id>`, and every `#/print/...` address draws the retired print page
+   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
+   So: drop the line "`#/print/<id>*<n>` keeps its spelling" (section 2) and the
+   `#/print/list/<id>`/`#/print/s/<token>` overlap (R9 never built them); move
+   `QTY_MAX` out of `listLink.ts` (`hash.ts` no longer imports it; `lib/bundle.ts`
+   and `cloudLists.ts` do); `ListPage`'s print button has a `prompt` state
+   (`SignInPrompt` under the toolbar) that is drawn only for a signed-out reader
+   of a browser list, with the golden `#/lists/a ~ print signed out` and the
+   sweep entry "печать без входа: список" - retire all three with the browser
+   lists.
 
 ## 7. Contracts and specs changed, by batch
 

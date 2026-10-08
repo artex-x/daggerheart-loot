@@ -41,10 +41,10 @@ which brings the configured bundle back under its old 170 kB limit.
 - **What**: the full client carries functions-js (1.5 kB gzip), which the
   app does not call; realtime-js is called since the Realtime release and
   storage-js since the pictures of own items (R8), and both stay. The account
-  chunk is 58.1 kB and the configured build 288.8 kB (measured 2026-10-14),
+  chunk is 58.1 kB and the configured build 290.9 kB (measured 2026-10-14),
   so every signed-in reader downloads it after first paint. The budget is
-  294 kB under the 300 kB ceiling (decision "The bundle ceilings rise to
-  300 kB configured and 250 unconfigured"), so it does not force this fix.
+  294 kB under the 350 kB ceiling (decision "The configured bundle ceiling
+  rises to 350 kB"), so it does not force this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
   `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js`,
   `RealtimeClient` from `@supabase/realtime-js` and `StorageClient` from
@@ -123,6 +123,20 @@ No release plan owns it; the owner decides which one takes it.
 Owns: the fake's parity with the database's bounds of one write, and the
 browser suites' language runs for a signed-in seed user.
 
+### D99 - the browser suites name a titled control by its title, not its text
+
+- **Where**: `tests/app/driver.js` (`NAME_FN`, read by `click`, `press`, `tick`
+  and `controls`).
+- **What**: `NAME_FN` takes `title` before the text, though its comment says it
+  names a control the way a screen reader would say it; the accessible name of
+  a titled button is its text (the goldens draw `button "Печать"`). A suite
+  must press «Печать» by its hint, «Собрать карточки для печати: девять на
+  лист A4».
+- **Why deferred**: a fix changes how every suite finds its controls, a change
+  of its own, not the print batch's.
+- **How to verify the fix**: `d.click('Печать')` presses the print control on
+  `#/i/ci1`, and every browser suite still passes.
+
 ### D68 - the fake takes more than 5000 entries in one `create` or `add`
 
 - **Where**: `app/src/ports/fake-cloud.ts`, `lists.apply` (`create`, `add`).
@@ -159,6 +173,22 @@ Owns: the consistency pass over the persistence surfaces after R7f, against
 "The signed-in pages follow one set of consistency rules". Each entry below
 is a named departure from a rule, a defect found in R7f's reviews, or a
 scale finding the owner sent to this task's scale re-run.
+
+### D100 - a print press stores the reader's own item of a clashing key
+
+- **Where**: `app/src/state/app.svelte.ts` (`printEntriesOf` resolves ids with
+  `recordFor`).
+- **What**: `recordFor` finds the reader's own item before another account's
+  item of the same key, so «Печать» on `#/h/<uuid>` or on `#/s/<token>` stores
+  the reader's own item when the reader holds that key. Only a clash made
+  before derived keys can occur
+  (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
+  The `#/p/` page itself draws the set's records, never an own record.
+- **Why deferred**: rare after derived keys, and the fix (resolve a press by
+  the item's `hid` where the page holds it) touches every print control.
+- **How to verify the fix**: signed in with an own item of a key that another
+  account's item also has, «Печать» on that item's `#/h/<uuid>`, and on a
+  `#/s/` link that holds it, opens a set of the other account's item.
 
 ### D74 - the list notes' two boxes take their name from the placeholder
 
@@ -325,7 +355,7 @@ R7d, R7e, R7f and R7g).
   so. Not measured in a browser.
 - **Why deferred**: the owner did not place it; the catalog's longest text
   (1299 code points) fits.
-- **How to verify the fix**: a 3000-character own item on `#/print/<key>`
+- **How to verify the fix**: a 3000-character own item on `#/p/<id>`
   draws one warning line above the sheet (`printPage.test.ts`, and a
   `tests/app/print.js` measurement).
 
@@ -405,40 +435,6 @@ R7d, R7e, R7f and R7g).
   of about 5 minutes stops a hung reset with the same advice; both lines
   join the "FAIL" table in `.claude/README.md`; a test of
   `tests/db/run.mjs`'s helpers covers both failures.
-
-## Print sets (`print-snapshots`)
-
-Owns: the print of another account's item through stored print sets.
-
-### D96 - only `homebrew_items.art` keeps a picture file alive
-
-- **Where**: `supabase/migrations/20261014120000_homebrew_art.sql`
-  (`homebrew_items_art_release()`, the files block of
-  `lifecycle_cleanup()`); `tools/supabase/usage.mjs` (the `lifecycle_files`
-  watch).
-- **What**: the release trigger, the hourly job and the watch count a file
-  as named only while a row of `homebrew_items` names it. A later table that
-  stores an own picture name (`p/<32 hex>.<ext>`) without a join to
-  `homebrew_items` - a frozen print set, say - would have its files deleted
-  an hour after the item stops naming them.
-- **Why deferred**: no such table exists in R8; `print-snapshots` answers
-  `img` from `homebrew_items.art` by join, which needs no change.
-- **How to verify the fix**: a table that stores a picture name extends the
-  three "is this file named" checks, and `tests/db/homebrew-art.test.mjs`
-  gains a case where only that table names a file and the job keeps it.
-
-### D70 - a homebrew entry of another account's list does not print from its address
-
-- **Where**: `app/src/state/app.svelte.ts` (`knows`, `recordFor`,
-  `linkedRecord`); `app/src/components/PrintPage.svelte`.
-- **What**: a reader who ticks such an entry on `#/s/<token>` and presses
-  «Печать», or opens its `#/print/` address later, gets no card for it.
-- **Why deferred**: every print becomes a stored set at `#/p/<id>` (owner,
-  2026-10-08), so the print routes of a cloud list and of another account's
-  item are never built; `print-snapshots` stores the item ids with the set.
-- **How to verify the fix**: signed in, «Печать» with the axe ticked on
-  `#/s/player-token-1` opens `#/p/<id>` with the axe's card, after a reload
-  too.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

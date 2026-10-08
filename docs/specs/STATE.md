@@ -5,7 +5,7 @@ implementation detail. A fifth holds one short-lived record.
 
 | Where | Holds | Survives a reload |
 |---|---|---|
-| URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, what to print | yes, and travels to other people |
+| URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, a print set's id | yes, and travels to other people |
 | `localStorage` | preferences and the person's browser lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
 | The account (signed in only) | the language, starting section, tables view and print layout (`user_prefs`); the account lists with their entries (`lists`, `list_entries`) | yes, on every device signed in to the account |
 | `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to, and the action a sign-in prompt started | this tab only, honoured for 10 minutes and removed when read |
@@ -44,8 +44,12 @@ action? }`, written just before sign-in or Connect leaves for the provider
 a sign-in prompt's «Войти» led to `#/account` - the prompt's page, and
 `action` the action it started (`app/src/lib/pending.ts`: reopen the
 add-to-list menu with its rows, taken counts and typed name, save the open
-shared list, `#/l/` or `#/s/`, or save a copy of a homebrew item (`saveItem`,
-the item's uuid)). The page that comes back reads and removes it before mount and
+shared list, `#/l/` or `#/s/`, save a copy of a homebrew item (`saveItem`,
+the item's uuid), or make a print set of the entries the press built
+(`print`, with the count cut past 180, so the sign-in ends with the same
+cut toast a signed-in press shows)). The print set reads each item live at
+its open, so an item edited meanwhile prints as it is now and one deleted
+meanwhile is counted missing. The page that comes back reads and removes it before mount and
 returns to `hash` only when every field is one the app could have written - a
 `#/` route under 16384 characters (a `#/l/` link with notes passes 2048),
 `at` within 10 minutes, a known `kind` and provider; otherwise it opens
@@ -188,7 +192,7 @@ state exists, by what it was for:
 | Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status, each list's linked items of other accounts as the last `items()` read answered them, and what each removed entry was written as, for its undo, forgotten on sign-out), `sharedView` (the open share link's list, its read status and whether the reader owns it), `itemView` (the open `#/h/` item, its related items, its read status and whether the reader is its author: page memory, forgotten when the page goes), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session); the index's ticked account lists (page memory, pruned to the drawn cards, empty on every visit) and the import field's file, preview and rows (page memory, forgotten when the field folds); the request sender's sent lines (memory, until the ticks change or clear); the owner's hidden decided requests (page load); the owner's change-log notices (memory, read with the requests; the list page's panel reads its own list's notices whole) and the «новое» marks of the notices that were unread when the page first held them (page memory) |
 | Homebrew | `homebrew` (the signed-in author's items, sources and cards, their read status and item limit: memory only, read on sign-in and cleared on sign-out; another tab's or device's write arrives as the owner topic's `homebrew` event and reads them again), the editor's draft, the draft it loaded, its revision and its problems (page memory: a remount starts from the store), the one leave check and the one unload check a dirty editor or a changed card form on the Sets or Rules tab registers (`AppState`, `PagePort`); the import panel's file, its preview, its «Куда» choices, skip or update, the open name lines and the ids of its rows, kept across a tab switch of «Мои предметы», and the move panel's chosen source and section (page memory: a remount starts empty); the Items, Sets and Rules queries and the open card folds (page memory: each query starts empty when its tab opens; a tab's address key opens its card's fold once) |
 | Prices | `rp`, `guess`, `moneyHelp` |
-| Print | `printIds`, the print layout a page switch picked for this visit (`AppState`) |
+| Print | the print set's read (`PrintPage`), the print layout a page switch picked for this visit (`AppState`) |
 | UI | `sel` (cleared on every navigation, except one between two `homebrew` routes, the «Мои предметы» tabs, and one between two `#/tables/homebrew` addresses, a source chip press; on a shared page, pruned to the drawn list; on the Items tab, pruned to the rows the search draws), `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change), `hidden` (the move banner's «Скрыть», in `MoveNotice`, which `Shell` never remounts: hidden until the next page load) |
 
 `fSeg` is the filter segment already read back from the address. Reading the

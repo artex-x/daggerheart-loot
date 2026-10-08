@@ -15,10 +15,7 @@ import {
   keepsTicks,
   legacySource,
   parseHash,
-  printAsked,
-  printHash,
-  printIds,
-  PRINT_MAX,
+  printSetHash,
   recordHash,
   recordHref,
   sectionHash,
@@ -42,7 +39,6 @@ interface RouteFixture {
     tab: string | null;
     rows: number;
     printCards: number;
-    printQty?: Record<string, number>;
     picked: string[];
     source?: string[];
   };
@@ -68,14 +64,16 @@ describe('golden route fixtures', () => {
          question: which section does the address lead to. */
       if (fx.resolves.tab === '#/tables') {
         expect(route.kind).toBe('tables');
-      } else if (fx.resolves.printCards > 0) {
-        expect(route.kind).toBe('print');
       }
       if (fx.resolves.hash === ACCOUNT_HASH) expect(route).toEqual({ kind: 'account' });
       if (fx.resolves.hash.startsWith(HOMEBREW_HASH)) expect(route.kind).toMatch(/^homebrew/);
-      if (fx.resolves.printQty) {
-        expect(route.kind).toBe('print');
-        if (route.kind === 'print') expect(route.qty).toEqual(fx.resolves.printQty);
+      /* Every address under `#/print/` is retired; `#/p/` reads the leading run as its id. */
+      if (fx.hash.startsWith('#/print/')) expect(route).toEqual({ kind: 'printRetired' });
+      if (fx.hash.startsWith('#/p/')) {
+        expect(route).toEqual({
+          kind: 'printSet',
+          id: /^[A-Za-z0-9_-]*/.exec(fx.hash.slice(4))?.[0] ?? ''
+        });
       }
 
       /* The pills on screen are the selection narrowed to the groups the table
@@ -264,64 +262,33 @@ describe('selection', () => {
 });
 
 describe('print', () => {
-  const knows = (id: string): boolean => id.startsWith('ci') || id.startsWith('q');
-
-  it('drops unknown ids and repeats, keeping the order', () => {
-    expect(printIds('ci1-zzz-q26-ci1-q33', knows)).toEqual(['ci1', 'q26', 'q33']);
+  it('reads a print set by the leading run of its id, a stray character dropped', () => {
+    expect(parseHash('#/p/AbCdEf-_1234')).toEqual({ kind: 'printSet', id: 'AbCdEf-_1234' });
+    expect(parseHash('#/p/AbCdEf-_1234.')).toEqual({ kind: 'printSet', id: 'AbCdEf-_1234' });
+    expect(parseHash('#/p/short')).toEqual({ kind: 'printSet', id: 'short' });
+    expect(parseHash('#/p/')).toEqual({ kind: 'printSet', id: '' });
+    expect(parseHash('#/p').kind).toBe('unknown');
   });
 
-  it('never takes more than the limit', () => {
-    const many = Array.from({ length: PRINT_MAX + 20 }, (_, i) => 'ci' + String(i + 1)).join(
-      '-'
-    );
-    expect(printIds(many, knows)).toHaveLength(PRINT_MAX);
-  });
-
-  it('printAsked keeps every known, deduplicated id - uncapped', () => {
-    const many = Array.from({ length: PRINT_MAX + 20 }, (_, i) => 'ci' + String(i + 1)).join(
-      '-'
-    );
-    expect(printAsked('ci1-zzz-q26-ci1', knows)).toEqual(['ci1', 'q26']);
-    expect(printAsked(many, knows)).toHaveLength(PRINT_MAX + 20);
-  });
-
-  it('a print route counts what the cap dropped', () => {
-    const asked181 = Array.from({ length: 181 }, (_, i) => 'ci' + String(i + 1)).join('-');
-    const r181 = parseHash('#/print/' + asked181, knows);
-    expect(r181.kind).toBe('print');
-    if (r181.kind === 'print') {
-      expect(r181.ids).toHaveLength(180);
-      expect(r181.dropped).toBe(1);
+  it('retires every address under #/print/ and reads nothing from it', () => {
+    for (const h of [
+      '#/print/ci1',
+      '#/print/ci1*3-q1',
+      '#/print/',
+      '#/print/s/x/y',
+      '#/print/h/00000000-0000-4000-8000-000000000511'
+    ]) {
+      expect(parseHash(h), h).toEqual({ kind: 'printRetired' });
     }
-
-    const asked180 = Array.from({ length: 180 }, (_, i) => 'ci' + String(i + 1)).join('-');
-    const r180 = parseHash('#/print/' + asked180, knows);
-    expect(r180.kind).toBe('print');
-    if (r180.kind === 'print') {
-      expect(r180.ids).toHaveLength(180);
-      expect(r180.dropped).toBe(0);
-    }
+    expect(parseHash('#/print').kind).toBe('unknown');
   });
 
-  it('reads a count over 1 per id, clamped, first occurrence winning', () => {
-    const r = parseHash('#/print/ci1*3-q26-ci1*5-zzz*4-q33*1-ci2*x-q27*0-q28*150', knows);
-    expect(r.kind).toBe('print');
-    if (r.kind === 'print') {
-      expect(r.ids).toEqual(['ci1', 'q26', 'q33', 'ci2', 'q27', 'q28']);
-      expect(r.qty).toEqual({ ci1: 3, q28: 99 });
-      expect(r.dropped).toBe(0);
-    }
-  });
-
-  it('keeps no count for an id past the cap', () => {
-    const asked = Array.from({ length: 181 }, (_, i) => 'ci' + String(i + 1) + '*5').join('-');
-    const r = parseHash('#/print/' + asked, knows);
-    expect(r.kind).toBe('print');
-    if (r.kind === 'print') {
-      expect(r.dropped).toBe(1);
-      expect(Object.keys(r.qty)).toHaveLength(PRINT_MAX);
-      expect(r.qty).not.toHaveProperty('ci181');
-    }
+  it('builds a print set address that reads back', () => {
+    expect(printSetHash('AbCdEf-_1234')).toBe('#/p/AbCdEf-_1234');
+    expect(parseHash(printSetHash('AbCdEf-_1234'))).toEqual({
+      kind: 'printSet',
+      id: 'AbCdEf-_1234'
+    });
   });
 });
 
@@ -648,28 +615,6 @@ describe('writing an address', () => {
       payload: '~abc',
       packed: true
     });
-  });
-
-  it('round-trips a print sheet, separator and all', () => {
-    const ids = ['w1', 'w2', 'a3'];
-    const h = printHash(ids);
-    expect(h).toBe('#/print/w1-w2-a3');
-    const r = parseHash(h);
-    expect(r.kind).toBe('print');
-    if (r.kind === 'print') expect(r.ids).toEqual(ids);
-  });
-
-  it('writes a count only over 1, clamped, and reads it back', () => {
-    expect(printHash(['w1', 'w2'], { w1: 3, w2: 1 })).toBe('#/print/w1*3-w2');
-    const h = printHash(['w1'], { w1: 150 });
-    expect(h).toBe('#/print/w1*99');
-    expect(parseHash(printHash(['w1', 'w2'], { w1: 3, w2: 1 }))).toEqual({
-      kind: 'print',
-      ids: ['w1', 'w2'],
-      dropped: 0,
-      qty: { w1: 3 }
-    });
-    expect(parseHash(h)).toEqual({ kind: 'print', ids: ['w1'], dropped: 0, qty: { w1: 99 } });
   });
 
   it('writes a table with a filter that reads back as the same filter', () => {

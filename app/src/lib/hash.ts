@@ -14,7 +14,6 @@ import {
   LIST_GROUPS,
   type FilterState
 } from './filters.js';
-import { QTY_MAX } from './listLink.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
 
 /** A packed link is marked with "~": base64url has no tilde and never can. */
@@ -38,15 +37,11 @@ export type Route =
   /** One homebrew item by its id, for everyone; `id` is the leading run of
    *  `[0-9A-Fa-f-]`, lowercased (docs/specs/ROUTES.md). */
   | { kind: 'item'; id: string }
-  /** `dropped` is how many known ids the cap threw away - the red note on
-   *  the bar counts them, off `printTooMany`. */
-  | {
-      kind: 'print';
-      ids: string[];
-      dropped: number;
-      /** Counts over 1 by id, off `*<n>` - the list link's own quantity grammar. */
-      qty: Record<string, number>;
-    }
+  /** A stored print set; `id` is the leading run of `[A-Za-z0-9_-]`, read by the page
+   *  only at 12 characters (docs/specs/ROUTES.md). */
+  | { kind: 'printSet'; id: string }
+  /** Any address under `#/print/`: the retired print page, nothing read from it. */
+  | { kind: 'printRetired' }
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
   /** An account list's share link; `token` is the leading run of `[A-Za-z0-9_-]`,
@@ -89,59 +84,17 @@ export function legacySource(hash: string): { core: boolean; hnf: boolean } | nu
   return LEGACY[stripHash(hash)] ?? null;
 }
 
-/** Reads a print segment: known ids without repeats, and each kept id's
- *  count over 1, clamped. A repeated id keeps its first count. */
-function readPrint(
-  segment: string,
-  knows: (id: string) => boolean
-): { ids: string[]; qty: Record<string, number> } {
-  const seen = new Set<string>();
-  const ids: string[] = [];
-  const qty: Record<string, number> = {};
-  for (const token of segment.split('-')) {
-    const star = token.indexOf('*');
-    const id = star < 0 ? token : token.slice(0, star);
-    if (!id || seen.has(id) || !knows(id)) continue;
-    seen.add(id);
-    ids.push(id);
-    const n = star < 0 ? NaN : parseInt(token.slice(star + 1), 10);
-    if (n > 1) qty[id] = Math.min(n, QTY_MAX);
-  }
-  return { ids, qty };
-}
-
-/** Ids the address asks for: known ones only, no repeats, uncapped - off
- *  `printAsked` in app.js. A `*<n>` count is read, not part of the id. */
-export function printAsked(segment: string, knows: (id: string) => boolean): string[] {
-  return readPrint(segment, knows).ids;
-}
-
-/** Ids to print: `printAsked`, capped at the limit. */
-export function printIds(segment: string, knows: (id: string) => boolean): string[] {
-  return printAsked(segment, knows).slice(0, PRINT_MAX);
-}
-
 /**
- * Parses the address. `knows` is only needed by print - no other branch asks
- * anything about the data.
+ * Parses the address. No branch reads the data: no route takes ids from the address.
  */
-export function parseHash(hash: string, knows: (id: string) => boolean = () => true): Route {
+export function parseHash(hash: string): Route {
   const h = stripHash(hash);
 
   if (h.startsWith('l/' + PACK_MARK)) {
     return { kind: 'sharedList', payload: h.slice(2), packed: true };
   }
   if (/^i\/[\w-]+$/.test(h)) return { kind: 'record', id: h.slice(2) };
-  if (/^print\/[\w*-]+$/.test(h)) {
-    const asked = readPrint(h.slice(6), knows);
-    const ids = asked.ids.slice(0, PRINT_MAX);
-    const qty: Record<string, number> = {};
-    for (const id of ids) {
-      const n = asked.qty[id];
-      if (n) qty[id] = n;
-    }
-    return { kind: 'print', ids, dropped: asked.ids.length - ids.length, qty };
-  }
+  if (/^print\//.test(h)) return { kind: 'printRetired' };
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
   /* A stray character a chat client leaves after the token or the filter is
      dropped; the address is not rewritten. */
@@ -153,6 +106,10 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
       filter: decodeFilter(share[2] ?? '', LIST_GROUPS)
     };
   }
+  /* A stray character a chat client leaves after the id is dropped; the address is not
+     rewritten. */
+  const set = /^p\/([A-Za-z0-9_-]*)/.exec(h);
+  if (set) return { kind: 'printSet', id: set[1] ?? '' };
   if (/^h\//.test(h)) {
     return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
   }
@@ -242,20 +199,9 @@ export function recordHref(it: { id: string; src?: string; hid?: string }): stri
     : recordHash(it.id);
 }
 
-/** Writes `*<n>` only for a count over 1, so a bare address stays byte-identical. */
-export function printHash(
-  ids: readonly string[],
-  qty: Readonly<Record<string, number>> = {}
-): string {
-  return (
-    '#/print/' +
-    ids
-      .map((id) => {
-        const n = qty[id] ?? 0;
-        return n > 1 ? `${id}*${String(Math.min(n, QTY_MAX))}` : id;
-      })
-      .join('-')
-  );
+/** The address of a stored print set. */
+export function printSetHash(id: string): string {
+  return '#/p/' + id;
 }
 
 /** The editor of an own item; null is a new item. */

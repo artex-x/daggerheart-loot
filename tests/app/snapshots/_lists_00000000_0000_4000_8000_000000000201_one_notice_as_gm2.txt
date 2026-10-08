@@ -32,7 +32,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
     button "Скачать JSON"
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Удалить"
     region "Новое в списке (1)"
       heading "Новое в списке (1)" [focused=true level=2]
@@ -146,7 +146,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     button "Share" [expanded=false]
     button "Copy text"
     button "Download JSON"
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm2#/print/q23-hb_emberaxeaaaaaaaa]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Delete"
     region "New in this list (1)"
       heading "New in this list (1)" [focused=true level=2]

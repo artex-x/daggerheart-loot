@@ -132,13 +132,16 @@ async function readArtFiles(db) {
    job as `{ status, start_time }` or null. Without a readable cron schema the
    runs are not counted and `lifecycle_note` names the gap. A database before
    that migration has no list_notices to count and keeps its requests 24
-   hours after a decision or expiry, so the watch takes that predicate. */
+   hours after a decision or expiry, so the watch takes that predicate. A
+   database from 20261014120100_print_sets also counts the print sets 90 days
+   after their last open. */
 async function readLifecycle(db) {
   const [s] = await db`
     select to_regclass('cron.job_run_details') is not null as present,
       coalesce(has_table_privilege(to_regclass('cron.job_run_details'), 'select'), false)
         and coalesce(has_table_privilege(to_regclass('cron.job'), 'select'), false) as readable,
-      to_regclass('public.list_notices') is not null as notices`;
+      to_regclass('public.list_notices') is not null as notices,
+      to_regclass('public.print_sets') is not null as print_sets`;
   const [{ requests }] = s.notices
     ? await db`select count(*)::int as requests from public.purchase_requests r
         where r.expires_at < now() - interval '2 hours'`
@@ -160,6 +163,12 @@ async function readLifecycle(db) {
       where x.read_at < now() - interval '3 hours'
         or (x.read_at is null and x.created_at < now() - interval '30 days 2 hours')`;
     n += notices;
+  }
+  if (s.print_sets) {
+    const [{ sets }] = await db`
+      select count(*)::int as sets from public.print_sets p
+      where p.opened_at < now() - interval '90 days 2 hours'`;
+    n += sets;
   }
   const files = await readArtFiles(db);
   n += files.lifecycle_files ?? 0;
@@ -231,6 +240,19 @@ export async function collect(db, now) {
       (select count(*) from per_list where lim is not null and n > lim)::int as lists_over,
       (select count(*) from per_items where lim is not null and n >= 0.8 * lim)::int as items_near,
       (select count(*) from per_items where lim is not null and n > lim)::int as items_over`;
+  // A database before 20261014120100_print_sets has no sets to count.
+  const [{ present }] =
+    await db`select to_regclass('public.print_sets') is not null as present`;
+  const [sets] = present
+    ? await db`
+      with per_sets as (
+        select count(*) as n, public.effective_limit(owner_id, 'print_sets_per_owner') as lim
+        from public.print_sets where opened_at >= now() - interval '90 days' group by owner_id
+      )
+      select
+        (select count(*) from per_sets where lim is not null and n >= 0.8 * lim)::int as sets_near,
+        (select count(*) from per_sets where lim is not null and n > lim)::int as sets_over`
+    : [{ sets_near: 0, sets_over: 0 }];
   return {
     db_bytes: num(bytes),
     ...(await readStorage(db)),
@@ -238,7 +260,7 @@ export async function collect(db, now) {
     auth_users: num(users),
     ...(await readRealtime(db)),
     tables,
-    near_limits: { ...near },
+    near_limits: { ...near, ...sets },
     ...(await readLifecycle(db))
   };
 }

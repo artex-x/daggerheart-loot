@@ -1,4 +1,4 @@
-/* The print sheet, `#/print/<ids>` - off `renderPrint`, `printCardHTML` and
+/* The print sheet, `#/p/<id>` - off `renderPrint`, `printCardHTML` and
  * its helpers, `fitPrintCards` (app.js 3235-3558) and the four handlers
  * (`doPrint`/`printBack`/`printArt`/`printLink`, app.js 4236-4245).
  *
@@ -11,9 +11,11 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
+import { dict } from '../lib/dict.js';
+import type { PrintSetEntry } from '../lib/printSet.js';
 import type { Record_ } from '../lib/types.js';
 import {
   fakeClipboard,
@@ -25,7 +27,7 @@ import {
   noData
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
-import { fakeCloud } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
@@ -277,6 +279,58 @@ const LOOT: Loot = {
 const at = (hash: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), ...over });
 
+/* A spec is the retired address's `id[*n]-id` spelling; an `hb_` key names the seed's
+   item of that key. */
+function entriesOf(spec: string | PrintSetEntry[], seed: Seed): PrintSetEntry[] {
+  if (typeof spec !== 'string') return spec;
+  return spec.split('-').map((token) => {
+    const [id = '', n] = token.split('*');
+    const q = n ? { q: Number(n) } : {};
+    if (!id.startsWith('hb_')) return { k: id, ...q };
+    const item = Object.values(seed.homebrew)
+      .flatMap((h) => h.items)
+      .find((i) => i.key === id);
+    return { h: item?.id ?? '', ...q };
+  });
+}
+
+interface SetOptions extends Partial<Env> {
+  /** The reader, signed in; `gm2` has no print layout and no homebrew of its own. */
+  as?: string;
+  /** The account that makes the set; the reader by default. */
+  by?: string;
+  seed?: Seed;
+  /** One port for the make and the read, for a case that drives the fake. */
+  port?: FakeCloud;
+  /** An address before the set in the history. */
+  from?: string;
+}
+
+/** Makes the set through the fake and answers the env at its `#/p/<id>`. */
+async function atSet(
+  spec: string | PrintSetEntry[],
+  { as = 'gm2', by, seed = SEED, port, from, ...over }: SetOptions = {}
+): Promise<Env> {
+  const world = port ? null : fakeCloud(seed);
+  const cloud = port ?? world?.as(as);
+  const maker = port ?? world?.as(by ?? as);
+  if (!cloud || !maker) throw new Error('no port');
+  const made = await maker.prints.create(entriesOf(spec, seed));
+  if (!made.ok) throw new Error('the fake refused the set: ' + JSON.stringify(made));
+  const hash = '#/p/' + made.id;
+  const router = memoryRouter(from ?? hash);
+  if (from) router.navigate(hash);
+  return at(hash, { router, cloud, ...over });
+}
+
+/** Waits until the sheet is drawn: the read is over and the first card is there. */
+async function opened(): Promise<void> {
+  await screen.findByRole('heading', { name: /^(Печать карточек|Printing cards)$/ });
+  await waitFor(() => {
+    expect(document.querySelector('.psheet')).not.toBeNull();
+  });
+}
+
 /** Svelte 5 leaves an empty `<!---->` comment as the anchor for every
  *  expression and block, and stamps every scoped element with its own
  *  `svelte-xxxxx` class - the markup itself carries none of either. */
@@ -287,8 +341,9 @@ const withoutAnchors = (html: string): string =>
     .replace(/\sclass=""/g, '');
 
 describe('arrival, colour', () => {
-  it('draws the bar, the controls in order, and one sheet with the two cards and seven blanks', () => {
-    render(App, { env: at('#/print/ci1-q1') });
+  it('draws the bar, the controls in order, and one sheet with the two cards and seven blanks', async () => {
+    render(App, { env: await atSet('ci1-q1') });
+    await opened();
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -326,12 +381,14 @@ describe('arrival, colour', () => {
       el.getAttribute('data-pid')
     );
     expect(pids).toEqual(['ci1', 'q1']);
+    expect(document.querySelector('.warnnote')).toBeNull();
   });
 });
 
 describe('the loot card', () => {
-  it('shows its art, no tier or strip, and its full source line', () => {
-    render(App, { env: at('#/print/ci1') });
+  it('shows its art, no tier or strip, and its full source line', async () => {
+    render(App, { env: await atSet('ci1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="ci1"]');
     expect(card?.querySelector('.pc-tags')?.textContent).toBe('Предмет');
     const back = card?.querySelector('.pc-back');
@@ -351,9 +408,9 @@ describe('the loot card', () => {
 });
 
 describe('no art', () => {
-  it('draws the glyph for a record with no image, and swaps a broken one for it too', () => {
-    const router = memoryRouter('#/print/ni1-ci1');
-    render(App, { env: at('#/print/ni1-ci1', { router }) });
+  it('draws the glyph for a record with no image, and swaps a broken one for it too', async () => {
+    render(App, { env: await atSet('ni1-ci1') });
+    await opened();
 
     const bare = document.querySelector('.pcard[data-pid="ni1"]');
     expect(bare?.querySelector('svg.pc-glyph')).toBeInTheDocument();
@@ -364,12 +421,12 @@ describe('no art', () => {
     withArt?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
   });
 
-  it('swaps to the glyph once the picture 404s, reached directly at a print address', async () => {
-    /* Unlike every other route, a shared #/print/... address may be the
-       first (and only) page this session ever draws for this id - nothing
-       else could already have caught the failure the way RecordCard's own
-       onerror does elsewhere. */
-    render(App, { env: at('#/print/ci1') });
+  it('swaps to the glyph once the picture 404s, reached directly at a set address', async () => {
+    /* Unlike every other route, a handed-over #/p/ address may be the first (and only)
+       page this session ever draws for this id - nothing else could already have caught
+       the failure the way RecordCard's own onerror does elsewhere. */
+    render(App, { env: await atSet('ci1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="ci1"]');
     expect(card?.querySelector('svg.pc-glyph')).toBeNull();
     /* Both `<img>`s carry their own `onerror` - either one reports the same
@@ -384,8 +441,9 @@ describe('no art', () => {
 });
 
 describe('the weapon card', () => {
-  it('draws the tier, tags, burden, die, ribbon, cells and a labelled rule', () => {
-    render(App, { env: at('#/print/q1') });
+  it('draws the tier, tags, burden, die, ribbon, cells and a labelled rule', async () => {
+    render(App, { env: await atSet('q1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="q1"]');
     expect(card?.querySelector('.pc-tier')?.textContent).toBe('1Ранг');
     const tags = card?.querySelectorAll('.pc-tag');
@@ -410,8 +468,9 @@ describe('the weapon card', () => {
 });
 
 describe('the versatile magic weapon', () => {
-  it('draws two strips, both magic, and the second stat block', () => {
-    render(App, { env: at('#/print/q23') });
+  it('draws two strips, both magic, and the second stat block', async () => {
+    render(App, { env: await atSet('q23') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="q23"]');
     const strips = card?.querySelectorAll('.pc-strip');
     expect(strips).toHaveLength(2);
@@ -425,7 +484,8 @@ describe('the versatile magic weapon', () => {
 
 describe('the print frame', () => {
   it("follows the weapon's class on every strip, while the damage box keeps the type", async () => {
-    const { container } = render(App, { env: at('#/print/q33-dve38-q171') });
+    const { container } = render(App, { env: await atSet('q33-dve38-q171') });
+    await opened();
     const card = (id: string): Element | null =>
       document.querySelector(`.pcard[data-pid="${id}"]`);
     const ribbons = (id: string): (string | null)[] =>
@@ -460,7 +520,8 @@ describe('the print frame', () => {
 
 describe('a set member', () => {
   it("draws the set's shared bonus as the last text line, labelled with the members", async () => {
-    const { container } = render(App, { env: at('#/print/st1-st2') });
+    const { container } = render(App, { env: await atSet('st1-st2') });
+    await opened();
     for (const id of ['st1', 'st2']) {
       const labels = document.querySelectorAll(`.pcard[data-pid="${id}"] .pc-text i`);
       const last = labels[labels.length - 1];
@@ -479,8 +540,9 @@ describe('a set member', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws no set line for a record outside any set', () => {
-    render(App, { env: at('#/print/q1') });
+  it('draws no set line for a record outside any set', async () => {
+    render(App, { env: await atSet('q1') });
+    await opened();
     expect(document.querySelector('.pcard[data-pid="q1"] .pc-text')?.textContent).not.toContain(
       'Комплект'
     );
@@ -488,8 +550,9 @@ describe('a set member', () => {
 });
 
 describe('a damage bonus', () => {
-  it('splits into the die and a bonus cell', () => {
-    render(App, { env: at('#/print/q8b3') });
+  it('splits into the die and a bonus cell', async () => {
+    render(App, { env: await atSet('q8b3') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="q8b3"]');
     expect(card?.querySelector('.pc-c1')).toHaveClass('wbonus');
     expect(card?.querySelector('.pc-bonus')?.textContent).toBe('+3');
@@ -498,8 +561,9 @@ describe('a damage bonus', () => {
 });
 
 describe('the armour card', () => {
-  it('draws the shield, the threshold strip and one tag', () => {
-    render(App, { env: at('#/print/a1') });
+  it('draws the shield, the threshold strip and one tag', async () => {
+    render(App, { env: await atSet('a1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="a1"]');
     const shield = card?.querySelector('.pc-shield');
     expect(shield?.querySelector('b')?.textContent).toBe('3');
@@ -530,8 +594,9 @@ describe('the armour card', () => {
 });
 
 describe('the artifact', () => {
-  it('has no tier, the artifact tag, and the list markup with no whitespace anywhere', () => {
-    render(App, { env: at('#/print/af1') });
+  it('has no tier, the artifact tag, and the list markup with no whitespace anywhere', async () => {
+    render(App, { env: await atSet('af1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="af1"]');
     expect(card?.querySelector('.pc-tier')).toBeNull();
     expect(card?.querySelector('.pc-tag.on')?.textContent).toBe('Артефакт');
@@ -544,7 +609,8 @@ describe('the artifact', () => {
 
 describe('the artifact weapon', () => {
   it('reads as an artifact card: the artifact tag, the class tag, no tier band, the strip', async () => {
-    const { container } = render(App, { env: at('#/print/af2') });
+    const { container } = render(App, { env: await atSet('af2') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="af2"]');
     expect(card?.querySelector('.pc-tier')).toBeNull();
     const tags = card?.querySelectorAll('.pc-tag');
@@ -561,8 +627,9 @@ describe('the artifact weapon', () => {
 });
 
 describe('the community card', () => {
-  it('names the community and then the book in the source line', () => {
-    render(App, { env: at('#/print/cm1') });
+  it('names the community and then the book in the source line', async () => {
+    render(App, { env: await atSet('cm1') });
+    await opened();
     const card = document.querySelector('.pcard[data-pid="cm1"]');
     const spans = card?.querySelectorAll('.pc-bottom span');
     // spans[1] is positional on purpose: it isolates the source line's own
@@ -573,7 +640,8 @@ describe('the community card', () => {
 
 describe('black and white', () => {
   it('switches every card, hides the art, and reorders the head', async () => {
-    render(App, { env: at('#/print/q1-a1') });
+    render(App, { env: await atSet('q1-a1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(screen.getByRole('button', { name: 'Чёрно-белая' })).toHaveAttribute(
       'aria-pressed',
@@ -619,7 +687,8 @@ describe('black and white', () => {
   });
 
   it('sizes the head marks before their images load, so the fit measures the real head', async () => {
-    render(App, { env: at('#/print/q1-a1') });
+    render(App, { env: await atSet('q1-a1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     const marks = Array.from(
       document.querySelectorAll('.pc-head .pc-shield img, .pc-head .pc-burden img')
@@ -633,41 +702,48 @@ describe('black and white', () => {
   });
 
   it('survives leaving the print page and coming back, stores nothing, and a reload draws the default', async () => {
-    const env = at('#/print/q1-a1');
+    const env = await atSet('q1-a1');
     const first = render(App, { env });
+    await opened();
+    const hash = env.router.hash();
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
 
     env.router.navigate('#/roll/std');
     await tick();
-    env.router.navigate('#/print/q1-a1');
-    await tick();
+    env.router.navigate(hash);
+    await opened();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
     expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
     first.unmount();
 
-    render(App, { env: at('#/print/q1-a1', { storage: env.storage }) });
+    /* A reload empties the fake: the seeded set holds the same two records' ids. */
+    render(App, {
+      env: at('#/p/set-twocards', { cloud: fakeCloud(SEED, 'gm2'), storage: env.storage })
+    });
+    await opened();
     expect(document.querySelector('.psheet.bw')).toBeNull();
   });
 
-  it('draws the stored default at arrival', () => {
+  it('draws the stored default at arrival', async () => {
     render(App, {
-      env: at('#/print/q1-a1', {
+      env: await atSet('q1-a1', {
         storage: memoryStorage({
           'dhloot.prefs.v1': '{"view":"list","printBw":true,"printCompact":false}'
         })
       })
     });
+    await opened();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
   });
 });
 
 describe('the note under the bar', () => {
-  const withSignIn = (): Env => at('#/print/ci1-q1', { cloud: fakeCloud(SEED) });
   const note = (): Element | null => document.querySelector('.keepnote');
 
   it('links the account while either switch differs from the default, and goes when both are back', async () => {
-    const { container } = render(App, { env: withSignIn() });
+    const { container } = render(App, { env: await atSet('ci1-q1') });
+    await opened();
     expect(note()).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
@@ -688,13 +764,6 @@ describe('the note under the bar', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Обычная' }));
     expect(note()).toBeNull();
   });
-
-  it('draws nothing in a build without sign-in', async () => {
-    render(App, { env: at('#/print/ci1-q1') });
-    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
-    expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
-    expect(note()).toBeNull();
-  });
 });
 
 describe('compact', () => {
@@ -702,7 +771,8 @@ describe('compact', () => {
     screen.getByRole('button', { name }).getAttribute('aria-pressed');
 
   it('prints sixteen places to a sheet in either layout, independent of the colour switch', async () => {
-    render(App, { env: at('#/print/ci1-q1') });
+    render(App, { env: await atSet('ci1-q1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     expect(pressed('Компактная')).toBe('true');
     expect(pressed('Обычная')).toBe('false');
@@ -737,17 +807,20 @@ describe('compact', () => {
   });
 
   it('survives leaving the print page and coming back, and is off on a fresh start', async () => {
-    const env = at('#/print/q1-a1');
+    const env = await atSet('q1-a1');
     const first = render(App, { env });
+    await opened();
+    const hash = env.router.hash();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     env.router.navigate('#/roll/std');
     await tick();
-    env.router.navigate('#/print/q1-a1');
-    await tick();
+    env.router.navigate(hash);
+    await opened();
     expect(document.querySelector('.psheet.compact')).toBeInTheDocument();
     first.unmount();
 
-    render(App, { env: at('#/print/q1-a1') });
+    render(App, { env: await atSet('q1-a1') });
+    await opened();
     expect(document.querySelector('.psheet.compact')).toBeNull();
     expect(pressed('Обычная')).toBe('true');
   });
@@ -769,10 +842,9 @@ describe('a second sheet', () => {
   };
   const ids = Array.from({ length: 10 }, (_, i) => `m${String(i + 1)}`).join('-');
 
-  it('splits eighteen places across two sheets, eight blank on the second, marked as a page break', () => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/print/' + ids), data: fakeData(TEN) })
-    });
+  it('splits eighteen places across two sheets, eight blank on the second, marked as a page break', async () => {
+    render(App, { env: await atSet(ids, { data: fakeData(TEN) }) });
+    await opened();
     expect(document.querySelectorAll('.psheet')).toHaveLength(2);
     expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(10);
     expect(document.querySelectorAll('.pcard.blank')).toHaveLength(8);
@@ -790,9 +862,8 @@ describe('a second sheet', () => {
   });
 
   it('fits the same ten on one compact sheet, six blank, with no page break', async () => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/print/' + ids), data: fakeData(TEN) })
-    });
+    render(App, { env: await atSet(ids, { data: fakeData(TEN) }) });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     expect(document.querySelectorAll('.psheet.compact')).toHaveLength(1);
     expect(document.querySelectorAll('.pcard.blank')).toHaveLength(6);
@@ -808,7 +879,7 @@ describe('a second sheet', () => {
 describe('the cap', () => {
   const MANY: Loot = {
     items: {
-      core_item: Array.from({ length: 181 }, (_, i) =>
+      core_item: Array.from({ length: 180 }, (_, i) =>
         row({
           id: `n${String(i + 1)}`,
           en: `Many ${String(i + 1)}`,
@@ -819,47 +890,36 @@ describe('the cap', () => {
     eq: [],
     refs: {}
   };
-  const ids181 = Array.from({ length: 181 }, (_, i) => `n${String(i + 1)}`).join('-');
+  const ids180 = Array.from({ length: 180 }, (_, i) => `n${String(i + 1)}`).join('-');
 
-  it('prints 180 cards on twenty sheets and names the one left out', () => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/print/' + ids181), data: fakeData(MANY) })
-    });
+  it('prints 180 cards on twenty sheets with no note', async () => {
+    render(App, { env: await atSet(ids180, { data: fakeData(MANY) }) });
+    await opened();
     expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(180);
     expect(document.querySelectorAll('.psheet')).toHaveLength(20);
-    expect(screen.getByText(/Карточек за один раз: не больше 180/)).toHaveTextContent(
-      'Карточек за один раз: не больше 180. Не попали на лист: 1. Разделите набор на части.'
-    );
+    expect(document.querySelector('.warnnote')).toBeNull();
   });
 
   it('prints the same 180 cards on twelve compact sheets', async () => {
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/print/' + ids181), data: fakeData(MANY) })
-    });
+    render(App, { env: await atSet(ids180, { data: fakeData(MANY) }) });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(180);
     expect(document.querySelectorAll('.psheet.compact')).toHaveLength(12);
     expect(document.querySelectorAll('.pcard.blank')).toHaveLength(12);
-    expect(document.querySelector('.warnnote')).toBeInTheDocument();
-  });
-
-  it('drops an unknown and a repeated id before counting, raising no note', () => {
-    render(App, { env: at('#/print/ci1-ci1-zzz') });
-    expect(document.querySelectorAll('.pcard:not(.blank)')).toHaveLength(1);
-    expect(document.querySelector('.warnnote')).toBeNull();
   });
 });
 
 describe('nothing to print', () => {
-  it('draws the heading, the empty note and a way to the lists', () => {
-    render(App, { env: at('#/print/zzz') });
-    expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
+  it('draws the heading, the empty note and a way home for a set of no known card', async () => {
+    render(App, { env: await atSet('zzz') });
     expect(
-      screen.getByText('Печатать нечего: в адресе не нашлось ни одной вещи.')
+      await screen.findByText('Печатать нечего: в наборе не осталось карточек.')
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
     const main = document.querySelector('main') as HTMLElement;
-    const link = within(main).getByRole('link', { name: 'Списки' });
-    expect(link).toHaveAttribute('href', '#/lists');
+    const link = within(main).getByRole('link', { name: 'На главную' });
+    expect(link).toHaveAttribute('href', '#/roll/std');
     expect(link).toHaveClass('primary');
     expect(document.querySelector('.printbar')).toBeNull();
     expect(document.querySelector('.psheet')).toBeNull();
@@ -869,55 +929,61 @@ describe('nothing to print', () => {
 
 describe('back', () => {
   it('steps back in history when there is somewhere to go', async () => {
-    const router = memoryRouter('#/roll/std');
-    router.navigate('#/print/ci1');
-    render(App, { env: at('#/print/ci1', { router }) });
+    const env = await atSet('ci1', { from: '#/roll/std' });
+    render(App, { env });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Назад' }));
-    expect(router.hash()).toBe('#/roll/std');
+    expect(env.router.hash()).toBe('#/roll/std');
   });
 
-  it('goes to the lists when there is nowhere to go back to', async () => {
-    const router = memoryRouter('#/print/ci1');
-    render(App, { env: at('#/print/ci1', { router }) });
+  it('goes home when there is nowhere to go back to', async () => {
+    const env = await atSet('ci1');
+    render(App, { env });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Назад' }));
-    expect(router.hash()).toBe('#/lists');
+    expect(env.router.hash()).toBe('#/roll/std');
   });
 });
 
 describe('print', () => {
   it('opens the print dialog', async () => {
     const dialog = fakeDialog();
-    render(App, { env: at('#/print/ci1', { dialog }) });
+    render(App, { env: await atSet('ci1', { dialog }) });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Отправить на печать' }));
     expect(dialog.printed).toBe(1);
   });
 });
 
 describe('the link', () => {
-  it('copies the address built from the parsed ids, not the raw one', async () => {
+  it("copies the set's own address", async () => {
     const clip = fakeClipboard();
-    render(App, { env: at('#/print/ci1-zzz-ci1-q1', { clipboard: clip }) });
+    const env = await atSet('ci1-q1', { clipboard: clip });
+    render(App, { env });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
-    expect(clip.last.text).toBe('https://example.test/#/print/ci1-q1');
+    expect(clip.last.text).toBe('https://example.test/' + env.router.hash());
+    expect(clip.last.text).toMatch(/^https:\/\/example\.test\/#\/p\/[A-Za-z0-9_-]{12}$/);
     expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
   });
 
   it('copies the English address in English', async () => {
     const clip = fakeClipboard();
-    const { container } = render(App, {
-      env: at('#/print/ci1-zzz-ci1-q1', {
-        clipboard: clip,
-        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
-      })
+    const env = await atSet('ci1-q1', {
+      clipboard: clip,
+      storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
     });
+    const { container } = render(App, { env });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Link to this set' }));
-    expect(clip.last.text).toBe('https://example.test/en/#/print/ci1-q1');
+    expect(clip.last.text).toBe('https://example.test/en/' + env.router.hash());
     await expectNoA11yViolations(container);
   });
 
   it('toasts the failure when the clipboard refuses', async () => {
     const clip = fakeClipboard({ fail: true });
-    render(App, { env: at('#/print/ci1', { clipboard: clip }) });
+    render(App, { env: await atSet('ci1', { clipboard: clip }) });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
     expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
   });
@@ -929,7 +995,7 @@ describe('a count from a list', () => {
     expect(counted?.querySelector('.pc-name')?.textContent).toBe('Вещь С Картинкой ×3');
     expect(counted?.querySelector('.pc-qty')?.textContent).toBe(' ×3');
     /* jsdom's name computation trims the span's leading space; the Chrome
-       tree in the `#/print/ci1*3-q1` golden keeps it. */
+       tree in the `#/p/set-counted1 as gm2` golden keeps it. */
     expect(screen.getByRole('heading', { name: /^Вещь С Картинкой ?×3$/ })).toBeInTheDocument();
     expect(document.querySelector('.pcard[data-pid="q1"] .pc-qty')).toBeNull();
     expect(
@@ -940,30 +1006,19 @@ describe('a count from a list', () => {
   };
 
   it('follows the counted name and leaves an uncounted card bare, in colour', async () => {
-    const { container } = render(App, { env: at('#/print/ci1*3-q1') });
+    const { container } = render(App, { env: await atSet('ci1*3-q1') });
+    await opened();
     expectCounted();
     await expectNoA11yViolations(container);
   });
 
   it('keeps the count in black and white', async () => {
-    const { container } = render(App, { env: at('#/print/ci1*3-q1') });
+    const { container } = render(App, { env: await atSet('ci1*3-q1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(document.querySelector('.psheet.bw')).not.toBeNull();
     expectCounted();
     await expectNoA11yViolations(container);
-  });
-
-  it('copies the counts with the set link', async () => {
-    const clip = fakeClipboard();
-    render(App, { env: at('#/print/ci1*3-q1', { clipboard: clip }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
-    expect(clip.last.text).toBe('https://example.test/#/print/ci1*3-q1');
-  });
-
-  it('keeps the first count of a repeated id', () => {
-    render(App, { env: at('#/print/ci1*3-ci1*5') });
-    expect(document.querySelectorAll('.pcard[data-pid]')).toHaveLength(1);
-    expect(document.querySelector('.pcard[data-pid="ci1"] .pc-qty')?.textContent).toBe(' ×3');
   });
 });
 
@@ -1039,7 +1094,8 @@ describe('the fit is wired', () => {
   it('reaches every step of the ladder and lands on the live floors', async () => {
     const restore = fakeLayout(() => 140, 9999);
     try {
-      render(App, { env: at('#/print/q1') });
+      render(App, { env: await atSet('q1') });
+      await opened();
       const card = document.querySelector('.pcard[data-pid="q1"]');
       expect(card?.querySelector('.pc-strip .pc-box b')).toHaveStyle({ fontSize: '2.2cqw' });
       expect(card?.querySelector('.pc-text')).toHaveStyle({ fontSize: '2.6cqw' });
@@ -1077,7 +1133,8 @@ describe('the fit is wired', () => {
       (text) => (text === 'Сила' || text === 'Урон' ? 9999 : 0)
     );
     try {
-      const { container } = render(App, { env: at('#/print/q8b3') });
+      const { container } = render(App, { env: await atSet('q8b3') });
+      await opened();
       const strip = document.querySelector<HTMLElement>('.pcard[data-pid="q8b3"] .pc-strip');
       const size = (sel: string): string | undefined =>
         strip?.querySelector<HTMLElement>(sel)?.style.fontSize;
@@ -1120,7 +1177,8 @@ describe('the fit is wired', () => {
       }
     );
     try {
-      const { container } = render(App, { env: at('#/print/q8b3') });
+      const { container } = render(App, { env: await atSet('q8b3') });
+      await opened();
       const strip = document.querySelector<HTMLElement>('.pcard[data-pid="q8b3"] .pc-strip');
       const range = strip?.querySelector<HTMLElement>('.pc-c3 b');
       expect(range?.textContent).toBe('Вплотную');
@@ -1140,7 +1198,8 @@ describe('the fit is wired', () => {
   it('grows short black-and-white text to the cap, and leaves colour alone', async () => {
     const restore = fakeLayout(() => 50, 0);
     try {
-      render(App, { env: at('#/print/q1') });
+      render(App, { env: await atSet('q1') });
+      await opened();
       const text = (): HTMLElement | null =>
         document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text');
       expect(text()?.style.fontSize).toBe('');
@@ -1168,7 +1227,8 @@ describe('the fit is wired', () => {
       0
     );
     try {
-      render(App, { env: at('#/print/q1') });
+      render(App, { env: await atSet('q1') });
+      await opened();
       await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
       expect(
         document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text')?.style.fontSize
@@ -1180,9 +1240,11 @@ describe('the fit is wired', () => {
 });
 
 describe('no data', () => {
-  it('says the data did not load, and nothing else', () => {
-    render(App, { env: fakeEnv({ router: memoryRouter('#/print/ci1'), data: noData() }) });
-    expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+  it('says the data did not load, and nothing else', async () => {
+    render(App, { env: await atSet('ci1', { data: noData() }) });
+    expect(
+      await screen.findByText('Данные не загрузились. Обновите страницу.')
+    ).toBeInTheDocument();
     expect(document.querySelector('.psheet')).toBeNull();
     expect(document.querySelector('.printbar')).toBeNull();
   });
@@ -1190,7 +1252,8 @@ describe('no data', () => {
 
 describe('English', () => {
   it('translates the bar, the note and the card text', async () => {
-    render(App, { env: at('#/print/q1-a1') });
+    render(App, { env: await atSet('q1-a1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('heading', { name: 'Printing cards' })).toBeInTheDocument();
     expect(
@@ -1234,31 +1297,161 @@ describe('English', () => {
   });
 });
 
+describe('the states of #/p/', () => {
+  const ru = dict('ru');
+  const home = (): HTMLElement =>
+    within(document.querySelector('main') as HTMLElement).getByRole('link', {
+      name: 'На главную'
+    });
+
+  it('draws the gone state for a malformed id signed in and signed out, and never reads', async () => {
+    for (const as of ['gm2', undefined]) {
+      const cloud = fakeCloud(SEED, as);
+      const read = vi.spyOn(cloud.prints, 'read');
+      const { unmount } = render(App, { env: at('#/p/short', { cloud }) });
+      expect(await screen.findByText(ru.printSetGone)).toBeInTheDocument();
+      expect(home()).toHaveAttribute('href', '#/roll/std');
+      await new Promise((r) => setTimeout(r, 0));
+      expect(read).not.toHaveBeenCalled();
+      unmount();
+    }
+  });
+
+  it('asks a signed-out reader to sign in, and «Войти» opens the account page', async () => {
+    const env = at('#/p/set-twocards', { cloud: fakeCloud(SEED) });
+    render(App, { env });
+    expect(await screen.findByText(ru.signInToPrint)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
+    expect(document.querySelector('.psheet')).toBeNull();
+    await userEvent.click(
+      within(document.querySelector('main') as HTMLElement).getByRole('button', {
+        name: 'Войти'
+      })
+    );
+    expect(env.router.hash()).toBe('#/account');
+  });
+
+  it('says it loads while the read runs', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    vi.spyOn(cloud.prints, 'read').mockReturnValue(new Promise(() => undefined));
+    render(App, { env: at('#/p/set-twocards', { cloud }) });
+    expect(await screen.findByText(ru.cloudLoading)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
+  });
+
+  it('says a failed read, and «Повторить» reads again', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const env = await atSet('ci1-q1', { port: cloud });
+    cloud.setOffline(true);
+    render(App, { env });
+    expect(await screen.findByText(ru.printLoadFailed)).toBeInTheDocument();
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await opened();
+    expect(document.querySelectorAll('.pcard[data-pid]')).toHaveLength(2);
+  });
+
+  it('draws the gone state for an unknown and an expired id', async () => {
+    for (const id of ['AbCdEf-_1234', 'set-expired1']) {
+      const { unmount } = render(App, {
+        env: at('#/p/' + id, { cloud: fakeCloud(SEED, 'gm2') })
+      });
+      expect(await screen.findByText(ru.printSetGone)).toBeInTheDocument();
+      expect(home()).toHaveClass('primary');
+      expect(document.querySelector('.psheet')).toBeNull();
+      unmount();
+    }
+  });
+
+  it('names the deleted items in the red note under the bar', async () => {
+    render(App, { env: at('#/p/set-missing1', { cloud: fakeCloud(SEED, 'gm2') }) });
+    await opened();
+    const note = document.querySelector('.printbar p.printnote.warnnote');
+    expect(note).toHaveTextContent(ru.printSetMissing.replace('%d', '1'));
+    expect(document.querySelectorAll('.pcard[data-pid]')).toHaveLength(1);
+  });
+
+  it('says nothing is left to print when every item is deleted', async () => {
+    const { container } = render(App, {
+      env: at('#/p/set-allgone1', { cloud: fakeCloud(SEED, 'gm2') })
+    });
+    expect(await screen.findByText(ru.printEmpty)).toBeInTheDocument();
+    expect(document.querySelector('p.printnote.warnnote')).toHaveTextContent(
+      ru.printSetMissing.replace('%d', '2')
+    );
+    expect(home()).toHaveAttribute('href', '#/roll/std');
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the sign-in state when the reader signs out on the sheet', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    render(App, { env: await atSet('ci1', { port: cloud }) });
+    await opened();
+    await cloud.auth.signOut();
+    expect(await screen.findByText(ru.signInToPrint)).toBeInTheDocument();
+    expect(document.querySelector('.psheet')).toBeNull();
+  });
+
+  it('draws the not-found page with no sign-in configured', () => {
+    render(App, { env: at('#/p/set-twocards') });
+    expect(screen.getByRole('heading', { name: ru.notFound })).toBeInTheDocument();
+  });
+
+  it('draws the retired page for an old long link in both builds, the address kept', () => {
+    for (const cloud of [null, fakeCloud(SEED, 'gm2')]) {
+      const env = at('#/print/ci1-q1', { cloud });
+      const { unmount } = render(App, { env });
+      expect(screen.getByRole('heading', { name: ru.printLinkRetired })).toBeInTheDocument();
+      expect(screen.getByText(ru.printLinkRetiredSub)).toBeInTheDocument();
+      expect(home()).toHaveAttribute('href', '#/roll/std');
+      expect(env.router.hash()).toBe('#/print/ci1-q1');
+      expect(document.querySelector('.psheet')).toBeNull();
+      unmount();
+    }
+  });
+});
+
 describe('axe', () => {
-  it('has no violations on either sheet size in either layout, or on the empty page', async () => {
-    const colour = render(App, { env: at('#/print/ci1-q1') });
+  it('has no violations on either sheet size in either layout', async () => {
+    const colour = render(App, { env: await atSet('ci1-q1') });
+    await opened();
     await expectNoA11yViolations(colour.container);
     colour.unmount();
 
-    const bwRender = render(App, { env: at('#/print/ci1-q1') });
+    const bwRender = render(App, { env: await atSet('ci1-q1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     await expectNoA11yViolations(bwRender.container);
     bwRender.unmount();
 
-    const compactColour = render(App, { env: at('#/print/ci1-q1') });
+    const compactColour = render(App, { env: await atSet('ci1-q1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     await expectNoA11yViolations(compactColour.container);
     compactColour.unmount();
 
-    const compactBw = render(App, { env: at('#/print/ci1-q1') });
+    const compactBw = render(App, { env: await atSet('ci1-q1') });
+    await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(document.querySelector('.psheet.compact.bw')).toBeInTheDocument();
     await expectNoA11yViolations(compactBw.container);
-    compactBw.unmount();
+  });
 
-    const empty = render(App, { env: at('#/print/zzz') });
-    await expectNoA11yViolations(empty.container);
+  it('has no violations on the sign-in, gone and retired pages', async () => {
+    const ru = dict('ru');
+    const signIn = render(App, { env: at('#/p/set-twocards', { cloud: fakeCloud(SEED) }) });
+    await screen.findByText(ru.signInToPrint);
+    await expectNoA11yViolations(signIn.container);
+    signIn.unmount();
+
+    const gone = render(App, { env: at('#/p/bad', { cloud: fakeCloud(SEED, 'gm2') }) });
+    await screen.findByText(ru.printSetGone);
+    await expectNoA11yViolations(gone.container);
+    gone.unmount();
+
+    const retired = render(App, { env: at('#/print/ci1-q1') });
+    await expectNoA11yViolations(retired.container);
   });
 });
 
@@ -1271,23 +1464,45 @@ describe('homebrew cards', () => {
   const bottom = (card: HTMLElement | undefined): string =>
     card?.querySelector('.pc-bottom')?.textContent ?? '';
 
-  it('prints own items with their path as the source line', async () => {
-    render(App, { env: at(`#/print/${AXE}-${POTION}`, { cloud: fakeCloud(SEED, 'gm1') }) });
-    await screen.findByText('Топор Тлеющих Углей');
-    expect(filled()).toHaveLength(2);
-    expect(bottom(filled()[0])).toContain('Мастерская Ольхи');
-    expect(bottom(filled()[1])).toContain('Хоумбрю');
+  it("prints gm1's axe and potion with their path as the source line, to gm1 and gm2 alike", async () => {
+    for (const as of ['gm1', 'gm2']) {
+      const { unmount } = render(App, {
+        env: await atSet(`${AXE}-${POTION}`, { as, by: 'gm1' })
+      });
+      await opened();
+      expect(screen.getByText('Топор Тлеющих Углей')).toBeInTheDocument();
+      expect(filled(), as).toHaveLength(2);
+      expect(bottom(filled()[0]), as).toContain('Мастерская Ольхи');
+      expect(bottom(filled()[1]), as).toContain('Хоумбрю');
+      unmount();
+    }
   });
 
-  it("prints another account's item an own list links, and nothing for a key no list holds", async () => {
-    render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED, 'gm2') }) });
-    await screen.findByText('Топор Тлеющих Углей');
-    expect(filled()).toHaveLength(1);
-    expect(bottom(filled()[0])).toContain('Мастерская Ольхи');
-    cleanup();
-    render(App, { env: at('#/print/' + AXE, { cloud: fakeCloud(SEED) }) });
-    await new Promise((r) => setTimeout(r, 0));
-    expect(filled()).toHaveLength(0);
+  it("draws the set's record, never the reader's own record of the same key", async () => {
+    const OTHER = uuid(2960);
+    const seed: Seed = {
+      ...SEED,
+      homebrew: {
+        ...SEED.homebrew,
+        gm3: {
+          books: [],
+          cards: [],
+          items: [
+            {
+              id: OTHER,
+              key: AXE,
+              content: { kind: 'item', ru: 'Чужой топор' },
+              createdAgoMs: 3_600_000,
+              editedAgoMs: 3_600_000
+            }
+          ]
+        }
+      }
+    };
+    render(App, { env: await atSet([{ h: OTHER }], { as: 'gm1', by: 'gm3', seed }) });
+    await opened();
+    expect(screen.getByText('Чужой топор')).toBeInTheDocument();
+    expect(screen.queryByText('Топор Тлеющих Углей')).toBeNull();
   });
 });
 
@@ -1309,14 +1524,13 @@ describe("the author's own set members", () => {
       ...SEED,
       homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [], items: pieces } }
     };
-    const { container } = render(App, {
-      env: at('#/print/st1', { cloud: fakeCloud(seed, 'gm3') })
+    const { container } = render(App, { env: await atSet('st1', { as: 'gm3', seed }) });
+    await opened();
+    await waitFor(() => {
+      expect(label('st1')).toBe(
+        'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB) и ещё 1):'
+      );
     });
-    await screen.findByText('Угольный Клинок');
-    await new Promise((r) => setTimeout(r, 0));
-    expect(label('st1')).toBe(
-      'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB) и ещё 1):'
-    );
     await expectNoA11yViolations(container);
   });
 
@@ -1333,14 +1547,13 @@ describe("the author's own set members", () => {
       ...SEED,
       homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [], items: pieces } }
     };
-    const { container } = render(App, {
-      env: at('#/print/' + last, { cloud: fakeCloud(seed, 'gm3') })
+    const { container } = render(App, { env: await atSet(last, { as: 'gm3', seed }) });
+    await opened();
+    await waitFor(() => {
+      expect(label(last)).toBe(
+        'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB), Д (HB) и ещё 1):'
+      );
     });
-    await screen.findByText('Д');
-    await new Promise((r) => setTimeout(r, 0));
-    expect(label(last)).toBe(
-      'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB), Д (HB) и ещё 1):'
-    );
     await expectNoA11yViolations(container);
   });
 
@@ -1361,10 +1574,8 @@ describe("the author's own set members", () => {
       ...SEED,
       homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [card], items: [] } }
     };
-    const { container } = render(App, {
-      env: at('#/print/ni1', { cloud: fakeCloud(seed, 'gm3') })
-    });
-    await screen.findByText('Вещь Без Картинки');
+    const { container } = render(App, { env: await atSet('ni1', { as: 'gm3', seed }) });
+    await opened();
     await waitFor(() => {
       expect(label('ni1')).toBe(
         'Свой набор (Комплект: Вещь С Картинкой, Вещь Без Картинки, Зелье, Вещь Сообщества и ещё 1):'
@@ -1407,27 +1618,14 @@ describe("the author's own set members", () => {
             }
           ]
         }
-      },
-      lists: {
-        ...SEED.lists,
-        gm2: [
-          {
-            id: uuid(291),
-            name: 'Чужое',
-            entries: [
-              { id: uuid(2911), itemKey: KEY, position: 0, source: 'homebrew', hbItem: ITEM }
-            ],
-            createdAgoMs: 3_600_000,
-            editedAgoMs: 3_600_000
-          }
-        ]
       }
     };
-    const { container } = render(App, {
-      env: at('#/print/' + KEY, { cloud: fakeCloud(seed, 'gm2') })
+    const { container } = render(App, { env: await atSet(KEY, { as: 'gm2', seed }) });
+    await opened();
+    expect(screen.getByText('Чужой браслет')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(label(KEY)).toBe('Чужой комплект:');
     });
-    await screen.findByText('Чужой браслет');
-    expect(label(KEY)).toBe('Чужой комплект:');
     expect(
       document
         .querySelector(`.pcard[data-pid="${KEY}"] .pc-text`)

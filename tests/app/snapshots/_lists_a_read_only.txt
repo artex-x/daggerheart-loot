@@ -28,7 +28,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
     textbox "Название списка" [value=Клад дракона multiline=false readonly=true required=false]
     StaticText "7 позиций"
     button "Скопировать текст"
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?today=2026-10-26#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
     button "Удалить"
     StaticText "Списки в этом браузере только для чтения с 26 октября 2026 года."
     ... StaticText x24 of 28 same-shape siblings elided
@@ -162,7 +162,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
     textbox "List name" [value=Клад дракона multiline=false readonly=true required=false]
     StaticText "7 items"
     button "Copy text"
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?today=2026-10-26#/print/ci1-ci2*2-ci3-ci4-ci5-ci6-ci7]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
     button "Delete"
     StaticText "Lists in this browser are read-only from 26 October 2026."
     ... StaticText x24 of 28 same-shape siblings elided

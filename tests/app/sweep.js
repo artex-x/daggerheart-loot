@@ -52,6 +52,34 @@ const TABLES = [
   'homebrew'
 ];
 
+/* Presses a control by its Russian name, or by its English one on an English page. */
+async function either(d, how, ru, en) {
+  try {
+    await d[how](ru);
+  } catch {
+    await d[how](en);
+  }
+}
+
+/** Presses a print control signed out, which opens its sign-in prompt; its hint names it
+ *  for the driver, where `title` wins. */
+const pressPrint = (d) =>
+  either(
+    d,
+    'click',
+    'Собрать карточки для печати: девять на лист A4',
+    'Lay these out for printing: nine to an A4 sheet'
+  );
+
+/** Waits until a `#/p/` page has left its loading line: its sheet, or its sub. */
+async function printed(d) {
+  for (let i = 0; i < 200; i++) {
+    if ((await d.count('.printbar, .page-sub')) > 0) return;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  throw new Error('the print page never left its loading line');
+}
+
 /* audit2's own 41 addresses, plus the routes only tests/app/states.js
  * reaches (`#/tables` bare, `#/lists/b`, `#/i/ci1`) so the sweep's net does
  * not stop short of what the real-input layer opens. */
@@ -102,6 +130,25 @@ const PAGES = [
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
     ['#/tables/community/Seaborne', 'якорь сообщества']
+  ])
+  /* The print page's states and the three print prompts, signed out at every width. */
+  .concat([
+    ['#/p/set-twocards', 'печать: вход', undefined, printed],
+    ['#/p/bad', 'печать: ошибка в адресе', undefined, printed],
+    ['#/print/ci1-q1', 'печать: старая ссылка'],
+    ['#/p/set-expired1', 'печать: набор не найден', 'gm2', printed],
+    ['#/p/set-allgone1', 'печать: предметы удалены', 'gm2', printed],
+    ['#/i/ci1', 'печать без входа: карточка', undefined, pressPrint],
+    [
+      '#/tables/core_item',
+      'печать без входа: панель выбора',
+      undefined,
+      async (d) => {
+        await either(d, 'tick', 'Первоклассный Спальный Мешок', 'Premium Bedroll');
+        await pressPrint(d);
+      }
+    ],
+    ['#/lists/a', 'печать без входа: список', undefined, pressPrint]
   ])
   /* An optional third element signs that seed user in. The storage seed's browser lists
    * then move into the account, and the move notice may draw: expected, not a finding. */
@@ -199,11 +246,12 @@ const PAGES = [
   ]);
 
 /* An A4 sheet legitimately scrolls sideways in a 360px window - the overflow
- * check would be reading the medium, not a defect - so print is checked at
- * 1180 only. */
+ * check would be reading the medium, not a defect - so a drawn sheet is checked
+ * at 1180 only. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`)
+ * read as gm2. */
 const PRINT_ONLY_1180 = [
-  ['#/print/ci1-q1', 'печать: два предмета'],
-  ['#/print/nope', 'печать: пусто']
+  ['#/p/set-twocards', 'печать: два предмета', 'gm2', printed],
+  ['#/p/set-missing1', 'печать: удалённый предмет', 'gm2', printed]
 ];
 
 /* The list seed both audit2 and this sweep have always used, plus a second

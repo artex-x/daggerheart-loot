@@ -47,10 +47,12 @@ export const HOOKS = {
 
 /** Vitest's reads are spread over many test files, so a deny-list: an
  * unknown path costs a rerun, not a false green. `i18n.test.ts` requires
- * tools/build-share-pages.js, which loads `data.js`. */
+ * tools/build-share-pages.js, which loads `data.js`; `printSet.test.ts` reads the
+ * privacy pages' sources for the 90 days. */
 export const VITEST = {
   rules: [
     ['docs/fixtures/', true],
+    ['pages/src/', true],
     ['supabase/config.toml', true],
     ['tools/build-share-pages.js', true],
     ['.claude/', false],

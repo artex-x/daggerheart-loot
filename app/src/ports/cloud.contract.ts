@@ -10,7 +10,7 @@
  * share links, I the move of a browser list, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
  * import of a homebrew file and the bulk move, P the GM-only entries, R the live links
- * across accounts, Q the own pictures of homebrew items. */
+ * across accounts, S the print sets, Q the own pictures of homebrew items. */
 
 import { newArtName, thumbOf } from '../lib/art.js';
 import type { EntryRow, ImportRow, ListRow, SharedRow } from '../lib/cloudLists.js';
@@ -1925,12 +1925,82 @@ async function artCases(
   );
 }
 
+/* S. Print sets: signed out, a make is a lapsed session and a read opens nothing; the
+   maker's own item and a catalog entry with a count make one set, the same sheet again the
+   same id; another signed-in reader reads both entries in order, the item with its record
+   and `hid`; after the item's deletion the read counts it missing; an unknown id opens
+   nothing. The maker's account deletion takes its sets. */
+async function printCases(
+  maker: CloudPort,
+  reader: CloudPort,
+  signedOut: CloudPort,
+  assert: Assert
+): Promise<void> {
+  const UNKNOWN = 'zzzzzzzzzzzz';
+  const outMade = await signedOut.prints.create([{ k: 'ci1' }]);
+  assert(
+    !outMade.ok && outMade.error === 'network',
+    'prints: signed out, create() answered ' + JSON.stringify(outMade)
+  );
+  const outRead = await signedOut.prints.read(UNKNOWN);
+  assert(outRead.ok && outRead.set === null, 'prints: signed out, read() is not { ok, null }');
+
+  const { homebrew } = maker;
+  const itemId = homebrew.newId();
+  const key = homebrew.newKey();
+  assert(
+    (
+      await homebrew.createItem({
+        id: itemId,
+        key,
+        book_id: null,
+        content: { kind: 'item', ru: 'Набор для печати' }
+      })
+    ).ok,
+    "prints: the maker's item was refused"
+  );
+  const entries = [{ k: 'ci1', q: 3 }, { h: itemId }];
+  const made = await maker.prints.create(entries);
+  assert(
+    made.ok && /^[A-Za-z0-9_-]{12}$/.test(made.id),
+    'prints: create() answered ' + JSON.stringify(made)
+  );
+  const id = made.ok ? made.id : UNKNOWN;
+  const again = await maker.prints.create(entries);
+  assert(again.ok && again.id === id, 'prints: the same sheet made a second set');
+
+  const read = await reader.prints.read(id);
+  const set = read.ok ? (read.set as { entries?: unknown; missing?: unknown } | null) : null;
+  const rows = Array.isArray(set?.entries) ? (set.entries as Record<string, unknown>[]) : [];
+  assert(
+    rows.length === 2 && rows[0]?.['k'] === 'ci1' && rows[0]['q'] === 3 && set?.missing === 0,
+    'prints: the reader read ' + JSON.stringify(set)
+  );
+  const item = rows[1]?.['item'] as { id?: unknown } | undefined;
+  assert(
+    rows[1]?.['hid'] === itemId && item?.id === key,
+    "prints: the reader did not read the item's record and hid"
+  );
+
+  assert((await homebrew.removeItem(itemId)).ok, "prints: the maker's delete was refused");
+  const after = await reader.prints.read(id);
+  const left = after.ok
+    ? (after.set as { entries?: unknown[]; missing?: unknown } | null)
+    : null;
+  assert(
+    left?.missing === 1 && left.entries?.length === 1,
+    'prints: a deleted item was not counted missing: ' + JSON.stringify(left)
+  );
+  const unknown = await reader.prints.read(UNKNOWN);
+  assert(unknown.ok && unknown.set === null, 'prints: an unknown id does not read null');
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
   assert: (cond: boolean, msg: string) => void,
   log: (msg: string) => void = () => undefined,
-  /** The ports of cases P and R, which read one account's writes from another: `make` itself
+  /** The ports of cases P, R and S, which read one account's writes from another: `make` itself
    *  when every port reaches one database. */
   makeShared: (as?: string) => Promise<CloudPort> = make,
   /** Case Q's reads of the public addresses; without one, case Q does not run. */
@@ -2090,6 +2160,16 @@ export async function runCloudContract(
   await linkCases(
     await makeShared(member.as),
     await makeShared(users.doomed),
+    await makeShared(),
+    assert
+  );
+
+  /* S. print sets: the doomed user makes them, so its account deletion takes them and the
+     member, kept across runs, gains no row toward its limit; the member reads them from the
+     same database. Before Q, which deletes the fake shared world's doomed user. */
+  await printCases(
+    await makeShared(users.doomed),
+    await makeShared(member.as),
     await makeShared(),
     assert
   );

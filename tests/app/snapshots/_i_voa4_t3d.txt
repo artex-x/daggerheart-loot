@@ -41,7 +41,7 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/voa4_t3d]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -121,7 +121,7 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=#/i/voa4_t3d]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/voa4_t3d]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

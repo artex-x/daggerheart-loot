@@ -2055,12 +2055,14 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 294 kB budget (with the account client chunk)`; 288.8
+Expected: `within the 294 kB budget (with the account client chunk)`; 290.9
+kB on 2026-10-14 at `print-snapshots` (every print a stored set: the pure module, the
+print page states, the three prompts, eight strings in two languages), 229.8 kB
+unconfigured, which leaves
+59.1 kB under the 350 kB ceiling (owner, 2026-10-14) for `debt-cleanup` and R10, and
+D60's 1.5 kB is the only recorded saving; 288.8
 kB on 2026-10-14 at R8 (own pictures: the field, the lazy crop dialog of
-2.3 kB plus 0.6 kB CSS, the media port), 228.0 kB unconfigured. That leaves
-11.2 kB under the 300 kB ceiling for `print-snapshots`, `debt-cleanup` and
-R10: each plans its growth against it, and D60's 1.5 kB is the only
-recorded saving. 282.0 kB on 2026-10-14 with R8's storage calls, 221.4 kB
+2.3 kB plus 0.6 kB CSS, the media port), 228.0 kB unconfigured. 282.0 kB on 2026-10-14 with R8's storage calls, 221.4 kB
 unconfigured; 264.2
 kB on 2026-10-02 at R7d's closeout, rebased on the search's Snowball stemmers
 and ranking, with the homebrew import, the bulk move, the downloads and the
@@ -2077,11 +2079,12 @@ import and export and the requests polish; 184.5 kB on 2026-09-27 with the
 Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
 `check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
 raises it to the measured size plus about 5 kB in the same commit, never past
-300 kB configured and 250 kB unconfigured, and past a ceiling it stops and
+350 kB configured (owner, 2026-10-14) and 250 kB unconfigured, and past a ceiling it stops and
 asks the owner. Decisions: "The configured bundle budget is 210 kB; the
 unconfigured stays 150 kB", amended by "The bundle budget steps up per batch
 to 250 kB configured and 190 unconfigured", amended by "The bundle ceilings
-rise to 300 kB configured and 250 unconfigured"; the slimmer client neither waits
+rise to 300 kB configured and 250 unconfigured", amended by "The configured bundle
+ceiling rises to 350 kB"; the slimmer client neither waits
 on is still `docs/specs/DEBT.md`, D60.
 
 Branch migrations on the test project: `migrate-test` runs on every
@@ -2685,6 +2688,13 @@ fix), delete the Vault secret `dhloot_storage_key` or restore `art` from
 the last backup taken before the down: after the up every file is an
 unnamed orphan older than an hour, and the job deletes 2000 an hour until
 the bucket is empty.
+
+To undo `20261014120100_print_sets`, revert the app first: the previous
+frontend prints through the long addresses and reads no set, and the sets
+stay for the next frontend. Run the reversal only as a second push, a new
+migration whose body is the reversal file, and only together with a
+frontend revert: it drops every print set, so no short link opens, and with
+the print-set frontend still deployed no signed-in reader can print.
 
 To undo `20261010120000_drop_list_entry_snapshot`, revert the app alone: no
 frontend since R7h reads the column. Push the reversal only to run a

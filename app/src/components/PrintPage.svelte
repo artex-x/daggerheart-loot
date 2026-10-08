@@ -1,44 +1,85 @@
 <script lang="ts">
-  /* `#/print/<ids>` - off `renderPrint` (app.js 3510-3558) and the print
-   * handlers (`printBack`/`doPrint`/`printArt`/`printLink`, app.js
-   * 4236-4245). No `PageHead`: the live markup writes a bare `h1`+`p`, no
-   * pin, no help. */
+  /* `#/p/<id>` - a stored print set (docs/specs/FEATURES.md, "Print"); the sheet itself is
+   * off `renderPrint` (app.js 3510-3558) and the print handlers
+   * (`printBack`/`doPrint`/`printArt`/`printLink`, app.js 4236-4245). No `PageHead`: the
+   * live markup writes a bare `h1`+`p`, no pin, no help. */
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
+  import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import Seg from './Seg.svelte';
   import { setBonusOf, setKeyOf, setOf } from '../lib/data.js';
-  import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
+  import { printSetHash, sectionHash } from '../lib/hash.js';
+  import { withRecords } from '../lib/homebrew.js';
   import { FOLD_OWN, relText, setFolds } from '../lib/label.js';
   import { COMPACT_PER_SHEET, pages } from '../lib/print.js';
+  import { PRINT_SET_ID, type PrintSetRow } from '../lib/printSet.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
     app: AppState;
-    ids: string[];
-    dropped: number;
-    qty: Record<string, number>;
+    id: string;
   }
 
-  const { app, ids, dropped, qty }: Props = $props();
+  const { app, id }: Props = $props();
 
   const t = $derived(app.t);
-  const index = $derived(app.index);
-  const items = $derived(
-    index
-      ? ids.flatMap((id) => {
-          const it = app.recordFor(id);
-          return it ? [it] : [];
-        })
-      : []
+  /* Only a 12-character id is read; any other draws the gone state with no read, signed in
+     or out (docs/specs/ROUTES.md). */
+  const valid = $derived(PRINT_SET_ID.test(id));
+  let read = $state<'loading' | 'failed' | 'gone' | 'ready'>('loading');
+  let rows = $state.raw<PrintSetRow[]>([]);
+  let missing = $state(0);
+  let attempt = $state(0);
+  /* The account, not the session object: a token refresh reads nothing again. */
+  const userId = $derived(app.user?.userId);
+
+  /* One read when the page opens, again on «Повторить» and after a sign-in; no live
+     re-read. An answer that lands after the effect re-ran is dropped. */
+  $effect(() => {
+    void attempt;
+    if (!valid || !userId) return;
+    let live = true;
+    read = 'loading';
+    void app.loadPrintSet(id).then((r) => {
+      if (!live) return;
+      if (!r.ok) {
+        read = 'failed';
+        return;
+      }
+      if (!r.set) {
+        read = 'gone';
+        return;
+      }
+      rows = r.set.rows;
+      missing = r.set.missing;
+      read = 'ready';
+    });
+    return () => {
+      live = false;
+    };
+  });
+
+  /* A homebrew row draws the set's own record, never an own record of the same key: two
+     authors can hold one key. */
+  const cards = $derived(
+    rows.flatMap((row) => {
+      const it = 'record' in row ? row.record : app.recordFor(row.id);
+      if (!it) return [];
+      const hid = 'record' in row ? row.record.hid : undefined;
+      return [{ it, q: row.q, key: hid ?? it.id }];
+    })
   );
+  const records = $derived(rows.flatMap((row) => ('record' in row ? [row.record] : [])));
+  /* The set line names the members that the sheet holds. */
+  const index = $derived(app.index ? withRecords(app.index, [], records) : null);
   const per = $derived(app.shownPrintCompact ? COMPACT_PER_SHEET : 9);
-  const sheet = $derived(pages(items, per));
+  const sheet = $derived(pages(cards, per));
   /** Just the keys `{#each}` needs for the blank places after the last
    *  card - an index array, built here so the template needs no unused
    *  item binding of its own. */
@@ -77,16 +118,15 @@
 
   const sub = $derived(
     (app.shownPrintCompact ? t.printSubCompact : t.printSub)
-      .replace('%n', String(items.length))
-      .replace('%p', String(Math.ceil(items.length / per)))
+      .replace('%n', String(cards.length))
+      .replace('%p', String(Math.ceil(cards.length / per)))
   );
-  const tooMany = $derived(
-    t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(dropped))
-  );
+  const missingNote = $derived(t.printSetMissing.replace('%d', String(missing)));
 
+  /* A handed-over link may have no history to step back to: home, not the lists. */
   function back(): void {
     if (app.env.router.canGoBack()) app.env.router.back();
-    else app.go(sectionHash('lists'));
+    else app.go(sectionHash('roll/std'));
   }
 
   function print(): void {
@@ -95,17 +135,46 @@
 
   async function copyLink(): Promise<void> {
     await app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(printHash(ids, qty))),
+      () => app.env.clipboard.writeText(app.linkTo(printSetHash(id))),
       (t) => t.linkCopied
     );
   }
 </script>
 
-{#if !index}
+{#if !app.index}
   <NoData>{t.noData}</NoData>
-{:else if !items.length}
+{:else if !valid}
+  <PageTitle title={t.printTitle} sub={t.printSetGone} />
+  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+{:else if app.user === undefined}
+  <!-- The session is not known yet: nothing, so no state flashes. -->
+{:else if app.user === null}
+  <PageTitle title={t.printTitle} sub={t.signInToPrint} />
+  <Button
+    variant="primary"
+    onclick={() => {
+      app.askSignIn({ hash: app.hash });
+    }}>{t.signIn}</Button
+  >
+{:else if read === 'loading' || read === 'failed'}
+  <PageTitle title={t.printTitle} />
+  <LoadState
+    {t}
+    failed={read === 'failed'}
+    text={t.printLoadFailed}
+    onretry={() => {
+      attempt++;
+    }}
+  />
+{:else if read === 'gone'}
+  <PageTitle title={t.printTitle} sub={t.printSetGone} />
+  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+{:else if !cards.length}
   <PageTitle title={t.printTitle} sub={t.printEmpty} />
-  <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+  {#if missing > 0}
+    <p class="printnote warnnote">{missingNote}</p>
+  {/if}
+  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
 {:else}
   <div class="printbar">
     <PageTitle title={t.printTitle} {sub} />
@@ -133,8 +202,8 @@
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
     </Actions>
     {#if app.printChanged}<KeepNote {app} />{/if}
-    {#if dropped}
-      <p class="printnote warnnote">{tooMany}</p>
+    {#if missing > 0}
+      <p class="printnote warnnote">{missingNote}</p>
     {/if}
     <p class="printnote">{t.printNote}</p>
   </div>
@@ -148,14 +217,14 @@
         class:compact={app.shownPrintCompact}
         data-next={i ? '1' : undefined}
       >
-        {#each page as it (it.id)}
+        {#each page as c (c.key)}
           <PrintCard
-            {it}
+            it={c.it}
             lang={app.lang}
             bw={app.shownPrintBW}
-            qty={qty[it.id]}
-            setLine={setLine(it)}
-            artBroken={app.artBroken(it.id)}
+            qty={c.q}
+            setLine={setLine(c.it)}
+            artBroken={app.artBroken(c.it.id)}
             onartfail={(bad: string) => {
               app.markArtBroken(bad);
             }}

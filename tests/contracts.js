@@ -185,6 +185,28 @@ const N_REC = '\x1e',
       name + ' does not name the date #/l/ links stop, 2026-10-26'
     );
   });
+  /* Every print is a stored set at #/p/<id>, and the long print links are retired
+     (CONTRACTS.md section 1): an agent must find the date and build no print address. */
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText],
+    ['ROUTES.md', routesDoc]
+  ].forEach(function ([name, text]) {
+    ok(text.includes('#/p/<id>'), name + ' does not name the print set address #/p/<id>');
+  });
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText]
+  ].forEach(function ([name, text]) {
+    ok(
+      text.includes('2026-10-08'),
+      name + ' does not name the date the #/print/ links were retired, 2026-10-08'
+    );
+  });
+  ok(
+    !machine.includes('#/print/<id>') && !machine.includes('#/print/ci1*3-q1'),
+    'llms.txt still teaches a #/print/ address'
+  );
 
   const dataIds = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data.json'), 'utf8'));
   const allIds = [...Object.values(dataIds.items).flat(), ...(dataIds.eq || [])].map(

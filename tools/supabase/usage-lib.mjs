@@ -434,7 +434,9 @@ export function renderSummary({ today, rows, tables, nearLimits, points }) {
     `- owners at 80 % or more of lists_per_owner: ${nearLimits.owners_near} (above 100 %: ${nearLimits.owners_over})`,
     `- lists at 80 % or more of entries_per_list: ${nearLimits.lists_near} (above 100 %: ${nearLimits.lists_over})`,
     // A snapshot taken before the homebrew migration has no items fields.
-    `- owners at 80 % or more of homebrew_items_per_owner: ${nearLimits.items_near ?? 0} (above 100 %: ${nearLimits.items_over ?? 0})`
+    `- owners at 80 % or more of homebrew_items_per_owner: ${nearLimits.items_near ?? 0} (above 100 %: ${nearLimits.items_over ?? 0})`,
+    // A snapshot taken before the print sets migration has no sets fields.
+    `- owners at 80 % or more of print_sets_per_owner: ${nearLimits.sets_near ?? 0} (above 100 %: ${nearLimits.sets_over ?? 0})`
   );
   out.push(
     '',

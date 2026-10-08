@@ -115,7 +115,7 @@ describe('the item page', () => {
     expect(router.hash()).toBe('#/h/' + uuid(9999));
   });
 
-  it("draws a reader's page signed out: «Предмет другого игрока», «Сохранить себе», no print, no edit, no table link", async () => {
+  it("draws a reader's page signed out: «Предмет другого игрока», «Сохранить себе», print, no edit, no table link", async () => {
     const { container } = page('#/h/' + ROLL_B, null);
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' })
@@ -126,7 +126,7 @@ describe('the item page', () => {
     expect(within(pick).getByRole('button', { name: t.addToList })).toBeInTheDocument();
     expect(within(pick).getByRole('button', { name: t.saveItem })).toBeInTheDocument();
     expect(within(pick).getByText(t.saveItemNote)).toBeInTheDocument();
-    expect(within(pick).queryByRole('link', { name: t.print })).toBeNull();
+    expect(within(pick).getByRole('button', { name: t.print })).toBeEnabled();
     expect(within(pick).queryByRole('link', { name: t.edit })).toBeNull();
     expect(screen.queryByRole('link', { name: t.showInTable })).toBeNull();
     await expectNoA11yViolations(container);
@@ -158,7 +158,7 @@ describe('the item page', () => {
       );
     });
     expect(sub().includes(t.itemFrom)).toBe(false);
-    expect(screen.getByRole('link', { name: t.print })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t.print })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.showInTable })).toHaveAttribute(
       'href',
       '#/tables/homebrew/hb_rangerrollaaaaaa'

@@ -1,4 +1,5 @@
-/* #/print/<ids> against dist-test/ - sheet grid, card size against the design,
+/* #/p/<id> against dist-test/, each sheet made through the fake with `openPrint`
+ * (tests/app/lib.js) as `gm2` - sheet grid, card size against the design,
  * versatile weapons, dice by class, armour, black and white, art
  * edges, text fitting, entry points.
  *
@@ -37,7 +38,7 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { fresh, reporter, closeBrowser } = require('./lib.js');
+const { fresh, reporter, closeBrowser, openPrint } = require('./lib.js');
 
 const MM = 96 / 25.4; // css pixels per millimetre
 const CARD_DIR = path.join(__dirname, '..', '..', 'card');
@@ -45,44 +46,43 @@ const LOOT = require('../../data.json');
 
 const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//, '')), 'utf8');
 
-/* The print routes shared between the card-layout assertions above and the
+/* The print sheets shared between the card-layout assertions above and the
  * four ported specs below - `tests/parity/specs.js`'s own `NINE`/`LONG`/
- * `TEN`/`TOO_MANY`, rebuilt off `data.json` the way it built `TOO_MANY`. */
-const NINE = '#/print/ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
-const LONG = '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
+ * `TEN`, and `MAX`, the catalog's first 180 ids off `data.json`. Each is
+ * an `openPrint` spec: the retired address's `id[*n]-id` spelling. */
+const NINE = 'ci1-q1-q313-cc1-voa2_a3-q23-w51-q35-di11';
+const LONG = 'voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11';
 /* Six burden marks in the black-and-white head, and one loot card - the same
  * route as `tests/app/inventory.js`'s `DV_SET`. */
-const DV_SET = '#/print/dve19-dve20-dve26-dve30-dve50-dve54-dv14';
-const TEN = '#/print/' + Array.from({ length: 10 }, (_, i) => 'ci' + (i + 1)).join('-');
-const TOO_MANY =
-  '#/print/' +
-  Object.values(LOOT.items)
-    .flat()
-    .slice(0, 181)
-    .map((x) => x.id)
-    .join('-');
+const DV_SET = 'dve19-dve20-dve26-dve30-dve50-dve54-dv14';
+const TEN = Array.from({ length: 10 }, (_, i) => 'ci' + (i + 1)).join('-');
+const MAX = Object.values(LOOT.items)
+  .flat()
+  .slice(0, 180)
+  .map((x) => x.id)
+  .join('-');
 
 /* The fifteen states that draw a sheet at all - `tests/parity/specs.js`'s
- * `PRINT_CARD_STATES`, minus `#/print/nope`, which draws no sheet for
+ * `PRINT_CARD_STATES`, minus its empty state, which draws no sheet for
  * `sheetCounts`/`cardFit` to read, plus the compact twins. `n` is each
  * route's own id count, so the sheet arithmetic below is computed, not
- * copied as a magic number: printed = min(n, 180), sheets = ceil(printed /
+ * copied as a magic number: printed = n (a set holds at most 180), sheets = ceil(printed /
  * per), per = 16 on the compact sheet and 9 otherwise. */
 const PRINT_CARD_STATES = [
   { route: NINE, bw: false, label: 'NINE', n: 9 },
   { route: NINE, bw: true, label: 'NINE ~ bw', n: 9 },
   { route: LONG, bw: false, label: 'LONG', n: 9 },
   { route: LONG, bw: true, label: 'LONG ~ bw', n: 9 },
-  { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1', n: 2 },
-  { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw', n: 2 },
+  { route: 'ci1-q1', bw: false, label: 'ci1-q1', n: 2 },
+  { route: 'ci1-q1', bw: true, label: 'ci1-q1 ~ bw', n: 2 },
   { route: TEN, bw: false, label: 'TEN', n: 10 },
-  { route: TOO_MANY, bw: false, label: 'TOO_MANY', n: 181 },
+  { route: MAX, bw: false, label: 'MAX', n: 180 },
   { route: NINE, bw: false, compact: true, label: 'NINE ~ compact', n: 9 },
   { route: NINE, bw: true, compact: true, label: 'NINE ~ compact bw', n: 9 },
   { route: LONG, bw: false, compact: true, label: 'LONG ~ compact', n: 9 },
   { route: LONG, bw: true, compact: true, label: 'LONG ~ compact bw', n: 9 },
-  { route: '#/print/ci1-q1', bw: false, compact: true, label: 'ci1-q1 ~ compact', n: 2 },
-  { route: '#/print/ci1-q1', bw: true, compact: true, label: 'ci1-q1 ~ compact bw', n: 2 },
+  { route: 'ci1-q1', bw: false, compact: true, label: 'ci1-q1 ~ compact', n: 2 },
+  { route: 'ci1-q1', bw: true, compact: true, label: 'ci1-q1 ~ compact bw', n: 2 },
   { route: TEN, bw: false, compact: true, label: 'TEN ~ compact', n: 10 }
 ];
 
@@ -175,7 +175,7 @@ const { ok } = rep;
   /* Opens a route in the layout and sheet size a state names. `d.open`
      reloads the page, so both switches start at colour and standard. */
   const openAs = async (d2, route, isBw, isCompact, bwFn, compactFn) => {
-    await d2.open(route);
+    await openPrint(d2, route);
     if (isCompact) {
       await compactFn();
       await d2.settle();
@@ -184,6 +184,19 @@ const { ok } = rep;
       await bwFn();
       await d2.settle();
     }
+  };
+
+  const PRINT_HINT = 'Собрать карточки для печати: девять на лист A4';
+  /* Waits until a press has opened `#/p/<id>` and its sheet is drawn. */
+  const waitForSet = async () => {
+    for (let i = 0; i < 200; i++) {
+      const at = await d.hash();
+      if (/^#\/p\/[A-Za-z0-9_-]{12}$/.test(at) && (await d.count('.printbar, .page-sub')) > 0) {
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    ok(false, 'a print press did not open #/p/: ' + (await d.hash()));
   };
 
   /* A page error would otherwise fail silently: every other tests/app/ suite
@@ -196,7 +209,7 @@ const { ok } = rep;
      63x88 mm is a playing-card size: sleeves and boxes are sold to it, so it
      is checked in millimetres, not "by eye off a picture". */
   console.log('size and grid');
-  await d.open('#/print/ci1-ci2-ci3-w7-w1-q1-voa1_t1a-cc1-f1');
+  await openPrint(d, 'ci1-ci2-ci3-w7-w1-q1-voa1_t1a-cc1-f1');
   const box = await page.$eval('.pcard', (e) => {
     const r = e.getBoundingClientRect();
     return { w: r.width, h: r.height };
@@ -290,7 +303,7 @@ const { ok } = rep;
   /* A tenth card starts a second sheet, and blanks pad it to nine: a full
      grid cuts more evenly. */
   console.log('several sheets');
-  await d.open('#/print/ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10');
+  await openPrint(d, 'ci1-ci2-ci3-ci4-ci5-ci6-ci7-ci8-ci9-ci10');
   ok(
     (await page.$$eval('.psheet', (e) => e.length)) === 2,
     'the tenth card did not start a second sheet'
@@ -316,7 +329,7 @@ const { ok } = rep;
   );
   ok(await page.$('.psheet[data-next]'), 'the second sheet is not marked as a page start');
   /* A third sheet at the twentieth card, and every sheet stays exactly A4. */
-  await d.open('#/print/' + Array.from({ length: 20 }, (_, i) => 'ci' + (i + 1)).join('-'));
+  await openPrint(d, Array.from({ length: 20 }, (_, i) => 'ci' + (i + 1)).join('-'));
   const heights = await page.$$eval('.psheet', (e) =>
     e.map((x) => x.getBoundingClientRect().height)
   );
@@ -330,23 +343,17 @@ const { ok } = rep;
      exactly this case, and clipped it silently. */
   console.log('a large set');
   const many = LOOT.items.wondrous.map((x) => x.id);
-  await d.open('#/print/' + many.join('-'));
+  await openPrint(d, many.join('-'));
   const drawn = await page.$$eval('.pcard:not(.blank)', (e) => e.length);
   ok(drawn === many.length, 'all of Wondrous did not fit: ' + drawn + ' of ' + many.length);
   ok(!(await page.$('.warnnote')), 'a truncation warning on a set that fit');
-  /* And when it genuinely does not fit, that is said, not silently dropped. */
-  const tooMany = many
-    .concat(LOOT.items.voa.map((x) => x.id))
-    .concat(LOOT.items.community.map((x) => x.id));
-  await d.open('#/print/' + tooMany.join('-'));
-  ok(await page.$('.warnnote'), 'the set was truncated silently, with no warning');
 
   /* ---------- card layout ----------
      Off the print-card design: the rank ribbon, the grip marks, a pair of
      tags, the name in capitals, the framed stat strip, the text, the book
      caption. */
   console.log('card layout');
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   const parts = await page.evaluate(() => {
     const q = (s) => {
       const e = document.querySelector(s);
@@ -413,12 +420,12 @@ const { ok } = rep;
      palms. */
   const burden = () =>
     page.$eval('.pc-burden img', (e) => e.getAttribute('src').replace(/^.*\//, ''));
-  await d.open('#/print/w51'); // two-handed grip
+  await openPrint(d, 'w51'); // two-handed grip
   ok(
     (await burden()) === 'burden-2.svg',
     'the two-handed grip has the wrong mark: ' + (await burden())
   );
-  await d.open('#/print/w7'); // one-handed
+  await openPrint(d, 'w7'); // one-handed
   ok(
     (await burden()) === 'burden-1.svg',
     'the one-handed grip has the wrong mark: ' + (await burden())
@@ -426,7 +433,7 @@ const { ok } = rep;
 
   /* `bu: 'any'` draws the one-handed mark captioned "1/2": no two-handed pair
    * is exported (docs/DECISIONS.md, "Gryphon Hammer `bu: 'any'`"). */
-  await d.open('#/print/dve30');
+  await openPrint(d, 'dve30');
   ok(
     (await burden()) === 'burden-1.svg',
     'the One/Two-Handed grip has the wrong mark: ' + (await burden())
@@ -443,7 +450,7 @@ const { ok } = rep;
   /* A community item's caption names the book, not only the community: the
      card leaves the table on its own, and "Великородное" does not say where
      it came from. */
-  await d.open('#/print/cm1');
+  await openPrint(d, 'cm1');
   const commBottom = await page.$eval('.pc-bottom', (e) => e.textContent);
   ok(
     /Сообществ/i.test(commBottom) && /Великородное/.test(commBottom),
@@ -451,7 +458,7 @@ const { ok } = rep;
   );
 
   /* Damage with a bonus: "d6 +2" beside the die, not a digit over it. */
-  await d.open('#/print/w7');
+  await openPrint(d, 'w7');
   ok(
     (await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6',
     'the damage bonus crept onto the die'
@@ -465,7 +472,7 @@ const { ok } = rep;
      property's prose. On the card it stands as a second strip, as the design
      has it. */
   console.log('versatile weapon');
-  await d.open('#/print/q23');
+  await openPrint(d, 'q23');
   const strips = await page.$$eval('.pc-strip .pc-cells', (e) => e.map((x) => x.textContent));
   ok(strips.length === 2, 'versatile weapon does not have two strips: ' + strips.length);
   ok(
@@ -478,7 +485,7 @@ const { ok } = rep;
   /* A feature that swaps the stat set draws the same second strip, and a
      set's shared bonus is the last text line of every member. */
   console.log('stat-swapping weapons and the set bonus');
-  await d.open('#/print/dve19');
+  await openPrint(d, 'dve19');
   const emberStrips = await page.$$eval('.pc-strip .pc-cells', (e) =>
     e.map((x) => x.textContent)
   );
@@ -491,16 +498,16 @@ const { ok } = rep;
     emberLast === 'Пылающие близнецы (Комплект: Уголёк, Искра):',
     'Ember set line label: ' + emberLast
   );
-  await d.open('#/print/dve54');
+  await openPrint(d, 'dve54');
   const gauntletDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(gauntletDice.join() === 'd10,d12', 'Steampowered Gauntlets dice: ' + gauntletDice.join());
-  await d.open('#/print/dve20');
+  await openPrint(d, 'dve20');
   const sparkText = await page.$eval('.pc-text', (e) => e.textContent);
   ok(
     sparkText.split('Пылающие близнецы').length === 2 && !/вместе с Угольком/.test(sparkText),
     'Spark carries the bonus other than once, in the set line: ' + sparkText
   );
-  await d.open('#/print/voa4_t3d');
+  await openPrint(d, 'voa4_t3d');
   const guardLast = await page.$$eval('.pc-text i', (e) => e.map((x) => x.textContent).pop());
   ok(
     guardLast === 'Убранство Святого (Комплект: Святой Щит, Святой Клинок, Святое Облачение):',
@@ -509,7 +516,7 @@ const { ok } = rep;
 
   /* The Spellcast trait cell uses the print-only short form, and fits. */
   for (const isBw of [false, true]) {
-    await d.open('#/print/dve50');
+    await openPrint(d, 'dve50');
     if (isBw) {
       await bw();
       await d.settle();
@@ -539,12 +546,12 @@ const { ok } = rep;
   /* Each die has its own shape, and colour follows the weapon's class:
      physical gold, magical blue-violet. */
   console.log('die by class');
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   ok(
     /die-d8-phy\.svg$/.test(await page.$eval('.pc-die img', (e) => e.getAttribute('src'))),
     'the physical d8 does not have its own die'
   );
-  await d.open('#/print/q35');
+  await openPrint(d, 'q35');
   const md = await page.$$eval('.pc-die img', (e) => e.map((x) => x.getAttribute('src')));
   ok(/die-d6-mag\.svg$/.test(md[0]), 'the magical d6 does not have a magical die: ' + md[0]);
   ok(await page.$('.pc-die.mag'), 'the magical die is not marked with its class');
@@ -559,7 +566,7 @@ const { ok } = rep;
     ['q143', 'd20']
   ];
   for (const [id, die] of DICE) {
-    await d.open('#/print/' + id);
+    await openPrint(d, id);
     const src = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
     ok(
       new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src),
@@ -569,7 +576,7 @@ const { ok } = rep;
   }
 
   /* Values in the strip are not ellipsised: they shrink by font instead. */
-  await d.open('#/print/q129');
+  await openPrint(d, 'q129');
   const cut = await page.$$eval('.pc-box b', (e) =>
     e
       .filter((x) => {
@@ -586,7 +593,7 @@ const { ok } = rep;
      checked - black-and-white has its own size. "Did not fit" here means
      "part of the card's data is lost", not "looks bad". */
   for (const isBw of [false, true]) {
-    await d.open('#/print/f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23');
+    await openPrint(d, 'f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23');
     if (isBw) {
       await bw();
       await d.settle();
@@ -605,14 +612,14 @@ const { ok } = rep;
       (isBw ? 'bw: ' : 'colour: ') + 'text is lost on the longest values: ' + lost.join(', ')
     );
   }
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   await colour();
   await d.settle();
 
   /* The frame grows out of the die, not standing beside it: in the design its
      whiskers meet the die's right edge. There used to be a gap between them,
      and the strip read as broken. */
-  await d.open('#/print/w7');
+  await openPrint(d, 'w7');
   const seam = await page.evaluate(() => {
     const die = document.querySelector('.pc-die').getBoundingClientRect();
     const fr = document.querySelector('.pc-frame').getBoundingClientRect();
@@ -625,7 +632,7 @@ const { ok } = rep;
   ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'the damage bonus is outside the frame again');
   const spread = await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent);
   ok(spread === 'flex-start', 'the bonus is not pressed against the die: ' + spread);
-  await d.open('#/print/q1'); // damage with no bonus
+  await openPrint(d, 'q1'); // damage with no bonus
   ok(!(await page.$('.pc-c1.wbonus')), 'a die with no bonus has spacing turned on');
   ok(
     (await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent)) === 'center',
@@ -635,7 +642,7 @@ const { ok } = rep;
   /* Armour is counted differently: instead of a grip mark, a shield with its
      Armour Score; instead of damage, a threshold scale. */
   console.log('armour');
-  await d.open('#/print/q313');
+  await openPrint(d, 'q313');
   ok(!(await page.$('.pc-burden')), 'armour grew burden-grip hands');
   const shield = await page.$eval('.pc-shield', (e) => e.textContent.trim());
   ok(
@@ -668,7 +675,7 @@ const { ok } = rep;
       };
     });
   for (const isBw of [false, true]) {
-    await d.open('#/print/q313');
+    await openPrint(d, 'q313');
     if (isBw) {
       await bw();
       await d.settle();
@@ -698,7 +705,7 @@ const { ok } = rep;
         m.gap.toFixed(1)
     );
   }
-  await d.open('#/print/q313');
+  await openPrint(d, 'q313');
   await colour();
   await d.settle();
   const th = await page.$eval('.pc-thstrip', (e) => e.textContent);
@@ -749,7 +756,7 @@ const { ok } = rep;
   ok(!(await page.$('.pc-die')), 'armour grew a damage die');
 
   /* Loot has neither. */
-  await d.open('#/print/ci1');
+  await openPrint(d, 'ci1');
   ok(
     !(await page.$('.pc-strip')) && !(await page.$('.pc-thstrip')),
     'the item grew a stat strip'
@@ -758,7 +765,7 @@ const { ok } = rep;
 
   /* An artifact or a cursed item carries no rank, and the book's word for it
      sits on the tag instead of "item". */
-  await d.open('#/print/voa2_a3');
+  await openPrint(d, 'voa2_a3');
   ok(!(await page.$('.pc-tier')), 'the artifact grew a tier ribbon');
   ok(
     /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
@@ -766,7 +773,7 @@ const { ok } = rep;
   );
   /* An artifact weapon reads like the loot artifact card and keeps its strip
      (docs/specs/FEATURES.md, "Print"). */
-  await d.open('#/print/voa4_a3');
+  await openPrint(d, 'voa4_a3');
   ok(!(await page.$('.pc-tier')), 'the artifact weapon grew a tier ribbon');
   ok(
     /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
@@ -775,7 +782,7 @@ const { ok } = rep;
   const oathDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(oathDice.join() === 'd12', 'the artifact weapon die: ' + oathDice.join());
   /* A consumable artifact is named by its section, not by its kind. */
-  await d.open('#/print/voa4_a2');
+  await openPrint(d, 'voa4_a2');
   ok(!(await page.$('.pc-tier')), 'the consumable artifact grew a tier ribbon');
   ok(
     /АРТЕФАКТ/i.test(await page.$eval('.pc-tag', (e) => e.textContent)),
@@ -786,7 +793,7 @@ const { ok } = rep;
      goes to a player, and that is a conversation with the GM, and 63 mm is
      spoken for already. */
   console.log('extras are not printed');
-  await d.open('#/print/ci18');
+  await openPrint(d, 'ci18');
   const crafted = await page.$eval('.pcard', (e) => e.textContent);
   ok(
     !/Крафт|Craft|улучш/i.test(crafted),
@@ -812,7 +819,7 @@ const { ok } = rep;
      white with a dark outline, and the ribbon, the tag and the mark gather
      into a row above the name. */
   console.log('black-and-white sheet');
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   ok(await page.$('.pc-img'), 'no picture in colour mode');
   await bw();
   await d.settle();
@@ -840,7 +847,7 @@ const { ok } = rep;
   /* The space held for the ribbon is held only where the ribbon exists. Loot
      has no rank, and the kind tag used to sit under the empty space instead
      of the text's own left edge. */
-  await d.open('#/print/ci1');
+  await openPrint(d, 'ci1');
   await bw();
   await d.settle();
   const noTier = await page.$eval('.pcard', (c) => {
@@ -862,7 +869,7 @@ const { ok } = rep;
   /* A magic weapon's die shows a white number on a blue fill. In
      black-and-white the fill is white, and the number has to darken or it is
      simply gone. */
-  await d.open('#/print/q35');
+  await openPrint(d, 'q35');
   await bw();
   await d.settle();
   /* A faceted die, as in the design, and a light outline saves the digit
@@ -892,7 +899,7 @@ const { ok } = rep;
   /* The caption sits at the card's bottom edge. In black-and-white the block
      is pinned to the top, and it used to hang wherever the rule ended - a
      different height on every card. */
-  await d.open('#/print/q1-q313-voa2_a3');
+  await openPrint(d, 'q1-q313-voa2_a3');
   await bw();
   await d.settle();
   const feet = await page.$$eval('.pcard:not(.blank)', (e) =>
@@ -911,7 +918,7 @@ const { ok } = rep;
      outline round it - the fingers on the mark disappeared. In the design the
      fill is mid-grey, the outline light, and the cuts between the fingers
      read. */
-  await d.open('#/print/w51');
+  await openPrint(d, 'w51');
   await bw();
   await d.settle();
   const bwBurden = await page.$eval('.pc-burden img', (e) => e.getAttribute('src'));
@@ -927,7 +934,7 @@ const { ok } = rep;
 
   /* The die is the same size in both looks: the same card must not change its
      die size because it is printed without ink. */
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   const dieColour = await page.$eval('.pc-die', (e) =>
     Math.round(e.getBoundingClientRect().width)
   );
@@ -950,7 +957,7 @@ const { ok } = rep;
   const ribbonOf = () =>
     page.$eval('.pc-ribbon', (e) => e.getAttribute('src').replace(/^.*\//, ''));
   for (const isBw of [false, true]) {
-    await d.open('#/print/q23');
+    await openPrint(d, 'q23');
     if (isBw) {
       await bw();
       await d.settle();
@@ -959,7 +966,7 @@ const { ok } = rep;
       (await ribbonOf()) === (isBw ? 'ribbon-mag-bw.svg' : 'ribbon-mag.svg'),
       'the magic weapon does not have its own frame: ' + (await ribbonOf())
     );
-    await d.open('#/print/q1');
+    await openPrint(d, 'q1');
     if (isBw) {
       await bw();
       await d.settle();
@@ -972,7 +979,7 @@ const { ok } = rep;
        magic weapon dealing either type, dve38 a physical one dealing magic
        damage, q171 a magic one whose second strip deals physical damage. */
     const frameOf = async (id) => {
-      await d.open('#/print/' + id);
+      await openPrint(d, id);
       if (isBw) {
         await bw();
         await d.settle();
@@ -1009,7 +1016,7 @@ const { ok } = rep;
       tag + 'the second strip of a magic weapon does not draw the magic frame: ' + q171
     );
   }
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   await colour();
   await d.settle();
 
@@ -1017,7 +1024,7 @@ const { ok } = rep;
      ribbon or the mark clear for it. In every capture both top corners are
      empty near-black background, so the marks sit on it and cover nothing,
      and the captions under them are light. */
-  await d.open('#/print/q1-q313-w7-ci1');
+  await openPrint(d, 'q1-q313-w7-ci1');
   const art = await page.$$eval('.pcard:not(.blank)', (cards) =>
     cards
       .map((c) => {
@@ -1068,7 +1075,7 @@ const { ok } = rep;
     !/255, 255, 255/.test(bwCap),
     "in black-and-white the mark's caption is white on white: " + bwCap
   );
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   await colour();
   await d.settle();
 
@@ -1092,7 +1099,7 @@ const { ok } = rep;
     await page.setViewport({ width: 1180, height: 950, deviceScaleFactor: dpr });
     /* Nine cards with different picture backgrounds: from near-black (ci19)
        to a light studio shot (ci1, q23). */
-    await d.open('#/print/ci1-q23-w2-w3-ci19-f7-w1-di3-w65');
+    await openPrint(d, 'ci1-q23-w2-w3-ci19-f7-w1-di3-w65');
     await d.settle();
     const spots = await page.$$eval('.pcard:not(.blank)', (cards) =>
       cards
@@ -1195,7 +1202,7 @@ const { ok } = rep;
   for (const isCompact of [false, true]) {
     for (const isBw of [false, true]) {
       for (const id of ['q1', 'q313']) {
-        await openAs(d, '#/print/' + id, isBw, isCompact, bw, compact);
+        await openAs(d, id, isBw, isCompact, bw, compact);
         if (isCompact && id === 'q1') {
           const stripPt = await page.$eval(
             '.pc-strip',
@@ -1250,7 +1257,7 @@ const { ok } = rep;
       }
     }
   }
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   await colour();
   await d.settle();
 
@@ -1258,9 +1265,7 @@ const { ok } = rep;
      An artifact's description runs many times longer than a potion's, and
      the space is the same one. */
   console.log('long text shrinks');
-  await d.open(
-    '#/print/voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11'
-  );
+  await openPrint(d, 'voa2_a3-voa2_a1-voa2_c4-voa2_c3-voa2_t4e-voa2_t4d-voa2_c1-voa2_a6-di11');
   const over = await page.$$eval('.pc-text', (e) =>
     e.map((x) => x.scrollHeight - x.clientHeight)
   );
@@ -1380,7 +1385,7 @@ const { ok } = rep;
         nineBw.map((t) => t.id + ' ' + t.size).join(', ')
     );
   }
-  await d.open(LONG);
+  await openPrint(d, LONG);
   await bw();
   await d.settle();
   const longBw = await grown();
@@ -1397,7 +1402,7 @@ const { ok } = rep;
     'LONG bw: a text size is outside 2.6..5: ' +
       longBw.map((t) => t.id + ' ' + t.size).join(', ')
   );
-  await d.open(DV_SET);
+  await openPrint(d, DV_SET);
   await bw();
   await d.settle();
   const dvBw = await grown();
@@ -1432,18 +1437,18 @@ const { ok } = rep;
           .join(', ')
     );
   }
-  await d.open('#/print/q1');
+  await openPrint(d, 'q1');
   await colour();
   await d.settle();
 
   /* Print replaces the page it came from: with no "back" button there was
      nowhere to return to except browser history. */
   console.log('the way back');
-  await d.open('#/tables/core_item');
+  await d.open('#/tables/core_item', { as: 'gm2' });
   await page.click('.rows .row .selbox input');
   await d.settle();
-  await page.click('.selbarwrap a[href^="#/print/"]');
-  await d.settle();
+  await d.click(PRINT_HINT);
+  await waitForSet();
   ok(await d.has('Назад'), 'there is no way back from print');
   await d.click('Назад');
   ok(
@@ -1452,75 +1457,89 @@ const { ok } = rep;
   );
 
   /* ---------- entry points ----------
-     Three places: the item card, a list, and the selection bar in a table. */
+     Three places: the item card, a list, and the selection bar in a table. Each
+     makes a print set and opens it at `#/p/<id>`. */
   console.log('entry points');
-  await d.open('#/i/q1');
-  ok(
-    (await page.$eval('a[href^="#/print/"]', (e) => e.getAttribute('href'))) === '#/print/q1',
-    'the item page does not print itself'
-  );
+  await d.open('#/i/q1', { as: 'gm2' });
   /* And it stands beside "add to list": both take the item off the page - to
      a list or onto paper - while copying leaves it in the clipboard. */
   ok(
-    await page.$('.card.full .cardpick a[href^="#/print/"]'),
+    await page.$('.card.full .cardpick button[title="' + PRINT_HINT + '"]'),
     'the print button is not beside "add to list"'
   );
   ok(
-    !(await page.$('.card.full .card-acts a[href^="#/print/"]')),
+    !(await page.$('.card.full .card-acts button[title="' + PRINT_HINT + '"]')),
     'the print button remained among the copy buttons'
   );
+  await d.click(PRINT_HINT);
+  await waitForSet();
+  ok(
+    (await d.count('.pcard:not(.blank)')) === 1 &&
+      (await d.count('.pcard[data-pid="q1"]')) === 1,
+    'the item page does not print itself'
+  );
 
-  await d.open('#/tables/core_item');
+  await d.open('#/tables/core_item', { as: 'gm2' });
   await page.click('.rows .row .selbox input');
   await d.settle();
   const acts = await page.$$eval('.selbarwrap .selacts > *', (e) =>
     e.map((x) => (x.className || '') + '|' + x.tagName)
   );
   ok(
-    /seldrop/.test(acts[0] || '') && /A$/.test(acts[1] || ''),
+    /seldrop/.test(acts[0] || '') && /BUTTON$/.test(acts[1] || ''),
     'in the selection bar, print is not right after "add to list": ' + acts.join(' ')
   );
-  const sel = await page.$eval('.selbarwrap a[href^="#/print/"]', (e) =>
-    e.getAttribute('href')
-  );
-  ok(/^#\/print\/\w+$/.test(sel), 'the selection bar does not print: ' + sel);
-  /* Print is a link, and ordinary buttons stand beside it. The rule that
-     strips the underline sat only on the card's own actions, and here it
-     arrived underlined - one button in the row unlike the rest. */
+  /* The print button stands among ordinary buttons, none of them underlined. */
   ok(
-    (await page.$eval('.selbarwrap a.btn', (e) => getComputedStyle(e).textDecorationLine)) ===
-      'none',
+    (await page.$eval(
+      '.selbarwrap .selacts > .btn',
+      (e) => getComputedStyle(e).textDecorationLine
+    )) === 'none',
     'the print button is underlined, and its neighbours are not'
   );
+  await d.click(PRINT_HINT);
+  await waitForSet();
+  ok((await d.count('.pcard:not(.blank)')) === 1, 'the selection bar does not print');
 
+  /* An account list prints its entries with their counts: ten entries, ci1 x2 and
+     cc1 x5. */
+  await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
+  await d.click(PRINT_HINT);
+  await waitForSet();
+  const counted = await page.$$eval('.pcard[data-pid]', (e) =>
+    e.map((x) => x.getAttribute('data-pid') + (x.querySelector('.pc-qty')?.textContent ?? ''))
+  );
+  ok(
+    counted.length === 10 && counted.includes('ci1 ×2') && counted.includes('cc1 ×5'),
+    'the list does not print its entries with their counts: ' + counted.join(', ')
+  );
+
+  /* Signed out, a browser list's «Печать» asks for a sign-in in its slot. */
   await d.seed({
     'dhloot.lists.v2': JSON.stringify([
-      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 },
-      { id: 'p2', name: 'Счёт', ids: ['ci1', 'q1'], created: 2, meta: { ci1: { qty: 3 } } }
+      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }
     ])
   });
   await d.open('#/lists/p');
+  await d.click(PRINT_HINT);
   ok(
-    (await page.$eval('.card-acts a[href^="#/print/"]', (e) => e.getAttribute('href'))) ===
-      '#/print/ci1-q1',
-    'the list does not print itself'
-  );
-  await d.open('#/lists/p2');
-  const countedHref = await page.$eval('.card-acts a[href^="#/print/"]', (e) =>
-    e.getAttribute('href')
-  );
-  ok(
-    countedHref === '#/print/ci1*3-q1',
-    'the list print link does not carry the count: ' + countedHref
+    (await d.text()).includes('Войдите, чтобы печатать карточки.'),
+    'a signed-out list print does not ask for a sign-in'
   );
 
-  /* Garbage in the address must not drop the page - only say there is
-     nothing to print. */
-  await d.open('#/print/nosuchid');
-  ok(!(await page.$('.psheet')), 'a made-up address assembled a sheet');
+  /* Garbage must not drop the page - only say there is nothing to print. */
+  await openPrint(d, 'nosuchid');
+  ok(!(await page.$('.psheet')), 'a set of a made-up id assembled a sheet');
   ok(
-    /\S/.test(await page.$eval('.page-h', (e) => e.textContent)),
-    'the empty print page has no heading'
+    (await d.text()).includes('Печатать нечего: в наборе не осталось карточек.'),
+    'the empty print page does not say there is nothing to print'
+  );
+  await d.open('#/print/nosuchid');
+  ok(!(await page.$('.psheet')), 'a retired print address assembled a sheet');
+  ok(
+    (await page.$eval('.page-h', (e) => e.textContent)) ===
+      'Такие ссылки на печать больше не открываются.',
+    'a retired print address does not draw the retired page'
   );
 
   /* ---------- the sheet, in counts (`sheetCounts`) ----------
@@ -1576,8 +1595,8 @@ const { ok } = rep;
      docs/specs/FEATURES.md, "Print". */
   console.log('small fields readable on paper');
   const SMALL_ROUTES = [
-    '#/print/dve50-di1-w51-f33-w22-di7-f23-q1-w7',
-    '#/print/f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23-voa4_a3'
+    'dve50-di1-w51-f33-w22-di7-f23-q1-w7',
+    'f44-f64-voa1_t2f-di7-w82-f77-di3-f7-q23-voa4_a3'
   ];
   async function smallFields(d2, page2, langTag, bwFn, compactFn) {
     for (const route of SMALL_ROUTES) {
@@ -2029,7 +2048,7 @@ const { ok } = rep;
       }
     }
     await d2.viewport(1180, 950);
-    await d2.open('#/print/q1');
+    await openPrint(d2, 'q1');
     await colourFn();
     await d2.settle();
   }
@@ -2058,12 +2077,9 @@ const { ok } = rep;
   async function nameLines(d2, page2, langTag, restoreW, restoreH) {
     await d2.viewport(1100, 900);
     try {
-      for (const route of [
-        '#/print/cm26-f60-hi62-ci81',
-        '#/print/cm26*99-f60*99-hi62*99-ci81*99'
-      ]) {
+      for (const route of ['cm26-f60-hi62-ci81', 'cm26*99-f60*99-hi62*99-ci81*99']) {
         for (const bwOn of [false, true]) {
-          await d2.open(route);
+          await openPrint(d2, route);
           if (bwOn) {
             await d2.click(langTag === ' en' ? 'Black and white' : 'Чёрно-белая');
             await d2.settle();
@@ -2114,11 +2130,11 @@ const { ok } = rep;
      whatever runs next. */
   console.log('the sheet under print media');
   const MEDIA_STATES = [
-    { route: '#/print/ci1-q1', bw: false, label: 'ci1-q1' },
-    { route: '#/print/ci1-q1', bw: true, label: 'ci1-q1 ~ bw' },
+    { route: 'ci1-q1', bw: false, label: 'ci1-q1' },
+    { route: 'ci1-q1', bw: true, label: 'ci1-q1 ~ bw' },
     { route: TEN, bw: false, label: 'TEN' },
     { route: TEN, bw: false, compact: true, label: 'TEN ~ compact' },
-    { route: '#/print/nope', bw: false, label: 'nope' }
+    { route: 'nosuchid', bw: false, label: 'nothing to print' }
   ];
   for (const s of MEDIA_STATES) {
     await openAs(d, s.route, s.bw, s.compact, bw, compact);
@@ -2131,11 +2147,9 @@ const { ok } = rep;
         skip: await d.computed('a.skip', ['display']),
         /* `.printbar` does not render at all when there is nothing to print
            (`printPage.test.ts`, "nothing to print") - a route fact, not a
-           print-media rule, so `nope` carries no `bar` key rather than
+           print-media rule, so the empty state carries no `bar` key rather than
            reading its absence as "hidden". */
-        ...(s.route === '#/print/nope'
-          ? {}
-          : { bar: await d.computed('.printbar', ['display']) })
+        ...(s.route === 'nosuchid' ? {} : { bar: await d.computed('.printbar', ['display']) })
       };
       /* `val && ...`, not `!val || ...`: a `null` read (the selector matched
          nothing) must fail, not pass - proven once by pointing `header` at a
@@ -2148,7 +2162,7 @@ const { ok } = rep;
         );
       }
 
-      if (s.route === '#/print/nope') {
+      if (s.route === 'nosuchid') {
         ok(
           !(await d.computed('.psheet', ['display'])),
           s.label + ': an empty print page grew a sheet anyway'
@@ -2298,35 +2312,42 @@ const { ok } = rep;
      above, English added below - the link text changes, the hash
      it carries does not. */
   console.log('the set link, copied');
-  await d.open('#/print/ci1-q1');
+  const setId = await openPrint(d, 'ci1-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clip = await d.clipboard();
   const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
-  ok(hash === '#/print/ci1-q1', 'the copied set link is wrong: ' + hash);
+  ok(hash === '#/p/' + setId, "the copied set link is not the page's own: " + hash);
 
   console.log('the set link, copied with a count');
-  await d.open('#/print/ci1*3-q1');
+  const countedId = await openPrint(d, 'ci1*3-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clipQty = await d.clipboard();
   const hashQty = clipQty.text ? clipQty.text.slice(clipQty.text.indexOf('#')) : null;
-  ok(hashQty === '#/print/ci1*3-q1', 'the copied set link lost the count: ' + hashQty);
+  ok(
+    hashQty === '#/p/' + countedId,
+    'the copied set link of a counted set is wrong: ' + hashQty
+  );
 
   console.log('the set link, copied (en)');
-  await dEn.open('#/print/ci1-q1');
+  const enId = await openPrint(dEn, 'ci1-q1');
   await dEn.resetClipboard();
   await dEn.click('Link to this set');
   const clipEn = await dEn.clipboard();
   const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
-  ok(hashEn === '#/print/ci1-q1', 'copied set link (en) is wrong: ' + hashEn);
+  ok(hashEn === '#/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
+  ok(
+    !!clipEn.text && clipEn.text.includes('en/#/p/'),
+    'the English set link does not go through en/: ' + clipEn.text
+  );
 
   /* An own item's picture: the colour card draws it as a catalog picture, the
      black-and-white card draws none. The seed gives gm1's axe the catalog's
-     ci1.webp (the test build has no bucket); print-snapshots re-keys this case
-     to #/p/<id>. */
+     ci1.webp (the test build has no bucket). */
   console.log("an own item's picture");
-  await d.open('#/print/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+  await d.open('#/p/set-emberaxe', { as: 'gm1' });
+  await waitForSet();
   await colour();
   await d.settle();
   const ownArt = await page.evaluate(async () => {

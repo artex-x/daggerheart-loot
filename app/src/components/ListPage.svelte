@@ -36,14 +36,16 @@
   import SharePanel from './SharePanel.svelte';
   import MoveStatus from './MoveStatus.svelte';
   import SharedListPage from './SharedListPage.svelte';
+  import SignInPrompt from './SignInPrompt.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import type { Dict } from '../lib/dict.js';
   import { moneyHelpFor } from '../lib/help.js';
-  import { printHash, sectionHash, sharedListHash } from '../lib/hash.js';
+  import { sectionHash, sharedListHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
+  import { printAction } from '../lib/pending.js';
   import { countOf, plural } from '../lib/plural.js';
   import { encodeListRaw, QTY_MAX } from '../lib/listLink.js';
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
@@ -158,6 +160,19 @@
     own ? own.ids.map(byId).filter((it): it is Record_ => it != null) : []
   );
   const qtyById = $derived(Object.fromEntries(items.map((x) => [x.id, metaOf(x.id).qty ?? 0])));
+  /* Signed out, «Печать» opens the sign-in prompt under the toolbar. */
+  let printAsking = $state(false);
+
+  function pressPrint(): void {
+    const target = app.printTarget;
+    if (target === 'prompt') printAsking = !printAsking;
+    else if (target === 'cloud') {
+      void app.print(
+        items.map((x) => x.id),
+        qtyById
+      );
+    }
+  }
 
   /**
    * Reading `own`'s fields (through `encodeList`, inside `syncListUrl`)
@@ -1056,15 +1071,13 @@
             >{t.exportJson}</Button
           >
         {/if}
-        {#if items.length}
+        {#if items.length && app.printTarget !== 'none'}
           <Button
             size="sm"
-            href={printHash(
-              items.map((x) => x.id),
-              qtyById
-            )}
-            sameTab
-            title={t.printHint}><Icon name="print" />{t.print}</Button
+            title={t.printHint}
+            disabled={app.printing || app.printTarget === 'wait'}
+            expanded={app.printTarget === 'prompt' ? printAsking : undefined}
+            onclick={pressPrint}><Icon name="print" />{t.print}</Button
           >
         {/if}
         <!-- A delete during the move would race its removal. -->
@@ -1072,6 +1085,22 @@
           <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
         {/if}
       </Actions>
+      {#if printAsking && items.length && app.printTarget === 'prompt'}
+        <SignInPrompt
+          {app}
+          lead={t.signInToPrint}
+          after={{
+            hash: app.hash,
+            action: printAction(
+              app.printEntriesOf(
+                items.map((x) => x.id),
+                qtyById
+              )
+            )
+          }}
+          boxed
+        />
+      {/if}
       {#if isCloud && sharing}
         <SharePanel {app} listId={own.id} />
       {/if}

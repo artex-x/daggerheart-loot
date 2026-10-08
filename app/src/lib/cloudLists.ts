@@ -500,7 +500,8 @@ export function limitText(key: string, value: number | null, t: Dict): string {
     homebrew_items_per_owner: t.limitHbItems,
     homebrew_books_per_owner: t.limitHbBooks,
     homebrew_cards_per_owner: t.limitHbCards,
-    homebrew_art: t.limitHbArt
+    homebrew_art: t.limitHbArt,
+    print_sets_per_owner: t.printSetLimit
   };
   const text = named[key] ?? t.limitOther;
   return text.replace('%n', value === null ? '?' : String(value));

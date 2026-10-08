@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readPending } from './pending.js';
+import { printAction, readPending } from './pending.js';
 
 const HID = '00000000-0000-4000-8000-000000000511';
 
@@ -65,5 +65,59 @@ describe('readPending', () => {
     expect(
       readPending(add({ ids: Array.from({ length: 180 }, (_, i) => 'q' + String(i)) }))
     ).not.toBeNull();
+  });
+});
+
+describe('the print action', () => {
+  const ks = (n: number) => Array.from({ length: n }, (_, i) => ({ k: 'c' + String(i) }));
+  const print = (over: Record<string, unknown> = {}) => ({
+    do: 'print',
+    entries: ks(1),
+    ...over
+  });
+
+  it('reads 1 and 180 entries, with and without the count cut', () => {
+    expect(readPending(print())).toEqual({ do: 'print', entries: [{ k: 'c0' }] });
+    expect(readPending(print({ entries: ks(180) }))).toMatchObject({ do: 'print' });
+    expect(readPending(print({ entries: [{ h: HID, q: 3 }], cut: 1 }))).toEqual({
+      do: 'print',
+      entries: [{ h: HID, q: 3 }],
+      cut: 1
+    });
+    expect(readPending(print({ cut: 9999 }))).toMatchObject({ cut: 9999 });
+  });
+
+  it('refuses an action with no entry, past 180, a bad entry or a bad cut', () => {
+    for (const bad of [
+      print({ entries: [] }),
+      print({ entries: ks(181) }),
+      print({ entries: 'ci1' }),
+      print({ entries: [{ k: 'ci1', q: 1 }] }),
+      print({ cut: 0 }),
+      print({ cut: -1 }),
+      print({ cut: 1.5 }),
+      print({ cut: 10000 }),
+      print({ cut: '1' })
+    ]) {
+      expect(readPending(bad), JSON.stringify(bad)).toBeNull();
+    }
+  });
+
+  it('copies each entry it reads', () => {
+    const entries = [{ k: 'ci1' }];
+    const read = readPending({ do: 'print', entries });
+    expect(read && read.do === 'print' && read.entries[0]).not.toBe(entries[0]);
+  });
+
+  it('builds the action with the cut only over 0', () => {
+    expect(printAction({ entries: [{ k: 'ci1' }], cut: 0 })).toEqual({
+      do: 'print',
+      entries: [{ k: 'ci1' }]
+    });
+    expect(printAction({ entries: [{ k: 'ci1' }], cut: 2 })).toEqual({
+      do: 'print',
+      entries: [{ k: 'ci1' }],
+      cut: 2
+    });
   });
 });

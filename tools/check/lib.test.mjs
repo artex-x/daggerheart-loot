@@ -78,6 +78,7 @@ describe('selects', () => {
     [VITEST, 'schema/import-v1.json', true],
     [VITEST, 'vite.config.mts', true],
     [VITEST, 'docs/fixtures/lists/x.json', true],
+    [VITEST, 'pages/src/privacy.html', true],
     [VITEST, 'supabase/config.toml', true],
     [VITEST, 'a-new-root-file.txt', true],
     [VITEST, 'docs/specs/FEATURES.md', false],

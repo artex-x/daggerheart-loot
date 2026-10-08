@@ -26,8 +26,15 @@ Frozen as written in `ROUTES.md`. In particular:
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
-- `#/i/<id>`, `#/print/<ids>` (each id optionally followed by `*<n>`, a
-  count), `#/lists/<listId>`, `#/l/<payload>`
+- `#/i/<id>`, `#/lists/<listId>`, `#/l/<payload>`
+- `#/p/<id>`, a stored print set: 12 base64url characters made by the
+  database when a signed-in reader presses «Печать», so a set is unlisted, not
+  secret, and an agent cannot build one; it opens for a signed-in reader only,
+  from `<site>#/p/<id>` and `<site>en/#/p/<id>` alike; a malformed id draws the
+  "set not found" print page
+- Retired on 2026-10-08 (owner, a deliberate break): `#/print/<ids>` and every
+  address under `#/print/` draw the retired print page, the address kept
+  (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`)
 - `#/account`, the account page, read in every build (the not-found page,
   address kept, where no sign-in is configured)
 - `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`, the author's own

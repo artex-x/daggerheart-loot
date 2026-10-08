@@ -2406,7 +2406,7 @@ async function fakeCloudSignedState() {
 
 /** 36. Account preferences over the fake cloud: the account's language
  *  wins over this browser's and is written back; an account with no row is
- *  seeded from this browser; a signed-out print press lasts until a reload,
+ *  seeded from this browser; a print page switch lasts until a reload,
  *  stores nothing and draws the note (docs/specs/STATE.md, "Account
  *  preferences"). */
 async function accountPreferences() {
@@ -2469,28 +2469,36 @@ async function accountPreferences() {
 
   const SEEDED = '{"view":"list","printBw":false,"printCompact":false}';
   const c = await fresh({ width: 1180, height: 900, storage: { 'dhloot.prefs.v1': SEEDED } });
-  const sheet = (page) =>
-    page.evaluate(() => ({
+  const sheet = async (page) => {
+    await waitIn(page, () => !!document.querySelector('.psheet'));
+    return page.evaluate(() => ({
       bw: document.querySelector('.psheet.bw') !== null,
       note: document.querySelector('.keepnote a')?.getAttribute('href') ?? null
     }));
-  await c.d.open('#/print/ci1-q1');
+  };
+  const accountPrefs = () =>
+    c.page.evaluate(async () => JSON.stringify(await window.__dhlootFake?.prefs.load()));
+  await c.d.open('#/p/set-twocards', { as: 'gm2' });
+  await sheet(c.page);
+  const before = await accountPrefs();
   await c.d.click('Чёрно-белая');
   const kept = await c.d.storage('dhloot.prefs.v1');
-  ok(kept === SEEDED, at + 'c: the signed-out print press changed dhloot.prefs.v1 - ' + kept);
+  ok(kept === SEEDED, at + 'c: the print page press changed dhloot.prefs.v1 - ' + kept);
+  const account = await accountPrefs();
+  ok(account === before, at + 'c: the print page press changed the account row - ' + account);
   let seen = await sheet(c.page);
   ok(
     seen.bw && seen.note === '#/account',
     at + 'c: the press did not draw black and white with the note - ' + JSON.stringify(seen)
   );
   await c.d.go('#/lists');
-  await c.d.go('#/print/ci1-q1');
+  await c.d.go('#/p/set-twocards');
   seen = await sheet(c.page);
   ok(
     seen.bw && seen.note === '#/account',
     at + 'c: the pick did not survive a return from #/lists - ' + JSON.stringify(seen)
   );
-  await c.d.open('#/print/ci1-q1');
+  await c.d.open('#/p/set-twocards', { as: 'gm2' });
   seen = await sheet(c.page);
   ok(
     !seen.bw && seen.note === null,
@@ -2569,6 +2577,44 @@ async function signInFromTheBar() {
     at + 'a prompt left behind by a tab still ran - ' + (await again.d.hash())
   );
   await again.ctx.close();
+}
+
+/** 73. A signed-out selection's «Печать» is the sign-in prompt in place of the
+ *  bar's action row; «Отмена» brings the row back; its «Войти» opens #/account,
+ *  whose Google sign-in makes the set of the ticked record and opens its
+ *  #/p/<id> (docs/specs/FEATURES.md, "Print"). */
+async function printAfterSignIn() {
+  const at = '73 (print after sign-in): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/tables');
+  await d.tick('Первоклассный Спальный Мешок');
+  await d.press('Собрать карточки для печати: девять на лист A4');
+  const text = () => page.evaluate(() => document.body.innerText);
+  ok(
+    (await text()).includes('Войдите, чтобы печатать карточки.') &&
+      !(await page.$('.selbarwrap .selacts')),
+    at + "the prompt did not take the bar's action row"
+  );
+  await d.press('Отмена');
+  ok(
+    !!(await page.$('.selbarwrap .selacts')),
+    at + '«Отмена» did not bring the action row back'
+  );
+  await d.press('Собрать карточки для печати: девять на лист A4');
+  await pressPromptSignIn(page);
+  ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
+  await d.press('Войти через Google');
+  ok(
+    await waitIn(
+      page,
+      () =>
+        /^#\/p\/[A-Za-z0-9_-]{12}$/.test(location.hash) &&
+        document.querySelectorAll('.pcard[data-pid="ci1"]').length === 1 &&
+        document.querySelectorAll('.pcard:not(.blank)').length === 1
+    ),
+    at + 'the sign-in did not open the set of the ticked record - ' + (await d.hash())
+  );
+  await ctx.close();
 }
 
 /** 38. An old #/l/ link, signed out: «Сохранить себе» opens the prompt under
@@ -4984,7 +5030,8 @@ const CASES = [
   ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle],
   ['70 (a picture: choose, crop, save)', pictureChooseCropSave],
   ['71 (a browser that cannot encode WebP)', pictureWithoutWebp],
-  ['72 (the crop dialog at 360 and in landscape)', cropDialogOnPhones]
+  ['72 (the crop dialog at 360 and in landscape)', cropDialogOnPhones],
+  ['73 (print after sign-in)', printAfterSignIn]
 ];
 
 (async () => {

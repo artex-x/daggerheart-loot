@@ -1,5 +1,6 @@
 # 2026-09-22 - The print address carries a list's count as `*<n>` per id
 
+- Superseded by "Every print is a stored set; long print links are retired" (2026-10-08).
 - Task: `67`, human decision (find it with `git log --grep="Task: 67"`).
 - Decision: `#/print/<id>[*<n>]-...`. A count over 1 is drawn after the
   card's name as ` ×N`, clamped to 99; anything else draws no counter. `*<n>`

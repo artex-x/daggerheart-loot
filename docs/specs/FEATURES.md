@@ -473,7 +473,7 @@ across.
   After the cutoff the notice is «Списки в этом браузере только для чтения
   с 26 октября 2026 года.», not dismissable and drawn even after a dismissal,
   with «Войдите - они перенесутся в аккаунт, и их снова можно будет
-  править. Скопировать текст и напечатать можно и так.» while no account owns
+  править. Скопировать текст можно и так.» while no account owns
   the lists.
 
 ### Account and browser lists
@@ -588,8 +588,9 @@ browser lists writable after the date.
   on another user's link copies its links. An undo of a removed entry, from
   the row's cross, «Удалить (N)» or the record's list menu, writes back the
   same link; a link whose item was deleted meanwhile is refused as any
-  write. `#/print/` prints an own item and another account's linked item of
-  an account list, with the item's path as its source line.
+  write. «Печать» stores an own item and another account's linked item of an
+  account list in the set it opens at `#/p/`, with the item's path as its
+  source line.
 - **«Свой предмет»** / "Own item"
   (`docs/decisions/2026-09-30-a-list-page-makes-a-plain-homebrew-item-in-one-press.md`,
   `docs/decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md`):
@@ -1031,7 +1032,7 @@ browser lists writable after the date.
   «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
   in both languages) or «Хоумбрю», with «показать в таблице» to its row on
   `#/tables/homebrew`, and the pick row adds «Изменить» (to
-  `#/homebrew/<key>`) after the print link. Its link is its item address
+  `#/homebrew/<key>`) after «Печать». Its link is its item address
   `#/h/<uuid>`: «Скопировать ссылку» copies it and «Отправить» carries it, in
   the language on screen (`<site>#/h/<uuid>`, `<site>en/#/h/<uuid>`). While
   the author's items fail to load, the page says «Не получилось загрузить
@@ -1047,9 +1048,9 @@ browser lists writable after the date.
   a relation of the author's item opens its own page; a catalog record opens
   over the page. A reader's line under the heading starts with «Предмет
   другого игрока» / "Another player's item", then the path; the pick row
-  offers «Добавить в список» and «Сохранить себе», and no «Печать», no
-  «Изменить» and no «показать в таблице» (another account's item prints
-  once every print is a stored set, a later release). The author sees the own record's controls: «Печать»,
+  offers «Добавить в список», «Сохранить себе» and «Печать», and no
+  «Изменить» and no «показать в таблице»; a reader's «Печать» makes a set and
+  opens `#/p/<id>`, and signed out it shows the sign-in prompt ("Print"). The author sees the own record's controls: «Печать»,
   «Изменить», «показать в таблице», and no «Предмет другого игрока». The page
   opens once the session is known, so the author never sees a reader's
   controls; a sign-in or a sign-out reads it again. While it reads it says
@@ -1766,20 +1767,62 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 
 ## Print
 
-- `#/print/<ids>`, nine cards to an A4 page at 63x88 mm, or sixteen at 44x63 mm
-  on the opt-in compact sheet; up to 180 cards either way.
-- Reached from an item page, a list, or a table selection; the address is
-  shareable and independent of where it came from.
+- Every print needs an account (owner, 2026-10-08). Three controls print, each
+  «Печать» with the print icon and the same hint: the pick row (the record
+  page, the record modal and `#/h/`, for its author and for a reader), the
+  selection bar (tables, search, «Мои предметы», `#/s/` and `#/l/` with the
+  taken counts) and the list toolbar (with the list's counts). Signed in, a
+  press stores the cards and their counts as a print set in the reader's
+  account and opens its address `#/p/<id>`; the control is disabled while the
+  set is made and while the session is unknown, and a build with no sign-in
+  configured draws none. Signed out, the press shows the sign-in prompt in the
+  control's slot - boxed under the pick row and the list toolbar, compact with
+  «Отмена» in place of the selection bar's action row - with «Войдите, чтобы
+  печатать карточки.», so the reader learns why before leaving the page, as
+  «Сохранить себе» says it. After the sign-in the app makes the set of the
+  cards that press saw and opens it (`STATE.md`, the auth return).
+- A set holds references: a catalog id, or a homebrew item's id, and a count
+  over 1. A reader sees each card as it is when the set is read: a catalog
+  card as the reader's own index draws it, a homebrew card as its author last
+  saved it, with its picture. A homebrew card whose item was deleted is left
+  out and counted in a red note under the bar, «Удалены автором и не попали
+  на лист: N.» (`<p class="printnote warnnote">`). The same sheet pressed
+  again by one account opens the same set. A set ends 90 days after it was
+  last opened, and with its maker's account
+  (`docs/decisions/2026-10-08-a-print-set-holds-references-and-lives-90.md`).
+- `#/p/<id>` reads the set once when it opens (no live re-read; a reload reads
+  it again). Each state keeps the heading «Печать карточек»: signed out, the
+  sub «Войдите, чтобы печатать карточки.» and one «Войти», which returns here;
+  while it reads, «Загружаем...»; a failed read, «Не получилось загрузить
+  карточки.» and the small «Повторить»; an unknown, expired or malformed id
+  (a malformed one signed out too, with no read), «Набор не найден: ссылку не
+  открывали 90 дней, или в адресе ошибка.» and «На главную»; a set with no
+  card left, «Печатать нечего: в наборе не осталось карточек.», the deleted
+  note and «На главную». A build with no sign-in configured draws the
+  not-found page. «Ссылка на набор» copies the page's own `#/p/<id>` address.
+- Every address under `#/print/` - the long print links retired on 2026-10-08
+  - draws «Такие ссылки на печать больше не открываются.» with «Попросите у
+  отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.»
+  and «На главную», the address kept and nothing read from it: the layout of
+  `#/l/`'s retired page, without a date
+  (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
+- Nine cards to an A4 page at 63x88 mm, or sixteen at 44x63 mm on the opt-in
+  compact sheet; up to 180 cards either way. The cap is a render bound, not
+  an address bound: the browser stalls on a couple of hundred cards, each
+  fitted after render (owner, 2026-10-08). A press of more than 180 records
+  stores the first 180 and says «Карточек за один раз: не больше 180. Не
+  попали на лист: N. Разделите набор на части.» as a toast, after a sign-in
+  too: the cut is the maker's, so a reader of a handed-on link never sees it.
 - Colour and black-and-white are two different cards, not one with a switch.
 - An artifact weapon (`eq.tier: 'A'`) prints as a loot artifact card does: the
   tag `Артефакт`, then its class tag, no tier band, and its damage strip.
 - A card printed from a list shows the list's count after its name as ` ×N`
   (a space, U+00D7, the number), only for a count over 1 - the same suffix
   the list's copied text puts after the name (`qtySuffix` in `share.ts`). The
-  count rides in the address as `*<n>` per id (`ROUTES.md`), so it survives a
-  reload and the copied set link. The list page's print button writes the
-  list's counts, and the shared page's selection bar writes the taken counts;
-  the record, table and search print links carry none. The counter sits
+  count is stored in the set, so it survives a reload and the copied set
+  link. The list page's print button stores the list's counts, and the
+  shared page's selection bar stores the taken counts; the record, table and
+  search print controls store none. The counter sits
   in a `nowrap` span, so it wraps with the name's last word, never alone.
 - Fitting is measured in the browser after render. The damage strip goes
   first: each value first tries one line, shrinking in 0.1cqw steps from its
@@ -1850,14 +1893,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   card reads at 6.2 pt where the grow rung reaches its cap. A size change
   fits every card again at its new size. Measured 2026-09-23
   (`DECISIONS.md`).
-- The compact subtitle says 44×63 mm and sixteen to a sheet; the print link's
-  title keeps "nine to an A4 sheet" - it names the default.
-- An address naming nothing the catalogue knows draws the heading, the "nothing
-  to print" note and a link back to the lists - no bar, no sheet.
-- More than 180 known ids prints the first 180 and a red note counting how many
-  did not make it onto a sheet, telling the reader to split the set in two.
-- `Назад` steps back in browser history; with nowhere to step back to it goes to
-  `#/lists` instead.
+- The compact subtitle says 44×63 mm and sixteen to a sheet; the print
+  control's hint keeps "nine to an A4 sheet" - it names the default.
+- A set with no card the build knows draws the heading, the "nothing to
+  print" note and «На главную» - no bar, no sheet.
+- `Назад` steps back in browser history; with nowhere to step back to it goes
+  home, not to `#/lists`: the reader of a handed-over link may have no lists.
 - A card's own name is drawn as `<h2 class="pc-name">`, a heading-level fix:
   the live app's `printCardHTML` wrote `<h3>` there - unrelated to the
   alternate-tables page's own heading jump, `<h1>` straight to `<h4>`, fixed
@@ -1877,14 +1918,14 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   picture.
 - A missing picture (a partial deploy, a cold cache) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
-  directly at a shared `#/print/...` address, where nothing has already
+  directly at a `#/p/` address, where nothing has already
   caught the failure.
 - An open record dialog and an action toast both stay hidden under print
   media, the way the live app's `#modal`/`#toast` rules did unconditionally -
   neither had an equivalent rule in the rewrite.
 - The card's own name (`.pc-name`) is not part of `fit()`'s shrink ladder -
   inspected rather than assumed (owner decision, "look first, then
-  shrink"). The four longest names (`#/print/cm26-f60-hi62-ci81`), measured
+  shrink"). The four longest names (`cm26`, `f60`, `hi62`, `ci81`), measured
   on the Windows host on 2026-09-22 as the distinct line tops of a `Range`
   over the name: in Russian cm26, f60 and hi62 wrap to three lines and ci81
   to two, three with a ` ×99` counter; in English all four wrap to two. An
@@ -1892,8 +1933,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `getClientRects()` check on the block, which can never report more than
   one line. `fit()` already takes the name's height from the rules text, so
   the cap is three lines (owner decision, 2026-09-22), not a shrink step.
-  `tests/app/print.js` pins it for both routes (bare and
-  `#/print/cm26*99-f60*99-hi62*99-ci81*99`), both languages and both
+  `tests/app/print.js` pins it for both sheets (bare and each at `×99`), both
+  languages and both
   layouts. No deviation from Figma nodes `714-42387`/`3773-90792` was
   needed.
 

@@ -317,7 +317,7 @@ const ru = {
   printSubCompact: 'Карточек: %n. Листов A4: %p. Размер карты 44×63 мм — шестнадцать на лист.',
   printNote:
     'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
-  printEmpty: 'Печатать нечего: в адресе не нашлось ни одной вещи.',
+  printEmpty: 'Печатать нечего: в наборе не осталось карточек.',
   back: 'Назад',
   printTooMany:
     'Карточек за один раз: не больше %n. Не попали на лист: %d. Разделите набор на части.',
@@ -515,6 +515,8 @@ const ru = {
   limitEntries:
     'Достигнут предел позиций в списке: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitOther: 'Достигнут предел: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  printSetLimit:
+    'Достигнут предел наборов для печати в аккаунте: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   writeRefused: 'Изменение не сохранилось: сервер его не принял. Показан список из аккаунта.',
 
   /* Homebrew: the author's own items, sources and sections, the editor and its
@@ -1077,9 +1079,17 @@ const ru = {
   moveBannerHide: 'Скрыть напоминание',
   localReadOnlyTitle: 'Списки в этом браузере только для чтения с %d.',
   localReadOnly:
-    'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст и напечатать можно и так.',
+    'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст можно и так.',
   linkRetired: 'Ссылки такого вида перестали открываться %d.',
-  linkRetiredSub: 'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.'
+  linkRetiredSub: 'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.',
+  printLinkRetired: 'Такие ссылки на печать больше не открываются.',
+  printLinkRetiredSub:
+    'Попросите у отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.',
+  signInToPrint: 'Войдите, чтобы печатать карточки.',
+  printSetGone: 'Набор не найден: ссылку не открывали 90 дней, или в адресе ошибка.',
+  printSetMissing: 'Удалены автором и не попали на лист: %d.',
+  printLoadFailed: 'Не получилось загрузить карточки.',
+  printSetFailed: 'Не получилось подготовить печать. Проверьте соединение и попробуйте ещё раз.'
 } as const;
 
 /** Every key the interface has. Derived, so the two sides cannot drift. */
@@ -1324,7 +1334,7 @@ const en: Dict = {
   printSubCompact: 'Cards: %n. A4 sheets: %p. Card size 44×63 mm - sixteen to a sheet.',
   printNote:
     'In the print dialog pick A4, portrait, and margins "none". The sheet is light on purpose: it reads on a black-and-white printer and does not drain the cartridge.',
-  printEmpty: 'Nothing to print: the address holds no items.',
+  printEmpty: 'Nothing to print: no card is left in the set.',
   back: 'Back',
   printTooMany:
     'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
@@ -1505,6 +1515,8 @@ const en: Dict = {
   limitEntries:
     'This list has reached its limit of %n entries. Need more? Write to daggerheart.loot@gmail.com.',
   limitOther: 'A limit has been reached: %n. Need more? Write to daggerheart.loot@gmail.com.',
+  printSetLimit:
+    'You have reached the limit of %n print sets. Need more? Write to daggerheart.loot@gmail.com.',
   writeRefused:
     'The change was not saved: the server refused it. The list from your account is shown.',
 
@@ -2042,9 +2054,17 @@ const en: Dict = {
   moveBannerHide: 'Dismiss the reminder',
   localReadOnlyTitle: 'Lists in this browser are read-only from %d.',
   localReadOnly:
-    'Sign in and they move to your account, where you can edit them again. Copying the text and printing still work.',
+    'Sign in and they move to your account, where you can edit them again. Copying the text still works.',
   linkRetired: 'Links of this kind stopped opening on %d.',
-  linkRetiredSub: 'Ask the sender for a new link, or sign in to build a list.'
+  linkRetiredSub: 'Ask the sender for a new link, or sign in to build a list.',
+  printLinkRetired: 'Print links of this kind no longer open.',
+  printLinkRetiredSub:
+    'Ask the sender for a new /#/p/ link, or sign in and pick the cards yourself.',
+  signInToPrint: 'Sign in to print cards.',
+  printSetGone: 'Set not found: nobody opened the link for 90 days, or the address is wrong.',
+  printSetMissing: 'Deleted by their author, not on the sheet: %d.',
+  printLoadFailed: 'Could not load the cards.',
+  printSetFailed: 'Could not prepare the print. Check the connection and try again.'
 };
 
 /* The texts that name the cutoff take its date from the one constant. */

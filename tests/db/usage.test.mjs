@@ -2,12 +2,13 @@
   The nightly usage report's database half (tools/supabase/usage.mjs):
   collect() on seeded rows relative to a baseline (the host volume can hold
   committed Auth rows), the Storage branch this stack has, the near-limit
-  counts with the part above 100 %, the one-row-a-day upsert and the
-  400-day delete, the 28-day history before today, the realtime.messages
-  rows of the last 24 hours, the clean-up watch (a request, a stopped share,
-  a run and a notice each past its retention plus 2 hours counted, each one
-  inside it not; the newest run of the job; the 24-hour request retention
-  on a database before the links migration), and no Data API role on
+  counts with the part above 100 % (print sets: live sets only), the
+  one-row-a-day upsert and the 400-day delete, the 28-day history before
+  today, the realtime.messages rows of the last 24 hours, the clean-up watch
+  (a request, a stopped share, a run, a notice and a print set each past its
+  retention plus 2 hours counted, each one inside it not; the newest run of
+  the job; the 24-hour request retention on a database before the links
+  migration), and no Data API role on
   public.usage_snapshots. .claude/README.md, "Usage monitoring".
 */
 import { after, before, describe, it } from 'node:test';
@@ -31,6 +32,7 @@ const PUBLIC_TABLES = [
   'list_notices',
   'list_shares',
   'lists',
+  'print_sets',
   'purchase_request_lines',
   'purchase_requests',
   'usage_snapshots',
@@ -212,6 +214,46 @@ describe('collect()', () => {
     assert.deepEqual(out.above, plus(out.base, { items_near: 1, items_over: 1 }));
   });
 
+  it('counts the owners near and over a lowered print sets limit, live sets only', async () => {
+    const out = await rolledBack(async (tx) => {
+      await tx`insert into auth.users (id, email) values
+        (${A}, 'usage-a@example.test'), (${B}, 'usage-b@example.test')`;
+      const near = async () => (await collect(tx, new Date())).near_limits;
+      const base = await near();
+      const sets = (owner, n, ago) => tx`
+        insert into public.print_sets (owner_id, entries, digest, opened_at)
+        select ${owner}, '[{"k": "ci1"}]'::jsonb, md5(${ago} || g), now() - ${ago}::interval
+        from generate_series(1, ${n}::int) as g`;
+      await sets(A, 80, '1 day');
+      await sets(B, 79, '1 day');
+      // Expired: the limit counts only the live sets.
+      await sets(B, 30, '91 days');
+      await tx`insert into public.user_limit_overrides (user_id, key, value)
+        values (${A}, 'print_sets_per_owner', 100), (${B}, 'print_sets_per_owner', 100)`;
+      const at80 = await near();
+      await tx`update public.user_limit_overrides set value = 50
+        where user_id = ${A} and key = 'print_sets_per_owner'`;
+      const above = await near();
+      return { base, at80, above };
+    });
+    const plus = (a, b) =>
+      Object.fromEntries(Object.keys(a).map((k) => [k, a[k] + (b[k] ?? 0)]));
+    assert.deepEqual(out.at80, plus(out.base, { sets_near: 1 }));
+    assert.deepEqual(out.above, plus(out.base, { sets_near: 1, sets_over: 1 }));
+  });
+
+  it('counts a print set past 90 days and 2 hours after its last open, and not one inside it', async () => {
+    const out = await rolledBack(async (tx) => {
+      const base = await collect(tx, new Date());
+      await tx`insert into auth.users (id, email) values (${A}, 'usage-a@example.test')`;
+      await tx`insert into public.print_sets (owner_id, entries, digest, opened_at) values
+        (${A}, '[{"k": "ci1"}]', 'late', now() - interval '90 days 3 hours'),
+        (${A}, '[{"k": "ci2"}]', 'due', now() - interval '90 days 1 hour')`;
+      return { base, next: await collect(tx, new Date()) };
+    });
+    assert.equal(out.next.lifecycle_overdue, out.base.lifecycle_overdue + 1);
+  });
+
   it('counts the realtime.messages rows of the last 24 hours over a baseline', async () => {
     await realtimePartition(sql);
     const out = await rolledBack(async (tx) => {
@@ -312,8 +354,10 @@ describe('collect()', () => {
     const list = crypto.randomUUID();
     const share = crypto.randomUUID();
     const out = await rolledBack(async (tx) => {
-      // Reversals run newest first: the pictures, then the snapshot drop, whose
-      // reversal re-adds the list_entries.snapshot that the links reversal writes.
+      // Reversals run newest first: the print sets, the pictures, then the snapshot
+      // drop, whose reversal re-adds the list_entries.snapshot that the links reversal
+      // writes.
+      await tx.unsafe(reversal('20261014120100_print_sets'));
       await tx.unsafe(reversal('20261014120000_homebrew_art'));
       await tx.unsafe(reversal('20261010120000_drop_list_entry_snapshot'));
       await tx.unsafe(reversal('20261007130000_homebrew_links'));

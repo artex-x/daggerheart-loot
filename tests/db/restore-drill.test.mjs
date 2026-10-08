@@ -208,6 +208,7 @@ describe('restoreDump', () => {
       'homebrew_items_per_owner=100',
       'lists_per_owner=50',
       'pending_requests_per_list=10',
+      'print_sets_per_owner=1000',
       'request_lines=100'
     ]);
     clean = true;

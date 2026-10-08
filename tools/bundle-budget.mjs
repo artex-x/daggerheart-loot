@@ -36,8 +36,9 @@ const code = walk(DIST).filter(
    2026-10-14 with the picture field, its lazy crop dialog and the media
    port; each passed its old limit, so both rose by the rule below). A
    batch raises a passed
-   budget to its size plus about 5 kB, never past 300 and 250 (decision
-   "The bundle ceilings rise to 300 kB configured and 250 unconfigured"). */
+   budget to its size plus about 5 kB, never past 350 and 250 (decisions
+   "The bundle ceilings rise to 300 kB configured and 250 unconfigured" and
+   "The configured bundle ceiling rises to 350 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
 const BUDGET_KB = withAccount ? 294 : 233; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';

@@ -60,7 +60,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Пустой список" [pressed=false]
     button "Трофеи" [pressed=false]
     button "+ Новый список" [pressed=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать"
   contentinfo ""
     navigation "Страницы сайта"
@@ -169,7 +169,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     StaticText "Selected 1"
     button "Clear selection" [description=Clear selection]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy"
   contentinfo ""
     navigation "Site pages"

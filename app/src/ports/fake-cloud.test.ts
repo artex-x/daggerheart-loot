@@ -2927,3 +2927,149 @@ describe("the fake's item read and change log", () => {
     expect(one.ok && one.notices.map((n) => n.id)).toEqual([uuid(21000)]);
   });
 });
+
+describe('the print sets', () => {
+  const DAY = 86_400_000;
+  beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-10-14T12:00:00Z'), toFake: ['Date'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('gives one set for the same sheet, whatever the order of the keys of an entry', async () => {
+    const { prints } = fakeCloud(SEED, 'gm1');
+    const a = await prints.create([{ q: 3, k: 'ci1' }]);
+    const b = await prints.create([{ k: 'ci1', q: 3 }]);
+    const c = await prints.create([{ k: 'ci1', q: 3 }, { k: 'ci2' }]);
+    const d = await prints.create([{ k: 'ci2' }, { k: 'ci1', q: 3 }]);
+    expect(a.ok && a.id).toMatch(/^[A-Za-z0-9_-]{12}$/);
+    expect(b).toEqual(a);
+    expect(new Set([a, c, d].map((x) => x.ok && x.id)).size).toBe(3);
+  });
+
+  it('refuses each sheet the database refuses', async () => {
+    const { prints } = fakeCloud(SEED, 'gm1');
+    const bad: unknown[] = [
+      [],
+      Array.from({ length: 181 }, (_, i) => ({ k: 'c' + String(i) })),
+      [{ k: 'ci1', x: 1 }],
+      [{ k: 'ci1', h: uuid(511) }],
+      [{ q: 2 }],
+      ['ci1'],
+      [{ k: 'hb_emberaxeaaaaaaaa' }],
+      [{ h: 'ABCDEF00-0000-4000-8000-000000000001' }],
+      [{ k: 'ci1', q: 1 }],
+      [{ k: 'ci1', q: 100 }],
+      [{ k: 'ci1', q: '3' }],
+      [{ k: 'ci1' }, { k: 'ci1', q: 2 }],
+      [{ h: uuid(511) }, { h: uuid(511) }]
+    ];
+    for (const entries of bad) {
+      expect(await prints.create(entries as never)).toEqual({ ok: false, error: 'refused' });
+    }
+    expect(
+      await prints.create(
+        Array.from({ length: 180 }, (_, i) => ({ k: 'c' + String(i), q: 99 }))
+      )
+    ).toMatchObject({ ok: true });
+  });
+
+  it('refuses past the limit, counts only live sets, and revives an expired one', async () => {
+    const { prints } = fakeCloud(SEED, 'gm1', { limits: { printSets: 2 } });
+    const first = await prints.create([{ k: 'ci1' }]);
+    await prints.create([{ k: 'ci2' }]);
+    expect(await prints.create([{ k: 'ci3' }])).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'print_sets_per_owner',
+      value: 2
+    });
+    vi.setSystemTime(Date.now() + 91 * DAY);
+    const id = first.ok ? first.id : '';
+    expect(await prints.read(id)).toEqual({ ok: true, set: null });
+    expect(await prints.create([{ k: 'ci1' }])).toEqual(first);
+    expect(await prints.read(id)).toEqual({
+      ok: true,
+      set: { entries: [{ k: 'ci1' }], missing: 0 }
+    });
+    expect(await prints.create([{ k: 'ci3' }])).toMatchObject({ ok: true });
+  });
+
+  it('answers the records of another reader, leaves a deleted item out and counts it', async () => {
+    const world = fakeCloud(SEED);
+    const maker = world.as('gm1');
+    const reader = world.as('gm2');
+    const made = await maker.prints.create([
+      { h: uuid(511), q: 2 },
+      { k: 'ci1' },
+      { h: uuid(512) }
+    ]);
+    const id = made.ok ? made.id : '';
+    const read = await reader.prints.read(id);
+    const set = read.ok
+      ? (read.set as { entries: Record<string, unknown>[]; missing: number })
+      : null;
+    expect(set?.entries.map((e) => [e['hid'] ?? e['k'], e['q'] ?? null])).toEqual([
+      [uuid(511), 2],
+      ['ci1', null],
+      [uuid(512), null]
+    ]);
+    expect(set?.entries[0]?.['item']).toMatchObject({ id: 'hb_emberaxeaaaaaaaa' });
+    expect(await maker.homebrew.removeItem(uuid(512))).toEqual({ ok: true });
+    const after = await reader.prints.read(id);
+    expect(after.ok && (after.set as { missing: number }).missing).toBe(1);
+  });
+
+  it('moves the last open at most once a day, and lives 90 days after it', async () => {
+    const { prints } = fakeCloud(SEED, 'gm1');
+    const made = await prints.create([{ k: 'ci1' }]);
+    const id = made.ok ? made.id : '';
+    vi.setSystemTime(Date.now() + 89 * DAY);
+    expect((await prints.read(id)).ok).toBe(true);
+    vi.setSystemTime(Date.now() + 89 * DAY);
+    expect(await prints.read(id)).toMatchObject({ ok: true, set: { missing: 0 } });
+    vi.setSystemTime(Date.now() + 90 * DAY + 60_000);
+    expect(await prints.read(id)).toEqual({ ok: true, set: null });
+  });
+
+  it('answers network signed out or offline, and a read signed out as a set that opens nothing', async () => {
+    const out = fakeCloud(SEED);
+    expect(await out.prints.create([{ k: 'ci1' }])).toEqual({ ok: false, error: 'network' });
+    expect(await out.prints.read('AbCdEf-_1234')).toEqual({ ok: true, set: null });
+    const off = fakeCloud(SEED, 'gm1', { offline: true });
+    expect(await off.prints.create([{ k: 'ci1' }])).toEqual({ ok: false, error: 'network' });
+    expect(await off.prints.read('AbCdEf-_1234')).toEqual({ ok: false });
+    const outOff = fakeCloud(SEED, undefined, { offline: true });
+    expect(await outOff.prints.read('AbCdEf-_1234')).toEqual({ ok: true, set: null });
+  });
+
+  it("reads gm4's seeded sets as another account", async () => {
+    const { prints } = fakeCloud(SEED, 'gm2');
+    expect(await prints.read('set-twocards')).toEqual({
+      ok: true,
+      set: { entries: [{ k: 'ci1' }, { k: 'q1' }], missing: 0 }
+    });
+    const missing1 = await prints.read('set-missing1');
+    expect(missing1).toEqual({ ok: true, set: { entries: [{ k: 'ci1' }], missing: 1 } });
+    expect(await prints.read('set-allgone1')).toEqual({
+      ok: true,
+      set: { entries: [], missing: 2 }
+    });
+    expect(await prints.read('set-expired1')).toEqual({ ok: true, set: null });
+    const own = await prints.read('set-ownitems');
+    const set = own.ok ? (own.set as { entries: { hid?: string }[] }) : null;
+    expect(set?.entries.map((e) => e.hid)).toEqual([uuid(511), uuid(512)]);
+    expect(SEED.printSets.every((p) => p.owner === 'gm4')).toBe(true);
+    expect(SEED.printSets).toHaveLength(13);
+  });
+
+  it("deletes an account's sets with the account", async () => {
+    const world = fakeCloud(SEED);
+    const maker = world.as('gm1');
+    const made = await maker.prints.create([{ k: 'ci1' }]);
+    expect(await maker.auth.deleteAccount()).toEqual({ ok: true });
+    const read = await world.as('gm2').prints.read(made.ok ? made.id : '');
+    expect(read).toEqual({ ok: true, set: null });
+  });
+});

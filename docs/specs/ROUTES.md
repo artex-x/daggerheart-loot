@@ -154,7 +154,8 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | Hash | Meaning |
 |---|---|
 | `#/i/<id>` | one record |
-| `#/print/<id>[*<n>]-<id>[*<n>]-...` | a print sheet of those records, up to 180, each with an optional count |
+| `#/p/<id>` | a stored print set, for a signed-in reader; the id is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept), and only a 12-character run is read; a malformed id (any other length) draws the "set not found" print page, signed in or out, with no read; a 12-character id signed out draws the print page's sign-in state; an unknown or expired id draws the "set not found" print page; a build with no sign-in configured draws the not-found page; the address is kept in every case, never home. `#/p` with no slash is an unreadable address |
+| `#/print/<anything>` | retired on 2026-10-08 (owner): the retired print page, in every build, the address kept, nothing read from it; `#/print` with no slash is an unreadable address |
 | `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (an account list's address is never rewritten to `#/l/`; a browser list's is not either after 2026-10-26, nor while the move into the account is due); the local id of a list that moved into the account opens that account list |
 | `#/h/<uuid>` | one homebrew item by its id, for everyone, signed out too, with the author's relation lines; the id is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character after it is dropped, the address kept); only a uuid is read; a malformed or unknown id, or a build with no sign-in configured, draws the record page's not-found page, never home |
 | `#/s/<token>` | an account list shared by its owner, read-only, with an optional filter (below); the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
@@ -183,17 +184,11 @@ the reachable case) used to fail a stricter character class and fall to
 which draws its own "not found" state for a payload that will not decode
 rather than silently leaving for a different page.
 
-`#/print/...` reads its ids from the address rather than from memory, because
-printing is reached from three places and the set has to survive a reload and
-being handed to another GM.
-
-An id may carry a count as `*<n>`, the list link's own `id*qty` spelling
-(`CONTRACTS.md` section 3): `#/print/ci1*3-q1`. A count over 1 is shown after
-the card's name, clamped to 99. A missing, `0`, `1` or unreadable count shows
-no counter, and the card still prints. A repeated id keeps its first
-occurrence and that occurrence's count. Only the list page's print button
-and the shared page's selection bar (the taken counts) write counts; an
-address written without them reads as it always did.
+A print set is stored in its maker's account, so the address does not grow with
+its cards: `<site>#/p/` and 12 characters. The cards and their counts live in
+the set (`FEATURES.md`, "Print"); the list link's `id*qty` spelling stays in
+`CONTRACTS.md` section 3. The long print addresses `#/print/<ids>` were retired
+on 2026-10-08 (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 
 ## Account
 

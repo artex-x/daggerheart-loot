@@ -68,15 +68,20 @@ const openMenu = (): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
 
 describe('the row under a full card', () => {
-  it('draws the button, folded, and the print link', () => {
+  it('draws the button, folded, and no print control with no sign-in configured', async () => {
     render(App, { env: at() });
     expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
-    const print = screen.getByRole('link', { name: 'Печать' });
-    expect(print).toHaveAttribute('href', '#/print/ci1');
+    expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
+    cleanup();
+    render(App, { env: at({ cloud: fakeCloud(SEED) }) });
+    const print = screen.getByRole('button', { name: 'Печать' });
     expect(print).toHaveAttribute('title', 'Собрать карточки для печати: девять на лист A4');
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
   });
 
   it('opens the menu newest list first, naming a single record "лежит в списках"', async () => {
@@ -261,16 +266,19 @@ describe('the row under a full card', () => {
   });
 
   it('draws the same row inside the modal a table row opens', async () => {
-    render(App, { env: fakeEnv({ router: memoryRouter('#/tables'), data: fakeData(LOOT) }) });
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables'),
+        data: fakeData(LOOT),
+        cloud: fakeCloud(SEED)
+      })
+    });
     await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
     const dialog = screen.getByRole('dialog');
     expect(
       within(dialog).getByRole('button', { name: 'Добавить в список' })
     ).toBeInTheDocument();
-    expect(within(dialog).getByRole('link', { name: 'Печать' })).toHaveAttribute(
-      'href',
-      '#/print/ci1'
-    );
+    expect(within(dialog).getByRole('button', { name: 'Печать' })).toBeInTheDocument();
   });
 });
 

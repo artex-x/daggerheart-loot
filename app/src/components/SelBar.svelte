@@ -15,11 +15,12 @@
   import AddToList from './AddToList.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
-  import { printHash } from '../lib/hash.js';
+  import SignInPrompt from './SignInPrompt.svelte';
   import type { ListEntryMeta } from '../lib/listLink.js';
   import { selCountText } from '../lib/i18n.js';
   import { takenQty, takenTotal } from '../lib/lists.js';
   import { moneyMode, totalParts } from '../lib/money.js';
+  import { printAction } from '../lib/pending.js';
   import { shareSelection } from '../lib/share.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -53,8 +54,9 @@
   const countText = $derived(
     taken ? selCountText(n, taken.pieces, app.lang, t) : `${t.selected} ${String(n)}`
   );
-  const printHref = $derived(
-    printHash(ids, shared ? Object.fromEntries(ids.map((id) => [id, takenOf(id)])) : undefined)
+  /* On a list page the taken counts print; a table or search selection prints one each. */
+  const printCounts = $derived(
+    shared ? Object.fromEntries(ids.map((id) => [id, takenOf(id)])) : undefined
   );
   const takenMeta = $derived(
     shared
@@ -74,6 +76,32 @@
   let remember = $state(false);
   let bar = $state<HTMLDivElement | undefined>(undefined);
   let question = $state<HTMLParagraphElement | undefined>(undefined);
+  /* Signed out, «Печать» replaces the action row with the sign-in prompt, as the notify
+     question replaces it; an empty bar forgets it. */
+  let printAsking = $state(false);
+  let printButton = $state<HTMLButtonElement | undefined>(undefined);
+  let printPrompt = $state<HTMLDivElement | undefined>(undefined);
+
+  $effect(() => {
+    if (!n) printAsking = false;
+  });
+
+  $effect(() => {
+    if (printAsking) printPrompt?.querySelector<HTMLElement>('.btn')?.focus();
+  });
+
+  function pressPrint(): void {
+    const target = app.printTarget;
+    if (target === 'prompt') printAsking = true;
+    else if (target === 'cloud') void app.print(ids, printCounts);
+  }
+
+  function cancelPrint(): void {
+    printAsking = false;
+    void tick().then(() => {
+      printButton?.focus();
+    });
+  }
 
   /* The question replaces the row that held the focused menu, so the focus
      moves to it, and back to «Добавить в список» after the answer. */
@@ -139,12 +167,31 @@
             >
             <label><input type="checkbox" bind:checked={remember} />{t.notifyRemember}</label>
           </div>
+        {:else if printAsking && app.printTarget === 'prompt'}
+          <div class="printq" bind:this={printPrompt}>
+            <SignInPrompt
+              {app}
+              compact
+              lead={t.signInToPrint}
+              after={{
+                hash: app.hash,
+                action: printAction(app.printEntriesOf(ids, printCounts))
+              }}
+              oncancel={cancelPrint}
+            />
+          </div>
         {:else}
           <div class="selacts">
             <AddToList {app} key="sel" {ids} meta={takenMeta} primary />
-            <Button size="sm" href={printHref} sameTab title={t.printHint}
-              ><Icon name="print" />{t.print}</Button
-            >
+            {#if app.printTarget !== 'none'}
+              <Button
+                size="sm"
+                title={t.printHint}
+                disabled={app.printing || app.printTarget === 'wait'}
+                bind:el={printButton}
+                onclick={pressPrint}><Icon name="print" />{t.print}</Button
+              >
+            {/if}
             <Button size="sm" onclick={() => void copySel()}
               ><Icon name="copy" />{t.copySel}</Button
             >
@@ -281,6 +328,11 @@
 
   .notify {
     display: flex;
+  }
+
+  /* The print sign-in prompt takes the action row's place, as the question does. */
+  .printq {
+    flex: 1 1 100%;
   }
 
   /* Flow b's question takes the action row's place. */

@@ -435,7 +435,7 @@ describe('the selection bar', () => {
   });
 
   it('reads the count, and offers add-to-list, print and copy for one tick', async () => {
-    const { container } = render(App, { env: at() });
+    const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
 
@@ -447,20 +447,57 @@ describe('the selection bar', () => {
       'aria-expanded',
       'false'
     );
-    const print = screen.getByRole('link', { name: 'Печать' });
-    expect(print).toHaveAttribute('href', '#/print/ci1');
+    const print = screen.getByRole('button', { name: 'Печать' });
     expect(print).toHaveAttribute('title', 'Собрать карточки для печати: девять на лист A4');
     expect(screen.getByRole('button', { name: 'Скопировать' })).toBeInTheDocument();
   });
 
-  it('carries every ticked id, in tick order, on the print link', async () => {
+  it('draws no print control with no sign-in configured', async () => {
     render(App, { env: at() });
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
+    expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Скопировать' })).toBeInTheDocument();
+  });
+
+  it('replaces the action row with the sign-in prompt signed out, and «Отмена» brings it back', async () => {
+    const { container } = render(App, { env: at({ cloud: fakeCloud(SEED) }) });
+    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
+    const print = screen.getByRole('button', { name: 'Печать' });
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
+    await userEvent.click(print);
+    expect(screen.getByText('Войдите, чтобы печатать карточки.')).toBeInTheDocument();
+    expect(container.querySelector('.selacts')).toBeNull();
+    expect(container.querySelector('.printq .signin.compact')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Войти' })).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
+    expect(container.querySelector('.selacts')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Печать' })).toHaveFocus();
+    });
+  });
+
+  it('makes a set of every ticked id, in tick order, signed in, and opens it', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const env = at({ cloud });
+    render(App, { env });
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[1] as HTMLElement);
     await userEvent.click(boxes[0] as HTMLElement);
-
-    const print = screen.getByRole('link', { name: 'Печать' });
-    expect(print).toHaveAttribute('href', '#/print/ci2-ci1');
+    const print = screen.getByRole('button', { name: 'Печать' });
+    await waitFor(() => {
+      expect(print).toBeEnabled();
+    });
+    await userEvent.click(print);
+    await waitFor(() => {
+      expect(env.router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+    });
+    const read = await cloud.prints.read(env.router.hash().slice(4));
+    expect(read).toMatchObject({ ok: true, set: { entries: [{ k: 'ci2' }, { k: 'ci1' }] } });
   });
 
   it('the cross clears every tick and folds the bar', async () => {

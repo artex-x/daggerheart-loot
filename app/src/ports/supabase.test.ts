@@ -2622,3 +2622,92 @@ describe('the item read and the change log', () => {
     expect(client.from).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('the print sets', () => {
+  const HID = '00000000-0000-4000-8000-000000000511';
+  const ENTRIES = [{ k: 'ci1', q: 3 }, { h: HID }];
+
+  it('makes a set through the RPC and maps each answer', async () => {
+    client.rpc
+      .mockResolvedValueOnce({ data: 'AbCdEf-_1234', error: null, status: 200 })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: 'P0001', message: 'limit: print_sets_per_owner', details: '1000' },
+        status: 400
+      })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '22023', message: 'print set: bad entries' },
+        status: 400
+      })
+      .mockResolvedValueOnce({ data: null, error: null, status: 200 })
+      .mockResolvedValueOnce({
+        data: null,
+        error: { code: '28000', message: 'create_print_set: not signed in' },
+        status: 400
+      })
+      .mockResolvedValueOnce({ data: null, error: { code: 'XX000' }, status: 503 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { prints } = make();
+    expect(await prints.create(ENTRIES)).toEqual({ ok: true, id: 'AbCdEf-_1234' });
+    expect(client.rpc).toHaveBeenLastCalledWith('create_print_set', { p_entries: ENTRIES });
+    expect(await prints.create(ENTRIES)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'print_sets_per_owner',
+      value: 1000
+    });
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'refused' });
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'refused' });
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'network' });
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'network' });
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'network' });
+  });
+
+  it('answers network to a make with no answer in time', async () => {
+    vi.useFakeTimers();
+    try {
+      client.rpc.mockReturnValueOnce(new Promise(() => {}));
+      const pending = make().prints.create(ENTRIES);
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS);
+      expect(await pending).toEqual({ ok: false, error: 'network' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads a set, null for one that opens nothing, not ok on an error', async () => {
+    const set = { entries: [{ k: 'ci1', q: 3 }], missing: 0 };
+    client.rpc
+      .mockResolvedValueOnce({ data: set, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: null, status: 200 })
+      .mockResolvedValueOnce({ data: null, error: { code: 'XX000' }, status: 503 })
+      .mockRejectedValueOnce(new Error('offline'));
+    const { prints } = make();
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: true, set });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_print_set', { p_id: 'AbCdEf-_1234' });
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: true, set: null });
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: false });
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: false });
+  });
+
+  it('answers not ok to a read with no answer in time', async () => {
+    vi.useFakeTimers();
+    try {
+      client.rpc.mockReturnValueOnce(new Promise(() => {}));
+      const pending = make().prints.read('AbCdEf-_1234');
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS);
+      expect(await pending).toEqual({ ok: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('calls neither function signed out', async () => {
+    client.auth.getSession.mockResolvedValue({ data: { session: null }, error: null });
+    const { prints } = make();
+    expect(await prints.create(ENTRIES)).toEqual({ ok: false, error: 'network' });
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: true, set: null });
+    expect(client.rpc).not.toHaveBeenCalled();
+  });
+});

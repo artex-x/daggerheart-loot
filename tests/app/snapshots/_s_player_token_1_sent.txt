@@ -57,7 +57,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
       StaticText "400 зол."
     button "Снять выделение" [description=Снять выделение]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1*2-cc1*5]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать"
     button "Запрос отправлен" [disabled=true]
   contentinfo ""
@@ -179,7 +179,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
       StaticText "400 gp"
     button "Clear selection" [description=Clear selection]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1*2-cc1*5]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy"
     button "Request sent" [disabled=true]
   contentinfo ""

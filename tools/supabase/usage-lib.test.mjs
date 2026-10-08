@@ -654,7 +654,9 @@ describe('the summary and the exit code', () => {
         lists_near: 2,
         lists_over: 1,
         items_near: 3,
-        items_over: 1
+        items_over: 1,
+        sets_near: 4,
+        sets_over: 2
       },
       points: 29
     });
@@ -670,6 +672,10 @@ describe('the summary and the exit code', () => {
       text,
       /- owners at 80 % or more of homebrew_items_per_owner: 3 \(above 100 %: 1\)/
     );
+    assert.match(
+      text,
+      /- owners at 80 % or more of print_sets_per_owner: 4 \(above 100 %: 2\)/
+    );
   });
 
   it('readsMissingHomebrewItemsCountsOfAnOlderSnapshotAsZero', () => {
@@ -683,6 +689,10 @@ describe('the summary and the exit code', () => {
     assert.match(
       text,
       /- owners at 80 % or more of homebrew_items_per_owner: 0 \(above 100 %: 0\)/
+    );
+    assert.match(
+      text,
+      /- owners at 80 % or more of print_sets_per_owner: 0 \(above 100 %: 0\)/
     );
   });
 

@@ -200,6 +200,15 @@ describe('limitText', () => {
     );
   });
 
+  it('names the print set limit', () => {
+    expect(limitText('print_sets_per_owner', 1000, dict('ru'))).toBe(
+      'Достигнут предел наборов для печати в аккаунте: 1000. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    expect(limitText('print_sets_per_owner', 1000, dict('en'))).toBe(
+      'You have reached the limit of 1000 print sets. Need more? Write to daggerheart.loot@gmail.com.'
+    );
+  });
+
   it('names the picture limit', () => {
     expect(limitText('homebrew_art', 105, dict('ru'))).toBe(
       'Достигнут предел картинок: 105. Нужно больше - напишите на daggerheart.loot@gmail.com.'

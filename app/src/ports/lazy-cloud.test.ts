@@ -241,8 +241,16 @@ describe('lazyCloud', () => {
     expect(load).toHaveBeenCalledOnce();
   });
 
+  it('forwards both print set calls to the loaded port', async () => {
+    const { prints } = lazyCloud(() => Promise.resolve(fakeCloud(SEED, 'gm1')));
+    const made = await prints.create([{ k: 'ci1', q: 2 }, { h: uuid(511) }]);
+    expect(made.ok).toBe(true);
+    const read = made.ok ? await prints.read(made.id) : null;
+    expect(read?.ok && (read.set as { entries: unknown[] }).entries).toHaveLength(2);
+  });
+
   it('answers signed out and refuses every change when the load fails', async () => {
-    const { auth, prefs, lists, shares, requests, homebrew } = lazyCloud(() =>
+    const { auth, prefs, lists, shares, requests, homebrew, prints } = lazyCloud(() =>
       Promise.reject(new Error('offline'))
     );
     const fn = vi.fn();
@@ -302,6 +310,8 @@ describe('lazyCloud', () => {
       unsent
     );
     expect(await homebrew.moveItems([{ id: 'x', revision: 1 }], null, null)).toEqual(unsent);
+    expect(await prints.create([{ k: 'ci1' }])).toEqual(unsent);
+    expect(await prints.read('AbCdEf-_1234')).toEqual({ ok: false });
     off();
     expect(fn).not.toHaveBeenCalled();
   });

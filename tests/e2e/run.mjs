@@ -41,7 +41,7 @@ try {
   console.log('e2e: sweep and member ok');
 
   await runRealContract(env, admin, member);
-  console.log('e2e: contract ok (cases A-R, and the real-only checks)');
+  console.log('e2e: contract ok (cases A-S, and the real-only checks)');
 
   /* The deploy job's own build, configured for the test project; `dist/`
      is left so until `npm run build` or `check:built` rebuilds it. */

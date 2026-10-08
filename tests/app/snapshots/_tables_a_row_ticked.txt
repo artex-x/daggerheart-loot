@@ -61,7 +61,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     StaticText "Выбрано 1"
     button "Снять выделение" [description=Снять выделение]
     button "Добавить в список" [expanded=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci1]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать"
   contentinfo ""
     navigation "Страницы сайта"
@@ -288,7 +288,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     StaticText "Selected 1"
     button "Clear selection" [description=Clear selection]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci1]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy"
   contentinfo ""
     navigation "Site pages"

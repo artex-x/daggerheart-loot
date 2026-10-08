@@ -21,7 +21,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Клад дракона" [pressed=false]
     button "Лавка в порту" [pressed=false]
     button "+ Новый список" [pressed=false]
-    link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=#/print/ci28]
+    button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
     status ""
       StaticText "Убрано из «Клад дракона»"
       button "Вернуть" [focused=true]
@@ -212,7 +212,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
-    link "Print" [description=Lay these out for printing: nine to an A4 sheet url=#/print/ci28]
+    button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
     status ""
       StaticText "Removed from "Клад дракона""
       button "Undo" [focused=true]
