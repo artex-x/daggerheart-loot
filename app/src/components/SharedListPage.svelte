@@ -5,27 +5,44 @@
      branch), or `#/s/<token>`, an account list's share link, read through
      `app.sharedView` (mounted by `App.svelte`). Both are mounted only once
      `app.index` is confirmed non-null. docs/specs/FEATURES.md, "Lists" and
-     "Account and browser lists". */
+     "Account and browser lists".
+
+     From 8 drawn entries, or once a query or a filter value is set, the page
+     draws the tables' search box and filter strip over the entries it draws;
+     on `#/s/` the filter lives in the address (`#/s/<token>/f_<filter>`), on
+     `#/l/` in page memory (docs/specs/FEATURES.md, "Lists"). */
   import { onDestroy, untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import Empty from './Empty.svelte';
+  import FilterBar from './FilterBar.svelte';
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
+  import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
   import { agoText } from '../lib/ago.js';
   import { sharedListOf, snapshotRecords } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
-  import type { Index } from '../lib/data.js';
-  import { sectionHash, storedListHash } from '../lib/hash.js';
+  import { listFacets, type Index } from '../lib/data.js';
+  import { listFacetRows } from '../lib/facets.js';
+  import {
+    chosenCount,
+    encodeFilter,
+    LIST_GROUPS,
+    passes,
+    type FilterState
+  } from '../lib/filters.js';
+  import { sectionHash, shareHash, storedListHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
   import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
-  import { copyInit, gmOnlyCount, itemMeta, takenQty } from '../lib/lists.js';
+  import { copyInit, gmOnlyCount, itemMeta, LIST_SEARCH_AT, takenQty } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
+  import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -94,8 +111,109 @@
     return bits.length ? bits.join(' · ') : undefined;
   }
 
+  /* The filter. The facets read only `items`, what this reader's page draws, so a
+     players' link never offers a GM-only entry's value. A picked value no row offers
+     is not in force: no pill, no narrowing (docs/specs/ROUTES.md, "Filter grammar"). */
+  let q = $state('');
+  let memPicked = $state<FilterState>({});
+  let filterOpen = $state(false);
+  let seenSeg = $state('');
+  let seenList = $state<string | null>(null);
+  /* Whether the search box and the strip are drawn. Latched per list: dropping the
+     last pill, clearing the query or a re-read that shrinks the list never removes
+     the control that has the focus. */
+  let finding = $state(false);
+  const picked = $derived<FilterState>(
+    token === undefined ? memPicked : app.route.kind === 'share' ? app.route.filter : {}
+  );
+  const facRows = $derived(listFacetRows(items, t, app.lang));
+  const inForce = $derived.by<FilterState>(() => {
+    const out: FilterState = {};
+    for (const row of facRows) {
+      const on = picked[row.group] ?? [];
+      const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
+      if (kept.length) out[row.group] = kept;
+    }
+    return out;
+  });
+
+  /* Another list starts unfiltered; on `#/s/` a segment this page did not write (a
+     filter link) opens the panel, as `TablesPage`'s does. */
+  $effect(() => {
+    const list = shownFor;
+    const route = app.route;
+    untrack(() => {
+      if (seenList !== list) {
+        seenList = list;
+        q = '';
+        memPicked = {};
+        seenSeg = '';
+        filterOpen = false;
+        finding = false;
+      }
+      if (token === undefined) return;
+      const seg = route.kind === 'share' ? encodeFilter(route.filter, LIST_GROUPS) : '';
+      if (seg !== seenSeg) filterOpen = true;
+      seenSeg = seg;
+    });
+  });
+
+  $effect(() => {
+    if (
+      !finding &&
+      (items.length >= LIST_SEARCH_AT || q !== '' || chosenCount(inForce, LIST_GROUPS) > 0)
+    )
+      finding = true;
+  });
+
+  /** Writes a filter: the address on `#/s/`, marked as this page's own edit; page
+   *  memory on `#/l/`, whose payload cannot carry a segment. */
+  function applyFilter(next: FilterState): void {
+    if (token === undefined) {
+      memPicked = next;
+      return;
+    }
+    seenSeg = encodeFilter(next, LIST_GROUPS);
+    app.replace(shareHash(token, { filter: next }));
+  }
+
+  function pickFacet(group: string, value: string): void {
+    const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
+    const current = inForce[group] ?? [];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : order.filter((v) => current.includes(v) || v === value);
+    applyFilter({ ...inForce, [group]: next });
+  }
+
+  function resetFacets(): void {
+    applyFilter({});
+  }
+
+  /* The audience and the link are read at the press: the toast is drawn later, and a
+     re-read in between must not change what it says. */
+  async function copyFilterLink(at: string): Promise<void> {
+    const gm = view?.shared?.audience === 'gm';
+    const link = app.linkTo(shareHash(at, { filter: inForce }));
+    await app.copied(
+      () => app.env.clipboard.writeText(link),
+      (t) => (gm ? t.gmFilterLinkCopied : t.filterLinkCopied)
+    );
+  }
+
+  const statLine = $derived(statLineFor(app.lang, t));
+  const hay = $derived(hayFor(statLine));
+  const shownItems = $derived.by(() => {
+    const passed = items.filter((it) => {
+      const f = listFacets(it);
+      return passes(inForce, LIST_GROUPS, (g) => f[g] ?? '');
+    });
+    const terms = parseQuery(q);
+    return terms.length ? passed.filter((it) => matches(it, terms, statLine, hay)) : passed;
+  });
+
   const entries = $derived(
-    items.map((it) => {
+    shownItems.map((it) => {
       const tail = tailOf(it.id);
       const entry = tail === undefined ? { it } : { it, tail };
       return metaOf(it.id).gmOnly === true ? { ...entry, gmOnly: true as const } : entry;
@@ -226,52 +344,90 @@
           <HitNote icon="eyeOff" label={t.noteHid} text={shared.hnote} />
         </div>
       {/if}
-      <TableRows
-        {entries}
-        view="list"
-        {index}
-        lang={app.lang}
-        selected={(id: string) => app.sel.has(id)}
-        artBroken={(id: string) => app.artBroken(id)}
-        ontoggle={(id: string) => {
-          app.toggleSel(id);
-        }}
-        onartfail={(id: string) => {
-          app.markArtBroken(id);
-        }}
-        onopen={openRecord}
-        ontoggleall={(ids: string[]) => {
-          app.toggleAllIn(ids);
-        }}
-      >
-        {#snippet inside(it: Record_)}
-          {@const m = metaOf(it.id)}
-          {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}
-            {@const taken = takenQty(m, app.picked.get(it.id))}
-            <div class="pickrow">
-              <PickQty
-                value={taken}
-                max={m.qty ?? 1}
-                label={t.pickQty}
-                ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
-                sum={priceText((m.gold ?? 0) * taken, mode, app.lang)}
-                name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
-                minText={t.pickMin}
-                maxText={t.pickMax}
-                minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
-                maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
-                onchange={(n: number) => {
-                  app.pick(it.id, n);
+      {#if finding}
+        <div class="lfind">
+          <SearchBox
+            value={q}
+            placeholder={t.searchPh}
+            oninput={(v: string) => {
+              q = v;
+            }}
+          />
+          <FilterBar
+            rows={facRows}
+            picked={inForce}
+            shown={entries.length}
+            total={items.length}
+            open={filterOpen}
+            {t}
+            ontoggle={() => {
+              filterOpen = !filterOpen;
+            }}
+            onpick={pickFacet}
+            onreset={resetFacets}
+            oncopylink={token === undefined
+              ? undefined
+              : () => {
+                  void copyFilterLink(token);
                 }}
-              />
-            </div>
+          />
+        </div>
+      {/if}
+      {#if items.length > 0 && entries.length === 0}
+        <Empty>
+          {t.nothing}
+          {#if chosenCount(inForce, LIST_GROUPS) > 0}
+            <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
           {/if}
-        {/snippet}
-        {#snippet after(it: Record_)}
-          <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
-          <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
-        {/snippet}
-      </TableRows>
+        </Empty>
+      {:else}
+        <TableRows
+          {entries}
+          view="list"
+          {index}
+          lang={app.lang}
+          selected={(id: string) => app.sel.has(id)}
+          artBroken={(id: string) => app.artBroken(id)}
+          ontoggle={(id: string) => {
+            app.toggleSel(id);
+          }}
+          onartfail={(id: string) => {
+            app.markArtBroken(id);
+          }}
+          onopen={openRecord}
+          ontoggleall={(ids: string[]) => {
+            app.toggleAllIn(ids);
+          }}
+        >
+          {#snippet inside(it: Record_)}
+            {@const m = metaOf(it.id)}
+            {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}
+              {@const taken = takenQty(m, app.picked.get(it.id))}
+              <div class="pickrow">
+                <PickQty
+                  value={taken}
+                  max={m.qty ?? 1}
+                  label={t.pickQty}
+                  ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
+                  sum={priceText((m.gold ?? 0) * taken, mode, app.lang)}
+                  name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                  minText={t.pickMin}
+                  maxText={t.pickMax}
+                  minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
+                  maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
+                  onchange={(n: number) => {
+                    app.pick(it.id, n);
+                  }}
+                />
+              </div>
+            {/if}
+          {/snippet}
+          {#snippet after(it: Record_)}
+            <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
+            <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
+          {/snippet}
+        </TableRows>
+      {/if}
       {#if token !== undefined}
         <!-- Says a re-read changed what the page draws; keyed, so a second
              change is announced again. `data-live` marks a joined topic for
@@ -291,6 +447,16 @@
      rule of this component's own. */
   .notes {
     margin-bottom: 18px;
+  }
+
+  /* The search box and the filter strip, between the notes and the rows; the
+     strip sits 12px under the box. */
+  .lfind {
+    margin: 0 0 18px;
+  }
+
+  .lfind :global(.fbar) {
+    margin-top: 12px;
   }
 
   /* Under the title, as the index card's «изменён N назад». */

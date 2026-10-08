@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import FilterBar from './FilterBar.svelte';
 import RowMain from './RowMain.svelte';
 import SelBar from './SelBar.svelte';
 import TablesPage from './TablesPage.svelte';
@@ -30,6 +31,8 @@ import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { buildIndex, type Loot } from '../lib/data.js';
+import { dict } from '../lib/dict.js';
+import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import type { Record_ } from '../lib/types.js';
 
@@ -611,6 +614,32 @@ describe('the table link', () => {
 describe('the filter', () => {
   const wond = (): Env =>
     fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) });
+
+  it('draws no link button without a copy action, and the pills and the reset still', async () => {
+    const t = dict('ru');
+    const rows: FacetRow[] = [
+      { group: 'kind', label: t.kindF, values: [{ value: 'item', label: t.fItems }] }
+    ];
+    const props = {
+      rows,
+      picked: { kind: ['item'] },
+      shown: 1,
+      total: 2,
+      open: false,
+      t,
+      ontoggle: vi.fn(),
+      onpick: vi.fn(),
+      onreset: vi.fn()
+    };
+    const { container } = render(FilterBar, props);
+    expect(container.querySelector('.fpill')).toHaveTextContent(t.fItems);
+    expect(screen.getByRole('button', { name: t.resetAll })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: t.filterLink })).not.toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    cleanup();
+    render(FilterBar, { ...props, oncopylink: vi.fn() });
+    expect(screen.getByRole('button', { name: t.filterLink })).toBeInTheDocument();
+  });
 
   it('draws the strip folded, with nothing picked and the plain total', () => {
     const { container } = render(App, { env: wond() });

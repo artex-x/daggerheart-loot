@@ -211,7 +211,11 @@ of two or three usually plays better than assigning one each.
   send you an export.
 - `#/s/<token>` — a list shared from an account; the token is opaque and made
   only by the list's owner, so you cannot build one, and fetching it tells you
-  nothing (the fragment never leaves the browser)
+  nothing (the fragment never leaves the browser). A link a person gave you
+  may end in a filter, `#/s/<token>/f_<filter>`, with the keys `kind`
+  (`item`/`consumable`/`weapon`/`secondary`/`armor`), `src`, `tier`, `cls`,
+  `trait`, `range`, `burden`, `line`, written as on a table; you still cannot
+  build the token.
 - `#/h/<uuid>` - one homebrew item, by an id the author's account made; you
   cannot build one, and fetching it tells you nothing (the fragment never
   leaves the browser). Ask the person for the item's text, or for an export

@@ -3228,6 +3228,7 @@ describe('the exports', () => {
     const [gm1, gm2] = [await zipOf('gm1'), await zipOf('gm2')];
     const empty: Seed = {
       ...SEED,
+      lists: { ...SEED.lists, gm3: [] },
       homebrew: { ...SEED.homebrew, gm3: { books: [], items: [], cards: [] } }
     };
     const { app } = await signedIn(fakeImage(), {}, 'gm3', empty);

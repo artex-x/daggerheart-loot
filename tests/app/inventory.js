@@ -1967,6 +1967,86 @@ const STATES = [
       await d.tick('Зелье Быстрого Шага');
     }
   },
+  /* The search box and the filter (docs/specs/FEATURES.md, "Lists"): the seeded share
+     holds 10 entries, past the threshold of 8. */
+  {
+    id: '#/s/player-token-1 ~ filters open',
+    route: '#/s/player-token-1',
+    why: 'the search box and «Фильтры» pressed: the panel with Тип (4), Источник (6), Ранг (1, 2), Класс, Характеристика (6), Дистанция (3), Хват and Линейка, each «любое»',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/s/player-token-1/f_kind-weapon.tier-1',
+    route: '#/s/player-token-1/f_kind-weapon.tier-1',
+    why: 'a filter link as it opens: the panel open with «Оружие» and «1» pressed, two pills, «Сбросить всё», the copy-link button, «3 из 10», three rows'
+  },
+  {
+    id: '#/s/player-token-1 ~ filtered',
+    route: '#/s/player-token-1',
+    why: '«Первоклассный Спальный Мешок» ticked, then «Оружие» and Ранг «1» picked and the panel folded: two pills, the copy-link button, «3 из 10», the bar «Выбрана 1 позиция» for the hidden tick; the address ends /f_kind-weapon.tier-1',
+    enter: async (d) => {
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.click('Фильтры');
+      await d.click('Оружие');
+      await d.click('1');
+      await d.click('Фильтры (2)');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ no match',
+    route: '#/s/player-token-1',
+    why: '«Броня» and Ранг «2»: «0 из 10», «Ничего не найдено» and «Сбросить всё», no rows and no «Выбрать все»',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Броня');
+      await d.click('2');
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ searched',
+    route: '#/s/player-token-1',
+    why: '«кинжал» typed: one row, the strip «10», the address unchanged',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'кинжал');
+    }
+  },
+  {
+    id: '#/s/gm-token-1 ~ filter link copied',
+    route: '#/s/gm-token-1',
+    why: "«Оружие» picked and the copy-link button pressed on the GM's link: the toast «Ссылка на фильтры скопирована - это ссылка для мастера: в ней есть заметки и позиции «Только для мастера»»",
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Оружие');
+      await d.click('Ссылка на фильтры');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/s/player-token-3 ~ long source picked',
+    route: '#/s/player-token-3',
+    why: "gm3's «Склад», 8 entries: the source at the 80-code-point name picked; its chip and its pill wrap inside the strip at 360 px; one row, gm4's «Фляга туманов»",
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click(
+        'Мастерская старого оружейника из долины туманов за перевалом у Северной реки, II'
+      );
+    }
+  },
+  {
+    /* `encodeList({ name: 'Склад', ids: [ci1, cc1, q1, q313, q23, w51, q35, di11] }, true)`,
+       computed once off the frozen format (docs/specs/CONTRACTS.md section 3);
+       sharedListPage.test.ts pins it byte-identical to `encodeList`. */
+    id: '#/l/ ~ filtered',
+    route: '#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE',
+    why: 'a #/l/ list of 8 entries with «Оружие» picked: the 26 October line, the strip with one pill and «Сбросить всё», no copy-link button, «4 из 8»; the address as it opened',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Оружие');
+    }
+  },
   {
     id: '#/s/player-token-1 ~ sent',
     route: '#/s/player-token-1',

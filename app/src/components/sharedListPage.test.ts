@@ -1380,3 +1380,321 @@ describe('homebrew entries on a share link', () => {
     expect(axe?.hb_item).toBe(uuid(511));
   });
 });
+
+/* The search box and the filter strip (docs/specs/FEATURES.md, "Lists"), over the real
+   data, so the seeded share draws its 10 entries. */
+describe('the filter', () => {
+  const ru = dict('ru');
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const SHOP = uuid(101);
+  const real = (hash: string, over: Partial<Env> = {}): Env =>
+    fakeEnv({ router: memoryRouter(hash), data: fakeData(REAL), ...over });
+  const open = (hash: string, cloud: CloudPort = fakeCloud(SEED), over: Partial<Env> = {}) => {
+    const router = memoryRouter(hash);
+    const clip = fakeClipboard();
+    const r = render(App, { env: real(hash, { router, cloud, clipboard: clip, ...over }) });
+    return { ...r, router, cloud, clip };
+  };
+  const rowsOf = (c: HTMLElement): string[] =>
+    [...c.querySelectorAll<HTMLElement>('[data-row]')].map((e) => e.dataset['row'] ?? '');
+  const pills = (c: HTMLElement): string[] =>
+    [...c.querySelectorAll<HTMLElement>('.fpill')].map((e) => e.dataset['val'] ?? '');
+  const pill = (c: HTMLElement, val: string): HTMLElement =>
+    c.querySelector<HTMLElement>('.fpill[data-val="' + val + '"]') as HTMLElement;
+  const count = (c: HTMLElement): string => c.querySelector('.fcount')?.textContent ?? '';
+  const chip = (name: string): HTMLElement =>
+    within(document.querySelector('.ffilter') as HTMLElement).getByRole('button', { name });
+  const shopReady = (): Promise<HTMLElement> =>
+    screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+  /* «Лавка кузнеца» holding only `keys`, so a test sets the count or the kinds. */
+  const shopOf = (keys: string[]): typeof SEED => {
+    const [shop, ...rest] = SEED.lists.gm1;
+    if (!shop) throw new Error('no seeded shop');
+    return {
+      ...SEED,
+      lists: {
+        ...SEED.lists,
+        gm1: [
+          {
+            ...shop,
+            entries: keys.map((itemKey, position) => ({
+              id: uuid(9000 + position),
+              itemKey,
+              position
+            }))
+          },
+          ...rest
+        ]
+      }
+    };
+  };
+  const EIGHT = ['ci1', 'cc1', 'q1', 'q313', 'q23', 'w51', 'q35', 'di11'];
+  const LEGACY_EIGHT = encodeList({ name: 'Склад', ids: EIGHT }, true);
+
+  it("encodes the 8-entry #/l/ list byte for byte as the inventory's `#/l/ ~ filtered` writes it", () => {
+    expect(LEGACY_EIGHT).toBe(
+      '0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE'
+    );
+  });
+
+  describe('the threshold', () => {
+    it('draws no search box below 8 entries, and the box and the strip at 8', async () => {
+      render(App, {
+        env: real('#/l/' + encodeList({ name: 'Семь', ids: EIGHT.slice(0, 7) }, true))
+      });
+      expect(screen.getByRole('heading', { level: 1, name: 'Семь' })).toBeInTheDocument();
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: ru.filters })).not.toBeInTheDocument();
+      cleanup();
+      const { container } = render(App, { env: real('#/l/' + LEGACY_EIGHT) });
+      expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', ru.searchPh);
+      expect(screen.getByRole('button', { name: ru.filters })).toHaveAttribute(
+        'aria-expanded',
+        'false'
+      );
+      expect(count(container)).toBe('8');
+      await expectNoA11yViolations(container);
+    });
+
+    it('draws the search box alone for 8 entries no row can narrow, and a filter link names nothing in force', async () => {
+      const potions = Array.from({ length: 8 }, (_, i) => 'cc' + String(i + 1));
+      const { container, router } = open(
+        '#/s/player-token-1/f_kind-consumable',
+        fakeCloud(shopOf(potions))
+      );
+      await shopReady();
+      expect(screen.getByRole('searchbox')).toBeInTheDocument();
+      expect(container.querySelector('.fbar')).toBeNull();
+      expect(pills(container)).toEqual([]);
+      expect(rowsOf(container)).toHaveLength(8);
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-consumable');
+      await expectNoA11yViolations(container);
+    });
+
+    it('stays drawn when the last pill goes, the query clears and a re-read shrinks the list', async () => {
+      const cloud = fakeCloud(SEED);
+      for (const key of ['ci1', 'cc1', 'voa2_a3'])
+        cloud.playEntry(SHOP, key, { gm_only: true });
+      const { container } = open('#/s/player-token-1/f_kind-weapon', cloud);
+      await shopReady();
+      expect(rowsOf(container)).toHaveLength(5);
+      await userEvent.click(pill(container, 'kind:weapon'));
+      expect(pills(container)).toEqual([]);
+      expect(rowsOf(container)).toHaveLength(7);
+      const box = screen.getByRole('searchbox');
+      await userEvent.type(box, 'палаш');
+      await userEvent.clear(box);
+      expect(screen.getByRole('searchbox')).toBe(box);
+      cloud.playEntry(SHOP, 'q1', { gm_only: true });
+      await waitFor(() => {
+        expect(rowsOf(container)).toHaveLength(6);
+      });
+      expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    });
+
+    it('starts unfiltered, folded and without the box on another list', async () => {
+      const env = real('#/l/' + LEGACY_EIGHT);
+      const { container } = render(App, { env });
+      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
+      await userEvent.click(chip('Оружие'));
+      await userEvent.type(screen.getByRole('searchbox'), 'посох');
+      env.router.navigate(
+        '#/l/' + encodeList({ name: 'Три', ids: ['ci1', 'q1', 'cc1'] }, true)
+      );
+      await screen.findByRole('heading', { level: 1, name: 'Три' });
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+      expect(rowsOf(container)).toEqual(['ci1', 'q1', 'cc1']);
+      env.router.navigate('#/l/' + LEGACY_EIGHT);
+      await screen.findByRole('heading', { level: 1, name: 'Склад' });
+      expect(screen.getByRole('searchbox')).toHaveValue('');
+      expect(screen.getByRole('button', { name: ru.filters })).toHaveAttribute(
+        'aria-expanded',
+        'false'
+      );
+      expect(rowsOf(container)).toHaveLength(8);
+    });
+  });
+
+  describe('on a share link', () => {
+    it('narrows by a pick, writes the address in place and reads the list once', async () => {
+      const cloud = fakeCloud(SEED);
+      const read = vi.spyOn(cloud.shares, 'read');
+      const { container, router } = open('#/s/player-token-1', cloud);
+      await shopReady();
+      await waitFor(() => {
+        expect(container.querySelector('.said[data-live="live"]')).not.toBeNull();
+      });
+      const reads = read.mock.calls.length;
+      expect(rowsOf(container)).toHaveLength(10);
+      expect(count(container)).toBe('10');
+      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
+      await userEvent.click(chip('Оружие'));
+      await userEvent.click(chip('1'));
+      expect(rowsOf(container)).toEqual(['q1', 'q23', 'q35']);
+      expect(count(container)).toBe('3 из 10');
+      expect(pills(container)).toEqual(['kind:weapon', 'tier:1']);
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon.tier-1');
+      expect(router.stack).toHaveLength(1);
+      await userEvent.click(pill(container, 'tier:1'));
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon');
+      expect(rowsOf(container)).toHaveLength(5);
+      await userEvent.click(screen.getByRole('button', { name: ru.resetAll }));
+      expect(router.hash()).toBe('#/s/player-token-1');
+      expect(rowsOf(container)).toHaveLength(10);
+      expect(read).toHaveBeenCalledTimes(reads);
+      await expectNoA11yViolations(container);
+    });
+
+    it('opens the panel with the values of a filter link pressed', async () => {
+      const { container } = open('#/s/player-token-1/f_kind-weapon.tier-1');
+      await shopReady();
+      expect(screen.getByRole('button', { name: `${ru.filters} (2)` })).toHaveAttribute(
+        'aria-expanded',
+        'true'
+      );
+      expect(chip('Оружие')).toHaveAttribute('aria-pressed', 'true');
+      expect(chip('1')).toHaveAttribute('aria-pressed', 'true');
+      expect(chip('Броня')).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: ru.filterLink })).toBeInTheDocument();
+      expect(rowsOf(container)).toHaveLength(3);
+      await expectNoA11yViolations(container);
+    });
+
+    it('ignores a value no entry answers, and the next pick writes only the values in force', async () => {
+      const { container, router } = open('#/s/player-token-1/f_range-veryfar');
+      await shopReady();
+      expect(pills(container)).toEqual([]);
+      expect(rowsOf(container)).toHaveLength(10);
+      expect(screen.getByRole('button', { name: ru.filters })).toBeInTheDocument();
+      await userEvent.click(chip('Оружие'));
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon');
+    });
+
+    it('drops a value in force once a re-read removes the last entry that answers it', async () => {
+      const cloud = fakeCloud(SEED);
+      const { container, router } = open('#/s/player-token-1/f_kind-armor', cloud);
+      await shopReady();
+      expect(rowsOf(container)).toEqual(['q313']);
+      cloud.playEntry(SHOP, 'q313', { gm_only: true });
+      await waitFor(() => {
+        expect(pills(container)).toEqual([]);
+      });
+      expect(rowsOf(container)).toHaveLength(9);
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-armor');
+      expect(screen.queryByRole('button', { name: 'Броня' })).not.toBeInTheDocument();
+    });
+
+    it('copies the filter link and toasts; the English link goes through en/', async () => {
+      const { clip } = open('#/s/player-token-1/f_kind-weapon');
+      await shopReady();
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(clip.last.text).toBe('https://example.test/#/s/player-token-1/f_kind-weapon');
+      expect(screen.getByText(ru.filterLinkCopied)).toBeInTheDocument();
+      cleanup();
+      const en = open('#/s/player-token-1/f_kind-weapon', fakeCloud(SEED), {
+        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      });
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await userEvent.click(screen.getByRole('button', { name: dict('en').filterLink }));
+      expect(en.clip.last.text).toBe(
+        'https://example.test/en/#/s/player-token-1/f_kind-weapon'
+      );
+      expect(screen.getByText('Filter link copied')).toBeInTheDocument();
+    });
+
+    it('copies only the values in force, and toasts the GM warning on a GM link', async () => {
+      const { clip, container } = open('#/s/gm-token-1/f_kind-weapon.range-veryfar');
+      await shopReady();
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(clip.last.text).toBe('https://example.test/#/s/gm-token-1/f_kind-weapon');
+      expect(screen.getByText(ru.gmFilterLinkCopied)).toBeInTheDocument();
+      await expectNoA11yViolations(container);
+    });
+
+    it('toasts the failure when the clipboard refuses, and leaves the address', async () => {
+      const { router } = open('#/s/player-token-1/f_kind-weapon', fakeCloud(SEED), {
+        clipboard: fakeClipboard({ fail: true })
+      });
+      await shopReady();
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(screen.getByRole('alert')).toHaveTextContent(ru.copyFailed);
+      expect(router.hash()).toBe('#/s/player-token-1/f_kind-weapon');
+    });
+
+    it('narrows by the query as a table does, and never writes it to the address', async () => {
+      const { container, router } = open('#/s/player-token-1');
+      await shopReady();
+      await userEvent.type(screen.getByRole('searchbox'), 'кинжал');
+      expect(rowsOf(container)).toEqual(['q35']);
+      expect(count(container)).toBe('10');
+      expect(router.hash()).toBe('#/s/player-token-1');
+    });
+
+    it('says nothing is found and offers the reset while a value is in force', async () => {
+      const { container, router } = open('#/s/player-token-1/f_kind-armor.tier-2');
+      await shopReady();
+      expect(count(container)).toBe('0 из 10');
+      expect(screen.getByText(ru.nothing)).toBeInTheDocument();
+      expect(screen.queryByRole('checkbox', { name: /Выбрать все/ })).not.toBeInTheDocument();
+      await expectNoA11yViolations(container);
+      const resets = screen.getAllByRole('button', { name: ru.resetAll });
+      await userEvent.click(resets.at(-1) as HTMLElement);
+      expect(router.hash()).toBe('#/s/player-token-1');
+      expect(rowsOf(container)).toHaveLength(10);
+    });
+
+    it('keeps a tick the filter hides, and ticks only the drawn rows from select-all', async () => {
+      const { container } = open('#/s/player-token-1');
+      await shopReady();
+      await userEvent.click(
+        screen.getByRole('checkbox', { name: 'Первоклассный Спальный Мешок' })
+      );
+      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
+      await userEvent.click(chip('Оружие'));
+      await userEvent.click(chip('1'));
+      expect(rowsOf(container)).not.toContain('ci1');
+      expect(screen.getByText(/^Выбрана 1 позиция/)).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
+      expect(screen.getByText(/^Выбрано 4 позиции/)).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: ru.resetAll }));
+      expect(
+        screen.getByRole('checkbox', { name: 'Первоклассный Спальный Мешок' })
+      ).toBeChecked();
+      expect(screen.getByRole('checkbox', { name: 'Колода Сумерек' })).not.toBeChecked();
+      await expectNoA11yViolations(container);
+    });
+
+    it('reads the strip, the panel and the no-match line in English', async () => {
+      const en = dict('en');
+      const { container } = open('#/s/player-token-1/f_kind-armor.tier-2', fakeCloud(SEED), {
+        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      });
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      expect(screen.getByRole('button', { name: `${en.filters} (2)` })).toBeInTheDocument();
+      expect(count(container)).toBe(`0 ${en.outOf} 10`);
+      expect(screen.getByText(en.nothing)).toBeInTheDocument();
+      expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', en.searchPh);
+      expect(chip('Armor')).toHaveAttribute('aria-pressed', 'true');
+      expect(container.querySelector('.ffilter')?.textContent).toContain(en.eqTrait);
+    });
+  });
+
+  describe('on a #/l/ link', () => {
+    it('narrows in page memory: the address stays and no link button is drawn', async () => {
+      const env = real('#/l/' + LEGACY_EIGHT);
+      const { container } = render(App, { env });
+      expect(screen.getByText(ru.legacyLinks)).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
+      await userEvent.click(chip('Оружие'));
+      expect(rowsOf(container)).toEqual(['q1', 'q23', 'w51', 'q35']);
+      expect(count(container)).toBe('4 из 8');
+      expect(pills(container)).toEqual(['kind:weapon']);
+      expect(screen.getByRole('button', { name: ru.resetAll })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: ru.filterLink })).not.toBeInTheDocument();
+      expect(env.router.hash()).toBe('#/l/' + LEGACY_EIGHT);
+      await expectNoA11yViolations(container);
+    });
+  });
+});

@@ -7,7 +7,13 @@
  *
  * Pure module: `location` never appears; the address arrives as a string. */
 
-import { decodeFilter, encodeFilter, groupsFor, type FilterState } from './filters.js';
+import {
+  decodeFilter,
+  encodeFilter,
+  groupsFor,
+  LIST_GROUPS,
+  type FilterState
+} from './filters.js';
 import { QTY_MAX } from './listLink.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
 
@@ -44,8 +50,9 @@ export type Route =
   | { kind: 'storedList'; listId: string }
   | { kind: 'sharedList'; payload: string; packed: boolean }
   /** An account list's share link; `token` is the leading run of `[A-Za-z0-9_-]`,
-   *  empty for a bare `#/s/` (docs/specs/ROUTES.md). */
-  | { kind: 'share'; token: string }
+   *  empty for a bare `#/s/`, and `filter` the optional `/f_` segment after it
+   *  (docs/specs/ROUTES.md). */
+  | { kind: 'share'; token: string; filter: FilterState }
   /** In every build: with no sign-in configured it draws the not-found page,
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
@@ -136,10 +143,15 @@ export function parseHash(hash: string, knows: (id: string) => boolean = () => t
     return { kind: 'print', ids, dropped: asked.ids.length - ids.length, qty };
   }
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
-  /* A stray character a chat client leaves after the token is dropped; the
-     address is not rewritten. */
-  if (/^s\//.test(h)) {
-    return { kind: 'share', token: /^[A-Za-z0-9_-]*/.exec(h.slice(2))?.[0] ?? '' };
+  /* A stray character a chat client leaves after the token or the filter is
+     dropped; the address is not rewritten. */
+  const share = /^s\/([A-Za-z0-9_-]*)(?:\/(f_[A-Za-z0-9_.-]*))?/.exec(h);
+  if (share) {
+    return {
+      kind: 'share',
+      token: share[1] ?? '',
+      filter: decodeFilter(share[2] ?? '', LIST_GROUPS)
+    };
   }
   if (/^h\//.test(h)) {
     return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
@@ -264,8 +276,10 @@ export function storedListHash(listId: string): string {
   return '#/lists/' + listId;
 }
 
-export function shareHash(token: string): string {
-  return '#/s/' + token;
+/** Returns a share link's address; a filter with a value adds its `/f_` segment. */
+export function shareHash(token: string, opts: { filter?: FilterState } = {}): string {
+  const seg = opts.filter ? encodeFilter(opts.filter, LIST_GROUPS) : '';
+  return '#/s/' + token + (seg ? '/' + seg : '');
 }
 
 /**

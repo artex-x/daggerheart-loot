@@ -212,12 +212,23 @@ async function twoFramesPicked() {
   ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pills instead of 2');
   await ctx.close();
 
-  const { ctx: ctx2, d: d2 } = await fresh({ width: 1180, height: 900 });
+  const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/other_frames/f_frame-beast_feast-colossus');
   const rows2 = await d2.count('.rows .row[data-row]');
   ok(rows2 === 57, '5 (link arriving fresh): ' + rows2 + ' rows instead of 57');
   const pills2 = await d2.count('.fpill');
   ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pills instead of 2');
+  /* A one-line pill keeps the strip's 32px, beside «Сбросить всё»; only a long
+     name wraps it taller (docs/specs/FEATURES.md, rule 16). */
+  const heights = await page2.evaluate(() =>
+    [...document.querySelectorAll('.fpill, .fclear')].map(
+      (e) => e.getBoundingClientRect().height
+    )
+  );
+  ok(
+    heights.length === 3 && heights.every((h) => h === 32),
+    '5 (link arriving fresh): pill and reset heights ' + heights.join(', ') + ', expected 32'
+  );
   await ctx2.close();
 }
 

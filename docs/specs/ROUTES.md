@@ -99,6 +99,7 @@ Group keys, by table:
 | `community` | `comm` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
+| `#/s/<token>` | `kind`, `src`, `tier`, `cls`, `trait`, `range`, `burden`, `line` |
 
 Values: `tier` `1`-`4` (and `A`, `C` on `voa`; `A` on an equipment table
 whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
@@ -110,6 +111,18 @@ community name. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own
 section's key. Such a value lives in one account: on the equipment tables
 another account's key narrows to nothing, as any unknown value does.
+
+On a share link (`#/s/<token>`, below) `kind` takes `item`, `consumable`,
+`weapon`, `secondary` and `armor` where a table takes `equip`: a list mixes the
+gear the equipment tables split. `src` also takes `community`, `hb` and an own
+or linked source's key; `tier` is the equipment tier (`1`-`4`, `A`), never a
+Vault of Ages section. A share link offers only the values the entries it draws
+answer. One departure from a table: a value no drawn entry answers draws no pill
+and narrows nothing, where a table empties. The address keeps such a value until
+the next change of the filter, which writes only the values in force, and it
+applies again if an entry that answers it comes back before that change. The
+copied filter link holds only the values in force, so it can differ from the
+address bar.
 
 On `homebrew`, `src` holds one value and picks the source chip ("Homebrew"
 below): it is not a facet, and values of two sources do not combine there.
@@ -140,9 +153,24 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | `#/print/<id>[*<n>]-<id>[*<n>]-...` | a print sheet of those records, up to 180, each with an optional count |
 | `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (an account list's address is never rewritten to `#/l/`; a browser list's is not either after 2026-10-26, nor while the move into the account is due); the local id of a list that moved into the account opens that account list |
 | `#/h/<uuid>` | one homebrew item by its id, for everyone, signed out too, with the author's relation lines; the id is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character after it is dropped, the address kept); only a uuid is read; a malformed or unknown id, or a build with no sign-in configured, draws the record page's not-found page, never home |
-| `#/s/<token>` | an account list shared by its owner, read-only; the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
+| `#/s/<token>` | an account list shared by its owner, read-only, with an optional filter (below); the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
 | `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`), until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then, in a build with sign-in configured, the retired page, the address kept and the payload never decoded |
 | `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open, until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then the retired page, never unpacked |
+
+```
+#/s/<token>
+#/s/<token>/f_<filter>
+```
+
+The token is read as above. `<filter>` is the "Filter grammar" with the share
+link's groups, read and written as on a table: a pick rewrites the address in
+place, and a filter link opens the panel. When `/f_` does not follow the token,
+anything after it is dropped and the address kept; a stray character after the
+segment is dropped the same way. A build before the filter reads the token and
+ignores the segment, so a filter link opens the whole list there. `#/l/` carries
+no segment: its payload is read as written, so a segment would become part of
+the payload and every earlier bundle would draw the bad-link page; its filter
+is page memory.
 
 The payload after `l/` is read as written, whatever it contains - R5. A stray
 character a chat client left behind (a truncated link's trailing full stop is

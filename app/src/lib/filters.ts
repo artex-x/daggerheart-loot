@@ -46,6 +46,20 @@ const PLAIN_GROUPS: Partial<Record<TableId, readonly string[]>> = {
   homebrew: ['kind', 'src', 'sect']
 };
 
+/** The groups of a share link's filter, in address order (docs/specs/ROUTES.md,
+ *  "Filter grammar"). A list mixes the gear the equipment tables split, so its
+ *  `kind` names `weapon`, `secondary` and `armor` where a table names `equip`. */
+export const LIST_GROUPS: readonly string[] = [
+  'kind',
+  'src',
+  'tier',
+  'cls',
+  'trait',
+  'range',
+  'burden',
+  'line'
+];
+
 /** The groups a table offers, in the order they are written to the address. */
 export function groupsFor(table: TableId): readonly string[] {
   const kind = EQ_TABLE[table];

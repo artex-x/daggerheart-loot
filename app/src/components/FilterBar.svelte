@@ -5,8 +5,8 @@
      strip whether or not the panel under it is open.
 
      Owns none of the routing: the caller hands in what is picked, what is
-     open, and a callback for every action. `TablesPage` is what turns a pick
-     into an address. */
+     open, and a callback for every action. `TablesPage` and `SharedListPage`
+     are what turn a pick into an address. */
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -25,7 +25,8 @@
     ontoggle: () => void;
     onpick: (group: string, value: string) => void;
     onreset: () => void;
-    oncopylink: () => void;
+    /** Absent where the address cannot carry the filter (`#/l/`): no link button. */
+    oncopylink?: (() => void) | undefined;
   }
 
   const { rows, picked, shown, total, open, t, ontoggle, onpick, onreset, oncopylink }: Props =
@@ -90,15 +91,17 @@
     {/each}
     {#if chosen.length}
       <button type="button" class="fclear" onclick={onreset}>{t.resetAll}</button>
-      <button
-        type="button"
-        class="flink"
-        title={t.filterLink}
-        aria-label={t.filterLink}
-        onclick={oncopylink}
-      >
-        <Icon name="link" />
-      </button>
+      {#if oncopylink}
+        <button
+          type="button"
+          class="flink"
+          title={t.filterLink}
+          aria-label={t.filterLink}
+          onclick={oncopylink}
+        >
+          <Icon name="link" />
+        </button>
+      {/if}
     {/if}
     <span class="fcount"
       >{chosen.length ? `${String(shown)} ${t.outOf} ${String(total)}` : String(total)}</span
@@ -147,20 +150,26 @@
     flex-wrap: wrap;
   }
 
-  /* off `.fpill` */
+  /* off `.fpill`. A long own source name wraps inside the strip instead of
+     overflowing it at 360 px (docs/specs/FEATURES.md, rule 16); one line is
+     the 20px line box plus 5+5 padding and the border: 32px, as before. */
   .fpill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 32px;
-    padding: 0 8px 0 11px;
+    flex: none;
+    max-width: 100%;
+    min-height: 32px;
+    padding: 5px 8px 5px 11px;
     border: 1px solid rgb(216 171 94 / 45%);
     border-radius: 8px;
     background: rgb(216 171 94 / 12%);
     color: var(--gold-soft);
     font-size: 12.5px;
     font-weight: 600;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: start;
     transition: 0.15s;
   }
 

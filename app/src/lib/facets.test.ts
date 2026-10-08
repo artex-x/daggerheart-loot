@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, equipFacets, equipOfKind } from './data.js';
+import { buildIndex, equipFacets, equipOfKind, listFacets, srcOf, type Loot } from './data.js';
 import { dict } from './dict.js';
-import { facetRows, type FacetValue } from './facets.js';
+import { facetRows, listFacetRows, type FacetRow, type FacetValue } from './facets.js';
 import { FRAME_ORDER } from './frames.js';
-import { decodeFilter, groupsFor, passes } from './filters.js';
+import { decodeFilter, encodeFilter, groupsFor, LIST_GROUPS, passes } from './filters.js';
 import { browseIndex, recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
 import { CHARACTER_TRAITS, type EquipKind, type Record_, type TableId } from './types.js';
 
@@ -406,5 +408,269 @@ describe('the own items', () => {
   it('drops the own values with the chip off', () => {
     expect(values(browseIndex(index, base, false), 'eq_weapon', 'src')).toEqual(['Core']);
     expect(values(browseIndex(index, base, true), 'eq_weapon', 'src')).toHaveLength(3);
+  });
+});
+
+describe("a share link's facet rows", () => {
+  const LOOT = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const catalog = buildIndex(LOOT);
+  const byId = (id: string): Record_ => catalog.byId.get(id) as Record_;
+  const ALDER = {
+    key: 'hb_alderworkshopaaa',
+    ru: 'Мастерская Ольхи',
+    en: 'Alder Workshop',
+    sections: [{ key: 'hb_sectbladesaaaaaa', ru: 'Холодное оружие', en: 'Blades' }]
+  };
+  const axe = recordOf(
+    'hb_emberaxeaaaaaaaa',
+    {
+      kind: 'equip',
+      ru: 'Топор Тлеющих Углей',
+      en: 'Ember Axe',
+      section: 'hb_sectbladesaaaaaa',
+      eq: {
+        t: 'weapon',
+        tier: 2,
+        cls: 'mag',
+        tr: 'spellcast',
+        rg: 'melee',
+        dmg: 'd10+2',
+        dt: 'mag',
+        bu: 2
+      }
+    },
+    ALDER
+  );
+  /* The test build's seeded share «Лавка кузнеца», in its order. */
+  const SHOP: Record_[] = [
+    ...['ci1', 'q1', 'q313', 'cc1', 'voa2_a3', 'q23', 'w51', 'q35', 'di11'].map(byId),
+    axe
+  ];
+  const shape = (rows: FacetRow[]): [string, string, string[]][] =>
+    rows.map((r) => [r.group, r.label, r.values.map((v) => v.label)]);
+  const gear = (id: string, src: string, eq: NonNullable<Record_['eq']>): Record_ =>
+    row({ id, src, kind: 'item', eq });
+
+  it('draws no row for no record and for one record', () => {
+    expect(listFacetRows([], t, 'ru')).toEqual([]);
+    expect(listFacetRows([byId('q1')], t, 'ru')).toEqual([]);
+  });
+
+  it("draws the seeded list's rows and values in the panel's order, in Russian", () => {
+    expect(shape(listFacetRows(SHOP, t, 'ru'))).toEqual([
+      ['kind', 'Тип', ['Предметы', 'Расходники', 'Оружие', 'Броня']],
+      [
+        'src',
+        'Источник',
+        ['Core', 'Hope & Fear', 'Wondrous', 'Dread', 'Vault of Ages', 'Мастерская Ольхи']
+      ],
+      ['tier', 'Ранг', ['1', '2']],
+      ['cls', 'Класс', ['Физическое', 'Магическое']],
+      [
+        'trait',
+        'Характеристика',
+        ['Проворность', 'Сила', 'Искусность', 'Инстинкт', 'Влияние', 'Знание']
+      ],
+      ['range', 'Дистанция', ['Вплотную', 'Средне', 'Далеко']],
+      ['burden', 'Хват', ['Одноручное', 'Двуручное']],
+      ['line', 'Линейка', ['Улучшаемые', 'Уникальные']]
+    ]);
+  });
+
+  it("draws the same rows in English, with each value's English name", () => {
+    const en = dict('en');
+    const rows = listFacetRows(SHOP, en, 'en');
+    expect(rows.map((r) => r.label)).toEqual([
+      en.kindF,
+      en.source,
+      en.tier,
+      en.eqClass,
+      en.eqTrait,
+      en.eqRange,
+      en.eqBurden,
+      en.eqLineF
+    ]);
+    expect(shape(rows)[0]).toEqual([
+      'kind',
+      en.kindF,
+      ['Items', 'Consumables', 'Weapons', 'Armor']
+    ]);
+    expect(rows[1]?.values.at(-1)?.label).toBe('Alder Workshop');
+    expect(rows[4]?.values[0]?.label).toBe('Agility');
+  });
+
+  it('drops a row whose one value every record answers, and keeps one some record lacks', () => {
+    const t1 = (id: string): Record_ =>
+      gear(id, 'core', { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'melee', bu: 1 });
+    const two = [t1('a1'), t1('a2')];
+    expect(listFacetRows(two, t, 'ru')).toEqual([]);
+    const withItem = [...two, row({ id: 'i1', src: 'core' })];
+    expect(listFacetRows(withItem, t, 'ru').map((r) => [r.group, r.values.length])).toEqual([
+      ['kind', 2],
+      ['tier', 1],
+      ['cls', 1],
+      ['trait', 1],
+      ['range', 1],
+      ['burden', 1],
+      ['line', 1]
+    ]);
+  });
+
+  it('offers all six traits for a Spellcast weapon and both burden chips for one held either way', () => {
+    const rows = listFacetRows(
+      [
+        gear('s1', 'core', { t: 'weapon', tier: 1, tr: 'spellcast', bu: 'any' }),
+        row({ id: 'i1', src: 'core' })
+      ],
+      t,
+      'ru'
+    );
+    expect(rows.find((r) => r.group === 'trait')?.values.map((v) => v.value)).toEqual([
+      ...CHARACTER_TRAITS
+    ]);
+    expect(rows.find((r) => r.group === 'burden')?.values.map((v) => v.value)).toEqual([
+      '1',
+      '2'
+    ]);
+  });
+
+  it('lists the catalog sources in book order, then no source, then own sources by name', () => {
+    const own = (key: string, book: { key: string; ru: string } | null): HomebrewRecord =>
+      recordOf(key, { kind: 'item', ru: 'Вещь ' + key }, book);
+    const records = [
+      own('hb_zzaaaaaaaaaaaaaa', { key: 'hb_yaaaaaaaaaaaaaaa', ru: 'Ясень' }),
+      row({ id: 'm1', src: 'frame', frame: 'colossus' }),
+      row({ id: 'c1', src: 'community', community: 'Seaborne' }),
+      row({ id: 'a1', src: 'arazo' }),
+      row({ id: 'v1', src: 'voa' }),
+      own('hb_noneaaaaaaaaaaaa', null),
+      own('hb_bookaaaaaaaaaaaa', { key: 'hb_baaaaaaaaaaaaaaa', ru: 'Берёза' }),
+      row({ id: 'k1', src: 'core' })
+    ];
+    const src = listFacetRows(records, t, 'ru').find((r) => r.group === 'src');
+    expect(src?.values).toEqual([
+      { value: 'core', label: 'Core' },
+      { value: 'voa', label: 'Vault of Ages' },
+      { value: 'arazo', label: t.srcArazo },
+      { value: 'community', label: 'Сообщества' },
+      { value: 'colossus', label: 'Колоссы Сухоземья' },
+      { value: 'hb', label: t.srcHomebrew },
+      { value: 'hb_baaaaaaaaaaaaaaa', label: 'Берёза' },
+      { value: 'hb_yaaaaaaaaaaaaaaa', label: 'Ясень' }
+    ]);
+    const enSrc = listFacetRows(records, dict('en'), 'en').find((r) => r.group === 'src');
+    expect(enSrc?.values.find((v) => v.value === 'community')?.label).toBe('Communities');
+  });
+
+  it('draws no row for 8 entries all alike', () => {
+    const potions = Array.from({ length: 8 }, (_, i) =>
+      row({ id: 'cc' + String(i + 1), src: 'core', kind: 'consumable' })
+    );
+    expect(listFacetRows(potions, t, 'ru')).toEqual([]);
+  });
+
+  it('draws the tier row alone for 8 weapons that differ only by tier', () => {
+    const weapons = Array.from({ length: 8 }, (_, i) =>
+      gear('p' + String(i), 'core', {
+        t: 'weapon',
+        tier: ((i % 4) + 1) as 1 | 2 | 3 | 4,
+        cls: 'phy',
+        tr: 'presence',
+        rg: 'melee',
+        bu: 1,
+        line: i < 4 ? 'p0' : 'p4'
+      })
+    );
+    expect(shape(listFacetRows(weapons, t, 'ru'))).toEqual([
+      ['tier', 'Ранг', ['1', '2', '3', '4']]
+    ]);
+  });
+
+  it('draws the source and line rows for 8 tier 2 armours from five sources', () => {
+    const SRC = ['core', 'hnf', 'wondrous', 'dread', 'voa'];
+    const armours = Array.from({ length: 8 }, (_, i) =>
+      gear('ar' + String(i), SRC[i % 5] ?? 'core', {
+        t: 'armor',
+        tier: 2,
+        ...(i === 0 ? { line: 'ar0' } : {})
+      })
+    );
+    expect(shape(listFacetRows(armours, t, 'ru'))).toEqual([
+      ['src', 'Источник', ['Core', 'Hope & Fear', 'Wondrous', 'Dread', 'Vault of Ages']],
+      ['line', 'Линейка', ['Улучшаемые', 'Уникальные']]
+    ]);
+  });
+
+  describe('at the entry limit and at three times it', () => {
+    /* A key of the 19-character shape for the n-th own row. */
+    const key = (head: string, n: number): string =>
+      (
+        'hb_' +
+        head +
+        'abcdefghij'.charAt(Math.floor(n / 10)) +
+        'abcdefghij'.charAt(n % 10)
+      ).padEnd(19, 'a');
+    /* 60 own sources, three owners at 20 each. */
+    const own = Array.from({ length: 60 }, (_, i) =>
+      recordOf(
+        key('own', i),
+        { kind: 'item', ru: 'Своя вещь ' + String(i) },
+        { key: key('src', i), ru: 'Источник ' + String(i) }
+      )
+    );
+    /* A fifth own items, the rest spread evenly over the catalog. */
+    const mixed = (n: number): Record_[] => {
+      const owned = own.slice(0, n / 5);
+      const rest = n - owned.length;
+      const all = catalog.all;
+      return [
+        ...owned,
+        ...Array.from(
+          { length: rest },
+          (_, i) => all[Math.floor((i * all.length) / rest)] as Record_
+        )
+      ];
+    };
+
+    for (const n of [100, 300]) {
+      it(`bounds every row by its vocabulary and filters to the expected subset at ${String(n)}`, () => {
+        const records = mixed(n);
+        const rows = listFacetRows(records, t, 'ru');
+        const size = (g: string): number => rows.find((r) => r.group === g)?.values.length ?? 0;
+        const bound: Record<string, number> = {
+          kind: 5,
+          tier: 5,
+          cls: 2,
+          trait: 6,
+          range: 5,
+          burden: 2,
+          line: 2
+        };
+        for (const [g, most] of Object.entries(bound))
+          expect(size(g), g).toBeLessThanOrEqual(most);
+        const ownSources = new Set(records.filter((it) => it.src === 'homebrew').map(srcOf));
+        expect(size('src')).toBeLessThanOrEqual(12 + ownSources.size);
+        const picked = { kind: ['weapon'], tier: ['2'] };
+        const passed = records.filter((it) =>
+          passes(picked, LIST_GROUPS, (g) => listFacets(it)[g] ?? '')
+        );
+        expect(passed.length).toBeGreaterThan(0);
+        expect(passed).toEqual(
+          records.filter((it) => it.eq?.t === 'weapon' && String(it.eq.tier) === '2')
+        );
+      });
+    }
+
+    it('keeps the longest address under the 16384 characters a sign-in return takes', () => {
+      const rows = listFacetRows(mixed(300), t, 'ru');
+      const every = Object.fromEntries(
+        rows.map((r) => [r.group, r.values.map((v) => v.value)])
+      );
+      expect(every['src']?.length).toBeGreaterThan(60);
+      const seg = encodeFilter(every, LIST_GROUPS);
+      expect(('#/s/' + 'A'.repeat(43) + '/' + seg).length).toBeLessThan(16384);
+    });
   });
 });

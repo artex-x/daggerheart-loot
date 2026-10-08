@@ -493,6 +493,72 @@
     }
   },
   {
+    "hash": "#/s/player-token-1/f_kind-weapon.tier-1",
+    "why": "a share link with a filter, on the test build's seeded share of 10 entries: the three tier 1 weapons, two pills, the address kept",
+    "resolves": {
+      "hash": "#/s/player-token-1/f_kind-weapon.tier-1",
+      "tab": null,
+      "rows": 3,
+      "printCards": 0,
+      "picked": ["kind:weapon", "tier:1"]
+    }
+  },
+  {
+    "hash": "#/s/player-token-1/f_kind-weapon_tier-1",
+    "why": "the old group separator on the test build's seeded share reads as on a table: the same three rows and pills",
+    "resolves": {
+      "hash": "#/s/player-token-1/f_kind-weapon_tier-1",
+      "tab": null,
+      "rows": 3,
+      "printCards": 0,
+      "picked": ["kind:weapon", "tier:1"]
+    }
+  },
+  {
+    "hash": "#/s/player-token-1/f_range-veryfar",
+    "why": "a value no entry of the test build's seeded share answers draws no pill and narrows nothing, where a table empties",
+    "resolves": {
+      "hash": "#/s/player-token-1/f_range-veryfar",
+      "tab": null,
+      "rows": 10,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/s/player-token-1/f_rg-melee",
+    "why": "a group a share link does not offer, on the test build's seeded share: the whole list, no pill",
+    "resolves": {
+      "hash": "#/s/player-token-1/f_rg-melee",
+      "tab": null,
+      "rows": 10,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/s/player-token-1/f_kind-weapon.",
+    "why": "a chat client's trailing full stop after the filter, on the test build's seeded share: the five weapons, one pill, the address not rewritten",
+    "resolves": {
+      "hash": "#/s/player-token-1/f_kind-weapon.",
+      "tab": null,
+      "rows": 5,
+      "printCards": 0,
+      "picked": ["kind:weapon"]
+    }
+  },
+  {
+    "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_kind-weapon",
+    "why": "a filter link whose token opens nothing draws the no-longer-available page, the address kept",
+    "resolves": {
+      "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_kind-weapon",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/h/00000000-0000-4000-8000-000000000511",
     "why": "one homebrew item by its id, for everyone; the address is kept",
     "resolves": {

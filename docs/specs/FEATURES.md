@@ -181,13 +181,14 @@ across.
   applies to the three kinds only. A record dialog, a list, `#/i/<key>`,
   `#/tables/homebrew` and the relation lines of a catalog card or row still
   draw them. It is memory only (`STATE.md`).
-- The filter panel is one component across all tables; where a table has nothing
-  to filter by, there is no panel. Nothing is selected by default and an empty
+- The filter panel is one component across all tables and the shared list page
+  ("Lists"); where a table has nothing to filter by, there is no panel. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
   and a copy-link button, so they are reachable while the panel is folded.
   Values in a row combine with *or*; a link naming two frames opens both.
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
-  every change, and read back only when the segment actually changed.
+  every change, and read back only when the segment actually changed; on a
+  share link too; on `#/l/` it is page memory.
 - A grid tile shows that record's own roll number. The live app passed the
   array index as the number (`list.map(tileHTML)`), so every tile past the
   first in a plain table showed its position instead of its roll - a live
@@ -422,7 +423,10 @@ across.
   is open) a line in the muted colour says «Ссылки вида #/l/ перестанут
   открываться 26 октября 2026 года. Сохраните список себе, чтобы не потерять
   его.» (`LEGACY_WRITE_UNTIL`); the bad-link page and a browser list's own
-  page do not draw it. A link
+  page do not draw it. From 8 entries the page draws the share link's search
+  box and filter ("The shared page `#/s/<token>`" below) as page memory: the
+  address stays as it opened, no copy-link button is drawn, and a reload or
+  another list starts unfiltered. A link
   written before the checksum that names no entry is still damaged; an
   empty list's own link opens it. A payload that cannot be
   decoded draws "Предмет не найден", the bad-link line and a "На главную"
@@ -679,6 +683,37 @@ browser lists writable after the date.
   entry in the GM-only row look. «Сохранить себе» from
   a GM's link keeps the mark on each copied entry; a players' link's copy has
   no such entry.
+  From 8 drawn entries (`LIST_SEARCH_AT`), or once a query or a filter value
+  is set, one block sits between the notes and the rows: the tables' search
+  box («Поиск по названию или описанию…», matched as a table's box, never
+  over the list notes) and the table filter strip and panel ("Tables and
+  search"). Once drawn the block stays until another list opens: dropping the
+  last pill, clearing the query or a re-read that shrinks the list never
+  removes it. The strip is drawn only while a row can narrow, so a list of
+  alike entries shows the search box alone. The rows are Тип / Type
+  («Предметы», «Расходники», «Оружие», «Вторичное», «Броня»), Источник /
+  Source (the books in book order, «Сообщества», the frames, then
+  «Хоумбрю» and each own or linked source by name), Ранг / Tier, Класс,
+  Характеристика, Дистанция, Хват and Линейка. A row offers only the values
+  the entries the page draws answer, so a players' link never offers a
+  GM-only entry's value, and is drawn only with two values or more, or one
+  value some entry lacks; a row never narrows by the picks in another row,
+  and no chip carries a count. The filter lives in the address,
+  `#/s/<token>/f_<filter>` (`ROUTES.md`), written in place; a filter link
+  opens the panel. While a value is picked the strip draws the copy-link
+  button: it copies `<site>#/s/...` or `<site>en/#/s/...` and toasts
+  «Ссылка на фильтры скопирована» / "Filter link copied"; on a GM's link
+  it toasts «Ссылка на фильтры скопирована - это ссылка для мастера: в ней
+  есть заметки и позиции «Только для мастера»» / "Filter link copied - it is
+  the GM's link: it carries the "GM only" notes and items". A value no drawn
+  entry answers (an old link, an entry the owner removed) draws no pill and
+  narrows nothing, where a table empties; the address keeps it until the
+  next change of the filter, it applies again if an answering entry comes
+  back first, and the copied link holds only the values in force. No match
+  draws «Ничего не найдено» and, while a value is in force, «Сбросить всё».
+  A ticked entry the filter hides stays ticked and counted; «Выбрать все (N)»
+  ticks the drawn rows only. The sub keeps the whole count. The owner's list
+  page `#/lists/<id>` has no filter.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session or the
@@ -2052,4 +2087,5 @@ Each rule keeps its number: a review cites it by number.
   no «?» (its one select explains itself).
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
-  toast, the chip and the source and card rows); nothing scrolls sideways.
+  toast, the chip, the filter pill and the source and card rows); nothing
+  scrolls sideways.

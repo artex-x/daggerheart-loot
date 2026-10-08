@@ -1,0 +1,209 @@
+# #/s/player-token-3 ~ long source picked
+# route: #/s/player-token-3
+# why: gm3's «Склад», 8 entries: the source at the 80-code-point name picked; its chip and its pill wrap inside the strip at 360 px; one row, gm4's «Фляга туманов»
+
+## ru :: tree
+RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Склад" [level=1]
+    StaticText "Список от другого игрока · 8 позиций"
+    StaticText "Обновлено позавчера"
+    button "Сохранить себе"
+    searchbox "Поиск по названию или описанию…"
+    button "Фильтры (1)" [expanded=true]
+    button "Мастерская старого оружейника из долины туманов за перевалом у С..." [description=Убрать из фильтра namelen=80 namehash=9bd5cf26]
+    button "Сбросить всё"
+    button "Ссылка на фильтры" [description=Ссылка на фильтры]
+    ... StaticText x15 of 19 same-shape siblings elided
+    button "Предметы" [pressed=false]
+    button "Расходники" [pressed=false]
+    ... button x16 of 20 same-shape siblings elided
+    button "Мастерская старого оружейника из долины туманов за перевалом у С..." [pressed=true namelen=80 namehash=9bd5cf26]
+    StaticText "любое"
+    button "Улучшаемые" [pressed=false]
+    button "Уникальные" [pressed=false]
+    checkbox "Выбрать все (1)" [checked=false]
+    StaticText "Выбрать все (1)"
+    checkbox "Фляга туманов" [checked=false]
+    button "Фляга туманов Туман из фляги скрывает вас до конца сцены. ПРЕДМЕ..." [namelen=151 namehash=a3e66376]
+    status ""
+  region "Выбранные записи"
+    generic ""
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1
+2
+Arazo's Artifacts
+Core
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Альт. таблицы
+Броня
+Влияние
+Войти
+Вплотную
+Далеко
+Двуручное
+Искусность
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+Магическое
+Мастерская старого оружейника из долины туманов за перевалом у С... [namelen=80 namehash=9bd5cf26]
+Обычные правила
+Одноручное
+Оружие
+Поиск
+Предметы
+Проворность
+Расходники
+Сбросить всё
+Сообщества
+Сохранить себе
+Списки
+Ссылка на фильтры
+Таблицы
+Убрать из фильтра
+Улучшаемые
+Уникальные
+Условия использования
+Установить как приложение
+Физическое
+Фильтры (1)
+Фляга туманов
+Фляга тумановТуман из фляги скрывает вас до конца сцены.ПредметМ... [namelen=148 namehash=2d9c9d8e]
+Хоумбрю
+
+## en :: tree
+RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Склад" [level=1]
+    StaticText "A list from another player · 8 items"
+    StaticText "Updated 2 days ago"
+    button "Save to my lists"
+    searchbox "Search by name or description…"
+    button "Filters (1)" [expanded=true]
+    button "Workshop of the old armourer from the valley of mists past the N..." [description=Remove from the filter namelen=80 namehash=a1da31ad]
+    button "Reset all"
+    button "Filter link" [description=Filter link]
+    ... StaticText x15 of 19 same-shape siblings elided
+    button "Items" [pressed=false]
+    button "Consumables" [pressed=false]
+    ... button x16 of 20 same-shape siblings elided
+    button "Workshop of the old armourer from the valley of mists past the N..." [pressed=true namelen=80 namehash=a1da31ad]
+    StaticText "any"
+    button "Upgradable" [pressed=false]
+    button "Unique" [pressed=false]
+    checkbox "Select all (1)" [checked=false]
+    StaticText "Select all (1)"
+    checkbox "Mist Flask" [checked=false]
+    button "Mist Flask The mist from the flask hides you until the end of th..." [namelen=163 namehash=fc84989c]
+    status ""
+  region "Selected records"
+    generic ""
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+1
+2
+Agility
+Alt. tables
+Arazo's Artifacts
+Armor
+Communities
+Consumables
+Core
+Dragon's Vault
+Dread
+EN
+Far
+Filter link
+Filters (1)
+Finesse
+Homebrew
+Install as an app
+Items
+Lists
+Magic
+Melee
+Mist Flask
+Mist FlaskThe mist from the flask hides you until the end of the... [namelen=160 namehash=13557f64]
+One-Handed
+Physical
+Presence
+Privacy
+RU
+Remove from the filter
+Reset all
+Save to my lists
+Search
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Two-Handed
+Unique
+Upgradable
+Vault of Ages
+Weapons
+Wondrous
+Workshop of the old armourer from the valley of mists past the N... [namelen=80 namehash=a1da31ad]
+daggerheart.com
+ЛутDaggerheart

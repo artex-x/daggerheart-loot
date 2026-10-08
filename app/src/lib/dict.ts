@@ -271,6 +271,9 @@ const ru = {
   resetAll: 'Сбросить всё',
   filterLink: 'Ссылка на фильтры',
   filterLinkCopied: 'Ссылка на фильтры скопирована',
+  /* A filter link copied on a GM link carries the GM token. */
+  gmFilterLinkCopied:
+    'Ссылка на фильтры скопирована - это ссылка для мастера: в ней есть заметки и позиции «Только для мастера»',
 
   /* A section heading's own link, off `sectionHead` in app.js - the table
      link button's sibling, one level down. */
@@ -1247,6 +1250,8 @@ const en: Dict = {
   resetAll: 'Reset all',
   filterLink: 'Filter link',
   filterLinkCopied: 'Filter link copied',
+  gmFilterLinkCopied:
+    'Filter link copied - it is the GM\'s link: it carries the "GM only" notes and items',
 
   copySection: 'Copy a link to this section',
   sectionLinkCopied: 'Section link copied',

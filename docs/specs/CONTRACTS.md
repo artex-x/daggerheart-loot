@@ -48,7 +48,9 @@ Frozen as written in `ROUTES.md`. In particular:
   (`get_shared_list`) draws each homebrew entry live from the linked item,
   with the item's id as `hid` beside the entry's `snapshot`; a players'
   link's projection holds no entry marked GM only (`list_entries.gm_only`),
-  and a GM's link writes `gm_only` on each entry
+  and a GM's link writes `gm_only` on each entry; the token is optionally
+  followed by a filter, `#/s/<token>/f_<filter>`, in the grammar and with the
+  groups of `ROUTES.md`; an earlier build ignores the filter
 - `#/h/<uuid>`, one homebrew item by its id (`homebrew_items.id`), for
   everyone, signed out too: the id is random, made by the author's client, so
   an item is unlisted, not secret, and nobody can build or list one; the id

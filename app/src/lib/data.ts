@@ -231,6 +231,13 @@ export function equipFacets(it: Record_): Record<string, string | readonly strin
   };
 }
 
+/** The facet values a record answers with, on a share link (`LIST_GROUPS`): the
+ *  equipment facets, then `kind` - the gear's own kind where a table says `equip` -
+ *  and `src`, which every record answers. */
+export function listFacets(it: Record_): Record<string, string | readonly string[]> {
+  return { ...equipFacets(it), kind: it.eq?.t ?? kindOf(it), src: srcOf(it) };
+}
+
 /** The facet values a record answers with, on the plain tables. */
 export function plainFacets(it: Record_): Record<string, string> {
   return {

@@ -21,10 +21,13 @@
  * `kind` and `sect` over its own rows; its `src` is the source chip above the table
  * (docs/specs/ROUTES.md, "Values").
  *
+ * A share link's filter is a third shape: `listFacetRows` offers only the values the
+ * list's own entries answer, because a list is small and changes under its reader.
+ *
  * Pure module: no DOM, no data beyond what is handed in. */
 
-import { equipFacets, kindOf, srcOf, type Index } from './data.js';
-import { EQ_GROUPS, EQ_TABLE, groupsFor } from './filters.js';
+import { equipFacets, kindOf, listFacets, srcOf, type Index } from './data.js';
+import { EQ_GROUPS, EQ_TABLE, groupsFor, LIST_GROUPS } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { srcName } from './label.js';
@@ -71,20 +74,35 @@ function kindRow(index: Index, table: TableId, t: Dict): FacetRow | null {
   };
 }
 
-/* The equipment `src` row's candidates, off `EQ_SRC` in app.js: the five books
+/* The book sources in book order, the roll sections' order. */
+const BOOK_SRC: readonly string[] = ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'arazo'];
+
+/* The equipment `src` row's candidates, off `EQ_SRC` in app.js: the books
    in book order, then the campaign frames. `motherboard` never survives the
    presence filter below - no equipment of any kind carries it - so it is
    never restated separately from `FRAME_ORDER`. */
-const EQ_SRC: readonly string[] = [
-  'core',
-  'hnf',
-  'wondrous',
-  'dread',
-  'voa',
-  'dv',
-  'arazo',
-  ...FRAME_ORDER
+const EQ_SRC: readonly string[] = [...BOOK_SRC, ...FRAME_ORDER];
+
+/* A share link's `src` candidates: a list also holds community loot. */
+const LIST_SRC: readonly string[] = [...BOOK_SRC, 'community', ...FRAME_ORDER];
+
+/* A share link's `kind` values: the search page's two kind words, then the equipment
+   tables' three tab words, because a list mixes the gear the tables split. */
+const LIST_KIND: readonly (readonly [string, keyof Dict])[] = [
+  ['item', 'fItems'],
+  ['consumable', 'fCons'],
+  ['weapon', 'subWeapon'],
+  ['secondary', 'subSecondary'],
+  ['armor', 'subArmor']
 ];
+
+/* Every key of a word map, labelled in `lang`. */
+const words = (map: Record<string, readonly [string, string]>, lang: Lang): FacetValue[] =>
+  Object.keys(map).map((k) => ({ value: k, label: eqWord(map, k, lang) }));
+
+/* The burden chips: `any` is no chip, it answers both. */
+const burdenValues = (lang: Lang): FacetValue[] =>
+  ['1', '2'].map((k) => ({ value: k, label: eqWord(EQ_BURDEN, k, lang) }));
 
 const byLabel =
   (lang: Lang) =>
@@ -150,14 +168,7 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
       ]
     }),
     /* The row filters the class on every weapon kind, secondary included. */
-    cls: () => ({
-      group: 'cls',
-      label: t.eqClass,
-      values: (Object.keys(EQ_CLS) as (keyof typeof EQ_CLS)[]).map((k) => ({
-        value: k,
-        label: eqWord(EQ_CLS, k, lang)
-      }))
-    }),
+    cls: () => ({ group: 'cls', label: t.eqClass, values: words(EQ_CLS, lang) }),
     trait: () => ({
       group: 'trait',
       label: t.eqTrait,
@@ -174,27 +185,9 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
           label: eqWord(EQ_TRAIT, k, lang)
         }))
     }),
-    range: () => ({
-      group: 'range',
-      label: t.eqRange,
-      values: (Object.keys(EQ_RANGE) as (keyof typeof EQ_RANGE)[]).map((k) => ({
-        value: k,
-        label: eqWord(EQ_RANGE, k, lang)
-      }))
-    }),
-    burden: () => ({
-      group: 'burden',
-      label: t.eqBurden,
-      values: ['1', '2'].map((k) => ({ value: k, label: eqWord(EQ_BURDEN, k, lang) }))
-    }),
-    line: () => ({
-      group: 'line',
-      label: t.eqLineF,
-      values: Object.keys(EQ_LINE).map((k) => ({
-        value: k,
-        label: eqWord(EQ_LINE, k, lang)
-      }))
-    })
+    range: () => ({ group: 'range', label: t.eqRange, values: words(EQ_RANGE, lang) }),
+    burden: () => ({ group: 'burden', label: t.eqBurden, values: burdenValues(lang) }),
+    line: () => ({ group: 'line', label: t.eqLineF, values: words(EQ_LINE, lang) })
   };
 
   return EQ_GROUPS[kind].map((g) => {
@@ -250,4 +243,58 @@ export function facetRows(
   }
 
   return rows;
+}
+
+/* Every row a share link's filter can draw, with every value it can take, in
+   `LIST_GROUPS` order; `src` adds the own and frozen-copy sources of `records`. */
+function listCandidates(records: readonly Record_[], t: Dict, lang: Lang): FacetRow[] {
+  const rows: Record<string, Omit<FacetRow, 'group'>> = {
+    kind: {
+      label: t.kindF,
+      values: LIST_KIND.map(([value, key]) => ({ value, label: t[key] }))
+    },
+    src: {
+      label: t.source,
+      values: [
+        ...LIST_SRC.map((k) => ({ value: k, label: srcName(k, lang) })),
+        ...homebrewSrcValues(records, t, lang)
+      ]
+    },
+    tier: {
+      label: t.tier,
+      values: [
+        ...['1', '2', '3', '4'].map((n) => ({ value: n, label: n })),
+        { value: 'A', label: t.voaArtifact }
+      ]
+    },
+    cls: { label: t.eqClass, values: words(EQ_CLS, lang) },
+    trait: { label: t.eqTrait, values: words(EQ_TRAIT, lang) },
+    range: { label: t.eqRange, values: words(EQ_RANGE, lang) },
+    burden: { label: t.eqBurden, values: burdenValues(lang) },
+    line: { label: t.eqLineF, values: words(EQ_LINE, lang) }
+  };
+  return LIST_GROUPS.flatMap((group) => {
+    const row = rows[group];
+    return row ? [{ group, ...row }] : [];
+  });
+}
+
+/**
+ * The facet rows of a share link's filter (docs/specs/FEATURES.md, "Lists"): of the
+ * candidates, the values some record answers, and only the rows that can narrow - two
+ * values or more, or one value some record lacks. A row never narrows by another
+ * row's picks, as on a table.
+ */
+export function listFacetRows(records: readonly Record_[], t: Dict, lang: Lang): FacetRow[] {
+  const answers = records.map((it) => listFacets(it));
+  const has = (f: Record<string, string | readonly string[]>, g: string, v: string): boolean =>
+    [f[g] ?? ''].flat().includes(v);
+  return listCandidates(records, t, lang).flatMap((row) => {
+    const values = row.values.filter((v) => answers.some((f) => has(f, row.group, v.value)));
+    const [only] = values;
+    const narrows =
+      values.length > 1 ||
+      (only !== undefined && answers.some((f) => !has(f, row.group, only.value)));
+    return narrows ? [{ ...row, values }] : [];
+  });
 }

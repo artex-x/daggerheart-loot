@@ -10,6 +10,7 @@ import {
   equipOfKind,
   kindOf,
   lineMembers,
+  listFacets,
   madeFrom,
   otherTableRows,
   plainFacets,
@@ -373,6 +374,29 @@ describe('facet values', () => {
        burden chips. */
     const gryphon = index.byId.get('dve30') as Record_;
     expect(equipFacets(gryphon)['burden']).toEqual(['1', '2']);
+  });
+});
+
+describe('the facet values on a share link', () => {
+  it('answer the kind of gear for equipment, and item or consumable otherwise', () => {
+    const kinds = (['weapon', 'secondary', 'armor'] as const).map(
+      (k) => listFacets(equipOfKind(index, k)[0] as Record_)['kind']
+    );
+    expect(kinds).toEqual(['weapon', 'secondary', 'armor']);
+    expect(listFacets(index.byId.get('ci1') as Record_)['kind']).toBe('item');
+    expect(listFacets(index.byId.get('cc1') as Record_)['kind']).toBe('consumable');
+    /* Wondrous gear is filed `kind: 'item'` with a stat block: its kind is the gear's. */
+    expect(listFacets(index.byId.get('w51') as Record_)['kind']).toBe('weapon');
+  });
+
+  it('answer the source for every record, and the equipment facets for gear only', () => {
+    for (const it of index.all) expect(listFacets(it)['src']).toBe(srcOf(it));
+    const katana = index.byId.get('q26') as Record_;
+    expect(listFacets(katana)).toEqual({ ...equipFacets(katana), kind: 'weapon' });
+    expect(Object.keys(listFacets(index.byId.get('ci1') as Record_)).sort()).toEqual([
+      'kind',
+      'src'
+    ]);
   });
 });
 

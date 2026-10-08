@@ -1,4 +1,4 @@
-/* The fake cloud's fixed world: three users with fixed ids, so a golden that
+/* The fake cloud's fixed world: four users with fixed ids, so a golden that
  * signs in holds the same text on every run. `gm1` has two identities (the
  * unlink guard has something to allow), `gm2` has one (it has something to
  * refuse). `gm1` keeps a preferences row, `gm2` none (a first sign-in
@@ -6,10 +6,13 @@
  * GM share link. `gm1` holds one homebrew source with two sections and four
  * homebrew items; its first list and `gm2`'s list link the axe. `gm1` also holds a set card in its source and a rule card
  * with no source, which no item names, so no screen draws them. `gm2` holds no
- * homebrew. `gm3` holds no list and 39 items in the default source: 34 that name
+ * homebrew. `gm3` holds 39 items in the default source: 34 that name
  * catalog records - 15 loot items made from `ci1`, 15 weapons in `q1`'s line, 4 loot
  * items in the set `saints-ensemble`, the relation folds on a catalog card - and a chain
  * of 5 own items with an own set card, which `#/h/` draws with every relation line.
+ * `gm3`'s one list, «Склад», has a players' link with 8 entries, the shared page's
+ * filter threshold. `gm4` holds no list and one item in a source at the longest
+ * name, which «Склад» links; no state signs in as `gm4`.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
  * longest name. docs/specs/COVERAGE.md, "Test layers". */
 
@@ -57,6 +60,11 @@ const USERS = {
     id: uuid(3),
     email: 'gm3@example.test',
     identities: [{ id: uuid(31), provider: 'google', email: 'gm3@example.test' }]
+  },
+  gm4: {
+    id: uuid(4),
+    email: 'gm4@example.test',
+    identities: [{ id: uuid(41), provider: 'google', email: 'gm4@example.test' }]
   }
 } satisfies Record<string, SeedUser>;
 
@@ -137,6 +145,11 @@ const AXE: HomebrewContent = {
   }
 };
 
+/* gm4's one item, in a source at the longest name (`BOOK_NAME_MAX`, 80 code points);
+   gm3's list links it. */
+const LONG_SRC_ITEM_KEY = 'hb_longsrcaaaaaaaaa';
+const LONG_SRC_ITEM_ID = uuid(461);
+
 /* gm1: a full list with both notes, two shares and prices in coins; an
    empty list; an old list. gm2: one list of its own. The offsets keep
    away from the boundaries of an "edited N ago" text. */
@@ -193,7 +206,34 @@ const LISTS = {
       editedAgoMs: 2 * DAY
     }
   ],
-  gm3: []
+  /* 8 entries, the shared page's filter threshold: catalog records of three kinds and
+     sources, gm3's bedroll at the longest item name and gm4's item in the source at the
+     longest source name. */
+  gm3: [
+    {
+      id: uuid(301),
+      name: 'Склад',
+      entries: [
+        { id: uuid(3101), itemKey: 'ci1', position: 0 },
+        { id: uuid(3102), itemKey: 'cc1', position: 1 },
+        { id: uuid(3103), itemKey: 'q1', position: 2 },
+        { id: uuid(3104), itemKey: 'q313', position: 3 },
+        { id: uuid(3105), itemKey: 'q23', position: 4 },
+        { id: uuid(3106), itemKey: 'w51', position: 5 },
+        { id: uuid(3107), itemKey: 'hb_bedrolloaaaaaaaa', position: 6, source: 'homebrew' },
+        {
+          id: uuid(3108),
+          itemKey: LONG_SRC_ITEM_KEY,
+          position: 7,
+          source: 'homebrew',
+          hbItem: LONG_SRC_ITEM_ID
+        }
+      ],
+      createdAgoMs: 6 * DAY,
+      editedAgoMs: 2 * DAY
+    }
+  ],
+  gm4: []
 } satisfies Record<SeedUserId, SeedList[]>;
 
 const SHARES: SeedShare[] = [
@@ -204,7 +244,20 @@ const SHARES: SeedShare[] = [
     token: 'player-token-1',
     topicKey: uuid(112)
   },
-  { id: uuid(113), listId: uuid(101), audience: 'gm', token: 'gm-token-1', topicKey: uuid(114) }
+  {
+    id: uuid(113),
+    listId: uuid(101),
+    audience: 'gm',
+    token: 'gm-token-1',
+    topicKey: uuid(114)
+  },
+  {
+    id: uuid(311),
+    listId: uuid(301),
+    audience: 'player',
+    token: 'player-token-3',
+    topicKey: uuid(312)
+  }
 ];
 
 /** A seeded homebrew source; the times are offsets back from the port's boot. */
@@ -473,6 +526,37 @@ const HOMEBREW = {
         editedAgoMs: 12 * HOUR
       }
     ]
+  },
+  gm4: {
+    books: [
+      {
+        id: uuid(451),
+        key: 'hb_longsourceaaaaaa',
+        content: {
+          ru: 'Мастерская старого оружейника из долины туманов за перевалом у Северной реки, II',
+          en: 'Workshop of the old armourer from the valley of mists past the Northern River II'
+        },
+        createdAgoMs: 8 * DAY,
+        editedAgoMs: 8 * DAY
+      }
+    ],
+    items: [
+      {
+        id: LONG_SRC_ITEM_ID,
+        key: LONG_SRC_ITEM_KEY,
+        bookId: uuid(451),
+        content: {
+          kind: 'item',
+          ru: 'Фляга туманов',
+          en: 'Mist Flask',
+          rud: 'Туман из фляги скрывает вас до конца сцены.',
+          ende: 'The mist from the flask hides you until the end of the scene.'
+        },
+        createdAgoMs: 8 * DAY,
+        editedAgoMs: 8 * DAY
+      }
+    ],
+    cards: []
   }
 } satisfies Record<SeedUserId, SeedHomebrew>;
 

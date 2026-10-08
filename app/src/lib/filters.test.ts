@@ -19,6 +19,7 @@ import {
   groupHits,
   groupIsAny,
   groupsFor,
+  LIST_GROUPS,
   passes
 } from './filters.js';
 import { CHARACTER_TRAITS, TABLE_IDS } from './types.js';
@@ -61,6 +62,24 @@ describe('which groups a table offers', () => {
       const g = groupsFor(t);
       expect(new Set(g).size, t).toBe(g.length);
     }
+  });
+
+  it("gives a share link kind, source and every equipment group, in the weapons' order", () => {
+    expect(LIST_GROUPS).toEqual([
+      'kind',
+      'src',
+      'tier',
+      'cls',
+      'trait',
+      'range',
+      'burden',
+      'line'
+    ]);
+    const weapon = EQ_GROUPS.weapon;
+    expect(LIST_GROUPS.filter((g) => weapon.includes(g)).sort()).toEqual([...weapon].sort());
+    expect(encodeFilter({ line: ['uniq'], kind: ['weapon'] }, LIST_GROUPS)).toBe(
+      'f_kind-weapon.line-uniq'
+    );
   });
 });
 

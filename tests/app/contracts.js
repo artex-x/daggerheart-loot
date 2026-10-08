@@ -323,7 +323,7 @@ function stampOf(parts) {
     await ctx.close();
   }
 
-  console.log('filter group names select something');
+  console.log('filter group names select something, on the tables and on a share link');
   const PROBE = [
     ['eq_weapon', 'tier-2'],
     ['eq_weapon', 'tier-A'],
@@ -360,6 +360,26 @@ function stampOf(parts) {
     );
   }
   await pCtx.close();
+
+  /* A share link's groups beyond `kind` and `tier`, which the route fixtures replay:
+     each value is one the test build's seeded share `player-token-1` (10 entries) holds. */
+  const SHARE_PROBE = [
+    'src-hnf',
+    'cls-mag',
+    'trait-presence',
+    'range-far',
+    'burden-2',
+    'line-uniq'
+  ];
+  const { ctx: sCtx, page: sPage, d: sD } = await fresh({ width: 1280, height: 900 });
+  for (const seg of SHARE_PROBE) {
+    await sD.open('#/s/player-token-1/f_' + seg);
+    const n = await sPage.evaluate(
+      () => document.querySelectorAll('.rows .row[data-row]').length
+    );
+    ok(n > 0 && n < 10, 'player-token-1/f_' + seg + ': the group selects ' + n + ' of 10');
+  }
+  await sCtx.close();
 
   /* The own items' values exist in one account only: gm1's seed. gm1's tables view is the
      grid, so a row is any `[data-row]`. On `homebrew` the `src` value is the source chip

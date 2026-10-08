@@ -1703,7 +1703,7 @@ describe('the seeded homebrew', () => {
     const index = buildIndex(loot);
     const { books, cards } = SEED.homebrew.gm3;
     const all = SEED.homebrew.gm3.items;
-    expect([books, SEED.lists.gm3]).toEqual([[], []]);
+    expect(books).toEqual([]);
     expect(all).toHaveLength(39);
     expect(all.every((i) => i.bookId === undefined)).toBe(true);
     const items = all.slice(0, 34);
@@ -1739,6 +1739,41 @@ describe('the seeded homebrew', () => {
       ])
     );
     expect(longest).toBe(120);
+  });
+
+  it("gives gm3 one list of 8 entries with a players' link, linking gm4's item in the longest source", async () => {
+    const [list, ...rest] = SEED.lists.gm3;
+    expect(rest).toEqual([]);
+    expect(list?.entries.map((e) => [e.itemKey, e.source ?? 'official', e.hbItem])).toEqual([
+      ['ci1', 'official', undefined],
+      ['cc1', 'official', undefined],
+      ['q1', 'official', undefined],
+      ['q313', 'official', undefined],
+      ['q23', 'official', undefined],
+      ['w51', 'official', undefined],
+      ['hb_bedrolloaaaaaaaa', 'homebrew', undefined],
+      ['hb_longsrcaaaaaaaaa', 'homebrew', uuid(461)]
+    ]);
+    const bedroll = SEED.homebrew.gm3.items.find((i) => i.key === 'hb_bedrolloaaaaaaaa');
+    expect(Array.from(bedroll?.content.ru ?? '')).toHaveLength(120);
+    const { books, items } = SEED.homebrew.gm4;
+    expect(SEED.lists.gm4).toEqual([]);
+    expect(items.map((i) => [i.id, i.key, i.bookId])).toEqual([
+      [uuid(461), 'hb_longsrcaaaaaaaaa', books[0]?.id]
+    ]);
+    expect(
+      books.map((b) => [
+        Array.from(b.content.ru ?? '').length,
+        Array.from(b.content.en ?? '').length
+      ])
+    ).toEqual([[80, 80]]);
+    const read = await fakeCloud(SEED).shares.read('player-token-3');
+    const shared = read.ok ? read.shared : null;
+    expect(shared?.entries.map((e) => e.item_key)).toEqual(list?.entries.map((e) => e.itemKey));
+    expect(shared?.entries[7]?.snapshot).toMatchObject({
+      id: 'hb_longsrcaaaaaaaaa',
+      book: { key: 'hb_longsourceaaaaaa' }
+    });
   });
 });
 

@@ -120,6 +120,11 @@ describe('naming a source key with no record behind it', () => {
     expect(srcName('arazo', 'en')).toBe("Arazo's Artifacts");
   });
 
+  it('names the community loot, which a share link offers as a source', () => {
+    expect(srcName('community', 'ru')).toBe('Сообщества');
+    expect(srcName('community', 'en')).toBe('Communities');
+  });
+
   it('falls through to a frame name', () => {
     expect(srcName('beast_feast', 'ru')).toBe('Пир зверей');
     expect(srcName('beast_feast', 'en')).toBe('Beast Feast');

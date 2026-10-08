@@ -139,7 +139,20 @@ const N_REC = '\x1e',
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
     ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
+    ok(
+      text.includes('#/s/<token>/f_'),
+      name + " does not name the share link's filter #/s/<token>/f_"
+    );
     ok(text.includes('#/h/<uuid>'), name + ' does not name the item address #/h/<uuid>');
+  });
+  /* A share link's `kind` names the gear a table calls `equip` (ROUTES.md, "Filter
+     grammar"); an agent that writes `kind-equip` gets the whole list. */
+  ok(
+    machine.includes('`item`/`consumable`/`weapon`/`secondary`/`armor`'),
+    "llms.txt does not list the share link's kind values"
+  );
+  ['weapon', 'secondary', 'armor'].forEach(function (v) {
+    ok(routesDoc.includes('`' + v + '`'), "ROUTES.md does not name the share link's kind " + v);
   });
   /* The homebrew pages and the reserved key prefix are public (CONTRACTS.md sections 1
      and 2): an agent must not take `hb_` for a record id it can build. */

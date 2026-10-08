@@ -89,6 +89,18 @@ describe('golden route fixtures', () => {
           .flatMap((g) => (route.filter[g] ?? []).map((v) => g + ':' + v));
         expect(shown.sort()).toEqual([...fx.resolves.picked].sort());
       }
+
+      /* A share link's pills are the parsed values its list holds, so each pill is in
+         the parsed filter; a value the list lacks is parsed and draws none. */
+      if (fx.hash.startsWith('#/s/')) {
+        expect(route.kind).toBe('share');
+        if (route.kind === 'share') {
+          for (const pill of fx.resolves.picked) {
+            const [group = '', value = ''] = pill.split(':');
+            expect(route.filter[group]).toContain(value);
+          }
+        }
+      }
     });
   }
 });
@@ -467,24 +479,65 @@ describe('a share link', () => {
     expect(SAMPLE).toMatch(/^[A-Za-z0-9_-]{43}$/);
   });
 
+  const bare = (token: string): Route => ({ kind: 'share', token, filter: {} });
+
   it('reads the token after `#/s/`', () => {
-    expect(parseHash('#/s/player-token-1')).toEqual({ kind: 'share', token: 'player-token-1' });
+    expect(parseHash('#/s/player-token-1')).toEqual(bare('player-token-1'));
   });
 
   it('drops a stray character after the token', () => {
     const long = 'A'.repeat(43);
-    expect(parseHash('#/s/' + long + '.')).toEqual({ kind: 'share', token: long });
-    expect(parseHash('#/s/' + SAMPLE + '.')).toEqual({ kind: 'share', token: SAMPLE });
+    expect(parseHash('#/s/' + long + '.')).toEqual(bare(long));
+    expect(parseHash('#/s/' + SAMPLE + '.')).toEqual(bare(SAMPLE));
   });
 
   it('reads a bare `#/s/` as the empty token, and `#/s` as unknown', () => {
-    expect(parseHash('#/s/')).toEqual({ kind: 'share', token: '' });
+    expect(parseHash('#/s/')).toEqual(bare(''));
     expect(parseHash('#/s').kind).toBe('unknown');
   });
 
   it('builds the address back', () => {
     expect(shareHash(SAMPLE)).toBe('#/s/' + SAMPLE);
-    expect(parseHash(shareHash(SAMPLE))).toEqual({ kind: 'share', token: SAMPLE });
+    expect(parseHash(shareHash(SAMPLE))).toEqual(bare(SAMPLE));
+  });
+
+  it('reads a filter segment after the token, in the old separator too', () => {
+    const want: Route = {
+      kind: 'share',
+      token: SAMPLE,
+      filter: { kind: ['weapon'], tier: ['1', '2'] }
+    };
+    expect(parseHash('#/s/' + SAMPLE + '/f_kind-weapon.tier-1-2')).toEqual(want);
+    expect(parseHash('#/s/' + SAMPLE + '/f_kind-weapon_tier-1-2')).toEqual(want);
+  });
+
+  it('drops a stray character after the segment, and anything after the token that is no segment', () => {
+    expect(parseHash('#/s/' + SAMPLE + '/f_kind-weapon.')).toEqual({
+      kind: 'share',
+      token: SAMPLE,
+      filter: { kind: ['weapon'] }
+    });
+    expect(parseHash('#/s/' + SAMPLE + '/x_kind-weapon')).toEqual(bare(SAMPLE));
+    expect(parseHash('#/s/' + SAMPLE + '/f_')).toEqual(bare(SAMPLE));
+  });
+
+  it('writes the segment in LIST_GROUPS order, and no segment for an empty filter', () => {
+    const filter = { line: ['uniq'], kind: ['armor', 'weapon'], src: [] };
+    const h = shareHash(SAMPLE, { filter });
+    expect(h).toBe('#/s/' + SAMPLE + '/f_kind-armor-weapon.line-uniq');
+    expect(parseHash(h)).toEqual({
+      kind: 'share',
+      token: SAMPLE,
+      filter: { kind: ['armor', 'weapon'], line: ['uniq'] }
+    });
+    expect(shareHash(SAMPLE, { filter: {} })).toBe('#/s/' + SAMPLE);
+    expect(shareHash(SAMPLE, { filter: { kind: [] } })).toBe('#/s/' + SAMPLE);
+  });
+
+  it('writes no group a share link does not offer', () => {
+    expect(shareHash(SAMPLE, { filter: { comm: ['x'], frame: ['colossus'] } })).toBe(
+      '#/s/' + SAMPLE
+    );
   });
 });
 

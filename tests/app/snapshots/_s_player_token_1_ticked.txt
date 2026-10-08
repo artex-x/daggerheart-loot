@@ -29,7 +29,9 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     StaticText "Список от другого игрока · 10 позиций"
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
+    searchbox "Поиск по названию или описанию…"
+    button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     button "1 Первоклассный Спальный Мешок ×2 · 150 зол. Во время отдыха вы ..." [namelen=107 namehash=a6fdba25]
@@ -118,6 +120,7 @@ daggerheart.com
 Топор Тлеющих Углей800 зол.Ранг 2 · Магическое · Характеристика ... [namelen=192 namehash=8354c34e]
 Условия использования
 Установить как приложение
+Фильтры
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
@@ -146,7 +149,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     StaticText "A list from another player · 10 items"
     StaticText "Updated 3 days ago"
     button "Save to my lists"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
+    searchbox "Search by name or description…"
+    button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=true]
     button "1 Premium Bedroll ×2 · 150 gp During downtime, you automatically..." [namelen=90 namehash=a96c7377]
@@ -204,6 +209,7 @@ Dread
 EN
 Ember Axe
 Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
+Filters
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Install as an app
