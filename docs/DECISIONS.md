@@ -30,6 +30,7 @@ deleted.
 - 2026-10-07 - [Owner rules are written to their homes in the batch that hears them](decisions/2026-10-07-owner-rules-are-written-to-their-homes-in.md)
 - 2026-10-07 - [The commit gate arms when both halves of the check pass on one tree](decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md)
 - 2026-10-07 - [The image review keeps its verdicts in the browser, keyed by hash](decisions/2026-10-07-the-image-review-keeps-its-verdicts-in-the-browser-by-hash.md)
+- 2026-10-06 - [A share link's filter lives in its address; its facets are the drawn entries](decisions/2026-10-06-a-share-links-filter-lives-in-its-address-its-facets.md)
 - 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)
 - 2026-10-02 - [A lists file is version 2 only when it holds homebrew](decisions/2026-10-02-a-lists-file-is-version-2-only-when-it-holds-homebrew.md) - superseded in part
 - 2026-10-02 - [A list's frozen copies hold up to 1048576 bytes together](decisions/2026-10-02-a-lists-frozen-copies-hold-up-to-1048576-bytes.md) - superseded in part
