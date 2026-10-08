@@ -7,6 +7,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/svelt
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import { derivedKey } from '../lib/homebrew.js';
 import { zipStored } from '../lib/zip.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
@@ -717,5 +718,110 @@ describe('the press', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(toggle);
     expect(screen.queryByText('example.json')).toBeNull();
+  });
+});
+
+describe('the keys of another account', () => {
+  const GM2 = SEED.users.gm2.id;
+  const d = (key: string): string => derivedKey(GM2, key);
+  const EXPORT_ITEMS = [
+    'hb_emberaxeaaaaaaaa',
+    'hb_smithpotionaaaaa',
+    'hb_whispercapaaaaaa',
+    'hb_engravedringaaaa'
+  ];
+
+  it("sends gm1's export.json as gm2 under the derived keys, and «Обновить» rewrites them the second time", async () => {
+    const { container, cloud } = await opened('gm2');
+    const imp = vi.spyOn(cloud.homebrew, 'import');
+    choose(container, fixture('export.json'));
+    const first = await importButton(6);
+    expect(
+      screen.queryByRole('group', { name: 'Предметы, карты и источники, которые уже есть' })
+    ).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(first);
+    await screen.findByText(/^Импортировано предметов: 4/);
+    const sent = imp.mock.calls[0]?.[0];
+    expect(sent?.items.map((i) => i.key)).toEqual(EXPORT_ITEMS.map(d));
+    expect(sent?.books.map((b) => b.key)).toEqual([d(ALDER_KEY)]);
+    expect(sent?.cards.map((c) => c.key)).toEqual(
+      ['hb_aldersetaaaaaaaa', 'hb_alderrulecardaaa'].map(d)
+    );
+    expect(sent?.items.every((i) => i.book === d(ALDER_KEY) || i.book === null)).toBe(true);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Импорт из файла' }));
+    choose(container, fixture('export.json'));
+    await importButton(6);
+    expect(
+      previews(container).filter((p) => p.includes('Уже есть - останутся как есть:'))
+    ).toHaveLength(3);
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'Обновить' }));
+    await userEvent.click(await importButton(6));
+    await screen.findByText(/^Импортировано предметов: 0/);
+    const again = imp.mock.calls[1]?.[0];
+    expect(again?.update).toBe(true);
+    expect(again?.items.map((i) => i.key)).toEqual(EXPORT_ITEMS.map(d));
+  });
+
+  it('sends an own file of held keys unchanged', async () => {
+    const { container, cloud } = await opened('gm1');
+    const imp = vi.spyOn(cloud.homebrew, 'import');
+    choose(container, fixture('export.json'));
+    await userEvent.click(await importButton(6));
+    await screen.findByText(/^Импортировано предметов: 0/);
+    expect(imp.mock.calls[0]?.[0].items.map((i) => i.key)).toEqual(EXPORT_ITEMS);
+  });
+
+  it('names the file key in a relation note of a key the account does not hold', async () => {
+    const { container } = await opened('gm2');
+    choose(
+      container,
+      doc({ items: [{ key: keyN(1), kind: 'item', ru: 'Мушкет', craft: [keyN(99)] }] })
+    );
+    await importButton(1);
+    expect(lineTexts(container.querySelector('.rep')!)).toEqual([
+      `Предмет 1, «Мушкет»: craft «${keyN(99)}» - нет ни в файле, ни в аккаунте, ни в каталоге; связь сохранится, но не покажется`
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('refuses a file whose derived key is a key it also holds for the account', async () => {
+    const seed: Seed = {
+      ...SEED,
+      homebrew: {
+        ...SEED.homebrew,
+        gm2: {
+          books: [],
+          cards: [],
+          items: [
+            {
+              id: uuid(8400),
+              key: d(keyN(1)),
+              content: { kind: 'item', ru: 'Своё' },
+              createdAgoMs: 0,
+              editedAgoMs: 0
+            }
+          ]
+        }
+      }
+    };
+    const { container } = await opened('gm2', {}, true, seed);
+    choose(
+      container,
+      doc({
+        items: [
+          { key: keyN(1), kind: 'item', ru: 'Первый' },
+          { key: d(keyN(1)), kind: 'item', ru: 'Второй' }
+        ]
+      })
+    );
+    expect(await alertText()).toMatch(/^В файле ошибки - ничего не импортировано\./);
+    expect(lineTexts(container.querySelector('.errs')!)).toEqual([
+      `Предмет 2, «Второй»: ключ «${d(keyN(1))}» уже есть в файле items[1].key`
+    ]);
+    expect(screen.queryByRole('button', { name: /Импортировать/ })).toBeNull();
+    await expectNoA11yViolations(container);
   });
 });

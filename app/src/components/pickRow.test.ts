@@ -11,7 +11,7 @@ import App from '../App.svelte';
 import PickRow from './PickRow.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
-import { recordOf } from '../lib/homebrew.js';
+import { derivedKey, recordOf } from '../lib/homebrew.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
@@ -28,6 +28,9 @@ const ROLL_B = uuid(662);
 const ROLL_KEY = 'hb_rangerrollaaaaaa';
 const AXE_ID = uuid(511);
 const GM2_LIST = uuid(201);
+/* The keys gm2's copies take: `derivedKey` of gm2's user id and the author's key. */
+const GM2 = uuid(2);
+const AXE_KEY = 'hb_emberaxeaaaaaaaa';
 
 const LOOT: Loot = {
   items: {
@@ -81,7 +84,7 @@ describe('«Сохранить себе»', () => {
     expect(
       await screen.findByText(t.saveItemSaved.replace('%s', 'Скатка следопыта'))
     ).toBeInTheDocument();
-    expect(await ownKeys(world)).toContain(ROLL_KEY);
+    expect(await ownKeys(world)).toContain(derivedKey(GM2, ROLL_KEY));
   });
 
   it("(a) returns a modal's sign-in to the item's page", async () => {
@@ -127,6 +130,84 @@ describe('«Сохранить себе»', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('(b) reads «Сохранено» after a reload, which finds the copy under its derived key', async () => {
+    const world = fakeCloud(SEED, 'gm2');
+    page('#/h/' + ROLL_B, world);
+    await userEvent.click(await saveButton());
+    await waitFor(async () => {
+      expect(await saveButton()).toHaveTextContent(t.saveItemDone);
+    });
+    cleanup();
+    const imported = vi.spyOn(world.homebrew, 'import');
+    page('#/h/' + ROLL_B, world);
+    await waitFor(async () => {
+      expect(await saveButton()).toHaveTextContent(t.saveItemDone);
+    });
+    expect(await saveButton()).toBeDisabled();
+    expect(imported).not.toHaveBeenCalled();
+  });
+
+  it('(b) reads «Сохранено» for an item whose own key the account holds, saved before keys were derived', async () => {
+    const world = fakeCloud(SEED, 'gm2');
+    const made = await world.homebrew.createItem({
+      id: uuid(9200),
+      key: ROLL_KEY,
+      book_id: null,
+      content: { kind: 'item', ru: 'Моя скатка' }
+    });
+    expect(made.ok).toBe(true);
+    const { container } = page('#/h/' + ROLL_B, world);
+    await waitFor(async () => {
+      expect(await saveButton()).toHaveTextContent(t.saveItemDone);
+    });
+    expect(await saveButton()).toBeDisabled();
+    await expectNoA11yViolations(container);
+  });
+
+  it('(b) reads «Сохранено» and writes nothing when the list holds the row of the copy too', async () => {
+    const world = fakeCloud(SEED, 'gm2');
+    const COPY = derivedKey(GM2, AXE_KEY);
+    const made = await world.homebrew.createItem({
+      id: uuid(9201),
+      key: COPY,
+      book_id: null,
+      content: { kind: 'item', ru: 'Мой топор' }
+    });
+    expect(made.ok).toBe(true);
+    await world.lists.apply([
+      {
+        op: 'add',
+        list_id: GM2_LIST,
+        entries: [
+          {
+            id: uuid(7400),
+            item_key: COPY,
+            source: 'homebrew',
+            hb_item: null,
+            position: 99,
+            quantity: 1,
+            price_coins: null,
+            player_note: '',
+            gm_note: ''
+          }
+        ]
+      }
+    ]);
+    const imported = vi.spyOn(world.homebrew, 'import');
+    const applied = vi.spyOn(world.lists, 'apply');
+    const { container } = page('#/h/' + AXE_ID, world);
+    await waitFor(async () => {
+      expect(await saveButton()).toHaveTextContent(t.saveItemDone);
+    });
+    const done = await saveButton();
+    expect(done).toBeDisabled();
+    expect(screen.queryByText(t.saveItemNoteList)).toBeNull();
+    await userEvent.click(done);
+    expect(imported).not.toHaveBeenCalled();
+    expect(applied).not.toHaveBeenCalled();
+    await expectNoA11yViolations(container);
+  });
+
   it('(c, d) says the list rows follow the copy, and the toast says they did, with «Изменить»', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const { container } = page('#/h/' + AXE_ID, world);
@@ -138,7 +219,7 @@ describe('«Сохранить себе»', () => {
     const edit = within(toast.closest('.toast') as HTMLElement).getByRole('link', {
       name: t.edit
     });
-    expect(edit).toHaveAttribute('href', '#/homebrew/hb_emberaxeaaaaaaaa');
+    expect(edit).toHaveAttribute('href', '#/homebrew/' + derivedKey(GM2, AXE_KEY));
     await expectNoA11yViolations(container);
   });
 
@@ -153,7 +234,7 @@ describe('«Сохранить себе»', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('(c) saves from the modal of a list row and says the row follows the copy', async () => {
+  it('(c) saves from the modal of a list row, which closes, and the row draws the copy', async () => {
     const world = fakeCloud(SEED, 'gm2');
     page('#/lists/' + GM2_LIST, world);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
@@ -162,7 +243,13 @@ describe('«Сохранить себе»', () => {
     expect(
       await screen.findByText(t.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'))
     ).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: t.saveItemDone })).toBeDisabled();
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
+    const copy = await screen.findByRole('dialog');
+    expect(within(copy).queryByRole('button', { name: t.saveItem })).toBeNull();
+    expect(copy.querySelector('article')).toHaveAttribute('data-id', derivedKey(GM2, AXE_KEY));
   });
 
   it('(e) says the own items still load, and writes nothing', async () => {

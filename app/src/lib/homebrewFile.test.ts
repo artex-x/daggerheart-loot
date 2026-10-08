@@ -16,6 +16,7 @@ import {
   CARD_URL_MAX,
   CRAFT_MAX,
   DESC_MAX,
+  derivedKey,
   HOMEBREW_KEY,
   NAME_MAX,
   REFS_MAX,
@@ -29,6 +30,7 @@ import {
   BOOK_KEYS,
   CARD_KEYS,
   defaultTarget,
+  deriveFile,
   EQ_KEYS,
   ERRORS_MAX,
   FILE_BOOKS_MAX,
@@ -1431,5 +1433,94 @@ describe('the downloads', () => {
     expect(homebrewFileName('Да/нет: «?»', at)).toBe('Да_нет_ «_».json');
     expect(homebrewFileName('   ', at)).toBe('homebrew.json');
     expect(homebrewFileName(null, at)).toBe('daggerheart-loot-homebrew-2026-10-02.json');
+  });
+});
+
+describe('deriveFile', () => {
+  const GM2 = '00000000-0000-4000-8000-000000000002';
+  const d = (key: string): string => derivedKey(GM2, key);
+  const FLINT = 'hb_flintlockpistola';
+  const DOUBLE = 'hb_doublepistolaaaa';
+  const PATCH = 'hb_patchbedrollaaaa';
+  const SET = 'hb_emberpairsetaaaa';
+  const RULE = 'hb_reloadruleaaaaaa';
+  const OUTSIDE = 'hb_outsideitemaaaaa';
+  /* example.json as version 2, its set card holding a catalog id and the bedroll naming
+     an item outside the file. */
+  const base = fileOf('example.json');
+  const file: HomebrewFile = {
+    ...base,
+    version: 2,
+    cards: base.cards.map((c) => (c.key === SET ? { ...c, items: ['ci1'] } : c)),
+    items: base.items.map((i) =>
+      i.key === PATCH ? { ...i, craft: [OUTSIDE, 'ci2', FLINT] } : i
+    )
+  };
+
+  it('derives every key the account does not hold and every reference follows', () => {
+    const { file: f, from } = deriveFile(file, GM2, account());
+    expect(f.books.map((b) => [b.key, b.sections?.map((s) => s.key)])).toEqual([
+      [d(ALDER), [d(PISTOLS), d(BLADES)]]
+    ]);
+    expect(f.cards.map((c) => [c.key, c.book, c.items])).toEqual([
+      [d(SET), d(ALDER), ['ci1']],
+      [d(RULE), d(ALDER), undefined]
+    ]);
+    const [flint, double, patch] = f.items;
+    expect([flint?.key, flint?.book, flint?.section, flint?.set, flint?.refs]).toEqual([
+      d(FLINT),
+      d(ALDER),
+      d(PISTOLS),
+      d(SET),
+      [d(RULE)]
+    ]);
+    expect([double?.key, double?.eq?.line]).toEqual([d(DOUBLE), d(FLINT)]);
+    expect([patch?.key, patch?.craft, patch?.craft_from]).toEqual([
+      d(PATCH),
+      [d(OUTSIDE), 'ci2', d(FLINT)],
+      ['ci1', 'dv34']
+    ]);
+    expect(from.get(d(FLINT))).toBe(FLINT);
+    expect(from.get(d(OUTSIDE))).toBe(OUTSIDE);
+    expect(from.get(d(BLADES))).toBe(BLADES);
+    expect(okOf(parseHomebrew(homebrewText(f), CTX)).file.items).toHaveLength(3);
+  });
+
+  it('keeps a held source with its sections and derives the rest', () => {
+    const held = account(
+      [book('b1', ALDER, { ru: 'Ольха' })],
+      [heldItem(FLINT, { kind: 'item', ru: 'К' })]
+    );
+    const { file: f } = deriveFile(file, GM2, held);
+    expect(f.books[0]?.key).toBe(ALDER);
+    expect(f.books[0]?.sections?.map((s) => s.key)).toEqual([PISTOLS, BLADES]);
+    expect(f.items.map((i) => [i.key, i.book ?? null, i.section ?? null])).toEqual([
+      [FLINT, ALDER, PISTOLS],
+      [d(DOUBLE), ALDER, PISTOLS],
+      [d(PATCH), null, null]
+    ]);
+    expect(f.items[1]?.eq?.line).toBe(FLINT);
+  });
+
+  it('returns the file itself when the account holds every key', () => {
+    const held = account(
+      [book('b1', ALDER, { ru: 'Ольха' })],
+      [FLINT, DOUBLE, PATCH, OUTSIDE].map((k) => heldItem(k, { kind: 'item', ru: 'К' })),
+      [SET, RULE].map((key, i) =>
+        row(
+          {
+            id: 'c' + String(i),
+            key,
+            kind: i ? 'ref' : 'set',
+            book_id: null,
+            content: { ru: 'К' }
+          },
+          '2026-09-02'
+        )
+      )
+    );
+    const out = deriveFile(file, GM2, held);
+    expect(out.file).toBe(file);
+    expect(out.from.size).toBe(0);
   });
 });

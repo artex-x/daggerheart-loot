@@ -30,7 +30,15 @@
   const offered = $derived(
     !!app.env.cloud && foreign && typeof hid === 'string' && isHomebrewRecord(it)
   );
-  const saved = $derived(!!app.homebrew?.has(it.id));
+  /* Saved: the copy's key is held and no row still links the author's item, or the account
+     holds the item's own key (a clash made before keys were derived, which nothing
+     relinks). */
+  const copyKey = $derived(app.ownKeyFor(it.id));
+  const saved = $derived(
+    copyKey === it.id
+      ? !!app.homebrew?.has(it.id)
+      : !!app.homebrew?.has(copyKey) && app.relinkTargets(it).length === 0
+  );
   const toLists = $derived(offered && app.relinkTargets(it).length > 0);
   let asking = $state(false);
 

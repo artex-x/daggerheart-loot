@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import ItemPage from './ItemPage.svelte';
 import type { Loot } from '../lib/data.js';
+import { agoText } from '../lib/ago.js';
 import { dict } from '../lib/dict.js';
 import type { Record_ } from '../lib/types.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
@@ -216,6 +217,107 @@ describe('the copy a sign-in left on the item page', () => {
     await waitFor(() => {
       expect(app.saveItemFor).toBeNull();
     });
+    app.stop();
+  });
+});
+
+describe('the item page re-read', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const said = (): string => document.querySelector('.said')?.textContent.trim() ?? '';
+
+  async function mounted(id: string, cloud: FakeCloud) {
+    const app = new AppState(
+      fakeEnv({
+        cloud,
+        router: memoryRouter('#/h/' + id),
+        storage: memoryStorage(),
+        data: fakeData(LOOT)
+      })
+    );
+    app.start();
+    await flush();
+    const view = render(ItemPage, { app, id });
+    return { app, view };
+  }
+
+  /* The fake's answer with `updated_at` set by `at`, or left out when `at` answers null. */
+  function stamped(cloud: FakeCloud, at: (now: number) => string | null): void {
+    const real = cloud.lists.item.bind(cloud.lists);
+    cloud.lists.item = async (id) => {
+      const r = await real(id);
+      if (!r.ok || !r.item) return r;
+      const item = { ...(r.item as Record<string, unknown>) };
+      const when = at(Date.now());
+      if (when === null) delete item['updated_at'];
+      else item['updated_at'] = when;
+      return { ...r, item };
+    };
+  }
+
+  it.each([
+    ['just now', 10_000],
+    ['minutes', 5 * 60_000],
+    ['days', 3 * 86_400_000]
+  ])('draws «Обновлено N назад» under the heading: %s', async (_, ago) => {
+    const cloud = fakeCloud(SEED);
+    stamped(cloud, (now) => new Date(now - ago).toISOString());
+    const { app, view } = await mounted(ROLL_B, cloud);
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    const at = app.itemView?.updatedAt ?? '';
+    const line = view.container.querySelector('.updated');
+    expect(line?.textContent.trim()).toBe(agoText(Date.parse(at), app.now, 'ru', t, 'updated'));
+    expect(line?.previousElementSibling?.classList.contains('page-sub')).toBe(true);
+    await expectNoA11yViolations(view.container);
+    app.stop();
+  });
+
+  it('draws no line for an answer with no updated_at', async () => {
+    const cloud = fakeCloud(SEED);
+    stamped(cloud, () => null);
+    const { app, view } = await mounted(ROLL_B, cloud);
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    expect(view.container.querySelector('.updated')).toBeNull();
+    app.stop();
+  });
+
+  it('says «Предмет обновлён» once per changed re-read, and «Предмет не найден» once the drawn item goes', async () => {
+    const cloud = fakeCloud(SEED, 'gm3');
+    const { app, view } = await mounted(ROLL_B, cloud);
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    const item = app.itemView as NonNullable<typeof app.itemView>;
+    expect(said()).toBe('');
+    await item.refresh();
+    expect(said()).toBe('');
+    const c = SEED.homebrew.gm3.items.find((i) => i.id === ROLL_B)!;
+    for (const en of ['Ranger Roll', 'Ranger Roll II']) {
+      await cloud.homebrew.updateItem(
+        ROLL_B,
+        { content: { ...c.content, en }, book_id: null },
+        null
+      );
+      await item.refresh();
+      await flush();
+      expect(said()).toBe(t.itemUpdated);
+      expect(view.container.querySelectorAll('.said span')).toHaveLength(1);
+    }
+    expect(item.changes).toBe(2);
+    await expectNoA11yViolations(view.container);
+    await cloud.homebrew.removeItem(ROLL_B);
+    await item.refresh();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: t.notFound })
+    ).toBeInTheDocument();
+    expect(said()).toBe(t.notFound);
+    await expectNoA11yViolations(view.container);
+    app.stop();
+  });
+
+  it('says nothing on a first read that finds nothing', async () => {
+    const { app, view } = await mounted(uuid(9999), fakeCloud(SEED));
+    await screen.findByRole('heading', { level: 1, name: t.notFound });
+    expect(view.container.querySelector('.said')).not.toBeNull();
+    expect(said()).toBe('');
+    await expectNoA11yViolations(view.container);
     app.stop();
   });
 });

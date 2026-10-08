@@ -3,7 +3,8 @@
      shape. A reader sees «Предмет другого игрока» first in the line under the heading, and
      «Сохранить себе» instead of «Печать» and «Изменить»; the author sees the own record's
      controls. A related item of the author opens its own page; a catalog record opens over
-     this one (docs/specs/FEATURES.md, "Records"). */
+     this one. The page draws the item's latest edit, and says a changed re-read and an item
+     that goes while drawn (docs/specs/FEATURES.md, "Records"). */
   import { onDestroy, untrack } from 'svelte';
   import Button from './Button.svelte';
   import LoadState from './LoadState.svelte';
@@ -14,6 +15,7 @@
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
   import TableLink from './TableLink.svelte';
+  import UpdatedLine from './UpdatedLine.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
   import { itemHash, sectionHash, tablesHash } from '../lib/hash.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
@@ -57,6 +59,12 @@
   });
 
   const it = $derived(view?.status === 'ready' && view.id === ownId ? view.record : null);
+  /* Whether this page drew its item: only then is a gone item said. */
+  let wasReady = $state(false);
+  $effect(() => {
+    if (view?.status === 'ready' && view.id === ownId) wasReady = true;
+  });
+  const lost = $derived(wasReady && view?.status === 'gone' && view.id === ownId);
   const index = $derived(view?.index ?? null);
   const table = $derived(it && view?.mine ? tableOf(it) : null);
   const where = $derived.by(() => {
@@ -100,6 +108,7 @@
         {/if}
       {/snippet}
       <PageTitle title={nameOf(it, app.lang)} {sub} />
+      {#if view?.updatedAt}<UpdatedLine {app} at={view.updatedAt} />{/if}
 
       <div class="itempage">
         <RecordCard
@@ -125,11 +134,30 @@
         </RecordCard>
       </div>
     {/if}
+    {#if readable}
+      <!-- Mounted across the ready, gone and error branches; keyed, so a second change
+           is said again. -->
+      <div class="said" role="status">
+        {#if lost}<span>{t.notFound}</span>{:else}{#key view?.changes}{#if view?.changes}<span
+                >{t.itemUpdated}</span
+              >{/if}{/key}{/if}
+      </div>
+    {/if}
   {/snippet}
 </RecordHost>
 
 <style>
   .itempage {
     max-width: 520px;
+  }
+
+  /* Visually hidden, as `SharedListPage.svelte`'s `.said`. */
+  .said {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 </style>

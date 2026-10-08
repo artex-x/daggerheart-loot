@@ -711,6 +711,8 @@ const COVERED: Record<string, string> = {
   'TableLink.svelte': "record.test.ts and itemPage.test.ts: the author's table link",
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
+  'UpdatedLine.svelte':
+    'itemPage.test.ts just now, minutes and days, and the share links in sharedListPage.test.ts',
   'VoaPanel.svelte': 'sections.test.ts, and in English above'
 };
 

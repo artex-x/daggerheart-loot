@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md)
 - 2026-10-08 - [A filter row offers only values the drawn rows answer, on every page](decisions/2026-10-08-a-filter-row-offers-only-values-the-drawn-rows-answer.md)
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
 - 2026-10-08 - [A lists file's homebrew entry may leave out its snapshot](decisions/2026-10-08-a-lists-files-homebrew-entry-may-leave-out-its-snapshot.md)
@@ -27,7 +28,7 @@ deleted.
 - 2026-10-08 - [Workers dispatch read-only Haiku helpers for wide locate and extract work](decisions/2026-10-08-workers-dispatch-read-only-haiku-helpers-for-wide.md)
 - 2026-10-07 - [A list's change log shares the requests' view and the database's clean-up](decisions/2026-10-07-a-lists-change-log-shares-the-requests-view-and-clean-up.md)
 - 2026-10-07 - [A local check skips a stage whose inputs match its last local pass](decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md)
-- 2026-10-07 - [A saved copy of another account's item keeps its key](decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md)
+- 2026-10-07 - [A saved copy of another account's item keeps its key](decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md) - superseded in part
 - 2026-10-07 - [An item is read by its id by anyone; a list holds a live link](decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md)
 - 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md) - superseded in part
 - 2026-10-07 - [Lifecycle data is deleted by the database on a schedule](decisions/2026-10-07-lifecycle-data-is-deleted-by-the-database-on-a-schedule.md)

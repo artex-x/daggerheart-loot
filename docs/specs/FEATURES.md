@@ -300,11 +300,13 @@ across.
   2 and 3. A version 3 entry keeps its «Только для мастера» mark, on its link
   or on its fixed copy's link; `gm_only` in a version 1 or 2 file is an
   unknown field. A homebrew entry of a version 2 or 3 file imports as a link
-  to the own item when the account holds its key; any other with a snapshot
-  becomes a new own item in «Хоумбрю», made from it, and the entry links it;
-  one without a snapshot is skipped (`CONTRACTS.md` section 4). One copy is made
-  per distinct key and snapshot: a later entry of the same key with another
-  snapshot gets a new key, and cards likewise. The copies count against the
+  to the own item when the account holds its key, else when it holds the
+  key's derived key (the homebrew file import's rule, "Homebrew"); any other
+  with a snapshot becomes a new own item in «Хоумбрю» under the derived key,
+  made from it, its `hb_` relations taking derived keys too, and the entry
+  links it; one without a snapshot is skipped (`CONTRACTS.md` section 4). One
+  copy is made per distinct key and snapshot: a later entry of the same key
+  with another snapshot gets a new key, and cards likewise. The copies count against the
   item and card limits and `import_homebrew`'s 1000 rows; past either the
   import is refused whole and nothing is written. A homebrew entry is never
   skipped as unknown; its snapshot is optional, and one that is present is
@@ -686,8 +688,12 @@ browser lists writable after the date.
   build with no sign-in, draws «Список больше не доступен» / «Владелец удалил
   эту ссылку или список.» and «На главную», the address kept, never the home
   page; a read that failed draws «Список не загрузился» / «Проверьте
-  соединение и нажмите «Повторить».» and «Повторить». Nothing is drawn while the first
-  read runs. A re-read names the revision the page shows, and a list still at
+  соединение и нажмите «Повторить».» and «Повторить». While the first read
+  runs the page draws «Загружаем...» with no heading (the heading is the
+  list's name). When a drawn link stops (a revoke, a deleted list), the page
+  draws the gone page and the status says «Список больше не доступен» once; a
+  first read that finds nothing, also right after another token, says
+  nothing. A re-read names the revision the page shows, and a list still at
   that revision answers with nothing to download or draw.
   A players' link never holds an entry its owner marked «Только для мастера»
   / "GM only": the server leaves the entry out with its linked item's id, and
@@ -1042,8 +1048,8 @@ browser lists writable after the date.
   over the page. A reader's line under the heading starts with «Предмет
   другого игрока» / "Another player's item", then the path; the pick row
   offers «Добавить в список» and «Сохранить себе», and no «Печать», no
-  «Изменить» and no «показать в таблице» (print routes of another account's
-  item come with R9). The author sees the own record's controls: «Печать»,
+  «Изменить» and no «показать в таблице» (another account's item prints
+  once every print is a stored set, a later release). The author sees the own record's controls: «Печать»,
   «Изменить», «показать в таблице», and no «Предмет другого игрока». The page
   opens once the session is known, so the author never sees a reader's
   controls; a sign-in or a sign-out reads it again. While it reads it says
@@ -1052,15 +1058,24 @@ browser lists writable after the date.
   `#/s/` failure's shape); a malformed id (read with no request), an unknown
   id, an item deleted meanwhile, and a build with no sign-in configured draw
   the record page's «Предмет не найден», the address kept. The page re-reads
-  on the shown-again signal only (a 45 s re-read comes with R9); a re-read
-  that fails keeps what is shown.
+  every 45 s, signed out too, and when the tab is shown again; it has no
+  Realtime topic, so an author's edit shows within 45 s. A re-read that fails
+  keeps what is shown, an unchanged one redraws nothing, and an older answer
+  that arrives after a newer one is dropped. «Обновлено N назад» / "Updated N
+  ago" under the heading, for a reader and for the author, names the latest
+  edit of the item, its source and its named cards, and moves with the 45 s
+  clock; an answer with no edit time draws no line. A visually hidden status
+  says «Предмет обновлён» / "The item was updated" once per re-read that
+  meets a new revision of the drawn item, and «Предмет не найден» once when a
+  drawn item goes; a first read that finds nothing says nothing.
 - **«Сохранить себе» / "Save to my items"** on another account's item - on
   `#/h/` and in the record modal of a list row that links it - makes an
   ordinary own item in «Хоумбрю» (no source, no section) from what the reader
-  sees, under the item's own key: the `hb_` keys of the author's other items
-  in its relations are dropped, catalog ids stay, and its set and rule cards
-  are copied under their keys, or named when the reader holds a card of that
-  key (`docs/decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md`).
+  sees, under the reader's derived key of the item's key: the `hb_` keys of
+  the author's other items in its relations are dropped, catalog ids stay,
+  and its set and rule cards are copied under their derived keys, or named
+  when the reader holds a card of the card's key or of its derived key
+  (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
   The copy no longer changes with the original. A line under the row says
   «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с
   оригиналом.», or, while one of the reader's account lists links the item,
@@ -1070,9 +1085,18 @@ browser lists writable after the date.
   мастера» mark, and toasts
   «Предмет «%s» сохранён в «Мои предметы», строки ваших списков ведут на
   копию», else «Предмет «%s» сохранён в «Мои предметы»», each with
-  «Изменить» to `#/homebrew/<key>` in a new tab. Then the button reads
-  «Сохранено», disabled, and no second copy is made; a reader who already
-  holds the key sees it so from the start. Signed out the press opens a
+  «Изменить» to the copy's `#/homebrew/<key>` in a new tab; each relinked
+  row's key becomes the copy's. Then the button reads «Сохранено», disabled,
+  and no second copy is made: also after a reload or in a second tab, which
+  find the copy under the same derived key with no row left on the author's
+  item; a reader who already holds the item's own key (a copy made before
+  keys were derived) sees it so from the start. When the copy is held but a
+  row still links the author's item (the relink never ran), the button offers
+  the press again, and the press relinks those rows to the copy with no
+  second import. A list that already holds a row of the copy keeps its row
+  of the author's item, because a list holds one row per key: the line and
+  the press skip that list. A pending purchase request line of a relinked row's old key
+  draws the raw key and reads short. Signed out the press opens a
   boxed sign-in prompt under the row, «Войдите, и копия предмета
   сохранится в «Мои предметы».»; the sign-in returns to the item's page (from
   a modal too) and the copy is made once the reader's items are read. While
@@ -1232,7 +1256,13 @@ browser lists writable after the date.
   app's does not.
 - A real navigation to a different address closes an open modal; a filter
   pick or a list mutation, which rewrite the address in place rather than
-  navigating to it, do not.
+  navigating to it, do not. The modal also closes when its record leaves the
+  page's index: a «Сохранить себе» from a list row's modal moves the row's
+  key, a removal of the list's row of another account's item from the
+  modal's add-to-list menu drops its record (the undo toast stays), and on
+  `#/s/<token>` the GM's removal of a row of their own item drops its record
+  (a catalog record stays in the index, so its modal stays). A page that has
+  no index yet keeps the modal.
 
 ## Homebrew
 
@@ -1580,7 +1610,15 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   `homebrew.json` (the file field, the 5 MB bound, the zip and the text rules
   of «Импорт из файла», "Lists"); its hint links `schema/homebrew-v1.json`,
   `schema/homebrew-v2.json` and `llms.txt`. «Обновить» with a version 1 file
-  keeps a held card's book items; a version 2 file states them. A
+  keeps a held card's book items; a version 2 file states them. A key the
+  account holds stays; any other `hb_` key of a source, a section, a card or
+  an item becomes the account's derived key (a section's key stays while its
+  source keeps its own), every `hb_` reference of the file following, also one
+  to an object the file does not hold; the preview, the held-key question, the
+  notes and the rows read that file, and a note names the file's key. So the
+  same file chosen again finds its keys held
+  (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
+  A file whose derived key equals another of its keys draws the error report. A
   zip's `lists.json` draws «Файл lists.json из архива импортируется на странице
   «Мои списки».». A file the app refuses whole says why in one alert line (not
   JSON, not an items file, another version or none, nothing in it, not a data

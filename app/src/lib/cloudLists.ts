@@ -207,7 +207,7 @@ export function snapshotRecords(row: SharedRow | null | undefined): HomebrewReco
 
 /** `get_homebrew_item`'s answer for an item that exists: its id, whether the reader is
  *  its author, the revision a re-read compares, the record and the author's related items
- *  (no texts, no cards). `updated_at` is read by R9's page, not here. */
+ *  (no texts, no cards) and `updated_at`, the latest edit that `#/h/` draws. */
 export interface ItemAnswer {
   hid: string;
   mine: boolean;
@@ -225,6 +225,9 @@ export interface ItemRead {
   revision: string;
   record: HomebrewRecord;
   related: HomebrewRecord[];
+  /** The latest edit of the item, its source and its named cards; null when the answer has
+   *  no `updated_at` or `Date.parse` cannot read it. */
+  updatedAt: string | null;
 }
 
 const KINDS: readonly unknown[] = ['item', 'consumable', 'equip'];
@@ -272,10 +275,10 @@ function relatedOf(v: unknown): HomebrewRecord | null {
 
 /** Returns the item `get_homebrew_item` answered, or null when the answer is not one: `hid`
  *  a uuid, `mine` a boolean, `revision` a string and `item` a valid record. A related row
- *  of another shape is dropped. */
+ *  of another shape is dropped, and an `updated_at` that `Date.parse` cannot read is null. */
 export function itemOf(a: unknown): ItemRead | null {
   if (!isObj(a)) return null;
-  const { hid, mine, revision, item, related } = a;
+  const { hid, mine, revision, item, related, updated_at } = a;
   if (typeof hid !== 'string' || !isCloudId(hid)) return null;
   if (typeof mine !== 'boolean' || typeof revision !== 'string') return null;
   if (!snapshotValid(item)) return null;
@@ -287,7 +290,11 @@ export function itemOf(a: unknown): ItemRead | null {
     related: (Array.isArray(related) ? related : []).flatMap((x) => {
       const r = relatedOf(x);
       return r ? [r] : [];
-    })
+    }),
+    updatedAt:
+      typeof updated_at === 'string' && !Number.isNaN(Date.parse(updated_at))
+        ? updated_at
+        : null
   };
 }
 

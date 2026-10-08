@@ -73,7 +73,9 @@ const rowsOf = (cloud: FakeCloud, lists: readonly ImportList[]) =>
     newId: () => cloud.lists.newId(),
     newKey: () => cloud.homebrew.newKey(),
     hasItem: () => false,
-    hasCard: () => false
+    hasCard: () => false,
+    keyFor: (key) => key,
+    cardKeyFor: (key) => key
   }).rows;
 
 async function serverList(repo: ListRepository, id: string) {
@@ -1888,29 +1890,60 @@ describe('homebrew entries', () => {
     expect(store.get(SHOP)?.ids).not.toContain(AXE);
   });
 
-  it('relinks an entry in place to an item of the same key, keeping its quantity, price and notes', async () => {
+  it('relinks an entry in place to an item of another key, keeping its place, quantity, price, notes and mark', async () => {
     const { cloud, port, store, apply } = await resolved('gm2', () => null);
     const copy = uuid(9100);
+    const COPY_KEY = 'hb_mycopyaxeaaaaaaa';
     expect(
       (
         await port.homebrew.createItem({
           id: copy,
-          key: AXE,
+          key: COPY_KEY,
           book_id: null,
           content: { kind: 'item', ru: 'Мой топор' }
         })
       ).ok
     ).toBe(true);
     store.setMeta(GM2_LIST, AXE, 'qty', 3);
+    store.setMeta(GM2_LIST, AXE, 'gold', 40);
+    store.setMeta(GM2_LIST, AXE, 'note', 'Игрокам');
     store.setMeta(GM2_LIST, AXE, 'hnote', 'Себе');
-    expect(store.relink(GM2_LIST, 'hb_nosuchitemaaaaaa', copy)).toBe(false);
-    expect(store.relink(GM2_LIST, AXE, copy)).toBe(true);
-    expect(store.get(GM2_LIST)?.links).toEqual({ [AXE]: copy });
+    store.setGmOnly(GM2_LIST, AXE, true);
     await quiet();
-    expect(kinds(apply).flat()).toContain('relink');
-    const row = (await serverList(cloud.as('gm2').lists, GM2_LIST))?.list_entries[1];
-    expect(row).toMatchObject({ id: uuid(2102), hb_item: copy, quantity: 3, gm_note: 'Себе' });
+    const before = store.get(GM2_LIST);
+    const at = before?.ids.indexOf(AXE) ?? -1;
+    const meta = before?.meta?.[AXE];
+    const rowId = before?.entryIds[AXE];
+    apply.mockClear();
+    expect(store.relinkAs(GM2_LIST, 'hb_nosuchitemaaaaaa', COPY_KEY, copy)).toBe(false);
+    expect(store.relinkAs(GM2_LIST, AXE, COPY_KEY, copy)).toBe(true);
+    const after = store.get(GM2_LIST);
+    expect(after?.ids.indexOf(COPY_KEY)).toBe(at);
+    expect(after?.ids).not.toContain(AXE);
+    expect(after?.meta?.[COPY_KEY]).toEqual(meta);
+    expect(after?.entryIds[COPY_KEY]).toBe(rowId);
+    expect(after?.links).toEqual({ [COPY_KEY]: copy });
+    await quiet();
+    expect(kinds(apply).flat()).toEqual(['relink']);
+    const row = (await serverList(cloud.as('gm2').lists, GM2_LIST))?.list_entries[at];
+    expect(row).toMatchObject({
+      id: rowId,
+      item_key: COPY_KEY,
+      hb_item: copy,
+      quantity: 3,
+      price_coins: 40,
+      player_note: 'Игрокам',
+      gm_note: 'Себе',
+      gm_only: true
+    });
     expect(said).toEqual([]);
+  });
+
+  it('relinks nothing onto a key another entry of the list holds', async () => {
+    const { store } = await resolved('gm2', () => null);
+    const other = store.get(GM2_LIST)?.ids.find((k) => k !== AXE);
+    if (!other) throw new Error('one entry');
+    expect(store.relinkAs(GM2_LIST, AXE, other, uuid(9100))).toBe(false);
   });
 
   it('forgets what it removed on a sign-out', async () => {

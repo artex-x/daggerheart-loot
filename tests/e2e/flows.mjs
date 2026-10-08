@@ -25,6 +25,7 @@
 
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { derivedKey } from '../../app/src/lib/homebrew.ts';
 import { readDataZip } from '../../app/src/lib/zip.ts';
 import {
   createThrowaway,
@@ -1082,17 +1083,18 @@ export async function runFlows({ env, admin, member, browser, base }) {
   }
   console.log('e2e: F16 ok');
 
-  /* F17: homebrew files on the hosted project. example.json imported through the page,
-     imported again with «Обновить» from example-edited.json, the two pistols moved to
-     «Холодное оружие» in one call, the data zip's homebrew.json holding every row, and
-     example-v2.json imported into lists: the held pistol linked, the lamp copied into the
-     account's homebrew and linked. */
+  /* F17: homebrew files on the hosted project. example.json imported through the page under
+     the member's derived keys, imported again with «Обновить» from example-edited.json (its
+     derived keys are held), the two pistols moved to «Холодное оружие» in one call, the data
+     zip's homebrew.json holding every row, and example-v2.json imported into lists: the held
+     derived pistol linked, the lamp copied under its derived key and linked. */
   await deleteListsOf(admin, member.id);
   await deleteHomebrewOf(admin, member.id);
   const fixture = (dir, name) =>
     fileURLToPath(new URL('../../docs/fixtures/' + dir + '/' + name, import.meta.url));
   try {
     const mine = () => homebrewOf(admin, member.id);
+    const own = (key) => derivedKey(member.id, key);
     await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
       /* The toggle is disabled while a call runs, the panel folds on an ok answer and stays
          open on any other: a press before the fold is lost, and a press on a panel kept
@@ -1141,12 +1143,12 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await answered('Импортировано предметов: 2');
       await until('F17: the update did not reach the account', async () => {
         const r = await mine();
-        const pistol = r.items.find((i) => i.key === 'hb_flintlockpistola');
+        const pistol = r.items.find((i) => i.key === own('hb_flintlockpistola'));
         return r.items.length === 5 && pistol?.content.ru === 'Старый кремнёвый пистоль';
       });
 
       const { books } = await mine();
-      const alder = books.find((b) => b.key === 'hb_alderworkshopaaa');
+      const alder = books.find((b) => b.key === own('hb_alderworkshopaaa'));
       if (!alder) throw new Error('e2e F17: the source is missing');
       await d.open('#/homebrew');
       await waitControl(page, 'F17', 'Импорт из файла');
@@ -1155,12 +1157,13 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await d.press('Переместить (2)');
       await page.select('#hb-move', alder.id);
       await page.waitForSelector('#hb-move-section', WAIT);
-      await page.select('#hb-move-section', 'hb_sectbladesaaaaaa');
+      await page.select('#hb-move-section', own('hb_sectbladesaaaaaa'));
       await d.press('Переместить');
       await until('F17: the move did not reach the account', async () => {
         const { items } = await mine();
         return ['hb_flintlockpistola', 'hb_doublepistolaaaa'].every(
-          (k) => items.find((i) => i.key === k)?.content.section === 'hb_sectbladesaaaaaa'
+          (k) =>
+            items.find((i) => i.key === own(k))?.content.section === own('hb_sectbladesaaaaaa')
         );
       });
 
@@ -1201,9 +1204,9 @@ export async function runFlows({ env, admin, member, browser, base }) {
         const { items } = await mine();
         const idOf = (k) => items.find((i) => i.key === k)?.id;
         return (
-          idOf('hb_wanderlampaaaaaa') !== undefined &&
-          by('hb_flintlockpistola')?.hb_item === idOf('hb_flintlockpistola') &&
-          by('hb_wanderlampaaaaaa')?.hb_item === idOf('hb_wanderlampaaaaaa')
+          idOf(own('hb_wanderlampaaaaaa')) !== undefined &&
+          by(own('hb_flintlockpistola'))?.hb_item === idOf(own('hb_flintlockpistola')) &&
+          by(own('hb_wanderlampaaaaaa'))?.hb_item === idOf(own('hb_wanderlampaaaaaa'))
         );
       });
     });

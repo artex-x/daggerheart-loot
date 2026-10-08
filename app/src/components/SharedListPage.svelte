@@ -18,13 +18,14 @@
   import FilterBar from './FilterBar.svelte';
   import HitNote from './HitNote.svelte';
   import Icon from './Icon.svelte';
+  import LoadState from './LoadState.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import TableRows from './TableRows.svelte';
-  import { agoText } from '../lib/ago.js';
+  import UpdatedLine from './UpdatedLine.svelte';
   import { sharedListOf, snapshotRecords } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import { listFacets, type Index } from '../lib/data.js';
@@ -119,6 +120,9 @@
   let filterOpen = $state(false);
   let seenSeg = $state('');
   let seenList = $state<string | null>(null);
+  /* The token the view was ready for: a revoke is said only for a link this page drew,
+     never for a first read that finds nothing, also right after another token. */
+  let readyFor = $state<string | null>(null);
   /* Whether the search box and the strip are drawn. Latched per list: dropping the
      last pill, clearing the query or a re-read that shrinks the list never removes
      the control that has the focus. */
@@ -150,6 +154,7 @@
         seenSeg = '';
         filterOpen = false;
         finding = false;
+        readyFor = null;
       }
       if (token === undefined) return;
       const seg = route.kind === 'share' ? encodeFilter(route.filter, LIST_GROUPS) : '';
@@ -157,6 +162,14 @@
       seenSeg = seg;
     });
   });
+
+  $effect(() => {
+    if (token !== undefined && view?.status === 'ready' && view.token === token)
+      readyFor = token;
+  });
+  const revoked = $derived(
+    token !== undefined && view?.status === 'gone' && view.token === token && readyFor === token
+  );
 
   $effect(() => {
     if (
@@ -295,8 +308,8 @@
       <PageTitle title={t.sharedFailed} sub={t.sharedFailedSub} />
       <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
     {:else if token !== undefined && !shared}
-      <!-- The link is being read: nothing yet, so no "no longer available"
-           flashes. -->
+      <!-- The first read: no heading, which is the list's name. -->
+      <LoadState {t} failed={false} text={t.sharedFailed} onretry={() => void view?.retry()} />
     {:else if !shared}
       <PageTitle title={t.notFound} sub={t.badShare} />
       <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
@@ -311,9 +324,7 @@
       {/if}
       <PageTitle title={shared.name || t.untitled} {sub} />
       {#if view?.shared}
-        <p class="updated">
-          {agoText(Date.parse(view.shared.updated_at), app.now, app.lang, t, 'updated')}
-        </p>
+        <UpdatedLine {app} at={view.shared.updated_at} />
       {/if}
       <Actions style="margin-bottom:18px">
         <!-- Only the open prompt is announced: an aria-expanded=false on
@@ -428,14 +439,18 @@
           {/snippet}
         </TableRows>
       {/if}
-      {#if token !== undefined}
-        <!-- Says a re-read changed what the page draws; keyed, so a second
-             change is announced again. `data-live` marks a joined topic for
-             the hosted E2E and draws nothing. -->
-        <div class="said" role="status" data-live={view?.live ? 'live' : undefined}>
-          {#key view?.changes}{#if view?.changes}<span>{t.listUpdated}</span>{/if}{/key}
-        </div>
-      {/if}
+    {/if}
+    {#if token !== undefined}
+      <!-- Mounted across every branch, so a revoke of a drawn link is said once
+           (docs/specs/FEATURES.md, "Account and browser lists"). Says a re-read
+           changed what the page draws; keyed, so a second change is announced
+           again. `data-live` marks a joined topic for the hosted E2E and draws
+           nothing. -->
+      <div class="said" role="status" data-live={view?.live ? 'live' : undefined}>
+        {#if revoked}<span>{t.shareGone}</span
+          >{:else}{#key view?.changes}{#if view?.changes}<span>{t.listUpdated}</span
+              >{/if}{/key}{/if}
+      </div>
     {/if}
   {/snippet}
 </RecordHost>
@@ -457,13 +472,6 @@
 
   .lfind :global(.fbar) {
     margin-top: 12px;
-  }
-
-  /* Under the title, as the index card's «изменён N назад». */
-  .updated {
-    margin: -14px 0 18px;
-    font-size: 12.5px;
-    color: var(--muted2);
   }
 
   .legacy {

@@ -62,6 +62,7 @@ import {
   copyRows,
   isHomebrewKey,
   isHomebrewRecord,
+  ownKeyFor,
   withRecords,
   type HomebrewRecord
 } from '../lib/homebrew.js';
@@ -961,10 +962,12 @@ export class AppState {
   /* The index and an account list page re-read while they are on screen and the
      owner's topic is not joined; a failed first read, or a move the network
      stopped, is retried on every route, so the browser's lists move once the
-     network returns. */
+     network returns. `#/h/` has no topic and re-reads on every tick, signed out
+     too. */
   #pollLists(): void {
     this.now = Date.now();
     this.#refreshShared(false);
+    if (this.route.kind === 'item') void this.itemView?.refresh();
     const lists = this.cloudLists;
     if (!lists || !this.user) return;
     const r = this.route;
@@ -1030,21 +1033,44 @@ export class AppState {
   }
 
   /** Returns the account lists whose entry of `it`'s key links `it`, another account's item:
-   *  the rows «Сохранить себе» relinks to the copy. Empty for an own item. */
+   *  the rows «Сохранить себе» relinks to the copy. Empty for an own item. A list that holds
+   *  the copy's key already keeps its row of `it`: a list holds one row per key. */
   relinkTargets(it: Record_): string[] {
     const hid = isHomebrewRecord(it) ? it.hid : undefined;
     if (typeof hid !== 'string' || this.homebrew?.items.some((r) => r.id === hid)) return [];
+    const copyKey = this.ownKeyFor(it.id);
     return (this.cloudLists?.lists ?? [])
       .filter((l) => l.links?.[it.id] === hid)
+      .filter((l) => copyKey === it.id || !l.ids.includes(copyKey))
       .map((l) => l.id);
+  }
+
+  /** Returns the key an item of `key` takes in the reader's account: itself when held, or
+   *  with no user or no own items, else the derived key
+   *  (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
+  ownKeyFor(key: string): string {
+    const own = this.homebrew;
+    const user = this.user;
+    if (!own || !user) return key;
+    return ownKeyFor(user.userId, (k) => own.has(k), key);
+  }
+
+  /* The key a card of `key` takes in the reader's account, as `ownKeyFor` for an item. */
+  #cardKeyFor(key: string): string {
+    const own = this.homebrew;
+    const user = this.user;
+    if (!own || !user) return key;
+    return ownKeyFor(user.userId, (k) => own.cards.some((c) => c.key === k), key);
   }
 
   /**
    * «Сохранить себе»: copies another account's item into the reader's own items, in the
-   * default source under the item's key, then relinks in place every row of the reader's
-   * lists that links the item, each keeping its position, quantity, price and notes
-   * (docs/decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md).
+   * default source under the item's derived key (`ownKeyFor`), then relinks in place every
+   * row of the reader's lists that links the item to the copy's key, each keeping its
+   * position, quantity, price, notes and mark
+   * (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md).
    * The account's read after the import decides: a lost answer whose rows landed is a save.
+   * A copy the account holds already gets the rows a relink that never ran left behind.
    */
   async saveItem(it: HomebrewRecord): Promise<void> {
     const own = this.homebrew;
@@ -1060,7 +1086,7 @@ export class AppState {
       return;
     }
     if (own.has(it.id)) return;
-    /* Unread lists relink nothing: the copy would shadow rows still linked to the author's item. */
+    /* Unread lists relink nothing: their rows would keep the author's link. */
     if (this.cloudLists.status === 'idle' || this.cloudLists.status === 'loading') {
       this.say((t) => t.hbNotReady, { error: true });
       return;
@@ -1070,16 +1096,41 @@ export class AppState {
       return;
     }
     const lists = this.relinkTargets(it);
+    const copyKey = this.ownKeyFor(it.id);
+    const store = this.cloudLists;
+    const relink = (ownId: string): boolean => {
+      let relinked = false;
+      for (const list of lists) {
+        if (store.relinkAs(list, it.id, copyKey, ownId)) relinked = true;
+      }
+      return relinked;
+    };
+    const done = (relinked: boolean): void => {
+      this.say(
+        (t, lang) =>
+          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)),
+        { action: { label: (t) => t.edit, href: homebrewItemHash(copyKey) } }
+      );
+    };
+    /* The copy landed, but its relink never ran: move the rows, import nothing again. */
+    const held = own.item(copyKey);
+    if (held) {
+      if (relink(held.id)) done(true);
+      return;
+    }
     /* A plain copy: a list's linked record is reactive state, which a port may clone. */
     const rows = copyRows($state.snapshot(it), {
       newId: () => own.newIds().id,
+      keyFor: (k) => this.ownKeyFor(k),
+      cardKeyFor: (k) => this.#cardKeyFor(k),
       hasCard: (k) => own.cards.some((c) => c.key === k)
     });
     this.savingItem = hid;
     try {
       const r = await own.import(rows);
       const made = rows.items[0]?.id ?? null;
-      const ownId = own.item(it.id)?.id ?? (r.ok && r.counts.items_created === 1 ? made : null);
+      const ownId =
+        own.item(copyKey)?.id ?? (r.ok && r.counts.items_created === 1 ? made : null);
       if (ownId === null) {
         if (!r.ok && r.error === 'limit') {
           const { key, value } = r;
@@ -1089,15 +1140,7 @@ export class AppState {
         } else this.say((t) => t.saveItemFailed, { error: true });
         return;
       }
-      let relinked = false;
-      for (const list of lists) {
-        if (this.cloudLists.relink(list, it.id, ownId)) relinked = true;
-      }
-      this.say(
-        (t, lang) =>
-          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)),
-        { action: { label: (t) => t.edit, href: homebrewItemHash(it.id) } }
-      );
+      done(relink(ownId));
     } finally {
       this.savingItem = null;
     }
@@ -1112,18 +1155,22 @@ export class AppState {
       newId: () => cloud.lists.newId(),
       newKey: () => own.newIds().key,
       hasItem: (k) => own.has(k),
-      hasCard: (k) => own.cards.some((c) => c.key === k)
+      hasCard: (k) => own.cards.some((c) => c.key === k),
+      keyFor: (k) => this.ownKeyFor(k),
+      cardKeyFor: (k) => this.#cardKeyFor(k)
     };
   }
 
   /** Returns a lists file's import plan (docs/specs/CONTRACTS.md section 4): built once per
    *  chosen file, then, with `plan`, again for a press: a key the account no longer holds
-   *  gains its fixed copy, every id kept, `plan` itself when nothing changed. Null with no
-   *  cloud. */
+   *  gains its fixed copy, every id kept, `plan` itself when nothing changed or while the
+   *  own items are not read (a derived key read from no items would copy a held one). Null
+   *  with no cloud. */
   importPlan(lists: readonly ImportList[], plan?: ImportPlan): ImportPlan | null {
     const account = this.#planAccount();
     if (!account) return null;
-    return plan ? withCopies(plan, lists, account) : importPlan(lists, account);
+    if (!plan) return importPlan(lists, account);
+    return this.homebrew?.status === 'ready' ? withCopies(plan, lists, account) : plan;
   }
 
   /** Imports a plan: its fixed copies first (one `import_homebrew` call, every row or none),

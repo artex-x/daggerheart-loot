@@ -493,9 +493,10 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v2.json
   is `A`.
 
 A snapshot is optional. Without one, an entry imports only into an account
-that holds its key: the GM imports the homebrew file first (see "Homebrew
-items as a file"), then the lists file; an entry whose key the account does
-not hold is skipped, as an unknown catalog id is.
+that holds its key, or the key the site gave it on the homebrew import (see
+"What the site does with a homebrew file"): the GM imports the homebrew
+file first (see "Homebrew items as a file"), then the lists file; any other
+entry without one is skipped, as an unknown catalog id is.
 A file for another GM must carry a snapshot on every homebrew entry, as the
 site's export does. When the GM gave you an export, copy its snapshots
 whole. When you write a snapshot yourself, build it from its item:
@@ -516,11 +517,12 @@ whole. When you write a snapshot yourself, build it from its item:
    Leave `cards` out when the item names none.
 
 On import, an entry whose key the account already holds becomes a live
-link to that item. Each homebrew entry with a snapshot that the account does
-not hold becomes an own item, made from it, so the import counts against the
-item and card limits and the 1000 items of one homebrew import; past either
-it is refused whole, and nothing is written. An entry without a snapshot
-whose key the account does not hold is skipped.
+link to that item, and so does an entry whose key the homebrew import gave
+another key in this account. Each other homebrew entry with a snapshot
+becomes an own item under that other key, made from it, so the import counts
+against the item and card limits and the 1000 items of one homebrew import;
+past either it is refused whole, and nothing is written. Any other entry
+without a snapshot is skipped.
 So import the homebrew file first (see "Homebrew items as a file"), then the
 lists file: the entries link the items you imported, with no second copy.
 
@@ -828,6 +830,13 @@ A weapon holds no `eq.as` or `eq.th`; armour holds none of `eq.cls`, `eq.tr`,
   GM chooses so: an update replaces the item's or the card's text and stats
   whole; a source's names change, and its sections only grow. The same file
   imported again with the default changes nothing.
+- Any other key of a source, a section, a card or an item gets a key of the
+  account's own, the same one on every import of that file into that
+  account, and every reference in the file follows it; a section keeps its
+  key while its source keeps its own. So keys never mix between two
+  accounts, and the same file imported again finds its keys held. Write
+  your own keys as the format asks and keep them across versions of a file;
+  the GM's export then carries the account's keys.
 - An item with a new key is added even when the account holds an item of
   the same name: the key is the only identity.
 - A relation that names nothing is kept and draws nothing; the GM sees a

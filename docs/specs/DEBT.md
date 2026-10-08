@@ -150,30 +150,6 @@ browser suites' language runs for a signed-in seed user.
   draws gm1's pages in English (the run asserts the page's `lang`
   attribute for each signed-in entry), and the Russian run is unchanged.
 
-## A live revoke on the shared page (no task filed yet; the owner names the release)
-
-Owns: what a screen reader hears when an open shared page stops drawing its
-list. No release plan owns it; the owner decides which one takes it.
-
-### D65 - a live revoke swaps the shared page with no announcement
-
-- **Where**: `app/src/components/SharedListPage.svelte` (the status region
-  `.said` is inside the drawn-list branch); `SharedView.refresh()` in
-  `app/src/state/sharedView.svelte.ts` (status `gone`).
-- **What**: when the owner deletes the link or the list while `#/s/<token>`
-  is open, the page swaps to «Список больше не доступен» within about a
-  second. The status region leaves with the list, so a screen reader
-  announces nothing, and the reader learns of the change only by moving
-  through the page.
-- **Why deferred**: found in the Realtime release's review (2026-09-27).
-  That release scoped the region to a change of what a drawn list shows;
-  a region that outlives the list, or moved focus, is a new design for the
-  gone page, not a fix to the region.
-- **How to verify the fix**: open `#/s/player-token-1` over the fake, call
-  `shares.revoke` for its share, and confirm that a polite status region
-  (or the focused heading) reads «Список больше не доступен» once. Cover it
-  in `sharedListPage.test.ts`.
-
 ## Persistence review (`persist-review`)
 
 Owns: the consistency pass over the persistence surfaces after R7f, against
@@ -405,11 +381,9 @@ R7d, R7e, R7f and R7g).
   join the "FAIL" table in `.claude/README.md`; a test of
   `tests/db/run.mjs`'s helpers covers both failures.
 
-## Item links (`persist-9-item-share`)
+## Print sets (`print-snapshots`)
 
-Owns: print routes for cloud lists and for another account's item (`#/h/`
-ships in R7h), the drop of `list_entries.snapshot`, and a linked entry
-whose key the reader also holds.
+Owns: the print of another account's item through stored print sets.
 
 ### D70 - a homebrew entry of another account's list does not print from its address
 
@@ -417,61 +391,12 @@ whose key the reader also holds.
   `linkedRecord`); `app/src/components/PrintPage.svelte`.
 - **What**: a reader who ticks such an entry on `#/s/<token>` and presses
   «Печать», or opens its `#/print/` address later, gets no card for it.
-- **Why deferred**: the address holds only keys, and the share page closes
-  the list's projection when it is left; R9 owns print routes for cloud
-  lists.
-- **How to verify the fix**: on `#/s/player-token-1` signed out, tick the
-  axe and press «Печать»; the sheet holds its card, after a reload too.
-
-### D93 - `list_entries.snapshot` stays as a column that is always null
-
-- **Where**: `supabase/migrations/20261007130000_homebrew_links.sql`
-  (`list_entries_snapshot_null`).
-- **What**: R7h links every homebrew entry by `hb_item` and keeps the
-  `snapshot` column with `check (snapshot is null)`. Nothing reads a value
-  from it; each read and write of an entry carries the empty column.
-- **Why deferred**: the frontend before R7h's links selects the column,
-  so a frontend-only revert of R7h keeps reading the lists (owner,
-  2026-10-07). The next release's first migration drops it.
-- **How to verify the fix**: the first migration of R9 drops the column and
-  its check; `git grep -n snapshot -- app/src/ports/supabase.ts` finds no
-  select of it, and `npm run check:db` passes.
-
-### D94 - a linked entry draws the reader's own item of the same key
-
-- **Where**: `app/src/state/app.svelte.ts` (`recordFor`, which asks the
-  catalogue and own-item index before `linkedRecord`).
-- **What**: keys are unique per owner only. A reader who imported the
-  author's homebrew file holds own items with the author's keys. A row of
-  a list that links the author's item by its id then draws the reader's
-  own record, while the entry keeps the link to the author's item, and
-  «Сохранить себе» is not offered there.
-- **Why deferred**: found in the R7h plan (2026-10-07); it needs a file
-  import of another author's items first, and R9 owns the item links and
-  «Сохранить себе».
-- **How to verify the fix**: as gm2, import gm1's homebrew file, then open
-  a list that links gm1's axe; the row draws gm1's item, and a test of
-  `recordFor` covers a linked entry whose key the reader also holds.
-
-### D96 - the server's snapshot check takes book items on a snapshot's card
-
-- **Where**: `public.homebrew_snapshot_valid` (last body in
-  `supabase/migrations/20261001130000_homebrew_relations.sql`), which calls
-  `homebrew_card_valid` and so accepts `content.items` (an own card's book
-  items, `20261008120000_homebrew_card_items.sql`) inside a snapshot's
-  card; its only caller is the `list_entries` snapshot check.
-- **What**: the client's `cardsValid` refuses `items` in a snapshot's card,
-  and `homebrew_snapshot_of` copies named fields only, so no app path
-  writes one; a direct write could, but `list_entries_snapshot_null` (D93)
-  keeps the column null.
-- **Why deferred**: found in the review of book items on own cards (task
-  `homebrew-followups`, 2026-10-08); the fix is a migration, and the
-  column it guards goes with D93.
-- **How to verify the fix**: R9's migration that drops
-  `list_entries.snapshot` drops `homebrew_snapshot_valid` too, or a
-  `tests/db/` case shows that a snapshot whose card holds `items` is
-  refused (`not jsonb_path_exists(snapshot, '$.cards.*.*.items')`);
-  `npm run check:db` passes.
+- **Why deferred**: every print becomes a stored set at `#/p/<id>` (owner,
+  2026-10-08), so the print routes of a cloud list and of another account's
+  item are never built; `print-snapshots` stores the item ids with the set.
+- **How to verify the fix**: signed in, «Печать» with the axe ticked on
+  `#/s/player-token-1` opens `#/p/<id>` with the axe's card, after a reload
+  too.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

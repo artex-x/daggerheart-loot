@@ -109,6 +109,63 @@ describe('ItemView', () => {
     expect([view.status, view.record]).toEqual(['gone', null]);
   });
 
+  it('counts a changed re-read of a drawn record only, follows updated_at, and resets both on open and close', async () => {
+    const world = fakeCloud(SEED, 'gm3');
+    const view = new ItemView(world.as().lists, () => CATALOG);
+    await view.open(ROLL_B, null);
+    expect(view.changes).toBe(0);
+    const first = view.updatedAt;
+    expect(first).not.toBeNull();
+    await view.refresh();
+    expect([view.changes, view.updatedAt]).toEqual([0, first]);
+    const c = SEED.homebrew.gm3.items.find((i) => i.id === ROLL_B)!;
+    await world.homebrew.updateItem(
+      ROLL_B,
+      { content: { ...c.content, en: 'Ranger Roll' }, book_id: null },
+      null
+    );
+    await view.refresh();
+    expect(view.changes).toBe(1);
+    expect(view.updatedAt).not.toBe(first);
+    expect(Date.parse(view.updatedAt!)).toBeGreaterThanOrEqual(Date.parse(first!));
+    await view.open(uuid(661), null);
+    expect([view.changes, view.updatedAt === null]).toEqual([0, false]);
+    view.close();
+    expect([view.changes, view.updatedAt]).toEqual([0, null]);
+  });
+
+  it('keeps the newer answer when two re-reads answer out of order, and counts it once', async () => {
+    const item = recordOf('hb_bigpieceaaaaaaaa', { kind: 'item', ru: 'Часть' }, null);
+    const answer = (revision: string, at: string) => ({
+      ok: true as const,
+      item: { hid: uuid(29999), mine: false, revision, item, related: [], updated_at: at }
+    });
+    const held: ((v: ReturnType<typeof answer>) => void)[] = [];
+    let first = true;
+    const repo = {
+      item: () => {
+        if (first) {
+          first = false;
+          return Promise.resolve(answer('r1', '2026-10-01T10:00:00Z'));
+        }
+        return new Promise((resolve) => held.push(resolve));
+      }
+    } as unknown as ListRepository;
+    const view = new ItemView(repo, () => CATALOG);
+    await view.open(uuid(29999), null);
+    const older = view.refresh();
+    const newer = view.refresh();
+    held[1]?.(answer('r3', '2026-10-03T10:00:00Z'));
+    await newer;
+    held[0]?.(answer('r2', '2026-10-02T10:00:00Z'));
+    await older;
+    expect([view.revision, view.updatedAt, view.changes]).toEqual([
+      'r3',
+      '2026-10-03T10:00:00Z',
+      1
+    ]);
+  });
+
   it('draws not found for an unknown id, and a failed read until «Повторить» answers', async () => {
     const world = fakeCloud(SEED);
     const view = new ItemView(world.as().lists, () => CATALOG);

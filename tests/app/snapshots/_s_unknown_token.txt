@@ -28,6 +28,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/unknown-token
     heading "Список больше не доступен" [level=1]
     StaticText "Владелец удалил эту ссылку или список."
     link "На главную" [url=#/roll/std]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -84,6 +85,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/unknown-token]
     heading "This list is no longer available" [level=1]
     StaticText "The owner deleted this link or the list."
     link "Home" [url=#/roll/std]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

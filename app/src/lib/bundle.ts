@@ -698,10 +698,14 @@ export function parseBundle(
 
 /** A lists file import as two calls: the fixed copies first (`import_homebrew`, null when
  *  there are none), then the lists (`import_lists`). Built once per chosen file, so a
- *  retry sends the same ids. */
+ *  retry sends the same ids. `given` and `givenCards` keep, per key of the file and
+ *  canonical text of a copy, the key that copy was given, so a later plan never copies one
+ *  twice. */
 export interface ImportPlan {
   rows: ImportRow[];
   copies: HomebrewImportRows | null;
+  given?: Record<string, Record<string, string>>;
+  givenCards?: Record<string, Record<string, string>>;
 }
 
 /** What a plan reads of the account, and where its ids and keys come from. */
@@ -712,6 +716,10 @@ export interface PlanAccount {
   newKey: () => string;
   hasItem: (key: string) => boolean;
   hasCard: (key: string) => boolean;
+  /** The key an item of `key` takes in the account: itself when held, else derived. */
+  keyFor: (key: string) => string;
+  /** The key a card of `key` takes in the account: itself when held, else derived. */
+  cardKeyFor: (key: string) => string;
 }
 
 /** Returns the import's plan: every id from `newId`, positions counted after the skips. A
@@ -744,13 +752,17 @@ export function importPlan(lists: readonly ImportList[], account: PlanAccount): 
   return withCopies({ rows, copies: null }, lists, account);
 }
 
-/** Returns `plan` (made by `importPlan` from `lists`) with a fixed copy, an own item in the
- *  default source, of each homebrew entry whose key the account does not hold and the plan
- *  does not copy yet; every id kept, `plan` itself when no entry needs one. One copy is made
- *  per distinct (key, snapshot): the first keeps the key, a later differing one takes a new
- *  key, which its entry then names. The set and rule cards a snapshot embeds are copied the
- *  same way, unless the account holds the card's key, which the copy then names. An entry
- *  without a snapshot is never copied. */
+/** Returns `plan` (made by `importPlan` from `lists`) with each homebrew entry whose key the
+ *  account does not hold, and that the plan does not copy yet, naming `keyFor` of its key:
+ *  the account's item of that key when held, else a fixed copy, an own item in the default
+ *  source, made under it from the snapshot. Every id kept, `plan` itself when nothing
+ *  changes. One copy is made per distinct (key, snapshot): the first takes `keyFor` of the
+ *  key, a later differing one a new key, which its entry then names; `given` keeps them
+ *  across calls. A copy's `hb_` ids in `craft`, `craft_from` and `eq.line` take `keyFor`.
+ *  The set and rule cards a snapshot embeds are copied the same way under `cardKeyFor`,
+ *  unless the account holds the card's key or that key, which the copy then names. An entry
+ *  without a snapshot is never copied
+ *  (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
 export function withCopies(
   plan: ImportPlan,
   lists: readonly ImportList[],
@@ -759,14 +771,17 @@ export function withCopies(
   const items: ImportItemRow[] = [...(plan.copies?.items ?? [])];
   const cards: ImportCardRow[] = [...(plan.copies?.cards ?? [])];
   const copied = new Set(items.map((i) => i.key));
-  /* Per key of the file, its snapshots by canonical text, each with the key it was given. */
-  const variants = new Map<string, Map<string, string>>();
-  const cardVariants = new Map<string, Map<string, string>>();
-  for (const c of cards) cardVariants.set(c.key, new Map([[canonJson(c.content), c.key]]));
-  /* The key a variant of `key` with the canonical text `canon` gets; `make` writes its row. */
+  /* Per key of the file, its copies by canonical text, each with the key it was given. */
+  const seed = (from: Record<string, Record<string, string>> | undefined) =>
+    new Map(Object.entries(from ?? {}).map(([k, v]) => [k, new Map(Object.entries(v))]));
+  const variants = seed(plan.given);
+  const cardVariants = seed(plan.givenCards);
+  /* The key a variant of `key` with the canonical text `canon` gets, `first` for the first
+     one; `make` writes its row. */
   const keyOf = (
     byKey: Map<string, Map<string, string>>,
     key: string,
+    first: string,
     canon: string,
     make: (key: string) => void
   ): string => {
@@ -774,19 +789,22 @@ export function withCopies(
     if (!byText) byKey.set(key, (byText = new Map<string, string>()));
     let given = byText.get(canon);
     if (given === undefined) {
-      given = byText.size ? account.newKey() : key;
+      given = byText.size ? account.newKey() : first;
       byText.set(canon, given);
       make(given);
     }
     return given;
   };
-  const cardKey = (kind: CardKind, key: string, card: CardContent): string => {
+  const cardKey = (kind: CardKind, key: string, card: CardContent | undefined): string => {
     if (account.hasCard(key)) return key;
+    const own = account.cardKeyFor(key);
+    if (!card || account.hasCard(own)) return own;
     const content = { ...card };
-    return keyOf(cardVariants, key, canonJson(content), (given) => {
+    return keyOf(cardVariants, key, own, canonJson(content), (given) => {
       cards.push({ id: account.newId(), key: given, kind, book: null, content });
     });
   };
+  const made = items.length;
   let changed = false as boolean;
   const rows = plan.rows.map((r, i) => ({
     ...r,
@@ -794,24 +812,43 @@ export function withCopies(
       if (e.source !== 'homebrew' || copied.has(e.item_key) || account.hasItem(e.item_key)) {
         return e;
       }
-      const snap = lists[i]?.entries[j]?.snapshot;
-      if (!snap) return e;
-      const content = contentOfRecord(snap);
-      const set = content.set === undefined ? undefined : snap.cards?.sets?.[content.set];
-      if (content.set !== undefined && set) content.set = cardKey('set', content.set, set);
-      if (content.refs) {
-        content.refs = content.refs.map((ref) => {
-          const card = snap.cards?.refs?.[ref];
-          return card ? cardKey('ref', ref, card) : ref;
+      const entry = lists[i]?.entries[j];
+      const fileKey = entry?.item_key ?? e.item_key;
+      const own = account.keyFor(fileKey);
+      let key = own;
+      const snap = entry?.snapshot;
+      if (snap && !account.hasItem(own)) {
+        const content = contentOfRecord(snap);
+        if (content.set !== undefined) {
+          content.set = cardKey('set', content.set, snap.cards?.sets?.[content.set]);
+        }
+        if (content.refs) {
+          content.refs = content.refs.map((ref) =>
+            cardKey('ref', ref, snap.cards?.refs?.[ref])
+          );
+        }
+        const keyFor = (id: string): string => account.keyFor(id);
+        if (content.craft) content.craft = content.craft.map(keyFor);
+        if (content.craft_from) content.craft_from = content.craft_from.map(keyFor);
+        if (content.eq?.line !== undefined) {
+          content.eq = { ...content.eq, line: keyFor(content.eq.line) };
+        }
+        key = keyOf(variants, fileKey, own, canonJson(content), (given) => {
+          items.push({ id: account.newId(), key: given, book: null, content });
         });
       }
-      const key = keyOf(variants, e.item_key, canonJson(content), (given) => {
-        items.push({ id: account.newId(), key: given, book: null, content });
-      });
+      if (key === e.item_key) return e;
       changed = true;
-      return key === e.item_key ? e : { ...e, item_key: key };
+      return { ...e, item_key: key };
     })
   }));
-  if (!changed) return plan;
-  return { rows, copies: { books: [], cards, items, update: false } };
+  if (!changed && items.length === made) return plan;
+  const out = (m: Map<string, Map<string, string>>): Record<string, Record<string, string>> =>
+    Object.fromEntries([...m].map(([k, v]) => [k, Object.fromEntries(v)]));
+  return {
+    rows,
+    copies: items.length ? { books: [], cards, items, update: false } : null,
+    given: out(variants),
+    givenCards: out(cardVariants)
+  };
 }

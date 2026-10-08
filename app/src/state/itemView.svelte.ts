@@ -1,7 +1,7 @@
 /* The homebrew item behind the open `#/h/<uuid>`: its read status, the record, the author's
- * related items, whether the reader is the author, and an index the page draws the card
- * over. No feed and no timer of its own: `AppState` re-reads it on the shown-again signal
- * (docs/specs/FEATURES.md, "Records"). On a key the reader also holds, the answer's records
+ * related items, whether the reader is the author, its latest edit, and an index the page
+ * draws the card over. No feed and no timer of its own: `AppState` re-reads it every 45 s and
+ * on the shown-again signal (docs/specs/FEATURES.md, "Records"). On a key the reader also holds, the answer's records
  * win: the page draws the author's relations (docs/specs/FEATURES.md, "Homebrew"). */
 
 import { itemOf } from '../lib/cloudLists.js';
@@ -22,6 +22,10 @@ export class ItemView {
   mine = $state(false);
   /** The answer's revision: a re-read with an equal one keeps the objects. */
   revision = $state<string | null>(null);
+  /** The answer's `updated_at`, from every answer; null when it has none. */
+  updatedAt = $state<string | null>(null);
+  /** How many re-reads met a new revision of a drawn record; the page announces each. */
+  changes = $state(0);
 
   /** The catalog with the item and its related items, which win a key over the catalog. */
   index: Index | null = $derived.by(() => {
@@ -34,6 +38,8 @@ export class ItemView {
   readonly #base: () => Index | null;
   /* The user the last read ran for; `undefined` before one. */
   #userId: string | null | undefined = undefined;
+  /* The number of the newest read started: an older answer that lands last is dropped. */
+  #reads = 0;
 
   constructor(repo: ListRepository, base: () => Index | null) {
     this.#repo = repo;
@@ -55,6 +61,8 @@ export class ItemView {
       this.related = [];
       this.mine = false;
       this.revision = null;
+      this.updatedAt = null;
+      this.changes = 0;
       await this.#read(id);
       return;
     }
@@ -69,8 +77,9 @@ export class ItemView {
   async refresh(): Promise<void> {
     const id = this.id;
     if (id === null || this.status === 'idle' || this.status === 'loading') return;
+    const n = ++this.#reads;
     const r = await this.#repo.item(id);
-    if (this.id !== id || !r.ok) return;
+    if (this.id !== id || n !== this.#reads || !r.ok) return;
     this.#take(r.item);
   }
 
@@ -89,14 +98,17 @@ export class ItemView {
     this.related = [];
     this.mine = false;
     this.revision = null;
+    this.updatedAt = null;
+    this.changes = 0;
     this.#userId = undefined;
   }
 
   async #read(id: string): Promise<void> {
     this.status = 'loading';
     const user = this.#userId;
+    const n = ++this.#reads;
     const r = await this.#repo.item(id);
-    if (this.id !== id) return;
+    if (this.id !== id || n !== this.#reads) return;
     if (!r.ok) {
       this.status = 'error';
       return;
@@ -113,11 +125,14 @@ export class ItemView {
       this.related = [];
       this.revision = null;
       this.mine = false;
+      this.updatedAt = null;
       this.status = 'gone';
       return;
     }
     this.mine = read.mine;
+    this.updatedAt = read.updatedAt;
     if (read.revision !== this.revision || !this.record) {
+      if (this.record) this.changes++;
       this.record = read.record;
       this.related = read.related;
       this.revision = read.revision;

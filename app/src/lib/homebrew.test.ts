@@ -41,7 +41,10 @@ import {
   type HomebrewRecord,
   type ItemRow,
   type Problem,
-  copyRows
+  copyRows,
+  derivedKey,
+  fnv1a128,
+  ownKeyFor
 } from './homebrew.js';
 import { buildIndex, madeFrom, setOf, upgradesTo } from './data.js';
 import type { Record_ } from './types.js';
@@ -934,14 +937,24 @@ describe('copyRows', () => {
     '00000000-0000-4000-8000-000000000662'
   );
 
-  it('keeps the key, drops the source and the author keys, keeps catalog ids, and copies every embedded card', () => {
-    const rows = copyRows(record, { newId: ids(), hasCard: () => false });
+  const GM2 = '00000000-0000-4000-8000-000000000002';
+  const derive = (k: string): string => derivedKey(GM2, k);
+  const account = (held: readonly string[] = []) => ({
+    newId: ids(),
+    keyFor: derive,
+    cardKeyFor: (k: string) => ownKeyFor(GM2, (x) => held.includes(x), k),
+    hasCard: (k: string) => held.includes(k)
+  });
+  const ITEM = derive('hb_rangerrollaaaaaa');
+
+  it('takes the derived key, drops the source and the author keys, keeps catalog ids, and copies every embedded card under its derived key', () => {
+    const rows = copyRows(record, account());
     expect(rows.books).toEqual([]);
     expect(rows.update).toBe(false);
     expect(rows.items).toEqual([
       {
         id: 'id5',
-        key: 'hb_rangerrollaaaaaa',
+        key: ITEM,
         book: null,
         content: {
           kind: 'equip',
@@ -950,28 +963,34 @@ describe('copyRows', () => {
           ende: '',
           rud: '',
           craft: ['ci1'],
-          set: SET,
-          refs: REFS,
+          set: derive(SET),
+          refs: REFS.map(derive),
           eq: { t: 'armor', tier: 2, as: 3, th: [5, 9] }
         }
       }
     ]);
     expect(rows.cards.map((c) => [c.id, c.key, c.kind, c.book])).toEqual([
-      ['id1', SET, 'set', null],
-      ['id2', REFS[0], 'ref', null],
-      ['id3', REFS[1], 'ref', null],
-      ['id4', REFS[2], 'ref', null]
+      ['id1', derive(SET), 'set', null],
+      ['id2', derive(REFS[0] as string), 'ref', null],
+      ['id3', derive(REFS[1] as string), 'ref', null],
+      ['id4', derive(REFS[2] as string), 'ref', null]
     ]);
-    expect(contentProblems(rows.items[0]?.content, 'hb_rangerrollaaaaaa')).toEqual([]);
+    expect(contentProblems(rows.items[0]?.content, ITEM)).toEqual([]);
     for (const c of rows.cards) expect(cardProblems(c.kind, c.content)).toEqual([]);
   });
 
   it('names a card key the account holds and drops an author key with no card', () => {
     const bare = { ...record, cards: { refs: { [REFS[0] as string]: ref('R0') } } };
-    const rows = copyRows(bare, { newId: ids(), hasCard: (k) => k === SET });
-    expect(rows.cards.map((c) => c.key)).toEqual([REFS[0]]);
+    const rows = copyRows(bare, account([SET]));
+    expect(rows.cards.map((c) => c.key)).toEqual([derive(REFS[0] as string)]);
     expect(rows.items[0]?.content.set).toBe(SET);
-    expect(rows.items[0]?.content.refs).toEqual([REFS[0]]);
+    expect(rows.items[0]?.content.refs).toEqual([derive(REFS[0] as string)]);
+  });
+
+  it('names a held derived card key instead of copying the card again', () => {
+    const rows = copyRows(record, account([derive(SET)]));
+    expect(rows.items[0]?.content.set).toBe(derive(SET));
+    expect(rows.cards.map((c) => c.key)).toEqual(REFS.map(derive));
   });
 
   it('copies an item with no relations and no cards as it is', () => {
@@ -980,7 +999,7 @@ describe('copyRows', () => {
       { kind: 'item', ru: 'Простое', set: 'saints-ensemble' },
       null
     );
-    const rows = copyRows({ ...plain, hid: 'x' }, { newId: ids(), hasCard: () => false });
+    const rows = copyRows({ ...plain, hid: 'x' }, account());
     expect(rows.cards).toEqual([]);
     expect(rows.items[0]?.content).toEqual({
       kind: 'item',
@@ -990,5 +1009,39 @@ describe('copyRows', () => {
       rud: '',
       set: 'saints-ensemble'
     });
+  });
+});
+
+describe('derivedKey and ownKeyFor', () => {
+  const GM1 = '00000000-0000-4000-8000-000000000001';
+  const GM2 = '00000000-0000-4000-8000-000000000002';
+
+  it('pinsTheFnv1a128HashOfTheEmptyStringAndOfA', () => {
+    expect(fnv1a128('').toString(16)).toBe('6c62272e07bb014262b821756295c58d');
+    expect(fnv1a128('a').toString(16)).toBe('d228cb696f1a8caf78912b704e4a8964');
+  });
+
+  it('matchesTheThreeVectorsAndTheKeyPattern', () => {
+    const keys = [
+      derivedKey(GM2, 'hb_emberaxeaaaaaaaa'),
+      derivedKey(GM1, 'hb_emberaxeaaaaaaaa'),
+      derivedKey(GM2, 'hb_alderworkshopaaa')
+    ];
+    expect(keys).toEqual(['hb_hhwsesekhtl7h4m5', 'hb_ycdjk7r64wtkg45d', 'hb_vgpfj574y25aevly']);
+    for (const k of keys) expect(k).toMatch(HOMEBREW_KEY);
+  });
+
+  it('givesOneKeyForOneInputAndAnotherForAnotherUserOrKey', () => {
+    const k = derivedKey(GM2, 'hb_emberaxeaaaaaaaa');
+    expect(derivedKey(GM2, 'hb_emberaxeaaaaaaaa')).toBe(k);
+    expect(derivedKey(GM1, 'hb_emberaxeaaaaaaaa')).not.toBe(k);
+    expect(derivedKey(GM2, 'hb_emberaxebaaaaaaa')).not.toBe(k);
+  });
+
+  it('keepsAHeldKeyAndACatalogIdAndDerivesAnyOtherKey', () => {
+    const held = (k: string): boolean => k === 'hb_emberaxeaaaaaaaa';
+    expect(ownKeyFor(GM2, held, 'hb_emberaxeaaaaaaaa')).toBe('hb_emberaxeaaaaaaaa');
+    expect(ownKeyFor(GM2, held, 'ci1')).toBe('ci1');
+    expect(ownKeyFor(GM2, held, 'hb_alderworkshopaaa')).toBe('hb_vgpfj574y25aevly');
   });
 });

@@ -28,9 +28,9 @@ RootWebArea "Спальный мешок долгой дороги через п
   main ""
     heading "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [level=1 namelen=120 namehash=084a20d9]
     StaticText "Предмет другого игрока · Хоумбрю"
+    StaticText "Обновлено вчера"
     button "Страница"
-    StaticText "ПРЕДМЕТ"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     StaticText "ПОЛУЧАЕТСЯ ИЗ"
@@ -40,6 +40,7 @@ RootWebArea "Спальный мешок долгой дороги через п
     button "Добавить в список" [expanded=false]
     button "Сохранить себе"
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -102,9 +103,9 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
   main ""
     heading "Bedroll of the long road over the pass, through the marshes, the..." [level=1 namelen=120 namehash=bbb6ed09]
     StaticText "Another player's item · Homebrew"
+    StaticText "Updated yesterday"
     button "Page"
-    StaticText "ITEM"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     StaticText "MADE FROM"
@@ -114,6 +115,7 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
     button "Add to list" [expanded=false]
     button "Save to my items"
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

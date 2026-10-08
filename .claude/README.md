@@ -2555,7 +2555,16 @@ It cannot restore: the one frozen copy with no holder that the migration
 deleted (owner, 2026-10-06), the content of own-held frozen copies (they
 became links to the live item), the read marks of requests, and per-owner
 `snapshot_bytes_per_list` overrides (deleted by cascade; only the default
-row comes back).
+row comes back). After `20261010120000_drop_list_entry_snapshot` a frontend
+before R7h needs the column again: push that migration's reversal first, as
+a second push, and only then this one.
+
+To undo `20261010120000_drop_list_entry_snapshot`, revert the app alone: no
+frontend since R7h reads the column. Push the reversal only to run a
+frontend before R7h or to restore a backup made before the migration: the
+dump's `list_entries` inserts name `snapshot`, so `restore:prod` and
+`restore:drill` of such a backup fail until the reversal is pushed; a drill
+of a backup made after the push needs nothing.
 
 ### Usage monitoring
 

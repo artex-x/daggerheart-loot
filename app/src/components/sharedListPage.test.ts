@@ -681,6 +681,30 @@ describe('a share link', () => {
     expect(screen.queryByText(ru.legacyLinks)).not.toBeInTheDocument();
   });
 
+  it('draws «Загружаем...» while the link reads, then the list', async () => {
+    const cloud = fakeCloud(SEED);
+    let answer: (() => void) | null = null;
+    const real = cloud.shares.read.bind(cloud.shares);
+    cloud.shares.read = (token, since) =>
+      new Promise((resolve) => {
+        answer = () => {
+          void real(token, since).then(resolve);
+        };
+      });
+    const { container } = open('#/s/player-token-1', cloud);
+    expect(await screen.findByText(ru.cloudLoading)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+    await expectNoA11yViolations(container);
+    await waitFor(() => {
+      expect(answer).not.toBeNull();
+    });
+    (answer as unknown as () => void)();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
+    ).toBeInTheDocument();
+    expect(screen.queryByText(ru.cloudLoading)).toBeNull();
+  });
+
   it('toasts the entries the data does not know, once', async () => {
     open('#/s/player-token-1');
     await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
@@ -922,6 +946,59 @@ describe('a share link', () => {
       expect(second).not.toBe(first);
       expect(first?.isConnected).toBe(false);
       await expectNoA11yViolations(container);
+    });
+
+    it('says once that the list is no longer available when its link is revoked live', async () => {
+      const { cloud, container } = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await waitFor(() => {
+        expect(region()).toHaveAttribute('data-live', 'live');
+      });
+      await cloud.as('gm1').shares.revoke(uuid(111));
+      expect(
+        await screen.findByRole('heading', { level: 1, name: ru.shareGone })
+      ).toBeInTheDocument();
+      expect(region()).toHaveTextContent(ru.shareGone);
+      expect(region()?.querySelectorAll('span')).toHaveLength(1);
+      await expectNoA11yViolations(container);
+    });
+
+    it("closes a player's open record of the GM's own item when the GM removes its row", async () => {
+      const { cloud, container } = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      await waitFor(() => {
+        expect(region()).toHaveAttribute('data-live', 'live');
+      });
+      await userEvent.click(screen.getByRole('button', { name: /Топор Тлеющих Углей/ }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(
+        (await cloud.as('gm1').lists.apply([{ op: 'remove_entries', ids: [uuid(1110)] }])).ok
+      ).toBe(true);
+      cloud.play(uuid(101), { name: 'Лавка у моста' });
+      await screen.findByRole('heading', { level: 1, name: 'Лавка у моста' });
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).toBeNull();
+      });
+      await expectNoA11yViolations(container);
+    });
+
+    it('says nothing for an unknown token, also right after a drawn one', async () => {
+      const { container } = open('#/s/unknown-token');
+      expect(
+        await screen.findByRole('heading', { level: 1, name: ru.shareGone })
+      ).toBeInTheDocument();
+      expect(region()).not.toBeNull();
+      expect(region()).toHaveTextContent('');
+      await expectNoA11yViolations(container);
+      cleanup();
+      const next = open('#/s/player-token-1');
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      next.router.navigate('#/s/unknown-token');
+      expect(
+        await screen.findByRole('heading', { level: 1, name: ru.shareGone })
+      ).toBeInTheDocument();
+      expect(region()).toHaveTextContent('');
+      expect(next.router.hash()).toBe('#/s/unknown-token');
     });
 
     it('draws no region on a #/l/ page', async () => {

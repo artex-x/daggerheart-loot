@@ -14,6 +14,7 @@ import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { dict } from '../lib/dict.js';
+import { derivedKey } from '../lib/homebrew.js';
 
 const t = dict('ru');
 
@@ -406,6 +407,33 @@ describe('homebrew lines', () => {
     const fold = await within(p).findByRole('button', { name: 'Решённые в этот раз (1)' });
     await userEvent.click(fold);
     expect(p.querySelector('.decided')).toHaveTextContent('Топор Тлеющих Углей');
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the raw key of a line whose row «Сохранить себе» moved to the copy, and reads it short', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const made = await cloud.shares.create(uuid(201), 'player');
+    if (!made.ok) throw new Error('no share');
+    cloud.request(made.token, [{ item: AXE, qty: 1 }]);
+    /* What the save did: a copy under gm2's derived key, the row relinked to it. */
+    const copy = uuid(9100);
+    const created = await cloud.homebrew.createItem({
+      id: copy,
+      key: derivedKey(SEED.users.gm2.id, AXE),
+      book_id: null,
+      content: { kind: 'item', ru: 'Мой топор' }
+    });
+    expect(created.ok).toBe(true);
+    const relinked = await cloud.lists.apply([{ op: 'relink', id: uuid(2102), hb_item: copy }]);
+    expect(relinked.ok).toBe(true);
+    const hash = '#/lists/' + uuid(201);
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
+    });
+    const p = await panel();
+    const req = requestsOf(p)[0] as HTMLElement;
+    expect(cells(req)).toEqual([AXE, 'нет в списке', '-']);
+    expect(req.querySelector('.short')).toHaveTextContent('нет в списке');
     await expectNoA11yViolations(container);
   });
 });

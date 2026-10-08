@@ -101,7 +101,10 @@ the index or an account list's page is open, and every 5 minutes on any route
 while the owner's topic is joined, always once no write is buffered or in
 flight. A shared page `#/s/<token>` reads its list again on a message of its
 share's topic, when it is shown again, every 45 s while that topic is not
-joined and every 5 minutes while it is, signed in or not. A read keeps each list
+joined and every 5 minutes while it is, signed in or not. An item page
+`#/h/<uuid>` has no topic: it reads its item again every 45 s and when it is
+shown again, signed in or not, and drops an older answer that arrives after a
+newer one. A read keeps each list
 whose `updated_at` has not moved as the same object, so a read that finds
 nothing new redraws nothing, and an edit replaces only the list it changes.
 

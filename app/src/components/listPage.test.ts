@@ -2174,7 +2174,11 @@ describe('homebrew entries', () => {
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
     await userEvent.click(within(dialog).getByRole('button', { name: '✓ Список второго ГМа' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Вернуть' }));
+    /* The record left the page with its row, so its modal closes; the undo stays. */
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await same();
   });
 

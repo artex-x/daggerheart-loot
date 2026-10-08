@@ -123,11 +123,11 @@
     return status !== undefined && status !== 'ready';
   };
 
-  /* The held-key test for an entry without a snapshot, which imports only under a held key;
-     the copy line and `importPlan` test a snapshot's copy apart. */
+  /* The held-key test for an entry without a snapshot, which imports only under a held key
+     or its held derived key; the copy line and `importPlan` test a snapshot's copy apart. */
   const holdsNow = (): ((key: string) => boolean) => {
     const held = new Set((app.homebrew?.items ?? []).map((i) => i.key));
-    return (key) => held.has(key);
+    return (key) => held.has(key) || held.has(app.ownKeyFor(key));
   };
 
   function read(text: string, sibling: boolean, other: string[], otherMore: number): void {
@@ -318,13 +318,14 @@
        preview is not made, and one deleted since is made at the press. */
     const own = app.homebrew;
     const planned = new Set((plan.copies?.items ?? []).map((i) => i.key));
+    const mine = (key: string): boolean => !!own?.has(key) || planned.has(key);
     const unheld = new Set(
       lists.flatMap((l) =>
         l.entries.flatMap((e) =>
           e.source === 'homebrew' &&
           e.snapshot !== null &&
-          !own?.has(e.item_key) &&
-          !planned.has(e.item_key)
+          !mine(e.item_key) &&
+          !mine(app.ownKeyFor(e.item_key))
             ? [e.item_key]
             : []
         )

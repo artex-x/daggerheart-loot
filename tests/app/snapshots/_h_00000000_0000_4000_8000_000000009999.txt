@@ -28,6 +28,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/h/00000000-0000
     heading "Предмет не найден" [level=1]
     StaticText "Возможно, ссылка устарела или данные были изменены."
     link "На главную" [url=#/roll/std]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -84,6 +85,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000
     heading "Item not found" [level=1]
     StaticText "The link may be out of date, or the data has changed."
     link "Home" [url=#/roll/std]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

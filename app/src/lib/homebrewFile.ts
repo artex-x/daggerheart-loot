@@ -15,10 +15,12 @@ import {
   bookProblems,
   cardProblems,
   contentProblems,
+  derivedKey,
   hasName,
   HOME_NAMES,
   HOMEBREW_KEY,
   nameTaken,
+  ownKeyFor,
   SECTIONS_MAX,
   type BookContent,
   type BookRow,
@@ -1015,4 +1017,76 @@ export function heldOf(file: HomebrewFile, held: HeldRows): HeldCounts {
       sameNamed: sameNamed.map(namesOf)
     }
   };
+}
+
+/** A file with the account's keys (`deriveFile`), and the file's key of each key it
+ *  changed. */
+export interface DerivedFile {
+  file: HomebrewFile;
+  /** By a changed key, the file's key it came from. */
+  from: ReadonlyMap<string, string>;
+}
+
+/** Returns `file` with each key the account does not hold changed to its derived key
+ *  (`ownKeyFor`), per namespace: sources, cards and items. A section keeps its key while
+ *  its source keeps its own, else it takes its derived key. Every `hb_` reference follows
+ *  the same rule, one the file does not hold too; a catalog id and a card's `items` stay.
+ *  `file` itself when no key changes
+ *  (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
+export function deriveFile(file: HomebrewFile, userId: string, held: HeldRows): DerivedFile {
+  const from = new Map<string, string>();
+  const memo = (map: (key: string) => string): ((key: string) => string) => {
+    const done = new Map<string, string>();
+    return (key) => {
+      let v = done.get(key);
+      if (v === undefined) {
+        v = map(key);
+        done.set(key, v);
+        if (v !== key) from.set(v, key);
+      }
+      return v;
+    };
+  };
+  const own = (rows: readonly { key: string }[]): ((key: string) => string) => {
+    const keys = new Set(rows.map((r) => r.key));
+    return memo((key) => ownKeyFor(userId, (k) => keys.has(k), key));
+  };
+  const bookKey = own(held.books);
+  const cardKey = own(held.cards);
+  const itemKey = own(held.items);
+  const sectionKey = memo((key) => derivedKey(userId, key));
+  const inBook = (book: string | undefined, section: string): string =>
+    book === undefined || bookKey(book) === book ? section : sectionKey(section);
+  const itemKeys = (ids: string[] | undefined): string[] | undefined => ids?.map(itemKey);
+
+  const out: HomebrewFile = {
+    ...file,
+    books: file.books.map((b) => {
+      const key = bookKey(b.key);
+      const next: FileBook = { ...b, key };
+      if (b.sections)
+        next.sections = b.sections.map((s) => ({ ...s, key: inBook(b.key, s.key) }));
+      return next;
+    }),
+    cards: file.cards.map((c) => {
+      const next: FileCard = { ...c, key: cardKey(c.key) };
+      if (c.book !== undefined) next.book = bookKey(c.book);
+      return next;
+    }),
+    items: file.items.map((it) => {
+      const next: FileItem = { ...it, key: itemKey(it.key) };
+      if (it.book !== undefined) next.book = bookKey(it.book);
+      if (it.section !== undefined) next.section = inBook(it.book, it.section);
+      if (it.set !== undefined) next.set = cardKey(it.set);
+      const refs = it.refs?.map(cardKey);
+      if (refs) next.refs = refs;
+      const craft = itemKeys(it.craft);
+      if (craft) next.craft = craft;
+      const craftFrom = itemKeys(it.craft_from);
+      if (craftFrom) next.craft_from = craftFrom;
+      if (it.eq?.line !== undefined) next.eq = { ...it.eq, line: itemKey(it.eq.line) };
+      return next;
+    })
+  };
+  return { file: from.size ? out : file, from };
 }

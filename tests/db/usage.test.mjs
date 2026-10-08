@@ -274,14 +274,14 @@ describe('collect()', () => {
   });
 
   it('takes the 24-hour request retention on a database before the links migration', async () => {
-    const down = readFileSync(
-      new URL('../../supabase/reversals/20261007130000_homebrew_links.sql', import.meta.url),
-      'utf8'
-    );
+    const reversal = (name) =>
+      readFileSync(new URL(`../../supabase/reversals/${name}.sql`, import.meta.url), 'utf8');
     const list = crypto.randomUUID();
     const share = crypto.randomUUID();
     const out = await rolledBack(async (tx) => {
-      await tx.unsafe(down);
+      // The links reversal writes list_entries.snapshot, which a later migration drops.
+      await tx.unsafe(reversal('20261010120000_drop_list_entry_snapshot'));
+      await tx.unsafe(reversal('20261007130000_homebrew_links'));
       const base = await collect(tx, new Date());
       await tx`insert into auth.users (id, email) values (${A}, 'usage-a@example.test')`;
       await tx`insert into public.lists (id, owner_id) values (${list}, ${A})`;

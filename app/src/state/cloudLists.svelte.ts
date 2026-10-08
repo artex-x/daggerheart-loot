@@ -828,13 +828,29 @@ export class CloudLists implements ListModel {
     return fresh;
   }
 
-  /** Points the list's entry of `key` at the item `hbItem` of the same key in place
-   *  (`relink`): its position, quantity, price and notes stay. False when the list holds
-   *  no entry of `key`. */
-  relink(id: string, key: string, hbItem: string): boolean {
-    const rowId = this.get(id)?.entryIds[key];
-    if (!rowId) return false;
-    this.#change(id, (x) => this.#withLinked({ ...x, links: { ...x.links, [key]: hbItem } }));
+  /** Points the list's entry of `oldKey` at the item `hbItem`, whose key is `newKey`, in
+   *  place (`relink`; the database moves the row's key, `list_entries_hb_key`): its
+   *  position, quantity, price, notes and GM-only mark stay under `newKey`. False when the
+   *  list holds no entry of `oldKey`, or another entry of `newKey`. */
+  relinkAs(id: string, oldKey: string, newKey: string, hbItem: string): boolean {
+    const l = this.get(id);
+    const rowId = l?.entryIds[oldKey];
+    if (!l || !rowId || (newKey !== oldKey && l.ids.includes(newKey))) return false;
+    const moved = <T>(o: Readonly<Record<string, T>> | undefined): Record<string, T> => {
+      const out: Record<string, T> = {};
+      for (const [k, v] of Object.entries(o ?? {})) out[k === oldKey ? newKey : k] = v;
+      return out;
+    };
+    this.#change(id, (x) => {
+      const out: CloudList = {
+        ...x,
+        ids: x.ids.map((k) => (k === oldKey ? newKey : k)),
+        entryIds: moved(x.entryIds),
+        links: { ...moved(x.links), [newKey]: hbItem }
+      };
+      if (x.meta) out.meta = moved(x.meta);
+      return this.#withLinked(out);
+    });
     this.#enqueue({
       key: `entry:${rowId}:link`,
       list: id,

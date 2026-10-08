@@ -196,9 +196,11 @@ All of them except the four `schema/` files are generated from `data.js` by
   homebrew entry, so an official-only export stays an `import-v1` file byte
   for byte; the import reads versions 1 and 2 (and 3, see `import-v3`), and
   a v1 reader refuses version 2.
-  On import a held key becomes a link to the own item. Each homebrew entry
-  with a snapshot whose key the account does not hold becomes an own item; one
-  without a snapshot is skipped, as an unknown catalog id is. The import counts
+  On import a held key becomes a link to the own item, and so does a key whose
+  derived key (below, `homebrew-v1`) the account holds. Each other homebrew
+  entry with a snapshot becomes an own item under the derived key, its `hb_`
+  relations taking derived keys too; one without a snapshot is skipped, as an
+  unknown catalog id is. The import counts
   against the item and card limits and `import_homebrew`'s 1000 rows; past
   either it is refused whole, and nothing is written. One copy is made per
   distinct key and snapshot; a later differing snapshot of a key gets a new
@@ -247,6 +249,19 @@ All of them except the four `schema/` files are generated from `data.js` by
   `lib/homebrewFile.test.ts` and `lib/bundle.test.ts` keep the validators
   equal to them. A homebrew record never reaches `data.json`, `catalog.csv`,
   `i/` or `og/`.
+  The import keeps each key the account holds and gives every other `hb_`
+  key of a source, a section, a card or an item the account's derived key,
+  `hb_` and 16 characters of `a-z2-7` from the FNV-1a 128 hash of the
+  account's user id and the old key; a section keeps its key while its
+  source keeps its own, and every `hb_` reference of the file follows. So
+  the same file imported again finds its keys held, and «Сохранить себе»
+  and the lists file import (`import-v2`) take the same keys
+  (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
+  The file format does not change. `llms.txt` and this section carry the
+  rule; the frozen schemas' descriptions keep their published wording
+  (`import-v2.json` and `import-v3.json`, entry `source`: "An account that
+  holds the key gets a live reference; any other gets a frozen copy of the
+  snapshot.").
 - `schema/homebrew-v2.json` - the homebrew file `homebrew-v2`, `$id`
   `https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json`:
   `homebrew-v1` with `version` 2 and a card's `items`, 1 to 100 unique catalog

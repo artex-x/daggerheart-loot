@@ -37,11 +37,13 @@
   } from '../lib/homebrew.js';
   import {
     defaultTarget,
+    deriveFile,
     ERRORS_MAX,
     FILE_BOOKS_MAX,
     FILE_CARDS_MAX,
     FILE_ITEMS_MAX,
     heldOf,
+    homebrewText,
     newName,
     parseHomebrew,
     planOf,
@@ -123,6 +125,8 @@
   let namesOpen = $state<string[]>([]);
   /* The ids and keys of this file's rows, made once: a retry sends the same. */
   let ids = new SvelteMap<string, string>();
+  /* By a derived key of the preview's file, the chosen file's key it came from. */
+  let from: ReadonlyMap<string, string> = new Map();
 
   const ROWS_SHOWN = 20;
   const NAMES_SHOWN = 10;
@@ -177,7 +181,20 @@
       refuse(REFUSALS[r.reason]);
       return;
     }
-    const p = parseHomebrew(r.text, context());
+    let p = parseHomebrew(r.text, context());
+    let text = r.text;
+    from = new Map();
+    /* Every key the account does not hold takes its derived key, references following; the
+       preview, the notes and the rows read that file (docs/specs/FEATURES.md, "Import"). */
+    const userId = app.user?.userId;
+    if (p.ok && userId) {
+      const mapped = deriveFile(p.file, userId, store);
+      if (mapped.file !== p.file) {
+        from = mapped.from;
+        text = homebrewText(mapped.file);
+        p = parseHomebrew(text, context());
+      }
+    }
     if (p.ok) {
       const rows = rowsOf(p.file);
       ids = new SvelteMap();
@@ -199,7 +216,7 @@
     } else if (p.reason === 'errors') {
       let doc: unknown = null;
       try {
-        doc = JSON.parse(r.text);
+        doc = JSON.parse(text);
       } catch {
         /* The parse refused no JSON before the walk: unreachable, the value stays null. */
       }
@@ -412,7 +429,7 @@
       n.kind === 'relation'
         ? {
             ...placeOf(n.array ?? 'items', n.index, names),
-            text: fill(t.hbImportUnknownRef, { f: n.field, v: n.id })
+            text: fill(t.hbImportUnknownRef, { f: n.field, v: from.get(n.id) ?? n.id })
           }
         : { ...placeOf('cards', n.index, names), text: t.hbImportKindDiffers }
     );

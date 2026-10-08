@@ -767,7 +767,7 @@ const ru = {
   hbImportNoteNew: 'Источник создастся вместе с разделами: %n.',
   hbImportNoteKey: 'Ключ источника совпал с вашим: предметы попадут в него.',
   hbImportNoteName:
-    'Источник с таким названием уже есть, но ключ другой (файл сделан заново). По умолчанию предметы попадут в ваш источник.',
+    'Источник с таким названием уже есть, но ключ другой. По умолчанию предметы попадут в ваш источник.',
   hbImportNoteAdd: 'В источник добавятся разделы: %n.',
   hbImportNoteHome: 'В «Хоумбрю» нет разделов: предметы лягут без раздела.',
   hbImportFull: 'В «%s» будет больше 30 разделов - выберите другой источник.',
@@ -948,6 +948,7 @@ const ru = {
   sharedFailed: 'Список не загрузился',
   sharedFailedSub: 'Проверьте соединение и нажмите «Повторить».',
   listUpdated: 'Список обновлён',
+  itemUpdated: 'Предмет обновлён',
   cloneFailed:
     'Не получилось сохранить список себе. Проверьте соединение и попробуйте ещё раз.',
   legacyLinks:
@@ -1718,7 +1719,7 @@ const en: Dict = {
   hbImportNoteNew: 'The source is created with its sections: %n.',
   hbImportNoteKey: 'The source key matches yours: the items go into it.',
   hbImportNoteName:
-    'A source of this name exists with another key (the file was made again). By default the items go into your source.',
+    'A source of this name exists with another key. By default the items go into your source.',
   hbImportNoteAdd: 'Sections added to the source: %n.',
   hbImportNoteHome: '"Homebrew" has no sections: the items go in with no section.',
   hbImportFull: '"%s" would hold more than 30 sections - choose another source.',
@@ -1895,6 +1896,7 @@ const en: Dict = {
   sharedFailed: 'The list did not load',
   sharedFailedSub: 'Check the connection and press "Retry".',
   listUpdated: 'The list was updated',
+  itemUpdated: 'The item was updated',
   cloneFailed: 'Could not save the list to your lists. Check the connection and try again.',
   legacyLinks:
     'Links like this one (#/l/) stop opening on %d. Save the list to your lists to keep it.',

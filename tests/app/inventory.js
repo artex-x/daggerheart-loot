@@ -1422,7 +1422,7 @@ const STATES = [
     id: GM2_LIST + ' ~ axe saved as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "«Сохранить себе» pressed in the axe's modal: «Сохранено» disabled, the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» with «Изменить» (the dialog alone is captured; app/src/state/app.test.ts reads the relinked row)",
+    why: "«Сохранить себе» pressed in the axe's modal: the row moves to the copy's derived key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)",
     enter: async (d) => {
       await d.click('Лезвие тлеет');
       await d.click('Сохранить себе');

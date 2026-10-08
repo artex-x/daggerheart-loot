@@ -28,9 +28,9 @@ RootWebArea "Скатка следопыта — Генератор лута —
   main ""
     heading "Скатка следопыта" [level=1]
     StaticText "Предмет другого игрока · Хоумбрю"
+    StaticText "Обновлено 11 часов назад"
     button "Страница"
-    StaticText "ПРЕДМЕТ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Скатка путника (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
@@ -43,6 +43,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Сохранено" [disabled=true]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -51,7 +52,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
     StaticText "Предмет «Скатка следопыта» сохранён в «Мои предметы»"
-    link "Изменить" [url=index.html?as=gm2#/homebrew/hb_rangerrollaaaaaa]
+    link "Изменить" [url=index.html?as=gm2#/homebrew/hb_mmvllha6ycgvfkf2]
 
 ## ru :: controls
 Arazo's Artifacts
@@ -112,9 +113,9 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
   main ""
     heading "Ranger's Roll" [level=1]
     StaticText "Another player's item · Homebrew"
+    StaticText "Updated 11 hours ago"
     button "Page"
-    StaticText "ITEM"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Traveller's Roll (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
@@ -127,6 +128,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Saved" [disabled=true]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -135,7 +137,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
     StaticText "Item "Ranger's Roll" saved to My items"
-    link "Edit" [url=index.html?as=gm2#/homebrew/hb_rangerrollaaaaaa]
+    link "Edit" [url=index.html?as=gm2#/homebrew/hb_mmvllha6ycgvfkf2]
 
 ## en :: controls
 Account: gm2@example.test

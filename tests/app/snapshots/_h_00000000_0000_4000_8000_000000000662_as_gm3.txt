@@ -29,9 +29,9 @@ RootWebArea "Скатка следопыта — Генератор лута —
     heading "Скатка следопыта" [level=1]
     StaticText "Хоумбрю "
     link "показать в таблице" [url=index.html?as=gm3#/tables/homebrew/hb_rangerrollaaaaaa]
+    StaticText "Обновлено 11 часов назад"
     button "Страница"
-    StaticText "ПРЕДМЕТ"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Скатка путника (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000661]
@@ -46,6 +46,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     button "Добавить в список" [expanded=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm3#/print/hb_rangerrollaaaaaa]
     link "Изменить" [url=index.html?as=gm3#/homebrew/hb_rangerrollaaaaaa]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -115,9 +116,9 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     heading "Ranger's Roll" [level=1]
     StaticText "Homebrew "
     link "show in the table" [url=index.html?as=gm3#/tables/homebrew/hb_rangerrollaaaaaa]
+    StaticText "Updated 11 hours ago"
     button "Page"
-    StaticText "ITEM"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Traveller's Roll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000661]
@@ -132,6 +133,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     button "Add to list" [expanded=false]
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm3#/print/hb_rangerrollaaaaaa]
     link "Edit" [url=index.html?as=gm3#/homebrew/hb_rangerrollaaaaaa]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

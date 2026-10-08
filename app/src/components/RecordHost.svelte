@@ -67,6 +67,8 @@
   const { app, index, extra, children }: Props = $props();
 
   let open = $state<Record_ | null>(null);
+  /* Whether the page's index held the open record when it opened. */
+  let indexed = false;
 
   $effect(() => {
     void app.navigations;
@@ -75,7 +77,14 @@
     });
   });
 
+  /* The record left the page: a save moved its row's key, or a GM removed its row on
+     `#/s/<token>`. A page with no index keeps the modal (docs/specs/FEATURES.md, "Records"). */
+  $effect(() => {
+    if (open && index && indexed && !index.byId.has(open.id)) open = null;
+  });
+
   function openRecord(r: Record_): void {
+    indexed = !!index?.byId.has(r.id);
     open = r;
   }
 </script>

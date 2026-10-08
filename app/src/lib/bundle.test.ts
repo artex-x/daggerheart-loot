@@ -45,6 +45,8 @@ import {
 import { NAME_MAX, NOTE_MAX, PRICE_MAX, type CloudList } from './cloudLists.js';
 import { buildIndex, type Loot } from './data.js';
 import {
+  derivedKey,
+  ownKeyFor,
   recordOf,
   SNAPSHOT_BYTES,
   type BookContent,
@@ -827,6 +829,9 @@ describe('toBundle and the round trip', () => {
   });
 });
 
+/* The reader of the plans below, whose account derives the keys it does not hold. */
+const USER = '00000000-0000-4000-8000-000000000002';
+const own = (key: string): string => derivedKey(USER, key);
 /* An account holding the items `items` and the cards `cards`; ids and keys count up. */
 const accountOf = (
   items: readonly string[] = [],
@@ -838,7 +843,9 @@ const accountOf = (
     newId: () => 'id' + String(n++),
     newKey: () => 'hb_newkey' + 'abcdefghij'.charAt(k++) + 'aaaaaaaaa',
     hasItem: (key) => items.includes(key),
-    hasCard: (key) => cards.includes(key)
+    hasCard: (key) => cards.includes(key),
+    keyFor: (key) => ownKeyFor(USER, (x) => items.includes(x), key),
+    cardKeyFor: (key) => ownKeyFor(USER, (x) => cards.includes(x), key)
   };
 };
 
@@ -1308,13 +1315,13 @@ describe('a lists file of version 2', () => {
     expect(p.skipped).toEqual([{ list: 0, entry: 1, id: AXE, why: 'repeat', first: 0 }]);
   });
 
-  it('sends every homebrew entry by its key, and makes a fixed copy of each key the account does not hold', () => {
+  it('sends a held homebrew entry by its key, and makes a fixed copy of each other under its derived key', () => {
     const p = okOf(parseBundle(fixture('example-v2.json'), knows));
     const held = importPlan(p.lists, accountOf(['hb_flintlockpistola']));
     expect(held.rows[0]?.entries.map((e) => [e.item_key, e.source, e.hb_item])).toEqual([
       ['ci1', 'official', null],
       ['hb_flintlockpistola', 'homebrew', null],
-      ['hb_wanderlampaaaaaa', 'homebrew', null]
+      [own('hb_wanderlampaaaaaa'), 'homebrew', null]
     ]);
     expect(held.copies).toEqual({
       books: [],
@@ -1322,7 +1329,7 @@ describe('a lists file of version 2', () => {
       items: [
         {
           id: 'id4',
-          key: 'hb_wanderlampaaaaaa',
+          key: own('hb_wanderlampaaaaaa'),
           book: null,
           content: {
             kind: 'item',
@@ -1337,26 +1344,26 @@ describe('a lists file of version 2', () => {
     });
     const none = importPlan(p.lists, accountOf());
     expect(none.copies?.items.map((i) => [i.key, i.book])).toEqual([
-      ['hb_flintlockpistola', null],
-      ['hb_wanderlampaaaaaa', null]
+      [own('hb_flintlockpistola'), null],
+      [own('hb_wanderlampaaaaaa'), null]
     ]);
     /* The pistol's set card and rule card come along, its source and section do not. */
     expect(none.copies?.cards.map((c) => [c.kind, c.key, c.book, c.content.en])).toEqual([
-      ['set', 'hb_emberpairsetaaaa', null, 'Smouldering Pair'],
-      ['ref', 'hb_reloadruleaaaaaa', null, 'Reload']
+      ['set', own('hb_emberpairsetaaaa'), null, 'Smouldering Pair'],
+      ['ref', own('hb_reloadruleaaaaaa'), null, 'Reload']
     ]);
     const pistol = none.copies?.items[0]?.content;
     expect(pistol?.section).toBeUndefined();
     expect([pistol?.set, pistol?.refs]).toEqual([
-      'hb_emberpairsetaaaa',
-      ['hb_reloadruleaaaaaa']
+      own('hb_emberpairsetaaaa'),
+      [own('hb_reloadruleaaaaaa')]
     ]);
   });
 
   it('names a card the account holds instead of copying it', () => {
     const p = okOf(parseBundle(fixture('example-v2.json'), knows));
     const plan = importPlan(p.lists, accountOf([], ['hb_emberpairsetaaaa']));
-    expect(plan.copies?.cards.map((c) => c.key)).toEqual(['hb_reloadruleaaaaaa']);
+    expect(plan.copies?.cards.map((c) => c.key)).toEqual([own('hb_reloadruleaaaaaa')]);
     expect(plan.copies?.items[0]?.content.set).toBe('hb_emberpairsetaaaa');
   });
 
@@ -1371,12 +1378,12 @@ describe('a lists file of version 2', () => {
     };
     const plan = importPlan([list, list, changed], accountOf(['hb_flintlockpistola']));
     expect(plan.copies?.items.map((i) => [i.key, i.content.rud])).toEqual([
-      ['hb_wanderlampaaaaaa', 'Светит только тому, кто её несёт.'],
+      [own('hb_wanderlampaaaaaa'), 'Светит только тому, кто её несёт.'],
       ['hb_newkeyaaaaaaaaaa', 'Другая лампа.']
     ]);
     expect(plan.rows.map((r) => r.entries.at(-1)?.item_key)).toEqual([
-      'hb_wanderlampaaaaaa',
-      'hb_wanderlampaaaaaa',
+      own('hb_wanderlampaaaaaa'),
+      own('hb_wanderlampaaaaaa'),
       'hb_newkeyaaaaaaaaaa'
     ]);
   });
@@ -1410,12 +1417,12 @@ describe('a lists file of version 2', () => {
     };
     const plan = importPlan([list, other], accountOf(['hb_wanderlampaaaaaa']));
     expect(plan.copies?.cards.map((c) => [c.key, c.content.en])).toEqual([
-      ['hb_emberpairsetaaaa', 'Smouldering Pair'],
-      ['hb_reloadruleaaaaaa', 'Reload'],
+      [own('hb_emberpairsetaaaa'), 'Smouldering Pair'],
+      [own('hb_reloadruleaaaaaa'), 'Reload'],
       ['hb_newkeyaaaaaaaaaa', 'Pair II']
     ]);
     expect(plan.copies?.items.map((i) => [i.key, i.content.set])).toEqual([
-      ['hb_flintlockpistola', 'hb_emberpairsetaaaa'],
+      [own('hb_flintlockpistola'), own('hb_emberpairsetaaaa')],
       ['hb_newkeybaaaaaaaaa', 'hb_newkeyaaaaaaaaaa']
     ]);
   });
@@ -1530,7 +1537,7 @@ describe('bedroll-shop.json', () => {
     expect(held.copies).toBeNull();
     expect(held.rows[0]?.entries.filter((e) => e.source === 'homebrew')).toHaveLength(6);
     const none = importPlan(p.lists, accountOf());
-    expect(none.copies?.items.map((i) => i.key)).toEqual(keys);
+    expect(none.copies?.items.map((i) => i.key)).toEqual(keys.map(own));
     expect(none.copies?.cards.length).toBeGreaterThan(0);
   });
 });
@@ -1619,17 +1626,31 @@ describe('keys-only-v2.json: homebrew entries without a snapshot', () => {
         ['ci1', 'official', 0, null],
         [AXE, 'homebrew', 1, null]
       ],
-      [[LAMP, 'homebrew', 0, null]]
+      [[own(LAMP), 'homebrew', 0, null]]
     ]);
     expect(plan.rows[0]?.entries[1]?.price_coins).toBe(40);
-    expect(plan.copies?.items.map((i) => i.key)).toEqual([LAMP]);
+    expect(plan.copies?.items.map((i) => i.key)).toEqual([own(LAMP)]);
   });
 
   it('never copies an entry without a snapshot, also when its key is no longer held', () => {
     const p = okOf(parseBundle(oneList([{ id: AXE, source: 'homebrew' }]), knows, () => true));
     const plan = importPlan(p.lists, accountOf([AXE]));
     expect(plan.copies).toBeNull();
-    expect(withCopies(plan, p.lists, accountOf())).toBe(plan);
+    const gone = withCopies(plan, p.lists, accountOf());
+    expect(gone.copies).toBeNull();
+    expect(gone.rows[0]?.entries.map((e) => e.item_key)).toEqual([own(AXE)]);
+  });
+
+  it('names the held derived key of an entry without a snapshot, else skips it as unheld', () => {
+    const doc = oneList([{ id: AXE, source: 'homebrew' }]);
+    const holds = (k: string): boolean => k === own(AXE);
+    const p = okOf(parseBundle(doc, knows, (k) => holds(k) || holds(own(k))));
+    const plan = importPlan(p.lists, accountOf([own(AXE)]));
+    expect(plan.copies).toBeNull();
+    expect(plan.rows[0]?.entries.map((e) => e.item_key)).toEqual([own(AXE)]);
+    expect(okOf(parseBundle(doc, knows, () => false)).skipped).toEqual([
+      { list: 0, entry: 0, id: AXE, why: 'unheld' }
+    ]);
   });
 
   it('reads a version 3 entry without a snapshot with its GM-only mark', () => {
@@ -1700,9 +1721,106 @@ describe('withCopies: the plan again for a press', () => {
       plan.rows[0]?.entries.map((e) => e.id)
     );
     expect(gone.copies?.items.map((i) => [i.id, i.key])).toEqual([
-      ['id4', 'hb_wanderlampaaaaaa'],
-      ['later', 'hb_flintlockpistola']
+      ['id4', own('hb_wanderlampaaaaaa')],
+      ['later', own('hb_flintlockpistola')]
     ]);
+  });
+
+  const FLINT = 'hb_flintlockpistola';
+  const LAMP = 'hb_wanderlampaaaaaa';
+  const exampleList = (): ImportList => {
+    const list = okOf(parseBundle(fixture('example-v2.json'), knows)).lists[0];
+    if (!list) throw new Error('no list');
+    return list;
+  };
+
+  it('names the held derived key of an entry, and copies under it only when it is not held', () => {
+    const lists = [exampleList()];
+    const linked = importPlan(lists, accountOf([own(FLINT), own(LAMP)]));
+    expect(linked.copies).toBeNull();
+    expect(linked.rows[0]?.entries.map((e) => e.item_key)).toEqual([
+      'ci1',
+      own(FLINT),
+      own(LAMP)
+    ]);
+    const half = importPlan(lists, accountOf([own(FLINT)]));
+    expect(half.copies?.items.map((i) => i.key)).toEqual([own(LAMP)]);
+  });
+
+  it('copies no card and no item twice when a later plan copies an item that embeds a copied card', () => {
+    const list = exampleList();
+    const pistol = list.entries[1];
+    if (!pistol?.snapshot) throw new Error('no pistol');
+    const OTHER = 'hb_otherpistolaaaaa';
+    const other: ImportList = {
+      ...list,
+      entries: [
+        { ...pistol, item_key: OTHER, snapshot: { ...pistol.snapshot, id: OTHER, en: 'Other' } }
+      ]
+    };
+    const lists = [list, other];
+    const first = importPlan(lists, accountOf([LAMP, OTHER]));
+    expect(first.copies?.items.map((i) => i.key)).toEqual([own(FLINT)]);
+    expect(first.copies?.cards).toHaveLength(2);
+    const again = withCopies(first, lists, accountOf([LAMP]));
+    expect(again.copies?.items.map((i) => i.key)).toEqual([own(FLINT), own(OTHER)]);
+    expect(again.copies?.cards).toEqual(first.copies?.cards);
+    expect(again.copies?.items[1]?.content.set).toBe(own('hb_emberpairsetaaaa'));
+    expect(withCopies(again, lists, accountOf([LAMP]))).toBe(again);
+  });
+
+  it("gives two copies that name each other in craft each other's derived key", () => {
+    const list = exampleList();
+    const lamp = list.entries[2];
+    if (!lamp?.snapshot) throw new Error('no lamp');
+    const naming: ImportList = {
+      ...list,
+      entries: [
+        list.entries[1]!,
+        { ...lamp, snapshot: { ...lamp.snapshot, craft: [FLINT, 'ci1'] } }
+      ]
+    };
+    const none = importPlan([naming], accountOf());
+    expect(none.copies?.items.find((i) => i.key === own(LAMP))?.content.craft).toEqual([
+      own(FLINT),
+      'ci1'
+    ]);
+    const held = importPlan([naming], accountOf([FLINT]));
+    expect(held.copies?.items.find((i) => i.key === own(LAMP))?.content.craft).toEqual([
+      FLINT,
+      'ci1'
+    ]);
+  });
+
+  it('plans 300 entries: each names its held key, its held derived key, or a copy under it', () => {
+    const lamp = exampleList().entries[2];
+    if (!lamp?.snapshot) throw new Error('no lamp');
+    const B32 = 'abcdefghijklmnopqrstuvwxyz234567';
+    const keys = Array.from(
+      { length: 300 },
+      (_, n) =>
+        'hb_' +
+        Array.from({ length: 4 }, (_, d) => B32.charAt((n >> (5 * d)) & 31)).join('') +
+        'lampaaaaaaaa'
+    );
+    const list: ImportList = {
+      name: 'L',
+      money_mode: MONEY_DEFAULT,
+      player_note: '',
+      gm_note: '',
+      entries: keys.map((k) => ({
+        ...lamp,
+        item_key: k,
+        snapshot: { ...lamp.snapshot!, id: k }
+      }))
+    };
+    const held = [...keys.slice(0, 100), ...keys.slice(100, 200).map(own)];
+    const plan = importPlan([list], accountOf(held));
+    expect(plan.rows[0]?.entries.map((e) => e.item_key)).toEqual([
+      ...keys.slice(0, 100),
+      ...keys.slice(100).map(own)
+    ]);
+    expect(plan.copies?.items.map((i) => i.key)).toEqual(keys.slice(200).map(own));
   });
 });
 
@@ -1938,9 +2056,9 @@ describe('a lists file of version 3', () => {
     const plan = importPlan(p.lists, accountOf());
     const keys = plan.copies?.items.map((i) => i.key) ?? [];
     expect(keys).toHaveLength(2);
-    expect(keys[0]).toBe(AXE);
+    expect(keys[0]).toBe(own(AXE));
     expect(plan.rows.map((r) => [r.entries[0]?.item_key, r.entries[0]?.gm_only])).toEqual([
-      [AXE, true],
+      [own(AXE), true],
       [keys[1], true]
     ]);
     for (const i of plan.copies?.items ?? [])

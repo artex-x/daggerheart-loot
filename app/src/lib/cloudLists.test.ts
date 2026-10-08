@@ -580,6 +580,13 @@ describe('itemOf', () => {
     expect(itemOf(answer({ related: 'none' }))?.related).toEqual([]);
   });
 
+  it('reads updated_at when Date.parse reads it, and null otherwise', () => {
+    expect(itemOf(answer())?.updatedAt).toBe('2026-10-07T10:00:00Z');
+    for (const updated_at of [undefined, null, 5, 'yesterday', '']) {
+      expect(itemOf(answer({ updated_at }))?.updatedAt, String(updated_at)).toBeNull();
+    }
+  });
+
   it('answers null for anything that is not an item answer', () => {
     for (const a of [
       null,

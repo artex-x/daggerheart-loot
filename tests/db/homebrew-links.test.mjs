@@ -33,6 +33,11 @@ const SUPABASE = path.resolve(
 const NAME = '20261007130000_homebrew_links.sql';
 const UP = readFileSync(path.join(SUPABASE, 'migrations', NAME), 'utf8');
 const DOWN = readFileSync(path.join(SUPABASE, 'reversals', NAME), 'utf8');
+// The links reversal writes list_entries.snapshot, which a later migration drops.
+const DOWN_DROP = readFileSync(
+  path.join(SUPABASE, 'reversals', '20261010120000_drop_list_entry_snapshot.sql'),
+  'utf8'
+);
 
 const A = '00000000-0000-4000-8000-0000000000aa';
 const B = '00000000-0000-4000-8000-0000000000bb';
@@ -166,6 +171,7 @@ describe('the conversion of stored rows', () => {
      list holding a reference to X, a frozen copy of Y and `orphans` frozen copies of
      keys nobody holds, and B's list holding a frozen copy of B's own key. */
   const before = async (tx, orphans) => {
+    await tx.unsafe(DOWN_DROP);
     await tx.unsafe(DOWN);
     await tx`insert into auth.users (id) values (${A}), (${B})`;
     await tx`insert into public.homebrew_items (id, owner_id, key, content) values
@@ -278,6 +284,7 @@ describe('the conversion of stored rows', () => {
       await tx`insert into public.purchase_requests (id, list_id, share_id, audience, created_at, expires_at)
         values (${id(11501)}, ${LB}, ${sid}, 'player', now() - interval '10 minutes',
           now() - interval '10 minutes' + interval '30 days')`;
+      await tx.unsafe(DOWN_DROP);
       await tx.unsafe(DOWN);
       const entries = (
         await tx`select list_id, item_key, snapshot is null as reference, snapshot ->> 'en' as en,

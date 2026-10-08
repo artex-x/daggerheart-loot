@@ -54,6 +54,36 @@ export function keyFrom(bytes: Uint8Array): string {
   return 'hb_' + out;
 }
 
+const FNV_OFFSET = 0x6c62272e07bb014262b821756295c58dn;
+const FNV_PRIME = 0x0000000001000000000000000000013bn;
+const MASK_128 = (1n << 128n) - 1n;
+const UTF8 = new TextEncoder();
+
+/** Returns the 128-bit FNV-1a hash of the UTF-8 bytes of `s`. */
+export function fnv1a128(s: string): bigint {
+  let h = FNV_OFFSET;
+  for (const b of UTF8.encode(s)) h = ((h ^ BigInt(b)) * FNV_PRIME) & MASK_128;
+  return h;
+}
+
+/** Returns the key an object of `key` takes in the account of `userId` when the account
+ *  does not hold `key`: `hb_` and the 80 most significant bits of the FNV-1a 128 hash of
+ *  `<userId>\n<key>` in base32. One reader and one old key give one key, on every import
+ *  and save (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
+export function derivedKey(userId: string, key: string): string {
+  const v = fnv1a128(userId + '\n' + key) >> 48n;
+  let out = 'hb_';
+  for (let shift = 75n; shift >= 0n; shift -= 5n)
+    out += BASE32.charAt(Number((v >> shift) & 31n));
+  return out;
+}
+
+/** Returns the key `key` takes in the account: itself when `held(key)` or when it is a
+ *  catalog id (not an `hb_` key), else `derivedKey(userId, key)`. */
+export function ownKeyFor(userId: string, held: (key: string) => boolean, key: string): string {
+  return !isHomebrewKey(key) || held(key) ? key : derivedKey(userId, key);
+}
+
 /** The most code points of an item's name, per language. */
 export const NAME_MAX = 120;
 /** The most code points of an item's description, per language. */
@@ -715,14 +745,20 @@ export function contentOfRecord(r: HomebrewRecord): HomebrewContent {
 }
 
 /** Returns the import rows of «Сохранить себе» (`import_homebrew`): one own item in the
- *  default source from what the reader sees, under the item's own key. The `hb_` ids of
- *  `craft`, `craft_from` and `eq.line` are dropped (the author's other items stay theirs);
- *  catalog ids stay. A set or rule card the record embeds is copied under its key, unless
- *  the account holds that key, which the copy then names; an `hb_` card key with no card
- *  is dropped (docs/decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md). */
+ *  default source from what the reader sees, under `keyFor` of the item's key. The `hb_`
+ *  ids of `craft`, `craft_from` and `eq.line` are dropped (the author's other items stay
+ *  theirs); catalog ids stay. A set or rule card the record embeds takes `cardKeyFor` of
+ *  its key and is copied under it, unless the account holds that key (`hasCard`), which
+ *  the copy then names; an `hb_` card key with no card is dropped
+ *  (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
 export function copyRows(
   r: HomebrewRecord,
-  account: { newId: () => string; hasCard: (key: string) => boolean }
+  account: {
+    newId: () => string;
+    keyFor: (key: string) => string;
+    cardKeyFor: (key: string) => string;
+    hasCard: (key: string) => boolean;
+  }
 ): HomebrewImportRows {
   const content = contentOfRecord(r);
   const cards: ImportCardRow[] = [];
@@ -742,11 +778,12 @@ export function copyRows(
   /* A card key the record embeds: copied, or named when the account holds it. */
   const cardKey = (kind: CardKind, key: string): string | null => {
     if (!isHomebrewKey(key)) return key;
-    if (account.hasCard(key)) return key;
+    const own = account.cardKeyFor(key);
+    if (account.hasCard(own)) return own;
     const card = kind === 'set' ? r.cards?.sets?.[key] : r.cards?.refs?.[key];
     if (!card) return null;
-    cards.push({ id: account.newId(), key, kind, book: null, content: { ...card } });
-    return key;
+    cards.push({ id: account.newId(), key: own, kind, book: null, content: { ...card } });
+    return own;
   };
   if (content.set !== undefined) {
     const set = cardKey('set', content.set);
@@ -764,7 +801,7 @@ export function copyRows(
   return {
     books: [],
     cards,
-    items: [{ id: account.newId(), key: r.id, book: null, content }],
+    items: [{ id: account.newId(), key: account.keyFor(r.id), book: null, content }],
     update: false
   };
 }

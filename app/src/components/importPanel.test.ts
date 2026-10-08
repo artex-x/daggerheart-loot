@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { FILE_MAX_BYTES, ZIP_MAX_BYTES } from '../lib/bundle.js';
+import { derivedKey } from '../lib/homebrew.js';
 import { zipStored } from '../lib/zip.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -31,6 +32,10 @@ import {
 } from '../test/importPanel.js';
 
 afterEach(cleanup);
+
+/* The key a copy takes in gm1's or gm2's account. */
+const gm1Key = (key: string): string => derivedKey(SEED.users.gm1.id, key);
+const gm2Key = (key: string): string => derivedKey(SEED.users.gm2.id, key);
 
 describe('the import field', () => {
   it('opens under the name row with the pick button, the hint and its two links', async () => {
@@ -144,18 +149,20 @@ describe('the import field', () => {
     expect(container.querySelector('.preview')).toBeNull();
     const own = await cloud.homebrew.load();
     const copies = own.ok
-      ? own.items.filter((i) => ['hb_flintlockpistola', 'hb_wanderlampaaaaaa'].includes(i.key))
+      ? own.items.filter((i) =>
+          ['hb_flintlockpistola', 'hb_wanderlampaaaaaa'].map(gm1Key).includes(i.key)
+        )
       : [];
     expect(copies.map((i) => [i.key, i.book_id])).toEqual([
-      ['hb_flintlockpistola', null],
-      ['hb_wanderlampaaaaaa', null]
+      [gm1Key('hb_flintlockpistola'), null],
+      [gm1Key('hb_wanderlampaaaaaa'), null]
     ]);
     const read = await cloud.lists.list();
     const made = read.ok ? read.lists.find((l) => l.name === 'Лавка Ольхи') : undefined;
     expect(made?.list_entries.map((e) => [e.item_key, e.source, e.hb_item])).toEqual([
       ['ci1', 'official', null],
-      ['hb_flintlockpistola', 'homebrew', copies[0]?.id],
-      ['hb_wanderlampaaaaaa', 'homebrew', copies[1]?.id]
+      [gm1Key('hb_flintlockpistola'), 'homebrew', copies[0]?.id],
+      [gm1Key('hb_wanderlampaaaaaa'), 'homebrew', copies[1]?.id]
     ]);
     await expectNoA11yViolations(container);
   });
@@ -540,13 +547,13 @@ describe('own items in a lists file', () => {
     expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
     const sent = imp.mock.calls[1]?.[0];
     expect(sent?.[0]?.entries[0]).toMatchObject({
-      item_key: 'hb_emberaxeaaaaaaaa',
+      item_key: gm1Key('hb_emberaxeaaaaaaaa'),
       hb_item: null
     });
     expect(sent?.[0]?.list.id).toBe(imp.mock.calls[0]?.[0][0]?.list.id);
     const after = await cloud.homebrew.load();
     const copy = after.ok
-      ? after.items.find((i) => i.key === 'hb_emberaxeaaaaaaaa')
+      ? after.items.find((i) => i.key === gm1Key('hb_emberaxeaaaaaaaa'))
       : undefined;
     expect(copy?.id).not.toBe(axe?.id);
     expect(copy?.book_id).toBeNull();
@@ -679,7 +686,7 @@ describe('own items without a snapshot in a lists file', () => {
         ['ci1', 'official'],
         [AXE, 'homebrew']
       ],
-      [[LAMP, 'homebrew']]
+      [[gm1Key(LAMP), 'homebrew']]
     ]);
     const lists = await cloud.lists.list();
     const named = (n: string) => (lists.ok ? lists.lists.find((l) => l.name === n) : undefined);
@@ -688,9 +695,9 @@ describe('own items without a snapshot in a lists file', () => {
       [AXE, held]
     ]);
     const own = await cloud.homebrew.load();
-    const lamp = own.ok ? own.items.find((i) => i.key === LAMP) : undefined;
+    const lamp = own.ok ? own.items.find((i) => i.key === gm1Key(LAMP)) : undefined;
     expect(named('Склад бродяги')?.list_entries.map((e) => [e.item_key, e.hb_item])).toEqual([
-      [LAMP, lamp?.id]
+      [gm1Key(LAMP), lamp?.id]
     ]);
   });
 
@@ -768,7 +775,7 @@ describe('own items without a snapshot in a lists file', () => {
     expect(previews(container)).toHaveLength(2);
     await cloud.homebrew.createItem({
       id: uuid(8300),
-      key: LAMP,
+      key: gm1Key(LAMP),
       book_id: null,
       content: { kind: 'item', ru: 'Лампа странника' }
     });
@@ -783,6 +790,33 @@ describe('own items without a snapshot in a lists file', () => {
     expect(lamps).toHaveLength(2);
   });
 
+  it('keeps an entry without a snapshot whose derived key the account holds, and links it', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createItem({
+      id: uuid(8301),
+      key: gm1Key(LAMP),
+      book_id: null,
+      content: { kind: 'item', ru: 'Лампа странника' }
+    });
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+    const imp = vi.spyOn(cloud.lists, 'import');
+    choose(container, oneList([{ id: 'ci1' }, { id: LAMP, source: 'homebrew' }]));
+    await userEvent.click(await importButton(1));
+    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    expect(imp.mock.calls[0]?.[0][0]?.entries.map((e) => e.item_key)).toEqual([
+      'ci1',
+      gm1Key(LAMP)
+    ]);
+  });
+
   it('sends the same ids after a failed lists call whose copies landed', async () => {
     const { container, cloud } = await openedAs('gm2');
     const imp = vi.spyOn(cloud.lists, 'import');
@@ -791,7 +825,9 @@ describe('own items without a snapshot in a lists file', () => {
     await userEvent.click(await importButton(2));
     expect(await alertText()).toBe('Не получилось. Проверьте соединение и попробуйте ещё раз.');
     const own = await cloud.homebrew.load();
-    expect(own.ok && own.items.map((i) => i.key).sort()).toEqual([AXE, LAMP]);
+    expect(own.ok && own.items.map((i) => i.key).sort()).toEqual(
+      [gm2Key(AXE), gm2Key(LAMP)].sort()
+    );
     await userEvent.click(await importButton(2));
     expect(await screen.findByText('Импортировано списков: 2')).toBeInTheDocument();
     expect(imp).toHaveBeenCalledTimes(2);

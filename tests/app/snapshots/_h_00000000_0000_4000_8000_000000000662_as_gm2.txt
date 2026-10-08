@@ -28,9 +28,9 @@ RootWebArea "Скатка следопыта — Генератор лута —
   main ""
     heading "Скатка следопыта" [level=1]
     StaticText "Предмет другого игрока · Хоумбрю"
+    StaticText "Обновлено 11 часов назад"
     button "Страница"
-    StaticText "ПРЕДМЕТ"
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Скатка путника (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
@@ -43,6 +43,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     button "Добавить в список" [expanded=false]
     button "Сохранить себе"
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
+    status ""
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -108,9 +109,9 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
   main ""
     heading "Ranger's Roll" [level=1]
     StaticText "Another player's item · Homebrew"
+    StaticText "Updated 11 hours ago"
     button "Page"
-    StaticText "ITEM"
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Traveller's Roll (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
@@ -123,6 +124,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     button "Add to list" [expanded=false]
     button "Save to my items"
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
+    status ""
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
