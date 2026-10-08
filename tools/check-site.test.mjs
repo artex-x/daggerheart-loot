@@ -315,7 +315,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 54);
+    assert.equal(list.length, 56);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -344,6 +344,7 @@ describe('checks() shape', () => {
       'pages/terms.html',
       'robots.txt',
       'schema/homebrew-v1.json',
+      'schema/homebrew-v2.json',
       'schema/import-v1.json',
       'schema/import-v2.json',
       'schema/import-v3.json',

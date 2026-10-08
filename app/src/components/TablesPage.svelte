@@ -49,7 +49,7 @@
     plainFacets,
     type AltKind
   } from '../lib/data.js';
-  import { facetRows } from '../lib/facets.js';
+  import { facetRows, narrowRows } from '../lib/facets.js';
   import {
     chosenCount,
     encodeFilter,
@@ -159,7 +159,6 @@
         )
       : null
   );
-  const facRows = $derived(browse ? facetRows(browse, table, t, app.lang, hbSource) : []);
 
   /** Returns the segment the panel compares: the encoded filter, without `src` on `homebrew`. */
   function segOf(filter: FilterState, tbl: TableId): string {
@@ -256,13 +255,27 @@
   const facetState = $derived<FilterState>(
     table === 'homebrew' ? { ...filterState, src: [] } : filterState
   );
+  const valueOf = $derived(
+    eqKind
+      ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
+      : (it: Record_, g: string) => plainFacets(it)[g] ?? ''
+  );
   const facPassed = $derived.by(() => {
     if (!facetGroups.length) return shownRows;
-    const valueOf = eqKind
-      ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
-      : (it: Record_, g: string) => plainFacets(it)[g] ?? '';
     return shownRows.filter((it) => passes(facetState, facetGroups, (g) => valueOf(it, g)));
   });
+  /* The panel offers the values the shown rows answer (the chosen chip's on `homebrew`);
+     a picked value stays offered, so its pill stays (docs/specs/FEATURES.md, "Tables and search"). */
+  const facRows = $derived(
+    browse
+      ? narrowRows(
+          facetRows(browse, table, t, app.lang, hbSource),
+          shownRows,
+          valueOf,
+          facetState
+        )
+      : []
+  );
   /* The stat line `matches` searches - shared with `altSections` below, so
      the rule lives once. `statLineFor`'s own doc comment carries the reason:
      the type word is kept here, unlike the row's own display. */

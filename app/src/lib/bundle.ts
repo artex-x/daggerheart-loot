@@ -3,11 +3,12 @@
  *
  * `schema/import-v1.json`, `import-v2.json` and `import-v3.json` are the published
  * contracts and this module their hand-written validator; `bundle.test.ts` keeps them equal.
- * Version 2 is version 1 plus homebrew entries, each with its snapshot; version 3 is version
- * 2 plus the GM-only mark `gm_only`. An export is the lowest version that holds what it
- * writes, so one without a homebrew or GM-only entry stays version 1, byte for byte. An
- * imported homebrew entry links the account's item of its key, a fixed copy made first when
- * the account holds none. Pure module: the report's words are the component's, this returns
+ * Version 2 is version 1 plus homebrew entries, each by its key and, optionally, its
+ * snapshot; version 3 is version 2 plus the GM-only mark `gm_only`. An export is the lowest
+ * version that holds what it writes, so one without a homebrew or GM-only entry stays version
+ * 1, byte for byte. An imported homebrew entry links the account's item of its key; for a key
+ * the account does not hold, a fixed copy is made first from the snapshot, and an entry
+ * without one is skipped. Pure module: the report's words are the component's, this returns
  * indexes and keys. docs/specs/CONTRACTS.md section 4. */
 
 import {
@@ -73,7 +74,8 @@ export interface BundleEntry {
   gm_note?: string;
   /** Version 3: written only as true, for an entry the players' link leaves out. */
   gm_only?: true;
-  /** Version 2, `source: homebrew` only: the item as a catalog record. */
+  /** Version 2, `source: homebrew` only, optional: the item as a catalog record. The export
+   *  always writes it. */
   snapshot?: HomebrewRecord;
 }
 
@@ -259,19 +261,21 @@ export interface BundleError {
 }
 
 /** An entry left out: `unknown` - no record with this id; `repeat` - the id is already at
- *  `first` in the same list. */
+ *  `first` in the same list; `unheld` - a homebrew entry without a snapshot whose key the
+ *  account does not hold. */
 export interface Skipped {
   list: number;
   entry: number;
   id: string;
-  why: 'unknown' | 'repeat';
+  why: 'unknown' | 'repeat' | 'unheld';
   first?: number;
 }
 
 export interface ImportEntry {
   item_key: string;
   source: 'official' | 'homebrew';
-  /** A homebrew entry's snapshot from the file; null for an official one. */
+  /** A homebrew entry's snapshot from the file; null for an official entry or a homebrew
+   *  entry without one. */
   snapshot: HomebrewRecord | null;
   quantity: number;
   price_coins: number | null;
@@ -448,8 +452,8 @@ function snapshotComplete(snap: Obj): boolean {
 }
 
 /* One entry; null when it has an error. Its id is read first, so an error on a key before
-   `id` names the record too. From version 2 a homebrew entry's id is a key and its snapshot
-   a valid copy of it, checked after its own keys. */
+   `id` names the record too. From version 2 a homebrew entry's id is a key, and a snapshot
+   it holds is a valid copy of it, checked after its own keys. */
 function walkEntry(r: Report, where: At, v: unknown, version: number): ImportEntry | null {
   if (!isObj(v)) {
     notObject(r, where, v);
@@ -521,20 +525,19 @@ function walkEntry(r: Report, where: At, v: unknown, version: number): ImportEnt
     if (typeof id === 'string' && ID_PATTERN.test(id) && !keyed) {
       fieldError(r, at, 'id', 'hbId', { value: shown(id) });
     }
-    const snap = v['snapshot'];
-    if (!('snapshot' in v)) fieldError(r, at, 'snapshot', 'missing');
-    /* A snapshot names its key: with no valid key there is nothing to check it against. */
-    else if (!keyed) return null;
-    else if (
-      !snapshotValid(snap) ||
-      !isObj(snap) ||
-      snap['id'] !== id ||
-      !snapshotComplete(snap)
-    ) {
-      fieldError(r, at, 'snapshot', 'snapshot');
-    } else {
-      e.source = 'homebrew';
-      e.snapshot = snap as unknown as HomebrewRecord;
+    /* With no valid key an error is already recorded, and a snapshot names nothing. */
+    if (!keyed) return null;
+    e.source = 'homebrew';
+    if ('snapshot' in v) {
+      const snap = v['snapshot'];
+      if (
+        !snapshotValid(snap) ||
+        !isObj(snap) ||
+        snap['id'] !== id ||
+        !snapshotComplete(snap)
+      ) {
+        fieldError(r, at, 'snapshot', 'snapshot');
+      } else e.snapshot = snap as unknown as HomebrewRecord;
     }
   }
   return r.errors.length + r.more === before ? e : null;
@@ -546,6 +549,7 @@ function walkList(
   i: number,
   v: unknown,
   knows: (id: string) => boolean,
+  owns: (key: string) => boolean,
   skipped: Skipped[],
   version: number
 ): ImportList | null {
@@ -605,6 +609,8 @@ function walkList(
             skipped.push({ list: i, entry: j, id: e.item_key, why: 'unknown' });
           } else if (seen !== undefined) {
             skipped.push({ list: i, entry: j, id: e.item_key, why: 'repeat', first: seen });
+          } else if (e.source === 'homebrew' && e.snapshot === null && !owns(e.item_key)) {
+            skipped.push({ list: i, entry: j, id: e.item_key, why: 'unheld' });
           } else {
             first.set(e.item_key, j);
             l.entries.push(e);
@@ -621,8 +627,14 @@ function walkList(
 /** Reads a lists file of version 1, 2 or 3: JSON, then `format`, then `version`, then every
  *  key and bound in document order, a list's or an entry's missing keys after its own. A
  *  catalog id `knows` does not know, and a later copy of an id in one list, is left out
- *  and recorded in `skipped`, never an error; a homebrew entry is never unknown. */
-export function parseBundle(text: string, knows: (id: string) => boolean): Parsed {
+ *  and recorded in `skipped`, never an error; a homebrew entry is never unknown. A homebrew
+ *  entry without a snapshot whose key `owns` does not hold is left out and recorded as
+ *  `unheld`. */
+export function parseBundle(
+  text: string,
+  knows: (id: string) => boolean,
+  owns: (key: string) => boolean = () => false
+): Parsed {
   let doc: unknown;
   try {
     doc = JSON.parse(text);
@@ -670,7 +682,7 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
         );
         if (x.length > LISTS_MAX) fieldError(r, root, k, 'many', { limit: LISTS_MAX });
         x.forEach((item: unknown, i) => {
-          const l = walkList(r, i, item, knows, skipped, version);
+          const l = walkList(r, i, item, knows, owns, skipped, version);
           if (l) lists.push(l);
         });
         break;
@@ -704,8 +716,9 @@ export interface PlanAccount {
 
 /** Returns the import's plan: every id from `newId`, positions counted after the skips. A
  *  homebrew entry is sent by its key, which links the account's own item of that key;
- *  `withCopies` makes the items it does not hold. A GM-only entry's row carries
- *  `gm_only: true`, on its fixed copy's link too; every other row has no such key. */
+ *  `withCopies` makes, from their snapshots, the items the account does not hold; an entry
+ *  without one is in the plan only when its key was held at the parse. A GM-only entry's row
+ *  carries `gm_only: true`, on its fixed copy's link too; every other row has no such key. */
 export function importPlan(lists: readonly ImportList[], account: PlanAccount): ImportPlan {
   const rows = lists.map((l): ImportRow => ({
     list: {
@@ -736,7 +749,8 @@ export function importPlan(lists: readonly ImportList[], account: PlanAccount): 
  *  does not copy yet; every id kept, `plan` itself when no entry needs one. One copy is made
  *  per distinct (key, snapshot): the first keeps the key, a later differing one takes a new
  *  key, which its entry then names. The set and rule cards a snapshot embeds are copied the
- *  same way, unless the account holds the card's key, which the copy then names. */
+ *  same way, unless the account holds the card's key, which the copy then names. An entry
+ *  without a snapshot is never copied. */
 export function withCopies(
   plan: ImportPlan,
   lists: readonly ImportList[],

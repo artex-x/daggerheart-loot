@@ -1,6 +1,6 @@
 # #/tables/homebrew as gm1
 # route: #/tables/homebrew
-# why: the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, the heading «Холодное оружие» with the axe, the grid of the account view
+# why: the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, no filter strip (one item cannot be narrowed), the heading «Холодное оружие» with the axe, the grid of the account view
 # as: gm1
 
 ## ru :: tree
@@ -48,8 +48,6 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
-    button "Фильтры" [expanded=false]
-    StaticText "1"
     StaticText "ХОЛОДНОЕ ОРУЖИЕ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
@@ -99,7 +97,6 @@ daggerheart.com
 Топор Тлеющих Углей
 Условия использования
 Установить как приложение
-Фильтры
 Хоумбрю
 
 ## en :: tree
@@ -147,8 +144,6 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Filters" [expanded=false]
-    StaticText "1"
     StaticText "BLADES"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
@@ -176,7 +171,6 @@ Dread GM Toolbox
 EN
 Ember Axe
 Equipment
-Filters
 Grid
 Homebrew
 Hope & Fear

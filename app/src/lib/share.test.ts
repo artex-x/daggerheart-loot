@@ -680,6 +680,40 @@ describe('homebrew records in copied text', () => {
     expect(shareBlocks(copy, index, 'en').at(-1)?.body).toBe('Own: A bonus.');
   });
 
+  it("writes the account's own set on a book item, folded past the third member, and its own rule card", () => {
+    const ids = ['q1', 'q2', 'q23', 'q35', 'ci1'];
+    const ix = withRecords(
+      index,
+      [],
+      [],
+      [
+        {
+          key: 'hb_aldersetaaaaaaaa',
+          kind: 'set',
+          ru: 'Комплект Ольхи',
+          rud: 'Бонус.',
+          items: ids
+        },
+        {
+          key: 'hb_alderrulecardaaa',
+          kind: 'ref',
+          ru: 'Клеймо',
+          rusub: 'Свойство',
+          rud: 'Перебросьте.',
+          items: ['q1']
+        }
+      ]
+    );
+    const blocks = shareBlocks(rec('q1'), ix, 'ru');
+    expect(blocks).toContainEqual({ head: 'Клеймо · Свойство', body: 'Перебросьте.' });
+    const set = blocks.at(-1);
+    expect(set?.body).toBe('Комплект Ольхи: Бонус.');
+    expect(set?.head).toMatch(new RegExp('^Комплект: ' + rec('q1').ru + ', .* и ещё 1$'));
+    expect(shareBlocks(rec('q1'), index, 'ru').some((b) => b.head.startsWith('Комплект'))).toBe(
+      false
+    );
+  });
+
   it("reads a frozen copy's rule card from the card it carries", () => {
     const card = {
       ru: 'Клеймо',

@@ -1,5 +1,6 @@
 # 2026-10-08 - Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78
 
+- Amended by "Arazo's Artifacts drop the book's GM notes; aa23 is «Волшебное Зеркало»" (2026-10-08): no record ships the book's GM note.
 - Task: `arazo-rebalance` (owner, 2026-10-08).
 - Decision: the 17 pieces of equipment are four-tier `eq.line`s; the nine fixed artifacts gain
   `Improved`, `Advanced` and `Legendary` rungs with the same feature text, and no record keeps

@@ -1,7 +1,7 @@
 {
   "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
   "format": "daggerheart-loot/homebrew",
-  "version": 2,
+  "version": 3,
   "items": [
     {
       "key": "hb_patchbedrollaaaa",

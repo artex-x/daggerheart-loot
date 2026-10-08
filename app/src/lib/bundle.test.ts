@@ -1142,7 +1142,13 @@ describe('the import-v2 schema and the validator (the drift guard)', () => {
       ...bundle,
       lists: [{ name: 'L', entries: [{ id: AXE, source: 'homebrew' }] }]
     };
-    expect(schemaProblems(bare)).toContain('.lists[0].entries[0].snapshot required');
+    expect(schemaProblems(bare)).toEqual([]);
+    expect(schemaProblems(JSON.parse(fixture('keys-only-v2.json')))).toEqual([]);
+  });
+
+  it("does not require a homebrew entry's snapshot", () => {
+    const then = (entry as ObjectSchema & { then?: { required?: string[] } }).then;
+    expect(then?.required ?? []).not.toContain('snapshot');
   });
 });
 
@@ -1187,8 +1193,34 @@ describe('a lists file of version 2', () => {
       lists: [{ name: 'L', entries: [{ id: AXE, ...entry }] }]
     });
 
+  it('reads a homebrew entry without a snapshot as its key', () => {
+    const p = okOf(parseBundle(v2({ source: 'homebrew' }), knows, () => true));
+    expect(p.skipped).toEqual([]);
+    expect(p.lists[0]?.entries).toEqual([
+      {
+        item_key: AXE,
+        source: 'homebrew',
+        snapshot: null,
+        quantity: 1,
+        price_coins: null,
+        player_note: '',
+        gm_note: ''
+      }
+    ]);
+  });
+
+  it('refuses a homebrew entry without a snapshot whose id is not a key, once', () => {
+    const text = JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 2,
+      lists: [{ name: 'L', entries: [{ id: 'lamp-1', source: 'homebrew' }] }]
+    });
+    expect(
+      errorsOf(parseBundle(text, knows, () => true)).map((e) => [e['field'], e['kind']])
+    ).toEqual([['id', 'hbId']]);
+  });
+
   it.each([
-    ['no snapshot', { source: 'homebrew' }, 'snapshot', 'missing'],
     [
       'a snapshot of another key',
       { source: 'homebrew', snapshot: { ...SNAP, id: 'hb_otherkeyaaaaaaaa' } },
@@ -1514,6 +1546,145 @@ describe('export-v2.json, the lists export with an own item', () => {
   });
 });
 
+describe('keys-only-v2.json: homebrew entries without a snapshot', () => {
+  const LAMP = 'hb_wanderlampaaaaaa';
+  const text = fixture('keys-only-v2.json');
+  const kept = (p: Extract<Parsed, { ok: true }>): [string, string | null][][] =>
+    p.lists.map((l) => l.entries.map((e) => [e.item_key, e.snapshot?.id ?? null]));
+  const oneList = (entries: Record<string, unknown>[], version = 2): string =>
+    JSON.stringify({ format: BUNDLE_FORMAT, version, lists: [{ name: 'L', entries }] });
+
+  it('passes a walk of the schema', () => {
+    expect(schemaProblems(JSON.parse(text))).toEqual([]);
+  });
+
+  it('keeps a held key, skips an unheld one, and a skipped entry is no first (the axe held)', () => {
+    const p = okOf(parseBundle(text, knows, (k) => k === AXE));
+    expect(kept(p)).toEqual([
+      [
+        ['ci1', null],
+        [AXE, null]
+      ],
+      [[LAMP, LAMP]]
+    ]);
+    expect(p.skipped).toEqual([
+      { list: 0, entry: 2, id: LAMP, why: 'unheld' },
+      { list: 0, entry: 3, id: AXE, why: 'repeat', first: 1 },
+      { list: 1, entry: 0, id: LAMP, why: 'unheld' },
+      { list: 1, entry: 2, id: LAMP, why: 'repeat', first: 1 }
+    ]);
+  });
+
+  it('keeps the entries with a snapshot in an account with no own items', () => {
+    const p = okOf(parseBundle(text, knows, () => false));
+    expect(kept(p)).toEqual([
+      [
+        ['ci1', null],
+        [AXE, AXE]
+      ],
+      [[LAMP, LAMP]]
+    ]);
+    expect(p.skipped).toEqual([
+      { list: 0, entry: 1, id: AXE, why: 'unheld' },
+      { list: 0, entry: 2, id: LAMP, why: 'unheld' },
+      { list: 1, entry: 0, id: LAMP, why: 'unheld' },
+      { list: 1, entry: 2, id: LAMP, why: 'repeat', first: 1 }
+    ]);
+  });
+
+  it('skips an unknown id before a repeat, and a repeat before an unheld key', () => {
+    const doc = oneList([
+      { id: 'nosuchid' },
+      { id: AXE, source: 'homebrew' },
+      { id: 'nosuchid' },
+      { id: AXE, source: 'homebrew' },
+      { id: LAMP, source: 'homebrew' }
+    ]);
+    const p = okOf(parseBundle(doc, knows, (k) => k === AXE));
+    expect(p.skipped.map((x) => [x.entry, x.why])).toEqual([
+      [0, 'unknown'],
+      [2, 'unknown'],
+      [3, 'repeat'],
+      [4, 'unheld']
+    ]);
+  });
+
+  it('plans the held axe as a link and copies the lamp only', () => {
+    const p = okOf(parseBundle(text, knows, (k) => k === AXE));
+    const plan = importPlan(p.lists, accountOf([AXE]));
+    expect(
+      plan.rows.map((r) => r.entries.map((e) => [e.item_key, e.source, e.position, e.hb_item]))
+    ).toEqual([
+      [
+        ['ci1', 'official', 0, null],
+        [AXE, 'homebrew', 1, null]
+      ],
+      [[LAMP, 'homebrew', 0, null]]
+    ]);
+    expect(plan.rows[0]?.entries[1]?.price_coins).toBe(40);
+    expect(plan.copies?.items.map((i) => i.key)).toEqual([LAMP]);
+  });
+
+  it('never copies an entry without a snapshot, also when its key is no longer held', () => {
+    const p = okOf(parseBundle(oneList([{ id: AXE, source: 'homebrew' }]), knows, () => true));
+    const plan = importPlan(p.lists, accountOf([AXE]));
+    expect(plan.copies).toBeNull();
+    expect(withCopies(plan, p.lists, accountOf())).toBe(plan);
+  });
+
+  it('reads a version 3 entry without a snapshot with its GM-only mark', () => {
+    const doc = oneList([{ id: AXE, source: 'homebrew', gm_only: true }], 3);
+    expect(okOf(parseBundle(doc, knows, () => true)).lists[0]?.entries[0]).toMatchObject({
+      item_key: AXE,
+      source: 'homebrew',
+      snapshot: null,
+      gm_only: true
+    });
+  });
+
+  it('splits 5000 entries without a snapshot by the 300 held keys', () => {
+    const B32 = 'abcdefghijklmnopqrstuvwxyz234567';
+    const keys = Array.from(
+      { length: ENTRIES_MAX },
+      (_, n) =>
+        'hb_' +
+        Array.from({ length: 4 }, (_, d) => B32.charAt((n >> (5 * d)) & 31)).join('') +
+        'aaaaaaaaaaaa'
+    );
+    expect(new Set(keys).size).toBe(ENTRIES_MAX);
+    const held = new Set(keys.slice(0, 300));
+    const doc = oneList(keys.map((id) => ({ id, source: 'homebrew' })));
+    const p = okOf(parseBundle(doc, knows, (k) => held.has(k)));
+    expect(p.lists[0]?.entries).toHaveLength(300);
+    expect(p.skipped).toHaveLength(4700);
+    expect(p.skipped.every((x) => x.why === 'unheld')).toBe(true);
+  });
+
+  it('sends no skipped entry: of 101 entries with one unheld, the plan holds 100 at 0-99', () => {
+    const ids = [...index.byId.keys()].slice(0, 100);
+    const doc = oneList([
+      ...ids.slice(0, 50).map((id) => ({ id })),
+      { id: LAMP, source: 'homebrew' },
+      ...ids.slice(50).map((id) => ({ id }))
+    ]);
+    const p = okOf(parseBundle(doc, knows, () => false));
+    const plan = importPlan(p.lists, accountOf());
+    expect(plan.rows[0]?.entries.map((e) => e.position)).toEqual(
+      Array.from({ length: 100 }, (_, n) => n)
+    );
+    expect(p.skipped).toEqual([{ list: 0, entry: 50, id: LAMP, why: 'unheld' }]);
+  });
+
+  it('imports a list whose every entry is an unheld skip as an empty list', () => {
+    const p = okOf(
+      parseBundle(oneList([{ id: LAMP, source: 'homebrew' }]), knows, () => false)
+    );
+    const plan = importPlan(p.lists, accountOf());
+    expect(plan.rows.map((r) => r.entries.length)).toEqual([0]);
+    expect(plan.copies).toBeNull();
+  });
+});
+
 describe('withCopies: the plan again for a press', () => {
   it('copies a key the account no longer holds, every id kept, and keeps a plan nothing changed', () => {
     const p = okOf(parseBundle(fixture('example-v2.json'), knows));
@@ -1553,6 +1724,17 @@ describe('the import-v3 schema and the validator (the drift guard)', () => {
     expect(Object.keys(entry.properties)).toEqual(ENTRY_KEYS_GM_ONLY);
     expect(prop(entry, 'gm_only')).toMatchObject({ type: 'boolean', default: false });
     expect(prop(entry, 'gm_only').description).toBeTruthy();
+    const then = (entry as ObjectSchema & { then?: { required?: string[] } }).then;
+    expect(then?.required ?? []).not.toContain('snapshot');
+    expect(
+      v3Problems(
+        JSON.parse(
+          fixture('keys-only-v2.json')
+            .replace('"version": 2', '"version": 3')
+            .replace('import-v2', 'import-v3')
+        )
+      )
+    ).toEqual([]);
   });
 
   it("is import-v2 but for its $id, title, description, version and the entry's gm_only", () => {

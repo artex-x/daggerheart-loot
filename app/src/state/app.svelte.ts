@@ -192,11 +192,15 @@ export class AppState {
   /** The signed-in author's homebrew; null with no sign-in configured. */
   readonly homebrew: Homebrew | null;
 
-  /** The catalogue with the signed-in author's own items: what every page that draws
-   *  records reads. The catalogue object itself while the account holds none. */
+  /** The catalogue with the signed-in author's own items and own cards, which also apply
+   *  to the catalog records they name in `items`: what every page that draws records
+   *  reads. The catalogue object itself while the account holds neither. */
   index: Index | null = $derived.by(() => {
     const own = this.homebrew?.records ?? [];
-    return this.catalog && own.length ? withRecords(this.catalog, own, []) : this.catalog;
+    const cards = this.homebrew?.cardRefs ?? [];
+    return this.catalog && (own.length || cards.length)
+      ? withRecords(this.catalog, own, [], cards)
+      : this.catalog;
   });
 
   /**

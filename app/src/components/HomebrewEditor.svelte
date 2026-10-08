@@ -194,11 +194,12 @@
       ? lineMembers(app.index, draft.line).filter((r) => r.id !== selfKey)
       : []
   );
-  /* The catalog and the own records with the draft in place of the stored row. */
+  /* The catalog, the own records with the draft in place of the stored row, and the own
+     cards. */
   const previewIndex = $derived.by(() => {
     if (!app.catalog) return app.index;
     const own = store.records.filter((r) => r.id !== selfKey);
-    return withRecords(app.catalog, [...own, preview], []);
+    return withRecords(app.catalog, [...own, preview], [], store.cardRefs);
   });
   const relCount = $derived(
     (draft.kind === 'equip' &&

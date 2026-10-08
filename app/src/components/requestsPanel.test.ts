@@ -648,16 +648,24 @@ describe('the change log in the panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('hides one notice with the focus on the heading, then the rest with the focus on main', async () => {
+  it('hides one notice with the focus on the heading, then the last one with the focus on main', async () => {
     const { container, cloud } = await openGm2();
     const p = await inbox();
+    expect(within(p).getByRole('button', { name: 'Скрыть изменения' })).toBeInTheDocument();
     await userEvent.click(
       within(p).getByRole('button', { name: 'Скрыть изменение «Топор Тлеющих Углей»' })
     );
     expect(noticeRows(p)).toHaveLength(1);
     expect(document.activeElement).toBe(within(p).getByRole('heading', { level: 2 }));
+    /* One notice, one hide button: its own «Скрыть» (docs/specs/FEATURES.md, "The change log"). */
+    expect(within(p).queryByRole('button', { name: 'Скрыть изменения' })).toBeNull();
+    expect(within(p).getAllByRole('button', { name: /^Скрыть изменение «/ })).toHaveLength(1);
     await expectNoA11yViolations(container);
-    await userEvent.click(within(p).getByRole('button', { name: 'Скрыть изменения' }));
+    await userEvent.click(
+      within(p).getByRole('button', {
+        name: 'Скрыть изменение «' + (SEED.notices[1]?.name.ru ?? '') + '»'
+      })
+    );
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: /^Новое в списке/ })).toBeNull();
     });

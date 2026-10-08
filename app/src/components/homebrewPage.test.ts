@@ -10,17 +10,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import CardForm from './CardForm.svelte';
 import HomebrewPage from './HomebrewPage.svelte';
 import { limitText } from '../lib/cloudLists.js';
+import type { Loot } from '../lib/data.js';
+import type { CardContent } from '../lib/homebrew.js';
+import type { Record_ } from '../lib/types.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import {
+  fakeData,
   fakeDialog,
   fakeEnv,
   fakeImage,
   fakePage,
   fixedClock,
   memoryRouter,
-  memoryStorage
+  memoryStorage,
+  type CloudPort
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -1075,6 +1080,274 @@ describe('the Sets and Rules tabs', () => {
     expect(await screen.findByText('Карта правил «Клеймо Ольхи» удалена')).toBeInTheDocument();
     const read = await cloud?.homebrew.load();
     expect(read?.ok && read.cards.map((c) => c.key)).toEqual([SET]);
+  });
+});
+
+describe('book items in a set or rule card', () => {
+  const rec = (id: string, ru: string, extra: Partial<Record_> = {}): Record_ => ({
+    id,
+    src: 'core',
+    kind: 'item',
+    en: id,
+    ru,
+    ende: '',
+    rud: '',
+    ...extra
+  });
+  const refCard = { en: 'R', ru: 'Р', ensub: '', rusub: '', ende: '', rud: '', url: '' };
+  const LOOT: Loot = {
+    items: {
+      core_item: [
+        rec('q1', 'Палаш'),
+        rec('q2', 'Длинный палаш'),
+        rec('s1', 'Палаш святого', { set: 'saints' }),
+        rec('r1', 'Палаш с рунами', { refs: ['slow', 'fast'] })
+      ]
+    },
+    refs: { slow: refCard, fast: refCard },
+    sets: { saints: { en: 'Saints', ru: 'Святые', ende: '', rud: '' } }
+  };
+  const env = { data: fakeData(LOOT) };
+  const withCard = async (
+    cloud: ReturnType<typeof fakeCloud>,
+    id: string,
+    patch: Partial<CardContent>
+  ): Promise<void> => {
+    const held = await cloud.homebrew.load();
+    const row = held.ok ? held.cards.find((c) => c.id === id) : undefined;
+    if (!row)
+      throw new Error('The seed has no card ' + id + '. Restore it in fake-cloud-seed.ts.');
+    await cloud.homebrew.updateCard(
+      id,
+      { content: { ...row.content, ...patch }, book_id: row.book_id },
+      null
+    );
+  };
+  const cardOf = async (cloud: CloudPort | null, id: string) => {
+    const read = await cloud?.homebrew.load();
+    return read?.ok ? read.cards.find((c) => c.id === id) : undefined;
+  };
+  const openSet = async (): Promise<HTMLElement> => {
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Комплект Ольхи' }));
+    return panel;
+  };
+
+  it('offers book and own items but not the members or, on the Sets tab, a book-set item', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withCard(cloud, uuid(521), { items: ['q2'] });
+    const { container } = page('gm1', { cloud, env });
+    await openSet();
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'палаш');
+    const options = screen.getAllByRole('option').map((o) => o.textContent);
+    expect(options.some((o) => o.startsWith('Палаш с рунами'))).toBe(true);
+    expect(options.some((o) => o.startsWith('Палаш святого'))).toBe(false);
+    expect(options.some((o) => o.startsWith('Длинный палаш'))).toBe(false);
+    await expectNoA11yViolations(container);
+    cleanup();
+    page('gm1', { cloud, env });
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Клеймо Ольхи' }));
+    await userEvent.type(
+      screen.getByRole('combobox', { name: t.hbAddMember }),
+      'палаш святого'
+    );
+    expect(screen.getByRole('option', { name: /Палаш святого/ })).toBeInTheDocument();
+  });
+
+  it('adds a book item and removes it, each a write of the card with its toast', async () => {
+    const { cloud, container } = page('gm1', { env });
+    const panel = await openSet();
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(await screen.findByText('Сохранено: «Длинный палаш»')).toBeInTheDocument();
+    expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
+    const link = await within(panel).findByRole('link', { name: 'Длинный палаш' });
+    expect(link).toHaveAttribute('href', '#/i/q2');
+    expect(link.nextElementSibling).toHaveTextContent('Core');
+    expect(within(panel).getByText('1 предмет · Мастерская Ольхи')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(panel).getByRole('button', { name: 'Убрать: Длинный палаш' }));
+    expect(await screen.findAllByText('Сохранено: «Длинный палаш»')).not.toHaveLength(0);
+    await waitFor(() => {
+      expect(within(panel).queryByRole('link', { name: 'Длинный палаш' })).toBeNull();
+    });
+    expect((await cardOf(cloud, uuid(521)))?.content).not.toHaveProperty('items');
+  });
+
+  it('lists own and book members by name, a gone id by its own words, and counts both', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withCard(cloud, uuid(521), { items: ['q2', 'gone1'] });
+    const held = await cloud.homebrew.load();
+    const ring = held.ok ? held.items.find((i) => i.id === uuid(514)) : undefined;
+    if (!ring) throw new Error('The seed has no ring. Restore it in fake-cloud-seed.ts.');
+    await cloud.homebrew.updateItem(
+      ring.id,
+      { content: { ...ring.content, set: SET }, book_id: null },
+      null
+    );
+    const { dialog, container } = page('gm1', { cloud, env, answer: false });
+    const panel = await openSet();
+    expect(within(panel).getByText('3 предмета · Мастерская Ольхи')).toBeInTheDocument();
+    const rows = [...panel.querySelectorAll('.members li')].map(
+      (li) => li.firstElementChild?.textContent
+    );
+    expect(rows).toEqual(['Длинный палаш', 'Кольцо с гравировкой', t.hbGoneItem]);
+    expect(
+      within(panel).getByRole('button', { name: 'Убрать: ' + t.hbGoneItem })
+    ).toBeEnabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(panel).getByRole('button', { name: t.del }));
+    expect(dialog.asked).toEqual([
+      'Удалить комплект «Комплект Ольхи»? Он указан в 3 предметах - там пропадут его название и бонус. Отменить удаление нельзя.'
+    ]);
+    await userEvent.click(within(panel).getByRole('button', { name: t.edit }));
+    expect(
+      screen.getByText('Изменения появятся на 3 предметах и в списках, где они лежат.')
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the book items when the card form saves a new text', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withCard(cloud, uuid(521), { items: ['q2'] });
+    page('gm1', { cloud, env });
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: t.edit }));
+    const form = screen.getByRole('group', { name: 'Комплект Ольхи' });
+    await fill(/^Бонус комплекта/, 'Новый бонус.');
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    await waitFor(() => {
+      expect(screen.queryByRole('group', { name: 'Комплект Ольхи' })).not.toBeInTheDocument();
+    });
+    expect((await cardOf(cloud, uuid(521)))?.content).toMatchObject({
+      rud: 'Новый бонус.',
+      items: ['q2']
+    });
+  });
+
+  it('asks before it moves a book item from another own set, then writes both cards', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createCard({
+      id: uuid(7031),
+      key: 'hb_cardaaaaaaaaaaaa',
+      kind: 'set',
+      book_id: null,
+      content: { ru: 'Альфа', rud: 'Бонус.', items: ['q2'] }
+    });
+    const { dialog } = page('gm1', { cloud, env });
+    await openSet();
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(dialog.asked).toEqual([
+      'Предмет «Длинный палаш» уйдёт из комплекта «Альфа». Перенести его?'
+    ]);
+    await waitFor(async () => {
+      expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
+    });
+    expect((await cardOf(cloud, uuid(7031)))?.content).not.toHaveProperty('items');
+  });
+
+  it('leaves the book item in no own set when the move fails at its second write, and adds it again with no question', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createCard({
+      id: uuid(7032),
+      key: 'hb_cardaaaaaaaaaaaa',
+      kind: 'set',
+      book_id: null,
+      content: { ru: 'Альфа', rud: 'Бонус.', items: ['q2'] }
+    });
+    const real = cloud.homebrew.updateCard.bind(cloud.homebrew);
+    const write = vi
+      .spyOn(cloud.homebrew, 'updateCard')
+      .mockImplementationOnce((...a) => real(...a))
+      .mockResolvedValueOnce({ ok: false, error: 'network' });
+    const { dialog } = page('gm1', { cloud, env });
+    await openSet();
+    const field = screen.getByRole('combobox', { name: t.hbAddMember });
+    await userEvent.type(field, 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(await screen.findByText(t.hbWriteFailed)).toBeInTheDocument();
+    expect(write).toHaveBeenCalledTimes(2);
+    expect((await cardOf(cloud, uuid(7032)))?.content).not.toHaveProperty('items');
+    expect((await cardOf(cloud, uuid(521)))?.content).not.toHaveProperty('items');
+    expect(dialog.asked).toHaveLength(1);
+    await userEvent.type(field, 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    await waitFor(async () => {
+      expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
+    });
+    expect(dialog.asked).toHaveLength(1);
+    expect(write).toHaveBeenCalledTimes(3);
+  });
+
+  it('refuses the 101st book item and a fourth rule card, writing nothing', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const hundred = Array.from({ length: 100 }, (_, i) => 'x' + String(i));
+    await withCard(cloud, uuid(521), { items: hundred });
+    await cloud.homebrew.createCard({
+      id: uuid(7041),
+      key: 'hb_rulebbbbbbbbbbbb',
+      kind: 'ref',
+      book_id: null,
+      content: { ru: 'Правило', rud: 'Текст.', items: ['r1'] }
+    });
+    const write = vi.spyOn(cloud.homebrew, 'updateCard');
+    page('gm1', { cloud, env });
+    await openSet();
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(
+      await screen.findByText('В карте уже 100 предметов из книг - это предел.')
+    ).toBeInTheDocument();
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Клеймо Ольхи' }));
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'рунами');
+    await userEvent.click(screen.getByRole('option', { name: /Палаш с рунами/ }));
+    expect(
+      await screen.findByText('У предмета «Палаш с рунами» уже три карты правил.')
+    ).toBeInTheDocument();
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['conflict', { ok: false, error: 'conflict' } as const, t.hbCardChanged],
+    ['gone', { ok: false, error: 'gone' } as const, t.hbCardGone],
+    ['network', { ok: false, error: 'network' } as const, t.hbWriteFailed]
+  ])('says a book item write answered %s', async (_kind, answer, text) => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    vi.spyOn(cloud.homebrew, 'updateCard').mockResolvedValueOnce(answer);
+    page('gm1', { cloud, env });
+    const panel = await openSet();
+    await userEvent.type(screen.getByRole('combobox', { name: t.hbAddMember }), 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(await screen.findByText(text)).toBeInTheDocument();
+    expect(within(panel).queryByRole('link', { name: 'Длинный палаш' })).toBeNull();
+  });
+
+  it('offers nothing and waits its «Убрать» buttons while a write to the card is in flight', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withCard(cloud, uuid(521), { items: ['q1'] });
+    const real = cloud.homebrew.updateCard.bind(cloud.homebrew);
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    vi.spyOn(cloud.homebrew, 'updateCard').mockImplementationOnce(async (...a) => {
+      await gate;
+      return real(...a);
+    });
+    page('gm1', { cloud, env });
+    const panel = await openSet();
+    const field = screen.getByRole('combobox', { name: t.hbAddMember });
+    await userEvent.type(field, 'Длинный');
+    await userEvent.click(screen.getByRole('option', { name: /Длинный палаш/ }));
+    expect(within(panel).getByRole('button', { name: 'Убрать: Палаш' })).toBeDisabled();
+    await userEvent.type(field, 'Палаш');
+    expect(screen.queryByRole('option')).toBeNull();
+    expect(screen.getByText(t.hbPickNone)).toBeInTheDocument();
+    open();
+    expect(await screen.findByText('Сохранено: «Длинный палаш»')).toBeInTheDocument();
+    expect(within(panel).getByRole('button', { name: 'Убрать: Палаш' })).toBeEnabled();
   });
 });
 

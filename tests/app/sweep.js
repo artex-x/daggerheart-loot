@@ -14,7 +14,14 @@
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
 const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
-const { HB_FILE, hbImportOpen, heldNamesFile, longNamesFile } = require('./inventory.js');
+const {
+  HB_FILE,
+  IMPORT,
+  hbImportOpen,
+  importOpen,
+  heldNamesFile,
+  longNamesFile
+} = require('./inventory.js');
 
 const argv = process.argv.slice(2);
 const ONLY = argv.map(Number).filter(Boolean);
@@ -167,6 +174,18 @@ const PAGES = [
         for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
           await d.tick(name);
         await d.click('Переместить (3)');
+      }
+    ],
+    /* The lists import's longest skip line: an own item the account does not hold. */
+    [
+      '#/lists',
+      'импорт списков: позиции без копии',
+      'gm1',
+      async (d) => {
+        await importOpen(d);
+        await d.upload(IMPORT('keys-only-v2.json'));
+        for (let i = 0; i < 40 && !(await d.text()).includes('Пропущено позиций'); i++)
+          await d.settle();
       }
     ],
     ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],

@@ -1638,3 +1638,134 @@ describe("the author's own relations on a catalog card", () => {
     await expectNoA11yViolations(bedroll);
   });
 });
+
+describe("the account's own card on a book item", () => {
+  /* The real catalog; gm1's seeded set card and rule card hold book items in `items`
+     (docs/specs/FEATURES.md, "Homebrew", "Cards"). */
+  const REAL = JSON.parse(
+    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+  ) as Loot;
+  const catalog = buildIndex(REAL);
+  const SET = 'hb_aldersetaaaaaaaa';
+  const RULE = 'hb_alderrulecardaaa';
+  const draw = (id: string, ix: Index) => {
+    const it = ix.byId.get(id);
+    if (!it) throw new Error(`The index lacks ${id}. Name a record it holds`);
+    return render(RecordCard, {
+      props: {
+        it,
+        index: ix,
+        lang: 'ru',
+        artBroken: false,
+        onartfail: () => {},
+        onopen: () => {}
+      }
+    });
+  };
+  const setLine = (container: HTMLElement): HTMLElement | undefined =>
+    [...container.querySelectorAll<HTMLElement>('.craft p')].find(
+      (e) => e.querySelector('.craft-l')?.textContent === 'Комплект'
+    );
+
+  it('draws the own set line and bonus on #/i/q1 linked to the Sets tab, and the own rule card after the book one', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    if (!held.ok) throw new Error('The seed did not load.');
+    for (const c of held.cards) {
+      await cloud.homebrew.updateCard(
+        c.id,
+        {
+          content: { ...c.content, items: c.kind === 'set' ? ['q1', 'q2'] : ['q1', 'w1'] },
+          book_id: c.book_id
+        },
+        null
+      );
+    }
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/i/q1'),
+        data: fakeData(REAL),
+        cloud,
+        storage: memoryStorage()
+      })
+    });
+    expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/' + SET
+    );
+    const line = setLine(container);
+    expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe('Комплект Палаш, Длинный Меч');
+    expect(screen.getByText('Клеймо Ольхи')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
+      'href',
+      '#/homebrew/rules/' + RULE
+    );
+    await expectNoA11yViolations(container);
+    cleanup();
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/i/w1'),
+        data: fakeData(REAL),
+        cloud,
+        storage: memoryStorage()
+      })
+    });
+    await screen.findByText('Клеймо Ольхи');
+    const names = [...document.querySelectorAll('.refs .ref-n')].map((e) => e.textContent);
+    expect(names).toHaveLength(2);
+    expect(names.at(-1)).toBe('Клеймо Ольхи');
+  });
+
+  it('draws neither for an index without the account cards, and none for a book item alone in an own set', async () => {
+    const plain = draw('q1', catalog);
+    expect(setLine(plain.container)).toBeUndefined();
+    expect(plain.container.querySelector('.refs')).toBeNull();
+    cleanup();
+    const alone = withRecords(
+      catalog,
+      [],
+      [],
+      [{ key: SET, kind: 'set', ru: 'Комплект Ольхи', rud: 'Бонус.', items: ['q1'] }]
+    );
+    const { container } = draw('q1', alone);
+    expect(setLine(container)).toBeUndefined();
+    expect(screen.queryByRole('link', { name: 'Комплект Ольхи' })).toBeNull();
+    expect(container.textContent).not.toContain('Комплект Ольхи');
+    await expectNoA11yViolations(container);
+  });
+
+  it('folds an own set of 100 book items past the third member, the catalog members in catalog order', async () => {
+    const order = [...catalog.allEquip, ...catalog.all]
+      .filter((r, i, a) => !r.set && a.indexOf(r) === i)
+      .slice(0, 100);
+    const ids = order.map((r) => r.id);
+    const ix = withRecords(
+      catalog,
+      [],
+      [],
+      [
+        {
+          key: SET,
+          kind: 'set',
+          ru: 'Комплект Ольхи',
+          rud: 'Бонус.',
+          items: [...ids].reverse()
+        }
+      ]
+    );
+    const first = ids[0]!;
+    const { container } = draw(first, ix);
+    const line = setLine(container);
+    if (!line) throw new Error('The card draws no set line.');
+    const shown = [...line.querySelectorAll('a, [aria-current]')].map((e) => e.textContent);
+    expect(shown).toEqual(order.slice(0, 4).map((r) => r.ru));
+    const more = within(line).getByRole('button', { name: 'и ещё 96' });
+    expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/' + SET
+    );
+    await userEvent.click(more);
+    expect(line.querySelectorAll('a')).toHaveLength(99);
+    await expectNoA11yViolations(container);
+  });
+});

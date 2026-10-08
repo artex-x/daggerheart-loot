@@ -153,8 +153,8 @@ across.
   a value that names no held source or a `sect` value that is not a section
   of the chosen source is rewritten once to the chosen chip. A chip keeps `kind` and drops `sect`,
   keeps the ticks and does not open a folded filter panel. Facets: `kind` and
-  `sect` (the sections of the shown source that hold an item, labelled by the
-  section's name); no `src` row. Every facet write, «Сбросить все» included,
+  `sect` of the shown source's items, by the offer rule below (a section
+  labelled by its name); no `src` row. Every facet write, «Сбросить все» included,
   keeps the chosen chip. «Ссылка на таблицу» copies the chosen chip's address
   (the bare address with one source), «Ссылка на фильтры» the filter with the
   chip. What the chips drop with two or more sources (owner accepted
@@ -182,7 +182,9 @@ across.
   `#/tables/homebrew` and the relation lines of a catalog card or row still
   draw them. It is memory only (`STATE.md`).
 - The filter panel is one component across all tables and the shared list page
-  ("Lists"); where a table has nothing to filter by, there is no panel. Nothing is selected by default and an empty
+  ("Lists"); where a table has nothing to filter by, there is no panel. A row offers only values
+  the drawn rows answer and shows only when it can narrow; a picked value stays offered as a pill
+  (owner, 2026-10-08). On `#/tables/homebrew` the drawn rows are the chosen source's. Nothing is selected by default and an empty
   row means "any". Chosen values show as pills outside the panel, with a reset
   and a copy-link button, so they are reachable while the panel is folded.
   Values in a row combine with *or*; a link naming two frames opens both.
@@ -298,16 +300,18 @@ across.
   2 and 3. A version 3 entry keeps its «Только для мастера» mark, on its link
   or on its fixed copy's link; `gm_only` in a version 1 or 2 file is an
   unknown field. A homebrew entry of a version 2 or 3 file imports as a link
-  to the own item when the account holds its key; any other becomes a new
-  own item in «Хоумбрю», made from its snapshot, and the entry links it
-  (`CONTRACTS.md` section 4). One copy is made per distinct key and snapshot: a later entry of
-  the same key with another snapshot gets a new key, and cards likewise. The
-  copies count against the item and card limits and `import_homebrew`'s 1000
-  rows; past either the import is refused whole and nothing is written. A
-  homebrew entry is never skipped as unknown, and its own refusals
-  read «snapshot: не копия предмета - сверьте поля с описанием в llms.txt» and
-  «id «...»: не ключ своего предмета - hb_ и 16 знаков a-z, 2-7». While the
-  account's own items load, a version 2 file with a homebrew entry draws «Ваши
+  to the own item when the account holds its key; any other with a snapshot
+  becomes a new own item in «Хоумбрю», made from it, and the entry links it;
+  one without a snapshot is skipped (`CONTRACTS.md` section 4). One copy is made
+  per distinct key and snapshot: a later entry of the same key with another
+  snapshot gets a new key, and cards likewise. The copies count against the
+  item and card limits and `import_homebrew`'s 1000 rows; past either the
+  import is refused whole and nothing is written. A homebrew entry is never
+  skipped as unknown; its snapshot is optional, and one that is present is
+  checked whole. Its own refusals read «snapshot: не копия предмета - сверьте
+  поля с описанием в llms.txt» and «id «...»: не ключ своего предмета - hb_ и
+  16 знаков a-z, 2-7». While the account's own items load, a version 2 or 3
+  file with a homebrew entry, with or without a snapshot, draws «Ваши
   предметы ещё загружаются - повторите через секунду.» in place of the preview,
   and the preview once they are read. When the account lacks some of its own
   items, the preview says «Своих предметов, которых нет в аккаунте: 2 - они
@@ -324,11 +328,15 @@ across.
   «...и ещё N в этом списке», and past 50 errors «...и ещё N ошибок». A clean
   file draws the preview «Списков: 2, позиций: 3.» with «Пропущено позиций: 2.»
   when entries were skipped, and a report grouped by list when a list has a skip
-  or a name the account holds: an unknown id and a repeated id are skipped and
-  named with their positions, and a name the account holds is allowed and noted
-  («...появится второй»). The report draws the first 20 list blocks, then «и ещё
-  N списков» / «свернуть» (rule 12); the skips are grouped by list once, so 1000
-  lists of skips draw at once. A zip's `homebrew.json` draws one line, «Файл
+  or a name the account holds: an unknown id, a repeated id and an own item
+  without a snapshot that the account does not hold («пропущена - этого своего
+  предмета нет в аккаунте: сначала импортируйте файл предметов на странице «Мои
+  предметы»») are skipped and named with their positions, and a name the account
+  holds is allowed and noted («...появится второй»). A skipped entry is no first
+  entry: a later entry of its key is read as if the skipped one were absent.
+  The report draws the first 20 list blocks, then «и ещё N списков» /
+  «свернуть» (rule 12); the skips are grouped by list once, so 1000 lists of
+  skips draw at once. A zip's `homebrew.json` draws one line, «Файл
   homebrew.json из архива импортируется на странице «Мои предметы».»; its other
   files are named under the preview (the first five, then «и ещё N»), and its
   lists import. «Импортировать (N)» and «Отмена» are disabled while the import
@@ -339,8 +347,13 @@ across.
   Нажмите «Импортировать» ещё раз.» (an own item a link names was deleted
   after the preview; the account's items are read again), anything else «Не
   получилось. Проверьте соединение и попробуйте ещё раз.», and the preview stays
-  for another press, which sends the same ids; the copies a failed lists call
-  left in the account are held keys then, and the retry links them.
+  for another press, which sends the same ids, unless an own item that a kept
+  entry without a snapshot links went, and the file was read again; the copies
+  a failed lists call left in the account are held keys then, and the retry
+  links them. A kept entry without a snapshot whose item goes reads the file
+  again, with new ids: after the server refuses such a link, the entry becomes
+  a skip and the next press imports the rest. A skipped entry whose item comes
+  later stays skipped: choose the file again.
 - Optional quantity and price per entry; both travel into copied text. The
   price is the price of one unit: after a count over 1 the copied line reads
   "×2 — по 7 мешков 5 горстей" / "×2 — 7 bags 5 handfuls each", in the
@@ -848,8 +861,8 @@ browser lists writable after the date.
   price and notes). One notice per list and item: a later change replaces
   it. The panel draws the first 3, then «и ещё N изменений» / "and N more
   changes", the requests' fold. Each notice has «Скрыть» («Скрыть изменение
-  «%s»»), and «Скрыть изменения» after them hides the notices the panel
-  holds, so one that arrived after the last read stays; the focus moves as
+  «%s»»); from two notices «Скрыть изменения» after them hides the notices
+  the panel holds (one notice, one hide button: owner, 2026-10-08), so one that arrived after the last read stays; the focus moves as
   the requests' «Скрыть» moves it. A notice that was unread when this page
   load first held it is marked «новое» until the page is left. The panel
   reads its list's notices whole; the list is marked read (the requests' rule
@@ -874,7 +887,8 @@ browser lists writable after the date.
   `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`, a store-only
   zip whose root holds `lists.json`, the same lists file of every account list,
   and, when the account holds a source, a card or an own item, `homebrew.json`,
-  the account's whole homebrew file ("Homebrew"). A download that writes own
+  the account's whole homebrew file ("Homebrew"): `homebrew-v1`, or
+  `homebrew-v2` when a card holds book items. A download that writes own
   items waits for them: while they load, or after their read failed, it toasts
   «Ваши предметы ещё загружаются - повторите через секунду.» and downloads
   nothing. An export has no toast of its own, and a failed download toasts «Не
@@ -901,7 +915,8 @@ browser lists writable after the date.
   drawn before the call answers. A list name the account holds imports as a
   second list, and the same file imported twice makes two copies. A lost
   answer whose lists the next read finds counts as done. The import counts
-  against the account's limits, with no exemption.
+  against the account's limits, with no exemption. The entries the preview
+  skips are not sent; the rest of the file imports.
 - **Limits**: the 51st list and the 101st entry of a list (the defaults;
   `limits:set` changes them per user) are refused with the error toast
   «Достигнут предел списков в аккаунте: 50. Нужно больше - напишите на
@@ -1179,7 +1194,12 @@ browser lists writable after the date.
   ladder also draw the author's own items that name the record, and an own
   item's card draws its own relations; nobody else sees them, another
   account's item in a list adds nothing to a catalog card, and the «Свои предметы» switch does not
-  hide them. A homebrew name reads «<name> (HB)» and a homebrew rung «<tier>
+  hide them. The account's own set and rule cards also draw on the book items
+  they hold (`items`): the set line, the bonus linked to the Sets tab, the
+  rule card after the book's with «Открыть в «Мои предметы»». Under an own
+  set every member past the third folds, catalog records included, the
+  catalog ones in catalog order, then the own ones by name; the record page,
+  print and the copied text alike. A homebrew name reads «<name> (HB)» and a homebrew rung «<tier>
   HB», titled and named «<name> (HB)», with the ordinary border. Each line
   and the ladder draw every catalog record, the record itself and three
   homebrew records - catalog records in their order, then homebrew ones by
@@ -1311,16 +1331,35 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   комплект · 2 карты из 100», «1 карта правил · 2 карты из 100»; with no
   limit known «1 комплект · 2 карты»), then the cards by name. A card is a
   fold named by the card, closed by default: its head shows «N предметов»
-  (the own items that name it) with its source, «Изменить» and «Удалить».
+  (the own items that name it and the book items it holds) with its source,
+  «Изменить» and «Удалить».
   `#/homebrew/sets/<key>` and `#/homebrew/rules/<key>` open that card's fold
   and scroll to it; an unknown key or a key of the other kind opens nothing
   and keeps the address; a press on a fold does not write the address. An
   empty tab reads «Комплектов пока нет.» / «Карт правил пока нет.», a query
   with no match «Ничего не найдено». Open, a card shows its text (a set's
   bonus; a rule card's subtitle in italics, its text and its link), then the
-  field «Добавить предмет» / "Add an item" (an item picker over the own items
-  that are not members, «Найти предмет»), then its members by name, each a
-  link to the item's address with «Убрать» / "Remove". An add on a set writes
+  field «Добавить предмет» / "Add an item" (an item picker over the own and
+  book items that are not members, ranked as search ranks them, with their
+  meta; on the Sets tab not a book item of a book set; «Найти предмет»),
+  then its members by name, own and book items in one list, each a link to
+  the item's address, a book item with its book's name after it, with
+  «Убрать» / "Remove". An own item's add or «Убрать» writes the item; a book
+  item's writes the card's `items` (at most 100: the 101st is refused «В
+  карте уже 100 предметов из книг - это предел.»), and while it is in flight
+  the card's picker offers nothing and its «Убрать» buttons are disabled. A
+  book item in another own set asks the move question below; a yes writes
+  that card, then this one, holding this card for both writes; a failed
+  second write toasts its own failure text and leaves the item in no own
+  set, and a second add puts it in the set. A book item counts toward the three rule cards
+  with its book's own; a book id the catalog lacks reads «Предмета больше
+  нет» with «Убрать». A card write that another device changed or deleted
+  toasts the card's texts below. A book item alone in its own set draws no
+  set line and no bonus, as an own item alone. **Only the account that owns
+  the card sees it on a book item, on every page it opens, its own share
+  links included; other readers of a share link, `#/h/` and another account
+  see the book's item** (owner, 2026-10-08,
+  `docs/decisions/2026-10-08-an-own-card-holds-book-items-the-owner-sees-them.md`). An add on a set writes
   the item's set; an item in another set first asks «Предмет «%i» уйдёт из
   комплекта «%s». Перенести его?», and a no writes nothing. An add on a rule
   card adds it to the item's rule cards; an item with three is refused «У
@@ -1354,7 +1393,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   its edit form and toasts «Эту карту удалили на другом устройстве.». An
   edit writes the language on screen, keeps the other one as the account
   holds it at the press and names how many items show the change. Deleting a
-  card asks «Удалить карту правил «%s»? Она указана в N предметах - там она
+  card asks, N counting own and book items, «Удалить карту правил «%s»? Она указана в N предметах - там она
   пропадёт. Отменить удаление нельзя.» or «Удалить комплект «%s»? Он указан
   в N предметах - там пропадут его название и бонус. Отменить удаление
   нельзя.», the short form («Удалить карту правил «%s»? Отменить удаление
@@ -1537,9 +1576,11 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   файла JSON» in a panel under the row; its
   code loads on the first open as its own chunk, with «Загружаем...» meanwhile
   and «Не получилось загрузить импорт.» with a small «Повторить» after a failed
-  load. The field takes a `homebrew-v1` file or the data zip's `homebrew.json`
-  (the file field, the 5 MB bound, the zip and the text rules of «Импорт из
-  файла», "Lists"); its hint links `schema/homebrew-v1.json` and `llms.txt`. A
+  load. The field takes a `homebrew-v1` or `homebrew-v2` file or the data zip's
+  `homebrew.json` (the file field, the 5 MB bound, the zip and the text rules
+  of «Импорт из файла», "Lists"); its hint links `schema/homebrew-v1.json`,
+  `schema/homebrew-v2.json` and `llms.txt`. «Обновить» with a version 1 file
+  keeps a held card's book items; a version 2 file states them. A
   zip's `lists.json` draws «Файл lists.json из архива импортируется на странице
   «Мои списки».». A file the app refuses whole says why in one alert line (not
   JSON, not an items file, another version or none, nothing in it, not a data
@@ -1615,7 +1656,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   for unsafe characters; «Хоумбрю.json» for the default source);
   «Скачать JSON (N)» in the strip downloads the ticked items, their sources
   and the cards they name as `daggerheart-loot-homebrew-<YYYY-MM-DD>.json`.
-  Each is a `homebrew-v1` file (`CONTRACTS.md` section 4) whose items keep
+  Each is a `homebrew-v1` file, or `homebrew-v2` when a card it writes holds
+  book items (`CONTRACTS.md` section 4), whose items keep
   only a section their source holds. While the items load, or after their
   read failed, a download toasts «Ваши предметы ещё загружаются - повторите
   через секунду.»; a failed download or a chunk that did not load toasts «Не

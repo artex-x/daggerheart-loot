@@ -14,7 +14,9 @@ import {
   madeFrom,
   otherTableRows,
   plainFacets,
+  refsOf,
   setBonusOf,
+  setKeyOf,
   setOf,
   srcOf,
   upgradeLine,
@@ -444,6 +446,58 @@ describe('set membership', () => {
     const small = buildIndex({ items: { core_item: [a, member('x2', 'pair')] } });
     expect(setOf(small, a)).toHaveLength(2);
     expect(setBonusOf(small, a)).toBeUndefined();
+  });
+
+  const SET = 'hb_aldersetaaaaaaaa';
+  const RULE = 'hb_alderrulecardaaa';
+  /* A catalog record of no book set. */
+  const plain = (id: string): Record_ => {
+    const r: Record_ = member(id, 'none');
+    delete r.set;
+    return r;
+  };
+  it("answers the account's own set and rule cards of a catalog record, its own first", () => {
+    const a = member('x1', 'solo');
+    const b: Record_ = { ...plain('x2'), refs: ['slow'] };
+    const c = plain('x3');
+    const small = buildIndex({ items: { core_item: [a, b, c] } });
+    const ix = withRecords(
+      small,
+      [],
+      [],
+      [
+        { key: SET, kind: 'set', ru: 'Комплект', rud: 'Бонус.', items: ['x1', 'x2', 'x3'] },
+        { key: RULE, kind: 'ref', ru: 'Клеймо', items: ['x2'] }
+      ]
+    );
+    expect(setKeyOf(ix, a)).toBe('solo');
+    expect(setKeyOf(ix, b)).toBe(SET);
+    expect(setKeyOf(small, b)).toBeUndefined();
+    expect(refsOf(ix, b)).toEqual(['slow', RULE]);
+    expect(refsOf(ix, { ...b, refs: [RULE] })).toEqual([RULE]);
+    expect(refsOf(small, b)).toEqual(['slow']);
+    expect(setOf(ix, b).map((r) => r.id)).toEqual(['x2', 'x3']);
+    expect(setBonusOf(ix, c)).toEqual({
+      en: 'Комплект',
+      ru: 'Комплект',
+      ende: 'Бонус.',
+      rud: 'Бонус.'
+    });
+    expect(setBonusOf(small, c)).toBeUndefined();
+  });
+
+  it('answers no set line and no bonus for a catalog record alone in an own set', () => {
+    const b = plain('x2');
+    const small = buildIndex({ items: { core_item: [b] } });
+    const ix = withRecords(
+      small,
+      [],
+      [],
+      [{ key: SET, kind: 'set', ru: 'Комплект', rud: 'Бонус.', items: ['x2'] }]
+    );
+    expect(setKeyOf(ix, b)).toBe(SET);
+    expect(setOf(ix, b)).toEqual([]);
+    expect(setBonusOf(ix, b)).toBeUndefined();
   });
 });
 

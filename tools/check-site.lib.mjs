@@ -46,7 +46,9 @@ export const SCHEMA_IDS = {
   'schema/import-v2.json': 'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json',
   'schema/import-v3.json': 'https://artex-x.github.io/daggerheart-loot/schema/import-v3.json',
   'schema/homebrew-v1.json':
-    'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json'
+    'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json',
+  'schema/homebrew-v2.json':
+    'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json'
 };
 
 /** The `$id` of a JSON body, or null when it is not JSON. */

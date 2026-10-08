@@ -1,0 +1,92 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 2,
+  "exported_at": "2026-09-25T12:00:00.000Z",
+  "books": [
+    {
+      "key": "hb_alderworkshopaaa",
+      "en": "Alder Workshop",
+      "ru": "Мастерская Ольхи",
+      "sections": [
+        {
+          "key": "hb_sectpistolsaaaaa",
+          "en": "Pistols",
+          "ru": "Пистоли"
+        },
+        {
+          "key": "hb_sectbladesaaaaaa",
+          "en": "Blades",
+          "ru": "Холодное оружие"
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "key": "hb_aldersetaaaaaaaa",
+      "kind": "set",
+      "book": "hb_alderworkshopaaa",
+      "en": "Alder Set",
+      "ru": "Комплект Ольхи",
+      "ende": "Two pieces of the set: +1 to Evasion.",
+      "rud": "Два предмета комплекта: +1 к Уклонению.",
+      "items": [
+        "q1"
+      ]
+    },
+    {
+      "key": "hb_alderrulecardaaa",
+      "kind": "ref",
+      "en": "Alder Brand",
+      "ru": "Клеймо Ольхи",
+      "ensub": "Weapon feature",
+      "rusub": "Свойство оружия",
+      "ende": "Once per rest: reroll one damage die.",
+      "rud": "Раз за отдых: перебросьте одну кость урона.",
+      "url": "https://example.test/alder-brand"
+    }
+  ],
+  "items": [
+    {
+      "key": "hb_emberaxeaaaaaaaa",
+      "book": "hb_alderworkshopaaa",
+      "section": "hb_sectbladesaaaaaa",
+      "kind": "equip",
+      "en": "Ember Axe",
+      "ru": "Топор Тлеющих Углей",
+      "ende": "The blade smoulders and does not go out in the rain.",
+      "rud": "Лезвие тлеет и не гаснет под дождём.",
+      "eq": {
+        "t": "weapon",
+        "tier": 2,
+        "cls": "mag",
+        "tr": "spellcast",
+        "rg": "melee",
+        "dmg": "d10+2",
+        "dt": "mag",
+        "bu": 2
+      },
+      "set": "hb_aldersetaaaaaaaa"
+    },
+    {
+      "key": "hb_smithpotionaaaaa",
+      "kind": "consumable",
+      "ru": "Настой кузнеца",
+      "rud": "Выпейте перед работой у горна: до конца сцены вы не отмечаете Стресс от жара."
+    },
+    {
+      "key": "hb_whispercapaaaaaa",
+      "kind": "item",
+      "en": "Whispering Cap",
+      "ende": "Once per rest, hear one sentence spoken within Far range.",
+      "tier": 2
+    },
+    {
+      "key": "hb_engravedringaaaa",
+      "kind": "item",
+      "ru": "Кольцо с гравировкой",
+      "rud": "Надпись на неизвестном языке. Тёплое на ощупь."
+    }
+  ]
+}

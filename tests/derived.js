@@ -1903,6 +1903,16 @@ ok(
   ),
   'Drakebow On Fire does not trigger on an attack roll on every rung'
 );
+ok(
+  arazo.every((x) => !/GM Note|Заметка для Мастера/.test(x.ende + '\n' + x.rud)),
+  "an Arazo's Artifacts record carries a GM note; they are removed on purpose (I18N.md, Rules)"
+);
+ok(
+  aaById.aa23.en === 'The Looking Glass' &&
+    aaById.aa23.ru === 'Волшебное Зеркало' &&
+    !/Зерцал/.test(aaById.aa23.rud),
+  'aa23 The Looking Glass is not «Волшебное Зеркало» throughout (I18N.md, Rules)'
+);
 
 console.log('Vault of Ages Volume 4');
 const voa4ById = Object.fromEntries(

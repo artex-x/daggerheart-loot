@@ -1,6 +1,6 @@
 # #/tables/homebrew/f_sect-hb_sectbladesaaaaaa as gm1
 # route: #/tables/homebrew/f_sect-hb_sectbladesaaaaaa
-# why: a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Тип» and «Раздел», the pill «Холодное оружие», one row
+# why: a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Раздел» only (the chip holds one kind), the pill «Холодное оружие», one row
 # as: gm1
 
 ## ru :: tree
@@ -53,10 +53,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     StaticText "1 из 1"
-    ... StaticText x3 of 7 same-shape siblings elided
-    button "Предметы" [pressed=false]
-    button "Расходники" [pressed=false]
-    button "Снаряжение" [pressed=false]
+    StaticText "РАЗДЕЛ"
     button "Холодное оружие" [pressed=true]
     StaticText "ХОЛОДНОЕ ОРУЖИЕ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
@@ -94,10 +91,8 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Предметы
 Прочее
 Ранг 2Топор Тлеющих УглейEmber Axe
-Расходники
 Сбросить всё
 Сеткой
 Скопировать ссылку на этот раздел
@@ -166,10 +161,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Reset all"
     button "Filter link" [description=Filter link]
     StaticText "1 of 1"
-    ... StaticText x3 of 7 same-shape siblings elided
-    button "Items" [pressed=false]
-    button "Consumables" [pressed=false]
-    button "Equipment" [pressed=false]
+    StaticText "SECTION"
     button "Blades" [pressed=true]
     StaticText "BLADES"
     button "Copy a link to this section" [description=Copy a link to this section]
@@ -191,7 +183,6 @@ Alt. tables
 Arazo's Artifacts
 Blades
 Communities
-Consumables
 Copy a link to this section
 Core
 Dragon's Vault
@@ -207,7 +198,6 @@ Homebrew
 Hope & Fear
 How this works
 Install as an app
-Items
 Link to this table
 List
 Lists

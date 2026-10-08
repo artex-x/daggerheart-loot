@@ -9,6 +9,7 @@ import { ID_PATTERN } from './bundle.js';
 import { buildIndex, type Loot } from './data.js';
 import {
   BOOK_NAME_MAX,
+  CARD_ITEMS_MAX,
   CARD_NAME_MAX,
   CARD_SUB_MAX,
   CARD_TEXT_MAX,
@@ -35,7 +36,9 @@ import {
   FILE_ITEMS_MAX,
   HOMEBREW_FORMAT,
   HOMEBREW_SCHEMA,
+  HOMEBREW_SCHEMA_V2,
   HOMEBREW_VERSION,
+  HOMEBREW_VERSIONS,
   heldOf,
   homebrewFileName,
   homebrewText,
@@ -139,6 +142,7 @@ interface Node {
   $defs?: Record<string, Node>;
 }
 const SCHEMA = JSON.parse(read('schema', 'homebrew-v1.json')) as Node;
+const SCHEMA2 = JSON.parse(read('schema', 'homebrew-v2.json')) as Node;
 const V2 = JSON.parse(read('schema', 'import-v2.json')) as Node;
 const V3 = JSON.parse(read('schema', 'import-v3.json')) as Node;
 const defs = SCHEMA.$defs ?? {};
@@ -168,7 +172,8 @@ describe('the schema and the validator (the drift guard)', () => {
     expect(Object.keys(props(SCHEMA))).toEqual(ROOT_KEYS);
     expect(Object.keys(props(def('book')))).toEqual(BOOK_KEYS);
     expect(Object.keys(props(def('section')))).toEqual(SECTION_KEYS);
-    expect(Object.keys(props(def('card')))).toEqual(CARD_KEYS);
+    expect(Object.keys(props(def('card')))).toEqual(CARD_KEYS.filter((k) => k !== 'items'));
+    expect(Object.keys(props(def('card', SCHEMA2)))).toEqual(CARD_KEYS);
     expect(Object.keys(props(def('item')))).toEqual(ITEM_KEYS);
     expect(Object.keys(props(def('eq')))).toEqual(EQ_KEYS);
     expect(Object.keys(props(def('stats')))).toEqual(STATS_KEYS);
@@ -256,6 +261,24 @@ describe('the schema and the validator (the drift guard)', () => {
     expect(def('damageType').enum).toEqual(['phy', 'mag', 'any']);
   });
 
+  it("keeps homebrew-v2.json equal to homebrew-v1.json but for the version and a card's book items", () => {
+    expect(SCHEMA2.$id).toBe(HOMEBREW_SCHEMA_V2);
+    expect(p(SCHEMA2, 'version').const).toBe(2);
+    expect(HOMEBREW_VERSIONS).toEqual([1, 2]);
+    const items = p(def('card', SCHEMA2), 'items');
+    expect(items).toMatchObject({ type: 'array', minItems: 1, maxItems: CARD_ITEMS_MAX });
+    expect(items.description).toBeTruthy();
+    expect(items.items?.pattern).toBe('^(?!hb_[a-z2-7]{16}$)[A-Za-z0-9_-]{1,64}$');
+    const strip = (s: Node): unknown => {
+      const copy = JSON.parse(JSON.stringify(s)) as Node & Record<string, unknown>;
+      for (const k of ['$id', 'title', 'description']) Reflect.deleteProperty(copy, k);
+      Reflect.deleteProperty(props(copy), 'version');
+      Reflect.deleteProperty(props(def('card', copy)), 'items');
+      return copy;
+    };
+    expect(strip(SCHEMA2)).toEqual(strip(SCHEMA));
+  });
+
   it("holds import-v2's and import-v3's copies of the stat block and the key deep-equal, and its card fields to the same bounds", () => {
     for (const name of [
       'key',
@@ -317,7 +340,7 @@ describe('parseHomebrew', () => {
     expect(parseHomebrew(fixture('wrong-version.json'), CTX)).toEqual({
       ok: false,
       reason: 'version',
-      version: 2
+      version: 3
     });
     expect(parseHomebrew('{"format":"daggerheart-loot/homebrew"}', CTX)).toEqual({
       ok: false,
@@ -480,6 +503,19 @@ describe('parseHomebrew', () => {
       { kind: 'relation', index: 2, field: 'eq.line', id: 'zz' }
     ]);
   });
+
+  it("refuses a version 1 card's book items as an unknown key, and notes a version 2 card's book item the catalog lacks", () => {
+    const cards = [{ key: KEY(9), kind: 'set', ru: 'Набор', items: ['q1', 'nosuchid'] }];
+    expect(errorsOf(parseHomebrew(doc({ cards }), CTX))).toEqual([
+      { path: 'cards[0].items', rule: 'extra' }
+    ]);
+    const v2 = okOf(parseHomebrew(doc({ version: 2, cards }), CTX));
+    expect(v2.file.version).toBe(2);
+    expect(v2.file.cards[0]?.items).toEqual(['q1', 'nosuchid']);
+    expect(v2.notes).toEqual([
+      { kind: 'relation', array: 'cards', index: 0, field: 'items', id: 'nosuchid' }
+    ]);
+  });
 });
 
 /* ---------- the hand-test files (plan section 5 of the task; docs/specs/CONTRACTS.md 4) ---------- */
@@ -497,6 +533,8 @@ describe('the hand-test files', () => {
       'errors.json',
       'nbsp-name.json',
       'wrong-version.json',
+      'example-v2.json',
+      'errors-v2.json',
       'bad-section.json',
       'over-limit.json',
       'same-names.json',
@@ -646,12 +684,31 @@ describe('the hand-test files', () => {
     ]);
   });
 
-  it('wrong-version.json: version 2, refused before the walk', () => {
+  it('wrong-version.json: version 3, refused before the walk', () => {
     expect(parseHomebrew(fixture('wrong-version.json'), CTX)).toMatchObject({
       ok: false,
       reason: 'version',
-      version: 2
+      version: 3
     });
+  });
+
+  it('example-v2.json: export.json with the set card holding q1 and the axe naming the set, clean', () => {
+    const p = okOf(parseHomebrew(fixture('example-v2.json'), CTX));
+    expect(p.notes).toEqual([]);
+    expect(p.file.version).toBe(2);
+    expect(p.file.cards[0]).toMatchObject({ key: 'hb_aldersetaaaaaaaa', items: ['q1'] });
+    expect(p.file.items[0]).toMatchObject({
+      key: 'hb_emberaxeaaaaaaaa',
+      set: 'hb_aldersetaaaaaaaa'
+    });
+  });
+
+  it('errors-v2.json: an own key, 101 ids and a repeated id among the book items', () => {
+    expect(errorsOf(parseHomebrew(fixture('errors-v2.json'), CTX))).toEqual([
+      { path: 'cards[0].items[1]', rule: 'pattern' },
+      { path: 'cards[1].items', rule: 'many' },
+      { path: 'cards[2].items[2]', rule: 'duplicate' }
+    ]);
   });
 
   it('bad-section.json: a section its source lacks', () => {
@@ -792,6 +849,46 @@ describe('toHomebrewFile and homebrewText', () => {
     const f = toHomebrewFile([], [], cards, new Date(0));
     expect(f.cards).toEqual([{ key: KEY(5), kind: 'ref', en: 'R', url: '' }]);
     expect(okOf(parseHomebrew(fixture('export.json'), CTX)).notes).toEqual([]);
+  });
+
+  it('writes version 1 byte for byte with no book items, and version 2 when a card holds them', () => {
+    const held = okOf(parseHomebrew(fixture('export.json'), CTX)).file;
+    const bookId = (key: string | undefined): string | null => (key ? 'b-' + key : null);
+    const books: BookRow[] = held.books.map((b, i) => {
+      const { key, ...content } = b;
+      return row({ id: 'b-' + key, key, content }, '2026-09-0' + String(i + 1));
+    });
+    const cardsOf = (items: string[] | null): CardRow[] =>
+      held.cards.map((c, i) => {
+        const { key, kind, book, ...content } = c;
+        return row(
+          {
+            id: 'c' + String(i),
+            key,
+            kind,
+            book_id: bookId(book),
+            content: i === 0 && items ? { ...content, items } : content
+          },
+          '2026-09-1' + String(i)
+        );
+      });
+    const items: ItemRow[] = held.items.map((it, i) => {
+      const { key, book, ...content } = it;
+      return row(
+        { id: 'i' + String(i), key, book_id: bookId(book), content },
+        '2026-09-2' + String(i)
+      );
+    });
+    const at = new Date('2026-09-25T12:00:00.000Z');
+    expect(homebrewText(toHomebrewFile(books, items, cardsOf(null), at))).toBe(
+      fixture('export.json')
+    );
+    const v2 = toHomebrewFile(books, items, cardsOf(['q1', 'ci1']), at);
+    expect([v2.$schema, v2.version]).toEqual([HOMEBREW_SCHEMA_V2, 2]);
+    expect(Object.keys(v2.cards[0] ?? {}).at(-1)).toBe('items');
+    const back = okOf(parseHomebrew(homebrewText(v2), CTX));
+    expect(back.notes).toEqual([]);
+    expect(back.file.cards[0]?.items).toEqual(['q1', 'ci1']);
   });
 });
 
@@ -1029,6 +1126,47 @@ describe('the import plan', () => {
     ]);
     expect(r.items[0]?.content).not.toHaveProperty('key');
     expect(r.items[0]?.content).not.toHaveProperty('book');
+  });
+
+  it("keeps a held card's book items for a version 1 file, and writes a version 2 file's own", () => {
+    const heldCard = (key: string, kind: CardKind, items?: string[]): CardRow =>
+      row(
+        {
+          id: 'c-' + key,
+          key,
+          kind,
+          book_id: null,
+          content: { ru: key, ...(items ? { items } : {}) }
+        },
+        '2026-09-02'
+      );
+    const held = account(
+      [],
+      [],
+      [
+        heldCard('hb_emberpairsetaaaa', 'set', ['q1']),
+        heldCard('hb_reloadruleaaaaaa', 'set', ['q2'])
+      ]
+    );
+    const rowsFor = (file: HomebrewFile) =>
+      toHomebrewRows(
+        file,
+        rowsOf(file),
+        [{ kind: 'new' }, { kind: 'home' }],
+        held,
+        true,
+        idsOf()
+      ).cards;
+    const v1 = rowsFor(fileOf('example.json'));
+    expect(v1.map((c) => c.content.items ?? null)).toEqual([['q1'], null]);
+    expect(v1[0]?.content.items).not.toBe(held.cards[0]?.content.items);
+    const v2File = fileOf('example.json');
+    const v2 = rowsFor({
+      ...v2File,
+      version: 2,
+      cards: v2File.cards.map((c, i) => (i === 1 ? { ...c, items: ['ci1'] } : c))
+    });
+    expect(v2.map((c) => c.content.items ?? null)).toEqual([null, ['ci1']]);
   });
 
   it('writes a held source with the sections it lacks, and its names only for its own key', () => {

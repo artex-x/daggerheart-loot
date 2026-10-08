@@ -11,9 +11,9 @@
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import Seg from './Seg.svelte';
-  import { setBonusOf, setOf } from '../lib/data.js';
+  import { setBonusOf, setKeyOf, setOf } from '../lib/data.js';
   import { PRINT_MAX, printHash, sectionHash } from '../lib/hash.js';
-  import { FOLD_OWN, relText } from '../lib/label.js';
+  import { FOLD_OWN, relText, setFolds } from '../lib/label.js';
   import { COMPACT_PER_SHEET, pages } from '../lib/print.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -55,7 +55,7 @@
     const members = setOf(index, it);
     return {
       label: members.length
-        ? `${name} (${t.setLabel}: ${relText(members, app.lang, FOLD_OWN, it.id)})`
+        ? `${name} (${t.setLabel}: ${relText(members, app.lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
         : name,
       body: ru ? bonus.rud : bonus.ende
     };

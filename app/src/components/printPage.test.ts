@@ -8,7 +8,7 @@
  * particular record. Equipment lives in `Loot.eq`, off the same records
  * `listPage.test.ts`'s fixture already establishes the convention for. */
 
-import { cleanup, render, screen, within } from '@testing-library/svelte';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -1341,6 +1341,35 @@ describe("the author's own set members", () => {
     expect(label(last)).toBe(
       'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок, А (HB), Б (HB), В (HB), Д (HB) и ещё 1):'
     );
+    await expectNoA11yViolations(container);
+  });
+
+  it("prints the account's own set on a book item, every member folded past the third", async () => {
+    const card = {
+      id: uuid(721),
+      key: 'hb_ownbookssetaaaaa',
+      kind: 'set' as const,
+      content: {
+        ru: 'Свой набор',
+        rud: 'Бонус.',
+        items: ['ci1', 'ni1', 'cc1', 'cm1', 'af1']
+      },
+      createdAgoMs: 3_600_000,
+      editedAgoMs: 3_600_000
+    };
+    const seed: Seed = {
+      ...SEED,
+      homebrew: { ...SEED.homebrew, gm3: { books: [], cards: [card], items: [] } }
+    };
+    const { container } = render(App, {
+      env: at('#/print/ni1', { cloud: fakeCloud(seed, 'gm3') })
+    });
+    await screen.findByText('Вещь Без Картинки');
+    await waitFor(() => {
+      expect(label('ni1')).toBe(
+        'Свой набор (Комплект: Вещь С Картинкой, Вещь Без Картинки, Зелье, Вещь Сообщества и ещё 1):'
+      );
+    });
     await expectNoA11yViolations(container);
   });
 

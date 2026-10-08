@@ -59,11 +59,11 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
 49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
 4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
-5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=399 namehash=cf4d1d2a]
-6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=410 namehash=227a07b7]
-7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=411 namehash=3a33c82a]
+5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=309 namehash=3a06bb17]
+6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=320 namehash=f321922c]
+7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=321 namehash=9a94ce7a]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
-8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=411 namehash=d61d5c2d]
+8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=321 namehash=672e07b4]
 Arazo's Artifacts
 Dragon's Vault
 Dread
@@ -172,11 +172,11 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
 116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
 49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
 4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
-5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=360 namehash=f8c58b0b]
-6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=369 namehash=2c1b24e6]
-7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=369 namehash=55f98140]
+5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=266 namehash=6419d1ef]
+6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=275 namehash=0580efd5]
+7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=275 namehash=0f3a6a16]
 84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
-8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=370 namehash=3e8a5301]
+8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=276 namehash=82237262]
 Account: gm1@example.test
 Advanced Axe of the Dawn
 Advanced Hallowed Axe

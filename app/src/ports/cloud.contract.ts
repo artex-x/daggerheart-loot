@@ -1121,7 +1121,8 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   );
 }
 
-/* N. A set card and a rule card written, refused, read back and updated; an item naming
+/* N. A set card holding book items and a rule card written, refused (an own key among the
+   book items too), read back and updated; an item naming
    them and catalog records; its share's projection embedding the own cards; a card removed
    and gone from the next projection, its key kept on the item; on the doomed user. */
 async function cardCases(port: CloudPort, assert: Assert): Promise<void> {
@@ -1137,7 +1138,11 @@ async function cardCases(port: CloudPort, assert: Assert): Promise<void> {
     key: homebrew.newKey(),
     kind: 'set' as const,
     book_id: null,
-    content: { ru: 'Комплект Ольхи', rud: 'Два предмета: +1 к Уклонению.' }
+    content: {
+      ru: 'Комплект Ольхи',
+      rud: 'Два предмета: +1 к Уклонению.',
+      items: ['q1', 'ci1']
+    } as CardContent
   };
   assert((await homebrew.createCard(setRow)).ok, 'cards: a set card was refused');
   assert(
@@ -1166,6 +1171,15 @@ async function cardCases(port: CloudPort, assert: Assert): Promise<void> {
         id: homebrew.newId(),
         key: homebrew.newKey(),
         content: { ...ruleRow.content, url: 'http://example.test' }
+      }
+    ],
+    [
+      'an own key among the book items',
+      {
+        ...ruleRow,
+        id: homebrew.newId(),
+        key: homebrew.newKey(),
+        content: { ...ruleRow.content, items: ['q1', homebrew.newKey()] } as CardContent
       }
     ],
     [

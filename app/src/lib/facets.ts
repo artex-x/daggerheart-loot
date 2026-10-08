@@ -21,13 +21,16 @@
  * `kind` and `sect` over its own rows; its `src` is the source chip above the table
  * (docs/specs/ROUTES.md, "Values").
  *
- * A share link's filter is a third shape: `listFacetRows` offers only the values the
- * list's own entries answer, because a list is small and changes under its reader.
+ * A share link's filter is a third shape: `listFacetRows` builds its own candidates.
+ *
+ * Every page passes its candidates through `narrowRows`: a row offers only the values
+ * its drawn records answer and is drawn only when it can narrow (docs/specs/FEATURES.md,
+ * "Tables and search").
  *
  * Pure module: no DOM, no data beyond what is handed in. */
 
 import { equipFacets, kindOf, listFacets, srcOf, type Index } from './data.js';
-import { EQ_GROUPS, EQ_TABLE, groupsFor, LIST_GROUPS } from './filters.js';
+import { EQ_GROUPS, EQ_TABLE, groupsFor, LIST_GROUPS, type FilterState } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { srcName } from './label.js';
@@ -279,22 +282,40 @@ function listCandidates(records: readonly Record_[], t: Dict, lang: Lang): Facet
   });
 }
 
+/** Returns the rows a page offers: of each candidate row, the values that a drawn record
+ *  answers or that `picked` holds; a row stays when it can narrow (two values, or one value
+ *  some record lacks) or holds a picked value (docs/specs/FEATURES.md, "Tables and search"). */
+export function narrowRows(
+  candidates: readonly FacetRow[],
+  records: readonly Record_[],
+  facetOf: (it: Record_, group: string) => string | readonly string[],
+  picked: FilterState = {}
+): FacetRow[] {
+  return candidates.flatMap((row) => {
+    const chosen = picked[row.group] ?? [];
+    const answers = (value: string) => (it: Record_) =>
+      [facetOf(it, row.group)].flat().includes(value);
+    const values = row.values.filter(
+      (v) => chosen.includes(v.value) || records.some(answers(v.value))
+    );
+    const first = values[0];
+    const narrows =
+      values.length >= 2 || (first !== undefined && !records.every(answers(first.value)));
+    const held = values.some((v) => chosen.includes(v.value));
+    return first && (narrows || held) ? [{ ...row, values }] : [];
+  });
+}
+
 /**
- * The facet rows of a share link's filter (docs/specs/FEATURES.md, "Lists"): of the
- * candidates, the values some record answers, and only the rows that can narrow - two
- * values or more, or one value some record lacks. A row never narrows by another
- * row's picks, as on a table.
+ * The facet rows of a share link's filter (docs/specs/FEATURES.md, "Lists"): the
+ * candidates through `narrowRows`, with no pick kept - a share link ignores a picked
+ * value its entries do not answer.
  */
 export function listFacetRows(records: readonly Record_[], t: Dict, lang: Lang): FacetRow[] {
-  const answers = records.map((it) => listFacets(it));
-  const has = (f: Record<string, string | readonly string[]>, g: string, v: string): boolean =>
-    [f[g] ?? ''].flat().includes(v);
-  return listCandidates(records, t, lang).flatMap((row) => {
-    const values = row.values.filter((v) => answers.some((f) => has(f, row.group, v.value)));
-    const [only] = values;
-    const narrows =
-      values.length > 1 ||
-      (only !== undefined && answers.some((f) => !has(f, row.group, only.value)));
-    return narrows ? [{ ...row, values }] : [];
-  });
+  const answers = new Map(records.map((it) => [it, listFacets(it)]));
+  return narrowRows(
+    listCandidates(records, t, lang),
+    records,
+    (it, g) => answers.get(it)?.[g] ?? ''
+  );
 }

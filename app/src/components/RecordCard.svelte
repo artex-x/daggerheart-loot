@@ -19,8 +19,24 @@
   import { artSrc, descParts } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { homebrewTabHash, recordHref } from '../lib/hash.js';
-  import { FOLD_OWN, cardBadges, foldOwn, relName, relOrder, srcLabel } from '../lib/label.js';
-  import { madeFrom, setBonusOf, setOf, upgradeLine, upgradesTo } from '../lib/data.js';
+  import {
+    FOLD_OWN,
+    cardBadges,
+    foldOwn,
+    relName,
+    relOrder,
+    setFolds,
+    srcLabel
+  } from '../lib/label.js';
+  import {
+    madeFrom,
+    refsOf,
+    setBonusOf,
+    setKeyOf,
+    setOf,
+    upgradeLine,
+    upgradesTo
+  } from '../lib/data.js';
   import { isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -65,7 +81,7 @@
      *  only the full card draws it, the same as `actions`. */
     pick?: Snippet | undefined;
     /** The viewer is the author: an own set's name and each own rule card link to their
-     *  tabs on «Мои предметы». */
+     *  tabs on «Мои предметы». The account's own card on a catalog record links there too. */
     manage?: boolean;
   }
 
@@ -110,6 +126,7 @@
     const line = it.eq?.line ? upgradeLine(index, it) : [];
     return line.length > 1 ? line : [];
   });
+  const setKey = $derived(setKeyOf(index, it));
   const setMembers = $derived(relOrder(setOf(index, it), lang));
 
   /* Each relation line and the ladder fold their homebrew records past the third
@@ -126,7 +143,12 @@
     list: readonly Record_[],
     line: Line
   ): { shown: readonly Record_[]; more: number } {
-    const folded = foldOwn(list, FOLD_OWN, it.id);
+    const folded = foldOwn(
+      list,
+      FOLD_OWN,
+      it.id,
+      line === 'set' ? setFolds(setKey) : undefined
+    );
     return isOpen(line) ? { shown: list, more: folded.more } : folded;
   }
   const fromFold = $derived(fold(from, 'from'));
@@ -138,8 +160,14 @@
     if (!b) return undefined;
     return lang === 'ru' ? { name: b.ru, text: b.rud } : { name: b.en, text: b.ende };
   });
+  /* The account's own set or rule card on a catalog record (`index.ownSetOf`). */
+  const ownSet = $derived(
+    !!setKey && isHomebrewKey(setKey) && (manage || index.ownSetOf.get(it.id) === setKey)
+  );
+  const ownRef = (key: string): boolean =>
+    isHomebrewKey(key) && (manage || !!index.ownRefsOf.get(it.id)?.includes(key));
   const refs = $derived(
-    (it.refs ?? []).flatMap((key) => {
+    refsOf(index, it).flatMap((key) => {
       const card = index.refs[key];
       return card ? [{ key, card }] : [];
     })
@@ -335,8 +363,8 @@
           <p>
             <span
               ><i
-                >{#if manage && it.set && isHomebrewKey(it.set)}<a
-                    href={homebrewTabHash('sets', it.set)}>{setBonus.name}</a
+                >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
+                    >{setBonus.name}</a
                   >:{:else}{setBonus.name}:{/if}</i
               >
               {setBonus.text}</span
@@ -371,7 +399,7 @@
             {:else if r.url}
               <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
             {/if}
-            {#if manage && isHomebrewKey(key)}
+            {#if ownRef(key)}
               <a href={homebrewTabHash('rules', key)}>{t.hbCardManage}</a>
             {/if}
           </details>

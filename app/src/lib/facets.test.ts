@@ -1,13 +1,36 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, equipFacets, equipOfKind, listFacets, srcOf, type Loot } from './data.js';
+import {
+  buildIndex,
+  equipFacets,
+  equipOfKind,
+  listFacets,
+  otherTableRows,
+  plainFacets,
+  srcOf,
+  type Index,
+  type Loot
+} from './data.js';
 import { dict } from './dict.js';
-import { facetRows, listFacetRows, type FacetRow, type FacetValue } from './facets.js';
+import {
+  facetRows,
+  listFacetRows,
+  narrowRows,
+  type FacetRow,
+  type FacetValue
+} from './facets.js';
 import { FRAME_ORDER } from './frames.js';
 import { decodeFilter, encodeFilter, groupsFor, LIST_GROUPS, passes } from './filters.js';
 import { browseIndex, recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
-import { CHARACTER_TRAITS, type EquipKind, type Record_, type TableId } from './types.js';
+import { ownAtScale } from '../test/facets.js';
+import {
+  CHARACTER_TRAITS,
+  TABLE_IDS,
+  type EquipKind,
+  type Record_,
+  type TableId
+} from './types.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: over.id ?? 'x',
@@ -672,5 +695,137 @@ describe("a share link's facet rows", () => {
       const seg = encodeFilter(every, LIST_GROUPS);
       expect(('#/s/' + 'A'.repeat(43) + '/' + seg).length).toBeLessThan(16384);
     });
+  });
+});
+
+describe('the offer rule', () => {
+  const kindRow: FacetRow = {
+    group: 'kind',
+    label: 'Тип',
+    values: [
+      { value: 'item', label: 'Предметы' },
+      { value: 'consumable', label: 'Расходники' },
+      { value: 'equip', label: 'Снаряжение' }
+    ]
+  };
+  const tierRow: FacetRow = {
+    group: 'tier',
+    label: 'Ранг',
+    values: ['1', '2', '3'].map((v) => ({ value: v, label: v }))
+  };
+  const plain = (it: Record_, g: string): string => plainFacets(it)[g] ?? '';
+  const item = row({ id: 'i1', kind: 'item', tier: 1 });
+  const potion = row({ id: 'c1', kind: 'consumable', tier: 1 });
+
+  it('draws no row for no record and no pick', () => {
+    expect(narrowRows([kindRow, tierRow], [], plain)).toEqual([]);
+  });
+
+  it('drops a row whose one value every record answers', () => {
+    expect(narrowRows([kindRow], [item, row({ id: 'i2', kind: 'item' })], plain)).toEqual([]);
+  });
+
+  it('keeps a row whose one value some record lacks', () => {
+    const rows = narrowRows([tierRow], [item, row({ id: 'i2', kind: 'item' })], plain);
+    expect(rows.map((r) => r.values.map((v) => v.value))).toEqual([['1']]);
+  });
+
+  it('keeps a row with two answered values and drops the values no record answers', () => {
+    expect(narrowRows([kindRow], [potion, item], plain)).toEqual([
+      { ...kindRow, values: [kindRow.values[0], kindRow.values[1]] }
+    ]);
+  });
+
+  it('keeps a picked value no record answers, and so its row', () => {
+    const rows = narrowRows([kindRow], [item], plain, { kind: ['consumable'] });
+    expect(rows.map((r) => r.values.map((v) => v.value))).toEqual([['item', 'consumable']]);
+    const alone = narrowRows([kindRow], [], plain, { kind: ['equip'] });
+    expect(alone.map((r) => r.values.map((v) => v.value))).toEqual([['equip']]);
+  });
+
+  it('ignores a pick in another row', () => {
+    expect(narrowRows([kindRow], [item], plain, { tier: ['2'] })).toEqual([]);
+  });
+
+  it("keeps the candidates' order and labels", () => {
+    const rows = narrowRows(
+      [tierRow, kindRow],
+      [potion, item, row({ id: 'i3', tier: 3 })],
+      plain
+    );
+    expect(rows.map((r) => [r.group, r.label, r.values.map((v) => v.label)])).toEqual([
+      ['tier', 'Ранг', ['1', '3']],
+      ['kind', 'Тип', ['Предметы', 'Расходники']]
+    ]);
+  });
+
+  it('lets a Spellcast weapon answer all six traits and burden any answer both chips', () => {
+    const gear = (id: string, eq: NonNullable<Record_['eq']>): Record_ =>
+      row({ id, src: 'core', eq });
+    const index = buildIndex({
+      items: {},
+      eq: [
+        gear('w1', {
+          t: 'weapon',
+          tier: 1,
+          cls: 'mag',
+          tr: 'spellcast',
+          rg: 'melee',
+          bu: 'any'
+        }),
+        gear('w2', { t: 'weapon', tier: 1, cls: 'phy', tr: 'agility', rg: 'far', bu: 1 })
+      ]
+    });
+    const rows = narrowRows(
+      facetRows(index, 'eq_weapon', t, 'ru'),
+      equipOfKind(index, 'weapon'),
+      (it, g) => equipFacets(it)[g] ?? ''
+    );
+    const of = (g: string): string[] =>
+      rows.find((r) => r.group === g)?.values.map((v) => v.value) ?? [];
+    expect(of('trait')).toEqual([...CHARACTER_TRAITS]);
+    expect(of('burden')).toEqual(['1', '2']);
+  });
+
+  describe('on the catalog tables', () => {
+    const LOOT = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+    ) as Loot;
+    const catalog = buildIndex(LOOT);
+    const EQ: Partial<Record<TableId, EquipKind>> = {
+      eq_weapon: 'weapon',
+      eq_secondary: 'secondary',
+      eq_armor: 'armor'
+    };
+    /* The rows and the accessor TablesPage.svelte gives the table. */
+    const drawn = (index: Index, table: TableId): readonly Record_[] => {
+      const kind = EQ[table];
+      if (kind) return equipOfKind(index, kind);
+      if (table === 'other_starting' || table === 'other_frames')
+        return otherTableRows(index, table);
+      return index.rows.get(table) ?? [];
+    };
+
+    for (const table of TABLE_IDS) {
+      it(`removes nothing from ${table}`, () => {
+        const candidates = facetRows(catalog, table, t, 'ru');
+        const valueOf = EQ[table]
+          ? (it: Record_, g: string) => equipFacets(it)[g] ?? ''
+          : plain;
+        expect(narrowRows(candidates, drawn(catalog, table), valueOf)).toEqual(candidates);
+      });
+    }
+  });
+
+  describe('on the homebrew table at the item limit and at three times it', () => {
+    for (const n of [100, 300]) {
+      it(`bounds the rows by the vocabulary at ${String(n)}`, () => {
+        const { index, source, shown } = ownAtScale(n);
+        const rows = narrowRows(facetRows(index, 'homebrew', t, 'ru', source), shown, plain);
+        expect(rows.map((r) => r.group)).toEqual(['kind', 'sect']);
+        expect(rows[0]?.values).toHaveLength(2);
+        expect(rows[1]?.values.length).toBeLessThanOrEqual(30);
+      });
+    }
   });
 });

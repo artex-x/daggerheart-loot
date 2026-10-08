@@ -488,7 +488,8 @@ export function cardDraftOf(
 }
 
 /** Returns the stored part a card form writes: `lang`'s trimmed fields when not empty, the
- *  other language's name, subtitle (a rule card) and text copied from `base`. */
+ *  other language's name, subtitle (a rule card) and text and the book `items` copied from
+ *  `base`. */
 export function cardContentOf(
   kind: CardKind,
   d: CardDraft,
@@ -512,6 +513,7 @@ export function cardContentOf(
   if (ref && d.sub.trim()) out[sub] = d.sub.trim();
   if (d.text.trim()) out[text] = d.text.trim();
   if (ref && d.url.trim()) out.url = d.url.trim();
+  if (base?.items) out.items = [...base.items];
   return out;
 }
 

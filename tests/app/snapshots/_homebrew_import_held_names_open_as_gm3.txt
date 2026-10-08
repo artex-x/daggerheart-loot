@@ -31,7 +31,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x19 of 23 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     combobox "Без источника 12 предметов" [value=В «Хоумбрю» expanded=false haspopup=menu]
       option "В «Хоумбрю»" [selected=true]
       option "+ Новый источник..." [selected=false]
@@ -41,6 +41,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импортировать (12)"
     ... button x38 of 42 same-shape siblings elided
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm3#/homebrew]
@@ -76,6 +77,7 @@ RU
 Vault of Ages
 Wondrous
 daggerheart.com
+homebrew-v2
 Аккаунт: gm3@example.test
 Альт. таблицы
 В «Хоумбрю»+ Новый источник...
@@ -211,7 +213,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x19 of 23 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     combobox "No source 12 items" [value=Into "Homebrew" expanded=false haspopup=menu]
       option "Into "Homebrew"" [selected=true]
       option "+ New source..." [selected=false]
@@ -221,6 +223,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
     button "Import (12)"
     ... button x38 of 42 same-shape siblings elided
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm3#/homebrew]
@@ -360,5 +363,6 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 homebrew-v1 schema
+homebrew-v2
 show less
 ЛутDaggerheart

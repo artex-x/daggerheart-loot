@@ -53,7 +53,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     ... checkbox x75 of 79 same-shape siblings elided
     ... button x75 of 79 same-shape siblings elided
     checkbox "Легендарный Кнут из Хвоста Виверны" [checked=false]
-    button "77 Легендарный Кнут из Хвоста Виверны Ранг 4 · Физическое · Пров..." [namelen=531 namehash=79c3e501]
+    button "77 Легендарный Кнут из Хвоста Виверны Ранг 4 · Физическое · Пров..." [namelen=351 namehash=2f3c4b71]
     checkbox "Ларец Зерана" [checked=false]
     button "78 Ларец Зерана Личное: Предмет, помещённый в Ларец, может увиде..." [namelen=254 namehash=d89d072b]
   contentinfo ""
@@ -65,10 +65,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 10Чаша ОбетаОдин раз за продолжительный отдых вы получаете допол... [namelen=329 namehash=7972b6de]
-11Кортик МёртвыхРанг 1 · Физическое · Искусность · Вплотную · d6... [namelen=505 namehash=bdb6831c]
-12Улучшенный Кортик МёртвыхРанг 2 · Физическое · Искусность · Вп... [namelen=516 namehash=39a05e96]
-13Продвинутый Кортик МёртвыхРанг 3 · Физическое · Искусность · В... [namelen=518 namehash=fa3a7800]
-14Легендарный Кортик МёртвыхРанг 4 · Физическое · Искусность · В... [namelen=518 namehash=d0ddcbf1]
+11Кортик МёртвыхРанг 1 · Физическое · Искусность · Вплотную · d6... [namelen=324 namehash=4d3bc329]
+12Улучшенный Кортик МёртвыхРанг 2 · Физическое · Искусность · Вп... [namelen=335 namehash=e663a7f1]
+13Продвинутый Кортик МёртвыхРанг 3 · Физическое · Искусность · В... [namelen=337 namehash=ed151c1f]
+14Легендарный Кортик МёртвыхРанг 4 · Физическое · Искусность · В... [namelen=337 namehash=50fb7108]
 15Драконий ЛукРанг 1 · Физическое · Искусность · Очень далеко · ... [namelen=339 namehash=0d78b624]
 16Улучшенный Драконий ЛукРанг 2 · Физическое · Искусность · Очен... [namelen=352 namehash=65338036]
 17Продвинутый Драконий ЛукРанг 3 · Физическое · Искусность · Оче... [namelen=353 namehash=3d24c58e]
@@ -78,7 +78,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 20Улучшенный Лук из Эльфийских ВолосРанг 2 · Физическое · Провор... [namelen=257 namehash=145140b5]
 21Продвинутый Лук из Эльфийских ВолосРанг 3 · Физическое · Прово... [namelen=258 namehash=2e42815d]
 22Легендарный Лук из Эльфийских ВолосРанг 4 · Физическое · Прово... [namelen=258 namehash=cebd666f]
-23ЗерцалоВы получаете дополнительный Ход Отдыха: Сменить Облик.С... [namelen=413 namehash=4f17da9c]
+23Волшебное ЗеркалоВы получаете дополнительный Ход Отдыха: Смени... [namelen=434 namehash=4dfd128c]
 24Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d12+... [namelen=313 namehash=07958b4d]
 25Улучшенная Дубина из Зубов ОграРанг 2 · Физическое · Сила · Бл... [namelen=324 namehash=3bad6dc3]
 26Продвинутая Дубина из Зубов ОграРанг 3 · Физическое · Сила · Б... [namelen=325 namehash=ac832998]
@@ -89,7 +89,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 30Улучшенная Праща ФениксаРанг 2 · Физическое · Искусность · Дал... [namelen=254 namehash=ff115599]
 31Продвинутая Праща ФениксаРанг 3 · Физическое · Искусность · Да... [namelen=255 namehash=5db12543]
 32Легендарная Праща ФениксаРанг 4 · Физическое · Искусность · Да... [namelen=255 namehash=d7ad9f7f]
-33Латы ПринцаРанг 1 · Пороги 8/17 · Броня 2Крепость: Когда вы по... [namelen=330 namehash=06fc4e41]
+33Латы ПринцаРанг 1 · Пороги 8/17 · Броня 2Крепость: Когда вы по... [namelen=186 namehash=7d02121b]
 34Улучшенные Латы ПринцаРанг 2 · Пороги 13/28 · Броня 4Крепость:... [namelen=198 namehash=02612949]
 35Продвинутые Латы ПринцаРанг 3 · Пороги 15/35 · Броня 6Крепость... [namelen=199 namehash=2bcf1cdb]
 36Легендарные Латы ПринцаРанг 4 · Пороги 17/44 · Броня 8Крепость... [namelen=199 namehash=fa17e2cf]
@@ -118,7 +118,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 57Фляга ПутникаОсвежающее: Любая жидкость, налитая во Флягу Путн... [namelen=398 namehash=c1e01f86]
 58Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10+... [namelen=348 namehash=02c8306a]
 59Улучшенное Копьё-КамертонРанг 2 · Физическое · Искусность · Бл... [namelen=359 namehash=4251ccc2]
-5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=399 namehash=cf4d1d2a]
+5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=309 namehash=3a06bb17]
 60Продвинутое Копьё-КамертонРанг 3 · Физическое · Искусность · Б... [namelen=360 namehash=a91677dd]
 61Легендарное Копьё-КамертонРанг 4 · Физическое · Искусность · Б... [namelen=361 namehash=af57cdd8]
 62Алебарда УрзоРанг 1 · Физическое · Влияние · Близко · d12+1 фи... [namelen=207 namehash=0b657042]
@@ -129,18 +129,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 67Улучшенный Боевой Молот БазаРанг 2 · Физическое · Сила · Вплот... [namelen=258 namehash=f1a98c56]
 68Продвинутый Боевой Молот БазаРанг 3 · Физическое · Сила · Впло... [namelen=259 namehash=ff306325]
 69Легендарный Боевой Молот БазаРанг 4 · Физическое · Сила · Впло... [namelen=259 namehash=8cfbc0de]
-6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=410 namehash=227a07b7]
+6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=320 namehash=f321922c]
 70Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 7/15 · Броня 3Оберега... [namelen=230 namehash=c776eff2]
 71Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=7237bb07]
 72Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 12/29 · Б... [namelen=243 namehash=4a3709d5]
 73Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 14/38 · Б... [namelen=243 namehash=985138fe]
-74Кнут из Хвоста ВиверныРанг 1 · Физическое · Проворность · Близ... [namelen=510 namehash=ceb3f1fe]
-75Улучшенный Кнут из Хвоста ВиверныРанг 2 · Физическое · Проворн... [namelen=523 namehash=b0e3a845]
-76Продвинутый Кнут из Хвоста ВиверныРанг 3 · Физическое · Провор... [namelen=524 namehash=468a0542]
-77Легендарный Кнут из Хвоста ВиверныРанг 4 · Физическое · Провор... [namelen=524 namehash=3204dc61]
+74Кнут из Хвоста ВиверныРанг 1 · Физическое · Проворность · Близ... [namelen=331 namehash=7e181f01]
+75Улучшенный Кнут из Хвоста ВиверныРанг 2 · Физическое · Проворн... [namelen=344 namehash=ce144e48]
+76Продвинутый Кнут из Хвоста ВиверныРанг 3 · Физическое · Провор... [namelen=345 namehash=359fee34]
+77Легендарный Кнут из Хвоста ВиверныРанг 4 · Физическое · Провор... [namelen=345 namehash=987c903e]
 78Ларец ЗеранаЛичное: Предмет, помещённый в Ларец, может увидеть... [namelen=249 namehash=08de533e]
-7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=411 namehash=3a33c82a]
-8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=411 namehash=d61d5c2d]
+7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=321 namehash=9a94ce7a]
+8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=321 namehash=672e07b4]
 9Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=8ea4922a]
 Arazo's Artifacts
 Core
@@ -158,10 +158,10 @@ daggerheart.com
 Альт. таблицы
 Боевой Молот База
 Войти
+Волшебное Зеркало
 Драконий Лук
 Дубина из Зубов Огра
 Жезл Сопротивления
-Зерцало
 Змеиный Моток
 К содержимому
 Как это работает
@@ -304,7 +304,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
     ... checkbox x75 of 79 same-shape siblings elided
     ... button x75 of 79 same-shape siblings elided
     checkbox "Legendary Wyverntail Whip" [checked=false]
-    button "77 Legendary Wyverntail Whip Tier 4 · Physical · Agility · Very ..." [namelen=449 namehash=4ae408a3]
+    button "77 Legendary Wyverntail Whip Tier 4 · Physical · Agility · Very ..." [namelen=305 namehash=abd02141]
     checkbox "Zeran's Coffer" [checked=false]
     button "78 Zeran's Coffer Private: Once an object is placed in the Coffe..." [namelen=292 namehash=ed134a7f]
   contentinfo ""
@@ -316,10 +316,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
 
 ## en :: controls
 10Chalice of CommitmentOnce per long rest, you gain an additiona... [namelen=334 namehash=3ecabb12]
-11Dirk of the DeadTier 1 · Physical · Finesse · Melee · d6+2 phy... [namelen=536 namehash=5481810d]
-12Improved Dirk of the DeadTier 2 · Physical · Finesse · Melee ·... [namelen=545 namehash=e2b23b8a]
-13Advanced Dirk of the DeadTier 3 · Physical · Finesse · Melee ·... [namelen=546 namehash=2b6dda65]
-14Legendary Dirk of the DeadTier 4 · Physical · Finesse · Melee ... [namelen=547 namehash=48468014]
+11Dirk of the DeadTier 1 · Physical · Finesse · Melee · d6+2 phy... [namelen=325 namehash=89d20e93]
+12Improved Dirk of the DeadTier 2 · Physical · Finesse · Melee ·... [namelen=334 namehash=b3b9108d]
+13Advanced Dirk of the DeadTier 3 · Physical · Finesse · Melee ·... [namelen=335 namehash=8e2551f6]
+14Legendary Dirk of the DeadTier 4 · Physical · Finesse · Melee ... [namelen=336 namehash=387fcd55]
 15DrakebowTier 1 · Physical · Finesse · Very Far · d8 phy · One-... [namelen=310 namehash=01dbece3]
 16Improved DrakebowTier 2 · Physical · Finesse · Very Far · d8+2... [namelen=321 namehash=2e73f0cc]
 17Advanced DrakebowTier 3 · Physical · Finesse · Very Far · d8+4... [namelen=321 namehash=d6d7c8b4]
@@ -340,7 +340,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
 30Improved Phoenix SlingTier 2 · Physical · Finesse · Far · d10+... [namelen=243 namehash=c939c84a]
 31Advanced Phoenix SlingTier 3 · Physical · Finesse · Far · d10+... [namelen=243 namehash=74cf192b]
 32Legendary Phoenix SlingTier 4 · Physical · Finesse · Far · d10... [namelen=244 namehash=f643d0d6]
-33Plate of the PrinceTier 1 · Thresholds 8/17 · Armor 2Fortress:... [namelen=292 namehash=8c2a1628]
+33Plate of the PrinceTier 1 · Thresholds 8/17 · Armor 2Fortress:... [namelen=172 namehash=7505d3d1]
 34Improved Plate of the PrinceTier 2 · Thresholds 13/28 · Armor ... [namelen=182 namehash=625893a3]
 35Advanced Plate of the PrinceTier 3 · Thresholds 15/35 · Armor ... [namelen=182 namehash=2fc73505]
 36Legendary Plate of the PrinceTier 4 · Thresholds 17/44 · Armor... [namelen=183 namehash=3e76b4fb]
@@ -369,7 +369,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
 57Traveler's FlaskRefreshing: Any liquid placed in the Traveler'... [namelen=383 namehash=f3a33048]
 58Tuning SpearTier 1 · Physical · Finesse · Very Close · d10+2 p... [namelen=324 namehash=933dca95]
 59Improved Tuning SpearTier 2 · Physical · Finesse · Very Close ... [namelen=333 namehash=1db5e338]
-5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=360 namehash=f8c58b0b]
+5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=266 namehash=6419d1ef]
 60Advanced Tuning SpearTier 3 · Physical · Finesse · Very Close ... [namelen=333 namehash=99c30085]
 61Legendary Tuning SpearTier 4 · Physical · Finesse · Very Close... [namelen=334 namehash=4a272fef]
 62Urzo's HalberdTier 1 · Physical · Presence · Very Close · d12+... [namelen=210 namehash=2b1d2a5c]
@@ -380,18 +380,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/arazo]
 67Improved Warhammer of BazTier 2 · Physical · Strength · Melee ... [namelen=234 namehash=23d4012a]
 68Advanced Warhammer of BazTier 3 · Physical · Strength · Melee ... [namelen=234 namehash=249f8a9d]
 69Legendary Warhammer of BazTier 4 · Physical · Strength · Melee... [namelen=235 namehash=fe1bb96b]
-6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=369 namehash=2c1b24e6]
+6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=275 namehash=0580efd5]
 70Wyrmscale HauberkTier 1 · Thresholds 7/15 · Armor 3Guarding: W... [namelen=200 namehash=a8d81d4d]
 71Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=738a8860]
 72Advanced Wyrmscale HauberkTier 3 · Thresholds 12/29 · Armor 5G... [namelen=210 namehash=bb68cb2c]
 73Legendary Wyrmscale HauberkTier 4 · Thresholds 14/38 · Armor 6... [namelen=211 namehash=efd18413]
-74Wyverntail WhipTier 1 · Physical · Agility · Very Close · d10 ... [namelen=430 namehash=2985f637]
-75Improved Wyverntail WhipTier 2 · Physical · Agility · Very Clo... [namelen=441 namehash=bd757e3d]
-76Advanced Wyverntail WhipTier 3 · Physical · Agility · Very Clo... [namelen=441 namehash=cb1f2703]
-77Legendary Wyverntail WhipTier 4 · Physical · Agility · Very Cl... [namelen=442 namehash=19cedf44]
+74Wyverntail WhipTier 1 · Physical · Agility · Very Close · d10 ... [namelen=287 namehash=61e2ccc3]
+75Improved Wyverntail WhipTier 2 · Physical · Agility · Very Clo... [namelen=298 namehash=b90236f4]
+76Advanced Wyverntail WhipTier 3 · Physical · Agility · Very Clo... [namelen=298 namehash=5fc76cff]
+77Legendary Wyverntail WhipTier 4 · Physical · Agility · Very Cl... [namelen=299 namehash=e6b8bafa]
 78Zeran's CofferPrivate: Once an object is placed in the Coffer,... [namelen=287 namehash=fdd8f271]
-7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=369 namehash=55f98140]
-8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=370 namehash=3e8a5301]
+7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=275 namehash=0f3a6a16]
+8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=276 namehash=82237262]
 9Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=971f3d0e]
 Advanced Ageless Eye of the Beast
 Advanced Axe of the Dawn

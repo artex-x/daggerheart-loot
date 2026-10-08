@@ -269,21 +269,53 @@ describe('#/tables/homebrew', () => {
     );
   });
 
-  it('offers kind and the chosen source sections by name, and no source row', async () => {
-    const { container, router } = page('#/tables/homebrew');
+  it('draws no filter strip on a chip whose one item cannot be narrowed', async () => {
+    const { container } = page('#/tables/homebrew');
     await screen.findByText('Топор Тлеющих Углей');
-    await userEvent.click(screen.getByRole('button', { name: t.filters }));
-    expect(values(t.kindF).length).toBeGreaterThan(1);
-    expect(() => field(t.source)).toThrow();
-    expect(values(t.hbSection)).toEqual(['Холодное оружие']);
+    expect(chipOn()).toBe('Мастерская Ольхи');
+    expect(screen.queryByRole('button', { name: /^Фильтры/ })).toBeNull();
+    expect(document.querySelector('.fbar')).toBeNull();
     await expectNoA11yViolations(container);
-    await userEvent.click(
-      within(field(t.hbSection)).getByRole('button', { name: 'Холодное оружие' })
-    );
-    expect(router.hash()).toBe(
-      '#/tables/homebrew/f_src-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa'
-    );
+  });
+
+  it("offers the chosen chip's kinds only, and no source or section row", async () => {
+    const { container, router } = page('#/tables/homebrew/f_src-hb');
+    await waitFor(() => {
+      expect(rowIds()).toHaveLength(3);
+    });
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    expect(values(t.kindF)).toEqual([t.fItems, t.fCons]);
+    expect(() => field(t.source)).toThrow();
+    expect(() => field(t.hbSection)).toThrow();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(field(t.kindF)).getByRole('button', { name: t.fItems }));
+    expect(router.hash()).toBe('#/tables/homebrew/f_kind-item.src-hb');
+  });
+
+  it('draws the section pill and its row on the chip whose one section it is', async () => {
+    const { container } = page('#/tables/homebrew/f_sect-hb_sectbladesaaaaaa');
+    await screen.findByText('Топор Тлеющих Углей');
+    expect(pill()).toHaveTextContent('Холодное оружие');
+    expect(values(t.hbSection)).toEqual(['Холодное оружие']);
+    expect(() => field(t.kindF)).toThrow();
     expect(rowIds()).toEqual([AXE]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps a picked kind no item of the chip has as a pill, and empties the table as before', async () => {
+    const { container, router } = page('#/tables/homebrew/f_src-hb_alderworkshopaaa.kind-item');
+    await screen.findByText(t.nothing, { exact: false });
+    expect(chipOn()).toBe('Мастерская Ольхи');
+    expect(values(t.kindF)).toEqual([t.fItems, t.fEquip]);
+    expect(pill()).toHaveTextContent(t.fItems);
+    expect(document.querySelector('.fcount')).toHaveTextContent('0 из 1');
+    expect(rowIds()).toEqual([]);
+    expect(screen.getAllByRole('button', { name: t.resetAll }).length).toBeGreaterThan(0);
+    await expectNoA11yViolations(container);
+    await userEvent.click(pill());
+    expect(router.hash()).toBe('#/tables/homebrew/f_src-hb_alderworkshopaaa');
+    expect(rowIds()).toEqual([AXE]);
+    expect(document.querySelector('.fbar')).toBeNull();
   });
 
   it('keeps the chip of an anchor on a kind pick', async () => {
@@ -558,7 +590,8 @@ describe('own equipment in the equipment tables', () => {
     await userEvent.click(ownSwitch());
     expect(ownSwitch()).not.toBeChecked();
     expect(rowIds(document.getElementById('sec-t2') as HTMLElement)).toEqual(['w2']);
-    expect(values(t.source)).toEqual(['Core']);
+    /* Every weapon left is Core: the source row cannot narrow, so it leaves. */
+    expect(() => field(t.source)).toThrow();
     await expectNoA11yViolations(container);
 
     router.navigate('#/search');

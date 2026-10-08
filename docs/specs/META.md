@@ -129,11 +129,13 @@ anyone who holds its id, through two definer functions,
 `get_homebrew_items(uuid[])` (`authenticated`, at most 1000 ids); nobody
 can list items, and neither answer holds the owner. `get_homebrew_item`
 also answers `updated_at`, when the item, its source or a card it names
-was last changed, with two known limits: a rename of a source moves the
-time of every item in it, and an «Обновить» import that writes the same
+was last changed, with three known limits: a rename of a source moves the
+time of every item in it, an «Обновить» import that writes the same
 content moves it too (`docs/decisions/`,
 2026-10-07, "An item is read by its id by anyone; a list holds a live
-link").
+link"), and a change of a card's book items alone moves the time of every
+item that names the card (`docs/decisions/`, 2026-10-08, "An own set or rule
+card holds book items; only its account sees them").
 
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser

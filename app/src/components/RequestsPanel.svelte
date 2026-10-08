@@ -8,9 +8,9 @@
      only while there is one of either. A request shows its first lines and the first
      requests show, each rest behind one fold button, so the panel stays about one screen
      at three times the limits. Then the notices, newest first, three and a fold: an author
-     changed an item («Открыть» its page) or deleted it; each has «Скрыть», and «Скрыть
-     изменения» hides the notices drawn (docs/specs/FEATURES.md, "Account and browser
-     lists"). */
+     changed an item («Открыть» its page) or deleted it; each has «Скрыть», and from two
+     notices «Скрыть изменения» hides the notices drawn (docs/specs/FEATURES.md, "Account and
+     browser lists"). */
   import { onDestroy, tick } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
@@ -249,29 +249,31 @@
           </li>
         {/each}
       </ul>
-      <div class="more nfold">
-        {#if notices.length > NOTICES_SHOWN}
-          <Button
-            size="sm"
-            variant="bare"
-            caret
-            expanded={noticesOpen}
-            onclick={() => {
-              noticesOpen = !noticesOpen;
-            }}
-            >{noticesOpen
-              ? t.relLess
-              : plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}</Button
+      {#if notices.length > 1}
+        <div class="more nfold">
+          {#if notices.length > NOTICES_SHOWN}
+            <Button
+              size="sm"
+              variant="bare"
+              caret
+              expanded={noticesOpen}
+              onclick={() => {
+                noticesOpen = !noticesOpen;
+              }}
+              >{noticesOpen
+                ? t.relLess
+                : plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}</Button
+            >
+          {/if}
+          <span class="hide"
+            ><Button
+              size="sm"
+              variant="bare"
+              onclick={() => void hideNotices(notices.map((n) => n.id))}>{t.noticesHide}</Button
+            ></span
           >
-        {/if}
-        <span class="hide"
-          ><Button
-            size="sm"
-            variant="bare"
-            onclick={() => void hideNotices(notices.map((n) => n.id))}>{t.noticesHide}</Button
-          ></span
-        >
-      </div>
+        </div>
+      {/if}
     {/if}
     {#if decided.length}
       <div class="decided">

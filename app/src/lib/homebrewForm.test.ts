@@ -493,6 +493,10 @@ describe('the card form', () => {
       ru: 'Клеймо II',
       rud: 'Новый.'
     });
+    const items = ['q1', 'ci1'];
+    const kept = cardContentOf('set', d, 'ru', { ...base, items });
+    expect(kept.items).toEqual(items);
+    expect(kept.items).not.toBe(items);
   });
 
   it('refuses an empty name and text, a name another card holds and a link that is not https', () => {

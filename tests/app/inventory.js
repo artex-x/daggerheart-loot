@@ -1295,6 +1295,18 @@ const STATES = [
     }
   },
   {
+    id: '#/lists ~ import preview by keys as gm1',
+    route: '#/lists',
+    as: 'gm1',
+    why: 'keys-only-v2.json chosen: «Списков: 2, позиций: 3. Пропущено позиций: 4.», «Своих предметов, которых нет в аккаунте: 1 - ...», block 1 «2 позиции будут импортированы» with the lamp skipped as not held and the axe repeat, block 2 «1 позиция будет импортирована» with the lamp skipped as not held and its repeat, then «Импортировать (2)» and «Отмена»',
+    enter: async (d) => {
+      await importOpen(d);
+      await d.upload(IMPORT('keys-only-v2.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Пропущено позиций'); i++)
+        await d.settle();
+    }
+  },
+  {
     id: '#/lists ~ import refused as gm1',
     route: '#/lists',
     as: 'gm1',
@@ -1385,6 +1397,17 @@ const STATES = [
     route: GM2_LIST,
     as: 'gm2',
     why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
+  },
+  {
+    id: GM2_LIST + ' ~ one notice as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    why: "the first notice's «Скрыть» pressed: the panel «Новое в списке (1)» with the 120-code-point deleted name and its own «Скрыть» only, no «Скрыть изменения»",
+    enter: async (d) => {
+      await d.click('Скрыть изменение «Топор Тлеющих Углей»');
+      for (let i = 0; i < 40 && (await d.text()).includes('Скрыть изменения'); i++)
+        await d.settle();
+    }
   },
   {
     id: GM2_LIST + ' ~ axe opened as gm2',
@@ -2422,7 +2445,7 @@ const STATES = [
     id: '#/homebrew ~ import panel as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json, schema/homebrew-v2.json and llms.txt',
     enter: hbImportOpen
   },
   {
@@ -2548,13 +2571,62 @@ const STATES = [
     enter: async (d) => {
       for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
         await d.settle();
-      await d.type('Найти предмет', 'Топор');
+      /* The book's axes rank with the own one: the query names it. */
+      await d.type('Найти предмет', 'Топор Тлеющих');
       await d.click('Топор Тлеющих Углей');
       for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Топор'); i++)
         await d.settle();
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
+  },
+  {
+    id: '#/homebrew/sets/hb_aldersetaaaaaaaa ~ official picker open as gm1',
+    route: '#/homebrew/sets/hb_aldersetaaaaaaaa',
+    as: 'gm1',
+    why: 'the address opens «Комплект Ольхи»; «меч» typed in «Добавить предмет»: the field expanded and focused, the named list under it, and «Ещё N - уточните запрос» for the book and own matches past eight; the tree holds no option rows (homebrewPage.test.ts pins them)',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+      await d.type('Найти предмет', 'меч');
+    }
+  },
+  {
+    id: '#/homebrew/sets/hb_aldersetaaaaaaaa ~ official member as gm1',
+    route: '#/homebrew/sets/hb_aldersetaaaaaaaa',
+    as: 'gm1',
+    why: 'the book item «Палаш» picked in «Добавить предмет»: its member row, a link with «Core» and «Убрать», «1 предмет · Мастерская Ольхи» on the card, the toast «Сохранено: «Палаш»»',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+      await d.type('Найти предмет', 'Палаш');
+      await d.click('Палаш');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Палаш»'); i++)
+        await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/i/q1 ~ own set as gm1',
+    route: '#/homebrew/sets/hb_aldersetaaaaaaaa',
+    as: 'gm1',
+    why: '«Палаш» and «Топор Тлеющих Углей» joined «Комплект Ольхи», then #/i/q1: the set line «Палаш, Топор Тлеющих Углей (HB)» and the bonus named «Комплект Ольхи», a link to the Sets tab',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+      await d.type('Найти предмет', 'Палаш');
+      await d.click('Палаш');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Палаш»'); i++)
+        await d.settle();
+      await d.type('Найти предмет', 'Топор Тлеющих');
+      await d.click('Топор Тлеющих Углей');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Топор'); i++)
+        await d.settle();
+      await d.go('#/i/q1');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Комплект Ольхи'); i++)
+        await d.settle();
+    }
   },
   {
     id: '#/homebrew as gm2',
@@ -2764,7 +2836,7 @@ const STATES = [
     id: '#/tables/homebrew as gm1',
     route: '#/tables/homebrew',
     as: 'gm1',
-    why: 'the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, the heading «Холодное оружие» with the axe, the grid of the account view'
+    why: 'the own items as a table: the group chip «Хоумбрю» last and on, the source chips «Мастерская Ольхи» (on, the first) and «Хоумбрю» under it, no filter strip (one item cannot be narrowed), the heading «Холодное оружие» with the axe, the grid of the account view'
   },
   {
     id: '#/tables/homebrew/f_src-hb as gm1',
@@ -2773,10 +2845,25 @@ const STATES = [
     why: 'the source chip «Хоумбрю» by link: the chip on, the heading «Хоумбрю» with the three items, the filter button with the panel folded'
   },
   {
+    id: '#/tables/homebrew/f_src-hb ~ filters open as gm1',
+    route: '#/tables/homebrew/f_src-hb',
+    as: 'gm1',
+    why: "«Фильтры» pressed on the «Хоумбрю» chip: «Тип» with the chip's two kinds «Предметы» and «Расходники», no «Снаряжение», no «Раздел»",
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/tables/homebrew/f_src-hb_alderworkshopaaa.kind-item as gm1',
+    route: '#/tables/homebrew/f_src-hb_alderworkshopaaa.kind-item',
+    as: 'gm1',
+    why: 'a kind the chip holds no item of, by link: the chip «Мастерская Ольхи» on, the panel open with «Тип» holding «Предметы» (kept by the pick) and «Снаряжение», the pill «Предметы», «0 из 1», «Ничего не найдено» with «Сбросить всё»'
+  },
+  {
     id: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa as gm1',
     route: '#/tables/homebrew/f_sect-hb_sectbladesaaaaaa',
     as: 'gm1',
-    why: 'a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Тип» and «Раздел», the pill «Холодное оружие», one row'
+    why: 'a section filter by link: the chip «Мастерская Ольхи» of the section on, the panel open with «Раздел» only (the chip holds one kind), the pill «Холодное оружие», one row'
   },
   {
     id: '#/tables/homebrew as gm2',
@@ -2928,4 +3015,13 @@ const STATES = [
   }
 ];
 
-module.exports = { STATES, LANGS, HB_FILE, hbImportOpen, heldNamesFile, longNamesFile };
+module.exports = {
+  STATES,
+  LANGS,
+  HB_FILE,
+  IMPORT,
+  hbImportOpen,
+  importOpen,
+  heldNamesFile,
+  longNamesFile
+};

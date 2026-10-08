@@ -190,24 +190,28 @@ All of them except the four `schema/` files are generated from `data.js` by
   homebrew entry's `snapshot` (the item as a catalog record, at most 131072
   bytes, what `homebrew_snapshot_of` writes); `$id`
   `https://artex-x.github.io/daggerheart-loot/schema/import-v2.json`. A
-  homebrew entry requires `snapshot` and a key as its `id`; an official entry
-  never holds one. The export writes version 2 only for a file that holds a
+  homebrew entry has a key as its `id` and may carry `snapshot`; the export
+  writes one on every homebrew entry; an official entry never holds one.
+  The export writes version 2 only for a file that holds a
   homebrew entry, so an official-only export stays an `import-v1` file byte
   for byte; the import reads versions 1 and 2 (and 3, see `import-v3`), and
   a v1 reader refuses version 2.
   On import a held key becomes a link to the own item. Each homebrew entry
-  the account does not hold becomes an own item, so the import counts
+  with a snapshot whose key the account does not hold becomes an own item; one
+  without a snapshot is skipped, as an unknown catalog id is. The import counts
   against the item and card limits and `import_homebrew`'s 1000 rows; past
   either it is refused whole, and nothing is written. One copy is made per
   distinct key and snapshot; a later differing snapshot of a key gets a new
   key. The database stores a link (`list_entries.hb_item`), never a
-  snapshot. Frozen as `import-v1`: v1's bounds (1000 lists, 5000
-  entries per list) hold, a bound widens in place and never narrows, any
-  other change is `import-v3.json`. Its `eq` and `key` definitions are copies
-  of `homebrew-v1.json`'s, held deep-equal by `lib/homebrewFile.test.ts`.
+  snapshot. Frozen: v1's bounds (1000 lists, 5000 entries per list) hold, a
+  bound widens, or a required key becomes optional, in place, and nothing
+  narrows; any other change is `import-v3.json`. Its `eq` and `key`
+  definitions are copies of `homebrew-v1.json`'s, held deep-equal by
+  `lib/homebrewFile.test.ts`.
   `llms.txt`, "Version 2: homebrew entries (import-v2)", describes it.
   Fixtures: `docs/fixtures/import/example-v2.json`, `errors-v2.json`,
-  `from-llms-v2.json` (the blind round).
+  `from-llms-v2.json` (the blind round), `keys-only-v2.json` (entries without
+  a snapshot).
 - `schema/import-v3.json` - the lists file `import-v3`: `import-v2` with
   `version` 3 and an optional entry `gm_only` (boolean), true for an entry
   marked «Только для мастера» ("GM only"), which a players' link leaves out;
@@ -243,12 +247,22 @@ All of them except the four `schema/` files are generated from `data.js` by
   `lib/homebrewFile.test.ts` and `lib/bundle.test.ts` keep the validators
   equal to them. A homebrew record never reaches `data.json`, `catalog.csv`,
   `i/` or `og/`.
+- `schema/homebrew-v2.json` - the homebrew file `homebrew-v2`, `$id`
+  `https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json`:
+  `homebrew-v1` with `version` 2 and a card's `items`, 1 to 100 unique catalog
+  ids, never an `hb_` key. The export writes it only when a card holds
+  `items`, else `homebrew-v1` byte for byte; the import reads both. Frozen as
+  `homebrew-v1` is: any other change is `homebrew-v3.json`. Its other
+  definitions equal `homebrew-v1.json`'s (`lib/homebrewFile.test.ts`);
+  fixtures `example-v2.json` and `errors-v2.json`; `llms.txt`, "Version 2:
+  book items in a card (homebrew-v2)", describes it.
 - The account's data zip (`daggerheart-loot-data-<YYYY-MM-DD>.zip`, from
   «Скачать мои данные» on `#/account`): one JSON file per kind at the root,
   each with its own `format` and `version`: `lists.json`, exactly the lists
   file of every account list (`import-v1`, `import-v2` when it holds a
   homebrew entry, or `import-v3` when it holds a GM-only entry), then
-  `homebrew.json`, exactly the account's whole `homebrew-v1` file, when the
+  `homebrew.json`, exactly the account's whole `homebrew-v1` file, or
+  `homebrew-v2` when a card holds book items, when the
   account holds a source, a card or an item. Frozen: a data zip written today imports for good, and a new kind is
   a new root file. A data zip holds its files at its root and no folders;
   every entry is stored (method 0) with a UTF-8 name (flag bit 11), no
@@ -282,8 +296,8 @@ grows past a few MB (433 KB measured).
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
 `en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg`,
-`schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json` and
-`schema/homebrew-v1.json`.
+`schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json`,
+`schema/homebrew-v1.json` and `schema/homebrew-v2.json`.
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `i/en/<id>.html` and `en/` are their English counterparts (issue 64,

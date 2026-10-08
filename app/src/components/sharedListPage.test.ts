@@ -1697,4 +1697,30 @@ describe('the filter', () => {
       await expectNoA11yViolations(container);
     });
   });
+
+  it("draws the owner's own set on a book item of its own link, and none signed out", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const set = held.ok ? held.cards.find((c) => c.kind === 'set') : undefined;
+    if (!set) throw new Error('The seed has no set card. Restore it in fake-cloud-seed.ts.');
+    await cloud.homebrew.updateCard(
+      set.id,
+      { content: { ...set.content, items: ['q1', 'q23'] }, book_id: set.book_id },
+      null
+    );
+    const { container } = open('#/s/player-token-1', cloud);
+    await screen.findByRole('link', { name: ru.ownListEdit });
+    await userEvent.click(await screen.findByRole('button', { name: /^Палаш/ }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
+      'href',
+      '#/homebrew/sets/hb_aldersetaaaaaaaa'
+    );
+    await expectNoA11yViolations(container);
+    cleanup();
+    open('#/s/player-token-1');
+    await shopReady();
+    await userEvent.click(await screen.findByRole('button', { name: /^Палаш/ }));
+    expect(within(screen.getByRole('dialog')).queryByText(/Комплект Ольхи/)).toBeNull();
+  });
 });

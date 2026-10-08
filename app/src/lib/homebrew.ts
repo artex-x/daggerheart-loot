@@ -125,7 +125,7 @@ export interface HomebrewContent {
 export type CardKind = 'set' | 'ref';
 
 /** A card's stored part. A set card holds only the names and `ende`/`rud`, its bonus; a
- *  rule card adds the subtitles and the link. */
+ *  rule card adds the subtitles and the link. Either may hold `items`. */
 export interface CardContent {
   en?: string;
   ru?: string;
@@ -134,6 +134,9 @@ export interface CardContent {
   ende?: string;
   rud?: string;
   url?: string;
+  /** Catalog record ids the card also holds, 1-100, never an `hb_` key: a set card's
+   *  members, or the records a rule card applies to, for the owning account only. */
+  items?: string[];
 }
 
 export type CardRef = CardContent & { key: string; kind: CardKind };
@@ -269,8 +272,10 @@ export const CARD_TEXT_MAX = 1500;
 /** The most characters of a rule card's link. */
 export const CARD_URL_MAX = 300;
 const CARD_URL = /^(https:\/\/[\x21-\x7e]+)?$/;
-const SET_KEYS = ['en', 'ru', 'ende', 'rud'];
-const REF_KEYS = ['en', 'ru', 'ensub', 'rusub', 'ende', 'rud', 'url'];
+/** The most catalog ids a card holds in `items`. */
+export const CARD_ITEMS_MAX = 100;
+const SET_KEYS = ['en', 'ru', 'ende', 'rud', 'items'];
+const REF_KEYS = ['en', 'ru', 'ensub', 'rusub', 'ende', 'rud', 'url', 'items'];
 
 const CONTENT_KEYS = [
   'kind',
@@ -506,7 +511,8 @@ export function bookProblems(v: unknown): Problem[] {
 }
 
 /** Returns every problem of a card's stored part for its kind, in the order kind, name, en,
- *  ru, ensub, rusub, ende, rud, url, then the unknown keys; none for a valid one. */
+ *  ru, ensub, rusub, ende, rud, url, items, then the unknown keys; none for a valid one. An
+ *  `hb_` key in `items` is the rule `pattern`: an own item names the card itself. */
 export function cardProblems(kind: unknown, v: unknown): Problem[] {
   const out: Problem[] = [];
   if (kind !== 'set' && kind !== 'ref') out.push({ path: 'kind', rule: 'enum' });
@@ -526,13 +532,23 @@ export function cardProblems(kind: unknown, v: unknown): Problem[] {
     if (out.length === before && typeof url === 'string' && !CARD_URL.test(url))
       out.push({ path: 'url', rule: 'pattern' });
   }
+  const before = out.length;
+  idsProblems(v, 'items', CARD_ITEMS_MAX, undefined, out);
+  const items = v['items'];
+  if (out.length === before && Array.isArray(items)) {
+    items.forEach((id: unknown, i) => {
+      if (typeof id === 'string' && HOMEBREW_KEY.test(id))
+        out.push({ path: 'items.' + String(i), rule: 'pattern' });
+    });
+  }
   extraProblems(v, set ? SET_KEYS : REF_KEYS, '', out);
   return out;
 }
 
 /* A snapshot's `cards`: only `sets` and `refs`, each an object; a set card under the
    record's `set`, a rule card under a key of its `refs`; every key an `hb_` key and every
-   card valid for its group's kind (homebrew_snapshot_valid). */
+   card valid for its group's kind (homebrew_snapshot_valid) and without `items`, which
+   the snapshot's card shape never holds (`schema/import-v2.json`). */
 function cardsValid(v: unknown, set: unknown, refs: unknown): boolean {
   if (!isObj(v) || Object.keys(v).some((k) => k !== 'sets' && k !== 'refs')) return false;
   const named = (key: string, kind: CardKind): boolean =>
@@ -546,7 +562,7 @@ function cardsValid(v: unknown, set: unknown, refs: unknown): boolean {
     if (!isObj(cards)) return false;
     for (const [key, card] of Object.entries(cards)) {
       if (!named(key, kind) || !HOMEBREW_KEY.test(key)) return false;
-      if (cardProblems(kind, card).length) return false;
+      if (!isObj(card) || 'items' in card || cardProblems(kind, card).length) return false;
     }
   }
   return true;
@@ -611,6 +627,31 @@ export function canonJson(v: unknown): string {
 const filled = (own: string | undefined, other: string | undefined): string =>
   own || other || '';
 
+/** Returns a set card in the catalog's card shape, each empty language filled from the
+ *  other. */
+export function setCardOf(card: CardContent): SetCard {
+  return {
+    en: filled(card.en, card.ru),
+    ru: filled(card.ru, card.en),
+    ende: filled(card.ende, card.rud),
+    rud: filled(card.rud, card.ende)
+  };
+}
+
+/** Returns a rule card in the catalog's card shape, each empty language filled from the
+ *  other. */
+export function refCardOf(card: CardContent): RefCard {
+  return {
+    en: filled(card.en, card.ru),
+    ru: filled(card.ru, card.en),
+    ensub: filled(card.ensub, card.rusub),
+    rusub: filled(card.rusub, card.ensub),
+    ende: filled(card.ende, card.rud),
+    rud: filled(card.rud, card.ende),
+    url: card.url ?? ''
+  };
+}
+
 function namedOf(key: string, v: { en?: string; ru?: string }): NamedKey {
   return { key, en: filled(v.en, v.ru), ru: filled(v.ru, v.en) };
 }
@@ -644,22 +685,9 @@ export function recordOf(
   const refs: Record<string, RefCard> = {};
   for (const card of cards) {
     if (card.kind === 'set' && card.key === c.set) {
-      sets[card.key] = {
-        en: filled(card.en, card.ru),
-        ru: filled(card.ru, card.en),
-        ende: filled(card.ende, card.rud),
-        rud: filled(card.rud, card.ende)
-      };
+      sets[card.key] = setCardOf(card);
     } else if (card.kind === 'ref' && c.refs?.includes(card.key)) {
-      refs[card.key] = {
-        en: filled(card.en, card.ru),
-        ru: filled(card.ru, card.en),
-        ensub: filled(card.ensub, card.rusub),
-        rusub: filled(card.rusub, card.ensub),
-        ende: filled(card.ende, card.rud),
-        rud: filled(card.rud, card.ende),
-        url: card.url ?? ''
-      };
+      refs[card.key] = refCardOf(card);
     }
   }
   const embedded: RecordCards = {};
@@ -752,14 +780,18 @@ export function isHomebrewRecord(it: Record_): it is HomebrewRecord {
  *  `searchable` and, with a stat block, in `allEquip`, make the `homebrew` rows and join the
  *  relation maps (`relate`) over the catalog and the own records. `refs` and `sets` add the
  *  cards the own records embed, then those of the linked records that joined, a key kept by
- *  its first holder and the catalog's first of all. A linked record joins no relation.
- *  `base` itself when both are empty. */
+ *  its first holder and the catalog's first of all, then the account's own `cards`.
+ *  With `cards`, the catalog records a card's `items` names take the account's own set
+ *  (`ownSetOf`, the lowest key, never over a book set; the record joins that key's
+ *  `setMembers` after the own ones, in catalog order) and rule cards (`ownRefsOf`, in key
+ *  order). A linked record joins no relation. `base` itself when all three are empty. */
 export function withRecords(
   base: Index,
   own: readonly HomebrewRecord[],
-  linked: readonly HomebrewRecord[]
+  linked: readonly HomebrewRecord[],
+  cards: readonly CardRef[] = []
 ): Index {
-  if (!own.length && !linked.length) return base;
+  if (!own.length && !linked.length && !cards.length) return base;
   const byId = new Map<string, Record_>(base.byId);
   for (const it of own) byId.set(it.id, it);
   const relations = own.length ? relate(base, own, byId) : null;
@@ -775,19 +807,62 @@ export function withRecords(
     for (const [k, card] of Object.entries(it.cards?.refs ?? {})) refs[k] ??= card;
     for (const [k, card] of Object.entries(it.cards?.sets ?? {})) sets[k] ??= card;
   }
-  if (!relations) return { ...base, byId, refs, sets };
-  const rows = new Map(base.rows);
-  rows.set('homebrew', own);
-  return {
-    ...base,
-    ...relations,
-    byId,
-    rows,
-    searchable: [...base.searchable, ...own],
-    allEquip: [...base.allEquip, ...own.filter((it) => it.eq)],
-    refs,
-    sets
-  };
+  const out: Index = relations
+    ? {
+        ...base,
+        ...relations,
+        byId,
+        rows: new Map(base.rows).set('homebrew', own),
+        searchable: [...base.searchable, ...own],
+        allEquip: [...base.allEquip, ...own.filter((it) => it.eq)],
+        refs,
+        sets
+      }
+    : { ...base, byId, refs, sets };
+  return cards.length ? withCards(out, base, cards) : out;
+}
+
+/* `index` with the account's own cards: each card in `refs` or `sets` under its key unless
+   a record already put one there, and the catalog records their `items` name in `ownSetOf`,
+   `ownRefsOf` and `setMembers`. `base` gives the catalog order. */
+function withCards(index: Index, base: Index, cards: readonly CardRef[]): Index {
+  const refs = index.refs;
+  const sets = index.sets;
+  const ownSetOf = new Map<string, string>();
+  const ownRefsOf = new Map<string, string[]>();
+  const sorted = [...cards].sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+  for (const c of sorted) {
+    if (c.kind === 'set') sets[c.key] ??= setCardOf(c);
+    else refs[c.key] ??= refCardOf(c);
+    for (const id of c.items ?? []) {
+      const r = index.byId.get(id);
+      if (!r || isHomebrewRecord(r)) continue;
+      if (c.kind === 'set') {
+        if (!r.set && !ownSetOf.has(id)) ownSetOf.set(id, c.key);
+      } else {
+        const keys = ownRefsOf.get(id) ?? [];
+        if (!keys.includes(c.key)) ownRefsOf.set(id, [...keys, c.key]);
+      }
+    }
+  }
+  if (!ownSetOf.size) return { ...index, ownSetOf, ownRefsOf };
+  /* The catalog's own order, `[...eq, ...all]`, as `buildIndex` groups a book set. */
+  const inAll = new Set(base.all);
+  const order = new Map<string, number>();
+  for (const r of [...base.allEquip.filter((x) => !inAll.has(x)), ...base.all])
+    if (!order.has(r.id)) order.set(r.id, order.size);
+  const at = (id: string): number => order.get(id) ?? Number.MAX_SAFE_INTEGER;
+  const setMembers = new Map<string, Record_[]>(
+    [...index.setMembers].map(([k, v]) => [k, [...v]])
+  );
+  for (const [id, key] of [...ownSetOf].sort((a, b) => at(a[0]) - at(b[0]))) {
+    const r = index.byId.get(id);
+    if (!r) continue;
+    const list = setMembers.get(key) ?? [];
+    list.push(r);
+    setMembers.set(key, list);
+  }
+  return { ...index, setMembers, ownSetOf, ownRefsOf };
 }
 
 /** Returns the index search and the equipment tables read: `index` itself while the
@@ -834,6 +909,11 @@ export function cardMembers(items: readonly ItemRow[], kind: CardKind, key: stri
 /** Returns how many of `items` name the card (`cardMembers`). */
 export function cardUses(items: readonly ItemRow[], kind: CardKind, key: string): number {
   return cardMembers(items, kind, key).length;
+}
+
+/** Returns the catalog record ids the card holds in `items`. */
+export function cardItemIds(c: CardRow): string[] {
+  return c.content.items ?? [];
 }
 
 const folded = (s: string): string => s.trim().toLocaleLowerCase();

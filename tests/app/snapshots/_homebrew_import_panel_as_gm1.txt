@@ -1,6 +1,6 @@
 # #/homebrew ~ import panel as gm1
 # route: #/homebrew
-# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json and llms.txt
+# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json, schema/homebrew-v2.json and llms.txt
 # as: gm1
 
 ## ru :: tree
@@ -31,8 +31,9 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm1#/homebrew]
@@ -72,6 +73,7 @@ Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 Wondrous
 daggerheart.com
+homebrew-v2
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
@@ -129,8 +131,9 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm1#/homebrew]
@@ -193,6 +196,7 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 homebrew-v1 schema
+homebrew-v2
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
 ЛутDaggerheart

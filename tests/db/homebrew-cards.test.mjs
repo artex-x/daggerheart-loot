@@ -449,3 +449,111 @@ describe('the card messages', () => {
     }
   });
 });
+
+/* A card's book items (content.items): only the owning account applies them, so a change of
+   them alone changes no linked item's record.
+   docs/decisions/2026-10-08-an-own-card-holds-book-items-the-owner-sees-them.md. */
+describe('the book items of a card', () => {
+  const REVERSAL = readFileSync(
+    path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      'supabase',
+      'reversals',
+      '20261008120000_homebrew_card_items.sql'
+    ),
+    'utf8'
+  );
+  /* The lists' revisions and the unread notices after each step, every notice read before. */
+  const step = async (tx, write) => {
+    await unbound(tx, (u) => u`update public.list_notices set read_at = now()`);
+    await write();
+    return unbound(tx, async (u) => ({
+      revs: await revisions(u),
+      unread: (await u`select item_key from public.list_notices where read_at is null`).map(
+        (r) => r.item_key
+      )
+    }));
+  };
+  const setCard = (tx, content) =>
+    tx`update public.homebrew_cards set content = ${tx.json(content)} where id = ${CS}`;
+
+  it('bumps no list and writes no notice for a change of the book items alone, and does for any other change', async () => {
+    const out = await asA(world, async (tx) => {
+      const was = await unbound(tx, revisions);
+      const added = await step(tx, () => setCard(tx, { ...SET_CARD, items: ['q1', 'ci1'] }));
+      const removed = await step(tx, () => setCard(tx, { ...SET_CARD, items: ['q1'] }));
+      const same = await step(tx, () => setCard(tx, { ...SET_CARD, items: ['q1'] }));
+      const text = await step(tx, () =>
+        setCard(tx, { ...SET_CARD, rud: 'Три предмета.', items: ['q1'] })
+      );
+      const both = await step(tx, () => setCard(tx, { ...SET_CARD, items: ['ci1'] }));
+      const book = await step(
+        tx,
+        () => tx`update public.homebrew_cards set book_id = null where id = ${CS}`
+      );
+      const [{ items }] =
+        await tx`select content -> 'items' as items from public.homebrew_cards where id = ${CS}`;
+      return { was, added, removed, same, text, both, book, items };
+    });
+    for (const quiet of [out.added, out.removed, out.same]) {
+      assert.deepEqual(quiet.revs, out.was);
+      assert.deepEqual(quiet.unread, []);
+    }
+    let before = out.was;
+    for (const loud of [out.text, out.both, out.book]) {
+      assert.equal(loud.revs[LA], before[LA] + 1);
+      assert.equal(loud.revs[LB], before[LB] + 1);
+      assert.deepEqual(loud.unread, [BUCKLE]);
+      before = loud.revs;
+    }
+    assert.deepEqual(out.items, ['ci1']);
+  });
+
+  it('writes and replaces a card with book items through import_homebrew', async () => {
+    const importAs = async (tx, cards, update) => {
+      const [{ v }] =
+        await tx`select public.import_homebrew('[]'::jsonb, ${tx.json(cards)}::jsonb,
+        '[]'::jsonb, ${update}::boolean) as v`;
+      return v;
+    };
+    const row = (content) => ({ id: id(9070), key: LATER, kind: 'ref', book: null, content });
+    const out = await asA(users, async (tx) => {
+      const made = await importAs(tx, [row({ en: 'Later', items: ['q1', 'ci1'] })], false);
+      const read = async () =>
+        (await tx`select content from public.homebrew_cards where key = ${LATER}`)[0].content;
+      const first = await read();
+      await importAs(tx, [row({ en: 'Later', items: ['q2'] })], true);
+      const replaced = await read();
+      await importAs(tx, [row({ en: 'Later' })], true);
+      const dropped = await read();
+      const own = await refused(tx, (sp) =>
+        importAs(sp, [row({ en: 'Later', items: [BUCKLE] })], true)
+      );
+      return { made, first, replaced, dropped, own };
+    });
+    assert.equal(out.made.cards_created, 1);
+    assert.deepEqual(out.first, { en: 'Later', items: ['q1', 'ci1'] });
+    assert.deepEqual(out.replaced, { en: 'Later', items: ['q2'] });
+    assert.deepEqual(out.dropped, { en: 'Later' });
+    byCode('23514', /homebrew_cards_content_check/)(out.own);
+  });
+
+  it('strips the book items with its reversal, and the previous validator refuses them', async () => {
+    const out = await asA(world, async (tx) => {
+      await setCard(tx, { ...SET_CARD, items: ['q1'] });
+      return unbound(tx, async (u) => {
+        await u.unsafe(REVERSAL);
+        const [{ content }] =
+          await u`select content from public.homebrew_cards where id = ${CS}`;
+        const [{ ok }] = await u.unsafe(
+          `select public.homebrew_card_valid('set', '{"en": "x", "items": ["q1"]}'::jsonb) as ok`
+        );
+        return { content, ok };
+      });
+    });
+    assert.deepEqual(out.content, SET_CARD);
+    assert.equal(out.ok, false);
+  });
+});

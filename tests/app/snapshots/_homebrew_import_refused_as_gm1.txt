@@ -31,7 +31,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x5 of 9 same-shape siblings elided
     alert ""
       StaticText "В файле ошибки - ничего не импортировано. Исправьте их и выберит..." [namelen=77 namehash=19ee0ad5]
       StaticText "Предмет 3"
@@ -40,6 +40,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       StaticText "items[11].refs"
     button "Отмена"
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm1#/homebrew]
@@ -78,6 +79,7 @@ Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 Wondrous
 daggerheart.com
+homebrew-v2
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
@@ -136,7 +138,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x4 of 8 same-shape siblings elided
+    ... StaticText x5 of 9 same-shape siblings elided
     alert ""
       StaticText "The file has errors - nothing was imported. Fix them and choose ..." [namelen=79 namehash=2aab81ca]
       StaticText "Item 3"
@@ -145,6 +147,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       StaticText "items[11].refs"
     button "Cancel"
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm1#/homebrew]
@@ -207,6 +210,7 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 homebrew-v1 schema
+homebrew-v2
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
 ЛутDaggerheart

@@ -14,9 +14,13 @@ deleted.
 
 ## Index
 
+- 2026-10-08 - [A filter row offers only values the drawn rows answer, on every page](decisions/2026-10-08-a-filter-row-offers-only-values-the-drawn-rows-answer.md)
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
+- 2026-10-08 - [A lists file's homebrew entry may leave out its snapshot](decisions/2026-10-08-a-lists-files-homebrew-entry-may-leave-out-its-snapshot.md)
 - 2026-10-08 - [A source chip on `#/tables/homebrew` is the `src` filter with one value](decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md)
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
+- 2026-10-08 - [An own set or rule card holds book items; only its account sees them](decisions/2026-10-08-an-own-card-holds-book-items-the-owner-sees-them.md)
+- 2026-10-08 - [Arazo's Artifacts drop the book's GM notes; aa23 is «Волшебное Зеркало»](decisions/2026-10-08-arazos-artifacts-drop-the-gm-notes-aa23-is-volshebnoe-zerkalo.md)
 - 2026-10-08 - [Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78](decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md)
 - 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)
 - 2026-10-08 - [The own-items filter is a labelled switch, «Свои предметы»](decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md)
@@ -61,7 +65,7 @@ deleted.
 - 2026-09-30 - [(HB) marks homebrew, and a homebrew relation shows only to its author](decisions/2026-09-30-hb-marks-homebrew-a-relation-shows-only-to-its-author.md)
 - 2026-09-30 - [Homebrew is first-class in the catalog pages; the roll pages are excluded](decisions/2026-09-30-homebrew-is-first-class-in-the-catalog-pages.md) - superseded in part
 - 2026-09-30 - [Homebrew ships in four releases: items, catalog pages, relations, files](decisions/2026-09-30-homebrew-ships-in-four-releases.md)
-- 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md)
+- 2026-09-30 - [Homebrew travels as its own file; a lists file v2 carries frozen entries](decisions/2026-09-30-homebrew-travels-as-its-own-file.md) - superseded in part
 - 2026-09-30 - [`import-v1` bounds are the import call's ceilings, not the default limits](decisions/2026-09-30-import-v1-bounds-are-the-import-calls-ceilings.md)
 - 2026-09-30 - [The account reads its own effective limit through `my_limit()`](decisions/2026-09-30-the-account-reads-its-own-effective-limit.md)
 - 2026-09-30 - [The bundle budget steps up per batch to 250 kB configured and 190 unconfigured](decisions/2026-09-30-the-bundle-budget-steps-up-per-batch-to.md)

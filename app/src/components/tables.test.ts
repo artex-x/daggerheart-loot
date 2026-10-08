@@ -633,7 +633,7 @@ describe('the filter', () => {
     };
     const { container } = render(FilterBar, props);
     expect(container.querySelector('.fpill')).toHaveTextContent(t.fItems);
-    expect(screen.getByRole('button', { name: t.resetAll })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: t.filterLink })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
     cleanup();
@@ -894,26 +894,60 @@ describe('the equipment tables', () => {
     expect(container.querySelector('.fcount')).toHaveTextContent('5');
   });
 
-  it('draws seven panel fields on weapons, six on secondary (no burden), three on armour', async () => {
+  it('draws only the fields the rows can narrow: six on weapons, two on armour, none on one secondary', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(document.querySelectorAll('.field')).toHaveLength(7);
-
-    cleanup();
-    render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(document.querySelectorAll('.field')).toHaveLength(6);
+    /* Every weapon here is unique, so «Линейка» cannot narrow. */
+    const labels = (): (string | undefined)[] =>
+      [...document.querySelectorAll('.field .lbl')].map((el) =>
+        el.firstChild?.textContent?.trim()
+      );
+    expect(labels()).toEqual([
+      'Ранг',
+      'Источник',
+      'Класс',
+      'Характеристика',
+      'Дистанция',
+      'Хват'
+    ]);
 
     cleanup();
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
-    expect(document.querySelectorAll('.field')).toHaveLength(3);
+    expect(labels()).toEqual(['Ранг', 'Источник']);
+
+    cleanup();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
+    });
+    expect(screen.queryByRole('button', { name: /^Фильтры/ })).toBeNull();
+  });
+
+  /* A second secondary weapon of the other class, so the class row can narrow. */
+  const twoSecondaries: Loot = {
+    ...LOOT,
+    eq: [
+      ...(LOOT.eq ?? []),
+      row({ id: 'q7', ru: 'Щит Стража', eq: { t: 'secondary', tier: 1, cls: 'phy' } })
+    ]
+  };
+
+  it('reads a tier no secondary weapon has as before: no pill, no row, «Сбросить всё»', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_secondary/f_tier-A'),
+        data: fakeData(twoSecondaries)
+      })
+    });
+    expect(container.querySelector('.fpill')).toBeNull();
+    expect(container.querySelector('[data-row]')).toBeNull();
+    expect(screen.getByText('Ничего не найдено', { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Сбросить всё' })).toBeInTheDocument();
+    await expectNoA11yViolations(container);
   });
 
   it('labels the class row Класс on every weapon kind', async () => {
@@ -925,7 +959,10 @@ describe('the equipment tables', () => {
 
     cleanup();
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/eq_secondary'), data: fakeData(LOOT) })
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_secondary'),
+        data: fakeData(twoSecondaries)
+      })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(screen.getByText('Класс')).toBeInTheDocument();

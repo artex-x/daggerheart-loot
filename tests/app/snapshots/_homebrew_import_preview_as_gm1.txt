@@ -31,7 +31,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x22 of 26 same-shape siblings elided
+    ... StaticText x23 of 27 same-shape siblings elided
     combobox "Мастерская Ольхи, второе издание 4 предмета" [value=В «Мастерская Ольхи» description=Ключ источника совпал с вашим: предметы попадут в него. expanded=false haspopup=menu]
       option "В «Хоумбрю»" [selected=false]
       option "В «Мастерская Ольхи»" [selected=true]
@@ -46,6 +46,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импортировать (7)"
     ... button x3 of 7 same-shape siblings elided
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm1#/homebrew]
@@ -83,6 +84,7 @@ Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 Wondrous
 daggerheart.com
+homebrew-v2
 Аккаунт: gm1@example.test
 Альт. таблицы
 В «Хоумбрю»В «Мастерская Ольхи»+ Новый источник...
@@ -146,7 +148,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x22 of 26 same-shape siblings elided
+    ... StaticText x23 of 27 same-shape siblings elided
     combobox "Alder Workshop, Second Edition 4 items" [value=Into "Alder Workshop" description=The source key matches yours: the items go into it. expanded=false haspopup=menu]
       option "Into "Homebrew"" [selected=false]
       option "Into "Alder Workshop"" [selected=true]
@@ -161,6 +163,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import (7)"
     ... button x3 of 7 same-shape siblings elided
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm1#/homebrew]
@@ -227,6 +230,7 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 homebrew-v1 schema
+homebrew-v2
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
 ЛутDaggerheart

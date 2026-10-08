@@ -21,7 +21,7 @@
 import { dict } from './dict.js';
 import { frameName } from './frames.js';
 import type { FrameId } from './frames.js';
-import { isHomebrewRecord } from './homebrew.js';
+import { isHomebrewKey, isHomebrewRecord } from './homebrew.js';
 import { EQ_TYPE, eqWord, nameOf } from './i18n.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
@@ -251,31 +251,40 @@ export function relOrder(list: readonly Record_[], lang: Lang): Record_[] {
   ];
 }
 
-/** Returns what a folded relation draws: every catalog record, the record `self` and the
- *  first `keep` other homebrew records, in `list`'s order; `more` counts the rest. */
+/** Returns what a folded relation draws: every record `folds` passes over, the record
+ *  `self` and the first `keep` other records, in `list`'s order; `more` counts the rest.
+ *  By default only homebrew records fold; an own set folds every member. */
 export function foldOwn(
   list: readonly Record_[],
   keep: number,
-  self?: string
+  self?: string,
+  folds: (r: Record_) => boolean = isHomebrewRecord
 ): { shown: Record_[]; more: number } {
   let own = 0;
   const shown = list.filter((r) => {
-    if (!isHomebrewRecord(r) || r.id === self) return true;
+    if (!folds(r) || r.id === self) return true;
     own += 1;
     return own <= keep;
   });
   return { shown, more: list.length - shown.length };
 }
 
-/** Returns a relation as text: `relOrder`, `foldOwn` (which keeps `self`), the `relName`s
- *  comma-joined, then `andMore` for the rest. */
+/** Returns which members of the set `key` fold: every one under an own set, whose members
+ *  may be catalog records, else only the homebrew ones (docs/specs/FEATURES.md, "Records"). */
+export function setFolds(key: string | undefined): (r: Record_) => boolean {
+  return key !== undefined && isHomebrewKey(key) ? () => true : isHomebrewRecord;
+}
+
+/** Returns a relation as text: `relOrder`, `foldOwn` (which keeps `self`, and folds what
+ *  `folds` names), the `relName`s comma-joined, then `andMore` for the rest. */
 export function relText(
   list: readonly Record_[],
   lang: Lang,
   keep: number,
-  self?: string
+  self?: string,
+  folds?: (r: Record_) => boolean
 ): string {
-  const { shown, more } = foldOwn(relOrder(list, lang), keep, self);
+  const { shown, more } = foldOwn(relOrder(list, lang), keep, self, folds);
   const head = shown.map((r) => relName(r, lang)).join(', ');
   return more > 0 ? head + ' ' + dict(lang).andMore.replace('%n', String(more)) : head;
 }

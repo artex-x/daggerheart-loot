@@ -1,6 +1,6 @@
 <script lang="ts">
   /* «Импорт предметов из файла JSON» under «Импорт из файла» on «Мои предметы» (m15): a
-     `homebrew-v1` file or the data zip's `homebrew.json`, its preview with the counts, the
+     `homebrew-v1` or `homebrew-v2` file or the data zip's `homebrew.json`, its preview with the counts, the
      names of the held items, cards and sources and of the new items with a held name,
      one «Куда» row per source of the file, skip or update for the held keys, and the press
      that writes every row or none (`import_homebrew`). Loaded with `lib/homebrewFile.ts` as
@@ -21,6 +21,7 @@
   import { fewNames } from '../lib/i18n.js';
   import {
     BOOK_NAME_MAX,
+    CARD_ITEMS_MAX,
     CARD_NAME_MAX,
     CARD_SUB_MAX,
     CARD_TEXT_MAX,
@@ -249,6 +250,8 @@
       case 'craft':
       case 'craft_from':
         return CRAFT_MAX;
+      case 'items':
+        return array === 'cards' ? CARD_ITEMS_MAX : undefined;
       case 'sections':
         return section ? SECTIONS_MAX : undefined;
       default:
@@ -408,7 +411,7 @@
     return view.notes.map((n) =>
       n.kind === 'relation'
         ? {
-            ...placeOf('items', n.index, names),
+            ...placeOf(n.array ?? 'items', n.index, names),
             text: fill(t.hbImportUnknownRef, { f: n.field, v: n.id })
           }
         : { ...placeOf('cards', n.index, names), text: t.hbImportKindDiffers }
@@ -777,6 +780,9 @@
   <p class="hint">
     {t.hbImportHintBefore}<a href="schema/homebrew-v1.json" target="_blank" rel="noopener"
       >{t.hbImportSchema}</a
+    >
+    /
+    <a href="schema/homebrew-v2.json" target="_blank" rel="noopener">{t.hbImportSchemaV2}</a
     >{t.importHintMid}<a href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
     >{t.hbImportHintAfter}
   </p>

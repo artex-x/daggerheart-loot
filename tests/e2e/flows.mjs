@@ -1026,7 +1026,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
 
   /* F16: an own item's relations on the hosted project: a loot item that upgrades into
      ci1 and is made from ci2, both picked by name in «Связи», with a rule card made by
-     «Новая карта правил»; the card row and the item's relation keys read back. */
+     «Новая карта правил»; the card row and the item's relation keys read back; then the
+     book item «Палаш» added to that card on «Карты правил», read back in its `items`. */
   await deleteHomebrewOf(admin, member.id);
   try {
     const mine = () => homebrewOf(admin, member.id);
@@ -1060,6 +1061,20 @@ export async function runFlows({ env, admin, member, browser, base }) {
           JSON.stringify(c?.craft_from) === JSON.stringify(['ci2']) &&
           JSON.stringify(c?.refs) === JSON.stringify([card])
         );
+      });
+      /* The book item «Палаш» (q1) joins the rule card from its fold on «Карты правил»: a
+         write of the card's `items`. */
+      await d.open('#/homebrew/rules/' + card);
+      await waitFor(
+        page,
+        'e2e F16: the rule card fold with «Добавить предмет» did not open',
+        () => !!document.querySelector('[id^="hb-card-body-"] input[role="combobox"]')
+      );
+      await d.type('Добавить предмет', 'Палаш');
+      await d.click('Палаш');
+      await until('F16: the book item did not reach the rule card', async () => {
+        const { cards } = await mine();
+        return JSON.stringify(cards[0]?.content.items) === JSON.stringify(['q1']);
       });
     });
   } finally {

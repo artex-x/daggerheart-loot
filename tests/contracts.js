@@ -335,9 +335,10 @@ const N_REC = '\x1e',
   });
 
   /* ---------- the homebrew file homebrew-v1 and the lists file import-v2 ---------- */
-  /* Both are frozen as import-v1 is (CONTRACTS.md section 4): a bound may widen in
-     place, never narrow. Their bounds are the import calls' ceilings, written here as
-     literals; the fixtures and llms.txt are checked by a walk of their own. */
+  /* Both are frozen (CONTRACTS.md section 4): a bound may widen, and a required key may
+     become optional, in place; nothing narrows. Their bounds are the import calls'
+     ceilings, written here as literals; the fixtures and llms.txt are checked by a walk of
+     their own. */
   console.log('homebrew file and import-v2');
   const HB_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json';
   const V2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json';
@@ -409,6 +410,10 @@ const N_REC = '\x1e',
     JSON.stringify(vd.entry.properties.source.enum) === '["official","homebrew"]',
     'import-v2: source is not official or homebrew'
   );
+  ok(
+    !(vd.entry.then.required || []).includes('snapshot'),
+    'import-v2: the snapshot of a homebrew entry is optional'
+  );
 
   const hbFiles = fs.readdirSync(HB_DIR).filter((f) => f.endsWith('.json'));
   hbFiles.forEach(function (f) {
@@ -449,28 +454,39 @@ const N_REC = '\x1e',
       if (it.eq) declared(it.eq, hd.eq, f + ' items[' + i + '].eq');
     });
   });
-  ['example-v2.json', 'from-llms-v2.json', 'export-v2.json', 'bedroll-shop.json'].forEach(
-    function (f) {
-      const doc = JSON.parse(fs.readFileSync(path.join(IMPORT, f), 'utf8'));
-      ok(
-        doc.format === 'daggerheart-loot/lists' && doc.version === 2,
-        f + ': not format daggerheart-loot/lists, version 2'
-      );
-      declared(doc, v2, f);
-      doc.lists.forEach(function (l, i) {
-        declared(l, vd.list, f + ' lists[' + i + ']');
-        l.entries.forEach(function (e, j) {
-          const at = f + ' lists[' + i + '].entries[' + j + ']';
-          declared(e, vd.entry, at);
+  [
+    'example-v2.json',
+    'from-llms-v2.json',
+    'export-v2.json',
+    'bedroll-shop.json',
+    'keys-only-v2.json'
+  ].forEach(function (f) {
+    const doc = JSON.parse(fs.readFileSync(path.join(IMPORT, f), 'utf8'));
+    ok(
+      doc.format === 'daggerheart-loot/lists' && doc.version === 2,
+      f + ': not format daggerheart-loot/lists, version 2'
+    );
+    declared(doc, v2, f);
+    doc.lists.forEach(function (l, i) {
+      declared(l, vd.list, f + ' lists[' + i + ']');
+      l.entries.forEach(function (e, j) {
+        const at = f + ' lists[' + i + '].entries[' + j + ']';
+        declared(e, vd.entry, at);
+        ok(
+          !('snapshot' in e) || e.source === 'homebrew',
+          at + ': a snapshot on an entry that is not homebrew'
+        );
+        /* The export writes a snapshot on every homebrew entry (CONTRACTS.md section 4). */
+        if (f.startsWith('export-')) {
           ok(
             (e.source === 'homebrew') === 'snapshot' in e,
-            at + ': a snapshot without homebrew, or the reverse'
+            at + ': an exported homebrew entry without its snapshot'
           );
-          if (e.snapshot) declared(e.snapshot, vd.snapshot, at + '.snapshot');
-        });
+        }
+        if (e.snapshot) declared(e.snapshot, vd.snapshot, at + '.snapshot');
       });
-    }
-  );
+    });
+  });
 
   /* llms.txt teaches both formats: each example verbatim, and every key, value and
      bound named in its own section. */
@@ -557,7 +573,8 @@ const N_REC = '\x1e',
   [
     '131072',
     V2_URL,
-    'never carries a bare reference',
+    'A snapshot is optional',
+    'A file for another GM must carry a snapshot on every homebrew entry',
     'import the homebrew file first'
   ].forEach((s) => ok(v2Section.includes(s), 'llms.txt version 2 section does not say ' + s));
   /* The zip's lines name both data files and the two-press restore. */
@@ -586,10 +603,61 @@ const N_REC = '\x1e',
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText]
   ].forEach(function ([name, text]) {
-    ['schema/homebrew-v1.json', 'schema/import-v2.json'].forEach((p) =>
-      ok(text.includes(p), name + ' does not name ' + p)
+    ['schema/homebrew-v1.json', 'schema/homebrew-v2.json', 'schema/import-v2.json'].forEach(
+      (p) => ok(text.includes(p), name + ' does not name ' + p)
     );
   });
+
+  /* ---------- the homebrew file homebrew-v2: homebrew-v1 plus a card's book items ---------- */
+  /* Frozen as homebrew-v1 is. Its other definitions are homebrew-v1's, held equal by
+     app/src/lib/homebrewFile.test.ts; this checks what a reader of the published file sees. */
+  console.log('homebrew-v2');
+  const HB2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
+  const hb2 = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'schema', 'homebrew-v2.json'), 'utf8')
+  );
+  const hd2 = hb2.$defs;
+  ok(hb2.$id === HB2_URL, 'schema/homebrew-v2.json: $id is not ' + HB2_URL);
+  ok(
+    hb2.properties.format.const === 'daggerheart-loot/homebrew' &&
+      hb2.properties.version.const === 2,
+    'homebrew-v2: format or version is not daggerheart-loot/homebrew, 2'
+  );
+  [hb2, hd2.book, hd2.section, hd2.card, hd2.item, hd2.eq, hd2.stats].forEach((s, i) =>
+    ok(
+      s.additionalProperties === false,
+      'schema: homebrew-v2 object ' + i + ' takes keys it does not name'
+    )
+  );
+  const cardItems = hd2.card.properties.items;
+  ok(
+    cardItems &&
+      cardItems.minItems === 1 &&
+      cardItems.maxItems === 100 &&
+      cardItems.uniqueItems === true &&
+      cardItems.items.pattern === '^(?!hb_[a-z2-7]{16}$)[A-Za-z0-9_-]{1,64}$',
+    "homebrew-v2: a card's items is not 1-100 unique catalog ids that are not an own key"
+  );
+  const hb2Example = JSON.parse(fs.readFileSync(path.join(HB_DIR, 'example-v2.json'), 'utf8'));
+  ok(
+    hb2Example.format === 'daggerheart-loot/homebrew' && hb2Example.version === 2,
+    'example-v2.json: not format daggerheart-loot/homebrew, version 2'
+  );
+  declared(hb2Example, hb2, 'example-v2.json');
+  hb2Example.cards.forEach((c, i) => declared(c, hd2.card, 'example-v2.json cards[' + i + ']'));
+  hb2Example.items.forEach((it, i) =>
+    declared(it, hd2.item, 'example-v2.json items[' + i + ']')
+  );
+  ok(
+    hb2Example.cards.some((c) => Array.isArray(c.items) && c.items.length),
+    'example-v2.json: no card holds book items'
+  );
+  const hb2Section = sectionOf('### Version 2: book items in a card (homebrew-v2)', 3);
+  ok(hb2Section.includes(HB2_URL), 'llms.txt homebrew-v2 section does not name ' + HB2_URL);
+  ok(
+    hb2Section.includes('`items`') && hb2Section.includes('```json'),
+    'llms.txt homebrew-v2 section does not name `items` or show a json example'
+  );
 
   /* ---------- the lists file import-v3: import-v2 plus the GM-only mark ---------- */
   /* Frozen as import-v2 is. Its other definitions are import-v2's, held deep-equal by
@@ -627,6 +695,10 @@ const N_REC = '\x1e',
     JSON.stringify(v3d.entry.properties.source.enum) === '["official","homebrew"]',
     'import-v3: source is not official or homebrew'
   );
+  ok(
+    !(v3d.entry.then.required || []).includes('snapshot'),
+    'import-v3: the snapshot of a homebrew entry is optional'
+  );
   ['example-v3.json', 'export-v3.json'].forEach(function (f) {
     const doc = JSON.parse(fs.readFileSync(path.join(IMPORT, f), 'utf8'));
     ok(
@@ -641,9 +713,15 @@ const N_REC = '\x1e',
         const at = f + ' lists[' + i + '].entries[' + j + ']';
         declared(e, v3d.entry, at);
         ok(
-          (e.source === 'homebrew') === 'snapshot' in e,
-          at + ': a snapshot without homebrew, or the reverse'
+          !('snapshot' in e) || e.source === 'homebrew',
+          at + ': a snapshot on an entry that is not homebrew'
         );
+        if (f.startsWith('export-')) {
+          ok(
+            (e.source === 'homebrew') === 'snapshot' in e,
+            at + ': an exported homebrew entry without its snapshot'
+          );
+        }
         if (e.snapshot) declared(e.snapshot, v3d.snapshot, at + '.snapshot');
         if ('gm_only' in e) {
           ok(e.gm_only === true, at + ': gm_only is written, but not as true');

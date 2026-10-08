@@ -112,6 +112,10 @@ community name. On `homebrew` and the equipment tables `src` also takes `hb`
 section's key. Such a value lives in one account: on the equipment tables
 another account's key narrows to nothing, as any unknown value does.
 
+A filter panel offers only the values the drawn rows answer (`FEATURES.md`, "Tables and
+search"); the address is read as above: a picked value no drawn row answers still narrows a
+table to nothing, and draws its pill where the panel lists the value.
+
 On a share link (`#/s/<token>`, below) `kind` takes `item`, `consumable`,
 `weapon`, `secondary` and `armor` where a table takes `equip`: a list mixes the
 gear the equipment tables split. `src` also takes `community`, `hb` and an own

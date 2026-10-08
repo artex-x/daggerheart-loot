@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, type Seed } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 
 /** What `opened` returns: the render of the app, its fake cloud and dialog. */
@@ -38,9 +38,10 @@ export const keyN = (n: number): string => {
 export async function opened(
   as: 'gm1' | 'gm2' = 'gm1',
   opts: FakeCloudOptions = {},
-  answer = true
+  answer = true,
+  seed: Seed = SEED
 ): Promise<Opened> {
-  const cloud = fakeCloud(SEED, as, opts);
+  const cloud = fakeCloud(seed, as, opts);
   const dialog = fakeDialog(answer);
   const view = render(App, {
     env: fakeEnv({

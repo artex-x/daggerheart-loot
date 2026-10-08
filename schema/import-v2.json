@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
   "title": "Daggerheart Loot lists file, version 2",
-  "description": "Account lists as one JSON file, version 1 plus homebrew entries: an entry with source homebrew carries the item as a snapshot. The site writes version 2 only for an export that holds a homebrew entry, and reads versions 1 and 2. llms.txt, section \"Lists as a file (import-v1)\", subsection \"Version 2: homebrew entries (import-v2)\", describes it for AI assistants. Frozen: a bound may widen in place, never narrow; any other change is import-v3.json beside this one.",
+  "description": "Account lists as one JSON file, version 1 plus homebrew entries: an entry with source homebrew names the item by its key and may carry it as a snapshot. The site writes version 2 only for an export that holds a homebrew entry, and reads versions 1 and 2. llms.txt, section \"Lists as a file (import-v1)\", subsection \"Version 2: homebrew entries (import-v2)\", describes it for AI assistants. Frozen: a bound may widen, and a required key may become optional, in place; nothing narrows; any other change is import-v3.json beside this one.",
   "type": "object",
   "required": ["format", "version", "lists"],
   "additionalProperties": false,
@@ -87,7 +87,7 @@
     },
     "entry": {
       "title": "Entry",
-      "description": "One record in a list: a catalog record, or a homebrew item (source homebrew) with its snapshot.",
+      "description": "One record in a list: a catalog record, or a homebrew item (source homebrew) by its key, with or without its snapshot.",
       "type": "object",
       "required": ["id"],
       "additionalProperties": false,
@@ -106,7 +106,7 @@
         },
         "source": {
           "title": "Source",
-          "description": "official for a catalog record; homebrew for a GM's own item, which carries snapshot. An account that holds the key gets a live reference; any other gets a frozen copy of the snapshot.",
+          "description": "official for a catalog record; homebrew for a GM's own item, by its key. An account that holds the key gets a link to its item; any other gets an own copy made from snapshot, or skips an entry without one.",
           "enum": ["official", "homebrew"],
           "default": "official"
         },
@@ -141,7 +141,7 @@
         },
         "snapshot": {
           "title": "Snapshot",
-          "description": "The homebrew item as a catalog record, with its source and the own cards it names. At most 131072 bytes of JSON.",
+          "description": "The homebrew item as a catalog record, with its source and the own cards it names. At most 131072 bytes of JSON. Optional: the site's export always writes it; without it, only an account that holds the key imports the entry.",
           "$ref": "#/$defs/snapshot"
         }
       },
@@ -154,7 +154,6 @@
         }
       },
       "then": {
-        "required": ["snapshot"],
         "properties": {
           "id": {
             "$ref": "#/$defs/key"

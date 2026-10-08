@@ -1,0 +1,96 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v2.json",
+  "format": "daggerheart-loot/lists",
+  "version": 2,
+  "exported_at": "2026-09-25T12:00:00.000Z",
+  "lists": [
+    {
+      "name": "Лавка по ключам",
+      "entries": [
+        {
+          "id": "ci1",
+          "name": "Первоклассный Спальный Мешок"
+        },
+        {
+          "id": "hb_emberaxeaaaaaaaa",
+          "name": "Топор Тлеющих Углей",
+          "source": "homebrew",
+          "price_coins": 40
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew"
+        },
+        {
+          "id": "hb_emberaxeaaaaaaaa",
+          "name": "Топор Тлеющих Углей",
+          "source": "homebrew",
+          "snapshot": {
+            "kind": "equip",
+            "ru": "Топор Тлеющих Углей",
+            "en": "Ember Axe",
+            "rud": "Лезвие тлеет и не гаснет под дождём.",
+            "ende": "The blade smoulders and does not go out in the rain.",
+            "eq": {
+              "t": "weapon",
+              "tier": 2,
+              "cls": "mag",
+              "tr": "spellcast",
+              "rg": "melee",
+              "dmg": "d10+2",
+              "dt": "mag",
+              "bu": 2
+            },
+            "id": "hb_emberaxeaaaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_alderworkshopaaa",
+              "en": "Alder Workshop",
+              "ru": "Мастерская Ольхи",
+              "section": {
+                "key": "hb_sectbladesaaaaaa",
+                "en": "Blades",
+                "ru": "Холодное оружие"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Склад бродяги",
+      "entries": [
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew"
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew",
+          "snapshot": {
+            "kind": "item",
+            "ru": "Лампа странника",
+            "en": "Wanderer's Lamp",
+            "rud": "Светит только тому, кто её несёт.",
+            "ende": "Sheds light only for the one who carries it.",
+            "id": "hb_wanderlampaaaaaa",
+            "src": "homebrew",
+            "book": {
+              "key": "hb_roadnotesaaaaaaa",
+              "en": "A Vagrant's Notes",
+              "ru": "Записки бродяги"
+            }
+          }
+        },
+        {
+          "id": "hb_wanderlampaaaaaa",
+          "name": "Лампа странника",
+          "source": "homebrew"
+        }
+      ]
+    }
+  ]
+}

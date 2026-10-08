@@ -18,6 +18,7 @@ import {
   relName,
   relOrder,
   relText,
+  setFolds,
   srcLabel,
   srcName,
   tableOf,
@@ -391,5 +392,15 @@ describe('a relation of a catalog record to homebrew records', () => {
     expect(relText(list, 'en', 1)).toBe(`${cat('ci1').en}, A (HB) and 2 more`);
     expect(relText(list, 'en', FOLD_OWN)).toBe(`${cat('ci1').en}, A (HB), B (HB), C (HB)`);
     expect(relText([cat('ci1')], 'ru', 1)).toBe(cat('ci1').ru);
+  });
+
+  it('folds every member past the third under an own set, and only the homebrew ones under a book set', () => {
+    const list = [cat('q1'), cat('q2'), cat('ci1'), cat('q23'), own('hb_a', 'А', 'A')];
+    const own3 = foldOwn(list, FOLD_OWN, 'q2', setFolds('hb_aldersetaaaaaaaa'));
+    expect(own3.shown.map((r) => r.id)).toEqual(['q1', 'q2', 'ci1', 'q23']);
+    expect(own3.more).toBe(1);
+    expect(foldOwn(list, FOLD_OWN, undefined, setFolds('saints-ensemble')).more).toBe(0);
+    expect(foldOwn(list, FOLD_OWN, undefined, setFolds(undefined)).more).toBe(0);
+    expect(relText(list, 'ru', 1, undefined, () => true)).toBe(`${cat('q1').ru} и ещё 4`);
   });
 });

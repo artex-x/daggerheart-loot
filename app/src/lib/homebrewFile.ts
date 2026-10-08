@@ -1,6 +1,8 @@
-/* The homebrew file `homebrew-v1`: the import reads it, the export writes it.
+/* The homebrew file `homebrew-v1` and `homebrew-v2`: the import reads both, the export
+ * writes version 2 only when a card holds book items (`items`), else version 1.
  *
- * `schema/homebrew-v1.json` is the published contract and this module its
+ * `schema/homebrew-v1.json` and `schema/homebrew-v2.json` are the published contract and
+ * this module their
  * hand-written validator over the editor's own (`lib/homebrew.ts`), so a file
  * that passes never meets a database refusal; `homebrewFile.test.ts` keeps the
  * schema and the constants equal. Pure module: no port, no storage; the app
@@ -33,9 +35,14 @@ import type { Lang } from './types.js';
 
 export const HOMEBREW_FORMAT = 'daggerheart-loot/homebrew';
 export const HOMEBREW_VERSION = 1;
+/** The versions the import reads. */
+export const HOMEBREW_VERSIONS = [1, 2] as const;
 /** The schema's `$id`; an export names it as its `$schema`. */
 export const HOMEBREW_SCHEMA =
   'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json';
+/** Version 2's schema `$id`: version 1 and a card's `items`. */
+export const HOMEBREW_SCHEMA_V2 =
+  'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
 /** The most sources, cards and items one file holds: `import_homebrew`'s bounds per call,
  *  at least three times the default limits; the account's limits are the database's. */
 export const FILE_BOOKS_MAX = 100;
@@ -67,7 +74,8 @@ export const CARD_KEYS = [
   'rusub',
   'ende',
   'rud',
-  'url'
+  'url',
+  'items'
 ] as const;
 export const ITEM_KEYS = [
   'key',
@@ -108,7 +116,7 @@ export type FileItem = HomebrewContent & { key: string; book?: string };
 export interface HomebrewFile {
   $schema?: string;
   format: typeof HOMEBREW_FORMAT;
-  version: typeof HOMEBREW_VERSION;
+  version: (typeof HOMEBREW_VERSIONS)[number];
   exported_at?: string;
   books: FileBook[];
   cards: FileCard[];
@@ -135,13 +143,15 @@ export interface FileError {
 }
 
 /** What the import keeps but names: a relation id that names nothing in the file, the
- *  account or the catalog (it stays and draws nothing), and a held card key of another
- *  kind (the card is skipped). */
+ *  account or the catalog (it stays and draws nothing), a card's book item the catalog
+ *  lacks (`array` `cards`), and a held card key of another kind (the card is skipped). */
 export type FileNote =
   | {
       kind: 'relation';
+      /** The object's array; `items` when absent. */
+      array?: 'cards';
       index: number;
-      field: 'craft' | 'craft_from' | 'eq.line' | 'set' | 'refs';
+      field: 'craft' | 'craft_from' | 'eq.line' | 'set' | 'refs' | 'items';
       id: string;
     }
   | { kind: 'cardKind'; index: number; key: string };
@@ -380,7 +390,8 @@ function walkCard(
   seen: Set<string>,
   k: Known,
   ctx: FileContext,
-  notes: FileNote[]
+  notes: FileNote[],
+  version: number
 ): void {
   if (!isObj(v)) {
     r.at('cards', i, '', 'type');
@@ -388,9 +399,22 @@ function walkCard(
   }
   keyOf(r, 'cards', i, v, seen);
   const kind = v['kind'];
-  const problems = cardProblems(kind, without(v, ['key', 'kind', 'book']));
+  /* Version 1 knows no `items`: the key is extra there, as its closed schema says. */
+  const v1Items = version === 1 && 'items' in v;
+  const problems = cardProblems(
+    kind,
+    without(v, v1Items ? ['key', 'kind', 'book', 'items'] : ['key', 'kind', 'book'])
+  );
   for (const p of problems) {
     r.at('cards', i, p.path, p.path === 'kind' && !('kind' in v) ? 'required' : p.rule);
+  }
+  if (v1Items) r.at('cards', i, 'items', 'extra');
+  else if (!problems.some((p) => p.path === 'items' || p.path.startsWith('items.'))) {
+    const ids = Array.isArray(v['items']) ? v['items'] : [];
+    for (const id of ids) {
+      if (typeof id === 'string' && !ctx.catalogHas(id))
+        notes.push({ kind: 'relation', array: 'cards', index: i, field: 'items', id });
+    }
   }
   bookOf(r, 'cards', i, v, k.books);
   const key = v['key'];
@@ -486,8 +510,9 @@ export function parseHomebrew(text: string, ctx: FileContext): HomebrewParsed {
   }
   if (!isObj(raw) || raw['format'] !== HOMEBREW_FORMAT)
     return { ok: false, reason: 'notHomebrew' };
-  if (raw['version'] !== HOMEBREW_VERSION) {
-    return { ok: false, reason: 'version', version: raw['version'] };
+  const version = raw['version'];
+  if (version !== 1 && version !== 2) {
+    return { ok: false, reason: 'version', version };
   }
   const doc = withNewlines(raw) as Obj;
   const k = scan(doc);
@@ -517,7 +542,7 @@ export function parseHomebrew(text: string, ctx: FileContext): HomebrewParsed {
         const seen = new Set<string>();
         x.forEach((v: unknown, i) => {
           if (key === 'books') walkBook(r, i, v, seen);
-          else if (key === 'cards') walkCard(r, i, v, seen, k, ctx, notes);
+          else if (key === 'cards') walkCard(r, i, v, seen, k, ctx, notes, version);
           else walkItem(r, i, v, seen, k, ctx, notes);
         });
         break;
@@ -532,7 +557,7 @@ export function parseHomebrew(text: string, ctx: FileContext): HomebrewParsed {
   const file: HomebrewFile = {
     ...(typeof doc['$schema'] === 'string' ? { $schema: doc['$schema'] } : {}),
     format: HOMEBREW_FORMAT,
-    version: HOMEBREW_VERSION,
+    version,
     ...(typeof doc['exported_at'] === 'string' ? { exported_at: doc['exported_at'] } : {}),
     books: (doc['books'] ?? []) as FileBook[],
     cards: (doc['cards'] ?? []) as FileCard[],
@@ -556,7 +581,8 @@ const byCreation = <T extends { created_at: string }>(rows: readonly T[]): T[] =
 
 /** Returns the homebrew file of the rows: `$schema`, `format`, `version`, `exported_at`,
  *  then the sources, the cards and the items by creation, each object's keys in the
- *  schema's order and `book` as the source's key. Empty arrays are written. */
+ *  schema's order and `book` as the source's key. Empty arrays are written. Version 2
+ *  with its schema when a card holds `items`, else version 1. */
 export function toHomebrewFile(
   books: readonly BookRow[],
   items: readonly ItemRow[],
@@ -569,10 +595,11 @@ export function toHomebrewFile(
     const key = id === null ? undefined : keyById.get(id);
     return key === undefined ? {} : { book: key };
   };
+  const v2 = cards.some((c) => c.content.items?.length);
   return {
-    $schema: HOMEBREW_SCHEMA,
+    $schema: v2 ? HOMEBREW_SCHEMA_V2 : HOMEBREW_SCHEMA,
     format: HOMEBREW_FORMAT,
-    version: HOMEBREW_VERSION,
+    version: v2 ? 2 : HOMEBREW_VERSION,
     exported_at: now.toISOString(),
     books: byCreation(books).map((b) => {
       const sections = b.content.sections?.map((s: SectionRow) => ordered(s, SECTION_KEYS));
@@ -911,9 +938,22 @@ export function toHomebrewRows(
     const i = rows.findIndex((r) => (r.book?.key ?? undefined) === book);
     return (i >= 0 ? dests[i] : undefined) ?? { key: null, sections: new Map() };
   };
+  /* A version 1 file knows no book items: a held card of the same key and kind keeps its
+     own. A version 2 file states them, so it wins. */
+  const heldItems = (key: string, kind: CardKind): string[] | undefined =>
+    file.version === 1
+      ? held.cards.find((h) => h.key === key && h.kind === kind)?.content.items
+      : undefined;
   const cards = file.cards.map((c): ImportCardRow => {
     const { key, kind, book, ...content } = c;
-    return { id: ids.id('card:' + key), key, kind, book: destOf(book).key, content };
+    const items = heldItems(key, kind);
+    return {
+      id: ids.id('card:' + key),
+      key,
+      kind,
+      book: destOf(book).key,
+      content: items?.length ? { ...content, items: [...items] } : content
+    };
   });
   const items = file.items.map((it): ImportItemRow => {
     const { key, book, section, ...rest } = it;

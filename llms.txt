@@ -481,7 +481,7 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v2.json
 - entry `source`: `homebrew` for an own item; leave it out (or `official`)
   for a catalog record.
 - entry `id`: for `source: homebrew`, the item's key.
-- entry `snapshot`: required with `source: homebrew`, never on an official
+- entry `snapshot`: optional with `source: homebrew`, never on an official
   entry. It is the item as a catalog record, at most 131072 bytes of JSON:
   `id` (the key again), `src` (always `homebrew`), `kind`, both names `en`
   and `ru` and both descriptions `ende` and `rud` (each filled from the other
@@ -492,9 +492,13 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v2.json
   field). `tier` is the loot tier, or `A` on equipment only when `eq.tier`
   is `A`.
 
-A file never carries a bare reference: every homebrew entry has its
-snapshot. When the GM gave you an export, copy its snapshots whole. When you
-write the homebrew file yourself, build each snapshot from its item:
+A snapshot is optional. Without one, an entry imports only into an account
+that holds its key: the GM imports the homebrew file first (see "Homebrew
+items as a file"), then the lists file; an entry whose key the account does
+not hold is skipped, as an unknown catalog id is.
+A file for another GM must carry a snapshot on every homebrew entry, as the
+site's export does. When the GM gave you an export, copy its snapshots
+whole. When you write a snapshot yourself, build it from its item:
 
 1. Take the item's fields except `key`, `book` and `section`.
 2. Add `id` (the item's key) and `src` (`homebrew`).
@@ -512,12 +516,13 @@ write the homebrew file yourself, build each snapshot from its item:
    Leave `cards` out when the item names none.
 
 On import, an entry whose key the account already holds becomes a live
-link to that item. Each homebrew entry the account does not hold becomes an
-own item, made from its snapshot, so the import counts against the item and
-card limits and the 1000 items of one homebrew import; past either it is
-refused whole, and nothing is written. So import the homebrew file first
-(see "Homebrew items as a file"), then the lists file: the entries link the
-items you imported, with no second copy.
+link to that item. Each homebrew entry with a snapshot that the account does
+not hold becomes an own item, made from it, so the import counts against the
+item and card limits and the 1000 items of one homebrew import; past either
+it is refused whole, and nothing is written. An entry without a snapshot
+whose key the account does not hold is skipped.
+So import the homebrew file first (see "Homebrew items as a file"), then the
+lists file: the entries link the items you imported, with no second copy.
 
 ### Version 3: GM-only entries (import-v3)
 
@@ -566,8 +571,8 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v3.json
 
 - entry `gm_only`: `true` keeps the entry off the players' link. Leave the
   key out for an entry the players see; `false` is the same as no key. A
-  homebrew entry may carry it beside its `snapshot`. On import a GM-only
-  entry keeps its mark, also when it links a fixed copy of its item.
+  homebrew entry may carry it, with or without its `snapshot`. On import a
+  GM-only entry keeps its mark, also when it links a fixed copy of its item.
 
 ## Homebrew items as a file (homebrew-v1)
 
@@ -703,13 +708,48 @@ a record of `data.json` is.
 }
 ```
 
+### Version 2: book items in a card (homebrew-v2)
+
+Version 2 is version 1 with one addition: a set card or a rule card may hold
+book items in `items`, 1 to 100 unique ids from `catalog.csv`, never an own
+`hb_` key (an own item names the card in its own `set` or `refs`). The GM
+sees the card's set bonus or rule on those book items; other readers see the
+book's item. Write `"version": 2` only when a card holds `items`; any other
+file stays version 1, which the site also reads. A record that the book puts
+in a set already (`set` in `data.json`) takes no own set card.
+
+Schema: https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json
+
+```json
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json",
+  "format": "daggerheart-loot/homebrew",
+  "version": 2,
+  "cards": [
+    {
+      "key": "hb_aldersetaaaaaaaa",
+      "kind": "set",
+      "en": "Alder Set",
+      "ru": "Комплект Ольхи",
+      "ende": "Two pieces of the set: +1 to Evasion.",
+      "rud": "Два предмета комплекта: +1 к Уклонению.",
+      "items": ["q1"]
+    }
+  ]
+}
+```
+
+On «Обновить» ("Update") a version 2 file states each card's book items: a
+card without `items` loses them. A version 1 file keeps the book items a
+held card has.
+
 ### The homebrew fields
 
 | Key | Required | Value |
 |---|---|---|
 | `$schema` | no | The schema URL above. Ignored. |
 | `format` | yes | Exactly `daggerheart-loot/homebrew`. |
-| `version` | yes | Exactly `1`. |
+| `version` | yes | `1`, or `2` when a card holds `items` ("Version 2" above). |
 | `exported_at` | no | When the site wrote the file (ISO 8601). Ignored on import. |
 | `books` | no | 0 to 100 sources. |
 | `cards` | no | 0 to 1000 set cards and rule cards. |
@@ -724,6 +764,7 @@ a record of `data.json` is.
 | card `ensub`, `rusub` | no | A rule card's subtitles, up to 60 characters each. Never on a set card. |
 | card `ende`, `rud` | no | A set card's bonus or a rule card's text, up to 1500 characters each. |
 | card `url` | no | A rule card's link: empty, or `https://` and printable ASCII, up to 300 characters. Never on a set card. |
+| card `items` | version 2 | 1 to 100 unique ids from `catalog.csv` the card also holds; never an `hb_` key. |
 | item `key` | yes | The item's key. |
 | item `book` | no | The `key` of a source of this file. Leave it out for no source. |
 | item `section` | no | The `key` of a section of the item's own source; never without `book`. |

@@ -10,9 +10,11 @@ import type { Loot } from '../lib/data.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
+import { memoryStorage, type FakeStoragePort } from '../ports/storage.js';
 
-/** What `opened` returns: the render of the app and its fake cloud. */
-type Opened = RenderResult<typeof App> & { cloud: FakeCloud };
+/** What `opened` returns: the render of the app, its fake cloud and its storage, whose
+ *  `fireExternalChange(null)` is the tab shown again. */
+type Opened = RenderResult<typeof App> & { cloud: FakeCloud; storage: FakeStoragePort };
 
 export const ROOT = join(import.meta.dirname, '..', '..', '..');
 export const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
@@ -24,16 +26,18 @@ export const doc = (lists: unknown, extra: Record<string, unknown> = {}): string
 
 export async function opened(options: FakeCloudOptions = {}): Promise<Opened> {
   const cloud = fakeCloud(SEED, 'gm1', options);
+  const storage = memoryStorage();
   const view = render(App, {
     env: fakeEnv({
       router: memoryRouter('#/lists'),
       data: fakeData(LOOT),
       dialog: fakeDialog(),
+      storage,
       cloud
     })
   });
   await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
-  return { ...view, cloud };
+  return { ...view, cloud, storage };
 }
 
 /* The input is `hidden`; its files are set as the browser's picker would. */

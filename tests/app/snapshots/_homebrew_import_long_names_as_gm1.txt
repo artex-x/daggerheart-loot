@@ -31,7 +31,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x16 of 20 same-shape siblings elided
+    ... StaticText x17 of 21 same-shape siblings elided
     combobox "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМаст..." [value=Новый источник «МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерская» expanded=false haspopup=menu namelen=90 namehash=b3b3ddc7]
       option "В «Хоумбрю»" [selected=false]
       option "В «Мастерская Ольхи»" [selected=false]
@@ -40,6 +40,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     button "Импортировать (1)"
     ... button x3 of 7 same-shape siblings elided
     link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm1#/homebrew]
@@ -77,6 +78,7 @@ Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 Wondrous
 daggerheart.com
+homebrew-v2
 Аккаунт: gm1@example.test
 Альт. таблицы
 В «Хоумбрю»В «Мастерская Ольхи»Новый источник «МастерскаяМастерс... [namelen=147 namehash=68b6113d]
@@ -137,7 +139,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x16 of 20 same-shape siblings elided
+    ... StaticText x17 of 21 same-shape siblings elided
     combobox "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМаст..." [value=New source "МастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерскаяМастерская" expanded=false haspopup=menu namelen=87 namehash=04e68653]
       option "Into "Homebrew"" [selected=false]
       option "Into "Alder Workshop"" [selected=false]
@@ -146,6 +148,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     button "Import (1)"
     ... button x3 of 7 same-shape siblings elided
     link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
+    link "homebrew-v2" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm1#/homebrew]
@@ -209,6 +212,7 @@ Wondrous
 a description for AI assistants
 daggerheart.com
 homebrew-v1 schema
+homebrew-v2
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
 ЛутDaggerheart

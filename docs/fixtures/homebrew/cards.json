@@ -59,6 +59,138 @@
         "rusub": "𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄𝔄",
         "url": "https://example.test/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       }
+    },
+    {
+      "name": "a set card with two book items",
+      "kind": "set",
+      "content": {
+        "ru": "Комплект Ольхи",
+        "items": [
+          "q1",
+          "ci1"
+        ]
+      }
+    },
+    {
+      "name": "a rule card with two book items",
+      "kind": "ref",
+      "content": {
+        "en": "Alder Brand",
+        "ende": "Once per rest: reroll one damage die.",
+        "items": [
+          "q1",
+          "ci1"
+        ]
+      }
+    },
+    {
+      "name": "a set card with 100 book items",
+      "kind": "set",
+      "content": {
+        "en": "Alder Set",
+        "items": [
+          "id001",
+          "id002",
+          "id003",
+          "id004",
+          "id005",
+          "id006",
+          "id007",
+          "id008",
+          "id009",
+          "id010",
+          "id011",
+          "id012",
+          "id013",
+          "id014",
+          "id015",
+          "id016",
+          "id017",
+          "id018",
+          "id019",
+          "id020",
+          "id021",
+          "id022",
+          "id023",
+          "id024",
+          "id025",
+          "id026",
+          "id027",
+          "id028",
+          "id029",
+          "id030",
+          "id031",
+          "id032",
+          "id033",
+          "id034",
+          "id035",
+          "id036",
+          "id037",
+          "id038",
+          "id039",
+          "id040",
+          "id041",
+          "id042",
+          "id043",
+          "id044",
+          "id045",
+          "id046",
+          "id047",
+          "id048",
+          "id049",
+          "id050",
+          "id051",
+          "id052",
+          "id053",
+          "id054",
+          "id055",
+          "id056",
+          "id057",
+          "id058",
+          "id059",
+          "id060",
+          "id061",
+          "id062",
+          "id063",
+          "id064",
+          "id065",
+          "id066",
+          "id067",
+          "id068",
+          "id069",
+          "id070",
+          "id071",
+          "id072",
+          "id073",
+          "id074",
+          "id075",
+          "id076",
+          "id077",
+          "id078",
+          "id079",
+          "id080",
+          "id081",
+          "id082",
+          "id083",
+          "id084",
+          "id085",
+          "id086",
+          "id087",
+          "id088",
+          "id089",
+          "id090",
+          "id091",
+          "id092",
+          "id093",
+          "id094",
+          "id095",
+          "id096",
+          "id097",
+          "id098",
+          "id099",
+          "id100"
+        ]
+      }
     }
   ],
   "invalid": [
@@ -283,6 +415,202 @@
         {
           "path": "name",
           "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "no book item",
+      "kind": "set",
+      "content": {
+        "en": "Alder Set",
+        "items": []
+      },
+      "problems": [
+        {
+          "path": "items",
+          "rule": "required"
+        }
+      ]
+    },
+    {
+      "name": "101 book items",
+      "kind": "ref",
+      "content": {
+        "en": "Alder Brand",
+        "items": [
+          "id001",
+          "id002",
+          "id003",
+          "id004",
+          "id005",
+          "id006",
+          "id007",
+          "id008",
+          "id009",
+          "id010",
+          "id011",
+          "id012",
+          "id013",
+          "id014",
+          "id015",
+          "id016",
+          "id017",
+          "id018",
+          "id019",
+          "id020",
+          "id021",
+          "id022",
+          "id023",
+          "id024",
+          "id025",
+          "id026",
+          "id027",
+          "id028",
+          "id029",
+          "id030",
+          "id031",
+          "id032",
+          "id033",
+          "id034",
+          "id035",
+          "id036",
+          "id037",
+          "id038",
+          "id039",
+          "id040",
+          "id041",
+          "id042",
+          "id043",
+          "id044",
+          "id045",
+          "id046",
+          "id047",
+          "id048",
+          "id049",
+          "id050",
+          "id051",
+          "id052",
+          "id053",
+          "id054",
+          "id055",
+          "id056",
+          "id057",
+          "id058",
+          "id059",
+          "id060",
+          "id061",
+          "id062",
+          "id063",
+          "id064",
+          "id065",
+          "id066",
+          "id067",
+          "id068",
+          "id069",
+          "id070",
+          "id071",
+          "id072",
+          "id073",
+          "id074",
+          "id075",
+          "id076",
+          "id077",
+          "id078",
+          "id079",
+          "id080",
+          "id081",
+          "id082",
+          "id083",
+          "id084",
+          "id085",
+          "id086",
+          "id087",
+          "id088",
+          "id089",
+          "id090",
+          "id091",
+          "id092",
+          "id093",
+          "id094",
+          "id095",
+          "id096",
+          "id097",
+          "id098",
+          "id099",
+          "id100",
+          "id101"
+        ]
+      },
+      "problems": [
+        {
+          "path": "items",
+          "rule": "many"
+        }
+      ]
+    },
+    {
+      "name": "a repeated book item",
+      "kind": "set",
+      "content": {
+        "en": "Alder Set",
+        "items": [
+          "q1",
+          "q1"
+        ]
+      },
+      "problems": [
+        {
+          "path": "items.1",
+          "rule": "duplicate"
+        }
+      ]
+    },
+    {
+      "name": "an own key among the book items",
+      "kind": "ref",
+      "content": {
+        "en": "Alder Brand",
+        "items": [
+          "q1",
+          "hb_alderaxeaaaaaaaa"
+        ]
+      },
+      "problems": [
+        {
+          "path": "items.1",
+          "rule": "pattern"
+        }
+      ]
+    },
+    {
+      "name": "a book item that is a number",
+      "kind": "set",
+      "content": {
+        "en": "Alder Set",
+        "items": [
+          7
+        ]
+      },
+      "problems": [
+        {
+          "path": "items.0",
+          "rule": "type"
+        }
+      ]
+    },
+    {
+      "name": "a book item of 65 characters",
+      "kind": "set",
+      "content": {
+        "en": "Alder Set",
+        "items": [
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      },
+      "problems": [
+        {
+          "path": "items.0",
+          "rule": "pattern"
         }
       ]
     }

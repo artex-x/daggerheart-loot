@@ -12,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { FILE_MAX_BYTES, ZIP_MAX_BYTES } from '../lib/bundle.js';
 import { zipStored } from '../lib/zip.js';
-import { fakeCloud } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -605,6 +605,223 @@ describe('own items in a lists file', () => {
     ]);
     const held = await cloud.homebrew.load();
     expect(held.ok && held.items.length).toBe(4 + file.items.length);
+  });
+});
+
+describe('own items without a snapshot in a lists file', () => {
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const LAMP = 'hb_wanderlampaaaaaa';
+  const UNHELD =
+    'пропущена - этого своего предмета нет в аккаунте: сначала импортируйте файл предметов на странице «Мои предметы»';
+  const previews = (c: HTMLElement): string[] =>
+    [...c.querySelectorAll('.preview')].map((p) => p.textContent.replace(/\s+/g, ' ').trim());
+  const blocks = (c: HTMLElement): Element[] => [...c.querySelectorAll('.rep-list')];
+  const oneList = (entries: Record<string, unknown>[]): Uint8Array =>
+    utf8(
+      JSON.stringify({
+        format: 'daggerheart-loot/lists',
+        version: 2,
+        lists: [{ name: 'Ключи', entries }]
+      })
+    );
+  /* The lists index as `user` over the fake cloud, «Импорт из файла» open. */
+  async function openedAs(user: 'gm1' | 'gm2', lang?: 'en') {
+    const cloud = fakeCloud(SEED, user);
+    if (lang) await cloud.prefs.save({ lang });
+    const view = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(
+      await screen.findByRole('button', { name: lang ? 'Import from file' : 'Импорт из файла' })
+    );
+    return { ...view, cloud };
+  }
+  const axeId = async (cloud: FakeCloud): Promise<string | undefined> => {
+    const read = await cloud.homebrew.load();
+    return read.ok ? read.items.find((i) => i.key === AXE)?.id : undefined;
+  };
+
+  it('previews keys-only-v2.json as gm1: the held axe kept, the lamp skipped, and imports the rest', async () => {
+    const { container, cloud } = await opened();
+    const imp = vi.spyOn(cloud.lists, 'import');
+    choose(container, fixture('keys-only-v2.json'));
+    const button = await importButton(2);
+    expect(previews(container)).toEqual([
+      'Списков: 2, позиций: 3. Пропущено позиций: 4.',
+      'Своих предметов, которых нет в аккаунте: 1 - они станут вашими копиями в «Мои предметы».'
+    ]);
+    const [one, two] = blocks(container);
+    expect([one, two].map((b) => b?.querySelector('small')?.textContent)).toEqual([
+      '2 позиции будут импортированы',
+      '1 позиция будет импортирована'
+    ]);
+    expect(lineTexts(one!)).toEqual([
+      'Позиция 3, ' + LAMP + ': ' + UNHELD,
+      'Позиция 4, Топор Тлеющих Углей (' + AXE + '): пропущена - уже есть в позиции 2'
+    ]);
+    expect(lineTexts(two!)).toEqual([
+      'Позиция 1, ' + LAMP + ': ' + UNHELD,
+      'Позиция 3, ' + LAMP + ': пропущена - уже есть в позиции 2'
+    ]);
+    await expectNoA11yViolations(container);
+    const held = await axeId(cloud);
+    await userEvent.click(button);
+    expect(await screen.findByText('Импортировано списков: 2')).toBeInTheDocument();
+    expect(
+      imp.mock.calls[0]?.[0].map((r) => r.entries.map((e) => [e.item_key, e.source]))
+    ).toEqual([
+      [
+        ['ci1', 'official'],
+        [AXE, 'homebrew']
+      ],
+      [[LAMP, 'homebrew']]
+    ]);
+    const lists = await cloud.lists.list();
+    const named = (n: string) => (lists.ok ? lists.lists.find((l) => l.name === n) : undefined);
+    expect(named('Лавка по ключам')?.list_entries.map((e) => [e.item_key, e.hb_item])).toEqual([
+      ['ci1', null],
+      [AXE, held]
+    ]);
+    const own = await cloud.homebrew.load();
+    const lamp = own.ok ? own.items.find((i) => i.key === LAMP) : undefined;
+    expect(named('Склад бродяги')?.list_entries.map((e) => [e.item_key, e.hb_item])).toEqual([
+      [LAMP, lamp?.id]
+    ]);
+  });
+
+  it('names an own item the account lacks in English', async () => {
+    const { container } = await openedAs('gm1', 'en');
+    choose(container, fixture('keys-only-v2.json'));
+    expect(await screen.findByRole('button', { name: 'Import (2)' })).toBeInTheDocument();
+    expect(lineTexts(blocks(container)[0]!)[0]).toBe(
+      'Item 3, ' +
+        LAMP +
+        ': skipped - your account does not hold this own item: first import the items file on the My items page'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws a list whose only entry is an unheld own item as a list with no entries', async () => {
+    const { container } = await opened();
+    choose(container, oneList([{ id: LAMP, source: 'homebrew' }]));
+    await importButton(1);
+    expect(previews(container)).toEqual(['Списков: 1, позиций: 0. Пропущено позиций: 1.']);
+    const [block] = blocks(container);
+    expect(block?.querySelector('small')?.textContent).toBe('без позиций');
+    expect(lineTexts(block!)).toEqual(['Позиция 1, ' + LAMP + ': ' + UNHELD]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('waits for the account items before the preview of a file whose only own entry has no snapshot', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    const load = cloud.homebrew.load.bind(cloud.homebrew);
+    vi.spyOn(cloud.homebrew, 'load').mockImplementationOnce(async () => {
+      await gate;
+      return load();
+    });
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+    choose(container, oneList([{ id: 'ci1' }, { id: AXE, source: 'homebrew' }]));
+    expect(
+      await screen.findByText('Ваши предметы ещё загружаются - повторите через секунду.')
+    ).toHaveAttribute('role', 'status');
+    expect(screen.queryByRole('button', { name: /Импортировать/ })).toBeNull();
+    open();
+    expect(await importButton(1)).toBeInTheDocument();
+    expect(previews(container)).toEqual(['Списков: 1, позиций: 2.']);
+    expect(container.querySelector('.rep')).toBeNull();
+  });
+
+  it('reads the file again when an own item a kept entry links goes', async () => {
+    const { container, cloud, storage } = await opened();
+    choose(container, oneList([{ id: 'ci1' }, { id: AXE, source: 'homebrew' }, { id: 'q1' }]));
+    await importButton(1);
+    expect(previews(container)).toEqual(['Списков: 1, позиций: 3.']);
+    await cloud.homebrew.removeItem((await axeId(cloud))!);
+    storage.fireExternalChange(null);
+    await waitFor(() => {
+      expect(previews(container)[0]).toBe('Списков: 1, позиций: 2. Пропущено позиций: 1.');
+    });
+    expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2, ' + AXE + ': ' + UNHELD]);
+  });
+
+  it('keeps a skip whose own item comes after the preview', async () => {
+    const { container, cloud, storage } = await opened();
+    choose(container, fixture('keys-only-v2.json'));
+    await importButton(2);
+    expect(previews(container)).toHaveLength(2);
+    await cloud.homebrew.createItem({
+      id: uuid(8300),
+      key: LAMP,
+      book_id: null,
+      content: { kind: 'item', ru: 'Лампа странника' }
+    });
+    storage.fireExternalChange(null);
+    /* The lamp's copy is held now, so the copy line goes; the skips stay. */
+    await waitFor(() => {
+      expect(previews(container)).toEqual(['Списков: 2, позиций: 3. Пропущено позиций: 4.']);
+    });
+    const lamps = blocks(container).flatMap((b) =>
+      lineTexts(b).filter((l) => l.includes(LAMP) && l.endsWith(UNHELD))
+    );
+    expect(lamps).toHaveLength(2);
+  });
+
+  it('sends the same ids after a failed lists call whose copies landed', async () => {
+    const { container, cloud } = await openedAs('gm2');
+    const imp = vi.spyOn(cloud.lists, 'import');
+    imp.mockResolvedValueOnce({ ok: false, error: 'network' });
+    choose(container, fixture('keys-only-v2.json'));
+    await userEvent.click(await importButton(2));
+    expect(await alertText()).toBe('Не получилось. Проверьте соединение и попробуйте ещё раз.');
+    const own = await cloud.homebrew.load();
+    expect(own.ok && own.items.map((i) => i.key).sort()).toEqual([AXE, LAMP]);
+    await userEvent.click(await importButton(2));
+    expect(await screen.findByText('Импортировано списков: 2')).toBeInTheDocument();
+    expect(imp).toHaveBeenCalledTimes(2);
+    expect(imp.mock.calls[1]?.[0]).toEqual(imp.mock.calls[0]?.[0]);
+  });
+
+  it('turns a link the server refused into a skip and imports the rest with new ids', async () => {
+    const { container, cloud } = await opened();
+    choose(container, oneList([{ id: 'ci1' }, { id: AXE, source: 'homebrew' }]));
+    const button = await importButton(1);
+    const axe = await axeId(cloud);
+    const imp = vi.spyOn(cloud.lists, 'import');
+    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    /* The database's 23503: the key names an item gone since the preview. */
+    imp.mockImplementationOnce(async () => {
+      await remove(axe!);
+      return { ok: false, error: 'refused' };
+    });
+    await userEvent.click(button);
+    expect(await alertText()).toBe(
+      'Сервер не принял файл: данные в аккаунте изменились. Нажмите «Импортировать» ещё раз.'
+    );
+    await waitFor(() => {
+      expect(lineTexts(blocks(container)[0]!)).toEqual(['Позиция 2, ' + AXE + ': ' + UNHELD]);
+    });
+    await userEvent.click(await importButton(1));
+    expect(await screen.findByText('Импортировано списков: 1')).toBeInTheDocument();
+    const [first, second] = imp.mock.calls.map((c) => c[0][0]);
+    expect(second?.list.id).not.toBe(first?.list.id);
+    expect(second?.entries.map((e) => e.item_key)).toEqual(['ci1']);
   });
 });
 

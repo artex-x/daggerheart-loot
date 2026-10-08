@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { zipStored } from '../lib/zip.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED, uuid } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
@@ -43,19 +43,23 @@ const lineTexts = (el: Element): string[] =>
   [...el.querySelectorAll('li')].map((li) => li.textContent.replace(/\s+/g, ' ').trim());
 
 describe('the import panel', () => {
-  it('opens after «Новый предмет» with the pick button, the hint and its two links', async () => {
+  it('opens after «Новый предмет» with the pick button, the hint and its three links', async () => {
     const { container } = await opened();
     const toggle = screen.getByRole('button', { name: 'Импорт из файла' });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
     const schema = screen.getByRole('link', { name: 'схеме homebrew-v1' });
     expect(schema).toHaveAttribute('href', 'schema/homebrew-v1.json');
+    const v2 = screen.getByRole('link', { name: 'homebrew-v2' });
+    expect(v2).toHaveAttribute('href', 'schema/homebrew-v2.json');
+    expect(v2).toHaveAttribute('target', '_blank');
+    expect(v2).toHaveAttribute('rel', 'noopener');
     expect(screen.getByRole('link', { name: 'описание для ИИ-помощников' })).toHaveAttribute(
       'href',
       'llms.txt'
     );
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v1 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
+      'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v1 / homebrew-v2 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
     );
     await expectNoA11yViolations(container);
   });
@@ -409,6 +413,59 @@ describe('the import panel', () => {
   });
 });
 
+describe("a card's book items on «Обновить»", () => {
+  const SET_ID = uuid(521);
+  const SET = 'hb_aldersetaaaaaaaa';
+  /* gm1 with its set card holding q1, then a file naming that card. */
+  const seed: Seed = {
+    ...SEED,
+    homebrew: {
+      ...SEED.homebrew,
+      gm1: {
+        ...SEED.homebrew.gm1,
+        cards: SEED.homebrew.gm1.cards.map((c) =>
+          c.id === SET_ID ? { ...c, content: { ...c.content, items: ['q1'] } } : c
+        )
+      }
+    }
+  };
+  const heldWithItems = async (file: Uint8Array, update: boolean) => {
+    const v = await opened('gm1', {}, true, seed);
+    choose(v.container, file);
+    await importButton(1);
+    if (update) await userEvent.click(screen.getByRole('button', { name: 'Обновить' }));
+    await userEvent.click(await importButton(1));
+    await screen.findByText(/^Импортировано предметов: 0/);
+    const read = await v.cloud.homebrew.load();
+    return read.ok ? read.cards.find((c) => c.id === SET_ID)?.content : undefined;
+  };
+  const card = { key: SET, kind: 'set', ru: 'Комплект из файла', rud: 'Новый бонус.' };
+
+  it('keeps the held book items for a version 1 file', async () => {
+    expect(await heldWithItems(doc({ cards: [card] }), true)).toMatchObject({
+      ru: 'Комплект из файла',
+      items: ['q1']
+    });
+  });
+
+  it("drops them for a version 2 file whose card has none, and writes a version 2 file's own", async () => {
+    expect(await heldWithItems(doc({ version: 2, cards: [card] }), true)).not.toHaveProperty(
+      'items'
+    );
+    cleanup();
+    expect(
+      await heldWithItems(doc({ version: 2, cards: [{ ...card, items: ['ci1', 'q2'] }] }), true)
+    ).toMatchObject({ items: ['ci1', 'q2'] });
+  });
+
+  it('writes no card on «Пропустить»', async () => {
+    expect(await heldWithItems(doc({ version: 2, cards: [card] }), false)).toMatchObject({
+      ru: 'Комплект Ольхи',
+      items: ['q1']
+    });
+  });
+});
+
 describe('the refusals', () => {
   it('refuses a file with errors, each line with its object, its text and its path', async () => {
     const { container } = await opened();
@@ -521,12 +578,12 @@ describe('the refusals', () => {
     [
       'another version',
       fixture('wrong-version.json'),
-      'Файл предметов версии 2: сайт читает версию 1.'
+      'Файл предметов версии 3: сайт читает версии 1 и 2.'
     ],
     [
       'no version',
       utf8(JSON.stringify({ format: 'daggerheart-loot/homebrew', items: [] })),
-      'В файле нет поля version. Сайт читает версию 1.'
+      'В файле нет поля version. Сайт читает версии 1 и 2.'
     ],
     [
       'a lists file',

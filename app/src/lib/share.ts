@@ -15,11 +15,11 @@
  * clipboard; that is `ClipboardPort`'s job. */
 
 import { dict, type Dict } from './dict.js';
-import { setBonusOf, setOf, upgradesTo, type Index } from './data.js';
+import { refsOf, setBonusOf, setKeyOf, setOf, upgradesTo, type Index } from './data.js';
 import { descHtml, esc } from './desc.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
-import { FOLD_OWN, foldOwn, relName, relOrder } from './label.js';
+import { FOLD_OWN, foldOwn, relName, relOrder, relText, setFolds } from './label.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
 import { takenTotal } from './lists.js';
 import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
@@ -50,8 +50,9 @@ export interface ShareBlock {
  * `skip` holds ids already present elsewhere in the same message, which is how a
  * copied roll of several records avoids repeating a shared upgrade target.
  *
- * The upgrade targets fold as the card folds them (`foldOwn`), so a target that
- * many homebrew records name still writes a message of bounded size.
+ * The upgrade targets and the set's members fold as the card folds them (`foldOwn`,
+ * `setFolds`), so a target that many homebrew records name, or an own set of many
+ * members, still writes a message of bounded size.
  */
 export function shareBlocks(
   it: Record_,
@@ -78,7 +79,7 @@ export function shareBlocks(
     out.push({ head: `${t.craftInto}: ${t.andMore.replace('%n', String(more))}`, body: '' });
   }
 
-  for (const key of it.refs ?? []) {
+  for (const key of refsOf(index, it)) {
     const r = index.refs[key] ?? (isHomebrewRecord(it) ? it.cards?.refs?.[key] : undefined);
     if (!r) continue;
     out.push(
@@ -93,9 +94,7 @@ export function shareBlocks(
   if (members.length || bonus) {
     out.push({
       head: members.length
-        ? `${t.setLabel}: ${relOrder(members, lang)
-            .map((r) => relName(r, lang))
-            .join(', ')}`
+        ? `${t.setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))}`
         : t.setLabel,
       body: !bonus
         ? ''

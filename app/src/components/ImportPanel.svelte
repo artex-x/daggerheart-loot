@@ -4,7 +4,9 @@
      refused, and the press that imports every list or none
      (docs/specs/FEATURES.md, "Lists"). A zip's `lists.json` is read by
      `ImportFile`; its `homebrew.json` is the homebrew import's. The rows are
-     built once per file, so a retry after a lost answer sends the same ids. */
+     built once per file, so a retry after a lost answer sends the same ids; a
+     kept entry without a snapshot whose own item went reads the file again. */
+  import { untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Field from './Field.svelte';
@@ -41,6 +43,8 @@
     | { kind: 'errors'; errors: BundleError[]; more: number; names: (string | null)[] }
     | {
         kind: 'preview';
+        /* The file's text, read again when a kept entry's own item goes. */
+        text: string;
         lists: ImportList[];
         skipped: Skipped[];
         plan: ImportPlan;
@@ -119,14 +123,22 @@
     return status !== undefined && status !== 'ready';
   };
 
+  /* The held-key test for an entry without a snapshot, which imports only under a held key;
+     the copy line and `importPlan` test a snapshot's copy apart. */
+  const holdsNow = (): ((key: string) => boolean) => {
+    const held = new Set((app.homebrew?.items ?? []).map((i) => i.key));
+    return (key) => held.has(key);
+  };
+
   function read(text: string, sibling: boolean, other: string[], otherMore: number): void {
     waiting = null;
     allLists = false;
     /* A lists file holds catalog ids only: an own key never imports as an official entry. */
-    const p = parseBundle(text, (id) => app.catalog?.byId.has(id) ?? false);
+    const p = parseBundle(text, (id) => app.catalog?.byId.has(id) ?? false, holdsNow());
     if (p.ok) {
       if (
-        p.lists.some((l) => l.entries.some((e) => e.source === 'homebrew')) &&
+        (p.lists.some((l) => l.entries.some((e) => e.source === 'homebrew')) ||
+          p.skipped.some((s) => s.why === 'unheld')) &&
         homebrewLoading()
       ) {
         waiting = { text, sibling, other, more: otherMore };
@@ -136,6 +148,7 @@
       const plan = app.importPlan(p.lists) ?? { rows: [], copies: null };
       view = {
         kind: 'preview',
+        text,
         lists: p.lists,
         skipped: p.skipped,
         plan,
@@ -162,6 +175,26 @@
     if (waiting && !homebrewLoading()) {
       const w = waiting;
       read(w.text, w.sibling, w.other, w.more);
+    }
+  });
+
+  /* A kept entry without a snapshot whose own item went reads the file again, with new
+     ids: the server refuses such a link whole, so none of the file's lists landed. A
+     skipped key that comes stays skipped: the press's own copies would make it held
+     after a failed lists call, and that press must keep its ids. */
+  $effect(() => {
+    if (view.kind !== 'preview' || sending || homebrewLoading()) return;
+    const holds = holdsNow();
+    const gone = view.lists.some((l) =>
+      l.entries.some(
+        (e) => e.source === 'homebrew' && e.snapshot === null && !holds(e.item_key)
+      )
+    );
+    if (gone) {
+      const v = view;
+      untrack(() => {
+        read(v.text, v.sibling, v.other, v.otherMore);
+      });
     }
   });
 
@@ -225,7 +258,9 @@
       text:
         s.why === 'unknown'
           ? t.importSkipUnknown
-          : t.importSkipRepeat.replace('%n', String((s.first ?? 0) + 1))
+          : s.why === 'unheld'
+            ? t.importSkipUnheld
+            : t.importSkipRepeat.replace('%n', String((s.first ?? 0) + 1))
     };
   }
 
@@ -286,7 +321,10 @@
     const unheld = new Set(
       lists.flatMap((l) =>
         l.entries.flatMap((e) =>
-          e.source === 'homebrew' && !own?.has(e.item_key) && !planned.has(e.item_key)
+          e.source === 'homebrew' &&
+          e.snapshot !== null &&
+          !own?.has(e.item_key) &&
+          !planned.has(e.item_key)
             ? [e.item_key]
             : []
         )
@@ -325,7 +363,8 @@
       app.say((t) => t.importTooSlow, { error: true });
     } else if (answer.error === 'refused') {
       /* The account changed under the preview (a linked item deleted) or a copy was
-         refused: the next press builds its plan from the read. */
+         refused: the next press builds its plan from the read; an entry without a snapshot
+         then becomes a skip through the re-read. */
       void app.homebrew?.read();
       app.say((t) => t.importRefused, { error: true });
     } else {

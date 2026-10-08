@@ -232,6 +232,19 @@ describe('recordOf and snapshotValid over docs/fixtures/homebrew/snapshots.json'
     expect(snapshotValid({ ...c, cards: [] })).toBe(false);
     expect(snapshotValid({ ...c, cards: { sets: [] } })).toBe(false);
   });
+  it("refuses a snapshot's card that holds book items", () => {
+    const c = snapshots.valid.find((x) => x.key === 'hb_relateditemaaaaa')?.snapshot as {
+      cards: { sets?: Record<string, object> };
+    };
+    const [key, card] = Object.entries(c.cards.sets ?? {})[0] ?? [];
+    expect(key).toBeDefined();
+    expect(
+      snapshotValid({
+        ...c,
+        cards: { ...c.cards, sets: { [key!]: { ...card, items: ['q1'] } } }
+      })
+    ).toBe(false);
+  });
   it('fills a missing language and an empty one from the other', () => {
     const r = recordOf('hb_aaaaaaaaaaaaaaaa', { kind: 'item', en: '', ru: 'Камень' }, null);
     expect([r.en, r.ru, r.ende, r.rud]).toEqual(['Камень', 'Камень', '', '']);
@@ -547,6 +560,40 @@ describe('the relations of withRecords', () => {
     expect(Object.keys(base.refs)).toEqual(['slow']);
     const frozenOnly = withRecords(base, [], [frozenSet]);
     expect(frozenOnly.sets[SET]?.ru).toBe('Чужой комплект');
+  });
+
+  it("applies the account's own cards to the catalog records their items name", () => {
+    const LATE = 'hb_zzzsetaaaaaaaaaa';
+    const cards: CardRef[] = [
+      { key: LATE, kind: 'set', en: 'Late', items: ['ci1'] },
+      { key: SET, kind: 'set', ru: 'Комплект Ольхи', items: ['ci2', 'ci1', 's1', 'gone'] },
+      { key: RULE, kind: 'ref', en: 'Alder Brand', items: ['ci1', 'hb_upaaaaaaaaaaaaaa'] },
+      { key: 'hb_aarulecardaaaaaa', kind: 'ref', en: 'First', items: ['ci1'] }
+    ];
+    const ownSet = recordOf(
+      'hb_ownsetaaaaaaaaaa',
+      { kind: 'item', ru: 'Своё', set: SET },
+      null
+    );
+    const ix = withRecords(base, [up, ownSet], [], cards);
+    expect([...ix.ownSetOf]).toEqual([
+      ['ci2', SET],
+      ['ci1', SET]
+    ]);
+    expect(ix.ownRefsOf.get('ci1')).toEqual(['hb_aarulecardaaaaaa', RULE]);
+    expect(ix.ownRefsOf.has(up.id)).toBe(false);
+    expect(ix.setMembers.get(SET)?.map((r) => r.id)).toEqual([ownSet.id, 'ci1', 'ci2']);
+    expect(ix.setMembers.get(LATE)).toBeUndefined();
+    expect(ix.sets[SET]?.ru).toBe('Комплект Ольхи');
+    expect(ix.sets[LATE]?.en).toBe('Late');
+    expect(ix.refs[RULE]?.en).toBe('Alder Brand');
+    expect(base.setMembers.has(SET)).toBe(false);
+    expect(base.ownSetOf.size).toBe(0);
+    const onlyCards = withRecords(base, [], [], cards);
+    expect(onlyCards.ownSetOf.get('ci1')).toBe(SET);
+    expect(onlyCards.rows).toBe(base.rows);
+    const linked = withRecords(ix, [], [up]);
+    expect(linked.ownSetOf).toBe(ix.ownSetOf);
   });
 });
 

@@ -98,6 +98,24 @@ No release plan owns it; the owner decides which one takes it.
   (for example the «Новый список» field), not `body`. Cover it in
   `listsPage.test.ts`.
 
+### D95 - focus falls to `body` when a dropped filter pick removes its row
+
+- **Where**: `app/src/components/TablesPage.svelte` and
+  `app/src/components/FilterBar.svelte` (the offer rule: a row that cannot
+  narrow is not drawn; `FEATURES.md`, "Tables and search").
+- **What**: a pressed pill or «Сбросить всё» that drops the last pick of a
+  row, or of the whole strip, removes the pressed control with its row or
+  strip, and nothing moves focus, so it falls to `body`. The pill press and
+  «Сбросить всё» did so before the offer rule too.
+- **Why deferred**: found in the review of the offer rule on every page
+  (task `homebrew-followups`, 2026-10-08); the target is the same decision
+  as D64 and D66.
+- **How to verify the fix**: on `#/tables/weapons` pick one value with the
+  keyboard, press its pill so that the row goes, and confirm that
+  `document.activeElement` is a named element (for example the table
+  heading or `#main`), not `body`; the same for «Сбросить всё». Cover it
+  in `tables.test.ts`.
+
 ## Harness parity (no task filed yet; the owner names the release)
 
 Owns: the fake's parity with the database's bounds of one write, and the
@@ -434,6 +452,26 @@ whose key the reader also holds.
 - **How to verify the fix**: as gm2, import gm1's homebrew file, then open
   a list that links gm1's axe; the row draws gm1's item, and a test of
   `recordFor` covers a linked entry whose key the reader also holds.
+
+### D96 - the server's snapshot check takes book items on a snapshot's card
+
+- **Where**: `public.homebrew_snapshot_valid` (last body in
+  `supabase/migrations/20261001130000_homebrew_relations.sql`), which calls
+  `homebrew_card_valid` and so accepts `content.items` (an own card's book
+  items, `20261008120000_homebrew_card_items.sql`) inside a snapshot's
+  card; its only caller is the `list_entries` snapshot check.
+- **What**: the client's `cardsValid` refuses `items` in a snapshot's card,
+  and `homebrew_snapshot_of` copies named fields only, so no app path
+  writes one; a direct write could, but `list_entries_snapshot_null` (D93)
+  keeps the column null.
+- **Why deferred**: found in the review of book items on own cards (task
+  `homebrew-followups`, 2026-10-08); the fix is a migration, and the
+  column it guards goes with D93.
+- **How to verify the fix**: R9's migration that drops
+  `list_entries.snapshot` drops `homebrew_snapshot_valid` too, or a
+  `tests/db/` case shows that a snapshot whose card holds `items` is
+  refused (`not jsonb_path_exists(snapshot, '$.cards.*.*.items')`);
+  `npm run check:db` passes.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 

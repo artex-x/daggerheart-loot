@@ -91,7 +91,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 47Посох Запредельной ПустотыРанг 1 · Магическое · Характеристика... [namelen=208 namehash=30468a73]
 52Моргенштерн ТарианаРанг 1 · Физическое · Сила · Близко · d10+2... [namelen=286 namehash=74f01d35]
 58Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10+... [namelen=348 namehash=02c8306a]
-5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=399 namehash=cf4d1d2a]
+5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=309 namehash=3a06bb17]
 62Алебарда УрзоРанг 1 · Физическое · Влияние · Близко · d12+1 фи... [namelen=207 namehash=0b657042]
 66Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12+2... [namelen=247 namehash=22d353e0]
 Arazo's Artifacts
@@ -329,7 +329,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 47Staff of the Void BeyondTier 1 · Magic · Spellcast · Very Far ... [namelen=182 namehash=4c9c09e2]
 52Taryan's MorningstarTier 1 · Physical · Strength · Very Close ... [namelen=294 namehash=4a668e11]
 58Tuning SpearTier 1 · Physical · Finesse · Very Close · d10+2 p... [namelen=324 namehash=933dca95]
-5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=360 namehash=f8c58b0b]
+5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=266 namehash=6419d1ef]
 62Urzo's HalberdTier 1 · Physical · Presence · Very Close · d12+... [namelen=210 namehash=2b1d2a5c]
 66Warhammer of BazTier 1 · Physical · Strength · Melee · d12+2 p... [namelen=225 namehash=8c9a7ddc]
 Agility

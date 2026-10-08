@@ -89,6 +89,12 @@ export interface Index {
   refs: Record<string, RefCard>;
   /** A set's shared bonus by set key. */
   sets: Record<string, SetCard>;
+  /** A catalog record's set from the signed-in account's own set card that names it in
+   *  `items`, by record id; empty for any other reader. */
+  ownSetOf: ReadonlyMap<string, string>;
+  /** A catalog record's rule cards from the signed-in account's own cards that name it in
+   *  `items`, by record id, in key order; empty for any other reader. */
+  ownRefsOf: ReadonlyMap<string, readonly string[]>;
 }
 
 export function buildIndex(loot: Loot): Index {
@@ -179,7 +185,9 @@ export function buildIndex(loot: Loot): Index {
       return out;
     },
     refs: loot.refs ?? {},
-    sets: loot.sets ?? {}
+    sets: loot.sets ?? {},
+    ownSetOf: new Map(),
+    ownRefsOf: new Map()
   };
 }
 
@@ -351,11 +359,24 @@ export function madeFrom(index: Index, it: Record_): Record_[] {
   ]);
 }
 
+/** Returns the key of the set a record belongs to: its own `set`, else the account's own
+ *  set card that names it (`ownSetOf`). */
+export function setKeyOf(index: Index, it: Record_): string | undefined {
+  return it.set ?? index.ownSetOf.get(it.id);
+}
+
+/** Returns the rule card keys a record draws: its own `refs`, then the account's own cards
+ *  that name it (`ownRefsOf`), each once. */
+export function refsOf(index: Index, it: Record_): string[] {
+  return [...new Set([...(it.refs ?? []), ...(index.ownRefsOf.get(it.id) ?? [])])];
+}
+
 /** Every member of the set a record belongs to, itself included also when the index
  *  lacks it (a frozen copy) - empty where the record belongs to no set or to a set of one. */
 export function setOf(index: Index, it: Record_): readonly Record_[] {
-  if (!it.set) return [];
-  const members = index.setMembers.get(it.set) ?? [];
+  const key = setKeyOf(index, it);
+  if (!key) return [];
+  const members = index.setMembers.get(key) ?? [];
   const all = members.some((r) => r.id === it.id) ? members : [...members, it];
   return all.length > 1 ? all : [];
 }
@@ -364,9 +385,10 @@ export function setOf(index: Index, it: Record_): readonly Record_[] {
  *  card, else the one the record carries. A frozen copy with no other member of its set
  *  still gets the card it carries; an own item alone in its set gets none. */
 export function setBonusOf(index: Index, it: Record_): SetCard | undefined {
-  if (!it.set) return undefined;
-  const carried = isHomebrewRecord(it) ? it.cards?.sets?.[it.set] : undefined;
-  if (setOf(index, it).length) return index.sets[it.set] ?? carried;
-  const listed = (index.setMembers.get(it.set) ?? []).some((r) => r.id === it.id);
+  const key = setKeyOf(index, it);
+  if (!key) return undefined;
+  const carried = isHomebrewRecord(it) ? it.cards?.sets?.[key] : undefined;
+  if (setOf(index, it).length) return index.sets[key] ?? carried;
+  const listed = (index.setMembers.get(key) ?? []).some((r) => r.id === it.id);
   return listed ? undefined : carried;
 }
