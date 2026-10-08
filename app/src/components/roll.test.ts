@@ -219,20 +219,20 @@ describe("Arazo's Artifacts over the real data", () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/roll/arazo'), data: fakeData(REAL) })
     });
-    expect(screen.getByRole('button', { name: 'Случайно 1–51' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Случайно 1–78' })).toBeInTheDocument();
   });
 
-  it('draws an upgrade rung, stat line and all, at 8', async () => {
-    await typed('8');
+  it('draws an upgrade rung, stat line and all, at 20', async () => {
+    await typed('20');
     expect(
       screen.getByRole('heading', { level: 2, name: 'Улучшенный Лук из Эльфийских Волос' })
     ).toBeInTheDocument();
-    expect(screen.getByText(/d10/)).toBeInTheDocument();
+    expect(screen.getByText(/d10\+1/)).toBeInTheDocument();
   });
 
-  it('draws the last row at 51', async () => {
-    await typed('51');
-    expect(field().value).toBe('51');
+  it('draws the last row at 78', async () => {
+    await typed('78');
+    expect(field().value).toBe('78');
     expect(screen.getByRole('heading', { level: 2, name: 'Ларец Зерана' })).toBeInTheDocument();
   });
 });

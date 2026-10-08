@@ -168,10 +168,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 410,
+      "rows": 437,
       "printCards": 0,
       "picked": [],
-      "count": "410"
+      "count": "437"
     }
   },
   {
@@ -192,10 +192,10 @@
     "resolves": {
       "hash": "#/tables/arazo",
       "tab": "#/tables",
-      "rows": 51,
+      "rows": 78,
       "printCards": 0,
       "picked": [],
-      "count": "51"
+      "count": "78"
     }
   },
   {
@@ -227,13 +227,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
       "tab": "#/tables",
-      "rows": 40,
+      "rows": 42,
       "printCards": 0,
       "picked": [
         "tier:2",
         "cls:mag"
       ],
-      "count": "40 из 410"
+      "count": "42 из 437"
     }
   },
   {
@@ -242,12 +242,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "#/tables",
-      "rows": 193,
+      "rows": 202,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "193 из 410"
+      "count": "202 из 437"
     }
   },
   {
@@ -256,12 +256,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 224,
+      "rows": 236,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "224 из 410"
+      "count": "236 из 437"
     }
   },
   {
@@ -270,13 +270,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 190,
+      "rows": 208,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "190 из 410"
+      "count": "208 из 437"
     }
   },
   {
@@ -285,12 +285,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-A",
       "tab": "#/tables",
-      "rows": 10,
+      "rows": 1,
       "printCards": 0,
       "picked": [
         "tier:A"
       ],
-      "count": "10 из 410"
+      "count": "1 из 437"
     }
   },
   {
@@ -349,13 +349,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "#/tables",
-      "rows": 51,
+      "rows": 58,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "51 из 410"
+      "count": "58 из 437"
     }
   },
   {
@@ -364,10 +364,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 410,
+      "rows": 437,
       "printCards": 0,
       "picked": [],
-      "count": "410"
+      "count": "437"
     }
   },
   {

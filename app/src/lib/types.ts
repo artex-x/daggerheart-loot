@@ -92,9 +92,9 @@ export function isSection(v: string): v is Section {
 /** The stat block. Not only records in `eq` carry one. */
 export interface Equip {
   t: EquipKind;
-  /** `'A'` only for equipment the book prints as an artifact - Vault of Ages'
-   *  Artifacts section, or an Arazo's Artifacts piece with no tier formula; the
-   *  record's own `tier` is then `'A'` too. Never inferred from the stats. */
+  /** `'A'` only for equipment the book prints in Vault of Ages' Artifacts
+   *  section; the record's own `tier` is then `'A'` too. Never inferred from
+   *  the stats. */
   tier: Tier | 'A';
   cls?: EquipClass;
   tr?: Trait;

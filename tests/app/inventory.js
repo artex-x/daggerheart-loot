@@ -703,7 +703,7 @@ const STATES = [
   {
     id: '#/roll/arazo ~ help',
     route: '#/roll/arazo',
-    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of a scaling piece',
+    why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
     enter: async (d) => {
       await d.click('Как это работает');
     }
@@ -958,7 +958,7 @@ const STATES = [
   {
     id: '#/tables/arazo',
     route: '#/tables/arazo',
-    why: 'a plain body with a kind row, 51 rows in book order, four rungs per scaling piece'
+    why: 'a plain body with a kind row, 78 rows in book order, four rungs per piece of equipment'
   },
   {
     id: '#/tables/other_starting',

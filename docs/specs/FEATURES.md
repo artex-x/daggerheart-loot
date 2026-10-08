@@ -18,7 +18,7 @@ across.
 | Dread | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
-| Arazo's Artifacts | 1-51 | 1 | `arazo {n}` |
+| Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
 | Communities | community + 1-10 | 1 | `comm {c, n}` |
 
 - The source switch on Core rules cannot be emptied - unticking the last one is
@@ -81,7 +81,7 @@ across.
   the default, a build with sign-in draws the note «Только до перезагрузки.
   Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
   last words a link to `#/account`.
-- Search covers all 1323 records: names, descriptions and stat lines, both
+- Search covers all 1350 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -123,13 +123,12 @@ across.
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 410 weapons, 127 secondary, 108 armour. The `src` facet is how you
+  two books**: 437 weapons, 127 secondary, 108 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
   The Dragon's Vault, Arazo's Artifacts, Wondrous and Dread equipment appears there too.
 - An equipment table is sectioned by tier, `Ранг 1` to `Ранг 4`, then
   `Артефакты` (key `tA`) for equipment the book prints in its Artifacts
-  section, or an Arazo's Artifacts piece with no tier formula
-  (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
+  section (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
   line, copied text and the stub page read `Артефакт` / `Artifact` where the
   rank goes; the tier facet offers an `A` chip, `Артефакты` / `Artifacts`
   (the section's label, as on the `voa` table), only on a table whose kind has

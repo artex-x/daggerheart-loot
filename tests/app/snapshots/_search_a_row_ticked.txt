@@ -27,20 +27,20 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=6f14b11a]
+    StaticText "Поиск сразу по 1350 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=30fa12d7]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    checkbox "Выбрать все (130)" [checked=false]
-    StaticText "Выбрать все (130)"
+    checkbox "Выбрать все (136)" [checked=false]
+    StaticText "Выбрать все (136)"
     checkbox "Меч Хрустального Духа" [checked=true]
     button "89 Меч Хрустального Духа Ранг 4 · Физическое · Искусность · Впло..." [namelen=284 namehash=e6f3ec0e]
     checkbox "Меч Призрачного Касания" [checked=false]
     button "105 Меч Призрачного Касания Ранг 2 · Физическое · Проворность · ..." [namelen=278 namehash=7b22872b]
-    ... checkbox x126 of 130 same-shape siblings elided
-    ... button x126 of 130 same-shape siblings elided
+    ... checkbox x132 of 136 same-shape siblings elided
+    ... button x132 of 136 same-shape siblings elided
     checkbox "Божественный Пластинчатый Доспех" [checked=false]
     button "Божественный Пластинчатый Доспех Ранг 4 · Пороги 13/36 · Броня 6..." [namelen=155 namehash=ddbafa4a]
     checkbox "Латы Ужаса" [checked=false]
@@ -67,17 +67,22 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 108Нектар Обетного ЦветкаВы очищаете 1d4 Стресса, но в следующий... [namelen=259 namehash=b85e1b52]
 10Маленький Лесной ДухИгривый лесной дух следует за вами как без... [namelen=278 namehash=cdbae407]
 10Мистическая СмолаМаленькая баночка воска для тетивы, которая м... [namelen=256 namehash=d4f34091]
+10Чаша ОбетаОдин раз за продолжительный отдых вы получаете допол... [namelen=329 namehash=7972b6de]
 113Кинетическое ЛезвиеРанг 2 · Физическое · Проворность · Вплотн... [namelen=335 namehash=588f7fbd]
 114Рукавицы УбийцыРанг 2 · Физическое · Сила · Вплотную · d10+4 ... [namelen=395 namehash=053b8b2a]
 116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
+11Кортик МёртвыхРанг 1 · Физическое · Искусность · Вплотную · d6... [namelen=505 namehash=bdb6831c]
 121Меч-РазрушительРанг 3 · Физическое · Проворность · Вплотную ·... [namelen=446 namehash=d0a43f69]
+12Улучшенный Кортик МёртвыхРанг 2 · Физическое · Искусность · Вп... [namelen=516 namehash=39a05e96]
 133Меч АнгеловРанг 4 · Физическое · Проворность · Вплотную · d10... [namelen=389 namehash=fbdd75b8]
 134Меч НежитиРанг 1 · Физическое · Проворность · Вплотную · d8 ф... [namelen=216 namehash=8c756826]
 138Двуручный Меч ВайатыРанг 2 · Физическое · Сила · Вплотную · d... [namelen=307 namehash=0d066e24]
 13Временной ФитильСтоимость Призыва: 2В качестве Хода Отдыха вы ... [namelen=484 namehash=5cae729d]
 13Кольцо Кровавой МатроныСтоимость Призыва: 2Кровавый Шип: Совер... [namelen=730 namehash=5a643486]
+13Продвинутый Кортик МёртвыхРанг 3 · Физическое · Искусность · В... [namelen=518 namehash=fa3a7800]
 13ХаррокливРанг 3 · Физическое · Сила · Вплотную · d12+7 физ · Д... [namelen=315 namehash=ef4478d5]
 143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=297 namehash=a94aca4a]
+14Легендарный Кортик МёртвыхРанг 4 · Физическое · Искусность · В... [namelen=518 namehash=d0ddcbf1]
 14Сфера БезумияСтоимость Призыва: 3Выберите знакомое существо на... [namelen=782 namehash=65f47e10]
 14Шлем Белого КогтяСтоимость Призыва: 1Этот шлем даёт вам кругов... [namelen=364 namehash=5b764708]
 15Камень ДоблестиВы можете прикрепить этот камень к доспеху, кот... [namelen=290 namehash=6a450524]
@@ -95,7 +100,6 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 23Голодный Кулачный КлинокРанг 4 · Физическое · Искусность · Впл... [namelen=424 namehash=e6e4f137]
 23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
 26Мантия АрхимагаРанг 4 · Пороги 10/30 · Броня 2Стоимость Призыв... [namelen=336 namehash=0adc4ed6]
-26Перчатка СкорпионаКогда вы держите в перчатке оружие, наносяще... [namelen=274 namehash=43f9409a]
 27Посох Чёрной ДырыРанг 4 · Магическое · Знание · Далеко · d20+7... [namelen=666 namehash=f24f876c]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
 2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
@@ -111,25 +115,26 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 37Перчатки РасторопностиКогда вы должны отметить Стресс, чтобы п... [namelen=122 namehash=4847aa54]
 3Агатовый ПаукВы можете приказать украшению в виде паука прыгнут... [namelen=262 namehash=16569d42]
 3Лист Исполинского ДереваОгромный лист, прочный как кожа и широк... [namelen=220 namehash=2072bd32]
-3Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=f196bb5d]
-46Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 9/20 · Броня 3Оберега... [namelen=230 namehash=2414bfcc]
-47Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=e058939b]
-48Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 11/24 · Б... [namelen=243 namehash=d7e6d353]
-49Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 12/26 · Б... [namelen=243 namehash=4b702769]
+41Перчатка СкорпионаКогда вы держите в перчатке оружие, наносяще... [namelen=274 namehash=6f0a1693]
 4Амулет Праведной ЯростиПризовите заключённую в амулете небесную... [namelen=296 namehash=4620947c]
 4Взгляд ВаэтСтоимость Призыва: 3Один раз за продолжительный отды... [namelen=357 namehash=c6da99d1]
-4Чаша ОбетаОдин раз за продолжительный отдых вы получаете дополн... [namelen=328 namehash=d79127c5]
-50Кнут из Хвоста ВиверныАртефакт · Физическое · Проворность · Бл... [namelen=530 namehash=af543359]
 53Кольца ТовариществаЭту пару деревянных колец могут носить два ... [namelen=174 namehash=ee31ba27]
 5Амулет Кровавого ОхотникаПока вы носите этот амулет, каждый раз... [namelen=384 namehash=4a14bd0d]
-5Кортик МёртвыхАртефакт · Физическое · Искусность · Вплотную · d... [namelen=522 namehash=935c72b3]
 5Маска ФаибосаКак только вы надеваете эту маску, она срастается ... [namelen=656 namehash=f6df1b2d]
 5Предательский КастетВы можете отметить Стресс перед Броском Ата... [namelen=128 namehash=bf531987]
 5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
 6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
 6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=287c4d5e]
+70Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 7/15 · Броня 3Оберега... [namelen=230 namehash=c776eff2]
 71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
+71Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=7237bb07]
+72Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 12/29 · Б... [namelen=243 namehash=4a3709d5]
+73Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 14/38 · Б... [namelen=243 namehash=985138fe]
+74Кнут из Хвоста ВиверныРанг 1 · Физическое · Проворность · Близ... [namelen=510 namehash=ceb3f1fe]
+75Улучшенный Кнут из Хвоста ВиверныРанг 2 · Физическое · Проворн... [namelen=523 namehash=b0e3a845]
+76Продвинутый Кнут из Хвоста ВиверныРанг 3 · Физическое · Провор... [namelen=524 namehash=468a0542]
 76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=df517ac1]
+77Легендарный Кнут из Хвоста ВиверныРанг 4 · Физическое · Провор... [namelen=524 namehash=3204dc61]
 78Тысяча ПорезовРанг 3 · Физическое · Искусность · Вплотную · d8... [namelen=440 namehash=66683ec3]
 79Лук ИскателяРанг 2 · Физическое · Искусность · Далеко · d6+4 ф... [namelen=372 namehash=eff71575]
 7Амулет из Пальца ДьяволаСтоимость Призыва: 3Вражда: Когда вы ил... [namelen=517 namehash=ebfd1e29]
@@ -140,6 +145,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 94Сумеречное КрылоРанг 2 · Физическое · Сила · Вплотную · d10+6 ... [namelen=252 namehash=ca1a4459]
 95Стихийный Длинный ЛукРанг 3 · Физическое · Проворность · Очень... [namelen=501 namehash=24bc8a83]
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
+9Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=8ea4922a]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
 Arazo's Artifacts
@@ -208,8 +214,10 @@ daggerheart.com
 Легендарный Длинный мечРанг 4 · Физическое · Проворность · Вплот... [namelen=111 namehash=5a5240a9]
 Легендарный Доспех из Гробового Дерева
 Легендарный Доспех из Гробового ДереваРанг 4 · Пороги 10/31 · Бр... [namelen=185 namehash=ade9c86d]
+Легендарный Кнут из Хвоста Виверны
 Легендарный Короткий Меч
 Легендарный Короткий МечРанг 4 · Физическое · Проворность · Впло... [namelen=171 namehash=062f3dcb]
+Легендарный Кортик Мёртвых
 Легендарный Меч Света
 Легендарный Меч СветаРанг 4 · Магическое · Сила · Вплотную · d10... [namelen=109 namehash=5b83b7a0]
 Легендарный Меч Тьмы
@@ -276,8 +284,10 @@ daggerheart.com
 Продвинутый Длинный МечРанг 3 · Физическое · Проворность · Вплот... [namelen=110 namehash=939cdf46]
 Продвинутый Доспех из Гробового Дерева
 Продвинутый Доспех из Гробового ДереваРанг 3 · Пороги 8/22 · Бро... [namelen=184 namehash=a17ca4ee]
+Продвинутый Кнут из Хвоста Виверны
 Продвинутый Короткий Меч
 Продвинутый Короткий МечРанг 3 · Физическое · Проворность · Впло... [namelen=171 namehash=98310ec6]
+Продвинутый Кортик Мёртвых
 Продвинутый Меч Света
 Продвинутый Меч СветаРанг 3 · Магическое · Сила · Вплотную · d10... [namelen=108 namehash=34108514]
 Продвинутый Меч Тьмы
@@ -320,8 +330,10 @@ daggerheart.com
 Улучшенный Длинный МечРанг 2 · Физическое · Проворность · Вплотн... [namelen=109 namehash=a3d053da]
 Улучшенный Доспех из Гробового Дерева
 Улучшенный Доспех из Гробового ДереваРанг 2 · Пороги 6/15 · Брон... [namelen=183 namehash=090fb767]
+Улучшенный Кнут из Хвоста Виверны
 Улучшенный Короткий Меч
 Улучшенный Короткий МечРанг 2 · Физическое · Проворность · Вплот... [namelen=170 namehash=4923b656]
+Улучшенный Кортик Мёртвых
 Улучшенный Меч Света
 Улучшенный Меч СветаРанг 2 · Магическое · Сила · Вплотную · d10+... [namelen=107 namehash=0a415a7e]
 Улучшенный Меч Тьмы
@@ -373,20 +385,20 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c8a75867]
+    StaticText "Search all 1350 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=da2b2a4c]
     searchbox "Search by name or description…" [value=меч focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    checkbox "Select all (130)" [checked=false]
-    StaticText "Select all (130)"
+    checkbox "Select all (136)" [checked=false]
+    StaticText "Select all (136)"
     checkbox "Crystal Spirit Sword" [checked=true]
     button "89 Crystal Spirit Sword Tier 4 · Physical · Finesse · Melee · d1..." [namelen=259 namehash=bd18897a]
     checkbox "Ghost Touch Sword" [checked=false]
     button "105 Ghost Touch Sword Tier 2 · Physical · Agility · Melee · d8+3..." [namelen=232 namehash=8a380fde]
-    ... checkbox x126 of 130 same-shape siblings elided
-    ... button x126 of 130 same-shape siblings elided
+    ... checkbox x132 of 136 same-shape siblings elided
+    ... button x132 of 136 same-shape siblings elided
     checkbox "Godbound Laminar" [checked=false]
     button "Godbound Laminar Tier 4 · Thresholds 13/36 · Armor 6 Divine: Whe..." [namelen=127 namehash=7a71d3e9]
     checkbox "Circle-Forged Dreadplate" [checked=false]
@@ -412,18 +424,23 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 108Hellfire SwordTier 4 · Magic · Strength · Melee · d10+12 mag ... [namelen=408 namehash=c859312f]
 108Votive Bloom NectarYou clear 1d4 Stress, but the next time yo... [namelen=243 namehash=a0d9cd81]
 10Arcane ResinA tiny jar of bowstring wax that changes the damag... [namelen=248 namehash=711fd626]
+10Chalice of CommitmentOnce per long rest, you gain an additiona... [namelen=334 namehash=3ecabb12]
 10Little Forest SpiritA playful forest spirit follows you as a s... [namelen=288 namehash=ed91f154]
 113Kinetic EdgeTier 2 · Physical · Agility · Melee · d8+4 phy · ... [namelen=308 namehash=06e85ecb]
 114Murderer's GauntletsTier 2 · Physical · Strength · Melee · d1... [namelen=393 namehash=e6390473]
 116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
+11Dirk of the DeadTier 1 · Physical · Finesse · Melee · d6+2 phy... [namelen=536 namehash=5481810d]
 121ShatterswordTier 3 · Physical · Agility · Melee · d10+5 phy ·... [namelen=382 namehash=c93d3632]
+12Improved Dirk of the DeadTier 2 · Physical · Finesse · Melee ·... [namelen=545 namehash=e2b23b8a]
 133Sword of AngelsTier 4 · Physical · Agility · Melee · d10+4 ph... [namelen=322 namehash=586dc763]
 134Sword of UndeathTier 1 · Physical · Agility · Melee · d8 phy ... [namelen=229 namehash=5f212d3e]
 138Waiata GreatswordTier 2 · Physical · Strength · Melee · d10+6... [namelen=303 namehash=959aa40e]
+13Advanced Dirk of the DeadTier 3 · Physical · Finesse · Melee ·... [namelen=546 namehash=2b6dda65]
 13HarrowcleaveTier 3 · Physical · Strength · Melee · d12+7 phy ·... [namelen=294 namehash=e28d778a]
 13Ring of the Blood MatronRecall Cost: 2Blood Spike: Make a Spel... [namelen=614 namehash=4f876560]
 13Temporal TaperRecall Cost: 2As a downtime move you can light t... [namelen=481 namehash=0c258fa4]
 143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=277 namehash=a005c78d]
+14Legendary Dirk of the DeadTier 4 · Physical · Finesse · Melee ... [namelen=547 namehash=48468014]
 14Sphere of InsanityRecall Cost: 3Pick a creature with whom you ... [namelen=743 namehash=490efa98]
 14White Talon HelmRecall Cost: 1This helm grants you 360-degree ... [namelen=304 namehash=68450ec7]
 15ValorstoneYou can attach this stone to armor that doesn't alre... [namelen=276 namehash=6f224513]
@@ -441,7 +458,6 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 23Hungry Fist BladeTier 4 · Physical · Finesse · Melee · d6+7 ph... [namelen=410 namehash=37a2f1b6]
 23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
 26Arch-Magus's RobesTier 4 · Thresholds 10/30 · Armor 2Recall Co... [namelen=294 namehash=31ef7315]
-26Scorpion GauntletWhen you hold a weapon that does physical dam... [namelen=272 namehash=779c686f]
 27Black Hole StaffTier 4 · Magic · Knowledge · Far · d20+7 mag ·... [namelen=598 namehash=ea194387]
 29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
 2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=223 namehash=1352e44d]
@@ -456,26 +472,27 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 35Emberite ShardChoose a point within Far range. All targets wit... [namelen=374 namehash=c631c064]
 37Gloves of AlacrityWhen you would mark a Stress to reload a wea... [namelen=102 namehash=47157714]
 3Agate SpiderYou can command this spider ornament to leap onto a... [namelen=237 namehash=ddd0528e]
-3Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=826b0aef]
 3Leaf of the Giant TreeA massive leaf sturdy as leather and broa... [namelen=193 namehash=c89505d9]
-46Wyrmscale HauberkTier 1 · Thresholds 9/20 · Armor 3Guarding: W... [namelen=200 namehash=4c4e6345]
-47Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=e8a3e449]
-48Advanced Wyrmscale HauberkTier 3 · Thresholds 11/24 · Armor 5G... [namelen=210 namehash=6ad9f359]
-49Legendary Wyrmscale HauberkTier 4 · Thresholds 12/26 · Armor 6... [namelen=211 namehash=69b1035a]
+41Scorpion GauntletWhen you hold a weapon that does physical dam... [namelen=272 namehash=34760a4e]
 4Amulet of Righteous FuryWhen you invoke the celestial power imb... [namelen=284 namehash=9c34148f]
-4Chalice of CommitmentOnce per long rest, you gain an additional... [namelen=333 namehash=9f593f32]
 4Gaze of VaethRecall Cost: 3Once per long rest you can spend a H... [namelen=342 namehash=3a3c8d90]
-50Wyverntail WhipArtifact · Physical · Agility · Very Close · d1... [namelen=446 namehash=c4744a95]
 53Rings of CamaraderieTwo creatures can wear this pair of wooden... [namelen=195 namehash=6aef9f89]
 5Amulet of the Bloody HunterWhile wearing this amulet, whenever ... [namelen=315 namehash=d9222cc5]
-5Dirk of the DeadArtifact · Physical · Finesse · Melee · d6 phy ... [namelen=549 namehash=49760210]
 5Keening Bone FluteRecall Cost: 1Once per long rest, you can pla... [namelen=302 namehash=c2058871]
 5Phaibos MaskOnce you don this mask, it fuses to your flesh maki... [namelen=651 namehash=fa9b72a4]
 5Treacherous Knuckle-DusterYou may mark 1 Stress before an attac... [namelen=134 namehash=6c5d102e]
 6Last StandTier 2 · Physical · Finesse · Very Close · d10+5 phy ... [namelen=231 namehash=3382489a]
 6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
+70Wyrmscale HauberkTier 1 · Thresholds 7/15 · Armor 3Guarding: W... [namelen=200 namehash=a8d81d4d]
+71Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=738a8860]
 71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
+72Advanced Wyrmscale HauberkTier 3 · Thresholds 12/29 · Armor 5G... [namelen=210 namehash=bb68cb2c]
+73Legendary Wyrmscale HauberkTier 4 · Thresholds 14/38 · Armor 6... [namelen=211 namehash=efd18413]
+74Wyverntail WhipTier 1 · Physical · Agility · Very Close · d10 ... [namelen=430 namehash=2985f637]
+75Improved Wyverntail WhipTier 2 · Physical · Agility · Very Clo... [namelen=441 namehash=bd757e3d]
+76Advanced Wyverntail WhipTier 3 · Physical · Agility · Very Clo... [namelen=441 namehash=cb1f2703]
 76Umbral PrismRoll a d8 and place it on this card as the Umbral ... [namelen=452 namehash=ff956f00]
+77Legendary Wyverntail WhipTier 4 · Physical · Agility · Very Cl... [namelen=442 namehash=19cedf44]
 78A Thousand CutsTier 3 · Physical · Finesse · Melee · d8+4 phy ... [namelen=417 namehash=7345d157]
 79Seeker's BowTier 2 · Physical · Finesse · Far · d6+4 phy · Two... [namelen=357 namehash=488ad05f]
 7Devil-Finger CharmRecall Cost: 3Enmity: When you or an ally mak... [namelen=493 namehash=b976e705]
@@ -485,6 +502,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 89Crystal Spirit SwordTier 4 · Physical · Finesse · Melee · d10+... [namelen=253 namehash=83de67b4]
 94Dusk WingTier 2 · Physical · Strength · Melee · d10+6 phy · Tw... [namelen=232 namehash=0ce62139]
 95Elemental LongbowTier 3 · Physical · Agility · Very Far · d6+8... [namelen=425 namehash=3a74cb69]
+9Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=971f3d0e]
 9Oath of BalanceArtifact · Magic · Instinct · Far · d12+12 mag ·... [namelen=752 namehash=9a8afa74]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
@@ -494,6 +512,7 @@ Advanced Brightsword
 Advanced BrightswordTier 3 · Magic · Strength · Melee · d10+9 ma... [namelen=103 namehash=0ea2e276]
 Advanced Coffinwood Armor
 Advanced Coffinwood ArmorTier 3 · Thresholds 8/22 · Armor 5Splin... [namelen=174 namehash=4e48c289]
+Advanced Dirk of the Dead
 Advanced Greatsword
 Advanced GreatswordTier 3 · Physical · Strength · Melee · d10+9 ... [namelen=206 namehash=13c086f1]
 Advanced Longsword
@@ -505,6 +524,7 @@ Advanced ShortswordTier 3 · Physical · Agility · Melee · d8+4 ph... [namelen
 Advanced Whipsword
 Advanced WhipswordTier 3 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=521ccd6a]
 Advanced Wyrmscale Hauberk
+Advanced Wyverntail Whip
 Aether Rifle
 Agate Spider
 Alt. tables
@@ -593,6 +613,7 @@ Improved Brightsword
 Improved BrightswordTier 2 · Magic · Strength · Melee · d10+6 ma... [namelen=103 namehash=3371c43a]
 Improved Coffinwood Armor
 Improved Coffinwood ArmorTier 2 · Thresholds 6/15 · Armor 4Splin... [namelen=174 namehash=600222e9]
+Improved Dirk of the Dead
 Improved Greatsword
 Improved GreatswordTier 2 · Physical · Strength · Melee · d10+6 ... [namelen=206 namehash=d97652ee]
 Improved Longsword
@@ -604,6 +625,7 @@ Improved ShortswordTier 2 · Physical · Agility · Melee · d8+2 ph... [namelen
 Improved Whipsword
 Improved WhipswordTier 2 · Physical · Finesse · Very Close · d8+... [namelen=191 namehash=49bed7a6]
 Improved Wyrmscale Hauberk
+Improved Wyverntail Whip
 Install as an app
 Irontree Breastplate Armor
 Irontree Breastplate ArmorTier 2 · Thresholds 9/20 · Armor 4Rein... [namelen=199 namehash=1768c922]
@@ -617,6 +639,7 @@ Legendary Brightsword
 Legendary BrightswordTier 4 · Magic · Strength · Melee · d10+12 ... [namelen=105 namehash=b6c7c1b2]
 Legendary Coffinwood Armor
 Legendary Coffinwood ArmorTier 4 · Thresholds 10/31 · Armor 6Spl... [namelen=176 namehash=729ced06]
+Legendary Dirk of the Dead
 Legendary Greatsword
 Legendary GreatswordTier 4 · Physical · Strength · Melee · d10+1... [namelen=208 namehash=9f75d484]
 Legendary Longsword
@@ -628,6 +651,7 @@ Legendary ShortswordTier 4 · Physical · Agility · Melee · d8+6 p... [namelen
 Legendary Whipsword
 Legendary WhipswordTier 4 · Physical · Finesse · Very Close · d8... [namelen=192 namehash=bdf7811e]
 Legendary Wyrmscale Hauberk
+Legendary Wyverntail Whip
 Lists
 Little Forest Spirit
 Longsword

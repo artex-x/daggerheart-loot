@@ -28,7 +28,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1323 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=3bbb5f2f]
+    StaticText "Поиск сразу по 1350 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=274e508c]
     searchbox "Поиск по названию или описанию…" [value=топор focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -36,13 +36,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     button "Снаряжение" [pressed=true]
     switch "Свои предметы" [checked=false]
     StaticText "Свои предметы"
-    checkbox "Выбрать все (14)" [checked=false]
-    StaticText "Выбрать все (14)"
+    checkbox "Выбрать все (17)" [checked=false]
+    StaticText "Выбрать все (17)"
     checkbox "Топор-Пила Лесоруба" [checked=false]
     button "10 Топор-Пила Лесоруба Этот массивный гибридный инструмент рубит..." [namelen=231 namehash=8a95748b]
-    ... checkbox x11 of 15 same-shape siblings elided
+    ... checkbox x14 of 18 same-shape siblings elided
     button "4 Топор Лесного Стража Этот внешне обычный топор несёт в себе бл..." [namelen=232 namehash=eec036d1]
-    ... button x10 of 14 same-shape siblings elided
+    ... button x13 of 17 same-shape siblings elided
     checkbox "Стопорный Ключ" [checked=false]
     button "49 Стопорный Ключ При успешном Броске Искусности вставьте этот и..." [namelen=359 namehash=bb980761]
     checkbox "Неугомонное Возмездие" [checked=false]
@@ -57,10 +57,13 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 ## ru :: controls
 10Топор-Пила ЛесорубаЭтот массивный гибридный инструмент рубит д... [namelen=227 namehash=501f18ee]
 116Неугомонное ВозмездиеРанг 3 · Физическое · Сила · Вплотную · ... [namelen=454 namehash=414955ac]
-2Топор РассветаАртефакт · Физическое · Сила · Вплотную · d12 физ... [namelen=417 namehash=6a1e358a]
 49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
 4Топор Лесного СтражаЭтот внешне обычный топор несёт в себе благ... [namelen=228 namehash=932d8976]
+5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=399 namehash=cf4d1d2a]
+6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=410 namehash=227a07b7]
+7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=411 namehash=3a33c82a]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
+8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=411 namehash=d61d5c2d]
 Arazo's Artifacts
 Dragon's Vault
 Dread
@@ -77,6 +80,7 @@ daggerheart.com
 Конфиденциальность
 Легендарный Священный Топор
 Легендарный Священный ТопорРанг 4 · Магическое · Сила · Вплотную... [namelen=108 namehash=27367bd9]
+Легендарный Топор Рассвета
 ЛутDaggerheart
 Мясницкий Топор
 Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
@@ -87,6 +91,7 @@ daggerheart.com
 Предметы
 Продвинутый Священный Топор
 Продвинутый Священный ТопорРанг 3 · Магическое · Сила · Вплотную... [namelen=107 namehash=6323de8c]
+Продвинутый Топор Рассвета
 Расходники
 Священный Топор
 Священный ТопорРанг 1 · Магическое · Сила · Вплотную · d8+1 маг ... [namelen=95 namehash=7f7c9d94]
@@ -105,6 +110,7 @@ daggerheart.com
 Топоры РикошетаРанг 4 · Физическое · Проворность · Далеко · d6+1... [namelen=210 namehash=c3af308c]
 Улучшенный Священный Топор
 Улучшенный Священный ТопорРанг 2 · Магическое · Сила · Вплотную ... [namelen=106 namehash=d7da7282]
+Улучшенный Топор Рассвета
 Условия использования
 Установить как приложение
 
@@ -133,7 +139,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1323 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=4c3ca56b]
+    StaticText "Search all 1350 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=732b182f]
     searchbox "Search by name or description…" [value=топор focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
@@ -141,13 +147,13 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
     button "Equipment" [pressed=true]
     switch "Own items" [checked=false]
     StaticText "Own items"
-    checkbox "Select all (14)" [checked=false]
-    StaticText "Select all (14)"
+    checkbox "Select all (17)" [checked=false]
+    StaticText "Select all (17)"
     checkbox "Felling Axe-Saw" [checked=false]
     button "10 Felling Axe-Saw This massive hybrid tool cuts through wood, r..." [namelen=234 namehash=b9fd3bb4]
-    ... checkbox x11 of 15 same-shape siblings elided
+    ... checkbox x14 of 18 same-shape siblings elided
     button "4 Forestwarden's Axe This seemingly ordinary axe carries the ble..." [namelen=200 namehash=1cca126c]
-    ... button x10 of 14 same-shape siblings elided
+    ... button x13 of 17 same-shape siblings elided
     checkbox "Jamming Spanner" [checked=false]
     button "49 Jamming Spanner Make a successful Finesse Roll to place this ..." [namelen=339 namehash=005e0aec]
     checkbox "Restless Vengeance" [checked=false]
@@ -162,11 +168,15 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
 ## en :: controls
 10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
 116Restless VengeanceTier 3 · Physical · Strength · Melee · d10+... [namelen=462 namehash=3dedac99]
-2Axe of the DawnArtifact · Physical · Strength · Melee · d12 phy... [namelen=374 namehash=8152378c]
 49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
 4Forestwarden's AxeThis seemingly ordinary axe carries the bless... [namelen=196 namehash=5664cde5]
+5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=360 namehash=f8c58b0b]
+6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=369 namehash=2c1b24e6]
+7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=369 namehash=55f98140]
 84Black Corruption AxeTier 4 · Physical · Presence · Very Close ... [namelen=452 namehash=18cf1bda]
+8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=370 namehash=3e8a5301]
 Account: gm1@example.test
+Advanced Axe of the Dawn
 Advanced Hallowed Axe
 Advanced Hallowed AxeTier 3 · Magic · Strength · Melee · d8+7 ma... [namelen=96 namehash=6fa84112]
 Alt. tables
@@ -185,6 +195,7 @@ Felling Axe-Saw
 Forestwarden's Axe
 Hallowed Axe
 Hallowed AxeTier 1 · Magic · Strength · Melee · d8+1 mag · One-H... [namelen=87 namehash=67e93e55]
+Improved Axe of the Dawn
 Improved Hallowed Axe
 Improved Hallowed AxeTier 2 · Magic · Strength · Melee · d8+4 ma... [namelen=96 namehash=13f8cd98]
 Install as an app
@@ -192,6 +203,7 @@ Items
 Jamming Spanner
 Labrys Axe
 Labrys AxeTier 3 · Physical · Strength · Melee · d10+7 phy · Two... [namelen=124 namehash=aaa3069c]
+Legendary Axe of the Dawn
 Legendary Hallowed Axe
 Legendary Hallowed AxeTier 4 · Magic · Strength · Melee · d8+10 ... [namelen=98 namehash=82afb9d3]
 Lists

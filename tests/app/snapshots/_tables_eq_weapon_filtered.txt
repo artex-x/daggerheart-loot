@@ -52,7 +52,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "44 из 410"
+    StaticText "48 из 437"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
@@ -62,15 +62,15 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Уникальные" [pressed=false]
     StaticText "РАНГ 1"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (44)" [checked=false]
-    StaticText "Выбрать все (44)"
+    checkbox "Выбрать все (48)" [checked=false]
+    StaticText "Выбрать все (48)"
     checkbox "Длинный Меч" [checked=false]
-    ... button x42 of 46 same-shape siblings elided
-    ... checkbox x41 of 45 same-shape siblings elided
-    checkbox "Копьё-Камертон" [checked=false]
-    button "37 Копьё-Камертон Ранг 1 · Физическое · Искусность · Близко · d1..." [namelen=351 namehash=6bbb0973]
+    ... button x46 of 50 same-shape siblings elided
+    ... checkbox x45 of 49 same-shape siblings elided
+    checkbox "Алебарда Урзо" [checked=false]
+    button "62 Алебарда Урзо Ранг 1 · Физическое · Влияние · Близко · d12+1 ..." [namelen=212 namehash=1a71ed0a]
     checkbox "Боевой Молот База" [checked=false]
-    button "42 Боевой Молот База Ранг 1 · Физическое · Сила · Вплотную · d12..." [namelen=250 namehash=252a7d46]
+    button "66 Боевой Молот База Ранг 1 · Физическое · Сила · Вплотную · d12..." [namelen=252 namehash=da7085f7]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -81,15 +81,19 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 1
 100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
-12Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d20 ... [namelen=311 namehash=a910c942]
 132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
-17Праща ФениксаРанг 1 · Физическое · Искусность · Далеко · d10 ф... [namelen=236 namehash=2d86b5e3]
+19Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Оче... [namelen=246 namehash=6a448ce6]
 2
+24Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d12+... [namelen=313 namehash=07958b4d]
+29Праща ФениксаРанг 1 · Физическое · Искусность · Далеко · d10+1... [namelen=243 namehash=a9aecbaa]
 3
-37Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10 ... [namelen=346 namehash=8e0b5a66]
 4
-42Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12 ф... [namelen=245 namehash=74aa51a3]
-7Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Очен... [namelen=243 namehash=af9c6bc6]
+47Посох Запредельной ПустотыРанг 1 · Магическое · Характеристика... [namelen=208 namehash=30468a73]
+52Моргенштерн ТарианаРанг 1 · Физическое · Сила · Близко · d10+2... [namelen=286 namehash=74f01d35]
+58Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10+... [namelen=348 namehash=02c8306a]
+5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=399 namehash=cf4d1d2a]
+62Алебарда УрзоРанг 1 · Физическое · Влияние · Близко · d12+1 фи... [namelen=207 namehash=0b657042]
+66Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12+2... [namelen=247 namehash=22d353e0]
 Arazo's Artifacts
 Core
 Dragon's Vault
@@ -103,6 +107,7 @@ Wondrous
 Wondrous Loot
 daggerheart.com
 Алебарда
+Алебарда Урзо
 АлебардаРанг 1 · Физическое · Сила · Близко · d10+2 физ · Двуруч... [namelen=113 namehash=09db8fd0]
 Альт. таблицы
 Артефакты
@@ -179,6 +184,7 @@ daggerheart.com
 Меч СветаРанг 1 · Магическое · Сила · Вплотную · d10+3 маг · Дву... [namelen=96 namehash=52fcd087]
 Многозарядный Арбалет
 Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко ·... [namelen=245 namehash=a52c33ff]
+Моргенштерн Тариана
 Мясницкий Топор
 Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
 Обычные правила
@@ -188,6 +194,7 @@ daggerheart.com
 Очень далеко
 Пир зверей
 Поиск
+Посох Запредельной Пустоты
 Походная Палка
 Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 ... [namelen=114 namehash=71d486bb]
 Праща Феникса
@@ -218,6 +225,7 @@ daggerheart.com
 Ссылка на таблицу
 Ссылка на фильтры
 Таблицы
+Топор Рассвета
 Тёмное сердце Андалурии
 Убрать из фильтра
 Удочка
@@ -282,7 +290,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "44 of 410"
+    StaticText "48 of 437"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
@@ -292,15 +300,15 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Unique" [pressed=false]
     StaticText "TIER 1"
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (44)" [checked=false]
-    StaticText "Select all (44)"
+    checkbox "Select all (48)" [checked=false]
+    StaticText "Select all (48)"
     checkbox "Longsword" [checked=false]
-    ... button x42 of 46 same-shape siblings elided
-    ... checkbox x41 of 45 same-shape siblings elided
-    checkbox "Tuning Spear" [checked=false]
-    button "37 Tuning Spear Tier 1 · Physical · Finesse · Very Close · d10 p..." [namelen=327 namehash=5da8e950]
+    ... button x46 of 50 same-shape siblings elided
+    ... checkbox x45 of 49 same-shape siblings elided
+    checkbox "Urzo's Halberd" [checked=false]
+    button "62 Urzo's Halberd Tier 1 · Physical · Presence · Very Close · d1..." [namelen=215 namehash=551cc74e]
     checkbox "Warhammer of Baz" [checked=false]
-    button "42 Warhammer of Baz Tier 1 · Physical · Strength · Melee · d12 p..." [namelen=228 namehash=6ca772d8]
+    button "66 Warhammer of Baz Tier 1 · Physical · Strength · Melee · d12+2..." [namelen=230 namehash=f63d7966]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -311,15 +319,19 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 ## en :: controls
 1
 100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
-12Ogre-teeth ClubTier 1 · Physical · Strength · Very Close · d20... [namelen=285 namehash=c140981a]
 132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=256 namehash=d8b9474b]
-17Phoenix SlingTier 1 · Physical · Finesse · Far · d10 phy · Two... [namelen=226 namehash=12c39d8b]
+19Elfhair BowTier 1 · Physical · Agility · Very Far · d10+1 phy ... [namelen=230 namehash=9b572916]
 2
+24Ogre-teeth ClubTier 1 · Physical · Strength · Very Close · d12... [namelen=287 namehash=253d35d6]
+29Phoenix SlingTier 1 · Physical · Finesse · Far · d10+1 phy · T... [namelen=234 namehash=e4f8bb48]
 3
-37Tuning SpearTier 1 · Physical · Finesse · Very Close · d10 phy... [namelen=322 namehash=e91a57d3]
 4
-42Warhammer of BazTier 1 · Physical · Strength · Melee · d12 phy... [namelen=223 namehash=db0522dd]
-7Elfhair BowTier 1 · Physical · Agility · Very Far · d10 phy · T... [namelen=227 namehash=9b26b85e]
+47Staff of the Void BeyondTier 1 · Magic · Spellcast · Very Far ... [namelen=182 namehash=4c9c09e2]
+52Taryan's MorningstarTier 1 · Physical · Strength · Very Close ... [namelen=294 namehash=4a668e11]
+58Tuning SpearTier 1 · Physical · Finesse · Very Close · d10+2 p... [namelen=324 namehash=933dca95]
+5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=360 namehash=f8c58b0b]
+62Urzo's HalberdTier 1 · Physical · Presence · Very Close · d12+... [namelen=210 namehash=2b1d2a5c]
+66Warhammer of BazTier 1 · Physical · Strength · Melee · d12+2 p... [namelen=225 namehash=8c9a7ddc]
 Agility
 Alt. tables
 Arazo's Artifacts
@@ -329,6 +341,7 @@ Arcane Rifle
 Arcane RifleTier 1 · Magic · Agility · Very Far · d10+3 mag · Tw... [namelen=271 namehash=aa2f1e8d]
 Armor
 Artifacts
+Axe of the Dawn
 Battleaxe
 BattleaxeTier 1 · Physical · Strength · Melee · d10+3 phy · Two-... [namelen=88 namehash=f8180535]
 Beast Feast
@@ -439,15 +452,18 @@ Sparkling Staff
 Sparkling StaffTier 1 · Magic · Knowledge · Very Far · d6 mag · ... [namelen=199 namehash=54c1d540]
 Spear
 SpearTier 1 · Physical · Finesse · Very Close · d8+3 phy · Two-H... [namelen=87 namehash=f321c681]
+Staff of the Void Beyond
 Standard rules
 Strength
 Striking Fangs
 Tables
+Taryan's Morningstar
 Terms of use
 Tuning Spear
 Two-Handed
 Unique
 Upgradable
+Urzo's Halberd
 Vault of Ages
 Very Close
 Very Far

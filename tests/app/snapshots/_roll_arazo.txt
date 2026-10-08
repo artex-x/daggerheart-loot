@@ -29,11 +29,11 @@ RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" 
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–51)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–78)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Случайно 1–51"
+    button "Случайно 1–78"
     status ""
       button "Страница"
       StaticText "1"
@@ -42,8 +42,11 @@ RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" 
       link "Нестареющее Око Зверя" [description=Страница url=#/i/aa1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
-      StaticText "Пьющий Души Клинок:"
-      StaticText " При успешной атаке вы можете потратить Надежду, чтобы цель отме..." [namelen=177 namehash=a116c8bf]
+      StaticText "РАНГ"
+      StaticText "1"
+      button "Улучшенное Нестареющее Око Зверя" [description=Улучшенное Нестареющее Око Зверя]
+      button "Продвинутое Нестареющее Око Зверя" [description=Продвинутое Нестареющее Око Зверя]
+      button "Легендарное Нестареющее Око Зверя" [description=Легендарное Нестареющее Око Зверя]
       button "Отправить"
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
@@ -68,6 +71,7 @@ daggerheart.com
 К содержимому
 Как это работает
 Конфиденциальность
+Легендарное Нестареющее Око Зверя
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
@@ -75,16 +79,18 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Продвинутое Нестареющее Око Зверя
 Результат броска
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Случайно 1–51
+Случайно 1–78
 Сообщества
 Списки
 Страница
 Таблицы
+Улучшенное Нестареющее Око Зверя
 Условия использования
 Установить как приложение
 
@@ -115,11 +121,11 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
-    StaticText "ROLL RESULT (1–51)"
+    StaticText "ROLL RESULT (1–78)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Random 1–51"
+    button "Random 1–78"
     status ""
       button "Page"
       StaticText "1"
@@ -128,8 +134,11 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
       link "The Ageless Eye of the Beast" [description=Page url=#/i/aa1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
-      StaticText "Soul-drinking Blade:"
-      StaticText " On a successful attack, you may spend a Hope to cause the targe..." [namelen=180 namehash=43b4d23d]
+      StaticText "TIER"
+      StaticText "1"
+      button "Improved Ageless Eye of the Beast" [description=Improved Ageless Eye of the Beast]
+      button "Advanced Ageless Eye of the Beast" [description=Advanced Ageless Eye of the Beast]
+      button "Legendary Ageless Eye of the Beast" [description=Legendary Ageless Eye of the Beast]
       button "Share"
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
@@ -141,6 +150,7 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Advanced Ageless Eye of the Beast
 Alt. tables
 Arazo's Artifacts
 Communities
@@ -152,7 +162,9 @@ Dragon's Vault
 Dread
 EN
 How this works
+Improved Ageless Eye of the Beast
 Install as an app
+Legendary Ageless Eye of the Beast
 Lists
 One higher
 One lower
@@ -160,7 +172,7 @@ Open this section on start
 Page
 Privacy
 RU
-Random 1–51
+Random 1–78
 Roll result
 Search
 Share

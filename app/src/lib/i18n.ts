@@ -2,7 +2,7 @@
  *
  * Two separate things live here, and docs/specs/I18N.md says why they must stay
  * separate: the interface dictionary is small, typed and reviewed, while record
- * text is 1323 pairs maintained with the data. This module only handles the
+ * text is 1350 pairs maintained with the data. This module only handles the
  * second kind - picking the right field off a record, and turning a stat block
  * into words.
  *

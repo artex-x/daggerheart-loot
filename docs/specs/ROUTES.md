@@ -18,7 +18,7 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 | `#/roll/dread` | Dread GM Toolbox, 1-29 |
 | `#/roll/voa` | Vault of Ages, by section |
 | `#/roll/dv` | The Dragon's Vault, 1-145 |
-| `#/roll/arazo` | Arazo's Artifacts, 1-51 |
+| `#/roll/arazo` | Arazo's Artifacts, 1-78 |
 | `#/roll/community` | Community items, community plus 1-10 |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |

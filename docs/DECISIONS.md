@@ -17,6 +17,7 @@ deleted.
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
 - 2026-10-08 - [A source chip on `#/tables/homebrew` is the `src` filter with one value](decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md)
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
+- 2026-10-08 - [Arazo's Artifacts rebalanced to Core bands: every piece a line, ids aa1-aa78](decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md)
 - 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)
 - 2026-10-08 - [The own-items filter is a labelled switch, «Свои предметы»](decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md)
 - 2026-10-08 - [Workers dispatch read-only Haiku helpers for wide locate and extract work](decisions/2026-10-08-workers-dispatch-read-only-haiku-helpers-for-wide.md)
@@ -24,7 +25,7 @@ deleted.
 - 2026-10-07 - [A local check skips a stage whose inputs match its last local pass](decisions/2026-10-07-a-local-check-skips-a-stage-whose-inputs.md)
 - 2026-10-07 - [A saved copy of another account's item keeps its key](decisions/2026-10-07-a-saved-copy-of-another-accounts-item-keeps-its-key.md)
 - 2026-10-07 - [An item is read by its id by anyone; a list holds a live link](decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md)
-- 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md)
+- 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md) - superseded in part
 - 2026-10-07 - [Lifecycle data is deleted by the database on a schedule](decisions/2026-10-07-lifecycle-data-is-deleted-by-the-database-on-a-schedule.md)
 - 2026-10-07 - [Owner rules are written to their homes in the batch that hears them](decisions/2026-10-07-owner-rules-are-written-to-their-homes-in.md)
 - 2026-10-07 - [The commit gate arms when both halves of the check pass on one tree](decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md)

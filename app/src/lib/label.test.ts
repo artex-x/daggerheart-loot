@@ -168,9 +168,9 @@ describe('which table a record is printed in', () => {
     expect(tableOf(index.byId.get('dve1') as Record_)).toBe('dv');
   });
 
-  it("sends Arazo's Artifacts items, rungs and artifacts to its own table", () => {
-    expect(tableOf(index.byId.get('aa3') as Record_)).toBe('arazo');
-    expect(tableOf(index.byId.get('aa8') as Record_)).toBe('arazo');
+  it("sends Arazo's Artifacts items, line heads and rungs to its own table", () => {
+    expect(tableOf(index.byId.get('aa9') as Record_)).toBe('arazo');
+    expect(tableOf(index.byId.get('aa20') as Record_)).toBe('arazo');
     expect(tableOf(index.byId.get('aa1') as Record_)).toBe('arazo');
   });
 

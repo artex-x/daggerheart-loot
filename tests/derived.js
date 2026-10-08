@@ -716,8 +716,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 264,
-  'equipment outside the two base books is not 264, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 291,
+  'equipment outside the two base books is not 291, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -1805,48 +1805,103 @@ ok(
 
 console.log("Arazo's Artifacts");
 const arazo = L.items.arazo;
-ok(arazo.length === 51, 'items.arazo is not 51, but ' + arazo.length);
+ok(arazo.length === 78, 'items.arazo is not 78, but ' + arazo.length);
 ok(
   arazo.every((x, i) => x.id === 'aa' + (i + 1) && x.roll === i + 1),
-  'items.arazo is not aa1..aa51 with rolls 1..51 in book order'
+  'items.arazo is not aa1..aa78 with rolls 1..78 in book order'
 );
 ok(arazo.filter((x) => x.kind === 'item').length === 10, 'items.arazo items are not 10');
 const aaEq = arazo.filter((x) => x.eq);
 const aaByKind = { weapon: 0, secondary: 0, armor: 0 };
 aaEq.forEach((x) => aaByKind[x.eq.t]++);
 ok(
-  aaByKind.weapon === 29 && aaByKind.secondary === 4 && aaByKind.armor === 8,
+  aaByKind.weapon === 56 && aaByKind.secondary === 4 && aaByKind.armor === 8,
   'arazo equipment by kind: ' + JSON.stringify(aaByKind)
 );
-/* A piece with a tier formula is a four-tier line; one without is an artifact. */
+/* Every piece is a four-tier line since the rebalance:
+   docs/decisions/2026-10-08-arazos-artifacts-rebalanced-to-core-bands.md */
 ok(
-  aaEq.filter((x) => x.eq.tier === 'A').every((x) => x.tier === 'A' && !x.eq.line) &&
-    aaEq.filter((x) => x.eq.tier === 'A').length === 9,
-  'arazo artifacts are not 9 unlined records with tier A'
+  aaEq.every((x) => x.eq.line && x.eq.tier !== 'A' && x.tier === undefined),
+  'an arazo piece is unlined, at tier A, or carries a record tier'
 );
-ok(
-  new Set(aaEq.filter((x) => x.eq.line).map((x) => x.eq.line)).size === 8 &&
-    aaEq.filter((x) => x.eq.line).every((x) => x.tier === undefined),
-  'arazo lines are not 8, or a rung carries a record tier'
+const aaLines = {};
+aaEq.forEach((x) => (aaLines[x.eq.line] = aaLines[x.eq.line] || []).push(x));
+ok(Object.keys(aaLines).length === 17, 'arazo lines are not 17');
+/* A line's rungs come directly after its head, which names the line and its art. */
+Object.entries(aaLines).forEach(([head, rungs]) =>
+  ok(
+    rungs.map((x) => x.id + ':' + x.eq.tier).join() ===
+      [1, 2, 3, 4].map((t) => 'aa' + (+head.slice(2) + t - 1) + ':' + t).join() &&
+      rungs.every((x) => x.img === head + '.webp'),
+    'arazo line ' + head + ' is not four rungs after its head with the head art'
+  )
 );
 const aaById = Object.fromEntries(arazo.map((x) => [x.id, x]));
-ok(
-  JSON.stringify([
-    aaById.aa21.eq.as,
-    aaById.aa21.eq.th,
-    aaById.aa24.eq.as,
-    aaById.aa24.eq.th
-  ]) === JSON.stringify([2, [11, 22], 8, [14, 28]]),
-  'Plate of the Prince is not 10+t / 20+2t, score 2t'
+const aaLine = (head, f) => aaLines[head].map((x) => f(x.eq, x));
+const AA_DMG = {
+  aa1: ['d10', 'd10+2', 'd10+4', 'd10+6'],
+  aa5: ['d12+2', 'd12+4', 'd12+6', 'd12+8'],
+  aa11: ['d6+2', 'd6+6', 'd6+10', 'd6+14'],
+  aa15: ['d8', 'd8+2', 'd8+4', 'd8+6'],
+  aa19: ['d10+1', 'd10+1', 'd10+2', 'd10+2'],
+  aa24: ['d12+1', 'd12+3', 'd12+5', 'd12+7'],
+  aa29: ['d10+1', 'd10+2', 'd10+3', 'd10+4'],
+  aa37: ['d10', 'd10', 'd10+1', 'd10+2'],
+  aa43: ['d8', 'd8', 'd8', 'd8'],
+  aa47: ['d10', 'd10+1', 'd10+2', 'd10+3'],
+  aa52: ['d10+2', 'd10+5', 'd10+8', 'd10+11'],
+  aa58: ['d10+2', 'd10+4', 'd10+6', 'd10+8'],
+  aa62: ['d12+1', 'd12+3', 'd12+5', 'd12+7'],
+  aa66: ['d12+2', 'd12+4', 'd12+6', 'd12+8'],
+  aa74: ['d10', 'd10+2', 'd10+4', 'd10+6']
+};
+Object.entries(AA_DMG).forEach(([head, want]) =>
+  ok(
+    aaLine(head, (e) => e.dmg).join() === want.join(),
+    aaById[head].en + ' damage is not ' + want.join(' / ')
+  )
 );
 ok(
-  JSON.stringify([
-    aaById.aa46.eq.as,
-    aaById.aa46.eq.th,
-    aaById.aa49.eq.as,
-    aaById.aa49.eq.th
-  ]) === JSON.stringify([3, [9, 20], 6, [12, 26]]),
-  'Wyrmscale Hauberk is not 8+t / 18+2t, score t+2'
+  JSON.stringify(aaLine('aa33', (e) => [e.as, e.th])) ===
+    JSON.stringify([
+      [2, [8, 17]],
+      [4, [13, 28]],
+      [6, [15, 35]],
+      [8, [17, 44]]
+    ]),
+  'Plate of the Prince is not 8/17, 13/28, 15/35, 17/44 with score 2t'
+);
+ok(
+  JSON.stringify(aaLine('aa70', (e) => [e.as, e.th])) ===
+    JSON.stringify([
+      [3, [7, 15]],
+      [4, [10, 22]],
+      [5, [12, 29]],
+      [6, [14, 38]]
+    ]),
+  'Wyrmscale Hauberk is not 7/15, 10/22, 12/29, 14/38 with score t+2'
+);
+const aaNumbers = (head, field, re) =>
+  aaLine(head, (e, x) => (re.exec(x[field]) || []).slice(1).join('/')).join();
+ok(
+  aaNumbers('aa43', 'ende', /Protective: \+(\d) to Armor Score/) === '2,2,3,4' &&
+    aaNumbers('aa43', 'rud', /Защитное: \+(\d) к Показателю Брони/) === '2,2,3,4',
+  'Shield of Arcturus Protective is not +2 / +2 / +3 / +4 in both languages'
+);
+ok(
+  aaNumbers('aa29', 'ende', /add \+(\d) to the attack roll and \+(\d) to the damage roll/) ===
+    '1/1,1/2,2/3,2/4' &&
+    aaNumbers('aa29', 'rud', /добавить \+(\d) к Броску Атаки и \+(\d) к Броску Урона/) ===
+      '1/1,1/2,2/3,2/4',
+  'Flight of the Phoenix is not attack +1/+1/+2/+2, damage +1/+2/+3/+4 in both languages'
+);
+ok(
+  aaLines.aa15.every(
+    (x) =>
+      x.ende.indexOf('when they make an attack roll') >= 0 &&
+      x.rud.indexOf('когда совершает Бросок Атаки') >= 0
+  ),
+  'Drakebow On Fire does not trigger on an attack roll on every rung'
 );
 
 console.log('Vault of Ages Volume 4');
@@ -1857,13 +1912,10 @@ ok(Object.keys(voa4ById).length === 36, 'Volume 4 does not have 36 records');
 Object.values(voa4ById).forEach((x) =>
   ok(x.img === x.id + '.webp', x.id + ': expected img === ' + x.id + '.webp, got ' + x.img)
 );
-const artifactEq = EVERY_EQ.filter((x) => x.eq.tier === 'A' && x.src !== 'arazo').map(
-  (x) => x.id
-);
+const artifactEq = EVERY_EQ.filter((x) => x.eq.tier === 'A').map((x) => x.id);
 ok(
   artifactEq.join() === 'voa4_a3',
-  "expected voa4_a3 alone outside Arazo's Artifacts to carry eq.tier A, got " +
-    artifactEq.join()
+  'expected voa4_a3 alone to carry eq.tier A, got ' + artifactEq.join()
 );
 const VOA4_REFS = { 'rotted-zombie': 'voa4_t1b' };
 Object.entries(VOA4_REFS).forEach(([key, id]) => {
