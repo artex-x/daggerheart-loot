@@ -29,6 +29,9 @@ export interface ListEntryMeta {
   note?: string;
   /** The note that stays with the GM. */
   hnote?: string;
+  /** «Только для мастера», an account list's entry only: the `#/l/` codec never reads or
+   *  writes it. */
+  gmOnly?: true;
 }
 
 export interface ListShape {

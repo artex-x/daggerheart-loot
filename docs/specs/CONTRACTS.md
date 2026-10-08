@@ -46,7 +46,9 @@ Frozen as written in `ROUTES.md`. In particular:
   the list's owner, one active per audience (players, GM); it opens from
   `<site>#/s/<token>` and `<site>en/#/s/<token>` alike; its projection
   (`get_shared_list`) draws each homebrew entry live from the linked item,
-  with the item's id as `hid` beside the entry's `snapshot`
+  with the item's id as `hid` beside the entry's `snapshot`; a players'
+  link's projection holds no entry marked GM only (`list_entries.gm_only`),
+  and a GM's link writes `gm_only` on each entry
 - `#/h/<uuid>`, one homebrew item by its id (`homebrew_items.id`), for
   everyone, signed out too: the id is random, made by the author's client, so
   an item is unlisted, not secret, and nobody can build or list one; the id
@@ -161,7 +163,7 @@ plain form, so everything downstream sees one format.
   the English preview card of the site, which redirects to the app at the
   root with the fragment kept.
 
-All of them except the three `schema/` files are generated from `data.js` by
+All of them except the four `schema/` files are generated from `data.js` by
 `node tools/build.js` and compared byte for byte by `tests/derived.js`.
 
 - `schema/import-v1.json` - the lists file `import-v1`, a JSON Schema (draft
@@ -189,7 +191,8 @@ All of them except the three `schema/` files are generated from `data.js` by
   homebrew entry requires `snapshot` and a key as its `id`; an official entry
   never holds one. The export writes version 2 only for a file that holds a
   homebrew entry, so an official-only export stays an `import-v1` file byte
-  for byte; the import reads both versions, and a v1 reader refuses version 2.
+  for byte; the import reads versions 1 and 2 (and 3, see `import-v3`), and
+  a v1 reader refuses version 2.
   On import a held key becomes a link to the own item. Each homebrew entry
   the account does not hold becomes an own item, so the import counts
   against the item and card limits and `import_homebrew`'s 1000 rows; past
@@ -202,8 +205,24 @@ All of them except the three `schema/` files are generated from `data.js` by
   of `homebrew-v1.json`'s, held deep-equal by `lib/homebrewFile.test.ts`.
   `llms.txt`, "Version 2: homebrew entries (import-v2)", describes it.
   Fixtures: `docs/fixtures/import/example-v2.json`, `errors-v2.json`,
-  `from-llms-v2.json` (the blind round); `v3.json` is the refused "another
-  version" file.
+  `from-llms-v2.json` (the blind round).
+- `schema/import-v3.json` - the lists file `import-v3`: `import-v2` with
+  `version` 3 and an optional entry `gm_only` (boolean), true for an entry
+  marked «Только для мастера» ("GM only"), which a players' link leaves out;
+  `$id` `https://artex-x.github.io/daggerheart-loot/schema/import-v3.json`.
+  The export writes version 3 only for a file that holds a GM-only entry and
+  writes the key only as `true`, so a file without one stays `import-v1` or
+  `import-v2` byte for byte
+  (`docs/decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md`).
+  The import reads versions 1, 2 and 3 and refuses `gm_only` in a version 1
+  or 2 file. A version 3 entry keeps its mark on its link, or on its fixed
+  copy's link; the copy itself has no mark. Frozen as `import-v2`; any other
+  change is `import-v4.json`. Its `$defs` are `import-v2`'s but for the
+  entry's `gm_only`, held deep-equal by `lib/bundle.test.ts`. `llms.txt`,
+  "Version 3: GM-only entries (import-v3)", describes it. Fixtures:
+  `docs/fixtures/import/example-v3.json`, `errors-v3.json`, `export-v3.json`
+  (gm1's lists with one GM-only entry, written by the export); `v4.json` is
+  the refused "another version" file.
 - `schema/homebrew-v1.json` - the homebrew file `homebrew-v1`, a JSON Schema
   (draft 2020-12) with `$id`
   `https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json`:
@@ -225,10 +244,10 @@ All of them except the three `schema/` files are generated from `data.js` by
 - The account's data zip (`daggerheart-loot-data-<YYYY-MM-DD>.zip`, from
   «Скачать мои данные» on `#/account`): one JSON file per kind at the root,
   each with its own `format` and `version`: `lists.json`, exactly the lists
-  file of every account list (`import-v1`, or `import-v2` when it holds a
-  homebrew entry), then `homebrew.json`, exactly the account's
-  whole `homebrew-v1` file, when the account holds a source, a card or an
-  item. Frozen: a data zip written today imports for good, and a new kind is
+  file of every account list (`import-v1`, `import-v2` when it holds a
+  homebrew entry, or `import-v3` when it holds a GM-only entry), then
+  `homebrew.json`, exactly the account's whole `homebrew-v1` file, when the
+  account holds a source, a card or an item. Frozen: a data zip written today imports for good, and a new kind is
   a new root file. A data zip holds its files at its root and no folders;
   every entry is stored (method 0) with a UTF-8 name (flag bit 11), no
   zip64, no encryption, one disk, at most 1000 entries. The import reads a
@@ -261,7 +280,8 @@ grows past a few MB (433 KB measured).
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
 `en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg`,
-`schema/import-v1.json`, `schema/import-v2.json` and `schema/homebrew-v1.json`.
+`schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json` and
+`schema/homebrew-v1.json`.
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `i/en/<id>.html` and `en/` are their English counterparts (issue 64,

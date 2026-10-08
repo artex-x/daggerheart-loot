@@ -12,7 +12,7 @@
    working filter while selecting nothing.
 
    This file covers only its fs-only half - the list-encoding
-   check, the docs-name check, the lists file import-v1 and import-v2 and the
+   check, the docs-name check, the lists file import-v1, import-v2 and import-v3 and the
    homebrew file homebrew-v1 (their schemas, fixtures, llms.txt sections and
    the data zip). The browser half (the link against a real
    app, the address grammar, the stat line, the filter-group probe) moved to
@@ -577,6 +577,84 @@ const N_REC = '\x1e',
       ok(text.includes(p), name + ' does not name ' + p)
     );
   });
+
+  /* ---------- the lists file import-v3: import-v2 plus the GM-only mark ---------- */
+  /* Frozen as import-v2 is. Its other definitions are import-v2's, held deep-equal by
+     app/src/lib/bundle.test.ts; this checks what a reader of the published file sees. */
+  console.log('import-v3');
+  const V3_URL = 'https://artex-x.github.io/daggerheart-loot/schema/import-v3.json';
+  const v3 = JSON.parse(fs.readFileSync(path.join(ROOT, 'schema', 'import-v3.json'), 'utf8'));
+  const v3d = v3.$defs;
+  ok(v3.$id === V3_URL, 'schema/import-v3.json: $id is not ' + V3_URL);
+  ok(
+    v3.properties.format.const === 'daggerheart-loot/lists' &&
+      v3.properties.version.const === 3,
+    'import-v3: format or version is not daggerheart-loot/lists, 3'
+  );
+  [
+    ['import-v3 root', v3],
+    ['import-v3 list', v3d.list],
+    ['import-v3 entry', v3d.entry],
+    ['import-v3 snapshot', v3d.snapshot],
+    ['import-v3 snapshot book', v3d.snapshot.properties.book],
+    ['import-v3 snapshot cards', v3d.snapshot.properties.cards],
+    ['import-v3 snapshotSet', v3d.snapshotSet],
+    ['import-v3 snapshotRef', v3d.snapshotRef]
+  ].forEach(function ([what, s]) {
+    ok(s.additionalProperties === false, 'schema: ' + what + ' takes keys it does not name');
+  });
+  [
+    ['import-v3 lists.maxItems', v3.properties.lists.maxItems, 1000],
+    ['import-v3 entries.maxItems', v3d.list.properties.entries.maxItems, 5000],
+    ['import-v3 gm_only type', v3d.entry.properties.gm_only.type, 'boolean']
+  ].forEach(function ([what, got, want]) {
+    ok(got === want, 'schema: ' + what + ' is ' + got + ', not ' + want);
+  });
+  ok(
+    JSON.stringify(v3d.entry.properties.source.enum) === '["official","homebrew"]',
+    'import-v3: source is not official or homebrew'
+  );
+  ['example-v3.json', 'export-v3.json'].forEach(function (f) {
+    const doc = JSON.parse(fs.readFileSync(path.join(IMPORT, f), 'utf8'));
+    ok(
+      doc.format === 'daggerheart-loot/lists' && doc.version === 3 && doc.$schema === V3_URL,
+      f + ': not format daggerheart-loot/lists, version 3, the import-v3 schema'
+    );
+    declared(doc, v3, f);
+    let marks = 0;
+    doc.lists.forEach(function (l, i) {
+      declared(l, v3d.list, f + ' lists[' + i + ']');
+      l.entries.forEach(function (e, j) {
+        const at = f + ' lists[' + i + '].entries[' + j + ']';
+        declared(e, v3d.entry, at);
+        ok(
+          (e.source === 'homebrew') === 'snapshot' in e,
+          at + ': a snapshot without homebrew, or the reverse'
+        );
+        if (e.snapshot) declared(e.snapshot, v3d.snapshot, at + '.snapshot');
+        if ('gm_only' in e) {
+          ok(e.gm_only === true, at + ': gm_only is written, but not as true');
+          marks++;
+        }
+      });
+    });
+    ok(marks === 1, f + ': holds ' + marks + ' GM-only entries, not 1');
+  });
+  const v3Section = sectionOf('### Version 3: GM-only entries (import-v3)', 3);
+  const v3Example = fs.readFileSync(path.join(IMPORT, 'example-v3.json'), 'utf8');
+  ok(
+    v3Section.includes('```json\n' + v3Example + '```'),
+    'llms.txt does not hold docs/fixtures/import/example-v3.json verbatim in a json block'
+  );
+  ['`gm_only`', '`true`', V3_URL, "players' link"].forEach((s) =>
+    ok(v3Section.includes(s), 'llms.txt version 3 section does not say ' + s)
+  );
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText]
+  ].forEach(([name, text]) =>
+    ok(text.includes('schema/import-v3.json'), name + ' does not name schema/import-v3.json')
+  );
 
   /* The account's data zips, read by a walk of their own: the end record, the central
      directory, each local header. data.zip is the frozen v1 pin; data-homebrew.zip is

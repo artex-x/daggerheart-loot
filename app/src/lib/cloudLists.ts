@@ -45,6 +45,9 @@ export interface EntryRow {
   price_coins: number | null;
   player_note: string;
   gm_note: string;
+  /** «Только для мастера»: a players' link leaves the entry out. Absent reads as false;
+   *  a write sends it only as true, so a shown entry's row keeps its earlier bytes. */
+  gm_only?: boolean;
 }
 
 export interface ListRow {
@@ -71,7 +74,7 @@ export type ListPatch = Partial<
   Pick<ListRow, 'name' | 'money_mode' | 'player_note' | 'gm_note'>
 >;
 export type EntryPatch = Partial<
-  Pick<EntryRow, 'quantity' | 'price_coins' | 'player_note' | 'gm_note'>
+  Pick<EntryRow, 'quantity' | 'price_coins' | 'player_note' | 'gm_note' | 'gm_only'>
 >;
 
 /** One write of `apply_list_writes`, in the shape the function reads
@@ -307,12 +310,14 @@ export function entryMetaOf(e: {
   price_coins: number | null;
   player_note: string;
   gm_note?: string | undefined;
+  gm_only?: boolean | undefined;
 }): ListEntryMeta {
   const m: ListEntryMeta = {};
   if (e.quantity > 1) m.qty = e.quantity;
   if (e.price_coins) m.gold = e.price_coins;
   if (e.player_note) m.note = e.player_note;
   if (e.gm_note) m.hnote = e.gm_note;
+  if (e.gm_only) m.gmOnly = true;
   return m;
 }
 
@@ -357,7 +362,8 @@ export interface ShareRow {
 }
 
 /** `get_shared_list`'s answer, the fields the app reads. A player link has no `gm_note`
- *  key, on the list or on an entry. */
+ *  key, on the list or on an entry, and no `gm_only` entry; a GM link writes `gm_only` on
+ *  each entry. */
 export interface SharedRow {
   audience: ShareAudience;
   updated_at: string;
@@ -447,7 +453,7 @@ export function entryRowsOf(
     })
     .map(({ key, src }, i) => {
       const m = meta?.[key] ?? {};
-      return {
+      const row: EntryRow = {
         id: newId(),
         item_key: key,
         source: src.source,
@@ -458,6 +464,8 @@ export function entryRowsOf(
         player_note: clip(m.note ?? '', NOTE_MAX),
         gm_note: clip(m.hnote ?? '', NOTE_MAX)
       };
+      if (m.gmOnly) row.gm_only = true;
+      return row;
     });
 }
 

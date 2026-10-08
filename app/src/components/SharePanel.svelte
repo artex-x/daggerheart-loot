@@ -123,7 +123,7 @@
   function copy(audience: ShareAudience, token: string): void {
     void app.copied(
       () => app.env.clipboard.writeText(app.linkTo(shareHash(token))),
-      audience === 'player' ? (t) => t.playersLinkCopied : (t) => t.gmShareCopied
+      audience === 'player' ? (t) => t.playersShareCopied : (t) => t.gmShareCopied
     );
   }
 </script>

@@ -310,6 +310,11 @@ export function priceTail(
  * sits right under the name as a preamble, then every known entry, each
  * carrying its quantity and price in the same bold run as its name
  * (`itemLine`), its derived blocks, and its own note last.
+ *
+ * It is the players' text: an entry marked «Только для мастера» stays home
+ * with the GM notes. `skip` holds only the shown entries, so a shown entry
+ * still writes its upgrade line to a GM-only record - the record's own data,
+ * not the fact that the list holds it.
  */
 export function shareList(
   list: ListShape,
@@ -317,7 +322,8 @@ export function shareList(
   lang: Lang,
   t: Dict
 ): { text: string; html: string } {
-  const skip = new Set(list.ids);
+  const shown = list.ids.filter((id) => list.meta?.[id]?.gmOnly !== true);
+  const skip = new Set(shown);
   const mode = moneyMode(list);
 
   const noteText = list.note ? `\n\n${t.noteHead}\n${list.note}` : '';
@@ -325,7 +331,7 @@ export function shareList(
     ? '<br><br><i>' + esc(t.noteHead) + '</i><br>' + esc(list.note).replace(/\n/g, '<br>')
     : '';
 
-  const parts = list.ids
+  const parts = shown
     .map((id): Record_ | undefined => index.byId.get(id))
     .filter((it): it is Record_ => it != null)
     .map((it) => {

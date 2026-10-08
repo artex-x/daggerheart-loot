@@ -4473,6 +4473,144 @@ async function fieldHelpAt360() {
   await ctx.close();
 }
 
+/** 69. The GM-only toggle at 1180 and 360 as `gm1` on «Лавка кузнеца»: at 1180x900 the
+ *  pressed row's three action buttons are each at least 24 px tall, and at both widths its
+ *  visually hidden ", Только для мастера" box is at most 1x1 px; on a 360x640 phone a
+ *  120-character own item's row keeps note, eye and cross at 44 px on the meta box's line
+ *  inside 0..360, and «Скрыть от игроков (2)» lies inside 0..360; nothing scrolls
+ *  sideways (docs/specs/FEATURES.md, "Account and browser lists"). */
+async function gmOnlyToggle() {
+  const at = '69 (the GM-only toggle at 1180 and 360): ';
+  const sideways = (page) =>
+    page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+  /* The action buttons of the row whose eye ends with `tail`, after a press on that eye. */
+  const pressAndMeasure = (page, tail) =>
+    page.evaluate(async (v) => {
+      const eye = [...document.querySelectorAll('.lrow-acts .lrow-gm')].find((b) =>
+        (b.getAttribute('aria-label') ?? '').endsWith(v)
+      );
+      if (!eye) return null;
+      eye.click();
+      /* Two frames: the store's redraw, then the layout it moves. */
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const row = eye.closest('.lrow');
+      const acts = row.querySelector('.lrow-acts').getBoundingClientRect();
+      const meta = row.querySelector('.lrow-meta').getBoundingClientRect();
+      const state = row.querySelector('.gmstate')?.getBoundingClientRect();
+      return {
+        pressed: eye.getAttribute('aria-pressed'),
+        dashed: row.classList.contains('gm-only'),
+        state: state ? { w: state.width, h: state.height } : null,
+        rowRight: row.getBoundingClientRect().right,
+        actsTop: acts.top,
+        metaBottom: meta.bottom,
+        buttons: [...row.querySelectorAll('.lrow-acts button')].map((b) => {
+          const r = b.getBoundingClientRect();
+          return { w: Math.round(r.width), h: Math.round(r.height), right: r.right };
+        })
+      };
+    }, tail);
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    await d.open(SHOP, { as: 'gm1' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('.lrow-acts .lrow-gm')),
+      at + 'the eye did not draw at 1180'
+    );
+    const m = await pressAndMeasure(page, 'Брошюра по Истории Искусства');
+    console.log('  69 at 1180: ' + JSON.stringify(m));
+    ok(!!m && m.pressed === 'true' && m.dashed, at + 'the eye did not mark the row at 1180');
+    ok(
+      !!m?.state && m.state.w <= 1 && m.state.h <= 1,
+      at + 'the GM-only words draw at 1180 - ' + JSON.stringify(m?.state)
+    );
+    ok(
+      !!m && m.buttons.length === 3 && m.buttons.every((b) => b.h >= 24),
+      at + 'an action button is under 24 px tall at 1180 - ' + JSON.stringify(m)
+    );
+    ok(!(await sideways(page)), at + 'the page scrolls sideways at 1180');
+    await ctx.close();
+  }
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+    /* A phone: its scrollbar overlays the page. A desktop window's 15 px scrollbar takes
+       the row's room, and the buttons wrap under the meta box there. */
+    await page.setViewport({ width: 360, height: 640, isMobile: true, hasTouch: true });
+    await d.open(SHOP, { as: 'gm1' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('button.addrow')),
+      at + 'the row «Свой предмет» did not draw'
+    );
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await d.press('Свой предмет');
+    const long = 'Ж'.repeat(120);
+    await page.evaluate((v) => {
+      const name = document.getElementById('qi-name');
+      name.focus();
+      name.value = v;
+      name.dispatchEvent(new Event('input', { bubbles: true }));
+    }, long);
+    const add = await page.evaluateHandle(() =>
+      [...document.querySelectorAll('.quick button')].find(
+        (b) => b.textContent.trim() === 'Добавить в список'
+      )
+    );
+    await add.asElement()?.click();
+    await add.dispose();
+    ok(
+      await waitIn(
+        page,
+        (v) =>
+          [...document.querySelectorAll('.lrow-acts .lrow-gm')].some((b) =>
+            (b.getAttribute('aria-label') ?? '').endsWith(v)
+          ),
+        long
+      ),
+      at + 'the 120-character row did not draw'
+    );
+    const m = await pressAndMeasure(page, long);
+    console.log('  69 at 360: ' + JSON.stringify(m));
+    ok(!!m && m.pressed === 'true' && m.dashed, at + 'the eye did not mark the row at 360');
+    ok(
+      !!m?.state && m.state.w <= 1 && m.state.h <= 1,
+      at + 'the GM-only words draw at 360 - ' + JSON.stringify(m?.state)
+    );
+    ok(
+      !!m && m.rowRight <= 360 && m.buttons.every((b) => b.right <= 360),
+      at + 'the row passes the right edge at 360 - ' + JSON.stringify(m)
+    );
+    ok(
+      !!m && m.buttons.length === 3 && m.buttons.every((b) => b.w === 44),
+      at + 'an action button is not 44 px wide at 360 - ' + JSON.stringify(m)
+    );
+    ok(
+      !!m && m.actsTop < m.metaBottom,
+      at + 'the action buttons wrapped under the meta box at 360 - ' + JSON.stringify(m)
+    );
+    ok(!(await sideways(page)), at + 'the page scrolls sideways at 360');
+
+    const names = await page.evaluate(() =>
+      [...document.querySelectorAll('.lrow input[type="checkbox"]')]
+        .slice(0, 2)
+        .map((c) => c.getAttribute('aria-label') ?? '')
+    );
+    for (const n of names) await d.tick(n);
+    const hide = await page.evaluate(() => {
+      const b = [...document.querySelectorAll('.batch-acts button')].find(
+        (x) => x.textContent.trim() === 'Скрыть от игроков (2)'
+      );
+      const r = b?.getBoundingClientRect();
+      return r ? { left: r.left, right: r.right } : null;
+    });
+    ok(
+      !!hide && hide.left >= 0 && hide.right <= 360,
+      at + '«Скрыть от игроков (2)» lies outside 0..360 - ' + JSON.stringify(hide)
+    );
+    ok(!(await sideways(page)), at + 'the bar scrolls the page sideways at 360');
+    await ctx.close();
+  }
+}
+
 /** 68. «Мои предметы» at 300 own items (`?items=300`), at 1180x900 in Chrome as `gm1`:
  *  (a) the navigation from `#/lists` to the 300 rows drawn, (b) one keystroke «9» in
  *  «Найти предмет» to the second frame after it (54 rows drawn); each the median of three
@@ -4626,7 +4764,8 @@ const CASES = [
   ['65 (the requests panel folds at 360)', requestsPanelFolds],
   ['66 (a 200-character list name at 360)', longListName],
   ['67 (field help and threshold labels at 360)', fieldHelpAt360],
-  ['68 (#/homebrew at 300 items)', homebrewAt300]
+  ['68 (#/homebrew at 300 items)', homebrewAt300],
+  ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle]
 ];
 
 (async () => {

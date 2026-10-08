@@ -3,6 +3,7 @@ import { encodeList, type DecodedList } from './listLink.js';
 import {
   copyInit,
   findListByPayload,
+  gmOnlyCount,
   itemMeta,
   keepLists,
   liftNotes,
@@ -13,6 +14,8 @@ import {
   stockLeft,
   takenQty,
   takenTotal,
+  withIds,
+  withMeta,
   type LegacyList,
   type StoredList
 } from './lists.js';
@@ -143,6 +146,27 @@ describe('entry meta', () => {
   it('is empty rather than missing on a list saved before it existed', () => {
     expect(itemMeta(list('a'), 'ci1')).toEqual({});
     expect(itemMeta({ ...list('a'), meta: { ci1: { qty: 3 } } }, 'ci1').qty).toBe(3);
+  });
+
+  it('sets the GM-only mark, and false removes it with the emptied meta', () => {
+    const on = withMeta(list('a'), 'ci1', 'gmOnly', true);
+    expect(on.meta).toEqual({ ci1: { gmOnly: true } });
+    expect(withMeta(on, 'ci1', 'gmOnly', false)).not.toHaveProperty('meta');
+  });
+
+  it('never carries the GM-only mark into an add', () => {
+    const added = withIds(list('a', []), ['ci1', 'q1'], {
+      ci1: { gmOnly: true, qty: 2 },
+      q1: { gmOnly: true }
+    });
+    expect(added.meta).toEqual({ ci1: { qty: 2 } });
+  });
+
+  it('never writes the GM-only mark into a #/l/ payload', () => {
+    const l: StoredList = { ...list('a'), meta: { ci1: { gmOnly: true, note: 'n' } } };
+    expect(encodeList(l, false)).toBe(
+      encodeList({ ...list('a'), meta: { ci1: { note: 'n' } } }, false)
+    );
   });
 });
 
@@ -278,6 +302,27 @@ describe('a selection taken count', () => {
         () => 1
       )
     ).toEqual({ coins: 0, unpriced: 0, pieces: 0 });
+  });
+});
+
+describe('gmOnlyCount', () => {
+  const l: StoredList = {
+    ...list('a', ['ci1', 'ci2', 'ci3']),
+    meta: { ci1: { gmOnly: true }, ci2: { qty: 2 }, ci3: { gmOnly: true, note: 'x' } }
+  };
+  const metaOf = (id: string) => itemMeta(l, id);
+
+  it('counts none when no entry is marked', () => {
+    expect(gmOnlyCount(['ci2'], metaOf)).toBe(0);
+    expect(gmOnlyCount([], metaOf)).toBe(0);
+  });
+
+  it('counts one marked entry', () => {
+    expect(gmOnlyCount(['ci1', 'ci2'], metaOf)).toBe(1);
+  });
+
+  it('counts every entry when all are marked', () => {
+    expect(gmOnlyCount(['ci1', 'ci3'], metaOf)).toBe(2);
   });
 });
 

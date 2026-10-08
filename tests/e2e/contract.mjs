@@ -51,7 +51,7 @@ function hasGmNote(o) {
   return Object.entries(o).some(([k, v]) => k === 'gm_note' || hasGmNote(v));
 }
 
-/** Runs cases A-O and the real-only checks; throws `contract: <what>`. */
+/** Runs cases A-P and R and the real-only checks; throws `contract: <what>`. */
 export async function runRealContract(env, admin, member) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const url = env.E2E_SUPABASE_URL;

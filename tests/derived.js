@@ -351,15 +351,22 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
         html.includes('href="' + BACK_HREF[lang] + '#/account"'),
         'pages/' + rel + ' does not link the account page at its own depth'
       );
-      /* The owner's sentence on the item address, word for word (owner, 2026-10-07). */
+      /* The owner's sentences, word for word: the item address (owner, 2026-10-07) and
+         the GM-only entries (owner, 2026-10-07, accepted with the mark). */
       const said = {
-        ru: 'По адресу предмета видно и время его последней правки.',
-        en: "The item's address also shows when it was last changed."
+        ru: [
+          'По адресу предмета видно и время его последней правки.',
+          'Вид для игроков не показывает заметки мастера и позиции «Только для мастера»; такой предмет по-прежнему открывается по своему адресу.'
+        ],
+        en: [
+          "The item's address also shows when it was last changed.",
+          'The player view leaves out the GM notes and the entries marked GM only; such an item still opens at its own address.'
+        ]
       }[lang];
-      ok(
-        source.replace(/\s+/g, ' ').includes(said),
-        'pages/src/' + rel + ' does not say: ' + said
-      );
+      const flat = source.replace(/\s+/g, ' ');
+      said.forEach(function (line) {
+        ok(flat.includes(line), 'pages/src/' + rel + ' does not say: ' + line);
+      });
     }
   });
 });

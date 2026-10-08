@@ -196,6 +196,16 @@ export function takenTotal(
   return { coins, unpriced, pieces };
 }
 
+/** Returns how many of the entries are «Только для мастера». */
+export function gmOnlyCount(
+  ids: readonly string[],
+  metaOf: (id: string) => ListEntryMeta
+): number {
+  let n = 0;
+  for (const id of ids) if (metaOf(id).gmOnly === true) n++;
+  return n;
+}
+
 /* ---------- one list's writers, shared by the local and the account store ---------- */
 
 /** Returns the list with one entry's field set, or removed when `value` is falsy; an entry
@@ -203,8 +213,8 @@ export function takenTotal(
 export function withMeta(
   l: StoredList,
   entryId: string,
-  field: 'qty' | 'gold' | 'note' | 'hnote',
-  value: string | number
+  field: 'qty' | 'gold' | 'note' | 'hnote' | 'gmOnly',
+  value: string | number | boolean
 ): StoredList {
   const meta: Record<string, ListEntryMeta> = { ...(l.meta ?? {}) };
   const m: ListEntryMeta = { ...meta[entryId] };

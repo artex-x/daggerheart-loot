@@ -768,6 +768,77 @@ describe('the write buffer', () => {
   });
 });
 
+describe('the GM-only mark', () => {
+  const Q1_ROW = uuid(1102);
+  const opsOf = (apply: { mock: { calls: [ListOp[]][] } }): ListOp[] =>
+    apply.mock.calls.flatMap(([ops]) => ops);
+
+  it('sends three presses as one write with the last value, and draws it at once', async () => {
+    const { cloud, store, apply } = await loaded();
+    store.setGmOnly(SHOP, 'q1', true);
+    store.setGmOnly(SHOP, 'q1', false);
+    store.setGmOnly(SHOP, 'q1', true);
+    expect(store.get(SHOP)?.meta?.['q1']).toEqual({
+      note: 'Последний в наличии.',
+      gmOnly: true
+    });
+    await quiet();
+    expect(apply.mock.calls).toEqual([
+      [[{ op: 'update_entry', id: Q1_ROW, patch: { gm_only: true } }]]
+    ]);
+    const row = await serverList(cloud.lists, SHOP);
+    expect(row?.list_entries.find((e) => e.id === Q1_ROW)?.gm_only).toBe(true);
+    store.setGmOnly(SHOP, 'ghost', true);
+    await quiet();
+    expect(apply).toHaveBeenCalledOnce();
+  });
+
+  it('sends a mark over 300 entries after the quiet window in two requests of 200 and 100 writes', async () => {
+    const { cloud, store, apply } = await loaded({ limits: { entries: 300 } });
+    store.add(
+      SHOP,
+      Array.from({ length: 290 }, (_, i) => 'x' + String(i)),
+      () => true
+    );
+    await quiet();
+    expect(store.get(SHOP)?.ids).toHaveLength(300);
+    apply.mockClear();
+    for (const id of store.get(SHOP)?.ids ?? []) store.setGmOnly(SHOP, id, true);
+    await quiet();
+    expect(apply.mock.calls.map(([ops]) => ops.length)).toEqual([200, 100]);
+    expect(opsOf(apply).every((o) => o.op === 'update_entry')).toBe(true);
+    const row = await serverList(cloud.lists, SHOP);
+    expect(row?.list_entries.filter((e) => e.gm_only)).toHaveLength(300);
+  });
+
+  it('writes a removed GM-only entry back GM-only on its undo', async () => {
+    const { store, apply } = await loaded();
+    store.setGmOnly(SHOP, 'q1', true);
+    await quiet();
+    const meta = store.get(SHOP)?.meta?.['q1'] ?? {};
+    store.removeEntry(SHOP, 'q1');
+    store.restoreEntry(SHOP, 'q1', 1, meta);
+    await quiet();
+    const add = opsOf(apply).find((o) => o.op === 'add');
+    expect(add?.op === 'add' && add.entries.map((e) => [e.item_key, e.gm_only])).toEqual([
+      ['q1', true]
+    ]);
+  });
+
+  it("writes no gm_only key for an add from a GM link's selection or a create of shown entries", async () => {
+    const { store, apply } = await loaded();
+    store.add(SHOP, ['q2'], () => true, { q2: { gmOnly: true, qty: 2 } });
+    store.create('Копия', { ids: ['q1'] });
+    await quiet();
+    const rows = opsOf(apply).flatMap((o) =>
+      o.op === 'add' || o.op === 'create' ? o.entries : []
+    );
+    expect(rows.map((e) => e.item_key)).toEqual(['q2', 'q1']);
+    for (const e of rows) expect('gm_only' in e).toBe(false);
+    expect(store.get(SHOP)?.meta?.['q2']).toEqual({ qty: 2 });
+  });
+});
+
 describe('a lost network', () => {
   it('keeps the edit, says not saved, retries every 15 s, and saves when the network is back', async () => {
     const { cloud, store } = await loaded();

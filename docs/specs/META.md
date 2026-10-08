@@ -163,11 +163,11 @@ What stays:
   module runs (`CONTRACTS.md` section 4).
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
   `closeBundle` copies `catalog.csv`, `data.json` and `llms.txt` into
-  `dist/`, `schema/import-v1.json`, `schema/import-v2.json` and
-  `schema/homebrew-v1.json` resolve through the `schema` entry of
-  `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`, as `img/`), and
-  `tools/smoke-http.mjs` asserts every `noscript a[href]` resolves to a
-  real file under `dist/`.
+  `dist/`, `schema/import-v1.json`, `schema/import-v2.json`,
+  `schema/import-v3.json` and `schema/homebrew-v1.json` resolve through the
+  `schema` entry of `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`,
+  as `img/`), and `tools/smoke-http.mjs` asserts every `noscript a[href]`
+  resolves to a real file under `dist/`.
 
 The main landmark's id moved from `view` to `main`, alongside the skip link,
 after checking `#view` appears in no spec, fixture, or route grammar

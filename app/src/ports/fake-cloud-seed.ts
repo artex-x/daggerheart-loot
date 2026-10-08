@@ -76,6 +76,8 @@ export interface SeedEntry {
   source?: 'official' | 'homebrew';
   /** The linked item's id, of any account. */
   hbItem?: string;
+  /** «Только для мастера»: a players' link leaves the entry out. */
+  gmOnly?: true;
 }
 
 /** A seeded cloud list. The times are offsets back from the port's boot,

@@ -688,7 +688,7 @@ const COVERED: Record<string, string> = {
   'Seg.svelte':
     'the frame, on every state here and in shell.test.ts; the tables view switch in tables.test.ts; the print sheet below',
   'RowMain.svelte':
-    "tables.test.ts's sectioned-body axe check, and both list-page states below",
+    "tables.test.ts's sectioned-body axe check, both list-page states below, and a GM-only row in listPage.test.ts",
   'SearchBox.svelte':
     "the tables toolbar in tables.test.ts, and the search page's own box below",
   'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',

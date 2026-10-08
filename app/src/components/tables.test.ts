@@ -1398,4 +1398,40 @@ describe("a row with the author's own relations", () => {
     );
     await expectNoA11yViolations(container);
   });
+
+  it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {
+    const REAL = JSON.parse(
+      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+    ) as Loot;
+    const index = buildIndex(REAL);
+    const it = index.byId.get('ci18');
+    if (!it) throw new Error('The catalog lacks ci18');
+    const props = {
+      it,
+      index,
+      lang: 'ru' as const,
+      artBroken: () => false,
+      onartfail: () => {},
+      onopen: () => {}
+    };
+    const marked = render(RowMain, { props: { ...props, gmOnly: true } });
+    const button = marked.container.querySelector('.row-main');
+    expect(button?.textContent).toContain(`${it.ru}, Только для мастера`);
+    expect(marked.container.querySelector('img')?.classList.contains('gm')).toBe(true);
+    /* The words sit only in the visually hidden span (its rule is RowMain.svelte's
+       `.gmstate`; tests/app/states.js case 69 proves its box is at most 1x1 px). */
+    const holders = [...marked.container.querySelectorAll('*')].filter(
+      (el) => el.children.length === 0 && el.textContent.includes('Только для мастера')
+    );
+    expect(holders.map((el) => el.classList.contains('gmstate'))).toEqual([true]);
+    await expectNoA11yViolations(marked.container);
+    marked.unmount();
+
+    const plain = render(RowMain, { props });
+    expect(plain.container.querySelector('.row-main')?.textContent).not.toContain(
+      'Только для мастера'
+    );
+    expect(plain.container.querySelector('img')?.classList.contains('gm')).toBe(false);
+    await expectNoA11yViolations(plain.container);
+  });
 });

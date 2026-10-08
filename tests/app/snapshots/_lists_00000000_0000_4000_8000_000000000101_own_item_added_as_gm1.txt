@@ -52,12 +52,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     ... checkbox x8 of 12 same-shape siblings elided
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=11]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Палаш" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     button "Очистить заметку" [description=Очистить заметку]
     textbox "Как предмет выглядит, что о нём знают" [value=Последний в наличии. multiline=true readonly=false required=false]
@@ -65,6 +67,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=11]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    ... button x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     spinbutton "Позиция в списке" [value=4 valuetext=4 required=false valuemin=1 valuemax=11]
@@ -88,6 +91,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Топор Тлеющих Углей" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Фляга контрабандиста" [checked=false]
     spinbutton "Позиция в списке" [value=11 valuetext=11 required=false valuemin=1 valuemax=11]
@@ -97,6 +101,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     StaticText "ЗОЛОТО"
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Фляга контрабандиста" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     button "Свой предмет" [expanded=true]
     region "Свой предмет в этот список"
@@ -182,6 +187,17 @@ daggerheart.com
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
+Только для мастера: Брошюра по Истории Искусства
+Только для мастера: Гарпун Левиафана
+Только для мастера: Зелье Быстрого Шага
+Только для мастера: Колдующий Кинжал
+Только для мастера: Колода Сумерек
+Только для мастера: Палаш
+Только для мастера: Первоклассный Спальный Мешок
+Только для мастера: Скипетр
+Только для мастера: Стеганый Доспех
+Только для мастера: Топор Тлеющих Углей
+Только для мастера: Фляга контрабандиста
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
 Убрать из списка
@@ -240,12 +256,14 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [value=150 valuetext=150 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     ... checkbox x8 of 12 same-shape siblings elided
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=11]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Broadsword" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     button "Clear the note" [description=Clear the note]
     textbox "What it looks like, what is known about it" [value=Последний в наличии. multiline=true readonly=false required=false]
@@ -253,6 +271,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=11]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    ... button x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     spinbutton "Position in the list" [value=4 valuetext=4 required=false valuemin=1 valuemax=11]
@@ -276,6 +295,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [value=800 valuetext=800 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Ember Axe" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Фляга контрабандиста" [checked=false]
     spinbutton "Position in the list" [value=11 valuetext=11 required=false valuemin=1 valuemax=11]
@@ -285,6 +305,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     StaticText "GOLD"
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Фляга контрабандиста" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     button "Own item" [expanded=true]
     region "An own item for this list"
@@ -333,6 +354,17 @@ EN
 Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+GM only: Art History Booklet
+GM only: Broadsword
+GM only: Casting Dagger
+GM only: Ember Axe
+GM only: Gambeson Armor
+GM only: Leviathan Harpoon
+GM only: Premium Bedroll
+GM only: Scepter
+GM only: Stride Potion
+GM only: Twilight Deck
+GM only: Фляга контрабандиста
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 How this works

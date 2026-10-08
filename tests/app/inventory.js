@@ -224,6 +224,14 @@ const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 const EMPTY_LIST = '#/lists/00000000-0000-4000-8000-000000000102';
 /** The fake seed's `gm2` list, `uuid(201)`, which holds a link to gm1's axe. */
 const GM2_LIST = '#/lists/00000000-0000-4000-8000-000000000201';
+
+/* Another device marks «Брошюра по Истории Искусства» (di11) of the shop GM only once
+   the share page's topic is joined. */
+async function gmOnlyLive(d) {
+  for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++) await d.settle();
+  await d.fake('playEntry', '00000000-0000-4000-8000-000000000101', 'di11', { gm_only: true });
+}
+
 /* gm3's «Скатка следопыта», the middle of its own chain and set; gm3's item at the
    120-code-point name; an id no item has. */
 const ITEM_H = '#/h/00000000-0000-4000-8000-000000000662';
@@ -1552,6 +1560,44 @@ const STATES = [
     }
   },
   {
+    id: SHOP + ' ~ gm only as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: 'the eye of «Брошюра по Истории Искусства» pressed: the crossed eye in the pressed look, the row dashed on the recessed ground with its art at 45%, no text on the row, and «10 позиций из 100 · только для мастера: 1 · Сохранено»',
+    enter: async (d) => {
+      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.writesSettled();
+    }
+  },
+  {
+    id: SHOP + ' ~ gm only ticked as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: 'one GM-only row and one shown row ticked: «Скрыть от игроков (2)» before «Удалить (2)» in the bar',
+    enter: async (d) => {
+      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.writesSettled();
+      await d.tick('Брошюра по Истории Искусства');
+      await d.tick('Первоклассный Спальный Мешок');
+    }
+  },
+  {
+    id: SHOP + ' ~ gm only hidden as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Скрыть от игроков (2)» pressed: both ticked rows dashed, the ticks kept, «Показать игрокам (2)», «только для мастера: 2» in the sub, and the toast «Скрыто от игроков: 1» with «Вернуть»',
+    enter: async (d) => {
+      await d.click('Только для мастера: Брошюра по Истории Искусства');
+      await d.writesSettled();
+      await d.tick('Брошюра по Истории Искусства');
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.click('Скрыть от игроков (2)');
+      await d.writesSettled();
+    },
+    /* a 7000ms action toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
     id: SHOP,
     route: SHOP,
     why: 'signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»'
@@ -1871,6 +1917,36 @@ const STATES = [
         await d.settle();
       await d.fake('play', '00000000-0000-4000-8000-000000000101', { name: 'Лавка у моста' });
       for (let i = 0; i < 40 && !(await d.text()).includes('Лавка у моста'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ gm only live',
+    route: '#/s/player-token-1',
+    why: 'signed out, after another device marked «Брошюра по Истории Искусства» GM only while the share topic was joined: the row gone with no reload, one entry fewer in the sub, and the hidden status «Список обновлён»',
+    enter: async (d) => {
+      await gmOnlyLive(d);
+      for (let i = 0; i < 40 && (await d.text()).includes('Брошюра по Истории Искусства'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/s/gm-token-1 ~ gm only',
+    route: '#/s/gm-token-1',
+    why: "signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row dashed with its art at 45%, and its button named with «, Только для мастера» for a screen reader only",
+    enter: async (d) => {
+      await gmOnlyLive(d);
+      for (let i = 0; i < 40 && !(await d.count('.gm-only')); i++) await d.settle();
+    }
+  },
+  {
+    id: '#/s/player-token-1 ~ gm only as gm1',
+    route: '#/s/player-token-1',
+    as: 'gm1',
+    why: "the owner on their own players' link with one GM-only entry: «Это ваш список. Только для мастера: 1 - по этой ссылке их не видно. Открыть для правки» above the rows the link shows",
+    enter: async (d) => {
+      await gmOnlyLive(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Только для мастера: 1'); i++)
         await d.settle();
     }
   },

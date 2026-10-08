@@ -294,11 +294,13 @@ across.
   that starts with a zip's signature is read as the data zip ("Account and
   browser lists", "Exports"), anything else as UTF-8 text. A zip of more than 10
   MB is refused before it is read, «Архив больше 10 МБ.»; a zip's chosen data
-  file of more than 5 MB reads «Файл больше 5 МБ.». The import reads versions 1
-  and 2: a version 2 file's homebrew entry imports as a link to the own item
-  when the account holds its key; any other becomes a new own item in
-  «Хоумбрю», made from its snapshot, and the entry links it (`CONTRACTS.md`
-  section 4). One copy is made per distinct key and snapshot: a later entry of
+  file of more than 5 MB reads «Файл больше 5 МБ.». The import reads versions 1,
+  2 and 3. A version 3 entry keeps its «Только для мастера» mark, on its link
+  or on its fixed copy's link; `gm_only` in a version 1 or 2 file is an
+  unknown field. A homebrew entry of a version 2 or 3 file imports as a link
+  to the own item when the account holds its key; any other becomes a new
+  own item in «Хоумбрю», made from its snapshot, and the entry links it
+  (`CONTRACTS.md` section 4). One copy is made per distinct key and snapshot: a later entry of
   the same key with another snapshot gets a new key, and cards likewise. The
   copies count against the item and card limits and `import_homebrew`'s 1000
   rows; past either the import is refused whole and nothing is written. A
@@ -601,14 +603,17 @@ browser lists writable after the date.
   players' first. An active row shows its link as the in-app address
   `#/s/<token>` and two buttons: «Скопировать» copies `<site>#/s/<token>`, or
   `<site>en/#/s/<token>` in English, and toasts «Ссылка для игроков
-  скопирована - заметок мастера в ней нет» or «Ссылка для мастера
-  скопирована - в ней есть заметки мастера»; «Удалить ссылку» stops the link
+  скопирована - заметок и позиций «Только для мастера» в ней нет» / "Players'
+  link copied - it carries no "GM only" notes or items" or «Ссылка для мастера
+  скопирована - в ней есть заметки и позиции «Только для мастера»» / "GM's
+  link copied - it carries the "GM only" notes and items"; «Удалить ссылку» stops the link
   at once, asks nothing and toasts «Ссылка удалена: по ней список больше не
   откроется.». A row whose links are all deleted says «Ссылка удалена» and
   offers «Создать ссылку» alone, which makes a new link and toasts «Ссылка
   создана.»; the next open does not make one by itself. Replacing a link is
-  delete, then create. Under the rows a hint says what the two buttons do and
-  that the GM's link shows the «Только для мастера» notes. «Загружаем...»
+  delete, then create. Under the rows a hint says what the two buttons do,
+  that the players' link hides the «Только для мастера» notes and items and
+  that the GM's link shows them. «Загружаем...»
   while the links are read; «Не получилось загрузить ссылки.» and a small
   «Повторить» when the read, or a link it had to make, failed; a failed change
   toasts «Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё
@@ -616,6 +621,28 @@ browser lists writable after the date.
   the row, and reloads the panel when it was refused. A row's buttons are
   disabled while its change runs. An empty list can be shared. No account
   list's page or panel writes or copies a `#/l/` address.
+- **«Только для мастера» / "GM only" entries**
+  (`docs/decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md`):
+  each row of an account list's page draws an eye between «Заметка» and
+  «Убрать из списка», named «Только для мастера: <name>» with `aria-pressed`
+  and the title «Только для мастера»; pressed, it draws the crossed eye in the
+  note button's pressed look. A press marks or clears the entry through the
+  write buffer, with no toast. A GM-only row has a dashed border, the
+  recessed ground and its art at 45%, on the owner's page and on the GM's
+  link; no text on screen marks it, and the row's button names the state
+  after the name for a screen reader («Брошюра по Истории Искусства, Только
+  для мастера ...»). While any entry is GM-only the sub adds the count between
+  the entry count and the save status, «10 позиций из 100 · только для
+  мастера: 2 · Сохранено»; at none the sub is unchanged. The selection bar
+  draws «Скрыть от игроков (N)» while any ticked entry is shown to players,
+  else «Показать игрокам (N)», before «Удалить (N)»; a press keeps the ticks
+  and toasts «Скрыто от игроков: N» / «Показано игрокам: N» for the entries
+  it changed, with «Вернуть», which puts back only those. «Скопировать
+  текст» is the players' text: it leaves GM-only entries out as it leaves out
+  the GM notes, and a shown entry still names a GM-only record it upgrades
+  into. The selection's «Скопировать», «Печать», the list roll, its numbers
+  and the counts keep every entry. A browser list has no eye and no bar
+  action.
 - **The shared page `#/s/<token>`** draws the list as the link's audience sees
   it, read-only for everyone, the owner included: the name, today's
   «Список от другого игрока · N позиций», «Обновлено N назад» / "Updated N
@@ -631,7 +658,10 @@ browser lists writable after the date.
   what the page draws, and nothing for a change the link does not show (a GM
   note on a players' link). The relative time moves with the 45 s clock and
   after each read that changed the list. The owner, signed in, sees «Это ваш список.» and «Открыть
-  для правки» to `#/lists/<uuid>` above the title. «Сохранить себе» saves a
+  для правки» to `#/lists/<uuid>` above the title; on a players' link, while
+  the list holds GM-only entries, the line adds «Только для мастера: N - по
+  этой ссылке их не видно.» / "GM only: N - this link does not show them."
+  between the two, once the account's lists are read. «Сохранить себе» saves a
   copy into the account with only the notes the link shows (a player link's
   copy has no GM note) and opens it; signed out it opens the sign-in prompt
   under it, and after the sign-in the copy is made by itself; a refusal
@@ -643,6 +673,13 @@ browser lists writable after the date.
   соединение и нажмите «Повторить».» and «Повторить». Nothing is drawn while the first
   read runs. A re-read names the revision the page shows, and a list still at
   that revision answers with nothing to download or draw.
+  A players' link never holds an entry its owner marked «Только для мастера»
+  / "GM only": the server leaves the entry out with its linked item's id, and
+  numbers the rest from 0, so the count, the rows and the selection know only
+  the rest; a GM's link holds every entry with its mark and draws a GM-only
+  entry in the GM-only row look. «Сохранить себе» from
+  a GM's link keeps the mark on each copied entry; a players' link's copy has
+  no such entry.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session or the
@@ -685,7 +722,8 @@ browser lists writable after the date.
   этой ссылке: подождите минуту.» (5 a minute per link), «У владельца уже 10
   запросов без ответа. Попробуйте позже.» (the pending cap, with its number),
   «Список изменился. Проверьте выбор и отправьте снова.» (an entry the list no
-  longer holds; the page reads the list again), «Не получилось отправить.
+  longer holds, or, through a players' link, one marked «Только для мастера»;
+  the page reads the list again), «Не получилось отправить.
   Проверьте соединение и попробуйте ещё раз.» (no answer in 20 s; a second press sends the same
   request again, which the server stores once), the line limit as «В
   запросе может быть не больше 100 позиций, а отмечено 101. Снимите лишние
@@ -794,9 +832,11 @@ browser lists writable after the date.
   list's page download a lists file of the ticked lists in the index's order or
   of the one list, both notes of every list and entry included: `<name>.json`
   for one list, else `daggerheart-loot-lists-<YYYY-MM-DD>.json` (the local day).
-  The file is `import-v1`, or `import-v2` when it holds a homebrew entry: each
-  is written with the live item as its snapshot, the own one or another
-  account's as the last read answered it (`CONTRACTS.md` section 4). «Скачать мои данные (ZIP)» on
+  The file is `import-v1`, `import-v2` when it holds a homebrew entry, or
+  `import-v3` when it holds an entry marked «Только для мастера»: the mark
+  travels as `"gm_only": true`. A homebrew entry is written with the live
+  item as its snapshot, the own one or another account's as the last read
+  answered it (`CONTRACTS.md` section 4). «Скачать мои данные (ZIP)» on
   `#/account` downloads `daggerheart-loot-data-<YYYY-MM-DD>.zip`, a store-only
   zip whose root holds `lists.json`, the same lists file of every account list,
   and, when the account holds a source, a card or an own item, `homebrew.json`,
@@ -977,7 +1017,8 @@ browser lists writable after the date.
   оригиналом.», or, while one of the reader's account lists links the item,
   «Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут
   вести на неё.»: the press relinks in place every such row to the copy,
-  each keeping its position, quantity, price and both notes, and toasts
+  each keeping its position, quantity, price, both notes and the «Только для
+  мастера» mark, and toasts
   «Предмет «%s» сохранён в «Мои предметы», строки ваших списков ведут на
   копию», else «Предмет «%s» сохранён в «Мои предметы»», each with
   «Изменить» to `#/homebrew/<key>` in a new tab. Then the button reads
@@ -1924,7 +1965,10 @@ Each rule keeps its number: a review cites it by number.
   adding its other counts after a comma when not zero. Departure: «Сохранить
   себе» of an item says «Предмет «%s» сохранён в «Мои предметы»» (and the
   relinked form), not «создан»: the toast repeats the word of the button the
-  reader pressed.
+  reader pressed. Departures for «Только для мастера» entries (owner,
+  2026-10-06): the row's eye has no toast, as an entry field (the note
+  button, the quantity); the bar's bulk toasts say «Скрыто от игроков: N» /
+  «Показано игрокам: N», the bar's verbs, not «<Причастие> предметов: N».
 - **6. Load states**: one `LoadState`: «Загружаем...» / "Loading..."
   (`role="status"`); a failure line (`role="alert"`) with «Повторить» /
   "Retry": primary where the failure replaces the page and its title says so

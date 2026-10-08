@@ -4,7 +4,8 @@
      real use - the list page's own row draws the same body without
      `num` (`rnum` - only the alternate tables' columns override the roll
      number) or `tail` (`rtail` - the shared page's decoration, threaded
-     through `TableRows`'s own `TableEntry.tail`). */
+     through `TableRows`'s own `TableEntry.tail`). The third optional input,
+     `gmOnly`, dims the art and names the state for a screen reader. */
   import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
   import { artSrc, descParts } from '../lib/desc.js';
@@ -28,9 +29,12 @@
     /** The shared-list decoration after the name - `TableRows`'s
      *  `TableEntry.tail`, from the shared page. */
     tail?: string | undefined;
+    /** An entry marked «Только для мастера»: the art at 45% and the state for a
+     *  screen reader after the name. */
+    gmOnly?: boolean | undefined;
   }
 
-  const { it, index, lang, artBroken, onartfail, onopen, num, tail }: Props = $props();
+  const { it, index, lang, artBroken, onartfail, onopen, num, tail, gmOnly }: Props = $props();
 
   const t = $derived(dict(lang));
 
@@ -52,6 +56,7 @@
   }}
 >
   <img
+    class:gm={gmOnly}
     src={artSrc(it.img, artBroken(it.id), 'thumb')}
     alt=""
     loading="lazy"
@@ -62,9 +67,9 @@
   />
   <span class="rt"
     ><b
-      >{#if num}<span class="rnum">{num}</span>{/if}{nameOf(it, lang)}{#if tail}<i class="rtail"
-          >{tail}</i
-        >{/if}</b
+      >{#if num}<span class="rnum">{num}</span>{/if}{nameOf(it, lang)}{#if gmOnly}<span
+          class="gmstate">{', ' + t.noteHid}</span
+        >{/if}{#if tail}<i class="rtail">{tail}</i>{/if}</b
     >{#if it.eq}<span class="rstats {eqClass(it.eq)}"
         >{eqLine(
           it,
@@ -124,6 +129,10 @@
     object-fit: cover;
     flex: none;
     background: #0a0810;
+  }
+
+  .row-main img.gm {
+    opacity: 0.45;
   }
 
   .row-main .rt {
@@ -196,6 +205,18 @@
     margin-top: 3px;
     font: 600 11.5px/1.4 var(--mono);
     color: var(--muted);
+  }
+
+  /* Visually hidden, as `.lsaid`: no text marks a GM-only row on screen
+     (docs/specs/FEATURES.md, "Account and browser lists"). */
+  .row-main .rt .gmstate {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .row-main .rm {

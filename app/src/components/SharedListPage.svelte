@@ -24,7 +24,7 @@
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
   import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
-  import { copyInit, takenQty } from '../lib/lists.js';
+  import { copyInit, gmOnlyCount, itemMeta, takenQty } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -97,9 +97,18 @@
   const entries = $derived(
     items.map((it) => {
       const tail = tailOf(it.id);
-      return tail === undefined ? { it } : { it, tail };
+      const entry = tail === undefined ? { it } : { it, tail };
+      return metaOf(it.id).gmOnly === true ? { ...entry, gmOnly: true as const } : entry;
     })
   );
+  /* The owner on the own players' link: how many entries the link leaves out.
+     0 until the account list is read. */
+  const hiddenN = $derived.by((): number => {
+    const mine = view?.mine;
+    if (!mine || view.shared?.audience !== 'player') return 0;
+    const l = app.cloudLists?.get(mine);
+    return l ? gmOnlyCount(l.ids, (id) => itemMeta(l, id)) : 0;
+  });
   const sub = $derived(`${t.sharedList} · ${plural(items.length, t.itemsN, app.lang)}`);
 
   /* The live `S.shared` (app.js 51, 3140-3141): every add-to-list menu on
@@ -176,7 +185,10 @@
     {:else}
       {#if view?.mine}
         <p class="ownline">
-          {t.ownList} <a href={storedListHash(view.mine)}>{t.ownListEdit}</a>
+          {t.ownList}
+          {#if hiddenN > 0}{`${t.ownGmOnly.replace('%n', String(hiddenN))} `}{/if}<a
+            href={storedListHash(view.mine)}>{t.ownListEdit}</a
+          >
         </p>
       {/if}
       <PageTitle title={shared.name || t.untitled} {sub} />

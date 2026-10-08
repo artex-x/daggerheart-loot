@@ -703,6 +703,66 @@ describe('a share link', () => {
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
   });
 
+  describe('a GM-only entry', () => {
+    const SHOP = uuid(101);
+    const marked = (as?: string) => {
+      const cloud = fakeCloud(SEED, as);
+      cloud.playEntry(SHOP, 'cc1', { gm_only: true });
+      return cloud;
+    };
+    const ownLine = (c: HTMLElement): string =>
+      c.querySelector('.ownline')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
+
+    it("draws it on the GM's link in the GM-only look, named for a screen reader", async () => {
+      const { container } = open('#/s/gm-token-1', marked());
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      const row = container.querySelector('[data-row="cc1"]');
+      expect(row).toHaveClass('gm-only');
+      expect(row?.querySelector('.row-main')?.textContent).toContain(
+        'Зелье, Только для мастера'
+      );
+      expect(container.querySelectorAll('.gm-only')).toHaveLength(1);
+      await expectNoA11yViolations(container);
+    });
+
+    it("leaves it out of the players' link, with no GM-only look", async () => {
+      const { container } = open('#/s/player-token-1', marked());
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
+      expect(screen.getByText('Список от другого игрока · 2 позиции')).toBeInTheDocument();
+      expect(container.querySelector('[data-row="cc1"]')).toBeNull();
+      expect(container.querySelector('.gm-only')).toBeNull();
+      expect(container.textContent).not.toContain('Только для мастера');
+      await expectNoA11yViolations(container);
+    });
+
+    it('tells the owner on the own players link how many entries it leaves out', async () => {
+      const { container } = open('#/s/player-token-1', marked('gm1'));
+      await screen.findByRole('link', { name: ru.ownListEdit });
+      await waitFor(() => {
+        expect(ownLine(container)).toBe(
+          'Это ваш список. Только для мастера: 1 - по этой ссылке их не видно. Открыть для правки'
+        );
+      });
+      await expectNoA11yViolations(container);
+    });
+
+    it('says nothing more to the owner with no GM-only entry, or on the GM link', async () => {
+      const plain = open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
+      await screen.findByRole('link', { name: ru.ownListEdit });
+      await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+      expect(ownLine(plain.container)).toBe('Это ваш список. Открыть для правки');
+      await expectNoA11yViolations(plain.container);
+      cleanup();
+      const gm = open('#/s/gm-token-1', marked('gm1'));
+      await screen.findByRole('link', { name: ru.ownListEdit });
+      await waitFor(() => {
+        expect(gm.container.querySelector('.gm-only')).not.toBeNull();
+      });
+      expect(ownLine(gm.container)).toBe('Это ваш список. Открыть для правки');
+      await expectNoA11yViolations(gm.container);
+    });
+  });
+
   it('disables «Сохранить себе» while the browser lists move into the account', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     let release = (): void => undefined;
@@ -1293,7 +1353,7 @@ describe('homebrew entries on a share link', () => {
       expect(router.hash()).toBe('#/lists/' + uuid(5000));
     });
     expect(
-      await screen.findByRole('button', { name: /Топор Тлеющих Углей/ })
+      await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ })
     ).toBeInTheDocument();
     page.fireHidden();
     const axe = await saved(cloud, uuid(5000));

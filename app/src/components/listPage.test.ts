@@ -34,6 +34,7 @@ import type { CloudPort, CompressPort, Env, ListWrites } from '../ports/index.js
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { filled, SHOP, sub, withStandins } from '../test/accountList.js';
 
 afterEach(cleanup);
 
@@ -580,6 +581,14 @@ describe('the actions under a ticked selection', () => {
         .map((b) => b.textContent)
     ).toEqual(['Цены', 'Скопировать', 'Удалить (1)']);
     expect((bar as HTMLElement).querySelector('input')).toBeNull();
+  });
+
+  it('draws no GM-only eye on a browser list', () => {
+    const { container } = render(App, { env: withA() });
+    expect(
+      screen.queryByRole('button', { name: /^Только для мастера/ })
+    ).not.toBeInTheDocument();
+    expect(container.querySelector('.lrow-gm')).toBeNull();
   });
 
   it('opens the panel on Цены and flips aria-expanded', async () => {
@@ -1426,7 +1435,6 @@ describe('accessibility', () => {
 });
 
 describe('an account list', () => {
-  const SHOP = '#/lists/00000000-0000-4000-8000-000000000101';
   /* `page.fireHidden()` sends the account's write buffer at once, as a
      hidden tab does, so a test reads the fake without the 2 s wait. */
   const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
@@ -1436,8 +1444,6 @@ describe('an account list', () => {
     const view = render(App, { env: at(hash, { router, dialog, cloud, page, ...over }) });
     return { ...view, router, dialog, page };
   };
-  const sub = (container: HTMLElement): string =>
-    container.querySelector('.page-sub')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
 
   it('counts its entries against the entry limit, and bare when the limit read failed', async () => {
     const { container } = openAs(fakeCloud(SEED, 'gm1', { limits: { entries: 4 } }));
@@ -1455,51 +1461,7 @@ describe('an account list', () => {
     expect(sub(bare.container)).toBe('4 позиции · Сохранено');
   });
 
-  /* gm1's shop holds ten entries, six of them records this data lacks; `more` fills it
-     with stand-ins, and the six get stand-ins too, so each entry counts. */
-  const STANDINS: Loot = {
-    ...LOOT,
-    items: {
-      ...LOOT.items,
-      core_item: [
-        ...(LOOT.items['core_item'] ?? []),
-        ...['q313', 'voa2_a3', 'q23', 'w51', 'q35', 'di11']
-          .concat(Array.from({ length: 290 }, (_, i) => 'x' + String(i)))
-          .map((id, i) => ({
-            id,
-            src: 'core',
-            kind: 'item' as const,
-            roll: 1,
-            en: 'Stand-in ' + String(i),
-            ende: '',
-            ru: 'Подставка ' + String(i),
-            rud: ''
-          }))
-      ]
-    }
-  };
-  const filled = async (more: number, entries: number): Promise<CloudPort> => {
-    const cloud = fakeCloud(SEED, 'gm1', { limits: { entries } });
-    const r = await cloud.lists.apply([
-      {
-        op: 'add',
-        list_id: uuid(101),
-        entries: Array.from({ length: more }, (_, i) => ({
-          id: uuid(7000 + i),
-          item_key: 'x' + String(i),
-          source: 'official' as const,
-          hb_item: null,
-          position: 10 + i,
-          quantity: 1,
-          price_coins: null,
-          player_note: '',
-          gm_note: ''
-        }))
-      }
-    ]);
-    if (!r.ok) throw new Error(`The fake refused ${String(more)} entries. Raise the limit.`);
-    return cloud;
-  };
+  const STANDINS = withStandins(LOOT);
 
   it('counts its entries at the limit and at three times the limit', async () => {
     const full = openAs(await filled(90, 100), SHOP, { data: fakeData(STANDINS) });
@@ -1512,6 +1474,139 @@ describe('an account list', () => {
     await screen.findByRole('textbox', { name: 'Название списка' });
     await waitFor(() => {
       expect(sub(big.container)).toBe('300 позиций из 300 · Сохранено');
+    });
+  });
+
+  /* gm1's shop as LOOT knows it: ci1, q1, cc1 and the homebrew axe. */
+  const gmOnlyOf = async (cloud: CloudPort, key: string): Promise<boolean | undefined> => {
+    const read = await cloud.lists.list();
+    const shop = read.ok ? read.lists.find((l) => l.id === uuid(101)) : undefined;
+    return shop?.list_entries.find((e) => e.item_key === key)?.gm_only;
+  };
+
+  it('draws the GM-only eye between «Заметка» and «Убрать из списка», and a press marks the entry with no toast', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container, page } = openAs(cloud);
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    const eye = screen.getByRole('button', { name: 'Только для мастера: Спальный мешок' });
+    const acts = [...(eye.parentElement?.children ?? [])].map((b) =>
+      b.getAttribute('aria-label')
+    );
+    expect(acts).toEqual(['Заметка', 'Только для мастера: Спальный мешок', 'Убрать из списка']);
+    expect(eye).toHaveAttribute('aria-pressed', 'false');
+    expect(eye).toHaveAttribute('title', 'Только для мастера');
+    expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+    const row = eye.closest('.lrow');
+    expect(row).not.toHaveClass('gm-only');
+    const icon = eye.innerHTML;
+
+    await userEvent.click(eye);
+    expect(eye).toHaveAttribute('aria-pressed', 'true');
+    expect(row).toHaveClass('gm-only');
+    expect(eye.innerHTML).not.toBe(icon);
+    expect(row?.querySelector('.row-main')?.textContent).toContain(
+      'Спальный мешок, Только для мастера'
+    );
+    expect(sub(container)).toMatch(/^4 позиции из 100 · только для мастера: 1 · /);
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
+    page.fireHidden();
+    await waitFor(async () => {
+      expect(await gmOnlyOf(cloud, 'ci1')).toBe(true);
+    });
+    await waitFor(() => {
+      expect(sub(container)).toBe('4 позиции из 100 · только для мастера: 1 · Сохранено');
+    });
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(eye);
+    expect(eye).toHaveAttribute('aria-pressed', 'false');
+    expect(eye.innerHTML).toBe(icon);
+    expect(row).not.toHaveClass('gm-only');
+    expect(row?.querySelector('.row-main')?.textContent).not.toContain('Только для мастера');
+    page.fireHidden();
+    await waitFor(async () => {
+      expect(await gmOnlyOf(cloud, 'ci1')).toBe(false);
+    });
+    await waitFor(() => {
+      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+    });
+    expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
+  });
+
+  it('hides the ticked entries from players from the bar, keeps the ticks, and undoes only what it changed', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container, page } = openAs(cloud);
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Меч' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Спальный мешок' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Меч' }));
+    const bar = container.querySelector('.batch-acts') as HTMLElement;
+    expect(
+      within(bar)
+        .getAllByRole('button')
+        .map((b) => b.textContent.trim())
+    ).toEqual(['Цены', 'Скопировать', 'Скрыть от игроков (2)', 'Удалить (2)']);
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Скрыть от игроков (2)' }));
+    expect(screen.getByText('Скрыто от игроков: 1')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Спальный мешок' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Меч' })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'Показать игрокам (2)' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Только для мастера: Спальный мешок' })
+    ).toHaveAttribute('aria-pressed', 'true');
+    expect(sub(container)).toMatch(/только для мастера: 2/);
+    page.fireHidden();
+    await waitFor(async () => {
+      expect(await gmOnlyOf(cloud, 'ci1')).toBe(true);
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(
+      screen.getByRole('button', { name: 'Только для мастера: Спальный мешок' })
+    ).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Только для мастера: Меч' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    page.fireHidden();
+    await waitFor(async () => {
+      expect(await gmOnlyOf(cloud, 'ci1')).toBe(false);
+    });
+    expect(await gmOnlyOf(cloud, 'q1')).toBe(true);
+  });
+
+  it('shows the ticked entries to players when every ticked entry is GM-only', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container, page } = openAs(cloud);
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Меч' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Только для мастера: Зелье' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Меч' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Показать игрокам (2)' }));
+    expect(screen.getByText('Показано игрокам: 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Скрыть от игроков (2)' })).toBeInTheDocument();
+    expect(container.querySelectorAll('.lrow.gm-only')).toHaveLength(0);
+    page.fireHidden();
+    await waitFor(async () => {
+      expect(await gmOnlyOf(cloud, 'q1')).toBe(false);
+    });
+    expect(await gmOnlyOf(cloud, 'cc1')).toBe(false);
+    await waitFor(() => {
+      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('counts the GM-only entries at the limit', async () => {
+    const full = openAs(await filled(90, 100, true), SHOP, { data: fakeData(STANDINS) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    await waitFor(() => {
+      expect(sub(full.container)).toBe(
+        '100 позиций из 100 · только для мастера: 90 · Сохранено'
+      );
     });
   });
 
@@ -2033,7 +2128,7 @@ describe('homebrew entries', () => {
     );
     /* The tab is shown again: the account's items are read again. */
     storage.fireExternalChange(null);
-    expect(await screen.findByRole('button', { name: /Топор Пепла/ })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^Топор Пепла/ })).toBeInTheDocument();
   });
 
   it("offers «Изменить» in the modal for an own item, and not for another account's", async () => {
@@ -2138,7 +2233,7 @@ describe('homebrew entries', () => {
       within(panel).getByRole('textbox', { name: 'Название*' }),
       'Фляга{Enter}'
     );
-    const made = await screen.findByRole('button', { name: /Фляга/ });
+    const made = await screen.findByRole('button', { name: /^Фляга/ });
     const after = container.querySelectorAll('.lrow');
     expect(after.length).toBe(rows.length + 1);
     expect(after[after.length - 1]?.contains(made)).toBe(true);

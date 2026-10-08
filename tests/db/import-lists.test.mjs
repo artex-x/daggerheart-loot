@@ -359,6 +359,35 @@ describe('an import, as A', () => {
       { ...own, hb_item: IA, list_id: L1 }
     ]);
   });
+
+  it('stores gm_only from an official and a by-key homebrew entry, and false without the key', async () => {
+    const IA = id(7301);
+    const items = async (tx) => {
+      await users(tx);
+      await tx`insert into public.homebrew_items (id, owner_id, key, content) values
+        (${IA}, ${A}, 'hb_ownitemaaaaaaaaa', ${tx.json({ kind: 'item', en: 'A' })})`;
+    };
+    const out = await asA(items, async (tx) => {
+      await importAs(tx, [
+        list(L1, 'L', [
+          entry(id(7101), 'ci1', 0, { gm_only: true }),
+          entry(id(7102), 'hb_ownitemaaaaaaaaa', 1, { source: 'homebrew', gm_only: true }),
+          entry(id(7103), 'q1', 2)
+        ])
+      ]);
+      return unbound(tx, async (t) =>
+        (
+          await t`select item_key, hb_item, gm_only from public.list_entries
+            where list_id = ${L1} order by position`
+        ).map((r) => [r.item_key, r.hb_item, r.gm_only])
+      );
+    });
+    assert.deepEqual(out, [
+      ['ci1', null, true],
+      ['hb_ownitemaaaaaaaaa', IA, true],
+      ['q1', null, false]
+    ]);
+  });
 });
 
 describe('the owner messages of an import', () => {

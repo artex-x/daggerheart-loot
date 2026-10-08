@@ -9,9 +9,10 @@
  * cases for the port member it adds: A-F the account, G the lists, H the
  * share links, I the move of a browser list, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
- * import of a homebrew file and the bulk move, R the live links across accounts. */
+ * import of a homebrew file and the bulk move, P the GM-only entries, R the live links
+ * across accounts. */
 
-import type { EntryRow, ImportRow, ListRow } from '../lib/cloudLists.js';
+import type { EntryRow, ImportRow, ListRow, SharedRow } from '../lib/cloudLists.js';
 import {
   canonJson,
   HOMEBREW_KEY,
@@ -1478,6 +1479,125 @@ async function homebrewFileCases(port: CloudPort, assert: Assert): Promise<void>
   }
 }
 
+/* Whether a key of `o`, at any depth, is `key`, or a string of `o` is `text`. */
+function holds(o: unknown, key: string, text: string): boolean {
+  if (o === text) return true;
+  if (Array.isArray(o)) return o.some((x) => holds(x, key, text));
+  if (o === null || typeof o !== 'object') return false;
+  return Object.entries(o).some(([k, v]) => k === key || holds(v, key, text));
+}
+
+/* P. GM-only entries: an own item linked GM-only between two official entries; the
+   players' link holds neither the entry nor the item's id and numbers the rest 0 and 1,
+   the GM's link marks each entry; a players' request for the item is stale; the mark
+   taken off shows it; an import keeps the mark; on the doomed user. A player is signed
+   out: the players' link is read, and the request sent, through `signedOut` too. */
+async function gmOnlyCases(
+  port: CloudPort,
+  signedOut: CloudPort,
+  assert: Assert
+): Promise<void> {
+  const { homebrew, lists, shares } = port;
+  const itemId = homebrew.newId();
+  const key = homebrew.newKey();
+  assert(
+    (
+      await homebrew.createItem({
+        id: itemId,
+        key,
+        book_id: null,
+        content: { kind: 'item', ru: 'Кольцо Тишины' }
+      })
+    ).ok,
+    'gm only: the item was refused'
+  );
+  const listId = lists.newId();
+  const marked = lists.newId();
+  const made = await lists.apply([
+    {
+      op: 'create',
+      list: { id: listId, name: 'Прилавок', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: [
+        entryOf(lists.newId(), 'ci1', 0),
+        entryOf(marked, key, 1, { source: 'homebrew', hb_item: itemId, gm_only: true }),
+        entryOf(lists.newId(), 'q1', 2)
+      ]
+    }
+  ]);
+  assert(answered(made) === 'ok', 'gm only: the list was not created: ' + answered(made));
+  const player = await shares.create(listId, 'player');
+  const gm = await shares.create(listId, 'gm');
+  assert(player.ok && gm.ok, 'gm only: the shares were not made');
+  if (!player.ok || !gm.ok) return;
+  const readOf = async (token: string, by: CloudPort = port): Promise<SharedRow | null> => {
+    const r = await by.shares.read(token);
+    return r.ok ? (r.shared ?? null) : null;
+  };
+
+  for (const [by, who] of [
+    [signedOut, 'signed out'],
+    [port, 'the owner']
+  ] as const) {
+    const p = await readOf(player.token, by);
+    assert(
+      p?.entries.map((e) => [e.item_key, e.position].join('|')).join(';') === 'ci1|0;q1|1',
+      "gm only: the players' link read by " +
+        who +
+        ' does not hold the shown entries at 0 and 1: ' +
+        JSON.stringify(p?.entries)
+    );
+    assert(
+      p !== null && !holds(p, 'gm_only', itemId),
+      "gm only: the players' link read by " + who + " holds gm_only or the item's id"
+    );
+  }
+  const g = await readOf(gm.token);
+  assert(
+    g?.entries.map((e) => [e.item_key, e.position, e.gm_only].join('|')).join(';') ===
+      ['ci1|0|false', key + '|1|true', 'q1|2|false'].join(';') && g.entries[1]?.hid === itemId,
+    "gm only: the GM's link does not mark each entry: " + JSON.stringify(g?.entries)
+  );
+  const stale = await signedOut.requests.send(lists.newId(), player.token, [
+    { item: key, qty: 1 }
+  ]);
+  assert(
+    !stale.ok && stale.error === 'stale',
+    "gm only: a players' request for the item answered " + JSON.stringify(stale)
+  );
+
+  const shown = await lists.apply([
+    { op: 'update_entry', id: marked, patch: { gm_only: false } }
+  ]);
+  assert(answered(shown) === 'ok', 'gm only: the unmark answered ' + answered(shown));
+  const after = await readOf(player.token, signedOut);
+  assert(
+    after?.entries.length === 3 && after.entries[1]?.hid === itemId,
+    "gm only: the unmarked entry is not on the players' link: " + JSON.stringify(after?.entries)
+  );
+
+  const importedId = lists.newId();
+  const imported = await lists.import([
+    importRow(importedId, 'Импорт', [entryOf(lists.newId(), 'ci1', 0, { gm_only: true })])
+  ]);
+  assert(imported.ok, 'gm only: the import answered ' + JSON.stringify(imported));
+  const back = await theList(port, importedId, assert, 'after the import');
+  assert(
+    back?.list_entries[0]?.gm_only === true,
+    'gm only: the imported entry is not GM-only: ' + JSON.stringify(back?.list_entries)
+  );
+
+  assert(
+    answered(
+      await lists.apply([
+        { op: 'remove', id: listId },
+        { op: 'remove', id: importedId }
+      ])
+    ) === 'ok,ok',
+    'gm only: the list removal was refused'
+  );
+  assert((await homebrew.removeItem(itemId)).ok, 'gm only: the item removal was refused');
+}
+
 /* R. A live link across accounts: the member's item, read by its id signed out and by its
    author (`item()`), linked in the doomed user's list by its id and read back through
    `items()`; relinked in place to the doomed user's own item of the same key and back; the
@@ -1659,7 +1779,7 @@ export async function runCloudContract(
   users: ContractUsers,
   assert: (cond: boolean, msg: string) => void,
   log: (msg: string) => void = () => undefined,
-  /** The ports of case R, which reads one account's writes from another: `make` itself
+  /** The ports of cases P and R, which read one account's writes from another: `make` itself
    *  when every port reaches one database. */
   makeShared: (as?: string) => Promise<CloudPort> = make
 ): Promise<void> {
@@ -1807,6 +1927,10 @@ export async function runCloudContract(
   /* O. a homebrew file imported and the bulk move, on the doomed user; the account's
      deletion takes the rows with it. */
   await homebrewFileCases(doomedPort, assert);
+
+  /* P. GM-only entries, on the doomed user, read by a signed-out player of the same
+     database; the case removes what it makes. */
+  await gmOnlyCases(await makeShared(users.doomed), await makeShared(), assert);
 
   /* R. a live link from the doomed user's list to the member's item; the case removes what
      it makes. */

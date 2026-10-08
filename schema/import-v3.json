@@ -1,0 +1,620 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://artex-x.github.io/daggerheart-loot/schema/import-v3.json",
+  "title": "Daggerheart Loot lists file, version 3",
+  "description": "Account lists as one JSON file, version 2 plus the GM-only mark: an entry with gm_only true is one the GM marked «Только для мастера» (GM only), which a players' share link leaves out. The site writes version 3 only for an export that holds a GM-only entry, and reads versions 1, 2 and 3. llms.txt, section \"Lists as a file (import-v1)\", subsection \"Version 3: GM-only entries (import-v3)\", describes it for AI assistants. Frozen: a bound may widen in place, never narrow; any other change is import-v4.json beside this one.",
+  "type": "object",
+  "required": ["format", "version", "lists"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "title": "Schema",
+      "description": "The URL of this schema, for editors. Ignored on import.",
+      "type": "string"
+    },
+    "format": {
+      "title": "Format",
+      "description": "Names the file as a lists file.",
+      "const": "daggerheart-loot/lists"
+    },
+    "version": {
+      "title": "Version",
+      "description": "The format version this schema describes.",
+      "const": 3
+    },
+    "exported_at": {
+      "title": "Exported at",
+      "description": "When the site wrote the file. Ignored on import.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "lists": {
+      "title": "Lists",
+      "description": "The lists, each imported as a new account list, in this order.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/list"
+      }
+    }
+  },
+  "$defs": {
+    "list": {
+      "title": "List",
+      "description": "One account list.",
+      "type": "object",
+      "required": ["name", "entries"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "description": "The list's name, in Unicode code points.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "money_mode": {
+          "title": "Money mode",
+          "description": "How the list shows prices: in bags or in coins. See \"Money\" in llms.txt.",
+          "enum": ["bag", "coin"],
+          "default": "bag"
+        },
+        "player_note": {
+          "title": "Player note",
+          "description": "The list's note that players may read through a share link.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "gm_note": {
+          "title": "GM note",
+          "description": "The list's note that only the GM reads.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "entries": {
+          "title": "Entries",
+          "description": "The list's entries in list order; an empty array for an empty list.",
+          "type": "array",
+          "maxItems": 5000,
+          "items": {
+            "$ref": "#/$defs/entry"
+          }
+        }
+      }
+    },
+    "entry": {
+      "title": "Entry",
+      "description": "One record in a list: a catalog record, or a homebrew item (source homebrew) with its snapshot.",
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Record id",
+          "description": "A record id from catalog.csv; for source homebrew, the item key (hb_ and 16 characters of a-z and 2-7). A catalog id the site does not know is skipped on import.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        },
+        "name": {
+          "title": "Record name",
+          "description": "The record's name, for a person reading the file. Ignored on import.",
+          "type": "string",
+          "maxLength": 200
+        },
+        "source": {
+          "title": "Source",
+          "description": "official for a catalog record; homebrew for a GM's own item, which carries snapshot. An account that holds the key gets a live reference; any other gets a frozen copy of the snapshot.",
+          "enum": ["official", "homebrew"],
+          "default": "official"
+        },
+        "quantity": {
+          "title": "Quantity",
+          "description": "How many of the record the list holds.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "default": 1
+        },
+        "price_coins": {
+          "title": "Price in coins",
+          "description": "The price in whole coins, whatever the money mode; leave the key out for no price. See \"Money\" in llms.txt.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99999
+        },
+        "player_note": {
+          "title": "Player note",
+          "description": "The entry's note that players may read through a share link.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "gm_note": {
+          "title": "GM note",
+          "description": "The entry's note that only the GM reads.",
+          "type": "string",
+          "maxLength": 4000,
+          "default": ""
+        },
+        "gm_only": {
+          "title": "GM only",
+          "description": "true: the entry is «Только для мастера» (GM only) - a players' share link leaves it out, the GM's link shows it. The export writes it only as true; leave it out for an entry the players see.",
+          "type": "boolean",
+          "default": false
+        },
+        "snapshot": {
+          "title": "Snapshot",
+          "description": "The homebrew item as a catalog record, with its source and the own cards it names. At most 131072 bytes of JSON.",
+          "$ref": "#/$defs/snapshot"
+        }
+      },
+      "if": {
+        "required": ["source"],
+        "properties": {
+          "source": {
+            "const": "homebrew"
+          }
+        }
+      },
+      "then": {
+        "required": ["snapshot"],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/key"
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": ["snapshot"]
+        }
+      }
+    },
+    "snapshot": {
+      "title": "Snapshot",
+      "description": "A homebrew item as the catalog draws it: the item's fields with its key as id, each name and description filled from the other language when it lacks one, its source with the section, and the set card and rule cards of its author it names. tier is the loot tier, or A on equipment only when eq.tier is A. A snapshot passes only whole: write it from the item, never by hand.",
+      "type": "object",
+      "required": ["id", "src", "kind", "en", "ru", "ende", "rud"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Key",
+          "description": "The item's key, equal to the entry's id.",
+          "$ref": "#/$defs/key"
+        },
+        "src": {
+          "title": "Source",
+          "description": "Always homebrew.",
+          "const": "homebrew"
+        },
+        "kind": {
+          "title": "Kind",
+          "description": "item (kept), consumable (spent) or equip (a weapon or armour with eq).",
+          "enum": ["item", "consumable", "equip"]
+        },
+        "en": {
+          "title": "English name",
+          "description": "The item's English name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 120
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The item's Russian name, in Unicode code points.",
+          "type": "string",
+          "maxLength": 120
+        },
+        "ende": {
+          "title": "English description",
+          "description": "The item's English text.",
+          "type": "string",
+          "maxLength": 3000
+        },
+        "rud": {
+          "title": "Russian description",
+          "description": "The item's Russian text.",
+          "type": "string",
+          "maxLength": 3000
+        },
+        "tier": {
+          "title": "Tier",
+          "description": "A loot item's tier from its source book; on equipment only A, when eq.tier is A.",
+          "enum": [1, 2, 3, 4, "A", "C"]
+        },
+        "eq": {
+          "title": "Stat block",
+          "description": "Only when kind is equip.",
+          "$ref": "#/$defs/eq"
+        },
+        "craft": {
+          "title": "Upgrades into",
+          "description": "The ids this item upgrades into; never the item's own key.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationId"
+          }
+        },
+        "craft_from": {
+          "title": "Made from",
+          "description": "The ids this item is made from; never the item's own key.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationId"
+          }
+        },
+        "set": {
+          "title": "Set card",
+          "description": "The key of a set card of this file or the account, or a catalog set's key from data.json.",
+          "$ref": "#/$defs/relationId"
+        },
+        "refs": {
+          "title": "Rule cards",
+          "description": "Keys of rule cards of this file or the account, or catalog rule card keys from data.json.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/relationId"
+          }
+        },
+        "book": {
+          "title": "Source",
+          "description": "The item's source; absent for an item with no source.",
+          "type": "object",
+          "required": ["key", "en", "ru"],
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "title": "Key",
+              "description": "The key in its author's account.",
+              "$ref": "#/$defs/key"
+            },
+            "en": {
+              "title": "English name",
+              "description": "The English name, the Russian one when it has none.",
+              "type": "string",
+              "maxLength": 80
+            },
+            "ru": {
+              "title": "Russian name",
+              "description": "The Russian name, the English one when it has none.",
+              "type": "string",
+              "maxLength": 80
+            },
+            "section": {
+              "title": "Section",
+              "description": "The section of the item's source the item is in.",
+              "type": "object",
+              "required": ["key", "en", "ru"],
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "title": "Key",
+                  "description": "The key in its author's account.",
+                  "$ref": "#/$defs/key"
+                },
+                "en": {
+                  "title": "English name",
+                  "description": "The English name, the Russian one when it has none.",
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "ru": {
+                  "title": "Russian name",
+                  "description": "The Russian name, the English one when it has none.",
+                  "type": "string",
+                  "maxLength": 80
+                }
+              }
+            }
+          }
+        },
+        "cards": {
+          "title": "Own cards",
+          "description": "The set card under the item's set and the rule cards its refs name, of its author, by key.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sets": {
+              "title": "Set cards",
+              "description": "The set card the item names, by its key.",
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/key"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/snapshotSet"
+              }
+            },
+            "refs": {
+              "title": "Rule cards",
+              "description": "The rule cards the item names, by key.",
+              "type": "object",
+              "propertyNames": {
+                "$ref": "#/$defs/key"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/snapshotRef"
+              }
+            }
+          }
+        }
+      }
+    },
+    "snapshotSet": {
+      "title": "Set card",
+      "description": "An own set card as a snapshot embeds it: both names and both bonus texts, each filled from the other language.",
+      "type": "object",
+      "required": ["en", "ru", "ende", "rud"],
+      "additionalProperties": false,
+      "properties": {
+        "en": {
+          "title": "English name",
+          "description": "The card's English name.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The card's Russian name.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ende": {
+          "title": "English bonus",
+          "description": "The set's bonus in English.",
+          "type": "string",
+          "maxLength": 1500
+        },
+        "rud": {
+          "title": "Russian bonus",
+          "description": "The set's bonus in Russian.",
+          "type": "string",
+          "maxLength": 1500
+        }
+      }
+    },
+    "snapshotRef": {
+      "title": "Rule card",
+      "description": "An own rule card as a snapshot embeds it: every field written, each filled from the other language, url possibly empty.",
+      "type": "object",
+      "required": ["en", "ru", "ensub", "rusub", "ende", "rud", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "en": {
+          "title": "English name",
+          "description": "The card's English name.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ru": {
+          "title": "Russian name",
+          "description": "The card's Russian name.",
+          "type": "string",
+          "maxLength": 80
+        },
+        "ensub": {
+          "title": "English subtitle",
+          "description": "The card's English subtitle.",
+          "type": "string",
+          "maxLength": 60
+        },
+        "rusub": {
+          "title": "Russian subtitle",
+          "description": "The card's Russian subtitle.",
+          "type": "string",
+          "maxLength": 60
+        },
+        "ende": {
+          "title": "English text",
+          "description": "The card's text in English.",
+          "type": "string",
+          "maxLength": 1500
+        },
+        "rud": {
+          "title": "Russian text",
+          "description": "The card's text in Russian.",
+          "type": "string",
+          "maxLength": 1500
+        },
+        "url": {
+          "title": "Link",
+          "description": "The card's link: empty, or https:// and printable ASCII.",
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^(https://[\\x21-\\x7e]+)?$"
+        }
+      }
+    },
+    "key": {
+      "title": "Key",
+      "description": "A homebrew key: hb_ and 16 characters of a-z and 2-7. It names the object in one account and never changes; a key unique within its array. The site makes keys; a converter makes them at random.",
+      "type": "string",
+      "pattern": "^hb_[a-z2-7]{16}$"
+    },
+    "relationId": {
+      "title": "Record id",
+      "description": "A key of this file or the account, or an id from catalog.csv. An id that names nothing is kept and draws nothing.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "eq": {
+      "title": "Stat block",
+      "description": "An equipment item's stats. A weapon (t weapon or secondary) holds cls, tr, rg, dmg, dt and bu; armour holds as and th. Write the tier from the source book; never work it out from the stats.",
+      "type": "object",
+      "required": ["t", "tier"],
+      "additionalProperties": false,
+      "properties": {
+        "t": {
+          "title": "Type",
+          "description": "weapon (primary), secondary or armor.",
+          "enum": ["weapon", "secondary", "armor"]
+        },
+        "tier": {
+          "title": "Tier",
+          "description": "The tier from the source book, or A for an artifact.",
+          "enum": [1, 2, 3, 4, "A"]
+        },
+        "cls": {
+          "title": "Class",
+          "description": "phy physical or mag magic weapon.",
+          "enum": ["phy", "mag"]
+        },
+        "tr": {
+          "$ref": "#/$defs/trait"
+        },
+        "rg": {
+          "$ref": "#/$defs/range"
+        },
+        "dmg": {
+          "$ref": "#/$defs/damage"
+        },
+        "dt": {
+          "$ref": "#/$defs/damageType"
+        },
+        "bu": {
+          "title": "Burden",
+          "description": "The hands the weapon takes: 1, 2, or any.",
+          "enum": [1, 2, "any"]
+        },
+        "as": {
+          "title": "Armor score",
+          "description": "The armour's score.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "th": {
+          "title": "Thresholds",
+          "description": "The armour's major and severe damage thresholds, the first lower than the second.",
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          }
+        },
+        "alt": {
+          "title": "Second stat set",
+          "description": "A weapon's second set of stats.",
+          "$ref": "#/$defs/stats"
+        },
+        "line": {
+          "title": "Upgrade line",
+          "description": "The line the item upgrades along: a catalog record's line id (catalog.csv) or the key of the line's own first item. Every member of a line is of one equipment type.",
+          "$ref": "#/$defs/relationId"
+        }
+      },
+      "if": {
+        "properties": {
+          "t": {
+            "const": "armor"
+          }
+        }
+      },
+      "then": {
+        "required": ["as", "th"],
+        "not": {
+          "anyOf": [
+            {
+              "required": ["cls"]
+            },
+            {
+              "required": ["tr"]
+            },
+            {
+              "required": ["rg"]
+            },
+            {
+              "required": ["dmg"]
+            },
+            {
+              "required": ["dt"]
+            },
+            {
+              "required": ["bu"]
+            },
+            {
+              "required": ["alt"]
+            }
+          ]
+        }
+      },
+      "else": {
+        "required": ["cls", "tr", "rg", "dmg", "dt", "bu"],
+        "not": {
+          "anyOf": [
+            {
+              "required": ["as"]
+            },
+            {
+              "required": ["th"]
+            }
+          ]
+        }
+      }
+    },
+    "stats": {
+      "title": "Second stat set",
+      "description": "A weapon's second set of stats, used in its other mode.",
+      "type": "object",
+      "required": ["tr", "rg", "dmg", "dt"],
+      "additionalProperties": false,
+      "properties": {
+        "tr": {
+          "$ref": "#/$defs/trait"
+        },
+        "rg": {
+          "$ref": "#/$defs/range"
+        },
+        "dmg": {
+          "$ref": "#/$defs/damage"
+        },
+        "dt": {
+          "$ref": "#/$defs/damageType"
+        }
+      }
+    },
+    "trait": {
+      "title": "Trait",
+      "description": "The trait the weapon attacks with.",
+      "enum": [
+        "agility",
+        "strength",
+        "finesse",
+        "instinct",
+        "presence",
+        "knowledge",
+        "spellcast"
+      ]
+    },
+    "range": {
+      "title": "Range",
+      "description": "The weapon's range.",
+      "enum": ["melee", "veryclose", "close", "far", "veryfar"]
+    },
+    "damage": {
+      "title": "Damage",
+      "description": "The damage die and a bonus of 1 to 99, as d8 or d10+2.",
+      "type": "string",
+      "pattern": "^d(4|6|8|10|12|20)(\\+[1-9][0-9]?)?$"
+    },
+    "damageType": {
+      "title": "Damage type",
+      "description": "phy physical, mag magic, any either.",
+      "enum": ["phy", "mag", "any"]
+    }
+  }
+}

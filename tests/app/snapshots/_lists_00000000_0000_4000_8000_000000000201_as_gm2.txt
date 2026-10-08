@@ -56,6 +56,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Скипетр" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Топор Тлеющих Углей" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
@@ -65,6 +66,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "ЗОЛОТО"
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Топор Тлеющих Углей" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     button "Свой предмет" [expanded=false]
     status ""
@@ -114,6 +116,8 @@ daggerheart.com
 Сообщества
 Списки
 Таблицы
+Только для мастера: Скипетр
+Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
 Убрать из списка
@@ -174,6 +178,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Scepter" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Ember Axe" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
@@ -183,6 +188,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     StaticText "GOLD"
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Ember Axe" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     button "Own item" [expanded=false]
     status ""
@@ -207,6 +213,8 @@ Dread
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+GM only: Ember Axe
+GM only: Scepter
 Hide changes
 Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
 Hide the change to "Ember Axe"

@@ -115,7 +115,7 @@ describe('the own-item panel', () => {
       }
     });
     /* The row is drawn at once, from the own item. */
-    expect(screen.getByRole('button', { name: /Фляга контрабандиста/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Фляга контрабандиста/ })).toBeInTheDocument();
     page.fireHidden();
     await waitFor(() => {
       expect(apply).toHaveBeenCalled();

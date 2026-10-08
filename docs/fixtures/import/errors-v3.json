@@ -1,0 +1,20 @@
+{
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/import-v3.json",
+  "format": "daggerheart-loot/lists",
+  "version": 3,
+  "lists": [
+    {
+      "name": "Ошибки",
+      "entries": [
+        {
+          "id": "ci1",
+          "gm_only": "yes"
+        },
+        {
+          "id": "q1",
+          "gm_only": null
+        }
+      ]
+    }
+  ]
+}

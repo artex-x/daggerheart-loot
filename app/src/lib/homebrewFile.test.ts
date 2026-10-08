@@ -140,6 +140,7 @@ interface Node {
 }
 const SCHEMA = JSON.parse(read('schema', 'homebrew-v1.json')) as Node;
 const V2 = JSON.parse(read('schema', 'import-v2.json')) as Node;
+const V3 = JSON.parse(read('schema', 'import-v3.json')) as Node;
 const defs = SCHEMA.$defs ?? {};
 const def = (name: string, s: Node = SCHEMA): Node => {
   const d = s.$defs?.[name];
@@ -255,7 +256,7 @@ describe('the schema and the validator (the drift guard)', () => {
     expect(def('damageType').enum).toEqual(['phy', 'mag', 'any']);
   });
 
-  it("holds import-v2's copies of the stat block and the key deep-equal, and its card fields to the same bounds", () => {
+  it("holds import-v2's and import-v3's copies of the stat block and the key deep-equal, and its card fields to the same bounds", () => {
     for (const name of [
       'key',
       'relationId',
@@ -267,6 +268,7 @@ describe('the schema and the validator (the drift guard)', () => {
       'damageType'
     ]) {
       expect(def(name, V2)).toEqual(def(name));
+      expect(def(name, V3)).toEqual(def(name));
     }
     const card = props(def('card'));
     for (const [snap, keys] of [

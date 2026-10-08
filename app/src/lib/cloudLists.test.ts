@@ -92,6 +92,18 @@ describe('toCloudList', () => {
     expect(toCloudList(row())).not.toHaveProperty('meta');
   });
 
+  it('keeps a GM-only mark, and no key for a shown entry', () => {
+    const l = toCloudList(
+      row({
+        list_entries: [
+          entry('a', 'q1', 0, { gm_only: true }),
+          entry('b', 'q2', 1, { gm_only: false })
+        ]
+      })
+    );
+    expect(l.meta).toEqual({ q1: { gmOnly: true } });
+  });
+
   it('keeps the money mode only for coins, the list notes, and both times in ms', () => {
     const l = toCloudList(row({ money_mode: 'coin', player_note: 'p', gm_note: 'g' }));
     expect(l).toMatchObject({
@@ -124,6 +136,13 @@ describe('entryRowsOf', () => {
       entry('id1', 'q2', 5)
     ]);
     expect(entryRowsOf(['q1'], undefined, () => 'x')[0]?.position).toBe(0);
+  });
+
+  it('writes gm_only only for a GM-only entry, and no key for a shown one', () => {
+    const rows = entryRowsOf(['q1', 'q2'], { q1: { gmOnly: true }, q2: { qty: 2 } }, () => 'x');
+    expect(rows[0]).toEqual(entry('x', 'q1', 0, { gm_only: true }));
+    expect(rows[1]).toEqual(entry('x', 'q2', 1, { quantity: 2 }));
+    expect('gm_only' in (rows[1] ?? {})).toBe(false);
   });
 
   it('leaves a homebrew key out and numbers the rest without a gap', () => {
@@ -258,6 +277,22 @@ describe('sharedListOf', () => {
       meta: { ci1: { hnote: 'h' } }
     });
     expect('money' in d).toBe(false);
+  });
+
+  it("carries a GM link's GM-only mark into the meta, and none for a shown entry", () => {
+    const d = sharedListOf(
+      {
+        ...player,
+        audience: 'gm',
+        entries: [
+          sharedEntry('ci1', 0, { gm_only: true }),
+          sharedEntry('q1', 1, { gm_only: false })
+        ]
+      },
+      known
+    );
+    expect(d.meta).toEqual({ ci1: { gmOnly: true } });
+    expect(JSON.stringify(sharedListOf(player, known))).not.toContain('gmOnly');
   });
 });
 

@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
 - 2026-10-08 - [A source chip on `#/tables/homebrew` is the `src` filter with one value](decisions/2026-10-08-a-source-chip-on-the-homebrew-table-is-the-src-filter-with-one-value.md)
 - 2026-10-08 - [A usage-profile line picks Max or Pro routing; review tier follows the writer](decisions/2026-10-08-a-usage-profile-line-picks-max-or-pro.md)
 - 2026-10-08 - [«Мои предметы» holds four tabs: items, sources, sets and rule cards](decisions/2026-10-08-my-items-holds-four-tabs-items-sources-sets-and-rule-cards.md)

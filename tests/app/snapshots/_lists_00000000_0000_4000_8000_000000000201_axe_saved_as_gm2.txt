@@ -70,6 +70,8 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Только для мастера: Скипетр
+Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=170 namehash=aa623fa1]
 Убрать из списка
@@ -116,6 +118,8 @@ EN
 Edit
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=148 namehash=85a1586a]
+GM only: Ember Axe
+GM only: Scepter
 Hide changes
 Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
 Hide the change to "Ember Axe"

@@ -49,6 +49,7 @@
   import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
   import {
     findListByPayload,
+    gmOnlyCount,
     itemMeta,
     stockLeft,
     takenQty,
@@ -335,6 +336,15 @@
   const takenOf = (id: string): number => takenQty(metaOf(id), picked.get(id));
   const taken = $derived(takenTotal(ticked, metaOf, takenOf));
   const total = $derived(totalParts(taken, mode, app.lang, t));
+  const gmN = $derived(
+    isCloud
+      ? gmOnlyCount(
+          items.map((x) => x.id),
+          metaOf
+        )
+      : 0
+  );
+  const tickedShown = $derived(ticked.length - gmOnlyCount(ticked, metaOf));
 
   /** The live `hidden` default (no note → hidden), with a person's own
    *  fold/unfold winning once they have touched it - the live `keepOpen`. */
@@ -730,6 +740,29 @@
     });
   }
 
+  /** The bar's «Скрыть от игроков» / «Показать игрокам»: hides every ticked
+   *  entry while any of them is shown to players, else shows them all. Keeps
+   *  the ticks; the undo puts back only the entries the press changed. */
+  function gmOnlyTicked(): void {
+    const l = own;
+    if (!l || !isCloud || !cloud) return;
+    const into = cloud;
+    const listId = l.id;
+    const on = tickedShown > 0;
+    const changed = ticked.filter((id) => (metaOf(id).gmOnly === true) !== on);
+    for (const id of changed) into.setGmOnly(listId, id, on);
+    const n = changed.length;
+    if (!n) return;
+    app.say((t) => (on ? t.gmOnlyHidden : t.gmOnlyShown).replace('%n', String(n)), {
+      action: {
+        label: (t) => t.undo,
+        run: () => {
+          for (const id of changed) into.setGmOnly(listId, id, !on);
+        }
+      }
+    });
+  }
+
   /* Drag through the `nativeDrag` port's live event model (app.js 4443-4530):
      the port owns every listener and the edge-scroll loop, and reports back
      which row is being dragged and where it would land so the template can
@@ -979,7 +1012,7 @@
       {/snippet}
       {#snippet cloudSub()}
         {countOf(items.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
-        <span
+        {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<span
           class="sync"
           class:bad={syncFailed}
           data-saving={cloud?.sync === 'saving' || undefined}
@@ -1175,6 +1208,14 @@
               ><Icon name="copy" />{t.copySel}</Button
             >
             {#if !readOnly}
+              {#if isCloud}
+                <Button size="sm" onclick={gmOnlyTicked}
+                  >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
+                    '%n',
+                    String(ticked.length)
+                  )}</Button
+                >
+              {/if}
               <Button size="sm" variant="danger" onclick={batchDelete}
                 >{t.del} ({String(ticked.length)})</Button
               >
@@ -1240,6 +1281,7 @@
               class="row lrow"
               class:sel={lsel.has(it.id)}
               class:has-note={hasNote}
+              class:gm-only={!!m.gmOnly}
               class:dragging={dragId === it.id}
               class:drop-before={dropGap === i}
               class:drop-after={dropGap === i + 1}
@@ -1288,6 +1330,7 @@
                   app.markArtBroken(bad);
                 }}
                 onopen={openRecord}
+                gmOnly={m.gmOnly}
               />
               <div class="lrow-meta">
                 <label
@@ -1343,6 +1386,18 @@
                     toggleNote(it.id, e);
                   }}><Icon name="note" /></button
                 >
+                {#if isCloud}
+                  <button
+                    type="button"
+                    class="lrow-gm"
+                    aria-pressed={!!m.gmOnly}
+                    title={t.noteHid}
+                    aria-label={t.gmOnlyOf.replace('%s', nameOf(it, app.lang))}
+                    onclick={() => {
+                      cloud?.setGmOnly(own.id, it.id, !m.gmOnly);
+                    }}><Icon name={m.gmOnly ? 'eyeOff' : 'eye'} /></button
+                  >
+                {/if}
                 {#if !readOnly}
                   <button
                     type="button"
@@ -1977,6 +2032,13 @@
     overflow: hidden;
   }
 
+  /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
+  .lrow.gm-only {
+    border-style: dashed;
+    border-color: var(--line2);
+    background: var(--bg2);
+  }
+
   @media (hover: hover) {
     .row:hover {
       border-color: var(--gold);
@@ -2050,8 +2112,18 @@
     padding: 8px 11px 8px 107px;
   }
 
-  .lrow-acts .lrow-note {
+  .lrow-acts .lrow-note,
+  .lrow-acts .lrow-gm {
     color: var(--muted2);
+  }
+
+  .lrow-acts .lrow-gm {
+    border-top: 1px solid var(--line);
+  }
+
+  .lrow-acts .lrow-gm[aria-pressed='true'] {
+    color: var(--gold);
+    background: rgb(216 171 94 / 12%);
   }
 
   .lrow-acts .lrow-note.on {
@@ -2059,7 +2131,8 @@
     background: rgb(216 171 94 / 12%);
   }
 
-  .lrow-acts .lrow-note :global(svg) {
+  .lrow-acts .lrow-note :global(svg),
+  .lrow-acts .lrow-gm :global(svg) {
     display: block;
     margin: 0 auto;
   }
@@ -2308,18 +2381,30 @@
       border-top: 1px solid var(--line);
     }
 
+    /* `flex: none`: the base `flex: 1` sized from a zero basis left the unbordered note
+       button 1 px under 44 (measured 2026-10-08, tests/app/states.js case 69). */
     .lrow-acts button {
+      flex: none;
       width: 44px;
       min-height: 38px;
     }
 
-    .lrow-acts .row-x {
+    .lrow-acts .row-x,
+    .lrow-acts .lrow-gm {
       border-top: 0;
       border-left: 1px solid var(--line);
     }
 
     .lrow-take {
       padding-left: 11px;
+    }
+  }
+
+  /* The meta box and three 44 px action buttons fill a 360 px row to the pixel; this
+     leaves 4 px of slack (measured 2026-10-08, tests/app/states.js case 69). */
+  @media (max-width: 400px) {
+    .lrow-meta {
+      padding-right: 6px;
     }
   }
 </style>

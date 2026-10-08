@@ -433,6 +433,22 @@ describe('the lines', () => {
     );
   });
 
+  it("refuses a GM-only item through a player token as stale, and stores it through a GM token with the entry's price", async () => {
+    const markCc1 = (tx) =>
+      tx`update public.list_entries set gm_only = true where id = ${E_CC1}`;
+    const out = await asAnon(worldAnd(markCc1), async (tx) => {
+      const err = await refusal(tx, (sp) => send(sp, TP, [{ item: 'cc1', qty: 1 }]));
+      await send(tx, TG, [{ item: 'cc1', qty: 2 }]);
+      await tx.unsafe('reset role');
+      const rows = await tx`select r.audience, l.item_key, l.price_coins
+        from public.purchase_requests r
+        left join public.purchase_request_lines l on l.request_id = r.id`;
+      return { err, rows: rows.map((r) => ({ ...r })) };
+    });
+    expectError(out.err, '22023', 'request: stale');
+    assert.deepEqual(out.rows, [{ audience: 'gm', item_key: 'cc1', price_coins: 20 }]);
+  });
+
   const three = [
     { item: 'ci1', qty: 1 },
     { item: 'q1', qty: 1 },

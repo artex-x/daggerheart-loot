@@ -851,6 +851,91 @@ describe("the fake's share links", () => {
     expect(await count()).toBe(was);
   });
 
+  describe('GM-only entries', () => {
+    /* The seed with q313 (position 2) and the axe (position 9) of gm1's shop GM-only. */
+    const MARKED = {
+      ...SEED,
+      lists: {
+        ...SEED.lists,
+        gm1: SEED.lists.gm1.map((l) =>
+          l.id === uuid(101)
+            ? {
+                ...l,
+                entries: l.entries.map((e) =>
+                  e.itemKey === 'q313' || e.source === 'homebrew'
+                    ? { ...e, gmOnly: true as const }
+                    : e
+                )
+              }
+            : l
+        )
+      }
+    };
+    const readOf = async (port: CloudPort, token: string) => {
+      const r = await port.shares.read(token);
+      return r.ok ? r.shared : null;
+    };
+
+    it("leaves them out of a players' read before their items and renumbers the rest; a GM's read marks each", async () => {
+      const port = fakeCloud(MARKED);
+      const g = await readOf(port, 'gm-token-1');
+      expect(g?.entries.map((e) => [e.item_key, e.position, e.gm_only])).toEqual([
+        ['ci1', 0, false],
+        ['q1', 1, false],
+        ['q313', 2, true],
+        ['cc1', 3, false],
+        ['voa2_a3', 4, false],
+        ['q23', 5, false],
+        ['w51', 6, false],
+        ['q35', 7, false],
+        ['di11', 8, false],
+        ['hb_emberaxeaaaaaaaa', 9, true]
+      ]);
+      const axe = g?.entries[9]?.hid ?? '';
+      expect(axe).not.toBe('');
+      const p = await readOf(port, 'player-token-1');
+      expect(p?.entries.map((e) => [e.item_key, e.position])).toEqual([
+        ['ci1', 0],
+        ['q1', 1],
+        ['cc1', 2],
+        ['voa2_a3', 3],
+        ['q23', 4],
+        ['w51', 5],
+        ['q35', 6],
+        ['di11', 7]
+      ]);
+      expect(keysOf(p)).not.toContain('gm_only');
+      expect(JSON.stringify(p)).not.toContain(axe);
+    });
+
+    it("answers a players' request for one stale, and takes it through the GM's link", async () => {
+      const { requests } = fakeCloud(MARKED);
+      const line = [{ item: 'q313', qty: 1 }];
+      expect(await requests.send(uuid(9001), 'player-token-1', line)).toEqual({
+        ok: false,
+        error: 'stale'
+      });
+      expect(await requests.send(uuid(9002), 'gm-token-1', line)).toEqual({ ok: true });
+    });
+
+    it("copies none from a players' link, and keeps the mark from a GM's link", async () => {
+      const port = fakeCloud(MARKED, 'gm2');
+      const [fromPlayers, fromGm] = [port.lists.newId(), port.lists.newId()];
+      expect(await port.shares.clone('player-token-1', fromPlayers)).toEqual({ ok: true });
+      expect(await port.shares.clone('gm-token-1', fromGm)).toEqual({ ok: true });
+      const read = await port.lists.list();
+      const marks = (id: string) =>
+        read.ok
+          ? read.lists
+              .find((l) => l.id === id)
+              ?.list_entries.filter((e) => e.gm_only)
+              .map((e) => e.item_key)
+          : undefined;
+      expect(marks(fromPlayers)).toEqual([]);
+      expect(marks(fromGm)).toEqual(['q313', 'hb_emberaxeaaaaaaaa']);
+    });
+  });
+
   it('answers not ok, network and null offline, and network to a write signed out', async () => {
     const port = fakeCloud(SEED, 'gm1', { offline: true });
     const network = { ok: false, error: 'network' };
@@ -1238,6 +1323,24 @@ describe('the fake live topics', () => {
     expect(share.seen).toEqual(['live', ['revision', { revision: 2, id: '2' }]]);
     const read = await cloud.shares.read('player-token-1');
     expect(read.ok && read.shared?.list.name).toBe('Лавка у моста');
+  });
+
+  it("edits one entry of any user's list as another device, and says false for an unknown list or key", async () => {
+    const cloud = fakeCloud(SEED);
+    const share = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    expect(cloud.playEntry(SHOP, 'di11', { gm_only: true })).toBe(true);
+    expect(cloud.playEntry(uuid(999), 'di11', { gm_only: true })).toBe(false);
+    expect(cloud.playEntry(SHOP, 'nope', { gm_only: true })).toBe(false);
+    await tick();
+    expect(share.seen).toEqual(['live', ['revision', { revision: 2, id: '2' }]]);
+    const players = await cloud.shares.read('player-token-1');
+    expect(players.ok && players.shared?.entries.some((e) => e.item_key === 'di11')).toBe(
+      false
+    );
+    const gm = await cloud.shares.read('gm-token-1');
+    const row = gm.ok ? gm.shared?.entries.find((e) => e.item_key === 'di11') : undefined;
+    expect(row?.gm_only).toBe(true);
   });
 
   it('delivers nothing after the leave', async () => {
@@ -1973,14 +2076,14 @@ describe("the fake's homebrew", () => {
     ).toEqual(REFUSED);
   });
 
-  it('relinks an entry in place, keeping its id, position, quantity, price and notes', async () => {
+  it('relinks an entry in place, keeping its id, position, quantity, price, notes and GM-only mark', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     await withEntries(cloud);
     await cloud.lists.apply([
       {
         op: 'update_entry',
         id: uuid(7102),
-        patch: { quantity: 4, price_coins: 30, gm_note: 'g' }
+        patch: { quantity: 4, price_coins: 30, gm_note: 'g', gm_only: true }
       }
     ]);
     const results = await cloud.lists.apply([
@@ -2002,7 +2105,8 @@ describe("the fake's homebrew", () => {
       position: 1,
       quantity: 4,
       price_coins: 30,
-      gm_note: 'g'
+      gm_note: 'g',
+      gm_only: true
     });
   });
 
@@ -2565,10 +2669,8 @@ describe("the fake's homebrew import and move", () => {
     expect(seen.filter((e) => e === 'homebrew')).toHaveLength(2);
   });
 
-  /* The lists export with a link: gm1's first list links the axe, so the file is version 2
-     with the live axe as its snapshot. export.json stays the frozen v1 pin. */
-  it("writes gm1's lists with their own items as docs/fixtures/import/export-v2.json", async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
+  /* The lists export as the account page writes it, from the fake's lists and items. */
+  const listsExport = async (cloud: ReturnType<typeof fakeCloud>): Promise<string> => {
     const r = await loaded(cloud);
     const read = await cloud.lists.list();
     const lists = (read.ok ? read.lists : [])
@@ -2586,7 +2688,7 @@ describe("the fake's homebrew import and move", () => {
       const b = r.books.find((x) => x.id === it.book_id);
       return recordOf(it.key, it.content, b ? { ...b.content, key: b.key } : null, cards);
     };
-    const text = bundleText(
+    return bundleText(
       toBundle(
         lists,
         (id) => index.byId.get(id)?.ru ?? record(id)?.ru,
@@ -2595,22 +2697,32 @@ describe("the fake's homebrew import and move", () => {
         (id, list) => record(id) ?? linkedOf(list)[id] ?? null
       ).bundle
     );
-    expect(JSON.parse(text)).toMatchObject({ version: 2 });
-    expect(text).toBe(
-      readFileSync(
-        join(
-          import.meta.dirname,
-          '..',
-          '..',
-          '..',
-          'docs',
-          'fixtures',
-          'import',
-          'export-v2.json'
-        ),
-        'utf8'
-      )
+  };
+  const importFixture = (name: string): string =>
+    readFileSync(
+      join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'import', name),
+      'utf8'
     );
+
+  /* The lists export with a link: gm1's first list links the axe, so the file is version 2
+     with the live axe as its snapshot. export.json stays the frozen v1 pin. */
+  it("writes gm1's lists with their own items as docs/fixtures/import/export-v2.json", async () => {
+    const text = await listsExport(fakeCloud(SEED, 'gm1'));
+    expect(JSON.parse(text)).toMatchObject({ version: 2 });
+    expect(text).toBe(importFixture('export-v2.json'));
+  });
+
+  /* The same lists with di11 marked GM-only: version 3, the mark on that entry only. */
+  it("writes gm1's lists with a GM-only entry as docs/fixtures/import/export-v3.json", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.lists.apply([{ op: 'update_entry', id: uuid(1109), patch: { gm_only: true } }]);
+    const text = await listsExport(cloud);
+    expect(JSON.parse(text)).toMatchObject({
+      version: 3,
+      $schema: 'https://artex-x.github.io/daggerheart-loot/schema/import-v3.json'
+    });
+    expect(text.match(/"gm_only"/g)).toHaveLength(1);
+    expect(text).toBe(importFixture('export-v3.json'));
   });
 
   it("writes gm1's homebrew as docs/fixtures/homebrew-file/export.json, byte for byte", async () => {

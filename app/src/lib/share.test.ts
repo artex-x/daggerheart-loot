@@ -562,6 +562,50 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
       [l.name, share(rec('ci1'), index, 'ru', { skip: new Set(l.ids) }).text].join('\n\n')
     );
   });
+
+  it('leaves a GM-only entry out of the text and the HTML, as it leaves out the GM notes', () => {
+    const t = dict('ru');
+    const l: ListShape = { ...list(), meta: { ci2: { qty: 2, gmOnly: true } } };
+    const { text, html } = shareList(l, index, 'ru', t);
+    const shown = share(rec('ci1'), index, 'ru', { skip: new Set(['ci1']) });
+    expect(text).toBe([`${l.name}\n\n${t.noteHead}\n${l.note ?? ''}`, shown.text].join('\n\n'));
+    expect(text).not.toContain(rec('ci2').ru);
+    expect(html).not.toContain(rec('ci2').ru);
+  });
+
+  it('keeps the upgrade line of a shown entry whose upgrade is a GM-only entry', () => {
+    const t = dict('ru');
+    const from = index.searchable.find((r) => r.craft?.some((id) => index.byId.has(id)));
+    const into = from?.craft?.find((id) => index.byId.has(id));
+    expect(into).toBeDefined();
+    if (!from || !into) return;
+    const head = shareBlocks(from, index, 'ru').find((b) =>
+      b.head.includes(rec(into).ru)
+    )?.head;
+    expect(head).toBeDefined();
+    if (!head) return;
+    const both: ListShape = { name: 'X', ids: [from.id, into] };
+    expect(shareList(both, index, 'ru', t).text).not.toContain(head);
+    const hidden: ListShape = { ...both, meta: { [into]: { gmOnly: true } } };
+    const { text } = shareList(hidden, index, 'ru', t);
+    expect(text).toBe(
+      [hidden.name, share(from, index, 'ru', { skip: new Set([from.id]) }).text].join('\n\n')
+    );
+    expect(text).toContain(head);
+  });
+
+  it('writes a list with no GM-only entry as before', () => {
+    const t = dict('ru');
+    const l: ListShape = { name: 'X', ids: ['ci1', 'ci2'], meta: { ci1: { qty: 2 } } };
+    const skip = new Set(l.ids);
+    expect(shareList(l, index, 'ru', t).text).toBe(
+      [
+        l.name,
+        share(rec('ci1'), index, 'ru', { skip, suffix: ' ×2' }).text,
+        share(rec('ci2'), index, 'ru', { skip }).text
+      ].join('\n\n')
+    );
+  });
 });
 
 describe('homebrew records in copied text', () => {

@@ -48,6 +48,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     spinbutton "КОЛ-ВО" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Доспешный Сшиватель" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=3]
@@ -55,6 +56,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     spinbutton "КОЛ-ВО" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО ?" [value=50 description=5 горстей valuetext=50 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Доспешный Сшиватель" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Туника из Паучьего Шелка" [checked=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=3]
@@ -64,6 +66,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "?"
     spinbutton "ЗОЛОТО ?" [value=12 description=1 горсть valuetext=12 required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Туника из Паучьего Шелка" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     button "Свой предмет" [expanded=false]
     status ""
@@ -118,6 +121,9 @@ daggerheart.com
 Сообщества
 Списки
 Таблицы
+Только для мастера: Доспешный Сшиватель
+Только для мастера: Первоклассный Спальный Мешок
+Только для мастера: Туника из Паучьего Шелка
 Туника из Паучьего Шелка
 Туника из Паучьего ШелкаРанг 2 · Пороги 9/20 · Броня 4Карабкающе... [namelen=165 namehash=1b03af51]
 Убрать из списка
@@ -170,6 +176,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     spinbutton "QTY" [value=2 valuetext=2 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Armor Stitcher" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=3]
@@ -177,6 +184,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     spinbutton "QTY" [value=5 valuetext=5 required=false valuemin=1 valuemax=99]
     spinbutton "GOLD ?" [value=50 description=5 handfuls valuetext=50 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Armor Stitcher" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Spidersilk Tunic" [checked=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=3]
@@ -186,6 +194,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     StaticText "?"
     spinbutton "GOLD ?" [value=12 description=1 handful valuetext=12 required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Spidersilk Tunic" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     button "Own item" [expanded=false]
     status ""
@@ -215,6 +224,9 @@ Download JSON
 Dragon's Vault
 Dread
 EN
+GM only: Armor Stitcher
+GM only: Premium Bedroll
+GM only: Spidersilk Tunic
 How this works
 In coins
 Install as an app

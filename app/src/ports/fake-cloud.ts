@@ -111,6 +111,9 @@ export type FakeCloud = CloudPort & {
   /** Edits any user's list as another device would, with its messages; false for an
    *  unknown list. */
   play(listId: string, patch: ListPatch): boolean;
+  /** Edits one entry of any user's list as another device would, with its messages;
+   *  false for an unknown list or key. */
+  playEntry(listId: string, itemKey: string, patch: EntryPatch): boolean;
   /** Sends a purchase request as another reader of the link would, with its message;
    *  answers the new request's id, or null when the send rules refuse it. */
   request(token: string, lines: { item: string; qty: number }[]): string | null;
@@ -168,7 +171,8 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
       quantity: e.qty ?? 1,
       price_coins: e.gold ?? null,
       player_note: e.note ?? '',
-      gm_note: e.hnote ?? ''
+      gm_note: e.hnote ?? '',
+      ...(e.gmOnly ? { gm_only: true } : {})
     }))
   }));
 }
@@ -1069,7 +1073,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     return sh && find(mine, sh.listId) ? sh : undefined;
   };
   /* `get_shared_list`: the audience's projection, or null for a stopped or
-     unknown link or a deleted list. */
+     unknown link or a deleted list. A players' link leaves the GM-only entries out
+     before it reads their items, and numbers the rest from 0; a GM's link writes
+     `gm_only` on each entry. */
   const projection = (token: string): SharedRow | null => {
     const sh = shareRows.find((x) => x.token === token && x.revoked_at === null);
     const h = sh ? anyList(sh.listId) : undefined;
@@ -1086,15 +1092,19 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         player_note: h.row.player_note,
         ...(gm ? { gm_note: h.row.gm_note } : {})
       },
-      entries: [...h.entries].sort(entryOrder).map((e) => {
-        const { gm_note, hb_item, ...rest } = e;
-        const out = {
-          ...rest,
-          snapshot: hb_item === null ? null : recordById(hb_item),
-          ...(hb_item === null ? {} : { hid: hb_item })
-        };
-        return gm ? { ...out, gm_note } : out;
-      })
+      entries: [...h.entries]
+        .filter((e) => gm || !e.gm_only)
+        .sort(entryOrder)
+        .map((e, position) => {
+          const { gm_note, hb_item, gm_only, ...rest } = e;
+          const out = {
+            ...rest,
+            position,
+            snapshot: hb_item === null ? null : recordById(hb_item),
+            ...(hb_item === null ? {} : { hid: hb_item })
+          };
+          return gm ? { ...out, gm_note, gm_only: gm_only ?? false } : out;
+        })
     };
   };
 
@@ -1170,7 +1180,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
               quantity: e.quantity,
               price_coins: e.price_coins,
               player_note: e.player_note,
-              gm_note: e.gm_note ?? ''
+              gm_note: e.gm_note ?? '',
+              ...(e.gm_only ? { gm_only: true } : {})
             },
             current
           );
@@ -1212,7 +1223,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (had) return had.shareId === sh.id ? OK : { ok: false, error: 'gone' };
     if (!linesOk(lines)) return REFUSED;
     if (lines.length > maxLines) return limited('request_lines', maxLines);
-    const stock = new Map(h.entries.map((e) => [e.item_key, e]));
+    /* A players' link holds no GM-only entry: a request for one is stale. */
+    const shown = h.entries.filter((e) => sh.audience === 'gm' || !e.gm_only);
+    const stock = new Map(shown.map((e) => [e.item_key, e]));
     if (lines.some((l) => !stock.has(l.item))) return { ok: false, error: 'stale' };
     const now = Date.now();
     const recent = purchases.filter((r) => r.shareId === sh.id && r.createdAt > now - RATE_MS);
@@ -1893,6 +1906,16 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       if (!h) return false;
       const was = before();
       h.row = { ...h.row, ...patch };
+      touch(h);
+      announce(was, 'other-device');
+      return true;
+    },
+    playEntry(listId, itemKey, patch) {
+      const h = anyList(listId);
+      const at = h ? h.entries.findIndex((e) => e.item_key === itemKey) : -1;
+      if (!h || at < 0) return false;
+      const was = before();
+      h.entries[at] = { ...(h.entries[at] as EntryRow), ...patch };
       touch(h);
       announce(was, 'other-device');
       return true;

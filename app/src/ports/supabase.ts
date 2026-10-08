@@ -257,7 +257,7 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
    it to the owner (tests/db/lists.test.mjs). */
 const LIST_SELECT =
   'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
-  'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note)';
+  'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note,gm_only)';
 
 /** The most ids one `get_homebrew_items` call takes; more go in several calls. */
 export const ITEMS_PER_CALL = 1000;

@@ -584,7 +584,7 @@ describe('the lists', () => {
 
   const SELECT =
     'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
-    'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note)';
+    'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note,gm_only)';
   const ORDERED = [
     ['order', ['updated_at', { ascending: false }]],
     ['order', ['id']]

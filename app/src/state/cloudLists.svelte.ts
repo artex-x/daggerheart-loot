@@ -721,6 +721,18 @@ export class CloudLists implements ListModel {
     });
   }
 
+  /** Marks the entry «Только для мастера» or shows it to the players again. */
+  setGmOnly(id: string, entryId: string, on: boolean): void {
+    const rowId = this.get(id)?.entryIds[entryId];
+    if (!rowId) return;
+    this.#change(id, (l) => withMeta(l, entryId, 'gmOnly', on));
+    this.#enqueue({
+      key: `entry:${rowId}:gmOnly`,
+      list: id,
+      write: { op: 'update_entry', id: rowId, patch: { gm_only: on } }
+    });
+  }
+
   move(id: string, entryId: string, to: number): boolean {
     const l = this.get(id);
     const ids = l ? movedIds(l, entryId, to) : null;

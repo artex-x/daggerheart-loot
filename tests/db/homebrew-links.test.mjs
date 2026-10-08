@@ -505,6 +505,39 @@ describe('the projection of a link to another account', () => {
     assert.equal(entry.snapshot.book.key, ALDER);
     assert.deepEqual(Object.keys(entry.snapshot.cards.sets), [SET]);
   });
+
+  it("leaves a GM-only link out of a players' answer with its hid; the author's edit still bumps the list and writes the notice", async () => {
+    const out = await as('authenticated', B, async (tx) => {
+      await tx`update public.list_entries set gm_only = true where list_id = ${LB}`;
+      const [{ token: player }] =
+        await tx`select token from public.create_list_share(${LB}, 'player')`;
+      const [{ token: gm }] = await tx`select token from public.create_list_share(${LB}, 'gm')`;
+      const [{ v: players }] = await tx`select public.get_shared_list(${player}) as v`;
+      const [{ v: gms }] = await tx`select public.get_shared_list(${gm}) as v`;
+      await tx.unsafe('reset role');
+      await tx`delete from public.list_notices`;
+      await tx`update public.homebrew_items set content = ${tx.json({
+        kind: 'item',
+        en: 'Main 2'
+      })} where id = ${I0}`;
+      const [{ v: after }] = await tx`select public.get_shared_list(${player}) as v`;
+      return { players, gms, after, notices: await notices(tx) };
+    });
+    assert.deepEqual(out.players.entries, []);
+    assert.equal(walk(out.players).strings.includes(I0), false);
+    assert.deepEqual(
+      out.gms.entries.map((e) => [e.hid, e.gm_only]),
+      [[I0, true]]
+    );
+    assert.ok(out.after.revision > out.players.revision);
+    assert.deepEqual(
+      out.notices.map((n) => [n.list_id, n.kind]),
+      [
+        [LB, 'changed'],
+        [LB2, 'changed']
+      ]
+    );
+  });
 });
 
 describe('the notices', () => {

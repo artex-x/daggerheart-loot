@@ -48,6 +48,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Палаш" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
@@ -57,6 +58,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     StaticText "ЗОЛОТО"
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
+    button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
     button "Свой предмет" [expanded=false]
     status ""
@@ -107,6 +109,8 @@ daggerheart.com
 Сообщества
 Списки
 Таблицы
+Только для мастера: Палаш
+Только для мастера: Первоклассный Спальный Мешок
 Убрать из списка
 Удалить
 Удалить ссылку
@@ -158,6 +162,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Broadsword" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Premium Bedroll" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=2]
@@ -167,6 +172,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     StaticText "GOLD"
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
+    button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
     button "Own item" [expanded=false]
     status ""
@@ -195,6 +201,8 @@ Download JSON
 Dragon's Vault
 Dread
 EN
+GM only: Broadsword
+GM only: Premium Bedroll
 Install as an app
 Lay these out for printing: nine to an A4 sheet
 List name

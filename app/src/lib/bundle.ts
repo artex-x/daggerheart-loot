@@ -1,12 +1,14 @@
-/* The lists file `import-v1` and `import-v2`: the export writes it, the import reads it.
+/* The lists file `import-v1`, `import-v2` and `import-v3`: the export writes it, the
+ * import reads it.
  *
- * `schema/import-v1.json` and `schema/import-v2.json` are the published contracts and
- * this module their hand-written validator; `bundle.test.ts` keeps them equal. Version 2
- * is version 1 plus homebrew entries, each with its snapshot; an export without one stays
- * version 1, byte for byte. An imported homebrew entry links the account's item of its
- * key, a fixed copy made first when the account holds none. Pure module: the report's
- * words are the component's, this returns indexes and keys. docs/specs/CONTRACTS.md
- * section 4. */
+ * `schema/import-v1.json`, `import-v2.json` and `import-v3.json` are the published
+ * contracts and this module their hand-written validator; `bundle.test.ts` keeps them equal.
+ * Version 2 is version 1 plus homebrew entries, each with its snapshot; version 3 is version
+ * 2 plus the GM-only mark `gm_only`. An export is the lowest version that holds what it
+ * writes, so one without a homebrew or GM-only entry stays version 1, byte for byte. An
+ * imported homebrew entry links the account's item of its key, a fixed copy made first when
+ * the account holds none. Pure module: the report's words are the component's, this returns
+ * indexes and keys. docs/specs/CONTRACTS.md section 4. */
 
 import {
   NAME_MAX,
@@ -33,10 +35,14 @@ export const BUNDLE_FORMAT = 'daggerheart-loot/lists';
 export const BUNDLE_VERSION = 1;
 /** The version that adds homebrew entries; the import reads both. */
 export const BUNDLE_VERSION_HOMEBREW = 2;
+/** The version that adds the GM-only mark; the import reads all three. */
+export const BUNDLE_VERSION_GM_ONLY = 3;
 /** The schema's `$id`; an export names it as its `$schema`. */
 export const BUNDLE_SCHEMA = 'https://artex-x.github.io/daggerheart-loot/schema/import-v1.json';
 export const BUNDLE_SCHEMA_HOMEBREW =
   'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json';
+export const BUNDLE_SCHEMA_GM_ONLY =
+  'https://artex-x.github.io/daggerheart-loot/schema/import-v3.json';
 /** The most lists one file holds: `import_lists`' bound per call; the account's limit is the
  *  database's. */
 export const LISTS_MAX = 1000;
@@ -65,6 +71,8 @@ export interface BundleEntry {
   price_coins?: number;
   player_note?: string;
   gm_note?: string;
+  /** Version 3: written only as true, for an entry the players' link leaves out. */
+  gm_only?: true;
   /** Version 2, `source: homebrew` only: the item as a catalog record. */
   snapshot?: HomebrewRecord;
 }
@@ -81,7 +89,8 @@ export interface BundleList {
 export interface Bundle {
   $schema: string;
   format: typeof BUNDLE_FORMAT;
-  version: typeof BUNDLE_VERSION | typeof BUNDLE_VERSION_HOMEBREW;
+  version:
+    typeof BUNDLE_VERSION | typeof BUNDLE_VERSION_HOMEBREW | typeof BUNDLE_VERSION_GM_ONLY;
   exported_at: string;
   lists: BundleList[];
 }
@@ -90,8 +99,9 @@ export interface Bundle {
  *  out. An entry's `name` is `nameOf`'s, left out when it has none; a blank list name is
  *  written as `untitled`, so the file keeps the schema's `minLength`. A homebrew entry is
  *  written with `snapshotOf`'s record of the live item, own or another account's, without
- *  its `hid`, or left out and counted when it answers null. The file is version 2 only when
- *  it holds a homebrew entry, else version 1. */
+ *  its `hid`, or left out and counted when it answers null. The file is version 3 when an
+ *  entry it writes is GM-only, else version 2 when it holds a homebrew entry, else version
+ *  1; a GM-only entry left out does not count. */
 export function toBundle(
   lists: readonly CloudList[],
   nameOf: (id: string) => string | undefined,
@@ -118,12 +128,23 @@ export function toBundle(
       entries
     };
   });
-  const homebrew = out.some((l) => l.entries.some((e) => e.source === 'homebrew'));
+  const any = (has: (e: BundleEntry) => boolean): boolean =>
+    out.some((l) => l.entries.some(has));
+  const gmOnly = any((e) => e.gm_only === true);
+  const homebrew = any((e) => e.source === 'homebrew');
   return {
     bundle: {
-      $schema: homebrew ? BUNDLE_SCHEMA_HOMEBREW : BUNDLE_SCHEMA,
+      $schema: gmOnly
+        ? BUNDLE_SCHEMA_GM_ONLY
+        : homebrew
+          ? BUNDLE_SCHEMA_HOMEBREW
+          : BUNDLE_SCHEMA,
       format: BUNDLE_FORMAT,
-      version: homebrew ? BUNDLE_VERSION_HOMEBREW : BUNDLE_VERSION,
+      version: gmOnly
+        ? BUNDLE_VERSION_GM_ONLY
+        : homebrew
+          ? BUNDLE_VERSION_HOMEBREW
+          : BUNDLE_VERSION,
       exported_at: now.toISOString(),
       lists: out
     },
@@ -144,6 +165,7 @@ function entryOf(
   if (m.gold) e.price_coins = m.gold;
   if (m.note) e.player_note = m.note;
   if (m.hnote) e.gm_note = m.hnote;
+  if (m.gmOnly) e.gm_only = true;
   if (snapshot) {
     const record = { ...snapshot };
     delete record.hid;
@@ -255,6 +277,8 @@ export interface ImportEntry {
   price_coins: number | null;
   player_note: string;
   gm_note: string;
+  /** Version 3: set only for an entry the file marks GM-only. */
+  gm_only?: true;
 }
 
 export interface ImportList {
@@ -297,6 +321,8 @@ export const ENTRY_KEYS = [
 export const ENTRY_REQUIRED: readonly string[] = ['id'];
 /** Version 2's entry keys: version 1's and `snapshot`. */
 export const ENTRY_KEYS_HOMEBREW = [...ENTRY_KEYS, 'snapshot'] as const;
+/** Version 3's entry keys: version 2's and `gm_only`, in the schema's order. */
+export const ENTRY_KEYS_GM_ONLY = [...ENTRY_KEYS, 'gm_only', 'snapshot'] as const;
 
 const isKey = <K extends string>(keys: readonly K[], k: string): k is K =>
   (keys as readonly string[]).includes(k);
@@ -422,9 +448,9 @@ function snapshotComplete(snap: Obj): boolean {
 }
 
 /* One entry; null when it has an error. Its id is read first, so an error on a key before
-   `id` names the record too. In version 2 a homebrew entry's id is a key and its snapshot a
-   valid copy of it, checked after its own keys. */
-function walkEntry(r: Report, where: At, v: unknown, v2: boolean): ImportEntry | null {
+   `id` names the record too. From version 2 a homebrew entry's id is a key and its snapshot
+   a valid copy of it, checked after its own keys. */
+function walkEntry(r: Report, where: At, v: unknown, version: number): ImportEntry | null {
   if (!isObj(v)) {
     notObject(r, where, v);
     return null;
@@ -441,7 +467,13 @@ function walkEntry(r: Report, where: At, v: unknown, v2: boolean): ImportEntry |
     player_note: '',
     gm_note: ''
   };
-  const keys: readonly string[] = v2 ? ENTRY_KEYS_HOMEBREW : ENTRY_KEYS;
+  const v2 = version >= BUNDLE_VERSION_HOMEBREW;
+  const keys: readonly string[] =
+    version >= BUNDLE_VERSION_GM_ONLY
+      ? ENTRY_KEYS_GM_ONLY
+      : v2
+        ? ENTRY_KEYS_HOMEBREW
+        : ENTRY_KEYS;
   const sources = v2 ? SOURCES_HOMEBREW : SOURCES;
   const homebrew = v2 && v['source'] === 'homebrew';
   for (const [k, x] of Object.entries(v)) {
@@ -474,6 +506,11 @@ function walkEntry(r: Report, where: At, v: unknown, v2: boolean): ImportEntry |
       case 'player_note':
       case 'gm_note':
         e[k] = stringUpTo(r, at, k, x, NOTE_MAX) ?? '';
+        break;
+      case 'gm_only':
+        if (typeof x !== 'boolean') {
+          fieldError(r, at, k, 'type', { value: shown(x), limit: 'boolean' });
+        } else if (x) e.gm_only = true;
         break;
     }
   }
@@ -510,7 +547,7 @@ function walkList(
   v: unknown,
   knows: (id: string) => boolean,
   skipped: Skipped[],
-  v2: boolean
+  version: number
 ): ImportList | null {
   const at: At = { path: 'lists[' + String(i) + ']', list: i, entry: null };
   if (!isObj(v)) {
@@ -560,7 +597,7 @@ function walkList(
             r,
             { path: at.path + '.entries[' + String(j) + ']', list: i, entry: j },
             item,
-            v2
+            version
           );
           if (!e) return;
           const seen = first.get(e.item_key);
@@ -581,7 +618,7 @@ function walkList(
   return r.errors.length + r.more === before ? l : null;
 }
 
-/** Reads a lists file of version 1 or 2: JSON, then `format`, then `version`, then every
+/** Reads a lists file of version 1, 2 or 3: JSON, then `format`, then `version`, then every
  *  key and bound in document order, a list's or an entry's missing keys after its own. A
  *  catalog id `knows` does not know, and a later copy of an id in one list, is left out
  *  and recorded in `skipped`, never an error; a homebrew entry is never unknown. */
@@ -593,10 +630,14 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
     return { ok: false, reason: 'notJson' };
   }
   if (!isObj(doc) || doc['format'] !== BUNDLE_FORMAT) return { ok: false, reason: 'notBundle' };
-  if (doc['version'] !== BUNDLE_VERSION && doc['version'] !== BUNDLE_VERSION_HOMEBREW) {
-    return { ok: false, reason: 'version', version: doc['version'] };
+  const version = doc['version'];
+  if (
+    version !== BUNDLE_VERSION &&
+    version !== BUNDLE_VERSION_HOMEBREW &&
+    version !== BUNDLE_VERSION_GM_ONLY
+  ) {
+    return { ok: false, reason: 'version', version };
   }
-  const v2 = doc['version'] === BUNDLE_VERSION_HOMEBREW;
   const r = new Report();
   const root: At = { path: '', list: null, entry: null };
   const lists: ImportList[] = [];
@@ -629,7 +670,7 @@ export function parseBundle(text: string, knows: (id: string) => boolean): Parse
         );
         if (x.length > LISTS_MAX) fieldError(r, root, k, 'many', { limit: LISTS_MAX });
         x.forEach((item: unknown, i) => {
-          const l = walkList(r, i, item, knows, skipped, v2);
+          const l = walkList(r, i, item, knows, skipped, version);
           if (l) lists.push(l);
         });
         break;
@@ -663,7 +704,8 @@ export interface PlanAccount {
 
 /** Returns the import's plan: every id from `newId`, positions counted after the skips. A
  *  homebrew entry is sent by its key, which links the account's own item of that key;
- *  `withCopies` makes the items it does not hold. */
+ *  `withCopies` makes the items it does not hold. A GM-only entry's row carries
+ *  `gm_only: true`, on its fixed copy's link too; every other row has no such key. */
 export function importPlan(lists: readonly ImportList[], account: PlanAccount): ImportPlan {
   const rows = lists.map((l): ImportRow => ({
     list: {
@@ -682,7 +724,8 @@ export function importPlan(lists: readonly ImportList[], account: PlanAccount): 
       quantity: e.quantity,
       price_coins: e.price_coins,
       player_note: e.player_note,
-      gm_note: e.gm_note
+      gm_note: e.gm_note,
+      ...(e.gm_only ? { gm_only: true } : {})
     }))
   }));
   return withCopies({ rows, copies: null }, lists, account);

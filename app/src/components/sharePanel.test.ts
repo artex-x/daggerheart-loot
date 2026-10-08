@@ -159,19 +159,50 @@ describe('the share panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it("copies the full address and says which link, the GM's with its warning", async () => {
-    const { clipboard } = openShare(SHOP);
+  it('copies the full address and says which link, naming the GM notes and the GM-only items', async () => {
+    const { clipboard, container } = openShare(SHOP);
     await pressShare();
+    expect(
+      screen.getByText(
+        '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для игроков скрывает заметки и позиции «Только для мастера», ссылка для мастера показывает их - давайте её только мастерам.'
+      )
+    ).toBeInTheDocument();
     await userEvent.click(
       within(await row(ru.shareLinkPlayers)).getByRole('button', { name: ru.shareCopy })
     );
     expect(clipboard.last.text).toBe('https://example.test/#/s/player-token-1');
-    expect(screen.getByText(ru.playersLinkCopied)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Ссылка для игроков скопирована - заметок и позиций «Только для мастера» в ней нет'
+      )
+    ).toBeInTheDocument();
     await userEvent.click(
       within(await row(ru.shareLinkGm)).getByRole('button', { name: ru.shareCopy })
     );
     expect(clipboard.last.text).toBe('https://example.test/#/s/gm-token-1');
-    expect(screen.getByText(ru.gmShareCopied)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Ссылка для мастера скопирована - в ней есть заметки и позиции «Только для мастера»'
+      )
+    ).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(
+      await screen.findByText(
+        `"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The players' link hides the "GM only" notes and items; the GM's link shows them - give it to GMs only.`
+      )
+    ).toBeInTheDocument();
+    await userEvent.click(
+      within(await row("Players' link")).getByRole('button', { name: 'Copy' })
+    );
+    expect(
+      await screen.findByText(`Players' link copied - it carries no "GM only" notes or items`)
+    ).toBeInTheDocument();
+    await userEvent.click(within(await row("GM's link")).getByRole('button', { name: 'Copy' }));
+    expect(
+      await screen.findByText(`GM's link copied - it carries the "GM only" notes and items`)
+    ).toBeInTheDocument();
   });
 
   it('says a failed change offline and keeps the row', async () => {

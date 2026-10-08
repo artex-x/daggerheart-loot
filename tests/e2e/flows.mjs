@@ -14,7 +14,8 @@
  * item's relations picked by name with a rule card made inline, F17 a homebrew file imported
  * through «Импорт из файла» of «Мои предметы», imported again with «Обновить», two items moved together, the
  * data zip's homebrew.json read back, and a version 2 lists file imported with a held item
- * and a copied one, F18 an item's `#/h/` address opened signed out. Each flow gets its own
+ * and a copied one, F18 an item's `#/h/` address opened signed out, F19 an entry marked GM only
+ * on the owner's page leaving an open players' page live, and coming back. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -1232,4 +1233,90 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteHomebrewOf(admin, member.id);
   }
   console.log('e2e: F18 ok');
+
+  /* F19: a GM-only entry on the hosted project. A signed-out players' page, once its topic
+     joined, loses the entry the member's page marks GM only within 10 s, and draws it again
+     after the second press; the mark is stored on the entry. */
+  await deleteListsOf(admin, member.id);
+  try {
+    const port = portOf(env, await mint(env, admin, member.email));
+    const listId = port.lists.newId();
+    const entry = (key, position) => ({
+      id: port.lists.newId(),
+      item_key: key,
+      source: 'official',
+      hb_item: null,
+      position,
+      quantity: 1,
+      price_coins: null,
+      player_note: '',
+      gm_note: ''
+    });
+    const made = await port.lists.apply([
+      {
+        op: 'create',
+        list: {
+          id: listId,
+          name: 'E2E GM only',
+          money_mode: 'bag',
+          player_note: '',
+          gm_note: ''
+        },
+        entries: [entry('ci1', 0), entry('q1', 1)]
+      }
+    ]);
+    if (!made.ok || made.results[0]?.ok !== true) throw new Error('e2e F19: no list made');
+    const share = await port.shares.create(listId, 'player');
+    if (!share.ok) throw new Error('e2e F19: no players link made');
+    const markOf = async () => {
+      const read = await port.lists.list();
+      const list = read.ok ? read.lists.find((l) => l.id === listId) : undefined;
+      return list?.list_entries.find((e) => e.item_key === 'q1')?.gm_only;
+    };
+
+    await withPage(ctx, null, async (shared, sd) => {
+      await sd.open('#/s/' + share.token);
+      await waitText(shared, 'F19', 'E2E GM only');
+      await waitFor(
+        shared,
+        'e2e F19: the share page never joined its topic',
+        () => !!document.querySelector('[data-live="live"]')
+      );
+      await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+        await d.open('#/lists/' + listId);
+        await waitText(page, 'F19', 'Сохранено');
+        await waitFor(
+          page,
+          "e2e F19: the list page never joined the owner's topic",
+          () => !!document.querySelector('.lsaid[data-live="live"]')
+        );
+        await d.press('Только для мастера: Палаш');
+        await d.writesSettled();
+        await within10(
+          shared,
+          'F19: the share page still drew the GM-only entry after 10 s',
+          () =>
+            !document.querySelector('[data-row="q1"]') &&
+            document.body.textContent.includes('1 позиция')
+        );
+        await until(
+          'F19: the mark did not reach the entry',
+          async () => (await markOf()) === true
+        );
+        await d.press('Только для мастера: Палаш');
+        await d.writesSettled();
+        await within10(
+          shared,
+          'F19: the share page did not draw the entry again in 10 s',
+          () => !!document.querySelector('[data-row="q1"]')
+        );
+        await until('F19: the cleared mark did not reach the entry', async () => {
+          return (await markOf()) === false;
+        });
+      });
+    });
+  } finally {
+    await deleteListsOf(admin, member.id);
+  }
+  console.log('e2e: F19 ok');
 }

@@ -558,3 +558,115 @@ describe('get_shared_list(text, bigint)', () => {
     assert.deepEqual({ ...row }, { anon: true, authed: true });
   });
 });
+
+/* docs/decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md:
+   official, GM-only official, a shown homebrew entry of own item X, a GM-only
+   homebrew entry of own item Y, official - in that order. */
+describe('GM-only entries', () => {
+  const X = id(3101);
+  const Y = id(3102);
+  const KEY_X = 'hb_shwn' + 'a'.repeat(11) + 'x';
+  const KEY_Y = 'hb_hidn' + 'a'.repeat(11) + 'y';
+  const G1 = id(1201);
+  const G2 = id(1202);
+  const G3 = id(1203);
+  const G4 = id(1204);
+  const G5 = id(1205);
+  const marked =
+    (...audiences) =>
+    async (tx) => {
+      await withShare(...audiences)(tx);
+      await tx`delete from public.list_entries`;
+      await tx`insert into public.homebrew_items (id, owner_id, key, content) values
+      (${X}, ${A}, ${KEY_X}, ${tx.json({ kind: 'item', en: 'Shown' })}),
+      (${Y}, ${A}, ${KEY_Y}, ${tx.json({ kind: 'item', en: 'Hidden' })})`;
+      await tx`insert into public.list_entries
+      (id, list_id, item_key, source, hb_item, position, gm_only, gm_note) values
+      (${G1}, ${LA}, 'ci1', 'official', null, 0, false, 'g1'),
+      (${G2}, ${LA}, 'q1', 'official', null, 1, true, 'g2'),
+      (${G3}, ${LA}, ${KEY_X}, 'homebrew', ${X}, 2, false, 'g3'),
+      (${G4}, ${LA}, ${KEY_Y}, 'homebrew', ${Y}, 3, true, 'g4'),
+      (${G5}, ${LA}, 'ci2', 'official', null, 4, false, 'g5')`;
+    };
+
+  it("leaves them out of a players' answer, with their hid, and numbers the rest from 0", async () => {
+    const v = await asAnon(marked('player'), (tx) => shared(tx, tokens.player));
+    assert.deepEqual(
+      v.entries.map((e) => [e.id, e.position]),
+      [
+        [G1, 0],
+        [G3, 1],
+        [G5, 2]
+      ]
+    );
+    for (const e of v.entries) {
+      assert.equal('gm_only' in e, false);
+      assert.equal('gm_note' in e, false);
+    }
+    assert.equal(v.entries[1].hid, X);
+    assert.equal(JSON.stringify(v).includes(Y), false);
+  });
+
+  it("writes gm_only on every entry of a GM's answer, numbered 0-4", async () => {
+    const v = await asAnon(marked('gm'), (tx) => shared(tx, tokens.gm));
+    assert.deepEqual(
+      v.entries.map((e) => [e.id, e.position, e.gm_only, e.hid ?? null]),
+      [
+        [G1, 0, false, null],
+        [G2, 1, true, null],
+        [G3, 2, false, X],
+        [G4, 3, true, Y],
+        [G5, 4, false, null]
+      ]
+    );
+  });
+
+  it('answers the whole projection after a mark, named with the old revision', async () => {
+    const out = await asA(marked('player'), async (tx) => {
+      const old = await shared(tx, tokens.player);
+      await tx`update public.list_entries set gm_only = true where id = ${G3}`;
+      return { old, now: await since(tx, tokens.player, old.revision) };
+    });
+    assert.ok(out.now.revision > out.old.revision);
+    assert.deepEqual(
+      out.now.entries.map((e) => [e.id, e.position]),
+      [
+        [G1, 0],
+        [G5, 1]
+      ]
+    );
+  });
+
+  const cloneOf = (audience) =>
+    asB(marked(audience), async (tx) => {
+      await tx`select public.clone_shared_list(${tokens[audience]}, ${COPY})`;
+      return tx`select item_key, hb_item, position, gm_only
+        from public.list_entries where list_id = ${COPY} order by position`;
+    });
+
+  it("copies nothing marked from a players' link", async () => {
+    const rows = await cloneOf('player');
+    assert.deepEqual(
+      rows.map((r) => [r.item_key, r.position, r.gm_only]),
+      [
+        ['ci1', 0, false],
+        [KEY_X, 1, false],
+        ['ci2', 2, false]
+      ]
+    );
+  });
+
+  it("keeps the mark and the link in a GM link's copy", async () => {
+    const rows = await cloneOf('gm');
+    assert.deepEqual(
+      rows.map((r) => [r.item_key, r.hb_item, r.position, r.gm_only]),
+      [
+        ['ci1', null, 0, false],
+        ['q1', null, 1, true],
+        [KEY_X, X, 2, false],
+        [KEY_Y, Y, 3, true],
+        ['ci2', null, 4, false]
+      ]
+    );
+  });
+});

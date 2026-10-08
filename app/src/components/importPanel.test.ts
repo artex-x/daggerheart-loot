@@ -175,6 +175,63 @@ describe('the import field', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('previews a version 3 file and imports its GM-only entry with the mark', async () => {
+    const { container, cloud } = await opened();
+    choose(container, fixture('example-v3.json'), 'example-v3.json');
+    const button = await importButton(1);
+    expect(container.querySelector('.preview')?.textContent.trim()).toBe(
+      'Списков: 1, позиций: 3.'
+    );
+    await expectNoA11yViolations(container);
+    await userEvent.click(button);
+    await waitFor(() => {
+      expect(container.querySelector('.preview')).toBeNull();
+    });
+    const read = await cloud.lists.list();
+    const made = read.ok ? read.lists.find((l) => l.name === 'Лавка у моста') : undefined;
+    expect(made?.list_entries.map((e) => [e.item_key, e.gm_only ?? false])).toEqual([
+      ['ci1', false],
+      ['q1', true],
+      ['q313', false]
+    ]);
+  });
+
+  it('refuses a version 3 file with a mark that is not a boolean, in words', async () => {
+    const { container } = await opened();
+    choose(container, fixture('errors-v3.json'));
+    await alertText();
+    expect(lineTexts(container.querySelector('.rep-list.bad')!)).toEqual([
+      'Позиция 1, Первоклассный Спальный Мешок (ci1): gm_only «yes»: неверный тип - нужен boolean lists[0].entries[0].gm_only',
+      'Позиция 2, Палаш (q1): gm_only «null»: неверный тип - нужен boolean lists[0].entries[1].gm_only'
+    ]);
+    await expectNoA11yViolations(container);
+  });
+
+  it('names versions 1, 2 and 3 in English when it refuses a version', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.prefs.save({ lang: 'en' });
+    const { container } = render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Import from file' }));
+    choose(container, fixture('v4.json'));
+    expect(await alertText()).toBe(
+      'Unknown format version: 4. The app reads versions 1, 2 and 3.'
+    );
+    choose(container, utf8(JSON.stringify({ format: 'daggerheart-loot/lists', lists: [] })));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'The file has no "version" field. The app reads versions 1, 2 and 3.'
+      );
+    });
+    await expectNoA11yViolations(container);
+  });
+
   it("puts the file's own errors in the box, before any list", async () => {
     const { container } = await opened();
     choose(container, utf8(doc([{ name: 'L', entries: [] }], { extra: 1 })));
@@ -188,13 +245,13 @@ describe('the import field', () => {
   it.each([
     [
       'another version',
-      fixture('v3.json'),
-      'Неизвестная версия формата: 3. Приложение читает версии 1 и 2.'
+      fixture('v4.json'),
+      'Неизвестная версия формата: 4. Приложение читает версии 1, 2 и 3.'
     ],
     [
       'no version',
       utf8(JSON.stringify({ format: 'daggerheart-loot/lists', lists: [] })),
-      'В файле нет поля version. Приложение читает версии 1 и 2.'
+      'В файле нет поля version. Приложение читает версии 1, 2 и 3.'
     ],
     [
       'an empty object',

@@ -473,6 +473,89 @@ describe('homebrew links, as A', () => {
   });
 });
 
+describe('the GM-only mark, as A', () => {
+  const marks = async (tx, listId) =>
+    (
+      await tx`select id, gm_only from public.list_entries
+        where list_id = ${listId} order by position, id`
+    ).map((e) => [e.id, e.gm_only]);
+
+  it('update_entry stores gm_only and moves the revision once', async () => {
+    const out = await asA(world, async (tx) => {
+      const before = (await listOf(tx, L)).revision;
+      const r = await batch(tx, [{ op: 'update_entry', id: E2, patch: { gm_only: true } }]);
+      return { r, before, after: (await listOf(tx, L)).revision, marks: await marks(tx, L) };
+    });
+    assert.deepEqual(out.r, [OK]);
+    assert.equal(out.after - out.before, 1);
+    assert.deepEqual(out.marks, [
+      [E1, false],
+      [E2, true],
+      [E3, false]
+    ]);
+  });
+
+  it('create and add store gm_only from each entry, and false without the key', async () => {
+    const out = await asA(users, async (tx) => ({
+      r: await batch(tx, [
+        {
+          op: 'create',
+          list: newList(L),
+          entries: [entry(E1, 'ci1', 0, { gm_only: true }), entry(E2, 'q1', 1)]
+        },
+        { op: 'add', list_id: L, entries: [entry(E3, 'cc1', 2, { gm_only: true })] }
+      ]),
+      marks: await marks(tx, L)
+    }));
+    assert.deepEqual(out.r, [OK, OK]);
+    assert.deepEqual(out.marks, [
+      [E1, true],
+      [E2, false],
+      [E3, true]
+    ]);
+  });
+
+  it('refuses a patch key hidden and a null gm_only, and changes nothing', async () => {
+    const out = await asA(world, async (tx) => ({
+      r: await batch(tx, [
+        { op: 'update_entry', id: E1, patch: { hidden: true } },
+        { op: 'update_entry', id: E1, patch: { gm_only: null } }
+      ]),
+      marks: await marks(tx, L)
+    }));
+    assert.deepEqual(out.r[0], {
+      ok: false,
+      code: '22023',
+      message: 'apply_list_writes: unknown field hidden',
+      details: null
+    });
+    assert.equal(out.r[1].ok, false);
+    assert.equal(out.r[1].code, '23502');
+    assert.deepEqual(
+      out.marks.map(([, m]) => m),
+      [false, false, false]
+    );
+  });
+
+  it('relink keeps the mark of a GM-only homebrew entry', async () => {
+    const out = await asA(withItems, async (tx) => {
+      await batch(tx, [
+        {
+          op: 'create',
+          list: newList(L),
+          entries: [entry(E1, HB_KEY, 0, { source: 'homebrew', hb_item: IHB, gm_only: true })]
+        }
+      ]);
+      return {
+        r: await batch(tx, [{ op: 'relink', id: E1, hb_item: IH }]),
+        rows: await tx`select hb_item, gm_only from public.list_entries where id = ${E1}`
+      };
+    });
+    assert.deepEqual(out.r, [OK]);
+    assert.deepEqual({ ...out.rows[0] }, { hb_item: IH, gm_only: true });
+  });
+});
+
 describe("B's rows, as A", () => {
   const readB = (tx) =>
     unbound(tx, async (t) => ({ list: await listOf(t, LB), entries: await entriesOf(t, LB) }));

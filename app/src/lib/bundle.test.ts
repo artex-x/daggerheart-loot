@@ -7,8 +7,10 @@ import { describe, expect, it } from 'vitest';
 import {
   BUNDLE_FORMAT,
   BUNDLE_SCHEMA,
+  BUNDLE_SCHEMA_GM_ONLY,
   BUNDLE_SCHEMA_HOMEBREW,
   BUNDLE_VERSION,
+  BUNDLE_VERSION_GM_ONLY,
   BUNDLE_VERSION_HOMEBREW,
   bundleFileName,
   bundleText,
@@ -16,6 +18,7 @@ import {
   decodeText,
   ENTRIES_MAX,
   ENTRY_KEYS,
+  ENTRY_KEYS_GM_ONLY,
   ENTRY_KEYS_HOMEBREW,
   ENTRY_REQUIRED,
   ERRORS_MAX,
@@ -234,10 +237,10 @@ describe('parseBundle', () => {
   });
 
   it('refuses another version with the value found, before the walk', () => {
-    expect(parseBundle(fixture('v3.json'), knows)).toEqual({
+    expect(parseBundle(fixture('v4.json'), knows)).toEqual({
       ok: false,
       reason: 'version',
-      version: 3
+      version: 4
     });
     expect(parseBundle('{"format":"daggerheart-loot/lists","qty":1}', knows)).toEqual({
       ok: false,
@@ -995,6 +998,7 @@ function walk(v: unknown, node: Schema, root: Schema, path: string, out: string[
   if (type === 'array' && !Array.isArray(v)) out.push(path + ' type');
   if (type === 'string' && typeof v !== 'string') out.push(path + ' type');
   if (type === 'integer' && !Number.isInteger(v)) out.push(path + ' type');
+  if (type === 'boolean' && typeof v !== 'boolean') out.push(path + ' type');
   if (typeof v === 'string') {
     if (typeof node['maxLength'] === 'number' && Array.from(v).length > node['maxLength'])
       out.push(path + ' maxLength');
@@ -1053,11 +1057,14 @@ function walk(v: unknown, node: Schema, root: Schema, path: string, out: string[
 const V2 = JSON.parse(read('schema', 'import-v2.json')) as ObjectSchema & {
   $defs: Record<string, ObjectSchema>;
 };
-const schemaProblems = (v: unknown): string[] => {
-  const out: string[] = [];
-  walk(v, V2 as unknown as Schema, V2 as unknown as Schema, '', out);
-  return out;
-};
+const problemsAgainst =
+  (s: object) =>
+  (v: unknown): string[] => {
+    const out: string[] = [];
+    walk(v, s as Schema, s as Schema, '', out);
+    return out;
+  };
+const schemaProblems = problemsAgainst(V2);
 const AXE = 'hb_emberaxeaaaaaaaa';
 const SNAP: HomebrewRecord = recordOf(
   AXE,
@@ -1140,13 +1147,9 @@ describe('the import-v2 schema and the validator (the drift guard)', () => {
 });
 
 describe('a lists file of version 2', () => {
-  it('reads version 1 and 2, and refuses 3', () => {
+  it('reads version 1 and 2', () => {
     expect(okOf(parseBundle(fixture('example.json'), knows)).lists).toHaveLength(1);
     expect(okOf(parseBundle(fixture('example-v2.json'), knows)).lists).toHaveLength(1);
-    expect(parseBundle(fixture('v3.json'), knows)).toMatchObject({
-      reason: 'version',
-      version: 3
-    });
   });
 
   it('reads example-v2.json: the catalog entry, then two homebrew entries with their snapshots', () => {
@@ -1529,5 +1532,257 @@ describe('withCopies: the plan again for a press', () => {
       ['id4', 'hb_wanderlampaaaaaa'],
       ['later', 'hb_flintlockpistola']
     ]);
+  });
+});
+
+/* ---------- version 3: the GM-only mark (schema/import-v3.json) ---------- */
+
+const V3 = JSON.parse(read('schema', 'import-v3.json')) as ObjectSchema & {
+  title: string;
+  description: string;
+  $defs: Record<string, ObjectSchema>;
+};
+const v3Problems = problemsAgainst(V3);
+
+describe('the import-v3 schema and the validator (the drift guard)', () => {
+  const entry = V3.$defs['entry'] as ObjectSchema;
+
+  it('names its URL and version 3, and the entry keys the validator reads', () => {
+    expect(V3.$id).toBe(BUNDLE_SCHEMA_GM_ONLY);
+    expect(prop(V3, 'version').const).toBe(BUNDLE_VERSION_GM_ONLY);
+    expect(Object.keys(entry.properties)).toEqual(ENTRY_KEYS_GM_ONLY);
+    expect(prop(entry, 'gm_only')).toMatchObject({ type: 'boolean', default: false });
+    expect(prop(entry, 'gm_only').description).toBeTruthy();
+  });
+
+  it("is import-v2 but for its $id, title, description, version and the entry's gm_only", () => {
+    const without = (o: object, keys: readonly string[]): Record<string, unknown> =>
+      Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
+    expect({ ...entry, properties: without(entry.properties, ['gm_only']) }).toEqual(
+      V2.$defs['entry']
+    );
+    expect(without(V3.$defs, ['entry'])).toEqual(without(V2.$defs, ['entry']));
+    const root = (s: ObjectSchema): Record<string, unknown> => ({
+      ...without(s, ['$id', 'title', 'description', '$defs']),
+      properties: without(s.properties, ['version'])
+    });
+    expect(root(V3)).toEqual(root(V2));
+    expect(V3.description).toContain('import-v4.json');
+  });
+
+  it('takes example-v3.json and export-v3.json by its own walk, and refuses a non-boolean mark', () => {
+    expect(v3Problems(JSON.parse(fixture('example-v3.json')))).toEqual([]);
+    expect(v3Problems(JSON.parse(fixture('export-v3.json')))).toEqual([]);
+    expect(v3Problems(JSON.parse(fixture('errors-v3.json')))).toEqual([
+      '.lists[0].entries[0].gm_only type',
+      '.lists[0].entries[1].gm_only type'
+    ]);
+  });
+});
+
+describe('a lists file of version 3', () => {
+  const v3 = (entry: Record<string, unknown>, version = 3): string =>
+    JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version,
+      lists: [{ name: 'L', entries: [{ id: 'ci1', ...entry }] }]
+    });
+
+  it('reads version 3 and refuses 4 with its value', () => {
+    expect(okOf(parseBundle(fixture('example-v3.json'), knows)).lists).toHaveLength(1);
+    expect(parseBundle(fixture('v4.json'), knows)).toEqual({
+      ok: false,
+      reason: 'version',
+      version: 4
+    });
+  });
+
+  it('reads example-v3.json clean: the GM-only mark on the sabre only', () => {
+    const p = okOf(parseBundle(fixture('example-v3.json'), knows));
+    expect(p.skipped).toEqual([]);
+    expect(p.lists[0]?.entries.map((e) => [e.item_key, e.gm_only ?? null])).toEqual([
+      ['ci1', null],
+      ['q1', true],
+      ['q313', null]
+    ]);
+  });
+
+  it('reads gm_only true as the mark and false as none', () => {
+    const marked = okOf(parseBundle(v3({ gm_only: true }), knows)).lists[0]?.entries[0];
+    expect(marked?.gm_only).toBe(true);
+    const shown = okOf(parseBundle(v3({ gm_only: false }), knows)).lists[0]?.entries[0];
+    expect(shown && 'gm_only' in shown).toBe(false);
+  });
+
+  it('reads errors-v3.json as two type errors in file order', () => {
+    expect(errorsOf(parseBundle(fixture('errors-v3.json'), knows))).toEqual([
+      {
+        path: 'lists[0].entries[0].gm_only',
+        field: 'gm_only',
+        kind: 'type',
+        value: 'yes',
+        limit: 'boolean'
+      },
+      {
+        path: 'lists[0].entries[1].gm_only',
+        field: 'gm_only',
+        kind: 'type',
+        value: 'null',
+        limit: 'boolean'
+      }
+    ]);
+  });
+
+  it.each([1, 2])('refuses gm_only in a version %i file as an unknown field', (version) => {
+    expect(errorsOf(parseBundle(v3({ gm_only: true }, version), knows))).toEqual([
+      {
+        path: 'lists[0].entries[0].gm_only',
+        field: 'gm_only',
+        kind: 'extra',
+        value: undefined,
+        limit: undefined
+      }
+    ]);
+  });
+
+  it('reads a homebrew entry with its snapshot and the mark', () => {
+    const text = JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 3,
+      lists: [
+        { name: 'L', entries: [{ id: AXE, source: 'homebrew', gm_only: true, snapshot: SNAP }] }
+      ]
+    });
+    expect(okOf(parseBundle(text, knows)).lists[0]?.entries[0]).toMatchObject({
+      item_key: AXE,
+      source: 'homebrew',
+      snapshot: SNAP,
+      gm_only: true
+    });
+  });
+
+  it('writes version 3 with "gm_only": true after gm_note on the GM-only entry only', () => {
+    const { bundle } = toBundle(
+      [
+        cloud({
+          ids: ['ci1', 'q1'],
+          meta: { ci1: { qty: 2 }, q1: { hnote: 'h', gmOnly: true } }
+        })
+      ],
+      nameOf,
+      'U',
+      AT,
+      () => null
+    );
+    expect([bundle.version, bundle.$schema]).toEqual([3, BUNDLE_SCHEMA_GM_ONLY]);
+    expect(bundle.lists[0]?.entries).toEqual([
+      { id: 'ci1', name: 'Первоклассный Спальный Мешок', quantity: 2 },
+      { id: 'q1', name: 'Палаш', gm_note: 'h', gm_only: true }
+    ]);
+    expect(Object.keys(bundle.lists[0]?.entries[1] ?? {})).toEqual([
+      'id',
+      'name',
+      'gm_note',
+      'gm_only'
+    ]);
+    expect(v3Problems(bundle)).toEqual([]);
+    const back = okOf(parseBundle(bundleText(bundle), knows));
+    expect(back.lists[0]?.entries.map((e) => e.gm_only ?? null)).toEqual([null, true]);
+  });
+
+  it('writes a GM-only homebrew entry as version 3, the mark before its snapshot', () => {
+    const { bundle } = toBundle(
+      [cloud({ ids: [AXE], meta: { [AXE]: { gmOnly: true } } })],
+      nameOf,
+      'U',
+      AT,
+      () => SNAP
+    );
+    expect(bundle.version).toBe(3);
+    expect(Object.keys(bundle.lists[0]?.entries[0] ?? {})).toEqual([
+      'id',
+      'source',
+      'gm_only',
+      'snapshot'
+    ]);
+    expect(v3Problems(bundle)).toEqual([]);
+  });
+
+  it('keeps version 1 or 2 when the only GM-only entry is left out, and writes no mark', () => {
+    const lists = (ids: string[]): CloudList[] => [
+      cloud({ ids, meta: { [AXE]: { gmOnly: true } } })
+    ];
+    const one = toBundle(lists(['ci1', AXE]), nameOf, 'U', AT, () => null);
+    expect([one.bundle.version, one.bundle.$schema, one.skipped]).toEqual([
+      1,
+      BUNDLE_SCHEMA,
+      1
+    ]);
+    const other = 'hb_otherkeyaaaaaaaa';
+    const two = toBundle(lists([other, AXE]), nameOf, 'U', AT, (id) =>
+      id === other ? { ...SNAP, id: other } : null
+    );
+    expect([two.bundle.version, two.bundle.$schema]).toEqual([2, BUNDLE_SCHEMA_HOMEBREW]);
+    expect(bundleText(two.bundle)).not.toContain('gm_only');
+  });
+
+  it("writes gm_only: true on a GM-only entry's row and no key on a shown one's", () => {
+    const p = okOf(parseBundle(fixture('example-v3.json'), knows));
+    const { rows, copies } = importPlan(p.lists, accountOf());
+    expect(copies).toBeNull();
+    expect(rows[0]?.entries.map((e) => ['gm_only' in e, e.gm_only])).toEqual([
+      [false, undefined],
+      [true, true],
+      [false, undefined]
+    ]);
+  });
+
+  it("keeps the mark on a fixed copy's link, also under a new key; the copy has none", () => {
+    const entry = (snapshot: HomebrewRecord): Record<string, unknown> => ({
+      id: AXE,
+      source: 'homebrew',
+      gm_only: true,
+      snapshot
+    });
+    const text = JSON.stringify({
+      format: BUNDLE_FORMAT,
+      version: 3,
+      lists: [
+        { name: 'L', entries: [entry(SNAP)] },
+        { name: 'M', entries: [entry({ ...SNAP, rud: 'Другой топор.' })] }
+      ]
+    });
+    const p = okOf(parseBundle(text, knows));
+    const plan = importPlan(p.lists, accountOf());
+    const keys = plan.copies?.items.map((i) => i.key) ?? [];
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe(AXE);
+    expect(plan.rows.map((r) => [r.entries[0]?.item_key, r.entries[0]?.gm_only])).toEqual([
+      [AXE, true],
+      [keys[1], true]
+    ]);
+    for (const i of plan.copies?.items ?? [])
+      expect(JSON.stringify(i)).not.toContain('gm_only');
+  });
+
+  it('reads export-v3.json clean: one GM-only entry, the axe with its snapshot', () => {
+    const p = okOf(parseBundle(fixture('export-v3.json'), knows));
+    const all = p.lists.flatMap((l) => l.entries);
+    expect(all.filter((e) => e.gm_only).map((e) => e.item_key)).toEqual(['di11']);
+    expect(all.filter((e) => e.source === 'homebrew')).toHaveLength(1);
+    expect(JSON.parse(fixture('export-v3.json'))).toMatchObject({
+      version: 3,
+      $schema: BUNDLE_SCHEMA_GM_ONLY
+    });
+  });
+
+  it("carries example-v3.json in llms.txt's version 3 section, which imports clean", () => {
+    const llms = read('llms.txt');
+    const head = '### Version 3: GM-only entries (import-v3)';
+    expect(llms).toContain(head);
+    const section = llms.slice(llms.indexOf(head));
+    const block = /\n```json\n([\s\S]*?)\n```\n/.exec(section)?.[1];
+    expect(JSON.parse(block ?? 'null')).toEqual(JSON.parse(fixture('example-v3.json')));
+    expect(okOf(parseBundle(block ?? '', knows)).skipped).toEqual([]);
   });
 });

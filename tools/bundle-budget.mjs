@@ -31,14 +31,14 @@ const code = walk(DIST).filter(
 
 /* Two limits by what was built: the configured build (`deploy`'s, and the
    one `npm run e2e` leaves) adds supabase-js as a chunk loaded after first
-   paint - 271.9 kB in all, under 277 - while the unconfigured one
-   `check:built` measures, 211.9 kB, must stay under 217 (both measured
-   2026-10-07 with the item page and the change log). During R7-R7d and
-   R7h a batch raises a passed budget to its size plus about 5 kB, never
-   past 300 and 250 (decision "The bundle ceilings rise to 300 kB
-   configured and 250 unconfigured"). */
+   paint - 276.5 kB in all, under 282 - while the unconfigured one
+   `check:built` measures, 216.5 kB, must stay under 222 (both measured
+   2026-10-08 with the GM-only entries and import-v3; each was 0.5 kB under
+   its old limit, so both rose by the rule below). A batch raises a passed
+   budget to its size plus about 5 kB, never past 300 and 250 (decision
+   "The bundle ceilings rise to 300 kB configured and 250 unconfigured"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 277 : 217; // gzip, code only
+const BUDGET_KB = withAccount ? 282 : 222; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

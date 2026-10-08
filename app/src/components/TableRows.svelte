@@ -33,6 +33,9 @@
     n?: number;
     /** The shared page's `×qty · price` after the name - `RowMain`'s `rtail`. */
     tail?: string;
+    /** The shared page's GM-only entry on a GM's link: the row's dashed look
+     *  and `RowMain`'s `gmOnly`. */
+    gmOnly?: true;
   }
 
   interface Props {
@@ -117,6 +120,7 @@
         class="row"
         class:sel={selected(it.id)}
         class:flash={flash === it.id}
+        class:gm-only={entry.gmOnly === true}
         data-row={it.id}
       >
         <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
@@ -138,6 +142,7 @@
           {onopen}
           num={rollNum}
           tail={entry.tail}
+          gmOnly={entry.gmOnly}
         />
         {#if inside}{@render inside(it)}{/if}
       </div>
@@ -290,6 +295,13 @@
     border-radius: 11px;
     transition: 0.15s;
     overflow: hidden;
+  }
+
+  /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
+  .row.gm-only {
+    border-style: dashed;
+    border-color: var(--line2);
+    background: var(--bg2);
   }
 
   @media (hover: hover) {
