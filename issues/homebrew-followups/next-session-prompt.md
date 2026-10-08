@@ -57,10 +57,19 @@ before `persist-review` (do not start it).
    `img`): copy the newest body and keep the GM-only filter.
 4. `print-snapshots` and 5. `debt-cleanup`: roadmap rows in
    `issues/persistent-storage/plan.md`; plan each from scratch (planner,
-   then plan review when a trigger fires). A `print-snapshots` worktree
-   exists (`.claude/worktrees/print-snapshots`, branch
-   `claude/print-snapshots`, empty: its planner was stopped before it
-   wrote a file); planning it can run in parallel with an implementer.
+   then plan review when a trigger fires). `print-snapshots` is already
+   planned: worktree `.claude/worktrees/print-snapshots`, branch
+   `claude/print-snapshots`, commit `5ba2ec57` (unpushed), owner answers
+   of 2026-10-08 in its `context.md` (all printing needs sign-in; every
+   print is a stored set at `#/p/<id>`; old `#/print/...` links stop
+   working - an owner-approved contract break; 90 days after last open;
+   180-card cap). It still needs its plan review before B1. IMPORTANT for
+   R9 (item 2): R9's refresh must drop its print scope first - the
+   routes `#/print/s/<token>/<ids>` and `#/print/h/<uuid>` and everything
+   listed in `issues/print-snapshots/plan.md` section 2.5 and its handoff
+   Blockers; print-snapshots takes over the print page states, the
+   reader's «Печать» on `#/h/` and D70's closure. That is a significant
+   change, so R9 does get a refresh and a second plan look.
 
 Standing facts (measured 2026-10-07/08, this host):
 - Gates: `rtk npm run check:fast` first, then `rtk npm run check:1` and
