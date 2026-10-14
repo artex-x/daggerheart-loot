@@ -219,6 +219,11 @@ will not show WebP in `og:image`. Ids are stable and match `id` in `data.js`:
 Communities run ten at a time in alphabetical order: Highborne `cm1`-`cm10`,
 Loreborne `cm11`-`cm20`, and so on.
 
+A homebrew item link, a share link, a print set link and a table link go
+through the preview host `daggerheart-loot.pages.dev`: it shows a card to a
+messenger and sends a person on to the app. A catalog record keeps its `i/`
+stub page. The link families are in `docs/specs/CONTRACTS.md` section 5.
+
 ## What the app remembers
 
 Everything is in this browser's `localStorage`. Signed in, the language,
@@ -299,15 +304,18 @@ pages/src/*.html      the site pages (install guide, privacy, terms), authored, 
 pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
                       and pages/en/ English
 data.json             the same data as plain JSON, for outside readers
+names.json            catalog names for the preview host; generated, not committed
 catalog.csv           one row per record, with stat lines
 llms.txt              what the site is, URL grammar, the lists import file
 schema/import-v1.json the JSON Schema of the lists import file
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
+tools/share-card.mjs        the card renderer of the stubs and the preview host
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
+preview/                    the preview host: link cards for messengers (Cloudflare Pages)
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behaviour and frozen contracts, for maintainers

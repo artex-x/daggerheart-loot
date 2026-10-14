@@ -60,6 +60,16 @@ function schemaId(body) {
   }
 }
 
+/** The `format` of a JSON body at version 1, or null. */
+function namesFormat(body) {
+  try {
+    const v = JSON.parse(body);
+    return v.version === 1 ? (v.format ?? null) : null;
+  } catch {
+    return null;
+  }
+}
+
 /* A path that is never on disk, so a page with no entry fails the entry's
    own status check with a readable message. */
 const NO_ENTRY = 'assets/no-entry-module.js';
@@ -120,6 +130,15 @@ export function checks() {
       path: f,
       ...status200(f)
     })),
+
+    /* The preview host reads the names at request time (docs/specs/CONTRACTS.md
+     * section 4); a card without them loses its craft, set and table lines. */
+    { path: 'names.json', ...status200('names.json') },
+    {
+      path: 'names.json',
+      test: (body) => namesFormat(body) === 'daggerheart-loot/names',
+      message: (meta) => `names.json names another format: ${String(namesFormat(meta.body))}`
+    },
 
     /* The file schemas are public contracts, each named by its own `$id`
      * (docs/specs/CONTRACTS.md section 4). */
@@ -226,6 +245,59 @@ export function checks() {
       path: UNKNOWN_PATH,
       test: (body) => body.includes(NOT_FOUND_MARKER),
       message: 'the 404 response body is not the bilingual way-home page (404.html)'
+    }
+  ];
+}
+
+/** The preview host's checks (docs/specs/CONTRACTS.md section 5), in the shape of
+ *  `checks()`: the static robots.txt, a 404 card for each malformed run, a 404 card for
+ *  a well-formed uuid no item has and for a well-formed token no list holds - which
+ *  prove the secrets and both card reads before the site deploy - and a table card. */
+export function previewChecks() {
+  const card404 = (path, why) => [
+    {
+      path,
+      test: (body, meta) => meta.status === 404,
+      message: (meta) =>
+        `${path} returned ${meta.status}, not 404` + (meta.status === 503 ? ` - ${why}` : '')
+    },
+    {
+      path,
+      test: (body) => NOINDEX.test(body),
+      message: `${path} has no noindex`
+    }
+  ];
+  return [
+    {
+      path: 'robots.txt',
+      test: (body, meta) => meta.status === 200,
+      message: (meta) => `robots.txt returned ${meta.status}, not 200`
+    },
+    {
+      path: 'robots.txt',
+      test: (body) => /^User-agent:/m.test(body),
+      message: 'robots.txt has no User-agent line'
+    },
+    ...card404('h/not-a-uuid', 'a malformed id sends no read'),
+    ...card404('s/x', 'a malformed token sends no read'),
+    ...card404('p/x', 'a print set sends no read'),
+    ...card404(
+      'h/00000000-0000-4000-8000-000000000000',
+      'the read get_item_preview failed: check the Pages secrets SUPABASE_URL and SUPABASE_KEY and the migration'
+    ),
+    ...card404(
+      's/' + 'A'.repeat(43),
+      'the read get_shared_list_preview failed: check the Pages secrets SUPABASE_URL and SUPABASE_KEY and the migration'
+    ),
+    {
+      path: 'tables/core_item',
+      test: (body, meta) => meta.status === 200,
+      message: (meta) => `tables/core_item returned ${meta.status}, not 200`
+    },
+    {
+      path: 'tables/core_item',
+      test: (body) => NOINDEX.test(body) && body.includes('og:title'),
+      message: 'tables/core_item lost its noindex or its og:title'
     }
   ];
 }

@@ -208,6 +208,55 @@ const N_REC = '\x1e',
     'llms.txt still teaches a #/print/ address'
   );
 
+  /* The preview host's four link families are frozen from their first deploy
+     (CONTRACTS.md section 5): the fixture, the documents and the deploy build name one
+     origin. */
+  console.log('preview links');
+  const PREVIEW_ORIGIN = 'https://daggerheart-loot.pages.dev';
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText]
+  ].forEach(function ([name, text]) {
+    for (const family of ['/h/<uuid>', '/s/<token>', '/p/<id>', '/tables/<table>']) {
+      ok(
+        text.includes(PREVIEW_ORIGIN + family),
+        name + ' does not name the preview link ' + PREVIEW_ORIGIN + family
+      );
+    }
+  });
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/preview\.json/m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/urls/preview.json"
+  );
+  const preview = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'preview.json'), 'utf8'));
+  ok(preview.origin === PREVIEW_ORIGIN, 'preview.json names another origin: ' + preview.origin);
+  for (const c of preview.build) {
+    if (c.url === null) continue;
+    ok(
+      c.url.startsWith(PREVIEW_ORIGIN + '/'),
+      'preview.json build url off the origin: ' + c.url
+    );
+  }
+  const offOrigin = preview.serve.filter((c) => !c.url.startsWith(PREVIEW_ORIGIN + '/'));
+  ok(
+    offOrigin.length === 1 &&
+      /^https:\/\/[a-z0-9]+\.daggerheart-loot\.pages\.dev\//.test(offOrigin[0].url),
+    'preview.json serves a url off the origin other than the one deployment-host case'
+  );
+  const ciText = fs.readFileSync(
+    path.join(__dirname, '..', '.github', 'workflows', 'ci.yml'),
+    'utf8'
+  );
+  const deployJob = /\n {2}deploy:\r?\n([\s\S]*?)(?=\n {2}[a-z][\w-]*:\r?\n|$)/.exec(ciText);
+  ok(
+    !!deployJob &&
+      new RegExp(
+        '^ +VITE_PREVIEW_BASE: ' + PREVIEW_ORIGIN.replace(/\./g, '\\.') + '\\r?$',
+        'm'
+      ).test(deployJob[1]),
+    "ci.yml's deploy job does not build with VITE_PREVIEW_BASE: " + PREVIEW_ORIGIN
+  );
+
   const dataIds = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data.json'), 'utf8'));
   const allIds = [...Object.values(dataIds.items).flat(), ...(dataIds.eq || [])].map(
     (r) => r.id

@@ -17,8 +17,9 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 - The static root (`index.html`, `style.css`, `app.js`) was deleted at R0c
   (`23c00a6`); read it from history with `git show 23c00a6^ -- index.html
   app.js style.css`, never from the working tree.
-- `data.js` (`window.LOOT`) is canonical. `data.json`, `catalog.csv`, and
-  `i/*.html` are generated; `img/` and `og/` are managed separately.
+- `data.js` (`window.LOOT`) is canonical. `data.json`, `catalog.csv`,
+  `names.json` (the preview host's name map, not committed) and `i/*.html`
+  are generated; `img/` and `og/` are managed separately.
 
 ## Engineering posture and campsite
 
@@ -135,7 +136,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 
 ## Product laws that look negotiable but are not
 
-- The Supabase backend is the only server: add no other backend, upload endpoint or paste service.
+- The Supabase backend is the only server that stores data; one stateless preview Worker renders link cards and stores nothing. Add no other backend, upload endpoint or paste service.
 - Keep `noindex` while allowing crawling; crawler blocks hide `noindex` and break previews.
 - Never infer equipment tier from stats; use the source book data.
 - Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Colour and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.

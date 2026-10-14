@@ -300,7 +300,7 @@ function starPath(cx, cy, outer, inner) {
 
 // The 1200x630 SVG of one site share card. The layout is the one the
 // hand-made og/_share.jpg of 7fd046c carried; the colours are the share
-// stubs' stylesheet (tools/build-share-pages.js).
+// stubs' stylesheet (tools/share-card.mjs).
 export function shareCardSvg(lang) {
   const text = CARD_TEXT[lang];
   if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');

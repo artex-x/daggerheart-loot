@@ -39,9 +39,9 @@
   const { app, index, it, row, extra }: Props = $props();
 
   const t = $derived(app.t);
-  const link = $derived(app.linkToRecord(it));
-  /* A homebrew item's link is its `#/h/` address, which opens for everyone; one with no id
-     (a lists file's copy) offers none (docs/specs/FEATURES.md, "Records"). */
+  /* A homebrew item's link is its preview link (its `#/h/` address in a build with no
+     preview host), which opens for everyone; one with no id (a lists file's copy) offers
+     none (docs/specs/FEATURES.md, "Records"). */
   const linked = $derived(
     !isHomebrewKey(it.id) || typeof (it as { hid?: unknown }).hid === 'string'
   );
@@ -113,7 +113,10 @@
     }
   }
 
+  /* The link's version hashes the record, so it is made at the press, not at every draw
+     (a 32 KB record measured 5.6 ms on this host). */
   async function copyLink(): Promise<void> {
+    const link = app.linkToRecord(it);
     await app.copied(
       () => app.env.clipboard.writeText(link),
       (t) => t.linkCopied
@@ -127,6 +130,7 @@
    * `canShare`; this only ever offers one when there is a picture to offer).
    */
   async function send(): Promise<void> {
+    const link = linked ? app.linkToRecord(it) : undefined;
     const name = shareName(it, app.lang);
     const { text } = share(it, index, app.lang, { extra });
     const hasArt = it.img && !app.artBroken(it.id);
@@ -139,7 +143,7 @@
     const r = await app.env.share.share({
       title: name,
       text,
-      ...(linked ? { url: link } : {}),
+      ...(link === undefined ? {} : { url: link }),
       ...(file ? { file } : {})
     });
     /* A dismissal is somebody changing their mind, not a failure, and saying

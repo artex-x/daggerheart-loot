@@ -4,6 +4,7 @@
  *
  *     node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/
  *     node tools/check-site.mjs --dir _site
+ *     node tools/check-site.mjs --preview https://daggerheart-loot.pages.dev/
  *
  * The URL form runs as the deploy job's last step against
  * `steps.pages.outputs.page_url`, and by hand against the same URL - it
@@ -18,8 +19,12 @@
  * step, against the local `_site/` collect output - the same assertions,
  * with no network and no retry, so a stale or partial local build is caught
  * before anything is published rather than after.
+ *
+ * The `--preview` form runs the preview host's own list (`previewChecks`) with the
+ * URL form's retries, in the deploy job after the preview host deploy and before
+ * the site deploy.
  */
-import { runChecks, fetchReader, dirReader } from './check-site.lib.mjs';
+import { runChecks, fetchReader, dirReader, previewChecks } from './check-site.lib.mjs';
 
 const TRIES = 6;
 const WAIT_MS = 10_000;
@@ -37,12 +42,12 @@ async function runDir(dir) {
   report(bad, dir);
 }
 
-async function runUrl(base) {
+async function runUrl(base, list) {
   const root = base.endsWith('/') ? base : base + '/';
   let bad = [];
   for (let i = 1; i <= TRIES; i++) {
     try {
-      bad = await runChecks(fetchReader(root));
+      bad = await runChecks(fetchReader(root), list);
     } catch (e) {
       bad = ['request failed: ' + (e && e.message ? e.message : String(e))];
     }
@@ -59,6 +64,7 @@ async function runUrl(base) {
 
 const args = process.argv.slice(2);
 const dirIdx = args.indexOf('--dir');
+const previewIdx = args.indexOf('--preview');
 
 if (dirIdx >= 0) {
   const dir = args[dirIdx + 1];
@@ -67,9 +73,20 @@ if (dirIdx >= 0) {
     process.exit(1);
   }
   await runDir(dir);
+} else if (previewIdx >= 0) {
+  const origin = args[previewIdx + 1];
+  if (!origin) {
+    console.log(
+      '  FAIL --preview needs an origin - usage: node tools/check-site.mjs --preview <url>'
+    );
+    process.exit(1);
+  }
+  await runUrl(origin, previewChecks());
 } else if (args[0]) {
   await runUrl(args[0]);
 } else {
-  console.log('  FAIL no base url - usage: node tools/check-site.mjs <url> | --dir <path>');
+  console.log(
+    '  FAIL no base url - usage: node tools/check-site.mjs <url> | --dir <path> | --preview <url>'
+  );
   process.exit(1);
 }

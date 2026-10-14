@@ -18,7 +18,8 @@ const L = global.window.LOOT;
 console.log('generated files match data.js');
 [
   ['data.json', D.dataJson],
-  ['catalog.csv', D.catalogCsv]
+  ['catalog.csv', D.catalogCsv],
+  ['names.json', D.namesJson]
 ].forEach(function ([name, make]) {
   const disk = fs.existsSync(path.join(ROOT, name))
     ? fs.readFileSync(path.join(ROOT, name), 'utf8')
@@ -26,6 +27,14 @@ console.log('generated files match data.js');
   ok(disk !== null, name + ': file is missing — run node tools/build.js');
   if (disk !== null) ok(disk === make(L), name + ': stale — run node tools/build.js');
 });
+/* The preview host parses names.json inside a 10 ms CPU limit, and drops a
+   body past this budget (docs/specs/CONTRACTS.md section 4). */
+const NAMES_BUDGET = 196608;
+const namesBytes = Buffer.byteLength(D.namesJson(L));
+ok(
+  namesBytes <= NAMES_BUDGET,
+  'names.json is ' + namesBytes + ' bytes, past its ' + NAMES_BUDGET + '-byte budget'
+);
 
 console.log('catalog reads clean');
 const catalogPath = path.join(ROOT, 'catalog.csv');

@@ -752,6 +752,18 @@ describe('taking a record somewhere else', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
     expect(clip.last.text).toBe('https://example.test/i/cc1.html');
   });
+
+  it('keeps the stub link of a catalog record in a build with a preview host', async () => {
+    const clip = fakeClipboard();
+    const share = fakeShare();
+    render(App, {
+      env: at('cc1', { clipboard: clip, share, preview: 'https://daggerheart-loot.pages.dev' })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
+    expect(share.last.url).toBe('https://example.test/i/cc1.html');
+  });
 });
 
 describe('the tier ladder', () => {
@@ -1317,6 +1329,23 @@ describe('an own homebrew item', () => {
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
     expect(clip.last.text).toBe(ITEM_URL);
+  });
+
+  it("hands out the preview link with the record's version from «Отправить» and the link button", async () => {
+    const ORIGIN = 'https://daggerheart-loot.pages.dev';
+    const LINK = new RegExp(
+      '^' +
+        ORIGIN.replace(/\./g, '\\.') +
+        '/h/00000000-0000-4000-8000-000000000511\\?v=[0-9a-z]+$'
+    );
+    const share = fakeShare();
+    const clip = fakeClipboard();
+    render(App, { env: own({ share, clipboard: clip, preview: ORIGIN }) });
+    await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
+    expect(share.last.url).toMatch(LINK);
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    expect(clip.last.text).toBe(share.last.url);
+    expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
   });
 
   it('draws «Загружаем...» until the session and the items are known', async () => {

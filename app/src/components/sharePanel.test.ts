@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { cardVersion } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import { fakeClipboard, fakeData, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
@@ -203,6 +204,46 @@ describe('the share panel', () => {
     expect(
       await screen.findByText(`GM's link copied - it carries the "GM only" notes and items`)
     ).toBeInTheDocument();
+  });
+
+  it('copies the preview links, each versioned by its card, and keeps showing #/s/', async () => {
+    const ORIGIN = 'https://daggerheart-loot.pages.dev';
+    /* The shop with one GM-only entry: the players' card counts 9, the GM's 10. */
+    const shop = SEED.lists.gm1[0]!;
+    const seed = {
+      ...SEED,
+      lists: {
+        ...SEED.lists,
+        gm1: [
+          {
+            ...shop,
+            entries: shop.entries.map((e) =>
+              e.itemKey === 'q313' ? { ...e, gmOnly: true as const } : e
+            )
+          },
+          ...SEED.lists.gm1.slice(1)
+        ]
+      }
+    };
+    const { clipboard } = openShare(SHOP, fakeCloud(seed, 'gm1'), { preview: ORIGIN });
+    await pressShare();
+    const players = await row(ru.shareLinkPlayers);
+    expect(within(players).getByRole('link', { name: '#/s/player-token-1' })).toHaveAttribute(
+      'href',
+      '#/s/player-token-1'
+    );
+    const v = (n: number) => cardVersion([shop.name, shop.note, n]);
+    await userEvent.click(within(players).getByRole('button', { name: ru.shareCopy }));
+    expect(clipboard.last.text).toBe(`${ORIGIN}/s/player-token-1?v=${v(9)}`);
+    await userEvent.click(
+      within(await row(ru.shareLinkGm)).getByRole('button', { name: ru.shareCopy })
+    );
+    expect(clipboard.last.text).toBe(`${ORIGIN}/s/gm-token-1?v=${v(10)}`);
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await userEvent.click(
+      within(await row("Players' link")).getByRole('button', { name: 'Copy' })
+    );
+    expect(clipboard.last.text).toBe(`${ORIGIN}/en/s/player-token-1?v=${v(9)}`);
   });
 
   it('says a failed change offline and keeps the row', async () => {

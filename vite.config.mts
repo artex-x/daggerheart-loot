@@ -168,7 +168,10 @@ export default defineConfig(({ command, mode }) => {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(cloudEnv['VITE_SUPABASE_URL'] ?? ''),
       'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
         cloudEnv['VITE_SUPABASE_PUBLISHABLE_KEY'] ?? ''
-      )
+      ),
+      /* The preview host's origin: only the `deploy` job sets it, so every other build
+         hands out the app's own links (docs/specs/CONTRACTS.md section 5). */
+      'import.meta.env.VITE_PREVIEW_BASE': JSON.stringify(cloudEnv['VITE_PREVIEW_BASE'] ?? '')
     },
     /* Under vitest the modules are loaded the way a server would, and Svelte then
        hands back its server build - where `mount` does not exist. Asking for the

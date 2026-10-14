@@ -698,4 +698,7 @@ export interface Env {
   clock: ClockPort;
   /** null in an unconfigured build: no cloud control is drawn. */
   cloud: CloudPort | null;
+  /** The preview host's origin, no trailing slash (`VITE_PREVIEW_BASE`): a copied item,
+   *  list, print or table link goes through it. Empty: every link stays in the app. */
+  preview: string;
 }

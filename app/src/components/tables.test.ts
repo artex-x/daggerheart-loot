@@ -647,6 +647,55 @@ describe('the table link', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));
     expect(screen.getByText('Не удалось скопировать')).toBeInTheDocument();
   });
+
+  it('copies the preview link of the table, the filter and a block, with no v', async () => {
+    const ORIGIN = 'https://daggerheart-loot.pages.dev';
+    const clip = fakeClipboard();
+    render(App, { env: at({ clipboard: clip, preview: ORIGIN }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));
+    expect(clip.last.text).toBe(ORIGIN + '/tables/core_item');
+    expect(screen.getByText('Ссылка на таблицу скопирована')).toBeInTheDocument();
+    cleanup();
+    const en = fakeClipboard();
+    render(App, {
+      env: at({
+        clipboard: en,
+        preview: ORIGIN,
+        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Link to this table' }));
+    expect(en.last.text).toBe(ORIGIN + '/en/tables/core_item');
+    cleanup();
+    const filter = fakeClipboard();
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/wondrous'),
+        data: fakeData(LOOT),
+        clipboard: filter,
+        preview: ORIGIN
+      })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
+    expect(filter.last.text).toBe(ORIGIN + '/tables/wondrous/f_kind-item');
+    cleanup();
+    const block = fakeClipboard();
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/voa'),
+        data: fakeData(LOOT),
+        clipboard: block,
+        preview: ORIGIN
+      })
+    });
+    const [, artifactSection] = screen.getAllByRole('button', {
+      name: 'Скопировать ссылку на этот раздел'
+    });
+    await userEvent.click(artifactSection as HTMLElement);
+    expect(block.last.text).toBe(ORIGIN + '/tables/voa/tA');
+  });
 });
 
 describe('the filter', () => {

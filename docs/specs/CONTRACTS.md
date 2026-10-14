@@ -8,7 +8,7 @@ address or import file without touching the site.
 update the golden fixtures, the tests, this file and `llms.txt` together.
 
 Fixtures: `docs/fixtures/lists/*.json`, `docs/fixtures/urls/routes.json`,
-`docs/fixtures/import/` (section 4).
+`docs/fixtures/urls/preview.json` (section 5), `docs/fixtures/import/` (section 4).
 Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
 contract fixture in this sense - it is `share.test.ts`'s own golden,
 regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
@@ -23,7 +23,7 @@ homebrew validators of `app/src/lib/homebrew.ts` and of the database share
 Frozen as written in `ROUTES.md`. In particular:
 
 - the ten section names, and the three legacy ones that fold into `roll/std`
-- the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash
+- the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
 - `#/i/<id>`, `#/lists/<listId>`, `#/l/<payload>`
@@ -31,7 +31,8 @@ Frozen as written in `ROUTES.md`. In particular:
   database when a signed-in reader presses «Печать», so a set is unlisted, not
   secret, and an agent cannot build one; it opens for a signed-in reader only,
   from `<site>#/p/<id>` and `<site>en/#/p/<id>` alike; a malformed id draws the
-  "set not found" print page
+  "set not found" print page; «Ссылка на набор» hands out
+  `https://daggerheart-loot.pages.dev/p/<id>` (section 5)
 - Retired on 2026-10-08 (owner, a deliberate break): `#/print/<ids>` and every
   address under `#/print/` draw the retired print page, the address kept
   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`)
@@ -59,16 +60,18 @@ Frozen as written in `ROUTES.md`. In particular:
   link's projection holds no entry marked GM only (`list_entries.gm_only`),
   and a GM's link writes `gm_only` on each entry; the token is optionally
   followed by a filter, `#/s/<token>/f_<filter>`, in the grammar and with the
-  groups of `ROUTES.md`; an earlier build ignores the filter
+  groups of `ROUTES.md`; an earlier build ignores the filter; the share panel's
+  copy and the shared page's filter link hand out the preview host's address
+  (section 5), and `<site>#/s/...` keeps opening
 - `#/h/<uuid>`, one homebrew item by its id (`homebrew_items.id`), for
   everyone, signed out too: the id is random, made by the author's client, so
   an item is unlisted, not secret, and nobody can build or list one; the id
   is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character
   after it is dropped, the address kept); a malformed or unknown id draws the
   record page's not-found page, never home; it opens from `<site>#/h/<uuid>`
-  and `<site>en/#/h/<uuid>` alike. Every homebrew link the app writes - a
-  relation, a list row, «Скопировать ссылку», «Отправить» - is this address;
-  `#/i/<key>` keeps opening the author's own item
+  and `<site>en/#/h/<uuid>` alike. A relation and a list row link to this
+  address; «Скопировать ссылку» and «Отправить» hand out the preview host's
+  address (section 5); `#/i/<key>` keeps opening the author's own item
 
 ## 2. Record ids
 
@@ -168,6 +171,19 @@ plain form, so everything downstream sees one format.
   `catalog.csv`'s `crafts_into` joins the ids with `;`. Field meanings are in
   `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
+- `names.json` - what the preview host reads at request time
+  (`docs/specs/META.md` section 3): one line, `JSON.stringify(v) + '\n'`
+  from `tools/derived.js`'s `namesJson(L)`, with `format`
+  `daggerheart-loot/names` and `version` 1; `items` maps every catalog
+  record and equipment row to `[ru, en]` (`ru` as stored, `""` when
+  absent); `sets` maps each key of `data.js`'s `sets` to `ru`, `en`,
+  `rud`, `ende` and `members`, the ids in the stubs' order; `tables` maps
+  each catalog table id (no `homebrew`) to `{ n }`, the rows the signed-out
+  tables page draws; `communities` maps a community's English name to `ru`
+  and `n`; `frames` maps a frame key to `{ n }`. A new key may be added;
+  any other change is `version` 2. Budget: at most 196608 bytes, which
+  `tests/derived.js` holds; 93407 bytes at 1350 records, measured
+  2026-10-14. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English.
 - `en/index.html` - the English entry document, published at `<site>en/`:
@@ -320,7 +336,7 @@ grows past a few MB (433 KB measured).
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
 `en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg`,
-`schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json`,
+`names.json`, `schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json`,
 `schema/homebrew-v1.json` and `schema/homebrew-v2.json`.
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
@@ -330,9 +346,10 @@ layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg` and the two site cards
 `og/_share.jpg` and `og/_share_en.jpg` are committed and published as they
 are; `tools/artwork/cards.mjs` renders the two cards (`docs/artwork.md`, "The
-site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`, the
-entry document and `assets/` are not committed: they are what the build emits
-(`node tools/build.js` for `i/`, `i/en/` and `en/`; `app/index.html` and the
+site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`,
+`names.json`, the entry document and `assets/` are not committed: they are
+what the build emits (`node tools/build.js` for `i/`, `i/en/`, `en/` and
+`names.json`; `app/index.html` and the
 bundle become `dist/index.html` and the hashed files under `dist/assets/`,
 whose names change with every build and are not public), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about
@@ -373,3 +390,29 @@ same rule at write time rather than only documenting it, so its shipment
 was deliberately not treated as a new contract: `docs/fixtures/`,
 `tests/contracts.js` and `llms.txt` state behaviour the code already
 enforced, not a new promise the code just started keeping.
+
+**The preview host.** The origin `https://daggerheart-loot.pages.dev` (the
+Cloudflare Pages project `daggerheart-loot`) is frozen: only this production
+host is handed out, never a deployment host. It serves a link card to a
+messenger and sends a person on to the app. The families, each also with
+`/en` after the origin for the English card and the English app:
+
+- `https://daggerheart-loot.pages.dev/h/<uuid>`, a homebrew item
+  (`<site>#/h/<uuid>`)
+- `https://daggerheart-loot.pages.dev/s/<token>[/f_<filter>]`, a share link
+  (`<site>#/s/<token>[/f_<filter>]`)
+- `https://daggerheart-loot.pages.dev/p/<id>`, a print set (`<site>#/p/<id>`)
+- `https://daggerheart-loot.pages.dev/tables/<table>[/<tail>]`, a catalog
+  table, one of its blocks or its filter (`<site>#/tables/<table>[/<tail>]`);
+  never `homebrew`
+
+The app adds `?v=<v>` to `/h/` and `/s/` links only: opaque, a version of
+what the card draws, so a changed card is a new URL to a messenger's cache.
+The host ignores every query. A path run (an id, a token, a table or a
+tail) past 2048 characters reads as empty. Only `GET` and `HEAD` are
+answered; any other method answers 405 with `Allow: GET, HEAD`.
+`/robots.txt` is a static file; any other path answers 302 to `<site>`
+(`<site>en/` under `/en/`); a deployment or branch host answers 301 to the
+same path and query on the production host. The fixture is
+`docs/fixtures/urls/preview.json`: `build` holds the links the app hands
+out, `serve` the host's answers.

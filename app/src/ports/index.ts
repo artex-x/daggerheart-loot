@@ -38,6 +38,9 @@ export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 export type { FakeStoragePort } from './storage.js';
 
+/* `import.meta.env` is undefined in Node, which runs this module for the hosted E2E. */
+const ENV = import.meta.env as Partial<ImportMetaEnv> | undefined;
+
 /** `cloud` starts empty: `main.ts` sets it once a build has one. */
 export function browserEnv(): Env {
   return {
@@ -56,7 +59,8 @@ export function browserEnv(): Env {
     motion: browserMotion(),
     page: browserPage(),
     clock: browserClock(),
-    cloud: null
+    cloud: null,
+    preview: (ENV?.VITE_PREVIEW_BASE ?? '').replace(/\/+$/, '')
   };
 }
 
@@ -83,6 +87,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     /* Before the cutoff, as the test build: a test after it says so. */
     clock: fixedClock(TEST_NOW),
     cloud: null,
+    preview: '',
     ...over
   };
 }

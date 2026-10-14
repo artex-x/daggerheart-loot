@@ -33,7 +33,7 @@ import {
 } from '../lib/homebrewFile.js';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
-import { sharedListHash } from '../lib/hash.js';
+import { cardVersion, sharedListHash } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
 import type { StoredList } from '../lib/lists.js';
 import { LOOT_KINDS } from '../lib/std.js';
@@ -475,6 +475,8 @@ describe('the install link', () => {
   });
 });
 
+const HID = '00000000-0000-4000-8000-000000000511';
+
 describe('links to hand somebody else', () => {
   it('follow the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
@@ -483,6 +485,57 @@ describe('links to hand somebody else', () => {
     app.setLang('en');
     expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1.html');
     expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
+  });
+
+  it('keep the app address for every card family in a build with no preview host', () => {
+    const app = new AppState(at('#/roll/std'));
+    const hb = { id: 'hb_emberaxeaaaaaaaa', src: 'homebrew', hid: HID } as unknown as Record_;
+    expect(app.linkToRecord(hb)).toBe('https://example.test/#/h/' + HID);
+    expect(app.linkTo('#/s/tok', 'v1')).toBe('https://example.test/#/s/tok');
+    expect(app.linkTo('#/p/AbCdEf123456')).toBe('https://example.test/#/p/AbCdEf123456');
+    expect(app.linkTo('#/tables/core_item')).toBe('https://example.test/#/tables/core_item');
+  });
+});
+
+describe('links through the preview host', () => {
+  const ORIGIN = 'https://daggerheart-loot.pages.dev';
+  const hb = (over: object = {}): Record_ =>
+    ({
+      id: 'hb_emberaxeaaaaaaaa',
+      src: 'homebrew',
+      kind: 'item',
+      hid: HID,
+      ru: 'Топор',
+      en: 'Axe',
+      ...over
+    }) as unknown as Record_;
+
+  it("hand out an item's preview link, versioned by the record, in the language on screen", () => {
+    const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
+    const v = cardVersion(hb());
+    expect(app.linkToRecord(hb())).toBe(`${ORIGIN}/h/${HID}?v=${v}`);
+    expect(app.linkToRecord(hb({ ru: 'Другой топор' }))).not.toBe(`${ORIGIN}/h/${HID}?v=${v}`);
+    expect(app.linkToRecord(hb({ img: 'q1.webp' }))).not.toBe(`${ORIGIN}/h/${HID}?v=${v}`);
+    app.setLang('en');
+    expect(app.linkToRecord(hb())).toBe(`${ORIGIN}/en/h/${HID}?v=${v}`);
+  });
+
+  it('keep a catalog record on its stub and every other address in the app', () => {
+    const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
+    expect(app.linkTo('#/l/ABC')).toBe('https://example.test/#/l/ABC');
+    expect(app.linkTo('#/tables/homebrew')).toBe('https://example.test/#/tables/homebrew');
+    expect(app.linkTo('#/tables/homebrew/f_src-hb_alderworkshopaaa')).toBe(
+      'https://example.test/#/tables/homebrew/f_src-hb_alderworkshopaaa'
+    );
+  });
+
+  it('put v on a share link only, and none on a print set or a table', () => {
+    const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
+    expect(app.linkTo('#/s/tok', 'v1')).toBe(ORIGIN + '/s/tok?v=v1');
+    expect(app.linkTo('#/p/AbCdEf123456')).toBe(ORIGIN + '/p/AbCdEf123456');
+    expect(app.linkTo('#/tables/core_item')).toBe(ORIGIN + '/tables/core_item');
   });
 });
 

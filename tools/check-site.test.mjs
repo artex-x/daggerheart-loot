@@ -18,6 +18,7 @@ import {
   dirReader,
   UNKNOWN_PATH,
   NOT_FOUND_MARKER,
+  previewChecks,
   SCHEMA_IDS
 } from './check-site.lib.mjs';
 
@@ -57,6 +58,10 @@ const GOOD = {
   'data.js': { type: 'application/javascript', body: 'window.LOOT = {}' },
   'data.json': { type: 'application/json', body: '{}' },
   'catalog.csv': { type: 'text/csv', body: 'id\n' },
+  'names.json': {
+    type: 'application/json',
+    body: JSON.stringify({ format: 'daggerheart-loot/names', version: 1 })
+  },
   'llms.txt': { type: 'text/plain', body: 'ok' },
   'robots.txt': { type: 'text/plain', body: 'User-agent: *\nAllow: /' },
   ...Object.fromEntries(
@@ -315,7 +320,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 56);
+    assert.equal(list.length, 58);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -334,6 +339,7 @@ describe('checks() shape', () => {
       'img/thumb/_none.webp',
       'llms.txt',
       'manifest.webmanifest',
+      'names.json',
       'og/_share.jpg',
       'og/_share_en.jpg',
       'pages/en/install.html',
@@ -356,5 +362,83 @@ describe('checks() shape', () => {
       assert.equal(typeof c.test, 'function');
       assert.ok(typeof c.message === 'string' || typeof c.message === 'function');
     }
+  });
+});
+
+describe('previewChecks() against the preview host', () => {
+  const CARD =
+    '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">';
+  const TOKEN = 's/' + 'A'.repeat(43);
+  const ITEM = 'h/00000000-0000-4000-8000-000000000000';
+  /* A host that answers as the preview host does; `over` replaces one path's answer. */
+  const host = (over = {}) => {
+    const files = {
+      'robots.txt': { status: 200, body: '# the preview host\nUser-agent: *\nAllow: /\n' },
+      'h/not-a-uuid': { status: 404, body: CARD },
+      's/x': { status: 404, body: CARD },
+      'p/x': { status: 404, body: CARD },
+      [TOKEN]: { status: 404, body: CARD },
+      [ITEM]: { status: 404, body: CARD },
+      'tables/core_item': { status: 200, body: CARD },
+      ...over
+    };
+    return async (path) => ({
+      status: files[path].status,
+      type: 'text/html',
+      body: files[path].body
+    });
+  };
+
+  it('reports nothing for a host that answers every check', async () => {
+    assert.deepEqual(await runChecks(host(), previewChecks()), []);
+  });
+
+  it('names the card read and the secrets when the well-formed token answers 503', async () => {
+    const bad = await runChecks(
+      host({ [TOKEN]: { status: 503, body: CARD } }),
+      previewChecks()
+    );
+    assert.equal(bad.length, 1);
+    assert.match(bad[0], /returned 503, not 404 - the read get_shared_list_preview failed/);
+    assert.match(bad[0], /SUPABASE_URL and SUPABASE_KEY/);
+  });
+
+  it('names the item read and the secrets when the well-formed uuid answers 503', async () => {
+    const bad = await runChecks(host({ [ITEM]: { status: 503, body: CARD } }), previewChecks());
+    assert.equal(bad.length, 1);
+    assert.match(bad[0], /returned 503, not 404 - the read get_item_preview failed/);
+    assert.match(bad[0], /SUPABASE_URL and SUPABASE_KEY/);
+  });
+
+  for (const [path, answer, pattern] of [
+    ['robots.txt', { status: 404, body: '' }, /robots\.txt returned 404/],
+    ['robots.txt', { status: 200, body: 'nothing' }, /no User-agent line/],
+    ['h/not-a-uuid', { status: 200, body: CARD }, /h\/not-a-uuid returned 200, not 404/],
+    ['s/x', { status: 404, body: '<p>no meta</p>' }, /s\/x has no noindex/],
+    ['p/x', { status: 302, body: '' }, /p\/x returned 302/],
+    ['tables/core_item', { status: 503, body: CARD }, /tables\/core_item returned 503/],
+    ['tables/core_item', { status: 200, body: '<p></p>' }, /lost its noindex or its og:title/]
+  ]) {
+    it(`fails on ${path} answering ${answer.status}`, async () => {
+      const bad = await runChecks(host({ [path]: answer }), previewChecks());
+      assert.ok(
+        bad.some((m) => pattern.test(m)),
+        bad.join('; ')
+      );
+    });
+  }
+
+  it('is the exact set of preview paths', () => {
+    const list = previewChecks();
+    assert.equal(list.length, 14);
+    assert.deepEqual([...new Set(list.map((c) => c.path))].sort(), [
+      ITEM,
+      'h/not-a-uuid',
+      'p/x',
+      'robots.txt',
+      TOKEN,
+      's/x',
+      'tables/core_item'
+    ]);
   });
 });

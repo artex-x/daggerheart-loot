@@ -190,6 +190,9 @@ the set (`FEATURES.md`, "Print"); the list link's `id*qty` spelling stays in
 `CONTRACTS.md` section 3. The long print addresses `#/print/<ids>` were retired
 on 2026-10-08 (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 
+The preview host's path grammar is `CONTRACTS.md` section 5: its paths
+`/h/`, `/s/`, `/p/` and `/tables/` mirror these hashes without the `#`.
+
 ## Account
 
 | Hash | Meaning |

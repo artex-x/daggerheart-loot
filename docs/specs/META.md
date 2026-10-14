@@ -42,6 +42,22 @@ every `#/...` link, since the fragment never reaches a crawler) and
 `<site>en/`, and `i/en/<id>.html` carry the English one, with its own
 picture `og/_share_en.jpg` for the root (`docs/specs/I18N.md`).
 
+The preview host's cards (`CONTRACTS.md` section 5), probed by the owner on
+2026-10-14 in Telegram Desktop:
+
+| Link | Card | Picture |
+|---|---|---|
+| `/h/` rich item, Russian and English | the title, the full subtitle and text; the English card in English | `og/_none.jpg` |
+| `/h/` item with its own WebP picture | the same | its WebP picture |
+| `/h/` item with 1000 related items | drawn, the set line folded | `og/_none.jpg` |
+| `/s/` players' link | the list name, «5 позиций.» and the players' note | the site picture |
+| `/s/` GM link | the same and « · Ссылка для мастера» | the site picture |
+| `/p/` | «Печать карточек», «Войдите, чтобы печатать карточки.» | the site picture |
+| a WebP and a JPEG test picture | both drawn | - |
+
+Other Telegram clients and other messengers were not probed (owner: not
+needed), so own pictures stay WebP.
+
 Bulk collection for training is a separate matter and is refused by name:
 `GPTBot`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Google-Extended`,
 `Applebot-Extended`, `Bytespider`, `meta-externalagent`.
@@ -49,9 +65,10 @@ Bulk collection for training is a separate matter and is refused by name:
 ## 3. Lists live in the account, and in the browser until the cutoff
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
-Supabase backend (Auth and Postgres, EU West) is the one server the site
-uses: for accounts, lists and, later, homebrew, each shipped in its own
-release. Sign-in (Google or Discord) and `#/account` exist in a build
+Supabase backend (Auth and Postgres, EU West) is the only server that
+stores the site's data: accounts, lists and homebrew, each shipped in its
+own release. One stateless preview Worker renders link cards and stores
+nothing (the last paragraph of this section). Sign-in (Google or Discord) and `#/account` exist in a build
 configured with the two `VITE_SUPABASE_*` values, and an account holds the
 reader's preferences and lists (`STATE.md`); a signed-in reader makes every
 new list there, and a signed-out one is asked to sign in first
@@ -148,7 +165,10 @@ content moves it too (`docs/decisions/`,
 2026-10-07, "An item is read by its id by anyone; a list holds a live
 link"), and a change of a card's book items alone moves the time of every
 item that names the card (`docs/decisions/`, 2026-10-08, "An own set or rule
-card holds book items; only its account sees them").
+card holds book items; only its account sees them"). The preview Worker
+draws a link card for every item `get_homebrew_item` returns, to the same
+audience as `#/h/` and with no opt-in: the holder of the link chose to
+share it.
 
 An own homebrew item may have a picture: two public files of the Supabase
 Storage bucket `homebrew-art` under one random name, `p/<32 hex>.<ext>`
@@ -181,8 +201,22 @@ accounts. The site keeps no copy of a file, and «Импорт из файла»
 on «Мои предметы» import only a file the reader chose, through the same
 Supabase backend.
 
-Add no server beside the Supabase backend: no upload endpoint and no paste
-service.
+The Supabase backend is the only server that stores data; one stateless
+preview Worker renders link cards and stores nothing. It is the Cloudflare
+Pages project `daggerheart-loot` (`.claude/README.md`, "Preview host"). It
+makes three reads, each as a signed-out reader: `get_item_preview(uuid,
+text)`, `get_shared_list_preview(text)` and the site's generated
+`names.json`. The two card reads
+(`supabase/migrations/20261014120200_link_previews.sql`) answer only what a
+card draws, and nothing beyond what `get_homebrew_item` or `get_shared_list`
+shows to the same caller, so an answer stays a few KB at any set size or
+entry count. It keeps `names.json` in memory for 10 minutes and nothing
+else; it has no edge cache, no cookie and no persistent log. A GM link's
+card read carries no GM note at all: a list card shows the list name, the
+count of the entries that the link's audience sees and the start of the
+players' note. Add no other
+backend, upload endpoint or paste service (`docs/decisions/`, 2026-10-14,
+"Link previews come from a stateless worker").
 
 ## 4. HTTP only; `file://` retired
 
@@ -301,6 +335,13 @@ state with `run.mjs --adopt` at issue 64 and were never pushed: Telegram had
 no preview of them to correct. From then on a change to their `og:*` text or
 picture is stale by the normal rule and pushed. `--adopt` refuses the
 Russian root and the Russian stubs.
+
+A preview host link of `/h/` or `/s/` carries `?v=<v>`, a version of what
+its card draws, so a changed card is a new URL to Telegram's cache and needs
+no push; `/p/` and `/tables/` links carry none: a print card never changes,
+and a table card changes only with a data deploy, so an old message keeps
+the old count. `tools/tg-preview`
+never pushes a preview host link.
 
 ## 9. Installable app (PWA)
 

@@ -23,6 +23,8 @@ export default ts.config(
       'i/**',
       /* Untracked artwork scratch, gitignored for the same reason (.gitignore). */
       'work/**',
+      /* wrangler's local state of the preview host. */
+      'preview/.wrangler/**',
       /* Everything under .claude/ except the hooks themselves: agent
          wiring (settings, prompts, skills) that is not JS, plus
          `.claude/worktrees/`, a dispatched agent's own isolated checkout
@@ -188,6 +190,8 @@ export default ts.config(
       'tests/**/*.mjs',
       'tools/**/*.js',
       'tools/**/*.mjs',
+      'preview/**/*.mjs',
+      'preview/**/*.js',
       '.claude/hooks/**/*.mjs'
     ],
     extends: [ts.configs.disableTypeChecked],

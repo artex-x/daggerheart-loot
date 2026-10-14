@@ -159,4 +159,99 @@ function dataJson(L) {
   return JSON.stringify(L) + '\n';
 }
 
-module.exports = { SITE, dataJson, catalogCsv, everything };
+/* The catalog tables a table card names, in app/src/lib/types.ts's TABLE_IDS
+   order without `homebrew`. */
+const CARD_TABLES = [
+  'core_item',
+  'core_consumable',
+  'hnf_item',
+  'hnf_consumable',
+  'wondrous',
+  'community',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'other_starting',
+  'other_frames',
+  'alt_item',
+  'alt_consumable',
+  'eq_weapon',
+  'eq_secondary',
+  'eq_armor'
+];
+
+/* The rows the signed-out tables page draws for a table with no filter, by
+   the app's own rules (app/src/lib/data.ts: rows, otherTableRows,
+   equipOfKind, altColumn); app/src/lib/i18n.test.ts holds them equal. */
+function tableRows(L, table) {
+  const starting = L.items.starting || [];
+  if (table === 'other_starting') return starting.filter((x) => !x.frame);
+  if (table === 'other_frames')
+    return (L.items.frames || []).concat(starting.filter((x) => x.frame));
+  if (table.startsWith('eq_')) {
+    const t = table.slice(3);
+    return [].concat(L.eq, ...Object.values(L.items)).filter((x) => x.eq && x.eq.t === t);
+  }
+  if (table.startsWith('alt_')) {
+    const ids = new Set(everything(L).map((x) => x.id));
+    const byRarity = (L.alt || {})[table.slice(4)] || {};
+    return Object.values(byRarity).flatMap((cols) =>
+      ['hope', 'fear'].flatMap((col) => (cols[col] || []).filter((id) => ids.has(id)))
+    );
+  }
+  return L.items[table] || [];
+}
+
+/* What the preview host reads at request time (docs/specs/CONTRACTS.md
+   section 4): catalog names by id, the sets, and the counts a table card
+   draws. One line, like data.json. */
+function namesJson(L) {
+  const items = {};
+  everything(L).forEach(function (x) {
+    items[x.id] = [x.ru || '', x.en || ''];
+  });
+  const groups = setGroups(L);
+  const sets = {};
+  Object.keys(L.sets || {}).forEach(function (key) {
+    const b = L.sets[key];
+    sets[key] = {
+      ru: b.ru,
+      en: b.en,
+      rud: b.rud,
+      ende: b.ende,
+      members: (groups[key] || []).map((x) => x.id)
+    };
+  });
+  const tables = {};
+  CARD_TABLES.forEach(function (t) {
+    tables[t] = { n: tableRows(L, t).length };
+  });
+  const communities = {};
+  (L.items.community || []).forEach(function (x) {
+    if (!x.community) return;
+    const c = (communities[x.community] = communities[x.community] || {
+      ru: x.community_ru || x.community,
+      n: 0
+    });
+    c.n++;
+  });
+  const frames = {};
+  tableRows(L, 'other_frames').forEach(function (x) {
+    if (!x.frame) return;
+    frames[x.frame] = { n: ((frames[x.frame] && frames[x.frame].n) || 0) + 1 };
+  });
+  return (
+    JSON.stringify({
+      format: 'daggerheart-loot/names',
+      version: 1,
+      items,
+      sets,
+      tables,
+      communities,
+      frames
+    }) + '\n'
+  );
+}
+
+module.exports = { SITE, dataJson, catalogCsv, namesJson, everything };

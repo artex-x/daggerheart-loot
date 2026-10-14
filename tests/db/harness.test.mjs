@@ -161,13 +161,17 @@ describe('public schema invariants', () => {
 // Supabase's default privileges grant EXECUTE on every new public function
 // to anon, so a migration has to revoke it.
 // The deliberate exceptions: a share link opens signed out, its holder
-// sends a purchase request, and an item opens by its id. In code-point order ("C"), as JS sorts: the
-// database's own collation puts `(text,bigint)` before `(text)`.
+// sends a purchase request, an item opens by its id, and the preview host reads
+// the two card reads get_item_preview and get_shared_list_preview. In
+// code-point order ("C"), as JS sorts: the database's own collation puts
+// `(text,bigint)` before `(text)`.
 const EXPECTED_ANON_FUNCTIONS = [
   'create_purchase_request(uuid,text,jsonb)',
   'get_homebrew_item(uuid)',
+  'get_item_preview(uuid,text)',
   'get_shared_list(text)',
-  'get_shared_list(text,bigint)'
+  'get_shared_list(text,bigint)',
+  'get_shared_list_preview(text)'
 ];
 function anonFunctions(db) {
   return db`

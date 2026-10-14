@@ -12,6 +12,7 @@ import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { cardVersion } from '../lib/hash.js';
 import { encodeList, toBase64Url } from '../lib/listLink.js';
 import { priceText } from '../lib/money.js';
 import { plural } from '../lib/plural.js';
@@ -1733,6 +1734,43 @@ describe('the filter', () => {
       expect(clip.last.text).toBe('https://example.test/#/s/gm-token-1/f_kind-weapon');
       expect(screen.getByText(ru.gmFilterLinkCopied)).toBeInTheDocument();
       await expectNoA11yViolations(container);
+    });
+
+    it("copies the preview link with the share panel's version of the token's card", async () => {
+      const ORIGIN = 'https://daggerheart-loot.pages.dev';
+      /* One GM-only entry: the players' card counts 9 entries, the GM's every one. */
+      const [shop, ...rest] = SEED.lists.gm1;
+      if (!shop) throw new Error('no seeded shop');
+      const seed: typeof SEED = {
+        ...SEED,
+        lists: {
+          ...SEED.lists,
+          gm1: [
+            {
+              ...shop,
+              entries: shop.entries.map((e) =>
+                e.itemKey === 'q313' ? { ...e, gmOnly: true as const } : e
+              )
+            },
+            ...rest
+          ]
+        }
+      };
+      const v = (n: number) => cardVersion([shop.name, shop.note, n]);
+      const players = open('#/s/player-token-1/f_kind-weapon', fakeCloud(seed), {
+        preview: ORIGIN
+      });
+      await shopReady();
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(players.clip.last.text).toBe(`${ORIGIN}/s/player-token-1/f_kind-weapon?v=${v(9)}`);
+      cleanup();
+      const gm = open('#/s/gm-token-1/f_kind-weapon', fakeCloud(seed), {
+        preview: ORIGIN,
+        storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      });
+      await shopReady();
+      await userEvent.click(screen.getByRole('button', { name: dict('en').filterLink }));
+      expect(gm.clip.last.text).toBe(`${ORIGIN}/en/s/gm-token-1/f_kind-weapon?v=${v(10)}`);
     });
 
     it('toasts the failure when the clipboard refuses, and leaves the address', async () => {

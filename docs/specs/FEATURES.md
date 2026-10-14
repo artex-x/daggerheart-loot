@@ -117,11 +117,22 @@ across.
   recorded in `docs/provenance/starting-items-artwork.json`.
 - Every heading has a copy-link button; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
-  table" link and a section's copy-link button produce) scrolls to its target
+  table" link produces; a section's copy-link button copies the same address
+  as its preview link, below) scrolls to its target
   and outlines it in gold for 1.6 s. The scroll and the outline re-play on a
   language switch. A search keystroke, a tick or a view switch does not
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
+- The three copy buttons of a catalog table - the toolbar's table link, the
+  filter link and a block's link - copy its preview link
+  `https://daggerheart-loot.pages.dev[/en]/tables/<table>[/<tail>]`, with no
+  `v` (`<site>[en/]#/tables/...` in a build with no preview host); on
+  `homebrew` they keep the app address `<site>[en/]#/tables/homebrew...`. The
+  card: the table's name in the stub's words («Core · Предметы»), «N
+  позиций» / "N items" of the table, a community or frame block's label and
+  count («Сообщество: Великородное. 10 позиций»), the `comm` and `frame`
+  filter labels with no count on a filter, and the site picture. A table card
+  keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
   two books**: 437 weapons, 127 secondary, 108 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
@@ -620,8 +631,11 @@ browser lists writable after the date.
   мастера», both ready on open: the panel reads the list's links (stopped
   ones too) and makes a link only for an audience that never had one, the
   players' first. An active row shows its link as the in-app address
-  `#/s/<token>` and two buttons: «Скопировать» copies `<site>#/s/<token>`, or
-  `<site>en/#/s/<token>` in English, and toasts «Ссылка для игроков
+  `#/s/<token>` (a named difference: the visible link opens the list in
+  place, the copied one carries the card) and two buttons: «Скопировать»
+  copies the preview link `https://daggerheart-loot.pages.dev/s/<token>?v=<v>`
+  (`/en/s/` in English; `<site>[en/]#/s/<token>` in a build with no preview
+  host), and toasts «Ссылка для игроков
   скопирована - заметок и позиций «Только для мастера» в ней нет» / "Players'
   link copied - it carries no "GM only" notes or items" or «Ссылка для мастера
   скопирована - в ней есть заметки и позиции «Только для мастера»» / "GM's
@@ -640,6 +654,17 @@ browser lists writable after the date.
   the row, and reloads the panel when it was refused. A row's buttons are
   disabled while its change runs. An empty list can be shared. No account
   list's page or panel writes or copies a `#/l/` address.
+- **The list card** of a share link's preview link: the list name (or «Без
+  названия» / "Untitled"), «N позиций» / "N items" of the entries that the
+  link's audience sees - a players' link counts the entries without «Только
+  для мастера», a GM link every entry, as the GM page draws them - then `. `
+  and the start of the players' note, fit to 480 bytes, and the site picture;
+  a GM link's title adds « · Ссылка для мастера» / " · GM's link". A GM note,
+  an entry note, an item name and a price never appear on a card, and a
+  players' card never counts a GM-only entry. The link's `v` is a version of
+  the name, the players' note and that count, made at the press, so the
+  players' and the GM link of one list carry their own `v`. A messenger keeps
+  the card it got after an edit or a revoke.
 - **«Только для мастера» / "GM only" entries**
   (`docs/decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md`):
   each row of an account list's page draws an eye between «Заметка» and
@@ -721,7 +746,10 @@ browser lists writable after the date.
   and no chip carries a count. The filter lives in the address,
   `#/s/<token>/f_<filter>` (`ROUTES.md`), written in place; a filter link
   opens the panel. While a value is picked the strip draws the copy-link
-  button: it copies `<site>#/s/...` or `<site>en/#/s/...` and toasts
+  button: it copies the preview link
+  `https://daggerheart-loot.pages.dev[/en]/s/<token>/f_<filter>?v=<v>`, with
+  the share panel's `v` of that token's card (`<site>[en/]#/s/...` in a build
+  with no preview host), and toasts
   «Ссылка на фильтры скопирована» / "Filter link copied"; on a GM's link
   it toasts «Ссылка на фильтры скопирована - это ссылка для мастера: в ней
   есть заметки и позиции «Только для мастера»» / "Filter link copied - it is
@@ -1032,9 +1060,11 @@ browser lists writable after the date.
   «Хоумбрю · <source> · <section>», its tag «<source> (HB)» (the Latin mark
   in both languages) or «Хоумбрю», with «показать в таблице» to its row on
   `#/tables/homebrew`, and the pick row adds «Изменить» (to
-  `#/homebrew/<key>`) after «Печать». Its link is its item address
-  `#/h/<uuid>`: «Скопировать ссылку» copies it and «Отправить» carries it, in
-  the language on screen (`<site>#/h/<uuid>`, `<site>en/#/h/<uuid>`). While
+  `#/homebrew/<key>`) after «Печать». Its link is its preview link:
+  «Скопировать ссылку» copies it and «Отправить» carries it, in the language
+  on screen (`https://daggerheart-loot.pages.dev/h/<uuid>?v=<v>`, `/en/h/` in
+  English; `CONTRACTS.md` section 5), and a build with no preview host hands
+  out the item address `<site>[en/]#/h/<uuid>`. While
   the author's items fail to load, the page says «Не получилось загрузить
   ваши предметы.» with «Повторить», not «Предмет не найден».
 - **The item page `#/h/<uuid>`** draws one homebrew item for everyone, signed
@@ -1042,9 +1072,9 @@ browser lists writable after the date.
   item's own record and the author's related items (made from, upgrades to,
   the set, the upgrade line) as `get_homebrew_item` answers them, which win a
   key the reader also holds, so the reader and the author see the same
-  «Получается из», «Улучшается до», «Комплект» and set bonus. Every homebrew
-  link the app writes is this address: a relation, a tier rung, a list row,
-  «Скопировать ссылку» and «Отправить» of an own or a linked item. A rung or
+  «Получается из», «Улучшается до», «Комплект» and set bonus. A relation, a
+  tier rung and a list row link to this address; «Скопировать ссылку» and
+  «Отправить» of an own or a linked item hand out its preview link (above). A rung or
   a relation of the author's item opens its own page; a catalog record opens
   over the page. A reader's line under the heading starts with «Предмет
   другого игрока» / "Another player's item", then the path; the pick row
@@ -1155,9 +1185,15 @@ browser lists writable after the date.
   own state; the live app threw on a missing `window.LOOT` and drew nothing.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
-  asterisks are deliberately not used. Copy link and share carry the
+  asterisks are deliberately not used. Copy link and share carry a catalog
   record's stub in the language on screen - `i/<id>.html` in Russian,
-  `i/en/<id>.html` in English - and a homebrew item's `#/h/<uuid>` address.
+  `i/en/<id>.html` in English - and a homebrew item's preview link. That
+  link's card - the name, the subtitle, the description, the picture and the
+  stub's craft and set lines folded with «и ещё N», catalog names from
+  `names.json` - draws at any set size; `v` is a version of the record, made
+  at the press, so a changed item is a new URL to a messenger's cache. A
+  re-shared link keeps the old set or craft line in a messenger's cache when
+  only a related item changed.
 - Copying the image has three outcomes, each with its own toast. A canvas
   that cannot be read back at all (the retired `file://` build's own picture
   always tainted it) falls back to copying the record's text instead, worded to say
@@ -1799,7 +1835,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   открывали 90 дней, или в адресе ошибка.» and «На главную»; a set with no
   card left, «Печатать нечего: в наборе не осталось карточек.», the deleted
   note and «На главную». A build with no sign-in configured draws the
-  not-found page. «Ссылка на набор» copies the page's own `#/p/<id>` address.
+  not-found page. «Ссылка на набор» copies the set's preview link
+  `https://daggerheart-loot.pages.dev[/en]/p/<id>`, with no `v`
+  (`<site>[en/]#/p/<id>` in a build with no preview host). The link opens in
+  the browser, not in the installed app, and a reader may need to sign in
+  there. Its card is generic - «Печать карточек», «Войдите, чтобы печатать
+  карточки.» and the site picture - and shows nothing of the set.
 - Every address under `#/print/` - the long print links retired on 2026-10-08
   - draws «Такие ссылки на печать больше не открываются.» with «Попросите у
   отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.»
@@ -2274,3 +2315,12 @@ Each rule keeps its number: a review cites it by number.
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
   toast, the chip, the filter pill and the source and card rows); nothing
   scrolls sideways.
+- **17. Handed-out links** (owner, 2026-10-14), on every page: a control
+  that copies or sends a link hands out the preview host's link with its own
+  card - an item, a shared list, a print set, a catalog table; a catalog
+  record keeps its `i/<id>.html` stub. Excluded, each with its reason: a
+  homebrew copy with no id (nothing to link); `#/tables/homebrew` (each reader
+  sees only their own items); a browser list's `#/l/` links (they hide from
+  `LEGACY_WRITE_UNTIL`, and a payload can be kilobytes in a path).
+  Departure: the share panel shows `#/s/<token>` and copies the preview link.
+  This rule binds every page, not only the signed-in pages of the lead.

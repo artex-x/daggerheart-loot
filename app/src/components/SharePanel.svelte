@@ -12,7 +12,8 @@
   import Panel from './Panel.svelte';
   import { shareOf, type ShareAudience } from '../lib/cloudLists.js';
   import type { Msg } from '../lib/dict.js';
-  import { shareHash } from '../lib/hash.js';
+  import { cardVersion, shareHash } from '../lib/hash.js';
+  import { gmOnlyCount, itemMeta } from '../lib/lists.js';
   import type { ShareRepository } from '../ports/index.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -120,9 +121,19 @@
     );
   }
 
+  /* The link's version is what its card draws - the name, the players' note and the count
+     the audience sees (a GM link counts every entry) - made at the press. */
   function copy(audience: ShareAudience, token: string): void {
+    const l = app.cloudLists?.get(listId);
+    const n = l
+      ? audience === 'gm'
+        ? l.ids.length
+        : l.ids.length - gmOnlyCount(l.ids, (id) => itemMeta(l, id))
+      : 0;
+    const v = l ? cardVersion([l.name, l.note ?? '', n]) : undefined;
+    const link = app.linkTo(shareHash(token), v);
     void app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(shareHash(token))),
+      () => app.env.clipboard.writeText(link),
       audience === 'player' ? (t) => t.playersShareCopied : (t) => t.gmShareCopied
     );
   }

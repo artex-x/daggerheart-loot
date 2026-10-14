@@ -311,7 +311,7 @@ function stampOf(parts) {
   }
 
   console.log('a share stub names the path its record page does');
-  /* The stub builder copies the record page's path words (tools/build-share-pages.js,
+  /* The stub builder copies the record page's path words (tools/share-card.mjs,
      PATH_TEXT); one record per table in each language catches a drift. */
   const stubs = require('../../tools/build-share-pages.js');
   const firstOf = {};

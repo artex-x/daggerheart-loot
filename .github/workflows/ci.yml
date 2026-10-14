@@ -234,12 +234,14 @@ jobs:
       - run: npm ci
       - name: Vulnerabilities we will not wave through
         run: npm audit --audit-level=high
-      # The two tool packages keep their own lockfiles; `npm audit` reads a
-      # lockfile alone, so neither needs an install here.
+      # The three tool packages keep their own lockfiles; `npm audit` reads a
+      # lockfile alone, so none needs an install here.
       - name: Vulnerabilities in the preview refresher
         run: npm audit --prefix tools/tg-preview --audit-level=high
       - name: Vulnerabilities in the artwork tooling
         run: npm audit --prefix tools/artwork --audit-level=high
+      - name: Vulnerabilities in the preview host's deploy tool
+        run: npm audit --prefix preview --audit-level=high
 
   secrets:
     runs-on: ubuntu-latest
@@ -404,6 +406,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # The preview host's origin: the copied item, list, print and table
+          # links go through it (docs/specs/CONTRACTS.md section 5).
+          VITE_PREVIEW_BASE: https://daggerheart-loot.pages.dev
 
       # `check:built` measures the unconfigured build; this is the bundle that
       # ships, with the account client's chunk in it.
@@ -423,16 +428,16 @@ jobs:
       # outputs too, copied verbatim from app/public/ (docs/specs/META.md
       # section 9).
       #
-      # `i/` (with `i/en/`) and `en/` are not in the repository - the Build step
-      # above regenerates it (npm run build -> npm run data ->
-      # tools/build-share-pages.js) immediately before this step copies it, so
+      # `i/` (with `i/en/`), `en/` and `names.json` are not in the repository -
+      # the Build step above regenerates them (npm run build -> npm run data ->
+      # tools/build.js) immediately before this step copies them, so
       # Collect must never be reordered ahead of Build.
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
                 dist/sw.js dist/icons _site/
-          cp -r data.json catalog.csv llms.txt robots.txt .nojekyll LICENSE \
+          cp -r data.json catalog.csv names.json llms.txt robots.txt .nojekyll LICENSE \
                 404.html img og i en card schema _site/
           # Only the generated site pages, one copy per language: pages/src/
           # is their authored source, not site content (docs/specs/META.md
@@ -447,13 +452,13 @@ jobs:
           # in _site anyway, some other step re-created it, and a stray root
           # file like that must never reach _site.
           for f in package.json node_modules app tests tools docs .git app.js style.css \
-                   pages/src supabase; do
+                   pages/src supabase preview; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
           # The other half, and the deterministic detector for a dangling
           # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
           # catches a link that resolved to nothing.
-          for f in index.html data.js data.json catalog.csv \
+          for f in index.html data.js data.json catalog.csv names.json \
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
                    sw.js icons/icon-192.png pages/install.html pages/en/install.html \
                    pages/privacy.html pages/en/privacy.html pages/terms.html \
@@ -524,6 +529,21 @@ jobs:
       # way they used to.
       - name: The published content is what tools/check-site.mjs expects
         run: node tools/check-site.mjs --dir _site
+
+      # The preview host serves the card of every link this build hands out, so it
+      # goes live first, after migrate-prod has added its reads; a Cloudflare failure
+      # stops the site deploy (.claude/README.md, "Preview host", "The CI deploy").
+      - name: Install the preview host's deploy tool
+        working-directory: preview
+        run: npm ci
+      - name: Deploy the preview host
+        working-directory: preview
+        run: npx wrangler pages deploy public --project-name daggerheart-loot --branch main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: The preview host answers correctly
+        run: node tools/check-site.mjs --preview https://daggerheart-loot.pages.dev/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4

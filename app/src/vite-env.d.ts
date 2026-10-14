@@ -8,4 +8,6 @@ interface ImportMetaEnv {
    *  with no sign-in configured (vite.config.mts). */
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_PUBLISHABLE_KEY: string;
+  /** The preview host's origin; empty in every build but the `deploy` job's. */
+  readonly VITE_PREVIEW_BASE?: string;
 }

@@ -76,9 +76,9 @@
 <h3>Print sets</h3>
 <p>
   Printing cards needs an account. Each print keeps a set in your account: the card numbers and
-  their counts, without notes or prices. Any signed-in person who has its /#/p/ address can open
-  it. A set is deleted 90 days after it was last opened, and with the account. The "Download my
-  data" archive does not hold them.
+  their counts, without notes or prices. Any signed-in person who has its /#/p/ address or its
+  print set link (daggerheart-loot.pages.dev/p/...) can open it. A set is deleted 90 days after
+  it was last opened, and with the account. The "Download my data" archive does not hold them.
 </p>
 <h3>Requests to a list's owner</h3>
 <p>
@@ -109,9 +109,25 @@
   sign in to the account you keep, load the archive on the My items page first, then on the My
   lists page, and connect the Google or Discord account again.
 </p>
+<h2>Link previews</h2>
+<p>
+  The links the site copies for a homebrew item, a list (share links), a print set and a table
+  go to daggerheart-loot.pages.dev (Cloudflare). When such a link is pasted into a messenger,
+  the messenger fetches that address and shows a card: for an item, its name, description,
+  picture and crafting and set lines; for a list, its name, the number of entries and the start
+  of the note for players (a GM note never appears on a card); for a print set, only a generic
+  text, nothing of the set; for a table, its name and the number of entries. A person who opens
+  the link also reaches that address first and goes on to the site at once. Cloudflare receives
+  the usual technical data of each request: an IP address and the link's address with the item
+  id, the key of the share link, the print set id or the filter segment (a filter can hold the
+  key of your own source); the Cloudflare privacy policy covers that data. The card server
+  stores nothing. A messenger can keep its copy of a card after the item or the list is changed,
+  the item is deleted or the share link is revoked. A print set link opens in the browser, not
+  in the installed app; you may need to sign in there.
+</p>
 <h2>Contact</h2>
 <p>
   For a privacy question, a deletion request or a report of an abused share link, write to
   <a href="mailto:daggerheart.loot@gmail.com">daggerheart.loot@gmail.com</a>.
 </p>
-<p>Last changed: 14 October 2026.</p>
+<p>Last changed: 15 October 2026.</p>

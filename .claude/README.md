@@ -264,7 +264,7 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a subagent (rule 2g, plain or `rtk`-prefixed; only when `agent_id` is in the hook input, because a subagent's background run dies with its turn, while the main session is notified at the exit and the check arms the gate by its own exit), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. **2w** (right after 2j) denies `git status`, `git log` without `-p`/`-u`/`--patch`/`-L`, `git branch`, `git worktree list`, `ls`, `cat`, `grep`, `rg`, `vitest` or `npx vitest` without `--coverage`, `prettier`/`npx prettier` and `eslint`/`npx eslint` in a pipe stage whose next stage is `head` or `tail`, because `rtk 0.48.0` never rewrites a pipe stage that is not the last; the deny names the bounded form (`git log -<n>`, `rtk read <file> --max-lines <n>`, `rtk grep --max <n>`, the command without the pipe) and, for git, `git.exe` in an isolated `agent-*` worktree. Not judged: `git show` and `git diff` (RTK never truncates them, so dropping the pipe raises the output), `npm run <script>` (2k owns `check`), a `--coverage` vitest run (RTK drops the coverage table), `git.exe`, a wrapper (`time`, `nohup`, `xargs`, `env`, `command`; an env-var prefix is judged), a pipe into any program but `head`/`tail`, and a substitution (`docs/decisions/`, 2026-10-01, "An RTK command piped into head or tail is denied when RTK bounds it"). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
-| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). For `agent_type` `reviewer`, before every other rule: only `Write`, `Edit` or `MultiEdit` on `issues/<id>/reviews/<name>.md` is allowed, and every other write is denied, a path outside the repository included (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"). Paths resolve against the session's own checkout, `lib.mjs`'s `checkoutRoot(cwd)`: the nearest ancestor of the payload's `cwd` with a `.git` file (a linked worktree; a nested `.git` directory does not count), when it is the repository root or inside it, else the repository root. The desktop app runs the main checkout's hook copy for a worktree session (measured 2026-09-30: a worktree write reached the main checkout's `.hook-state.json` as `.claude/worktrees/<name>/...`), so the hook file's own location names the wrong checkout. A reviewer's report in a linked worktree resolves against that worktree, because a reviewer dispatched from the main checkout keeps that `cwd` while the task lives in an `agent-*` worktree (measured 2026-10-07); a report in the main checkout from a worktree session is denied. For the generated-file rules, a path outside the session's checkout falls back to the repository root, so a worktree session still cannot write the main checkout's `data.json`. Selftest #301. | **block** |
+| `PreToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-guard.mjs` | Blocks writes to `data.json`, `catalog.csv`, `names.json`, `i/*.html` (with `i/en/*.html`), `en/index.html`, `pages/*.html`, `pages/en/*.html`, `dist/`, `dist-test/`, `package-lock.json`, `tests/app/snapshots/**`, `docs/DECISIONS.md` (the generated index of `docs/decisions/`; the message names `node tools/decisions.js`), and a `supabase/migrations/<file>` that a remote-tracking ref holds (`git fetch --quiet origin` first when a remote `origin` exists - 5 s at most, `GIT_TERMINAL_PROMPT=0`, so a push from another clone is seen - then `git for-each-ref refs/remotes/`, then `git cat-file -e <ref>:<path>`; CI applies every pushed migration, so a pushed one is history - "write a new migration instead"). `lib.mjs`'s `remoteRefsHoldingMigration` is the lookup, shared with rule 2p. No file records applied migrations; a failed or slow fetch reads the local refs as they are, and a repository with no remote ref, or a git failure, blocks no migration (fail open). For `agent_type` `reviewer`, before every other rule: only `Write`, `Edit` or `MultiEdit` on `issues/<id>/reviews/<name>.md` is allowed, and every other write is denied, a path outside the repository included (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"). Paths resolve against the session's own checkout, `lib.mjs`'s `checkoutRoot(cwd)`: the nearest ancestor of the payload's `cwd` with a `.git` file (a linked worktree; a nested `.git` directory does not count), when it is the repository root or inside it, else the repository root. The desktop app runs the main checkout's hook copy for a worktree session (measured 2026-09-30: a worktree write reached the main checkout's `.hook-state.json` as `.claude/worktrees/<name>/...`), so the hook file's own location names the wrong checkout. A reviewer's report in a linked worktree resolves against that worktree, because a reviewer dispatched from the main checkout keeps that `cwd` while the task lives in an `agent-*` worktree (measured 2026-10-07); a report in the main checkout from a worktree session is denied. For the generated-file rules, a path outside the session's checkout falls back to the repository root, so a worktree session still cannot write the main checkout's `data.json`. Selftest #301. | **block** |
 | `PreToolUse` | `Agent\|Task\|SubagentDispatch` | `agent-guard.mjs` | Judges an `implementer` dispatch whose prompt names `TASK: <id>` against `issues/<id>/plan.md` Status: denies when it has no `- Plan review:` line or a malformed one ("declare it"), and for each `required before <batch>` line, the newest `issues/<id>/reviews/plan-<batch>.md` or `plan-<batch>-<n>.md` with a `Verdict:` line (numeric order; `lib.mjs`, `parseReviewHead`) decides: `approve` allows; `fix-then-continue` allows when a Status line `- Plan review findings applied: reviews/<that file>` names it; `replan` denies ("a replan needs a second look"); no such report denies ("dispatch the reviewer"); the deny names the file, each report seen with its verdict, and the dispatch tool (`docs/decisions/`, 2026-09-27, "A plan that changes schema, contracts, stored data or sync is reviewed first"; 2026-10-01, "A plan review's fix-then-continue is applied once, with no second look"). Silent for another agent type, no `TASK:` line, a `TASK: <id>` placeholder, no `plan.md`, and any throw; a resume (`SendMessage`) is not a dispatch. This host's dispatch tool is `Agent`; `Task` and `SubagentDispatch` are other builds' names. | **block** |
 | `PreToolUse` | `Read\|Grep` | `read-guard.mjs` | Denies the Read tool's `file_path`, and the Grep tool's `path` or `glob`, whose last path segment starts with `.env` (case folded, `\` read as `/`), from any checkout, because a `./` pattern in `permissions.deny` binds the session's working directory and an absolute path from a worktree passed it (`docs/decisions/`, 2026-09-27, "The Read and Grep tools are denied `.env` files by a hook, not only by settings"). A Grep by pattern over a directory is not judged ("Known limitations"). A worktree agent is guarded by its worktree's tree, cut from `origin/main`, so a change reaches it only after the push ("Known limitations"). No git and no file read; any throw allows. | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: BUSY` line (the local stack lock is held; tested before the FAIL markers, because npm prints its own error lines for exit 3) says BUSY and writes nothing, a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. When a run cannot be attributed (`check:db` without its PASS line, `check` without its coverage summary) but the cache already holds the current tree key, the check's own exit armed the gate (`gate-credit.mjs`), and the line says `PASS - armed by the check's own exit.` An attributed pass does not rewrite a cache that already holds the current key, so a `by: "exit"` record stays. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
@@ -2689,6 +2689,14 @@ the last backup taken before the down: after the up every file is an
 unnamed orphan older than an hour, and the job deletes 2000 an hour until
 the bucket is empty.
 
+To undo `20261014120200_link_previews`, revert the preview host first
+(`preview/` only, never the whole commit that added
+`20261014120200_link_previews.sql`): the previous Worker reads
+`get_homebrew_item` and `get_shared_list`, which stay. Then push a new
+migration whose body is the reversal file; it drops the two card reads, so
+until the Worker is reverted every `/h/` and `/s/` card answers 503 with the
+redirect kept. No table, row or stored shape changes.
+
 To undo `20261014120100_print_sets`, revert the app first: the previous
 frontend prints through the long addresses and reads no set, and the sets
 stay for the next frontend. Run the reversal only as a second push, a new
@@ -3090,6 +3098,194 @@ re-litigates them:
 - No hook guards an artwork install: the standing bar for a new hook is a
   repeated mistake, and no artwork operation has produced one a path test
   could catch - the `og/`-orphan gap was a test gap, closed as a test.
+
+## Preview host
+
+The preview host gives a link card to the links that carry their record in
+the fragment: a homebrew item (`/h/<uuid>`), a shared list (`/s/<token>`),
+a print set (`/p/<id>`) and a catalog table (`/tables/<table>[/<tail>]`),
+each also under `/en/`. It is the Cloudflare Pages project
+`daggerheart-loot` at `https://daggerheart-loot.pages.dev/`, in Pages
+Functions advanced mode: `preview/public/_worker.js` re-exports
+`preview/worker.mjs`, which draws the cards with `tools/share-card.mjs`. It
+answers every client with the card and sends a person to `<site>#/...` by
+`meta refresh` and `location.replace`. It stores nothing (`docs/specs/META.md`
+section 3; `docs/decisions/`, 2026-10-14, "Link previews come from a
+stateless worker").
+
+Rules:
+
+- The host is frozen from the first link the app hands out, and later
+  becomes the app's own host (task `cloudflare-pages`). Never delete the
+  Pages project: a deleted name can be taken by another account, and every
+  handed-out link then shows its content. Pages cannot rename a project.
+- Hand out only the production host. A `<hash>.daggerheart-loot.pages.dev`
+  deployment host or a branch alias answers 301 to the same path on the
+  production host (the host guard in `preview/worker.mjs`), because an old
+  deployment stays reachable with the code and the secrets it was made with.
+- Every deploy uses `--branch main`. Git integration stays off: direct
+  upload has no automatic preview builds, and a direct-upload project
+  cannot switch to Git integration later.
+- `robots.txt` is a static file (`preview/public/robots.txt`, the site's
+  directive lines); `_routes.json` excludes it from Functions, so it costs
+  no request.
+
+Owner setup, facts of 2026-10-14:
+
+- The account subdomain is `daggerheart-loot`. The project was created with
+  `npx wrangler pages project create daggerheart-loot --production-branch main`;
+  repeat that command for a new account. The deployments made before the
+  first CI deploy (the probe and the measurement) hold the test project's
+  secrets; the owner deletes them in the dashboard after the first CI deploy.
+- The token is "daggerheart-loot pages deploy": account scope Cloudflare
+  Pages Edit, Workers Scripts Edit, Workers Tail Read, Account Settings
+  Read; user scope User Details Read, Memberships Read; no IP filter, no TTL.
+  The repository-level secrets `CLOUDFLARE_API_TOKEN` and
+  `CLOUDFLARE_ACCOUNT_ID` on `artex-x/daggerheart-loot` (not an environment)
+  hold it; the main checkout's `.env` holds local copies under the same
+  names, which `wrangler` reads.
+- The old Worker `share` on `workers.dev`, from the first setup, is never
+  handed out. The owner may delete it.
+
+### Deploy the preview host by hand (owner)
+
+Prerequisites: the main checkout's `.env` with the token; the Supabase
+project the cards read is awake (the free plan pauses it after 7 idle days,
+and a paused project gives the 503 card).
+
+1. Install the deploy tool. Run `npm ci` in `preview/`. Expected: `found 0
+   vulnerabilities`.
+2. Confirm the project. Run `npx wrangler pages project list`. Expected: the
+   project `daggerheart-loot` with the domain `daggerheart-loot.pages.dev`.
+   If the domain differs, stop: the host changes in every link.
+3. Set the two secrets, before the first deploy. Run
+   `npx wrangler pages secret put SUPABASE_URL --project-name daggerheart-loot`
+   and `npx wrangler pages secret put SUPABASE_KEY --project-name daggerheart-loot`,
+   and paste the project URL and its publishable key. For the probe, use the
+   test project. A deployment keeps the secrets it was made with; a changed
+   secret applies only at the next deploy (Cloudflare Pages documentation,
+   "Bindings": a secret is set "before a deployment that uses those secrets").
+4. Deploy. In `preview/`, run
+   `npx wrangler pages deploy public --project-name daggerheart-loot --branch main`.
+   Expected: a deployment URL `https://<hash>.daggerheart-loot.pages.dev`.
+5. Check. Run `curl -I https://daggerheart-loot.pages.dev/robots.txt`.
+   Expected: `200`. Run `curl -I https://<hash>.daggerheart-loot.pages.dev/x`.
+   Expected: `301` with `Location: https://daggerheart-loot.pages.dev/x`.
+
+The Worker keeps no persistent log, so no id is stored.
+`npx wrangler pages deployment tail --project-name daggerheart-loot`
+streams live requests, with their CPU time, only while it runs. The hand
+deploy stays for an emergency and for a measurement; CI deploys every push.
+
+### The CI deploy
+
+`ci.yml`'s `deploy` job builds the app with `VITE_PREVIEW_BASE` set to the
+origin, then, after `node tools/check-site.mjs --dir _site` and before the
+GitHub Pages deploy, runs three steps: `npm ci` in `preview/`, `npx wrangler
+pages deploy public --project-name daggerheart-loot --branch main` with the
+secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, and `node
+tools/check-site.mjs --preview https://daggerheart-loot.pages.dev/`. The job
+runs after `migrate-prod`, so the host's two card reads exist before it goes
+live, and the host goes live before the site, because the site's build hands
+out links that only the host can answer.
+
+- The preview check asks for a 404 card on `s/` and 43 `A`, a well-formed
+  token that no list holds, and on `h/00000000-0000-4000-8000-000000000000`,
+  a well-formed uuid that no item has. A 503 there means the secrets or that
+  card read are wrong, and the check names them. Neither proves the ICU
+  collation: the read answers null before it sorts.
+- A Cloudflare outage or a bundle error stops the site deploy; rerun the job.
+- A lasting failure (a revoked token, a suspended account, a deleted
+  project): fix the secret, or commit `if: false` on the three preview steps
+  until it is fixed. The links already handed out keep the last deployment.
+- A direct upload is believed not to count toward the 500 builds a month,
+  and the deploys are fewer than 500 a month either way.
+
+### Quotas, recovery and failure
+
+- Functions requests count against the Workers free plan: 100,000 a day,
+  reset at 00:00 UTC, shared by every Worker and Pages Function of the
+  account, 10 ms CPU per request. Static files are free. Past the quota
+  Cloudflare answers error 1027.
+- A deliberate quota burn is possible: anyone can send 100,000 requests in
+  one UTC day, and the free plan has no rate-limit rule for a Pages project.
+  Every preview link then fails until 00:00 UTC. Recovery for a reader: open
+  `<site>`; `<site>#/h/`, `#/s/`, `#/p/` and `#/tables/` addresses keep working.
+- The commit that added `20261014120200_link_previews.sql` carries a
+  migration. To undo the Worker or the app,
+  revert those paths only and keep `supabase/migrations/` and
+  `supabase/reversals/` as they are. To remove the two reads, add a new
+  migration whose body is
+  `supabase/reversals/20261014120200_link_previews.sql` (`ci.yml`,
+  `migrate-prod`). Use the dashboard's "Rollback to this deployment" only for
+  an emergency between pushes; the next deploy replaces it. Never roll back
+  to a deployment made before the first CI deploy: those hold the test
+  project's secrets and the `/probe/*` routes.
+- A failed read draws the 503 card (the site's title and the open line)
+  with the redirect kept; a failed `names.json` read draws the card without
+  craft, set or table lines and is fetched again on the next request; a
+  thrown error draws the 503 card with the way home.
+- CPU, measured 2026-10-14 with `deployment tail` on the full reads
+  `get_homebrew_item` and `get_shared_list`: 2 ms for
+  a rich item and a five-entry list; 43, 45 and 71 ms for a 1,745,628-byte
+  `/h/` answer (1000 related rows at the validators' maxima), past the 10 ms
+  limit. The Worker therefore reads two lean projections,
+  `get_item_preview` and `get_shared_list_preview`: the database orders and
+  cuts the names, so an answer stays at most 32768 bytes (`/h/`) and 4096
+  bytes (`/s/`) at any set or list size (`tests/db/link-previews.test.mjs`
+  measures about 26 KB and 2.5 KB at the maxima). The byte bounds stay as a
+  defence at twice those sizes, `ITEM_MAX` 65536 and `LIST_MAX` 8192: past a
+  bound the card is the site's text with 200 and the redirect, and the body
+  is never parsed.
+- CPU of the lean reads, measured 2026-10-15 on the deployed Pages Function
+  (`wrangler pages deployment tail <full deployment id> --format json`; a
+  short id is refused as "a static site"). Each case was fetched three
+  times, 1.5 s apart. All outcomes were `ok`, all at most 3 ms CPU, in a
+  warm isolate after the first request, with no `names.json` on the site:
+
+  | Case | Read size (ru) | CPU ms | Wall ms |
+  |---|---|---|---|
+  | rich `/h/` | 1517 B | 2 / 1 / 1 | 100 / 102 / 62 |
+  | heavy `/h/` (1000 big related rows) | 1596 B | 1 / 1 / 1 | 69 / 78 / 70 |
+  | 600 small related rows `/h/` | 1749 B | 1 / 1 / 3 | 63 / 105 / 75 |
+  | `/s/` players', 905 entries | 559 B | 1 / 0 / 1 | 60 / 164 / 59 |
+  | `/s/` GM, 906 entries | 555 B | 1 / 1 / 0 | 103 / 62 / 57 |
+
+  The same heavy item through the full read was 1,745,628 B and 43-71 ms CPU.
+  A cold `names.json` parse (93 KB) is not in these readings; `JSON.parse`
+  of it measured 1.4 ms on the Windows host.
+- PostgREST sends no `Content-Length` on an RPC `jsonb` answer, with or
+  without gzip (`content-range: 0-0/*`). The guard reads a byte counter, so
+  it does not need the header.
+- Telegram fetches a link once, when it is sent, and caches the card. A
+  `deployment tail` started later sees nothing, and Pages keeps no request
+  log: measure CPU with your own fetches while a tail runs.
+
+### Cross-host limits
+
+The preview host is another origin than the app on GitHub Pages until the
+task `cloudflare-pages`.
+
+| Concern | Result |
+|---|---|
+| CORS, the app and the host | Non-issue: the app only builds a URL string and never fetches the host |
+| CORS, the host to Supabase and to `<site>names.json` | Non-issue: server to server, two subrequests a card of 50 allowed |
+| `og:image` on Storage public URLs | Non-issue: a crawler fetches it server side; absolute `https`, a public bucket |
+| `og:image` format | Measured 2026-10-14, Telegram Desktop: a WebP and a JPEG picture both drawn; own pictures stay WebP |
+| Card content type | Non-issue: the Worker answers `text/html; charset=utf-8` |
+| Redirects for crawlers | Non-issue: every card answer is 200 or 404 with the card; only the host guard answers 301 |
+| User-Agent check | Rejected: an unknown crawler would get the redirect and the site card |
+| Supabase session | Non-issue: the Worker reads as `anon` and holds no session; the reader lands on the app's origin |
+| The English language seed | One more hop: the English card redirects to `<site>en/#/...`, where `en/index.html` seeds the language |
+| Cookies | Non-issue: the Worker sets none; the app keeps its session in `localStorage` |
+| CSP and mixed content | Non-issue: the app has no CSP; every URL is `https` |
+| PWA scope | Costs: the host is outside `/daggerheart-loot/`, so a tapped card link opens in the browser, not the installed app; a `/p/` reader may have to sign in there |
+| Telegram cache | The app writes `?v=<version>` on `/h/` and `/s/`, so an edit is a new URL; an old message keeps its old card, also after a delete or a revoke |
+| Rate limits | Costs: 100,000 requests a day (above) |
+| Cold starts | Costs: a cold isolate parses `names.json` on its first `/h/` or `/tables/` request (about 93 KB); the CPU row has the readings |
+| Supabase pause after 7 idle days | Costs: the 503 card, which still redirects; a crawler keeps that card for its URL |
+| Page size | Non-issue: the meta description is capped at 480 bytes and each line at 1200, so a card stays under 64 KB |
+| CPU (10 ms) | Measured 2026-10-14 on the full reads `get_homebrew_item` and `get_shared_list`: 2 ms for a rich item and a five-entry list, 43-71 ms for a 1,745,628-byte `/h/` answer; the lean reads `get_item_preview` and `get_shared_list_preview` keep an answer at most 32768 and 4096 bytes, behind the bounds `ITEM_MAX` 65536 and `LIST_MAX` 8192 ("Quotas, recovery and failure") |
 
 ## Candidates considered (issue 65)
 

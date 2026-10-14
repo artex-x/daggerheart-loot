@@ -135,7 +135,7 @@ ok(
 /* Every stub page whose record rud carries a newline renders a
    multi-line description, and nothing pins the new shape - the staleness
    probe above only proves a stub isn't stale, not what a fresh one actually
-   renders. Pin it directly: descHtml() in tools/build-share-pages.js renders
+   renders. Pin it directly: descHtml() in tools/share-card.mjs renders
    one <p> per source line, not one glued paragraph. */
 console.log('multi-line description rendering');
 const w6 = ALL.find((x) => x.id === 'w6');

@@ -14,6 +14,7 @@ import {
   LIST_GROUPS,
   type FilterState
 } from './filters.js';
+import { canonJson, fnv1a128 } from './homebrew.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
 
 /** A packed link is marked with "~": base64url has no tilde and never can. */
@@ -271,4 +272,27 @@ export function appUrl(site: Site, hash: string, lang?: Lang): string {
  */
 export function recordUrl(site: Site, id: string, lang: Lang): string {
   return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + '.html';
+}
+
+/* ---------- the preview host ---------- */
+
+const CARD_FAMILY = /^#\/(?:(?:h|s|p)\/.|tables\/[a-z_])/;
+const HOMEBREW_TABLE = /^#\/tables\/homebrew(?:\/|$)/;
+
+/** Returns the preview host's address of `hash` in `lang`, with `?v=<v>` when `v` is
+ *  given, or null when `hash` is not a card family (`docs/specs/CONTRACTS.md` section 5). */
+export function previewUrl(
+  origin: string,
+  hash: string,
+  lang: Lang,
+  v?: string
+): string | null {
+  if (!CARD_FAMILY.test(hash) || HOMEBREW_TABLE.test(hash)) return null;
+  return origin + (lang === 'en' ? '/en' : '') + hash.slice(1) + (v ? '?v=' + v : '');
+}
+
+/** Returns the `v` of a preview link: 40 bits of the FNV-1a hash of `drawn`'s canonical
+ *  JSON in base 36, so a changed card is a new URL to a messenger's cache. */
+export function cardVersion(drawn: unknown): string {
+  return (fnv1a128(canonJson(drawn)) >> 88n).toString(36);
 }

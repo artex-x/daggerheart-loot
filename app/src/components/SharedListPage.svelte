@@ -37,7 +37,7 @@
     passes,
     type FilterState
   } from '../lib/filters.js';
-  import { sectionHash, shareHash, storedListHash } from '../lib/hash.js';
+  import { cardVersion, sectionHash, shareHash, storedListHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
   import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
@@ -206,8 +206,12 @@
   /* The audience and the link are read at the press: the toast is drawn later, and a
      re-read in between must not change what it says. */
   async function copyFilterLink(at: string): Promise<void> {
-    const gm = view?.shared?.audience === 'gm';
-    const link = app.linkTo(shareHash(at, { filter: inForce }));
+    const s = view?.shared;
+    const gm = s?.audience === 'gm';
+    /* The share panel's version: a players' projection holds no GM-only entry and a GM's
+       holds every entry, so its length is the count the token's card shows. */
+    const v = s ? cardVersion([s.list.name, s.list.player_note, s.entries.length]) : undefined;
+    const link = app.linkTo(shareHash(at, { filter: inForce }), v);
     await app.copied(
       () => app.env.clipboard.writeText(link),
       (t) => (gm ? t.gmFilterLinkCopied : t.filterLinkCopied)

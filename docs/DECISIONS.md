@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-10-14 - [A link preview reads a lean projection](decisions/2026-10-14-a-link-preview-reads-a-lean-projection.md)
+- 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md)
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
 - 2026-10-14 - [The configured bundle ceiling rises to 350 kB](decisions/2026-10-14-the-configured-bundle-ceiling-rises-to-350-kb.md)
 - 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md)

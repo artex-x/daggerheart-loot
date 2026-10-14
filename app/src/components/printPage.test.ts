@@ -980,6 +980,30 @@ describe('the link', () => {
     await expectNoA11yViolations(container);
   });
 
+  it("copies the set's preview link, with no v, in the language on screen", async () => {
+    const ORIGIN = 'https://daggerheart-loot.pages.dev';
+    const clip = fakeClipboard();
+    const env = await atSet('ci1-q1', { clipboard: clip, preview: ORIGIN });
+    render(App, { env });
+    await opened();
+    await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
+    expect(clip.last.text).toBe(ORIGIN + env.router.hash().slice(1));
+    expect(clip.last.text).toMatch(
+      /^https:\/\/daggerheart-loot\.pages\.dev\/p\/[A-Za-z0-9_-]{12}$/
+    );
+    cleanup();
+    const en = fakeClipboard();
+    const enEnv = await atSet('ci1-q1', {
+      clipboard: en,
+      preview: ORIGIN,
+      storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+    });
+    render(App, { env: enEnv });
+    await opened();
+    await userEvent.click(screen.getByRole('button', { name: 'Link to this set' }));
+    expect(en.last.text).toBe(ORIGIN + '/en' + enEnv.router.hash().slice(1));
+  });
+
   it('toasts the failure when the clipboard refuses', async () => {
     const clip = fakeClipboard({ fail: true });
     render(App, { env: await atSet('ci1', { clipboard: clip }) });

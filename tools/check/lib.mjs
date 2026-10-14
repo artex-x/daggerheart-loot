@@ -47,14 +47,18 @@ export const HOOKS = {
 
 /** Vitest's reads are spread over many test files, so a deny-list: an
  * unknown path costs a rerun, not a false green. `i18n.test.ts` requires
- * tools/build-share-pages.js, which loads `data.js`; `printSet.test.ts` reads the
- * privacy pages' sources for the 90 days. */
+ * tools/build-share-pages.js, which loads `data.js` and tools/share-card.mjs, and
+ * tools/derived.js; `printSet.test.ts` reads the privacy pages' sources for the
+ * 90 days. A preview/ edit reruns no vitest file: preview/worker.test.mjs is its own stage. */
 export const VITEST = {
   rules: [
     ['docs/fixtures/', true],
     ['pages/src/', true],
     ['supabase/config.toml', true],
     ['tools/build-share-pages.js', true],
+    ['tools/share-card.mjs', true],
+    ['tools/derived.js', true],
+    ['preview/', false],
     ['.claude/', false],
     ['.github/', false],
     ['.impeccable/', false],
@@ -99,6 +103,11 @@ export const STAGES = [
   {
     name: 'test:tg-preview',
     command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs',
+    half: 1
+  },
+  {
+    name: 'test:preview',
+    command: 'node --test --test-reporter=dot preview/worker.test.mjs',
     half: 1
   },
   {

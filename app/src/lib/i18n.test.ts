@@ -13,8 +13,12 @@ import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex, equipOfKind, otherTableRows, type Loot } from './data.js';
 import { dict } from './dict.js';
+import { EQ_TABLE, decodeFilter, groupsFor } from './filters.js';
+import { whereFrom } from './label.js';
+import type { Rarity } from './money.js';
+import { communities, communityGroup } from './sections.js';
 import {
   descOf,
   eqLine,
@@ -32,7 +36,7 @@ import {
   type StatLabels
 } from './i18n.js';
 import { FRAME_ORDER, frameName } from './frames.js';
-import type { Lang, Record_ } from './types.js';
+import { TABLE_IDS, type Lang, type Record_, type TableId } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
 const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
@@ -316,9 +320,9 @@ describe('llms.txt', () => {
 });
 
 /**
- * `tools/build-share-pages.js` hand-copies these six maps and the frame names
+ * `tools/share-card.mjs` hand-copies these six maps and the frame names
  * into its own `[ru, en]` tables for the share stubs in both languages. This
- * is the pin: a CJS `require` of the generator, checked pair for pair against
+ * is the pin: a CJS `require` of the generator, which re-exports them, checked pair for pair against
  * this file and `frames.ts`. Without it, editing a word in one place and not
  * the other is a silent divergence no test catches.
  */
@@ -354,5 +358,177 @@ describe('the share-stub generator quotes the same words', () => {
       FRAME_ORDER.map((id) => [id, [frameName(id, 'ru'), frameName(id, 'en')]])
     );
     expect(stubs.FRAME_LABEL).toEqual(want);
+  });
+});
+
+/**
+ * `tools/share-card.mjs` draws the preview host's cards too (`preview/worker.mjs`):
+ * the homebrew item, shared list, print set and table cards. Its words, its path line
+ * and its filter reader are copies of the app's; `tools/derived.js` writes the table
+ * counts into `names.json` by the app's own rules. These cases hold each copy equal.
+ */
+describe('the preview card quotes the app', () => {
+  const require_ = createRequire(import.meta.url);
+  type Words = Record<string, string>;
+  const share = require_('../../../tools/share-card.mjs') as {
+    TEXT: Record<Lang, Words>;
+    PATH_TEXT: Record<Lang, Words>;
+    homebrewSubtitle: (it: Record_, lang: Lang) => string;
+    decodeFilter: (segment: string, groups: readonly string[]) => Record<string, string[]>;
+    LABEL_GROUPS: Record<string, readonly string[]>;
+  };
+  const derived = require_('../../../tools/derived.js') as {
+    namesJson: (l: Loot) => string;
+  };
+  const WORDS = [
+    'srcHomebrew',
+    'hbTag',
+    'notFound',
+    'notFoundSub',
+    'andMore',
+    'itemsN',
+    'untitled',
+    'shareLinkGm',
+    'shareGone',
+    'shareGoneSub',
+    'printTitle',
+    'signInToPrint',
+    'printSetGone',
+    'communityLabel',
+    'commF',
+    'frameF'
+  ] as const;
+
+  it.each(['ru', 'en'] as const)('copies the words of dict.ts (%s)', (lang) => {
+    const t = dict(lang);
+    for (const key of WORDS) expect(share.TEXT[lang][key], key).toBe(t[key]);
+    expect(share.PATH_TEXT[lang]['alt']).toBe(t.alt);
+  });
+
+  it.each(['ru', 'en'] as const)(
+    'draws a homebrew path line as whereFrom and eqLine do (%s)',
+    (lang) => {
+      const t = dict(lang);
+      const labels: StatLabels = {
+        tier: t.tier,
+        thresholds: t.eqTh,
+        armorScore: t.eqScore,
+        artifact: t.voaArtifact1
+      };
+      const book = { key: 'hb_aaaaaaaaaaaaaaaa', en: 'Alder Workshop', ru: 'Мастерская Ольхи' };
+      const section = { key: 'hb_bbbbbbbbbbbbbbbb', en: 'Blades', ru: 'Клинки' };
+      const records = [
+        {
+          id: 'hb_cccccccccccccccc',
+          src: 'homebrew',
+          kind: 'item',
+          en: 'A',
+          ru: 'А',
+          ende: '',
+          rud: ''
+        },
+        {
+          id: 'hb_dddddddddddddddd',
+          src: 'homebrew',
+          kind: 'equip',
+          en: 'B',
+          ru: 'Б',
+          ende: '',
+          rud: '',
+          book: { ...book, section },
+          eq: {
+            t: 'weapon',
+            tier: 2,
+            cls: 'phy',
+            tr: 'agility',
+            rg: 'melee',
+            dmg: 'd8+2',
+            dt: 'phy',
+            bu: 1
+          }
+        },
+        {
+          id: 'hb_eeeeeeeeeeeeeeee',
+          src: 'homebrew',
+          kind: 'equip',
+          tier: 'A',
+          en: 'C',
+          ru: 'В',
+          ende: '',
+          rud: '',
+          book,
+          eq: { t: 'armor', tier: 'A', th: [9, 20], as: 5 }
+        }
+      ] as unknown as Record_[];
+      for (const it of records) {
+        const want = [whereFrom(it, lang), it.eq ? eqLine(it, lang, labels) : '']
+          .filter(Boolean)
+          .join(' · ');
+        expect(share.homebrewSubtitle(it, lang)).toBe(want);
+      }
+    }
+  );
+
+  it('reads a filter as decodeFilter does on the two labelled tables', () => {
+    const cases: [TableId, string][] = [
+      ['community', 'f_comm-Loreborne-Orderborne'],
+      ['community', 'f_comm-Highborne-Highborne'],
+      ['community', 'f_'],
+      ['other_frames', 'f_frame-beast_feast-colossus'],
+      ['other_frames', 'f_kind-armor.frame-colossus'],
+      ['other_frames', 'f_kind-armor_frame-colossus'],
+      ['other_frames', 'f_frame-beast_feast'],
+      ['other_frames', 'tail']
+    ];
+    for (const [table, segment] of cases) {
+      expect(share.LABEL_GROUPS[table]).toEqual(groupsFor(table));
+      expect(share.decodeFilter(segment, groupsFor(table)), segment).toEqual(
+        decodeFilter(segment, groupsFor(table))
+      );
+    }
+  });
+
+  it('writes the counts the signed-out tables page draws into names.json', () => {
+    const names = JSON.parse(derived.namesJson(LOOT)) as {
+      tables: Record<string, { n: number }>;
+      communities: Record<string, { ru: string; n: number }>;
+      frames: Record<string, { n: number }>;
+    };
+    const altCount = (kind: 'item' | 'consumable'): number =>
+      (Object.keys(LOOT.alt?.[kind] ?? {}) as Rarity[]).reduce(
+        (sum, r) =>
+          sum +
+          index.altColumn(kind, r, 'hope').length +
+          index.altColumn(kind, r, 'fear').length,
+        0
+      );
+    const want: Record<string, number> = {};
+    for (const t of TABLE_IDS) {
+      if (t === 'homebrew') continue;
+      if (t === 'other_starting' || t === 'other_frames')
+        want[t] = otherTableRows(index, t).length;
+      else if (t === 'alt_item') want[t] = altCount('item');
+      else if (t === 'alt_consumable') want[t] = altCount('consumable');
+      else if (EQ_TABLE[t]) want[t] = equipOfKind(index, EQ_TABLE[t]).length;
+      else want[t] = index.rows.get(t)?.length ?? -1;
+    }
+    expect(Object.keys(want)).toHaveLength(17);
+    expect(Object.fromEntries(Object.entries(names.tables).map(([k, v]) => [k, v.n]))).toEqual(
+      want
+    );
+    expect(names.communities).toEqual(
+      Object.fromEntries(
+        communities(index).map((c) => [
+          c.id,
+          { ru: c.ru, n: communityGroup(index, c.id).length }
+        ])
+      )
+    );
+    const frameRows = otherTableRows(index, 'other_frames');
+    expect(names.frames).toEqual(
+      Object.fromEntries(
+        FRAME_ORDER.map((f) => [f, { n: frameRows.filter((x) => x.frame === f).length }])
+      )
+    );
   });
 });

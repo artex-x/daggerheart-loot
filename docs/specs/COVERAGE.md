@@ -836,6 +836,19 @@ not run. CI's `browser` matrix runs the rows as five shards
   name, and `get_print_set` then answers both entries without `img`); and
   no API role reaching the key, the released names, `art_delete` or the
   triggers.
+  `link-previews.test.mjs` holds the preview host's two card reads
+  (`20261014120200_link_previews.sql`), every seed in a rolled-back
+  transaction: EXECUTE for `anon` and `authenticated`, the ICU collations;
+  `get_item_preview` null for a null or unknown id, `22023` for a language
+  that is not `ru` or `en` (null included), the drawn item keys, `img` and
+  the set card equal to `get_homebrew_item`'s, each line's count equal to
+  the one derived from its `related` and only its names, the ICU order
+  equal to `localeCompare` in both languages, the 1200-byte cut with the
+  count kept, at most 32768 bytes at 300 and 1000 related rows at the
+  maxima, the same answer for anon, a third account and the owner;
+  `get_shared_list_preview` null exactly when `get_shared_list` is, the
+  name, the note cut to 1000 characters and the audience's count, no GM
+  note, entry note or price, at most 4096 bytes with 300 entries.
   `print-sets.test.mjs` holds the print sets
   (`20261014120100_print_sets.sql`), every seed in a rolled-back
   transaction but the two-connection cases: EXECUTE for `authenticated`
@@ -1485,6 +1498,17 @@ empty or missing prefix, a prefix that matches nothing and a Russian stub).
 The real Telegram connection (`client.mjs`) and the real CDN fetch
 (`live.mjs`) are deliberately outside it - thin wrappers around a live network, where the only honest proof is
 Telegram and the CDN themselves. See `docs/tg-preview.md`.
+
+`preview/worker.test.mjs` is a separate suite again, run under `node
+--test` as the stage `test:preview` of half 1: it covers the preview host's
+routes through its fetch handler with a fake `fetch` - every family's 200,
+404, 503 and oversize cards, the host guard, the 302 home and the 405, the
+injection cases, the byte bounds with a cancelled stream, the lines and the
+fold, the path runs past 2048 characters, the catch-all 503, and every
+`serve` case of `docs/fixtures/urls/preview.json`. The real Workers runtime,
+the real reads and the CPU time are outside it: `wrangler pages deployment
+tail` measures them on the deployed host (`.claude/README.md`, "Preview
+host").
 
 `tools/artwork/lib.test.mjs` is a separate suite again, run under `node
 --test` as its own step in `npm run check`, right after

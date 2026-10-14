@@ -44,12 +44,14 @@ import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
+  cardVersion,
   homebrewItemHash,
   itemHash,
   keepsTicks,
   legacySource,
   PACK_MARK,
   parseHash,
+  previewUrl,
   printSetHash,
   PRINT_MAX,
   recordUrl,
@@ -1706,20 +1708,23 @@ export class AppState {
     return { base: this.env.router.base() };
   }
 
-  /** The app's own address, for a link to a section or a filtered table. An
-   *  address to hand somebody else, in the language on screen, so a messenger
-   *  builds its preview in that language. */
-  linkTo(hash: string): string {
-    return appUrl(this.site, hash, this.lang);
+  /** An address to hand somebody else, in the language on screen, so a messenger
+   *  builds its preview in that language. A card family (an item, a share link, a
+   *  print set, a catalog table) goes through the preview host, so a messenger draws
+   *  its own card; `v` is that card's version. Any other address, and every address in
+   *  a build with no preview host, is the app's own. */
+  linkTo(hash: string, v?: string): string {
+    const card = this.env.preview ? previewUrl(this.env.preview, hash, this.lang, v) : null;
+    return card ?? appUrl(this.site, hash, this.lang);
   }
 
-  /** A record's address to hand somebody else, in the language on screen, so a messenger
-   *  builds its preview in that language: a homebrew item's `#/h/` address in the app, else
-   *  the record's stub page. */
+  /** A record's address to hand somebody else, in the language on screen: a homebrew item's
+   *  preview link, versioned by the record (its `#/h/` address in a build with no preview
+   *  host), else the record's stub page. Every record with a `hid` is saved. */
   linkToRecord(it: Record_): string {
     const hid = isHomebrewRecord(it) ? it.hid : undefined;
     return typeof hid === 'string'
-      ? appUrl(this.site, itemHash(hid), this.lang)
+      ? this.linkTo(itemHash(hid), cardVersion(it))
       : recordUrl(this.site, it.id, this.lang);
   }
 

@@ -2066,6 +2066,7 @@ function testEditGuard() {
   const denyCases = [
     ['#31 data.json', path.join(scratchRoot, 'data.json'), 'node tools/build.js'],
     ['#32 catalog.csv', path.join(scratchRoot, 'catalog.csv'), null],
+    ['#32a names.json', path.join(scratchRoot, 'names.json'), 'node tools/build.js'],
     ['#33 i/cc1.html', path.join(scratchRoot, 'i', 'cc1.html'), null],
     ['#33b en/index.html', path.join(scratchRoot, 'en', 'index.html'), 'node tools/build.js'],
     [

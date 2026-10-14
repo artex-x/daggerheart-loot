@@ -89,6 +89,9 @@ describe('selects', () => {
     [VITEST, 'tests/derived.js', false],
     [VITEST, 'tools/build.js', false],
     [VITEST, 'tools/build-share-pages.js', true],
+    [VITEST, 'tools/share-card.mjs', true],
+    [VITEST, 'tools/derived.js', true],
+    [VITEST, 'preview/worker.mjs', false],
     [VITEST, 'img/x.webp', false],
     [VITEST, 'data.js', true],
     [VITEST, 'README.md', false],
@@ -363,6 +366,7 @@ describe('the stage table', () => {
         'dataint',
         'selftest',
         'test:tg-preview',
+        'test:preview',
         'test:artwork',
         'test:supabase',
         'test:check-site',
@@ -626,9 +630,14 @@ describe('G1: vitest reads only paths VITEST selects', () => {
     }
   }
   // G1 does not follow the reads of a required module: the share-stub
-  // generator loads data.js when it loads.
+  // generator loads data.js and the card module when it loads.
   if (reads.has('tools/build-share-pages.js')) {
     reads.set('data.js', 'tools/build-share-pages.js, which a vitest file requires');
+    if (!reads.has('tools/share-card.mjs'))
+      reads.set(
+        'tools/share-card.mjs',
+        'tools/build-share-pages.js, which a vitest file requires'
+      );
   }
 
   it('finds the reads it knows of, so a broken extractor cannot pass', () => {
@@ -641,6 +650,8 @@ describe('G1: vitest reads only paths VITEST selects', () => {
       'docs/fixtures/lists',
       'docs/fixtures/homebrew-file/export.json',
       'tools/build-share-pages.js',
+      'tools/share-card.mjs',
+      'tools/derived.js',
       'data.js'
     ]) {
       assert.ok(reads.has(p), `G1 no longer finds ${p}`);

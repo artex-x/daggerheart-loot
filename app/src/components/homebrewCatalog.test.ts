@@ -89,6 +89,7 @@ function page(
     as?: 'gm1' | 'gm2' | 'gm3' | null;
     cloud?: FakeCloud | null;
     clipboard?: ReturnType<typeof fakeClipboard>;
+    preview?: string;
   } = {}
 ) {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -105,7 +106,8 @@ function page(
       router,
       storage: memoryStorage(),
       data: fakeData(LOOT),
-      ...(opts.clipboard ? { clipboard: opts.clipboard } : {})
+      ...(opts.clipboard ? { clipboard: opts.clipboard } : {}),
+      ...(opts.preview ? { preview: opts.preview } : {})
     })
   });
   return { ...view, cloud, router };
@@ -402,6 +404,19 @@ describe('#/tables/homebrew', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: t.tableLink }));
     expect(one.last.text).toMatch(/#\/tables\/homebrew$/);
+  });
+
+  it('keeps the app address of the table link in a build with a preview host', async () => {
+    const clip = fakeClipboard();
+    page('#/tables/homebrew/f_src-hb', {
+      clipboard: clip,
+      preview: 'https://daggerheart-loot.pages.dev'
+    });
+    await waitFor(() => {
+      expect(rowIds()).toHaveLength(3);
+    });
+    await userEvent.click(screen.getByRole('button', { name: t.tableLink }));
+    expect(clip.last.text).toBe('https://example.test/#/tables/homebrew/f_src-hb');
   });
 
   it('heads a chip by its sections, then «Без раздела», and narrows to one section', async () => {

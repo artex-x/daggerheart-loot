@@ -8,7 +8,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ACCOUNT_HASH,
+  cardVersion,
   HOMEBREW_HASH,
+  previewUrl,
   homebrewItemHash,
   homebrewTabHash,
   itemHash,
@@ -678,6 +680,52 @@ describe('a link to hand somebody else', () => {
   it('lands on an address the app can read back', () => {
     const r = parseHash(appUrl(host, recordHash('w1')).split('/loot/')[1] ?? '');
     expect(r).toEqual({ kind: 'record', id: 'w1' });
+  });
+});
+
+interface PreviewFixture {
+  origin: string;
+  build: { hash: string; lang: 'ru' | 'en'; v?: string; url: string | null; why: string }[];
+}
+
+const PREVIEW = JSON.parse(
+  readFileSync(
+    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'urls', 'preview.json'),
+    'utf8'
+  )
+) as PreviewFixture;
+
+describe('a preview link, docs/fixtures/urls/preview.json', () => {
+  for (const c of PREVIEW.build) {
+    it(`${c.hash} (${c.lang}) - ${c.why}`, () => {
+      expect(previewUrl(PREVIEW.origin, c.hash, c.lang, c.v)).toBe(c.url);
+    });
+  }
+
+  it('adds no v when none is given, and every link reads back as the hash', () => {
+    expect(previewUrl(PREVIEW.origin, printSetHash('AbCdEf123456'), 'ru')).toBe(
+      PREVIEW.origin + '/p/AbCdEf123456'
+    );
+    for (const c of PREVIEW.build) {
+      if (c.url === null) continue;
+      const path = new URL(c.url).pathname.replace(/^\/en\//, '/');
+      expect(parseHash('#' + path)).toEqual(parseHash(c.hash));
+    }
+  });
+
+  it('answers null for a family with nothing after it', () => {
+    for (const hash of ['#/h/', '#/s/', '#/p/', '#/tables/'])
+      expect(previewUrl(PREVIEW.origin, hash, 'ru')).toBeNull();
+  });
+});
+
+describe('cardVersion', () => {
+  it('is the same for the same card and another for a changed one, in base 36', () => {
+    const a = cardVersion(['Лавка', 'для игроков', 12]);
+    expect(a).toMatch(/^[0-9a-z]{1,8}$/);
+    expect(cardVersion(['Лавка', 'для игроков', 12])).toBe(a);
+    expect(cardVersion(['Лавка', 'для игроков', 11])).not.toBe(a);
+    expect(cardVersion({ b: 1, a: 2 })).toBe(cardVersion({ a: 2, b: 1 }));
   });
 });
 
