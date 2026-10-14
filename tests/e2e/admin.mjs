@@ -25,6 +25,18 @@ function fail(what, error) {
   return new Error('e2e: ' + what + ' - ' + redactAddresses(error?.message ?? 'no answer'));
 }
 
+/** Polls a public address every second until it answers 400 or 404 (a deleted file), `ms`
+ * at most; answers whether it did. The read bypasses the HTTP cache: a CDN copy that
+ * outlives the delete is what the poll measures. */
+export async function addressGone(url, ms = 30_000) {
+  for (let waited = 0; waited <= ms; waited += 1000) {
+    const { status } = await fetch(url, { cache: 'no-store' });
+    if (status === 400 || status === 404) return true;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return false;
+}
+
 export function adminClient(env) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const admin = createClient(env.E2E_SUPABASE_URL, env.E2E_SUPABASE_SECRET_KEY, NODE_AUTH);
@@ -169,7 +181,7 @@ export async function homebrewOf(admin, userId) {
       .eq('owner_id', userId),
     admin
       .from('homebrew_items')
-      .select('id,key,book_id,content,revision')
+      .select('id,key,book_id,content,revision,art')
       .eq('owner_id', userId)
   ]);
   if (books.error) throw fail('reading homebrew sources', books.error);

@@ -218,13 +218,16 @@ export interface ItemRow {
   key: string;
   book_id: string | null;
   content: HomebrewContent;
+  /** The item's picture: an own file `p/<32 hex>.<ext>` or a catalog basename; absent or
+   *  null for none (`lib/art.ts`). */
+  art?: string | null;
   revision: number;
   created_at: string;
   updated_at: string;
 }
 
 export type NewBookRow = Pick<BookRow, 'id' | 'key' | 'content'>;
-export type NewItemRow = Pick<ItemRow, 'id' | 'key' | 'book_id' | 'content'>;
+export type NewItemRow = Pick<ItemRow, 'id' | 'key' | 'book_id' | 'content' | 'art'>;
 
 export interface NamedKey {
   key: string;
@@ -691,13 +694,14 @@ function namedOf(key: string, v: { en?: string; ru?: string }): NamedKey {
  *  artifact, and its source with the section the source holds. `book` null is the default
  *  source. Of `cards`, the set card under the item's `set` and the rule cards its `refs`
  *  names are embedded in `cards`, in the catalog's card shape; absent when none is. `hid`,
- *  when given, is the item's row id. */
+ *  when given, is the item's row id, and `art` the row's picture, drawn as `img`. */
 export function recordOf(
   key: string,
   c: HomebrewContent,
   book: BookRef | null,
   cards: readonly CardRef[] = [],
-  hid?: string
+  hid?: string,
+  art?: string | null
 ): HomebrewRecord {
   const { section, ...rest } = c;
   const out: HomebrewRecord = {
@@ -710,6 +714,7 @@ export function recordOf(
     rud: filled(c.rud, c.ende)
   };
   if (hid !== undefined) out.hid = hid;
+  if (art) out.img = art;
   if (c.eq?.tier === 'A') out.tier = 'A';
   const sets: Record<string, SetCard> = {};
   const refs: Record<string, RefCard> = {};
@@ -734,11 +739,14 @@ export function recordOf(
 }
 
 /** Returns the content a record was made from (`recordOf`'s inverse): its own fields with
- *  no `id`, `src`, `hid`, source or embedded cards, and no record `tier` of an artifact,
- *  which its stat block holds. The item lands in the default source. */
+ *  no `id`, `src`, `hid`, picture, source or embedded cards, and no record `tier` of an
+ *  artifact, which its stat block holds. The item lands in the default source; a picture
+ *  travels by the row id, never in content (`homebrew_content_valid` refuses `img`). */
 export function contentOfRecord(r: HomebrewRecord): HomebrewContent {
   const rest: Record<string, unknown> = { ...r };
-  for (const k of ['id', 'src', 'hid', 'book', 'cards']) Reflect.deleteProperty(rest, k);
+  for (const k of ['id', 'src', 'hid', 'img', 'book', 'cards']) {
+    Reflect.deleteProperty(rest, k);
+  }
   const out = rest as unknown as HomebrewContent & { tier?: unknown };
   if (out.kind === 'equip') delete out.tier;
   return out;

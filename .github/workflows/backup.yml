@@ -4,8 +4,9 @@ name: backup
 # each file encrypted to the owner's `age` public key before it leaves this
 # job. Nothing unencrypted is uploaded - a public repository's artifacts are
 # readable by anyone. The job fails closed: no recipient, a failed dump or no
-# file to upload each turn it red. Restore procedure: .claude/README.md,
-# "Backups and restore".
+# file to upload each turn it red. Sunday's run, or a dispatch with
+# `art: true`, also copies the public picture bucket as art.tar.age.
+# Restore procedure: .claude/README.md, "Backups and restore".
 
 on:
   # 03:17 UTC. GitHub disables this after 60 days without a push; any push
@@ -14,6 +15,11 @@ on:
   schedule:
     - cron: '17 3 * * *'
   workflow_dispatch:
+    inputs:
+      art:
+        description: Copy the pictures on this run too (every Sunday run copies them)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -78,7 +84,34 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
           RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
 
+      # The weekly picture copy: the bucket is public, so the script lists the
+      # names over the connection string and downloads the public addresses,
+      # 8 at a time. The plain files go once the encrypted tar exists.
+      - name: Copy and encrypt the pictures
+        run: |
+          set -euo pipefail
+          if [ "$(date -u +%u)" != 7 ] && [ "$ART" != true ]; then
+            echo "pictures: not tonight (Sunday's run, or a dispatch with art: true)"
+            exit 0
+          fi
+          out="$RUNNER_TEMP/backup"
+          node tools/supabase/backup-art.mjs "$out/art"
+          tar -cf "$out/art.tar" -C "$out" art
+          rm -rf "$out/art"
+          # A temporary name: a failed `age` leaves no partial art.tar.age to upload.
+          age -r "$RECIPIENT" -o "$out/art.tar.part" "$out/art.tar"
+          mv "$out/art.tar.part" "$out/art.tar.age"
+          rm "$out/art.tar"
+          ls -l "$out"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL_PROD }}
+          RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          ART: ${{ inputs.art }}
+
+      # The night's dump uploads even when the picture step failed; the job
+      # stays red through that step.
       - uses: actions/upload-artifact@v5
+        if: ${{ !cancelled() && steps.dump.outcome == 'success' }}
         with:
           name: backup-${{ steps.dump.outputs.date }}
           path: ${{ runner.temp }}/backup/*.age

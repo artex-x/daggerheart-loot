@@ -32,6 +32,7 @@ import {
   dumpPublicTables,
   truncateStatement,
   drillReport,
+  tarNames,
   parseRestoreArgs,
   safetyStamp,
   staleSafetyStamps,
@@ -644,6 +645,12 @@ describe('drillReport', () => {
       'cleanup: temp files deleted, local database reset'
     ]);
     noEmail(lines);
+  });
+
+  it('reports the weekly picture copy when the artifact held it', () => {
+    const { pass, lines } = drillReport({ ...base(), art: { files: 210 } });
+    assert.equal(pass, true);
+    assert.equal(lines[2], 'decrypt: art.tar.age ok, 210 picture files');
   });
 
   it('fails on a count mismatch and lists the auth table that differs', () => {
@@ -1270,5 +1277,42 @@ describe('prodReport', () => {
     for (const done of [base(), { ...early, confirmed: false }]) {
       assert.deepEqual(prodReport(done).lines.slice(0, first.length), first);
     }
+  });
+});
+
+describe('tarNames', () => {
+  /* One ustar header block: the name, an octal size and a type. */
+  const header = (name, size, type) => {
+    const b = new Uint8Array(512);
+    const put = (at, text) => b.set(new TextEncoder().encode(text), at);
+    put(0, name);
+    put(124, size.toString(8).padStart(11, '0'));
+    put(156, type);
+    put(257, 'ustar');
+    return b;
+  };
+  const tar = (...blocks) => {
+    const out = new Uint8Array(blocks.reduce((n, b) => n + b.length, 0) + 1024);
+    let at = 0;
+    for (const b of blocks) {
+      out.set(b, at);
+      at += b.length;
+    }
+    return out;
+  };
+
+  it('lists the regular files in order, past a directory and a file body', () => {
+    const bytes = tar(
+      header('art/', 0, '5'),
+      header('art/p/aa.webp', 600, '0'),
+      new Uint8Array(1024),
+      header('art/t/aa.webp', 0, '0')
+    );
+    assert.deepEqual(tarNames(bytes), ['art/p/aa.webp', 'art/t/aa.webp']);
+  });
+
+  it('refuses bytes that are not a tar archive, or one with no end', () => {
+    assert.throws(() => tarNames(new Uint8Array(512).fill(1)), /not a tar archive/);
+    assert.throws(() => tarNames(header('a', 0, '0')), /no end/);
   });
 });

@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
 - 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md)
 - 2026-10-08 - [A filter row offers only values the drawn rows answer, on every page](decisions/2026-10-08-a-filter-row-offers-only-values-the-drawn-rows-answer.md)
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)

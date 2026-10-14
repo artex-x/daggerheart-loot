@@ -1,7 +1,7 @@
 /*
   `npm run check:db`: the database layer (layer 3) against a local Supabase
-  stack in Docker. Starts the database, Auth, Realtime and Kong when the
-  stack is down, or restarts a stack that runs without Auth or Realtime;
+  stack in Docker. Starts the database, Auth, Realtime, Storage and Kong when
+  the stack is down, or restarts a stack that runs without one of them;
   resets it to supabase/migrations/, runs every tests/db/*.test.mjs
   and prints one final `check:db: PASS`, `check:db: FAIL` or `check:db: BUSY`
   line, which .claude/hooks/check-observer.mjs reads to arm the commit gate.
@@ -109,10 +109,10 @@ function runSuite() {
     if (!env[name]) env[name] = 'unused-local-stack';
   }
 
-  // A stack another run started without Auth or Realtime (an older
+  // A stack another run started without Auth, Realtime or Storage (an older
   // checkout's excludes) is started again with this list.
   const id = localProjectId(toml);
-  const complete = ['auth', 'realtime', 'kong'].every((s) =>
+  const complete = ['auth', 'realtime', 'storage', 'kong'].every((s) =>
     runningContainer(`supabase_${s}_${id}`)
   );
   let status = complete ? stackStatus(env) : null;

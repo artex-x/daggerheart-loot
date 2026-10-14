@@ -259,7 +259,9 @@ describe('the retentions', () => {
       out.first.requests >= 3 && out.first.shares >= 1 && out.first.notices >= 2,
       JSON.stringify(out.first)
     );
-    assert.deepEqual(out.second, { requests: 0, shares: 0, runs: 0, notices: 0 });
+    // files is null: the local stack holds no Vault secret of the file deletion
+    // (tests/db/homebrew-art.test.mjs seeds them for its cases).
+    assert.deepEqual(out.second, { requests: 0, shares: 0, runs: 0, notices: 0, files: null });
   });
 });
 

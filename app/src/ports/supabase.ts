@@ -21,6 +21,7 @@ import {
   type SharedRow,
   type ShareRow
 } from '../lib/cloudLists.js';
+import { newArtName, thumbOf } from '../lib/art.js';
 import {
   canonJson,
   keyFrom,
@@ -102,6 +103,9 @@ function refusalOf(error: {
   message?: string | undefined;
   details?: string | null | undefined;
 }): Exclude<ListWrite, { ok: true } | { error: 'network' }> {
+  if (error.code === 'P0001' && error.message === 'homebrew: art missing') {
+    return { ok: false, error: 'refused', reason: 'artGone' };
+  }
   const limit = error.code === 'P0001' ? LIMIT.exec(error.message ?? '') : null;
   if (limit?.[1]) {
     const value = Number(error.details);
@@ -148,6 +152,28 @@ const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
    again, so it is not `network`. */
 const TOO_SLOW: ListWrite = { ok: false, error: 'refused', reason: 'tooSlow' };
 const UNSAVED: HomebrewSaved = { ok: false, error: 'network' };
+
+/** The public bucket of own pictures (`supabase/migrations/20261014120000_homebrew_art.sql`). */
+const ART_BUCKET = 'homebrew-art';
+/* A day, against readers' egress: the CDN serves a deleted file's public address until its
+   cache age runs out (the hosted E2E read 200 after the delete, 2026-10-14), so the age
+   bounds how long a removed picture stays readable (docs/decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md). */
+const ART_CACHE = '86400';
+
+/** Returns an upload's refusal: the same name again (409) is this caller's retry, so ok;
+ *  the insert policy's refusal (403) is the picture room, because the client never sends
+ *  a bad name; a lapsed session, a server fault or no answer is `network`. */
+function uploadRefusal(error: {
+  status?: number | undefined;
+  statusCode?: string | undefined;
+}): ListWrite {
+  const code = error.statusCode ?? '';
+  if (code === '409') return WRITTEN;
+  if (code === '403') return { ok: false, error: 'limit', key: 'homebrew_art', value: null };
+  const status = error.status ?? 0;
+  if (status === 0 || status === 401 || status >= 500 || code === '401') return NETWORK;
+  return { ok: false, error: 'refused' };
+}
 
 /** Returns an `apply` call's own failure: `fault`, `network`, or `refused`. */
 function callFailure(answer: Answer): ListWrites {
@@ -281,7 +307,7 @@ const NOTICE_SELECT = 'id,list_id,item_key,hid,kind,name,created_at,read_at';
 /* The author's homebrew rows; row level security keeps them to the author
    (tests/db/homebrew.test.mjs). */
 const BOOK_SELECT = 'id,key,content,revision,created_at,updated_at';
-const ITEM_SELECT = 'id,key,book_id,content,revision,created_at,updated_at';
+const ITEM_SELECT = 'id,key,book_id,content,art,revision,created_at,updated_at';
 const CARD_SELECT = 'id,key,kind,book_id,content,revision,created_at,updated_at';
 type HomebrewTable = 'homebrew_books' | 'homebrew_items' | 'homebrew_cards';
 /* `import_homebrew`'s seven counts, each a whole number; a key past them is ignored, so a
@@ -670,8 +696,14 @@ export function createCloud(
           const data: unknown = r0.data;
           if (r0.error || !Array.isArray(data)) return { ok: false };
           for (const row of data as unknown[]) {
-            const r = row as { hid?: unknown; item?: unknown } | null;
-            if (r && typeof r.hid === 'string') out.push({ hid: r.hid, item: r.item });
+            const r = row as { hid?: unknown; item?: unknown; img?: unknown } | null;
+            if (r && typeof r.hid === 'string') {
+              out.push(
+                r.img === undefined
+                  ? { hid: r.hid, item: r.item }
+                  : { hid: r.hid, item: r.item, img: r.img }
+              );
+            }
           }
         }
         return { ok: true, items: out };
@@ -953,6 +985,33 @@ export function createCloud(
           .abortSignal(signal)
       )
     );
+  const art = () => client.storage.from(ART_BUCKET);
+  /* An upload has no abort: past the time it answers network, and the retry sends the
+     same name, which answers ok. */
+  const uploaded = async (name: string, blob: Blob): Promise<ListWrite> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const late = new Promise<ListWrite>((resolve) => {
+        timer = setTimeout(() => {
+          resolve(NETWORK);
+        }, IMPORT_TIMEOUT_MS);
+      });
+      return await Promise.race([
+        art()
+          .upload(name, blob, {
+            upsert: false,
+            cacheControl: ART_CACHE,
+            contentType: blob.type
+          })
+          .then(({ error }) => (error ? uploadRefusal(error) : WRITTEN)),
+        late
+      ]);
+    } catch {
+      return NETWORK;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
   const homebrewRemove = (table: HomebrewTable, id: string) =>
     written(() =>
       timed((signal) => client.from(table).delete().eq('id', id).abortSignal(signal))
@@ -1000,9 +1059,68 @@ export function createCloud(
       homebrewUpdate(
         'homebrew_items',
         id,
-        { content: patch.content, book_id: patch.book_id },
+        patch.art === undefined
+          ? { content: patch.content, book_id: patch.book_id }
+          : { content: patch.content, book_id: patch.book_id, art: patch.art },
         revision
       ),
+    async setArt(id, name, onlyIfNone) {
+      if (!onlyIfNone) return homebrewUpdate('homebrew_items', id, { art: name }, null);
+      try {
+        const answer = await timed((signal) =>
+          client
+            .from('homebrew_items')
+            .update({ art: name })
+            .eq('id', id)
+            .is('art', null)
+            .select('revision')
+            .abortSignal(signal)
+        );
+        const failed = writeOf(answer);
+        if (!failed.ok) return failed;
+        const found: unknown = answer.data;
+        const row = Array.isArray(found)
+          ? (found[0] as { revision?: unknown } | undefined)
+          : null;
+        if (typeof row?.revision === 'number') return { ok: true, revision: row.revision };
+        /* No row matched: gone, or it holds a picture, which stays. */
+        const held = await timed((signal) =>
+          client
+            .from('homebrew_items')
+            .select('revision')
+            .eq('id', id)
+            .abortSignal(signal)
+            .maybeSingle()
+        );
+        if (held.error) return UNSAVED;
+        const now = held.data as { revision?: unknown } | null;
+        if (!now) return { ok: false, error: 'gone' };
+        return typeof now.revision === 'number'
+          ? { ok: true, revision: now.revision }
+          : UNSAVED;
+      } catch {
+        return UNSAVED;
+      }
+    },
+    uploadArt: uploaded,
+    async copyArt(img) {
+      try {
+        const name = newArtName(img.endsWith('.jpg') ? 'jpg' : 'webp', crypto.randomUUID());
+        const files = await Promise.all(
+          [img, thumbOf(img)].map((n) =>
+            timed((signal) => fetch(art().getPublicUrl(n).data.publicUrl, { signal }))
+          )
+        );
+        if (!files.every((r) => r.ok)) return { ok: false };
+        const [full, thumb] = await Promise.all(files.map((r) => r.blob()));
+        if (!full || !thumb) return { ok: false };
+        if (!(await uploaded(name, full)).ok) return { ok: false };
+        if (!(await uploaded(thumbOf(name), thumb)).ok) return { ok: false };
+        return { ok: true, name };
+      } catch {
+        return { ok: false };
+      }
+    },
     removeItem: (id) => homebrewRemove('homebrew_items', id),
     createCard: (row) => homebrewCreate('homebrew_cards', row),
     updateCard: (id, patch, revision) =>

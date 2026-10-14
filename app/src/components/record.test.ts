@@ -33,6 +33,7 @@ import {
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 
@@ -1195,9 +1196,43 @@ describe('an own homebrew item', () => {
       '#/homebrew/' + AXE
     );
     expect(screen.getByRole('button', { name: 'Скопировать ссылку' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Скопировать изображение' })).toBeNull();
+    /* The seeded axe carries the catalog picture ci1.webp. */
+    expect(screen.getByRole('button', { name: 'Скопировать изображение' })).toBeInTheDocument();
     expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
+  });
+
+  it("draws an own picture's 640 px file, reports a failed load, then draws the placeholder", () => {
+    const img = `p/${'c'.repeat(32)}.jpg`;
+    const it = recordOf(
+      'hb_lanternaaaaaaaaa',
+      { kind: 'item', ru: 'Фонарь' },
+      null,
+      [],
+      'id',
+      img
+    );
+    const failed = vi.fn();
+    const props = {
+      it,
+      index: buildIndex({ items: {} }),
+      lang: 'ru' as const,
+      onopen: () => {}
+    };
+    const drawn = render(RecordCard, {
+      props: { ...props, artBroken: false, onartfail: failed }
+    });
+    const pic = drawn.container.querySelector('.card-media img');
+    expect(pic?.getAttribute('src')).toBe(ART_BASE + img);
+    pic?.dispatchEvent(new Event('error'));
+    expect(failed).toHaveBeenCalledWith('hb_lanternaaaaaaaaa');
+    drawn.unmount();
+    const broken = render(RecordCard, {
+      props: { ...props, artBroken: true, onartfail: failed }
+    });
+    expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
+      'img/_none.webp'
+    );
   });
 
   it('links its own set and rule card to their tabs on its page and in the modal of a set member', async () => {

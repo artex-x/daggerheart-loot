@@ -1106,6 +1106,16 @@ browser lists writable after the date.
   попробуйте ещё раз.»; any other refusal «Сервер не принял копию: данные в
   аккаунте изменились. Нажмите «Сохранить себе» ещё раз.». The account's read
   after the write decides: a lost answer whose copy landed is a save.
+  The copy takes the item's picture by the copy's row id, never in its
+  content: a catalog picture is named as it is, and an own file of the
+  author is copied to a file of the reader's under a new name, so the
+  author's delete never removes it. The picture is written before the rows
+  are relinked, so a tab closed in the middle leaves the rows on the
+  author's item and the next press finishes it; the button stays busy
+  meanwhile. A failed copy appends «Картинку скопировать не получилось -
+  копия сохранена без неё.» to the toast, and the copy and the relink still
+  land. The press on a held copy without a picture (the relink never ran)
+  gives it the author's picture and never replaces one the copy holds.
 - A tag and a table path are two different things, and a record draws each in
   its own place. The line under a record page's heading is the record's
   complete table path - the group, its sub-table, and, for the two tables
@@ -1239,7 +1249,14 @@ browser lists writable after the date.
   when no other member of the set is the reader's.
 - A row - in a table, a search, a shared list or a list page - and the lists
   index strip draw the 160 px thumbnail `img/thumb/<asset>`; tiles, cards,
-  the record page, print and copy-image draw the 640 px file.
+  the record page, print and copy-image draw the 640 px file. An own
+  homebrew item's picture («Картинка» in the editor) draws on every one of
+  these surfaces, the Items tab, `#/h/<uuid>` for every reader and every
+  list that links the item, `#/s/` too: its 160 px file `t/<name>` on a
+  row and its 640 px file `p/<name>` elsewhere, both public files of the
+  Supabase bucket (`META.md` section 3); a picture chosen from the catalog
+  draws as the catalog's. A list row of another account's item draws the
+  author's current picture.
 - A record with no artwork falls back to `_none.webp` at the size the site
   draws, and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
@@ -1441,7 +1458,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   снаряжения», «Источник» (with «+ Новый источник...», which makes the
   source at once and selects it), for a named source «Раздел» (with «+
   Новый раздел...»; a source change resets it), «Название» * (at most 120
-  characters), «Описание» (at most 3000, a counter past 2500), for loot and
+  characters), «Описание» (at most 3000, a counter past 2500), «Картинка»
+  (below), for loot and
   consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
   default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
   «Тип урона», «Хват», each *, and the disclosure «Второй набор
@@ -1527,6 +1545,47 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   нажмите «Отмена».» / «Создайте карту кнопкой «Создать карту» или нажмите
   «Отмена».». A source another tab deleted reads «Этот источник удалили -
   выберите другой.».
+- **«Картинка» / "Picture"**: a 96 px
+  square, then «Выбрать файл» and «Выбрать из предметов», or, with a
+  picture, «Заменить», «Обрезать заново» (while the chosen file is held in
+  memory) and «Убрать картинку»; the line under it reads «Квадрат 640x640 из
+  файла PNG, JPEG или WebP до 20 МБ. Картинка загрузится при сохранении.». A
+  file over 20 MB is refused at once («Файл больше 20 МБ - выберите файл
+  поменьше.»). Otherwise the dialog «Обрезать картинку» opens (a lazy chunk;
+  a failed load draws «Не получилось загрузить окно обрезки. ...» with
+  «Повторить», the file kept) and decodes the file: one it cannot open, a
+  short side under 160 px or a long side over 8000 px closes it with «Не
+  получилось открыть картинку. ...», «Картинка меньше 160 пикселей ...» or
+  «Картинка больше 8000 пикселей ...» under the field. The dialog shows a
+  square frame over the picture; a drag, the arrow keys on the focused stage
+  (2 % of the square, 10 % with Shift), + and - and the range «Масштаб» (from
+  the short side to 4x) move and zoom it; it opens centred at the smallest
+  zoom. «Готово» renders the 640 px square and the 160 px square of the same
+  part, WebP at qualities 0.85 to 0.55 until the 640 px file is at most
+  200 KB, JPEG where the browser cannot encode WebP (Safari); none fits says
+  «Не получилось сжать картинку до 200 КБ - выберите другую.». «Отмена»,
+  Escape and the backdrop keep the field as it was. The dialog keeps its
+  keys from the form: Enter and Ctrl+S inside it save nothing. «Выбрать из
+  предметов» opens a picker («Предмет с картинкой») over the catalog's
+  pictures and the author's own items with a picture, never the item itself
+  or another account's item; a pick names the same picture, with no upload.
+  To replace a picture by another item's, the author removes it first. The
+  form and the preview card draw the choice at once; nothing uploads before
+  «Сохранить», and the guard counts a chosen file, a picked picture and a
+  removal as edits. The save uploads the 640 px file, then the 160 px file
+  («Загружаем картинку...» under the buttons), then writes the row; a
+  text-only edit sends no picture, so a picture another tab set stays. A
+  lost upload says «Не получилось загрузить картинку: нет связи. ...» and
+  keeps the form, and the next press sends the same names; the picture
+  limit, the item limit plus 5 (105 at the defaults), says «Не сохранено.
+  Достигнут предел картинок: N. ...». A row write refused because the file
+  is gone takes a new name and uploads once more when the form holds the
+  cropped file, and otherwise says «Картинка не сохранилась: файла уже нет.
+  Выберите картинку заново.» under the field with every other edit kept;
+  «Сохранить как новый» after another device's delete names the loaded
+  picture, so a deleted own file is refused that way and a catalog picture
+  saves. The browser never deletes a file: the database deletes a file no
+  item names (`META.md` section 3).
 - **Saving**: «Сохранить», Ctrl+S or Cmd+S, or Enter in any one-line field
   of the form saves. A new item's save replaces the address with
   `#/homebrew/<key>` and keeps the form and the focus; an edit writes over
@@ -1813,6 +1872,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   While either switch differs from its default, a build with sign-in draws
   the same note as the tables toolbar under the bar, with its link to
   `#/account`; the bar never prints, so neither does the note.
+- An own homebrew item's picture prints on the colour card from its 640 px
+  file, as a catalog picture does; the black-and-white card draws no
+  picture.
 - A missing picture (a partial deploy, a cold cache) falls back to the same drawn glyph a record with no art gets,
   the same way `RecordCard` does - reached from a print sheet opened
   directly at a shared `#/print/...` address, where nothing has already
@@ -1862,7 +1924,9 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   со списками и, если есть свои предметы, homebrew.json с ними, их
   источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте
   архив сначала на странице «Мои предметы», затем на странице «Мои списки»:
-  за один раз - до 1000 списков и до 1000 своих предметов.» and «Скачать
+  за один раз - до 1000 списков и до 1000 своих предметов.», then, only
+  while the account holds an item with a picture, «Картинок в архиве нет:
+  после переноса добавьте их заново.» (the files never carry a picture), and «Скачать
   мои данные (ZIP)» ("Account
   and browser lists", "Exports"), disabled until the account's lists are
   read and while its zip is built, with «Не получилось загрузить списки

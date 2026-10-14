@@ -199,6 +199,15 @@ describe('limitText', () => {
       'You have reached the limit of 100 cards (sets and rule cards). Need more? Write to daggerheart.loot@gmail.com.'
     );
   });
+
+  it('names the picture limit', () => {
+    expect(limitText('homebrew_art', 105, dict('ru'))).toBe(
+      'Достигнут предел картинок: 105. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+    );
+    expect(limitText('homebrew_art', 305, dict('en'))).toBe(
+      'You have reached the limit of 305 pictures. Need more? Write to daggerheart.loot@gmail.com.'
+    );
+  });
 });
 
 type SharedEntry = SharedRow['entries'][number];
@@ -498,6 +507,41 @@ describe('homebrew entries', () => {
     expect(snapshotRecords(shared)).toEqual([linked]);
     expect(snapshotRecords(null)).toEqual([]);
   });
+
+  /* The pictures the reads may carry beside a record, and what each becomes. */
+  const OWN = `p/${'a'.repeat(32)}.webp`;
+  const IMGS: [unknown, string | undefined][] = [
+    [OWN, OWN],
+    ['q1.webp', 'q1.webp'],
+    ['q1.png', undefined],
+    [`t/${'a'.repeat(32)}.webp`, undefined],
+    ['https://example.test/x.webp', undefined],
+    [5, undefined],
+    [null, undefined]
+  ];
+
+  it("puts an items() row's picture on its record, an own name or a catalog basename, and drops any other value", () => {
+    for (const [img, kept] of IMGS) {
+      const got = linkedRecords([{ hid: HID, item: copy, img }]).get(HID);
+      expect(got?.img, String(img)).toBe(kept);
+      expect(got && 'img' in got, String(img)).toBe(kept !== undefined);
+    }
+    expect(linkedRecords([{ hid: HID, item: copy }]).get(HID)).toEqual(linked);
+  });
+
+  it("puts a projection entry's picture on its record", () => {
+    const shared = (img: unknown): SharedRow => ({
+      audience: 'player',
+      updated_at: '2026-09-22T10:00:00.000Z',
+      revision: 1,
+      topic_key: '00000000-0000-4000-8000-000000004000',
+      list: { name: 'Лавка', money_mode: 'bag', player_note: '' },
+      entries: [sharedEntry(AXE, 0, { source: 'homebrew', snapshot: copy, hid: HID, img })]
+    });
+    for (const [img, kept] of IMGS) {
+      expect(snapshotRecords(shared(img))[0]?.img, String(img)).toBe(kept);
+    }
+  });
 });
 
 describe('itemOf', () => {
@@ -584,6 +628,18 @@ describe('itemOf', () => {
     expect(itemOf(answer())?.updatedAt).toBe('2026-10-07T10:00:00Z');
     for (const updated_at of [undefined, null, 5, 'yesterday', '']) {
       expect(itemOf(answer({ updated_at }))?.updatedAt, String(updated_at)).toBeNull();
+    }
+  });
+
+  it("puts the answer's picture on the record, and drops a value of another shape", () => {
+    const own = `p/${'b'.repeat(32)}.jpg`;
+    expect(itemOf(answer({ img: own }))?.record).toEqual({ ...item, hid: HID, img: own });
+    expect(itemOf(answer({ img: 'q1.webp' }))?.record.img).toBe('q1.webp');
+    for (const img of ['x.png', 7, null, { name: own }]) {
+      expect(itemOf(answer({ img }))?.record, JSON.stringify(img)).toEqual({
+        ...item,
+        hid: HID
+      });
     }
   });
 

@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Sixty-three cases in
- * sixty-two runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-two cases in
+ * seventy-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -4705,6 +4705,211 @@ async function homebrewAt300() {
   await ctx.close();
 }
 
+/** The catalog's 640 px square picture: a real file for the crop dialog to decode. */
+const CI1 = path.join(__dirname, '../../img/ci1.webp');
+
+/** Opens `#/homebrew/new` as `gm1`, uploads `CI1` and waits for the crop stage's picture. */
+async function cropOpen(page, d, at) {
+  await d.open('#/homebrew/new', { as: 'gm1' });
+  ok(
+    await waitIn(page, () =>
+      [...document.querySelectorAll('button')].some(
+        (b) => b.textContent.trim() === 'Выбрать файл'
+      )
+    ),
+    at + 'the picture field did not draw'
+  );
+  await d.upload(CI1);
+  return waitIn(page, () => {
+    const img = document.querySelector('dialog.cropdlg .stage img');
+    return !!img && img.complete && img.naturalWidth > 0;
+  });
+}
+
+/** Types the item's name and saves; answers the saved row's picture name, or null. */
+async function nameAndSave(page, d, name) {
+  await page.evaluate((v) => {
+    const box = document.getElementById('hb-name');
+    box.focus();
+    box.value = v;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+  }, name);
+  await d.press('Сохранить');
+  await waitIn(
+    page,
+    async (v) => {
+      const r = await window.__dhlootFake.homebrew.load();
+      return r.ok && r.items.some((i) => i.content.ru === v);
+    },
+    name
+  );
+  return page.evaluate(async (v) => {
+    const r = await window.__dhlootFake.homebrew.load();
+    return (r.ok && r.items.find((i) => i.content.ru === v)?.art) ?? null;
+  }, name);
+}
+
+async function pictureChooseCropSave() {
+  const at = '70 (a picture: choose, crop, save): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  ok(await cropOpen(page, d, at), at + 'the crop dialog did not draw the picture');
+  const stage = await page.evaluate(() => {
+    const r = document.querySelector('dialog.cropdlg .stage').getBoundingClientRect();
+    return { w: r.width, h: r.height };
+  });
+  ok(
+    stage.w >= 160 && Math.abs(stage.w - stage.h) < 1,
+    at + 'the stage is not a square of 160 px or more - ' + JSON.stringify(stage)
+  );
+  const left = () =>
+    page.evaluate(() => document.querySelector('dialog.cropdlg .stage img').style.left);
+  /* The decoding state's «Отмена» held the focus; the ready stage takes it. */
+  ok(
+    await waitIn(page, () => document.activeElement?.classList.contains('stage') ?? false),
+    at + 'the stage did not take the focus once the picture decoded'
+  );
+  /* A square picture fills the square at the smallest zoom: zoom in first. */
+  await page.keyboard.type('++++');
+  const zoomed = await left();
+  await page.keyboard.press('ArrowRight');
+  const moved = await left();
+  ok(moved !== zoomed, at + 'an arrow key did not move the picture - ' + zoomed);
+  const box = await page.evaluate(() => {
+    const r = document.querySelector('dialog.cropdlg .stage').getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.move(box.x, box.y);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 40, box.y + 10, { steps: 4 });
+  await page.mouse.up();
+  ok((await left()) !== moved, at + 'a drag did not move the picture - ' + moved);
+  await d.press('Готово');
+  ok(
+    await waitIn(page, () => !document.querySelector('dialog.cropdlg')),
+    at + '«Готово» did not close the dialog'
+  );
+  ok(
+    await waitIn(page, () => {
+      const card = document.querySelector('.preview .card-media img');
+      return (
+        !!card && card.src.startsWith('blob:') && card.complete && card.naturalWidth === 640
+      );
+    }),
+    at + 'the preview card does not draw the 640 px crop'
+  );
+  ok(
+    await page.evaluate(
+      () => document.querySelector('.th img')?.src.startsWith('blob:') ?? false
+    ),
+    at + 'the field does not draw the crop'
+  );
+  /* The guard: an in-app navigation asks, and a no keeps the page. */
+  const asked = await page.evaluate(async () => {
+    let n = 0;
+    window.confirm = () => {
+      n++;
+      return false;
+    };
+    location.hash = '#/homebrew';
+    await new Promise((r) => setTimeout(r, 300));
+    return { n, hash: location.hash };
+  });
+  ok(
+    asked.n >= 1 && asked.hash === '#/homebrew/new',
+    at + 'the guard did not ask - ' + JSON.stringify(asked)
+  );
+  const art = await nameAndSave(page, d, 'Фонарь 70');
+  ok(/^p\/[0-9a-f]{32}\.webp$/.test(art ?? ''), at + 'the saved picture is ' + String(art));
+
+  /* Escape keeps the field as it was and gives the focus back to its first button. */
+  ok(
+    await waitIn(page, () =>
+      [...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Заменить')
+    ),
+    at + '«Заменить» did not draw after the save'
+  );
+  await new Promise((r) => setTimeout(r, 300));
+  const before = await page.evaluate(() => document.querySelector('.th img')?.src);
+  await d.upload(CI1);
+  ok(
+    await waitIn(page, () => !!document.querySelector('dialog.cropdlg .stage')),
+    at + 'the second crop dialog did not open'
+  );
+  await page.keyboard.press('Escape');
+  ok(
+    await waitIn(page, () => !document.querySelector('dialog.cropdlg')),
+    at + 'Escape did not close the dialog'
+  );
+  const after = await page.evaluate(() => ({
+    src: document.querySelector('.th img')?.src,
+    focus: document.activeElement?.textContent?.trim()
+  }));
+  ok(after.src === before, at + 'Escape changed the field - ' + JSON.stringify(after));
+  ok(after.focus === 'Заменить', at + 'Escape left the focus on ' + String(after.focus));
+  await ctx.close();
+}
+
+async function pictureWithoutWebp() {
+  const at = '71 (a browser that cannot encode WebP): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  /* Safari: a canvas asked for WebP answers a PNG (MDN, `toBlob()`). */
+  await page.evaluateOnNewDocument(() => {
+    const toBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (cb, type, quality) {
+      return toBlob.call(this, cb, type === 'image/webp' ? 'image/png' : type, quality);
+    };
+  });
+  ok(await cropOpen(page, d, at), at + 'the crop dialog did not draw the picture');
+  await d.press('Готово');
+  ok(
+    await waitIn(page, () => !document.querySelector('dialog.cropdlg')),
+    at + '«Готово» did not close the dialog'
+  );
+  const art = await nameAndSave(page, d, 'Фонарь 71');
+  ok(/^p\/[0-9a-f]{32}\.jpg$/.test(art ?? ''), at + 'the saved picture is ' + String(art));
+  await ctx.close();
+}
+
+async function cropDialogOnPhones() {
+  const at = '72 (the crop dialog at 360 and in landscape): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 640 });
+  await page.setViewport({ width: 360, height: 640, isMobile: true, hasTouch: true });
+  ok(await cropOpen(page, d, at), at + 'the crop dialog did not draw the picture');
+  const measure = () =>
+    page.evaluate(() => {
+      const dlg = document.querySelector('dialog.cropdlg');
+      const r = dlg.getBoundingClientRect();
+      const s = dlg.querySelector('.stage').getBoundingClientRect();
+      return {
+        left: r.left,
+        right: r.right,
+        top: r.top,
+        bottom: r.bottom,
+        vw: innerWidth,
+        vh: innerHeight,
+        stage: { w: s.width, h: s.height },
+        scrolls: dlg.scrollHeight > dlg.clientHeight,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+  const inside = (m) =>
+    m.left >= 0 && m.top >= 0 && m.right <= m.vw + 0.5 && m.bottom <= m.vh + 0.5;
+  const tall = await measure();
+  console.log('  72 at 360x640: ' + JSON.stringify(tall));
+  ok(inside(tall), at + 'the dialog leaves the viewport at 360 - ' + JSON.stringify(tall));
+  ok(!tall.sideways, at + 'the page scrolls sideways at 360');
+  ok(Math.abs(tall.stage.w - tall.stage.h) < 1, at + 'the stage is not square at 360');
+  await page.setViewport({ width: 640, height: 360, isMobile: true, hasTouch: true });
+  await new Promise((r) => setTimeout(r, 200));
+  const wide = await measure();
+  console.log('  72 at 640x360: ' + JSON.stringify(wide));
+  ok(inside(wide), at + 'the dialog leaves the viewport at 640x360 - ' + JSON.stringify(wide));
+  ok(wide.scrolls, at + 'the dialog does not scroll inside itself at 640x360');
+  ok(!wide.sideways, at + 'the page scrolls sideways at 640x360');
+  ok(Math.abs(wide.stage.w - wide.stage.h) < 1, at + 'the stage is not square at 640x360');
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4776,7 +4981,10 @@ const CASES = [
   ['66 (a 200-character list name at 360)', longListName],
   ['67 (field help and threshold labels at 360)', fieldHelpAt360],
   ['68 (#/homebrew at 300 items)', homebrewAt300],
-  ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle]
+  ['69 (the GM-only toggle at 1180 and 360)', gmOnlyToggle],
+  ['70 (a picture: choose, crop, save)', pictureChooseCropSave],
+  ['71 (a browser that cannot encode WebP)', pictureWithoutWebp],
+  ['72 (the crop dialog at 360 and in landscape)', cropDialogOnPhones]
 ];
 
 (async () => {

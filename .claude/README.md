@@ -1795,8 +1795,8 @@ CLI facts (2.117.0, measured 2026-09-24):
   a stack started without Auth, for example by a checkout older than the
   current `LOCAL_STACK_EXCLUDES` after a run with it. The Realtime suite
   needs the anon key and the secret, so the `check:db` stack and the
-  drill's stack are the same: the database, Auth, Realtime and Kong
-  (`LOCAL_STACK_EXCLUDES`).
+  drill's stack are the same: the database, Auth, Realtime, Storage (since
+  R8) and Kong (`LOCAL_STACK_EXCLUDES`).
 - With Realtime running, `db reset --local` applies a migration that makes
   a policy on `realtime.messages`, and restarts the realtime container
   itself; Realtime makes the day partitions of `realtime.messages` when it
@@ -2041,9 +2041,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-211 kB for the unconfigured build and 269 kB for the configured one, which
+233 kB for the unconfigured build and 294 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 211 kB limit. The 269 kB limit runs in
+unconfigured and so measures only the 233 kB limit. The 294 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2055,7 +2055,13 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 269 kB budget (with the account client chunk)`; 264.2
+Expected: `within the 294 kB budget (with the account client chunk)`; 288.8
+kB on 2026-10-14 at R8 (own pictures: the field, the lazy crop dialog of
+2.3 kB plus 0.6 kB CSS, the media port), 228.0 kB unconfigured. That leaves
+11.2 kB under the 300 kB ceiling for `print-snapshots`, `debt-cleanup` and
+R10: each plans its growth against it, and D60's 1.5 kB is the only
+recorded saving. 282.0 kB on 2026-10-14 with R8's storage calls, 221.4 kB
+unconfigured; 264.2
 kB on 2026-10-02 at R7d's closeout, rebased on the search's Snowball stemmers
 and ranking, with the homebrew import, the bulk move, the downloads and the
 export byte warning, 204.4 kB unconfigured (260.9 kB on 2026-10-02 at R7d
@@ -2115,10 +2121,81 @@ select jobid, status, return_message, start_time from cron.job_run_details order
 
 Expected: `succeeded` rows an hour apart. `return_message` holds the
 command tag (`SELECT 1`), not the function's answer `{ "requests": n,
-"shares": n, "runs": n }`; run the function by hand to see the counts,
-which deletes for real. The nightly
+"shares": n, "runs": n, "notices": n, "files": n }`; run the function by
+hand to see the counts, which deletes for real. The nightly
 usage report's `lifecycle` row warns on a failed or missing run ("Usage
 monitoring").
+
+**Own pictures and the file deletion.** `20261014120000_homebrew_art`
+makes the public Storage bucket `homebrew-art` (200 KB, WebP and JPEG), its
+insert policy `homebrew_art_insert` on `storage.objects`, the column
+`homebrew_items.art`, the extension `pg_net` (`with schema extensions`; its
+functions live in `net`) and the two triggers that delete a file through
+the Storage API when no item names it; the hourly `lifecycle_cleanup()`
+deletes the rest (`docs/decisions/`, 2026-10-14, "Own pictures are
+random-named files the database deletes"). The local stack runs
+`storage-api` for it (`LOCAL_STACK_EXCLUDES` no longer excludes it). Each
+hosted project needs two Vault secrets, set once by the owner in the
+dashboard's SQL editor and never in a migration or a chat:
+
+```sql
+select vault.create_secret('https://<ref>.supabase.co', 'dhloot_api_url');
+select vault.create_secret('<a secret key made for this use only>', 'dhloot_storage_key');
+```
+
+Expected: `select name from vault.secrets` lists both. Without them no file
+is deleted, every write still succeeds, and the usage report's `lifecycle`
+row warns "the picture clean-up has no storage key" once the bucket holds
+a file. Revoke the key alone (Project Settings, API Keys) if it leaks.
+Done on both projects (owner, 2026-10-08). The owner's reads of 2026-10-08,
+the same on both projects: `pg_net` not installed before R8,
+`default_version` 0.20.4, `postgres` with `rolbypassrls` true, and the
+only foreign key on `storage.objects` is `objects_bucketId_fkey` (none to
+`auth.users`, so `delete_account()` never waits for files).
+
+The owner checks the JPEG path once after the release push, on an iPhone
+(Safari encodes no WebP, and no gate runs Safari): choose a photo for an own
+item, crop it, save, then open the item and its `#/h/` address. Expected:
+the picture draws on both, and its file name ends in `.jpg`.
+
+The local probe (2026-10-14, CLI 2.117.0):
+
+- `pg_net` 0.20.4; `net.http_delete(url text, params jsonb, headers jsonb,
+  timeout_milliseconds integer, body jsonb)` returns `bigint`; `postgres`
+  executes it and selects `vault.decrypted_secrets`. `art_delete` calls it
+  with named arguments, so another version's extra parameter is harmless.
+  pg_net refuses a malformed address with an exception, which
+  `art_delete` catches (the db suite's failing-call case uses one).
+- `net.http_request_queue` grants every privilege to `PUBLIC`, and `net`
+  is usable by `anon` and `authenticated`; the owner is `supabase_admin`,
+  so a migration cannot revoke it. No API role reaches it: `net` is not in
+  `[api] schemas`, which `homebrew-art.test.mjs` pins. A queued request
+  holds the key until the worker sends it.
+- `service_role` selects `vault.secrets` and `vault.decrypted_secrets`;
+  `anon` and `authenticated` do not. The secret key already holds every
+  power the storage key gives.
+- `storage.objects` has the triggers `update_objects_updated_at` and
+  `protect_objects_delete`; the second refuses a delete from SQL unless
+  the transaction sets `storage.allow_delete_query` to `true` (only the
+  db suite does, for the rows of its committed lock case). An insert from
+  SQL as `postgres` works, so the db suite seeds objects directly.
+- An upload through the local gateway with a member's token and the insert
+  policy alone answered 200 and stored the member's id in `owner_id` (and
+  `owner`): no select policy is needed. The same name again answered HTTP
+  400 with `statusCode` "409" (`KeyAlreadyExists`); a name the policy
+  refuses answered 400 with `statusCode` "403". A public read answered 200
+  with `access-control-allow-origin: *`, `cache-control: max-age=31536000`
+  and no owner in a header; `object/info/public/...` holds no `owner_id`.
+- A `DELETE /storage/v1/object/homebrew-art/<name>` with the local secret
+  key in the `apikey` header alone answered 200, and the public address
+  then answered 400. On the test project (first `npm run e2e` after the
+  push, 2026-10-14) the release trigger's requests answered 200
+  "Successfully deleted" in `net._http_response`, and contract case Q
+  passed: the object info answered 400 or 404 within 30 s after a removal
+  and after an account deletion. The public address of a deleted file
+  that had been read once still answered 200 through the CDN, so uploads
+  ask for a bounded cache age: `cacheControl` 86400, one day, against
+  readers' egress (`docs/decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md`).
 
 ### Backups and restore
 
@@ -2141,6 +2218,45 @@ backup.yml not found on the default branch`, 2026-09-25), so a new
 workflow file runs first on `main`. The first run on `main` (2026-09-25,
 schema only, no user rows yet) took 74 s for the `dump` job and uploaded
 an 11 KB artifact.
+
+Sunday's run (`date -u +%u` is 7), or a dispatch with `-f art=true`, also
+copies the public picture bucket: `tools/supabase/backup-art.mjs` lists the
+names over the same connection string, downloads each own picture file from
+its public address, 8 at a time (no key: the bucket is public), and the
+step tars them as `art.tar`, encrypts it as `art.tar.age` and deletes the
+plain files. A file deleted between the list and its download (400 or 404)
+is counted and skipped; any other answer fails the job. Weekly, not
+nightly (owner, Q8-10 a, 2026-10-07): a full copy downloads the whole
+bucket, and a nightly one would pass the free plan's 5 GB of egress at
+about 170 MB of pictures; a restore can lose up to 7 days of new
+pictures, whose items then draw the placeholder. `npm run restore:drill`
+opens `art.tar.age` and counts its files when the artifact holds it.
+
+The restore keeps the pictures only through its order: `TRUNCATE` of the
+`public` tables fires no row trigger, the `auth` rows are deleted after the
+items are gone, and the load runs with `session_replication_role =
+replica`, so the owner check refuses no restored picture and no file
+delete is queued (`tests/db/restore-prod.test.mjs` guards it). A restore
+by `DELETE`, or a load without `replica`, would queue the deletion of every
+production picture or stop at the first restored one.
+
+Restore the picture files (owner only, after the rows): decrypt and unpack
+the tar, then `npx supabase storage cp -r <dir>/art/p ss:///homebrew-art/p
+--experimental` and the same for `t`, with the CLI linked to the project.
+Expected: the restored items draw their pictures. A restored file has no
+`owner_id` (the CLI uploads as the service role): the restored item keeps
+naming it, but no other item can newly name it. A new project needs the
+two Vault secrets of "Supabase configuration" before its first picture
+write.
+
+**Remove a reported picture.** In the SQL editor, `update
+public.homebrew_items set art = null where art = '<the p/ name>'`.
+Expected: the release trigger queues the deletes of both files, and the
+Storage API's `object/info/public/homebrew-art/<name>` answers 400 or 404
+within a minute (observed on the test project, 2026-10-14: within 30 s). The
+public address may still answer from a CDN copy that a reader made before:
+expect 400 or 404 within a day, the upload's cache age (a bound from the
+cache age, not a measurement).
 
 **Symptom.** Data is lost, or a migration must be undone together with the
 data it changed.
@@ -2559,6 +2675,17 @@ row comes back). After `20261010120000_drop_list_entry_snapshot` a frontend
 before R7h needs the column again: push that migration's reversal first, as
 a second push, and only then this one.
 
+To undo `20261014120000_homebrew_art`, revert the app first: the previous
+frontend ignores `img` and writes no `art`, and the database still deletes
+the files of rows deleted meanwhile. Push the reversal only to drop the
+column: it drops every picture reference (`homebrew_items.art`), both
+triggers, `art_delete`, the policy and `pg_net`; the bucket and its files
+stay, for the owner to empty with the CLI. Before any later up (a forward
+fix), delete the Vault secret `dhloot_storage_key` or restore `art` from
+the last backup taken before the down: after the up every file is an
+unnamed orphan older than an hour, and the job deletes 2000 an hour until
+the bucket is empty.
+
 To undo `20261010120000_drop_list_entry_snapshot`, revert the app alone: no
 frontend since R7h reads the column. Push the reversal only to run a
 frontend before R7h or to restore a backup made before the migration: the
@@ -2652,6 +2779,14 @@ read 2026-09-25):
   invocations; 2 active free projects. MAU is "distinct users who sign in
   or refresh their token during the billing cycle"; over quota on the free
   plan gives an email and a grace period.
+- Own pictures (measured on the test project by `npm run e2e` F20,
+  2026-10-14): a public file of `homebrew-art` answers `cache-control:
+  public, max-age=86400` and an `etag`, and a second read with
+  `If-None-Match` answers 304, so a reader whose day-old copy expired
+  downloads headers only for an unchanged file. Readers' egress stays the
+  owner's monthly dashboard look; past 2.5 GB of cached egress in a month the
+  owner chooses between a longer cache age (with the privacy text) and the
+  Pro plan.
 - Pausing: "Free projects are paused after 1 week of inactivity"; Supabase
   emails about one week before; a paused project restores from the
   dashboard for up to a year

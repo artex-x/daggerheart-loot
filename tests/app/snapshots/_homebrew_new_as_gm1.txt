@@ -40,11 +40,13 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
         option "+ Новый источник..." [selected=false]
-      StaticText "Название"
-      StaticText "*"
+      ... StaticText x2 of 6 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       StaticText "Описание"
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Выбрать файл"
+      button "Выбрать из предметов" [expanded=false]
+      StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
       group "Ранг"
         button "Без ранга" [pressed=true]
         button "1" [pressed=false]
@@ -81,6 +83,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Без ранга
+Выбрать из предметов
+Выбрать файл
 К содержимому
 Карты правил
 Конфиденциальность
@@ -146,11 +150,13 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
         option "+ New source..." [selected=false]
-      StaticText "Name"
-      StaticText "*"
+      ... StaticText x2 of 6 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       StaticText "Description"
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Choose a file"
+      button "Choose from items" [expanded=false]
+      StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]
       group "Tier"
         button "No tier" [pressed=true]
         button "1" [pressed=false]
@@ -180,6 +186,8 @@ Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
 Cancel
+Choose a file
+Choose from items
 Communities
 Consumable
 Dragon's Vault

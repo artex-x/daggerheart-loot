@@ -623,6 +623,9 @@ const COVERED: Record<string, string> = {
     'homebrewEditor.test.ts with the fold «Связи» open for each kind, its problems and its forms',
   'ItemPage.svelte': 'itemPage.test.ts: each state, a reader and the author',
   'ItemPicker.svelte': 'itemPicker.test.ts closed, open and full, and homebrewEditor.test.ts',
+  'ArtField.svelte':
+    'artField.test.ts with no picture, a saved one, a crop unsaved, the picker open, each refusal and the failed chunk',
+  'CropDialog.svelte': 'cropDialog.test.ts decoding, ready and busy',
   'NameField.svelte':
     'the new source field above, and homebrewEditor.test.ts with its inline source',
   'PickRow.svelte': 'record.test.ts on a catalog and an own record, and inside the modal above',

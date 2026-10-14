@@ -96,6 +96,25 @@ export async function realtimePolicies(sql) {
     .join('\n');
 }
 
+/** Returns the policies on storage.objects and the installed extensions as
+ * sorted text: the snapshot of the public schema holds neither, and a
+ * migration makes both (the homebrew-art insert policy, pg_net). */
+export async function storageState(sql) {
+  const policies = await sql`
+    select policyname, cmd, roles::text as roles, coalesce(qual, '') as qual,
+      coalesce(with_check, '') as with_check
+    from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+    order by policyname`;
+  const extensions = await sql`select extname from pg_extension order by extname`;
+  return [
+    ...policies.map(
+      (r) => `${r.policyname} ${r.cmd} ${r.roles} using (${r.qual}) check (${r.with_check})`
+    ),
+    `extensions: ${extensions.map((r) => r.extname).join(', ')}`
+  ].join('\n');
+}
+
 /** Waits at most `ms` for the partition of realtime.messages that holds
  * the current time. Realtime makes the partitions when it starts, and the
  * CLI restarts it after every reset; `realtime.send` into a missing one

@@ -1387,7 +1387,16 @@ ok(backup, 'backup.yml: the nightly production backup is missing');
   ['workflow_dispatch', 'the manual run'],
   ['BACKUP_AGE_RECIPIENT', 'the encryption recipient'],
   ['--schema auth,public', 'the auth rows in the data dump'],
-  ['if-no-files-found: error', 'the fail-closed upload']
+  ['if-no-files-found: error', 'the fail-closed upload'],
+  ['node tools/supabase/backup-art.mjs', 'the weekly picture copy'],
+  [
+    'mv "$out/art.tar.part" "$out/art.tar.age"',
+    'the encrypted picture tar under its final name only'
+  ],
+  [
+    "if: ${{ !cancelled() && steps.dump.outcome == 'success' }}",
+    'the dump uploaded when the picture step failed'
+  ]
 ].forEach(function (pair) {
   ok(backup.indexOf(pair[0]) >= 0, 'backup.yml: ' + pair[1] + ' (' + pair[0] + ') is missing');
 });

@@ -10,6 +10,7 @@ import { browserCompress, plainCompress } from './compress.js';
 import { browserData, fakeData } from './data.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
+import { browserMedia, fakeMedia } from './media.js';
 import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
 import { browserPage, fakePage } from './page.js';
@@ -26,6 +27,8 @@ export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { browserImage, fakeImage } from './image.js';
+export { browserMedia, fakeMedia, fakePicture } from './media.js';
+export type { FakeMedia } from './media.js';
 export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
 export { browserPage, fakePage } from './page.js';
@@ -40,6 +43,7 @@ export function browserEnv(): Env {
   return {
     data: browserData(),
     image: browserImage(),
+    media: browserMedia(),
     random: Math.random,
     storage: browserStorage(),
     clipboard: browserClipboard(),
@@ -62,6 +66,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     /* An empty catalogue by default: a test that needs records says which. */
     data: fakeData({ items: {} }),
     image: fakeImage(),
+    media: fakeMedia(),
     /* Always the first row unless a test says otherwise: a roll that is a
        surprise in a test is a test that cannot assert what came up. */
     random: () => 0,

@@ -326,6 +326,49 @@ describe('restoreToTarget', () => {
     }
   });
 
+  /* The restore's order keeps the pictures (.claude/README.md, "Backups and restore"):
+     TRUNCATE fires no row trigger, and the load runs with session_replication_role =
+     replica, so the owner check refuses no restored picture and the release queues no
+     delete, with the file deletion's Vault secrets set. */
+  it('loads an item that names a picture, refuses nothing and queues no file delete', async () => {
+    const art = `p/${'a'.repeat(32)}.webp`;
+    const item = 'a2000000-0000-4000-8000-000000000001';
+    const withArt = source(
+      'run 5',
+      backup.dataText.replace(
+        'SELECT pg_catalog.setval',
+        `INSERT INTO "public"."homebrew_items" ("id", "owner_id", "key", "book_id", "content", "art", "revision", "created_at", "updated_at") VALUES
+	('${item}', 'a0000000-0000-4000-8000-00000000000a', 'hb_restoreartaaaaaa', NULL, '{"kind": "item", "ru": "Скатка"}', '${art}', 1, '2026-09-23 10:00:00+00', '2026-09-23 10:00:00+00');
+
+SELECT pg_catalog.setval`
+      )
+    );
+    const requests = () =>
+      withSql(
+        async (sql) =>
+          (await sql`select last_value::bigint as n from net.http_request_queue_id_seq`)[0].n
+      );
+    await withSql(async (sql) => {
+      await sql`select vault.create_secret('http://127.0.0.1:9', 'dhloot_api_url')`;
+      await sql`select vault.create_secret('restore-test-key', 'dhloot_storage_key')`;
+    });
+    try {
+      const was = await requests();
+      const { report } = await restore(withArt, { receipts: [receiptOf(withArt)] });
+      assert.equal(report.verdict, 'PASS', report.lines.join('\n'));
+      const [row] = await withSql(
+        (sql) => sql`select art from public.homebrew_items where id = ${item}`
+      );
+      assert.equal(row?.art, art);
+      assert.equal(await requests(), was);
+    } finally {
+      await withSql(
+        (sql) => sql`delete from vault.secrets
+          where name in ('dhloot_api_url', 'dhloot_storage_key')`
+      );
+    }
+  });
+
   it('leaves no fixture row after the reset', async () => {
     assert.equal(resetLocal(), true, 'supabase db reset --local failed');
     const now = await snapshot();

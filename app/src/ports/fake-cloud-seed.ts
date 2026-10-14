@@ -275,6 +275,8 @@ export interface SeedItem {
   key: string;
   bookId?: string;
   content: HomebrewContent;
+  /** The picture: a catalog basename only, as the test build has no bucket. */
+  art?: string;
   createdAgoMs: number;
   editedAgoMs: number;
 }
@@ -338,6 +340,7 @@ const GM3_ITEMS: SeedItem[] = [
       ende: 'A bedroll for a long road.',
       craft_from: ['ci1']
     },
+    ...(i === 14 ? { art: 'ci2.webp' } : {}),
     createdAgoMs: (60 - i) * HOUR,
     editedAgoMs: (60 - i) * HOUR
   })),
@@ -409,11 +412,14 @@ const chainItem = (
 });
 const GM3_CHAIN: SeedItem[] = [
   chainItem(661, ROLL_A, 'Скатка путника', "Traveller's Roll"),
-  chainItem(662, ROLL_B, 'Скатка следопыта', "Ranger's Roll", {
-    craft_from: [ROLL_A],
-    craft: [ROLL_C],
-    set: STAR_SET
-  }),
+  {
+    ...chainItem(662, ROLL_B, 'Скатка следопыта', "Ranger's Roll", {
+      craft_from: [ROLL_A],
+      craft: [ROLL_C],
+      set: STAR_SET
+    }),
+    art: 'w1.webp'
+  },
   chainItem(663, ROLL_C, 'Скатка стража', "Sentry's Roll"),
   chainItem(664, 'hb_mosspillowaaaaaa', 'Подушка из мха', 'Moss Pillow', { set: STAR_SET }),
   chainItem(665, 'hb_campblanketaaaaa', 'Походный плед', 'Camp Blanket', { set: STAR_SET })
@@ -436,6 +442,7 @@ const HOMEBREW = {
         key: AXE_KEY,
         bookId: uuid(501),
         content: AXE,
+        art: 'ci1.webp',
         createdAgoMs: 9 * DAY,
         editedAgoMs: 4 * DAY
       },

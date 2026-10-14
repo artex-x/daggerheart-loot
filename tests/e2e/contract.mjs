@@ -3,11 +3,12 @@
  * ts-hooks.mjs). Each port gets its own store, holding a minted session or
  * none; the ports are used one after another, never interleaved. */
 
+import { newArtName, thumbOf } from '../../app/src/lib/art.ts';
 import { readShareMessage } from '../../app/src/lib/live.ts';
 import { joinLive, runCloudContract } from '../../app/src/ports/cloud.contract.ts';
 import { createCloud } from '../../app/src/ports/supabase.ts';
 import { createClient } from '@supabase/supabase-js';
-import { createThrowaway, mint } from './admin.mjs';
+import { addressGone, createThrowaway, mint } from './admin.mjs';
 import { assertTestProject, memoryStorage, storageKey } from './lib.mjs';
 
 /* The window the port saves its way back through; no redirect starts here. */
@@ -51,7 +52,50 @@ function hasGmNote(o) {
   return Object.entries(o).some(([k, v]) => k === 'gm_note' || hasGmNote(v));
 }
 
-/** Runs cases A-P and R and the real-only checks; throws `contract: <what>`. */
+/* The real-only picture checks: a public object's headers and its info answer name no
+   account, and the gateway takes the secret key in the `apikey` header alone for a delete,
+   the request art_delete() queues (supabase/migrations/20261014120000_homebrew_art.sql). */
+async function artRequests(env, make, publicUrl, infoUrl) {
+  const check = (cond, msg) => {
+    if (!cond) throw new Error('contract: art: ' + msg);
+  };
+  const port = await make('doomed');
+  const userId = (await port.auth.session())?.userId;
+  check(typeof userId === 'string', 'the throwaway has no session');
+  const name = newArtName('webp', crypto.randomUUID());
+  const blob = new Blob([new Uint8Array([82, 73, 70, 70, 4, 0, 0, 0, 87, 69, 66, 80])], {
+    type: 'image/webp'
+  });
+  for (const n of [name, thumbOf(name)]) {
+    check((await port.homebrew.uploadArt(n, blob)).ok, 'the upload of ' + n + ' was refused');
+  }
+  const read = await fetch(publicUrl(name), { cache: 'no-store' });
+  const headers = JSON.stringify([...read.headers]);
+  check(read.status === 200, 'the public address answered ' + read.status);
+  check(!headers.includes(userId) && !/owner/i.test(headers), 'a header names the account');
+  const info = await fetch(
+    `${env.E2E_SUPABASE_URL}/storage/v1/object/info/public/homebrew-art/${name}`
+  );
+  const infoText = await info.text();
+  check(
+    !infoText.includes(userId) && !/"owner(_id)?"/.test(infoText),
+    'the info answer names the account'
+  );
+  for (const n of [name, thumbOf(name)]) {
+    const { status } = await fetch(
+      `${env.E2E_SUPABASE_URL}/storage/v1/object/homebrew-art/${n}`,
+      { method: 'DELETE', headers: { apikey: env.E2E_SUPABASE_SECRET_KEY } }
+    );
+    check(status === 200, 'a delete with the secret key in apikey answered ' + status);
+  }
+  check(await addressGone(infoUrl(name)), 'the deleted file still answers after 30 s');
+  /* Logged, not asserted: the CDN may serve the read above until the upload's cache age. */
+  const cached = await fetch(publicUrl(name), { cache: 'no-store' });
+  console.log(`contract: art: the public address after the delete answered ${cached.status}`);
+  check((await port.auth.deleteAccount()).ok, 'the throwaway account deletion was refused');
+}
+
+/** Runs cases A-R and the real-only checks; throws `contract: <what>`. */
 export async function runRealContract(env, admin, member) {
   assertTestProject(env.E2E_SUPABASE_URL);
   const url = env.E2E_SUPABASE_URL;
@@ -67,6 +111,10 @@ export async function runRealContract(env, admin, member) {
     return portOf(env, session);
   };
 
+  const publicUrl = (name) => `${url}/storage/v1/object/public/homebrew-art/${name}`;
+  /* The Storage API's own answer for a file: the CDN keeps serving the public address of a
+     deleted file until its cache age runs out, so case Q reads the object info. */
+  const infoUrl = (name) => `${url}/storage/v1/object/info/public/homebrew-art/${name}`;
   await runCloudContract(
     make,
     { member: { as: 'member', userId: member.id, email: member.email }, doomed: 'doomed' },
@@ -75,8 +123,11 @@ export async function runRealContract(env, admin, member) {
     },
     (msg) => {
       console.log('contract: ' + msg);
-    }
+    },
+    make,
+    { status: async (name) => (await fetch(infoUrl(name), { cache: 'no-store' })).status }
   );
+  await artRequests(env, make, publicUrl, infoUrl);
 
   /* A limit trigger's DETAIL reaches the client as `details`: 101 entries in
      one insert pass the default entries_per_list of 100 (the limits

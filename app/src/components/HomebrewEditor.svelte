@@ -13,6 +13,7 @@
      docs/decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md). */
   import { tick, untrack } from 'svelte';
   import AddToList from './AddToList.svelte';
+  import ArtField from './ArtField.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
   import HelpButton from './HelpButton.svelte';
@@ -27,6 +28,7 @@
   import SignInPrompt from './SignInPrompt.svelte';
   import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
+  import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
   import { HOMEBREW_HASH, homebrewItemHash } from '../lib/hash.js';
@@ -121,10 +123,19 @@
      author's press; it never closes by itself. */
   let relOpen = $state(false);
   let addIds = $state<NewIds | null>(null);
+  /* The picture: the field's choice, the row's picture when the form loaded or last saved,
+     the save's refusal for it, the upload in flight, and a preview that failed to draw. */
+  let art = $state<ArtValue>({ kind: 'keep' });
+  let loadedArt = $state<string | null>(null);
+  let artLine = $state<string | null>(null);
+  let uploadingArt = $state(false);
+  let previewBroken = $state(false);
   let summary = $state<HTMLDivElement | undefined>(undefined);
   let formEl = $state<HTMLFormElement | undefined>(undefined);
 
-  const dirty = $derived(formLoaded && JSON.stringify(draft) !== loaded);
+  const dirty = $derived(
+    formLoaded && (JSON.stringify(draft) !== loaded || art.kind !== 'keep')
+  );
   const row = $derived(rowKey === null ? undefined : store.item(rowKey));
 
   function load(r: ItemRow | null): void {
@@ -132,6 +143,8 @@
     base = r?.content ?? null;
     revision = r?.revision ?? null;
     loadedId = r?.id ?? null;
+    loadedArt = r?.art ?? null;
+    art = { kind: 'keep' };
     draft = draftOf(r, editIn);
     heldTier = draft.tier;
     heldEqTier = draft.eqTier;
@@ -212,10 +225,25 @@
       draft.refs.length
   );
   const title = $derived(nameOf(preview, lang) || t.hbNewItem);
+  const shownImg = $derived(shownArt(art, loadedArt));
   /* The card's name is a heading: an item with no name yet draws «Новый предмет». */
-  const card = $derived(
-    nameOf(preview, lang) ? preview : { ...preview, en: t.hbNewItem, ru: t.hbNewItem }
-  );
+  const card = $derived.by(() => {
+    const c = nameOf(preview, lang)
+      ? { ...preview }
+      : { ...preview, en: t.hbNewItem, ru: t.hbNewItem };
+    if (shownImg) c.img = shownImg;
+    else delete c.img;
+    return c;
+  });
+  $effect(() => {
+    void shownImg;
+    previewBroken = false;
+  });
+  /* A new choice clears the save's refusal for the picture. */
+  $effect(() => {
+    void art;
+    artLine = null;
+  });
   const sub = $derived(
     whereFrom(preview, lang) +
       (draft.kind === 'equip' && draft.eqTier !== '' && draft.eqTier !== 'A'
@@ -346,9 +374,24 @@
     return t.hbSaveNetwork;
   }
 
-  /* After a write that created or wrote over the row: the draft is what is stored. */
-  function settled(id: string, rev: number, content: HomebrewContent, made = false): void {
+  /* After a write that created or wrote over the row: the draft is what is stored, and the
+     picture written (`undefined`: the row's own, unchanged). */
+  function settled(
+    id: string,
+    rev: number,
+    content: HomebrewContent,
+    written: string | null | undefined,
+    made = false
+  ): void {
     loadedId = id;
+    if (written !== undefined) loadedArt = written;
+    else {
+      /* A text-only write keeps the row's picture, which another tab may have changed
+         since the form loaded. */
+      const held = rowKey === null ? undefined : store.item(rowKey);
+      if (held) loadedArt = held.art ?? null;
+    }
+    art = { kind: 'keep' };
     revision = rev;
     base = content;
     loaded = JSON.stringify(draft);
@@ -359,39 +402,113 @@
     app.say((t) => (made ? t.hbCreated : t.hbSaved).replace('%s', name));
   }
 
-  async function create(pair: NewIds, content: HomebrewContent): Promise<void> {
-    const r = await store.createItem(pair, draft.bookId, content);
+  /* A create names the loaded picture when the form kept it, so «Сохранить как новый»
+     after another device's delete is refused for a deleted own file and keeps a catalog
+     picture. */
+  async function create(
+    pair: NewIds,
+    content: HomebrewContent,
+    a: string | null | undefined,
+    retried = false
+  ): Promise<void> {
+    const written = a === undefined ? loadedArt : a;
+    const r = await store.createItem(pair, draft.bookId, content, written);
     if (!r.ok) {
-      refused = refusedLine(r);
+      if (artGone(r)) await renamed(retried, (n) => create(pair, content, n, true));
+      else refused = refusedLine(r);
       return;
     }
     rowKey = pair.key;
     ids = store.newIds();
-    settled(pair.id, 1, content, true);
+    settled(pair.id, 1, content, written, true);
     app.replace(homebrewItemHash(pair.key));
   }
 
-  async function write(content: HomebrewContent, forced: boolean): Promise<void> {
+  /* A text-only update sends no `art`, so the row keeps a picture another tab gave it. */
+  async function write(
+    content: HomebrewContent,
+    a: string | null | undefined,
+    forced: boolean,
+    retried = false
+  ): Promise<void> {
     const r0 = row;
     if (!r0) {
       banner = 'gone';
       return;
     }
-    const r = await store.updateItem(
-      r0,
-      { content, book_id: draft.bookId },
-      forced ? null : revision
-    );
-    if (r.ok) settled(r0.id, r.revision, content);
+    const patch =
+      a === undefined
+        ? { content, book_id: draft.bookId }
+        : { content, book_id: draft.bookId, art: a };
+    const r = await store.updateItem(r0, patch, forced ? null : revision);
+    if (r.ok) settled(r0.id, r.revision, content, a);
     else if (r.error === 'conflict' || r.error === 'gone') banner = r.error;
+    else if (artGone(r)) await renamed(retried, (n) => write(content, n, forced, true));
     else refused = refusedLine(r);
+  }
+
+  const artGone = (r: ListWrite | HomebrewSaved): boolean =>
+    !r.ok && r.error === 'refused' && r.reason === 'artGone';
+
+  /* The database refused the picture's name (another tab removed the picture from its last
+     item meanwhile): with the cropped file still here, the save takes a new name and
+     uploads again, once; else the author chooses the picture again. */
+  async function renamed(
+    retried: boolean,
+    again: (name: string) => Promise<void>
+  ): Promise<void> {
+    const v = art;
+    if (v.kind !== 'file' || retried) {
+      artLine = t.hbArtGone;
+      return;
+    }
+    const next = {
+      ...v,
+      id: store.newIds().id.replace(/-/g, ''),
+      preview: app.env.media.preview(v.full)
+    };
+    art = next;
+    const name = await upload(next);
+    if (name !== null) await again(name);
+  }
+
+  /* Uploads the cropped file's pair; null after a refusal, which the line under the buttons
+     names. */
+  async function upload(v: ArtValue & { kind: 'file' }): Promise<string | null> {
+    const name = newArtName(v.ext, v.id);
+    uploadingArt = true;
+    const r = await store.uploadArt(name, v.full, v.thumb);
+    uploadingArt = false;
+    if (r.ok) return name;
+    refused =
+      r.error === 'limit'
+        ? t.hbNotSaved + ' ' + limitText(r.key, r.value, t)
+        : t.hbArtUploadFailed;
+    return null;
+  }
+
+  /* The picture a save writes: `undefined` leaves the row's own; a file uploads first. */
+  async function artToSend(): Promise<{ art: string | null | undefined } | null> {
+    const v = art;
+    switch (v.kind) {
+      case 'keep':
+        return { art: undefined };
+      case 'remove':
+        return { art: null };
+      case 'item':
+        return { art: v.img };
+      default: {
+        const name = await upload(v);
+        return name === null ? null : { art: name };
+      }
+    }
   }
 
   /* Checks first: nothing is sent while a problem remains. `key` is the key the write
      uses: «Новая линия» stores it as the line. */
   async function run(
     key: string,
-    send: (content: HomebrewContent) => Promise<void>
+    send: (content: HomebrewContent, art: string | null | undefined) => Promise<void>
   ): Promise<void> {
     if (busy) return;
     refused = null;
@@ -411,7 +528,9 @@
     problems = [];
     busy = true;
     try {
-      await send(contentOf(draft, editIn, base, key) as HomebrewContent);
+      const content = contentOf(draft, editIn, base, key) as HomebrewContent;
+      const picture = await artToSend();
+      if (picture) await send(content, picture.art);
     } finally {
       busy = false;
     }
@@ -419,8 +538,8 @@
 
   function save(): Promise<void> {
     return rowKey === null
-      ? run(ids.key, (c) => create(ids, c))
-      : run(rowKey, (c) => write(c, false));
+      ? run(ids.key, (c, a) => create(ids, c, a))
+      : run(rowKey, (c, a) => write(c, a, false));
   }
 
   async function showNew(): Promise<void> {
@@ -729,7 +848,7 @@
                 size="sm"
                 variant="primary"
                 onclick={() => {
-                  if (rowKey !== null) void run(rowKey, (c) => write(c, true));
+                  if (rowKey !== null) void run(rowKey, (c, a) => write(c, a, true));
                 }}>{t.hbSaveMine}</Button
               >
               <Button size="sm" onclick={() => void showNew()}>{t.hbShowNew}</Button>
@@ -742,7 +861,8 @@
               <Button
                 size="sm"
                 variant="primary"
-                onclick={() => void run(ids.key, (c) => create(ids, c))}>{t.hbSaveAsNew}</Button
+                onclick={() => void run(ids.key, (c, a) => create(ids, c, a))}
+                >{t.hbSaveAsNew}</Button
               >
               <Button size="sm" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
             {/snippet}
@@ -890,6 +1010,7 @@
             <span class="counter">{descLength} / {DESC_MAX}</span>
           {/if}
         </FormField>
+        <ArtField {app} {store} {selfKey} saved={loadedArt} bind:value={art} line={artLine} />
 
         {#if draft.kind !== 'equip'}
           <FormField label={t.tier} error={errText('hb-tier')} errorId={errId('hb-tier')}>
@@ -1146,6 +1267,9 @@
             <Button variant="danger" onclick={() => void remove()}>{t.del}</Button>
           {/if}
         </div>
+        {#if uploadingArt}
+          <p class="hint" role="status">{t.hbArtUploading}</p>
+        {/if}
         {#if refused}
           <p class="refused" role="alert">{refused}</p>
         {/if}
@@ -1160,8 +1284,10 @@
           it={card}
           index={previewIndex ?? app.index}
           lang={app.lang}
-          artBroken={false}
-          onartfail={() => {}}
+          artBroken={previewBroken}
+          onartfail={() => {
+            previewBroken = true;
+          }}
           pick={rowKey !== null && row ? addPick : undefined}
         />
       {/if}

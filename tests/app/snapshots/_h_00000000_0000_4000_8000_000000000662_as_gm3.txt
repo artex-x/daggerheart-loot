@@ -42,6 +42,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     StaticText ":"
     StaticText " Два предмета комплекта: вы просыпаетесь отдохнувшим даже на гол..." [namelen=73 namehash=d14a4e49]
     button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm3#/print/hb_rangerrollaaaaaa]
@@ -77,6 +78,7 @@ daggerheart.com
 Походный плед (HB)
 Скатка путника (HB)
 Скатка стража (HB)
+Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
@@ -129,6 +131,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm
     StaticText ":"
     StaticText " Two pieces of the set: you wake rested even on bare ground."
     button "Share"
+    button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm3#/print/hb_rangerrollaaaaaa]
@@ -148,6 +151,7 @@ Alt. tables
 Arazo's Artifacts
 Camp Blanket (HB)
 Communities
+Copy image
 Copy link
 Copy name
 Copy text

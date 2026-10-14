@@ -267,6 +267,24 @@ describe('your data', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('says the archive holds no pictures only to an account with a picture', async () => {
+    const zipNoArt = 'Картинок в архиве нет: после переноса добавьте их заново.';
+    const one = open(as('gm1'));
+    expect(await screen.findByText(zipNoArt)).toBeInTheDocument();
+    await expectNoA11yViolations(one.container);
+    await userEvent.click(screen.getAllByRole('button', { name: 'EN' })[0]!);
+    expect(
+      await screen.findByText('The archive holds no pictures: add them again after the move.')
+    ).toBeInTheDocument();
+    cleanup();
+    open(as('gm2'));
+    await screen.findByRole('button', { name: 'Скачать мои данные (ZIP)' });
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Скачать мои данные (ZIP)' })).toBeEnabled();
+    });
+    expect(screen.queryByText(zipNoArt)).toBeNull();
+  });
+
   it('is disabled while the lists load', async () => {
     const cloud = as('gm1');
     cloud.lists.list = () => new Promise(() => undefined);

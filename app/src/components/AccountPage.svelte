@@ -409,6 +409,9 @@
       <Panel style={PANEL}>
         <Field label={t.yourData} heading>
           <p class="hint lead">{t.yourDataHint}</p>
+          {#if app.homebrew?.items.some((r) => r.art)}
+            <p class="hint lead">{t.zipNoArt}</p>
+          {/if}
           <div class="row-btns">
             <Button
               disabled={exporting || app.cloudLists?.status !== 'ready'}

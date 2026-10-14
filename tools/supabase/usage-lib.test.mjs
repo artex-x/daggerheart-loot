@@ -340,6 +340,48 @@ describe('the lifecycle check', () => {
     assert.equal(row.note, 'the hourly clean-up has not run: 3 rows past their retention');
   });
 
+  it('isOkAtZeroOverduePictureFiles', () => {
+    const row = lifecycle({
+      lifecycle_overdue: 0,
+      lifecycle_files: 0,
+      lifecycle_last: run('succeeded')
+    });
+    assert.equal(row.state, 'ok');
+  });
+
+  it('warnsOnThreeOverduePictureFilesAndCountsThemInTheRows', () => {
+    const row = lifecycle({
+      lifecycle_overdue: 4,
+      lifecycle_files: 3,
+      lifecycle_last: run('succeeded')
+    });
+    assert.equal(row.state, 'warn');
+    assert.equal(
+      row.note,
+      'the hourly clean-up has not run: 4 rows past their retention, 3 of them picture files'
+    );
+  });
+
+  it('warnsWhenTheBucketHoldsFilesAndAStorageKeyIsMissing', () => {
+    const missing = lifecycle({
+      lifecycle_overdue: 0,
+      lifecycle_files: 0,
+      lifecycle_files_key: false,
+      lifecycle_last: run('succeeded')
+    });
+    assert.equal(
+      `${missing.state}: ${missing.note}`,
+      'warn: the picture clean-up has no storage key'
+    );
+    // The collector sets no key flag for an empty bucket.
+    const empty = lifecycle({
+      lifecycle_overdue: 0,
+      lifecycle_files: 0,
+      lifecycle_last: run('succeeded')
+    });
+    assert.equal(empty.state, 'ok');
+  });
+
   it('warnsWhenTheNewestRunFailed', () => {
     const row = lifecycle({ lifecycle_overdue: 0, lifecycle_last: run('failed') });
     assert.equal(row.state, 'warn');

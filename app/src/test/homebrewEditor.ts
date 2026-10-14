@@ -16,9 +16,11 @@ import {
   fakeData,
   fakeDialog,
   fakeEnv,
+  fakeMedia,
   fakePage,
   memoryRouter,
-  memoryStorage
+  memoryStorage,
+  type FakeMedia
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 
@@ -52,6 +54,8 @@ export async function editor(
     cloud?: FakeCloud;
     /* The real catalogue, for the relations to catalog records. */
     real?: boolean;
+    /* The picture field's decode and encode. */
+    media?: FakeMedia;
   } = {}
 ): Promise<EditorView> {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -64,7 +68,8 @@ export async function editor(
   const page = fakePage();
   const storage = memoryStorage(opts.lang ? { 'dhloot.lang.v1': opts.lang } : {});
   const data = opts.real ? { data: fakeData(REAL) } : {};
-  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage, ...data }));
+  const media = opts.media ?? fakeMedia();
+  const app = new AppState(fakeEnv({ cloud, router, dialog, page, storage, media, ...data }));
   app.start();
   await flush();
   /* The owner feed's join asks for one coalesced read; it lands before a test acts as

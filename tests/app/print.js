@@ -2321,6 +2321,34 @@ const { ok } = rep;
   const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
   ok(hashEn === '#/print/ci1-q1', 'copied set link (en) is wrong: ' + hashEn);
 
+  /* An own item's picture: the colour card draws it as a catalog picture, the
+     black-and-white card draws none. The seed gives gm1's axe the catalog's
+     ci1.webp (the test build has no bucket); print-snapshots re-keys this case
+     to #/p/<id>. */
+  console.log("an own item's picture");
+  await d.open('#/print/hb_emberaxeaaaaaaaa', { as: 'gm1' });
+  await colour();
+  await d.settle();
+  const ownArt = await page.evaluate(async () => {
+    const card = document.querySelector('.pcard');
+    const imgs = ['.pc-img', '.pc-back'].map((sel) => card?.querySelector(sel));
+    await Promise.all(imgs.map((i) => i?.decode().catch(() => undefined)));
+    return imgs.map((i) => ({
+      src: i?.getAttribute('src') ?? null,
+      loaded: !!i && i.complete && i.naturalWidth > 0
+    }));
+  });
+  ok(
+    ownArt.every((a) => a.src === 'img/ci1.webp' && a.loaded),
+    "the own item's colour card does not draw its picture: " + JSON.stringify(ownArt)
+  );
+  await bw();
+  await d.settle();
+  ok(
+    (await page.$('.pcard.bw')) && !(await page.$('.pc-art')),
+    "the own item's black-and-white card draws a picture"
+  );
+
   ok(!pageErrs.length, 'page error — ' + pageErrs.slice(0, 2).join(' | '));
   ok(!pageErrsEn.length, 'page error (en) - ' + pageErrsEn.slice(0, 2).join(' | '));
 

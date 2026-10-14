@@ -92,6 +92,40 @@ async function readRealtime(db) {
   return { realtime_rows_24h: num(r.n) };
 }
 
+/* The picture files of the clean-up watch (20261014120000_homebrew_art):
+   `lifecycle_files`, the own files with a valid name that no item names and
+   that are older than 3 hours (the hour of grace, the hourly run and 2
+   hours), and `lifecycle_files_key: false` when the bucket holds a file and
+   a Vault secret of the file deletion is missing (names only, never a
+   value). Nothing before that migration or without storage.objects access. */
+async function readArtFiles(db) {
+  const [s] = await db`
+    select to_regprocedure('public.homebrew_art_name_ok(text)') is not null as art,
+      coalesce(has_table_privilege(to_regclass('storage.objects'), 'select'), false) as objects,
+      coalesce(has_table_privilege(to_regclass('vault.secrets'), 'select'), false) as vault`;
+  if (!s.art || !s.objects) return {};
+  const [f] = await db`
+    select count(*) filter (where o.created_at < now() - interval '3 hours'
+        and not exists (
+          select 1 from public.homebrew_items i
+          where i.art like 'p/%' and i.art = 'p/' || substr(o.name, 3)))::int
+        as files,
+      count(*)::int as held
+    from storage.objects o
+    where o.bucket_id = 'homebrew-art' and public.homebrew_art_name_ok(o.name)`;
+  const out = { lifecycle_files: f.files };
+  if (f.held > 0) {
+    const keys = s.vault
+      ? (
+          await db`select count(*)::int as n from vault.secrets
+            where name in ('dhloot_api_url', 'dhloot_storage_key')`
+        )[0].n
+      : 0;
+    if (keys < 2) out.lifecycle_files_key = false;
+  }
+  return out;
+}
+
 /* The watch on the hourly clean-up (lifecycle_cleanup(), as the
    20261007130000 migration leaves it): `lifecycle_overdue`, the rows past
    their retention plus 2 hours, and `lifecycle_last`, the newest run of the
@@ -127,9 +161,12 @@ async function readLifecycle(db) {
         or (x.read_at is null and x.created_at < now() - interval '30 days 2 hours')`;
     n += notices;
   }
+  const files = await readArtFiles(db);
+  n += files.lifecycle_files ?? 0;
   if (!s.present || !s.readable) {
     return {
       lifecycle_overdue: n,
+      ...files,
       lifecycle_last: null,
       lifecycle_note: s.present ? 'no cron.job_run_details access' : 'no cron.job_run_details'
     };
@@ -144,6 +181,7 @@ async function readLifecycle(db) {
     order by d.start_time desc nulls last limit 1`;
   return {
     lifecycle_overdue: n + runs,
+    ...files,
     lifecycle_last: last
       ? { status: last.status, start_time: last.start_time?.toISOString() ?? null }
       : null
@@ -154,7 +192,8 @@ async function readLifecycle(db) {
  * `db_bytes`, the Storage figures, `mau`, `auth_users`,
  * `realtime_rows_24h`, `tables` (every
  * `public` table's exact rows and total bytes), `near_limits` and the
- * clean-up watch (`lifecycle_overdue`, `lifecycle_last`). Totals only: no
+ * clean-up watch (`lifecycle_overdue`, `lifecycle_files`, `lifecycle_files_key`,
+ * `lifecycle_last`). Totals only: no
  * id, email or name leaves the database. */
 export async function collect(db, now) {
   const [{ bytes }] =

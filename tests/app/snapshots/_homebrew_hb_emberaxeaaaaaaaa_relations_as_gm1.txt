@@ -44,7 +44,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "Хоумбрю" [selected=false]
         option "Мастерская Ольхи" [selected=true]
         option "+ Новый источник..." [selected=false]
-      ... StaticText x22 of 26 same-shape siblings elided
+      ... StaticText x23 of 27 same-shape siblings elided
       combobox "Раздел" [value=Холодное оружие expanded=false haspopup=menu]
         option "Без раздела" [selected=false]
         option "Пистоли" [selected=false]
@@ -52,6 +52,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "+ Новый раздел..." [selected=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      button "Заменить"
+      button "Убрать картинку"
       group "Ранг"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -97,12 +99,10 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Уникальный" [pressed=false]
         button "В линии" [pressed=true]
         button "Новая линия" [pressed=false]
-      button "Убрать: Палаш"
+      ... button x6 of 10 same-shape siblings elided
       button "Подсказка: Улучшается до" [description=Подсказка: Улучшается до expanded=false]
-      button "Убрать: Длинный Меч"
       combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Подсказка: Получается из" [description=Подсказка: Получается из expanded=false]
-      ... button x4 of 8 same-shape siblings elided
       combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=false]
       combobox "Комплект" [value=Пылающие близнецы expanded=false haspopup=menu]
@@ -170,6 +170,7 @@ daggerheart.com
 Двуручное
 Длинный Меч
 Добавить в список
+Заменить
 Знание
 Инстинкт
 Искра
@@ -213,6 +214,7 @@ daggerheart.com
 Средне
 Страница
 Таблицы
+Убрать картинку
 Убрать: Длинный Меч
 Убрать: Клеймо Ольхи
 Убрать: Медленный
@@ -273,7 +275,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "Homebrew" [selected=false]
         option "Alder Workshop" [selected=true]
         option "+ New source..." [selected=false]
-      ... StaticText x22 of 26 same-shape siblings elided
+      ... StaticText x23 of 27 same-shape siblings elided
       combobox "Section" [value=Blades expanded=false haspopup=menu]
         option "No section" [selected=false]
         option "Pistols" [selected=false]
@@ -281,6 +283,8 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "+ New section..." [selected=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      button "Replace"
+      button "Remove the picture"
       group "Tier"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -326,12 +330,10 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Unique" [pressed=false]
         button "In a line" [pressed=true]
         button "New line" [pressed=false]
-      button "Remove: Broadsword"
+      ... button x6 of 10 same-shape siblings elided
       button "Help: Upgrades to" [description=Help: Upgrades to expanded=false]
-      button "Remove: Longsword"
       combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Help: Made from" [description=Help: Made from expanded=false]
-      ... button x4 of 8 same-shape siblings elided
       combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Help: Set" [description=Help: Set expanded=false]
       combobox "Set" [value=Blazing Twins expanded=false haspopup=menu]
@@ -431,11 +433,13 @@ Presence
 Primary weapon
 Privacy
 RU
+Remove the picture
 Remove: Alder Brand
 Remove: Broadsword
 Remove: Longsword
 Remove: Premium Bedroll
 Remove: Slow
+Replace
 Rule cards
 Save
 Search

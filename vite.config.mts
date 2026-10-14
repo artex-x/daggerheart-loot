@@ -262,6 +262,11 @@ export default defineConfig(({ command, mode }) => {
              one exclusion rather than an inline ignore on `pngOf` alone,
              because `pngOf` is most of it. */
           'src/ports/image.ts',
+          /* The picture field's decode and encode, for the same reason: jsdom has no
+             `createImageBitmap`, canvas or `toBlob`. tests/app/states.js cases 70-72
+             drive `browserMedia` in Chrome, the JPEG fallback included; the field and
+             the dialog are covered here through `fakeMedia`. */
+          'src/ports/media.ts',
           'src/vite-env.d.ts',
           /* The entry point that mounts the app onto a real DOM - exercised for
              real by tools/smoke-http.mjs, which opens the built page over

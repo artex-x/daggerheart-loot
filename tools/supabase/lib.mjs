@@ -298,11 +298,12 @@ export function pendingMigrations(localNames, appliedVersions) {
 }
 
 // The local stack's services that no suite uses. `npm run check:db` and the
-// restore drill start the database, Auth, Realtime and Kong (the gateway
-// the WebSocket clients join through). With Auth excluded, `supabase status`
-// names no key and no JWT secret; the drill needs Auth's migrated columns.
+// restore drill start the database, Auth, Realtime, Storage and Kong (the
+// gateway the WebSocket clients join through). With Auth excluded, `supabase
+// status` names no key and no JWT secret; the drill needs Auth's migrated
+// columns. Storage runs because the homebrew-art bucket and its policy live in
+// its schema, which only the storage-api container migrates.
 export const LOCAL_STACK_EXCLUDES = Object.freeze([
-  'storage-api',
   'imgproxy',
   'mailpit',
   'postgrest',
@@ -568,6 +569,27 @@ function loadFailLine(load, hints) {
   return `load: FAIL SQLSTATE ${load.sqlstate}${at}${hint ? ` (${hint})` : ''}`;
 }
 
+/** Returns the names of the regular files in a tar archive (ustar or GNU,
+ * as `tar -cf` writes it), in archive order. Throws on bytes that are not
+ * one. */
+export function tarNames(bytes) {
+  const names = [];
+  const text = (from, len) =>
+    new TextDecoder().decode(bytes.subarray(from, from + len)).replace(/\0.*$/s, '');
+  let at = 0;
+  while (at + 512 <= bytes.length) {
+    if (bytes.subarray(at, at + 512).every((b) => b === 0)) return names;
+    if (!text(at + 257, 5).startsWith('ustar')) throw new Error('not a tar archive');
+    const size = parseInt(text(at + 124, 12).trim() || '0', 8);
+    const type = text(at + 156, 1);
+    const prefix = text(at + 345, 155);
+    const name = text(at, 100);
+    if (type === '' || type === '0') names.push(prefix ? `${prefix}/${name}` : name);
+    at += 512 + Math.ceil(size / 512) * 512;
+  }
+  throw new Error('the tar archive has no end');
+}
+
 /** The recovery command when a drill could not reset the local database. */
 export const RESET_COMMAND = 'node node_modules/supabase/dist/supabase.js db reset --local';
 
@@ -579,7 +601,9 @@ export const RESET_COMMAND = 'node node_modules/supabase/dist/supabase.js db res
  * (null, `{ ok: true }`, `{ ok: false, skipped: true }` or `{ ok: false,
  * sqlstate, line, status }`), `counts` (Map of `schema.table` to `{ loaded,
  * dump }`, or null), `cleanup` (`{ tempRemoved, reset }`; `reset` is null
- * when the drill stopped before the local stack). */
+ * when the drill stopped before the local stack), and `art` (`{ files }`
+ * when the artifact held the weekly `art.tar.age` and it opened; absent
+ * otherwise). */
 export function drillReport(input) {
   const lines = [];
   let pass = true;
@@ -602,6 +626,7 @@ export function drillReport(input) {
   } else pass = false;
   if (decrypted) lines.push('decrypt: schema.sql.age ok, data.sql.age ok');
   else pass = false;
+  if (input.art) lines.push(`decrypt: art.tar.age ok, ${input.art.files} picture files`);
   if (failure) fail(`FAIL: ${failure}`);
 
   if (dumpTables && localTables) {

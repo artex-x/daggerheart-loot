@@ -45,6 +45,8 @@ const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
  *  than typed by hand (the 181-id cap) - generated from `data.js`,
  *  `tests/derived.js` keeps the two equal. */
 const LOOT = require('../../data.json');
+/** A real 640 px square picture for the editor's «Картинка». */
+const ART_FILE = path.join(__dirname, '../../img/ci1.webp');
 
 /* The fake cloud seed's homebrew (`app/src/ports/fake-cloud-seed.ts`): the axe's
    row id, and its content renamed as another device would. */
@@ -2646,6 +2648,54 @@ const STATES = [
     why: 'a new item: «Новый предмет», the legend, «Вид» on «Предмет», «Источник» with its «?» on «Хоумбрю», «Название» *, «Описание», «Ранг» on «Без ранга» then 1-4, «Сохранить» and «Отмена», the preview card'
   },
   {
+    id: '#/homebrew/new ~ picture refused as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'a file that is not a picture chosen for «Картинка»: the dialog closed, «Не получилось открыть картинку. Выберите файл PNG, JPEG или WebP.» under the field, «Выбрать файл» and «Выбрать из предметов» kept',
+    enter: async (d) => {
+      await d.upload(HB_FILE('example.json'));
+      for (
+        let i = 0;
+        i < 40 && !(await d.text()).includes('Не получилось открыть картинку');
+        i++
+      )
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/new ~ crop dialog as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'the catalog picture ci1.webp chosen: the modal «Обрезать картинку» ready, its hint, the stage group, «Масштаб», «Готово» and «Отмена»',
+    enter: async (d) => {
+      await d.upload(ART_FILE);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Масштаб'); i++) await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/new ~ picture chosen as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'a crop done and not saved: the field with «Заменить», «Обрезать заново» and «Убрать картинку», the preview card drawing the crop',
+    enter: async (d) => {
+      await d.upload(ART_FILE);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Масштаб'); i++) await d.settle();
+      await d.press('Готово');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Обрезать заново'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/new ~ picture from items open as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: '«Выбрать из предметов» open and «Кольцо Тишины» typed: the picker «Предмет с картинкой» focused under the buttons with its named list; the tree holds no option rows (artField.test.ts pins the filter)',
+    enter: async (d) => {
+      await d.press('Выбрать из предметов');
+      await d.type('Найти предмет по названию...', 'Кольцо Тишины');
+    }
+  },
+  {
     id: '#/homebrew/new ~ armour as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
@@ -2997,6 +3047,15 @@ const STATES = [
     route: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa',
     as: 'gm1',
     why: 'two own items on the black-and-white compact sheet: the axe with its stat block, the potion; each source line the path, «Мастерская Ольхи · Холодное оружие» and «Хоумбрю»'
+  },
+  {
+    id: '#/print/' + HB_AXE + ' ~ colour for this visit as gm1',
+    route: '#/print/' + HB_AXE,
+    as: 'gm1',
+    why: "an own item's picture on print: the axe's colour card draws its picture (the catalog's ci1.webp, seeded), as print.js pins; print-snapshots re-keys this state to #/p/<id>",
+    enter: async (d) => {
+      await d.click('Цветная');
+    }
   },
   {
     id: '#/print/' + HB_AXE + '-hb_smithpotionaaaaa ~ colour for this visit as gm1',

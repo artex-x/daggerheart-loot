@@ -10,8 +10,9 @@
  * share links, I the move of a browser list, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
  * import of a homebrew file and the bulk move, P the GM-only entries, R the live links
- * across accounts. */
+ * across accounts, Q the own pictures of homebrew items. */
 
+import { newArtName, thumbOf } from '../lib/art.js';
 import type { EntryRow, ImportRow, ListRow, SharedRow } from '../lib/cloudLists.js';
 import {
   canonJson,
@@ -1788,6 +1789,142 @@ async function linkCases(
   );
 }
 
+/** How case Q reads a picture file's public address: its HTTP status. */
+export interface ArtProbe {
+  status(name: string): Promise<number>;
+}
+
+/** How long a deleted picture's address may still answer: the database queues the delete
+ *  at the commit, and the CDN may hold a read copy (docs/specs/META.md, section 3). */
+const ART_GONE_MS = 30_000;
+
+/* Answers whether the address of `name` stops answering 200 within `ART_GONE_MS`. */
+async function artGone(probe: ArtProbe, name: string): Promise<boolean> {
+  for (let waited = 0; waited <= ART_GONE_MS; waited += 1000) {
+    const status = await probe.status(name);
+    if (status === 400 || status === 404) return true;
+    await pause(1000);
+  }
+  return false;
+}
+
+/* A file the bucket takes: the WebP magic, nothing a browser has to draw. */
+const artBlob = (): Blob =>
+  new Blob([new Uint8Array([82, 73, 70, 70, 4, 0, 0, 0, 87, 69, 66, 80])], {
+    type: 'image/webp'
+  });
+
+async function artCases(
+  author: CloudPort,
+  reader: CloudPort,
+  signedOut: CloudPort,
+  probe: ArtProbe,
+  assert: Assert
+): Promise<void> {
+  const name = newArtName('webp', author.homebrew.newId());
+  for (const n of [name, thumbOf(name), name]) {
+    const up = await author.homebrew.uploadArt(n, artBlob());
+    assert(up.ok, 'art: the upload of ' + n + ' answered ' + JSON.stringify(up));
+  }
+  const bad = await author.homebrew.uploadArt('x/notapicture.webp', artBlob());
+  assert(!bad.ok, 'art: an upload of a name of another shape was taken');
+  assert((await probe.status(name)) === 200, 'art: the public address does not answer 200');
+
+  const itemId = author.homebrew.newId();
+  const key = author.homebrew.newKey();
+  const content: HomebrewContent = { kind: 'item', ru: 'Скатка следопыта' };
+  const made = await author.homebrew.createItem({
+    id: itemId,
+    key,
+    book_id: null,
+    content,
+    art: name
+  });
+  assert(made.ok, 'art: an item naming its upload was refused: ' + JSON.stringify(made));
+  const missing = await author.homebrew.createItem({
+    id: author.homebrew.newId(),
+    key: author.homebrew.newKey(),
+    book_id: null,
+    content,
+    art: newArtName('webp', author.homebrew.newId())
+  });
+  assert(
+    !missing.ok && missing.error === 'refused' && missing.reason === 'artGone',
+    'art: an item naming a file never uploaded answered ' + JSON.stringify(missing)
+  );
+  const out = await signedOut.lists.item(itemId);
+  assert(
+    out.ok && (out.item as { img?: unknown } | null)?.img === name,
+    'art: signed out, item() does not carry img: ' + JSON.stringify(out)
+  );
+  const linked = await author.lists.items([itemId]);
+  assert(
+    linked.ok && linked.items[0]?.img === name,
+    'art: items() does not carry img: ' + JSON.stringify(linked)
+  );
+  const textOnly = await author.homebrew.updateItem(
+    itemId,
+    { content: { ...content, rud: 'Пахнет хвоей.' }, book_id: null },
+    null
+  );
+  assert(textOnly.ok, 'art: a text-only update was refused');
+  const artOf = async (port: CloudPort, id: string): Promise<string | null | undefined> => {
+    const read = await port.homebrew.load();
+    return read.ok ? read.items.find((i) => i.id === id)?.art : undefined;
+  };
+  assert((await artOf(author, itemId)) === name, 'art: a text-only update changed the picture');
+
+  /* «Сохранить себе»: the reader's own copy of the file, named on the reader's item. */
+  const copied = await reader.homebrew.copyArt(name);
+  assert(copied.ok && copied.name !== name, 'art: copyArt answered ' + JSON.stringify(copied));
+  const copy = copied.ok ? copied.name : name;
+  assert((await probe.status(copy)) === 200, 'art: the copy does not answer 200');
+  const readerItem = reader.homebrew.newId();
+  assert(
+    (
+      await reader.homebrew.createItem({
+        id: readerItem,
+        key: reader.homebrew.newKey(),
+        book_id: null,
+        content
+      })
+    ).ok,
+    "art: the reader's item was refused"
+  );
+  const set = await reader.homebrew.setArt(readerItem, copy, true);
+  assert(set.ok, 'art: setArt of the copy answered ' + JSON.stringify(set));
+  const kept = await reader.homebrew.setArt(readerItem, 'q1.webp', true);
+  assert(kept.ok, 'art: setArt only-if-none over a picture answered ' + JSON.stringify(kept));
+  assert(
+    (await artOf(reader, readerItem)) === copy,
+    'art: setArt only-if-none replaced a picture'
+  );
+  const foreign = await reader.homebrew.setArt(readerItem, name, false);
+  assert(
+    !foreign.ok && foreign.error === 'refused' && foreign.reason === 'artGone',
+    "art: an item named another account's file: " + JSON.stringify(foreign)
+  );
+
+  /* The database deletes a file no item names any more. */
+  assert(
+    (await author.homebrew.setArt(itemId, null, false)).ok,
+    'art: the removal was refused'
+  );
+  assert(await artGone(probe, name), 'art: the removed picture still answers after 30 s');
+  assert(await artGone(probe, thumbOf(name)), 'art: its 160 px file still answers after 30 s');
+  assert((await author.homebrew.removeItem(itemId)).ok, "art: the author's delete was refused");
+
+  /* An account deletion takes the account's pictures. */
+  assert(
+    (await reader.auth.deleteAccount()).ok,
+    'art: the reader account deletion was refused'
+  );
+  assert(
+    await artGone(probe, copy),
+    "art: a deleted account's picture still answers after 30 s"
+  );
+}
+
 export async function runCloudContract(
   make: (as?: string) => Promise<CloudPort>,
   users: ContractUsers,
@@ -1795,7 +1932,9 @@ export async function runCloudContract(
   log: (msg: string) => void = () => undefined,
   /** The ports of cases P and R, which read one account's writes from another: `make` itself
    *  when every port reaches one database. */
-  makeShared: (as?: string) => Promise<CloudPort> = make
+  makeShared: (as?: string) => Promise<CloudPort> = make,
+  /** Case Q's reads of the public addresses; without one, case Q does not run. */
+  art: ArtProbe | null = null
 ): Promise<void> {
   /* A. signed out, with no redirect to report and no preferences */
   const signedOut = await make();
@@ -1954,6 +2093,21 @@ export async function runCloudContract(
     await makeShared(),
     assert
   );
+
+  /* Q. own pictures: the member's upload, its item and its reads, a copy by a second user of
+     the same database, the file deletion at a removal and at that user's account deletion.
+     After R: the fake's second user is the shared world's doomed user, which Q deletes. */
+  if (art) {
+    await artCases(
+      await makeShared(member.as),
+      await makeShared(users.doomed),
+      await makeShared(),
+      art,
+      assert
+    );
+  } else {
+    log('case Q skipped: no picture probe');
+  }
 
   /* E. deleteAccount leaves nothing signed in */
   const doomed = doomedPort.auth;

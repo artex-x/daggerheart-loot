@@ -184,8 +184,15 @@ function lifecycleRow(snapshot, now) {
   const row = { kind: 'check', label: 'lifecycle' };
   const notes = [];
   const overdue = snapshot.lifecycle_overdue ?? 0;
+  const files = snapshot.lifecycle_files ?? 0;
   if (overdue > 0) {
-    notes.push(`the hourly clean-up has not run: ${overdue} rows past their retention`);
+    notes.push(
+      `the hourly clean-up has not run: ${overdue} rows past their retention` +
+        (files > 0 ? `, ${files} of them picture files` : '')
+    );
+  }
+  if (snapshot.lifecycle_files_key === false) {
+    notes.push('the picture clean-up has no storage key');
   }
   const last = snapshot.lifecycle_last ?? null;
   if (snapshot.lifecycle_note) notes.push(snapshot.lifecycle_note);

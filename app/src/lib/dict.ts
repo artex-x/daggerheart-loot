@@ -488,6 +488,7 @@ const ru = {
   yourDataHint:
     'Всё, что хранится в аккаунте, одним архивом ZIP: файл lists.json со списками и, если есть свои предметы, homebrew.json с ними, их источниками и картами. Чтобы перенести всё в другой аккаунт, импортируйте архив сначала на странице «Мои предметы», затем на странице «Мои списки»: за один раз - до 1000 списков и до 1000 своих предметов.',
   exportData: 'Скачать мои данные (ZIP)',
+  zipNoArt: 'Картинок в архиве нет: после переноса добавьте их заново.',
 
   /* Account lists: the index groups, the save status, the sign-in prompts,
      the delete confirm and the limits (docs/specs/FEATURES.md, "Lists"). */
@@ -648,6 +649,35 @@ const ru = {
     'Достигнут предел своих предметов: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
   limitHbBooks:
     'Достигнут предел источников: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  /* The picture of an own item (docs/specs/FEATURES.md, "Homebrew"). */
+  hbArt: 'Картинка',
+  hbArtChoose: 'Выбрать файл',
+  hbArtFromItems: 'Выбрать из предметов',
+  hbArtFromItemsLabel: 'Предмет с картинкой',
+  hbArtLine:
+    'Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка загрузится при сохранении.',
+  hbArtReplace: 'Заменить',
+  hbArtRecrop: 'Обрезать заново',
+  hbArtRemove: 'Убрать картинку',
+  hbArtCrop: 'Обрезать картинку',
+  hbArtCropHint:
+    'Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, + и - меняют масштаб.',
+  hbArtStage: 'Кадр: перетащите или двигайте стрелками',
+  hbArtZoom: 'Масштаб',
+  hbArtDone: 'Готово',
+  hbArtTooBig: 'Файл больше 20 МБ - выберите файл поменьше.',
+  hbArtBad: 'Не получилось открыть картинку. Выберите файл PNG, JPEG или WebP.',
+  hbArtSmall: 'Картинка меньше 160 пикселей по короткой стороне - выберите побольше.',
+  hbArtHuge: 'Картинка больше 8000 пикселей по стороне - уменьшите её и выберите снова.',
+  hbArtSqueeze: 'Не получилось сжать картинку до 200 КБ - выберите другую.',
+  hbArtUploading: 'Загружаем картинку...',
+  hbArtUploadFailed:
+    'Не получилось загрузить картинку: нет связи. Правки остались в форме - нажмите «Сохранить» ещё раз.',
+  hbArtGone: 'Картинка не сохранилась: файла уже нет. Выберите картинку заново.',
+  limitHbArt:
+    'Достигнут предел картинок: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+  hbArtChunkFailed:
+    'Не получилось загрузить окно обрезки. Проверьте соединение и попробуйте ещё раз.',
   hbRelations: 'Связи',
   hbLine: 'Линия улучшений',
   hbLineHelp:
@@ -1024,6 +1054,7 @@ const ru = {
     'Не получилось сохранить предмет себе. Проверьте соединение и попробуйте ещё раз.',
   saveItemRefused:
     'Сервер не принял копию: данные в аккаунте изменились. Нажмите «Сохранить себе» ещё раз.',
+  copyArtFailed: 'Картинку скопировать не получилось - копия сохранена без неё.',
   requestsWaitN: '%n запрос ждёт ответа|%n запроса ждут ответа|%n запросов ждут ответа',
 
   /* Browser lists moved into the account, and read-only after the cutoff
@@ -1449,6 +1480,7 @@ const en: Dict = {
   yourDataHint:
     'Everything your account holds, in one ZIP archive: lists.json with your lists and, when you have items of your own, homebrew.json with them, their sources and cards. To move everything into another account, import the archive on the My items page first, then on the My lists page: up to 1000 lists and 1000 own items at a time.',
   exportData: 'Download my data (ZIP)',
+  zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
   groupAccount: 'Your account',
   groupBrowser: 'This browser',
@@ -1602,6 +1634,32 @@ const en: Dict = {
     'You have reached the limit of %n items of your own. Need more? Write to daggerheart.loot@gmail.com.',
   limitHbBooks:
     'You have reached the limit of %n sources. Need more? Write to daggerheart.loot@gmail.com.',
+  hbArt: 'Picture',
+  hbArtChoose: 'Choose a file',
+  hbArtFromItems: 'Choose from items',
+  hbArtFromItemsLabel: 'Item with a picture',
+  hbArtLine:
+    'A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The picture uploads when you save.',
+  hbArtReplace: 'Replace',
+  hbArtRecrop: 'Crop again',
+  hbArtRemove: 'Remove the picture',
+  hbArtCrop: 'Crop the picture',
+  hbArtCropHint: 'Drag the picture to choose the square. Arrow keys move it; + and - zoom.',
+  hbArtStage: 'Frame: drag it or move it with the arrow keys',
+  hbArtZoom: 'Zoom',
+  hbArtDone: 'Done',
+  hbArtTooBig: 'The file is larger than 20 MB - choose a smaller one.',
+  hbArtBad: 'Could not open the picture. Choose a PNG, JPEG or WebP file.',
+  hbArtSmall: 'The picture is under 160 pixels on its short side - choose a larger one.',
+  hbArtHuge: 'The picture is over 8000 pixels on a side - make it smaller and choose it again.',
+  hbArtSqueeze: 'Could not make the picture 200 KB or smaller - choose another one.',
+  hbArtUploading: 'Uploading the picture...',
+  hbArtUploadFailed:
+    'Could not upload the picture: no connection. Your edits are still in the form - press "Save" again.',
+  hbArtGone: 'The picture was not saved: its file is gone. Choose the picture again.',
+  limitHbArt:
+    'You have reached the limit of %n pictures. Need more? Write to daggerheart.loot@gmail.com.',
+  hbArtChunkFailed: 'Could not load the crop window. Check the connection and try again.',
   hbRelations: 'Relations',
   hbLine: 'Upgrade line',
   hbLineHelp:
@@ -1964,6 +2022,7 @@ const en: Dict = {
   saveItemFailed: 'Could not save the item to your items. Check the connection and try again.',
   saveItemRefused:
     'The server did not accept the copy: the data in your account changed. Press "Save to my items" again.',
+  copyArtFailed: 'Could not copy the picture - the copy was saved without it.',
   requestsWaitN: '%n request waits for an answer|%n requests wait for an answer',
 
   quoted: '"%s"',

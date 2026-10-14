@@ -1010,6 +1010,25 @@ describe('copyRows', () => {
       set: 'saints-ensemble'
     });
   });
+
+  it('writes no picture into the content: an own file or a catalog basename travels by row id', () => {
+    const plain = recordOf('hb_plainaaaaaaaaaaa', { kind: 'item', ru: 'Простое' }, null);
+    for (const img of [`p/${'e'.repeat(32)}.webp`, 'q1.webp']) {
+      const content = copyRows({ ...plain, img }, account()).items[0]?.content;
+      expect(content && 'img' in content).toBe(false);
+      expect(contentProblems(content, 'hb_plainaaaaaaaaaaa')).toEqual([]);
+    }
+  });
+});
+
+describe('recordOf with a picture', () => {
+  it("draws the row's picture as img, and none for a null or absent one", () => {
+    const own = `p/${'f'.repeat(32)}.jpg`;
+    const c = { kind: 'item' as const, ru: 'Скатка' };
+    expect(recordOf('hb_plainaaaaaaaaaaa', c, null, [], 'x', own).img).toBe(own);
+    expect('img' in recordOf('hb_plainaaaaaaaaaaa', c, null, [], 'x', null)).toBe(false);
+    expect('img' in recordOf('hb_plainaaaaaaaaaaa', c, null)).toBe(false);
+  });
 });
 
 describe('derivedKey and ownKeyFor', () => {

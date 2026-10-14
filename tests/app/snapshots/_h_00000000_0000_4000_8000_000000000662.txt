@@ -38,6 +38,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     link "Походный плед (HB)" [url=#/h/00000000-0000-4000-8000-000000000665]
     StaticText " Два предмета комплекта: вы просыпаетесь отдохнувшим даже на гол..." [namelen=73 namehash=d14a4e49]
     button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Сохранить себе" [expanded=false]
@@ -72,6 +73,7 @@ daggerheart.com
 Походный плед (HB)
 Скатка путника (HB)
 Скатка стража (HB)
+Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
@@ -119,6 +121,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=#/h/00000000-000
     link "Moss Pillow (HB)" [url=#/h/00000000-0000-4000-8000-000000000664]
     StaticText " Two pieces of the set: you wake rested even on bare ground."
     button "Share"
+    button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Save to my items" [expanded=false]
@@ -137,6 +140,7 @@ Alt. tables
 Arazo's Artifacts
 Camp Blanket (HB)
 Communities
+Copy image
 Copy link
 Copy name
 Copy text

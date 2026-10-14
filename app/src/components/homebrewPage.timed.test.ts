@@ -75,5 +75,7 @@ describe('a set of 300 own members and 100 book items', () => {
       first && field.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
     await expectNoA11yViolations(container);
-  }, 120_000);
+    /* The whole case took 96-104 s alone and exceeded 120 s inside the full coverage run on
+       this host (2026-10-14, at ed625964 too); the 3000 ms bound above is the measure. */
+  }, 300_000);
 });

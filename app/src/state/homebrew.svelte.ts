@@ -24,6 +24,7 @@ import {
   type HomebrewRecord,
   type ItemRow
 } from '../lib/homebrew.js';
+import { ART_SLACK, thumbOf } from '../lib/art.js';
 import { COALESCE_MS, readHomebrewMessage } from '../lib/live.js';
 import type { Lang } from '../lib/types.js';
 import type { HomebrewImportRows } from '../lib/homebrewFile.js';
@@ -94,8 +95,8 @@ export class Homebrew {
     }))
   );
 
-  /** Every own item as the app draws it, with its source, the own cards it names and its
-   *  row id as `hid`. */
+  /** Every own item as the app draws it, with its source, the own cards it names, its
+   *  row id as `hid` and its picture as `img`. */
   records: HomebrewRecord[] = $derived.by(() => {
     const refs: Record<string, BookRef> = Object.fromEntries(
       this.books.map((b) => [b.id, { ...b.content, key: b.key }])
@@ -107,7 +108,8 @@ export class Homebrew {
         row.content,
         row.book_id === null ? null : (refs[row.book_id] ?? null),
         cards,
-        row.id
+        row.id,
+        row.art
       )
     );
   });
@@ -266,37 +268,40 @@ export class Homebrew {
     return r;
   }
 
-  /** Makes an item in the source `bookId` (null: the default source). */
+  /** Makes an item in the source `bookId` (null: the default source), with the picture
+   *  `art` (null: none; its files are uploaded first). */
   async createItem(
     ids: NewIds,
     bookId: string | null,
-    content: HomebrewContent
+    content: HomebrewContent,
+    art: string | null = null
   ): Promise<ListWrite> {
     if (this.#unsure[ids.id]) {
       if (!(await this.read())) return NETWORK;
       const held = this.items.find((r) => r.id === ids.id);
       if (held) {
-        const r = await this.updateItem(held, { content, book_id: bookId }, held.revision);
+        const r = await this.updateItem(held, { content, book_id: bookId, art }, held.revision);
         return this.#settled(ids.id, r);
       }
     }
     const r = await this.#send(() =>
-      this.#repo.createItem({ ...ids, book_id: bookId, content })
+      this.#repo.createItem({ ...ids, book_id: bookId, content, art })
     );
     if (r.ok) {
       const at = nowIso();
       this.items = [
         ...this.items,
-        { ...ids, book_id: bookId, content, revision: 1, created_at: at, updated_at: at }
+        { ...ids, book_id: bookId, content, art, revision: 1, created_at: at, updated_at: at }
       ];
     }
     return this.#created(ids.id, r);
   }
 
-  /** Writes the item over `revision` (null: whatever the row holds). */
+  /** Writes the item over `revision` (null: whatever the row holds); the patch holds `art`
+   *  only when the form changed the picture, so a text-only save keeps the row's picture. */
   async updateItem(
     row: ItemRow,
-    patch: { content: HomebrewContent; book_id: string | null },
+    patch: { content: HomebrewContent; book_id: string | null; art?: string | null },
     revision: number | null
   ): Promise<HomebrewSaved> {
     const r = await this.#send(() => this.#repo.updateItem(row.id, patch, revision));
@@ -307,6 +312,45 @@ export class Homebrew {
       );
     }
     return r;
+  }
+
+  /** Writes the item's picture alone (`HomebrewRepository.setArt`). With `onlyIfNone` an
+   *  `ok` does not say whether the row took the picture (another device may have set one),
+   *  so the store reads the account again instead of patching the row. */
+  async setArt(id: string, art: string | null, onlyIfNone: boolean): Promise<HomebrewSaved> {
+    const r = await this.#send(() => this.#repo.setArt(id, art, onlyIfNone));
+    if (r.ok && onlyIfNone) {
+      await this.read();
+    } else if (r.ok) {
+      const at = nowIso();
+      this.items = this.items.map((x) =>
+        x.id === id ? { ...x, art, revision: r.revision, updated_at: at } : x
+      );
+    }
+    return r;
+  }
+
+  /** Uploads a cropped picture: the 640 px file `name`, then its 160 px file. The picture
+   *  room refused answers the account's picture limit, the item limit plus `ART_SLACK`
+   *  (null while the item limit is unknown). */
+  async uploadArt(name: string, full: Blob, thumb: Blob): Promise<ListWrite> {
+    for (const [n, blob] of [
+      [name, full],
+      [thumbOf(name), thumb]
+    ] as const) {
+      const r = await this.#send(() => this.#repo.uploadArt(n, blob));
+      if (r.ok) continue;
+      if (r.error === 'limit' && r.key === 'homebrew_art' && r.value === null) {
+        return { ...r, value: this.itemLimit === null ? null : this.itemLimit + ART_SLACK };
+      }
+      return r;
+    }
+    return { ok: true };
+  }
+
+  /** Copies another account's own picture under a new name of this account's. */
+  copyArt(img: string): Promise<{ ok: true; name: string } | { ok: false }> {
+    return this.#send(() => this.#repo.copyArt(img));
   }
 
   /** Deletes the item; the database removes its references from the lists. */

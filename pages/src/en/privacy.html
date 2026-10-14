@@ -48,6 +48,19 @@
   there, so you can copy it again at any time. A share link shows the homebrew items in the list
   as they are now.
 </p>
+<h3>Pictures</h3>
+<p>
+  A picture you add to a homebrew item is kept as a file in Supabase Storage under a random
+  name. Its address is public: anybody who opens the item, or a list that holds it, can open the
+  picture. Two of your items that show the same picture share its address, so a reader can tell
+  they are from one account. When no item of yours names a picture any more - you replaced or
+  removed it, deleted the item or deleted your account - the database deletes the file, usually
+  within a minute, and within a few hours if a request fails; the address can still answer for
+  up to a day after that, because a cached copy stays valid for that long. A player who saves
+  your item to their own items gets their own copy of the picture; deleting yours does not
+  delete theirs. The backup keeps pictures encrypted for at most 30 days. The data archive holds
+  no pictures.
+</p>
 <h3>Homebrew item addresses</h3>
 <p>
   Each homebrew item has its own address. Anybody who has the address can open the item, signed
@@ -73,8 +86,8 @@
 <h3>Deleting your data</h3>
 <p>
   If you sign in, you delete your account on the <a href="%APP%#/account">account page</a>. The
-  deletion is immediate: your lists, homebrew items, set and rule cards, pictures, settings and
-  share links leave the live database at once, and every share link stops working. A backup made
+  deletion is immediate: your lists, homebrew items, set and rule cards, settings and share
+  links leave the live database at once, and every share link stops working. A backup made
   before the deletion is kept encrypted for at most 30 days; after that the deleted data is gone
   from it too. Your items also leave other users' lists at once: their rows go, and those lists
   keep only each item's name and the fact that it was deleted, for at most 30 days. Copies of
@@ -94,4 +107,4 @@
   For a privacy question, a deletion request or a report of an abused share link, write to
   <a href="mailto:daggerheart.loot@gmail.com">daggerheart.loot@gmail.com</a>.
 </p>
-<p>Last changed: 7 October 2026.</p>
+<p>Last changed: 14 October 2026.</p>

@@ -43,7 +43,8 @@ describe('the fake cloud', () => {
         expect(c, m).toBe(true);
       },
       undefined,
-      (as) => Promise.resolve(world.as(as))
+      (as) => Promise.resolve(world.as(as)),
+      { status: (name) => Promise.resolve(world.artStatus(name)) }
     );
   });
 

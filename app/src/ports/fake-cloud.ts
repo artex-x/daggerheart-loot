@@ -30,6 +30,7 @@ import {
   type HomebrewRecord,
   type ItemRow
 } from '../lib/homebrew.js';
+import { isArtName, isOwnArt, newArtName, thumbOf } from '../lib/art.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { NoticeRow, RequestLine, ShortLine } from '../lib/requests.js';
 import {
@@ -123,6 +124,9 @@ export type FakeCloud = CloudPort & {
   /** A port of the same world signed in as `user`, or signed out without one: what one
    *  account writes another reads, as on the real project. */
   as(user?: string): CloudPort;
+  /** The HTTP status of a picture file's public address: 200 while the bucket holds it,
+   *  else 400, as Storage answers a missing object. */
+  artStatus(name: string): number;
 };
 
 /** The string the production-bundle guard looks for; renaming it without the
@@ -202,6 +206,7 @@ function seedHomebrew(
       key: i.key,
       book_id: i.bookId ?? null,
       content: structuredClone(i.content),
+      art: i.art ?? null,
       revision: 1,
       created_at: iso(boot - i.createdAgoMs),
       updated_at: iso(boot - i.editedAgoMs)
@@ -220,6 +225,9 @@ function seedHomebrew(
 }
 
 const BASE32 = 'abcdefghijklmnopqrstuvwxyz234567';
+
+/* Catalog pictures for the generated items: the 300-item measure draws a picture per row. */
+const FILL_ART = ['ci1.webp', 'ci2.webp', 'w1.webp'];
 
 /* Generated items «Предмет 001» ... after the seeded ones: when the user holds a source,
    every third in its first source with no section, every third in that source's first
@@ -248,6 +256,7 @@ function fillHomebrew(h: HeldHomebrew, to: number, boot: number): void {
         ende: 'A generated item for the measure.',
         ...(place === 1 && section ? { section } : {})
       },
+      art: FILL_ART[i % FILL_ART.length] ?? null,
       revision: 1,
       created_at: at,
       updated_at: at
@@ -338,6 +347,12 @@ interface Subscriber {
 const OK: Extract<ListWrite, { ok: true }> = { ok: true };
 const NETWORK: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
 const REFUSED: Extract<ListWrite, { error: 'refused' }> = { ok: false, error: 'refused' };
+const ART_GONE: Extract<ListWrite, { error: 'refused' }> = {
+  ok: false,
+  error: 'refused',
+  reason: 'artGone'
+};
+const ART_FILE = /^[pt]\/[0-9a-f]{32}\.(webp|jpg)$/;
 /* `P0002` in `apply_list_writes`: the row is deleted or not the caller's. */
 const GONE: ListOpResult = { ok: false, error: 'gone' };
 const FAULT: ListWrites = { ok: false, error: 'fault' };
@@ -522,13 +537,15 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const gone = new Set((lists.get(current) ?? []).map((h) => h.row.id));
       purchases = purchases.filter((r) => !gone.has(r.listId));
       notices = notices.filter((n) => !gone.has(n.listId));
-      const items = (homebrewHeld.get(current)?.items ?? []).map((i) => i.id);
+      const held = homebrewHeld.get(current)?.items ?? [];
+      const items = held.map((i) => i.id);
       noticeLinks(items, 'deleted');
       users.delete(current);
       rows.delete(current);
       lists.delete(current);
       homebrewHeld.delete(current);
       unlink(items);
+      releaseArt(held.map((i) => i.art));
       current = null;
       notify();
       return Promise.resolve({ ok: true });
@@ -664,6 +681,30 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     for (const [k, all] of lists) if (all.includes(h)) return users.get(k)?.id ?? null;
     return null;
   };
+  /* The bucket homebrew-art by name, with each file's owner (a seed user); an item names
+     only its owner's files (`homebrew_items_art_owned`). */
+  const artFiles = new Map<string, { owner: string; blob: Blob }>();
+  const artOk = (owner: string, art: string | null | undefined): boolean => {
+    if (art === null || art === undefined) return true;
+    if (!isArtName(art)) return false;
+    if (!isOwnArt(art)) return true;
+    return [art, thumbOf(art)].every((n) => artFiles.get(n)?.owner === owner);
+  };
+  /* `homebrew_items_art_release`: a file no item names any more goes at once. */
+  const releaseArt = (names: readonly (string | null | undefined)[]): void => {
+    for (const name of names) {
+      if (!name || !isOwnArt(name)) continue;
+      const named = [...homebrewHeld.values()].some((h) => h.items.some((i) => i.art === name));
+      if (named) continue;
+      artFiles.delete(name);
+      artFiles.delete(thumbOf(name));
+    }
+  };
+  /* An answer row's picture beside the item, absent for none. */
+  const imgOf = (hid: string): { img?: string } => {
+    const art = itemById(hid)?.item.art;
+    return art ? { img: art } : {};
+  };
   /* Any account's item as `homebrew_item_record` writes it, with its owner's source and
      cards; null for an id no item has. */
   const recordById = (hid: string): HomebrewRecord | null => {
@@ -738,10 +779,11 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     return {
       hid,
       mine: current !== null && found.owner === current,
-      revision: canonJson({ item, related }),
+      revision: canonJson({ item, related, ...imgOf(hid) }),
       item,
       related,
-      updated_at: updated
+      updated_at: updated,
+      ...imgOf(hid)
     };
   };
   const activeShares = (listId: string): HeldShare[] =>
@@ -1037,7 +1079,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const items: LinkedRow[] = [];
       for (const hid of new Set(ids)) {
         const item = recordById(hid);
-        if (item) items.push({ hid, item });
+        if (item) items.push({ hid, item, ...imgOf(hid) });
       }
       return Promise.resolve({ ok: true, items });
     },
@@ -1101,7 +1143,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
             ...rest,
             position,
             snapshot: hb_item === null ? null : recordById(hb_item),
-            ...(hb_item === null ? {} : { hid: hb_item })
+            ...(hb_item === null ? {} : { hid: hb_item, ...imgOf(hb_item) })
           };
           return gm ? { ...out, gm_note, gm_only: gm_only ?? false } : out;
         })
@@ -1576,8 +1618,15 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       if (mine.items.length >= maxItems) {
         return Promise.resolve(limited('homebrew_items_per_owner', maxItems));
       }
+      if (!artOk(current as string, row.art)) return Promise.resolve(ART_GONE);
       const at = stamp();
-      mine.items.push({ ...structuredClone(row), revision: 1, created_at: at, updated_at: at });
+      mine.items.push({
+        ...structuredClone(row),
+        art: row.art ?? null,
+        revision: 1,
+        created_at: at,
+        updated_at: at
+      });
       homebrewSaid();
       return Promise.resolve(OK);
     },
@@ -1598,8 +1647,13 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       if (patch.book_id !== null && !mine.books.some((b) => b.id === patch.book_id)) {
         return Promise.resolve(REFUSED);
       }
+      const was = i.art;
+      const art = patch.art === undefined ? was : patch.art;
+      if (art !== was && !artOk(current as string, art)) return Promise.resolve(ART_GONE);
       i.content = structuredClone(patch.content);
       i.book_id = patch.book_id;
+      i.art = art ?? null;
+      releaseArt([was]);
       i.revision++;
       i.updated_at = stamp();
       touchLinks([i.id]);
@@ -1617,8 +1671,49 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       unlink([i.id]);
       announce(was, TAB);
       mine.items.splice(at, 1);
+      releaseArt([i.art]);
       homebrewSaid();
       return Promise.resolve(OK);
+    },
+    setArt(id, art, onlyIfNone): Promise<HomebrewSaved> {
+      const mine = ownHomebrew();
+      if (!mine) return Promise.resolve(NETWORK);
+      const i = mine.items.find((x) => x.id === id);
+      if (!i) return Promise.resolve({ ok: false, error: 'gone' });
+      if (onlyIfNone && i.art) return Promise.resolve({ ok: true, revision: i.revision });
+      const was = i.art;
+      if (art === was) return Promise.resolve({ ok: true, revision: i.revision });
+      if (!artOk(current as string, art)) return Promise.resolve(ART_GONE);
+      i.art = art;
+      releaseArt([was]);
+      i.revision++;
+      i.updated_at = stamp();
+      touchLinks([i.id]);
+      homebrewSaid();
+      return Promise.resolve({ ok: true, revision: i.revision });
+    },
+    /* The insert policy: a file name of the bucket's shape, and room for twice the item
+       limit plus 5 pictures (`homebrew_art_room`); the same name again is ok. */
+    uploadArt(name, blob) {
+      if (offline || current === null) return Promise.resolve(NETWORK);
+      const owner = current;
+      const room = [...artFiles.values()].filter((f) => f.owner === owner).length;
+      if (artFiles.has(name)) return Promise.resolve(OK);
+      if (!ART_FILE.test(name) || room >= 2 * (maxItems + 5)) {
+        return Promise.resolve({ ok: false, error: 'limit', key: 'homebrew_art', value: null });
+      }
+      artFiles.set(name, { owner, blob });
+      return Promise.resolve(OK);
+    },
+    copyArt(img) {
+      if (offline || current === null || !isOwnArt(img)) return Promise.resolve({ ok: false });
+      const full = artFiles.get(img);
+      const thumb = artFiles.get(thumbOf(img));
+      if (!full || !thumb) return Promise.resolve({ ok: false });
+      const name = newArtName(img.endsWith('.jpg') ? 'jpg' : 'webp', uuid(made++));
+      artFiles.set(name, { owner: current, blob: full.blob });
+      artFiles.set(thumbOf(name), { owner: current, blob: thumb.blob });
+      return Promise.resolve({ ok: true, name });
     },
     createCard(row) {
       const mine = ownHomebrew();
@@ -1946,6 +2041,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     },
     writeCount: () => requests,
     opCount: () => applied,
+    artStatus: (name) => (artFiles.has(name) ? 200 : 400),
     as(who) {
       if (who !== undefined && !users.has(who)) {
         throw new Error('fake cloud: unknown user "' + who + '"');

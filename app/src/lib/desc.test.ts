@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
+import { ART_BASE } from './art.js';
 import { artSrc, descHtml, descParts, esc, hasLabels, lineHtml, splitLabel } from './desc.js';
 import type { Record_ } from './types.js';
 
@@ -153,5 +154,21 @@ describe('where a picture lives', () => {
     expect(artSrc('a.webp', false, 'thumb')).toBe('img/thumb/a.webp');
     expect(artSrc(undefined, false, 'thumb')).toBe('img/thumb/_none.webp');
     expect(artSrc('a.webp', true, 'thumb')).toBe('img/thumb/_none.webp');
+  });
+});
+
+describe('where an own picture lives', () => {
+  const own = `p/${'a'.repeat(32)}.webp`;
+
+  it('draws the bucket file at full size and its t/ copy for a row', () => {
+    expect(artSrc(own)).toBe(ART_BASE + own);
+    expect(artSrc(own, false, 'thumb')).toBe(ART_BASE + `t/${'a'.repeat(32)}.webp`);
+  });
+
+  it('passes an unsaved crop through at both sizes, and draws the placeholder when it fails', () => {
+    expect(artSrc('blob:http://x/1')).toBe('blob:http://x/1');
+    expect(artSrc('blob:http://x/1', false, 'thumb')).toBe('blob:http://x/1');
+    expect(artSrc(own, true)).toBe('img/_none.webp');
+    expect(artSrc(own, true, 'thumb')).toBe('img/thumb/_none.webp');
   });
 });

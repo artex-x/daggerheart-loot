@@ -681,6 +681,13 @@ describe('a share link', () => {
     expect(screen.queryByText(ru.legacyLinks)).not.toBeInTheDocument();
   });
 
+  it("draws a homebrew entry's picture on its row, signed out", async () => {
+    open('#/s/player-token-1');
+    const name = await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
+    const row = name.closest('.lrow') ?? name.closest('li') ?? name.parentElement;
+    expect(row?.querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+  });
+
   it('draws «Загружаем...» while the link reads, then the list', async () => {
     const cloud = fakeCloud(SEED);
     let answer: (() => void) | null = null;

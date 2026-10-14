@@ -203,6 +203,9 @@ describe('homebrew grants and functions', () => {
       'get_homebrew_items(uuid[])': pin(true, false, true),
       'get_shared_list(text)': pin(true, true, true),
       'get_shared_list(text,bigint)': pin(false, true, true),
+      /* The picture policy's two checks (20261014120000_homebrew_art.sql). */
+      'homebrew_art_name_ok(text)': validator,
+      'homebrew_art_room()': pin(true, false, true),
       'homebrew_book_valid(jsonb)': validator,
       'homebrew_books_before_update()': pin(false, false, false),
       'homebrew_books_limit()': pin(true, false, false),
@@ -215,6 +218,8 @@ describe('homebrew grants and functions', () => {
       'homebrew_content_valid(jsonb)': validator,
       'homebrew_ids_ok(jsonb,text,integer)': validator,
       'homebrew_item_record(uuid)': pin(false, false, false),
+      'homebrew_items_art_owned()': pin(true, false, false),
+      'homebrew_items_art_release()': pin(true, false, false),
       'homebrew_items_before_delete()': pin(true, false, false),
       'homebrew_items_before_update()': pin(false, false, false),
       'homebrew_items_limit()': pin(true, false, false),

@@ -323,6 +323,111 @@ describe('items', () => {
     });
   });
 
+  it('creates an item with a picture, keeps it over a text-only update and writes it alone', async () => {
+    const { cloud, store } = await loaded('gm2');
+    const own = `p/${'c'.repeat(32)}.webp`;
+    const blob = new Blob(['x'], { type: 'image/webp' });
+    for (const n of [own, `t/${'c'.repeat(32)}.webp`]) {
+      expect(await cloud.homebrew.uploadArt(n, blob)).toEqual({ ok: true });
+    }
+    const ids = store.newIds();
+    expect(await store.createItem(ids, null, POTION, own)).toEqual({ ok: true });
+    expect(store.records.find((r) => r.id === ids.key)?.img).toBe(own);
+    const row = store.item(ids.key)!;
+    const text = { content: { ...POTION, ru: 'Зелье II' }, book_id: null };
+    expect((await store.updateItem(row, text, 1)).ok).toBe(true);
+    expect(store.item(ids.key)?.art).toBe(own);
+    expect(await store.setArt(ids.id, 'q1.webp', true)).toEqual({
+      ok: true,
+      revision: 2
+    });
+    expect(store.item(ids.key)?.art).toBe(own);
+    expect((await store.setArt(ids.id, 'q1.webp', false)).ok).toBe(true);
+    expect(store.item(ids.key)?.art).toBe('q1.webp');
+    expect(cloud.artStatus(own)).toBe(400);
+    expect(await store.setArt(ids.id, own, false)).toEqual({
+      ok: false,
+      error: 'refused',
+      reason: 'artGone'
+    });
+  });
+
+  it("keeps another device's picture when an only-if-none write took nothing", async () => {
+    const { cloud, store } = await loaded('gm2');
+    const ids = store.newIds();
+    expect(await store.createItem(ids, null, POTION)).toEqual({ ok: true });
+    /* Another device sets a picture after this store's read. */
+    expect((await cloud.homebrew.setArt(ids.id, 'q2.webp', false)).ok).toBe(true);
+    expect(store.item(ids.key)?.art).toBeNull();
+    expect((await store.setArt(ids.id, 'q1.webp', true)).ok).toBe(true);
+    expect(store.item(ids.key)?.art).toBe('q2.webp');
+    expect(store.records.find((r) => r.id === ids.key)?.img).toBe('q2.webp');
+  });
+
+  it('uploads the 640 px file, then the 160 px file, and the same names again', async () => {
+    const order: string[] = [];
+    const { cloud, store } = make('gm2', (c) => ({
+      ...c.homebrew,
+      uploadArt: (name, blob) => {
+        order.push(name);
+        return c.homebrew.uploadArt(name, blob);
+      }
+    }));
+    await store.load();
+    const name = `p/${'d'.repeat(32)}.webp`;
+    const full = new Blob(['f'], { type: 'image/webp' });
+    const thumb = new Blob(['t'], { type: 'image/webp' });
+    expect(await store.uploadArt(name, full, thumb)).toEqual({ ok: true });
+    expect(order).toEqual([name, `t/${'d'.repeat(32)}.webp`]);
+    expect(cloud.artStatus(name)).toBe(200);
+    expect(await store.uploadArt(name, full, thumb)).toEqual({ ok: true });
+    cloud.setOffline(true);
+    expect(await store.uploadArt(`p/${'e'.repeat(32)}.webp`, full, thumb)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+  });
+
+  it('names the picture limit as the item limit plus 5, or none while it is unknown', async () => {
+    const refusing = (c: FakeCloud): HomebrewRepository => ({
+      ...c.homebrew,
+      uploadArt: () =>
+        Promise.resolve({ ok: false, error: 'limit', key: 'homebrew_art', value: null })
+    });
+    const blob = new Blob(['x'], { type: 'image/webp' });
+    const name = `p/${'f'.repeat(32)}.webp`;
+    const one = make('gm1', refusing);
+    expect(await one.store.uploadArt(name, blob, blob)).toEqual({
+      ok: false,
+      error: 'limit',
+      key: 'homebrew_art',
+      value: null
+    });
+    await one.store.load();
+    expect(await one.store.uploadArt(name, blob, blob)).toMatchObject({ value: 105 });
+    const big = fakeCloud(SEED, 'gm1', { limits: { items: 300 } });
+    const store3 = new Homebrew(refusing(big), {
+      tab: () => big.events.tab,
+      refreshLists: () => Promise.resolve()
+    });
+    await store3.load();
+    expect(await store3.uploadArt(name, blob, blob)).toMatchObject({ value: 305 });
+  });
+
+  it("copies another account's picture under a new name, and answers a failed copy", async () => {
+    const { cloud, store } = await loaded('gm2');
+    const author = cloud.as('gm1');
+    const name = `p/${'a'.repeat(32)}.webp`;
+    const blob = new Blob(['x'], { type: 'image/webp' });
+    for (const n of [name, `t/${'a'.repeat(32)}.webp`]) {
+      expect((await author.homebrew.uploadArt(n, blob)).ok).toBe(true);
+    }
+    const copied = await store.copyArt(name);
+    expect(copied.ok && copied.name).toMatch(/^p\/[0-9a-f]{32}\.webp$/);
+    expect(copied.ok && copied.name).not.toBe(name);
+    expect(await store.copyArt(`p/${'b'.repeat(32)}.webp`)).toEqual({ ok: false });
+  });
+
   it('removes an item and re-reads the lists', async () => {
     const { store, refreshLists } = await loaded();
     const ring = store.item(RING)!;

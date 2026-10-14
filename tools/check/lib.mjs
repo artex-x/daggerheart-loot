@@ -107,7 +107,7 @@ export const STAGES = [
   {
     name: 'test:supabase',
     command:
-      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs',
+      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs tools/supabase/backup-art.test.mjs',
     half: 1
   },
   {

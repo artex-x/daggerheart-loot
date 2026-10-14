@@ -213,7 +213,7 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   and no `E2E_*` variable in its environment - the deploy job's own code
   path. `dist/` is left configured for the test project until `npm run
   build` or `check:built` rebuilds it; CI's `e2e` job then runs `npm run
-  budget` on it (the 226 kB limit with the account client chunk);
+  budget` on it (the limit with the account client chunk, 294 kB on 2026-10-14);
 - the flows in Chrome over that `dist/`, each in its own browser context
   with the browser suites' `prepare()` and driver and the session written
   where supabase-js keeps it: F1 signed out (the chooser, «Войти» in the
@@ -291,6 +291,15 @@ value of those variables; CI's `e2e` job uploads nothing. In order:
   presses «Только для мастера: Палаш», and within 10 s the share page has no
   `q1` row and says «1 позиция», the entry holds `gm_only`; a second press
   draws the row again within 10 s; the lists removed whatever happened.
+  F20, the last flow, so its item and picture stay for the usage report:
+  the member's page uploads `img/ci1.webp` on `#/homebrew/new`, crops it
+  and saves; the row's `art` has the `p/` shape and both public files
+  answer 200 with an image type; a signed-out page draws the 640 px file on
+  `#/h/<id>` and draws it into a canvas (`crossOrigin`, copy-image's
+  CORS); the Items tab draws the 160 px file; a throwaway's «Сохранить
+  себе» gets a picture of its own, whose files go within 30 s of the
+  throwaway's deletion while the member's stay; a conditional request's
+  status is logged (`.claude/README.md`, "Usage monitoring").
   A known gap: no
   browser-level test proves the `keepalive` flag - a build with a plain
   `fetch` passes F10 too (measured 2026-09-26 on this host, in both the
@@ -366,7 +375,14 @@ keeping the entry's id, position, quantity, price and notes, and back, a relink
 of an unknown entry `gone`; the member's edit moving the list's revision, its
 delete removing the entry; `items()` answering nothing for the deleted id and
 refused signed out; the signed-out read by id is layer 3's until a port member
-reads it); E delete
+reads it); Q own pictures, when the caller gives a picture probe (the
+member's upload of both files, the same name again ok and a name of another
+shape refused, the public address 200, an item naming the upload, an item
+naming a file never uploaded refused `artGone`, `img` in `item()` signed out
+and in `items()`, a text-only update keeping the picture, the doomed user's
+`copyArt` under a new name and `setArt` only-if-none keeping a picture,
+another account's file refused, the address 400 or 404 within 30 s after the
+picture is removed and after the doomed user's account deletion); E delete
 leaves nothing signed in. A also requires `prefs` and `lists.list()` refused signed out,
 `move` answering `network` signed out, `homebrew.load()` not `ok` and `createItem`
 answering `network` signed out, B an `ok` read for the member. The seed's own behaviour stays in
@@ -781,7 +797,37 @@ not run. CI's `browser` matrix runs the rows as five shards
   the column and `list_entries_snapshot_null` absent; in a rolled-back
   transaction the reversal re-adds both, a snapshot is refused `23514`, and
   the migration applies again. `homebrew-links.test.mjs` and the case of
-  `usage.test.mjs` that apply the links reversal apply this one first.
+  `usage.test.mjs` that apply the links reversal apply this one first, and
+  the pictures' reversal before it.
+  `homebrew-art.test.mjs` holds the own pictures
+  (`20261014120000_homebrew_art.sql`), every seed in a rolled-back
+  transaction but the lock case: the public bucket of 200 KB WebP and JPEG;
+  the insert policy (a member's good name taken, a bad name and `anon`
+  refused `42501`, the room of twice the item limit plus 5 counting only the
+  caller's files, none without an item limit); `homebrew_items.art` (an own
+  upload and a catalog basename taken; a missing file, another user's file,
+  a 640 px file without its 160 px one and a released name refused
+  `homebrew: art missing`; a bad shape `23514`; an update sending another
+  account's `owner_id` refused with the row unchanged; an update that keeps
+  the name checks nothing); with the two Vault secrets seeded, the release's
+  two `DELETE` requests in `net.http_request_queue` with the address and the
+  `apikey` header once no item names a file, at an item delete, a bulk
+  delete of two items sharing a picture and `delete_account()`; nothing
+  queued without the secrets; a failing `pg_net` call (a malformed address)
+  refusing no write and stopping no part of `lifecycle_cleanup()`; the job
+  (an unnamed file of 61 minutes queued, one of 59 minutes, a named one and
+  `.emptyFolderPlaceholder` not; 2001 unnamed files queue 2000; the released
+  names upserted and deleted after a day); the lock per name across two
+  committed connections in both orders; the 3x population (45 000 items,
+  90 000 files): an account deletion of 300 items with pictures queuing 600
+  requests and a job run, timed and asserted under 3 s and 5 s (on this
+  host, 2026-10-14: the account deletion 178-381 ms; the job run 1.4-1.5 s
+  alone and 2.1-2.9 s inside `check:db`; the plan's target is 1 s); `img`
+  beside the item in the three reads and no `img` key without a picture,
+  the unchanged revision of an item without one, #70's
+  share rules with pictures, one `changed` notice for a picture change; and
+  no API role reaching the key, the released names, `art_delete` or the
+  triggers.
   `usage.test.mjs` holds the
   usage report's database half (`tools/supabase/usage.mjs`): `collect` on
   seeded rows against a baseline taken in the same transaction (the sizes,
@@ -1361,6 +1407,9 @@ per-file table prints with `npx vitest run --coverage
 | `state/ownerRequests.test.ts` | the owner's requests over the fake with fake timers: newest first with an expired one hidden, this tab's own message ignored and a burst read once, an arrival counted from the second read, another device's decision removing a request with no reload, a failed read keeping what is shown and a read that started before `clear()` dropped; apply after the write buffer and the lists re-read, a buffer that cannot be sent stopping it, short then clamped, a request that left the pending list losing its short lines, decline and the fold's order, `decided` after this tab's own `network` read quietly, `decided` otherwise said, `gone` from apply and decline read quietly, `expired` and `refused` said, one decision at a time, an answer after `clear()` dropped; `markRead` only while the list holds an unread request, once at a time, a failure retried by the next call and an answer after `clear()` dropped |
 | `components/batchBar.test.ts` | the selection strip on its own: idle (the box unchecked, its text shown, the live region empty, no actions), some ticked (mixed, the count and the summary in the live region, the actions), all ticked, `onall` given the box's state, `joined` and the part below inside the strip, and axe in each |
 | `components/itemPicker.test.ts` | the item picker on its own: at most eight options with «Ещё N - уточните запрос», «Ничего не найдено», the empty status line kept while the field has focus, ArrowDown and ArrowUp moving `aria-activedescendant` and scrolling the active option into view, Enter and a click picking, a press of the list outside an option keeping it open and the focus in the field, Escape closing until the next input, Backspace removing the last chosen one, a remove button focusing the field, the full picker with and without its text, Enter passing on an empty field, and axe closed, open and full |
+| `components/artField.test.ts` | the picture field: no picture, a saved one, a crop unsaved and cropped again, a removal from each state; the 20 MB refusal before any decode, each refusal of the dialog under the field and the next choice clearing it; the failed crop chunk with «Повторить»; «Выбрать из предметов» with catalog and own pictures, never one without, another account's or the item itself, eight options and «Ещё N»; the focus after each step; axe in each state |
+| `components/cropDialog.test.ts` | the crop dialog over `fakeMedia`: decoding, ready and busy (axe), the refusals at 159 and 8001 px and the bounds 160 and 8000 passing, the arrow keys with and without Shift and the edge, + and - and the range between 1 and 4, a pointer drag, «Готово» rendering 640 then 160 px of one square, the squeeze refusal, «Отмена», Escape and the backdrop answering once, Enter and Ctrl+S kept from a surrounding form, the decoded picture and its preview freed |
+| `lib/artCrop.test.ts` | the crop square of a landscape, a portrait and a square picture at zoom 1, 2 and 4, centred and at each corner; the encoder ladder: the first quality that fits, the last one, exactly 200 KB, none, JPEG without WebP, a refused render |
 | `components/importPanel.test.ts` | «Импорт из файла» through `App` as `gm1`, files from `docs/fixtures/import/` set on the hidden input: the field, its hint and its two links; the picker opened by «Выбрать файл...»; a clean file's preview with no report and `example.json`'s name note; `unknown-id.json`'s report by list (the skips, the name note under both lists); `errors.json`'s four lines with their records and paths; a version 3 file previewed and imported with its GM-only entry marked, `errors-v3.json`'s two `gm_only` lines; the file's own errors in the alert box; every one-line refusal (another version, `v4.json`, and none, each naming versions 1, 2 and 3, also in English, `{}`, `[]`, not JSON, not UTF-8, no lists, a broken zip, a file over 5 MiB unread, a zip over twice that unread, two `lists.json` at one depth, a deflated one, none); `data.zip` previewed; a zip's `homebrew.json` named with its page and its other files named; a bad id and an empty name in words; ten lines a list, then the rest of the list and of the file counted; own items in a version 2 file: the count of those the account lacks, the wait for the account's items in place of the preview, a snapshot without a required text refused, a link refused by the server (`importRefused`, the preview kept, the account's items read again and the next press copying the item with the same list id), a refused copies call said as a refused import, a file whose copies pass the item limit refused whole with nothing written, `bedroll-shop.json` as six copies alone and six links with no copy after `bedrolls.json`; own items without a snapshot: `keys-only-v2.json`'s preview (the head, the copy line, two blocks with their skip lines) and press as gm1, its skip line in English, the wait for a file whose only own entry has none, the file read again when a kept entry's item goes, a skip that stays when its item comes, the same ids after a failed lists call whose copies landed (gm2), a link refused by the server turned into a skip and the rest imported with new ids; the report past 20 lists of 1000 (20 blocks, «и ещё 980 списков», «свернуть»; the read and the render timed, not the single pass over the skips); the press (the toast, the fold, the new card first), a lost answer keeping the preview and the retry sending the same rows, both buttons disabled while it runs, the list limit, a list of 150 entries imported under an entry limit of 200 and refused with the entry limit's toast at the default, a statement timeout; «Отмена» folding with the focus back on the toggle; axe in each state |
 | `components/homebrewImport.test.ts` | «Импорт из файла» of «Мои предметы» through `App`, files from `docs/fixtures/homebrew-file/` set on the hidden input: the panel, its hint and its two links; a first import's counts, rows, defaults, options, notes and labels; the press (the toast with its counts, the fold, the new groups); the same file skipped, then `example-edited.json` updated after the confirm (refused once, then sent with the flag); gm1's held source by key with the skip or update group; the held lines of items, cards and sources with their verb, 1, 10 and 11 names with «и ещё 1» and «свернуть», a 120-code-point name; a file of held source keys only with the sources' own skip and update lines; a row whose held source another tab deleted drawn with its default target again after the refusal's read; `no-book.json`'s one row and the custom source refused empty and taken, then made with its items and card; the same-name line with nothing held; a zip's `homebrew.json` with its `lists.json` named; 60 sources folded to 20 and opened; a merge past 30 sections refused in its row with no call; the notes (a relation that names nothing, a held card of the other kind); `errors.json`'s three lines and every other rule in words (a key, a repeated key, a source the file lacks, a link, a long text, an enum, the item naming itself, an unknown key, a range, the threshold order, a repeat, a type); 50 errors and the count of the rest; 101 sources and 1001 items; every one-line refusal and a deflated `homebrew.json`; the item limit with the preview kept, a lost answer and the retry sending the same rows, a refusal and a statement timeout, every control disabled while the call runs, «Отмена» folding with the focus back on the toggle; axe in each state |
 | `components/importFile.test.ts` | the shared file field alone: a text file read and named, the picker opened, a file past 5 MiB unread, a zip past twice that unread, a 6 MB zip of two 3 MB files read, a zip's data file past 5 MiB refused, a failed read, bytes that are not UTF-8, a zip's named file with its sibling, a zip's text and missing-file refusals, an empty pick, a newer file winning over an older read and an older failure; axe |
@@ -1530,6 +1579,13 @@ recipient, `--schema auth,public`, `contents: read`, 30-day retention and
 report step, `contents: read`, `environment: production`, no artifact and
 no permission of `write` or `write-all` in any scope, quoted or not.
 
+`tools/supabase/backup-art.test.mjs` runs in the same step: the weekly
+picture copy over a stubbed listing and fetch (only own picture files, a
+file deleted after the list skipped, an answer other than 200, 400 or 404
+failing the run, at most 8 downloads in flight, and the request and byte
+counts of a bucket of 210 and of 10 000 files). `lib.test.mjs` holds the
+drill's tar listing and its `art.tar.age` line.
+
 `tools/supabase/usage-lib.test.mjs` runs in the same `node --test` step as
 `tools/supabase/lib.test.mjs`: it covers the nightly usage report's pure
 half (`.claude/README.md`, "Usage monitoring") over the fixtures in
@@ -1545,7 +1601,8 @@ note), a `warn` row for no MAU source and for no Storage access,
 error and the timeout are a warning), the `lifecycle` check after
 `requests` (`ok` at 0 overdue with a recent succeeded run; `warn` at 3
 overdue, on a failed newest run, a run 3 hours old, no run on record and
-no cron access), a summary with no `@` and no uuid,
+no cron access; the overdue picture files named among the rows, and a
+warning when the bucket holds files and a Vault secret is missing), a summary with no `@` and no uuid,
 and the exit code. Both HTTP calls take an injected `fetch`, so no case
 reaches the network. `usage.mjs`'s `collect`, `readHistory` and
 `saveSnapshot` are layer 3 (`tests/db/usage.test.mjs`); its `main` is
@@ -1774,6 +1831,15 @@ reading it); `.card :global(.card-acts ...)` raises specificity (0,3,0 ->
 ## Known thin spots
 
 Not blocking, recorded so they are not mistaken for coverage:
+
+- `ports/media.ts` (decode, canvas render, the WebP probe) is excluded from
+  the unit coverage table, as `ports/image.ts` is: jsdom has no
+  `createImageBitmap`, canvas or `toBlob`. `tests/app/states.js` cases 70-72
+  drive it in Chrome, case 71 with `toBlob` answering PNG for WebP as
+  Safari does. A real Safari (the JPEG path) is checked once per release on
+  the owner's iPhone, not by a gate. The draw of an own `p/` file is proved
+  by unit cases and the hosted F20, not by a golden: the test build has no
+  bucket, so the seeds name catalog pictures only.
 
 - The real Supabase client is proven on the test project (layer 4) for the
   session, the identities read, both sign-out scopes and deletion. The

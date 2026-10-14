@@ -25,7 +25,15 @@ const { client, createClient, rows } = vi.hoisted(() => {
   };
   rows.select.mockImplementation(() => rows);
   rows.eq.mockImplementation(() => rows);
+  /* `storage.from('homebrew-art')`: an upload and a public address. */
+  const bucket = {
+    upload: vi.fn(),
+    getPublicUrl: vi.fn((name: string) => ({
+      data: { publicUrl: 'https://x.test/storage/v1/object/public/homebrew-art/' + name }
+    }))
+  };
   const client = {
+    storage: { from: vi.fn(() => bucket) },
     auth: {
       exchangeCodeForSession: vi.fn(),
       getSession: vi.fn(),
@@ -1008,6 +1016,20 @@ describe('the linked items', () => {
     });
   });
 
+  it("keeps a row's picture beside its item", async () => {
+    const [hid] = ids(1);
+    const img = `p/${'c'.repeat(32)}.webp`;
+    client.rpc.mockResolvedValueOnce({
+      data: [{ hid, item: { id: 'hb_aaaaaaaaaaaaaaaa' }, img }],
+      error: null,
+      status: 200
+    });
+    expect(await make().lists.items([hid as string])).toEqual({
+      ok: true,
+      items: [{ hid, item: { id: 'hb_aaaaaaaaaaaaaaaa' }, img }]
+    });
+  });
+
   it('answers not ok when any call fails or throws, and makes no call for no ids', async () => {
     client.rpc
       .mockResolvedValueOnce({ data: null, error: { code: '42501' }, status: 401 })
@@ -1787,7 +1809,7 @@ describe('the homebrew rows', () => {
     const calls: Call[] = [];
     const q: Record<string, unknown> = {};
     let signal: AbortSignal | null = null;
-    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'maybeSingle']) {
+    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'is', 'maybeSingle']) {
       q[m] = (...args: unknown[]) => {
         calls.push([m, args]);
         return q;
@@ -1815,6 +1837,8 @@ describe('the homebrew rows', () => {
     return calls;
   }
   const answer = (data: unknown, status = 200) => ({ data, error: null, status });
+  const bucket = client.storage.from();
+  const OWN = `p/${'a'.repeat(32)}.webp`;
   const failed = (code: string, status: number, message = '', details?: string) => ({
     data: null,
     error: { code, message, ...(details === undefined ? {} : { details }) },
@@ -1878,7 +1902,7 @@ describe('the homebrew rows', () => {
     ]);
     expect(books).toEqual([['select', ['id,key,content,revision,created_at,updated_at']]]);
     expect(items).toEqual([
-      ['select', ['id,key,book_id,content,revision,created_at,updated_at']]
+      ['select', ['id,key,book_id,content,art,revision,created_at,updated_at']]
     ]);
     expect(cards).toEqual([
       ['select', ['id,key,kind,book_id,content,revision,created_at,updated_at']]
@@ -2043,6 +2067,153 @@ describe('the homebrew rows', () => {
     });
   });
 
+  it('maps a write that names a gone picture file to artGone', async () => {
+    query(failed('P0001', 400, 'homebrew: art missing'));
+    expect(
+      await make().homebrew.createItem({
+        id: 'i1',
+        key: ITEM.key,
+        book_id: null,
+        content: CONTENT,
+        art: OWN
+      })
+    ).toEqual({ ok: false, error: 'refused', reason: 'artGone' });
+  });
+
+  it('sends art in an update only when the patch holds it', async () => {
+    const calls = query(answer([{ revision: 4 }]));
+    expect(
+      await make().homebrew.updateItem('i1', { content: CONTENT, book_id: null, art: null }, 3)
+    ).toEqual({ ok: true, revision: 4 });
+    expect(calls[0]).toEqual(['update', [{ content: CONTENT, book_id: null, art: null }]]);
+  });
+
+  it('writes the picture alone over any revision', async () => {
+    const calls = query(answer([{ revision: 6 }]));
+    expect(await make().homebrew.setArt('i1', OWN, false)).toEqual({ ok: true, revision: 6 });
+    expect(client.from).toHaveBeenLastCalledWith('homebrew_items');
+    expect(calls).toEqual([
+      ['update', [{ art: OWN }]],
+      ['eq', ['id', 'i1']],
+      ['select', ['revision']],
+      ['abortSignal', []]
+    ]);
+  });
+
+  it('writes the picture only where none is, and answers ok with no change over one', async () => {
+    const cloud = make();
+    const calls = query(answer([{ revision: 2 }]));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({ ok: true, revision: 2 });
+    expect(calls).toEqual([
+      ['update', [{ art: OWN }]],
+      ['eq', ['id', 'i1']],
+      ['is', ['art', null]],
+      ['select', ['revision']],
+      ['abortSignal', []]
+    ]);
+    query(answer([]));
+    const read = query(answer({ revision: 7 }));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({ ok: true, revision: 7 });
+    expect(read[0]).toEqual(['select', ['revision']]);
+    query(answer([]));
+    query(answer(null));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({ ok: false, error: 'gone' });
+    query(answer([]));
+    query(failed('PGRST000', 503));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    query(answer([]));
+    query(answer({}));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+    query(failed('P0001', 400, 'homebrew: art missing'));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({
+      ok: false,
+      error: 'refused',
+      reason: 'artGone'
+    });
+    query(new Error('offline'));
+    expect(await cloud.homebrew.setArt('i1', OWN, true)).toEqual({
+      ok: false,
+      error: 'network'
+    });
+  });
+
+  it('uploads a picture file for a day of cache, and reads a retry, the room, a fault and a refusal', async () => {
+    const cloud = make();
+    const blob = new Blob(['x'], { type: 'image/webp' });
+    const cases: [unknown, unknown][] = [
+      [{ error: null }, { ok: true }],
+      [{ error: { status: 400, statusCode: '409' } }, { ok: true }],
+      [
+        { error: { status: 400, statusCode: '403' } },
+        { ok: false, error: 'limit', key: 'homebrew_art', value: null }
+      ],
+      [{ error: { status: 400, statusCode: '413' } }, { ok: false, error: 'refused' }],
+      [{ error: { status: 502, statusCode: '502' } }, { ok: false, error: 'network' }],
+      [{ error: { status: 400, statusCode: '401' } }, { ok: false, error: 'network' }],
+      [{ error: {} }, { ok: false, error: 'network' }]
+    ];
+    for (const [a, want] of cases) {
+      bucket.upload.mockResolvedValueOnce(a);
+      expect(await cloud.homebrew.uploadArt(OWN, blob)).toEqual(want);
+    }
+    expect(client.storage.from).toHaveBeenLastCalledWith('homebrew-art');
+    expect(bucket.upload).toHaveBeenLastCalledWith(OWN, blob, {
+      upsert: false,
+      cacheControl: '86400',
+      contentType: 'image/webp'
+    });
+    bucket.upload.mockRejectedValueOnce(new Error('offline'));
+    expect(await cloud.homebrew.uploadArt(OWN, blob)).toEqual({ ok: false, error: 'network' });
+  });
+
+  it("copies another account's picture under a new name of the caller's", async () => {
+    const cloud = make();
+    const fetched: string[] = [];
+    const fetchOk = vi.fn((url: string) => {
+      fetched.push(url);
+      return Promise.resolve(new Response(new Blob(['x'], { type: 'image/webp' })));
+    });
+    vi.stubGlobal('fetch', fetchOk);
+    try {
+      bucket.upload.mockResolvedValue({ error: null });
+      const copied = await cloud.homebrew.copyArt(OWN);
+      expect(copied.ok).toBe(true);
+      const name = copied.ok ? copied.name : '';
+      expect(name).toMatch(/^p\/[0-9a-f]{32}\.webp$/);
+      expect(name).not.toBe(OWN);
+      expect(fetched).toEqual([
+        'https://x.test/storage/v1/object/public/homebrew-art/' + OWN,
+        'https://x.test/storage/v1/object/public/homebrew-art/t/' + 'a'.repeat(32) + '.webp'
+      ]);
+      expect(bucket.upload.mock.calls.map((c) => String(c[0]))).toEqual([
+        name,
+        't/' + name.slice(2)
+      ]);
+      expect((await cloud.homebrew.copyArt(`p/${'b'.repeat(32)}.jpg`)).ok).toBe(true);
+      expect(bucket.upload.mock.calls.at(-1)?.[0]).toMatch(/^t\/[0-9a-f]{32}\.jpg$/);
+
+      bucket.upload.mockResolvedValueOnce({ error: { status: 400, statusCode: '403' } });
+      expect(await cloud.homebrew.copyArt(OWN)).toEqual({ ok: false });
+      bucket.upload
+        .mockResolvedValueOnce({ error: null })
+        .mockResolvedValueOnce({ error: { status: 400, statusCode: '403' } });
+      expect(await cloud.homebrew.copyArt(OWN)).toEqual({ ok: false });
+      fetchOk.mockResolvedValueOnce(new Response(null, { status: 404 }));
+      expect(await cloud.homebrew.copyArt(OWN)).toEqual({ ok: false });
+      fetchOk.mockRejectedValueOnce(new Error('offline'));
+      expect(await cloud.homebrew.copyArt(OWN)).toEqual({ ok: false });
+    } finally {
+      vi.unstubAllGlobals();
+      bucket.upload.mockReset();
+    }
+  });
+
   it('removes a row by id', async () => {
     const cloud = make();
     const book = query(answer(null, 204));
@@ -2161,6 +2332,20 @@ describe('the homebrew rows', () => {
         got = a;
       });
       await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+      expect(got).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(got).toEqual({ ok: false, error: 'network' });
+    });
+
+    it('answers network for an upload with no answer after IMPORT_TIMEOUT_MS', async () => {
+      bucket.upload.mockReturnValueOnce(new Promise(() => undefined));
+      let got: unknown = 'pending';
+      void make()
+        .homebrew.uploadArt(OWN, new Blob(['x'], { type: 'image/webp' }))
+        .then((a) => {
+          got = a;
+        });
+      await vi.advanceTimersByTimeAsync(IMPORT_TIMEOUT_MS - 1);
       expect(got).toBe('pending');
       await vi.advanceTimersByTimeAsync(1);
       expect(got).toEqual({ ok: false, error: 'network' });

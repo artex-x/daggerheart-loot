@@ -11,7 +11,7 @@ import { dict } from '../lib/dict.js';
 import { canonJson, type HomebrewContent } from '../lib/homebrew.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { fakeEnv, fakePicture, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
   ALDER,
@@ -1216,6 +1216,251 @@ describe('the fold «Связи»', () => {
     expect(dialog.asked.at(-1)).toBe(
       'Предмет «Кольцо с гравировкой» есть в 1 списке и указан в 2 предметах. Удалить его и убрать из списков? ' +
         OTHERS
+    );
+  });
+});
+
+describe('the picture', () => {
+  const OWN_HEX = 'a'.repeat(32);
+  const png = (): File =>
+    new File([fakePicture(1000, 1000)], 'picture.png', { type: 'image/png' });
+  const fileInput = (): HTMLInputElement =>
+    document.getElementById('hb-art-file') as HTMLInputElement;
+  const previewImg = (): HTMLImageElement =>
+    document.querySelector('.preview .card-media img') as HTMLImageElement;
+
+  async function cropFile(): Promise<void> {
+    await userEvent.upload(fileInput(), png());
+    await userEvent.click(await screen.findByRole('button', { name: t.hbArtDone }));
+    await screen.findByRole('button', { name: t.hbArtReplace });
+  }
+
+  async function rowOf(cloud: FakeCloud, key: string) {
+    const r = await cloud.homebrew.load();
+    return r.ok ? r.items.find((i) => i.key === key) : undefined;
+  }
+
+  /* Records the port calls a save makes, in order. */
+  function traced(cloud: FakeCloud): string[] {
+    const calls: string[] = [];
+    const h = cloud.homebrew;
+    const upload = h.uploadArt.bind(h);
+    const create = h.createItem.bind(h);
+    h.uploadArt = (name, blob) => {
+      calls.push('upload ' + name);
+      return upload(name, blob);
+    };
+    h.createItem = (row) => {
+      calls.push('create ' + String(row.art));
+      return create(row);
+    };
+    return calls;
+  }
+
+  it('sits in the form after the description and before the tier', async () => {
+    await editor(null);
+    const desc = screen.getByLabelText(t.hbDesc);
+    const field = screen.getByRole('group', { name: t.hbArt });
+    const tier = group(t.tier);
+    expect(desc.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(field.compareDocumentPosition(tier) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(previewImg().src).toContain('img/_none.webp');
+  });
+
+  it('draws a cropped file in the preview and arms the guard', async () => {
+    const { page, container } = await editor(null);
+    expect(page.unloadAsks()).toBe(false);
+    await cropFile();
+    expect(previewImg().src).toBe('blob:fake-2');
+    expect(page.unloadAsks()).toBe(true);
+    await expectNoA11yViolations(container);
+  });
+
+  it('uploads the 640 px file, then the 160 px file, then creates the item with the name', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const calls = traced(cloud);
+    const { page } = await editor(null, { cloud });
+    await userEvent.type(screen.getByLabelText(/Название/), 'Фонарь');
+    await cropFile();
+    cloud.setOffline(true);
+    await save();
+    expect(await screen.findByText(t.hbArtUploadFailed)).toHaveAttribute('role', 'alert');
+    expect(page.unloadAsks()).toBe(true);
+    const first = calls[0];
+    cloud.setOffline(false);
+    await save();
+    await toastSays('Предмет «Фонарь» создан');
+    expect(calls[1]).toBe(first);
+    expect(calls.slice(1)).toEqual([
+      first,
+      first?.replace('upload p/', 'upload t/'),
+      'create ' + String(first?.replace('upload ', ''))
+    ]);
+    expect(first).toMatch(/^upload p\/[0-9a-f]{32}\.webp$/);
+    const key = (await cloud.homebrew.load()) as { ok: true; items: { art?: string | null }[] };
+    expect(key.items.some((i) => 'upload ' + String(i.art) === first)).toBe(true);
+    expect(page.unloadAsks()).toBe(false);
+    expect(screen.getByRole('button', { name: t.hbArtReplace })).toBeInTheDocument();
+  });
+
+  it('says «Загружаем картинку...» while the files upload', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let go = (): void => undefined;
+    const held = new Promise<void>((r) => (go = r));
+    const upload = cloud.homebrew.uploadArt.bind(cloud.homebrew);
+    cloud.homebrew.uploadArt = async (n, b) => {
+      await held;
+      return upload(n, b);
+    };
+    const { container } = await editor(null, { cloud });
+    await userEvent.type(screen.getByLabelText(/Название/), 'Фонарь');
+    await cropFile();
+    await save();
+    expect(screen.getByText(t.hbArtUploading)).toHaveAttribute('role', 'status');
+    expect(screen.getByRole('button', { name: t.save })).toBeDisabled();
+    await expectNoA11yViolations(container);
+    go();
+    await toastSays('Предмет «Фонарь» создан');
+    expect(screen.queryByText(t.hbArtUploading)).toBeNull();
+  });
+
+  it('names the picture limit as the item limit plus 5: 105, and 305 at 3x', async () => {
+    for (const [items, n] of [
+      [undefined, 105],
+      [300, 305]
+    ] as const) {
+      const cloud = fakeCloud(SEED, 'gm1', items ? { limits: { items } } : {});
+      cloud.homebrew.uploadArt = () =>
+        Promise.resolve({ ok: false, error: 'limit', key: 'homebrew_art', value: null });
+      await editor(null, { cloud });
+      await userEvent.type(screen.getByLabelText(/Название/), 'Фонарь');
+      await cropFile();
+      await save();
+      expect(
+        await screen.findByText(
+          `Не сохранено. Достигнут предел картинок: ${String(n)}. Нужно больше - напишите на daggerheart.loot@gmail.com.`
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/Название/)).toHaveValue('Фонарь');
+      cleanup();
+    }
+  });
+
+  it('takes a new name and uploads once more when the database released the first', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const calls = traced(cloud);
+    const create = cloud.homebrew.createItem.bind(cloud.homebrew);
+    let refused = false;
+    cloud.homebrew.createItem = (row) => {
+      if (refused) return create(row);
+      refused = true;
+      calls.push('refused');
+      return Promise.resolve({ ok: false, error: 'refused', reason: 'artGone' });
+    };
+    await editor(null, { cloud });
+    await userEvent.type(screen.getByLabelText(/Название/), 'Фонарь');
+    await cropFile();
+    await save();
+    await toastSays('Предмет «Фонарь» создан');
+    const uploads = calls.filter((c) => c.startsWith('upload p/'));
+    expect(uploads).toHaveLength(2);
+    expect(uploads[0]).not.toBe(uploads[1]);
+    expect(calls.at(-1)).toBe('create ' + String(uploads[1]?.replace('upload ', '')));
+    expect(screen.queryByText(t.hbArtGone)).toBeNull();
+  });
+
+  it('says «Картинка не сохранилась» for a picked picture whose file is gone, and keeps the edits', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.homebrew.updateItem = () =>
+      Promise.resolve({ ok: false, error: 'refused', reason: 'artGone' });
+    const { container } = await editor(RING, { cloud });
+    await userEvent.type(screen.getByLabelText(/Название/), '!');
+    await userEvent.click(screen.getByRole('button', { name: t.hbArtFromItems }));
+    await userEvent.type(
+      screen.getByRole('combobox', { name: t.hbArtFromItemsLabel }),
+      'Топор{Enter}'
+    );
+    await save();
+    expect(await screen.findByText(t.hbArtGone)).toHaveAttribute('role', 'alert');
+    expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой!');
+    await expectNoA11yViolations(container);
+    /* The next choice clears the line. */
+    await userEvent.click(screen.getByRole('button', { name: t.hbArtRemove }));
+    expect(screen.queryByText(t.hbArtGone)).toBeNull();
+  });
+
+  it("sends no picture with a text-only edit, so another tab's picture stays", async () => {
+    const { cloud, store } = await editor(AXE);
+    const axe = await rowOf(cloud, AXE);
+    expect(axe?.art).toBe('ci1.webp');
+    await cloud.homebrew.setArt(axe!.id, 'ci2.webp', false);
+    await userEvent.type(screen.getByLabelText(/Название/), '!');
+    /* The other tab's message reads the account again under the dirty form. */
+    await store.read();
+    await save();
+    await screen.findByText(t.hbConflict);
+    await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
+    await waitFor(async () => {
+      expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей!');
+    });
+    expect((await rowOf(cloud, AXE))?.art).toBe('ci2.webp');
+    /* The form and the preview draw the row's picture, not the one loaded before. */
+    await waitFor(() => {
+      expect(previewImg().getAttribute('src')).toBe('img/ci2.webp');
+    });
+    expect(document.querySelector('.th img')?.getAttribute('src')).toBe('img/thumb/ci2.webp');
+  });
+
+  it('removes the saved picture with «Убрать картинку»', async () => {
+    const { cloud } = await editor(AXE);
+    await userEvent.click(screen.getByRole('button', { name: t.hbArtRemove }));
+    await save();
+    await toastSays(/^Сохранено/);
+    expect((await rowOf(cloud, AXE))?.art).toBeNull();
+    expect(screen.getByRole('button', { name: t.hbArtChoose })).toBeInTheDocument();
+  });
+
+  it('saves nothing on Enter in the crop dialog', async () => {
+    const { cloud } = await editor(AXE);
+    await userEvent.type(screen.getByLabelText(/Название/), '!');
+    await userEvent.upload(fileInput(), png());
+    const zoom = await screen.findByLabelText(t.hbArtZoom);
+    zoom.focus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard('{Control>}s{/Control}');
+    await flush();
+    expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей');
+  });
+
+  it('refuses «Сохранить как новый» with a deleted own picture, and keeps a catalog one', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const own = `p/${OWN_HEX}.webp`;
+    const blob = new Blob(['x'], { type: 'image/webp' });
+    await cloud.homebrew.uploadArt(own, blob);
+    await cloud.homebrew.uploadArt(`t/${OWN_HEX}.webp`, blob);
+    const ring = await rowOf(cloud, RING);
+    expect((await cloud.homebrew.setArt(ring!.id, own, false)).ok).toBe(true);
+    const { store } = await editor(RING, { cloud });
+    await userEvent.type(screen.getByLabelText(/Название/), ' мой');
+    await cloud.homebrew.removeItem(ring!.id);
+    await store.read();
+    await userEvent.click(await screen.findByRole('button', { name: t.hbSaveAsNew }));
+    expect(await screen.findByText(t.hbArtGone)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой мой');
+    cleanup();
+
+    const two = await editor(AXE);
+    await userEvent.type(screen.getByLabelText(/Название/), ' мой');
+    await two.cloud.homebrew.removeItem((await rowOf(two.cloud, AXE))!.id);
+    await two.store.read();
+    await userEvent.click(await screen.findByRole('button', { name: t.hbSaveAsNew }));
+    await toastSays('Предмет «Топор Тлеющих Углей мой» создан');
+    const read = (await two.cloud.homebrew.load()) as {
+      ok: true;
+      items: { content: HomebrewContent; art?: string | null }[];
+    };
+    expect(read.items.find((i) => i.content.ru === 'Топор Тлеющих Углей мой')?.art).toBe(
+      'ci1.webp'
     );
   });
 });

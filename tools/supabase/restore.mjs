@@ -252,9 +252,13 @@ export function defaultReceiptsFile() {
  * matches. A backup is downloaded into a temp directory, read into memory
  * and the directory deleted; a safety backup is read from `safetyRoot`. */
 export function readSource(source, env, { safetyRoot = defaultSafetyRoot() } = {}) {
+  /* art.tar.age: the weekly picture copy, absent on the other nights. */
   const read = (dir) => ({
     schema: readFileSync(path.join(dir, 'schema.sql.age')),
-    data: readFileSync(path.join(dir, 'data.sql.age'))
+    data: readFileSync(path.join(dir, 'data.sql.age')),
+    art: existsSync(path.join(dir, 'art.tar.age'))
+      ? readFileSync(path.join(dir, 'art.tar.age'))
+      : null
   });
   if (source && source.kind === 'safety') {
     const dir = path.join(safetyRoot, source.stamp);

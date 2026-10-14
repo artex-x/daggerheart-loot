@@ -31,31 +31,33 @@ Owns: search defects found at the review of the words-in-any-order search
 Owns: an account client built from the Supabase packages the app uses,
 which brings the configured bundle back under its old 170 kB limit.
 
-### D60 - the configured build ships about 9 kB of account client that nothing calls
+### D60 - the configured build ships about 1.5 kB of account client that nothing calls
 
 - **Where**: `app/src/ports/supabase.ts` (`createClient` from
   `@supabase/supabase-js`); `SUPABASE_ONLY_IN_PORT` in `eslint.config.mjs`
   (its `@supabase/*` pattern already covers the smaller packages); the
   decision "The account client loads after first paint; a provider redirect
   settles before mount", which names supabase-js as the one import.
-- **What**: the full client carries storage-js (7.1 kB gzip) and
-  functions-js (1.5 kB), which the app does not call; realtime-js is called
-  since the Realtime release and stays. The account chunk is 55.7 kB and
-  the configured build 184.5 kB (measured 2026-09-27), so every signed-in
-  reader downloads them after first paint. The budget is 226 kB (decision
-  "The bundle budget steps up per batch to 250 kB configured and 190
-  unconfigured"; the configured build measured 220.8 kB on 2026-09-30 with
-  the homebrew pages), so it does not force this fix.
+- **What**: the full client carries functions-js (1.5 kB gzip), which the
+  app does not call; realtime-js is called since the Realtime release and
+  storage-js since the pictures of own items (R8), and both stay. The account
+  chunk is 58.1 kB and the configured build 288.8 kB (measured 2026-10-14),
+  so every signed-in reader downloads it after first paint. The budget is
+  294 kB under the 300 kB ceiling (decision "The bundle ceilings rise to
+  300 kB configured and 250 unconfigured"), so it does not force this fix.
 - **Why deferred**: the fix replaces `createClient` with `AuthClient` from
-  `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js` and
-  `RealtimeClient` from `@supabase/realtime-js`, and changes who may import
+  `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js`,
+  `RealtimeClient` from `@supabase/realtime-js` and `StorageClient` from
+  `@supabase/storage-js`, and changes who may import
   what. The risk: the session's access token must follow every auth change
-  into the postgrest client's headers and into the Realtime client, or
-  writes run as anon and an owner topic's join is refused. `npm run e2e` is
+  into the postgrest client's headers, the Realtime client and the Storage
+  client, or writes run as anon, an owner topic's join is refused and an
+  upload is refused. `npm run e2e` is
   the gate. It is its own release, not a fix to a pushed commit.
 - **How to verify the fix**: the configured build and its budget
-  (`.claude/README.md`, "The configured bundle budget") report about 9 kB
-  less than before the fix; `npm run e2e` passes F0-F11 and contract case J.
+  (`.claude/README.md`, "The configured bundle budget") report about 1.5 kB
+  less than before the fix; `npm run e2e` passes every flow (F20 uploads a
+  picture) and contract cases J and Q.
 
 ## Focus after a control that removes itself (no task filed yet; the owner names the release)
 
@@ -277,6 +279,29 @@ Owns: scale findings at up to three times the default limits that no
 release took (the scale review of 2026-10-01; the owner placed the rest in
 R7d, R7e, R7f and R7g).
 
+### D97 - the usage report rounds the bucket to 0.1 MB
+
+- **Where**: `tools/supabase/usage-lib.mjs` (the Storage row's MB format).
+- **What**: the Storage row prints megabytes with one decimal, so a bucket
+  under 50 kB reads "0.0 MB" (39 362 bytes on the test project, 2026-10-14);
+  the stored `storage_bytes` and the forecast are exact.
+- **Why deferred**: found at R8's usage line; the forecast warns at 50 % of
+  1 GB, where the rounding does not matter.
+- **How to verify the fix**: `usage-lib.test.mjs` renders 39 362 bytes as a
+  non-zero figure (kB under 1 MB).
+
+### D98 - one homebrew page test costs about 100 s of every coverage run
+
+- **Where**: `app/src/components/homebrewPage.timed.test.ts`.
+- **What**: the test took 96 s alone and timed out at 120 s twice inside
+  the full coverage run (measured 2026-10-14 on this host); its timeout is
+  300 s and its 3000 ms draw bound is unchanged.
+- **Why deferred**: found in R8's gates; the test belongs to
+  `homebrew-followups`, and nothing in R8 touches it.
+- **How to verify the fix**: the file runs under 30 s in
+  `npx vitest run app/src/components/homebrewPage.timed.test.ts` with the
+  same bound.
+
 ### D81 - the homebrew read downloads every row each time
 
 - **Where**: `homebrew.load` in `app/src/ports/supabase.ts`;
@@ -384,6 +409,23 @@ R7d, R7e, R7f and R7g).
 ## Print sets (`print-snapshots`)
 
 Owns: the print of another account's item through stored print sets.
+
+### D96 - only `homebrew_items.art` keeps a picture file alive
+
+- **Where**: `supabase/migrations/20261014120000_homebrew_art.sql`
+  (`homebrew_items_art_release()`, the files block of
+  `lifecycle_cleanup()`); `tools/supabase/usage.mjs` (the `lifecycle_files`
+  watch).
+- **What**: the release trigger, the hourly job and the watch count a file
+  as named only while a row of `homebrew_items` names it. A later table that
+  stores an own picture name (`p/<32 hex>.<ext>`) without a join to
+  `homebrew_items` - a frozen print set, say - would have its files deleted
+  an hour after the item stops naming them.
+- **Why deferred**: no such table exists in R8; `print-snapshots` answers
+  `img` from `homebrew_items.art` by join, which needs no change.
+- **How to verify the fix**: a table that stores a picture name extends the
+  three "is this file named" checks, and `tests/db/homebrew-art.test.mjs`
+  gains a case where only that table names a file and the job keeps it.
 
 ### D70 - a homebrew entry of another account's list does not print from its address
 

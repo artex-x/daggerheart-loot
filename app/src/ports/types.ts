@@ -37,6 +37,7 @@ import type {
   SharedRow,
   ShareRow
 } from '../lib/cloudLists.js';
+import type { ArtRect, ArtType, PictureSource } from '../lib/art.js';
 import type { Loot } from '../lib/data.js';
 import type {
   BookContent,
@@ -359,8 +360,10 @@ export type ListWrite =
   /** A count limit (`limit: <key>`); `value` is the limit the database applied. */
   | { ok: false; error: 'limit'; key: string; value: number | null }
   /** Any other refusal by the database; `tooSlow` (only `import` sets it) is a call the
-   *  database stopped at its statement timeout, which the same call would reach again. */
-  | { ok: false; error: 'refused'; reason?: 'tooSlow' };
+   *  database stopped at its statement timeout, which the same call would reach again;
+   *  `artGone` is an item write that names a picture file which is gone, not the owner's,
+   *  or queued for deletion (`homebrew: art missing`). */
+  | { ok: false; error: 'refused'; reason?: 'tooSlow' | 'artGone' };
 
 /** `{ ok: false }` is signed out or a read that failed, never an empty account. `kept`
  *  names the lists whose revision equals the one the caller holds; their rows are not
@@ -563,11 +566,23 @@ export interface HomebrewRepository {
   updateBook(id: string, content: BookContent, revision: number | null): Promise<HomebrewSaved>;
   removeBook(id: string): Promise<ListWrite>;
   createItem(row: NewItemRow): Promise<ListWrite>;
+  /** `art` is sent only when the patch holds it: a text-only save keeps the row's picture. */
   updateItem(
     id: string,
-    patch: { content: HomebrewContent; book_id: string | null },
+    patch: { content: HomebrewContent; book_id: string | null; art?: string | null },
     revision: number | null
   ): Promise<HomebrewSaved>;
+  /** Writes the item's picture alone, over whatever revision the row holds, so it never
+   *  overwrites another device's content. With `onlyIfNone` a row that holds a picture
+   *  keeps it and answers ok with no change. */
+  setArt(id: string, art: string | null, onlyIfNone: boolean): Promise<HomebrewSaved>;
+  /** Uploads one file of an own picture (`lib/art.ts` names it) to the public bucket. The
+   *  same name again is ok: names are random, so it is this caller's retry. The picture
+   *  room refused (`homebrew_art_room`) is `limit` with the key `homebrew_art`. */
+  uploadArt(name: string, blob: Blob): Promise<ListWrite>;
+  /** Copies another account's own picture `img` (both files) under a new name of the
+   *  caller's, for «Сохранить себе»; any failure is `ok: false`. */
+  copyArt(img: string): Promise<{ ok: true; name: string } | { ok: false }>;
   removeItem(id: string): Promise<ListWrite>;
   /** A set card or a rule card; its kind never changes after the create. */
   createCard(row: NewCardRow): Promise<ListWrite>;
@@ -620,9 +635,30 @@ export interface ImagePort {
   download(blob: Blob, filename: string): Promise<void>;
 }
 
+/** The picture field's decoding and encoding (`ports/media.ts`). */
+export interface MediaPort {
+  /** Decodes a chosen file in its own orientation; `bad` when the browser cannot. */
+  decode(file: Blob): Promise<{ ok: true; image: PictureSource } | { ok: false; error: 'bad' }>;
+  /** Draws the source square `rect` into a `side` px square and encodes it; rejects when
+   *  the browser encoded another type (Safari answers PNG for WebP). */
+  render(
+    image: PictureSource,
+    rect: ArtRect,
+    side: number,
+    type: ArtType,
+    quality: number
+  ): Promise<Blob>;
+  /** Whether this browser encodes WebP from a canvas; probed once. */
+  webp(): Promise<boolean>;
+  /** An object address that draws the blob; `release` frees it. */
+  preview(blob: Blob): string;
+  release(url: string): void;
+}
+
 export interface Env {
   data: DataPort;
   image: ImagePort;
+  media: MediaPort;
   /**
    * Where a roll comes from.
    *

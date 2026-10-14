@@ -118,6 +118,8 @@ database on a schedule").
 | `list_notices` unread | 30 days after `created_at`, which each new change of the item resets |
 | `list_shares` stopped | 30 days after `revoked_at`, only when a newer row of the same list and audience exists: the owner's panel draws the newest row of each audience |
 | `cron.job_run_details` | 7 days after `end_time` |
+| own picture files of `homebrew-art` that no item names | at the row change that stops naming them, through the Storage API; else the hourly job, 1 hour after the upload, at most 2000 a run |
+| `homebrew_art_released` (the names queued for deletion) | 1 day after `at` |
 
 Homebrew items, their sources and sections, and the author's set and rule
 cards live in the account only: never in the browser's storage, and never
@@ -136,6 +138,27 @@ content moves it too (`docs/decisions/`,
 link"), and a change of a card's book items alone moves the time of every
 item that names the card (`docs/decisions/`, 2026-10-08, "An own set or rule
 card holds book items; only its account sees them").
+
+An own homebrew item may have a picture: two public files of the Supabase
+Storage bucket `homebrew-art` under one random name, `p/<32 hex>.<ext>`
+(640 px) and `t/<32 hex>.<ext>` (160 px), WebP or JPEG, at most 200 KB.
+`homebrew_items.art` stores the name (or a catalog picture's basename),
+never an address, and the three item reads answer it as `img` beside the
+record. Ownership is the object's `owner_id`, which Storage sets from the
+session: an item names only an upload of its stored owner, and an upload
+needs room under twice `homebrew_items_per_owner` plus 5 pictures. The
+browser uploads and never deletes: the database deletes a file when no item
+names it, through `pg_net` with the project's URL and a secret key in
+Vault, and a failed request refuses no write; the hourly job asks again.
+On the test project (2026-10-14) the Storage API answered 400 or 404 for
+a deleted file within 30 s, while its public address, read once before the
+delete, still answered 200 from the CDN. Uploads ask for a cache age of one
+day (`cacheControl` 86400, against readers' egress; the decision below), so a removed picture is
+expected to stay readable for at most a day: a bound from the cache age,
+not a measurement.
+`anon` still executes the four functions above and has no storage policy
+(`docs/decisions/`, 2026-10-14, "Own pictures are random-named files the
+database deletes").
 
 An account's lists leave it only as the reader's own file: the lists JSON
 or the data zip of `#/account` (`FEATURES.md`, "Account and browser

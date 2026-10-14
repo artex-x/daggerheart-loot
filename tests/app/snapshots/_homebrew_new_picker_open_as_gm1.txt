@@ -40,9 +40,11 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
         option "+ Новый источник..." [selected=false]
-      ... StaticText x8 of 12 same-shape siblings elided
+      ... StaticText x9 of 13 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Выбрать файл"
+      button "Выбрать из предметов" [expanded=false]
       group "Ранг"
         button "Без ранга" [pressed=true]
         button "1" [pressed=false]
@@ -98,6 +100,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Без ранга
+Выбрать из предметов
+Выбрать файл
 К содержимому
 Карты правил
 Конфиденциальность
@@ -163,9 +167,11 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
         option "+ New source..." [selected=false]
-      ... StaticText x8 of 12 same-shape siblings elided
+      ... StaticText x9 of 13 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Choose a file"
+      button "Choose from items" [expanded=false]
       group "Tier"
         button "No tier" [pressed=true]
         button "1" [pressed=false]
@@ -214,6 +220,8 @@ Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
 Cancel
+Choose a file
+Choose from items
 Communities
 Consumable
 Dragon's Vault

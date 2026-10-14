@@ -21,7 +21,8 @@ import {
   drillReport,
   localProjectId,
   parseRestoreArgs,
-  receiptFor
+  receiptFor,
+  tarNames
 } from './lib.mjs';
 import {
   KEY_FILE,
@@ -178,6 +179,16 @@ async function main() {
       }
     }
     state.decrypted = true;
+    if (read.encrypted.art) {
+      try {
+        const bytes = await decryptAge(read.encrypted.art, identity);
+        plaintext.push(bytes);
+        state.art = { files: tarNames(bytes).length };
+      } catch {
+        state.failure = 'the key does not open art.tar.age, or it holds no tar archive.';
+        return state;
+      }
+    }
 
     const result = await restoreDump({
       dbUrl,

@@ -30,6 +30,7 @@ import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import type { FacetRow } from '../lib/facets.js';
@@ -1463,6 +1464,34 @@ describe("a row with the author's own relations", () => {
       `Улучшается до: Малое Зелье Выносливости, ${[...names].sort((a, b) => a.localeCompare(b, 'ru'))[0] ?? ''} (HB) и ещё 14`
     );
     await expectNoA11yViolations(container);
+  });
+
+  it("draws an own picture's 160 px file on a row, and the placeholder once it failed", () => {
+    const img = `p/${'b'.repeat(32)}.webp`;
+    const it = recordOf(
+      'hb_lanternaaaaaaaaa',
+      { kind: 'item', ru: 'Фонарь' },
+      null,
+      [],
+      'id',
+      img
+    );
+    const props = {
+      it,
+      index: buildIndex({ items: {} }),
+      lang: 'ru' as const,
+      onartfail: () => {},
+      onopen: () => {}
+    };
+    const drawn = render(RowMain, { props: { ...props, artBroken: () => false } });
+    expect(drawn.container.querySelector('img')?.getAttribute('src')).toBe(
+      ART_BASE + `t/${'b'.repeat(32)}.webp`
+    );
+    drawn.unmount();
+    const broken = render(RowMain, { props: { ...props, artBroken: () => true } });
+    expect(broken.container.querySelector('img')?.getAttribute('src')).toBe(
+      'img/thumb/_none.webp'
+    );
   });
 
   it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {

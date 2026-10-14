@@ -51,9 +51,11 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
         option "+ Новый источник..." [selected=false]
-      ... StaticText x11 of 15 same-shape siblings elided
+      ... StaticText x12 of 16 same-shape siblings elided
       textbox "Название*" [description=Введите название. multiline=false readonly=false required=true invalid=true]
       textbox "Описание" [multiline=true readonly=false required=false]
+      button "Выбрать файл"
+      button "Выбрать из предметов" [expanded=false]
       group "Ранг" [description=Выберите ранг от 1 до 4.]
         button "1" [pressed=false]
         button "2" [pressed=false]
@@ -130,6 +132,8 @@ daggerheart.com
 Вплотную
 Вторичное оружие
 Второй набор характеристик
+Выбрать из предметов
+Выбрать файл
 Далеко
 Двуручное
 Дистанция - выберите значение.
@@ -237,9 +241,11 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
         option "+ New source..." [selected=false]
-      ... StaticText x11 of 15 same-shape siblings elided
+      ... StaticText x12 of 16 same-shape siblings elided
       textbox "Name*" [description=Enter a name. multiline=false readonly=false required=true invalid=true]
       textbox "Description" [multiline=true readonly=false required=false]
+      button "Choose a file"
+      button "Choose from items" [expanded=false]
       group "Tier" [description=Choose a tier from 1 to 4.]
         button "1" [pressed=false]
         button "2" [pressed=false]
@@ -306,6 +312,8 @@ Arazo's Artifacts
 Armor
 Burden - choose a value.
 Cancel
+Choose a file
+Choose from items
 Class - choose a value.
 Close
 Communities

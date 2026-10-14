@@ -15,7 +15,9 @@
  * through «Импорт из файла» of «Мои предметы», imported again with «Обновить», two items moved together, the
  * data zip's homebrew.json read back, and a version 2 lists file imported with a held item
  * and a copied one, F18 an item's `#/h/` address opened signed out, F19 an entry marked GM only
- * on the owner's page leaving an open players' page live, and coming back. Each flow gets its own
+ * on the owner's page leaving an open players' page live, and coming back, F20 a picture
+ * chosen, cropped and saved, drawn on `#/h/` and the Items tab, copied by «Сохранить себе»
+ * and deleted with the copier's account. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
  * session written where supabase-js keeps it. Nothing here prints,
@@ -25,9 +27,11 @@
 
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { thumbOf } from '../../app/src/lib/art.ts';
 import { derivedKey } from '../../app/src/lib/homebrew.ts';
 import { readDataZip } from '../../app/src/lib/zip.ts';
 import {
+  addressGone,
   createThrowaway,
   deleteHomebrewOf,
   deleteListsOf,
@@ -1337,4 +1341,122 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F19 ok');
+
+  /* F20: an own picture on the hosted project. The member's page chooses the catalog's
+     ci1.webp, crops it and saves; both public files answer, a signed-out `#/h/` draws the
+     640 px file and a canvas takes it (copy-image's CORS), the Items tab draws the 160 px
+     file, a throwaway's «Сохранить себе» gets files of its own, and its account deletion
+     deletes them. The last flow: the item and its picture stay for the usage report, and
+     the next run's F18 deletes them. */
+  await deleteListsOf(admin, member.id);
+  await deleteHomebrewOf(admin, member.id);
+  const bucket = env.E2E_SUPABASE_URL.replace(/\/+$/, '') + '/storage/v1/object/';
+  const publicOf = (name) => bucket + 'public/homebrew-art/' + name;
+  const infoOf = (name) => bucket + 'info/public/homebrew-art/' + name;
+  const OWN = /^p\/[0-9a-f]{32}\.(webp|jpg)$/;
+  const itemsOf = async (id) => (await homebrewOf(admin, id)).items;
+  const answers = async (name) => {
+    const r = await fetch(publicOf(name), { cache: 'no-store' });
+    return r.status === 200 && (r.headers.get('content-type') ?? '').startsWith('image/');
+  };
+  await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+    await d.open('#/homebrew/new');
+    await waitControl(page, 'F20', 'Сохранить');
+    await page.type('#hb-name', 'Фонарь F20');
+    await d.upload(fileURLToPath(new URL('../../img/ci1.webp', import.meta.url)));
+    await waitControl(page, 'F20', 'Готово');
+    await d.press('Готово');
+    await waitControl(page, 'F20', 'Заменить');
+    await d.press('Сохранить');
+    await until('F20: the item with its picture did not reach the account', async () => {
+      const items = await itemsOf(member.id);
+      return items.length === 1 && OWN.test(items[0].art ?? '');
+    });
+  });
+  const [lamp] = await itemsOf(member.id);
+  const art = lamp.art;
+  if (!(await answers(art)) || !(await answers(thumbOf(art)))) {
+    throw new Error('e2e F20: a public file of the picture does not answer as an image');
+  }
+  await withPage(ctx, null, async (page, d) => {
+    await d.open('#/h/' + lamp.id);
+    await waitText(page, 'F20', 'Фонарь F20');
+    await waitFor(page, 'e2e F20: #/h/ does not draw the 640 px file', () => {
+      const img = document.querySelector('.card-media img');
+      return (
+        !!img &&
+        img.src.includes('/storage/v1/object/public/homebrew-art/p/') &&
+        img.complete &&
+        img.naturalWidth === 640
+      );
+    });
+    await expectInPage(page, 'F20', 'a canvas refused the picture (CORS)', async () => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = document.querySelector('.card-media img').src;
+      await img.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      return new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(!!b && b.size > 0), 'image/png');
+      });
+    });
+  });
+  await withPage(ctx, await mint(env, admin, member.email), async (page, d) => {
+    await d.open('#/homebrew');
+    await waitFor(page, 'e2e F20: the Items tab does not draw the 160 px file', () => {
+      const img = document.querySelector('.rows .row img');
+      return (
+        !!img &&
+        img.src.includes('/homebrew-art/t/') &&
+        img.complete &&
+        img.naturalWidth === 160
+      );
+    });
+  });
+  const saver = await createThrowaway(admin, member.email);
+  let copy = null;
+  let deleted;
+  try {
+    await withPage(ctx, await mint(env, admin, saver.email), async (page, d) => {
+      await d.open('#/h/' + lamp.id);
+      await waitText(page, 'F20', 'Фонарь F20');
+      await waitControl(page, 'F20', 'Сохранить себе');
+      await d.press('Сохранить себе');
+      await until("F20: the reader's copy did not get a picture of its own", async () => {
+        const items = await itemsOf(saver.id);
+        copy = items[0]?.art ?? null;
+        return items.length === 1 && OWN.test(copy ?? '') && copy !== art;
+      });
+    });
+    if (!(await answers(copy)) || !(await answers(thumbOf(copy)))) {
+      throw new Error("e2e F20: a public file of the reader's copy does not answer");
+    }
+  } finally {
+    deleted = await admin.auth.admin.deleteUser(saver.id);
+  }
+  if (deleted?.error) throw new Error('e2e F20: the reader was not deleted');
+  if (!(await addressGone(infoOf(copy)))) {
+    throw new Error("e2e F20: the deleted reader's picture still answers after 30 s");
+  }
+  if ((await fetch(infoOf(art), { cache: 'no-store' })).status !== 200) {
+    throw new Error("e2e F20: the member's picture went with the reader's account");
+  }
+  /* Logged, not asserted: whether a conditional read of a public file answers 304. */
+  const first = await fetch(publicOf(art), { cache: 'no-store' });
+  const etag = first.headers.get('etag');
+  const again = await fetch(publicOf(art), {
+    cache: 'no-store',
+    headers: etag ? { 'If-None-Match': etag } : {}
+  });
+  console.log(
+    'e2e: F20 a conditional read answered ' +
+      String(again.status) +
+      (etag ? '' : ' (no etag)') +
+      ', cache-control ' +
+      String(first.headers.get('cache-control'))
+  );
+  console.log('e2e: F20 ok');
 }

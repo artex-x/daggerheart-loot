@@ -37,6 +37,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     StaticText "Двуручное"
     StaticText "Лезвие тлеет и не гаснет под дождём."
     button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     link "Печать" [description=Собрать карточки для печати: девять на лист A4 url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
@@ -67,6 +68,7 @@ daggerheart.com
 Обычные правила
 Отправить
 Поиск
+Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
@@ -113,6 +115,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/i
     StaticText "Two-Handed"
     StaticText "The blade smoulders and does not go out in the rain."
     button "Share"
+    button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     link "Print" [description=Lay these out for printing: nine to an A4 sheet url=index.html?as=gm1#/print/hb_emberaxeaaaaaaaa]
@@ -130,6 +133,7 @@ Add to list
 Alt. tables
 Arazo's Artifacts
 Communities
+Copy image
 Copy link
 Copy name
 Copy text

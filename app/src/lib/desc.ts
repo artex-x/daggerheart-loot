@@ -15,6 +15,7 @@
 
 import type { Lang, Record_ } from './types.js';
 import { descOf } from './i18n.js';
+import { ART_BASE, isOwnArt, thumbOf } from './art.js';
 
 /** A label is a short property name, not every colon in the prose. */
 const LABEL_MAX = 34;
@@ -115,11 +116,17 @@ const NO_ART = '_none.webp';
  * A record with no art and one whose file is missing get the same placeholder,
  * so the layout does not shift when one turns into the other. Row-sized sites
  * ask for `'thumb'`, the 160 px derivative (`docs/specs/FEATURES.md`, "Records").
+ * An own picture of a homebrew item is the bucket's file, its `t/` copy for a thumb;
+ * a `blob:` address (the editor's unsaved crop) passes through at both sizes.
  */
 export function artSrc(
   img: string | undefined,
   broken = false,
   size: 'full' | 'thumb' = 'full'
 ): string {
+  if (img && !broken) {
+    if (img.startsWith('blob:')) return img;
+    if (isOwnArt(img)) return ART_BASE + (size === 'thumb' ? thumbOf(img) : img);
+  }
   return (size === 'thumb' ? 'img/thumb/' : 'img/') + (img && !broken ? img : NO_ART);
 }

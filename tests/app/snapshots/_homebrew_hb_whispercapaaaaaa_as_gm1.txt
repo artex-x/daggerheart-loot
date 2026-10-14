@@ -40,11 +40,13 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
         option "+ Новый источник..." [selected=false]
-      StaticText "Название"
-      StaticText "*"
+      ... StaticText x2 of 6 same-shape siblings elided
       textbox "Название*" [value=Whispering Cap multiline=false readonly=false required=true]
       StaticText "Описание"
       textbox "Описание" [value=Once per rest, hear one sentence spoken within Far range. multiline=true readonly=false required=false]
+      button "Выбрать файл"
+      button "Выбрать из предметов" [expanded=false]
+      StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
       group "Ранг"
         button "Без ранга" [pressed=false]
         button "1" [pressed=false]
@@ -84,6 +86,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Без ранга
+Выбрать из предметов
+Выбрать файл
 Добавить в список
 К содержимому
 Карты правил
@@ -151,11 +155,13 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
         option "+ New source..." [selected=false]
-      StaticText "Name"
-      StaticText "*"
+      ... StaticText x2 of 6 same-shape siblings elided
       textbox "Name*" [value=Whispering Cap multiline=false readonly=false required=true]
       StaticText "Description"
       textbox "Description" [value=Once per rest, hear one sentence spoken within Far range. multiline=true readonly=false required=false]
+      button "Choose a file"
+      button "Choose from items" [expanded=false]
+      StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]
       group "Tier"
         button "No tier" [pressed=false]
         button "1" [pressed=false]
@@ -189,6 +195,8 @@ Add to list
 Alt. tables
 Arazo's Artifacts
 Cancel
+Choose a file
+Choose from items
 Communities
 Consumable
 Delete

@@ -2131,6 +2131,12 @@ describe('homebrew entries', () => {
     expect(await screen.findByRole('button', { name: /^Топор Пепла/ })).toBeInTheDocument();
   });
 
+  it("draws the picture of another account's linked item on its row", async () => {
+    open(fakeCloud(SEED, 'gm2'), GM2_ID);
+    await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
+    expect(axeRow().querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+  });
+
   it("offers «Изменить» in the modal for an own item, and not for another account's", async () => {
     open(fakeCloud(SEED, 'gm1'), SHOP_ID);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));

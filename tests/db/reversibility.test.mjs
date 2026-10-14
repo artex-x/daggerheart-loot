@@ -11,7 +11,8 @@
   when a second up would not fail; an additive one is only applied. The
   walk must end in the schema apply-pending.test.mjs left, which that test
   proves equal to the CLI's own reset. Each snapshot also holds this
-  project's policies on realtime.messages, outside the public schema. The fixtures
+  project's policies on realtime.messages and storage.objects and the
+  installed extensions, outside the public schema. The fixtures
   prove the gate in both directions on a scratch schema. docs/DECISIONS.md,
   2026-09-25, "The reversibility base check walks forward from one reset".
 */
@@ -31,7 +32,8 @@ import {
   lineDiff,
   realtimePolicies,
   resetLocal,
-  snapshot
+  snapshot,
+  storageState
 } from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -50,10 +52,12 @@ function read(...parts) {
   return readFileSync(path.join(...parts), 'utf8');
 }
 
-/** Returns the schema dump of `schemas` and the realtime policies. */
+/** Returns the schema dump of `schemas`, the realtime and storage policies
+ * and the installed extensions. */
 async function state(sql, schemas) {
   return `${snapshot(schemas)}
-${await realtimePolicies(sql)}`;
+${await realtimePolicies(sql)}
+${await storageState(sql)}`;
 }
 
 /** Runs up-down-up over `steps` ({ up, down } texts, oldest first) with

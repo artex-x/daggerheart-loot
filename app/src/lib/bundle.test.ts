@@ -1463,6 +1463,14 @@ describe('a lists file of version 2', () => {
     const { bundle } = toBundle(lists, nameOf, 'U', AT, () => linked);
     expect(bundle.lists[0]?.entries[0]?.snapshot).toEqual(SNAP);
   });
+
+  it("writes a record's snapshot without its picture, own file or catalog basename", () => {
+    const lists = [cloud({ ids: [AXE] })];
+    for (const img of [`p/${'d'.repeat(32)}.webp`, 'q1.webp']) {
+      const { bundle } = toBundle(lists, nameOf, 'U', AT, () => ({ ...SNAP, img }));
+      expect(bundle.lists[0]?.entries[0]?.snapshot).toEqual(SNAP);
+    }
+  });
 });
 
 /* The blind round's lists file for request R-B: the Premium Bedroll, 2 at 150 coins, and

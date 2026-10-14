@@ -39,6 +39,7 @@ import {
   snapshotRecords,
   type CloudList
 } from '../lib/cloudLists.js';
+import { isArtName, isOwnArt } from '../lib/art.js';
 import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
@@ -1105,17 +1106,40 @@ export class AppState {
       }
       return relinked;
     };
-    const done = (relinked: boolean): void => {
+    const done = (relinked: boolean, artFailed: boolean): void => {
       this.say(
         (t, lang) =>
-          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)),
+          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)) +
+          (artFailed ? ' ' + t.copyArtFailed : ''),
         { action: { label: (t) => t.edit, href: homebrewItemHash(copyKey) } }
       );
     };
-    /* The copy landed, but its relink never ran: move the rows, import nothing again. */
+    /* The copy's own picture, by its row id: an own file of the author is copied to a new
+       name, a catalog picture is named as it is. It runs before the relink, so a tab closed
+       in the middle leaves the rows on the author's item and the next press finishes it.
+       Answers true when the copy holds no picture though the author's item has one. */
+    const img = isArtName(it.img) ? it.img : null;
+    const copyPicture = async (id: string, onlyIfNone: boolean): Promise<boolean> => {
+      if (img === null) return false;
+      let name = img;
+      if (isOwnArt(img)) {
+        const copied = await own.copyArt(img);
+        if (!copied.ok) return true;
+        name = copied.name;
+      }
+      return !(await own.setArt(id, name, onlyIfNone)).ok;
+    };
+    /* The copy landed, but its relink never ran: move the rows, import nothing again; a
+       copy without a picture gets the author's, one with a picture keeps it. */
     const held = own.item(copyKey);
     if (held) {
-      if (relink(held.id)) done(true);
+      this.savingItem = hid;
+      try {
+        const failed = held.art ? false : await copyPicture(held.id, true);
+        if (relink(held.id)) done(true, failed);
+      } finally {
+        this.savingItem = null;
+      }
       return;
     }
     /* A plain copy: a list's linked record is reactive state, which a port may clone. */
@@ -1140,7 +1164,8 @@ export class AppState {
         } else this.say((t) => t.saveItemFailed, { error: true });
         return;
       }
-      done(relink(ownId));
+      const failed = await copyPicture(ownId, false);
+      done(relink(ownId), failed);
     } finally {
       this.savingItem = null;
     }

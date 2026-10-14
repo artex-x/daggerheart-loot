@@ -36,6 +36,7 @@ RootWebArea "Спальный мешок долгой дороги через п
     StaticText "ПОЛУЧАЕТСЯ ИЗ"
     link "Первоклассный Спальный Мешок" [url=index.html?as=gm2#/i/ci1]
     button "Отправить"
+    button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Сохранить себе"
@@ -67,6 +68,7 @@ daggerheart.com
 Отправить
 Первоклассный Спальный Мешок
 Поиск
+Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
@@ -111,6 +113,7 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
     StaticText "MADE FROM"
     link "Premium Bedroll" [url=index.html?as=gm2#/i/ci1]
     button "Share"
+    button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Save to my items"
@@ -129,6 +132,7 @@ Add to list
 Alt. tables
 Arazo's Artifacts
 Communities
+Copy image
 Copy link
 Copy name
 Copy text

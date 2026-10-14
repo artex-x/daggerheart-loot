@@ -14,7 +14,7 @@ import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { appliedVersions, applyPending, connect } from '../../tools/supabase/db.mjs';
-import { lineDiff, realtimePolicies, resetLocal, snapshot } from './roles.mjs';
+import { lineDiff, realtimePolicies, resetLocal, snapshot, storageState } from './roles.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const MIGRATIONS = path.resolve(HERE, '..', '..', 'supabase', 'migrations');
@@ -38,10 +38,11 @@ const guarded = (fn) => async () => {
     throw err;
   }
 };
-/* The schema and the realtime policies the CLI's reset in run.mjs left,
-   before this file resets. */
+/* The schema, the realtime and storage policies and the extensions the CLI's
+   reset in run.mjs left, before this file resets. */
 let cliSchema;
 let cliPolicies;
+let cliStorage;
 before(async () => {
   // A before hook that throws skips the cases; the after hook then resets.
   failed = true;
@@ -52,6 +53,7 @@ before(async () => {
   const first = connect(url);
   try {
     cliPolicies = await realtimePolicies(first);
+    cliStorage = await storageState(first);
   } finally {
     await first.end();
   }
@@ -92,6 +94,8 @@ describe('applyPending', () => {
       assert.deepEqual(lineDiff(cliSchema, snapshot(['public'])), []);
       assert.equal(await realtimePolicies(sql), cliPolicies);
       assert.match(cliPolicies, /dhloot_share_topics_receive/);
+      assert.equal(await storageState(sql), cliStorage);
+      assert.match(cliStorage, /homebrew_art_insert/);
     })
   );
 

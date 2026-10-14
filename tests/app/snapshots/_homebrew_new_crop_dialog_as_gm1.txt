@@ -1,0 +1,120 @@
+# #/homebrew/new ~ crop dialog as gm1
+# route: #/homebrew/new
+# why: the catalog picture ci1.webp chosen: the modal «Обрезать картинку» ready, its hint, the stage group, «Масштаб», «Готово» and «Отмена»
+# as: gm1
+
+## ru :: tree
+RootWebArea "Новый предмет — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+  dialog "Обрезать картинку" [modal=true]
+    heading "Обрезать картинку" [level=2]
+    StaticText "Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, ..." [namelen=85 namehash=0d5e8fc6]
+    group "Кадр: перетащите или двигайте стрелками" [description=Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, + и - меняют масштаб. focused=true]
+    StaticText "Масштаб"
+    slider "Масштаб" [value=1 valuetext=1 valuemin=1 valuemax=4 orientation=horizontal]
+    button "Готово"
+    button "Отмена"
+
+## ru :: controls
+1
+2
+3
+4
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Без ранга
+Выбрать из предметов
+Выбрать файл
+Готово
+К содержимому
+Карты правил
+Конфиденциальность
+ЛутDaggerheart
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
+Обычные правила
+Отмена
+Подсказка: Источник
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Получается из
+Подсказка: Улучшается до
+Поиск
+Получается из
+Предмет
+Расходник
+Снаряжение
+Сообщества
+Сохранить
+Списки
+Страница
+Таблицы
+Улучшается до
+Условия использования
+Установить как приложение
+ХоумбрюМастерская Ольхи+ Новый источник...
+
+## en :: tree
+RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+  dialog "Crop the picture" [modal=true]
+    heading "Crop the picture" [level=2]
+    StaticText "Drag the picture to choose the square. Arrow keys move it; + and..." [namelen=72 namehash=f7b3964e]
+    group "Frame: drag it or move it with the arrow keys" [description=Drag the picture to choose the square. Arrow keys move it; + and - zoom. focused=true]
+    StaticText "Zoom"
+    slider "Zoom" [value=1 valuetext=1 valuemin=1 valuemax=4 orientation=horizontal]
+    button "Done"
+    button "Cancel"
+
+## en :: controls
+1
+2
+3
+4
+Account: gm1@example.test
+Alt. tables
+Arazo's Artifacts
+Cancel
+Choose a file
+Choose from items
+Communities
+Consumable
+Done
+Dragon's Vault
+Dread
+EN
+Equipment
+Help: Made from
+Help: Rule cards
+Help: Set
+Help: Source
+Help: Upgrades to
+HomebrewAlder Workshop+ New source...
+Install as an app
+Item
+Lists
+Made from
+New rule card
+No tier
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+Page
+Privacy
+RU
+Rule cards
+Save
+Search
+Skip to content
+Standard rules
+Tables
+Terms of use
+Upgrades to
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

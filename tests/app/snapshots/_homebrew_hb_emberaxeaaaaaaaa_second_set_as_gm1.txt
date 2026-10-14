@@ -49,7 +49,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "Хоумбрю" [selected=false]
         option "Мастерская Ольхи" [selected=true]
         option "+ Новый источник..." [selected=false]
-      ... StaticText x10 of 14 same-shape siblings elided
+      ... StaticText x11 of 15 same-shape siblings elided
       combobox "Раздел" [value=Холодное оружие expanded=false haspopup=menu]
         option "Без раздела" [selected=false]
         option "Пистоли" [selected=false]
@@ -57,6 +57,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "+ Новый раздел..." [selected=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      button "Заменить"
+      button "Убрать картинку"
       group "Ранг"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -173,6 +175,7 @@ daggerheart.com
 Далеко
 Двуручное
 Добавить в список
+Заменить
 Знание
 Инстинкт
 Искусность
@@ -212,6 +215,7 @@ daggerheart.com
 Средне
 Страница
 Таблицы
+Убрать картинку
 Удалить
 Улучшается до
 Уникальный
@@ -270,7 +274,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "Homebrew" [selected=false]
         option "Alder Workshop" [selected=true]
         option "+ New source..." [selected=false]
-      ... StaticText x10 of 14 same-shape siblings elided
+      ... StaticText x11 of 15 same-shape siblings elided
       combobox "Section" [value=Blades expanded=false haspopup=menu]
         option "No section" [selected=false]
         option "Pistols" [selected=false]
@@ -278,6 +282,8 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "+ New section..." [selected=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
       textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
+      button "Replace"
+      button "Remove the picture"
       group "Tier"
         button "1" [pressed=false]
         button "2" [pressed=true]
@@ -416,6 +422,8 @@ Presence
 Primary weapon
 Privacy
 RU
+Remove the picture
+Replace
 Rule cards
 Save
 Search

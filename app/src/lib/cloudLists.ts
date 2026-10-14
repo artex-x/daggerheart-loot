@@ -4,6 +4,7 @@
  * Column names follow the schema (`supabase/migrations/20260925130100_lists.sql`).
  * Pure module: no port, no storage. docs/specs/FEATURES.md, "Account and browser lists". */
 
+import { isArtName } from './art.js';
 import type { Dict } from './dict.js';
 import {
   isHomebrewKey,
@@ -178,29 +179,40 @@ export function linkedOf(l: StoredList): Readonly<Record<string, HomebrewRecord>
   return (l as Partial<CloudList>).linked ?? NO_LINKED;
 }
 
-/** One answer row of `get_homebrew_items`: the item's id and its record. */
+/** One answer row of `get_homebrew_items`: the item's id, its record and its picture
+ *  (absent for none). */
 export interface LinkedRow {
   hid: string;
   item: unknown;
+  img?: unknown;
+}
+
+/* The record with the answer's picture beside it, after the record is valid: a value of
+   another shape is dropped. The picture is never inside the projection, which a previous
+   bundle validates. */
+function withImg(r: HomebrewRecord, img: unknown): HomebrewRecord {
+  return isArtName(img) ? { ...r, img } : r;
 }
 
 /** Returns the valid records of `get_homebrew_items`'s rows by item id, each with its
- *  `hid`. */
+ *  `hid` and its picture. */
 export function linkedRecords(rows: readonly LinkedRow[]): Map<string, HomebrewRecord> {
   const out = new Map<string, HomebrewRecord>();
   for (const r of rows) {
-    if (snapshotValid(r.item)) out.set(r.hid, { ...(r.item as HomebrewRecord), hid: r.hid });
+    if (snapshotValid(r.item)) {
+      out.set(r.hid, withImg({ ...(r.item as HomebrewRecord), hid: r.hid }, r.img));
+    }
   }
   return out;
 }
 
-/** Returns the valid records a share's projection carries, each with the `hid` of its
- *  entry: every homebrew entry's snapshot, filled from the linked item. */
+/** Returns the valid records a share's projection carries, each with the `hid` and the
+ *  picture of its entry: every homebrew entry's snapshot, filled from the linked item. */
 export function snapshotRecords(row: SharedRow | null | undefined): HomebrewRecord[] {
   if (!row) return [];
   return row.entries.flatMap((e) =>
     e.source === 'homebrew' && recordValid(e.item_key, e.snapshot)
-      ? [typeof e.hid === 'string' ? { ...e.snapshot, hid: e.hid } : e.snapshot]
+      ? [withImg(typeof e.hid === 'string' ? { ...e.snapshot, hid: e.hid } : e.snapshot, e.img)]
       : []
   );
 }
@@ -215,6 +227,8 @@ export interface ItemAnswer {
   item: unknown;
   related: unknown;
   updated_at?: string;
+  /** The item's picture, beside the record; absent for none. */
+  img?: unknown;
 }
 
 /** One item as `#/h/` draws it: the record with its `hid`, and each related item as a
@@ -278,7 +292,7 @@ function relatedOf(v: unknown): HomebrewRecord | null {
  *  of another shape is dropped, and an `updated_at` that `Date.parse` cannot read is null. */
 export function itemOf(a: unknown): ItemRead | null {
   if (!isObj(a)) return null;
-  const { hid, mine, revision, item, related, updated_at } = a;
+  const { hid, mine, revision, item, related, updated_at, img } = a;
   if (typeof hid !== 'string' || !isCloudId(hid)) return null;
   if (typeof mine !== 'boolean' || typeof revision !== 'string') return null;
   if (!snapshotValid(item)) return null;
@@ -286,7 +300,7 @@ export function itemOf(a: unknown): ItemRead | null {
     hid,
     mine,
     revision,
-    record: { ...(item as HomebrewRecord), hid },
+    record: withImg({ ...(item as HomebrewRecord), hid }, img),
     related: (Array.isArray(related) ? related : []).flatMap((x) => {
       const r = relatedOf(x);
       return r ? [r] : [];
@@ -379,11 +393,12 @@ export interface SharedRow {
   /** The share's live topic is `share:<topic_key>`; a random id of its own, not the token. */
   topic_key: string;
   list: { name: string; money_mode: MoneyMode; player_note: string; gm_note?: string };
-  /** A homebrew entry's `snapshot` is its linked item's record and `hid` that item's id;
-   *  an official entry's `snapshot` is null. */
+  /** A homebrew entry's `snapshot` is its linked item's record, `hid` that item's id and
+   *  `img` its picture (absent for none); an official entry's `snapshot` is null. */
   entries: (Omit<EntryRow, 'gm_note' | 'hb_item'> & {
     snapshot: unknown;
     hid?: string;
+    img?: unknown;
     gm_note?: string;
   })[];
 }
@@ -484,7 +499,8 @@ export function limitText(key: string, value: number | null, t: Dict): string {
     entries_per_list: t.limitEntries,
     homebrew_items_per_owner: t.limitHbItems,
     homebrew_books_per_owner: t.limitHbBooks,
-    homebrew_cards_per_owner: t.limitHbCards
+    homebrew_cards_per_owner: t.limitHbCards,
+    homebrew_art: t.limitHbArt
   };
   const text = named[key] ?? t.limitOther;
   return text.replace('%n', value === null ? '?' : String(value));

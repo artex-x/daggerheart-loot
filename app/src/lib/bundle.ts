@@ -101,7 +101,7 @@ export interface Bundle {
  *  out. An entry's `name` is `nameOf`'s, left out when it has none; a blank list name is
  *  written as `untitled`, so the file keeps the schema's `minLength`. A homebrew entry is
  *  written with `snapshotOf`'s record of the live item, own or another account's, without
- *  its `hid`, or left out and counted when it answers null. The file is version 3 when an
+ *  its `hid` and its picture, or left out and counted when it answers null. The file is version 3 when an
  *  entry it writes is GM-only, else version 2 when it holds a homebrew entry, else version
  *  1; a GM-only entry left out does not count. */
 export function toBundle(
@@ -171,6 +171,8 @@ function entryOf(
   if (snapshot) {
     const record = { ...snapshot };
     delete record.hid;
+    // Files carry no picture: the import formats refuse one (snapshotValid).
+    delete record.img;
     e.snapshot = record;
   }
   return e;

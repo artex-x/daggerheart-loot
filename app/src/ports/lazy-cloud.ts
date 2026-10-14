@@ -150,6 +150,10 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     createItem: async (row) => (await port())?.homebrew.createItem(row) ?? UNSENT,
     updateItem: async (id, patch, revision) =>
       (await port())?.homebrew.updateItem(id, patch, revision) ?? UNSENT,
+    setArt: async (id, art, onlyIfNone) =>
+      (await port())?.homebrew.setArt(id, art, onlyIfNone) ?? UNSENT,
+    uploadArt: async (name, blob) => (await port())?.homebrew.uploadArt(name, blob) ?? UNSENT,
+    copyArt: async (img) => (await port())?.homebrew.copyArt(img) ?? { ok: false },
     removeItem: async (id) => (await port())?.homebrew.removeItem(id) ?? UNSENT,
     createCard: async (row) => (await port())?.homebrew.createCard(row) ?? UNSENT,
     updateCard: async (id, patch, revision) =>

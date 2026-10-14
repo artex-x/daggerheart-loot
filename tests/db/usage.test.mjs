@@ -22,6 +22,7 @@ const B = '00000000-0000-4000-8000-0000000000b2';
 const DAY_MS = 86_400_000;
 const PRIVS = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'];
 const PUBLIC_TABLES = [
+  'homebrew_art_released',
   'homebrew_books',
   'homebrew_cards',
   'homebrew_items',
@@ -273,13 +274,47 @@ describe('collect()', () => {
     assert.equal(out.next.lifecycle_note, undefined);
   });
 
+  it('counts an unnamed picture file over 3 hours old and warns on a missing storage key', async () => {
+    const hex = (c) => c.repeat(32);
+    const out = await rolledBack(async (tx) => {
+      const base = await collect(tx, new Date());
+      await tx`insert into auth.users (id, email) values (${A}, 'usage-a@example.test')`;
+      // Seeded as postgres: no session sets owner_id, and no trigger reads it here.
+      const put = (
+        name,
+        age
+      ) => tx`insert into storage.objects (bucket_id, name, owner_id, created_at)
+        values ('homebrew-art', ${name}, ${A}, now() - ${age}::interval)`;
+      await put(`p/${hex('a')}.webp`, '4 hours');
+      await put(`t/${hex('a')}.webp`, '4 hours');
+      await put(`p/${hex('b')}.webp`, '2 hours');
+      await put(`p/${hex('c')}.webp`, '4 hours');
+      await put(`t/${hex('c')}.webp`, '4 hours');
+      await put('.emptyFolderPlaceholder', '4 hours');
+      // c is named by an item, so only a's two files are overdue.
+      await tx`insert into public.homebrew_items (id, owner_id, key, content, art)
+        values (${crypto.randomUUID()}, ${A}, 'hb_usageartaaaaaaaa',
+          ${tx.json({ kind: 'item', ru: 'Скатка' })}, ${`p/${hex('c')}.webp`})`;
+      const unkeyed = await collect(tx, new Date());
+      await tx`select vault.create_secret('http://127.0.0.1:54321', 'dhloot_api_url')`;
+      await tx`select vault.create_secret('usage-test-key', 'dhloot_storage_key')`;
+      return { base, unkeyed, keyed: await collect(tx, new Date()) };
+    });
+    assert.equal(out.unkeyed.lifecycle_files, out.base.lifecycle_files + 2);
+    assert.equal(out.unkeyed.lifecycle_overdue, out.base.lifecycle_overdue + 2);
+    assert.equal(out.unkeyed.lifecycle_files_key, false);
+    assert.equal(out.keyed.lifecycle_files_key, undefined);
+  });
+
   it('takes the 24-hour request retention on a database before the links migration', async () => {
     const reversal = (name) =>
       readFileSync(new URL(`../../supabase/reversals/${name}.sql`, import.meta.url), 'utf8');
     const list = crypto.randomUUID();
     const share = crypto.randomUUID();
     const out = await rolledBack(async (tx) => {
-      // The links reversal writes list_entries.snapshot, which a later migration drops.
+      // Reversals run newest first: the pictures, then the snapshot drop, whose
+      // reversal re-adds the list_entries.snapshot that the links reversal writes.
+      await tx.unsafe(reversal('20261014120000_homebrew_art'));
       await tx.unsafe(reversal('20261010120000_drop_list_entry_snapshot'));
       await tx.unsafe(reversal('20261007130000_homebrew_links'));
       const base = await collect(tx, new Date());
