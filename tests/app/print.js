@@ -41,6 +41,9 @@ const path = require('path');
 const { fresh, reporter, closeBrowser, openPrint } = require('./lib.js');
 
 const MM = 96 / 25.4; // css pixels per millimetre
+/* The two clip warnings' leading words, the editor's and the print bar's (dict.ts). */
+const CLIP_CARD = 'Текст не помещается на карточку при печати';
+const CLIP_SHEET = 'Текст не помещается на карточки при печати: %d.';
 const CARD_DIR = path.join(__dirname, '..', '..', 'card');
 const LOOT = require('../../data.json');
 
@@ -2433,6 +2436,174 @@ const { ok } = rep;
       ok(
         m.right !== null && m.cardRight !== null && m.right <= m.cardRight + 0.5,
         layout + ': the table runs past the card - ' + JSON.stringify(m)
+      );
+      /* The bar counts the card exactly when its text still overflows (FEATURES.md, "Print"). */
+      const cut = await page.evaluate(() => {
+        const text = document.querySelector('.pcard .pc-text');
+        return !!text && text.scrollHeight > text.clientHeight + 1;
+      });
+      const counted = (await d.text()).includes(CLIP_SHEET.replace('%d', '1'));
+      console.log('  ' + layout + ': ' + (cut ? 'cut off, counted' : 'fits, not counted'));
+      ok(
+        counted === cut,
+        layout + ': the clip warning does not follow the overflow - cut ' + cut
+      );
+    }
+  }
+
+  /* ---------- the editor's print view (docs/specs/FEATURES.md, "Homebrew") ----------
+     The same card with the same fit, at the printed size, in each of the four layouts;
+     the visit pick is the print page's, so `d.go` keeps it on the way to the sheet. */
+  console.log("the editor's print view");
+  {
+    const EDITOR = '#/homebrew/hb_emberaxeaaaaaaaa';
+    const fitOf = (sel) =>
+      page.evaluate((s) => {
+        const c = document.querySelector(s);
+        if (!c) return null;
+        const r = c.getBoundingClientRect();
+        const text = c.querySelector('.pc-text');
+        const box = c.querySelector('.pc-content');
+        const art = c.querySelector('.pc-art');
+        return {
+          w: r.width,
+          h: r.height,
+          font: text ? parseFloat(getComputedStyle(text).fontSize) : null,
+          pad: box ? box.style.getPropertyValue('--pcpad') : null,
+          art: art ? art.getBoundingClientRect().height : null
+        };
+      }, sel);
+    const near = (a, b) => (a === null && b === null) || Math.abs(a - b) < 0.05;
+    await d.open(EDITOR, { as: 'gm1' });
+    await d.click('На печати');
+    for (const [isBw, isCompact] of [
+      [false, false],
+      [true, false],
+      [false, true],
+      [true, true]
+    ]) {
+      const name = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
+      await d.click(isBw ? 'Чёрно-белая' : 'Цветная');
+      await d.click(isCompact ? 'Компактная' : 'Обычная');
+      await d.settle();
+      const shown = await fitOf('.preview .pframe .pcard');
+      await d.go('#/p/set-emberaxe');
+      await waitForSet();
+      await d.settle();
+      const printed = await fitOf('.psheet .pcard[data-pid]');
+      console.log('  ' + name + ': ' + JSON.stringify({ shown, printed }));
+      const [w, h] = isCompact ? [44, 63] : [63, 88];
+      ok(
+        !!shown && Math.abs(shown.w - w * MM) < 0.5 && Math.abs(shown.h - h * MM) < 0.5,
+        name + ': the preview card is not ' + w + 'x' + h + ' mm - ' + JSON.stringify(shown)
+      );
+      ok(
+        !!shown &&
+          !!printed &&
+          near(shown.font, printed.font) &&
+          shown.pad === printed.pad &&
+          near(shown.art, printed.art),
+        name +
+          ': the preview fits otherwise than the sheet - ' +
+          JSON.stringify({ shown, printed })
+      );
+      await d.go(EDITOR);
+      for (let i = 0; i < 40 && !(await d.has('На печати')); i++) await d.settle();
+      await d.click('На печати');
+    }
+
+    /* (b) A 3000-character description: cut off, and the warning after the pause. */
+    const editorCut = async (name, desc, layout) => {
+      await d.open('#/homebrew/new', { as: 'gm1' });
+      await d.type('Название*', name);
+      if (desc) await d.type('Описание', desc);
+      await d.click('На печати');
+      for (const label of layout) await d.click(label);
+      await new Promise((r) => setTimeout(r, 300));
+      await d.settle();
+      return page.evaluate((words) => {
+        const tall = (e) => !!e && e.scrollHeight > e.clientHeight + 1;
+        const wide = (e) => !!e && e.scrollWidth > e.clientWidth + 1;
+        const card = document.querySelector('.preview .pframe .pcard');
+        const text = card?.querySelector('.pc-text');
+        return {
+          text: tall(text) || wide(text) || wide(card?.querySelector('.pc-name')),
+          box: tall(card?.querySelector('.pc-content')),
+          warned: [...document.querySelectorAll('.hbform .fld .box.warn')].some((b) =>
+            b.textContent.includes(words)
+          )
+        };
+      }, CLIP_CARD);
+    };
+    const long =
+      'Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. '
+        .repeat(40)
+        .slice(0, 3000);
+    const b = await editorCut('Свиток долгой ночи', long, ['Цветная', 'Обычная']);
+    console.log('  3000 characters: ' + JSON.stringify(b));
+    ok(
+      b.text && b.warned,
+      'a 3000-character text is not cut off and warned - ' + JSON.stringify(b)
+    );
+
+    /* (e) The longest name in compact colour: counted when the head leaves the card. */
+    const name120 = 'Очень длинное название предмета '.repeat(4).slice(0, 120);
+    const e = await editorCut(name120, '', ['Цветная', 'Компактная']);
+    console.log('  the 120-character name, compact colour: ' + JSON.stringify(e));
+    ok(
+      e.warned === (e.text || e.box),
+      'the longest name is not counted by the content box - ' + JSON.stringify(e)
+    );
+
+    /* (f) One unbroken 200-letter word: cut off across, and warned. */
+    const f = await editorCut('Слово', 'а'.repeat(200), ['Цветная', 'Обычная']);
+    console.log('  one 200-letter word: ' + JSON.stringify(f));
+    ok(f.text && f.warned, 'a long unbroken word is not counted across - ' + JSON.stringify(f));
+  }
+
+  /* ---------- the print bar's clip warning (docs/specs/FEATURES.md, "Print") ---------- */
+  console.log('the clip warning on the sheet');
+  {
+    await d.open('#/p/set-clipped1', { as: 'gm2' });
+    await waitForSet();
+    for (let i = 0; i < 40 && !(await d.text()).includes(CLIP_SHEET.replace('%d', '1')); i++)
+      await d.settle();
+    const bar = await page.evaluate(() => {
+      const w = document.querySelector('.printbar .clipwarn .box.warn');
+      return { role: w?.getAttribute('role') ?? null, text: w?.textContent ?? null };
+    });
+    ok(
+      bar.role === 'status' && !!bar.text && bar.text.includes(CLIP_SHEET.replace('%d', '1')),
+      'set-clipped1 draws no warning with 1 in the bar - ' + JSON.stringify(bar)
+    );
+    await d.media('print');
+    try {
+      const shown = await page.evaluate(() => {
+        const w = document.querySelector('.clipwarn');
+        return !!w && getComputedStyle(w).display !== 'none' && w.getClientRects().length > 0;
+      });
+      ok(!shown, 'the clip warning prints');
+    } finally {
+      await d.media(undefined);
+    }
+    /* A long source line on the compact card is not counted: no shorter text mends it. */
+    await d.open('#/p/set-emberaxe', { as: 'gm1' });
+    await waitForSet();
+    await d.settle();
+    ok(
+      (await d.count('.clipwarn')) === 0,
+      "the axe's compact black-and-white card is counted for its source line"
+    );
+    for (const set of ['set-ninecard', 'set-longtext', 'set-maxcards']) {
+      await d.open('#/p/' + set, { as: 'gm2' });
+      await waitForSet();
+      await d.settle();
+      ok((await d.count('.clipwarn')) === 0, set + ': a catalog sheet draws the clip warning');
+      await compact();
+      await d.settle();
+      ok(
+        (await d.count('.clipwarn')) === 0,
+        set + ': a compact catalog sheet draws the clip warning'
       );
     }
   }

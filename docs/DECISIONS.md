@@ -18,6 +18,7 @@ deleted.
 - 2026-10-15 - [Catalog text follows the SRD card style for names, costs and conditions](decisions/2026-10-15-catalog-text-follows-the-srd-card-style.md)
 - 2026-10-15 - [Descriptions use a line-based Markdown subset parsed by one module](decisions/2026-10-15-descriptions-use-a-line-based-markdown-subset.md)
 - 2026-10-15 - [Formatted text is typed as Markdown in a box with a toolbar](decisions/2026-10-15-formatted-text-is-typed-as-markdown-in-a-box-with-a-toolbar.md)
+- 2026-10-15 - [The editor previews the print with the print card at its printed size](decisions/2026-10-15-the-editor-previews-the-print-with-the-print.md)
 - 2026-10-14 - [A link preview reads a lean projection](decisions/2026-10-14-a-link-preview-reads-a-lean-projection.md)
 - 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md)
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)

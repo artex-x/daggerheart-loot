@@ -132,6 +132,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       link "Отмена" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
+    button "На экране" [pressed=true]
+    button "На печати" [pressed=false]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x7 of 11 same-shape siblings elided
@@ -186,6 +188,8 @@ daggerheart.com
 Курсив
 ЛутDaggerheart
 Магическое
+На печати
+На экране
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Новая линия
@@ -361,6 +365,8 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       link "Cancel" [url=index.html?as=gm1#/homebrew]
       button "Delete"
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
+    button "On screen" [pressed=true]
+    button "In print" [pressed=false]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x7 of 11 same-shape siblings elided
@@ -410,6 +416,7 @@ Help: Upgrade line
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 In a line
+In print
 Install as an app
 Instinct
 Italic
@@ -424,6 +431,7 @@ New rule card
 No sectionPistolsBlades+ New section...
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Numbered list
+On screen
 One-Handed
 One/Two-Handed
 Physical

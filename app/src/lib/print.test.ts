@@ -6,8 +6,11 @@ import {
   glyphKey,
   pages,
   PRINT_GLYPH,
-  printTrait
+  printTrait,
+  setLineOf
 } from './print.js';
+import { buildIndex } from './data.js';
+import { withRecords, type HomebrewRecord } from './homebrew.js';
 import type { Record_ } from './types.js';
 
 describe("the trait cell's word", () => {
@@ -142,5 +145,51 @@ describe('the fallback glyph for a record with no image', () => {
     expect(Object.keys(PRINT_GLYPH).sort()).toEqual(
       ['weapon', 'secondary', 'armor', 'item', 'cons'].sort()
     );
+  });
+});
+
+describe("a card's set line", () => {
+  const member = (id: string, set?: string): Record_ => ({
+    id,
+    src: 'core',
+    kind: 'item',
+    en: 'Thing ' + id,
+    ende: '',
+    ru: 'Вещь ' + id,
+    rud: '',
+    ...(set ? { set } : {})
+  });
+  const a = member('x1', 'pair');
+  const b = member('x2', 'pair');
+  const index = buildIndex({
+    items: { core_item: [a, b, member('x3')] },
+    sets: { pair: { ru: 'Пара', en: 'Pair', rud: 'Оба вместе.', ende: 'Both together.' } }
+  });
+
+  it('is absent outside a set', () => {
+    expect(setLineOf(index, member('x3'), 'ru')).toBeUndefined();
+  });
+
+  it('names the set and its members, then the bonus, in each language', () => {
+    expect(setLineOf(index, a, 'ru')).toEqual({
+      label: 'Пара (Комплект: Вещь x1, Вещь x2)',
+      body: 'Оба вместе.'
+    });
+    expect(setLineOf(index, a, 'en')).toEqual({
+      label: 'Pair (Set: Thing x1, Thing x2)',
+      body: 'Both together.'
+    });
+  });
+
+  it('names the set alone for a frozen copy with no other member', () => {
+    const card = { ru: 'Свой комплект', en: 'Own Set', rud: 'Бонус.', ende: 'A bonus.' };
+    const copy: HomebrewRecord = {
+      ...member('hb_copyaaaaaaaaaaaa'),
+      src: 'homebrew',
+      set: 'hb_ownsetaaaaaaaaaa',
+      cards: { sets: { hb_ownsetaaaaaaaaaa: card } }
+    };
+    const ix = withRecords(index, [], [copy]);
+    expect(setLineOf(ix, copy, 'en')).toEqual({ label: 'Own Set', body: 'A bonus.' });
   });
 });

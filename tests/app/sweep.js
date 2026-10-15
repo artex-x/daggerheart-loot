@@ -157,6 +157,13 @@ const PAGES = [
     ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
     ['#/search', 'поиск со своими предметами', 'gm1'],
     ['#/homebrew/hb_emberaxeaaaaaaaa', 'редактор своего предмета', 'gm1'],
+    /* The print view: the switches wrap and the printed-size card stays in the column. */
+    [
+      '#/homebrew/hb_emberaxeaaaaaaaa',
+      'редактор своего предмета: вид на печати',
+      'gm1',
+      (d) => either(d, 'click', 'На печати', 'In print')
+    ],
     ['#/lists/00000000-0000-4000-8000-000000000101', 'список аккаунта', 'gm1'],
     ['#/lists/00000000-0000-4000-8000-000000000102', 'пустой список аккаунта', 'gm1'],
     ['#/lists', 'списки аккаунта', 'gm1'],
@@ -251,7 +258,8 @@ const PAGES = [
  * read as gm2. */
 const PRINT_ONLY_1180 = [
   ['#/p/set-twocards', 'печать: два предмета', 'gm2', printed],
-  ['#/p/set-missing1', 'печать: удалённый предмет', 'gm2', printed]
+  ['#/p/set-missing1', 'печать: удалённый предмет', 'gm2', printed],
+  ['#/p/set-clipped1', 'печать: текст не помещается', 'gm2', printed]
 ];
 
 /* The list seed both audit2 and this sweep have always used, plus a second

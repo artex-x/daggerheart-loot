@@ -1555,7 +1555,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   Новый раздел...»; a source change resets it), «Название» * (at most 120
   characters; «Язык текста» sits right above it), «Описание» (at most 3000,
   a counter past 2500; a box of rule 18 with all five buttons and no
-  «Просмотр»: the card beside it is the preview, live on every input),
+  «Просмотр»: the card beside it is the preview, live on every input; in
+  the print view, a warning after its counter, below),
   «Картинка»
   (below), for loot and
   consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
@@ -1593,6 +1594,23 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   edits reach the list with «Сохранить»; a new item has none before its
   first save. The type and the weapon values stay in the form while another
   kind or type is chosen.
+- **The print view**: above the card, «Показать карточку» / "Show the card"
+  with «На экране» / "On screen" (pressed at each mount) and «На печати» /
+  "In print". «На печати» draws the print card ("Print") at its printed
+  size, 63x88 mm or 44x63 mm, never scaled, with the same fit, the set line
+  and the text language of the form, in place of the screen card and its
+  «Добавить в список». The print bar's two switches sit beside the view
+  switch and are its visit pick: a pick here is the print page's, and the
+  reverse; the editor draws no note about the default. The switches wrap and
+  speak the interface language. While the print card still cuts off text
+  after its fit, a warning box (rule 19) after the «Описание» counter reads
+  «Текст не помещается на карточку при печати: его конец не напечатается.
+  Можно сократить название или описание.», for the layout on screen; the
+  card and the warning follow the typed text 150 ms after the typing stops.
+  «На экране» removes it. The editor does not print, and the warning blocks
+  no save. The set and rule card forms have no print view: a set's bonus is
+  checked in a member's print view (owner, 2026-10-14;
+  `docs/decisions/2026-10-15-the-editor-previews-the-print-with-the-print.md`).
 - **Relations**: the fold «Связи» / "Relations" closes the form, its summary
   «Связи · N» for the N relations the item names. It is closed for an item
   with no relation and open for one with any; a save problem inside it or an
@@ -1933,6 +1951,13 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   words broken anywhere, so it is never wider than the card. The fit ladder
   below measures a table with the rest of the text, and clips what still does
   not fit. A set bonus's label leads the first paragraph of its text.
+- A card that still cuts off text after the last rung is counted: the bar
+  draws «Текст не помещается на карточки при печати: N. Конец текста на них
+  не напечатается.» in the warning box (rule 19) after the red deleted note
+  and before the grey note, hidden in print media with the bar; it blocks
+  nothing. The count reads the text box down and across, the name across and
+  the content box down; the source line is not counted (`DEBT.md` D105). The
+  editor's print view draws the same card with the same fit ("Homebrew").
 - An artifact weapon (`eq.tier: 'A'`) prints as a loot artifact card does: the
   tag `Артефакт`, then its class tag, no tier band, and its damage strip.
 - A card printed from a list shows the list's count after its name as ` ×N`
@@ -2412,3 +2437,8 @@ Each rule keeps its number: a review cites it by number.
   box, the format buttons disabled, only where no rendered view sits beside
   the field (owner, 2026-10-14): the card forms, «Свой предмет» and the list
   notes; the item form's card is its preview.
+- **19. Warnings**: a line that tells about a risk and blocks nothing is a
+  warning: the warning box (`NoticeBox` with `warn`), `role="status"`, a fact
+  and an option in its words, never «Ошибка». The error look (`--danger`,
+  `role="alert"`) is for a refusal (owner, 2026-10-14). Departure: the print
+  page's red deleted note keeps the error look: its cards are not on the sheet.

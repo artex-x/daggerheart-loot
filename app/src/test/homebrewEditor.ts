@@ -18,6 +18,7 @@ import {
   fakeEnv,
   fakeMedia,
   fakePage,
+  fakePicture,
   memoryRouter,
   memoryStorage,
   type FakeMedia
@@ -135,3 +136,19 @@ export const openRel = async (): Promise<void> => {
   if (!relFold().open) await userEvent.click(relSummary());
 };
 export const picker = (name: string): HTMLElement => screen.getByRole('combobox', { name });
+
+/* The picture field: a 1000 px file, its input, and a choice through the crop dialog. */
+export const png = (): File =>
+  new File([fakePicture(1000, 1000)], 'picture.png', { type: 'image/png' });
+export const fileInput = (): HTMLInputElement =>
+  document.getElementById('hb-art-file') as HTMLInputElement;
+export async function cropFile(): Promise<void> {
+  await userEvent.upload(fileInput(), png());
+  /* The crop dialog is a lazy chunk: under the full coverage run it loads
+     after the default 1 s wait (measured 2026-10-15); artField.test.ts
+     waits 10 s for it too. */
+  await userEvent.click(
+    await screen.findByRole('button', { name: t.hbArtDone }, { timeout: 10_000 })
+  );
+  await screen.findByRole('button', { name: t.hbArtReplace }, { timeout: 10_000 });
+}

@@ -12,17 +12,20 @@ import { dict } from '../lib/dict.js';
 import { canonJson, type HomebrewContent } from '../lib/homebrew.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeEnv, fakePicture, memoryRouter, memoryStorage } from '../ports/index.js';
+import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
   ALDER,
   AXE,
+  cropFile,
   editor,
+  fileInput,
   flush,
   group,
   helpButton,
   openRel,
   picker,
+  png,
   press,
   relFold,
   relSummary,
@@ -1381,23 +1384,8 @@ describe('the fold «Связи»', () => {
 
 describe('the picture', () => {
   const OWN_HEX = 'a'.repeat(32);
-  const png = (): File =>
-    new File([fakePicture(1000, 1000)], 'picture.png', { type: 'image/png' });
-  const fileInput = (): HTMLInputElement =>
-    document.getElementById('hb-art-file') as HTMLInputElement;
   const previewImg = (): HTMLImageElement =>
     document.querySelector('.preview .card-media img') as HTMLImageElement;
-
-  async function cropFile(): Promise<void> {
-    await userEvent.upload(fileInput(), png());
-    /* The crop dialog is a lazy chunk: under the full coverage run it loads
-       after the default 1 s wait (measured 2026-10-15); artField.test.ts
-       waits 10 s for it too. */
-    await userEvent.click(
-      await screen.findByRole('button', { name: t.hbArtDone }, { timeout: 10_000 })
-    );
-    await screen.findByRole('button', { name: t.hbArtReplace }, { timeout: 10_000 });
-  }
 
   async function rowOf(cloud: FakeCloud, key: string) {
     const r = await cloud.homebrew.load();

@@ -11,9 +11,10 @@
  * items in the set `saints-ensemble`, the relation folds on a catalog card - and a chain
  * of 5 own items with an own set card, which `#/h/` draws with every relation line.
  * `gm3`'s one list, «Склад», has a players' link with 8 entries, the shared page's
- * filter threshold. `gm4` holds no list and one item in a source at the longest
- * name, which «Склад» links; no state signs in as `gm4`. `gm4` made the 13 seeded print
- * sets, which the goldens open as `gm2` and `gm1`.
+ * filter threshold. `gm4` holds no list, one item in a source at the longest name,
+ * which «Склад» links, a formatted item and an item whose text the print card cuts off;
+ * the formatted item's states sign in as `gm4`. `gm4` made the 15 seeded print sets,
+ * which the goldens open as `gm2`, `gm1` and `gm4`.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
  * longest name. docs/specs/COVERAGE.md, "Test layers". */
 
@@ -179,6 +180,26 @@ const MARKUP: HomebrewContent = {
     '| 1-3 | No |',
     '| 4-6 | **Yes** |'
   ].join('\n')
+};
+
+/* gm4's item at the longest description (`DESC_MAX`, 3000 code points) in each language:
+   the print card cuts its text off (docs/specs/FEATURES.md, "Print"). One sentence again and
+   again, cut at the limit. */
+const LONG_TEXT_ID = uuid(516);
+const atLimit = (sentence: string): string => {
+  const cps = Array.from(sentence.repeat(Math.ceil(3000 / Array.from(sentence).length)));
+  return cps.slice(0, 2999).join('') + '.';
+};
+const LONG_TEXT: HomebrewContent = {
+  kind: 'item',
+  ru: 'Свиток долгой ночи',
+  en: 'Scroll of the Long Night',
+  rud: atLimit(
+    'Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. '
+  ),
+  ende: atLimit(
+    'Once per rest you can unroll the scroll and read it aloud until the end of the scene. '
+  )
 };
 
 /* gm4's one item, in a source at the longest name (`BOOK_NAME_MAX`, 80 code points);
@@ -604,6 +625,13 @@ const HOMEBREW = {
         content: MARKUP,
         createdAgoMs: DAY,
         editedAgoMs: DAY
+      },
+      {
+        id: LONG_TEXT_ID,
+        key: 'hb_longtextaaaaaaaa',
+        content: LONG_TEXT,
+        createdAgoMs: DAY,
+        editedAgoMs: DAY
       }
     ],
     cards: []
@@ -707,6 +735,7 @@ const PRINT_SETS: SeedPrintSet[] = [
   printSet('set-ownitems', [{ h: AXE_ID }, { h: uuid(512) }]),
   printSet('set-emberaxe', [{ h: AXE_ID }]),
   printSet('set-markup01', [{ h: MARKUP_ID }]),
+  printSet('set-clipped1', [{ h: LONG_TEXT_ID }]),
   /* `uuid(598)` and `uuid(599)` name no item: a deleted one. */
   printSet('set-missing1', [{ k: 'ci1' }, { h: uuid(599) }]),
   printSet('set-allgone1', [{ h: uuid(598) }, { h: uuid(599) }]),

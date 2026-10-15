@@ -41,6 +41,8 @@ daggerheart.com
 Конфиденциальность
 Курсив
 ЛутDaggerheart
+На печати
+На экране
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Нумерованный список
@@ -108,6 +110,7 @@ Help: Set
 Help: Source
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
+In print
 Install as an app
 Italic
 Item
@@ -117,6 +120,7 @@ New rule card
 No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Numbered list
+On screen
 Privacy
 RU
 RU - empty

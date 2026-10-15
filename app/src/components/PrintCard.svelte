@@ -9,6 +9,7 @@
    * `.pc-text` joins the paragraphs of the text with `<br>`, not
    * `RecordCard`'s `<p>`s, and has no whitespace of any kind between the tags
    * in that block (docs/specs/COVERAGE.md, "Whitespace text nodes are content"). */
+  import { untrack } from 'svelte';
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
@@ -44,9 +45,12 @@
     /** A set's shared bonus, drawn after the text: the label in italics, then the
      *  bonus text, formatted. `PrintPage` builds it: the card has no index. */
     setLine?: { label: string; body: string } | undefined;
+    /** Told after each fit whether the card still cuts off text: the text box down or
+     *  across, the name across, the content box down (FEATURES.md, "Print"). */
+    onfit?: ((clipped: boolean) => void) | undefined;
   }
 
-  const { it, lang, bw, artBroken, onartfail, qty, setLine }: Props = $props();
+  const { it, lang, bw, artBroken, onartfail, qty, setLine, onfit }: Props = $props();
 
   const t = $derived(dict(lang));
   const counter = $derived(qtySuffix(qty));
@@ -211,7 +215,20 @@
       }
     }
 
-    if (!text) return;
+    const tall = (e: HTMLElement | null): boolean => !!e && e.scrollHeight > e.clientHeight + 1;
+    const wide = (e: HTMLElement | null): boolean => !!e && e.scrollWidth > e.clientWidth + 1;
+    /* The content box counts down only: across, a long source line on the compact
+       card overflows it, which no shorter name or description mends. */
+    const report = (): void => {
+      const name = el.querySelector<HTMLElement>('.pc-name');
+      const clipped = tall(text) || wide(text) || wide(name) || tall(box);
+      untrack(() => onfit?.(clipped));
+    };
+
+    if (!text) {
+      report();
+      return;
+    }
     text.style.fontSize = '';
     if (box) box.style.removeProperty('--pcpad');
     const tight = (): boolean => text.scrollHeight > text.clientHeight + 1;
@@ -252,6 +269,7 @@
       art.style.setProperty('--artw', `${String(band)}cqw`);
       art.style.display = line - top < 24 ? 'none' : '';
     }
+    report();
   }
 
   $effect(() => {

@@ -7,18 +7,17 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
+  import { SvelteMap } from 'svelte/reactivity';
   import LoadState from './LoadState.svelte';
   import NoData from './NoData.svelte';
+  import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
-  import Seg from './Seg.svelte';
-  import { setBonusOf, setKeyOf, setOf } from '../lib/data.js';
+  import PrintSwitches from './PrintSwitches.svelte';
   import { printSetHash, sectionHash } from '../lib/hash.js';
   import { withRecords } from '../lib/homebrew.js';
-  import { FOLD_OWN, relText, setFolds } from '../lib/label.js';
-  import { COMPACT_PER_SHEET, pages } from '../lib/print.js';
+  import { COMPACT_PER_SHEET, pages, setLineOf } from '../lib/print.js';
   import { PRINT_SET_ID, type PrintSetRow } from '../lib/printSet.js';
-  import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -85,36 +84,10 @@
    *  item binding of its own. */
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
 
-  /** The set's shared bonus as a card's last text line. The label names the
-   *  members, folded as the card folds them, so a card read alone still says the
-   *  bonus needs the others; a frozen copy with no other member names none. */
-  function setLine(it: Record_): { label: string; body: string } | undefined {
-    const bonus = index ? setBonusOf(index, it) : undefined;
-    if (!index || !bonus) return undefined;
-    const ru = app.lang === 'ru';
-    const name = ru ? bonus.ru : bonus.en;
-    const members = setOf(index, it);
-    return {
-      label: members.length
-        ? `${name} (${t.setLabel}: ${relText(members, app.lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
-        : name,
-      body: ru ? bonus.rud : bonus.ende
-    };
-  }
-
-  /* Both print switches change the layout for this visit; the default is the
-     Display section's (docs/specs/FEATURES.md, "Print"). The pick lives on
-     `AppState`, not here: this page remounts on every navigation, and the
-     pick must survive a return from another page. */
-
-  const ART = $derived([
-    { value: 'color', label: t.printColor },
-    { value: 'bw', label: t.printBW }
-  ] as const);
-  const SIZE = $derived([
-    { value: 'std', label: t.printStd },
-    { value: 'compact', label: t.printCompact }
-  ] as const);
+  /* Whether each card still cuts off text after its fit, by the card's key; written only
+     on a change, so a report cannot re-render the bar in a loop (FEATURES.md, "Print"). */
+  const clippedBy = new SvelteMap<string, boolean>();
+  const clippedCount = $derived([...clippedBy.values()].filter(Boolean).length);
 
   const sub = $derived(
     (app.shownPrintCompact ? t.printSubCompact : t.printSub)
@@ -181,29 +154,17 @@
     <Actions>
       <Button onclick={back}><Icon name="back" />{t.back}</Button>
       <Button variant="primary" onclick={print}><Icon name="print" />{t.printNow}</Button>
-      <Seg
-        small
-        options={ART}
-        value={app.shownPrintBW ? 'bw' : 'color'}
-        label={t.printTitle}
-        onchange={(v: 'color' | 'bw') => {
-          app.showPrintBW(v === 'bw');
-        }}
-      />
-      <Seg
-        small
-        options={SIZE}
-        value={app.shownPrintCompact ? 'compact' : 'std'}
-        label={t.printSize}
-        onchange={(v: 'std' | 'compact') => {
-          app.showPrintCompact(v === 'compact');
-        }}
-      />
+      <PrintSwitches {app} />
       <Button onclick={() => void copyLink()}><Icon name="link" />{t.printLink}</Button>
     </Actions>
     {#if app.printChanged}<KeepNote {app} />{/if}
     {#if missing > 0}
       <p class="printnote warnnote">{missingNote}</p>
+    {/if}
+    {#if clippedCount}
+      <div class="clipwarn">
+        <NoticeBox warn>{t.printClipped.replace('%d', String(clippedCount))}</NoticeBox>
+      </div>
     {/if}
     <p class="printnote">{t.printNote}</p>
   </div>
@@ -223,10 +184,13 @@
             lang={app.lang}
             bw={app.shownPrintBW}
             qty={c.q}
-            setLine={setLine(c.it)}
+            setLine={index ? setLineOf(index, c.it, app.lang) : undefined}
             artBroken={app.artBroken(c.it.id)}
             onartfail={(bad: string) => {
               app.markArtBroken(bad);
+            }}
+            onfit={(cut: boolean) => {
+              if (clippedBy.get(c.key) !== cut) clippedBy.set(c.key, cut);
             }}
           />
         {/each}
@@ -262,6 +226,11 @@
   .printnote.warnnote {
     color: var(--danger);
     font-weight: 600;
+  }
+
+  .clipwarn {
+    margin-top: 12px;
+    max-width: 62ch;
   }
 
   /* off `.psheet` (style.css:1118-1126) */

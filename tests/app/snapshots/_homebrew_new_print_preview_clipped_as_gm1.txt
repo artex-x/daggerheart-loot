@@ -1,0 +1,284 @@
+# #/homebrew/new ~ print preview clipped as gm1
+# route: #/homebrew/new
+# why: a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact colour print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled
+# as: gm1
+
+## ru :: tree
+RootWebArea "Новый предмет — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+  link "К содержимому" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
+      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Таблицы" [url=index.html?as=gm1#/tables]
+      link "Списки" [url=index.html?as=gm1#/lists]
+      link "Поиск" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Свиток долгой ночи" [level=1]
+    StaticText "Хоумбрю"
+    form ""
+      StaticText "* - обязательное поле. Остальное можно заполнить позже."
+      group "Вид"
+        button "Предмет" [pressed=true]
+        button "Расходник" [pressed=false]
+        button "Снаряжение" [pressed=false]
+      StaticText "Источник"
+      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
+      combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
+        option "Хоумбрю" [selected=true]
+        option "Мастерская Ольхи" [selected=false]
+        option "+ Новый источник..." [selected=false]
+      button "RU" [pressed=true]
+      button "EN - пусто" [pressed=false]
+      ... StaticText x3 of 7 same-shape siblings elided
+      textbox "Название*" [value=Свиток долгой ночи multiline=false readonly=false required=true]
+      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      toolbar "Оформление: Описание" [orientation=horizontal]
+        button "Жирный" [keyshortcuts=Control+B Meta+B]
+        button "Курсив" [keyshortcuts=Control+I Meta+I]
+        button "Список"
+        button "Нумерованный список"
+        button "Таблица"
+      textbox "Описание" [value=Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены focused=true multiline=true readonly=false required=false]
+      StaticText "3000 / 3000"
+      status ""
+        StaticText "Текст не помещается на карточку при печати: его конец не напечат..." [namelen=109 namehash=8aca606f]
+      button "Выбрать файл"
+      button "Выбрать из предметов" [expanded=false]
+      StaticText "Квадрат 640x640 из файла PNG, JPEG или WebP до 20 МБ. Картинка з..." [namelen=89 namehash=d79a0cd0]
+      group "Ранг"
+        button "Без ранга" [pressed=true]
+        button "1" [pressed=false]
+        button "2" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
+      DisclosureTriangle "Связи" [expanded=false]
+      button "Сохранить"
+      link "Отмена" [url=index.html?as=gm1#/homebrew]
+    button "На экране" [pressed=false]
+    button "На печати" [pressed=true]
+    button "Цветная" [pressed=true]
+    button "Чёрно-белая" [pressed=false]
+    button "Обычная" [pressed=false]
+    button "Компактная" [pressed=true]
+    StaticText "ПРЕДМЕТ"
+    heading "СВИТОК ДОЛГОЙ НОЧИ" [level=2]
+    StaticText "Раз за отдых вы можете развернуть свиток и прочитать его вслух д..." [namelen=3000 namehash=cbfd5e8c]
+    StaticText "Daggerheart"
+    StaticText "Хоумбрю"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+1
+2
+3
+4
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+EN - пусто
+RU
+Vault of Ages
+Wondrous
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Без ранга
+Выбрать из предметов
+Выбрать файл
+Жирный
+К содержимому
+Карты правил
+Компактная
+Конфиденциальность
+Курсив
+ЛутDaggerheart
+На печати
+На экране
+НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
+Новая карта правил
+Нумерованный список
+Обычная
+Обычные правила
+Отмена
+Подсказка: Источник
+Подсказка: Карты правил
+Подсказка: Комплект
+Подсказка: Описание
+Подсказка: Получается из
+Подсказка: Улучшается до
+Поиск
+Получается из
+Предмет
+Расходник
+Снаряжение
+Сообщества
+Сохранить
+Списки
+Список
+Таблица
+Таблицы
+Улучшается до
+Условия использования
+Установить как приложение
+ХоумбрюМастерская Ольхи+ Новый источник...
+Цветная
+Чёрно-белая
+
+## en :: tree
+RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+  link "Skip to content" [url=index.html?as=gm1#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
+      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
+      link "Dread" [url=index.html?as=gm1#/roll/dread]
+      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
+      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
+      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
+      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Tables" [url=index.html?as=gm1#/tables]
+      link "Lists" [url=index.html?as=gm1#/lists]
+      link "Search" [url=index.html?as=gm1#/search]
+  main ""
+    heading "Свиток долгой ночи" [level=1]
+    StaticText "Homebrew"
+    form ""
+      StaticText "* - required field. The rest can be filled in later."
+      group "Kind"
+        button "Item" [pressed=true]
+        button "Consumable" [pressed=false]
+        button "Equipment" [pressed=false]
+      StaticText "Source"
+      button "Help: Source" [description=Help: Source expanded=false]
+      combobox "Source" [value=Homebrew expanded=false haspopup=menu]
+        option "Homebrew" [selected=true]
+        option "Alder Workshop" [selected=false]
+        option "+ New source..." [selected=false]
+      button "RU" [pressed=true]
+      button "EN - empty" [pressed=false]
+      ... StaticText x3 of 7 same-shape siblings elided
+      textbox "Name*" [value=Свиток долгой ночи multiline=false readonly=false required=true]
+      button "Help: Description" [description=Help: Description expanded=false]
+      toolbar "Formatting: Description" [orientation=horizontal]
+        button "Bold" [keyshortcuts=Control+B Meta+B]
+        button "Italic" [keyshortcuts=Control+I Meta+I]
+        button "Bulleted list"
+        button "Numbered list"
+        button "Table"
+      textbox "Description" [value=Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены focused=true multiline=true readonly=false required=false]
+      StaticText "3000 / 3000"
+      status ""
+        StaticText "The text does not fit the card in print: its end does not print...." [namelen=109 namehash=bbaa5170]
+      button "Choose a file"
+      button "Choose from items" [expanded=false]
+      StaticText "A 640x640 square from a PNG, JPEG or WebP file up to 20 MB. The ..." [namelen=94 namehash=d7d2d695]
+      group "Tier"
+        button "No tier" [pressed=true]
+        button "1" [pressed=false]
+        button "2" [pressed=false]
+        button "3" [pressed=false]
+        button "4" [pressed=false]
+      DisclosureTriangle "Relations" [expanded=false]
+      button "Save"
+      link "Cancel" [url=index.html?as=gm1#/homebrew]
+    button "On screen" [pressed=false]
+    button "In print" [pressed=true]
+    button "Colour" [pressed=true]
+    button "Black and white" [pressed=false]
+    button "Standard" [pressed=false]
+    button "Compact" [pressed=true]
+    StaticText "ПРЕДМЕТ"
+    heading "СВИТОК ДОЛГОЙ НОЧИ" [level=2]
+    StaticText "Раз за отдых вы можете развернуть свиток и прочитать его вслух д..." [namelen=3000 namehash=cbfd5e8c]
+    StaticText "Daggerheart"
+    StaticText "Хоумбрю"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+1
+2
+3
+4
+Account: gm1@example.test
+Alt. tables
+Arazo's Artifacts
+Black and white
+Bold
+Bulleted list
+Cancel
+Choose a file
+Choose from items
+Colour
+Communities
+Compact
+Consumable
+Dragon's Vault
+Dread
+EN
+EN - empty
+Equipment
+Help: Description
+Help: Made from
+Help: Rule cards
+Help: Set
+Help: Source
+Help: Upgrades to
+HomebrewAlder Workshop+ New source...
+In print
+Install as an app
+Italic
+Item
+Lists
+Made from
+New rule card
+No tier
+NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+Numbered list
+On screen
+Privacy
+RU
+Rule cards
+Save
+Search
+Skip to content
+Standard
+Standard rules
+Table
+Tables
+Terms of use
+Upgrades to
+Vault of Ages
+Wondrous
+daggerheart.com
+ЛутDaggerheart

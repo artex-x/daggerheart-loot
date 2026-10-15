@@ -85,6 +85,8 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       StaticText "До 3 карт."
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
+    button "На экране" [pressed=true]
+    button "На печати" [pressed=false]
     button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
@@ -122,6 +124,8 @@ daggerheart.com
 Конфиденциальность
 Курсив
 ЛутDaggerheart
+На печати
+На экране
 Новая карта правил
 Нумерованный список
 Обычные правила
@@ -234,6 +238,8 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       StaticText "Up to 3 cards."
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
+    button "On screen" [pressed=true]
+    button "In print" [pressed=false]
     button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
@@ -274,6 +280,7 @@ Help: Set bonus
 Help: Source
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
+In print
 Install as an app
 Italic
 Item
@@ -282,6 +289,7 @@ Made from
 New rule card
 No tier
 Numbered list
+On screen
 Preview
 Privacy
 RU

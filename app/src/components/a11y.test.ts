@@ -686,6 +686,10 @@ const COVERED: Record<string, string> = {
   'RollPanel.svelte': 'roll.test.ts, and the pressed states above',
   'PrintCard.svelte': "printPage.test.ts's axe cases of both layouts and sizes",
   'PrintPage.svelte': "printPage.test.ts's axe cases of the sheet and its states",
+  'PrintPreview.svelte':
+    "homebrewPrintPreview.test.ts's axe cases of the print view and of its clip warning",
+  'PrintSwitches.svelte':
+    "printPage.test.ts's axe cases of the bar and homebrewPrintPreview.test.ts's print view",
   'Seg.svelte':
     'the frame, on every state here and in shell.test.ts; the tables view switch in tables.test.ts; the print sheet in printPage.test.ts',
   'RowMain.svelte':

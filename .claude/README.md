@@ -801,11 +801,11 @@ documented; the parity rows below are replaced by the gates that survive.
 | gate | idle host | loaded host |
 |---|---|---|
 | `npm run check` | 10-18 min with nothing cached (2026-10-07); agents run its halves below | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
-| `npm run check:fast` | 215-310 s (2026-10-07) | longer; one call |
+| `npm run check:fast` | 215-310 s (2026-10-07) | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background |
 | `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | longer; past 600 s it records the half by its exit |
 | `npm run check:2` | 308 s (2026-10-07); 344-566 s with the stack stopped and 3496-3532 tests (2026-10-08) | 465-682 s (2026-10-07); past 600 s it records the half by its exit |
 | `npm run check:built` | a few minutes | longer |
-| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer |
+| `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer; 723 s with WSL and Rancher up (2026-10-15) |
 | `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
 | `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; the four shards must run separately, never as one bare `node tests/app/golden.js` call |
 | `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`: 371.9s(ru)/172.7s(en), CI run `35232880507`) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
@@ -886,7 +886,10 @@ capture at ~415 of 1005 means a real cost sits in the compare path.
 On this Windows/Git-Bash host, `node tests/app/golden.js --only="#/..."`
 needs `MSYS_NO_PATHCONV=1` in front (see "Shell hazards on this host",
 "Run a long check"); without it the `#/`-leading argument is path-converted
-and the filter silently matches nothing. Separately, `npm run check`'s own
+and the filter silently matches nothing. With `--update`, the closing line
+still reads `structural snapshots (dist-test/): unchanged` after it wrote
+files (measured 2026-10-15): read `git status -- tests/app/snapshots` for
+what moved. Separately, `npm run check`'s own
 `npm run data` step can move `data.json`/`catalog.csv` mtimes with unchanged
 content, so a build run before the check no longer satisfies the
 stale-build guard - rebuild after the check (`npm run build:test` before any
@@ -2055,7 +2058,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 303 kB budget (with the account client chunk)`; 297.5
+Expected: `within the 303 kB budget (with the account client chunk)`; 299.4
+kB on 2026-10-15 at `authoring-print-preview` (the editor's print view, the
+clip report, five strings in two languages), 238.2 kB unconfigured, which
+leaves 50.6 kB under the 350 kB ceiling; 297.5
 kB on 2026-10-15 at `rich-descriptions` (the formatted text box, its
 toolbar and the two-language forms), 236.3 kB unconfigured, which leaves
 52.5 kB under the 350 kB ceiling; 290.9

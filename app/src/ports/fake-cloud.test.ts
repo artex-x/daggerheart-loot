@@ -1761,7 +1761,12 @@ describe('the seeded homebrew', () => {
     expect(SEED.lists.gm4).toEqual([]);
     expect(items.map((i) => [i.id, i.key, i.bookId])).toEqual([
       [uuid(461), 'hb_longsrcaaaaaaaaa', books[0]?.id],
-      [uuid(515), 'hb_markupscrollaaaa', undefined]
+      [uuid(515), 'hb_markupscrollaaaa', undefined],
+      [uuid(516), 'hb_longtextaaaaaaaa', undefined]
+    ]);
+    const long = items.find((i) => i.key === 'hb_longtextaaaaaaaa')?.content;
+    expect([Array.from(long?.rud ?? '').length, Array.from(long?.ende ?? '').length]).toEqual([
+      3000, 3000
     ]);
     expect(
       books.map((b) => [
@@ -3065,7 +3070,10 @@ describe('the print sets', () => {
     const markup = await prints.read('set-markup01');
     const markupSet = markup.ok ? (markup.set as { entries: { hid?: string }[] }) : null;
     expect(markupSet?.entries.map((e) => e.hid)).toEqual([uuid(515)]);
-    expect(SEED.printSets).toHaveLength(14);
+    const clipped = await prints.read('set-clipped1');
+    const clippedSet = clipped.ok ? (clipped.set as { entries: { hid?: string }[] }) : null;
+    expect(clippedSet?.entries.map((e) => e.hid)).toEqual([uuid(516)]);
+    expect(SEED.printSets).toHaveLength(15);
   });
 
   it("deletes an account's sets with the account", async () => {

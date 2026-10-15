@@ -9,7 +9,8 @@
      asks before any navigation and before the tab closes. The editor keeps its own key:
      a save that creates replaces the address and keeps this form mounted. The fold
      «Связи» holds the relations; the preview reads its own index, with the draft in place
-     of the stored row, so it draws the draft's ladder, set and reverse links
+     of the stored row, so it draws the draft's ladder, set and reverse links. Its view
+     switch shows the screen card or the print card, which warns when it cuts off text
      (docs/specs/FEATURES.md, "Homebrew";
      docs/decisions/2026-09-30-the-homebrew-editor-keeps-its-save-button-with-a-guard.md). */
   import { tick, untrack } from 'svelte';
@@ -25,6 +26,8 @@
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
   import Panel from './Panel.svelte';
+  import PrintPreview from './PrintPreview.svelte';
+  import PrintSwitches from './PrintSwitches.svelte';
   import RecordCard from './RecordCard.svelte';
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
@@ -136,6 +139,10 @@
   let artLine = $state<string | null>(null);
   let uploadingArt = $state(false);
   let previewBroken = $state(false);
+  /* The preview column's view: the screen card, or the print card with its clip report.
+     It starts on the screen card at each mount. */
+  let view = $state<'screen' | 'print'>('screen');
+  let clipped = $state(false);
   let summary = $state<HTMLDivElement | undefined>(undefined);
   let formEl = $state<HTMLFormElement | undefined>(undefined);
 
@@ -748,6 +755,10 @@
   const descLength = $derived(Array.from(draft[descKey]).length);
   const DESC_TOOLS: readonly MarkupTool[] = ['bold', 'italic', 'ul', 'ol', 'table'];
   const weapon = $derived(draft.kind === 'equip' && draft.t !== 'armor');
+  const VIEWS = $derived([
+    { value: 'screen' as const, label: t.hbPreviewScreen },
+    { value: 'print' as const, label: t.hbPreviewPrint }
+  ]);
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag
@@ -1065,6 +1076,9 @@
           {#if descLength > counterFrom(DESC_MAX)}
             <span class="counter">{descLength} / {DESC_MAX}</span>
           {/if}
+          {#if view === 'print' && clipped}
+            <NoticeBox warn>{t.hbPrintClipped}</NoticeBox>
+          {/if}
         </FormField>
         <ArtField {app} {store} {selfKey} saved={loadedArt} bind:value={art} line={artLine} />
 
@@ -1336,16 +1350,47 @@
     </Panel>
     <div class="preview" lang={editIn === app.lang ? undefined : editIn}>
       {#if app.index}
-        <RecordCard
-          it={card}
-          index={previewIndex ?? app.index}
-          lang={editIn}
-          artBroken={previewBroken}
-          onartfail={() => {
-            previewBroken = true;
-          }}
-          pick={rowKey !== null && row ? addPick : undefined}
-        />
+        <!-- The switches speak the interface language, whatever the card's. -->
+        <div class="pviews" lang={app.lang}>
+          <Seg
+            small
+            options={VIEWS}
+            value={view}
+            label={t.hbPreviewShow}
+            onchange={(v: 'screen' | 'print') => {
+              view = v;
+              if (v === 'screen') clipped = false;
+            }}
+          />
+          {#if view === 'print'}<PrintSwitches {app} />{/if}
+        </div>
+        {#if view === 'print'}
+          <PrintPreview
+            it={card}
+            index={previewIndex ?? app.index}
+            lang={editIn}
+            bw={app.shownPrintBW}
+            compact={app.shownPrintCompact}
+            artBroken={previewBroken}
+            onartfail={() => {
+              previewBroken = true;
+            }}
+            onclipped={(c: boolean) => {
+              clipped = c;
+            }}
+          />
+        {:else}
+          <RecordCard
+            it={card}
+            index={previewIndex ?? app.index}
+            lang={editIn}
+            artBroken={previewBroken}
+            onartfail={() => {
+              previewBroken = true;
+            }}
+            pick={rowKey !== null && row ? addPick : undefined}
+          />
+        {/if}
       {/if}
     </div>
   </div>
@@ -1376,6 +1421,13 @@
   .hbform {
     display: grid;
     gap: 16px;
+  }
+
+  .pviews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
   }
 
   /* A long choice row wraps instead of running off a narrow screen. */

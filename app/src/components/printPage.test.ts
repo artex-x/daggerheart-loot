@@ -30,36 +30,11 @@ import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { emptyRanges, fakeLayout } from '../test/layout.js';
 
 afterEach(cleanup);
 
-/* jsdom (v30) declares `Range.prototype.getBoundingClientRect` in its types
- * but does not actually implement it - not even a zero-rect stub, which is
- * what a real browser gives an empty range. `fit()`'s strip loop calls it
- * unconditionally on every card with a `.pc-strip`, so without this every
- * such render throws before the DOM even settles. A zero-width rect is what
- * a real browser reports for a freshly-created, empty range anyway, so this
- * is filling an environment gap, not changing behaviour: `over()` reads
- * `false` immediately, same as it would off a genuine zero rect, and the
- * "fit is wired" case below still overrides this locally to drive the
- * loops. `getClientRects` has the same gap: an empty list is what a real
- * browser gives an empty range. */
-Range.prototype.getBoundingClientRect = function (): DOMRect {
-  return {
-    width: 0,
-    height: 0,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    x: 0,
-    y: 0,
-    toJSON: () => ({})
-  };
-};
-Range.prototype.getClientRects = function (): DOMRectList {
-  return [] as unknown as DOMRectList;
-};
+emptyRanges();
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: 'x',
@@ -1063,73 +1038,7 @@ describe('a count from a list', () => {
 });
 
 describe('the fit is wired', () => {
-  /* jsdom lays nothing out - clientWidth/clientHeight/offsetTop and a
-     Range's rect are all zero - so every loop in `fit()` would exit at once
-     and the art arithmetic would divide by zero. Faked here exactly enough
-     to walk every branch: `.pc-text`'s scrollHeight comes from the case,
-     everything else measures 100 tall, and a Range reads as the case sets,
-     one line wide, by the text it holds. */
-  const fakeLayout = (
-    textScroll: (text: HTMLElement) => number,
-    rangeWidth: number | ((text: string) => number),
-    /* A value's line rects by its inline `whiteSpace` and `fontSize`; null
-       falls back to one line of `rangeWidth`. */
-    lineRects?: (value: HTMLElement) => { width: number; top: number }[] | null
-  ): (() => void) => {
-    const widthDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
-    const heightDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight');
-    const topDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetTop');
-    const scrollDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollHeight');
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- restored, never called unbound
-    const rectFn = Range.prototype.getBoundingClientRect;
-    // eslint-disable-next-line @typescript-eslint/unbound-method -- restored, never called unbound
-    const rectsFn = Range.prototype.getClientRects;
-    const widthOf = (r: Range): number =>
-      typeof rangeWidth === 'number' ? rangeWidth : rangeWidth(r.toString());
-
-    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
-      configurable: true,
-      get(this: HTMLElement) {
-        return 238;
-      }
-    });
-    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
-      configurable: true,
-      get(this: HTMLElement) {
-        return 100;
-      }
-    });
-    Object.defineProperty(HTMLElement.prototype, 'offsetTop', {
-      configurable: true,
-      get() {
-        return 0;
-      }
-    });
-    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
-      configurable: true,
-      get(this: HTMLElement) {
-        return this.classList.contains('pc-text') ? textScroll(this) : 100;
-      }
-    });
-    Range.prototype.getBoundingClientRect = function (this: Range) {
-      return { width: widthOf(this) } as DOMRect;
-    };
-    Range.prototype.getClientRects = function (this: Range) {
-      const host = this.startContainer;
-      const own = lineRects && host instanceof HTMLElement ? lineRects(host) : null;
-      return (own ?? [{ width: widthOf(this), top: 0 }]) as unknown as DOMRectList;
-    };
-
-    return () => {
-      if (widthDesc) Object.defineProperty(HTMLElement.prototype, 'clientWidth', widthDesc);
-      if (heightDesc) Object.defineProperty(HTMLElement.prototype, 'clientHeight', heightDesc);
-      if (topDesc) Object.defineProperty(HTMLElement.prototype, 'offsetTop', topDesc);
-      if (scrollDesc) Object.defineProperty(HTMLElement.prototype, 'scrollHeight', scrollDesc);
-      Range.prototype.getBoundingClientRect = rectFn;
-      Range.prototype.getClientRects = rectsFn;
-    };
-  };
-
+  /* jsdom lays nothing out: `fakeLayout` (app/src/test/layout.ts) walks every branch. */
   /* `.pc-text` is always tight here, so the grow rung is skipped. */
   it('reaches every step of the ladder and lands on the live floors', async () => {
     const restore = fakeLayout(() => 140, 9999);
@@ -1273,6 +1182,135 @@ describe('the fit is wired', () => {
       expect(
         document.querySelector<HTMLElement>('.pcard[data-pid="q1"] .pc-text')?.style.fontSize
       ).toBe('4cqw');
+    } finally {
+      restore();
+    }
+  });
+});
+
+describe('the clip warning', () => {
+  const ru = dict('ru');
+  const pidOf = (text: HTMLElement): string | undefined =>
+    text.closest<HTMLElement>('.pcard')?.dataset['pid'];
+  /* The cards named in `tight` overflow at every rung; the others fit. */
+  const tightOn = (...tight: string[]): (() => void) =>
+    fakeLayout((text) => (tight.includes(pidOf(text) ?? '') ? 140 : 50), 0);
+  const warning = (): Element | null => document.querySelector('.printbar .clipwarn .box');
+
+  it('counts one cut card in the warning box inside the bar, and printing still works', async () => {
+    const restore = tightOn('q1');
+    try {
+      const dialog = fakeDialog();
+      const { container } = render(App, { env: await atSet('ci1-q1', { dialog }) });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
+      });
+      expect(warning()).toHaveAttribute('role', 'status');
+      expect(warning()).toHaveClass('warn');
+      expect(warning()?.closest('.warnnote')).toBeNull();
+      expect(document.querySelector('[role="alert"]')).toBeNull();
+      const send = screen.getByRole('button', { name: 'Отправить на печать' });
+      expect(send).toBeEnabled();
+      await userEvent.click(send);
+      expect(dialog.printed).toBe(1);
+      await expectNoA11yViolations(container);
+    } finally {
+      restore();
+    }
+  });
+
+  it('draws no warning while every card fits', async () => {
+    const restore = tightOn();
+    try {
+      render(App, { env: await atSet('ci1-q1') });
+      await opened();
+      await tick();
+      expect(document.querySelector('.clipwarn')).toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
+  it('counts each cut card', async () => {
+    const restore = tightOn('ci1', 'q1');
+    try {
+      render(App, { env: await atSet('ci1-q1-cc1') });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '2'));
+      });
+    } finally {
+      restore();
+    }
+  });
+
+  it('counts every card when every card is cut', async () => {
+    const ids = ['ci1', 'ni1', 'cc1', 'cm1', 'q1', 'a1'];
+    const restore = tightOn(...ids);
+    try {
+      render(App, { env: await atSet(ids.join('-')) });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', String(ids.length)));
+      });
+    } finally {
+      restore();
+    }
+  });
+
+  it('draws the red deleted note, then the warning, then the grey note', async () => {
+    const restore = tightOn('ci1');
+    try {
+      render(App, { env: at('#/p/set-missing1', { cloud: fakeCloud(SEED, 'gm2') }) });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).not.toBeNull();
+      });
+      const order = [...(document.querySelector('.printbar')?.children ?? [])]
+        .map((e) =>
+          e.matches('p.printnote.warnnote')
+            ? 'deleted'
+            : e.matches('.clipwarn')
+              ? 'warning'
+              : e.matches('p.printnote')
+                ? 'note'
+                : null
+        )
+        .filter(Boolean);
+      expect(order).toEqual(['deleted', 'warning', 'note']);
+    } finally {
+      restore();
+    }
+  });
+
+  it('follows a layout switch and stops reporting once the sheet settles', async () => {
+    let fits = 0;
+    let tight = true;
+    const restore = fakeLayout(() => {
+      fits++;
+      return tight ? 140 : 50;
+    }, 0);
+    try {
+      render(App, { env: await atSet('q1') });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
+      });
+      tight = false;
+      await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+      await waitFor(() => {
+        expect(document.querySelector('.clipwarn')).toBeNull();
+      });
+      tight = true;
+      await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
+      });
+      const settled = fits;
+      await new Promise((r) => setTimeout(r, 50));
+      await tick();
+      expect(fits).toBe(settled);
     } finally {
       restore();
     }

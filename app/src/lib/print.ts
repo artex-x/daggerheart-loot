@@ -3,12 +3,15 @@
  *
  * Everything a card draws that is not text is a vector exported into `card/`
  * by the live app's author, not redrawn here - CLAUDE.md's "Export vectors;
- * do not redraw them." This module only names which file a card wants and
- * how the deck of cards is cut into nine- or sixteen-up sheets.
+ * do not redraw them." This module names which file a card wants, how the
+ * deck of cards is cut into nine- or sixteen-up sheets, and a card's set line.
  *
  * Pure module: no DOM, no `S.printBW` - `bw` arrives as an argument. */
 
+import { setBonusOf, setKeyOf, setOf, type Index } from './data.js';
+import { dict } from './dict.js';
 import { EQ_TRAIT, eqWord } from './i18n.js';
+import { FOLD_OWN, relText, setFolds } from './label.js';
 import type { Lang, Record_, Trait } from './types.js';
 
 /** Where the exported vectors live, junctioned into `dist/` alongside `img/`
@@ -17,6 +20,10 @@ export const CARD_DIR = 'card/';
 
 /** Cards on the opt-in compact sheet: 4x4 of 44x63 mm - FEATURES.md, "Print". */
 export const COMPACT_PER_SHEET = 16;
+
+/** The editor's print card follows the typed text this long after the last change:
+ *  one `fit()` per pause instead of one per key on a 3000-character card. */
+export const PREVIEW_FIT_MS = 150;
 
 export type GlyphKey = 'weapon' | 'secondary' | 'armor' | 'item' | 'cons';
 
@@ -87,4 +94,25 @@ const SHORT_TRAIT: Partial<Record<Trait, readonly [string, string]>> = {
 export function printTrait(tr: Trait | undefined, lang: Lang): string {
   const short = tr ? SHORT_TRAIT[tr] : undefined;
   return short ? short[lang === 'ru' ? 0 : 1] : eqWord(EQ_TRAIT, tr, lang);
+}
+
+/** A set's shared bonus as a card's last text line. The label names the
+ *  members, folded as the card folds them, so a card read alone still says the
+ *  bonus needs the others; a frozen copy with no other member names none. */
+export function setLineOf(
+  index: Index,
+  it: Record_,
+  lang: Lang
+): { label: string; body: string } | undefined {
+  const bonus = setBonusOf(index, it);
+  if (!bonus) return undefined;
+  const ru = lang === 'ru';
+  const name = ru ? bonus.ru : bonus.en;
+  const members = setOf(index, it);
+  return {
+    label: members.length
+      ? `${name} (${dict(lang).setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
+      : name,
+    body: ru ? bonus.rud : bonus.ende
+  };
 }

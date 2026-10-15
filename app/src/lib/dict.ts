@@ -321,6 +321,8 @@ const ru = {
   back: 'Назад',
   printTooMany:
     'Карточек за один раз: не больше %n. Не попали на лист: %d. Разделите набор на части.',
+  printClipped:
+    'Текст не помещается на карточки при печати: %d. Конец текста на них не напечатается.',
   homeSet: 'Приложение будет открываться на этом разделе',
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
@@ -539,6 +541,11 @@ const ru = {
   hbNoSection: 'Без раздела',
   save: 'Сохранить',
   hbNewItem: 'Новый предмет',
+  hbPreviewShow: 'Показать карточку',
+  hbPreviewScreen: 'На экране',
+  hbPreviewPrint: 'На печати',
+  hbPrintClipped:
+    'Текст не помещается на карточку при печати: его конец не напечатается. Можно сократить название или описание.',
   hbEmpty: 'Своих предметов пока нет - создайте первый выше или импортируйте файл.',
   /* The tables' empty state: its button follows the line. */
   hbEmptyTable: 'Своих предметов пока нет.',
@@ -1356,6 +1363,8 @@ const en: Dict = {
   back: 'Back',
   printTooMany:
     'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
+  printClipped:
+    'The text does not fit some cards in print: %d. The end of the text does not print on them.',
   homeSet: 'The app will open on this section',
   homeReset: 'The app will open on the standard rules again',
 
@@ -1555,6 +1564,11 @@ const en: Dict = {
   hbNoSection: 'No section',
   save: 'Save',
   hbNewItem: 'New item',
+  hbPreviewShow: 'Show the card',
+  hbPreviewScreen: 'On screen',
+  hbPreviewPrint: 'In print',
+  hbPrintClipped:
+    'The text does not fit the card in print: its end does not print. You can shorten the name or the description.',
   hbEmpty: 'No items of your own yet - create the first one above or import a file.',
   hbEmptyTable: 'No items of your own yet.',
   hbSignIn: 'Sign in to create your own items.',

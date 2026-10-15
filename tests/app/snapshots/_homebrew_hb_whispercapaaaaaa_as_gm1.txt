@@ -66,6 +66,8 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
+    button "На экране" [pressed=true]
+    button "На печати" [pressed=false]
     button "Page"
     StaticText "ITEM"
     StaticText "HOMEBREW"
@@ -106,6 +108,8 @@ daggerheart.com
 Конфиденциальность
 Курсив
 ЛутDaggerheart
+На печати
+На экране
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Нумерованный список
@@ -197,6 +201,8 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
       button "Delete"
+    button "On screen" [pressed=true]
+    button "In print" [pressed=false]
     button "Page"
     StaticText "ITEM"
     StaticText "HOMEBREW"
@@ -238,6 +244,7 @@ Help: Set
 Help: Source
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
+In print
 Install as an app
 Italic
 Item
@@ -247,6 +254,7 @@ New rule card
 No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Numbered list
+On screen
 Page
 Privacy
 RU

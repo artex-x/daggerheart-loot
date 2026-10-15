@@ -92,6 +92,12 @@ const DV_SET = '#/p/set-dragonvt';
  * a folded condition line, and two bulleted lists. */
 const VOA4_SET = '#/p/set-voa4wrst';
 
+/* A description at the 3000-code-point limit, which the print card cuts off. */
+const CLIPPED_TEXT =
+  'Раз за отдых вы можете развернуть свиток и прочитать его вслух до конца сцены. '
+    .repeat(40)
+    .slice(0, 3000);
+
 /** The print controls' hint, which names them for the driver (`title` wins). */
 const PRINT_HINT = 'Собрать карточки для печати: девять на лист A4';
 
@@ -3248,6 +3254,17 @@ const STATES = [
     }
   },
   {
+    id: '#/p/set-clipped1 as gm2',
+    route: '#/p/set-clipped1',
+    as: 'gm2',
+    why: "gm4's item at the 3000-character text on the standard colour sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar before the grey note, «Отправить на печать» enabled",
+    enter: async (d) => {
+      await sheet(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
+        await d.settle();
+    }
+  },
+  {
     id: '#/p/set-markup01 as gm4',
     route: '#/p/set-markup01',
     as: 'gm4',
@@ -3276,6 +3293,31 @@ const STATES = [
         'Описание',
         '**Тлеет** под дождём, *шипит* на снегу.\n- Поджигает сухую траву.\n- Греет руки.\n| Бросок | Эффект |\n|---|---|\n| 1-3 | Искры |\n| 4-6 | Пламя |'
       );
+    }
+  },
+  /* The editor's print view (docs/specs/FEATURES.md, "Homebrew"): the print card in the
+     visit's layout, gm1's Display default black and white, compact. */
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ print preview as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: '«На печати» of «Показать карточку» pressed: the print groups on «Чёрно-белая» and «Компактная», the 44x63 mm black-and-white print card in place of the screen card, no «Добавить в список», no warning',
+    enter: async (d) => {
+      await d.click('На печати');
+    }
+  },
+  {
+    id: '#/homebrew/new ~ print preview clipped as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact colour print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
+    enter: async (d) => {
+      await d.type('Название*', 'Свиток долгой ночи');
+      await d.type('Описание', CLIPPED_TEXT);
+      await d.click('На печати');
+      await d.click('Цветная');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
+        await d.settle();
     }
   },
   {

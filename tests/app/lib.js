@@ -217,6 +217,7 @@ const PRINT_SETS = {
   voa4: 'set-voa4wrst',
   ownItems: 'set-ownitems',
   emberAxe: 'set-emberaxe',
+  clipped: 'set-clipped1',
   missing: 'set-missing1',
   allGone: 'set-allgone1',
   expired: 'set-expired1'

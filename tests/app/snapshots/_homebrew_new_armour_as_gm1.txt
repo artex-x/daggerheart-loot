@@ -71,6 +71,8 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
       link "Отмена" [url=index.html?as=gm1#/homebrew]
+    button "На экране" [pressed=true]
+    button "На печати" [pressed=false]
     button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
@@ -110,6 +112,8 @@ daggerheart.com
 Конфиденциальность
 Курсив
 ЛутDaggerheart
+На печати
+На экране
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Новая линия
@@ -210,6 +214,8 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
+    button "On screen" [pressed=true]
+    button "In print" [pressed=false]
     button "Страница"
     StaticText "ПРЕДМЕТ"
     StaticText "ХОУМБРЮ"
@@ -251,6 +257,7 @@ Help: Upgrade line
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 In a line
+In print
 Install as an app
 Italic
 Item
@@ -260,6 +267,7 @@ New line
 New rule card
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
 Numbered list
+On screen
 Primary weapon
 Privacy
 RU

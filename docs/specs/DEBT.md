@@ -287,26 +287,6 @@ scale finding the owner sent to this task's scale re-run.
   the one the store holds; a `cloudLists.test.ts` case answers two reads
   out of order and expects the newer row to stay.
 
-## Authoring print preview (`authoring-print-preview`)
-
-Owns: a print view in the item editor (owner, 2026-10-14; it ships after
-`rich-descriptions` and before `debt-cleanup`).
-
-### D82 - a print card clips a long text with no notice
-
-- **Where**: `app/src/components/PrintCard.svelte` (the text size ladder,
-  then `overflow: hidden` on the text box).
-- **What**: an item description may hold 3000 code points; past the last
-  step of the ladder the text is cut on the printed card and nothing says
-  so. Not measured in a browser.
-- **Why deferred**: the owner did not place it; the catalog's longest text
-  (1299 code points) fits.
-- **How to verify the fix**: a 3000-character own item on `#/p/<id>`
-  draws one warning line above the sheet (`printPage.test.ts`, and a
-  `tests/app/print.js` measurement). The warning also counts a clipped
-  table: a 4x20 table in a long text (the `app/print` case of 2026-10-15)
-  draws the line when its last rows are cut.
-
 ## Debt cleanup (`debt-cleanup`)
 
 Owns: scale findings at up to three times the default limits that no
@@ -469,6 +449,20 @@ R7d, R7e, R7f and R7g).
   of about 5 minutes stops a hung reset with the same advice; both lines
   join the "FAIL" table in `.claude/README.md`; a test of
   `tests/db/run.mjs`'s helpers covers both failures.
+
+### D105 - a long source line is cut at the side of a print card with no warning
+
+- **Where**: `app/src/components/PrintCard.svelte` (`.pc-bottom`, `white-space:
+  nowrap`, inside the `overflow: hidden` of `.pc-content`).
+- **What**: a homebrew card's source line (the author's source and section, up
+  to 80 code points per name) runs past the content box and is cut at the
+  side. The clip report counts the content box down only, so neither the
+  editor nor `#/p/` warns. Measured 2026-10-15 on this host: 170 px in a
+  142 px box on gm1's axe, compact sheet.
+- **Why deferred**: the fix changes the card's layout (a wrap, a fold or a
+  shrink of the source line), which `authoring-print-preview` did not take.
+- **How to verify the fix**: gm4's `hb_longsrcaaaaaaaaa` on the standard and the
+  compact sheet: the whole source line is inside the card.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 
