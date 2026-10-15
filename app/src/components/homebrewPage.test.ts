@@ -1380,6 +1380,88 @@ describe('the card form on a tab', () => {
     expect(await screen.findByRole('button', { name: t.hbNewCard })).toBeInTheDocument();
   });
 
+  it('edits both languages behind «Язык текста» and writes them in one write', async () => {
+    const { cloud, container } = page();
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: t.edit }));
+    const form = screen.getByRole('group', { name: 'Клеймо Ольхи' });
+    const switcher = within(form).getByRole('group', { name: t.hbTextLang });
+    /* The switch is the form's first field. */
+    expect(form.querySelector('.fld')?.contains(switcher)).toBe(true);
+    const name = within(form).getByLabelText(/^Название карты/);
+    expect(name).toHaveValue('Клеймо Ольхи');
+    await userEvent.click(within(switcher).getByRole('button', { name: 'EN' }));
+    expect(name).toHaveValue('Alder Brand');
+    expect(name).toHaveAttribute('lang', 'en');
+    expect(within(form).getByLabelText(/^Текст карты/)).toHaveAttribute('lang', 'en');
+    await fill(/^Подзаголовок/, 'Trait');
+    await userEvent.click(within(switcher).getByRole('button', { name: 'RU' }));
+    await fill(/^Подзаголовок/, 'Черта');
+    await expectNoA11yViolations(container);
+    const update = vi.spyOn(cloud!.homebrew, 'updateCard');
+    await userEvent.click(within(form).getByRole('button', { name: t.save }));
+    expect(await screen.findByText('Сохранено: «Клеймо Ольхи»')).toBeInTheDocument();
+    expect(update).toHaveBeenCalledOnce();
+    const read = await cloud?.homebrew.load();
+    expect(read?.ok && read.cards.find((c) => c.id === uuid(522))?.content).toMatchObject({
+      ru: 'Клеймо Ольхи',
+      en: 'Alder Brand',
+      rusub: 'Черта',
+      ensub: 'Trait'
+    });
+  });
+
+  it('draws «Просмотр» on the card text, with the set bonus toolbar shorter', async () => {
+    const { container } = page();
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewCard }));
+    await fill(/^Текст карты/, '**Доставка:** письмо');
+    const bar = screen.getByRole('toolbar', { name: 'Оформление: Текст карты' });
+    expect(within(bar).getAllByRole('button')).toHaveLength(6);
+    await userEvent.click(within(bar).getByRole('button', { name: t.mdPreview }));
+    const pane = screen.getByRole('region', { name: 'Просмотр: Текст карты' });
+    expect(pane.querySelector('b')?.textContent).toBe('Доставка:');
+    await expectNoA11yViolations(container);
+    /* A failed press on a problem of the text leaves the pane for the box. */
+    await fill(/^Название карты/, 'Огненный след');
+    await userEvent.click(within(bar).getByRole('button', { name: t.mdPreview }));
+    await fill(/^Текст карты/, ' ');
+    await userEvent.click(within(bar).getByRole('button', { name: t.mdPreview }));
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateCard }));
+    await waitFor(() => {
+      expect(screen.getByLabelText(/^Текст карты/)).toHaveFocus();
+    });
+    expect(screen.queryByRole('region', { name: 'Просмотр: Текст карты' })).toBeNull();
+    cleanup();
+    page();
+    const setTab = await sets();
+    await userEvent.click(within(setTab).getByRole('button', { name: t.hbNewSet }));
+    const setBar = screen.getByRole('toolbar', { name: 'Оформление: Бонус комплекта' });
+    expect(within(setBar).getAllByRole('button')).toHaveLength(4);
+    expect(within(setBar).queryByRole('button', { name: 'Таблица' })).toBeNull();
+  });
+
+  it('switches to the language of a duplicate name that the shown language hides', async () => {
+    const { cloud } = page();
+    const create = vi.spyOn(cloud!.homebrew, 'createCard');
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewCard }));
+    const form = screen.getByRole('group', { name: t.hbNewCard });
+    const switcher = within(form).getByRole('group', { name: t.hbTextLang });
+    await userEvent.click(within(switcher).getByRole('button', { name: 'EN - пусто' }));
+    await fill(/^Название карты/, 'Alder Brand');
+    await userEvent.click(within(switcher).getByRole('button', { name: 'RU - пусто' }));
+    await fill(/^Текст карты/, 'Цель горит.');
+    await userEvent.click(within(form).getByRole('button', { name: t.hbCreateCard }));
+    expect(await screen.findByText('Карта правил «Alder Brand» уже есть.')).toBeInTheDocument();
+    expect(within(switcher).getByRole('button', { name: 'EN' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(screen.getByLabelText(/^Название карты/)).toHaveFocus();
+    expect(create).not.toHaveBeenCalled();
+  });
+
   it('registers no check from the editor`s inline form', async () => {
     const pagePort = fakePage();
     const dialog = fakeDialog(false);

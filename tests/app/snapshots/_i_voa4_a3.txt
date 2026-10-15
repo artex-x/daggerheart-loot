@@ -30,11 +30,11 @@ RootWebArea "Клятва Равновесия — Генератор лута �
     link "показать в таблице" [url=#/tables/voa/voa4_a3]
     button "Страница"
     StaticText "9"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Запасная Сила:"
-    StaticText " Один раз за продолжительный отдых, когда вы отмечаете последний..." [namelen=165 namehash=3fb8b823]
+    StaticText "отметить Рану"
+    StaticText " и получить преимущество на следующий Бросок Заклинания."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -106,11 +106,11 @@ RootWebArea "Oath of Balance — Daggerheart Loot Generator" [url=#/i/voa4_a3]
     link "show in the table" [url=#/tables/voa/voa4_a3]
     button "Page"
     StaticText "9"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "Reserve Power:"
-    StaticText " Once per long rest when you mark your last Stress, you can mark..." [namelen=133 namehash=67221ab4]
+    StaticText "mark a Hit Point"
+    StaticText " instead, and gain advantage on your next Spellcast Roll."
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]

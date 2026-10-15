@@ -48,6 +48,8 @@ const {
   SEED_EN,
   STYLE
 } = require('./share-card.mjs');
+/* A stub carries record text as it reads: no markup (docs/specs/CONTRACTS.md section 4). */
+const { markupText } = require('../app/src/lib/markup.ts');
 
 /* The English entry document, en/index.html. The counts are computed from
    data.js, like tests/derived.js's "counters in the text". */
@@ -96,7 +98,10 @@ function setLines(it, lang) {
   if (members.length < 2) return [];
   const out = [TEXT[lang].set + members.map((m) => nameOf(m, lang)).join(', ')];
   const b = SETS[it.set];
-  if (b) out.push(lang === 'ru' ? b.ru + ': ' + b.rud : b.en + ': ' + b.ende);
+  if (b)
+    out.push(
+      lang === 'ru' ? b.ru + ': ' + markupText(b.rud) : b.en + ': ' + markupText(b.ende)
+    );
   return out;
 }
 
@@ -117,7 +122,7 @@ function page(it, lang = 'ru') {
     throw new Error('No share page text for language "' + lang + '". Use ru or en');
   const craft = craftLines(it, lang);
   const set = setLines(it, lang);
-  const rawDesc = (lang === 'ru' ? it.rud || it.ende : it.ende) || '';
+  const rawDesc = markupText((lang === 'ru' ? it.rud || it.ende : it.ende) || '');
   const from = provenance(it, lang);
   const up = lang === 'ru' ? '../' : '../../';
   return card(lang, {

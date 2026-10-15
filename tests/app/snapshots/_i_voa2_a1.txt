@@ -30,11 +30,11 @@ RootWebArea "Узы Души — Генератор лута — Daggerheart" [u
     link "показать в таблице" [url=#/tables/voa/voa2_a1]
     button "Страница"
     StaticText "1"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Вы можете отметить 5 Стресса, чтобы поглотить душу, навсегда пол..." [namelen=177 namehash=4ff313da]
-    StaticText "Вы можете потратить Надежду, чтобы освободить душу. Она немедлен..." [namelen=158 namehash=808dbb15]
+    StaticText "потратить Надежду"
+    StaticText ", чтобы освободить душу. Она немедленно возвращается к владельцу..." [namelen=131 namehash=171fc9e9]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -106,11 +106,11 @@ RootWebArea "Anima Colligationem — Daggerheart Loot Generator" [url=#/i/voa2_a
     link "show in the table" [url=#/tables/voa/voa2_a1]
     button "Page"
     StaticText "1"
-    ... StaticText x9 of 13 same-shape siblings elided
+    ... StaticText x15 of 19 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "You can mark 5 Stress to consume the soul, permanently gaining a..." [namelen=171 namehash=e92aa3dc]
-    StaticText "You can spend a Hope to free the soul. It returns to the owner i..." [namelen=136 namehash=5450f646]
+    StaticText "spend a Hope"
+    StaticText " to free the soul. It returns to the owner immediately, regardle..." [namelen=116 namehash=b9bbbffb]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]

@@ -3,9 +3,12 @@
      snippet (app.js's `notePairHTML`, 3109-3128, drawn one label at a time).
      Extracted on its second real use - the list page's rolled entry
      and the shared page, which draws two above the rows and two more
-     after every entry. Renders nothing when `text` is empty. */
+     after every entry. Renders nothing when `text` is empty. The note is formatted
+     text (docs/specs/FEATURES.md, "Lists"), drawn by Markup. */
   import Icon from './Icon.svelte';
+  import Markup from './Markup.svelte';
   import type { IconName } from '../lib/icons.js';
+  import { parseMarkup } from '../lib/markup.js';
 
   interface Props {
     icon: IconName;
@@ -19,10 +22,10 @@
 {#if text}
   <div class="hitnote">
     <Icon name={icon} />
-    <span
-      ><b>{label}</b>{#each text.split('\n') as line, i (i)}{#if i > 0}<br
-          />{/if}{line}{/each}</span
-    >
+    <div class="htext mdtext">
+      <b>{label}</b>
+      <Markup blocks={parseMarkup(text)} />
+    </div>
   </div>
 {/if}
 
@@ -59,7 +62,7 @@
     margin-bottom: 2px;
   }
 
-  .hitnote span {
+  .htext {
     min-width: 0;
     overflow-wrap: break-word;
   }

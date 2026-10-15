@@ -147,6 +147,40 @@ const AXE: HomebrewContent = {
   }
 };
 
+/* gm4's formatted item: every construct of the formatted text in both languages
+   (docs/specs/FEATURES.md, "Records", "Formatted text"). Not gm1's: gm1's homebrew is
+   docs/fixtures/homebrew-file/export.json byte for byte. «Узоролист» and "Patternleaf"
+   are in no catalog record and no other seed, so a search finds it alone. */
+const MARKUP_ID = uuid(515);
+const MARKUP_KEY = 'hb_markupscrollaaaa';
+const MARKUP: HomebrewContent = {
+  kind: 'consumable',
+  ru: 'Свиток Узоролиста',
+  en: 'Patternleaf Scroll',
+  rud: [
+    '**Раз за отдых:** разверните свиток, и *узор* ответит на вопрос.',
+    '- **Путь** к укрытию;',
+    '- *имя* существа рядом.',
+    '1. Задайте вопрос.',
+    '2. Бросьте d6.',
+    '| Бросок | Ответ |',
+    '|---|---|',
+    '| 1-3 | Нет |',
+    '| 4-6 | **Да** |'
+  ].join('\n'),
+  ende: [
+    '**Once per rest:** unroll the scroll, and the *pattern* answers a question.',
+    '- **A path** to cover;',
+    '- the *name* of a creature nearby.',
+    '1. Ask the question.',
+    '2. Roll a d6.',
+    '| Roll | Answer |',
+    '|---|---|',
+    '| 1-3 | No |',
+    '| 4-6 | **Yes** |'
+  ].join('\n')
+};
+
 /* gm4's one item, in a source at the longest name (`BOOK_NAME_MAX`, 80 code points);
    gm3's list links it. */
 const LONG_SRC_ITEM_KEY = 'hb_longsrcaaaaaaaaa';
@@ -563,6 +597,13 @@ const HOMEBREW = {
         },
         createdAgoMs: 8 * DAY,
         editedAgoMs: 8 * DAY
+      },
+      {
+        id: MARKUP_ID,
+        key: MARKUP_KEY,
+        content: MARKUP,
+        createdAgoMs: DAY,
+        editedAgoMs: DAY
       }
     ],
     cards: []
@@ -665,6 +706,7 @@ const PRINT_SETS: SeedPrintSet[] = [
   ),
   printSet('set-ownitems', [{ h: AXE_ID }, { h: uuid(512) }]),
   printSet('set-emberaxe', [{ h: AXE_ID }]),
+  printSet('set-markup01', [{ h: MARKUP_ID }]),
   /* `uuid(598)` and `uuid(599)` name no item: a deleted one. */
   printSet('set-missing1', [{ k: 'ci1' }, { h: uuid(599) }]),
   printSet('set-allgone1', [{ h: uuid(598) }, { h: uuid(599) }]),

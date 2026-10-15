@@ -30,11 +30,11 @@ RootWebArea "Губитель из Сухостоя — Генератор лу�
     link "показать в таблице" [url=#/tables/voa/voa4_t1b]
     button "Страница"
     StaticText "26"
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Бессмертный Слуга:"
-    StaticText " Когда атака этим оружием убивает живого противника, у которого ..." [namelen=583 namehash=3cbda823]
+    StaticText "потратить Надежду"
+    StaticText ", чтобы поднять его как Гнилого Зомби под вашим контролем. Он ос..." [namelen=452 namehash=16d591e3]
     DisclosureTriangle "Гнилой Зомби ПРОТИВНИК · ПРИСПЕШНИК · РАНГ 1" [expanded=false]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -107,11 +107,11 @@ RootWebArea "Deadwood Slayer — Daggerheart Loot Generator" [url=#/i/voa4_t1b]
     link "show in the table" [url=#/tables/voa/voa4_t1b]
     button "Page"
     StaticText "26"
-    ... StaticText x12 of 16 same-shape siblings elided
+    ... StaticText x14 of 18 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "Undying Servant:"
-    StaticText " When an attack by this weapon kills a living adversary with no ..." [namelen=527 namehash=4251b2f3]
+    StaticText "spend a Hope"
+    StaticText " to revive it as a Rotted Zombie under your control. It stays wi..." [namelen=390 namehash=77a68e25]
     DisclosureTriangle "Rotted Zombie ADVERSARY · MINION · TIER 1" [expanded=false]
     button "Share"
     button "Copy image" [description=Copy image]

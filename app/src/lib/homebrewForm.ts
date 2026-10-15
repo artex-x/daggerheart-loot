@@ -57,8 +57,11 @@ export interface ItemDraft {
   t: EquipKind;
   bookId: string | null;
   section: string | null;
-  name: string;
-  desc: string;
+  /** The name and the description in each language, as the boxes show them. */
+  ru: string;
+  en: string;
+  rud: string;
+  ende: string;
   /** Loot only. */
   tier: '' | '1' | '2' | '3' | '4' | 'A' | 'C';
   eqTier: '' | '1' | '2' | '3' | '4' | 'A';
@@ -122,8 +125,10 @@ const EMPTY: ItemDraft = {
   t: 'weapon',
   bookId: null,
   section: null,
-  name: '',
-  desc: '',
+  ru: '',
+  en: '',
+  rud: '',
+  ende: '',
   tier: '',
   eqTier: '',
   cls: '',
@@ -158,9 +163,81 @@ const dmgParts = (dmg: string | undefined): { die: '' | Die; bonus: string } => 
   return m ? { die: m[1] as Die, bonus: m[2] ?? '' } : { die: '', bonus: '' };
 };
 
-/** Returns the draft of an item, its name and description in `lang`; a new item's draft
- *  (`row` null) is a plain item in the default source. */
-export function draftOf(row: ItemRow | null, lang: Lang): ItemDraft {
+/** What a form opened on: the stored part, and the draft as the form showed it then. */
+export interface Origin<C, D> {
+  base: C;
+  draft: D;
+}
+
+type LangKey = 'ru' | 'en' | 'rud' | 'ende' | 'rusub' | 'ensub';
+
+/* The text fields of each language a form writes, by what it edits. */
+const LANG_KEYS: Record<'item' | CardKind, Record<Lang, readonly LangKey[]>> = {
+  item: { ru: ['ru', 'rud'], en: ['en', 'ende'] },
+  set: { ru: ['ru', 'rud'], en: ['en', 'ende'] },
+  ref: { ru: ['ru', 'rusub', 'rud'], en: ['en', 'ensub', 'ende'] }
+};
+
+const LANGS: readonly Lang[] = ['ru', 'en'];
+
+type LangFields = Partial<Record<LangKey, string>>;
+
+/* Writes both languages into `out`: a language whose fields all equal the draft as the form
+   opened is copied from the stored part as it is, so another device's write there stays;
+   a changed one is written trimmed, an empty field left out. */
+function writeLangs(
+  out: Record<string, unknown>,
+  what: 'item' | CardKind,
+  d: LangFields,
+  origin: Origin<LangFields, LangFields> | null
+): void {
+  for (const lang of LANGS) {
+    const keys = LANG_KEYS[what][lang];
+    if (origin && keys.every((k) => (d[k] ?? '') === (origin.draft[k] ?? ''))) {
+      for (const k of keys) {
+        const v = origin.base[k];
+        if (v !== undefined) out[k] = v;
+      }
+      continue;
+    }
+    for (const k of keys) {
+      const v = (d[k] ?? '').trim();
+      if (v) out[k] = v;
+    }
+  }
+}
+
+/** Returns whether a language of a draft is empty: no field of it holds a non-space
+ *  character. */
+export function langEmpty(what: 'item' | CardKind, d: LangFields, lang: Lang): boolean {
+  return LANG_KEYS[what][lang].every((k) => !hasName(d[k] ?? ''));
+}
+
+/** Returns the options of «Язык текста»: «RU» and «EN», an empty language marked «- пусто». */
+export function langOptions(
+  what: 'item' | CardKind,
+  d: LangFields,
+  t: Dict
+): { value: Lang; label: string }[] {
+  return LANGS.map((lang) => {
+    const code = lang.toUpperCase();
+    const label = langEmpty(what, d, lang) ? t.hbLangEmpty.replace('%s', code) : code;
+    return { value: lang, label };
+  });
+}
+
+/** Returns the language a problem belongs to, by the last segment of its path: `en`,
+ *  `ende` and `ensub` English, `ru`, `rud` and `rusub` Russian; null for any other. */
+export function problemLang(p: Problem): Lang | null {
+  const last = p.path.split('.').at(-1) ?? '';
+  if (last === 'en' || last === 'ende' || last === 'ensub') return 'en';
+  if (last === 'ru' || last === 'rud' || last === 'rusub') return 'ru';
+  return null;
+}
+
+/** Returns the draft of an item, its name and description in both languages; a new item's
+ *  draft (`row` null) is a plain item in the default source. */
+export function draftOf(row: ItemRow | null): ItemDraft {
   if (!row) return { ...EMPTY, craft: [], craftFrom: [], refs: [] };
   const c = row.content;
   const eq = c.eq;
@@ -173,8 +250,10 @@ export function draftOf(row: ItemRow | null, lang: Lang): ItemDraft {
     t: eq?.t ?? 'weapon',
     bookId: row.book_id,
     section: c.section ?? null,
-    name: (lang === 'ru' ? c.ru : c.en) ?? '',
-    desc: (lang === 'ru' ? c.rud : c.ende) ?? '',
+    ru: c.ru ?? '',
+    en: c.en ?? '',
+    rud: c.rud ?? '',
+    ende: c.ende ?? '',
     tier: c.tier === undefined ? '' : (String(c.tier) as ItemDraft['tier']),
     eqTier: eq ? (String(eq.tier) as ItemDraft['eqTier']) : '',
     cls: eq?.cls ?? '',
@@ -215,25 +294,18 @@ export function dmgOf(die: '' | Die, bonus: string): string {
   return die + (b ? '+' + b : '');
 }
 
-/** Returns the stored part a draft writes: the name and description in `lang`, the other
- *  language copied from `base` untouched, the relations, and only the fields of the chosen
- *  kind and type. «Новая линия» writes `key` as the line; without `key` it writes none.
- *  Unknown on purpose: a draft may break a rule, and `contentProblems` says which. */
+/** Returns the stored part a draft writes: both languages of the name and description (a
+ *  language unchanged since `origin` as the row holds it), the relations, and only the
+ *  fields of the chosen kind and type. «Новая линия» writes `key` as the line; without
+ *  `key` it writes none. Unknown on purpose: a draft may break a rule, and
+ *  `contentProblems` says which. */
 export function contentOf(
   draft: ItemDraft,
-  lang: Lang,
-  base: HomebrewContent | null,
+  origin: Origin<HomebrewContent, ItemDraft> | null,
   key?: string
 ): unknown {
   const out: Record<string, unknown> = { kind: draft.kind };
-  const [name, desc, otherName, otherDesc] =
-    lang === 'ru'
-      ? (['ru', 'rud', 'en', 'ende'] as const)
-      : (['en', 'ende', 'ru', 'rud'] as const);
-  if (base?.[otherName] !== undefined) out[otherName] = base[otherName];
-  if (base?.[otherDesc] !== undefined) out[otherDesc] = base[otherDesc];
-  if (draft.name.trim()) out[name] = draft.name.trim();
-  if (draft.desc.trim()) out[desc] = draft.desc.trim();
+  writeLangs(out, 'item', draft, origin);
   if (draft.kind !== 'equip' && draft.tier !== '') out['tier'] = tierOf(draft.tier);
   if (draft.section !== null && draft.bookId !== null) out['section'] = draft.section;
   if (draft.craft.length) out['craft'] = [...draft.craft];
@@ -285,12 +357,11 @@ export interface FormContext {
  *  `books` no longer holds (another tab deleted it), and an open card form. */
 export function formProblems(
   draft: ItemDraft,
-  lang: Lang,
-  base: HomebrewContent | null,
+  origin: Origin<HomebrewContent, ItemDraft> | null,
   books: readonly BookRow[],
   ctx: FormContext = {}
 ): Problem[] {
-  const out = contentProblems(contentOf(draft, lang, base, ctx.key), ctx.key);
+  const out = contentProblems(contentOf(draft, origin, ctx.key), ctx.key);
   if (draft.kind === 'equip' && draft.lineMode === 'in') {
     if (!draft.line) out.push({ path: 'eq.line', rule: 'required' });
     else if ((ctx.rungs ?? []).some((r) => r.eq && r.eq.t !== draft.t)) {
@@ -373,12 +444,10 @@ export function problemText(p: Problem, t: Dict): string {
 export function previewOf(
   key: string,
   draft: ItemDraft,
-  lang: Lang,
-  base: HomebrewContent | null,
   book: BookRef | null,
   cards: readonly CardRef[] = []
 ): HomebrewRecord {
-  const c = contentOf(draft, lang, base, key) as HomebrewContent;
+  const c = contentOf(draft, null, key) as HomebrewContent;
   if (draft.eqTier === '') delete c.eq;
   return recordOf(key, c, book, cards);
 }
@@ -460,76 +529,67 @@ export function matchRecords<T extends Record_>(records: readonly T[], query: st
   return q ? records.filter((r) => recordMatches(r, q)) : [...records];
 }
 
-/** What the set or rule card form holds, in one language. */
+/** What the set or rule card form holds: the name, the subtitle and the text in each
+ *  language, as the boxes show them. */
 export interface CardDraft {
-  name: string;
-  sub: string;
-  text: string;
+  ru: string;
+  en: string;
+  rusub: string;
+  ensub: string;
+  rud: string;
+  ende: string;
   url: string;
   bookId: string | null;
 }
 
-/** Returns the card form's draft: the card's fields in `lang`, its own source for an edit,
- *  `bookId` for a new card. */
-export function cardDraftOf(
-  card: CardRow | null,
-  lang: Lang,
-  bookId: string | null
-): CardDraft {
+/** Returns the card form's draft: the card's fields in both languages, its own source for
+ *  an edit, `bookId` for a new card. */
+export function cardDraftOf(card: CardRow | null, bookId: string | null): CardDraft {
   const c: CardContent = card?.content ?? {};
-  const ru = lang === 'ru';
   return {
-    name: (ru ? c.ru : c.en) ?? '',
-    sub: (ru ? c.rusub : c.ensub) ?? '',
-    text: (ru ? c.rud : c.ende) ?? '',
+    ru: c.ru ?? '',
+    en: c.en ?? '',
+    rusub: c.rusub ?? '',
+    ensub: c.ensub ?? '',
+    rud: c.rud ?? '',
+    ende: c.ende ?? '',
     url: c.url ?? '',
     bookId: card ? card.book_id : bookId
   };
 }
 
-/** Returns the stored part a card form writes: `lang`'s trimmed fields when not empty, the
- *  other language's name, subtitle (a rule card) and text and the book `items` copied from
- *  `base`. */
+/** Returns the stored part a card form writes: both languages' name, subtitle (a rule card)
+ *  and text, a language unchanged since `origin` as the row holds it; the link of a rule
+ *  card; the book `items` copied from `origin`'s row. */
 export function cardContentOf(
   kind: CardKind,
   d: CardDraft,
-  lang: Lang,
-  base: CardContent | null
+  origin: Origin<CardContent, CardDraft> | null
 ): CardContent {
-  const ref = kind === 'ref';
-  const [name, sub, text, oName, oSub, oText] =
-    lang === 'ru'
-      ? (['ru', 'rusub', 'rud', 'en', 'ensub', 'ende'] as const)
-      : (['en', 'ensub', 'ende', 'ru', 'rusub', 'rud'] as const);
-  const out: CardContent = {};
-  const keep = (k: typeof oName | typeof oSub | typeof oText): void => {
-    const v = base?.[k];
-    if (v !== undefined) out[k] = v;
-  };
-  keep(oName);
-  if (ref) keep(oSub);
-  keep(oText);
-  if (d.name.trim()) out[name] = d.name.trim();
-  if (ref && d.sub.trim()) out[sub] = d.sub.trim();
-  if (d.text.trim()) out[text] = d.text.trim();
-  if (ref && d.url.trim()) out.url = d.url.trim();
-  if (base?.items) out.items = [...base.items];
-  return out;
+  const out: Record<string, unknown> = {};
+  writeLangs(out, kind, d, origin);
+  const c = out as CardContent;
+  if (kind === 'ref' && d.url.trim()) c.url = d.url.trim();
+  if (origin?.base.items) c.items = [...origin.base.items];
+  return c;
 }
 
 /** Returns every problem the card form refuses: the database's rules, then a name another
- *  card of `others` holds (without case), then a card with no text in either language. */
+ *  card of `others` holds (without case) in each language whose name changed since `origin`
+ *  (every language of a new card), then a card with no text in either language. */
 export function cardFormProblems(
   kind: CardKind,
   d: CardDraft,
-  lang: Lang,
-  base: CardContent | null,
+  origin: Origin<CardContent, CardDraft> | null,
   others: readonly CardRow[]
 ): Problem[] {
-  const c = cardContentOf(kind, d, lang, base);
+  const c = cardContentOf(kind, d, origin);
   const out = cardProblems(kind, c);
   const names = others.map((o) => o.content);
-  if (nameTaken(names, d.name)) out.push({ path: 'name', rule: 'duplicate' });
+  for (const lang of LANGS) {
+    if (origin && d[lang] === origin.draft[lang]) continue;
+    if (nameTaken(names, d[lang])) out.push({ path: lang, rule: 'duplicate' });
+  }
   if (!hasName(c.ende ?? '') && !hasName(c.rud ?? '')) {
     out.push({ path: 'text', rule: 'required' });
   }

@@ -57,10 +57,10 @@ function hygiene(x) {
     ok(v === v.trim(), x.id + '.' + k + ': whitespace at the edges');
     ok(!/\s\s/.test(v), x.id + '.' + k + ': double space');
     ok(!/<[a-z/]/i.test(v), x.id + '.' + k + ': markup in the text');
-    /* daggerheart.su ships markdown: emphasis and rule links. The links were
-       stripped, the asterisks were not, and one description shipped *Restrain*
-       to the reader. */
-    ok(!/[*`]/.test(v), x.id + '.' + k + ': markdown markup in the text');
+    /* daggerheart.su ships markdown: emphasis and rule links. Emphasis is the
+       catalog's own formatted text now ("formatted text" below); code spans
+       and links are not in the subset. */
+    ok(!/`/.test(v), x.id + '.' + k + ': markdown code in the text');
     ok(!/\[[^\]]*\]\(|\/rule\/|#\{|\}#/.test(v), x.id + '.' + k + ': leftover markdown link');
     /* Those same links lost the space that followed them, gluing a rule term to
        the next word: "within Meleerange", "bonus to your Proficiencyon". */
@@ -83,6 +83,147 @@ function hygiene(x) {
 ALL.forEach(hygiene);
 /* A set's bonus is record text too, drawn on every member's card. */
 Object.entries(L.sets || {}).forEach(([key, s]) => hygiene(Object.assign({ id: key }, s)));
+
+/* The record texts are the formatted-text subset (docs/specs/FEATURES.md,
+   "Records", "Formatted text"); the parser is the app's own. */
+console.log('formatted text');
+const { parseMarkup, markupText, inlineText } = require(
+  path.join(ROOT, 'app', 'src', 'lib', 'markup.ts')
+);
+const STYLE = require(path.join(ROOT, 'tools', 'desc-style.mjs'));
+const ESCAPE = /\\([!-/:-@[-`{-~])/g;
+/** Returns what is wrong with the formatted text `src`, as messages. */
+function markupProblems(src) {
+  const out = [];
+  const plain = markupText(src);
+  const escaped = [...src.matchAll(ESCAPE)].filter((m) => m[1] === '*').length;
+  /* A star left in the text that no escape wrote is a run nothing matched. */
+  if ((plain.match(/\*/g) || []).length !== escaped)
+    out.push('an unmatched * (write a literal star as \\*)');
+  const bare = src.replace(/\\([!-/:-@[-`{-~])|\*+/g, (m, p) => p || '');
+  if (!src.split('\n').some((l) => l.startsWith('|')) && plain !== bare)
+    out.push('the text without its markup is not the source without its markers');
+  return out;
+}
+/** Returns the count of each construct in `src`: bold, italic, list items, table rows. */
+function markupShape(src) {
+  const n = { b: 0, i: 0, li: 0, rows: 0 };
+  const walk = (c) =>
+    c.forEach((x) => {
+      if (x.t === 'text') return;
+      n[x.t]++;
+      walk(x.c);
+    });
+  for (const b of parseMarkup(src)) {
+    if (b.t === 'p') walk(b.c);
+    else if (b.t === 'table') {
+      n.rows += b.rows.length + 1;
+      [b.head, ...b.rows].forEach((row) => row.forEach(walk));
+    } else {
+      n.li += b.items.length;
+      b.items.forEach(walk);
+    }
+  }
+  return JSON.stringify(n);
+}
+/* The style tool keeps the exceptions beside the overrides, each with its reason. */
+const SHAPE_EXCEPTIONS = STYLE.SHAPE_EXCEPTIONS;
+/** Returns what in `L` does not follow the catalog style, as messages. */
+function styleProblems(data, overrides) {
+  try {
+    return STYLE.convert(data, overrides).changes.map((c) => {
+      const a = c.before.split('\n');
+      const b = c.after.split('\n');
+      const k = Math.max(
+        0,
+        a.findIndex((line, i) => line !== b[i])
+      );
+      return (
+        c.id +
+        '.' +
+        (c.lang === 'en' ? 'ende' : 'rud') +
+        ': does not follow the catalog style (FEATURES.md, "Records", "Catalog style") - run node tools/desc-style.mjs --write, or add an override with its reason: ' +
+        a[k] +
+        ' -> ' +
+        b[k]
+      );
+    });
+  } catch (e) {
+    return [e.message];
+  }
+}
+const DICE = /\bd\d|\bRolls?\b|Бросо?к/;
+/** Returns whether `x` is a line's `***Name:***` label: a bold run around one italic run. */
+const isLabel = (x) =>
+  x.t === 'b' && x.c.length === 1 && x.c[0].t === 'i' && inlineText(x.c).endsWith(':');
+/** Returns the spans of `src`, a line's label aside, that hold a die or a roll (S5). */
+function diceProblems(src) {
+  const out = [];
+  const line = (c) =>
+    c.forEach((x, k) => {
+      if (x.t !== 'text' && !(k === 0 && isLabel(x)) && DICE.test(inlineText(x.c)))
+        out.push(
+          'a die or a roll in a span: ' + inlineText(x.c) + ' (dice and rolls stay plain)'
+        );
+    });
+  for (const b of parseMarkup(src)) {
+    if (b.t === 'p') line(b.c);
+    else if (b.t === 'table') [b.head, ...b.rows].forEach((row) => row.forEach(line));
+    else b.items.forEach(line);
+  }
+  return out;
+}
+console.log('catalog style');
+styleProblems(L).forEach((p) => ok(false, p));
+const TEXTS = [
+  ...ALL,
+  ...Object.entries(L.sets || {}).map(([key, s]) => Object.assign({ id: 'set ' + key }, s)),
+  ...Object.entries(REFS || {}).map(([key, r]) => Object.assign({ id: 'ref ' + key }, r))
+];
+TEXTS.forEach((x) => {
+  ['ende', 'rud'].forEach((k) => {
+    markupProblems(x[k] || '').forEach((p) => ok(false, x.id + '.' + k + ': ' + p));
+    diceProblems(x[k] || '').forEach((p) => ok(false, x.id + '.' + k + ': ' + p));
+  });
+  const same = markupShape(x.ende || '') === markupShape(x.rud || '');
+  if (SHAPE_EXCEPTIONS.has(x.id))
+    ok(!same, x.id + ': EN and RU now share their markup; drop it from SHAPE_EXCEPTIONS');
+  else
+    ok(
+      same,
+      x.id +
+        ': EN and RU differ in markup - ' +
+        markupShape(x.ende || '') +
+        ' against ' +
+        markupShape(x.rud || '')
+    );
+});
+/* The checks themselves, on records that break them. */
+ok(
+  markupProblems('*open and closed').some((p) => p.includes('unmatched')),
+  'an unmatched * passes the check'
+);
+ok(markupProblems('\\*literal\\*').length === 0, 'an escaped * fails the check');
+ok(
+  markupShape('*Name:* one') !== markupShape('Имя: один'),
+  'an EN and RU pair with different markup passes the shape check'
+);
+ok(
+  styleProblems(
+    { items: {}, eq: [{ id: 'q0', eq: {}, src: 'core', ende: '*Reliable:* +1', rud: '' }] },
+    []
+  ).some((p) => p.includes('does not follow the catalog style')),
+  'a label in the wrong form passes the catalog style check'
+);
+ok(
+  diceProblems('**Roll a d6** now').length === 1,
+  'a bold die at a line start passes the dice guard'
+);
+ok(diceProblems('Roll **a d6** now').length === 1, 'a bold die passes the dice guard');
+ok(
+  diceProblems('***Spellcast Roll:*** x').length === 0,
+  'a label that opens its line fails the dice guard'
+);
 
 console.log('table numbering');
 const ROLL_POOLS = [];

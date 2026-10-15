@@ -8,6 +8,8 @@
   Run `node tools/build.js` after editing data.js.
 */
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+/* The csv carries record text as it reads: no markup (docs/specs/CONTRACTS.md section 4). */
+const { markupText } = require('../app/src/lib/markup.ts');
 
 /* Spelled out into human names: the csv and json are read aloud from the
    source, not matched against the code. A forgotten key used to leak out
@@ -125,8 +127,8 @@ function catalogCsv(L) {
       (x.craft || []).join(';'),
       x.community || '',
       SITE + 'i/' + x.id + '.html',
-      (x.rud || '') + set.ru,
-      (x.ende || '') + set.en
+      markupText(x.rud || '') + set.ru,
+      markupText(x.ende || '') + set.en
     ]
       .map(cell)
       .join(',');
@@ -151,7 +153,10 @@ function setText(L, sets, x) {
   const ru = members.map((m) => m.ru || m.en).join(', ');
   const en = members.map((m) => m.en).join(', ');
   return b
-    ? { ru: `\n${b.ru} (Комплект: ${ru}): ${b.rud}`, en: `\n${b.en} (Set: ${en}): ${b.ende}` }
+    ? {
+        ru: `\n${b.ru} (Комплект: ${ru}): ${markupText(b.rud)}`,
+        en: `\n${b.en} (Set: ${en}): ${markupText(b.ende)}`
+      }
     : { ru: `\nКомплект: ${ru}`, en: `\nSet: ${en}` };
 }
 
@@ -205,7 +210,8 @@ function tableRows(L, table) {
 
 /* What the preview host reads at request time (docs/specs/CONTRACTS.md
    section 4): catalog names by id, the sets, and the counts a table card
-   draws. One line, like data.json. */
+   draws. One line, like data.json. A set bonus stays formatted-text source;
+   the host draws it as plain text. */
 function namesJson(L) {
   const items = {};
   everything(L).forEach(function (x) {

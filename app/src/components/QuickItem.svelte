@@ -8,8 +8,8 @@
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
+  import MarkupField from './MarkupField.svelte';
   import Panel from './Panel.svelte';
-  import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import { homebrewItemHash } from '../lib/hash.js';
@@ -27,6 +27,7 @@
     formProblems,
     problemText
   } from '../lib/homebrewForm.js';
+  import type { MarkupTool } from '../lib/markupEdit.js';
   import type { NewIds } from '../state/homebrew.svelte.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -48,7 +49,9 @@
   let ids: NewIds | null = null;
   let nameEl = $state<HTMLInputElement | undefined>(undefined);
   let descEl = $state<HTMLTextAreaElement | undefined>(undefined);
+  let previewing = $state(false);
   let root = $state<HTMLElement | undefined>(undefined);
+  const TOOLS: readonly MarkupTool[] = ['bold', 'italic', 'ul', 'ol'];
 
   const nameProblem = $derived(problems.find((p) => fieldOf(p) === 'hb-name'));
   const descProblem = $derived(problems.find((p) => fieldOf(p) === 'hb-desc'));
@@ -65,11 +68,21 @@
     const lists = app.cloudLists;
     if (busy || !store || !lists || !ids) return;
     refused = null;
-    const draft = { ...draftOf(null, app.lang), name, desc };
-    const found = formProblems(draft, app.lang, null, store.books);
+    /* One language, the interface's, as the author types it. */
+    const draft = {
+      ...draftOf(null),
+      [app.lang]: name,
+      [app.lang === 'ru' ? 'rud' : 'ende']: desc
+    };
+    const found = formProblems(draft, null, store.books);
     problems = found;
     if (found.length) {
-      (found.some((p) => fieldOf(p) === 'hb-name') ? nameEl : descEl)?.focus();
+      if (found.some((p) => fieldOf(p) === 'hb-name')) nameEl?.focus();
+      else {
+        previewing = false;
+        await tick();
+        descEl?.focus();
+      }
       return;
     }
     if (store.status !== 'ready') {
@@ -86,11 +99,7 @@
     busy = true;
     const pair = ids;
     try {
-      const r = await store.createItem(
-        pair,
-        null,
-        contentOf(draft, app.lang, null) as HomebrewContent
-      );
+      const r = await store.createItem(pair, null, contentOf(draft, null) as HomebrewContent);
       if (!r.ok) {
         refused = r.error === 'limit' ? limitText(r.key, r.value, t) : t.quickFailed;
         return;
@@ -100,6 +109,7 @@
       const shown = name.trim();
       name = '';
       desc = '';
+      previewing = false;
       app.say((t) => t.quickAdded.replace('%s', shown), {
         action: { label: (t) => t.edit, href: homebrewItemHash(pair.key) }
       });
@@ -154,9 +164,15 @@
       for="qi-desc"
       error={descProblem && problemText(descProblem, t)}
       errorId="qi-desc-err"
+      help={{
+        id: 'qi-desc-help',
+        text: t.mdHelp.replace('%n', String(DESC_MAX)),
+        lang: app.lang
+      }}
     >
-      <TextArea
+      <MarkupField
         id="qi-desc"
+        rows={3}
         bind:value={desc}
         bind:el={descEl}
         maxlength={DESC_MAX}
@@ -165,6 +181,11 @@
         oninput={() => {
           problems = problems.filter((p) => fieldOf(p) !== 'hb-desc');
         }}
+        label={t.hbDesc}
+        tools={TOOLS}
+        preview
+        bind:previewing
+        {t}
       />
       {#if descLength > counterFrom(DESC_MAX)}
         <span class="counter">{descLength} / {DESC_MAX}</span>

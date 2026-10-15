@@ -368,8 +368,9 @@ export function fold(label, names, more, bytes, total = names.length) {
 }
 
 // The visible paragraph keeps the line breaks the meta description above
-// flattens: a multi-line body (98 records use "- " list lines) renders as one
+// flattens: a multi-line body (12 records use 94 "- " list lines) renders as one
 // <p> per source line instead of a run-on paragraph once the newlines are gone.
+// `raw` is plain text: a caller passes record text through `markupText` first.
 export function descHtml(raw) {
   return raw
     .split('\n')

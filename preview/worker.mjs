@@ -28,6 +28,9 @@ import {
   plural,
   tablePath
 } from '../tools/share-card.mjs';
+/* A card draws record text as it reads: no markup (docs/specs/CONTRACTS.md section 4).
+   The Pages deploy bundles this import with esbuild, which reads TypeScript. */
+import { markupText } from '../app/src/lib/markup.ts';
 
 /** A card's caps, in escaped UTF-8 bytes (.claude/README.md, "Preview host", "Cross-host
  *  limits", "Page size"). get_item_preview cuts each line's names to `line`. */
@@ -255,7 +258,10 @@ function homebrewLines(answer, names, lang) {
     if (drawn) set.push(line(t.set, members, setRead));
     const bonus = drawn ? catalogSet || carried : carried;
     if (bonus) {
-      const text = lang === 'ru' ? bonus.ru + ': ' + bonus.rud : bonus.en + ': ' + bonus.ende;
+      const text =
+        lang === 'ru'
+          ? bonus.ru + ': ' + markupText(String(bonus.rud))
+          : bonus.en + ': ' + markupText(String(bonus.ende));
       set.push(fit(text, CAPS.line));
     }
   }
@@ -282,7 +288,7 @@ function homebrewImage(env, img) {
 function homebrewCard(answer, lang, env, names, id) {
   const it = answer.item;
   const sub = homebrewSubtitle(it, lang);
-  const raw = descOf(it, lang);
+  const raw = markupText(String(descOf(it, lang)));
   const lines = homebrewLines(answer, names, lang);
   const pic = homebrewImage(env, has(answer, 'img') ? answer.img : null);
   return card(lang, {
@@ -334,13 +340,14 @@ async function itemRoute(rest, lang, env, method) {
 /* ---------- /s/: a shared list ---------- */
 
 /** Returns the card of a `get_shared_list_preview` answer: the name, the count that the
- *  link's audience sees and the players' note; the read holds no GM note. */
+ *  link's audience sees and the players' note without its markup; the read holds no GM
+ *  note. */
 function listCard(answer, lang, env, token, filter) {
   const t = TEXT[lang];
   const name = (typeof answer.name === 'string' && answer.name) || t.untitled;
   const note = typeof answer.note === 'string' ? answer.note.trim() : '';
   const desc = fit(
-    plural(answer.n, t.itemsN, lang) + (note ? '. ' + flat(note) : ''),
+    plural(answer.n, t.itemsN, lang) + (note ? '. ' + flat(markupText(note)) : ''),
     CAPS.meta
   );
   return siteCard(env, lang, {

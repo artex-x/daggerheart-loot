@@ -2041,9 +2041,9 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-233 kB for the unconfigured build and 294 kB for the configured one, which
+242 kB for the unconfigured build and 303 kB for the configured one, which
 carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 233 kB limit. The 294 kB limit runs in
+unconfigured and so measures only the 242 kB limit. The 303 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2055,7 +2055,10 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 294 kB budget (with the account client chunk)`; 290.9
+Expected: `within the 303 kB budget (with the account client chunk)`; 297.5
+kB on 2026-10-15 at `rich-descriptions` (the formatted text box, its
+toolbar and the two-language forms), 236.3 kB unconfigured, which leaves
+52.5 kB under the 350 kB ceiling; 290.9
 kB on 2026-10-14 at `print-snapshots` (every print a stored set: the pure module, the
 print page states, the three prompts, eight strings in two languages), 229.8 kB
 unconfigured, which leaves
@@ -3107,11 +3110,16 @@ a print set (`/p/<id>`) and a catalog table (`/tables/<table>[/<tail>]`),
 each also under `/en/`. It is the Cloudflare Pages project
 `daggerheart-loot` at `https://daggerheart-loot.pages.dev/`, in Pages
 Functions advanced mode: `preview/public/_worker.js` re-exports
-`preview/worker.mjs`, which draws the cards with `tools/share-card.mjs`. It
-answers every client with the card and sends a person to `<site>#/...` by
-`meta refresh` and `location.replace`. It stores nothing (`docs/specs/META.md`
-section 3; `docs/decisions/`, 2026-10-14, "Link previews come from a
-stateless worker").
+`preview/worker.mjs`, which draws the cards with `tools/share-card.mjs` and
+reads record text as plain text through `app/src/lib/markup.ts` (no imports;
+the deploy's esbuild bundle reads TypeScript, and CI deploys on every push).
+Node 24.15 requires that `.ts` file silently from this typeless package and
+imports it with a MODULE_TYPELESS_PACKAGE_JSON warning (measured 2026-10-15),
+so the build tools `require()` it and `preview/worker.test.mjs` requires it
+before it imports the worker. It answers every client with the card and
+sends a person to `<site>#/...` by `meta refresh` and `location.replace`. It
+stores nothing (`docs/specs/META.md` section 3; `docs/decisions/`,
+2026-10-14, "Link previews come from a stateless worker").
 
 Rules:
 

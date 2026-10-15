@@ -26,6 +26,7 @@
 import { stemmer as stemEn } from '@orama/stemmers/english';
 import { stemmer as stemRu } from '@orama/stemmers/russian';
 import { eqLine } from './i18n.js';
+import { markupText } from './markup.js';
 import type { Dict } from './dict.js';
 import type { Lang, Record_ } from './types.js';
 
@@ -200,11 +201,14 @@ type Hay = (it: Record_) => HayParts;
 const folded = (fields: readonly (string | undefined)[]): string[] =>
   fields.filter((s): s is string => !!s).map(foldQuery);
 
-/** Returns a record's folded fields; `hayFor` and the uncached path share it, so they cannot disagree. */
+/** Returns a record's folded fields; `hayFor` and the uncached path share it, so they cannot
+ *  disagree. A description is searched as it reads, without its markup. */
 function partsOf(it: Record_, statLine: StatLine): HayParts {
+  const rud = it.rud && markupText(it.rud);
+  const ende = it.ende && markupText(it.ende);
   return {
     names: folded([it.ru, it.en]),
-    texts: folded(it.eq ? [it.rud, it.ende, statLine(it)] : [it.rud, it.ende])
+    texts: folded(it.eq ? [rud, ende, statLine(it)] : [rud, ende])
   };
 }
 

@@ -133,6 +133,27 @@ describe('the own-item panel', () => {
     });
   });
 
+  it('formats the description with the toolbar and «Просмотр», with no language switch', async () => {
+    const { container } = openShop();
+    await openPanel();
+    expect(screen.queryByRole('group', { name: 'Язык текста' })).toBeNull();
+    const bar = screen.getByRole('toolbar', { name: 'Оформление: Описание' });
+    expect(
+      within(bar)
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('aria-label') ?? b.textContent)
+    ).toEqual(['Жирный', 'Курсив', 'Список', 'Нумерованный список', 'Просмотр']);
+    const desc = document.getElementById('qi-desc') as HTMLTextAreaElement;
+    await userEvent.type(desc, 'Фляга');
+    desc.setSelectionRange(0, 5);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Курсив' }));
+    expect(desc).toHaveValue('*Фляга*');
+    await userEvent.click(within(bar).getByRole('button', { name: 'Просмотр' }));
+    const pane = screen.getByRole('region', { name: 'Просмотр: Описание' });
+    expect(pane.querySelector('i')?.textContent).toBe('Фляга');
+    await expectNoA11yViolations(container);
+  });
+
   it('adds on Enter in the name', async () => {
     const { cloud } = openShop();
     const name = await openPanel();

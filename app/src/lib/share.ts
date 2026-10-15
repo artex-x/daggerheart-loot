@@ -1,9 +1,10 @@
 /* What a record looks like when it leaves the app.
  *
  * Two flavours of the same message. `text/html` carries the name in bold and
- * property labels in italic; `text/plain` carries the same words with no markup
- * at all - deliberately not Markdown, because an app that cannot take rich text
- * should receive readable text rather than stray asterisks.
+ * the record text's own bold and italics (`markupHtml`); `text/plain` carries
+ * the same words with no markup at all (`markupText`) - deliberately not
+ * Markdown, because an app that cannot take rich text should receive readable
+ * text rather than stray asterisks.
  *
  * This is a public format in the sense that matters: it is pasted into other
  * people's chats, so changing it changes messages nobody can edit afterwards.
@@ -19,16 +20,21 @@ import { refsOf, setBonusOf, setKeyOf, setOf, upgradesTo, type Index } from './d
 import { descHtml, esc } from './desc.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
+import { markupHtml, markupText } from './markup.js';
 import { FOLD_OWN, foldOwn, relName, relOrder, relText, setFolds } from './label.js';
 import type { ListEntryMeta, ListShape } from './listLink.js';
 import { takenTotal } from './lists.js';
 import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
-/** An attached paragraph: a heading and a body, both of them plain text. */
+/** An attached paragraph: a plain heading and a body. The body is plain text, or
+ *  formatted-text source when `md` is set; `lead` is plain text written before
+ *  the body, then a colon. */
 export interface ShareBlock {
   head: string;
   body: string;
+  md?: true;
+  lead?: string;
 }
 
 /**
@@ -63,7 +69,9 @@ export function shareBlocks(
   const t = dict(lang);
   const out: ShareBlock[] = [];
 
-  const own = new Set(descOf(it, lang).split('\n'));
+  /* Lines compare as they read, so a plain line and its labelled twin are one line;
+     a table line always stays, or a shared separator would break the target's table. */
+  const own = new Set(descOf(it, lang).split('\n').map(markupText));
   const targets = relOrder(upgradesTo(index, it), lang).filter((r) => !skip.has(r.id));
   const { shown, more } = foldOwn(targets, FOLD_OWN, it.id);
   for (const into of shown) {
@@ -71,8 +79,9 @@ export function shareBlocks(
       head: `${t.craftInto}: ${relName(into, lang)}`,
       body: descOf(into, lang)
         .split('\n')
-        .filter((line) => line && !own.has(line))
-        .join('\n')
+        .filter((line) => line && (line.startsWith('|') || !own.has(markupText(line))))
+        .join('\n'),
+      md: true
     });
   }
   if (more > 0) {
@@ -84,24 +93,25 @@ export function shareBlocks(
     if (!r) continue;
     out.push(
       lang === 'ru'
-        ? { head: `${r.ru} · ${r.rusub}`, body: r.rud }
-        : { head: `${r.en} · ${r.ensub}`, body: r.ende }
+        ? { head: `${r.ru} · ${r.rusub}`, body: r.rud, md: true }
+        : { head: `${r.en} · ${r.ensub}`, body: r.ende, md: true }
     );
   }
 
   const members = setOf(index, it);
   const bonus = setBonusOf(index, it);
   if (members.length || bonus) {
-    out.push({
-      head: members.length
-        ? `${t.setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))}`
-        : t.setLabel,
-      body: !bonus
-        ? ''
+    const head = members.length
+      ? `${t.setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))}`
+      : t.setLabel;
+    /* The set's name is plain text and never parsed; the bonus is formatted. */
+    out.push(
+      !bonus
+        ? { head, body: '' }
         : lang === 'ru'
-          ? `${bonus.ru}: ${bonus.rud}`
-          : `${bonus.en}: ${bonus.ende}`
-    });
+          ? { head, lead: bonus.ru, body: bonus.rud, md: true }
+          : { head, lead: bonus.en, body: bonus.ende, md: true }
+    );
   }
 
   return out;
@@ -173,8 +183,8 @@ export function share(
   const text =
     name +
     (stats ? '\n' + stats : '') +
-    (desc ? '\n\n' + desc : '') +
-    blocks.map((b) => '\n\n' + b.head + (b.body ? '\n' + b.body : '')).join('');
+    (desc ? '\n\n' + markupText(desc) : '') +
+    blocks.map((b) => '\n\n' + b.head + (b.body ? '\n' + blockText(b) : '')).join('');
 
   const html =
     '<b>' +
@@ -183,16 +193,23 @@ export function share(
     (stats ? '<br>' + esc(stats) : '') +
     (desc ? '<br><br>' + descHtml(it, lang) : '') +
     blocks
-      .map(
-        (b) =>
-          '<br><br><i>' +
-          esc(b.head) +
-          '</i>' +
-          (b.body ? '<br>' + esc(b.body).replace(/\n/g, '<br>') : '')
-      )
+      .map((b) => '<br><br><i>' + esc(b.head) + '</i>' + (b.body ? '<br>' + blockHtml(b) : ''))
       .join('');
 
   return { text, html };
+}
+
+/** Returns a block's body as plain text: a formatted body without its markers. */
+function blockText(b: ShareBlock): string {
+  return (b.lead !== undefined ? b.lead + ': ' : '') + (b.md ? markupText(b.body) : b.body);
+}
+
+/** Returns a block's body as flat HTML: a formatted body with its bold and italics. */
+function blockHtml(b: ShareBlock): string {
+  return (
+    (b.lead !== undefined ? esc(b.lead) + ': ' : '') +
+    (b.md ? markupHtml(b.body) : esc(b.body).replace(/\n/g, '<br>'))
+  );
 }
 
 /**
@@ -278,7 +295,7 @@ export function shareSelection(
  * the same thing the list page's own rows do.
  */
 export function entryNoteBlock(meta: ListEntryMeta, t: Dict): ShareBlock[] {
-  return meta.note ? [{ head: t.noteHead, body: meta.note }] : [];
+  return meta.note ? [{ head: t.noteHead, body: meta.note, md: true }] : [];
 }
 
 /** Returns the count that follows a name in copied text and on a print card. */
@@ -325,9 +342,9 @@ export function shareList(
   const skip = new Set(shown);
   const mode = moneyMode(list);
 
-  const noteText = list.note ? `\n\n${t.noteHead}\n${list.note}` : '';
+  const noteText = list.note ? `\n\n${t.noteHead}\n${markupText(list.note)}` : '';
   const noteHtml = list.note
-    ? '<br><br><i>' + esc(t.noteHead) + '</i><br>' + esc(list.note).replace(/\n/g, '<br>')
+    ? '<br><br><i>' + esc(t.noteHead) + '</i><br>' + markupHtml(list.note)
     : '';
 
   const parts = shown

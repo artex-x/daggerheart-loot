@@ -36,7 +36,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x138 of 142 same-shape siblings elided
+    ... StaticText x153 of 157 same-shape siblings elided
     heading "УГОЛЁК" [level=2]
     LineBreak " "
     heading "ИСКРА" [level=2]
@@ -118,7 +118,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-dragonvt]
     button "Compact" [pressed=false]
     button "Link to this set"
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x138 of 142 same-shape siblings elided
+    ... StaticText x153 of 157 same-shape siblings elided
     heading "EMBER" [level=2]
     LineBreak " "
     heading "SPARK" [level=2]

@@ -5,10 +5,13 @@
      `num` (`rnum` - only the alternate tables' columns override the roll
      number) or `tail` (`rtail` - the shared page's decoration, threaded
      through `TableRows`'s own `TableEntry.tail`). The third optional input,
-     `gmOnly`, dims the art and names the state for a screen reader. */
+     `gmOnly`, dims the art and names the state for a screen reader.
+     The description's bold and italics come from MarkupInline: the scoped
+     `.row-main .rt b` rule below draws any `<b>` written here as the name. */
   import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
-  import { artSrc, descParts } from '../lib/desc.js';
+  import MarkupInline from './MarkupInline.svelte';
+  import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
   import { cardBadges, relText, srcLabel } from '../lib/label.js';
@@ -77,12 +80,16 @@
           { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore, artifact: t.voaArtifact1 },
           { noType: true }
         )}</span
-      >{/if}{#if descOf(it, lang)}{@const parts = descParts(it, lang)}<span
-        >{#each parts as part, i (i)}{#if i > 0}<br
-            />{/if}{#if part.kind === 'list'}{#each part.items as line, j (j)}{#if j > 0}<br
-                />{/if}• {#if line.label}<i>{line.label}:</i
-                >{/if}{line.body}{/each}{:else}{#if part.label}<i>{part.label}:</i
-              >{/if}{part.body}{/if}{/each}</span
+      >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
+        >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
+              c={b.c}
+            />{:else if b.t === 'table'}{#each [b.head, ...b.rows] as row, j (j)}{#if j > 0}<br
+                />{/if}{#each row as cell, k (k)}{k > 0 ? ' | ' : ''}<MarkupInline
+                  c={cell}
+                />{/each}{/each}{:else}{#each b.items as item, j (j)}{#if j > 0}<br
+                />{/if}{b.t === 'ol' ? String(b.start + j) + '. ' : '• '}<MarkupInline
+                c={item}
+              />{/each}{/if}{/each}</span
       >{/if}{#if into.length || from.length}<span class="rcraft"
         >{#if from.length}<Icon name="craftFrom" />{t.craftFrom}: {relText(
             from,

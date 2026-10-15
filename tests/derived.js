@@ -10,6 +10,8 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const D = require(path.join(ROOT, 'tools', 'derived.js'));
 const { ok, failed } = require('./ok.js');
+/* The content checks below read a record's text as it reads, without its markup. */
+const { markupText } = require(path.join(ROOT, 'app', 'src', 'lib', 'markup.ts'));
 
 global.window = {};
 require(path.join(ROOT, 'data.js'));
@@ -844,8 +846,8 @@ ok(rc.length === 115, 'Recall Cost is not on 115 records, but on ' + rc.length);
 ok(
   rc.every(
     (x) =>
-      x.rud.indexOf('Стоимость Призыва: ' + x.recall + '\n') === 0 &&
-      x.ende.indexOf('Recall Cost: ' + x.recall + '\n') === 0
+      markupText(x.rud).indexOf('Стоимость Призыва: ' + x.recall + '\n') === 0 &&
+      markupText(x.ende).indexOf('Recall Cost: ' + x.recall + '\n') === 0
   ),
   'Recall Cost does not open the description as its own line'
 );
@@ -871,7 +873,7 @@ ok(
   'the description starts with a list item, with no intro line'
 );
 const named = VOA.filter(function (x) {
-  return x.rud
+  return markupText(x.rud)
     .replace(/^Стоимость Призыва: \d+\n/, '')
     .split('\n')
     .some(function (line) {
@@ -1900,7 +1902,7 @@ ok(
   'Wyrmscale Hauberk is not 7/15, 10/22, 12/29, 14/38 with score t+2'
 );
 const aaNumbers = (head, field, re) =>
-  aaLine(head, (e, x) => (re.exec(x[field]) || []).slice(1).join('/')).join();
+  aaLine(head, (e, x) => (re.exec(markupText(x[field])) || []).slice(1).join('/')).join();
 ok(
   aaNumbers('aa43', 'ende', /Protective: \+(\d) to Armor Score/) === '2,2,3,4' &&
     aaNumbers('aa43', 'rud', /Защитное: \+(\d) к Показателю Брони/) === '2,2,3,4',

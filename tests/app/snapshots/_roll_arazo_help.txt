@@ -42,7 +42,7 @@ RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" 
       button "Страница"
       StaticText "1"
       StaticText "ОСНОВНОЕ ОРУЖИЕ"
-      ... StaticText x11 of 15 same-shape siblings elided
+      ... StaticText x13 of 17 same-shape siblings elided
       link "Нестареющее Око Зверя" [description=Страница url=#/i/aa1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -139,7 +139,7 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
       button "Page"
       StaticText "1"
       StaticText "PRIMARY WEAPON"
-      ... StaticText x11 of 15 same-shape siblings elided
+      ... StaticText x13 of 17 same-shape siblings elided
       link "The Ageless Eye of the Beast" [description=Page url=#/i/aa1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]

@@ -37,7 +37,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Ссылка на набор"
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=index.html?as=gm2#/account]
-    ... StaticText x83 of 87 same-shape siblings elided
+    ... StaticText x107 of 111 same-shape siblings elided
     heading "КОЛОДА СУМЕРЕК" [level=2]
     LineBreak " "
     heading "УЗЫ ДУШИ" [level=2]
@@ -121,7 +121,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-longtext]
     button "Link to this set"
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=index.html?as=gm2#/account]
-    ... StaticText x83 of 87 same-shape siblings elided
+    ... StaticText x107 of 111 same-shape siblings elided
     heading "TWILIGHT DECK" [level=2]
     LineBreak " "
     heading "ANIMA COLLIGATIONEM" [level=2]

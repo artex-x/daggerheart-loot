@@ -96,7 +96,7 @@ const LOOT: Loot = {
         tier: 'A',
         en: 'Artifact',
         ru: 'Артефакт',
-        rud: 'Стоимость Призыва: 2\nЭта колода даёт защиту.\n- Первый пункт\n- Второй пункт',
+        rud: '*Стоимость Призыва:* 2\nЭта колода даёт защиту.\n- Первый пункт\n- Второй пункт',
         ende: 'Recall Cost: 2\nThis deck grants protection.\n- First entry\n- Second entry'
       }),
       /* An artifact that carries a stat block: printed in the book's
@@ -126,8 +126,8 @@ const LOOT: Loot = {
       id: 'q1',
       en: 'Basic Sword',
       ru: 'Простой Меч',
-      rud: 'Надёжное: +1 к Броскам Атаки',
-      ende: 'Reliable: +1 to attack rolls',
+      rud: '*Надёжное:* +1 к Броскам Атаки',
+      ende: '*Reliable:* +1 to attack rolls',
       eq: {
         t: 'weapon',
         tier: 1,
@@ -604,6 +604,22 @@ describe('the artifact', () => {
       '<i>Стоимость Призыва:</i> 2<br>Эта колода даёт защиту.' +
         '<ul class="dlist"><li>Первый пункт</li><li>Второй пункт</li></ul>'
     );
+  });
+});
+
+describe('formatted text', () => {
+  it('draws bold, italic, both lists and a table, with no whitespace anywhere', async () => {
+    render(App, { env: await atSet([{ h: uuid(515) }]) });
+    await opened();
+    const text = document.querySelector('.pcard .pc-text');
+    expect(withoutAnchors(text?.innerHTML ?? '')).toBe(
+      '<b>Раз за отдых:</b> разверните свиток, и <i>узор</i> ответит на вопрос.' +
+        '<ul class="dlist"><li><b>Путь</b> к укрытию;</li><li><i>имя</i> существа рядом.</li></ul>' +
+        '<ol class="dlist" start="1"><li>Задайте вопрос.</li><li>Бросьте d6.</li></ol>' +
+        '<table class="dtable"><thead><tr><th scope="col">Бросок</th><th scope="col">Ответ</th></tr></thead>' +
+        '<tbody><tr><td>1-3</td><td>Нет</td></tr><tr><td>4-6</td><td><b>Да</b></td></tr></tbody></table>'
+    );
+    await expectNoA11yViolations(document.body);
   });
 });
 

@@ -37,7 +37,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Ссылка на набор"
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=index.html?as=gm2#/account]
-    ... StaticText x158 of 162 same-shape siblings elided
+    ... StaticText x181 of 185 same-shape siblings elided
     heading "КЛЯТВА РАВНОВЕСИЯ" [level=2]
     LineBreak " "
     LineBreak " "
@@ -121,7 +121,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-voa4wrst]
     button "Link to this set"
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=index.html?as=gm2#/account]
-    ... StaticText x158 of 162 same-shape siblings elided
+    ... StaticText x182 of 186 same-shape siblings elided
     heading "OATH OF BALANCE" [level=2]
     LineBreak " "
     LineBreak " "

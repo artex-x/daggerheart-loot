@@ -40,10 +40,24 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Монетами" [pressed=true]
     button "Как это работает" [description=Как это работает expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
+    button "Подсказка: Для игроков" [description=Подсказка: Для игроков expanded=false]
     button "Очистить заметку" [description=Очистить заметку]
-    textbox "Например: лавка закрыта до утра" [value=Открыта с рассвета до полуночи. focused=true multiline=true readonly=false required=false]
+    toolbar "Оформление: Для игроков" [orientation=horizontal]
+      button "Жирный" [keyshortcuts=Control+B Meta+B]
+      button "Курсив" [keyshortcuts=Control+I Meta+I]
+      button "Список"
+      button "Нумерованный список"
+      button "Просмотр" [pressed=false]
+    textbox "ДЛЯ ИГРОКОВ" [value=Открыта с рассвета до полуночи. description=уедет с текстом и ссылкой для игроков focused=true multiline=true readonly=false required=false]
+    button "Подсказка: Только для мастера" [description=Подсказка: Только для мастера expanded=false]
     button "Очистить заметку" [description=Очистить заметку]
-    textbox "Например: позиции 9-10 лежат под прилавком" [value=Кузнец торгуется, если назвать имя его брата. multiline=true readonly=false required=false]
+    toolbar "Оформление: Только для мастера" [orientation=horizontal]
+      button "Жирный" [keyshortcuts=Control+B Meta+B]
+      button "Курсив" [keyshortcuts=Control+I Meta+I]
+      button "Список"
+      button "Нумерованный список"
+      button "Просмотр" [pressed=false]
+    textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [value=Кузнец торгуется, если назвать имя его брата. description=останется у вас multiline=true readonly=false required=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     checkbox "Выбрать все" [checked=false]
     generic ""
@@ -61,9 +75,12 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Заметка" [description=Заметка]
     button "Только для мастера: Палаш" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
+    button "Подсказка: Для игроков" [description=Подсказка: Для игроков expanded=false]
     button "Очистить заметку" [description=Очистить заметку]
-    textbox "Как предмет выглядит, что о нём знают" [value=Последний в наличии. multiline=true readonly=false required=false]
-    textbox "Хоумбрю, подвох, что знает только мастер" [multiline=true readonly=false required=false]
+    ... toolbar x2 of 6 same-shape siblings elided
+    textbox "ДЛЯ ИГРОКОВ" [value=Последний в наличии. description=уедет с текстом и ссылкой для игроков multiline=true readonly=false required=false]
+    button "Подсказка: Только для мастера" [description=Подсказка: Только для мастера expanded=false]
+    textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [description=останется у вас multiline=true readonly=false required=false]
     spinbutton "Позиция в списке" [value=3 valuetext=3 required=false valuemin=1 valuemax=10]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
@@ -76,9 +93,23 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "Позиция в списке" [value=5 valuetext=5 required=false valuemin=1 valuemax=10]
     ... spinbutton x4 of 8 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
-    textbox "Как предмет выглядит, что о нём знают" [multiline=true readonly=false required=false]
+    button "Подсказка: Для игроков" [description=Подсказка: Для игроков expanded=false]
+    toolbar "Оформление: Для игроков" [orientation=horizontal]
+      button "Жирный" [keyshortcuts=Control+B Meta+B]
+      button "Курсив" [keyshortcuts=Control+I Meta+I]
+      button "Список"
+      button "Нумерованный список"
+      button "Просмотр" [pressed=false]
+    textbox "ДЛЯ ИГРОКОВ" [description=уедет с текстом и ссылкой для игроков multiline=true readonly=false required=false]
+    button "Подсказка: Только для мастера" [description=Подсказка: Только для мастера expanded=false]
     button "Очистить заметку" [description=Очистить заметку]
-    textbox "Хоумбрю, подвох, что знает только мастер" [value=Проклят. multiline=true readonly=false required=false]
+    toolbar "Оформление: Только для мастера" [orientation=horizontal]
+      button "Жирный" [keyshortcuts=Control+B Meta+B]
+      button "Курсив" [keyshortcuts=Control+I Meta+I]
+      button "Список"
+      button "Нумерованный список"
+      button "Просмотр" [pressed=false]
+    textbox "ТОЛЬКО ДЛЯ МАСТЕРА" [value=Проклят. description=останется у вас multiline=true readonly=false required=false]
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=10]
     spinbutton "Позиция в списке" [value=7 valuetext=7 required=false valuemin=1 valuemax=10]
     spinbutton "ЗОЛОТО" [value=99999 valuetext=99999 required=false valuemin=0 valuemax=99999]
@@ -130,6 +161,7 @@ daggerheart.com
 Выбрать все
 Гарпун Левиафана
 Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=359 namehash=d7ce48f5]
+Жирный
 Заметка
 Зелье Быстрого Шага
 Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=128 namehash=a50f77f6]
@@ -141,14 +173,14 @@ daggerheart.com
 Колода Сумерек
 Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы си... [namelen=847 namehash=c740b19a]
 Конфиденциальность
-Кузнец торгуется, если назвать имя его брата.
+Курсив
 ЛутDaggerheart
 Монетами
 На единицу больше
 На единицу меньше
 Название списка
+Нумерованный список
 Обычные правила
-Открыта с рассвета до заката.
 Очистить заметку
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
@@ -156,10 +188,11 @@ daggerheart.com
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
 Повторить
 Поделиться
+Подсказка: Для игроков
+Подсказка: Только для мастера
 Позиция в списке
 Поиск
-Последний в наличии.
-Проклят.
+Просмотр
 Результат броска
 Свой предмет
 Скачать JSON
@@ -169,6 +202,7 @@ daggerheart.com
 Собрать карточки для печати: девять на лист A4
 Сообщества
 Списки
+Список
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
@@ -226,10 +260,24 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "In coins" [pressed=true]
     button "How this works" [description=How this works expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
+    button "Help: For players" [description=Help: For players expanded=false]
     button "Clear the note" [description=Clear the note]
-    textbox "e.g. the shop is shut until morning" [value=Открыта с рассвета до полуночи. focused=true multiline=true readonly=false required=false]
+    toolbar "Formatting: For players" [orientation=horizontal]
+      button "Bold" [keyshortcuts=Control+B Meta+B]
+      button "Italic" [keyshortcuts=Control+I Meta+I]
+      button "Bulleted list"
+      button "Numbered list"
+      button "Preview" [pressed=false]
+    textbox "FOR PLAYERS" [value=Открыта с рассвета до полуночи. description=travels with the text and the players' link focused=true multiline=true readonly=false required=false]
+    button "Help: GM only" [description=Help: GM only expanded=false]
     button "Clear the note" [description=Clear the note]
-    textbox "e.g. entries 9-10 are kept under the counter" [value=Кузнец торгуется, если назвать имя его брата. multiline=true readonly=false required=false]
+    toolbar "Formatting: GM only" [orientation=horizontal]
+      button "Bold" [keyshortcuts=Control+B Meta+B]
+      button "Italic" [keyshortcuts=Control+I Meta+I]
+      button "Bulleted list"
+      button "Numbered list"
+      button "Preview" [pressed=false]
+    textbox "GM ONLY" [value=Кузнец торгуется, если назвать имя его брата. description=stays with you multiline=true readonly=false required=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     checkbox "Select all" [checked=false]
     generic ""
@@ -247,9 +295,12 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "Note" [description=Note]
     button "GM only: Broadsword" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
+    button "Help: For players" [description=Help: For players expanded=false]
     button "Clear the note" [description=Clear the note]
-    textbox "What it looks like, what is known about it" [value=Последний в наличии. multiline=true readonly=false required=false]
-    textbox "Homebrew, the catch, what only the GM knows" [multiline=true readonly=false required=false]
+    ... toolbar x2 of 6 same-shape siblings elided
+    textbox "FOR PLAYERS" [value=Последний в наличии. description=travels with the text and the players' link multiline=true readonly=false required=false]
+    button "Help: GM only" [description=Help: GM only expanded=false]
+    textbox "GM ONLY" [description=stays with you multiline=true readonly=false required=false]
     spinbutton "Position in the list" [value=3 valuetext=3 required=false valuemin=1 valuemax=10]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
@@ -262,9 +313,23 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "Position in the list" [value=5 valuetext=5 required=false valuemin=1 valuemax=10]
     ... spinbutton x4 of 8 same-shape siblings elided
     ... spinbutton x2 of 6 same-shape siblings elided
-    textbox "What it looks like, what is known about it" [multiline=true readonly=false required=false]
+    button "Help: For players" [description=Help: For players expanded=false]
+    toolbar "Formatting: For players" [orientation=horizontal]
+      button "Bold" [keyshortcuts=Control+B Meta+B]
+      button "Italic" [keyshortcuts=Control+I Meta+I]
+      button "Bulleted list"
+      button "Numbered list"
+      button "Preview" [pressed=false]
+    textbox "FOR PLAYERS" [description=travels with the text and the players' link multiline=true readonly=false required=false]
+    button "Help: GM only" [description=Help: GM only expanded=false]
     button "Clear the note" [description=Clear the note]
-    textbox "Homebrew, the catch, what only the GM knows" [value=Проклят. multiline=true readonly=false required=false]
+    toolbar "Formatting: GM only" [orientation=horizontal]
+      button "Bold" [keyshortcuts=Control+B Meta+B]
+      button "Italic" [keyshortcuts=Control+I Meta+I]
+      button "Bulleted list"
+      button "Numbered list"
+      button "Preview" [pressed=false]
+    textbox "GM ONLY" [value=Проклят. description=stays with you multiline=true readonly=false required=false]
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=10]
     spinbutton "Position in the list" [value=7 valuetext=7 required=false valuemin=1 valuemax=10]
     spinbutton "GOLD" [value=99999 valuetext=99999 required=false valuemin=0 valuemax=99999]
@@ -306,8 +371,10 @@ Arazo's Artifacts
 Art History Booklet
 Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532 namehash=f84ac14a]
 As in the book
+Bold
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+Bulleted list
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear the note
@@ -332,21 +399,26 @@ GM only: Stride Potion
 GM only: Twilight Deck
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Help: For players
+Help: GM only
 How this works
 In coins
 Install as an app
+Italic
 Lay these out for printing: nine to an A4 sheet
 Leviathan Harpoon
 Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=341 namehash=99adf1d2]
 List name
 Lists
 Note
+Numbered list
 One higher
 One lower
 Own item
 Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Preview
 Privacy
 RU
 Remove from the list
@@ -369,8 +441,4 @@ Twilight DeckRecall Cost: 2This deck enhances fortunes with the ... [namelen=870
 Vault of Ages
 Wondrous
 daggerheart.com
-Кузнец торгуется, если назвать имя его брата.
 ЛутDaggerheart
-Открыта с рассвета до заката.
-Последний в наличии.
-Проклят.

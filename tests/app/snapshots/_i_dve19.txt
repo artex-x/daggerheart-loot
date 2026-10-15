@@ -30,12 +30,12 @@ RootWebArea "Уголёк — Генератор лута — Daggerheart" [url=
     link "показать в таблице" [url=#/tables/dv/dve19]
     button "Страница"
     StaticText "96"
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Искра" [url=#/i/dve20]
-    StaticText "Пылающие близнецы:"
-    StaticText " При критическом успехе на Броске Атаки цель временно начинает П..." [namelen=140 namehash=1b4b3cf5]
+    StaticText "Пылает"
+    StaticText ", она должна отметить 1 Рану во время своей активации."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -108,12 +108,12 @@ RootWebArea "Ember — Daggerheart Loot Generator" [url=#/i/dve19]
     link "show in the table" [url=#/tables/dv/dve19]
     button "Page"
     StaticText "96"
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Spark" [url=#/i/dve20]
-    StaticText "Blazing Twins:"
-    StaticText " When you critically succeed on an attack roll, set the target t..." [namelen=134 namehash=2159c57c]
+    StaticText "Ablaze"
+    StaticText ", they must mark 1 HP when spotlighted."
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]

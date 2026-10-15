@@ -50,7 +50,16 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         option "Пистоли" [selected=false]
         option "Холодное оружие" [selected=true]
         option "+ Новый раздел..." [selected=false]
+      button "RU" [pressed=true]
+      button "EN" [pressed=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
+      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      toolbar "Оформление: Описание" [orientation=horizontal]
+        button "Жирный" [keyshortcuts=Control+B Meta+B]
+        button "Курсив" [keyshortcuts=Control+I Meta+I]
+        button "Список"
+        button "Нумерованный список"
+        button "Таблица"
       textbox "Описание" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
       button "Заменить"
       button "Убрать картинку"
@@ -121,7 +130,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x16 of 20 same-shape siblings elided
+    ... StaticText x20 of 24 same-shape siblings elided
     heading "Топор Тлеющих Углей" [level=2]
     button "Палаш" [description=Палаш]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
@@ -131,8 +140,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     link "Длинный Меч" [url=index.html?as=gm1#/i/q2]
     link "Уголёк" [url=index.html?as=gm1#/i/dve19]
     link "Искра" [url=index.html?as=gm1#/i/dve20]
-    StaticText "Пылающие близнецы:"
-    StaticText " При критическом успехе на Броске Атаки цель временно начинает П..." [namelen=140 namehash=1b4b3cf5]
+    StaticText "Пылает"
+    StaticText ", она должна отметить 1 Рану во время своей активации."
     DisclosureTriangle "Клеймо Ольхи СВОЙСТВО ОРУЖИЯ" [expanded=false]
     DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
     button "Добавить в список" [expanded=false]
@@ -170,6 +179,7 @@ daggerheart.com
 Двуручное
 Длинный Меч
 Добавить в список
+Жирный
 Заменить
 Знание
 Инстинкт
@@ -179,12 +189,14 @@ daggerheart.com
 Карты правил
 Конфиденциальность
 Костьd4d6d8d10d12d20
+Курсив
 Легендарный Палаш
 ЛутDaggerheart
 Магическое
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Новая линия
+Нумерованный список
 Обычные правила
 Одноручное
 Одноручное/двуручное
@@ -198,6 +210,7 @@ daggerheart.com
 Подсказка: Карты правил
 Подсказка: Комплект
 Подсказка: Линия улучшений
+Подсказка: Описание
 Подсказка: Получается из
 Подсказка: Улучшается до
 Поиск
@@ -211,8 +224,10 @@ daggerheart.com
 Сообщества
 Сохранить
 Списки
+Список
 Средне
 Страница
+Таблица
 Таблицы
 Убрать картинку
 Убрать: Длинный Меч
@@ -281,7 +296,16 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         option "Pistols" [selected=false]
         option "Blades" [selected=true]
         option "+ New section..." [selected=false]
+      button "RU" [pressed=true]
+      button "EN" [pressed=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
+      button "Help: Description" [description=Help: Description expanded=false]
+      toolbar "Formatting: Description" [orientation=horizontal]
+        button "Bold" [keyshortcuts=Control+B Meta+B]
+        button "Italic" [keyshortcuts=Control+I Meta+I]
+        button "Bulleted list"
+        button "Numbered list"
+        button "Table"
       textbox "Description" [value=Лезвие тлеет и не гаснет под дождём. multiline=true readonly=false required=false]
       button "Replace"
       button "Remove the picture"
@@ -350,22 +374,22 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       link "Cancel" [url=index.html?as=gm1#/homebrew]
       button "Delete"
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
-    button "Page"
-    StaticText "PRIMARY WEAPON"
-    ... StaticText x16 of 20 same-shape siblings elided
-    heading "Ember Axe" [level=2]
-    button "Broadsword" [description=Broadsword]
-    button "Improved Broadsword" [description=Improved Broadsword]
-    button "Advanced Broadsword" [description=Advanced Broadsword]
-    button "Legendary Broadsword" [description=Legendary Broadsword]
-    link "Premium Bedroll" [url=index.html?as=gm1#/i/ci1]
-    link "Longsword" [url=index.html?as=gm1#/i/q2]
-    link "Ember" [url=index.html?as=gm1#/i/dve19]
-    link "Spark" [url=index.html?as=gm1#/i/dve20]
-    StaticText "Blazing Twins:"
-    StaticText " When you critically succeed on an attack roll, set the target t..." [namelen=134 namehash=2159c57c]
-    DisclosureTriangle "Alder Brand WEAPON FEATURE" [expanded=false]
-    DisclosureTriangle "Slow HUGE GREEN OOZE · ADVERSARY FEATURE · PASSIVE" [expanded=false]
+    button "Страница"
+    StaticText "ОСНОВНОЕ ОРУЖИЕ"
+    ... StaticText x20 of 24 same-shape siblings elided
+    heading "Топор Тлеющих Углей" [level=2]
+    button "Палаш" [description=Палаш]
+    button "Улучшенный Палаш" [description=Улучшенный Палаш]
+    button "Продвинутый Палаш" [description=Продвинутый Палаш]
+    button "Легендарный Палаш" [description=Легендарный Палаш]
+    link "Первоклассный Спальный Мешок" [url=index.html?as=gm1#/i/ci1]
+    link "Длинный Меч" [url=index.html?as=gm1#/i/q2]
+    link "Уголёк" [url=index.html?as=gm1#/i/dve19]
+    link "Искра" [url=index.html?as=gm1#/i/dve20]
+    StaticText "Пылает"
+    StaticText ", она должна отметить 1 Рану во время своей активации."
+    DisclosureTriangle "Клеймо Ольхи СВОЙСТВО ОРУЖИЯ" [expanded=false]
+    DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
     button "Add to list" [expanded=false]
   contentinfo ""
     navigation "Site pages"
@@ -381,12 +405,12 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
 4
 Account: gm1@example.test
 Add to list
-Advanced Broadsword
 Agility
 Alt. tables
 Arazo's Artifacts
 Armor
-Broadsword
+Bold
+Bulleted list
 Cancel
 Close
 Communities
@@ -396,10 +420,10 @@ Died4d6d8d10d12d20
 Dragon's Vault
 Dread
 EN
-Ember
 Equipment
 Far
 Finesse
+Help: Description
 Help: Made from
 Help: Rule cards
 Help: Second stat set
@@ -408,15 +432,13 @@ Help: Source
 Help: Upgrade line
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
-Improved Broadsword
 In a line
 Install as an app
 Instinct
+Italic
 Item
 Knowledge
-Legendary Broadsword
 Lists
-Longsword
 Made from
 Magic
 Melee
@@ -424,11 +446,10 @@ New line
 New rule card
 No sectionPistolsBlades+ New section...
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
+Numbered list
 One-Handed
 One/Two-Handed
-Page
 Physical
-Premium Bedroll
 Presence
 Primary weapon
 Privacy
@@ -446,10 +467,10 @@ Search
 Second stat set
 Secondary weapon
 Skip to content
-Spark
 Spellcast
 Standard rules
 Strength
+Table
 Tables
 Terms of use
 Two-Handed
@@ -463,4 +484,13 @@ daggerheart.com
 mag
 phy
 phy/mag
+Длинный Меч
+Искра
+Легендарный Палаш
 ЛутDaggerheart
+Палаш
+Первоклассный Спальный Мешок
+Продвинутый Палаш
+Страница
+Уголёк
+Улучшенный Палаш

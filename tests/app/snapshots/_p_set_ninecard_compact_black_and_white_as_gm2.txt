@@ -37,7 +37,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Ссылка на набор"
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=index.html?as=gm2#/account]
-    ... StaticText x121 of 125 same-shape siblings elided
+    ... StaticText x125 of 129 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПАЛАШ" [level=2]
     ... heading x5 of 9 same-shape siblings elided
@@ -117,7 +117,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-ninecard]
     button "Link to this set"
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=index.html?as=gm2#/account]
-    ... StaticText x121 of 125 same-shape siblings elided
+    ... StaticText x125 of 129 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
     heading "BROADSWORD" [level=2]
     ... heading x5 of 9 same-shape siblings elided

@@ -190,22 +190,6 @@ scale finding the owner sent to this task's scale re-run.
   account's item also has, «Печать» on that item's `#/h/<uuid>`, and on a
   `#/s/` link that holds it, opens a set of the other account's item.
 
-### D74 - the list notes' two boxes take their name from the placeholder
-
-- **Where**: `app/src/components/ListPage.svelte`, the `notePair` snippet
-  (`.nlbl` and the two `<textarea>`s, list and row notes).
-- **What**: the visible label («Для игроков» / «Только для мастера» and its
-  consequence line) is a `span`, not tied to the box, so a screen reader
-  names each box by its placeholder. Rule 15 (a) says a placeholder is never
-  the label; rule 15 names this departure.
-- **Why deferred**: the fix needs a per-key id on an inner text span
-  (`.nlbl` also holds the clear button) and moves every list-page golden
-  (four shards of compare and re-seed); the visible label already serves
-  sighted readers.
-- **How to verify the fix**: `listPage.test.ts` finds each note box with
-  `getByRole('textbox', { name: /Для игроков/ })` and the hidden one by its
-  own label; the re-seeded list goldens name the boxes by their labels.
-
 ### D75 - each «?» has a description equal to its name
 
 - **Where**: `app/src/components/HelpButton.svelte` (`title` and
@@ -303,11 +287,74 @@ scale finding the owner sent to this task's scale re-run.
   the one the store holds; a `cloudLists.test.ts` case answers two reads
   out of order and expects the newer row to stay.
 
+## Authoring print preview (`authoring-print-preview`)
+
+Owns: a print view in the item editor (owner, 2026-10-14; it ships after
+`rich-descriptions` and before `debt-cleanup`).
+
+### D82 - a print card clips a long text with no notice
+
+- **Where**: `app/src/components/PrintCard.svelte` (the text size ladder,
+  then `overflow: hidden` on the text box).
+- **What**: an item description may hold 3000 code points; past the last
+  step of the ladder the text is cut on the printed card and nothing says
+  so. Not measured in a browser.
+- **Why deferred**: the owner did not place it; the catalog's longest text
+  (1299 code points) fits.
+- **How to verify the fix**: a 3000-character own item on `#/p/<id>`
+  draws one warning line above the sheet (`printPage.test.ts`, and a
+  `tests/app/print.js` measurement). The warning also counts a clipped
+  table: a 4x20 table in a long text (the `app/print` case of 2026-10-15)
+  draws the line when its last rows are cut.
+
 ## Debt cleanup (`debt-cleanup`)
 
 Owns: scale findings at up to three times the default limits that no
 release took (the scale review of 2026-10-01; the owner placed the rest in
 R7d, R7e, R7f and R7g).
+
+### D101 - a row's name joins two marked words that only a space parts
+
+- **Where**: `app/src/components/RowMain.svelte` and `MarkupInline.svelte`
+  (the row's description run).
+- **What**: Chrome drops a space-only text node between two inline elements
+  from a button's name, so a row reads "Ослепительный Свет:Потратьте
+  Надежду" where the screen shows the space (76 joins in 39 catalog records
+  since the catalog style, 2026-10-15; the four Arazo shields `aa43`-`aa46`,
+  `f56`). The card, print and the clipboard keep the space.
+- **Why deferred**: the fix is in the row renderer, and the visible text
+  is right.
+- **How to verify the fix**: the `#/tables/eq_secondary` golden names row 46
+  "... Ослепительный Свет: Потратьте Надежду ..." and the `#/tables/other_frames
+  ~ two frames` golden names the `f56` row "... Быстрый выстрел: Потратьте 2
+  Надежды ..."; each row name gains one character per join.
+
+### D102 - a table with a head and no rows has header cells with no data
+
+- **Where**: `app/src/components/Markup.svelte` (the table block) and
+  `PrintCard.svelte` (`.dtable`).
+- **What**: formatted text with a `|` line and a separator line but no row
+  under it draws a `<thead>` of `<th>` cells and an empty `<tbody>`; axe's
+  `th-has-data-cells` may flag it. No stored text has one (2026-10-15).
+- **Why deferred**: only a homebrew author can write it, and the text still
+  reads; the fix (draw a head-only table as a paragraph, or its cells as
+  `<td>`) is a renderer change of its own.
+- **How to verify the fix**: `components/markup.test.ts` renders `| a | b |`
+  over `|---|---|` and `expectNoA11yViolations` passes.
+
+### D103 - a one-language set bonus or rule card text draws with no mark
+
+- **Where**: `app/src/components/RecordCard.svelte` (the set bonus and the
+  rule card text) and `HomebrewCards.svelte`.
+- **What**: a homebrew set bonus or rule card text written in one language
+  draws in the other language with no «Текст только на английском» /
+  "Text in English only" line and no `lang` (`I18N.md` names the
+  departure); an item's description carries both.
+- **Why deferred**: the mark derives from the drawn record (`textLangOf`),
+  and the card texts reach `RecordCard` as stored cards, a second path.
+- **How to verify the fix**: a set with only `ende` drawn in Russian shows
+  the line before the bonus and `lang="en"` on it (`record.test.ts`), and
+  the `I18N.md` departure sentence goes.
 
 ### D97 - the usage report rounds the bucket to 0.1 MB
 
@@ -345,19 +392,6 @@ R7d, R7e, R7f and R7g).
 - **How to verify the fix**: the read asks for `id,revision,updated_at`
   first and fetches only changed rows; `supabase.test.ts` counts the
   requests of an unchanged second read.
-
-### D82 - a print card clips a long text with no notice
-
-- **Where**: `app/src/components/PrintCard.svelte` (the text size ladder,
-  then `overflow: hidden` on the text box).
-- **What**: an item description may hold 3000 code points; past the last
-  step of the ladder the text is cut on the printed card and nothing says
-  so. Not measured in a browser.
-- **Why deferred**: the owner did not place it; the catalog's longest text
-  (1299 code points) fits.
-- **How to verify the fix**: a 3000-character own item on `#/p/<id>`
-  draws one warning line above the sheet (`printPage.test.ts`, and a
-  `tests/app/print.js` measurement).
 
 ### D83 - a statement timeout makes the write buffer wait about a minute
 

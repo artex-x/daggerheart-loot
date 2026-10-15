@@ -64,7 +64,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Нож Единорога" [checked=false]
     button "32 Нож Единорога Ранг 4 · Физическое · Искусность · Вплотную · d..." [namelen=346 namehash=240c1322]
     checkbox "Легендарный Щит Арктура" [checked=false]
-    button "46 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=297 namehash=0b8301ba]
+    button "46 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=296 namehash=42c22c9c]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -426,7 +426,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     checkbox "Unicorn Knife" [checked=false]
     button "32 Unicorn Knife Tier 4 · Physical · Finesse · Melee · d8+6 phy ..." [namelen=312 namehash=1d5303db]
     checkbox "Legendary Shield of Arcturus" [checked=false]
-    button "46 Legendary Shield of Arcturus Tier 4 · Physical · Strength · M..." [namelen=268 namehash=91c76d8f]
+    button "46 Legendary Shield of Arcturus Tier 4 · Physical · Strength · M..." [namelen=267 namehash=2e48f667]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

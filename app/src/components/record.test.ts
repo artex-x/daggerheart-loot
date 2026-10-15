@@ -135,9 +135,9 @@ const LOOT: Loot = {
         frame: 'beast_feast',
         kind: 'equip',
         en: 'Sharpened Cooking Knife',
-        ende: 'Reliable: +1 to attack rolls',
+        ende: '*Reliable:* +1 to attack rolls',
         ru: 'Наточенный Кухонный Нож',
-        rud: 'Надёжное: +1 к Броскам Атаки',
+        rud: '*Надёжное:* +1 к Броскам Атаки',
         eq: {
           t: 'weapon',
           tier: 1,
@@ -222,9 +222,9 @@ const LOOT: Loot = {
       src: 'core',
       kind: 'equip',
       en: 'Broadsword',
-      ende: 'Reliable: +1 to attack rolls',
+      ende: '*Reliable:* +1 to attack rolls',
       ru: 'Палаш',
-      rud: 'Надёжное: +1 к Броскам Атаки',
+      rud: '*Надёжное:* +1 к Броскам Атаки',
       eq: {
         t: 'weapon',
         tier: 1,
@@ -383,28 +383,20 @@ describe('a record on its own page', () => {
     );
   });
 
-  it('brings the text of a referenced card, collapsed, as real text nodes split on the line break', () => {
-    /* Ported from app.js's refHTML/lines(): a \n becomes a <br> between two
-       text nodes, not one joined run injected via {@html}. Svelte 5 leaves an
-       empty comment anchor beside each {#if}/{#each} item, so the real
-       assertion filters those out rather than reading raw innerHTML/childNodes. */
+  it('brings the text of a referenced card, collapsed, one paragraph per source line', () => {
+    /* A line of the card's text is its own paragraph (Markup.svelte), drawn as
+       text nodes, never injected through {@html}. */
     render(App, { env: at('ci2') });
     const card = screen.getByText('Неистовое опутывание');
     expect(card).toBeInTheDocument();
     expect(card.closest('details')?.open).toBe(false);
 
-    const p = card.closest('details')?.querySelector('p');
-    expect(p?.textContent).toBe('Корни вырываются из-под земли.Они хватают за лодыжки.');
-    const real = Array.from(p?.childNodes ?? []).filter(
-      (n) =>
-        n.nodeType === Node.ELEMENT_NODE || (n.nodeType === Node.TEXT_NODE && n.textContent)
-    );
-    expect(real.map((n) => n.nodeName)).toEqual(['#text', 'BR', '#text']);
-    expect(real.map((n) => n.textContent)).toEqual([
+    const text = card.closest('details')?.querySelector('.ref-text');
+    expect([...(text?.querySelectorAll('p') ?? [])].map((p) => p.textContent)).toEqual([
       'Корни вырываются из-под земли.',
-      '',
       'Они хватают за лодыжки.'
     ]);
+    expect(text?.querySelector('br')).toBeNull();
   });
 
   it('links a referenced card out to daggerheart.su, subdomain matching the language on screen', async () => {
@@ -435,8 +427,11 @@ describe('a record on its own page', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByText('Sage · Level 1 · Spell')).toBeInTheDocument();
-    const p = screen.getByText('Sage · Level 1 · Spell').closest('details')?.querySelector('p');
-    expect(p?.textContent).toBe('Roots reach out.They grab at ankles.');
+    const text = screen
+      .getByText('Sage · Level 1 · Spell')
+      .closest('details')
+      ?.querySelector('.ref-text');
+    expect(text?.textContent).toBe('Roots reach out.They grab at ankles.');
   });
 
   it('offers no way into a table for a record that is in none', () => {
@@ -1126,7 +1121,7 @@ describe('the set line', () => {
     for (const id of ['s1', 's2']) {
       render(App, { env: at(id) });
       const label = screen.getByText('Двойное лезвие:');
-      const line = label.closest('p');
+      const line = label.closest('.set-bonus');
       expect(line?.previousElementSibling?.textContent).toContain('Комплект');
       expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe(
         'Двойное лезвие: Оба клинка бьют как один.'
@@ -1245,6 +1240,53 @@ describe('an own homebrew item', () => {
     expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
       'img/_none.webp'
     );
+  });
+
+  it('marks a text written in the other language only, on both card variants', async () => {
+    const index = buildIndex({ items: {} });
+    const cap = recordOf(
+      'hb_capaaaaaaaaaaaaa',
+      { kind: 'item', en: 'Cap', ende: 'Hear.' },
+      null
+    );
+    for (const variant of ['full', 'compact'] as const) {
+      const view = render(RecordCard, {
+        props: { it: cap, index, lang: 'ru', variant, artBroken: false, onartfail: () => {} }
+      });
+      const line = screen.getByText('Текст только на английском');
+      expect(line.nextElementSibling).toHaveClass('card-desc');
+      expect(line.nextElementSibling).toHaveAttribute('lang', 'en');
+      await expectNoA11yViolations(view.container);
+      view.unmount();
+    }
+    const ru = recordOf(
+      'hb_potionaaaaaaaaaa',
+      { kind: 'item', ru: 'Зелье', rud: 'Лечит.' },
+      null
+    );
+    render(RecordCard, {
+      props: { it: ru, index, lang: 'en', artBroken: false, onartfail: () => {} }
+    });
+    expect(screen.getByText('Text in Russian only')).toBeInTheDocument();
+    cleanup();
+    /* The language on screen, both languages, and a catalog record draw no line. */
+    const both = recordOf(
+      'hb_bothaaaaaaaaaaaa',
+      { kind: 'item', ru: 'Р', en: 'E', rud: 'Лечит.', ende: 'Heals.' },
+      null
+    );
+    for (const [it, lang] of [
+      [cap, 'en'],
+      [both, 'ru'],
+      [{ ...cap, src: 'core' }, 'ru']
+    ] as const) {
+      const view = render(RecordCard, {
+        props: { it, index, lang, artBroken: false, onartfail: () => {} }
+      });
+      expect(view.container.querySelector('.text-lang')).toBeNull();
+      expect(view.container.querySelector('.card-desc')).not.toHaveAttribute('lang');
+      view.unmount();
+    }
   });
 
   it('links its own set and rule card to their tabs on its page and in the modal of a set member', async () => {

@@ -799,6 +799,7 @@ export const REVIEW_CARD_CLASSES = [
   'card-name',
   'eqstats',
   'card-desc',
+  'mdtext',
   'badge',
   'num',
   'src',
@@ -878,7 +879,7 @@ export function cardHeadSource(svelteText) {
   const a = find((l) => l.trim() === 'const t = $derived(dict(lang));', 0, 'dict derivation');
   const b = find((l) => l.trim().startsWith('const badges ='), a, 'badges derivation');
   const c = find((l) => l.trim() === '<div class="card-meta">', b, 'card-meta row');
-  const d = find((l) => l.trim() === '<div class="card-desc">', c, 'card-desc block');
+  const d = find((l) => /^<div class="card-desc[ "]/.test(l.trim()), c, 'card-desc block');
   const indent = /^\s*/.exec(lines[d])[0];
   const e = find((l) => l === indent + '</div>', d, 'end of card-desc');
   return lines

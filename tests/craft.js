@@ -12,6 +12,8 @@ const path = require('path');
 
 const ROOT = require('path').join(__dirname, '..');
 const { ok, failed } = require('./ok.js');
+/* A stub carries a record's text as it reads, without its markup. */
+const { markupText } = require(path.join(ROOT, 'app', 'src', 'lib', 'markup.ts'));
 
 /* ---------- 1. data integrity, no DOM needed ---------- */
 global.window = {};
@@ -120,7 +122,7 @@ const stale = ALL.filter((x) => {
      (five Vault of Ages records open with a one-line "Стоимость Призыва: N"
      header under 40 characters) no longer carries a raw "line one\nline two"
      substring anywhere in the stub - the newline is now a paragraph break. */
-  const probe = x.rud.split('\n')[0].slice(0, 40);
+  const probe = markupText(x.rud).split('\n')[0].slice(0, 40);
   return !fs.existsSync(p) || fs.readFileSync(p, 'utf8').indexOf(probe) < 0;
 });
 ok(
@@ -136,7 +138,8 @@ ok(
    multi-line description, and nothing pins the new shape - the staleness
    probe above only proves a stub isn't stale, not what a fresh one actually
    renders. Pin it directly: descHtml() in tools/share-card.mjs renders
-   one <p> per source line, not one glued paragraph. */
+   one <p> per source line of the plain text (`markupText`), not one glued
+   paragraph. */
 console.log('multi-line description rendering');
 const w6 = ALL.find((x) => x.id === 'w6');
 ok(
@@ -144,7 +147,7 @@ ok(
   'w6 is expected to carry a multi-line rud for this probe'
 );
 if (w6) {
-  const w6Lines = w6.rud.split('\n');
+  const w6Lines = markupText(w6.rud).split('\n');
   const w6Stub = fs.readFileSync(path.join(ROOT, 'i', 'w6.html'), 'utf8');
   const w6Paragraphs = [...w6Stub.matchAll(/^\s*<p>(.*)<\/p>$/gm)].map((m) => m[1]);
   ok(

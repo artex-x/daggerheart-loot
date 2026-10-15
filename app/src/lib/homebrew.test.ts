@@ -32,6 +32,7 @@ import {
   nameTaken,
   recordOf,
   SNAPSHOT_BYTES,
+  textLangOf,
   snapshotValid,
   withRecords,
   type BookRef,
@@ -363,6 +364,41 @@ describe('isHomebrewRecord', () => {
         rud: ''
       })
     ).toBe(false);
+  });
+});
+
+describe('textLangOf', () => {
+  const own = (c: Omit<Parameters<typeof recordOf>[1], 'kind'>) =>
+    recordOf('hb_aaaaaaaaaaaaaaaa', { kind: 'item', ru: 'А', ...c }, null);
+
+  it('marksAnEnglishOnlyHomebrewText', () => {
+    expect(textLangOf(own({ ende: '**Hear** one sentence.' }))).toBe('en');
+  });
+
+  it('marksARussianOnlyHomebrewText', () => {
+    expect(textLangOf(own({ rud: 'Слышит одну фразу (d6).' }))).toBe('ru');
+  });
+
+  it('marksNoTextWrittenInBothLanguages', () => {
+    expect(textLangOf(own({ ende: 'Hear.', rud: 'Слышит.' }))).toBeNull();
+    expect(textLangOf(own({}))).toBeNull();
+  });
+
+  it('marksNoCatalogRecord', () => {
+    const catalog: Record_ = {
+      id: 'ci1',
+      src: 'core',
+      kind: 'item',
+      en: 'A',
+      ru: 'А',
+      ende: 'Hear.',
+      rud: 'Hear.'
+    };
+    expect(textLangOf(catalog)).toBeNull();
+  });
+
+  it('marksNoTextWithoutLetters', () => {
+    expect(textLangOf(own({ ende: '+2 / 13 - 7' }))).toBeNull();
   });
 });
 

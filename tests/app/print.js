@@ -493,7 +493,10 @@ const { ok } = rep;
   ok(/Близко/i.test(emberStrips[1] || ''), 'Ember second strip: ' + emberStrips[1]);
   const emberDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(emberDice.join() === 'd8,d12', 'Ember dice: ' + emberDice.join());
-  const emberLast = await page.$$eval('.pc-text i', (e) => e.map((x) => x.textContent).pop());
+  /* The set lead is the italic run that names the set; the bonus after it may hold an
+     italic condition of its own (FEATURES.md, "Records", "Catalog style"). */
+  const setLead = (e) => e.map((x) => x.textContent).find((t) => t.includes('(Комплект:'));
+  const emberLast = await page.$$eval('.pc-text i', setLead);
   ok(
     emberLast === 'Пылающие близнецы (Комплект: Уголёк, Искра):',
     'Ember set line label: ' + emberLast
@@ -508,7 +511,7 @@ const { ok } = rep;
     'Spark carries the bonus other than once, in the set line: ' + sparkText
   );
   await openPrint(d, 'voa4_t3d');
-  const guardLast = await page.$$eval('.pc-text i', (e) => e.map((x) => x.textContent).pop());
+  const guardLast = await page.$$eval('.pc-text i', setLead);
   ok(
     guardLast === 'Убранство Святого (Комплект: Святой Щит, Святой Клинок, Святое Облачение):',
     'Saintly Guard set line label: ' + guardLast
@@ -2369,6 +2372,70 @@ const { ok } = rep;
     (await page.$('.pcard.bw')) && !(await page.$('.pc-art')),
     "the own item's black-and-white card draws a picture"
   );
+
+  /* Formatted text at its limit: a 3000-code-point text with a 4x20 table on gm4's
+     formatted item prints inside its card in both layouts (docs/specs/FEATURES.md,
+     "Print"); the fit ladder only clips what does not fit. */
+  console.log('a table at the text limit');
+  {
+    const markupId = '00000000-0000-4000-8000-000000000515';
+    const rows = Array.from(
+      { length: 20 },
+      (_, i) =>
+        `| ${String(i + 1)} | **Итог ${String(i + 1)}** | *цена* ${String(i * 5)} | Заметка об этом исходе для игроков |`
+    );
+    const head = ['| Бросок | Итог | Цена | Заметка |', '|---|---|---|---|', ...rows].join(
+      '\n'
+    );
+    const lead = 'Сверьтесь с таблицей. '.repeat(200);
+    const rud = (lead.slice(0, 3000 - head.length - 1) + '\n' + head).slice(0, 3000);
+    await d.open('#/p/', { as: 'gm4' });
+    const saved = await d.fake(
+      'homebrew.updateItem',
+      markupId,
+      { content: { kind: 'consumable', ru: 'Свиток Узоролиста', rud }, book_id: null },
+      null
+    );
+    ok(
+      !!saved && saved.ok,
+      'the fake refused the 3000-character text: ' + JSON.stringify(saved)
+    );
+    const made = await d.fake('prints.create', [{ h: markupId }]);
+    await d.go('#/p/' + made.id);
+    await waitForSet();
+    for (const layout of ['colour', 'bw']) {
+      if (layout === 'bw') await bw();
+      else await colour();
+      await d.settle();
+      const m = await page.evaluate(() => {
+        const card = document.querySelector('.pcard');
+        const table = card?.querySelector('.pc-text table.dtable');
+        const r = (e) => e?.getBoundingClientRect();
+        return {
+          rows: table?.querySelectorAll('tbody tr').length ?? 0,
+          cols: table?.querySelectorAll('thead th').length ?? 0,
+          table: table ? r(table).width : null,
+          text: r(card?.querySelector('.pc-text'))?.width ?? null,
+          card: r(card)?.width ?? null,
+          right: table ? r(table).right : null,
+          cardRight: r(card)?.right ?? null
+        };
+      });
+      console.log('  ' + layout + ': ' + JSON.stringify(m));
+      ok(
+        m.rows === 20 && m.cols === 4,
+        layout + ': the table is not 4x20 - ' + JSON.stringify(m)
+      );
+      ok(
+        m.table !== null && m.text !== null && m.table <= m.text + 0.5,
+        layout + ': the table is wider than the text block - ' + JSON.stringify(m)
+      );
+      ok(
+        m.right !== null && m.cardRight !== null && m.right <= m.cardRight + 0.5,
+        layout + ': the table runs past the card - ' + JSON.stringify(m)
+      );
+    }
+  }
 
   ok(!pageErrs.length, 'page error — ' + pageErrs.slice(0, 2).join(' | '));
   ok(!pageErrsEn.length, 'page error (en) - ' + pageErrsEn.slice(0, 2).join(' | '));

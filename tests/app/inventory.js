@@ -242,6 +242,7 @@ async function gmOnlyLive(d) {
 const ITEM_H = '#/h/00000000-0000-4000-8000-000000000662';
 const ITEM_LONG = '#/h/00000000-0000-4000-8000-000000000615';
 const ITEM_NONE = '#/h/00000000-0000-4000-8000-000000009999';
+const ITEM_MARKUP = '#/h/00000000-0000-4000-8000-000000000515';
 
 /** Two purchase requests on «Лавка кузнеца» from other readers, the players' link
  *  first: the fake seed holds none, so a state makes its own. */
@@ -415,6 +416,27 @@ const noted = {
         ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' }
       },
       note: 'Лавка закрыта до утра'
+    },
+    LISTS[1]
+  ])
+};
+
+/* `noted` with formatted notes: italics and a list in the list note, bold and a
+   numbered list in row 2's (docs/specs/FEATURES.md, "Lists"). */
+const formatted = {
+  'dhloot.lists.v2': JSON.stringify([
+    {
+      ...LISTS[0],
+      ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'],
+      meta: {
+        ci2: {
+          qty: 2,
+          gold: 750,
+          note: '**Светится** в темноте\n1. днём тускло\n2. ночью ярко',
+          hnote: 'Проклят'
+        }
+      },
+      note: 'Лавка *закрыта* до утра\n- вход со двора'
     },
     LISTS[1]
   ])
@@ -1679,6 +1701,35 @@ const STATES = [
       await d.click(NAME.ru.rollBy);
       await d.click(NAME.ru.stepUp);
       await d.click(NAME.ru.stepUp);
+    }
+  },
+  {
+    id: '#/lists/a ~ rolled, formatted',
+    route: '#/lists/a',
+    storage: formatted,
+    why: "result 2: the rolled entry's players' note draws bold and a numbered list, no markers",
+    enter: async (d) => {
+      await d.click(NAME.ru.rollBy);
+      await d.click(NAME.ru.stepUp);
+      await d.click(NAME.ru.stepUp);
+    }
+  },
+  {
+    id: '#/lists/a ~ note preview',
+    route: '#/lists/a',
+    storage: formatted,
+    why: "the list's players' note with «Просмотр» pressed: the pane draws the italics and the list in place of the box; the format buttons disabled",
+    enter: async (d) => {
+      await d.click('Просмотр');
+    }
+  },
+  {
+    id: '#/lists/a ~ note help',
+    route: '#/lists/a',
+    storage: noted,
+    why: "the list's players' note with its «?» pressed: the three lines of the formatting hint under the label row",
+    enter: async (d) => {
+      await d.click('Подсказка: Для игроков');
     }
   },
   {
@@ -3178,6 +3229,111 @@ const STATES = [
     as: 'gm2',
     why: "gm1's axe in a set made by another account, read by gm2 on the standard colour sheet, its source line the path",
     enter: sheet
+  },
+  /* gm4's «Свиток Узоролиста»: every construct of the formatted text
+     (docs/specs/FEATURES.md, "Records", "Formatted text"). */
+  {
+    id: ITEM_MARKUP + ' ~ markup as gm4',
+    route: ITEM_MARKUP,
+    as: 'gm4',
+    why: 'the author: the card draws «Раз за отдых:» bold, «узор» italic, a bulleted list of two, a numbered list of two and a table «Бросок» / «Ответ» of two rows with «Да» bold'
+  },
+  {
+    id: '#/search ~ markup row as gm4',
+    route: '#/search',
+    as: 'gm4',
+    why: '«узоролист» typed: the one own row, its description one clamped run with «Раз за отдых:» bold, «• » list lines, «1. » lines and the table rows «Бросок | Ответ»',
+    enter: async (d) => {
+      await d.type('Поиск по названию или описанию…', 'узоролист');
+    }
+  },
+  {
+    id: '#/p/set-markup01 as gm4',
+    route: '#/p/set-markup01',
+    as: 'gm4',
+    why: 'the formatted item on print: bold, italic, both lists as lists and the table inside the text block, on the standard colour sheet',
+    enter: sheet
+  },
+  /* The formatted text boxes and the two languages of a homebrew form
+     (docs/specs/FEATURES.md, "Consistency rules", rule 18; "Homebrew", "Language"). The
+     form's own «EN» is the second control of that name: the header's switch comes first. */
+  {
+    id: '#/homebrew/new ~ description help as gm1',
+    route: '#/homebrew/new',
+    as: 'gm1',
+    why: 'the «?» of «Описание» pressed: the three lines of the markup hint under the label, «Разметка входит в 3000 символов.» last, then the toolbar «Оформление: Описание» and the box',
+    enter: async (d) => {
+      await d.click('Подсказка: Описание');
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ formatted draft as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: 'the description replaced by a text with bold, italic, a bulleted list and a 2-column table of two rows: the live card draws them on that input, the form dirty and unsaved',
+    enter: async (d) => {
+      await d.type(
+        'Описание',
+        '**Тлеет** под дождём, *шипит* на снегу.\n- Поджигает сухую траву.\n- Греет руки.\n| Бросок | Эффект |\n|---|---|\n| 1-3 | Искры |\n| 4-6 | Пламя |'
+      );
+    }
+  },
+  {
+    id: '#/homebrew/' + HB_AXE + ' ~ english as gm1',
+    route: '#/homebrew/' + HB_AXE,
+    as: 'gm1',
+    why: '«EN» of «Язык текста» pressed in the Russian interface: «Ember Axe» and the English description in the boxes, each with lang="en", the card in English with its English badges, the labels in Russian',
+    enter: async (d) => {
+      await d.click('EN', 1);
+    }
+  },
+  {
+    id: '#/homebrew/rules ~ new card preview as gm1',
+    route: '#/homebrew/rules',
+    as: 'gm1',
+    why: '«Новая карта правил», a name and a formatted text typed, «Просмотр» pressed: the pane «Просмотр: Текст карты» draws bold, italic and a list in place of the box, the five format buttons disabled',
+    enter: async (d) => {
+      await d.press('Новая карта правил');
+      await d.type('Название карты*', 'Почта из пергамента');
+      await d.type(
+        'Текст карты*',
+        '***Доставка:*** письмо прибудет после **продолжительного отдыха**.\n- Птица не летит сквозь бурю.\n- Адресат может *ответить* на обороте.'
+      );
+      await d.press('Просмотр');
+    }
+  },
+  {
+    id: '#/homebrew/rules ~ duplicate in english as gm1',
+    route: '#/homebrew/rules',
+    as: 'gm1',
+    why: 'a new card named «Alder Brand» in English and given a Russian text, then «Создать карту»: the form switched to «EN», «Карта правил «Alder Brand» уже есть.» under the name, nothing made',
+    enter: async (d) => {
+      await d.press('Новая карта правил');
+      await d.click('EN - пусто');
+      await d.type('Название карты*', 'Alder Brand');
+      await d.click('RU - пусто');
+      await d.type('Текст карты*', 'Цель горит.');
+      await d.press('Создать карту');
+    }
+  },
+  {
+    id: SHOP + ' ~ own item preview as gm1',
+    route: SHOP,
+    as: 'gm1',
+    why: '«Свой предмет» with a formatted description and «Просмотр» pressed: the pane under the toolbar of four format buttons, no «Язык текста»',
+    enter: async (d) => {
+      await d.click('Свой предмет');
+      await d.type('Название*', 'Фляга контрабандиста');
+      await d.type('Описание', '**Двойное дно:** во второй половине *можно* спрятать письмо.');
+      /* The six note boxes above the panel (the list's pair, rows 2 and 5) each draw a «Просмотр» first. */
+      await d.press('Просмотр', 6);
+    }
+  },
+  {
+    id: '#/h/00000000-0000-4000-8000-000000000513 as gm1',
+    route: '#/h/00000000-0000-4000-8000-000000000513',
+    as: 'gm1',
+    why: 'the English-only cap on its page: «Текст только на английском» over its text, the text lang="en", in the Russian half; the English half draws no line'
   }
 ];
 

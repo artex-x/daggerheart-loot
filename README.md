@@ -452,8 +452,8 @@ they sit in `window.LOOT.eq` and carry an `eq` block:
 ```js
 {
   id:'q26', src:'hnf', kind:'equip',
-  en:'Katana',  ende:'Quick: When you make an attack...',
-  ru:'Катана',  rud:'Быстрое: Когда вы совершаете атаку...',
+  en:'Katana',  ende:'*Quick:* When you make an attack...',
+  ru:'Катана',  rud:'*Быстрое:* Когда вы совершаете атаку...',
   img:'',
   eq:{ t:'weapon', tier:1, cls:'phy', tr:'agility', rg:'melee',
        dmg:'d10+3', dt:'phy', bu:2, as:null, th:null, line:'q26' }
@@ -475,7 +475,8 @@ they sit in `window.LOOT.eq` and carry an `eq` block:
 
 Records follow the order of the books, and ids are handed out in that order, so
 the table on screen matches the spread in the book. `ende` / `rud` hold only the
-property, as `Name: text`; the stat line is assembled at render time, so it looks
+property, as `***Name:*** text` (formatted text in the catalog style:
+`docs/specs/FEATURES.md`, "Records", "Catalog style"); the stat line is assembled at render time, so it looks
 the same in a table row, on a card, in copied text, in a share and in the Open
 Graph markup.
 

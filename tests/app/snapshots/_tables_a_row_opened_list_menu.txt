@@ -9,10 +9,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Страница"
     StaticText "28"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Потратьте Надежду, чтобы активировать это кольцо. Ваши шаги буду..." [namelen=98 namehash=1a72c1f5]
+    StaticText ", чтобы активировать это кольцо. Ваши шаги будут бесшумными до с..." [namelen=81 namehash=29328dad]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -199,11 +199,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     button "Page"
     StaticText "28"
     StaticText "ITEM"
-    StaticText "CORE"
-    StaticText "Ring of Silence"
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "Spend a Hope to activate this ring. Your footsteps are silent un..." [namelen=83 namehash=9975bafb]
+    StaticText "Spend a Hope"
+    StaticText " to activate this ring. Your footsteps are silent until your nex..." [namelen=71 namehash=01eb3998]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]

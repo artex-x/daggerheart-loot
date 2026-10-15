@@ -182,7 +182,7 @@ Do:
    `node tools/artwork/run.mjs ingest` per `docs/artwork.md`; never
    hand-convert. Records must be in `data.js` before or in the same change
    as running `ingest`, or its `og/` orphan gate fails
-6. Run `node tools/build.js` and fix derived drift. Then search `i/` for `undefined`: a source missing from a generator's label map prints it into the stub
+6. Run `node tools/desc-style.mjs --write` (the catalog style; a new source with labelled text joins `isLabelled`; settle a printed shape difference or a failed dataint "catalog style" check by an entry in `OVERRIDES` with its reason, or in `SHAPE_EXCEPTIONS` when the two languages really differ; never hand-edit the style in `data.js`), then `node tools/build.js` and fix derived drift. Then search `i/` for `undefined`: a source missing from a generator's label map prints it into the stub
 7. Wire roll mode / table / filters / i18n only if required. A new source key, table or roll section is registered in all of these (grep an existing key such as `voa` or `dv` to confirm the list is still complete):
     - app: `app/src/lib/types.ts` (`TABLE_IDS`, `SECTIONS`), `tables.ts`, `label.ts` (`srcName`, `srcLabel`, `tableOf`), `dict.ts` (tab, page, `src*`, `footBefore`, section labels), `help.ts` (the help box and its product link), `facets.ts`, `filters.ts` (`PLAIN_GROUPS`), `sections.ts`, `desc.ts`; `App.svelte` (`ROLL_TABLE`), `TabBar.svelte`, `TablesPage.svelte`, `FilterBar.svelte`
     - generators: `tools/derived.js` (`SRC`), `tools/build-share-pages.js` (`SRC_LABEL`)

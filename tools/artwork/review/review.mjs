@@ -166,24 +166,37 @@ function renderCard(record, cardLang) {
     frag.append(box);
   }
 
-  const body = el('div', { class: 'card-desc' });
-  const withLabel = (parent, line) => {
-    if (line.label) parent.append(el('i', { text: line.label + ':' }));
-    parent.append(document.createTextNode(line.body));
-  };
-  for (const part of desc.descParts(record, cardLang)) {
-    if (part.kind === 'list') {
-      const ul = el('ul');
-      for (const line of part.items) {
-        const li = el('li');
-        withLabel(li, line);
-        ul.append(li);
+  const body = el('div', { class: 'card-desc mdtext' });
+  /* Markup.svelte and MarkupInline.svelte, element for element. */
+  const inline = (parent, c) => {
+    for (const n of c) {
+      if (n.t === 'text') parent.append(document.createTextNode(n.v));
+      else {
+        const span = el(n.t);
+        inline(span, n.c);
+        parent.append(span);
       }
-      body.append(ul);
+    }
+    return parent;
+  };
+  const cells = (tag, row) => {
+    const tr = el('tr');
+    for (const c of row) tr.append(inline(el(tag, tag === 'th' ? { scope: 'col' } : {}), c));
+    return tr;
+  };
+  for (const b of desc.descBlocks(record, cardLang)) {
+    if (b.t === 'p') body.append(inline(el('p'), b.c));
+    else if (b.t === 'table') {
+      const head = el('thead');
+      head.append(cells('th', b.head));
+      const rows = el('tbody');
+      for (const row of b.rows) rows.append(cells('td', row));
+      body.append(el('table', {}, head, rows));
     } else {
-      const p = el('p');
-      withLabel(p, part);
-      body.append(p);
+      const list = el(b.t);
+      if (b.t === 'ol') list.setAttribute('start', String(b.start));
+      for (const item of b.items) list.append(inline(el('li'), item));
+      body.append(list);
     }
   }
   frag.append(body);

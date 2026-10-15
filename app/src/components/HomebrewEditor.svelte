@@ -3,8 +3,9 @@
      m18-m20 and m13's last line in the homebrew mocks), the form beside a live preview.
 
      The form checks on «Сохранить» only, with the database's own rules; a failed save
-     keeps the form, the draft and the guard. The name and the description edit the
-     item's own language; the other language is written back untouched. A dirty form
+     keeps the form, the draft and the guard. «Язык текста» shows the name and the
+     description in either language, and the card beside them follows it; a save writes
+     both, a language the author did not change as the row holds it. A dirty form
      asks before any navigation and before the tab closes. The editor keeps its own key:
      a save that creates replaces the address and keeps this form mounted. The fold
      «Связи» holds the relations; the preview reads its own index, with the draft in place
@@ -19,6 +20,7 @@
   import HelpButton from './HelpButton.svelte';
   import HomebrewRelations from './HomebrewRelations.svelte';
   import LoadState from './LoadState.svelte';
+  import MarkupField from './MarkupField.svelte';
   import NameField from './NameField.svelte';
   import NoticeBox from './NoticeBox.svelte';
   import PageTitle from './PageTitle.svelte';
@@ -26,11 +28,11 @@
   import RecordCard from './RecordCard.svelte';
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import TextArea from './TextArea.svelte';
   import TextInput from './TextInput.svelte';
   import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
+  import { dict } from '../lib/dict.js';
   import { HOMEBREW_HASH, homebrewItemHash } from '../lib/hash.js';
   import {
     BOOK_NAME_MAX,
@@ -56,7 +58,9 @@
     draftOf,
     fieldOf,
     formProblems,
+    langOptions,
     previewOf,
+    problemLang,
     problemText,
     type FieldId,
     type ItemDraft
@@ -71,6 +75,7 @@
     nameOf
   } from '../lib/i18n.js';
   import { whereFrom } from '../lib/label.js';
+  import type { MarkupTool } from '../lib/markupEdit.js';
   import { plural } from '../lib/plural.js';
   import type { Lang } from '../lib/types.js';
   import type { HomebrewSaved, ListWrite } from '../ports/index.js';
@@ -93,13 +98,14 @@
   let rowKey = $state<string | null>(untrack(() => key));
   /* The id pair a new item is created with, kept until an `ok`. */
   let ids = $state<NewIds>(untrack(() => store.newIds()));
-  let draft = $state<ItemDraft>(draftOf(null, 'ru'));
+  let draft = $state<ItemDraft>(draftOf(null));
   /* The draft as loaded, the stored part it came from, its revision, its row. */
   let loaded = $state('');
   let base = $state.raw<HomebrewContent | null>(null);
   let revision = $state<number | null>(null);
   let loadedId = $state<string | null>(null);
-  /* The language the name and description are written in: the item's own. */
+  /* The language the name and description boxes show: the item's own on load, then the
+     switch's. */
   let editIn = $state<Lang>('ru');
   /* The tiers the row was loaded with or last saved with: a stored «Артефакт» or
      «Проклятый предмет» stays a choice until a saved change drops it. */
@@ -145,7 +151,7 @@
     loadedId = r?.id ?? null;
     loadedArt = r?.art ?? null;
     art = { kind: 'keep' };
-    draft = draftOf(r, editIn);
+    draft = draftOf(r);
     heldTier = draft.tier;
     heldEqTier = draft.eqTier;
     const c = r?.content;
@@ -200,7 +206,7 @@
   const named = (v: { en?: string; ru?: string }): string =>
     (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
   const selfKey = $derived(rowKey ?? ids.key);
-  const preview = $derived(previewOf(selfKey, draft, editIn, base, bookRef, store.cardRefs));
+  const preview = $derived(previewOf(selfKey, draft, bookRef, store.cardRefs));
   /* The other rungs of the line «В линии» joins: `formProblems` refuses another type. */
   const rungs = $derived(
     draft.line && app.index
@@ -226,11 +232,13 @@
   );
   const title = $derived(nameOf(preview, lang) || t.hbNewItem);
   const shownImg = $derived(shownArt(art, loadedArt));
-  /* The card's name is a heading: an item with no name yet draws «Новый предмет». */
+  /* The card draws the shown language, as its reader sees it. Its name is a heading: an item
+     with no name yet draws «Новый предмет». */
   const card = $derived.by(() => {
-    const c = nameOf(preview, lang)
+    const unnamed = dict(editIn).hbNewItem;
+    const c = nameOf(preview, editIn)
       ? { ...preview }
-      : { ...preview, en: t.hbNewItem, ru: t.hbNewItem };
+      : { ...preview, en: unnamed, ru: unnamed };
     if (shownImg) c.img = shownImg;
     else delete c.img;
     return c;
@@ -252,20 +260,24 @@
   );
   const inLists = $derived(rowKey === null ? 0 : app.listsHolding([rowKey]));
 
-  /* One problem per field, the first; the order is the validators'. */
+  /* One problem per field and language, the first; the order is the validators'. */
   const shown = $derived.by(() => {
-    const seen: FieldId[] = [];
-    const out: { field: FieldId; p: Problem }[] = [];
+    const seen: string[] = [];
+    const out: { field: FieldId; lang: Lang | null; p: Problem }[] = [];
     for (const p of problems) {
       const field = fieldOf(p);
-      if (seen.includes(field)) continue;
-      seen.push(field);
-      out.push({ field, p });
+      const of = problemLang(p);
+      const id = field + ':' + (of ?? '');
+      if (seen.includes(id)) continue;
+      seen.push(id);
+      out.push({ field, lang: of, p });
     }
     return out;
   });
+  /* A field's line draws the problem of the shown language, or of no language. */
+  const inView = (of: Lang | null): boolean => of === null || of === editIn;
   const problemOf = (field: FieldId): Problem | undefined =>
-    shown.find((s) => s.field === field)?.p;
+    shown.find((s) => s.field === field && inView(s.lang))?.p;
   const errId = (field: FieldId): string | undefined =>
     problemOf(field) ? field + '-err' : undefined;
   const errText = (field: FieldId): string | undefined => {
@@ -274,7 +286,9 @@
   };
 
   function clear(field: FieldId): void {
-    if (problemOf(field)) problems = problems.filter((p) => fieldOf(p) !== field);
+    if (problemOf(field)) {
+      problems = problems.filter((p) => fieldOf(p) !== field || !inView(problemLang(p)));
+    }
   }
 
   function set<K extends keyof ItemDraft>(k: K, v: ItemDraft[K], field: FieldId): void {
@@ -320,7 +334,9 @@
 
   const lowerFirst = (s: string): string => s.charAt(0).toLocaleLowerCase() + s.slice(1);
 
-  function focusField(field: FieldId): void {
+  /* A problem of the hidden language switches to it first. */
+  function focusField(field: FieldId, of: Lang | null = null): void {
+    if (of !== null) editIn = of;
     const id =
       field === 'hb-th'
         ? 'hb-th0'
@@ -505,14 +521,17 @@
   }
 
   /* Checks first: nothing is sent while a problem remains. `key` is the key the write
-     uses: «Новая линия» stores it as the line. */
+     uses: «Новая линия» stores it as the line. `from` is the row a language the author did
+     not change is copied from. */
   async function run(
     key: string,
-    send: (content: HomebrewContent, art: string | null | undefined) => Promise<void>
+    send: (content: HomebrewContent, art: string | null | undefined) => Promise<void>,
+    from: HomebrewContent | null = base
   ): Promise<void> {
     if (busy) return;
     refused = null;
-    const found = formProblems(draft, editIn, base, store.books, {
+    const origin = from ? { base: from, draft: JSON.parse(loaded) as ItemDraft } : null;
+    const found = formProblems(draft, origin, store.books, {
       key,
       rungs,
       open: cardForm
@@ -528,12 +547,25 @@
     problems = [];
     busy = true;
     try {
-      const content = contentOf(draft, editIn, base, key) as HomebrewContent;
+      const content = contentOf(draft, origin, key) as HomebrewContent;
       const picture = await artToSend();
       if (picture) await send(content, picture.art);
     } finally {
       busy = false;
     }
+  }
+
+  /* «Сохранить мою версию»: the row is read again first, so a language the author did not
+     change keeps what the other device wrote there. */
+  async function saveMine(): Promise<void> {
+    if (rowKey === null || busy) return;
+    refused = null;
+    if (!(await store.read())) {
+      refused = t.hbWriteFailed;
+      return;
+    }
+    const now = store.item(rowKey)?.content ?? base;
+    await run(rowKey, (c, a) => write(c, a, true), now);
   }
 
   function save(): Promise<void> {
@@ -712,7 +744,9 @@
   const RANGES = $derived(pair(EQ_RANGE) as { value: ItemDraft['rg']; label: string }[]);
   const DAMAGE = $derived(pair(EQ_DT) as { value: ItemDraft['dt']; label: string }[]);
   const BURDEN = $derived(pair(EQ_BURDEN) as { value: ItemDraft['bu']; label: string }[]);
-  const descLength = $derived(Array.from(draft.desc).length);
+  const descKey = $derived(editIn === 'ru' ? 'rud' : 'ende');
+  const descLength = $derived(Array.from(draft[descKey]).length);
+  const DESC_TOOLS: readonly MarkupTool[] = ['bold', 'italic', 'ul', 'ol', 'table'];
   const weapon = $derived(draft.kind === 'equip' && draft.t !== 'armor');
 </script>
 
@@ -789,7 +823,10 @@
 <!-- A saved item goes into a list as a reference: unsaved edits reach it with «Сохранить». -->
 {#snippet addPick()}
   {#if rowKey !== null}
-    <AddToList {app} key={rowKey} ids={[rowKey]} primary />
+    <!-- The menu speaks the interface language, whatever the card's. -->
+    <div style="display: contents" lang={app.lang}>
+      <AddToList {app} key={rowKey} ids={[rowKey]} primary />
+    </div>
   {/if}
 {/snippet}
 
@@ -826,14 +863,17 @@
           <div class="errs" role="alert" tabindex="-1" bind:this={summary}>
             <b>{plural(shown.length, t.hbFixN, lang)}</b>
             <ul>
-              {#each shown as s (s.field)}
+              {#each shown as s (s.field + ':' + (s.lang ?? ''))}
                 <li>
                   <button
                     type="button"
                     class="errlink"
                     onclick={() => {
-                      focusField(s.field);
-                    }}>{LABELS[s.field]} - {lowerFirst(problemText(s.p, t))}</button
+                      focusField(s.field, s.lang);
+                    }}
+                    >{LABELS[s.field]}{s.lang && s.lang !== editIn
+                      ? ` (${s.lang.toUpperCase()})`
+                      : ''} - {lowerFirst(problemText(s.p, t))}</button
                   >
                 </li>
               {/each}
@@ -848,7 +888,7 @@
                 size="sm"
                 variant="primary"
                 onclick={() => {
-                  if (rowKey !== null) void run(rowKey, (c, a) => write(c, a, true));
+                  void saveMine();
                 }}>{t.hbSaveMine}</Button
               >
               <Button size="sm" onclick={() => void showNew()}>{t.hbShowNew}</Button>
@@ -969,6 +1009,16 @@
           </FormField>
         {/if}
 
+        <FormField label={t.hbTextLang}>
+          <Seg
+            label={t.hbTextLang}
+            options={langOptions('item', draft, t)}
+            value={editIn}
+            onchange={(v: Lang) => {
+              editIn = v;
+            }}
+          />
+        </FormField>
         <FormField
           label={t.hbName}
           for="hb-name"
@@ -978,7 +1028,8 @@
         >
           <TextInput
             id="hb-name"
-            bind:value={draft.name}
+            bind:value={draft[editIn]}
+            lang={editIn}
             maxlength={NAME_MAX}
             required
             invalid={!!problemOf('hb-name')}
@@ -994,17 +1045,22 @@
           for="hb-desc"
           error={errText('hb-desc')}
           errorId={errId('hb-desc')}
+          help={{ id: 'hb-desc-help', text: t.mdHelp.replace('%n', String(DESC_MAX)), lang }}
         >
-          <TextArea
+          <MarkupField
             id="hb-desc"
             rows={5}
-            bind:value={draft.desc}
+            bind:value={draft[descKey]}
             maxlength={DESC_MAX}
             invalid={!!problemOf('hb-desc')}
             describedby={errId('hb-desc')}
             oninput={() => {
               clear('hb-desc');
             }}
+            label={t.hbDesc}
+            tools={DESC_TOOLS}
+            {t}
+            textLang={editIn}
           />
           {#if descLength > counterFrom(DESC_MAX)}
             <span class="counter">{descLength} / {DESC_MAX}</span>
@@ -1278,12 +1334,12 @@
         {/if}
       </form>
     </Panel>
-    <div class="preview">
+    <div class="preview" lang={editIn === app.lang ? undefined : editIn}>
       {#if app.index}
         <RecordCard
           it={card}
           index={previewIndex ?? app.index}
-          lang={app.lang}
+          lang={editIn}
           artBroken={previewBroken}
           onartfail={() => {
             previewBroken = true;

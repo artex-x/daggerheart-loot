@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* The multi-line text box, TextInput's twin: the homebrew editor's description and the
-     quick item's. */
+  /* The multi-line text box, TextInput's twin: the box of MarkupField. */
+  import type { Lang } from '../lib/types.js';
 
   interface Props {
     value?: string;
@@ -14,7 +14,12 @@
     describedby?: string | undefined;
     /** The most the database keeps (docs/specs/FEATURES.md, "Consistency rules"). */
     maxlength?: number | undefined;
-    oninput?: () => void;
+    oninput?: ((e: Event) => void) | undefined;
+    readonly?: boolean;
+    placeholder?: string | undefined;
+    /** The language of the text, when it is not the page's. */
+    lang?: Lang | undefined;
+    onkeydown?: (e: KeyboardEvent) => void;
   }
 
   let {
@@ -25,7 +30,11 @@
     invalid = false,
     describedby,
     maxlength,
-    oninput
+    oninput,
+    readonly = false,
+    placeholder,
+    lang,
+    onkeydown
   }: Props = $props();
 </script>
 
@@ -34,10 +43,14 @@
   bind:this={el}
   {id}
   {rows}
+  {lang}
   aria-invalid={invalid || undefined}
   aria-describedby={describedby}
   {maxlength}
-  {oninput}></textarea>
+  {readonly}
+  {placeholder}
+  {oninput}
+  {onkeydown}></textarea>
 
 <style>
   textarea {

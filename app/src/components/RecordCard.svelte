@@ -7,8 +7,9 @@
      47) compared the two apps pixel for pixel, so a value that was
      nearly right was a value that failed.
 
-     Nothing here injects HTML. The description arrives parsed - see
-     lib/desc.ts - so a label is an <i> element and a list is a real <ul>.
+     Nothing here injects HTML. The description, the set bonus and the rule
+     card text arrive parsed (lib/markup.ts) and draw through Markup.svelte,
+     so a label is an <i> element and a list is a real <ul>.
 
      The image review page draws this card's head too: docs/artwork.md, "The
      card follows the site's card". */
@@ -16,7 +17,8 @@
   import Badge from './Badge.svelte';
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
-  import { artSrc, descParts } from '../lib/desc.js';
+  import Markup from './Markup.svelte';
+  import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { homebrewTabHash, recordHref } from '../lib/hash.js';
   import {
@@ -37,8 +39,9 @@
     upgradeLine,
     upgradesTo
   } from '../lib/data.js';
-  import { isHomebrewKey, isHomebrewRecord } from '../lib/homebrew.js';
+  import { isHomebrewKey, isHomebrewRecord, textLangOf } from '../lib/homebrew.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
+  import { parseMarkup } from '../lib/markup.js';
   import type { AltCol, Index } from '../lib/data.js';
   import type { Lang, Record_ } from '../lib/types.js';
   import type { Snippet } from 'svelte';
@@ -113,7 +116,12 @@
       { noType: true }
     )
   );
-  const parts = $derived(descParts(it, lang));
+  const blocks = $derived(descBlocks(it, lang));
+  /* A homebrew text written in one language only, shown on a screen of the other. */
+  const textLang = $derived.by(() => {
+    const l = textLangOf(it);
+    return l && l !== lang ? l : undefined;
+  });
   const art = $derived(artSrc(it.img, artBroken));
   const badges = $derived(cardBadges(it, lang, t));
 
@@ -158,7 +166,8 @@
   const setBonus = $derived.by(() => {
     const b = setBonusOf(index, it);
     if (!b) return undefined;
-    return lang === 'ru' ? { name: b.ru, text: b.rud } : { name: b.en, text: b.ende };
+    const text = lang === 'ru' ? b.rud : b.ende;
+    return { name: lang === 'ru' ? b.ru : b.en, blocks: parseMarkup(text) };
   });
   /* The account's own set or rule card on a catalog record (`index.ownSetOf`). */
   const ownSet = $derived(
@@ -249,22 +258,11 @@
       </div>
     {/if}
 
-    <div class="card-desc">
-      {#each parts as part, i (i)}
-        {#if part.kind === 'list'}
-          <ul>
-            {#each part.items as line, j (j)}
-              <li>
-                {#if line.label}<i>{line.label}:</i>{/if}{line.body}
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <p>
-            {#if part.label}<i>{part.label}:</i>{/if}{part.body}
-          </p>
-        {/if}
-      {/each}
+    {#if textLang}
+      <p class="text-lang">{textLang === 'en' ? t.textEnOnly : t.textRuOnly}</p>
+    {/if}
+    <div class="card-desc mdtext" lang={textLang}>
+      <Markup {blocks} />
     </div>
 
     {#if ladder.length}
@@ -357,19 +355,18 @@
           </p>
         {/if}
         {#if setBonus}
-          <!-- One span, so the row's flex gap does not split the label from
-               the text. A frozen copy alone in its set draws the bonus with no
-               set line. -->
-          <p>
-            <span
-              ><i
-                >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
-                    >{setBonus.name}</a
-                  >:{:else}{setBonus.name}:{/if}</i
-              >
-              {setBonus.text}</span
-            >
-          </p>
+          <!-- The name leads the first paragraph of the bonus text. A frozen copy
+               alone in its set draws the bonus with no set line. -->
+          {@const bonus = setBonus}
+          <div class="set-bonus mdtext">
+            <Markup blocks={bonus.blocks}>
+              {#snippet lead()}<i
+                  >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
+                      >{bonus.name}</a
+                    >:{:else}{bonus.name}:{/if}</i
+                >{/snippet}
+            </Markup>
+          </div>
         {/if}
       </div>
     {/if}
@@ -386,10 +383,9 @@
               <span class="ref-n">{lang === 'ru' ? r.ru : r.en}</span>
               <i class="ref-s">{lang === 'ru' ? r.rusub : r.ensub}</i>
             </summary>
-            <p>
-              {#each (lang === 'ru' ? r.rud : r.ende).split('\n') as line, j (j)}{#if j > 0}<br
-                  />{/if}{line}{/each}
-            </p>
+            <div class="ref-text mdtext">
+              <Markup blocks={parseMarkup(lang === 'ru' ? r.rud : r.ende)} />
+            </div>
             {#if !isHomebrewKey(key)}
               <a
                 href={lang === 'ru' ? r.url : r.url.replace('//ru.', '//en.')}
@@ -645,25 +641,16 @@
     line-height: 1.55;
   }
 
+  /* The body's 8px gap less 2px: the line belongs to the text under it. */
+  .text-lang {
+    margin: 0 0 -2px;
+    font-size: 12.5px;
+    color: var(--muted2);
+  }
+
   .card.full .card-desc {
     font-size: 14px;
     line-height: 1.62;
-  }
-
-  .card-desc :global(p) {
-    margin: 0;
-  }
-
-  /* off `.dlist` in style.css. The values are the live ones, not a tidier
-     equivalent: 1.2em of padding read the same and cost four pixels a row on
-     the Vault of Ages cards, which are the ones with long lists. */
-  .card-desc ul {
-    margin: 4px 0 0;
-    padding-left: 18px;
-  }
-
-  .card-desc li {
-    margin: 1px 0;
   }
 
   /* ---------- the upgrade chain ---------- */
@@ -686,6 +673,13 @@
   }
 
   .craft p > :global(*) {
+    min-width: 0;
+  }
+
+  /* The bonus is a block of its own, not a flex row: its first paragraph holds the name. */
+  .set-bonus {
+    font-size: 12.5px;
+    line-height: 1.45;
     min-width: 0;
   }
 
@@ -819,8 +813,7 @@
     border-bottom: 1px solid var(--line);
   }
 
-  .refs p {
-    margin: 0;
+  .ref-text {
     padding: 7px 9px 5px;
     color: var(--muted);
     font-size: 12.5px;

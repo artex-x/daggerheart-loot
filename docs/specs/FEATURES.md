@@ -421,7 +421,13 @@ across.
   `data-keep` opt-ins - rather than resetting to the data's own default the
   way every other re-render does.
 - Two notes per list and per entry - see `CONTRACTS.md` for how they encode and
-  which link carries which.
+  which link carries which. Each note is formatted text ("Records", "Formatted
+  text") in a box of rule 18 (bold, italic, both lists, «Просмотр», the «?»),
+  named by its label and described by its line, at most 4000 characters with
+  no counter. A stored list or entry note is read the same way, with no
+  migration.
+  The rolled entry, `#/s/`, `#/l/` and the clipboard draw it formatted, the
+  link card plain. A read-only list keeps «Просмотр» only.
 - The address bar always holds the player link and is refreshed on every edit
   - opening the page, and after every writer on it. A read-only browser list
   (after the cutoff, or while the move is due) keeps the address it opened at.
@@ -610,7 +616,8 @@ browser lists writable after the date.
   and more it adds the grey hint «название и описание, остальное потом в
   редакторе») opens «Свой предмет в этот список» under it: «Название» *
   (focused; at most 120 characters), «Описание» (at most 3000, with the
-  counter «N / 3000» past 2500), «Добавить в список», «Отмена» and the note
+  counter «N / 3000» past 2500; a box of rule 18 with bold, italic, both
+  lists and «Просмотр»), «Добавить в список», «Отмена» and the note
   «Предмет сохранится в «Мои предметы», в «Хоумбрю». Вид, источник и
   остальное можно задать потом в редакторе.». «Добавить в список» (or Enter
   in the name) makes a plain item in «Хоумбрю», awaited, then adds it to the
@@ -1183,6 +1190,52 @@ browser lists writable after the date.
   `#/i/<id>` and every other route that could have named itself). When `data.js` itself did not load, every page draws the "data did
   not load" line in place of its content (`NoData.svelte`) - the rewrite's
   own state; the live app threw on a missing `window.LOOT` and drew nothing.
+- **Formatted text**: every long text field (a catalog record's, set's and
+  rule card's text; a homebrew item's description, a set bonus and a rule
+  card's text; a list's and an entry's two notes) is one line-based Markdown subset, read by one parser
+  (`app/src/lib/markup.ts`). Each source line is one block, never joined: a
+  paragraph; a bulleted item (`- `); a numbered item (1 to 3 digits, `. `),
+  consecutive items one list that starts at the first number; a table, a `|`
+  line above a separator line (`|---|---|`), then its `|` rows, a short row
+  padded and a long one cut to the head. Inline: `**bold**`, `*italic*`,
+  `***both***`; an unmatched `*` stays text; `_` is never a marker; `\` before
+  an ASCII punctuation character writes it literally. No links, headings,
+  images, code, quotes, raw HTML, nested lists or underline. The card draws
+  real elements (a list, a numbered list, a table no wider than the card),
+  the row one clamped run (`• `, `N. `, cells joined by ` | `), print real
+  lists and a table inside the text block, the clipboard flat HTML; the stub,
+  `catalog.csv`, the link cards and search read the plain text. The catalog
+  text follows the catalog style below; no label is found by a colon any
+  more. The catalog's die and rank results (`w6`, `dv14`, `di8`) stay
+  bulleted lists, not tables (owner, 2026-10-14). Text written before 2026-10-15 is read the same way: a pair of `*`
+  draws italics or bold, a `\` before ASCII punctuation is hidden, a line
+  that starts "1. " is a numbered list, and a `|` line above a separator line
+  is a table (`CONTRACTS.md` section 4, "Formatted text"). Homebrew authors
+  type it in the box of rule 18 ("Consistency rules").
+- **Catalog style**: every catalog record, set bonus and rule card text
+  follows the SRD 2.0 card style; `tools/desc-style.mjs` writes it from the
+  plain text and `tests/dataint.js` holds it ("catalog style"); for homebrew
+  text it is advice in the «?» of rule 18, never enforced.
+
+  | # | What | EN | RU |
+  |---|---|---|---|
+  | S1 | A feature or property name at a line head, Recall Cost included; a rule card's adversary feature (`<Name> - Passive:`) and a beastform or transformation feature. Stat lines stay plain | `***Reliable:*** +1 ...`, `***Recall Cost:*** 2` | `***Надёжное:*** ...`, `***Стоимость Призыва:*** 2` |
+  | S2 | A cost the user pays by choice for an effect: an option ("can"), a price ("to", "for", "by"), an order with its effect - bold from the verb to the resource, the number inside | `you can **spend a Hope** to`, `**Mark a Stress** and clear a HP` | `вы можете **потратить Надежду**, чтобы`, `**Отметьте Стресс** и` |
+  | S3 | A consequence, a penalty, another payer's cost, or a reference to a cost | `the target must mark a Stress`, `When you would spend a Hope` | `цель должна отметить Стресс`, `Когда вы должны отметить Стресс` |
+  | S4 | A condition, core or defined by a feature, capitalised: the word only | `temporarily *Vulnerable*`, `*Restrain* the target` | `временно *Уязвимой*`, `*Обездвижить* цель` |
+  | S5 | Dice and named rolls | `roll a d6`, `make a Spellcast Roll (15)` | `бросьте d6`, `Бросок Заклинания (15)` |
+  | S6 | Ranges, damage types, numbers, difficulties | `within Very Close range`, `d8+2 phy` | `в пределах Близкой дистанции` |
+
+  The feature-defined conditions are an allowlist in the tool
+  (`FEATURE_CONDITIONS`, with each term's Russian forms); a lowercase form
+  stays plain. A choice no rule makes is an override with its reason, and a
+  record whose EN and RU really differ is a shape exception with its reason.
+  Sources: SRD 2.0 PDF (`DH_SRD_2_2026_08_25.pdf`) p. 36, 16 and 97 (S1),
+  218 and 97 (S2), 21 and 77 (S3), 52, 10, 29 and 83 (S4), 97 (S6); the SRD
+  bolds dice and named rolls (p. 23, 9), bolds an adversary's stat heads
+  (p. 97, "ATK:", "Experience:") and keeps loot costs plain (pp. 75-83); the
+  catalog does otherwise (`docs/decisions/`, "Catalog text follows the SRD
+  card style for names, costs and conditions").
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used. Copy link and share carry a catalog
@@ -1457,11 +1510,13 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   place of the card's row; one form is open at a time, and an open form
   stays while the query hides its card. A changed card form asks before a
   navigation and on a closed browser tab, as the editor's guard does. A card delete
-  toasts «Комплект «%s» удалён» / «Карта правил «%s» удалена». The set form
+  toasts «Комплект «%s» удалён» / «Карта правил «%s» удалена». Each card form, inline or on a tab,
+  opens with «Язык текста». The set form
   holds «Название комплекта» * and «Бонус комплекта» *; the rule card form
   «Название карты» *, «Подзаголовок», «Текст карты» * and «Ссылка» (empty,
   or `https://` in Latin characters with no spaces); on the tabs both hold
-  «Источник». The name stops at 80 characters, the subtitle at 60, the
+  «Источник». The bonus and the card text are boxes of rule 18 with «Просмотр»
+  and a «?» (the bonus: bold, italic and a list; the card text: all five). The name stops at 80 characters, the subtitle at 60, the
   text or bonus at 1500 (with the counter «N / 1500» past 1250) and the link
   at 300. An edit saved toasts «Сохранено: «%s»». A form sends on its button
   or Enter in a one-line field and
@@ -1473,10 +1528,13 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   латиницы без пробелов.»), the card limit, a card changed on another
   device («Карту изменили на другом устройстве. Данные обновлены -
   повторите.») and a lost network; a refusal draws under its field or the
-  buttons and keeps the typed text. A card another device deleted closes
-  its edit form and toasts «Эту карту удалили на другом устройстве.». An
-  edit writes the language on screen, keeps the other one as the account
-  holds it at the press and names how many items show the change. Deleting a
+  buttons and keeps the typed text; when no problem is in the shown
+  language, the press switches to the language of the first one and focuses
+  its field. A name is checked in each language it changed (every language
+  of a new card). A card another device deleted closes
+  its edit form and toasts «Эту карту удалили на другом устройстве.». A
+  save writes both languages, one it did not change as the account holds it
+  at the press, and the form names how many items show the change. Deleting a
   card asks, N counting own and book items, «Удалить карту правил «%s»? Она указана в N предметах - там она
   пропадёт. Отменить удаление нельзя.» or «Удалить комплект «%s»? Он указан
   в N предметах - там пропадут его название и бонус. Отменить удаление
@@ -1495,7 +1553,10 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   снаряжения», «Источник» (with «+ Новый источник...», which makes the
   source at once and selects it), for a named source «Раздел» (with «+
   Новый раздел...»; a source change resets it), «Название» * (at most 120
-  characters), «Описание» (at most 3000, a counter past 2500), «Картинка»
+  characters; «Язык текста» sits right above it), «Описание» (at most 3000,
+  a counter past 2500; a box of rule 18 with all five buttons and no
+  «Просмотр»: the card beside it is the preview, live on every input),
+  «Картинка»
   (below), for loot and
   consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
   default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
@@ -1514,9 +1575,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   «Порог Тяжёлого урона должен быть больше порога Ощутимого урона.». «Урон»
   is a die select «Кость урона» («Кость», d4-d20) and «Бонус к урону»
   (empty for none), each with its own label, in the main stats and in the
-  second set. Among the main fields only «Источник» carries a «?» (rule 15 of
-  "Consistency rules"): «Подсказка: <поле>» opens a hint under the label -
-  what a source is. «Второй набор характеристик» is
+  second set. Among the main fields «Источник» and «Описание» carry a «?»
+  (rule 15 of "Consistency rules"): «Подсказка: <поле>» opens a hint under
+  the label - what a source is, and the markup of rule 18. «Второй набор характеристик» is
   a button that shows and hides the set (the fields stay in the form while
   hidden; a save problem inside it opens it), with its own «?», whose hint reads «Для оружия, которое по
   своему свойству переходит на другие характеристики - например,
@@ -1633,8 +1694,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   остались в форме - нажмите «Сохранить» ещё раз.»; both keep the form. An
   item changed on another device draws «Этот предмет изменили на другом
   устройстве, пока форма была открыта. Ваши правки не сохранены.» with
-  «Сохранить мою версию» (writes over it) and «Показать новую версию»
-  (asks «Ваши правки пропадут. Показать новую версию?» while the form is
+  «Сохранить мою версию» (reads the account again, then writes over it; a
+  language the author did not change keeps the other device's write) and
+  «Показать новую версию» (asks «Ваши правки пропадут. Показать новую версию?» while the form is
   dirty, then reloads; a read that fails keeps the form and says «Не
   получилось сохранить: ...»). An item deleted on another device draws «Этот
   предмет удалили на другом устройстве.» with «Сохранить как новый» (a new
@@ -1643,10 +1705,20 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   clean form reloads when a read brings a newer row, and draws «Предмет не
   найден» when the row is gone. A press sent again after a lost answer
   never makes a second item or source.
-- **Language**: the name and the description edit the item's own language:
-  the language on screen for a new item or one named in both, else the one
-  language that names it. The other language is written back unchanged.
-  The labels follow the language on screen.
+- **Language**: one switch per form, «Язык текста» / "Text language" with
+  «RU» and «EN» (the codes of the app's language switch), picks which
+  language the name, the subtitle and the text boxes show; the labels stay
+  in the language on screen, and each box carries `lang`. A language with
+  no name, subtitle or text reads «EN - пусто» / "EN - empty" on its
+  button. The form opens on the item's own language: the language on
+  screen for a new item or one named in both, else the one language that
+  names it. The card beside the item form draws the shown language. A save
+  writes both languages in one write (one revision); a language the author
+  did not change is written as the row holds it, a changed one trimmed. The
+  summary names a problem of the hidden language with its code («Описание
+  (EN) - ...»), and a press on it switches the language and focuses the
+  field. «Свой предмет» on a list writes the language on screen only.
+  Source and section names keep the one-language rename of "The Sources tab".
 - **The guard**: while the form differs from what it loaded, a link, Back,
   Forward and every in-app navigation ask «Изменения не сохранены. Уйти со
   страницы?» (a no keeps the page and its address), and closing the tab
@@ -1855,6 +1927,12 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   попали на лист: N. Разделите набор на части.» as a toast, after a sign-in
   too: the cut is the maker's, so a reader of a handed-on link never sees it.
 - Colour and black-and-white are two different cards, not one with a switch.
+- The card text is formatted text ("Records", "Formatted text"): bold and
+  italic in black, lists as lists, and a table as a real table across the
+  text block with fixed columns, 0.2 mm black cell borders in both layouts and
+  words broken anywhere, so it is never wider than the card. The fit ladder
+  below measures a table with the rest of the text, and clips what still does
+  not fit. A set bonus's label leads the first paragraph of its text.
 - An artifact weapon (`eq.tier: 'A'`) prints as a loot artifact card does: the
   tag `Артефакт`, then its class tag, no tier band, and its damage strip.
 - A card printed from a list shows the list's count after its name as ` ×N`
@@ -2290,7 +2368,7 @@ Each rule keeps its number: a review cites it by number.
   the label; it explains what the site does with the field or a constraint
   of the site, never a basic game term: a player knows the Daggerheart rules
   (owner, 2026-10-02) («Линия улучшений», «Второй набор характеристик»,
-  «Источник»). The «?» is a button named «Подсказка: <label>» / "Help:
+  «Источник», and the markup of each formatted text box, rule 18). The «?» is a button named «Подсказка: <label>» / "Help:
   <label>" with `aria-expanded`; the hint is closed when the form opens. A
   self-explanatory field has no «?».
   (d) A line always visible under a field holds only what the person must
@@ -2305,9 +2383,7 @@ Each rule keeps its number: a review cites it by number.
   row's position box and the add-to-list menu's new-list box (an
   `aria-label` in a row or a menu with no room for a caption); the search
   boxes (a search is no form field); the list row's «Золото» «?» glyph
-  (hover only; `DEBT.md` D79); the list notes' two boxes, whose visible
-  label is not tied to the box, so the name is the placeholder (`DEBT.md`
-  D74); the second set's «Заполните все четыре поля или
+  (hover only; `DEBT.md` D79); the second set's «Заполните все четыре поля или
   оставьте набор пустым» stays behind its «?» (owner, 2026-10-02), and a
   save names the fix in each field's line; the bulk move's «Источник» has
   no «?» (its one select explains itself).
@@ -2324,3 +2400,15 @@ Each rule keeps its number: a review cites it by number.
   `LEGACY_WRITE_UNTIL`, and a payload can be kilobytes in a path).
   Departure: the share panel shows `#/s/<token>` and copies the preview link.
   This rule binds every page, not only the signed-in pages of the lead.
+- **18. Formatted text boxes**: every box of formatted text ("Records",
+  "Formatted text") is one control: the toolbar «Оформление: <поле>» /
+  "Formatting: <field>" (one tab stop, the arrow keys move), the box, and a
+  «?» on the label with the markup and the catalog style in three lines and
+  "Markup counts toward the N characters.". The buttons, by `aria-label`: «Жирный», «Курсив»
+  (Ctrl+B / Cmd+B and Ctrl+I / Cmd+I in the box), «Список», «Нумерованный
+  список», «Таблица» (wide fields only); each wraps or unwraps the
+  selection, or prefixes the selected lines, and an edit past the cap does
+  nothing. «Просмотр» / "Preview" (pressed) draws the text in place of the
+  box, the format buttons disabled, only where no rendered view sits beside
+  the field (owner, 2026-10-14): the card forms, «Свой предмет» and the list
+  notes; the item form's card is its preview.

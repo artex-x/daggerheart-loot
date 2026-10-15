@@ -1,15 +1,17 @@
 <script lang="ts">
   /* One set or rule card form (m21, m04 and m05's inline forms in the homebrew mocks): the
      editor's «+ Новый комплект...» and «Новая карта правил», and the create and edit of
-     the Sets and Rules tabs. It edits one language and keeps the other; it checks on its own
+     the Sets and Rules tabs. «Язык текста» shows the fields in either language; a save writes
+     both, a language the author did not change as the row holds it now. It checks on its own
      button, draws each field's problem under it and keeps the typed text. A new card keeps
      one id pair until an `ok`, so a press after a lost answer makes no second card
      (docs/specs/FEATURES.md, "Homebrew", "Cards"). A group, never a `<form>`: the editor's
      form holds it. */
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
-  import TextArea from './TextArea.svelte';
+  import MarkupField from './MarkupField.svelte';
+  import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import {
@@ -29,9 +31,13 @@
     cardFieldOf,
     cardFormProblems,
     cardProblemText,
+    langOptions,
+    problemLang,
     type CardDraft,
     type CardFieldId
   } from '../lib/homebrewForm.js';
+  import type { MarkupTool } from '../lib/markupEdit.js';
+  import type { Lang } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -72,14 +78,13 @@
 
   const t = $derived(app.t);
   const lang = $derived(app.lang);
-  /* Read once: the language and a new card's ids stay as they were when the form opened. */
-  const editIn = untrack(() => editLang(card?.content ?? null, app.lang));
+  /* The shown language opens on the card's own; a new card's ids stay as they were when the
+     form opened. */
+  let editIn = $state<Lang>(untrack(() => editLang(card?.content ?? null, app.lang)));
   const ids = untrack(() => store.newIds());
-  /* The other language comes from the row as it is now: a conflict reads it again, and a
-     retry must keep what another device wrote there. */
-  const base = $derived(card?.content ?? null);
-  let draft = $state<CardDraft>(untrack(() => cardDraftOf(card, editIn, bookId)));
+  let draft = $state<CardDraft>(untrack(() => cardDraftOf(card, bookId)));
   const opened = JSON.stringify(untrack(() => draft));
+  let previewing = $state(false);
 
   $effect(() => {
     if (!guard) return;
@@ -101,17 +106,29 @@
   });
 
   const ORDER: readonly CardFieldId[] = ['name', 'sub', 'text', 'url'];
+  /* A field's line draws the problem of the shown language, or of no language. */
+  const inView = (p: Problem): boolean => {
+    const of = problemLang(p);
+    return of === null || of === editIn;
+  };
   const problemOf = (field: CardFieldId): Problem | undefined =>
-    problems.find((p) => cardFieldOf(p) === field);
+    problems.find((p) => cardFieldOf(p) === field && inView(p));
   const errId = (field: CardFieldId): string | undefined =>
     problemOf(field) ? `${id}-${field}-err` : undefined;
   const errText = (field: CardFieldId): string | undefined => {
     const p = problemOf(field);
-    return p && cardProblemText(kind, p, t, draft.name);
+    return p && cardProblemText(kind, p, t, draft[problemLang(p) ?? editIn]);
   };
   const clear = (field: CardFieldId): void => {
-    if (problemOf(field)) problems = problems.filter((p) => cardFieldOf(p) !== field);
+    if (problemOf(field)) {
+      problems = problems.filter((p) => cardFieldOf(p) !== field || !inView(p));
+    }
   };
+  const subKey = $derived(editIn === 'ru' ? 'rusub' : 'ensub');
+  const textKey = $derived(editIn === 'ru' ? 'rud' : 'ende');
+  const TOOLS = $derived<readonly MarkupTool[]>(
+    kind === 'set' ? ['bold', 'italic', 'ul'] : ['bold', 'italic', 'ul', 'ol', 'table']
+  );
 
   const named = (v: { en?: string; ru?: string }): string =>
     (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
@@ -123,22 +140,32 @@
   );
   const submit = $derived(card ? t.save : kind === 'set' ? t.hbCreateSet : t.hbCreateCard);
   /* Code points, as the validator counts. */
-  const textLength = $derived(Array.from(draft.text).length);
+  const textLength = $derived(Array.from(draft[textKey]).length);
 
   async function send(): Promise<void> {
     if (busy) return;
     refused = null;
     const others = store.cards.filter((c) => c.kind === kind && c.id !== card?.id);
-    const found = cardFormProblems(kind, draft, editIn, base, others);
+    /* The untouched language comes from the row as it is now: a conflict reads it again,
+       and a retry must keep what another device wrote there. */
+    const origin = card ? { base: card.content, draft: JSON.parse(opened) as CardDraft } : null;
+    const found = cardFormProblems(kind, draft, origin, others);
     if (found.length) {
       problems = found;
-      const first = ORDER.find((f) => problemOf(f));
-      document.getElementById(`${id}-${first ?? 'name'}`)?.focus();
+      /* With no problem in view, the form switches to the language of the first one. */
+      const of = found.some(inView) ? null : problemLang(found[0] as Problem);
+      if (of) editIn = of;
+      const first = ORDER.find((f) => problemOf(f)) ?? 'name';
+      if (first === 'text') previewing = false;
+      await tick();
+      document.getElementById(`${id}-${first}`)?.focus();
       return;
     }
     problems = [];
-    const content = cardContentOf(kind, draft, editIn, base);
-    const name = draft.name.trim();
+    const content = cardContentOf(kind, draft, origin);
+    const ru = draft.ru.trim();
+    const en = draft.en.trim();
+    const name = lang === 'ru' ? ru || en : en || ru;
     busy = true;
     try {
       if (card) {
@@ -190,6 +217,16 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="cardform" role="group" aria-label={label} {onkeydown}>
+  <FormField label={t.hbTextLang}>
+    <Seg
+      label={t.hbTextLang}
+      options={langOptions(kind, draft, t)}
+      value={editIn}
+      onchange={(v: Lang) => {
+        editIn = v;
+      }}
+    />
+  </FormField>
   <FormField
     label={kind === 'set' ? t.hbSetName : t.hbCardName}
     for={id + '-name'}
@@ -199,7 +236,8 @@
   >
     <TextInput
       id={id + '-name'}
-      bind:value={draft.name}
+      bind:value={draft[editIn]}
+      lang={editIn}
       bind:el={nameEl}
       maxlength={CARD_NAME_MAX}
       required
@@ -220,7 +258,8 @@
     >
       <TextInput
         id={id + '-sub'}
-        bind:value={draft.sub}
+        bind:value={draft[subKey]}
+        lang={editIn}
         maxlength={CARD_SUB_MAX}
         invalid={!!problemOf('sub')}
         describedby={errId('sub') ?? id + '-sub-hint'}
@@ -238,17 +277,24 @@
     required
     error={errText('text')}
     errorId={errId('text')}
+    help={{ id: id + '-text-help', text: t.mdHelp.replace('%n', String(CARD_TEXT_MAX)), lang }}
   >
-    <TextArea
+    <MarkupField
       id={id + '-text'}
       rows={kind === 'set' ? 4 : 5}
-      bind:value={draft.text}
+      bind:value={draft[textKey]}
       maxlength={CARD_TEXT_MAX}
       invalid={!!problemOf('text')}
       describedby={errId('text')}
       oninput={() => {
         clear('text');
       }}
+      label={kind === 'set' ? t.hbSetBonus : t.hbCardText}
+      tools={TOOLS}
+      preview
+      bind:previewing
+      {t}
+      textLang={editIn}
     />
     {#if textLength > counterFrom(CARD_TEXT_MAX)}
       <span class="counter">{textLength} / {CARD_TEXT_MAX}</span>
@@ -321,6 +367,12 @@
 
   .cardform :global(input) {
     height: 38px;
+  }
+
+  /* The language switch keeps its own width, as on the item form. */
+  .cardform :global(.seg) {
+    width: fit-content;
+    max-width: 100%;
   }
 
   .hint,

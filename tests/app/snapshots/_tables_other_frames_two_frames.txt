@@ -66,7 +66,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "Выбрать все (21)"
     checkbox "Легендарный Малый Револьвер" [checked=false]
-    button "Легендарный Малый Револьвер Ранг 4 · Физическое · Искусность · Д..." [namelen=216 namehash=d672baf5]
+    button "Легендарный Малый Револьвер Ранг 4 · Физическое · Искусность · Д..." [namelen=215 namehash=7810fc4a]
     checkbox "Динамит" [checked=false]
     button "Динамит Вы можете поджечь эту динамитную шашку и бросить её в пр..." [namelen=358 namehash=6652d180]
   contentinfo ""
@@ -298,7 +298,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "Select all (21)"
     checkbox "Legendary Small Revolver" [checked=false]
-    button "Legendary Small Revolver Tier 4 · Physical · Finesse · Far · d6+..." [namelen=194 namehash=1c6ec51c]
+    button "Legendary Small Revolver Tier 4 · Physical · Finesse · Far · d6+..." [namelen=193 namehash=bb179dc9]
     checkbox "Dynamite" [checked=false]
     button "Dynamite You can light this dynamite and toss it within Close ra..." [namelen=353 namehash=a88f5f1f]
   contentinfo ""

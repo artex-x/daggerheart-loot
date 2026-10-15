@@ -35,20 +35,26 @@ daggerheart.com
 Альт. таблицы
 Выбрать все
 Добавить в список
+Жирный
 Закрыть
 Заметка
 К содержимому
 Конфиденциальность
+Курсив
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
 Название списка
+Нумерованный список
 Обычные правила
 Открыть
 Отправить
 Поделиться
+Подсказка: Для игроков
+Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Просмотр
 Результат броска
 Свой предмет
 Скачать JSON
@@ -66,6 +72,7 @@ daggerheart.com
 Сообщества
 Сохранить себе
 Списки
+Список
 Страница
 Таблицы
 Только для мастера: Скипетр
@@ -101,6 +108,8 @@ Account: gm2@example.test
 Add to list
 Alt. tables
 Arazo's Artifacts
+Bold
+Bulleted list
 Close
 Communities
 Copy image
@@ -116,20 +125,25 @@ Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
 GM only: Ember Axe
 GM only: Scepter
+Help: For players
+Help: GM only
 Hide changes
 Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
 Hide the change to "Ember Axe"
 Install as an app
+Italic
 Lay these out for printing: nine to an A4 sheet
 List name
 Lists
 Note
+Numbered list
 One higher
 One lower
 Open
 Own item
 Page
 Position in the list
+Preview
 Privacy
 RU
 Random 1–2

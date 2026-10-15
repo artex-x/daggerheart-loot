@@ -3,6 +3,7 @@
      style.css. Extracted on its third use: the lists index's two boxes and
      the account page's typed confirmation. */
   import type { HTMLInputAttributes } from 'svelte/elements';
+  import type { Lang } from '../lib/types.js';
 
   interface Props {
     value?: string;
@@ -23,6 +24,8 @@
     /** The most the database keeps (docs/specs/FEATURES.md, "Consistency rules"). */
     maxlength?: number | undefined;
     oninput?: () => void;
+    /** The language of the text, when it is not the page's. */
+    lang?: Lang | undefined;
   }
 
   let {
@@ -37,7 +40,8 @@
     invalid = false,
     describedby,
     maxlength,
-    oninput
+    oninput,
+    lang
   }: Props = $props();
 </script>
 
@@ -45,6 +49,7 @@
   type="text"
   bind:value
   bind:this={el}
+  {lang}
   {placeholder}
   aria-label={label}
   {id}

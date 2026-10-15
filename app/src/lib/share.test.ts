@@ -13,6 +13,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, type Loot } from './data.js';
+import { esc } from './desc.js';
+import { markupHtml, markupText } from './markup.js';
 import { dict } from './dict.js';
 import { withRecords, type HomebrewRecord } from './homebrew.js';
 import type { ListShape } from './listLink.js';
@@ -162,10 +164,15 @@ describe('what travels with a record', () => {
     if (!card) return;
 
     const blocks = shareBlocks(withRef, index, 'ru');
-    expect(blocks.at(-1)).toEqual({ head: `${card.ru} · ${card.rusub}`, body: card.rud });
+    expect(blocks.at(-1)).toEqual({
+      head: `${card.ru} · ${card.rusub}`,
+      body: card.rud,
+      md: true
+    });
     expect(shareBlocks(withRef, index, 'en').at(-1)).toEqual({
       head: `${card.en} · ${card.ensub}`,
-      body: card.ende
+      body: card.ende,
+      md: true
     });
   });
 
@@ -177,11 +184,23 @@ describe('what travels with a record', () => {
     expect(nightshroud.rud).not.toContain('\n');
     expect(nightshroud.ende).not.toContain('\n');
     expect(shareBlocks(nightshroud, index, 'ru')).toEqual([
-      { head: `${ref.ru} · ${ref.rusub}`, body: ref.rud }
+      { head: `${ref.ru} · ${ref.rusub}`, body: ref.rud, md: true }
     ]);
     expect(shareBlocks(nightshroud, index, 'en')).toEqual([
-      { head: `${ref.en} · ${ref.ensub}`, body: ref.ende }
+      { head: `${ref.en} · ${ref.ensub}`, body: ref.ende, md: true }
     ]);
+  });
+
+  it('copies a labelled upgrade line as plain text and as bold italics, never as stars', () => {
+    const blade = rec('dve24');
+    const block = shareBlocks(blade, index, 'en')[0];
+    expect(block?.body).toMatch(/^\*\*\*Overcome Adversity:\*\*\* /);
+    const { text, html } = share(blade, index, 'en');
+    expect(text).not.toContain('*');
+    expect(text).toContain('\nOvercome Adversity: When you make an attack roll');
+    expect(html).toContain(
+      '<br><b><i>Overcome Adversity:</i></b> When you make an attack roll'
+    );
   });
 
   it('ignores a reference key the data does not have', () => {
@@ -207,17 +226,25 @@ describe('what travels with a record', () => {
     const ru = shareBlocks(ember, index, 'ru');
     expect(ru.at(-1)).toEqual({
       head: `Комплект: ${ember.ru}, ${spark.ru}`,
-      body: `${bonus.ru}: ${bonus.rud}`
+      lead: bonus.ru,
+      body: bonus.rud,
+      md: true
     });
     const en = shareBlocks(ember, index, 'en');
     expect(en.at(-1)).toEqual({
       head: `Set: ${ember.en}, ${spark.en}`,
-      body: `${bonus.en}: ${bonus.ende}`
+      lead: bonus.en,
+      body: bonus.ende,
+      md: true
     });
+    const html = share(ember, index, 'en').html;
+    expect(html).toContain(`<br>${esc(bonus.en)}: ${markupHtml(bonus.ende)}`);
     /* Symmetric: Spark's own block names Ember back, in the same order. */
     expect(shareBlocks(spark, index, 'ru').at(-1)).toEqual({
       head: `Комплект: ${ember.ru}, ${spark.ru}`,
-      body: `${bonus.ru}: ${bonus.rud}`
+      lead: bonus.ru,
+      body: bonus.rud,
+      md: true
     });
   });
 
@@ -270,7 +297,7 @@ describe('what travels with a record', () => {
     );
     expect(
       ru.html.endsWith(
-        '<br><br><i>Комплект: Уголёк, Искра</i><br>Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает Пылать. Пока она Пылает, она должна отметить 1 Рану во время своей активации.'
+        '<br><br><i>Комплект: Уголёк, Искра</i><br>Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает <i>Пылать</i>. Пока она <i>Пылает</i>, она должна отметить 1 Рану во время своей активации.'
       )
     ).toBe(true);
     const en = share(rec('dve19'), index, 'en');
@@ -283,7 +310,7 @@ describe('what travels with a record', () => {
     );
     expect(
       en.html.endsWith(
-        '<br><br><i>Set: Ember, Spark</i><br>Blazing Twins: When you critically succeed on an attack roll, set the target temporarily Ablaze. While Ablaze, they must mark 1 HP when spotlighted.'
+        '<br><br><i>Set: Ember, Spark</i><br>Blazing Twins: When you critically succeed on an attack roll, set the target temporarily <i>Ablaze</i>. While <i>Ablaze</i>, they must mark 1 HP when spotlighted.'
       )
     ).toBe(true);
   });
@@ -475,8 +502,17 @@ describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
   it('is a single block off the players’ note, never the GM one', () => {
     const t = dict('ru');
     expect(entryNoteBlock({ note: 'Светится в темноте', hnote: 'Проклят' }, t)).toEqual([
-      { head: t.noteHead, body: 'Светится в темноте' }
+      { head: t.noteHead, body: 'Светится в темноте', md: true }
     ]);
+  });
+
+  it('copies a formatted note without markers in the text and with bold in the html', () => {
+    const t = dict('ru');
+    const extra = entryNoteBlock({ note: '**x** в *темноте*\n- вход' }, t);
+    const { text, html } = share(rec('ci1'), index, 'ru', { extra });
+    expect(text.endsWith(`\n\n${t.noteHead}\nx в темноте\n- вход`)).toBe(true);
+    expect(html).toContain('<b>x</b> в <i>темноте</i><br>• вход');
+    expect(text).not.toContain('**');
   });
 
   it('is empty when the entry carries no players’ note', () => {
@@ -517,7 +553,7 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
     const b = share(ci2, index, 'ru', {
       skip: new Set(l.ids),
       suffix: ' ×2 — по 7 мешков 5 горстей',
-      extra: [{ head: t.noteHead, body: 'Светится в темноте' }]
+      extra: [{ head: t.noteHead, body: 'Светится в темноте', md: true }]
     });
 
     expect(text).toBe(
@@ -531,6 +567,16 @@ describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
     /* The GM's own note never leaves the list. */
     expect(text).not.toContain(l.hnote);
     expect(html).not.toContain(l.hnote);
+  });
+
+  it('copies the list note without markers in the text and with bold in the html', () => {
+    const t = dict('ru');
+    const l: ListShape = { name: 'X', ids: [], note: '**x** закрыта\n- вход со двора' };
+    const { text, html } = shareList(l, index, 'ru', t);
+    expect(text).toBe(`X\n\n${t.noteHead}\nx закрыта\n- вход со двора`);
+    expect(html).toBe(
+      `<b>X</b><br><br><i>${t.noteHead}</i><br><b>x</b> закрыта<br>• вход со двора`
+    );
   });
 
   it('has no note preamble and no suffix on a plain, unnoted list', () => {
@@ -620,6 +666,24 @@ describe('homebrew records in copied text', () => {
     ...over
   });
 
+  it('drops an upgrade line its own plain line already says, and keeps a table whole', () => {
+    const target = rec('dve25');
+    const labelled = target.ende.split('\n').find((l) => l.startsWith('*')) ?? '';
+    expect(labelled).toMatch(/^\*\*\*[^*]+:\*\*\* /);
+    const own = hb('hb_plainaaaaaaaaaaa', { ende: markupText(labelled), craft: ['dve25'] });
+    const ix = withRecords(index, [own], []);
+    const body = shareBlocks(ix.byId.get(own.id) ?? own, ix, 'en')[0]?.body ?? '';
+    expect(body.split('\n')).not.toContain(labelled);
+
+    const table = '| A | B |\n|---|---|\n| 1 | 2 |';
+    const into = hb('hb_tableintoaaaaaaa', { ende: '| X | Y |\n|---|---|\n| 3 | 4 |' });
+    const from = hb('hb_tablefromaaaaaaa', { ende: table, craft: [into.id] });
+    const ix2 = withRecords(index, [from, into], []);
+    expect(shareBlocks(ix2.byId.get(from.id) ?? from, ix2, 'en')[0]?.body).toBe(
+      '| X | Y |\n|---|---|\n| 3 | 4 |'
+    );
+  });
+
   it('writes one upgrade block per homebrew target, catalog first and homebrew by name, each with (HB)', () => {
     const own = [
       hb('hb_baaaaaaaaaaaaaaa', { ru: 'Яшмовый вирд', en: 'Ash Wyrd', craft_from: ['dve24'] }),
@@ -651,9 +715,9 @@ describe('homebrew records in copied text', () => {
     });
     const ix = withRecords(index, own, []);
     expect(shareBlocks(rec('ci1'), ix, 'ru')).toEqual([
-      { head: 'Улучшается до: Мешок 10 (HB)', body: 'Строка 10.' },
-      { head: 'Улучшается до: Мешок 11 (HB)', body: 'Строка 11.' },
-      { head: 'Улучшается до: Мешок 12 (HB)', body: 'Строка 12.' },
+      { head: 'Улучшается до: Мешок 10 (HB)', body: 'Строка 10.', md: true },
+      { head: 'Улучшается до: Мешок 11 (HB)', body: 'Строка 11.', md: true },
+      { head: 'Улучшается до: Мешок 12 (HB)', body: 'Строка 12.', md: true },
       { head: 'Улучшается до: и ещё 12', body: '' }
     ]);
     expect(shareBlocks(rec('ci1'), ix, 'en').map((b) => b.head)).toEqual([
@@ -675,9 +739,9 @@ describe('homebrew records in copied text', () => {
       }
     });
     expect(shareBlocks(copy, index, 'ru')).toEqual([
-      { head: 'Комплект', body: 'Свой: Бонус.' }
+      { head: 'Комплект', lead: 'Свой', body: 'Бонус.', md: true }
     ]);
-    expect(shareBlocks(copy, index, 'en').at(-1)?.body).toBe('Own: A bonus.');
+    expect(share(copy, index, 'en').text).toMatch(/\nOwn: A bonus\.$/);
   });
 
   it("writes the account's own set on a book item, folded past the third member, and its own rule card", () => {
@@ -705,9 +769,13 @@ describe('homebrew records in copied text', () => {
       ]
     );
     const blocks = shareBlocks(rec('q1'), ix, 'ru');
-    expect(blocks).toContainEqual({ head: 'Клеймо · Свойство', body: 'Перебросьте.' });
+    expect(blocks).toContainEqual({
+      head: 'Клеймо · Свойство',
+      body: 'Перебросьте.',
+      md: true
+    });
     const set = blocks.at(-1);
-    expect(set?.body).toBe('Комплект Ольхи: Бонус.');
+    expect(set).toMatchObject({ lead: 'Комплект Ольхи', body: 'Бонус.' });
     expect(set?.head).toMatch(new RegExp('^Комплект: ' + rec('q1').ru + ', .* и ещё 1$'));
     expect(shareBlocks(rec('q1'), index, 'ru').some((b) => b.head.startsWith('Комплект'))).toBe(
       false
@@ -729,7 +797,7 @@ describe('homebrew records in copied text', () => {
       cards: { refs: { hb_cardaaaaaaaaaaaa: card } }
     });
     expect(shareBlocks(copy, index, 'ru')).toEqual([
-      { head: 'Клеймо · Свойство', body: 'Перебросьте кость.' }
+      { head: 'Клеймо · Свойство', body: 'Перебросьте кость.', md: true }
     ]);
   });
 });

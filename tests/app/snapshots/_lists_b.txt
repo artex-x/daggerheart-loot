@@ -59,17 +59,24 @@ daggerheart.com
 Альт. таблицы
 Войти
 Войти и перенести списки
+Жирный
 К содержимому
 Конфиденциальность
+Курсив
 ЛутDaggerheart
 Название списка
+Нумерованный список
 Обычные правила
+Подсказка: Для игроков
+Подсказка: Только для мастера
 Поиск
+Просмотр
 Скопировать текст
 Скрыть
 Скрыть напоминание
 Сообщества
 Списки
+Список
 Ссылка игрокам
 Ссылка себе
 Таблицы
@@ -125,6 +132,8 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
 ## en :: controls
 Alt. tables
 Arazo's Artifacts
+Bold
+Bulleted list
 Communities
 Copy text
 Delete
@@ -133,10 +142,15 @@ Dismiss the reminder
 Dragon's Vault
 Dread
 EN
+Help: For players
+Help: GM only
 Install as an app
+Italic
 List name
 Lists
+Numbered list
 Players' link
+Preview
 Privacy
 RU
 Search

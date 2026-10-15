@@ -36,7 +36,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x119 of 123 same-shape siblings elided
+    ... StaticText x123 of 127 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПАЛАШ" [level=2]
     ... heading x5 of 9 same-shape siblings elided
@@ -114,7 +114,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-ninecard]
     button "Compact" [pressed=false]
     button "Link to this set"
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x119 of 123 same-shape siblings elided
+    ... StaticText x123 of 127 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
     heading "BROADSWORD" [level=2]
     ... heading x5 of 9 same-shape siblings elided

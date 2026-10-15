@@ -26,6 +26,7 @@
   import NumRow from './NumRow.svelte';
   import OrGrid from './OrGrid.svelte';
   import LoadState from './LoadState.svelte';
+  import MarkupField from './MarkupField.svelte';
   import PageTitle from './PageTitle.svelte';
   import PickQty from './PickQty.svelte';
   import RecordActions from './RecordActions.svelte';
@@ -42,6 +43,7 @@
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import type { Dict } from '../lib/dict.js';
+  import type { MarkupTool } from '../lib/markupEdit.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { sectionHash, sharedListHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
@@ -786,10 +788,15 @@
      storage merge mid-drag does not unbind a live drag; the drop moves the
      id captured at `dragstart`, not whatever row now sits at its index. */
   const ownId = $derived(own?.id);
-  /* A hand-resized note box's height by its `data-note` (`<key>:<kind>`), so a
+  /* A hand-resized note box's height by its id (`note-<key>-<kind>`), so a
      row's box that unmounts on a fold keeps the height when it comes back. */
   // eslint-disable-next-line svelte/prefer-svelte-reactivity -- read at a box's mount, never drawn
   const handHeight = new Map<string, string>();
+  const NOTE_TOOLS: readonly MarkupTool[] = ['bold', 'italic', 'ul', 'ol'];
+  /* A note box's text while the person edits it, by box id; memory only. */
+  const drafts = new SvelteMap<string, string>();
+  /* The note boxes whose «?» hint is open, by box id. */
+  const noteHelp = new SvelteSet<string>();
   /* The share and own-item panels fold when another list opens, and the hand
      heights, keyed by record id, belong to the list that set them. */
   let sharing = $state(false);
@@ -800,6 +807,8 @@
     sharing = false;
     quick = false;
     handHeight.clear();
+    drafts.clear();
+    noteHelp.clear();
   });
   $effect(() => {
     const el = rowsEl;
@@ -838,8 +847,7 @@
       dragging = null;
       if (!d || !d.ta.isConnected || d.ta.offsetHeight === d.h) return;
       d.ta.dataset['manual'] = '1';
-      const at = d.ta.dataset['note'];
-      if (at) handHeight.set(at, d.ta.style.height);
+      if (d.ta.id) handHeight.set(d.ta.id, d.ta.style.height);
     };
     document.addEventListener('pointerdown', onDown);
     document.addEventListener('pointerup', onUp);
@@ -849,101 +857,141 @@
     };
   });
 
-  /**
-   * Seeds a textarea's text child at mount - the live `<textarea>
-   * {esc(value)}</textarea>`. The component reads edits through `oninput`
-   * rather than binding `value`, exactly as the live uncontrolled field
-   * does, which is what gives the inventory the live names (a bound value
-   * leaves `textContent` empty) - the mount write stays `textContent` for
-   * exactly that reason.
-   *
-   * Past mount, an uncontrolled field ignores whatever this component's
-   * own state does next - so a note that changed underneath it (another
-   * tab's edit, landed through `watch()`) stayed on screen showing the old
-   * text until the next keystroke silently overwrote the new one with it.
-   * `update` re-seeds through `.value` instead - `textContent` no longer
-   * reaches a field's live value once the browser's own "dirty value" flag
-   * is set, which happens the moment anyone (a person or a script) has ever
-   * written to `.value` - but only when the field is not focused (a person
-   * mid-edit here wins) and only when the incoming text actually differs
-   * (an edit this same tab just made already matches, and touching `.value`
-   * unconditionally would reset the caret on every keystroke).
-   */
-  function seedText(node: HTMLTextAreaElement, value: string): { update(v: string): void } {
-    node.textContent = value;
+  /* The store trims a note on write, so a box keeps the person's text as a draft while
+     it has focus; a stored change from elsewhere replaces it only in a box without focus. */
+  function noteBox(
+    node: HTMLElement,
+    text: string
+  ): { update(v: string): void; destroy(): void } {
+    let last = text;
+    const ta = node.querySelector('textarea');
+    const id = ta?.id ?? '';
+    /* A focused box holds a draft from its first focus, so a stored change cannot reach it. */
+    const hold = (): void => {
+      if (ta && !drafts.has(id)) drafts.set(id, ta.value);
+    };
+    /* Leaving the box shows the stored note when another write landed during the focus. */
+    const settle = (e: FocusEvent): void => {
+      if (node.contains(e.relatedTarget as Node | null)) return;
+      const draft = drafts.get(id);
+      if (!ta || draft === undefined || draft.trim() === last) return;
+      drafts.delete(id);
+      void tick().then(() => {
+        autoSize(ta);
+      });
+    };
+    node.addEventListener('focusin', hold);
+    node.addEventListener('focusout', settle);
     /* Each box sizes itself at mount and on a write: a walk over every box on
        each edit of the list cost every keystroke a layout read per box. */
     void tick().then(() => {
-      const h = handHeight.get(node.dataset['note'] ?? '');
+      if (!ta) return;
+      const h = handHeight.get(id);
       if (h) {
-        node.style.height = h;
-        node.dataset['manual'] = '1';
-      } else autoSize(node);
+        ta.style.height = h;
+        ta.dataset['manual'] = '1';
+      } else autoSize(ta);
     });
     return {
       update(v: string) {
-        if (document.activeElement === node) return;
-        if (node.value !== v) {
-          node.value = v;
-          autoSize(node);
-        }
+        if (v === last) return;
+        last = v;
+        if (!ta || node.contains(document.activeElement)) return;
+        const draft = drafts.get(id);
+        if (draft !== undefined && draft.trim() !== v) drafts.delete(id);
+        void tick().then(() => {
+          autoSize(ta);
+        });
+      },
+      destroy() {
+        node.removeEventListener('focusin', hold);
+        node.removeEventListener('focusout', settle);
+        drafts.delete(id);
       }
     };
   }
 </script>
 
+{#snippet noteField(
+  o: { note?: string | undefined; hnote?: string | undefined },
+  key: string,
+  kind: 'note' | 'hnote'
+)}
+  {@const id = `note-${key}-${kind}`}
+  {@const caption = kind === 'note' ? t.notePub : t.noteHid}
+  {@const stored = (kind === 'note' ? o.note : o.hnote) ?? ''}
+  <div
+    class="nfield"
+    class:n-pub={kind === 'note'}
+    class:n-hid={kind === 'hnote'}
+    use:noteBox={stored}
+  >
+    <span class="nlbl"
+      ><Icon name={kind === 'note' ? 'eye' : 'eyeOff'} /><label for={id}>{caption}</label><i
+        id="{id}-hint">{kind === 'note' ? t.notePubHint : t.noteHidHint}</i
+      >{#if !readOnly}<HelpButton
+          lang={app.lang}
+          size="sm"
+          open={noteHelp.has(id)}
+          label={t.fieldHelp.replace('%s', caption)}
+          controls="{id}-help"
+          onclick={() => {
+            if (noteHelp.has(id)) noteHelp.delete(id);
+            else noteHelp.add(id);
+          }}
+        /><button
+          type="button"
+          class="note-x"
+          title={t.noteClear}
+          aria-label={t.noteClear}
+          onclick={(e) => {
+            clearNote(key, kind, e);
+          }}>&times;</button
+        >{/if}</span
+    >
+    {#if !readOnly}
+      <p class="nhelp" id="{id}-help" hidden={!noteHelp.has(id)}>
+        {t.mdHelp.replace('%n', String(NOTE_MAX))}
+      </p>
+    {/if}
+    <MarkupField
+      bind:value={
+        () => drafts.get(id) ?? stored,
+        (v: string) => {
+          drafts.set(id, v);
+        }
+      }
+      {id}
+      rows={3}
+      maxlength={NOTE_MAX}
+      placeholder={kind === 'note'
+        ? key === 'list'
+          ? t.listNotePhPub
+          : t.notePhPub
+        : key === 'list'
+          ? t.listNotePhHid
+          : t.notePhHid}
+      readonly={readOnly}
+      describedby="{id}-hint"
+      label={caption}
+      tools={NOTE_TOOLS}
+      preview
+      {t}
+      oninput={readOnly
+        ? undefined
+        : (e: Event) => {
+            noteInput(key, kind, e);
+          }}
+    />
+  </div>
+{/snippet}
+
 {#snippet notePair(o: { note?: string | undefined; hnote?: string | undefined }, key: string)}
   <div class="npair">
-    <div class="nfield n-pub">
-      <span class="nlbl"
-        ><Icon name="eye" />{t.notePub}<i>{t.notePubHint}</i>{#if !readOnly}<button
-            type="button"
-            class="note-x"
-            title={t.noteClear}
-            aria-label={t.noteClear}
-            onclick={(e) => {
-              clearNote(key, 'note', e);
-            }}>&times;</button
-          >{/if}</span
-      >
-      <textarea
-        rows="3"
-        data-note="{key}:note"
-        placeholder={key === 'list' ? t.listNotePhPub : t.notePhPub}
-        maxlength={NOTE_MAX}
-        readonly={readOnly}
-        use:seedText={o.note ?? ''}
-        oninput={readOnly
-          ? undefined
-          : (e) => {
-              noteInput(key, 'note', e);
-            }}></textarea>
-    </div>
-    <div class="nfield n-hid">
-      <span class="nlbl"
-        ><Icon name="eyeOff" />{t.noteHid}<i>{t.noteHidHint}</i>{#if !readOnly}<button
-            type="button"
-            class="note-x"
-            title={t.noteClear}
-            aria-label={t.noteClear}
-            onclick={(e) => {
-              clearNote(key, 'hnote', e);
-            }}>&times;</button
-          >{/if}</span
-      >
-      <textarea
-        rows="3"
-        data-note="{key}:hnote"
-        placeholder={key === 'list' ? t.listNotePhHid : t.notePhHid}
-        maxlength={NOTE_MAX}
-        readonly={readOnly}
-        use:seedText={o.hnote ?? ''}
-        oninput={readOnly
-          ? undefined
-          : (e) => {
-              noteInput(key, 'hnote', e);
-            }}></textarea>
-    </div>
+    <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -->
+    {@render noteField(o, key, 'note')}
+    {@render noteField(o, key, 'hnote')}
+    <!-- eslint-enable @typescript-eslint/no-confusing-void-expression -->
   </div>
 {/snippet}
 
@@ -1143,8 +1191,8 @@
         ontoggle={(e) => {
           const box = e.currentTarget;
           if (!box.open) return;
-          autoSize(box.querySelector<HTMLTextAreaElement>('[data-note="list:note"]'));
-          autoSize(box.querySelector<HTMLTextAreaElement>('[data-note="list:hnote"]'));
+          autoSize(box.querySelector<HTMLTextAreaElement>('#note-list-note'));
+          autoSize(box.querySelector<HTMLTextAreaElement>('#note-list-hnote'));
         }}
       >
         <summary><Icon name="note" /><span>{t.listNote}</span></summary>
@@ -1725,8 +1773,8 @@
 
   /* off `.lnote textarea,.rnote textarea` and the `:focus` pair
      (style.css:646-657) */
-  .lnote textarea,
-  .rnote textarea {
+  .lnote :global(textarea),
+  .rnote :global(textarea) {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -1741,13 +1789,13 @@
     overflow-y: auto;
   }
 
-  .rnote textarea {
+  .rnote :global(textarea) {
     font-size: 13px;
     background: var(--surface);
   }
 
-  .lnote textarea:focus,
-  .rnote textarea:focus {
+  .lnote :global(textarea:focus),
+  .rnote :global(textarea:focus) {
     outline: none;
     border-color: var(--gold);
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
@@ -1776,12 +1824,6 @@
     gap: 5px;
   }
 
-  /* Positioned and later in the tree, so it stacks above the clear button's
-     44px `::after`: a tap in the overlap focuses the note. */
-  .nfield textarea {
-    position: relative;
-  }
-
   .nlbl {
     position: relative;
     display: flex;
@@ -1803,8 +1845,16 @@
     font-weight: 400;
   }
 
-  .n-hid textarea {
+  .n-hid :global(textarea) {
     border-style: dashed;
+  }
+
+  /* FormField's `.fhelp`: the hint keeps its line breaks. */
+  .nhelp {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted2);
+    white-space: pre-line;
   }
 
   @media (max-width: 640px) {
@@ -1850,7 +1900,7 @@
     transform: translate(-50%, -50%);
   }
 
-  .nfield:has(textarea:placeholder-shown) .note-x {
+  .nfield:has(:global(textarea:placeholder-shown)) .note-x {
     display: none;
   }
 

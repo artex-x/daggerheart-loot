@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-two cases in
- * seventy-one runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-four cases in
+ * seventy-three runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -1945,10 +1945,11 @@ async function guideBackLink() {
   }
 }
 
-/** 30. The note clear button's 44px target yields to the note textarea
- *  where the two overlap: a point just inside the textarea under the button
- *  hits the textarea, the button's own centre hits the button. */
-async function noteClearTargetYieldsToTextarea() {
+/** 30. The note clear button's 44px target yields to the formatting toolbar under
+ *  it: a point just inside the toolbar's top edge, under the button's centre, hits a
+ *  toolbar button; the button's own centre hits the button. */
+async function noteClearTargetYieldsToTheToolbar() {
+  const at = '30 (note clear target): ';
   const { ctx, page, d } = await fresh({
     width: 1180,
     height: 900,
@@ -1968,34 +1969,25 @@ async function noteClearTargetYieldsToTextarea() {
       (b) => getComputedStyle(b).display !== 'none'
     );
     if (!btn) return null;
-    const ta = btn.closest('.nfield').querySelector('textarea');
+    const bar = btn.closest('.nfield').querySelector('[role="toolbar"]');
     const b = btn.getBoundingClientRect();
-    const t = ta.getBoundingClientRect();
+    const t = bar.getBoundingClientRect();
     const cx = b.x + b.width / 2;
     const edge = document.elementFromPoint(cx, t.top + 3);
     const centre = document.elementFromPoint(cx, b.y + b.height / 2);
     return {
       overlap: b.y + b.height / 2 + 22 - t.top,
-      edgeIsTextarea: !!edge && (edge === ta || ta.contains(edge)),
+      edgeIsTool: !!edge && !!edge.closest('button') && bar.contains(edge),
       centreIsButton: !!centre && (centre === btn || btn.contains(centre)),
       target: getComputedStyle(btn, '::after').width
     };
   });
-  ok(!!hits, '30 (note clear target): no visible clear button on the list note');
+  ok(!!hits, at + 'no visible clear button on the list note');
   if (hits) {
-    ok(hits.overlap > 3, '30 (note clear target): no overlap left to test - ' + hits.overlap);
-    ok(
-      hits.edgeIsTextarea,
-      '30 (note clear target): the textarea edge under the button hits the button'
-    );
-    ok(
-      hits.centreIsButton,
-      '30 (note clear target): the button centre does not hit the button'
-    );
-    ok(
-      hits.target === '44px',
-      '30 (note clear target): the target is not 44px - ' + hits.target
-    );
+    ok(hits.overlap > 3, at + 'no overlap left to test - ' + hits.overlap);
+    ok(hits.edgeIsTool, at + 'the toolbar edge under the button does not hit a toolbar button');
+    ok(hits.centreIsButton, at + 'the button centre does not hit the button');
+    ok(hits.target === '44px', at + 'the target is not 44px - ' + hits.target);
   }
 
   await ctx.close();
@@ -4956,6 +4948,217 @@ async function cropDialogOnPhones() {
   await ctx.close();
 }
 
+/** 74. The record text through Markup.svelte keeps the card look (values read on
+ *  the build before Markup.svelte, 2026-10-15, at 360 px): the card paragraph with
+ *  its S1 label in bold italics, the Vault of Ages list, a rule card's text and a
+ *  set bonus; then gm4's formatted item: its table no wider than the description. */
+async function keepsTheCardDescriptionLook() {
+  const at = '74 (the card text look): ';
+  const { ctx, page, d } = await fresh({ width: 360, height: 800 });
+  const style = (sel, props) =>
+    page.evaluate(
+      (s, ps) => {
+        const el = document.querySelector(s);
+        if (!el) return null;
+        const cs = getComputedStyle(el);
+        return Object.fromEntries(ps.map((p) => [p, cs.getPropertyValue(p)]));
+      },
+      sel,
+      props
+    );
+  const expect = (got, want, what) =>
+    ok(
+      !!got && Object.entries(want).every(([k, v]) => got[k] === v),
+      at + what + ' - ' + JSON.stringify(got)
+    );
+
+  await d.open('#/i/q1');
+  await d.settle();
+  expect(await style('.card-desc p', ['margin']), { margin: '0px' }, 'q1 paragraph margin');
+  ok(
+    (await page.evaluate(() => document.querySelector('.card-desc p b > i')?.textContent)) ===
+      'Надёжное:',
+    at + 'q1 does not draw its label in bold italics'
+  );
+
+  await d.open('#/i/voa2_a3');
+  await d.settle();
+  expect(
+    await style('.card-desc ul', ['padding-left', 'margin-top', 'margin-bottom']),
+    { 'padding-left': '18px', 'margin-top': '4px', 'margin-bottom': '0px' },
+    'voa2_a3 list'
+  );
+  expect(
+    await style('.card-desc li', ['margin-top', 'margin-bottom']),
+    { 'margin-top': '1px', 'margin-bottom': '1px' },
+    'voa2_a3 list item'
+  );
+
+  await d.open('#/i/w1');
+  await d.settle();
+  await page.evaluate(() => {
+    const det = document.querySelector('.refs details');
+    if (det) det.open = true;
+  });
+  expect(
+    await style('.refs .ref-text', ['padding', 'color', 'font-size', 'line-height']),
+    {
+      padding: '7px 9px 5px',
+      color: 'rgb(155, 147, 179)',
+      'font-size': '12.5px',
+      'line-height': '18.75px'
+    },
+    "w1's rule card text"
+  );
+  expect(await style('.refs .ref-text p', ['margin']), { margin: '0px' }, 'a rule card line');
+
+  await d.open('#/i/voa4_t3d');
+  await d.settle();
+  expect(
+    await style('.craft .set-bonus p', ['font-size', 'line-height', 'margin']),
+    { 'font-size': '12.5px', 'line-height': '18.125px', margin: '0px' },
+    'the set bonus'
+  );
+
+  await d.open('#/h/00000000-0000-4000-8000-000000000515', { as: 'gm4' });
+  await waitIn(page, () => !!document.querySelector('.card-desc table'));
+  const table = await page.evaluate(() => {
+    const desc = document.querySelector('.card-desc');
+    const t = desc?.querySelector('table');
+    return {
+      table: t ? t.getBoundingClientRect().width : null,
+      desc: desc ? desc.getBoundingClientRect().width : null,
+      layout: t ? getComputedStyle(t).tableLayout : null,
+      sideways: document.documentElement.scrollWidth > innerWidth
+    };
+  });
+  ok(
+    table.table !== null && table.desc !== null && table.table <= table.desc + 0.5,
+    at + 'the table is wider than the description - ' + JSON.stringify(table)
+  );
+  ok(table.layout === 'fixed', at + 'the table layout is not fixed - ' + JSON.stringify(table));
+  ok(!table.sideways, at + 'the formatted card scrolls the page sideways');
+  const found = await axe(page);
+  ok(
+    found.length === 0,
+    at + 'axe on the formatted card - ' + JSON.stringify(found.map((v) => v.id))
+  );
+  await ctx.close();
+}
+
+/* A toolbar edit goes through `execCommand('insertText')`, so Ctrl+Z takes it back; jsdom
+   has no `execCommand`, so only a real browser proves it (docs/specs/FEATURES.md,
+   "Consistency rules", rule 18). */
+async function undoesAToolbarEditWithTheBrowsersUndo() {
+  const at = '75 (undo of a toolbar edit): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/homebrew/new', { as: 'gm1' });
+  ok(
+    await waitIn(page, () => !!document.getElementById('hb-desc')),
+    at + 'the description box did not draw'
+  );
+  await page.focus('#hb-desc');
+  await page.keyboard.type('огонь');
+  await page.evaluate(() => {
+    const box = document.getElementById('hb-desc');
+    box.setSelectionRange(0, box.value.length);
+  });
+  await d.press('Жирный');
+  const bold = await page.evaluate(() => document.getElementById('hb-desc').value);
+  ok(bold === '**огонь**', at + 'Bold did not wrap the word - ' + JSON.stringify(bold));
+  ok(
+    await waitIn(
+      page,
+      () => document.querySelector('.preview .card-desc b')?.textContent === 'огонь'
+    ),
+    at + 'the card did not draw the bold word'
+  );
+  await page.focus('#hb-desc');
+  await page.keyboard.down('Control');
+  await page.keyboard.press('KeyZ');
+  await page.keyboard.up('Control');
+  await d.settle();
+  const undone = await page.evaluate(() => document.getElementById('hb-desc').value);
+  ok(undone === 'огонь', at + 'Ctrl+Z did not undo the edit - ' + JSON.stringify(undone));
+  await ctx.close();
+}
+
+/** 76. A list note draws as formatted text at 360 px: the list note's «Просмотр» pane
+ *  takes the shared list rules, and the rolled entry's note draws bold, a numbered list and
+ *  a table no wider than its text (docs/specs/FEATURES.md, "Lists"). */
+async function drawsListNotesAsFormattedText() {
+  const at = '76 (list notes draw as formatted text): ';
+  const { ctx, page, d } = await fresh({
+    width: 360,
+    height: 800,
+    storage: {
+      'dhloot.lists.v2': JSON.stringify([
+        {
+          id: 'a',
+          name: 'Тайник',
+          ids: ['ci1', 'ci2'],
+          created: 1,
+          note: 'Лавка *закрыта* до утра\n- вход со двора',
+          meta: {
+            ci2: {
+              note:
+                '**Светится** в темноте\n1. днём тускло\n2. ночью ярко\n' +
+                '| Время суток, когда свет заметнее всего | Свет |\n|---|---|\n| ночь | ярко |'
+            }
+          }
+        }
+      ])
+    }
+  });
+  await d.open('#/lists/a');
+  await d.press('Просмотр');
+  ok(
+    await waitIn(page, () => !!document.querySelector('.lnote .pane ul')),
+    at + 'the pane drew no list'
+  );
+  const pane = await page.evaluate(() => {
+    const ul = document.querySelector('.lnote .pane ul');
+    const cs = ul ? getComputedStyle(ul) : null;
+    return {
+      padding: cs?.paddingLeft,
+      margin: cs?.marginTop,
+      italic: document.querySelector('.lnote .pane i')?.textContent
+    };
+  });
+  ok(
+    pane.padding === '18px' && pane.margin === '4px' && pane.italic === 'закрыта',
+    at + 'the pane does not take the list rules - ' + JSON.stringify(pane)
+  );
+  await d.press('Бросок по списку');
+  await d.press('На единицу больше');
+  await d.press('На единицу больше');
+  ok(
+    await waitIn(page, () => !!document.querySelector('.hitnote .htext ol')),
+    at + 'the rolled entry drew no numbered list'
+  );
+  const hit = await page.evaluate(() => {
+    const text = document.querySelector('.hitnote .htext');
+    const table = text?.querySelector('table');
+    return {
+      bold: text?.querySelector('p b')?.textContent,
+      stars: text?.textContent.includes('*'),
+      table: table ? table.getBoundingClientRect().width : null,
+      text: text ? text.getBoundingClientRect().width : null,
+      sideways: document.documentElement.scrollWidth > innerWidth
+    };
+  });
+  ok(
+    hit.table !== null && hit.text !== null && hit.table <= hit.text + 0.5,
+    at + 'the rolled note table is wider than its text - ' + JSON.stringify(hit)
+  );
+  ok(hit.bold === 'Светится', at + 'the rolled note has no bold word - ' + JSON.stringify(hit));
+  ok(!hit.stars, at + 'the rolled note draws its markers');
+  ok(!hit.sideways, at + 'the page scrolls sideways at 360');
+  const found = await axe(page);
+  ok(found.length === 0, at + 'axe - ' + JSON.stringify(found.map((v) => v.id)));
+  await ctx.close();
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4985,7 +5188,7 @@ const CASES = [
   ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
   ['28 (minimal worker)', minimalWorker],
   ['29 (guide back link)', guideBackLink],
-  ['30 (note clear target)', noteClearTargetYieldsToTextarea],
+  ['30 (note clear target)', noteClearTargetYieldsToTheToolbar],
   ['31 (card image focus ring)', cardMediaRingVisible],
   ['32 (undo toast in the record dialog)', undoToastInRecordDialog],
   ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
@@ -5031,7 +5234,10 @@ const CASES = [
   ['70 (a picture: choose, crop, save)', pictureChooseCropSave],
   ['71 (a browser that cannot encode WebP)', pictureWithoutWebp],
   ['72 (the crop dialog at 360 and in landscape)', cropDialogOnPhones],
-  ['73 (print after sign-in)', printAfterSignIn]
+  ['73 (print after sign-in)', printAfterSignIn],
+  ['74 (the card text keeps its look)', keepsTheCardDescriptionLook],
+  ['75 (the browser undoes a toolbar edit)', undoesAToolbarEditWithTheBrowsersUndo],
+  ['76 (list notes draw as formatted text)', drawsListNotesAsFormattedText]
 ];
 
 (async () => {

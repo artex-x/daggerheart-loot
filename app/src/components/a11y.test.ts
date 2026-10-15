@@ -634,7 +634,7 @@ const COVERED: Record<string, string> = {
   'HelpButton.svelte':
     "PageHead's help panel states above, the list page's own priced entry below, and each field «?» of homebrewEditor.test.ts closed and open",
   'HitNote.svelte':
-    "the list page's priced, noted entry with the roll panel open above, and the shared list below",
+    "the list page's priced, noted entry with the roll panel open above, the shared list below, and a formatted note in sharedListPage.test.ts",
   'ListPage.svelte': 'listPage.test.ts, and both list-page states below',
   'ListCard.svelte': 'listsPage.test.ts, signed out, signed in and with a failed read',
   'OrGrid.svelte': 'the Core rules panel, which is the only screen with a choice',
@@ -700,6 +700,10 @@ const COVERED: Record<string, string> = {
   'SharedListPage.svelte':
     'sharedListPage.test.ts in both modes, and the shared list and both share links above',
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
+  'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
+  'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',
+  'MarkupField.svelte':
+    'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',
   'SignInPrompt.svelte':
     'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',

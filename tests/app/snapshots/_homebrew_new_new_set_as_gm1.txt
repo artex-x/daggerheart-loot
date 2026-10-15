@@ -40,8 +40,17 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
         option "+ Новый источник..." [selected=false]
+      button "RU - пусто" [pressed=true]
+      button "EN - пусто" [pressed=false]
       ... StaticText x13 of 17 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
+      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      toolbar "Оформление: Описание" [orientation=horizontal]
+        button "Жирный" [keyshortcuts=Control+B Meta+B]
+        button "Курсив" [keyshortcuts=Control+I Meta+I]
+        button "Список"
+        button "Нумерованный список"
+        button "Таблица"
       textbox "Описание" [multiline=true readonly=false required=false]
       button "Выбрать файл"
       button "Выбрать из предметов" [expanded=false]
@@ -57,7 +66,15 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       button "Подсказка: Получается из" [description=Подсказка: Получается из expanded=false]
       combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=false]
+      button "RU - пусто" [pressed=true]
+      button "EN - пусто" [pressed=false]
       textbox "Название комплекта*" [focused=true multiline=false readonly=false required=true]
+      button "Подсказка: Бонус комплекта" [description=Подсказка: Бонус комплекта expanded=false]
+      toolbar "Оформление: Бонус комплекта" [orientation=horizontal]
+        button "Жирный" [keyshortcuts=Control+B Meta+B]
+        button "Курсив" [keyshortcuts=Control+I Meta+I]
+        button "Список"
+        button "Просмотр" [pressed=false]
       textbox "Бонус комплекта*" [multiline=true readonly=false required=false]
       button "Создать комплект"
       button "Отмена"
@@ -88,7 +105,9 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+EN - пусто
 RU
+RU - пусто
 Vault of Ages
 Wondrous
 daggerheart.com
@@ -97,28 +116,36 @@ daggerheart.com
 Без ранга
 Выбрать из предметов
 Выбрать файл
+Жирный
 К содержимому
 Карты правил
 Конфиденциальность
+Курсив
 ЛутDaggerheart
 Новая карта правил
+Нумерованный список
 Обычные правила
 Отмена
+Подсказка: Бонус комплекта
 Подсказка: Источник
 Подсказка: Карты правил
 Подсказка: Комплект
+Подсказка: Описание
 Подсказка: Получается из
 Подсказка: Улучшается до
 Поиск
 Получается из
 Предмет
+Просмотр
 Расходник
 Снаряжение
 Создать комплект
 Сообщества
 Сохранить
 Списки
+Список
 Страница
+Таблица
 Таблицы
 Улучшается до
 Условия использования
@@ -162,8 +189,17 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
         option "+ New source..." [selected=false]
+      button "RU - empty" [pressed=true]
+      button "EN - empty" [pressed=false]
       ... StaticText x13 of 17 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
+      button "Help: Description" [description=Help: Description expanded=false]
+      toolbar "Formatting: Description" [orientation=horizontal]
+        button "Bold" [keyshortcuts=Control+B Meta+B]
+        button "Italic" [keyshortcuts=Control+I Meta+I]
+        button "Bulleted list"
+        button "Numbered list"
+        button "Table"
       textbox "Description" [multiline=true readonly=false required=false]
       button "Choose a file"
       button "Choose from items" [expanded=false]
@@ -179,7 +215,15 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       button "Help: Made from" [description=Help: Made from expanded=false]
       combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Help: Set" [description=Help: Set expanded=false]
+      button "RU - empty" [pressed=true]
+      button "EN - empty" [pressed=false]
       textbox "Set name*" [focused=true multiline=false readonly=false required=true]
+      button "Help: Set bonus" [description=Help: Set bonus expanded=false]
+      toolbar "Formatting: Set bonus" [orientation=horizontal]
+        button "Bold" [keyshortcuts=Control+B Meta+B]
+        button "Italic" [keyshortcuts=Control+I Meta+I]
+        button "Bulleted list"
+        button "Preview" [pressed=false]
       textbox "Set bonus*" [multiline=true readonly=false required=false]
       button "Create set"
       button "Cancel"
@@ -190,10 +234,10 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       StaticText "Up to 3 cards."
       button "Save"
       link "Cancel" [url=index.html?as=gm1#/homebrew]
-    button "Page"
-    StaticText "ITEM"
-    StaticText "HOMEBREW"
-    heading "New item" [level=2]
+    button "Страница"
+    StaticText "ПРЕДМЕТ"
+    StaticText "ХОУМБРЮ"
+    heading "Новый предмет" [level=2]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -209,6 +253,8 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
+Bold
+Bulleted list
 Cancel
 Choose a file
 Choose from items
@@ -218,27 +264,34 @@ Create set
 Dragon's Vault
 Dread
 EN
+EN - empty
 Equipment
+Help: Description
 Help: Made from
 Help: Rule cards
 Help: Set
+Help: Set bonus
 Help: Source
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 Install as an app
+Italic
 Item
 Lists
 Made from
 New rule card
 No tier
-Page
+Numbered list
+Preview
 Privacy
 RU
+RU - empty
 Rule cards
 Save
 Search
 Skip to content
 Standard rules
+Table
 Tables
 Terms of use
 Upgrades to
@@ -246,3 +299,4 @@ Vault of Ages
 Wondrous
 daggerheart.com
 ЛутDaggerheart
+Страница

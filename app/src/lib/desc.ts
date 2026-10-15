@@ -1,26 +1,14 @@
 /* A record's description, parsed once.
  *
- * The source is plain text with two conventions: a line beginning "- " is a list
- * item, and a line may open with a short property label followed by a colon.
- * Both the card and the clipboard need that structure, and they need it
- * rendered differently - the card draws a real `<ul>`, the clipboard cannot
- * (a list does not survive inside a `<span>`, and a browser closes a `<p>`
- * before one, losing the card's formatting for everything after it).
- *
- * So the parse lives here and returns data. The card renders it with Svelte
- * markup, which is why nothing in the new app has to inject HTML into the page;
- * `descHtml` builds the flat string the clipboard takes.
- *
- * Pure, and the label rule is deliberately conservative - see `splitLabel`. */
+ * The source is the formatted-text subset of `markup.ts` (docs/specs/FEATURES.md,
+ * "Records", "Formatted text"). The card, the row and print render the block
+ * tree with Svelte elements, so nothing in the app injects HTML into the page;
+ * `descHtml` builds the flat string the clipboard takes. */
 
 import type { Lang, Record_ } from './types.js';
 import { descOf } from './i18n.js';
 import { ART_BASE, isOwnArt, thumbOf } from './art.js';
-
-/** A label is a short property name, not every colon in the prose. */
-const LABEL_MAX = 34;
-/** Inside a list item the head is the name of an option, which runs longer. */
-const LABEL_MAX_IN_LIST = 40;
+import { markupHtml, parseMarkup, type MarkupBlock } from './markup.js';
 
 export function esc(s: string): string {
   return s
@@ -30,81 +18,14 @@ export function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/** One line: an optional property label, and the rest of it. */
-export interface Line {
-  label: string;
-  body: string;
+/** Returns the description in the language on screen as blocks; an empty one is one empty paragraph. */
+export function descBlocks(it: Record_, lang: Lang): MarkupBlock[] {
+  return parseMarkup(descOf(it, lang) || '');
 }
 
-/**
- * Splits a property label off the head of a line, if there is one to split.
- *
- * Loot descriptions are full of "The GM decides: ..." and marking that up would
- * be noise rather than structure, so the head has to look like a name: short,
- * free of sentence punctuation, at most four words. Inside a list item the colon
- * separates the name of an option instead - "Calamity (Failure, Fear)" - where a
- * comma is legitimate, so only the length is checked there.
- */
-export function splitLabel(line: string, inList = false): Line {
-  const i = line.indexOf(': ');
-  if (i < 0) return { label: '', body: line };
-  const head = line.slice(0, i);
-  const ok = inList
-    ? head.length <= LABEL_MAX_IN_LIST
-    : head.length <= LABEL_MAX && !/[,.;]/.test(head) && head.split(' ').length <= 4;
-  return ok ? { label: head, body: line.slice(i + 1) } : { label: '', body: line };
-}
-
-/** Only equipment, Vault of Ages, Arazo's Artifacts and homebrew items print named
- *  properties, so only they get labels: an author writes a property as a catalog book does. */
-export function hasLabels(it: Record_): boolean {
-  return !!it.eq || it.src === 'voa' || it.src === 'arazo' || it.src === 'homebrew';
-}
-
-export type DescPart =
-  { kind: 'line'; label: string; body: string } | { kind: 'list'; items: Line[] };
-
-/**
- * The description as parts a component can render: runs of plain lines, and
- * runs of consecutive list items gathered into one list.
- */
-export function descParts(it: Record_, lang: Lang): DescPart[] {
-  const named = hasLabels(it);
-  const read = (line: string, inList: boolean): Line =>
-    named ? splitLabel(line, inList) : { label: '', body: line };
-
-  const out: DescPart[] = [];
-  for (const line of (descOf(it, lang) || '').split('\n')) {
-    if (line.startsWith('- ')) {
-      const last = out.at(-1);
-      if (last?.kind === 'list') last.items.push(read(line.slice(2), true));
-      else out.push({ kind: 'list', items: [read(line.slice(2), true)] });
-      continue;
-    }
-    const { label, body } = read(line, false);
-    out.push({ kind: 'line', label, body });
-  }
-  return out;
-}
-
-/** A single line as HTML, with the label in italics. */
-export function lineHtml(line: string, inList = false): string {
-  const { label, body } = splitLabel(line, inList);
-  return label ? '<i>' + esc(label) + ':</i>' + esc(body) : esc(line);
-}
-
-/**
- * The description flattened for the clipboard: one run of lines, list items
- * marked with a bullet rather than wrapped in a real list.
- */
+/** Returns the description flattened for the clipboard: list items marked with a bullet. */
 export function descHtml(it: Record_, lang: Lang): string {
-  const named = hasLabels(it);
-  const lab = (line: string, inList = false): string =>
-    named ? lineHtml(line, inList) : esc(line);
-  return (descOf(it, lang) || '')
-    .split('\n')
-    .map((l) => (l.startsWith('- ') ? '• ' + lab(l.slice(2), true) : lab(l)))
-    .join('<br>');
+  return markupHtml(descOf(it, lang) || '');
 }
 
 /** The placeholder a record with no art, or with art that failed, falls back to. */

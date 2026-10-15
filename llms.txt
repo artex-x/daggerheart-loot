@@ -72,6 +72,27 @@ text, not the rules those items refer to.
 
 `kind` is one of `item`, `consumable`, `weapon`, `secondary`, `armor`.
 
+The record text in `data.json` (`ende`, `rud` of records, `sets` and `refs`)
+is Markdown subset source; the `text_ru` and `text_en` of `catalog.csv` are
+plain text, the same words with no markup. The subset is line-based: each line
+is one paragraph, and lines are never joined. `**bold**`, `*italic*` and
+`***both***`; a line that starts `- ` is a bulleted item and `1. ` a numbered
+item; a `|` line above a separator line such as `|---|---|` is a table head,
+and the `|` lines under it are its rows. A `\` before a punctuation character
+writes it literally (`\*`). Nothing else is markup: no links, headings,
+underline or HTML. Plain text is valid subset text.
+
+The catalog follows one style, and a homebrew file reads best in it too. A
+feature or property name at the head of a line is bold italics, colon inside:
+`***Reliable:*** +1 to attack rolls`. A cost the user pays by choice for an
+effect is bold from the verb to the resource: `**spend a Hope**`,
+`**mark 2 Stress**`. A condition is italics, the word only: `*Vulnerable*`,
+`*Restrained*`. Dice, rolls, ranges, damage types and numbers stay plain. For
+example: `***Grappling:*** On a successful attack, you can **spend a Hope** to
+*Restrain* the target.` A cost that someone else pays ("the target must mark a
+Stress") or that a sentence only mentions ("when you would spend a Hope") stays
+plain.
+
 ## The eight sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
@@ -319,14 +340,14 @@ name is an error, not ignored: write `quantity`, never `qty`.
 | `lists` | yes | 1 to 1000 lists, imported in this order. |
 | `name` | yes | The list's name, 1 to 200 characters. |
 | `money_mode` | no | `bag` (the default) or `coin`: how the list shows prices. See "Money". |
-| `player_note`, `gm_note` | no | The list's two notes, up to 4000 characters each. See "The two notes". |
+| `player_note`, `gm_note` | no | The list's two notes, up to 4000 characters each, markup counted; Markdown subset source. See "The two notes". |
 | `entries` | yes | The list's entries in list order: 0 to 5000 of them; `[]` for an empty list. |
 | entry `id` | yes | A record id from `catalog.csv`, e.g. `ci1`. |
 | entry `name` | no | The record's name, for a person reading the file. Ignored on import. |
 | entry `source` | no | `official` - the only value in version 1; version 2 adds `homebrew` (see "Version 2"). |
 | entry `quantity` | no | A whole number, 1 to 99. Default 1. |
 | entry `price_coins` | no | A whole number of coins, 1 to 99999. Leave the key out for no price; never `null` or `0`. |
-| entry `player_note`, `gm_note` | no | The entry's two notes, up to 4000 characters each. |
+| entry `player_note`, `gm_note` | no | The entry's two notes, up to 4000 characters each, markup counted; Markdown subset source. |
 
 ### What the site does with a file
 
@@ -509,7 +530,8 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v2.json
   `section` with `key`, `en`, `ru`) and `cards` (`sets` and `refs`: the own
   set card and rule cards the item names, by key, each with every text
   field). `tier` is the loot tier, or `A` on equipment only when `eq.tier`
-  is `A`.
+  is `A`. Its `ende` and `rud` and its cards' `ende` and `rud` are Markdown
+  subset source ("Data" above).
 
 A snapshot is optional. Without one, an entry imports only into an account
 that holds its key, or the key the site gave it on the homebrew import (see
@@ -783,7 +805,7 @@ held card has.
 | card `book` | no | The `key` of a source of this file. Leave it out for no source. |
 | card `en`, `ru` | one of them | The card's names, up to 80 characters each. |
 | card `ensub`, `rusub` | no | A rule card's subtitles, up to 60 characters each. Never on a set card. |
-| card `ende`, `rud` | no | A set card's bonus or a rule card's text, up to 1500 characters each. |
+| card `ende`, `rud` | no | A set card's bonus or a rule card's text, up to 1500 characters each, markup counted; Markdown subset source ("Data" above). |
 | card `url` | no | A rule card's link: empty, or `https://` and printable ASCII, up to 300 characters. Never on a set card. |
 | card `items` | version 2 | 1 to 100 unique ids from `catalog.csv` the card also holds; never an `hb_` key. |
 | item `key` | yes | The item's key. |
@@ -791,7 +813,7 @@ held card has.
 | item `section` | no | The `key` of a section of the item's own source; never without `book`. |
 | item `kind` | yes | `item` (kept), `consumable` (spent) or `equip` (a weapon or armour, with `eq`). |
 | item `en`, `ru` | one of them | The item's names, up to 120 characters each. |
-| item `ende`, `rud` | no | The item's texts, up to 3000 characters each. |
+| item `ende`, `rud` | no | The item's texts, up to 3000 characters each, markup counted; Markdown subset source ("Data" above). |
 | item `tier` | no | Loot only: `1` to `4`, `A` (artifact) or `C` (cursed), from the book. Leave it out for none. |
 | item `eq` | with `equip` | The stat block below. |
 | item `craft` | no | 1 to 8 ids this item upgrades into. |
@@ -895,7 +917,8 @@ to choose the update on import.
 ## The two notes
 
 Every list, and every entry in it, carries two separate notes - `player_note`
-and `gm_note` in a file. The difference is what the players see.
+and `gm_note` in a file. The difference is what the players see. Both are
+Markdown subset source ("Data" above), markup counted in the 4000 characters.
 
 - **Player note** — what the party reads when the GM shares the list with
   them. The shop's pitch, a visible detail, a price they are quoted. Write it

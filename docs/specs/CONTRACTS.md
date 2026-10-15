@@ -318,6 +318,36 @@ All of them except the four `schema/` files are generated from `data.js` by
   the zip of `export-v2.json` (gm1's lists, the axe as a homebrew entry) and
   `docs/fixtures/homebrew-file/export.json`, each byte for byte.
 
+### Formatted text
+
+A text field marked Markdown carries the formatted-text subset of
+`docs/specs/FEATURES.md`, "Records", "Formatted text"; a file written before
+2026-10-15 is read the same way. Plain text is valid subset text, so no file
+version and no fixture changed. Stored homebrew text is read as Markdown with
+no migration: a pair of `*` draws italics or bold, a `\` before an ASCII
+punctuation character is hidden, a line that starts "1. " is a numbered list,
+and a `|` line above a separator line is a table. A stored list or entry note
+is read the same way, with no migration. The catalog text follows the catalog
+style of `FEATURES.md`, "Records", "Catalog style" (`***Name:***` names, bold
+costs, italic conditions); its plain text did not change, so `catalog.csv` and
+the stubs did not change. The app no longer finds labels by a colon.
+
+| Artefact | Field | Carries |
+|---|---|---|
+| `data.js`, `data.json` | `ende`, `rud` of records, `sets` and `refs` | Markdown subset source |
+| `names.json` | `sets[k].ende`, `sets[k].rud` | Markdown subset source, as `data.js` |
+| `catalog.csv` | `text_ru`, `text_en` | plain text (`markupText`, newlines folded) |
+| `i/<id>.html`, `i/en/<id>.html` | meta and Open Graph description, visible body | plain text |
+| Preview host cards (`/h/`, `/s/`) | description, set bonus, players' note | plain text, cut by `fit` |
+| `homebrew_items.content`, `homebrew_cards.content` | `ende`, `rud` | Markdown subset source |
+| `lists.player_note`, `lists.gm_note`, `list_entries.player_note`, `list_entries.gm_note` | notes | Markdown subset source |
+| `import-v1`, `import-v2`, `import-v3` files | list and entry `player_note`, `gm_note` | Markdown subset source |
+| `dhloot.lists.v2`, `#/l/` payload | list and entry `note`, `hnote` | Markdown subset source |
+| `homebrew-v1`, `homebrew-v2` files | item and card `ende`, `rud` | Markdown subset source |
+| `import-v2`, `import-v3` files | entry `snapshot` `ende`, `rud` and its `cards` texts | Markdown subset source |
+| Clipboard «Скопировать» | `text/plain`; `text/html` | plain text; flat HTML (`<b>`, `<i>`, `<br>`) |
+| Names, subtitles, source and section names | all | plain text, never parsed |
+
 `data.js` assigns `window.LOOT` from a classic script. That is not decoration:
 the dataset is cached apart from the hashed bundle, so a code change does not
 send the data again, and the app reads it at boot with no async bootstrap

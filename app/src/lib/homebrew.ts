@@ -819,6 +819,16 @@ export function isHomebrewRecord(it: Record_): it is HomebrewRecord {
   return it.src === 'homebrew';
 }
 
+/** Returns the one language a homebrew record's description is written in: `recordOf` and
+ *  `homebrew_snapshot_of` fill an empty language from the other, so equal texts are one
+ *  text - Russian when it holds a Cyrillic letter, else English when it holds a Latin one.
+ *  Null for a catalog record, two different texts, an empty text or one with no letter. */
+export function textLangOf(it: Record_): Lang | null {
+  if (!isHomebrewRecord(it) || !it.ende || it.ende !== it.rud) return null;
+  if (/[\u0400-\u04ff]/.test(it.ende)) return 'ru';
+  return /[A-Za-z]/.test(it.ende) ? 'en' : null;
+}
+
 /** Returns `base` with the own records and the linked records of other accounts in `byId`:
  *  an own record replaces nothing of `base`'s, and a linked one only takes a key that
  *  neither holds, so an own item wins a key. The own records also follow the catalog's in

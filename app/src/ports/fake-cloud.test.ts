@@ -1760,7 +1760,8 @@ describe('the seeded homebrew', () => {
     const { books, items } = SEED.homebrew.gm4;
     expect(SEED.lists.gm4).toEqual([]);
     expect(items.map((i) => [i.id, i.key, i.bookId])).toEqual([
-      [uuid(461), 'hb_longsrcaaaaaaaaa', books[0]?.id]
+      [uuid(461), 'hb_longsrcaaaaaaaaa', books[0]?.id],
+      [uuid(515), 'hb_markupscrollaaaa', undefined]
     ]);
     expect(
       books.map((b) => [
@@ -3061,7 +3062,10 @@ describe('the print sets', () => {
     const set = own.ok ? (own.set as { entries: { hid?: string }[] }) : null;
     expect(set?.entries.map((e) => e.hid)).toEqual([uuid(511), uuid(512)]);
     expect(SEED.printSets.every((p) => p.owner === 'gm4')).toBe(true);
-    expect(SEED.printSets).toHaveLength(13);
+    const markup = await prints.read('set-markup01');
+    const markupSet = markup.ok ? (markup.set as { entries: { hid?: string }[] }) : null;
+    expect(markupSet?.entries.map((e) => e.hid)).toEqual([uuid(515)]);
+    expect(SEED.printSets).toHaveLength(14);
   });
 
   it("deletes an account's sets with the account", async () => {

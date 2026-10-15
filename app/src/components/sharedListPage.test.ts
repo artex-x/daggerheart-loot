@@ -243,12 +243,34 @@ describe('the notes', () => {
     expect(afterB?.nextElementSibling).toBe(cc1Row);
   });
 
-  it('renders a newline in a note as a line break', () => {
+  it('draws each line of a note as its own paragraph', () => {
     const payload = encodeList({ name: 'X', ids: ['ci1'], note: 'Первая\nВторая' }, true);
     const { container } = render(App, { env: at('#/l/' + payload) });
-    const note = container.querySelector('.hitnote');
-    expect(note?.querySelector('br')).toBeInTheDocument();
-    expect(note).toHaveTextContent('ПерваяВторая');
+    const note = container.querySelector('.hitnote .htext');
+    expect([...(note?.querySelectorAll('p') ?? [])].map((p) => p.textContent)).toEqual([
+      'Первая',
+      'Вторая'
+    ]);
+  });
+
+  it('draws a list note and an entry note as formatted text, the label first', async () => {
+    const text = '**x** и *y*\n- пункт';
+    const payload = encodeList(
+      { name: 'X', ids: ['ci1'], note: text, meta: { ci1: { note: text } } },
+      true
+    );
+    const { container } = render(App, { env: at('#/l/' + payload) });
+    const notes = [...container.querySelectorAll('.hitnote .htext')];
+    expect(notes).toHaveLength(2);
+    for (const note of notes) {
+      expect(note.firstElementChild?.tagName).toBe('B');
+      expect(note.firstElementChild).toHaveTextContent('Для игроков');
+      expect(note.querySelector('p b')).toHaveTextContent('x');
+      expect(note.querySelector('p i')).toHaveTextContent('y');
+      expect(note.querySelector('ul li')).toHaveTextContent('пункт');
+      expect(note.textContent).not.toContain('*');
+    }
+    await expectNoA11yViolations(container);
   });
 });
 

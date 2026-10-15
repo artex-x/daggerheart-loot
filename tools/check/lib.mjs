@@ -116,6 +116,11 @@ export const STAGES = [
     half: 1
   },
   {
+    name: 'test:desc-style',
+    command: 'node --test --test-reporter=dot tools/desc-style.test.mjs',
+    half: 1
+  },
+  {
     name: 'test:supabase',
     command:
       'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs tools/supabase/backup-art.test.mjs',

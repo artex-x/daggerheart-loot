@@ -25,11 +25,14 @@ import {
   fieldOf,
   formProblems,
   lineOption,
+  langOptions,
   matchRecords,
   previewOf,
+  problemLang,
   problemText,
   recordMatches,
   recordOption,
+  type CardDraft,
   type ItemDraft,
   deleteItemAsk
 } from './homebrewForm.js';
@@ -84,28 +87,30 @@ const BOOK: BookRow = {
 };
 
 const t = dict('ru');
-const draft = (over: Partial<ItemDraft>): ItemDraft => ({ ...draftOf(null, 'ru'), ...over });
+const draft = (over: Partial<ItemDraft>): ItemDraft => ({ ...draftOf(null), ...over });
+/* What the item form opened on: the row and its draft. */
+const opened = (r: ItemRow) => ({ base: r.content, draft: draftOf(r) });
 
 describe('draftOf and contentOf', () => {
   it('starts a new item as a plain item in the default source', () => {
-    const d = draftOf(null, 'ru');
+    const d = draftOf(null);
     expect(d).toMatchObject({ kind: 'item', t: 'weapon', bookId: null, section: null });
-    expect(d.name).toBe('');
+    expect([d.ru, d.en, d.rud, d.ende]).toEqual(['', '', '', '']);
     expect(d.eqTier).toBe('');
   });
 
   it.each([
-    ['a weapon with a second set, in Russian', AXE, 'ru'],
-    ['a weapon, in English', AXE, 'en'],
-    ['an English-only loot item', CAP, 'en'],
-    ['an armour artifact', COAT, 'ru']
-  ] as const)('writes back %s unchanged', (_name, r, lang) => {
-    expect(canonJson(contentOf(draftOf(r, lang), lang, r.content))).toBe(canonJson(r.content));
+    ['a weapon with a second set', AXE],
+    ['an English-only loot item', CAP],
+    ['an armour artifact', COAT]
+  ] as const)('writes back %s unchanged', (_name, r) => {
+    expect(canonJson(contentOf(draftOf(r), opened(r)))).toBe(canonJson(r.content));
+    expect(canonJson(contentOf(draftOf(r), null))).toBe(canonJson(r.content));
   });
 
   it('writes the edited language and keeps the other one from the base', () => {
-    const d = { ...draftOf(CAP, 'ru'), name: '  Шапка  ', desc: '' };
-    expect(contentOf(d, 'ru', CAP.content)).toEqual({
+    const d = { ...draftOf(CAP), ru: '  Шапка  ' };
+    expect(contentOf(d, opened(CAP))).toEqual({
       kind: 'item',
       ru: 'Шапка',
       en: 'Whispering Cap',
@@ -115,23 +120,22 @@ describe('draftOf and contentOf', () => {
   });
 
   it('writes nothing of another kind or type, and keeps it in the draft', () => {
-    const d = { ...draftOf(AXE, 'ru'), kind: 'item' as const };
-    const c = contentOf(d, 'ru', AXE.content) as Record<string, unknown>;
+    const d = { ...draftOf(AXE), kind: 'item' as const };
+    const c = contentOf(d, opened(AXE)) as Record<string, unknown>;
     expect(c['eq']).toBeUndefined();
     expect([d.dmgDie, d.dmgBonus]).toEqual(['d10', '2']);
-    const armour = contentOf({ ...draftOf(AXE, 'ru'), t: 'armor' }, 'ru', null) as {
+    const armour = contentOf({ ...draftOf(AXE), t: 'armor' }, null) as {
       eq: Record<string, unknown>;
     };
     expect(Object.keys(armour.eq).sort()).toEqual(['t', 'tier']);
   });
 
   it('splits a stored damage into the die and the bonus', () => {
-    const d = draftOf(AXE, 'ru');
+    const d = draftOf(AXE);
     expect([d.dmgDie, d.dmgBonus]).toEqual(['d10', '2']);
     expect([d.altDmgDie, d.altDmgBonus]).toEqual(['d8', '']);
     const four = draftOf(
-      row({ kind: 'equip', ru: 'Нож', eq: { ...AXE.content.eq!, dmg: 'd4' } }),
-      'ru'
+      row({ kind: 'equip', ru: 'Нож', eq: { ...AXE.content.eq!, dmg: 'd4' } })
     );
     expect([four.dmgDie, four.dmgBonus]).toEqual(['d4', '']);
   });
@@ -145,7 +149,6 @@ describe('draftOf and contentOf', () => {
   ] as const)('joins the die %s and the bonus %o into %o', (die, bonus, dmg) => {
     const c = contentOf(
       draft({ kind: 'equip', t: 'weapon', eqTier: '1', dmgDie: die, dmgBonus: bonus }),
-      'ru',
       null
     ) as { eq: Record<string, unknown> };
     expect(c.eq['dmg']).toBe(dmg);
@@ -154,14 +157,12 @@ describe('draftOf and contentOf', () => {
   it('writes the second set from its own pair and reads the numbers of an armour', () => {
     const c = contentOf(
       draft({ kind: 'equip', t: 'weapon', eqTier: '1', bu: 'any', altDmgDie: 'd6' }),
-      'ru',
       null
     ) as { eq: Record<string, unknown> };
     expect(c.eq['bu']).toBe('any');
     expect(c.eq['alt']).toEqual({ dmg: 'd6' });
     const a = contentOf(
       draft({ kind: 'equip', t: 'armor', eqTier: 'A', as: '4', th0: '5', th1: 'x' }),
-      'ru',
       null
     ) as { eq: Record<string, unknown> };
     expect(a.eq).toEqual({ t: 'armor', tier: 'A', as: 4, th: [5, 'x'] });
@@ -169,15 +170,13 @@ describe('draftOf and contentOf', () => {
 
   it('writes the section only with a named source, and a loot tier only when chosen', () => {
     const c = contentOf(
-      draft({ name: 'А', section: 'hb_sectbladesaaaaaa', tier: 'C' }),
-      'ru',
+      draft({ ru: 'А', section: 'hb_sectbladesaaaaaa', tier: 'C' }),
       null
     ) as Record<string, unknown>;
     expect(c['section']).toBeUndefined();
     expect(c['tier']).toBe('C');
     const named = contentOf(
-      draft({ name: 'А', bookId: 'b1', section: 'hb_sectbladesaaaaaa' }),
-      'ru',
+      draft({ ru: 'А', bookId: 'b1', section: 'hb_sectbladesaaaaaa' }),
       null
     ) as Record<string, unknown>;
     expect(named['section']).toBe('hb_sectbladesaaaaaa');
@@ -187,12 +186,12 @@ describe('draftOf and contentOf', () => {
 
 describe('formProblems', () => {
   it('passes a draft the validators take', () => {
-    expect(formProblems(draftOf(AXE, 'ru'), 'ru', AXE.content, [BOOK])).toEqual([]);
-    expect(contentProblems(contentOf(draftOf(COAT, 'ru'), 'ru', null))).toEqual([]);
+    expect(formProblems(draftOf(AXE), opened(AXE), [BOOK])).toEqual([]);
+    expect(contentProblems(contentOf(draftOf(COAT), null))).toEqual([]);
   });
 
   it('refuses an equipment item with no tier, no name and every weapon field empty', () => {
-    const fields = formProblems(draft({ kind: 'equip' }), 'ru', null, []).map(fieldOf);
+    const fields = formProblems(draft({ kind: 'equip' }), null, []).map(fieldOf);
     expect(fields).toEqual([
       'hb-name',
       'hb-eqtier',
@@ -206,7 +205,7 @@ describe('formProblems', () => {
   });
 
   it('refuses a source another tab deleted', () => {
-    expect(formProblems(draft({ name: 'А', bookId: 'b9' }), 'ru', null, [BOOK])).toEqual([
+    expect(formProblems(draft({ ru: 'А', bookId: 'b9' }), null, [BOOK])).toEqual([
       { path: 'book', rule: 'gone' }
     ]);
   });
@@ -220,20 +219,20 @@ describe('formProblems', () => {
   ] as const)(
     'refuses the die %o with the bonus %o as a damage problem: %s',
     (die, bonus, bad) => {
-      const main = { ...draftOf(AXE, 'ru'), dmgDie: die, dmgBonus: bonus };
-      expect(formProblems(main, 'ru', AXE.content, [BOOK]).map(fieldOf)).toEqual(
+      const main = { ...draftOf(AXE), dmgDie: die, dmgBonus: bonus };
+      expect(formProblems(main, opened(AXE), [BOOK]).map(fieldOf)).toEqual(
         bad ? ['hb-dmg'] : []
       );
-      const alt = { ...draftOf(AXE, 'ru'), altDmgDie: die, altDmgBonus: bonus };
-      expect(formProblems(alt, 'ru', AXE.content, [BOOK]).map(fieldOf)).toEqual(
+      const alt = { ...draftOf(AXE), altDmgDie: die, altDmgBonus: bonus };
+      expect(formProblems(alt, opened(AXE), [BOOK]).map(fieldOf)).toEqual(
         bad ? ['hb-alt-dmg'] : []
       );
     }
   );
 
   it('refuses a half-filled second set on each field left empty', () => {
-    const d = { ...draftOf(AXE, 'ru'), altRg: '' as const, altDt: '' as const };
-    expect(formProblems(d, 'ru', AXE.content, [BOOK]).map(fieldOf)).toEqual([
+    const d = { ...draftOf(AXE), altRg: '' as const, altDt: '' as const };
+    expect(formProblems(d, opened(AXE), [BOOK]).map(fieldOf)).toEqual([
       'hb-alt-rg',
       'hb-alt-dt'
     ]);
@@ -265,14 +264,14 @@ describe('fieldOf and problemText', () => {
 
 describe('previewOf', () => {
   it('draws no stat block until the author chose a tier', () => {
-    const d = { ...draftOf(AXE, 'ru'), eqTier: '' as const };
-    expect(previewOf(AXE.key, d, 'ru', AXE.content, null).eq).toBeUndefined();
+    const d = { ...draftOf(AXE), eqTier: '' as const };
+    expect(previewOf(AXE.key, d, null).eq).toBeUndefined();
   });
 
   it('draws the source and section, and an artifact as the record tier', () => {
-    const r = previewOf(COAT.key, draftOf(COAT, 'ru'), 'ru', null, null);
+    const r = previewOf(COAT.key, draftOf(COAT), null);
     expect(r.tier).toBe('A');
-    const axe = previewOf(AXE.key, draftOf(AXE, 'ru'), 'ru', AXE.content, {
+    const axe = previewOf(AXE.key, draftOf(AXE), {
       ...BOOK.content,
       key: BOOK.key
     });
@@ -287,11 +286,11 @@ describe('previewOf', () => {
       { key: 'hb_otherrulecardaaa', kind: 'ref', ru: 'Другая', rud: 'Текст.' }
     ];
     const d = {
-      ...draftOf(AXE, 'ru'),
+      ...draftOf(AXE),
       set: 'hb_aldersetaaaaaaaa',
       refs: ['slow', 'hb_alderrulecardaaa']
     };
-    const r = previewOf(AXE.key, d, 'ru', AXE.content, null, cards);
+    const r = previewOf(AXE.key, d, null, cards);
     expect(Object.keys(r.cards?.sets ?? {})).toEqual(['hb_aldersetaaaaaaaa']);
     expect(Object.keys(r.cards?.refs ?? {})).toEqual(['hb_alderrulecardaaa']);
   });
@@ -314,48 +313,47 @@ describe('the relations of the draft', () => {
     ['all five relation keys', RELATED],
     ['an own line', row({ ...COAT.content, eq: { ...COAT.content.eq!, line: COAT.key } })]
   ] as const)('writes back an item with %s unchanged', (_name, r) => {
-    const back = contentOf(draftOf(r, 'ru'), 'ru', r.content, r.key);
+    const back = contentOf(draftOf(r), opened(r), r.key);
     expect(canonJson(back)).toBe(canonJson(r.content));
   });
 
   it('reads each line mode', () => {
-    expect(draftOf(AXE, 'ru')).toMatchObject({ lineMode: 'unique', line: '' });
-    expect(draftOf(RELATED, 'ru')).toMatchObject({ lineMode: 'in', line: 'q1' });
+    expect(draftOf(AXE)).toMatchObject({ lineMode: 'unique', line: '' });
+    expect(draftOf(RELATED)).toMatchObject({ lineMode: 'in', line: 'q1' });
     const own = row({ ...COAT.content, eq: { ...COAT.content.eq!, line: COAT.key } });
-    expect(draftOf(own, 'ru')).toMatchObject({ lineMode: 'new', line: '' });
+    expect(draftOf(own)).toMatchObject({ lineMode: 'new', line: '' });
   });
 
   it('writes the key as a new line only when it has one, and no line for «Уникальный»', () => {
-    const d = { ...draftOf(COAT, 'ru'), lineMode: 'new' as const };
-    const eq = (key?: string) =>
-      (contentOf(d, 'ru', null, key) as { eq: { line?: string } }).eq;
+    const d = { ...draftOf(COAT), lineMode: 'new' as const };
+    const eq = (key?: string) => (contentOf(d, null, key) as { eq: { line?: string } }).eq;
     expect(eq('hb_newkeyaaaaaaaaaa').line).toBe('hb_newkeyaaaaaaaaaa');
     expect(eq().line).toBeUndefined();
-    const unique = { ...draftOf(RELATED, 'ru'), lineMode: 'unique' as const };
-    const c = contentOf(unique, 'ru', null, RELATED.key) as { eq: { line?: string } };
+    const unique = { ...draftOf(RELATED), lineMode: 'unique' as const };
+    const c = contentOf(unique, null, RELATED.key) as { eq: { line?: string } };
     expect(c.eq.line).toBeUndefined();
   });
 
   it('refuses the item itself, a line that is missing or of another type, and an open card form', () => {
-    const self = { ...draftOf(AXE, 'ru'), craft: [AXE.key] };
-    expect(formProblems(self, 'ru', AXE.content, [BOOK], { key: AXE.key })).toEqual([
+    const self = { ...draftOf(AXE), craft: [AXE.key] };
+    expect(formProblems(self, opened(AXE), [BOOK], { key: AXE.key })).toEqual([
       { path: 'craft.0', rule: 'self' }
     ]);
-    const none = { ...draftOf(AXE, 'ru'), lineMode: 'in' as const };
-    expect(formProblems(none, 'ru', AXE.content, [BOOK])).toEqual([
+    const none = { ...draftOf(AXE), lineMode: 'in' as const };
+    expect(formProblems(none, opened(AXE), [BOOK])).toEqual([
       { path: 'eq.line', rule: 'required' }
     ]);
     const armour = { eq: { t: 'armor', tier: 1, line: 'f81' } } as unknown as Record_;
-    const typed = { ...draftOf(RELATED, 'ru') };
-    expect(formProblems(typed, 'ru', RELATED.content, [BOOK], { rungs: [armour] })).toEqual([
+    const typed = { ...draftOf(RELATED) };
+    expect(formProblems(typed, opened(RELATED), [BOOK], { rungs: [armour] })).toEqual([
       { path: 'eq.line', rule: 'enum' }
     ]);
-    expect(
-      formProblems(draftOf(AXE, 'ru'), 'ru', AXE.content, [BOOK], { open: 'set' })
-    ).toEqual([{ path: 'set', rule: 'open' }]);
-    expect(
-      formProblems(draftOf(AXE, 'ru'), 'ru', AXE.content, [BOOK], { open: 'ref' })
-    ).toEqual([{ path: 'refs', rule: 'open' }]);
+    expect(formProblems(draftOf(AXE), opened(AXE), [BOOK], { open: 'set' })).toEqual([
+      { path: 'set', rule: 'open' }
+    ]);
+    expect(formProblems(draftOf(AXE), opened(AXE), [BOOK], { open: 'ref' })).toEqual([
+      { path: 'refs', rule: 'open' }
+    ]);
   });
 
   it.each([
@@ -452,34 +450,47 @@ const card = (over: Partial<CardRow>): CardRow => ({
   ...over
 });
 
+const cardDraft = (over: Partial<CardDraft>): CardDraft => ({
+  ...cardDraftOf(null, null),
+  ...over
+});
+const cardOpened = (c: CardRow) => ({ base: c.content, draft: cardDraftOf(c, null) });
+
 describe('the card form', () => {
-  it('reads a card in one language with its own source, and a new card in the given one', () => {
-    expect(cardDraftOf(card({}), 'ru', null)).toEqual({
-      name: 'Клеймо',
-      sub: 'Черта',
-      text: 'Р.',
+  it('reads a card in both languages with its own source, and a new card in the given one', () => {
+    expect(cardDraftOf(card({}), null)).toEqual({
+      ru: 'Клеймо',
+      en: 'Brand',
+      rusub: 'Черта',
+      ensub: 'Feature',
+      rud: 'Р.',
+      ende: 'E.',
       url: '',
       bookId: 'b1'
     });
-    expect(cardDraftOf(null, 'en', 'b2')).toEqual({
-      name: '',
-      sub: '',
-      text: '',
+    expect(cardDraftOf(null, 'b2')).toEqual({
+      ru: '',
+      en: '',
+      rusub: '',
+      ensub: '',
+      rud: '',
+      ende: '',
       url: '',
       bookId: 'b2'
     });
   });
 
   it('writes the edited language and keeps the other one; a set writes no subtitle or link', () => {
-    const base = card({}).content;
+    const c = card({});
     const d = {
-      name: ' Клеймо II ',
-      sub: '',
-      text: 'Новый.',
+      ...cardDraftOf(c, null),
+      ru: ' Клеймо II ',
+      rusub: '',
+      rud: 'Новый.',
       url: ' https://a.test ',
       bookId: null
     };
-    expect(cardContentOf('ref', d, 'ru', base)).toEqual({
+    expect(cardContentOf('ref', d, cardOpened(c))).toEqual({
       en: 'Brand',
       ensub: 'Feature',
       ende: 'E.',
@@ -487,40 +498,64 @@ describe('the card form', () => {
       rud: 'Новый.',
       url: 'https://a.test'
     });
-    expect(cardContentOf('set', d, 'ru', base)).toEqual({
+    expect(cardContentOf('set', d, cardOpened(c))).toEqual({
       en: 'Brand',
       ende: 'E.',
       ru: 'Клеймо II',
       rud: 'Новый.'
     });
     const items = ['q1', 'ci1'];
-    const kept = cardContentOf('set', d, 'ru', { ...base, items });
+    const kept = cardContentOf('set', d, { ...cardOpened(c), base: { ...c.content, items } });
     expect(kept.items).toEqual(items);
     expect(kept.items).not.toBe(items);
   });
 
+  it('keepsAnotherDevicesWriteInAnUntouchedCardLanguage', () => {
+    const c = card({});
+    const d = { ...cardDraftOf(c, null), ru: 'Клеймо II' };
+    /* Another device wrote the English text after the form opened; the base is the row now. */
+    const now = { ...c.content, ende: 'Twice per rest.' };
+    const out = cardContentOf('ref', d, { base: now, draft: cardDraftOf(c, null) });
+    expect(out).toMatchObject({ ru: 'Клеймо II', en: 'Brand', ende: 'Twice per rest.' });
+  });
+
   it('refuses an empty name and text, a name another card holds and a link that is not https', () => {
-    const empty = { name: '', sub: '', text: ' ', url: '', bookId: null };
-    expect(cardFormProblems('set', empty, 'ru', null, []).map(cardFieldOf)).toEqual([
-      'name',
-      'text'
-    ]);
+    const empty = cardDraft({ rud: ' ' });
+    expect(cardFormProblems('set', empty, null, []).map(cardFieldOf)).toEqual(['name', 'text']);
     /* U+180E survives trim() and is still a space of the class homebrew_names_ok holds. */
     const mongolian = String.fromCharCode(0x180e);
-    const spaced = { name: mongolian, sub: '', text: mongolian, url: '', bookId: null };
-    expect(cardFormProblems('set', spaced, 'ru', null, []).map(cardFieldOf)).toEqual([
+    const spaced = cardDraft({ ru: mongolian, rud: mongolian });
+    expect(cardFormProblems('set', spaced, null, []).map(cardFieldOf)).toEqual([
       'name',
       'text'
     ]);
-    const taken = { name: 'клеймо', sub: '', text: 'Т.', url: 'http://a.test', bookId: null };
-    const problems = cardFormProblems('ref', taken, 'ru', null, [card({})]);
+    const taken = cardDraft({ ru: 'клеймо', rud: 'Т.', url: 'http://a.test' });
+    const problems = cardFormProblems('ref', taken, null, [card({})]);
     expect(problems).toEqual([
       { path: 'url', rule: 'pattern' },
-      { path: 'name', rule: 'duplicate' }
+      { path: 'ru', rule: 'duplicate' }
     ]);
-    expect(problems.map((p) => cardProblemText('ref', p, t, taken.name))).toEqual([
+    expect(problems.map((p) => cardProblemText('ref', p, t, taken.ru))).toEqual([
       t.hbErrUrl,
       'Карта правил «клеймо» уже есть.'
+    ]);
+  });
+
+  it('checksANameDuplicatePerChangedLanguage', () => {
+    const others = [card({ id: 'c2', content: { ru: 'Кузня', en: 'Forge', rud: 'Т.' } })];
+    const mine = card({ content: { ru: 'Кузня', en: 'Brand', rud: 'Р.' } });
+    /* A name the card held when the form opened is not checked again. */
+    const same = cardDraftOf(mine, null);
+    expect(cardFormProblems('ref', same, cardOpened(mine), others)).toEqual([]);
+    const renamed = { ...same, en: 'forge' };
+    expect(cardFormProblems('ref', renamed, cardOpened(mine), others)).toEqual([
+      { path: 'en', rule: 'duplicate' }
+    ]);
+    /* A new card checks every language it names. */
+    const fresh = cardDraft({ ru: 'кузня', en: 'Forge', rud: 'Т.' });
+    expect(cardFormProblems('set', fresh, null, others)).toEqual([
+      { path: 'ru', rule: 'duplicate' },
+      { path: 'en', rule: 'duplicate' }
     ]);
   });
 
@@ -528,7 +563,7 @@ describe('the card form', () => {
     ['set', { path: 'name', rule: 'required' }, 'name', t.hbErrName],
     ['set', { path: 'text', rule: 'required' }, 'text', t.hbErrSetBonus],
     ['ref', { path: 'text', rule: 'required' }, 'text', t.hbErrCardText],
-    ['set', { path: 'name', rule: 'duplicate' }, 'name', 'Комплект «Кузня» уже есть.'],
+    ['set', { path: 'ru', rule: 'duplicate' }, 'name', 'Комплект «Кузня» уже есть.'],
     ['ref', { path: 'ru', rule: 'long' }, 'name', 'Не длиннее 80 знаков.'],
     ['ref', { path: 'rusub', rule: 'long' }, 'sub', 'Не длиннее 60 знаков.'],
     ['ref', { path: 'rud', rule: 'long' }, 'text', 'Не длиннее 1500 знаков.'],
@@ -538,6 +573,64 @@ describe('the card form', () => {
   ] as const)('reads a %s card problem %o as its field and text', (kind, p, field, text) => {
     expect(cardFieldOf(p)).toBe(field);
     expect(cardProblemText(kind, p, t, ' Кузня ')).toBe(text);
+  });
+});
+
+describe('both languages', () => {
+  it('writesBothLanguagesOfTheDraftInOneContent', () => {
+    const d = draft({ ru: 'Рог', en: 'Horn', rud: '**Трубит.**', ende: 'Blows.' });
+    expect(contentOf(d, null)).toEqual({
+      kind: 'item',
+      ru: 'Рог',
+      en: 'Horn',
+      rud: '**Трубит.**',
+      ende: 'Blows.'
+    });
+  });
+
+  it('writesAnUntouchedLanguageAsTheRowHoldsIt', () => {
+    /* A stored text that another client wrote untrimmed stays as it is. */
+    const raw = row({ kind: 'item', ru: 'Шапка', en: ' Cap ', ende: 'Hear. ' });
+    const d = { ...draftOf(raw), ru: 'Шапка II' };
+    expect(contentOf(d, opened(raw))).toEqual({
+      kind: 'item',
+      ru: 'Шапка II',
+      en: ' Cap ',
+      ende: 'Hear. '
+    });
+    /* The base wins over the draft for an untouched language: a reload changed the row. */
+    const moved = { base: { ...raw.content, ende: 'Newer.' }, draft: draftOf(raw) };
+    expect(contentOf(d, moved)).toMatchObject({ ende: 'Newer.' });
+  });
+
+  it('trimsOnlyAChangedLanguage', () => {
+    const raw = row({ kind: 'item', ru: ' Шапка ', en: ' Cap ' });
+    const d = { ...draftOf(raw), en: ' Cap II ' };
+    expect(contentOf(d, opened(raw))).toEqual({ kind: 'item', ru: ' Шапка ', en: 'Cap II' });
+  });
+
+  it('readsTheLanguageOfAProblemFromItsPath', () => {
+    const lang = (path: string) => problemLang({ path, rule: 'long' });
+    expect(['en', 'ende', 'ensub', 'sections.1.en'].map(lang)).toEqual([
+      'en',
+      'en',
+      'en',
+      'en'
+    ]);
+    expect(['ru', 'rud', 'rusub'].map(lang)).toEqual(['ru', 'ru', 'ru']);
+    expect(['name', 'text', 'eq.tier', ''].map(lang)).toEqual([null, null, null, null]);
+  });
+
+  it('marks an empty language on the switch', () => {
+    const d = draft({ ru: 'Рог', ende: ' ' });
+    expect(langOptions('item', d, t)).toEqual([
+      { value: 'ru', label: 'RU' },
+      { value: 'en', label: 'EN - пусто' }
+    ]);
+    expect(langOptions('ref', cardDraft({ ensub: 'Sub' }), dict('en'))).toEqual([
+      { value: 'ru', label: 'RU - empty' },
+      { value: 'en', label: 'EN' }
+    ]);
   });
 });
 

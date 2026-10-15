@@ -208,6 +208,34 @@ const N_REC = '\x1e',
     'llms.txt still teaches a #/print/ address'
   );
 
+  /* Record text is Markdown subset source and the csv is plain text (CONTRACTS.md
+     section 4, "Formatted text"): an agent reads which file carries which. */
+  const dataAt = machine.indexOf('\n## Data\n');
+  /* Whitespace runs fold to one space, so a reflow of the paragraph keeps the guard. */
+  const dataSection = machine
+    .slice(dataAt, machine.indexOf('\n## ', dataAt + 1))
+    .replace(/\s+/g, ' ');
+  ok(
+    dataSection.includes('is Markdown subset source') &&
+      dataSection.includes('`catalog.csv` are plain text'),
+    'llms.txt "Data" does not say that data.json text is Markdown and catalog.csv text plain'
+  );
+  /* The catalog style (FEATURES.md, "Records", "Catalog style") for a model that writes
+     a homebrew file. */
+  ok(
+    dataSection.includes('`***Reliable:*** +1 to attack rolls`') &&
+      dataSection.includes('**spend a Hope**'),
+    'llms.txt "Data" does not teach the catalog style (***Reliable:***, **spend a Hope**)'
+  );
+  ok(
+    contractsText.includes('### Formatted text') &&
+      contractsText.includes('| Artefact | Field | Carries |') &&
+      contractsText.includes('| `homebrew-v1`, `homebrew-v2` files |') &&
+      contractsText.includes('`list_entries.player_note`') &&
+      contractsText.includes('"Catalog style"'),
+    'CONTRACTS.md section 4 has no "Carries" table of formatted text with the homebrew files and the notes, or no "Catalog style" pointer'
+  );
+
   /* The preview host's four link families are frozen from their first deploy
      (CONTRACTS.md section 5): the fixture, the documents and the deploy build name one
      origin. */

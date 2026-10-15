@@ -30,11 +30,11 @@ RootWebArea "Ночной Покров — Генератор лута — Dagge
     link "показать в таблице" [url=#/tables/dv/dve66]
     button "Страница"
     StaticText "143"
-    ... StaticText x7 of 11 same-shape siblings elided
+    ... StaticText x13 of 17 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Теневые оковы:"
-    StaticText " Когда вы отмечаете Ячейку Брони, можете потратить Надежду и зас..." [namelen=208 namehash=4202295e]
+    StaticText "Замедлен"
+    StaticText ", у него есть пассивное свойство «Медленный»."
     DisclosureTriangle "Медленный ОГРОМНАЯ ЗЕЛЁНАЯ СЛИЗЬ · СВОЙСТВО ПРОТИВНИКА · ПАССИВН..." [expanded=false namelen=66 namehash=48799063]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -107,11 +107,11 @@ RootWebArea "Nightshroud — Daggerheart Loot Generator" [url=#/i/dve66]
     link "show in the table" [url=#/tables/dv/dve66]
     button "Page"
     StaticText "143"
-    ... StaticText x7 of 11 same-shape siblings elided
+    ... StaticText x13 of 17 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "Shadowbind:"
-    StaticText " When you mark an Armor Slot, you can spend a Hope to have the a..." [namelen=193 namehash=5c4d1c23]
+    StaticText "Slowed"
+    StaticText ", they have the "Slow" passive feature."
     DisclosureTriangle "Slow HUGE GREEN OOZE · ADVERSARY FEATURE · PASSIVE" [expanded=false]
     button "Share"
     button "Copy image" [description=Copy image]

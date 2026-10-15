@@ -23,7 +23,9 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+EN - пусто
 RU
+RU - пусто
 Vault of Ages
 Wondrous
 daggerheart.com
@@ -33,17 +35,21 @@ daggerheart.com
 Выбрать из предметов
 Выбрать файл
 Готово
+Жирный
 К содержимому
 Карты правил
 Конфиденциальность
+Курсив
 ЛутDaggerheart
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
+Нумерованный список
 Обычные правила
 Отмена
 Подсказка: Источник
 Подсказка: Карты правил
 Подсказка: Комплект
+Подсказка: Описание
 Подсказка: Получается из
 Подсказка: Улучшается до
 Поиск
@@ -54,7 +60,9 @@ daggerheart.com
 Сообщества
 Сохранить
 Списки
+Список
 Страница
+Таблица
 Таблицы
 Улучшается до
 Условия использования
@@ -80,6 +88,8 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
+Bold
+Bulleted list
 Cancel
 Choose a file
 Choose from items
@@ -89,7 +99,9 @@ Done
 Dragon's Vault
 Dread
 EN
+EN - empty
 Equipment
+Help: Description
 Help: Made from
 Help: Rule cards
 Help: Set
@@ -97,20 +109,23 @@ Help: Source
 Help: Upgrades to
 HomebrewAlder Workshop+ New source...
 Install as an app
+Italic
 Item
 Lists
 Made from
 New rule card
 No tier
 NoneBlazing TwinsSaint's EnsembleAlder Set (HB)+ New set...
-Page
+Numbered list
 Privacy
 RU
+RU - empty
 Rule cards
 Save
 Search
 Skip to content
 Standard rules
+Table
 Tables
 Terms of use
 Upgrades to
@@ -118,3 +133,4 @@ Vault of Ages
 Wondrous
 daggerheart.com
 ЛутDaggerheart
+Страница

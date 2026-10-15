@@ -93,10 +93,12 @@
     gap: 6px;
   }
 
+  /* A hint of several sentences keeps its line breaks (`mdHelp`). */
   .fhelp {
     margin: 0;
     font-size: 12.5px;
     color: var(--muted2);
+    white-space: pre-line;
   }
 
   .req {

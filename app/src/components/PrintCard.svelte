@@ -6,13 +6,15 @@
    * exactly where the live code does - `class:bw` and the `{#if bw}`
    * branches, not two components: they share every helper and the fit.
    *
-   * `.pc-text` reproduces `descHtml`'s non-plain branch, not `RecordCard`'s
-   * `<p>`s - see `descParts` and CLAUDE.md's leading-space rule: no
-   * whitespace of any kind between the tags in that block. */
-  import { artSrc, descParts } from '../lib/desc.js';
+   * `.pc-text` joins the paragraphs of the text with `<br>`, not
+   * `RecordCard`'s `<p>`s, and has no whitespace of any kind between the tags
+   * in that block (docs/specs/COVERAGE.md, "Whitespace text nodes are content"). */
+  import MarkupInline from './MarkupInline.svelte';
+  import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
   import { printSrc } from '../lib/label.js';
+  import { afterLead, parseMarkup, type MarkupBlock } from '../lib/markup.js';
   import { qtySuffix } from '../lib/share.js';
   import {
     cardArt,
@@ -23,7 +25,6 @@
     PRINT_GLYPH,
     printTrait
   } from '../lib/print.js';
-  import type { DescPart } from '../lib/desc.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   const GROW_CAP = 5;
@@ -40,8 +41,8 @@
     onartfail: (id: string) => void;
     /** The list's count for this card - FEATURES.md, Print. */
     qty?: number | undefined;
-    /** A set's shared bonus, drawn as the last text line. `PrintPage` builds
-     *  it: the card has no index. */
+    /** A set's shared bonus, drawn after the text: the label in italics, then the
+     *  bonus text, formatted. `PrintPage` builds it: the card has no index. */
     setLine?: { label: string; body: string } | undefined;
   }
 
@@ -80,14 +81,20 @@
      Spellcast), on both strips; the damage box names each strip's own type. */
   const magFrame = $derived(eq?.cls === 'mag');
   const tag2 = $derived(eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls, lang) : '');
-  const parts = $derived<DescPart[]>(
-    setLine
-      ? [
-          ...descParts(it, lang),
-          { kind: 'line', label: setLine.label, body: ' ' + setLine.body }
-        ]
-      : descParts(it, lang)
-  );
+  /* The text's blocks, then the set bonus: its label leads its first paragraph. */
+  const blocks = $derived.by<{ b: MarkupBlock; lead?: string }[]>(() => {
+    const own = descBlocks(it, lang).map((b) => ({ b }));
+    if (!setLine) return own;
+    const [first, ...rest] = parseMarkup(setLine.body);
+    const head =
+      first?.t === 'p'
+        ? [{ b: { t: 'p' as const, c: afterLead(first.c) }, lead: setLine.label }]
+        : [
+            { b: { t: 'p' as const, c: afterLead([]) }, lead: setLine.label },
+            ...(first ? [{ b: first }] : [])
+          ];
+    return [...own, ...head, ...rest.map((b) => ({ b }))];
+  });
   const src = $derived(printSrc(it, lang));
   const hasArt = $derived(!!it.img && !artBroken);
   const pkClass = $derived(
@@ -384,23 +391,25 @@
         eq,
         magFrame
       )}{#if eq.alt}{@render dmgStrip(eq.alt, magFrame)}{/if}{/if}<div class="pc-text"
-      >{#each parts as part, i (i)}{#if part.kind === 'list'}<ul class="dlist"
-          >{#each part.items as line, k (k)}<li
-              >{#if line.label}<i>{line.label}:</i>{/if}{line.body}</li
-            >{/each}</ul
-        >{:else}{#if i > 0 && parts[i - 1]?.kind === 'line'}<br
-          />{/if}{#if part.label}<i>{part.label}:</i>{/if}{part.body}{/if}{/each}</div
+      >{#each blocks as { b, lead }, i (i)}{#if b.t === 'ul'}<ul class="dlist"
+          >{#each b.items as item, k (k)}<li><MarkupInline c={item} /></li>{/each}</ul
+        >{:else if b.t === 'ol'}<ol class="dlist" start={b.start}
+          >{#each b.items as item, k (k)}<li><MarkupInline c={item} /></li>{/each}</ol
+        >{:else if b.t === 'table'}<table class="dtable"
+          ><thead><tr>{#each b.head as cell, k (k)}<th scope="col"><MarkupInline c={cell} /></th>{/each}</tr></thead
+          ><tbody>{#each b.rows as row, k (k)}<tr>{#each row as cell, m (m)}<td><MarkupInline c={cell} /></td>{/each}</tr>{/each}</tbody
+        ></table>{:else}{#if i > 0 && blocks[i - 1]?.b.t === 'p'}<br
+          />{/if}{#if lead}<i>{lead}:</i>{/if}<MarkupInline c={b.c} />{/if}{/each}</div
     ><div class="pc-bottom"><span>Daggerheart</span><span>{src}</span></div></div
   ></article
 >
 
 <!-- This block is style.css 1128-1395, ported verbatim in order - including
-     `.pc-text p`, `.pc-text ol` and `.pc-text em`, which this component never
-     draws (`descHtml`'s non-plain branch emits neither a `<p>` nor an `<ol>`,
-     and no label uses `<em>`). A full copy is easier to audit against
-     style.css than a pruned one, so the ignore below covers the whole
-     stylesheet rather than pruning three rules a future diff would then
-     have to reconcile by hand. -->
+     `.pc-text p` and `.pc-text em`, which this component never draws (the
+     text's paragraphs are joined with `<br>`, and the markup draws `<i>`, not
+     `<em>`). A full copy is easier to audit against style.css than a pruned
+     one, so the ignore below covers the whole stylesheet rather than pruning
+     rules a future diff would then have to reconcile by hand. -->
 <!-- svelte-ignore css_unused_selector -->
 <style>
   .pcard {
@@ -1088,9 +1097,30 @@
     margin: 1px 0;
   }
 
-  .pc-text i,
+  /* Global: MarkupInline draws the text's `<i>` and `<b>`. */
+  .pc-text :global(i),
+  .pc-text :global(b),
   .pc-text em {
     color: #000;
+  }
+
+  /* A table spans the text block and never grows past it: fixed columns, words
+     broken anywhere; the fit ladder measures it with the rest of the text. */
+  .pc-text table.dtable {
+    table-layout: fixed;
+    width: 100%;
+    margin: 0 0 1.4cqw;
+    border-collapse: collapse;
+    font: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  .pc-text .dtable th,
+  .pc-text .dtable td {
+    border: 0.2mm solid #000;
+    padding: 0.4cqw 0.8cqw;
+    text-align: left;
+    vertical-align: top;
   }
 
   .pc-bottom {

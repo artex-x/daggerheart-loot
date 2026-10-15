@@ -307,6 +307,12 @@ describe('the folded haystack cache', () => {
     const it = thing('Имя');
     expect(hay(it)).toBe(hay(it));
   });
+
+  it('searches a description as it reads, without its markup', () => {
+    const it = { ...thing('Имя'), rud: '*Надёжное:* **плюс** один' };
+    expect(matches(it, parseQuery('надежное: плюс'), () => '')).toBe(true);
+    expect(hayFor(() => '')(it).texts).toEqual(['надежное: плюс один']);
+  });
 });
 
 /** Today's rule before words and forms: the folded query as one substring of one field. */

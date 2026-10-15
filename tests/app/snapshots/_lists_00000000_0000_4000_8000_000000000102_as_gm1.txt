@@ -58,18 +58,25 @@ Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Жирный
 К содержимому
 Конфиденциальность
+Курсив
 ЛутDaggerheart
 Название списка
+Нумерованный список
 Обычные правила
 Поделиться
+Подсказка: Для игроков
+Подсказка: Только для мастера
 Поиск
+Просмотр
 Свой предмет
 Скачать JSON
 Скопировать текст
 Сообщества
 Списки
+Список
 Таблицы
 Удалить
 Условия использования
@@ -123,6 +130,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
 Account: gm1@example.test
 Alt. tables
 Arazo's Artifacts
+Bold
+Bulleted list
 Communities
 Copy text
 Delete
@@ -130,10 +139,15 @@ Download JSON
 Dragon's Vault
 Dread
 EN
+Help: For players
+Help: GM only
 Install as an app
+Italic
 List name
 Lists
+Numbered list
 Own item
+Preview
 Privacy
 RU
 Search

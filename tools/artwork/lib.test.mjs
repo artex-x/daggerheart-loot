@@ -460,9 +460,11 @@ const RULE = 'docs/artwork.md, "The card follows the site\'s card"';
 
 // The pinned hash of RecordCard.svelte's card head (docs/artwork.md, "The card
 // follows the site's card").
-const CARD_HEAD_SHA256 = '24a2ccdf03afdfb2a4d2e82661f0adfebc515daeed27cb11642e13a5671b6287';
+const CARD_HEAD_SHA256 = 'd22d37ab2382537819b4a911abab629de918927afefd6cbd370c4871fe1f1b51';
 
-const CARD_FILES = ['RecordCard', 'Badge', 'Seg'].map((n) => `app/src/components/${n}.svelte`);
+const CARD_FILES = ['RecordCard', 'Badge', 'Seg', 'Markup'].map(
+  (n) => `app/src/components/${n}.svelte`
+);
 
 function classesMissingFrom(css) {
   return REVIEW_CARD_CLASSES.filter(
@@ -962,7 +964,7 @@ describe('image review', () => {
 
     it('changes the card head hash for an added line', () => {
       const text = readRepo('app/src/components/RecordCard.svelte');
-      const marker = 'const parts = $derived(descParts(it, lang));';
+      const marker = 'const blocks = $derived(descBlocks(it, lang));';
       assert.ok(text.includes(marker));
       assert.notEqual(
         cardHeadSource(text),

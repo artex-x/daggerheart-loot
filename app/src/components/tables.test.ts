@@ -65,12 +65,12 @@ const LOOT: Loot = {
       row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: ['ci3'] }),
       row({ id: 'ci3', roll: 3, ru: 'Плащ Бездны' }),
       /* No roll: it is equipment, so it carries a stat line instead - and its
-         description is two parts, a labelled line then a labelled list item,
-         to reach both shapes `descParts` produces. */
+         description is two blocks, a labelled line then a labelled list item,
+         to reach both shapes a row draws. */
       row({
         id: 'ci4',
         ru: 'Клинок Эха',
-        rud: 'Свойство: Острое.\n- Хват: Одноручное',
+        rud: '*Свойство:* Острое.\n- *Хват:* Одноручное',
         eq: {
           t: 'weapon',
           tier: 1,
@@ -263,6 +263,32 @@ describe('the index', () => {
     render(App, { env: at() });
     expect(screen.getByText('Свойство:')).toBeInTheDocument();
     expect(screen.getByText('Хват:')).toBeInTheDocument();
+  });
+
+  it('draws formatted text as one run: bold, a numbered list and table rows, with no span', async () => {
+    const FORMATTED: Loot = {
+      ...LOOT,
+      items: {
+        ...LOOT.items,
+        core_item: (LOOT.items['core_item'] ?? []).map((r) =>
+          r.id === 'ci1'
+            ? {
+                ...r,
+                rud: '**Раз:** тихо.\n2. Один\n3. Два\n| А | Б |\n|---|---|\n| 1 | *2* |'
+              }
+            : r
+        )
+      }
+    };
+    const { container } = render(App, { env: at({ data: fakeData(FORMATTED) }) });
+    const run = container.querySelector(
+      '[data-row="ci1"] .rt > span:not(.rstats):not(.rcraft)'
+    );
+    expect(run?.innerHTML.replace(/<!---->/g, '')).toBe(
+      '<b>Раз:</b> тихо.<br>2. Один<br>3. Два<br>А | Б<br>1 | <i>2</i>'
+    );
+    expect(run?.querySelector('span')).toBeNull();
+    await expectNoA11yViolations(container);
   });
 });
 

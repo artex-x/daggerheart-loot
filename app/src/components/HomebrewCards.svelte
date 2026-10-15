@@ -17,6 +17,7 @@
   import Empty from './Empty.svelte';
   import Icon from './Icon.svelte';
   import ItemPicker from './ItemPicker.svelte';
+  import Markup from './Markup.svelte';
   import SearchBox from './SearchBox.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import { refsOf } from '../lib/data.js';
@@ -36,6 +37,7 @@
   } from '../lib/homebrew.js';
   import { cardMatches, recordOption, type PickOption } from '../lib/homebrewForm.js';
   import { nameOf } from '../lib/i18n.js';
+  import { parseMarkup } from '../lib/markup.js';
   import { srcLabel } from '../lib/label.js';
   import { LIST_SEARCH_AT } from '../lib/lists.js';
   import { countOf, plural } from '../lib/plural.js';
@@ -442,10 +444,11 @@
                     <i>{named({ en: c.content.ensub, ru: c.content.rusub })}</i>
                   </p>
                 {/if}
-                <p class="text">
-                  {#each named( { en: c.content.ende, ru: c.content.rud } ).split('\n') as line, j (j)}{#if j > 0}<br
-                      />{/if}{line}{/each}
-                </p>
+                <div class="text mdtext">
+                  <Markup
+                    blocks={parseMarkup(named({ en: c.content.ende, ru: c.content.rud }))}
+                  />
+                </div>
                 {#if kind === 'ref' && c.content.url}
                   <a class="url" href={c.content.url} target="_blank" rel="noopener"
                     >{c.content.url}</a

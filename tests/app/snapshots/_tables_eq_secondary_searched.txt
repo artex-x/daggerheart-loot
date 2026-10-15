@@ -64,7 +64,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Нож Единорога" [checked=false]
     button "32 Нож Единорога Ранг 4 · Физическое · Искусность · Вплотную · d..." [namelen=346 namehash=240c1322]
     checkbox "Легендарный Щит Арктура" [checked=false]
-    button "46 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=297 namehash=0b8301ba]
+    button "46 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=296 namehash=42c22c9c]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]

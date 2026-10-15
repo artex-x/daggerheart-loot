@@ -41,7 +41,10 @@ describe('plural', () => {
   it('givesEveryFormSetThreeRussianAndTwoEnglishForms', () => {
     const ru = dict('ru');
     const en = dict('en');
-    const keys = (Object.keys(ru) as (keyof typeof ru)[]).filter((k) => ru[k].includes('|'));
+    /* `mdHelp` teaches the table syntax: its bars are text, not form separators. */
+    const keys = (Object.keys(ru) as (keyof typeof ru)[]).filter(
+      (k) => ru[k].includes('|') && k !== 'mdHelp'
+    );
     expect(keys).toContain('selectedN');
     for (const k of keys) {
       expect(ru[k].split('|'), k).toHaveLength(3);

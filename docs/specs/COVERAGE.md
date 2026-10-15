@@ -1205,6 +1205,8 @@ tracing a feature back through history).
 | v1 storage and v1 links migrate | `state/lists.test.ts` |
 | Record card, modal, copy, share, image | `record.test.ts`, `share.test.ts`, `tests/app/states.js` |
 | Craft chains, referenced cards | `record.test.ts`, `tables.test.ts`, `share.test.ts`, `derived` |
+| Formatted text (`FEATURES.md`, "Records", "Formatted text"): the grammar, the plain and flat forms, the catalog style, the card, row and print renderers, the clipboard, search, the stubs, the csv and the preview host's cards | `lib/markup.test.ts`, `lib/desc.test.ts`, `components/markup.test.ts` (`Markup.svelte`, `MarkupInline.svelte`), `record.test.ts`, `tables.test.ts`, `printPage.test.ts`, `lib/share.test.ts`, `lib/search.test.ts`, `tools/desc-style.test.mjs` (stage `test:desc-style`: the catalog style rules), `dataint` (no unmatched `*`, the text without its markup, the EN and RU markup shape, the catalog style, the dice guard), `derived`, `craft`, `preview/worker.test.mjs`, `tests/app/states.js` case 74 (the card text's computed look, the table no wider than the card at 360 px), `app/print` (a 3000-character text with a 4x20 table inside its card), the `#/h/<uuid> ~ markup as gm4`, `#/search ~ markup row as gm4` and `#/p/set-markup01 as gm4` goldens |
+| Formatted text boxes (`FEATURES.md`, "Consistency rules", rule 18) and both languages of a homebrew form ("Homebrew", "Language"; `I18N.md`, "Record text"): the toolbar's edits, the tab stop, the shortcuts, the cap, «Просмотр», the «?», the switch, one write for both languages, an untouched language as the row holds it, the hidden language's problem, the fallback line; the list and entry note boxes (a read-only box with «Просмотр» only, the draft a focused box keeps, the label and line that name a box) and `HitNote.svelte` through `Markup` | `lib/markupEdit.test.ts`, `components/markupField.test.ts` (`MarkupField.svelte`), `listPage.test.ts` ("the note boxes"), `sharedListPage.test.ts` ("the notes"), `lib/homebrewForm.test.ts`, `lib/homebrew.test.ts` (`textLangOf`), `homebrewEditor.test.ts`, `homebrewPage.test.ts`, `quickItem.test.ts`, `record.test.ts`, `tests/app/states.js` case 75 (the browser's undo of a toolbar edit), the goldens of the editor, the card forms, the quick item and `#/h/<uuid 513>`, `tests/app/states.js` case 76 (list notes at 360), the goldens `#/lists/a ~ note preview`, `~ note help` and `~ rolled, formatted` |
 | Print | `app/print` (`#/p/<id>` sheets made through the fake as `gm2`), `printPage.test.ts` (a switch lasting the visit, nothing stored, the note from `KeepNote.svelte` and its link; each state of `#/p/`; the retired page), `lib/printSet.test.ts`, `lib/hash.test.ts`, `lib/pending.test.ts` (the `print` action), `state/app.test.ts` (the default read from `dhloot.prefs.v1`, a page pick for this visit; the press, the cut, the limit, the failure, the pending print, #70 and D70's reload), `pickRow.test.ts`, `tables.test.ts`, `sharedListPage.test.ts`, `listPage.test.ts` and `lists.test.ts` (the three controls and their prompts), `ports/fake-cloud.test.ts` (the seeded sets), `tests/db/print-sets.test.mjs`, `tests/app/states.js` cases 36 and 73, the `#/p/set-twocards as gm1` and `~ colour for this visit as gm1` goldens and the `#/p/` goldens of the print suite |
 | Language switch | `i18n.test.ts`, `app/src/lib/dict.ts`'s compile-time check, `tests/app/sweep.js`, `tests/app/typo.js` |
 | Starting section | `state/app.test.ts`, `tests/app/states.js` |
@@ -1509,6 +1511,16 @@ fold, the path runs past 2048 characters, the catch-all 503, and every
 the real reads and the CPU time are outside it: `wrangler pages deployment
 tail` measures them on the deployed host (`.claude/README.md`, "Preview
 host").
+
+`tools/desc-style.test.mjs` is a separate suite, run under `node --test` as
+the stage `test:desc-style` of half 1: it covers the catalog style rules of
+`tools/desc-style.mjs` (FEATURES.md, "Records", "Catalog style"): the label
+heads it writes and the prose it leaves, the rule card features and stat
+lines, each bold rule of a cost and the plain penalty, the capitalised
+condition, an override and a stale one, the refusal of a star or a table in
+the plain text, a second run that changes nothing, and the refusal of a
+`data.js` that is not one `JSON.stringify` line. `dataint`'s "catalog style"
+check holds the real `data.js` to the same rules.
 
 `tools/artwork/lib.test.mjs` is a separate suite again, run under `node
 --test` as its own step in `npm run check`, right after
@@ -1899,6 +1911,12 @@ Not blocking, recorded so they are not mistaken for coverage:
   by unit cases and the hosted F20, not by a golden: the test build has no
   bucket, so the seeds name catalog pictures only.
 
+- The formatted text box's toolbar edits go through
+  `document.execCommand('insertText')`, proven in Chrome only (unit cases and
+  `tests/app/states.js` case 75); Firefox and Safari, with `maxlength` and
+  Ctrl+B / Cmd+B, are not checked by a gate. Two profiles saving the same
+  homebrew item on the hosted test project (the conflict guard of both
+  languages) are not run by a gate either; the fake proves the guard.
 - The real Supabase client is proven on the test project (layer 4) for the
   session, the identities read, both sign-out scopes and deletion. The
   provider redirect, `link` and `unlink` are proven only against the stub

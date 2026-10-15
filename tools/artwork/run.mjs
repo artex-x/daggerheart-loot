@@ -611,7 +611,7 @@ async function verbVerifyPreviews(flags) {
 // serves an allowlist of files, the card CSS of the app's own components,
 // the transpiled app/src/lib/ modules and the picture dates and hashes. It
 // writes nothing and never imports `sharp`.
-const CARD_COMPONENTS = ['RecordCard', 'Badge', 'Seg'].map(
+const CARD_COMPONENTS = ['RecordCard', 'Badge', 'Seg', 'Markup'].map(
   (n) => 'app/src/components/' + n + '.svelte'
 );
 

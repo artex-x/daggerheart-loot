@@ -1,8 +1,9 @@
 /* The homebrew editor over the fake cloud: every field of each kind and type, the
    checks on «Сохранить», the preview, the inline source and section, each refused save,
-   the conflict and gone banners, the guard, Ctrl+S, the edited language and the delete.
+   the conflict and gone banners, the guard, Ctrl+S, both languages, the formatting
+   toolbar and the delete.
    docs/specs/FEATURES.md, "Homebrew". */
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
@@ -358,6 +359,35 @@ describe('another device', () => {
     expect(screen.queryByText(t.hbConflict)).toBeNull();
   });
 
+  it("«Сохранить мою версию» keeps another device's write in a language this form did not change", async () => {
+    const { cloud } = await editor(AXE);
+    const read = (await cloud.homebrew.load()) as {
+      ok: true;
+      items: { key: string; id: string; content: HomebrewContent; book_id: string | null }[];
+    };
+    const axe = read.items.find((i) => i.key === AXE)!;
+    await cloud.homebrew.updateItem(
+      axe.id,
+      { content: { ...axe.content, ende: 'Written elsewhere.' }, book_id: axe.book_id },
+      null
+    );
+    await userEvent.type(screen.getByLabelText(/Название/), '!');
+    await save();
+    expect(await screen.findByText(t.hbConflict)).toBeInTheDocument();
+    /* A failed read writes nothing and keeps the banner. */
+    cloud.setOffline(true);
+    await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
+    expect(await screen.findByText(t.hbWriteFailed)).toBeInTheDocument();
+    expect(screen.getByText(t.hbConflict)).toBeInTheDocument();
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
+    await waitFor(async () => {
+      expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей!');
+    });
+    const c = await stored(cloud, AXE);
+    expect([c?.en, c?.ende]).toEqual(['Ember Axe', 'Written elsewhere.']);
+  });
+
   it('«Показать новую версию» asks, then reloads; after a failed read it keeps the draft', async () => {
     const { cloud, dialog } = await editor(AXE);
     const read = (await cloud.homebrew.load()) as {
@@ -526,6 +556,135 @@ describe('the edited language', () => {
       'Топор Тлеющих Углей',
       'Лезвие тлеет и не гаснет под дождём.'
     ]);
+  });
+});
+
+describe('both languages', () => {
+  const lang = (): HTMLElement => group(t.hbTextLang);
+  const preview = (container: HTMLElement): HTMLElement =>
+    container.querySelector('.preview') as HTMLElement;
+
+  it('switchesTheNameAndDescriptionToTheOtherLanguage', async () => {
+    const { container } = await editor(AXE);
+    const name = screen.getByLabelText(/Название/);
+    const desc = screen.getByLabelText(t.hbDesc);
+    expect(name).toHaveValue('Топор Тлеющих Углей');
+    expect(name).toHaveAttribute('lang', 'ru');
+    /* The switch sits right above «Название». */
+    expect(
+      lang().compareDocumentPosition(name) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    await press(t.hbTextLang, 'EN');
+    expect(name).toHaveValue('Ember Axe');
+    expect(name).toHaveAttribute('lang', 'en');
+    expect(desc).toHaveValue('The blade smoulders and does not go out in the rain.');
+    expect(desc).toHaveAttribute('lang', 'en');
+    /* The labels stay in the interface language. */
+    expect(screen.getByText(t.hbLegend)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+  });
+
+  it('savesBothLanguagesInOneWrite', async () => {
+    const { cloud } = await editor(AXE);
+    const update = vi.spyOn(cloud.homebrew, 'updateItem');
+    await userEvent.type(screen.getByLabelText(/Название/), ' II');
+    await press(t.hbTextLang, 'EN');
+    const desc = screen.getByLabelText(t.hbDesc);
+    await userEvent.clear(desc);
+    await userEvent.type(desc, 'It **burns**.');
+    await save();
+    await toastSays('Сохранено: «Топор Тлеющих Углей II»');
+    expect(update).toHaveBeenCalledOnce();
+    const c = await stored(cloud, AXE);
+    expect([c?.ru, c?.en, c?.rud, c?.ende]).toEqual([
+      'Топор Тлеющих Углей II',
+      'Ember Axe',
+      'Лезвие тлеет и не гаснет под дождём.',
+      'It **burns**.'
+    ]);
+  });
+
+  it('marksAnEmptyLanguageOnTheSwitch', async () => {
+    await editor(CAP);
+    /* An English-only item opens in English in the Russian interface. */
+    expect(within(lang()).getByRole('button', { name: 'EN' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(within(lang()).getByRole('button', { name: 'RU - пусто' })).toBeInTheDocument();
+    cleanup();
+    await editor(null);
+    expect(within(lang()).getByRole('button', { name: 'RU - пусто' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
+    expect(within(lang()).getByRole('button', { name: 'RU' })).toBeInTheDocument();
+    expect(within(lang()).getByRole('button', { name: 'EN - пусто' })).toBeInTheDocument();
+  });
+
+  it('namesAProblemOfTheHiddenLanguageInTheSummary', async () => {
+    const { cloud, container } = await editor(AXE);
+    const update = vi.spyOn(cloud.homebrew, 'updateItem');
+    await press(t.hbTextLang, 'EN');
+    await fireEvent.input(screen.getByLabelText(t.hbDesc), { target: { value: 'a\u0007b' } });
+    await press(t.hbTextLang, 'RU');
+    await save();
+    expect(update).not.toHaveBeenCalled();
+    const box = screen.getByRole('alert');
+    const link = within(box).getByRole('button', { name: /^Описание \(EN\) - / });
+    /* The Russian box has no problem of its own. */
+    expect(screen.getByLabelText(t.hbDesc)).not.toHaveAttribute('aria-invalid');
+    await expectNoA11yViolations(container);
+    await userEvent.click(link);
+    await waitFor(() => {
+      expect(screen.getByLabelText(t.hbDesc)).toHaveFocus();
+    });
+    expect(screen.getByLabelText(/Название/)).toHaveValue('Ember Axe');
+    expect(screen.getByLabelText(t.hbDesc)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText(t.hbErrControl)).toBeInTheDocument();
+  });
+
+  it('drawsTheTypedMarkdownInTheCard', async () => {
+    const { container } = await editor(null);
+    await userEvent.type(screen.getByLabelText(t.hbDesc), '**x**');
+    expect(preview(container).querySelector('.card-desc b')?.textContent).toBe('x');
+  });
+
+  it('drawsTheCardInTheShownLanguage', async () => {
+    const { container } = await editor(AXE);
+    await press(t.hbTextLang, 'EN');
+    const card = preview(container);
+    expect(card).toHaveAttribute('lang', 'en');
+    expect(within(card).getByRole('heading', { name: 'Ember Axe' })).toBeInTheDocument();
+    /* The page title stays in the interface language. */
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Топор Тлеющих Углей' })
+    ).toBeInTheDocument();
+    await press(t.hbTextLang, 'RU');
+    expect(card).not.toHaveAttribute('lang');
+    cleanup();
+    const view = await editor(null);
+    await press(t.hbTextLang, 'EN - пусто');
+    expect(within(preview(view.container)).getByText('New item')).toBeInTheDocument();
+  });
+
+  it('drawsNoPreviewButtonOnTheItemForm', async () => {
+    await editor(AXE);
+    const bar = screen.getByRole('toolbar', { name: 'Оформление: Описание' });
+    expect(within(bar).getAllByRole('button')).toHaveLength(5);
+    expect(screen.queryByRole('button', { name: t.mdPreview })).toBeNull();
+  });
+
+  it('opensTheDescriptionHint', async () => {
+    const { container } = await editor(null);
+    const help = helpButton(t.hbDesc);
+    await userEvent.click(help);
+    const hint = document.getElementById('hb-desc-help');
+    expect(hint).toBeVisible();
+    expect(hint?.textContent).toBe(t.mdHelp.replace('%n', '3000'));
+    expect(hint?.textContent.split('\n')).toHaveLength(3);
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -867,7 +1026,7 @@ describe('the «?» of a field', () => {
 
   it('draws no «?» on «Ранг», a self-explanatory field or «Пороги урона»', async () => {
     await editor(null);
-    for (const label of [t.tier, t.hbKind, t.hbName, t.hbDesc, t.hbTh]) {
+    for (const label of [t.tier, t.hbKind, t.hbName, t.hbTh, t.hbTextLang]) {
       expect(
         screen.queryByRole('button', { name: t.fieldHelp.replace('%s', label) })
       ).toBeNull();

@@ -5,8 +5,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import worker from './worker.mjs';
+import { createRequire } from 'node:module';
 import { esc, fit } from '../tools/share-card.mjs';
+
+/* Required before the worker imports it: Node imports a .ts file of this typeless
+   package with a MODULE_TYPELESS_PACKAGE_JSON warning and requires it silently
+   (measured 2026-10-15, Node 24.15.0); both give the same module. */
+createRequire(import.meta.url)('../app/src/lib/markup.ts');
+const { default: worker } = await import('./worker.mjs');
 
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 const HOST = 'https://daggerheart-loot.pages.dev';
@@ -340,6 +346,36 @@ describe('/h/: craft and set lines', () => {
       'Set: Blade (HB), Member (HB)',
       'Own: Own bonus'
     ]);
+  });
+
+  it('draws formatted text as plain text: the description and both set bonuses', async () => {
+    const names = {
+      ...NAMES,
+      sets: {
+        'ember-spark': { ...NAMES.sets['ember-spark'], ende: '**Both** at *once*.' }
+      }
+    };
+    const w = await freshWorker();
+    serve({
+      names: json(names),
+      item: json(
+        itemAnswer(
+          { set: 'ember-spark', ende: '*Sharp:* +1\n- **one**' },
+          {},
+          { set: line(['Blade']) }
+        )
+      )
+    });
+    const catalog = await get('/en/h/' + ID, { w });
+    assert.deepEqual(lines(catalog.body), [
+      'Set: First, Second, Blade (HB)',
+      'Blazing Twins: Both at once.'
+    ]);
+    assert.ok(catalog.body.includes('<p>Sharp: +1</p>\n<p>- one</p>'), catalog.body);
+    assert.ok(!unesc(meta(catalog.body, 'og:description')).includes('*'));
+    const own = { set_card: { ru: 'Свой', en: 'Own', rud: 'Бонус', ende: '*Own* bonus' } };
+    serve({ item: json(itemAnswer({ set: 'hb_set1' }, own, { set: line(['Blade']) })) });
+    assert.deepEqual(lines((await get('/en/h/' + ID, { w })).body), ['Own: Own bonus']);
   });
 
   it('draws the set line at two names and not at one; the own bonus stays', async () => {
@@ -875,6 +911,12 @@ describe('/s/: a shared list', () => {
     const { body } = await get('/s/' + TOKEN);
     assert.equal(meta(body, 'og:description'), '12 позиций. Первая строка вторая');
     assert.ok(body.includes('<p>12 позиций. Первая строка вторая</p>'));
+  });
+
+  it("draws the players' note without its markup", async () => {
+    serve({ list: json(listAnswer({ note: '**Лавка** *открыта*' })) });
+    const { body } = await get('/s/' + TOKEN);
+    assert.equal(meta(body, 'og:description'), '12 позиций. Лавка открыта');
   });
 
   it('gives an empty or whitespace note the count-only card', async () => {

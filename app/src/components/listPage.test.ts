@@ -494,7 +494,7 @@ describe('the roll panel', () => {
   });
 
   it('shows an entry’s compact card, badged, with both hitnotes, on a typed number', async () => {
-    render(App, { env: withA() });
+    const { container } = render(App, { env: withA() });
     await userEvent.click(screen.getByText('Бросок по списку'));
     const field = screen.getByRole('textbox', { name: 'Результат броска' });
     await userEvent.clear(field);
@@ -502,9 +502,12 @@ describe('the roll panel', () => {
 
     /* "Зелье" names both the row and the roll result's own compact card. */
     expect(screen.getAllByText('Зелье').length).toBeGreaterThanOrEqual(2);
-    /* The hit's note shows both on its own row and in the roll result's card. */
-    expect(screen.getAllByText('Светится в темноте').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('Проклят').length).toBeGreaterThanOrEqual(2);
+    /* The hit's note shows both in its own row's box and in the roll result's card. */
+    expect(screen.getByDisplayValue('Светится в темноте')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Проклят')).toBeInTheDocument();
+    const hit = container.querySelector('.lroll') as HTMLElement;
+    expect(within(hit).getByText('Светится в темноте')).toBeInTheDocument();
+    expect(within(hit).getByText('Проклят')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Сбросить' })).toBeInTheDocument();
   });
 
@@ -1001,10 +1004,6 @@ describe('a row’s note', () => {
     const textarea = pubField.querySelector('textarea') as HTMLTextAreaElement;
     await userEvent.click(clear);
     expect(screen.getByText('Заметка очищена')).toBeInTheDocument();
-    /* The field's `textContent` is the live app's own quirk too: an
-       uncontrolled textarea keeps its original text node once seeded, and
-       only `.value` tracks a later edit - including one made by script, the
-       way the clear cross itself does. */
     expect(textarea).toHaveValue('');
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
@@ -1073,7 +1072,7 @@ describe('a row’s note', () => {
       const gold = container.querySelector<HTMLElement>('input[data-gold]') as HTMLElement;
       await userEvent.type(gold, '12');
       const textareas = read.mock.contexts.filter((el) => el instanceof HTMLTextAreaElement);
-      expect(textareas.map((el) => (el as HTMLElement).dataset['note'])).toEqual([]);
+      expect(textareas.map((el) => (el as HTMLElement).id)).toEqual([]);
     } finally {
       read.mockRestore();
     }
@@ -1206,6 +1205,70 @@ describe("another tab's write, while this page is mounted", () => {
     await tick();
 
     expect(pubField).toHaveValue('Светится в темноте');
+  });
+
+  const otherWrite = (storage: ReturnType<typeof memoryStorage>, note: string): void => {
+    const other: StoredList = {
+      ...listA,
+      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note } }
+    };
+    storage.set('dhloot.lists.v2', JSON.stringify([other]));
+    storage.fireExternalChange('dhloot.lists.v2');
+  };
+
+  it('keeps the typed text in a focused box when another tab writes', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
+    box.focus();
+    box.setSelectionRange(18, 18);
+    await userEvent.keyboard(' и ');
+    otherWrite(storage, 'Правка из другой вкладки');
+    await tick();
+    await tick();
+    expect(box).toHaveValue('Светится в темноте и ');
+  });
+
+  it("shows another tab's note when the focused box loses focus", async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
+    box.focus();
+    box.setSelectionRange(18, 18);
+    await userEvent.keyboard(' и ');
+    otherWrite(storage, 'Правка из другой вкладки');
+    await tick();
+    expect(box).toHaveValue('Светится в темноте и ');
+    box.blur();
+    await waitFor(() => {
+      expect(box).toHaveValue('Правка из другой вкладки');
+    });
+  });
+
+  it('keeps the typed text in a box that loses focus with no other write', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
+    box.focus();
+    box.setSelectionRange(18, 18);
+    await userEvent.keyboard(' и ');
+    box.blur();
+    await tick();
+    expect(box).toHaveValue('Светится в темноте и ');
+  });
+
+  it('shows another tab’s note in a box without focus', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
+    box.focus();
+    box.setSelectionRange(18, 18);
+    await userEvent.keyboard(' и ');
+    box.blur();
+    otherWrite(storage, 'Правка из другой вкладки');
+    await waitFor(() => {
+      expect(box).toHaveValue('Правка из другой вкладки');
+    });
   });
 });
 
@@ -1435,13 +1498,72 @@ describe('no data', () => {
   });
 });
 
-describe('the textarea seed', () => {
-  it('sets textContent to the value once, so the field is named by its text', () => {
+describe('the note boxes', () => {
+  const pubOf = (container: HTMLElement): HTMLElement =>
+    container.querySelector('.lnote .n-pub') as HTMLElement;
+
+  it('names each note box by its label and its line', () => {
     render(App, { env: withA() });
-    /* The live inventory names a noted textarea by its text content - not by
-       `bind:value`, which leaves `textContent` empty. */
-    expect(screen.getByText('Светится в темноте').tagName).toBe('TEXTAREA');
-    expect(screen.getByText('Не для игроков').tagName).toBe('TEXTAREA');
+    const pub = screen.getAllByRole('textbox', { name: 'Для игроков' });
+    const hid = screen.getAllByRole('textbox', { name: 'Только для мастера' });
+    /* The list's pair and the noted entry's pair. */
+    expect(pub).toHaveLength(2);
+    expect(hid).toHaveLength(2);
+    for (const box of pub)
+      expect(box).toHaveAccessibleDescription('уедет с текстом и ссылкой для игроков');
+    for (const box of hid) expect(box).toHaveAccessibleDescription('останется у вас');
+    expect(pub[0]).toHaveValue('Лавка закрыта до утра');
+    expect(pub[0]).toHaveAttribute('id', 'note-list-note');
+    expect(hid[1]).toHaveAttribute('id', 'note-cc1-hnote');
+  });
+
+  it('draws the toolbar, «Просмотр» and the «?» on each note box', async () => {
+    const storage = memoryStorage({
+      'dhloot.lists.v2': JSON.stringify([{ ...listA, note: '**Лавка** закрыта' }])
+    });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    for (const name of ['Для игроков', 'Только для мастера']) {
+      expect(screen.getAllByRole('toolbar', { name: `Оформление: ${name}` })).toHaveLength(2);
+      expect(screen.getAllByRole('button', { name: `Подсказка: ${name}` })).toHaveLength(2);
+    }
+    const pub = pubOf(container);
+    const bar = within(pub).getByRole('toolbar');
+    for (const name of ['Жирный', 'Курсив', 'Список', 'Нумерованный список', 'Просмотр'])
+      expect(within(bar).getByRole('button', { name })).toBeInTheDocument();
+    expect(within(bar).queryByRole('button', { name: 'Таблица' })).toBeNull();
+
+    await userEvent.click(within(bar).getByRole('button', { name: 'Просмотр' }));
+    const pane = within(pub).getByRole('region', { name: 'Просмотр: Для игроков' });
+    expect(pane.querySelector('b')).toHaveTextContent('Лавка');
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the note hint under its label', async () => {
+    const { container } = render(App, { env: withA() });
+    const pub = pubOf(container);
+    const help = within(pub).getByRole('button', { name: 'Подсказка: Для игроков' });
+    const hint = pub.querySelector('#note-list-note-help') as HTMLElement;
+    expect(hint).not.toBeVisible();
+    expect(help).toHaveAttribute('aria-controls', 'note-list-note-help');
+    await userEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(hint).toBeVisible();
+    expect(hint.textContent).toBe(dict('ru').mdHelp.replace('%n', '4000'));
+    /* Only the pressed box's hint opens. */
+    expect(container.querySelector('#note-list-hnote-help')).not.toBeVisible();
+    await expectNoA11yViolations(container);
+  });
+
+  it('keeps a typed trailing space in the box while the store trims it', async () => {
+    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
+    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
+    box.focus();
+    box.setSelectionRange(18, 18);
+    await userEvent.keyboard(' и ');
+    expect(box).toHaveFocus();
+    expect(box).toHaveValue('Светится в темноте и ');
+    expect(readLists(storage)[0]?.meta?.['cc1']?.note).toBe('Светится в темноте и');
   });
 });
 
@@ -1639,7 +1761,7 @@ describe('an account list', () => {
     const { container } = openAs(fakeCloud(SEED, 'gm1'));
     const input = await screen.findByRole('textbox', { name: 'Название списка' });
     expect(input).toHaveAttribute('maxlength', '200');
-    const notes = [...container.querySelectorAll('textarea[data-note]')];
+    const notes = [...container.querySelectorAll('.npair textarea')];
     expect(notes.length).toBeGreaterThan(0);
     for (const n of notes) expect(n).toHaveAttribute('maxlength', '4000');
   });
@@ -1922,6 +2044,13 @@ describe('a browser list after the cutoff, and while the move is due', () => {
       expect(f).toHaveAttribute('readonly');
     for (const ta of container.querySelectorAll('textarea'))
       expect(ta).toHaveAttribute('readonly');
+    /* A note box keeps only «Просмотр»: no format button and no «?». */
+    for (const bar of container.querySelectorAll('.npair [role="toolbar"]'))
+      expect([...bar.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
+        'Просмотр'
+      ]);
+    expect(container.querySelectorAll('.npair [role="toolbar"]').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: /^Подсказка: / })).toBeNull();
     for (const chip of screen.getAllByRole('button', { name: /Мешками|Монетами/ }))
       expect(chip).toBeDisabled();
     expect(
