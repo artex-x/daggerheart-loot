@@ -58,6 +58,7 @@ const GOOD = {
   'data.js': { type: 'application/javascript', body: 'window.LOOT = {}' },
   'data.json': { type: 'application/json', body: '{}' },
   'catalog.csv': { type: 'text/csv', body: 'id\n' },
+  'catalog-index.csv': { type: 'text/csv', body: 'id\n' },
   'names.json': {
     type: 'application/json',
     body: JSON.stringify({ format: 'daggerheart-loot/names', version: 1 })
@@ -320,7 +321,7 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 58);
+    assert.equal(list.length, 59);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -328,6 +329,7 @@ describe('checks() shape', () => {
       '',
       '<entry>',
       'card/die-d12-bw.svg',
+      'catalog-index.csv',
       'catalog.csv',
       'data.js',
       'data.json',

@@ -59,6 +59,9 @@ i/
 # names.json is the preview host's name map, generated and published the same
 # way (docs/specs/CONTRACTS.md section 4); nothing reads it off disk before a build.
 /names.json
+# catalog-index.csv is catalog.csv without its text, generated and published
+# the same way; catalog.csv stays the committed table for diffs.
+/catalog-index.csv
 
 # The preview host's own install and wrangler's local state (preview/).
 preview/node_modules/

@@ -22,8 +22,10 @@ you reaches a server.
 > **For AI agents.** The app renders on the client, and a list lives in the URL
 > fragment, which never reaches the server: fetching `index.html` gives you an
 > empty page. The readable data is separate -
-> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) for
-> selection, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
+> [`catalog-index.csv`](https://artex-x.github.io/daggerheart-loot/catalog-index.csv)
+> for selection,
+> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) with
+> the text, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
 > for full text, and
 > [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) for the URL
 > grammar, the lists import file, and guidance on which set to draw from.
@@ -306,6 +308,7 @@ pages/*.html          the site pages, generated from pages/src/, not committed: 
 data.json             the same data as plain JSON, for outside readers
 names.json            catalog names for the preview host; generated, not committed
 catalog.csv           one row per record, with stat lines
+catalog-index.csv     catalog.csv without the text, for one fetch; generated, not committed
 llms.txt              what the site is, URL grammar, the lists import file
 schema/import-v1.json the JSON Schema of the lists import file
 robots.txt            crawling allowed, training scrapers excluded
@@ -381,10 +384,11 @@ chosen language leaks between suites.
 ### Machine readability and search
 
 A fetcher sees an empty page and a list link looks like nonsense, so the data
-lives separately: `catalog.csv` for selection, `data.json` for full parsing,
-`llms.txt` for the URL grammar, the lists import file, the two kinds of note and
-price guidance. Those files are in English - models read them, and it is cheaper
-that way. The import file is documented well enough to write one that imports
+lives separately: `catalog-index.csv` for selection in one fetch, the record
+pages `i/<id>.html` for one record's text, `catalog.csv` for the full table,
+`data.json` for full parsing, `llms.txt` for the URL grammar, the lists
+import file, the two kinds of note and price guidance. Those files are in
+English - models read them, and it is cheaper that way. The import file is documented well enough to write one that imports
 clean without touching the site: `schema/import-v1.json` is its JSON Schema, and
 `tests/contracts.js` checks that `llms.txt` names every key, value and bound in
 it.

@@ -171,6 +171,16 @@ plain form, so everything downstream sees one format.
   `catalog.csv`'s `crafts_into` joins the ids with `;`. Field meanings are in
   `README.md`.
 - `catalog.csv` - one row per record, with the stat line.
+- `catalog-index.csv` - the catalog without its text, for an agent's one
+  fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
+  `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
+  order and quoting, from `tools/derived.js`'s `catalogIndexCsv(L)`. Budget:
+  at most 196608 bytes, which `tests/derived.js` holds; 150197 bytes at 1350
+  records, measured 2026-10-15, about 111 bytes a row, so the budget holds
+  about 1767 records, about 417 more than today. A column may be added at
+  the end; any other change is a new file name. An ingest that passes the
+  budget raises `INDEX_BUDGET` and the `llms.txt` words "under 200 KB" in
+  one commit, or publishes a new file name. Not committed, like `names.json`.
 - `names.json` - what the preview host reads at request time
   (`docs/specs/META.md` section 3): one line, `JSON.stringify(v) + '\n'`
   from `tools/derived.js`'s `namesJson(L)`, with `format`
@@ -190,7 +200,7 @@ plain form, so everything downstream sees one format.
   the English preview card of the site, which redirects to the app at the
   root with the fragment kept.
 
-All of them except the four `schema/` files are generated from `data.js` by
+All of them except the five `schema/` files are generated from `data.js` by
 `node tools/build.js` and compared byte for byte by `tests/derived.js`.
 
 - `schema/import-v1.json` - the lists file `import-v1`, a JSON Schema (draft
@@ -366,8 +376,8 @@ grows past a few MB (433 KB measured).
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg`, `i/<id>.html`, `i/en/<id>.html`,
 `en/` (the file `en/index.html`), `og/_share.jpg`, `og/_share_en.jpg`,
-`names.json`, `schema/import-v1.json`, `schema/import-v2.json`, `schema/import-v3.json`,
-`schema/homebrew-v1.json` and `schema/homebrew-v2.json`.
+`names.json`, `catalog-index.csv`, `schema/import-v1.json`, `schema/import-v2.json`,
+`schema/import-v3.json`, `schema/homebrew-v1.json` and `schema/homebrew-v2.json`.
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `i/en/<id>.html` and `en/` are their English counterparts (issue 64,
@@ -377,9 +387,9 @@ layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `og/_share.jpg` and `og/_share_en.jpg` are committed and published as they
 are; `tools/artwork/cards.mjs` renders the two cards (`docs/artwork.md`, "The
 site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`,
-`names.json`, the entry document and `assets/` are not committed: they are
-what the build emits (`node tools/build.js` for `i/`, `i/en/`, `en/` and
-`names.json`; `app/index.html` and the
+`names.json`, `catalog-index.csv`, the entry document and `assets/` are not
+committed: they are what the build emits (`node tools/build.js` for `i/`,
+`i/en/`, `en/`, `names.json` and `catalog-index.csv`; `app/index.html` and the
 bundle become `dist/index.html` and the hashed files under `dist/assets/`,
 whose names change with every build and are not public), and the deploy job
 publishes them from the build rather than from a committed file. Nothing about

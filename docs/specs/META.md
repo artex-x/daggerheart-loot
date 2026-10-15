@@ -62,6 +62,30 @@ Bulk collection for training is a separate matter and is refused by name:
 `GPTBot`, `ClaudeBot`, `anthropic-ai`, `CCBot`, `Google-Extended`,
 `Applebot-Extended`, `Bytespider`, `meta-externalagent`.
 
+The `*` group also holds `Content-Signal: search=no, ai-input=yes,
+ai-train=no`. The Content Signals Policy
+(https://blog.cloudflare.com/content-signals-policy/, read 2026-10-15)
+defines the three uses: `search` builds a search index and gives search
+results, not AI search summaries; `ai-input` puts the content into an AI
+model, with retrieval augmented generation, grounding and AI search
+answers; `ai-train` trains or fine-tunes an AI model. So `ai-input=yes`
+also allows an AI search answer built from a crawled copy, not only a fetch
+a person asked for: an assistant must use the text to follow the `llms.txt`
+reading route. A crawler obeys the group that names its token (RFC 9309),
+so for the eight named tokens the `Disallow: /` wins over the signal;
+`Google-Extended` keeps Gemini grounding refused. A crawler that does not
+know the line ignores it, and compliance is the vendor's.
+
+A crawler reads robots.txt only at a host root. The preview host's copy
+(`preview/public/robots.txt`, the same directive lines) is at the root of
+`daggerheart-loot.pages.dev` and is read now. The site's copy sits under
+`/daggerheart-loot/` and `https://artex-x.github.io/robots.txt` answers
+404, so the site's training block and signal take effect on the new host
+when the site moves to a host root; the old host keeps its frozen copies,
+unread (owner, 2026-10-15: no root file for `artex-x.github.io`). The text files (`llms.txt`, `data.json`,
+`catalog.csv`, `catalog-index.csv`, `names.json`, `schema/*.json`) carry no
+`noindex` until the host sends `X-Robots-Tag`. Both are `DEBT.md` D104.
+
 ## 3. Lists live in the account, and in the browser until the cutoff
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A

@@ -126,7 +126,7 @@ export function checks() {
       message: 'data.js no longer starts by assigning window.LOOT'
     },
 
-    ...['data.json', 'catalog.csv', 'llms.txt', 'robots.txt'].map((f) => ({
+    ...['data.json', 'catalog.csv', 'catalog-index.csv', 'llms.txt', 'robots.txt'].map((f) => ({
       path: f,
       ...status200(f)
     })),

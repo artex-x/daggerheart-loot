@@ -26,15 +26,23 @@ Four things trip agents up here, in order of how often:
    tells you nothing about the list. Ask the person for the list's contents,
    or for an exported file.
 3. **Never name an item from memory.** Every name and id must come out of
-   `catalog.csv`. Names that sound right — "Tome of Ancient Knowledge",
-   "Superior Alconite Crystal" — are usually not in any of these books, and a
-   file built on an invented id imports without that entry.
+   `catalog-index.csv` or `catalog.csv`. Names that sound right — "Tome of
+   Ancient Knowledge", "Superior Alconite Crystal" — are usually not in any
+   of these books, and a file built on an invented id imports without that
+   entry.
 4. **A list for a GM is a file.** Build a JSON file as "Lists as a file
    (import-v1)" describes; the GM imports it into their account. Do not
    build `#/l/` links: that format is retired and stops opening on
    2026-10-26.
 
-Read `catalog.csv` first. Everything else here is about what to do with it.
+Start with `catalog-index.csv`: one row per record, every column of
+`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1350
+records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
+file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
+`i/en/<id>.html` or `i/<id>.html` (the page text is plain; the Markdown source
+is `data.json`'s `ende`/`rud`, see "Data"). Read `catalog.csv` or `data.json`
+whole only with a tool that reads a large file in full: both are several times
+larger. Everything else here is about what to do with the records.
 
 For rules questions this site does not answer — how a condition works, what a
 Reaction Roll is, how tiers map to levels — use the
@@ -47,6 +55,11 @@ text, not the rules those items refer to.
 
 ## Data
 
+- [catalog-index.csv](https://artex-x.github.io/daggerheart-loot/catalog-index.csv)
+  — the catalog without its text, for one fetch: the same rows in the same
+  order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
+  class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
+  community`.
 - [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1350
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
@@ -54,6 +67,8 @@ text, not the rules those items refer to.
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
   `crafts_into` holds the ids a record upgrades into, joined with `;`.
+  It adds `url`, `text_ru` and `text_en` to the columns of
+  `catalog-index.csv`.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
   records in full (a record's `craft` is a list of the ids it upgrades
   into), plus the rarity tables (`alt`), the text of the thirteen

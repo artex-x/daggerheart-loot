@@ -41,6 +41,11 @@ const DENY = [
       'Blocked: names.json is generated from data.js. Edit data.js or tools/derived.js, then run `node tools/build.js`.'
   },
   {
+    test: (p) => p === 'catalog-index.csv',
+    message:
+      'Blocked: catalog-index.csv is generated from data.js. Edit data.js or tools/derived.js, then run `node tools/build.js`.'
+  },
+  {
     test: (p) => p.startsWith('i/'),
     message:
       'Blocked: i/*.html and i/en/*.html are generated share stubs. Edit data.js, then run `node tools/build.js`.'

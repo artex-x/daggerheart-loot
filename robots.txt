@@ -9,12 +9,25 @@
 # blanket Disallow would break those as well.
 #
 # Readable data, for an agent someone has handed the link to:
-#   catalog.csv   1350 records, one per row
-#   /data.json     the same records in full
-#   /llms.txt      what this is, the URL grammar, the list link format
+#   catalog-index.csv  1350 records, one per row, without the text
+#   catalog.csv        the same rows with the text and the page link
+#   data.json          the same records in full
+#   llms.txt           what this is, the URL grammar, the list link format
+#
+# Content-Signal, in the terms of the Content Signals Policy
+# (https://blog.cloudflare.com/content-signals-policy/):
+#   search    builds a search index and gives search results, not AI search summaries
+#   ai-input  puts the content into an AI model, with retrieval, grounding and AI search answers
+#   ai-train  trains or fine-tunes an AI model
+# A crawler obeys the group that names it, so the named blocks below win for
+# their tokens.
+#
+# A crawler reads robots.txt only at a host root: a copy at a host root is
+# read; a copy under /daggerheart-loot/ is not.
 
 User-agent: *
 Allow: /
+Content-Signal: search=no, ai-input=yes, ai-train=no
 
 # Bulk collection for training is a different thing from reading a page someone
 # asked about. The item text is not mine to hand over.

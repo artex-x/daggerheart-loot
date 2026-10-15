@@ -559,3 +559,33 @@ migration drops `move_legacy_list` and `lists.legacy_fingerprint`
   by the persistence programme (2026-09-26); the cost is one reload.
 - **How to verify the fix**: signed out, open two tabs, change the language
   in the first, and confirm that the second tab shows it without a reload.
+
+## Cloudflare Pages move (`cloudflare-pages`)
+
+Owns: what the site host cannot do while the site sits at a subpath of
+GitHub Pages: a robots file at a host root and an `X-Robots-Tag` header.
+
+### D104 - the site's robots.txt is read by no crawler, and its text files carry no noindex
+
+- **Where**: `robots.txt` on the GitHub Pages host
+  (`https://artex-x.github.io/daggerheart-loot/robots.txt`), and the text
+  files `llms.txt`, `data.json`, `catalog.csv`, `catalog-index.csv`,
+  `names.json`, `schema/*.json`.
+- **What**: a crawler reads robots.txt only at a host root, and
+  `https://artex-x.github.io/robots.txt` answers 404, so the eight named
+  blocks and the `Content-Signal` line have no effect on the site host;
+  GitHub Pages sends no `X-Robots-Tag`, so the text files carry no
+  `noindex`. The old host keeps these files and this `robots.txt` with the
+  same bytes for good (`CONTRACTS.md` section 5), so there the blocks and
+  the signal stay unread and the files carry no `noindex` after the move
+  too.
+- **Why deferred**: owner, 2026-10-15: no root file for `artex-x.github.io`.
+  The move to Cloudflare Pages pays the new host only: it puts the site's
+  file at a host root and adds the header there. The old-host half is an
+  accepted trade-off of the decision "AI assistants read a compact index and
+  the record pages".
+- **How to verify the fix**: `curl https://daggerheart-loot.pages.dev/robots.txt`
+  returns the site's own file: its "Readable data" comment, the
+  `Content-Signal` line and the named blocks;
+  `curl -I https://daggerheart-loot.pages.dev/llms.txt` shows
+  `X-Robots-Tag: noindex`.

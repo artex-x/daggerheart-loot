@@ -3,6 +3,9 @@
 
     data.json     the same records, as plain JSON anything can parse
     catalog.csv   one row per record, for reading rather than parsing
+    catalog-index.csv
+                  the catalog without its text, for one fetch
+                  (not committed: build output, like names.json)
     names.json    catalog names, sets and table counts for the preview host
                   (not committed: build output, like i/)
     i/<id>.html   the share stubs
@@ -30,6 +33,7 @@ const L = global.window.LOOT;
 [
   ['data.json', D.dataJson(L)],
   ['catalog.csv', D.catalogCsv(L)],
+  ['catalog-index.csv', D.catalogIndexCsv(L)],
   ['names.json', D.namesJson(L)]
 ].forEach(function ([name, body]) {
   fs.writeFileSync(path.join(ROOT, name), body);

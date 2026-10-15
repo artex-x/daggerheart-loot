@@ -770,7 +770,7 @@ describe('docs/fixtures/urls/preview.json, serve', () => {
 
 describe('robots.txt and the routes file', () => {
   const directives = (text) =>
-    text.split('\n').filter((l) => /^(User-agent|Allow|Disallow):/i.test(l));
+    text.split('\n').filter((l) => /^(User-agent|Allow|Disallow|Content-Signal):/i.test(l));
   const own = readFileSync(join(import.meta.dirname, 'public', 'robots.txt'), 'utf8');
   it("holds the site's directive lines in their order", () => {
     const site = readFileSync(join(import.meta.dirname, '..', 'robots.txt'), 'utf8');
@@ -779,7 +779,7 @@ describe('robots.txt and the routes file', () => {
   });
   it('holds no number and no data pointer', () => {
     assert.doesNotMatch(own, /\d/);
-    assert.doesNotMatch(own, /catalog\.csv|data\.json|llms\.txt/);
+    assert.doesNotMatch(own, /catalog(-index)?\.csv|data\.json|llms\.txt/);
   });
   it('is excluded from the worker', () => {
     const routes = JSON.parse(

@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-15 - [AI assistants read a compact index and the record pages](decisions/2026-10-15-ai-assistants-read-a-compact-index-and-the.md)
 - 2026-10-15 - [Catalog text follows the SRD card style for names, costs and conditions](decisions/2026-10-15-catalog-text-follows-the-srd-card-style.md)
 - 2026-10-15 - [Descriptions use a line-based Markdown subset parsed by one module](decisions/2026-10-15-descriptions-use-a-line-based-markdown-subset.md)
 - 2026-10-15 - [Formatted text is typed as Markdown in a box with a toolbar](decisions/2026-10-15-formatted-text-is-typed-as-markdown-in-a-box-with-a-toolbar.md)

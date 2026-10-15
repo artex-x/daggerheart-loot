@@ -1,7 +1,8 @@
-# The directives of the site's own robots.txt: crawling allowed, so the noindex on every card is read.
+# The directives of the site's own robots.txt: crawling allowed, so the noindex on every card is read; the Content-Signal line refuses search and training and allows AI input.
 
 User-agent: *
 Allow: /
+Content-Signal: search=no, ai-input=yes, ai-train=no
 
 User-agent: GPTBot
 User-agent: ClaudeBot

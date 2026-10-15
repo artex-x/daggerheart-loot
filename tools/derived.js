@@ -97,43 +97,59 @@ function cell(v) {
   return /[",]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
-/* One row per record, every column an agent needs to answer "give me tier 1-2
-   physical armour and primary weapons" without parsing 450 KB of JSON. */
-function catalogCsv(L) {
+/* One record's cells keyed by CSV_HEAD name, shared by the catalog and its
+   index. */
+function catalogRow(L, rarity, sets, x) {
+  const e = x.eq;
+  const set = setText(L, sets, x);
+  return {
+    id: x.id,
+    kind: e ? e.t : x.kind,
+    source: SRC[x.src] || x.src,
+    name_ru: x.ru,
+    name_en: x.en,
+    /* Vault of Ages prints a tier on loot too, not only on equipment: the
+       book is laid out by tier, and past the fourth come A (artifact) and
+       C (cursed object). */
+    tier: x.tier != null ? x.tier : e ? e.tier : '',
+    rarity: rarity[x.id] || '',
+    roll: x.roll == null ? '' : x.roll,
+    class: e && e.cls ? CLS[e.cls] : '',
+    trait: e && e.tr ? TRAIT[e.tr] : '',
+    range: e && e.rg ? RANGE[e.rg] : '',
+    damage: e && e.dmg ? e.dmg + (e.dt ? ' ' + DT[e.dt] : '') : '',
+    burden: e && e.bu ? BURDEN[e.bu] : '',
+    armor_score: e && e.as != null ? e.as : '',
+    thresholds: e && e.th ? e.th.join('/') : '',
+    crafts_into: (x.craft || []).join(';'),
+    community: x.community || '',
+    url: SITE + 'i/' + x.id + '.html',
+    text_ru: markupText(x.rud || '') + set.ru,
+    text_en: markupText(x.ende || '') + set.en
+  };
+}
+
+function csvOf(L, head) {
   const rarity = rarityIndex(L);
   const sets = setGroups(L);
   const rows = everything(L).map(function (x) {
-    const e = x.eq;
-    const set = setText(L, sets, x);
-    return [
-      x.id,
-      e ? e.t : x.kind,
-      SRC[x.src] || x.src,
-      x.ru,
-      x.en,
-      /* Vault of Ages prints a tier on loot too, not only on equipment: the
-         book is laid out by tier, and past the fourth come A (artifact) and
-         C (cursed object). */
-      x.tier != null ? x.tier : e ? e.tier : '',
-      rarity[x.id] || '',
-      x.roll == null ? '' : x.roll,
-      e && e.cls ? CLS[e.cls] : '',
-      e && e.tr ? TRAIT[e.tr] : '',
-      e && e.rg ? RANGE[e.rg] : '',
-      e && e.dmg ? e.dmg + (e.dt ? ' ' + DT[e.dt] : '') : '',
-      e && e.bu ? BURDEN[e.bu] : '',
-      e && e.as != null ? e.as : '',
-      e && e.th ? e.th.join('/') : '',
-      (x.craft || []).join(';'),
-      x.community || '',
-      SITE + 'i/' + x.id + '.html',
-      markupText(x.rud || '') + set.ru,
-      markupText(x.ende || '') + set.en
-    ]
-      .map(cell)
-      .join(',');
+    const row = catalogRow(L, rarity, sets, x);
+    return head.map((k) => cell(row[k])).join(',');
   });
-  return CSV_HEAD.join(',') + '\n' + rows.join('\n') + '\n';
+  return head.join(',') + '\n' + rows.join('\n') + '\n';
+}
+
+/* One row per record, every column an agent needs to answer "give me tier 1-2
+   physical armour and primary weapons" without parsing all of data.json. */
+function catalogCsv(L) {
+  return csvOf(L, CSV_HEAD);
+}
+
+/* The catalog without its text and page link, small enough for one fetch. */
+const INDEX_HEAD = CSV_HEAD.filter((k) => !['url', 'text_ru', 'text_en'].includes(k));
+
+function catalogIndexCsv(L) {
+  return csvOf(L, INDEX_HEAD);
 }
 
 /* A set's members in the app's `[...eq, ...all]` order, keyed by set. */
@@ -260,4 +276,4 @@ function namesJson(L) {
   );
 }
 
-module.exports = { SITE, dataJson, catalogCsv, namesJson, everything };
+module.exports = { SITE, dataJson, catalogCsv, catalogIndexCsv, namesJson, everything };

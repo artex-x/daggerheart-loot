@@ -428,16 +428,16 @@ jobs:
       # outputs too, copied verbatim from app/public/ (docs/specs/META.md
       # section 9).
       #
-      # `i/` (with `i/en/`), `en/` and `names.json` are not in the repository -
-      # the Build step above regenerates them (npm run build -> npm run data ->
-      # tools/build.js) immediately before this step copies them, so
-      # Collect must never be reordered ahead of Build.
+      # `i/` (with `i/en/`), `en/`, `names.json` and `catalog-index.csv` are
+      # not in the repository - the Build step above regenerates them (npm
+      # run build -> npm run data -> tools/build.js) immediately before this
+      # step copies them, so Collect must never be reordered ahead of Build.
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
                 dist/sw.js dist/icons _site/
-          cp -r data.json catalog.csv names.json llms.txt robots.txt .nojekyll LICENSE \
+          cp -r data.json catalog.csv catalog-index.csv names.json llms.txt robots.txt .nojekyll LICENSE \
                 404.html img og i en card schema _site/
           # Only the generated site pages, one copy per language: pages/src/
           # is their authored source, not site content (docs/specs/META.md
@@ -458,7 +458,7 @@ jobs:
           # The other half, and the deterministic detector for a dangling
           # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
           # catches a link that resolved to nothing.
-          for f in index.html data.js data.json catalog.csv names.json \
+          for f in index.html data.js data.json catalog.csv catalog-index.csv names.json \
                    llms.txt robots.txt LICENSE 404.html manifest.webmanifest \
                    sw.js icons/icon-192.png pages/install.html pages/en/install.html \
                    pages/privacy.html pages/en/privacy.html pages/terms.html \

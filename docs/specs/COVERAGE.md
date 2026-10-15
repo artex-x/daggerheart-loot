@@ -443,7 +443,18 @@ not run. CI's `browser` matrix runs the rows as five shards
   `docs/fixtures/import/from-llms-v2.json`, five questions answered, the
   two files held to the requests by `lib/homebrewFile.test.ts` and
   `lib/bundle.test.ts` - three rounds, 2026-10-02, the third passed after
-  two fixes of `llms.txt`), `craft`
+  two fixes of `llms.txt`; the reading route by a round over `llms.txt`,
+  `catalog-index.csv` and `i/en/*.html` only, one round, 2026-10-15,
+  passed: R1 "tier 2 physical primary weapons for a Strength fighter, Core
+  and Hope & Fear, melee or very close" named the ten ids `catalog.csv`
+  holds (`q40 q41 q42 q43 q48 q53 q54 q57 q82 q87`), R2 "three uncommon
+  consumables, no Campaign Frames, with their English text" three ids
+  (`cc13 cc15 cc17`) whose page text equals `markupText(ende)` with
+  whitespace folded, R3 "a lists file for a tier 1 general store of six
+  entries with prices" a file that `parseBundle` reads with no error and no
+  skip, a one-off proof and not a fixture; the agent's reader cut the 150 KB
+  index, so `llms.txt` now gives the record count to check the read
+  against), `craft`
   (trimmed to two sections - data invariants and the share stubs), `dataint`,
   `derived`, `stub` (the generated pages - a share stub in `i/` and in
   `i/en/`, the English entry document `en/index.html`, and a site page in
@@ -1934,6 +1945,13 @@ Not blocking, recorded so they are not mistaken for coverage:
   `relkind = 'v'` only: a materialized view (`'m'`) has no
   `security_invoker` and is not checked. The first migration that adds one
   extends the invariant.
+- The `llms.txt` reading route (index, record page, full files) is not
+  proven on a real assistant. Its blind round reads local files, so it
+  cannot show that a web fetch reads 150 KB of CSV whole, or that a fetch of
+  a stub stops at the page and does not follow its `meta refresh` to the
+  client-rendered app. The check: ask claude.ai and ChatGPT to fetch the
+  live `catalog-index.csv` and give its last id and row count, and to fetch
+  `i/en/q26.html` and quote its text.
 - `tests/app/sweep.js` visits `#/account` signed out only (it takes no
   `as`); the signed-in account page is covered by its goldens, the
   `accountPage.test.ts` jsdom tests and E2E flow F2.

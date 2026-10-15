@@ -21,6 +21,7 @@ console.log('generated files match data.js');
 [
   ['data.json', D.dataJson],
   ['catalog.csv', D.catalogCsv],
+  ['catalog-index.csv', D.catalogIndexCsv],
   ['names.json', D.namesJson]
 ].forEach(function ([name, make]) {
   const disk = fs.existsSync(path.join(ROOT, name))
@@ -37,6 +38,35 @@ ok(
   namesBytes <= NAMES_BUDGET,
   'names.json is ' + namesBytes + ' bytes, past its ' + NAMES_BUDGET + '-byte budget'
 );
+/* llms.txt promises an agent the index in one fetch, "under 200 KB"; past
+   the budget, docs/specs/CONTRACTS.md section 4 names the breach path. */
+const INDEX_BUDGET = 196608;
+const indexCsv = D.catalogIndexCsv(L);
+const indexBytes = Buffer.byteLength(indexCsv);
+ok(
+  indexBytes <= INDEX_BUDGET,
+  'catalog-index.csv is ' + indexBytes + ' bytes, past its ' + INDEX_BUDGET + '-byte budget'
+);
+{
+  const indexLines = indexCsv.trim().split('\n');
+  const catalogLines = D.catalogCsv(L).trim().split('\n');
+  ok(
+    indexLines.length === D.everything(L).length + 1,
+    'catalog-index.csv has ' + indexLines.length + ' lines, not one per record and a header'
+  );
+  const wantHead = catalogLines[0]
+    .split(',')
+    .filter((k) => !['url', 'text_ru', 'text_en'].includes(k))
+    .join(',');
+  ok(
+    indexLines[0] === wantHead,
+    'catalog-index.csv header is not the catalog header without url, text_ru, text_en'
+  );
+  ok(
+    indexLines.every((line, i) => line.split(',')[0] === (catalogLines[i] || '').split(',')[0]),
+    'catalog-index.csv rows are not the catalog rows in the same order'
+  );
+}
 
 console.log('catalog reads clean');
 const catalogPath = path.join(ROOT, 'catalog.csv');
@@ -226,6 +256,13 @@ ok(
   /GPTBot|CCBot/.test(rob) && /Disallow: \//.test(rob),
   'robots.txt does not block AI training crawlers'
 );
+{
+  const star = rob.split(/\n(?=User-agent:)/).find((g) => /^User-agent: \*/m.test(g)) || '';
+  ok(
+    /^Content-Signal: search=no, ai-input=yes, ai-train=no$/m.test(star),
+    'robots.txt: the * group lacks Content-Signal: search=no, ai-input=yes, ai-train=no'
+  );
+}
 ok(
   !fs.existsSync(path.join(ROOT, 'sitemap.xml')),
   'a sitemap came back, and it exists for exactly the indexing this rejects'
@@ -669,7 +706,8 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
   'Player note',
   'GM note',
   'Not indexed',
-  'Read `catalog.csv` first',
+  'Start with `catalog-index.csv`',
+  'catalog-index.csv',
   'Dread GM Toolbox',
   'Never name an item from memory',
   'daggerheart.com/srd',
