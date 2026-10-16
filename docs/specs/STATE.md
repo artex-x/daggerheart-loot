@@ -34,7 +34,7 @@ is for.
 | `dhloot.prefs.v1` | the defaults `{ view: 'list' \| 'grid', printBw: boolean, printCompact: boolean }`, written whole by the Display section and the account's answer, never by a page switch; read at boot for every reader; live's old `{ view }` still reads (a missing field is `list`/`false`) |
 | `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
 | `dhloot.probe` | written and removed to test whether storage works at all |
-| `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (supabase-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by supabase-js, never by the app |
+| `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (auth-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by auth-js 2.117.1 under the key that `ports/supabase.ts` names by supabase-js's rule (`sb-<first host label>-auth-token`); never by the app's own code |
 | `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1). The move into the account reads it (the notice names it) and never writes or deletes it |
 | `dhloot.migrated.v1` | the move of browser lists into the account (`FEATURES.md`, "Account and browser lists"): `{ owner, lists, notice?, bad?, held? }` - `owner` the first account whose page loaded with browser lists (only it moves them), `lists` the tombstones (local id to account id: a tombstoned list is never drawn again and leaves `dhloot.lists.v2` on the next removal), `notice` the names the one-time notice still shows, `bad` the damaged-backup sentence (`true` to show, `false` shown and dismissed), `held` the local ids whose account copy did not match (never sent again; a delete prunes the id). Read fresh on every read of the lists; every writer reads it fresh and merges - `owner` kept once set, `lists` and `held` unions, a name appended only with a new tombstone - so two tabs never undo each other's write or a «Скрыть». The tombstones are written before the lists they remove. A value that does not parse reads as absent. Kept after the legacy write cutoff, 2026-10-26 |
 
@@ -112,6 +112,12 @@ newer one. A read keeps each list
 whose `updated_at` has not moved as the same object, so a read that finds
 nothing new redraws nothing, and an edit replaces only the list it changes.
 
+Signed out, a tab follows another tab's settings: on a `storage` event for
+`dhloot.lang.v1`, `dhloot.home.v1`, `dhloot.warn.v1` or `dhloot.prefs.v1`, and
+when it is shown again, it reads the four keys as the boot reads them (a bad
+value reads as the boot's fallback) and applies a changed value at once,
+with no reload and no write back. Signed in, the account row decides.
+
 ## Account preferences
 
 Signed in, the language, starting section, tables view and print layout
@@ -124,12 +130,13 @@ setting, and so do the pin and the starting-section select.
 - **Defaults and a page's pick.** The tables view and the print layout each
   have a default and, for this visit, an optional page value (`AppState`).
   The default is read at boot from `dhloot.prefs.v1`, replaced by the
-  account's answer, and set by the Display section of `#/account`
-  (`FEATURES.md`, "Account"); nothing else writes it. A page switch sets
+  account's answer (signed out, by another tab's `dhloot.prefs.v1`), and set
+  by the Display section of `#/account` (`FEATURES.md`, "Account"); nothing
+  else writes it. A page switch sets
   the page value in memory only: no storage write, no account save. A page
   draws its page value when set, else the default. A Display change sets
-  the default and drops the page value; the account's answer moves the
-  default and keeps a page value. A signed-out reader keeps the default
+  the default and drops the page value; the account's answer, and signed out
+  another tab's write, moves the default and keeps a page value. A signed-out reader keeps the default
   `dhloot.prefs.v1` already holds and cannot change it.
 
 - **`notifyGm`** (`ask`, `always` or `never`), the remembered answer of

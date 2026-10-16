@@ -20,7 +20,7 @@
  * and deleted with the copier's account. Each flow gets its own
  * browser context, the
  * browser suites' `prepare()` and driver, and - when it has one - a minted
- * session written where supabase-js keeps it. Nothing here prints,
+ * session written under the auth storage key. Nothing here prints,
  * screenshots or throws a value of an `E2E_*` variable or the member's
  * address: comparisons run in the page with the value as an argument.
  * docs/specs/COVERAGE.md, "Test layers". */
@@ -128,7 +128,16 @@ async function withPage({ browser, base, env }, session, run, seed = null) {
       );
     }
     await page.setViewport({ width: 1180, height: 900 });
-    await run(page, makeDriver(page, 'e2e', base + 'index.html'));
+    const d = makeDriver(page, 'e2e', base + 'index.html', { waitUntil: 'networkidle2' });
+    try {
+      await run(page, d);
+    } catch (e) {
+      /* A wait that timed out names what the page still waited for (F8's
+         navigation timeout and F11's missed redraw each failed once with no
+         cause on record). */
+      if (e instanceof Error && !e.message.includes('in flight')) e.message += d.inFlightText();
+      throw e;
+    }
   } finally {
     await ctx.close();
   }

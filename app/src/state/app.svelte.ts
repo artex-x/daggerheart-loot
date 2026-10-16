@@ -108,6 +108,8 @@ const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
 const WARN_KEY = 'dhloot.warn.v1';
 const PREFS_KEY = 'dhloot.prefs.v1';
+/* The settings a signed-out tab follows when another tab writes them (docs/specs/STATE.md). */
+const SETTINGS_KEYS: readonly string[] = [LANG_KEY, HOME_KEY, WARN_KEY, PREFS_KEY];
 
 const DEFAULT_HOME = '#/roll/std';
 
@@ -321,6 +323,11 @@ export class AppState {
   #listPoll: ReturnType<typeof setInterval> | null = null;
   /* The one page with unsaved edits asks before any navigation leaves it. */
   #leaveCheck: (() => boolean) | null = null;
+  /* `ownKeyFor`'s answers, for the user and the own items array they were made for. */
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a memo, never drawn
+  #keyMemo = new Map<string, string>();
+  #keyMemoUser: string | null = null;
+  #keyMemoItems: readonly unknown[] | null = null;
 
   /**
    * The list currently open on the list page, and the payload its address
@@ -487,6 +494,7 @@ export class AppState {
   #stopListWatch: (() => void) | null = null;
   #stopAuth: (() => void) | null = null;
   #stopHidden: (() => void) | null = null;
+  #stopSettings: (() => void) | null = null;
   /* The account sync (docs/specs/STATE.md, "Account preferences"): whether
      `#watchAccount` is listening, the user whose row was last pulled, how
      many local edits there have been (a pull that sees it move drops its
@@ -645,6 +653,9 @@ export class AppState {
     /* A list another tab moved leaves this one; its open page follows it. */
     this.#stopListWatch = this.lists.watch((moved) => {
       this.followMoved(moved);
+    });
+    this.#stopSettings = this.env.storage.onExternalChange((key) => {
+      if (key === null || SETTINGS_KEYS.includes(key)) this.#followSettings();
     });
     this.#watchAccount();
     if (this.cloudLists) {
@@ -1072,7 +1083,19 @@ export class AppState {
     const own = this.homebrew;
     const user = this.user;
     if (!own || !user) return key;
-    return ownKeyFor(user.userId, (k) => own.has(k), key);
+    /* A derived key is a 128-bit hash: one per key until the user or the own items change
+       (both replace on change). */
+    if (this.#keyMemoUser !== user.userId || this.#keyMemoItems !== own.items) {
+      this.#keyMemo.clear();
+      this.#keyMemoUser = user.userId;
+      this.#keyMemoItems = own.items;
+    }
+    let out = this.#keyMemo.get(key);
+    if (out === undefined) {
+      out = ownKeyFor(user.userId, (k) => own.has(k), key);
+      this.#keyMemo.set(key, out);
+    }
+    return out;
   }
 
   /* The key a card of `key` takes in the reader's account, as `ownKeyFor` for an item. */
@@ -1080,7 +1103,7 @@ export class AppState {
     const own = this.homebrew;
     const user = this.user;
     if (!own || !user) return key;
-    return ownKeyFor(user.userId, (k) => own.cards.some((c) => c.key === k), key);
+    return ownKeyFor(user.userId, (k) => own.cardKeys.has(k), key);
   }
 
   /**
@@ -1238,7 +1261,9 @@ export class AppState {
 
   /** How many account lists hold any of `keys`. */
   listsHolding(keys: readonly string[]): number {
-    return (this.cloudLists?.lists ?? []).filter((l) => l.ids.some((id) => keys.includes(id)))
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup within one call
+    const wanted = new Set(keys);
+    return (this.cloudLists?.lists ?? []).filter((l) => l.ids.some((id) => wanted.has(id)))
       .length;
   }
 
@@ -1594,6 +1619,33 @@ export class AppState {
       });
   }
 
+  /* Signed out, another tab's settings apply here as the start read them; a bad value
+     reads as the start's fallback. A page's own value stays: only the defaults move, as
+     the account's answer moves them. Signed in, the account's row decides. Nothing is
+     written back. */
+  #followSettings(): void {
+    if (this.user) return;
+    const lang = readLang(this.env);
+    const home = homeOf(this.env.storage.get(HOME_KEY));
+    const warn = this.env.storage.get(WARN_KEY) === '1';
+    const local = readLocalPrefs(this.env);
+    const moved =
+      lang !== this.lang ||
+      home !== this.#home ||
+      warn !== this.#warnHidden ||
+      local.view !== this.#tablesView ||
+      local.printBw !== this.#printBW ||
+      local.printCompact !== this.#printCompact;
+    if (!moved) return;
+    this.lang = lang;
+    this.#home = home;
+    this.#warnHidden = warn;
+    this.#tablesView = local.view;
+    this.#printBW = local.printBw;
+    this.#printCompact = local.printCompact;
+    this.#changed();
+  }
+
   /* Every setter writes this browser first, then the account. */
   #changed(): void {
     this.#edits++;
@@ -1620,6 +1672,8 @@ export class AppState {
     this.#stopAuth = null;
     this.#stopHidden?.();
     this.#stopHidden = null;
+    this.#stopSettings?.();
+    this.#stopSettings = null;
     this.cloudLists?.unwatch();
     this.ownerRequests?.clear();
     this.homebrew?.clear();

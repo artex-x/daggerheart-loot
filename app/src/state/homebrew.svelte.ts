@@ -30,6 +30,7 @@ import type { Lang } from '../lib/types.js';
 import type { HomebrewImportRows } from '../lib/homebrewFile.js';
 import type {
   HomebrewImport,
+  HomebrewKnown,
   HomebrewMoved,
   HomebrewRepository,
   HomebrewSaved,
@@ -55,6 +56,26 @@ type Row = { id: string; revision: number; updated_at: string; created_at: strin
 
 const byCreated = (a: Row, b: Row): number =>
   a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id);
+
+/* A re-read's rows of one table: the fresh rows, and each held row the read kept by id (an id
+   kept that the store no longer holds stays gone). A fresh row below the held revision is an
+   overlapping read's: the held row stays. With no `keptIds` the read was whole. */
+function merged<R extends Row>(
+  old: readonly R[],
+  fresh: readonly R[],
+  keptIds: readonly string[] | undefined
+): R[] {
+  const had: Record<string, R> = Object.fromEntries(old.map((r) => [r.id, r]));
+  const rows = fresh.map((r) => {
+    const o = had[r.id];
+    return o && r.revision < o.revision ? o : r;
+  });
+  for (const id of keptIds ?? []) {
+    const o = had[id];
+    if (o) rows.push(o);
+  }
+  return kept(old, rows);
+}
 
 /* The fresh rows, each old object kept where its id, revision and time match; the old array
    itself when nothing changed. */
@@ -85,6 +106,12 @@ export class Homebrew {
   itemLimit = $state<number | null>(null);
   bookLimit = $state<number | null>(null);
   cardLimit = $state<number | null>(null);
+
+  /** The keys of the own items and cards. */
+  /* eslint-disable svelte/prefer-svelte-reactivity -- rebuilt whole when the rows change, never mutated */
+  readonly itemKeys: ReadonlySet<string> = $derived(new Set(this.items.map((r) => r.key)));
+  readonly cardKeys: ReadonlySet<string> = $derived(new Set(this.cards.map((c) => c.key)));
+  /* eslint-enable svelte/prefer-svelte-reactivity */
 
   /** Every own card as a record embeds it. */
   cardRefs: CardRef[] = $derived(
@@ -122,6 +149,14 @@ export class Homebrew {
      made again. */
   #edits = 0;
   #inFlight: Promise<unknown>[] = [];
+  /* The rows this store wrote since its last applied read: their times are the client's, so
+     the next read fetches them whole and brings the database's. */
+  #written: Record<string, true> = {};
+  /* Each read's number, taken when it is sent, and the newest one applied: an older answer
+     is dropped, so it can neither remove a row a newer read brought nor bring back one it
+     deleted. */
+  #readSeq = 0;
+  #appliedSeq = 0;
   /* Rows whose create got no answer: it may have landed. */
   #unsure: Record<string, true> = {};
   #timer: ReturnType<typeof setTimeout> | null = null;
@@ -132,7 +167,7 @@ export class Homebrew {
   }
 
   has(key: string): boolean {
-    return this.items.some((r) => r.key === key);
+    return this.itemKeys.has(key);
   }
 
   item(key: string): ItemRow | undefined {
@@ -162,16 +197,21 @@ export class Homebrew {
       while (this.#inFlight.length) await Promise.allSettled(this.#inFlight);
       if (epoch !== this.#epoch) return false;
       const edits = this.#edits;
-      const r = await this.#repo.load();
+      const known = this.status === 'ready' ? this.#known() : undefined;
+      const seq = ++this.#readSeq;
+      const r = await (known ? this.#repo.load(known) : this.#repo.load());
       if (epoch !== this.#epoch) return false;
       if (edits !== this.#edits || this.#inFlight.length) continue;
+      if (seq < this.#appliedSeq) return true;
       if (!r.ok) {
         if (this.status === 'loading') this.status = 'error';
         return false;
       }
-      this.books = kept(this.books, r.books);
-      this.items = kept(this.items, r.items);
-      this.cards = kept(this.cards, r.cards);
+      this.#appliedSeq = seq;
+      this.#written = {};
+      this.books = merged(this.books, r.books, r.kept?.books);
+      this.items = merged(this.items, r.items, r.kept?.items);
+      this.cards = merged(this.cards, r.cards, r.kept?.cards);
       /* A limit read that failed (undefined) keeps the limit known. */
       if (r.itemLimit !== undefined) this.itemLimit = r.itemLimit;
       if (r.bookLimit !== undefined) this.bookLimit = r.bookLimit;
@@ -179,6 +219,15 @@ export class Homebrew {
       this.status = 'ready';
       return true;
     }
+  }
+
+  /* The revisions held, without the rows written since the last applied read. */
+  #known(): HomebrewKnown {
+    const of = (rows: readonly Row[]): Record<string, number> =>
+      Object.fromEntries(
+        rows.filter((r) => !this.#written[r.id]).map((r) => [r.id, r.revision])
+      );
+    return { books: of(this.books), items: of(this.items), cards: of(this.cards) };
   }
 
   /** The owner topic's message: another tab's or device's homebrew write. */
@@ -197,6 +246,7 @@ export class Homebrew {
   clear(): void {
     this.#epoch++;
     this.#unsure = {};
+    this.#written = {};
     if (this.#timer !== null) clearTimeout(this.#timer);
     this.#timer = null;
     this.books = [];
@@ -221,6 +271,7 @@ export class Homebrew {
     }
     const r = await this.#send(() => this.#repo.createBook({ ...ids, content }));
     if (r.ok) {
+      this.#written[ids.id] = true;
       const at = nowIso();
       this.books = [
         ...this.books,
@@ -288,6 +339,7 @@ export class Homebrew {
       this.#repo.createItem({ ...ids, book_id: bookId, content, art })
     );
     if (r.ok) {
+      this.#written[ids.id] = true;
       const at = nowIso();
       this.items = [
         ...this.items,
@@ -306,6 +358,7 @@ export class Homebrew {
   ): Promise<HomebrewSaved> {
     const r = await this.#send(() => this.#repo.updateItem(row.id, patch, revision));
     if (r.ok) {
+      this.#written[row.id] = true;
       const at = nowIso();
       this.items = this.items.map((x) =>
         x.id === row.id ? { ...x, ...patch, revision: r.revision, updated_at: at } : x
@@ -322,6 +375,7 @@ export class Homebrew {
     if (r.ok && onlyIfNone) {
       await this.read();
     } else if (r.ok) {
+      this.#written[id] = true;
       const at = nowIso();
       this.items = this.items.map((x) =>
         x.id === id ? { ...x, art, revision: r.revision, updated_at: at } : x
@@ -401,6 +455,7 @@ export class Homebrew {
       this.#repo.createCard({ ...ids, kind, book_id: bookId, content })
     );
     if (r.ok) {
+      this.#written[ids.id] = true;
       const at = nowIso();
       this.cards = [
         ...this.cards,
@@ -419,6 +474,7 @@ export class Homebrew {
   ): Promise<HomebrewSaved> {
     const r = await this.#send(() => this.#repo.updateCard(row.id, patch, revision));
     if (r.ok) {
+      this.#written[row.id] = true;
       const at = nowIso();
       this.cards = this.cards.map((x) =>
         x.id === row.id ? { ...x, ...patch, revision: r.revision, updated_at: at } : x
@@ -464,6 +520,7 @@ export class Homebrew {
   async #updateBook(book: BookRow, content: BookContent): Promise<HomebrewSaved> {
     const r = await this.#send(() => this.#repo.updateBook(book.id, content, book.revision));
     if (r.ok) {
+      this.#written[book.id] = true;
       const at = nowIso();
       this.books = this.books.map((b) =>
         b.id === book.id ? { ...b, content, revision: r.revision, updated_at: at } : b

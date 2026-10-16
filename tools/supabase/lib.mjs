@@ -2,21 +2,16 @@
   Pure logic for the Supabase release tools (config.mjs, db-push.mjs,
   db.mjs, limits.mjs, migrate-test.mjs, pending-check.mjs, restore.mjs,
   restore-drill.mjs, restore-prod.mjs) and the reversibility gate in
-  tests/db/. No process
-  spawn, no filesystem: every
+  tests/db/. No filesystem, and no process spawn except `runTimed` and
+  `resetLocal`, the one reset of the local database: every other
   input arrives as an argument, so lib.test.mjs covers it inside `npm run
   check`.
   Procedure: .claude/README.md, "Supabase configuration".
 */
 
-import { fileURLToPath } from 'node:url';
-
-/** The CLI's node entry from the pinned `supabase` devDependency. Callers
- * run it as `process.execPath SUPABASE_CLI ...`, so no shell and no `npx`
- * lookup sits between the script and the pinned version. */
-export const SUPABASE_CLI = fileURLToPath(
-  new URL('../../node_modules/supabase/dist/supabase.js', import.meta.url)
-);
+import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 
 export const PROJECTS = Object.freeze({
   test: 'rdjxcjkhsklhprmzxajq',
@@ -324,6 +319,159 @@ export function localProjectId(tomlText) {
     if (m) return m[1];
   }
   return null;
+}
+
+/** The services `npm run check:db` needs, in the CLI's container names
+ * (`supabase_<service>_<project_id>`). Storage is one: see
+ * LOCAL_STACK_EXCLUDES. */
+export const STACK_SERVICES = Object.freeze(['db', 'auth', 'realtime', 'storage', 'kong']);
+
+/** Returns the container names of STACK_SERVICES for `projectId`. */
+export function stackContainers(projectId) {
+  return STACK_SERVICES.map((s) => `supabase_${s}_${projectId}`);
+}
+
+/** Returns the names for which `isRunning(name)` is false, in order. */
+export function missingContainers(names, isRunning) {
+  return names.filter((name) => !isRunning(name));
+}
+
+/** Returns the one-line remedy for a local stack that cannot serve the
+ * suite. A plain `npx supabase start` starts the full stack, whose vector
+ * container restart-loops (.claude/README.md, "Shell hazards"). */
+export function stackAdvice(what) {
+  return `check:db: ${what}. Run "npx supabase stop" through PowerShell, then run check:db again: it starts the stack with its excludes and pulls a missing image.`;
+}
+
+/** The longest a local `db reset` may take: three times the 77 s one
+ * reset took (measured 2026-10-15 on this host) is under five minutes. */
+export const RESET_TIMEOUT_MS = 300000;
+
+/** The longest `supabase start`, `stop` or `status` may take in `npm run
+ * check:db` and the restore commands: three times the slowest of three warm
+ * starts (39.9-42.5 s, measured 2026-10-16 on this host), rounded up to the
+ * minute, under the hang guard's 300 s stall kill. A first start that pulls
+ * its images takes longer: DHLOOT_STACK_TIMEOUT_MS overrides it. */
+export const STACK_TIMEOUT_MS = 180000;
+
+/** The longest `docker ps` may take: it answers in under a second when
+ * Docker is up. */
+export const DOCKER_PS_TIMEOUT_MS = 30000;
+
+/** Returns DHLOOT_STACK_TIMEOUT_MS from `env` when it is a positive
+ * integer, else STACK_TIMEOUT_MS. */
+export function stackTimeoutMs(env) {
+  const n = Number(env?.DHLOOT_STACK_TIMEOUT_MS);
+  return Number.isInteger(n) && n > 0 ? n : STACK_TIMEOUT_MS;
+}
+
+/** Returns a time bound as a FAIL line says it: `N minutes` when whole,
+ * else `N s`. */
+export function spanText(ms) {
+  return ms % 60000 === 0 ? `${ms / 60000} minutes` : `${ms / 1000} s`;
+}
+
+/** Returns what a CLI call that ran out of stackTimeoutMs(env) did, for a
+ * FAIL line: the call, the bound and the override. */
+export function stalledText(what, env) {
+  return `${what} did not finish in ${spanText(stackTimeoutMs(env))} (DHLOOT_STACK_TIMEOUT_MS sets the bound, for a first start that pulls its images)`;
+}
+
+/** Returns the one FAIL line of `tool` (`check:db`, `restore`) for an error
+ * thrown before the run, such as supabaseCli's missing binary: its message,
+ * no stack trace. */
+export function failLine(tool, err) {
+  return `${tool}: FAIL - ${err instanceof Error ? err.message : String(err)}`;
+}
+
+/** Returns DHLOOT_RESET_TIMEOUT_MS from `env` when it is a positive
+ * integer, else RESET_TIMEOUT_MS. */
+export function resetTimeoutMs(env) {
+  const n = Number(env?.DHLOOT_RESET_TIMEOUT_MS);
+  return Number.isInteger(n) && n > 0 ? n : RESET_TIMEOUT_MS;
+}
+
+/** Returns `'timeout'` when a `spawnSync` result ended at its timeout,
+ * `'failed'` for any other error, a signal (an interrupt) or a non-zero
+ * status, else null. */
+export function resetFailure(result) {
+  if (result.error?.code === 'ETIMEDOUT') return 'timeout';
+  if (result.error || result.signal || result.status !== 0) return 'failed';
+  return null;
+}
+
+const CLI_PACKAGES = {
+  darwin: { arm64: ['darwin-arm64'], x64: ['darwin-x64'] },
+  linux: { arm64: ['linux-arm64', 'linux-arm64-musl'], x64: ['linux-x64', 'linux-x64-musl'] },
+  win32: { arm64: ['windows-arm64'], x64: ['windows-x64'] }
+};
+
+/** Returns the path of the Supabase CLI's platform binary as
+ * `node_modules/supabase/dist/supabase.js` finds it, or null:
+ * `env.SUPABASE_CLI_BINARY_OVERRIDE`, else the bin of the first
+ * `@supabase/cli-<platform>-<arch>` package that `resolve` finds. A spawn of
+ * the binary has no node wrapper between it and its timeout: a killed
+ * wrapper on Windows leaves the binary running. */
+export function supabaseBinary(platform, arch, resolve, env = {}) {
+  if (env.SUPABASE_CLI_BINARY_OVERRIDE) return env.SUPABASE_CLI_BINARY_OVERRIDE;
+  const ext = platform === 'win32' ? '.exe' : '';
+  for (const suffix of CLI_PACKAGES[platform]?.[arch] ?? []) {
+    try {
+      const dir = path.dirname(resolve(`@supabase/cli-${suffix}/package.json`));
+      return path.join(dir, 'bin', `supabase${ext}`);
+    } catch {
+      // the next candidate
+    }
+  }
+  return null;
+}
+
+/** Runs `file args` with `spawn` (default `spawnSync`) under `opts.timeout`
+ * (ms) and returns `{ failure, seconds, result }`; `failure` as resetFailure
+ * answers. */
+export function runTimed(file, args, opts, spawn = spawnSync) {
+  const t0 = Date.now();
+  const result = spawn(file, args, { encoding: 'utf8', ...opts });
+  return {
+    failure: resetFailure(result),
+    seconds: Math.round((Date.now() - t0) / 1000),
+    result
+  };
+}
+
+const requireHere = createRequire(import.meta.url);
+
+/** Returns the Supabase CLI's platform binary for this process (`supabaseBinary`). It
+ * resolves up the parent directories, so a `.claude/worktrees/` checkout with no own
+ * `node_modules` finds it too. Throws when no binary package is installed. */
+export function supabaseCli(env = process.env) {
+  const bin = supabaseBinary(process.platform, process.arch, requireHere.resolve, env);
+  if (bin === null) throw new Error('The Supabase CLI binary is not installed. Run npm ci.');
+  return bin;
+}
+
+/** Resets the local database to supabase/migrations/ (`args`: more CLI
+ * arguments, such as `--version <14 digits>`) through the CLI binary itself,
+ * stopped after resetTimeoutMs(env). Returns `{ failure, seconds, stderr }`;
+ * `failure` is null, `'timeout'` or `'failed'`. It drops every connection. */
+export function resetLocal({ args = [], env = process.env, cwd, stdio } = {}) {
+  let bin;
+  try {
+    bin = supabaseCli(env);
+  } catch (e) {
+    return {
+      failure: 'failed',
+      seconds: 0,
+      stderr: e instanceof Error ? e.message : String(e)
+    };
+  }
+  const { failure, seconds, result } = runTimed(bin, ['db', 'reset', '--local', ...args], {
+    cwd,
+    env,
+    stdio: stdio ?? ['ignore', 'pipe', 'pipe'],
+    timeout: resetTimeoutMs(env)
+  });
+  return { failure, seconds, stderr: result.stderr ?? '' };
 }
 
 /** True when `s` has the shape of a native X25519 age identity

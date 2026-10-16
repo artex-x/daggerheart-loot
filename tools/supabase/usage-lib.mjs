@@ -377,17 +377,27 @@ export async function keepAlive({ url, key, fetchImpl, timeoutMs = 10000 }) {
     : { ok: false, status: res.status };
 }
 
+const KB = 1000;
 const MB = 1_000_000;
+
+/** Returns `bytes` as kB with one decimal under 1 MB, else as MB with
+ * `mbDigits` decimals: a bucket of 39 362 bytes reads 39.4 kB, not 0.0 MB. */
+export function bytesText(bytes, mbDigits = 1) {
+  /* The rounded kB value decides: 999 950 bytes would otherwise read `1000.0 kB`. */
+  const kb = (bytes / KB).toFixed(1);
+  if (Math.abs(Number(kb)) < 1000) return `${kb} kB`;
+  return `${(bytes / MB).toFixed(mbDigits)} MB`;
+}
 
 function amount(value, unit) {
   if (value === null || value === undefined) return '-';
-  if (unit === 'bytes') return `${(value / MB).toFixed(1)} MB`;
+  if (unit === 'bytes') return bytesText(value);
   return String(Math.round(value));
 }
 
 function growth(perDay, unit) {
   if (perDay === null || perDay === undefined) return '-';
-  if (unit === 'bytes') return `${(perDay / MB).toFixed(2)} MB`;
+  if (unit === 'bytes') return bytesText(perDay, 2);
   return perDay.toFixed(1);
 }
 

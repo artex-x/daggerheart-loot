@@ -543,7 +543,7 @@ describe('#/tables/homebrew', () => {
       { content: { ...axe.content, ru: 'Топор Пепла' }, book_id: axe.book_id },
       null
     );
-    expect(await screen.findByText('Топор Пепла', {}, { timeout: 4000 })).toBeInTheDocument();
+    expect(await screen.findByText('Топор Пепла')).toBeInTheDocument();
     const box = screen.getByPlaceholderText(t.searchPh);
     await userEvent.type(box, 'Пепла');
     expect(rowIds()).toEqual([AXE]);

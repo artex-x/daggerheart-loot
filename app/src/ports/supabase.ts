@@ -1,25 +1,25 @@
 /* The real `CloudPort`: Supabase Auth and the account's rows through
- * supabase-js.
+ * `@supabase/auth-js`, `postgrest-js`, `realtime-js` and `storage-js`.
  *
- * The only module that imports `@supabase/supabase-js` (ESLint enforces it);
- * `main.ts` loads it as a lazy chunk after first paint, and only in a build
- * with the two `VITE_SUPABASE_*` values (docs/DECISIONS.md, "The account
- * client loads after first paint"). The provider redirect is read before
- * mount by `redirect.ts`, so supabase-js's own URL detection is off - it
- * would race the router. docs/specs/FEATURES.md, "Account". */
+ * The only module that imports `@supabase/*` (ESLint enforces it); `main.ts`
+ * loads it as a lazy chunk after first paint, and only in a build with the
+ * two `VITE_SUPABASE_*` values (docs/DECISIONS.md, "The account client loads
+ * after first paint"). The provider redirect is read before mount by
+ * `redirect.ts`, so auth-js's own URL detection is off - it would race the
+ * router. docs/specs/FEATURES.md, "Account". */
 
-import {
-  createClient,
-  REALTIME_SUBSCRIBE_STATES,
-  type User,
-  type UserIdentity
-} from '@supabase/supabase-js';
+import { AuthClient, type User, type UserIdentity } from '@supabase/auth-js';
+import { PostgrestClient } from '@supabase/postgrest-js';
+import { RealtimeClient, REALTIME_SUBSCRIBE_STATES } from '@supabase/realtime-js';
+import { StorageClient } from '@supabase/storage-js';
 import {
   entryOrder,
   type LinkedRow,
   type ListRow,
+  type SharedHeld,
   type SharedRow,
-  type ShareRow
+  type ShareRow,
+  withSnapshots
 } from '../lib/cloudLists.js';
 import { newArtName, thumbOf } from '../lib/art.js';
 import {
@@ -31,7 +31,13 @@ import {
 } from '../lib/homebrew.js';
 import type { SignInAfter } from '../lib/pending.js';
 import { readPrefs } from '../lib/prefs.js';
-import { readApplied, readRequests, requestRefusal, type NoticeRow } from '../lib/requests.js';
+import {
+  readApplied,
+  readRequestHeads,
+  readRequests,
+  requestRefusal,
+  type NoticeRow
+} from '../lib/requests.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
   AuthError,
@@ -57,6 +63,7 @@ import type {
   RequestDeclined,
   RequestRepository,
   RequestSent,
+  RequestsRead,
   Session,
   ShareMade,
   ShareRepository
@@ -146,6 +153,9 @@ async function written(call: () => PromiseLike<Answer>): Promise<ListWrite> {
 const FAULT_CODE = /^(?:57014|(?:22|23|42|P0|XX)[0-9A-Z]{3})$/;
 
 const FAULT: ListWrites = { ok: false, error: 'fault' };
+/* A statement timeout cancelled the call's one statement, which rolled back: a smaller call
+   can pass at once (docs/decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md). */
+const TIMED_OUT: ListWrites = { ok: false, error: 'fault', timeout: true };
 const UNSENT: ListWrites = { ok: false, error: 'network' };
 const REFUSED: ListWrites = { ok: false, error: 'refused' };
 const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
@@ -178,6 +188,7 @@ function uploadRefusal(error: {
 
 /** Returns an `apply` call's own failure: `fault`, `network`, or `refused`. */
 function callFailure(answer: Answer): ListWrites {
+  if (answer.status === 500 && answer.error?.code === '57014') return TIMED_OUT;
   if (answer.status === 500 && FAULT_CODE.test(answer.error?.code ?? '')) return FAULT;
   /* A stale schema cache or a reverted migration: waited out, never up to
      200 writes refused with one toast. */
@@ -212,11 +223,10 @@ type Fetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
    request. An auth request never carries the flag - a token refresh that
    lands after the page closed would rotate a refresh token the page never
    stores. A request the browser refuses with the flag is sent once more
-   without it; every write is idempotent. The prefix is parsed as
-   supabase-js parses the URL, so an uppercase host or an explicit default
-   port still matches. */
-function keepaliveFetch(url: string, tab: string): Fetch {
-  const rest = new URL('rest/v1/', url.replace(/\/*$/, '/')).href;
+   without it; every write is idempotent. `base` is `accountClients`' base,
+   so an uppercase host or an explicit default port still matches. */
+function keepaliveFetch(base: string, tab: string): Fetch {
+  const rest = new URL('rest/v1/', base).href;
   return async (input, init) => {
     const target =
       typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
@@ -236,6 +246,74 @@ function keepaliveFetch(url: string, tab: string): Fetch {
       if (init?.signal?.aborted) throw err;
       return fetch(input, tagged);
     }
+  };
+}
+
+type AuthStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+
+/* The account's four clients, built as supabase-js 2.117.1's `SupabaseClient` builds them:
+   the same addresses from one base, the same auth storage key - a changed key signs every
+   reader out (docs/specs/STATE.md) - and the session's token read on every request, never
+   held in a header (docs/decisions/2026-09-24-the-account-client-loads-after-first-paint-a.md). */
+function accountClients(url: string, key: string, tab: string, storage?: AuthStorage) {
+  const trimmed = url.trim();
+  const base = new URL(trimmed.endsWith('/') ? trimmed : trimmed + '/');
+  const live = new URL('realtime/v1', base);
+  live.protocol = live.protocol.replace('http', 'ws');
+  const plain = keepaliveFetch(base.href, tab);
+  const auth = new AuthClient({
+    url: new URL('auth/v1', base).href,
+    headers: { Authorization: `Bearer ${key}`, apikey: key },
+    storageKey: `sb-${base.hostname.split('.')[0] ?? ''}-auth-token`,
+    flowType: 'pkce',
+    detectSessionInUrl: false,
+    persistSession: true,
+    autoRefreshToken: true,
+    fetch: plain,
+    ...(storage ? { storage } : {})
+  });
+  const token = async (): Promise<string | null> => {
+    const { data } = await auth.getSession();
+    return data.session?.access_token ?? null;
+  };
+  /* supabase-js's `fetchWithAuth`: a header the caller set wins. */
+  const authed: Fetch = async (input, init) => {
+    const bearer = (await token()) ?? key;
+    const headers = new Headers(init?.headers);
+    if (!headers.has('apikey')) headers.set('apikey', key);
+    if (!headers.has('Authorization')) headers.set('Authorization', `Bearer ${bearer}`);
+    return plain(input, { ...init, headers });
+  };
+  const realtime = new RealtimeClient(live.href, {
+    params: { apikey: key },
+    accessToken: async () => (await token()) ?? key,
+    fetch: authed
+  });
+  /* supabase-js's `_handleTokenChanged`. Synchronous on purpose: a callback that awaits
+     another auth call deadlocks auth-js. */
+  let current: string | undefined;
+  auth.onAuthStateChange((event, session) => {
+    const next = session?.access_token;
+    if (
+      (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION') &&
+      current !== next
+    ) {
+      current = next;
+      void realtime.setAuth(next);
+    } else if (event === 'SIGNED_OUT') {
+      void realtime.setAuth();
+      current = undefined;
+    }
+  });
+  return {
+    auth,
+    rest: new PostgrestClient(new URL('rest/v1', base).href, {
+      headers: {},
+      schema: 'public',
+      fetch: authed
+    }),
+    realtime,
+    storage: new StorageClient(new URL('storage/v1', base).href, {}, authed)
   };
 }
 
@@ -289,18 +367,23 @@ const LIST_SELECT =
 /** The most ids one `get_homebrew_items` call takes; more go in several calls. */
 export const ITEMS_PER_CALL = 1000;
 
-/** The most changed lists a re-read fetches by id: `in.(...)` of 50 UUIDs is about 1.9 kB
- *  of address, far under a common 8 kB request line. More read the whole account. */
-export const CHANGED_LISTS_MAX = 50;
+/** The most ids one `in.(...)` filter names: 50 UUIDs are about 1.9 kB of address, far
+ *  under a common 8 kB request line. A re-read with more changed rows (lists, the homebrew
+ *  rows of one table, new requests) reads them all. */
+export const CHANGED_ROWS_MAX = 50;
 /** PostgREST's row cap (`supabase/config.toml`, `[api] max_rows`): a page of the requests
  *  read. The cap limits top-level rows only, not embedded ones. */
 export const READ_PAGE = 1000;
+/** The most `delete_account_requests()` calls one account delete makes: 200 requests a call,
+ *  20 000 in all (an account at three times the limits holds 4500 pending). */
+export const ACCOUNT_DELETE_CALLS_MAX = 100;
 
 /* The owner's pending requests with their lines; row level security keeps them to the
-   owner of each request's list. */
+   owner of each request's list. A re-read pages the heads alone: a pending request's lines
+   change only in the apply that decides it. */
+const REQUEST_HEAD = 'id,list_id,audience,created_at,expires_at,read_at';
 const REQUEST_SELECT =
-  'id,list_id,audience,created_at,expires_at,read_at,' +
-  'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+  REQUEST_HEAD + ',purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
 
 /* The owner's change log: one row per list and item. */
 const NOTICE_SELECT = 'id,list_id,item_key,hid,kind,name,created_at,read_at';
@@ -385,22 +468,13 @@ export function createCloud(
   key: string,
   redirect: Redirect | null,
   win: CloudWindow = window,
-  /* Outside a browser supabase-js ignores `localStorage` and keeps the
+  /* Outside a browser auth-js ignores `localStorage` and keeps the
      session in its own memory; only the hosted E2E's Node half hands a
      store in (tests/e2e/contract.mjs). */
-  storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+  storage?: AuthStorage
 ): CloudPort {
   const tab = crypto.randomUUID();
-  const client = createClient(url, key, {
-    auth: {
-      flowType: 'pkce',
-      detectSessionInUrl: false,
-      persistSession: true,
-      autoRefreshToken: true,
-      ...(storage ? { storage } : {})
-    },
-    global: { fetch: keepaliveFetch(url, tab) }
-  });
+  const client = accountClients(url, key, tab, storage);
 
   /* Started at once: the page mounts meanwhile, and every read waits for it. */
   const exchanged: Promise<AuthResult> | null = redirect?.code
@@ -518,8 +592,18 @@ export function createCloud(
       }
     },
     async deleteAccount() {
+      /* The purchase requests go first in bounded calls: at three times the limits their
+         lines alone pass the statement timeout in one delete
+         (docs/decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md). */
       try {
-        const { error } = await client.rpc('delete_account');
+        for (let call = 0; call < ACCOUNT_DELETE_CALLS_MAX; call++) {
+          const answer = await client.rest.rpc('delete_account_requests');
+          if (answer.error?.code === 'PGRST202') break;
+          if (answer.error) return refuse('failed');
+          const pruned: unknown = answer.data;
+          if (typeof pruned !== 'number' || pruned === 0) break;
+        }
+        const { error } = await client.rest.rpc('delete_account');
         if (error) return refuse('failed');
       } catch {
         return refuse('failed');
@@ -530,8 +614,8 @@ export function createCloud(
       return OK;
     },
     onChange(fn) {
-      /* Synchronous on purpose: a callback that awaits another client call
-         deadlocks supabase-js. */
+      /* Synchronous on purpose: a callback that awaits another auth call
+         deadlocks auth-js. */
       const { data } = client.auth.onAuthStateChange((_event, s) => {
         fn(sessionOf(s?.user));
       });
@@ -557,7 +641,7 @@ export function createCloud(
       const id = await userId();
       if (!id) return { ok: false };
       try {
-        const { data, error } = await client
+        const { data, error } = await client.rest
           .from('user_prefs')
           .select('prefs')
           .eq('user_id', id)
@@ -572,7 +656,7 @@ export function createCloud(
       const id = await userId();
       if (!id) return false;
       try {
-        const { error } = await client
+        const { error } = await client.rest
           .from('user_prefs')
           .upsert({ user_id: id, prefs: p }, { onConflict: 'user_id' });
         return !error;
@@ -587,7 +671,7 @@ export function createCloud(
      limit. The read of the rows never fails for it. */
   const limitOf = async (key: string): Promise<number | null | undefined> => {
     try {
-      const r = await client.rpc('my_limit', { p_key: key });
+      const r = await client.rest.rpc('my_limit', { p_key: key });
       if (r.error) return undefined;
       const data: unknown = r.data;
       if (data === null) return null;
@@ -599,7 +683,11 @@ export function createCloud(
 
   /* A fresh builder per read: postgrest-js builders keep the filters of an earlier call. */
   const listsQuery = (columns: string) =>
-    client.from('lists').select(columns).order('updated_at', { ascending: false }).order('id');
+    client.rest
+      .from('lists')
+      .select(columns)
+      .order('updated_at', { ascending: false })
+      .order('id');
   const listRows = (data: unknown): ListRow[] | null =>
     Array.isArray(data)
       ? (data as ListRow[]).map((l) => ({
@@ -626,7 +714,7 @@ export function createCloud(
         if (head.error || !Array.isArray(head.data)) return { ok: false };
         const held = head.data as unknown as { id: string; revision: number }[];
         const changed = held.filter((l) => known[l.id] !== l.revision).map((l) => l.id);
-        if (changed.length > CHANGED_LISTS_MAX) return await full();
+        if (changed.length > CHANGED_ROWS_MAX) return await full();
         const kept = held.filter((l) => known[l.id] === l.revision).map((l) => l.id);
         const [read, [listLimit, entryLimit]] = await Promise.all([
           changed.length ? listsQuery(LIST_SELECT).in('id', changed) : null,
@@ -642,7 +730,7 @@ export function createCloud(
       if (!ops.length) return { ok: true, results: [] };
       try {
         const answer = await timed((signal) =>
-          client.rpc('apply_list_writes', { p_ops: ops }).abortSignal(signal)
+          client.rest.rpc('apply_list_writes', { p_ops: ops }).abortSignal(signal)
         );
         if (answer.error) return callFailure(answer);
         const data: unknown = answer.data;
@@ -658,7 +746,7 @@ export function createCloud(
     async move(id, canonical) {
       try {
         const answer = await timed((signal) =>
-          client
+          client.rest
             .rpc('move_legacy_list', { p_id: id, p_canonical: canonical })
             .abortSignal(signal)
         );
@@ -678,7 +766,7 @@ export function createCloud(
     async import(rows) {
       try {
         const answer = await timed(
-          (signal) => client.rpc('import_lists', { p_lists: rows }).abortSignal(signal),
+          (signal) => client.rest.rpc('import_lists', { p_lists: rows }).abortSignal(signal),
           IMPORT_TIMEOUT_MS
         );
         return answer.error?.code === '57014' ? TOO_SLOW : writeOf(answer);
@@ -693,7 +781,7 @@ export function createCloud(
         const out: LinkedRow[] = [];
         for (let at = 0; at < ids.length; at += ITEMS_PER_CALL) {
           const part = ids.slice(at, at + ITEMS_PER_CALL);
-          const r0 = await client.rpc('get_homebrew_items', { p_ids: part });
+          const r0 = await client.rest.rpc('get_homebrew_items', { p_ids: part });
           const data: unknown = r0.data;
           if (r0.error || !Array.isArray(data)) return { ok: false };
           for (const row of data as unknown[]) {
@@ -716,7 +804,7 @@ export function createCloud(
     async item(id) {
       try {
         const answer = await timed((signal) =>
-          client.rpc('get_homebrew_item', { p_id: id }).abortSignal(signal)
+          client.rest.rpc('get_homebrew_item', { p_id: id }).abortSignal(signal)
         );
         if (answer.error) return { ok: false };
         const item: unknown = answer.data;
@@ -730,10 +818,11 @@ export function createCloud(
   /* Row level security keeps a share's row to its list's owner, stopped rows
      included (tests/db/list-shares.test.mjs); a change goes through the
      functions, which check the owner again. */
+  let sharedHaveGone = false;
   const shares: ShareRepository = {
     async list(listId) {
       try {
-        const { data, error } = await client
+        const { data, error } = await client.rest
           .from('list_shares')
           .select('id,audience,token,created_at,revoked_at')
           .eq('list_id', listId);
@@ -746,7 +835,7 @@ export function createCloud(
     create: (listId, audience) =>
       made(() =>
         timed((signal) =>
-          client
+          client.rest
             .rpc('create_list_share', { p_list: listId, p_audience: audience })
             .abortSignal(signal)
         )
@@ -754,28 +843,49 @@ export function createCloud(
     revoke: (shareId) =>
       written(() =>
         timed((signal) =>
-          client.rpc('revoke_list_share', { p_share: shareId }).abortSignal(signal)
+          client.rest.rpc('revoke_list_share', { p_share: shareId }).abortSignal(signal)
         )
       ),
-    /* `{ p_token }` alone names `get_shared_list(text)`; with `p_since` PostgREST picks the
-       `(text, bigint)` overload, which answers `{ unchanged: true }` for a known revision. */
-    async read(token, since) {
+    /* Every read names `(text, bigint, jsonb)`, which leaves out a held record of the same
+       `rev`; `{ unchanged: true }` answers a known revision. After a `PGRST202` (its
+       reversal pushed) this port takes the calls of before: `{ p_token }` names
+       `get_shared_list(text)`, `{ p_token, p_since }` the `(text, bigint)` overload. */
+    async read(token, since, held) {
+      /* Captured before the call: the fill reads nothing the store changes meanwhile. */
+      const have: SharedHeld = new Map(held ?? []);
+      const ask = (s: number | undefined, h: SharedHeld) =>
+        sharedHaveGone
+          ? client.rest.rpc(
+              'get_shared_list',
+              s === undefined ? { p_token: token } : { p_token: token, p_since: s }
+            )
+          : client.rest.rpc('get_shared_list', {
+              p_token: token,
+              p_since: s ?? null,
+              p_have: Object.fromEntries([...h].map(([hid, x]) => [hid, x.rev]))
+            });
       try {
-        const answer = await client.rpc(
-          'get_shared_list',
-          since === undefined ? { p_token: token } : { p_token: token, p_since: since }
-        );
+        let answer = await ask(since, have);
+        if (answer.error?.code === 'PGRST202' && !sharedHaveGone) {
+          sharedHaveGone = true;
+          answer = await ask(since, have);
+        }
         if (answer.error) return { ok: false };
         const shared: unknown = answer.data;
-        if (
-          since !== undefined &&
-          shared !== null &&
-          typeof shared === 'object' &&
-          (shared as { unchanged?: unknown }).unchanged === true
-        ) {
+        if (shared === null || typeof shared !== 'object') return { ok: true, shared: null };
+        if (since !== undefined && (shared as { unchanged?: unknown }).unchanged === true) {
           return { ok: true, unchanged: true };
         }
-        return { ok: true, shared: (shared as SharedRow | null) ?? null };
+        if (sharedHaveGone) return { ok: true, shared: shared as SharedRow };
+        const filled = withSnapshots(shared as SharedRow, have);
+        if (filled) return { ok: true, shared: filled };
+        /* An answer that left out a record this read did not hold: once more, whole. */
+        const whole = await ask(undefined, new Map());
+        if (whole.error || whole.data === null || typeof whole.data !== 'object') {
+          return whole.error ? { ok: false } : { ok: true, shared: null };
+        }
+        const again = withSnapshots(whole.data as SharedRow, new Map());
+        return again ? { ok: true, shared: again } : { ok: false };
       } catch {
         return { ok: false };
       }
@@ -783,7 +893,7 @@ export function createCloud(
     async ownerOf(token) {
       if (!(await userId())) return null;
       try {
-        const { data, error } = await client
+        const { data, error } = await client.rest
           .from('list_shares')
           .select('list_id')
           .eq('token', token)
@@ -797,7 +907,7 @@ export function createCloud(
     clone: (token, id) =>
       written(() =>
         timed((signal) =>
-          client.rpc('clone_shared_list', { p_token: token, p_id: id }).abortSignal(signal)
+          client.rest.rpc('clone_shared_list', { p_token: token, p_id: id }).abortSignal(signal)
         )
       )
   };
@@ -809,7 +919,7 @@ export function createCloud(
     tab,
     subscribe(topic, on) {
       let open = true;
-      const ch = client.channel(topic, { config: { private: true } });
+      const ch = client.realtime.channel(topic, { config: { private: true } });
       ch.on('broadcast', { event: '*' }, (m) => {
         if (open) on.message(m.event, m['payload']);
       });
@@ -820,13 +930,13 @@ export function createCloud(
           return;
         }
         open = false;
-        void client.removeChannel(ch);
+        void client.realtime.removeChannel(ch);
         on.status('down');
       });
       return () => {
         if (!open) return;
         open = false;
-        void client.removeChannel(ch);
+        void client.realtime.removeChannel(ch);
       };
     }
   };
@@ -835,28 +945,50 @@ export function createCloud(
      functions, which check the token or the owner again. */
   const requests: RequestRepository = {
     /* Keyset pages by id past PostgREST's row cap: an offset page would skip a row when a
-       request is deleted between two pages. */
-    async list() {
-      try {
+       request is deleted between two pages. With `held`, the pages carry no lines and the
+       new requests are read in one more call by id (at most `CHANGED_ROWS_MAX`, so one
+       `in.(...)` holds them); a failed page or read fails the whole read. */
+    async list(held) {
+      const pages = async (columns: string): Promise<unknown[] | null> => {
         const rows: unknown[] = [];
         let last: string | null = null;
         for (;;) {
-          const q = client
+          const q = client.rest
             .from('purchase_requests')
-            .select(REQUEST_SELECT)
+            .select(columns)
             .eq('status', 'pending');
           const page = await (last === null ? q : q.gt('id', last))
             .order('id')
             .limit(READ_PAGE);
-          if (page.error || !Array.isArray(page.data)) return { ok: false };
+          if (page.error || !Array.isArray(page.data)) return null;
           const got = page.data as unknown[];
           rows.push(...got);
           const end = got.at(-1) as { id?: unknown } | undefined;
-          if (got.length < READ_PAGE || typeof end?.id !== 'string') break;
+          if (got.length < READ_PAGE || typeof end?.id !== 'string') return rows;
           last = end.id;
         }
-        const read = readRequests(rows);
+      };
+      const whole = async (): Promise<RequestsRead> => {
+        const read = readRequests(await pages(REQUEST_SELECT));
         return read ? { ok: true, requests: read } : { ok: false };
+      };
+      try {
+        if (!held?.length) return await whole();
+        const heads = readRequestHeads(await pages(REQUEST_HEAD));
+        if (!heads) return { ok: false };
+        const holds = new Set(held);
+        const kept = heads.filter((h) => holds.has(h.id));
+        const fresh = heads.filter((h) => !holds.has(h.id)).map((h) => h.id);
+        if (fresh.length > CHANGED_ROWS_MAX) return await whole();
+        if (!fresh.length) return { ok: true, requests: [], kept };
+        const added = await client.rest
+          .from('purchase_requests')
+          .select(REQUEST_SELECT)
+          .eq('status', 'pending')
+          .in('id', fresh)
+          .order('id');
+        const read = added.error ? null : readRequests(added.data);
+        return read ? { ok: true, requests: read, kept } : { ok: false };
       } catch {
         return { ok: false };
       }
@@ -864,7 +996,7 @@ export function createCloud(
     async send(id, token, lines) {
       try {
         const answer = await timed((signal) =>
-          client
+          client.rest
             .rpc('create_purchase_request', { p_id: id, p_token: token, p_lines: lines })
             .abortSignal(signal)
         );
@@ -876,7 +1008,9 @@ export function createCloud(
     async apply(id, clamp) {
       try {
         const answer = await timed((signal) =>
-          client.rpc('apply_purchase_request', { p_id: id, p_clamp: clamp }).abortSignal(signal)
+          client.rest
+            .rpc('apply_purchase_request', { p_id: id, p_clamp: clamp })
+            .abortSignal(signal)
         );
         if (answer.error) return decisionOf(requestFailure(answer));
         const data: unknown = answer.data;
@@ -888,7 +1022,7 @@ export function createCloud(
     async decline(id) {
       try {
         const answer = await timed((signal) =>
-          client.rpc('decline_purchase_request', { p_id: id }).abortSignal(signal)
+          client.rest.rpc('decline_purchase_request', { p_id: id }).abortSignal(signal)
         );
         return answer.error ? decisionOf(requestFailure(answer)) : { ok: true };
       } catch {
@@ -897,14 +1031,16 @@ export function createCloud(
     },
     markRead: (listId) =>
       written(() =>
-        timed((signal) => client.rpc('mark_list_read', { p_list: listId }).abortSignal(signal))
+        timed((signal) =>
+          client.rest.rpc('mark_list_read', { p_list: listId }).abortSignal(signal)
+        )
       ),
     /* Row level security keeps a notice to its list's owner; one list reads whole, every
        list is cut at the row cap (`READ_PAGE`), newest first. */
     async notices(listId) {
       if (!(await userId())) return { ok: false };
       try {
-        const q = client.from('list_notices').select(NOTICE_SELECT);
+        const q = client.rest.from('list_notices').select(NOTICE_SELECT);
         const { data, error } = await (listId === undefined ? q : q.eq('list_id', listId))
           .order('created_at', { ascending: false })
           .order('id')
@@ -915,14 +1051,14 @@ export function createCloud(
         return { ok: false };
       }
     },
-    /* The ids go in chunks of `CHANGED_LISTS_MAX`: one `in.(...)` of 210 ids passes an 8 kB
+    /* The ids go in chunks of `CHANGED_ROWS_MAX`: one `in.(...)` of 210 ids passes an 8 kB
        request line. A failed chunk stops; the caller reads the notices again. */
     async hideNotices(listId, ids) {
-      for (let i = 0; i < ids.length; i += CHANGED_LISTS_MAX) {
-        const chunk = ids.slice(i, i + CHANGED_LISTS_MAX);
+      for (let i = 0; i < ids.length; i += CHANGED_ROWS_MAX) {
+        const chunk = ids.slice(i, i + CHANGED_ROWS_MAX);
         const r = await written(() =>
           timed((signal) =>
-            client
+            client.rest
               .from('list_notices')
               .delete()
               .eq('list_id', listId)
@@ -946,7 +1082,7 @@ export function createCloud(
   ): Promise<HomebrewSaved> {
     try {
       const answer = await timed((signal) => {
-        const q = client.from(table).update(patch).eq('id', id);
+        const q = client.rest.from(table).update(patch).eq('id', id);
         return (revision === null ? q : q.eq('revision', revision))
           .select('revision')
           .abortSignal(signal);
@@ -959,7 +1095,7 @@ export function createCloud(
         : null;
       if (typeof row?.revision === 'number') return { ok: true, revision: row.revision };
       const held = await timed((signal) =>
-        client
+        client.rest
           .from(table)
           .select(['revision', ...Object.keys(patch)].join(','))
           .eq('id', id)
@@ -980,7 +1116,7 @@ export function createCloud(
   const homebrewCreate = (table: HomebrewTable, row: object) =>
     written(() =>
       timed((signal) =>
-        client
+        client.rest
           .from(table)
           .upsert(row, { onConflict: 'id', ignoreDuplicates: true })
           .abortSignal(signal)
@@ -1015,34 +1151,61 @@ export function createCloud(
   };
   const homebrewRemove = (table: HomebrewTable, id: string) =>
     written(() =>
-      timed((signal) => client.from(table).delete().eq('id', id).abortSignal(signal))
+      timed((signal) => client.rest.from(table).delete().eq('id', id).abortSignal(signal))
     );
   const homebrew: HomebrewRepository = {
     newId: () => crypto.randomUUID(),
     newKey: () => keyFrom(crypto.getRandomValues(new Uint8Array(10))),
-    async load() {
+    /* With `known`, each table reads its `id,revision` head, then only the rows whose
+       revision moved, by id; past `CHANGED_ROWS_MAX` that table reads whole
+       (docs/decisions/2026-10-02-the-account-re-read-fetches-only-lists-whose-revision-moved.md). */
+    async load(known) {
       if (!(await userId())) return { ok: false };
+      const whole =
+        !known ||
+        (!Object.keys(known.books).length &&
+          !Object.keys(known.items).length &&
+          !Object.keys(known.cards).length);
+      type Rows = { rows: unknown[]; kept: string[] } | null;
+      const table = async (
+        name: HomebrewTable,
+        columns: string,
+        held: Readonly<Record<string, number>>
+      ): Promise<Rows> => {
+        const all = async (): Promise<Rows> => {
+          const r = await client.rest.from(name).select(columns);
+          return r.error || !Array.isArray(r.data) ? null : { rows: r.data, kept: [] };
+        };
+        if (whole) return all();
+        const head = await client.rest.from(name).select('id,revision');
+        if (head.error || !Array.isArray(head.data)) return null;
+        const rows = head.data as unknown as { id: string; revision: number }[];
+        const changed = rows.filter((r) => held[r.id] !== r.revision).map((r) => r.id);
+        if (changed.length > CHANGED_ROWS_MAX) return all();
+        const kept = rows.filter((r) => held[r.id] === r.revision).map((r) => r.id);
+        if (!changed.length) return { rows: [], kept };
+        const read = await client.rest.from(name).select(columns).in('id', changed);
+        return read.error || !Array.isArray(read.data) ? null : { rows: read.data, kept };
+      };
+      const none: Readonly<Record<string, number>> = {};
       try {
         const [books, items, cards, itemLimit, bookLimit, cardLimit] = await Promise.all([
-          client.from('homebrew_books').select(BOOK_SELECT),
-          client.from('homebrew_items').select(ITEM_SELECT),
-          client.from('homebrew_cards').select(CARD_SELECT),
+          table('homebrew_books', BOOK_SELECT, known?.books ?? none),
+          table('homebrew_items', ITEM_SELECT, known?.items ?? none),
+          table('homebrew_cards', CARD_SELECT, known?.cards ?? none),
           limitOf('homebrew_items_per_owner'),
           limitOf('homebrew_books_per_owner'),
           limitOf('homebrew_cards_per_owner')
         ]);
-        if (books.error || items.error || cards.error) return { ok: false };
-        if (
-          !Array.isArray(books.data) ||
-          !Array.isArray(items.data) ||
-          !Array.isArray(cards.data)
-        )
-          return { ok: false };
+        if (!books || !items || !cards) return { ok: false };
         return {
           ok: true,
-          books: books.data as unknown as BookRow[],
-          items: items.data as unknown as ItemRow[],
-          cards: cards.data as unknown as CardRow[],
+          books: books.rows as BookRow[],
+          items: items.rows as ItemRow[],
+          cards: cards.rows as CardRow[],
+          ...(whole
+            ? {}
+            : { kept: { books: books.kept, items: items.kept, cards: cards.kept } }),
           itemLimit,
           bookLimit,
           cardLimit
@@ -1069,7 +1232,7 @@ export function createCloud(
       if (!onlyIfNone) return homebrewUpdate('homebrew_items', id, { art: name }, null);
       try {
         const answer = await timed((signal) =>
-          client
+          client.rest
             .from('homebrew_items')
             .update({ art: name })
             .eq('id', id)
@@ -1086,7 +1249,7 @@ export function createCloud(
         if (typeof row?.revision === 'number') return { ok: true, revision: row.revision };
         /* No row matched: gone, or it holds a picture, which stays. */
         const held = await timed((signal) =>
-          client
+          client.rest
             .from('homebrew_items')
             .select('revision')
             .eq('id', id)
@@ -1136,7 +1299,7 @@ export function createCloud(
       try {
         const answer = await timed(
           (signal) =>
-            client
+            client.rest
               .rpc('import_homebrew', {
                 p_books: rows.books,
                 p_cards: rows.cards,
@@ -1159,7 +1322,7 @@ export function createCloud(
       try {
         return movedOf(
           await timed((signal) =>
-            client
+            client.rest
               .rpc('move_homebrew_items', {
                 p_items: items,
                 p_book: bookId,
@@ -1180,7 +1343,7 @@ export function createCloud(
       if (!(await userId())) return { ok: false, error: 'network' };
       try {
         const answer = await timed((signal) =>
-          client.rpc('create_print_set', { p_entries: entries }).abortSignal(signal)
+          client.rest.rpc('create_print_set', { p_entries: entries }).abortSignal(signal)
         );
         const failed = writeOf(answer);
         if (!failed.ok) return failed;
@@ -1194,7 +1357,7 @@ export function createCloud(
       if (!(await userId())) return { ok: true, set: null };
       try {
         const answer = await timed((signal) =>
-          client.rpc('get_print_set', { p_id: id }).abortSignal(signal)
+          client.rest.rpc('get_print_set', { p_id: id }).abortSignal(signal)
         );
         if (answer.error) return { ok: false };
         const set: unknown = answer.data;

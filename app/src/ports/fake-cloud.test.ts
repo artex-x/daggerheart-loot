@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bundleText, toBundle } from '../lib/bundle.js';
 import {
+  heldSnapshots,
   linkedOf,
   toCloudList,
   type EntryRow,
@@ -604,6 +605,37 @@ describe("the fake's lists", () => {
     expect(await port.lists.apply([rename, remove])).toEqual({ ok: true, results: [OK, OK] });
     expect([port.writeCount(), port.opCount()]).toEqual([4, 3]);
     expect((await rowsOf(port))[0]?.name).toBe('a');
+  });
+
+  it('answers a timeout fault when the switch says so', async () => {
+    const port = fakeCloud(SEED, 'gm2');
+    const rename: ListOp = { op: 'update', id: uuid(201), patch: { name: 'a' } };
+    port.setFault(true, { timeout: true });
+    expect(await port.lists.apply([rename])).toEqual({
+      ok: false,
+      error: 'fault',
+      timeout: true
+    });
+    port.setFault(true);
+    expect(await port.lists.apply([rename])).toEqual({ ok: false, error: 'fault' });
+    expect([port.writeCount(), port.opCount()]).toEqual([2, 0]);
+  });
+
+  it('refuses a create of 5001 entries alone, makes no list for it, and applies the rest', async () => {
+    const port = fakeCloud(SEED, 'gm2', { limits: { entries: 6000 } });
+    const huge = Array.from({ length: 5001 }, (_, i) =>
+      entry(uuid(20000 + i), 'r' + String(i), i)
+    );
+    const r = await port.lists.apply([
+      { op: 'create', list: newList(uuid(8000), 'Склад'), entries: huge },
+      { op: 'update', id: uuid(201), patch: { name: 'a' } }
+    ]);
+    expect(r).toEqual({ ok: true, results: [REFUSED, OK] });
+    const rows = await rowsOf(port);
+    expect(rows.some((l) => l.id === uuid(8000))).toBe(false);
+    expect(rows.find((l) => l.id === uuid(201))?.name).toBe('a');
+    const add = await port.lists.apply([{ op: 'add', list_id: uuid(201), entries: huge }]);
+    expect(add).toEqual({ ok: true, results: [REFUSED] });
   });
 
   it('keeps each port apart, and drops the lists with the account', async () => {
@@ -1373,6 +1405,42 @@ describe("the fake's purchase requests", () => {
     return read.ok ? read.requests.map((r) => r.id) : null;
   };
 
+  it('answers a held request in kept with no lines, and only a new one whole', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const first = cloud.request('player-token-1', ONE);
+    const second = cloud.request('player-token-1', [{ item: 'q1', qty: 2 }]);
+    if (!first || !second) throw new Error('the seed refused a request');
+    const read = await cloud.requests.list([first, uuid(9999)]);
+    expect(read.ok && read.requests.map((r) => r.id)).toEqual([second]);
+    expect(read.ok && read.kept?.map((k) => k.id)).toEqual([first]);
+    expect(read.ok && read.kept?.[0]).toEqual({
+      id: first,
+      readAt: null,
+      expiresAt: expect.any(String) as unknown
+    });
+    cloud.decide(first, 'declined');
+    const after = await cloud.requests.list([first, second]);
+    expect(after).toEqual({
+      ok: true,
+      requests: [],
+      kept: [expect.objectContaining({ id: second })]
+    });
+  });
+
+  it('reads every request whole past 50 new ones, with no kept', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { limits: { pending: 100 } });
+    const ids: string[] = [];
+    for (let i = 0; i < 52; i++) {
+      vi.setSystemTime(Date.now() + 61_000);
+      const id = cloud.request('player-token-1', ONE);
+      if (id) ids.push(id);
+    }
+    expect(ids.length).toBe(52);
+    const read = await cloud.requests.list([ids[0] as string]);
+    expect(read.ok && read.requests).toHaveLength(52);
+    expect(read.ok && 'kept' in read).toBe(false);
+  });
+
   it('counts five sends a minute per link, and one more once the minute has passed', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     for (let i = 0; i < 5; i++) {
@@ -1784,6 +1852,46 @@ describe('the seeded homebrew', () => {
   });
 });
 
+describe("the fake's homebrew re-read", () => {
+  const revisions = (rows: readonly { id: string; revision: number }[]) =>
+    Object.fromEntries(rows.map((r) => [r.id, r.revision]));
+
+  it('answers the rows held at their revision in kept, and a changed one whole', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const all = await cloud.homebrew.load();
+    if (!all.ok) throw new Error('the read failed');
+    const known = {
+      books: revisions(all.books),
+      items: revisions(all.items),
+      cards: revisions(all.cards)
+    };
+    const same = await cloud.homebrew.load(known);
+    expect(same.ok && [same.books, same.items, same.cards]).toEqual([[], [], []]);
+    expect(same.ok && same.kept).toEqual({
+      books: all.books.map((r) => r.id),
+      items: all.items.map((r) => r.id),
+      cards: all.cards.map((r) => r.id)
+    });
+    const item = all.items[0];
+    if (!item) throw new Error('the seed has no item');
+    await cloud.homebrew.updateItem(
+      item.id,
+      { content: item.content, book_id: item.book_id },
+      null
+    );
+    const one = await cloud.homebrew.load(known);
+    expect(one.ok && one.items.map((r) => r.id)).toEqual([item.id]);
+    expect(one.ok && one.kept?.items).not.toContain(item.id);
+  });
+
+  it('answers a table whole past 50 changed rows', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { fillItems: 60 });
+    const read = await cloud.homebrew.load({ books: { x: 1 }, items: {}, cards: {} });
+    expect(read.ok && read.items.length).toBeGreaterThanOrEqual(60);
+    expect(read.ok && read.kept?.items).toEqual([]);
+  });
+});
+
 describe("the fake's homebrew", () => {
   const AXE = 'hb_emberaxeaaaaaaaa';
   const POTION = 'hb_smithpotionaaaaa';
@@ -2183,6 +2291,30 @@ describe("the fake's homebrew", () => {
       : undefined;
     expect(linked?.hid).toBe(uuid(511));
     expect(linked?.snapshot).toMatchObject({ id: AXE, book: { ru: 'Мастерская II' } });
+  });
+
+  it('names each linked record by an opaque rev and leaves a held one out before the fill', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const made = await cloud.shares.create(EMPTY, 'player');
+    if (!made.ok) throw new Error('no share');
+    const first = await cloud.shares.read(made.token);
+    if (!first.ok || !first.shared) throw new Error('no read');
+    const axe = first.shared.entries[0];
+    expect(typeof axe?.rev).toBe('string');
+    const held = heldSnapshots(first.shared);
+    expect(held.size).toBeGreaterThan(0);
+    /* A held record whose snapshot is a marker: a fill takes it, a whole answer would not. */
+    const marked = new Map(
+      [...held].map(([hid, h]) => [hid, { ...h, snapshot: { mark: hid } }])
+    );
+    const again = await cloud.shares.read(made.token, 0, marked);
+    const shown = again.ok ? again.shared?.entries[0] : undefined;
+    expect(shown?.snapshot).toEqual({ mark: axe?.hid });
+    expect(await cloud.shares.read(made.token, 0, held)).toEqual(first);
+    const other = new Map([...held].map(([hid, h]) => [hid, { ...h, rev: 'other' }]));
+    const whole = await cloud.shares.read(made.token, 0, other);
+    expect(whole.ok && whole.shared?.entries[0]?.snapshot).toEqual(axe?.snapshot);
   });
 
   it('links the same items in a copy by the owner and by another user', async () => {

@@ -80,7 +80,15 @@
   let pickQ = $state('');
   const shown = $derived(showSearch ? matchLists(sorted, pickQ) : sorted);
 
-  const inList = (l: StoredList): boolean => one !== undefined && l.ids.includes(one);
+  /* The lists holding `one` now: a toggle in the open menu updates it; `held` keeps the
+     open-time order only. One pass per change of the lists, not two per chip per draw. */
+  const holding = $derived.by(() => {
+    const record = one;
+    return new Set(
+      record === undefined ? [] : all.filter((l) => l.ids.includes(record)).map((l) => l.id)
+    );
+  });
+  const inList = (l: StoredList): boolean => holding.has(l.id);
 
   let newListFor = $state(false);
   let draft = $state('');
@@ -161,7 +169,7 @@
 
   function pick(l: StoredList): void {
     const store = app.storeFor(l.id);
-    if (one !== undefined && l.ids.includes(one)) {
+    if (one !== undefined && inList(l)) {
       const entryId = one;
       const at = l.ids.indexOf(entryId);
       const meta = { ...itemMeta(l, entryId) };

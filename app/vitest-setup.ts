@@ -1,5 +1,12 @@
 /* jest-dom's matchers, once, for every component test. */
 import '@testing-library/jest-dom/vitest';
+import { configure } from '@testing-library/svelte';
+
+/* The default 1 s find failed under the full coverage run on a loaded host
+   (2026-10-14/15: requestsPanel.test.ts, importPanel.test.ts,
+   homebrewEditor.test.ts). No component test expects a find or a waitFor to
+   fail, so the longer wait costs a passing test nothing. */
+configure({ asyncUtilTimeout: 5000 });
 
 /* jsdom implements <dialog> as an element but not as a dialog: showModal, close
    and the backdrop are all missing (jsdom 30). The component uses the real API

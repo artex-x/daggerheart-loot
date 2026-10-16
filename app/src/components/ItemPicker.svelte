@@ -1,3 +1,8 @@
+<script module lang="ts">
+  /** The most matches the list offers; past it the field says how many more there are. */
+  export const PICK_SHOWN = 8;
+</script>
+
 <script lang="ts">
   /* A combobox that picks records or cards into a short list (m06 in the homebrew mocks):
      the chosen rows with their remove buttons, then a text field whose list offers at most
@@ -46,8 +51,6 @@
     onremove
   }: Props = $props();
 
-  const SHOWN = 8;
-
   let query = $state('');
   let focused = $state(false);
   /* Escape closed the list; the next input opens it again. */
@@ -58,14 +61,14 @@
 
   const q = $derived(foldQuery(query.trim()));
   const found = $derived(q ? find(q) : []);
-  const options = $derived(found.slice(0, SHOWN));
+  const options = $derived(found.slice(0, PICK_SHOWN));
   const open = $derived(focused && q !== '' && !closed);
   const drawn = $derived(open && options.length > 0);
   const message = $derived(
     !open
       ? ''
-      : found.length > SHOWN
-        ? t.hbPickMore.replace('%n', String(found.length - SHOWN))
+      : found.length > PICK_SHOWN
+        ? t.hbPickMore.replace('%n', String(found.length - PICK_SHOWN))
         : found.length
           ? ''
           : t.hbPickNone

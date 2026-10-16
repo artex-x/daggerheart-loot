@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import type { EventsPort } from '../ports/index.js';
+import { heldSnapshots, type SharedRow } from '../lib/cloudLists.js';
+import type { EventsPort, ShareRepository } from '../ports/index.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const GM1 = SEED.users.gm1.id;
@@ -57,7 +58,12 @@ describe('SharedView', () => {
     expect(read.mock.calls[0]).toEqual(['player-token-1']);
     const first = view.shared;
     await view.refresh();
-    expect(read.mock.calls[1]).toEqual(['player-token-1', first?.revision]);
+    expect(first && heldSnapshots(first).size).toBeGreaterThan(0);
+    expect(read.mock.calls[1]).toEqual([
+      'player-token-1',
+      first?.revision,
+      first && heldSnapshots(first)
+    ]);
     expect(await read.mock.results[1]?.value).toEqual({ ok: true, unchanged: true });
     expect(view.shared).toBe(first);
     expect(view.changes).toBe(0);
@@ -237,9 +243,9 @@ describe('SharedView', () => {
     expect(view.status).toBe('error');
     const statuses: string[] = [];
     const read = cloud.shares.read.bind(cloud.shares);
-    vi.spyOn(cloud.shares, 'read').mockImplementation((token) => {
+    vi.spyOn(cloud.shares, 'read').mockImplementation((token, since, held) => {
       statuses.push(view.status);
-      return read(token);
+      return read(token, since, held);
     });
     await view.refresh();
     expect(view.status).toBe('error');
@@ -248,6 +254,85 @@ describe('SharedView', () => {
     expect(statuses).toEqual(['error', 'error']);
     expect(view.status).toBe('ready');
     expect(view.shared?.list.name).toBe('Лавка кузнеца');
+  });
+
+  describe('a stub repository', () => {
+    const HID = uuid(5001);
+    const record = { id: 'hb_heldaaaaaaaaaaaah', kind: 'item', en: 'Held' };
+    const row = (revision: number, name = 'Лавка'): SharedRow => ({
+      audience: 'player',
+      updated_at: `2026-10-15T10:00:0${String(revision)}.000Z`,
+      revision,
+      topic_key: 't',
+      list: { name, money_mode: 'bag', player_note: '' },
+      entries: [
+        {
+          id: 'e1',
+          item_key: record.id,
+          source: 'homebrew',
+          position: 0,
+          quantity: 1,
+          price_coins: null,
+          player_note: '',
+          hid: HID,
+          rev: 'r1',
+          snapshot: record
+        }
+      ]
+    });
+    type Read = ReturnType<ShareRepository['read']>;
+    const stub = (answers: (() => Read)[]) => {
+      const calls: unknown[][] = [];
+      const repo: ShareRepository = {
+        list: () => Promise.resolve({ ok: false }),
+        create: () => Promise.resolve({ ok: false, error: 'network' }),
+        revoke: () => Promise.resolve({ ok: false, error: 'network' }),
+        ownerOf: () => Promise.resolve(null),
+        clone: () => Promise.resolve({ ok: false, error: 'network' }),
+        read: (...args) => {
+          calls.push(args);
+          return answers[calls.length - 1]?.() ?? Promise.resolve({ ok: false });
+        }
+      };
+      return { repo, calls };
+    };
+
+    it('names the shown records by hid and rev on a re-read of a ready page only', async () => {
+      const { repo, calls } = stub([
+        () => Promise.resolve({ ok: false }),
+        () => Promise.resolve({ ok: true, shared: row(1) }),
+        () => Promise.resolve({ ok: true, unchanged: true })
+      ]);
+      const view = new SharedView(repo);
+      await view.open('tk', null);
+      await view.refresh();
+      await view.refresh();
+      expect(calls).toEqual([
+        ['tk'],
+        ['tk'],
+        ['tk', 1, new Map([[HID, { rev: 'r1', snapshot: record }]])]
+      ]);
+    });
+
+    it('keeps the newer list when two re-reads answer out of order', async () => {
+      let older: (r: Awaited<Read>) => void = () => undefined;
+      const { repo } = stub([
+        () => Promise.resolve({ ok: true, shared: row(1) }),
+        () =>
+          new Promise((resolve) => {
+            older = resolve;
+          }),
+        () => Promise.resolve({ ok: true, shared: row(3, 'Новая') })
+      ]);
+      const view = new SharedView(repo);
+      await view.open('tk', null);
+      const first = view.refresh();
+      await view.refresh();
+      older({ ok: true, shared: row(2, 'Старая') });
+      await first;
+      expect(view.shared?.list.name).toBe('Новая');
+      expect(view.shared?.revision).toBe(3);
+    });
   });
 
   it('knows the owner after a failed first read is read again through refresh', async () => {

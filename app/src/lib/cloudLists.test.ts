@@ -5,6 +5,7 @@ import {
   entryOrder,
   entryRowsOf,
   entrySource,
+  heldSnapshots,
   isCloudId,
   limitText,
   linkedOf,
@@ -17,6 +18,7 @@ import {
   shareOf,
   snapshotRecords,
   toCloudList,
+  withSnapshots,
   type EntryRow,
   type ListOp,
   type ListRow,
@@ -410,6 +412,56 @@ describe('sameProjection', () => {
         entries: [sharedEntry('ci1', 0)]
       })
     ).toBe(false);
+  });
+});
+
+describe('heldSnapshots and withSnapshots', () => {
+  const HID = '00000000-0000-4000-8000-000000005001';
+  const record = { id: 'hb_heldaaaaaaaaaaaah', kind: 'item', en: 'Held' };
+  /* The database's key order: `rev` after `snapshot`, as jsonb prints it. */
+  const whole: SharedRow = {
+    audience: 'player',
+    updated_at: '2026-09-22T10:00:00.000Z',
+    revision: 3,
+    topic_key: '00000000-0000-4000-8000-000000004000',
+    list: { name: 'Лавка', money_mode: 'bag', player_note: '' },
+    entries: [
+      sharedEntry('ci1', 0),
+      sharedEntry(record.id, 1, { source: 'homebrew', snapshot: record, hid: HID, rev: 'r1' }),
+      sharedEntry('hb_norevaaaaaaaaaaaa', 2, { source: 'homebrew', snapshot: null, hid: HID })
+    ]
+  };
+  const stripped: SharedRow = {
+    ...whole,
+    entries: whole.entries.map((e, i) =>
+      i === 1
+        ? (Object.fromEntries(
+            Object.entries(e).filter(([k]) => k !== 'snapshot')
+          ) as SharedRow['entries'][number])
+        : e
+    )
+  };
+
+  it('holds only the entries with a hid, a rev and an object snapshot', () => {
+    expect([...heldSnapshots(whole)]).toEqual([[HID, { rev: 'r1', snapshot: record }]]);
+    expect(heldSnapshots(stripped).size).toBe(0);
+  });
+
+  it('fills a stripped entry from the held map to equal the whole answer', () => {
+    const held = heldSnapshots(whole);
+    const filled = withSnapshots(stripped, held);
+    const plain = withSnapshots(whole, new Map());
+    expect(filled).toEqual(whole);
+    expect(filled && plain && sameProjection(filled, plain)).toBe(true);
+    expect(JSON.stringify(filled)).toBe(JSON.stringify(plain));
+    expect(Object.keys(plain?.entries[1] ?? {}).at(-1)).toBe('snapshot');
+  });
+
+  it('answers null for a stripped entry with no held record of its rev', () => {
+    expect(withSnapshots(stripped, new Map())).toBeNull();
+    expect(
+      withSnapshots(stripped, new Map([[HID, { rev: 'r0', snapshot: record }]]))
+    ).toBeNull();
   });
 });
 

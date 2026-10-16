@@ -394,13 +394,57 @@ export interface SharedRow {
   topic_key: string;
   list: { name: string; money_mode: MoneyMode; player_note: string; gm_note?: string };
   /** A homebrew entry's `snapshot` is its linked item's record, `hid` that item's id and
-   *  `img` its picture (absent for none); an official entry's `snapshot` is null. */
-  entries: (Omit<EntryRow, 'gm_note' | 'hb_item'> & {
-    snapshot: unknown;
-    hid?: string;
-    img?: unknown;
-    gm_note?: string;
-  })[];
+   *  `img` its picture (absent for none); an official entry's `snapshot` is null. `rev` is
+   *  the database's opaque hash of a linked record (`get_shared_list(text, bigint, jsonb)`). */
+  entries: SharedEntry[];
+}
+
+type SharedEntry = Omit<EntryRow, 'gm_note' | 'hb_item'> & {
+  snapshot: unknown;
+  hid?: string;
+  img?: unknown;
+  rev?: string;
+  gm_note?: string;
+};
+
+/** The linked records a shown projection holds: `hid` to the record's `rev` and record. */
+export type SharedHeld = ReadonlyMap<string, { rev: string; snapshot: unknown }>;
+
+/** Returns the records of `row` that a re-read can name by hash: each entry with a `hid`,
+ *  a string `rev` and an object `snapshot`. */
+export function heldSnapshots(row: SharedRow): SharedHeld {
+  const out = new Map<string, { rev: string; snapshot: unknown }>();
+  for (const e of row.entries) {
+    if (
+      typeof e.hid === 'string' &&
+      typeof e.rev === 'string' &&
+      e.snapshot !== null &&
+      typeof e.snapshot === 'object'
+    ) {
+      out.set(e.hid, { rev: e.rev, snapshot: e.snapshot });
+    }
+  }
+  return out;
+}
+
+/** Returns `raw` with every entry rebuilt as `{ ...rest, snapshot }`, so a whole and a
+ *  filled answer have one key order and `sameProjection` compares them exactly. An entry
+ *  the database sent without its `snapshot` takes the held one of its `hid` when the `rev`
+ *  matches. Null when such an entry has no matching held record. */
+export function withSnapshots(raw: SharedRow, held: SharedHeld): SharedRow | null {
+  const entries: SharedEntry[] = [];
+  for (const e of raw.entries) {
+    const { snapshot, ...rest } = e;
+    /* `in` would narrow the type: an answer may leave out a key the type requires. */
+    if (Object.hasOwn(e, 'snapshot')) {
+      entries.push({ ...rest, snapshot });
+      continue;
+    }
+    const h = typeof e.hid === 'string' ? held.get(e.hid) : undefined;
+    if (!h || h.rev !== e.rev) return null;
+    entries.push({ ...rest, snapshot: h.snapshot });
+  }
+  return { ...raw, entries };
 }
 
 /** Returns whether two reads draw the same page; `revision`, `updated_at` and `topic_key`

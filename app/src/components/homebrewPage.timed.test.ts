@@ -12,7 +12,6 @@ import type { Loot } from '../lib/data.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData } from '../ports/index.js';
-import { expectNoA11yViolations } from '../test/a11y.js';
 import { page, t, tab } from '../test/homebrewPage.js';
 
 afterEach(cleanup);
@@ -60,7 +59,7 @@ describe('a set of 300 own members and 100 book items', () => {
       })),
       update: false
     });
-    const { container } = page('gm2', { cloud, env: { data: fakeData(loot) } });
+    page('gm2', { cloud, env: { data: fakeData(loot) } });
     const panel = await tab(t.hbSets);
     const fold = within(panel).getByRole('button', { name: 'Большой комплект' });
     const start = performance.now();
@@ -74,8 +73,10 @@ describe('a set of 300 own members and 100 book items', () => {
     expect(
       first && field.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    await expectNoA11yViolations(container);
-    /* The whole case took 96-104 s alone and exceeded 120 s inside the full coverage run on
-       this host (2026-10-14, at ed625964 too); the 3000 ms bound above is the measure. */
-  }, 300_000);
+    /* No axe here: over 400 rows it was 41 s of the file's 52-56 s (2026-10-15). The open
+       fold's axe runs in homebrewPage.test.ts, "lists own and book members by name, a gone
+       id by its own words, and counts both" (docs/decisions/2026-10-15-a-timed-component-case-leaves-axe-to-its-sibling-test.md).
+       The case took 2.0 s alone (file 12.2-12.6 s) and 2.7 s with coverage on this host
+       (2026-10-16); check:2 prints no case time. The timeout is over three times either. */
+  }, 60_000);
 });

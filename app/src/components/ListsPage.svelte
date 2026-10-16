@@ -134,9 +134,10 @@
 
   /* An account list's pending, unexpired purchase requests and its unread notices, for its
      card. */
+  const pending = $derived(app.ownerRequests?.pendingCounts(app.now));
   function waiting(listId: string): string | undefined {
     const owner = app.ownerRequests;
-    const n = owner?.pendingCount(listId, app.now) ?? 0;
+    const n = pending?.get(listId) ?? 0;
     const changed = owner?.unreadNotices(listId) ?? 0;
     const parts = [
       n ? plural(n, t.requestsWaitN, app.lang) : '',

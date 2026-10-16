@@ -28,6 +28,14 @@ export interface OwnerRequest {
   lines: RequestLine[];
 }
 
+/** A pending request as a re-read's head names it: while it is pending only its read
+ *  mark and its expiry change. */
+export interface RequestHead {
+  id: string;
+  readAt: string | null;
+  expiresAt: string;
+}
+
 /** A line an apply could not fill: the count asked for and the stock. */
 export interface ShortLine {
   item: string;
@@ -83,6 +91,25 @@ function requestOf(v: unknown): OwnerRequest | null {
 export function readRequests(data: unknown): OwnerRequest[] | null {
   if (!Array.isArray(data)) return null;
   return data.map(requestOf).filter((r): r is OwnerRequest => r !== null);
+}
+
+/** Returns the heads of a `purchase_requests` read with no lines; a row of another shape
+ *  is skipped. Null when `data` is not an array. */
+export function readRequestHeads(data: unknown): RequestHead[] | null {
+  if (!Array.isArray(data)) return null;
+  const heads: RequestHead[] = [];
+  for (const v of data as unknown[]) {
+    if (!isRecord(v)) continue;
+    const { id, expires_at, read_at } = v;
+    if (typeof id !== 'string' || typeof expires_at !== 'string') continue;
+    if (read_at !== null && read_at !== undefined && typeof read_at !== 'string') continue;
+    heads.push({
+      id,
+      expiresAt: expires_at,
+      readAt: typeof read_at === 'string' ? read_at : null
+    });
+  }
+  return heads;
 }
 
 /** A `list_notices` row as the owner's read returns it: one item of one list that its

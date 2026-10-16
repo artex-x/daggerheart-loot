@@ -4,6 +4,7 @@ import {
   ageText,
   pendingFor,
   readApplied,
+  readRequestHeads,
   readRequests,
   requestRefusal,
   requestTotal,
@@ -97,6 +98,28 @@ describe('readRequests', () => {
     expect(readRequests([...bad, row({ id: 'ok' })])?.map((r) => r.id)).toEqual(['ok']);
     expect(readRequests({})).toBeNull();
     expect(readRequests(null)).toBeNull();
+  });
+});
+
+describe('readRequestHeads', () => {
+  it('reads the id, the read mark and the expiry, and skips a row of another shape', () => {
+    const head = { id: 'r1', expires_at: '2026-09-27T12:50:00+00:00', read_at: null };
+    expect(
+      readRequestHeads([
+        head,
+        { ...head, id: 'r2', read_at: '2026-09-27T11:50:00+00:00' },
+        { ...head, id: 'r3', read_at: undefined },
+        { ...head, id: 7 },
+        { ...head, expires_at: null },
+        { ...head, read_at: 5 },
+        null
+      ])
+    ).toEqual([
+      { id: 'r1', readAt: null, expiresAt: head.expires_at },
+      { id: 'r2', readAt: '2026-09-27T11:50:00+00:00', expiresAt: head.expires_at },
+      { id: 'r3', readAt: null, expiresAt: head.expires_at }
+    ]);
+    expect(readRequestHeads({})).toBeNull();
   });
 });
 

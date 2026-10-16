@@ -577,7 +577,11 @@ browser lists writable after the date.
   send that the server fails three times in a row, at
   least 15 s apart, is split in half, and each half is sent on its own; a
   single edit that the server still fails three times is dropped as
-  refused, with the toast, and the account is read again. A lost network, a
+  refused, with the toast, and the account is read again. The exception is
+  a send of more than one edit that the database stops at its statement
+  timeout: it is split in half at once, with no wait and no «Не сохранено»
+  (the stopped statement changed nothing); a single edit stopped so keeps
+  the three counted failures. A lost network, a
   server that does not answer or a database that is restarting is waited
   out, never split. An old `#/l/` link saved over the entry limit makes no
   list, and the toast names the limit.
@@ -727,7 +731,10 @@ browser lists writable after the date.
   draws the gone page and the status says «Список больше не доступен» once; a
   first read that finds nothing, also right after another token, says
   nothing. A re-read names the revision the page shows, and a list still at
-  that revision answers with nothing to download or draw.
+  that revision answers with nothing to download or draw. A re-read also
+  names the linked items' records the page holds by their hash, so an
+  unchanged record is not downloaded again; an answer older than the one
+  drawn is dropped.
   A players' link never holds an entry its owner marked «Только для мастера»
   / "GM only": the server leaves the entry out with its linked item's id, and
   numbers the rest from 0, so the count, the rows and the selection know only
@@ -790,7 +797,13 @@ browser lists writable after the date.
   page read it every 45 s while Realtime is not joined. Each read waits until
   no write is buffered or in flight. A re-read asks for each list's revision
   and fetches the lists whose revision moved (every list when more than 50
-  did); a page load reads every list. A shared page
+  did); a page load reads every list. The owner's homebrew re-read does the
+  same per table (sources, items, cards), and also fetches every row this
+  tab wrote since its last read, so the row gets the database's times; the
+  pending purchase requests re-read fetches only the requests the page does
+  not hold, with their lines (every request when more than 50 are new), and
+  takes the read mark and the expiry of the held ones. A read that answers
+  after a newer read of the same store is dropped. A shared page
   `#/s/<token>` reads its list again on the same signals. The last write wins per entry and there is no conflict
   dialog. A reorder made
   on a device with an old entry set keeps the given order and puts the
@@ -2144,8 +2157,10 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   получилось. Проверьте соединение и попробуйте ещё раз.».
 - Sign-out and deletion stay on `#/account`, which becomes the signed-out
   page, with the toast «Вы вышли из аккаунта.» or «Аккаунт удалён.».
-  Deletion removes the account on the server (`delete_account()`, a
-  migration in `supabase/migrations/`), then this browser's session.
+  Deletion first removes the account's purchase requests in bounded calls
+  (`delete_account_requests()`, 200 a call), then the account on the server
+  (`delete_account()`), then this browser's session. A failed step keeps
+  the session and shows the error toast; a later press finishes the delete.
 - The texts describe what an account is for in general terms, true in
   every release (`I18N.md`, "Rules").
 - A build with no sign-in configured draws the not-found page on

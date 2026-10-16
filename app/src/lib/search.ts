@@ -79,7 +79,7 @@ function foldLatinDiacritics(s: string): string {
 /**
  * Folds a string the way search compares it: case-insensitive, `ё`/`Ё` read
  * as `е`, the typographic apostrophes some equipment names carry (U+2019,
- * and U+02BC for good measure) read as the plain `'` a keyboard types, Latin
+ * and U+2018 and U+02BC for good measure) read as the plain `'` a keyboard types, Latin
  * diacritics read as their plain letter (`foldLatinDiacritics`, above - the
  * owner overrode this file's earlier "no diacritic stripping" stance once
  * `Ethereal Zweihänder`/`Möbius Orb` were shown unreachable by ordinary
@@ -91,7 +91,7 @@ function foldLatinDiacritics(s: string): string {
 export function foldQuery(s: string): string {
   return foldLatinDiacritics(s.toLowerCase())
     .replace(/ё/g, 'е')
-    .replace(/[’ʼ]/g, "'")
+    .replace(/[‘’ʼ]/g, "'")
     .replace(/−/g, '-');
 }
 

@@ -140,7 +140,19 @@ export function mergeLists(
 /** Returns the lists whose name holds the query, folded the way search folds it; a blank query keeps every list. */
 export function matchLists<T extends StoredList>(lists: readonly T[], query: string): T[] {
   const q = foldQuery(query.trim());
-  return q ? lists.filter((l) => foldQuery(l.name).includes(q)) : [...lists];
+  return q ? lists.filter((l) => foldedName(l).includes(q)) : [...lists];
+}
+
+/* Each list's folded name, by list object: a store replaces a list on change, so one fold per
+   list serves every keystroke of a search; the name kept beside it guards a mutated one. */
+const FOLDED = new WeakMap<StoredList, { name: string; folded: string }>();
+
+function foldedName(l: StoredList): string {
+  const had = FOLDED.get(l);
+  if (had?.name === l.name) return had.folded;
+  const folded = foldQuery(l.name);
+  FOLDED.set(l, { name: l.name, folded });
+  return folded;
 }
 
 /** Returns a copy with the `first` lists ahead of the rest, each group newest created first. */

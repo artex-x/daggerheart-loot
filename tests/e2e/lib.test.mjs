@@ -62,7 +62,7 @@ describe('the project guard', () => {
     }
   });
 
-  it("names supabase-js's storage key", () => {
+  it('names the auth storage key', () => {
     assert.equal(storageKey(TEST_URL), 'sb-' + PROJECTS.test + '-auth-token');
   });
 });

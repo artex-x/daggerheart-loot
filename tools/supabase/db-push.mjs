@@ -15,7 +15,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SUPABASE_CLI, parseProjectArg, pairMigrations } from './lib.mjs';
+import { pairMigrations, parseProjectArg, supabaseCli } from './lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -33,7 +33,7 @@ function sqlFiles(dir) {
 }
 
 function runCli(args, env = process.env) {
-  const r = spawnSync(process.execPath, [SUPABASE_CLI, ...args], {
+  const r = spawnSync(supabaseCli(env), args, {
     cwd: ROOT,
     env,
     stdio: 'inherit'

@@ -55,11 +55,11 @@ function hasGmNote(o) {
 /* The real-only picture checks: a public object's headers and its info answer name no
    account, and the gateway takes the secret key in the `apikey` header alone for a delete,
    the request art_delete() queues (supabase/migrations/20261014120000_homebrew_art.sql). */
-async function artRequests(env, make, publicUrl, infoUrl) {
+async function artRequests(env, makeDoomed, publicUrl, infoUrl) {
   const check = (cond, msg) => {
     if (!cond) throw new Error('contract: art: ' + msg);
   };
-  const port = await make('doomed');
+  const { port, session } = await makeDoomed();
   const userId = (await port.auth.session())?.userId;
   check(typeof userId === 'string', 'the throwaway has no session');
   const name = newArtName('webp', crypto.randomUUID());
@@ -92,6 +92,17 @@ async function artRequests(env, make, publicUrl, infoUrl) {
   /* Logged, not asserted: the CDN may serve the read above until the upload's cache age. */
   const cached = await fetch(publicUrl(name), { cache: 'no-store' });
   console.log(`contract: art: the public address after the delete answered ${cached.status}`);
+  /* The request delete by raw RPC: the port falls back on PGRST202, so only this call
+     fails when the migration was not pushed. */
+  const raw = createClient(env.E2E_SUPABASE_URL, env.E2E_SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${session.access_token}` } }
+  });
+  const pruned = await raw.rpc('delete_account_requests');
+  check(
+    pruned.error === null && typeof pruned.data === 'number',
+    `delete_account_requests() answered ${JSON.stringify(pruned.error ?? pruned.data)}, not a number`
+  );
   check((await port.auth.deleteAccount()).ok, 'the throwaway account deletion was refused');
 }
 
@@ -101,14 +112,15 @@ export async function runRealContract(env, admin, member) {
   const url = env.E2E_SUPABASE_URL;
   const key = env.E2E_SUPABASE_PUBLISHABLE_KEY;
 
+  /* A new throwaway account's port and its minted session. */
+  const makeDoomed = async () => {
+    const doomed = await createThrowaway(admin, member.email);
+    const session = await mint(env, admin, doomed.email);
+    return { port: portOf(env, session), session };
+  };
   const make = async (as) => {
-    let session = null;
-    if (as === 'member') session = await mint(env, admin, member.email);
-    else if (as === 'doomed') {
-      const doomed = await createThrowaway(admin, member.email);
-      session = await mint(env, admin, doomed.email);
-    }
-    return portOf(env, session);
+    if (as === 'doomed') return (await makeDoomed()).port;
+    return portOf(env, as === 'member' ? await mint(env, admin, member.email) : null);
   };
 
   const publicUrl = (name) => `${url}/storage/v1/object/public/homebrew-art/${name}`;
@@ -127,7 +139,7 @@ export async function runRealContract(env, admin, member) {
     make,
     { status: async (name) => (await fetch(infoUrl(name), { cache: 'no-store' })).status }
   );
-  await artRequests(env, make, publicUrl, infoUrl);
+  await artRequests(env, makeDoomed, publicUrl, infoUrl);
 
   /* A limit trigger's DETAIL reaches the client as `details`: 101 entries in
      one insert pass the default entries_per_list of 100 (the limits
@@ -315,9 +327,9 @@ export async function runRealContract(env, admin, member) {
   }
   const limit = await anon.rpc('my_limit', { p_key: 'homebrew_items_per_owner' });
   if (!limit.error) throw new Error('contract: my_limit() answered a caller with no session');
-  /* The three functions anon may run: get_shared_list(text), its revision overload
-     get_shared_list(text, bigint), and create_purchase_request, which case K and F12 send
-     through. An unknown link reads as null through either, not an error. */
+  /* Functions anon may run: get_shared_list(text), its overloads (text, bigint) and
+     (text, bigint, jsonb), and create_purchase_request, which case K and F12 send
+     through. An unknown link reads as null through each, not an error. */
   const shared = await anon.rpc('get_shared_list', { p_token: 'nonsense' });
   if (shared.error || shared.data !== null) {
     throw new Error(
@@ -328,6 +340,18 @@ export async function runRealContract(env, admin, member) {
   if (since.error || since.data !== null) {
     throw new Error(
       `contract: get_shared_list('nonsense', 1) answered ${JSON.stringify(since.error ?? since.data)}, not null`
+    );
+  }
+  /* The held-records overload by raw RPC: the port falls back on PGRST202, so only this
+     call fails when the migration was not pushed. */
+  const have = await anon.rpc('get_shared_list', {
+    p_token: 'nonsense',
+    p_since: null,
+    p_have: {}
+  });
+  if (have.error || have.data !== null) {
+    throw new Error(
+      `contract: get_shared_list('nonsense', null, {}) answered ${JSON.stringify(have.error ?? have.data)}, not null`
     );
   }
 }

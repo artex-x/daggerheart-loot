@@ -31,9 +31,7 @@ const ALDER = uuid(501);
 const ALDER_KEY = 'hb_alderworkshopaaa';
 
 const alertText = async (): Promise<string> =>
-  (await screen.findByRole('alert', {}, { timeout: 3000 })).textContent
-    .replace(/\s+/g, ' ')
-    .trim();
+  (await screen.findByRole('alert')).textContent.replace(/\s+/g, ' ').trim();
 const previews = (c: HTMLElement): string[] =>
   [...c.querySelectorAll('.preview')].map((p) => p.textContent.replace(/\s+/g, ' ').trim());
 const selected = (row: HTMLElement): string => {

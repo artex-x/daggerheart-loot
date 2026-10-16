@@ -23,8 +23,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { connect, ownedSequences, publicTables, rowCounts, setCronJobActive } from './db.mjs';
 import {
+  DOCKER_PS_TIMEOUT_MS,
   LOCAL_STACK_EXCLUDES,
-  SUPABASE_CLI,
   cliShapedDataDump,
   dumpPublicTables,
   dumpRowCounts,
@@ -32,8 +32,13 @@ import {
   isAgeIdentity,
   parseEnvFile,
   pickBackupArtifact,
+  resetLocal as resetStack,
+  runTimed,
   sequenceGuard,
+  stackTimeoutMs,
+  stalledText,
   staleSafetyStamps,
+  supabaseCli,
   truncateStatement
 } from './lib.mjs';
 
@@ -81,13 +86,22 @@ export function childEnv() {
   return env;
 }
 
-export function cli(args, env, stdio = ['ignore', 'ignore', 'inherit']) {
-  return spawnSync(process.execPath, [SUPABASE_CLI, ...args], {
-    cwd: ROOT,
-    env,
-    encoding: 'utf8',
-    stdio
-  });
+/** Runs a Supabase CLI call under stackTimeoutMs(env), its output shown, and
+ * returns spawnSync's result. Throws when the call runs out of its time: a
+ * `supabase start` once hung on a `docker container inspect` (2026-10-15). */
+export function cli(args, env, stdio = ['ignore', 'inherit', 'inherit'], spawn = spawnSync) {
+  const { failure, result } = runTimed(
+    supabaseCli(env),
+    args,
+    { cwd: ROOT, env, stdio, timeout: stackTimeoutMs(env) },
+    spawn
+  );
+  if (failure === 'timeout') {
+    throw new Error(
+      `${stalledText(`supabase ${args[0]}`, env)}. Run "npx supabase stop" through PowerShell, then run the command again.`
+    );
+  }
+  return result;
 }
 
 /** Returns the local database URL from `supabase status -o json`, or null
@@ -106,8 +120,7 @@ export function localDbUrl(env) {
 /** Resets the local database to supabase/migrations/. Returns true on
  * success. It drops every connection. */
 export function resetLocal(env = childEnv()) {
-  const r = cli(['db', 'reset', '--local'], env, ['ignore', 'ignore', 'pipe']);
-  return !r.error && r.status === 0;
+  return resetStack({ env, cwd: ROOT, stdio: ['ignore', 'ignore', 'pipe'] }).failure === null;
 }
 
 /** Returns the key and removes it from `env` (the process environment in
@@ -131,22 +144,27 @@ export function dockerAnswers() {
   return !r.error && r.status === 0;
 }
 
-/** Returns the name of the running container `name`, or null. */
-export function runningContainer(name) {
-  const r = spawnSync(
-    'docker',
-    ['ps', '--filter', `name=^${name}$`, '--format', '{{.Names}}'],
-    {
-      encoding: 'utf8'
-    }
-  );
+/** Returns the name of the running container `name`, or null. Throws when
+ * `docker ps` does not answer in DOCKER_PS_TIMEOUT_MS. */
+export function runningContainer(name, spawn = spawnSync) {
+  const r = spawn('docker', ['ps', '--filter', `name=^${name}$`, '--format', '{{.Names}}'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: DOCKER_PS_TIMEOUT_MS
+  });
+  if (r.error?.code === 'ETIMEDOUT') {
+    throw new Error(
+      `docker ps did not answer in ${DOCKER_PS_TIMEOUT_MS / 1000} s. Restart Rancher Desktop (rdctl shutdown, then rdctl start) through PowerShell, then run the command again.`
+    );
+  }
   if (r.error || r.status !== 0) return null;
   return r.stdout.split(/\r?\n/).includes(name) ? name : null;
 }
 
 /** Starts the local stack with Auth when its container is not running and
  * returns the database URL, or null. A production dump names the columns
- * that hosted Auth migrated; the database image's baseline lacks them. */
+ * that hosted Auth migrated; the database image's baseline lacks them.
+ * Throws when a CLI call or `docker ps` runs out of its time. */
 export function ensureStackWithAuth(env, projectId) {
   if (!runningContainer(`supabase_auth_${projectId}`)) {
     if (localDbUrl(env)) {

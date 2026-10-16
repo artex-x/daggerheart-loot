@@ -195,6 +195,21 @@ export function fastPlan(paths) {
   return { related, sources, budget };
 }
 
+/** Returns the first `<dir>/<rel>` for which `exists` is true, from
+ * `start` up to the filesystem root, else null. A `.claude/worktrees/`
+ * checkout with no own `node_modules` finds its packages up the parents, as
+ * Node's own resolution does. */
+export function findUp(start, rel, exists) {
+  let dir = path.resolve(start);
+  for (;;) {
+    const candidate = path.join(dir, rel);
+    if (exists(candidate)) return candidate;
+    const parent = path.dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
 /** The most recent passes a stage keeps, so a revert to a recent state still hits. */
 export const MAX_PASSES = 8;
 

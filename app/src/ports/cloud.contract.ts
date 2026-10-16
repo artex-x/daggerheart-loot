@@ -13,7 +13,13 @@
  * across accounts, S the print sets, Q the own pictures of homebrew items. */
 
 import { newArtName, thumbOf } from '../lib/art.js';
-import type { EntryRow, ImportRow, ListRow, SharedRow } from '../lib/cloudLists.js';
+import {
+  heldSnapshots,
+  type EntryRow,
+  type ImportRow,
+  type ListRow,
+  type SharedRow
+} from '../lib/cloudLists.js';
 import {
   canonJson,
   HOMEBREW_KEY,
@@ -684,6 +690,17 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
       { item: 'cc1', qty: 2 }
     ];
     assert((await requests.send(r2, share.token, two)).ok, 'requests: the second send failed');
+    /* A re-read names the requests held: a held one answers in `kept` with its read mark and
+       no lines; only the new one comes with its lines. */
+    const held = await requests.list([r1]);
+    const keptOne = held.ok ? held.kept?.find((k) => k.id === r1) : undefined;
+    assert(
+      held.ok &&
+        keptOne?.readAt === opened?.readAt &&
+        !held.requests.some((r) => r.id === r1) &&
+        held.requests.some((r) => r.id === r2 && r.lines.length === 2),
+      'requests: a re-read that holds the first request answered ' + JSON.stringify(held)
+    );
     const short = await requests.apply(r2, false);
     assert(
       JSON.stringify(short) ===
@@ -723,6 +740,13 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     assert(
       left.ok && !left.requests.some((r) => r.listId === id),
       'requests: a decided request is still pending'
+    );
+    const decided = await requests.list([r1, r2]);
+    assert(
+      decided.ok &&
+        !decided.kept?.some((k) => k.id === r1 || k.id === r2) &&
+        !decided.requests.some((r) => r.listId === id),
+      'requests: a re-read keeps a decided request: ' + JSON.stringify(decided)
     );
 
     const stale = await requests.send(lists.newId(), share.token, [{ item: 'zz1', qty: 1 }]);
@@ -1030,6 +1054,53 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(
     canonJson(forced) === canonJson({ ok: true, revision: 3 }),
     'homebrew: a forced update answered ' + JSON.stringify(forced)
+  );
+
+  /* A re-read names the revisions held: a row still at its revision answers in `kept`, a
+     changed one alone, and a stale revision or an unknown id reads as the lists' re-read. */
+  const revs = (rows: readonly { id: string; revision: number }[]) =>
+    Object.fromEntries(rows.map((r) => [r.id, r.revision]));
+  const whole = await homebrew.load();
+  const known = whole.ok
+    ? { books: revs(whole.books), items: revs(whole.items), cards: revs(whole.cards) }
+    : { books: {}, items: {}, cards: {} };
+  const keptAll = await homebrew.load(known);
+  assert(
+    keptAll.ok &&
+      !keptAll.books.length &&
+      !keptAll.items.length &&
+      !keptAll.cards.length &&
+      keptAll.kept?.books.includes(bookId) === true &&
+      keptAll.kept.items.includes(itemId),
+    'homebrew: a re-read with every revision held does not read as kept: ' +
+      JSON.stringify(keptAll)
+  );
+  assert(
+    (await homebrew.updateItem(itemId, patch, null)).ok,
+    'homebrew: the update before the re-read was refused'
+  );
+  const oneChanged = await homebrew.load(known);
+  assert(
+    oneChanged.ok &&
+      oneChanged.items.length === 1 &&
+      oneChanged.items[0]?.id === itemId &&
+      oneChanged.items[0].revision === 4 &&
+      !oneChanged.kept?.items.includes(itemId) &&
+      oneChanged.kept?.books.includes(bookId) === true,
+    'homebrew: a re-read after one update does not read that item alone: ' +
+      JSON.stringify(oneChanged)
+  );
+  const unknown = homebrew.newId();
+  const odd = await homebrew.load({
+    ...known,
+    items: { [itemId]: 1, [unknown]: 1 }
+  });
+  assert(
+    odd.ok &&
+      odd.items.some((r) => r.id === itemId) &&
+      !odd.items.some((r) => r.id === unknown) &&
+      !odd.kept?.items.includes(unknown),
+    'homebrew: a re-read with a stale revision and an unknown id does not read as expected'
   );
 
   const potionKey = homebrew.newKey();
@@ -1589,6 +1660,21 @@ async function gmOnlyCases(
     after?.entries.length === 3 && after.entries[1]?.hid === itemId,
     "gm only: the unmarked entry is not on the players' link: " + JSON.stringify(after?.entries)
   );
+  /* The re-read that names the shown records by `rev` answers the same row as a whole read
+     (docs/decisions/2026-10-15-a-shared-page-re-read-names-its-held-snapshots-by-hash.md). */
+  const held = after ? heldSnapshots(after) : new Map();
+  assert(
+    typeof after?.entries[1]?.rev === 'string' && held.size > 0,
+    'held records: the linked entry carries no rev: ' + JSON.stringify(after?.entries[1])
+  );
+  if (after) {
+    const named = await signedOut.shares.read(player.token, after.revision - 1, held);
+    assert(
+      named.ok && JSON.stringify(named.shared) === JSON.stringify(after),
+      'held records: the re-read with the held map differs from a whole read: ' +
+        JSON.stringify(named)
+    );
+  }
 
   const importedId = lists.newId();
   const imported = await lists.import([

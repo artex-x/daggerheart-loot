@@ -21,6 +21,7 @@ import {
   cacheMode,
   fastPlan,
   findPass,
+  findUp,
   recordPath,
   rowPath,
   runStages,
@@ -607,6 +608,39 @@ function relativeImports(text) {
   }
   return out;
 }
+
+describe('findUp', () => {
+  const start = path.resolve(path.sep, 'repo', '.claude', 'worktrees', 'task');
+  const rel = path.join('node_modules', 'vitest', 'vitest.mjs');
+
+  it('finds the path in the start directory', () => {
+    const here = path.join(start, rel);
+    assert.equal(
+      findUp(start, rel, (p) => p === here),
+      here
+    );
+  });
+
+  it('finds the path in a parent of the start directory', () => {
+    const up = path.resolve(path.sep, 'repo', rel);
+    assert.equal(
+      findUp(start, rel, (p) => p === up),
+      up
+    );
+  });
+
+  it('answers null when no directory up to the root has the path', () => {
+    const seen = [];
+    assert.equal(
+      findUp(start, rel, (p) => {
+        seen.push(p);
+        return false;
+      }),
+      null
+    );
+    assert.equal(seen.at(-1), path.join(path.parse(start).root, rel));
+  });
+});
 
 /** Returns `path` as a selector sees it: a directory with its slash. */
 function asInput(p) {

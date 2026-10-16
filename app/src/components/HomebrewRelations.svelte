@@ -10,7 +10,7 @@
   import CardForm from './CardForm.svelte';
   import FormField from './FormField.svelte';
   import Icon from './Icon.svelte';
-  import ItemPicker from './ItemPicker.svelte';
+  import ItemPicker, { PICK_SHOWN } from './ItemPicker.svelte';
   import Seg from './Seg.svelte';
   import { lineMembers } from '../lib/data.js';
   import { CRAFT_MAX, REFS_MAX, type CardKind } from '../lib/homebrew.js';
@@ -76,6 +76,8 @@
     });
   }
 
+  /* Only the options the picker draws are built: past `PICK_SHOWN` a hit counts for «ещё N»
+     and is never drawn, so it is an id alone. */
   function findItems(chosen: readonly string[]): (q: string) => PickOption[] {
     return (q) =>
       rankHits(
@@ -83,7 +85,9 @@
         parseQuery(q),
         statLine,
         hay
-      ).map((it) => recordOption(it, lang, t));
+      ).map((it, i) =>
+        i < PICK_SHOWN ? recordOption(it, lang, t) : { id: it.id, name: '', meta: '' }
+      );
   }
 
   const rungsOf = (line: string) =>

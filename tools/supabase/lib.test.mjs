@@ -1,9 +1,12 @@
 /*
-  node:test over lib.mjs's pure logic. No filesystem, no process, no
-  network - hand-built inputs, in the style of tools/artwork/lib.test.mjs.
+  node:test over lib.mjs's pure logic. No filesystem, no network - hand-built
+  inputs, in the style of tools/artwork/lib.test.mjs. One case spawns a node
+  child, to prove that runTimed ends a child that never exits; the restore
+  tools' stack calls run over a stub spawn.
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import { Encrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
   PROJECTS,
@@ -47,8 +50,23 @@ import {
   addReceipt,
   checkReceipt,
   pgEnvFromUrl,
-  prodReport
+  prodReport,
+  STACK_SERVICES,
+  stackContainers,
+  missingContainers,
+  stackAdvice,
+  RESET_TIMEOUT_MS,
+  resetTimeoutMs,
+  resetFailure,
+  supabaseBinary,
+  failLine,
+  runTimed,
+  STACK_TIMEOUT_MS,
+  stackTimeoutMs,
+  spanText,
+  stalledText
 } from './lib.mjs';
+import { cli, runningContainer } from './restore.mjs';
 
 const M1 = '20261001120000_lists.sql';
 const M2 = '20261002120000_share_links.sql';
@@ -1314,5 +1332,198 @@ describe('tarNames', () => {
   it('refuses bytes that are not a tar archive, or one with no end', () => {
     assert.throws(() => tarNames(new Uint8Array(512).fill(1)), /not a tar archive/);
     assert.throws(() => tarNames(header('a', 0, '0')), /no end/);
+  });
+});
+
+describe('the local stack preflight', () => {
+  it('names the five containers check:db needs, storage included', () => {
+    assert.deepEqual(STACK_SERVICES, ['db', 'auth', 'realtime', 'storage', 'kong']);
+    assert.deepEqual(stackContainers('p'), [
+      'supabase_db_p',
+      'supabase_auth_p',
+      'supabase_realtime_p',
+      'supabase_storage_p',
+      'supabase_kong_p'
+    ]);
+  });
+
+  it('finds the containers that are not running, in order', () => {
+    const names = stackContainers('p');
+    assert.deepEqual(
+      missingContainers(names, () => true),
+      []
+    );
+    assert.deepEqual(
+      missingContainers(names, (n) => n !== 'supabase_storage_p'),
+      ['supabase_storage_p']
+    );
+    assert.deepEqual(
+      missingContainers(names, () => false),
+      names
+    );
+  });
+
+  it('gives the stop-then-rerun remedy and never a plain supabase start', () => {
+    const line = stackAdvice('supabase_storage_p is not running');
+    assert.match(line, /^check:db: supabase_storage_p is not running\. /);
+    assert.match(line, /Run "npx supabase stop" through PowerShell, then run check:db again/);
+    assert.doesNotMatch(line, /npx supabase start/);
+  });
+});
+
+describe('the local reset timeout', () => {
+  it('reads DHLOOT_RESET_TIMEOUT_MS only when it is a positive integer', () => {
+    assert.equal(resetTimeoutMs({}), RESET_TIMEOUT_MS);
+    assert.equal(resetTimeoutMs({ DHLOOT_RESET_TIMEOUT_MS: '1000' }), 1000);
+    assert.equal(resetTimeoutMs({ DHLOOT_RESET_TIMEOUT_MS: '0' }), RESET_TIMEOUT_MS);
+    assert.equal(resetTimeoutMs({ DHLOOT_RESET_TIMEOUT_MS: 'soon' }), RESET_TIMEOUT_MS);
+  });
+
+  it('tells a timeout from an interrupt and from a failed exit', () => {
+    assert.equal(resetFailure({ error: { code: 'ETIMEDOUT' }, signal: 'SIGTERM' }), 'timeout');
+    assert.equal(resetFailure({ signal: 'SIGINT', status: null }), 'failed');
+    assert.equal(resetFailure({ status: 1 }), 'failed');
+    assert.equal(resetFailure({ error: { code: 'ENOENT' } }), 'failed');
+    assert.equal(resetFailure({ status: 0, signal: null }), null);
+  });
+
+  it('ends a child that never exits at the timeout, with piped stdio', () => {
+    const t0 = Date.now();
+    const { failure } = runTimed(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 1000
+    });
+    assert.equal(failure, 'timeout');
+    assert.ok(Date.now() - t0 < 5000, `the child ran ${Date.now() - t0} ms`);
+  });
+});
+
+describe('supabaseBinary', () => {
+  const found = (spec) => `/nm/${spec.replace('/package.json', '')}/package.json`;
+  const none = () => {
+    throw new Error('MODULE_NOT_FOUND');
+  };
+
+  it('takes the override first', () => {
+    assert.equal(
+      supabaseBinary('win32', 'x64', found, { SUPABASE_CLI_BINARY_OVERRIDE: 'C:/cli.exe' }),
+      'C:/cli.exe'
+    );
+  });
+
+  it('finds the platform package, with .exe on win32 only', () => {
+    assert.equal(
+      supabaseBinary('win32', 'x64', found),
+      path.join('/nm/@supabase/cli-windows-x64', 'bin', 'supabase.exe')
+    );
+    assert.equal(
+      supabaseBinary('linux', 'x64', found),
+      path.join('/nm/@supabase/cli-linux-x64', 'bin', 'supabase')
+    );
+  });
+
+  it('tries the next candidate, and answers null when none resolves', () => {
+    const muslOnly = (spec) => (spec.includes('musl') ? found(spec) : none());
+    assert.equal(
+      supabaseBinary('linux', 'x64', muslOnly),
+      path.join('/nm/@supabase/cli-linux-x64-musl', 'bin', 'supabase')
+    );
+    assert.equal(supabaseBinary('linux', 'x64', none), null);
+    assert.equal(supabaseBinary('sunos', 'x64', found), null);
+  });
+});
+
+describe('failLine', () => {
+  it("prints a missing binary's message as one line with no stack trace", () => {
+    const line = failLine(
+      'check:db',
+      new Error('The Supabase CLI binary is not installed. Run npm ci.')
+    );
+    assert.equal(
+      line,
+      'check:db: FAIL - The Supabase CLI binary is not installed. Run npm ci.'
+    );
+    assert.equal(failLine('check:db', 'down'), 'check:db: FAIL - down');
+  });
+});
+
+describe('the local stack timeout', () => {
+  it('reads DHLOOT_STACK_TIMEOUT_MS only when it is a positive integer', () => {
+    assert.equal(stackTimeoutMs({}), STACK_TIMEOUT_MS);
+    assert.equal(stackTimeoutMs({ DHLOOT_STACK_TIMEOUT_MS: '1000' }), 1000);
+    assert.equal(stackTimeoutMs({ DHLOOT_STACK_TIMEOUT_MS: '-5' }), STACK_TIMEOUT_MS);
+    assert.equal(stackTimeoutMs({ DHLOOT_STACK_TIMEOUT_MS: '1.5' }), STACK_TIMEOUT_MS);
+    assert.equal(stackTimeoutMs({ DHLOOT_STACK_TIMEOUT_MS: 'soon' }), STACK_TIMEOUT_MS);
+  });
+
+  it('says a bound in whole minutes, else in seconds', () => {
+    assert.equal(spanText(240000), '4 minutes');
+    assert.equal(spanText(1000), '1 s');
+    assert.equal(spanText(90000), '90 s');
+  });
+
+  it('names the call, the bound and the override', () => {
+    const line = stalledText('supabase start', { DHLOOT_STACK_TIMEOUT_MS: '1000' });
+    assert.match(line, /^supabase start did not finish in 1 s /);
+    assert.match(line, /DHLOOT_STACK_TIMEOUT_MS/);
+    assert.match(stackAdvice(line), /^check:db: supabase start did not finish in 1 s /);
+  });
+});
+
+describe('the restore tools on a hung stack', () => {
+  const env = {
+    SUPABASE_CLI_BINARY_OVERRIDE: 'supabase-stub',
+    DHLOOT_STACK_TIMEOUT_MS: '1000'
+  };
+  const timedOut = () => ({ error: { code: 'ETIMEDOUT' }, signal: 'SIGTERM', status: null });
+
+  it('throws when a CLI call runs out of its time, and answers the result otherwise', () => {
+    const seen = [];
+    const ok = cli(
+      ['status', '-o', 'json'],
+      env,
+      ['ignore', 'pipe', 'pipe'],
+      (file, args, opts) => {
+        seen.push({ file, args, timeout: opts.timeout, stdio: opts.stdio });
+        return { status: 0, stdout: '{}' };
+      }
+    );
+    assert.deepEqual(ok, { status: 0, stdout: '{}' });
+    assert.deepEqual(seen, [
+      {
+        file: 'supabase-stub',
+        args: ['status', '-o', 'json'],
+        timeout: 1000,
+        stdio: ['ignore', 'pipe', 'pipe']
+      }
+    ]);
+    assert.throws(
+      () => cli(['start', '-x', 'studio'], env, undefined, timedOut),
+      /^Error: supabase start did not finish in 1 s .*Run "npx supabase stop" through PowerShell/
+    );
+  });
+
+  it('shows the output of start and stop by default', () => {
+    let stdio;
+    cli(['stop'], env, undefined, (file, args, opts) => {
+      stdio = opts.stdio;
+      return { status: 0 };
+    });
+    assert.deepEqual(stdio, ['ignore', 'inherit', 'inherit']);
+  });
+
+  it('throws when docker ps does not answer, and reads a down container as null', () => {
+    assert.throws(
+      () => runningContainer('supabase_db_p', timedOut),
+      /^Error: docker ps did not answer in 30 s\. /
+    );
+    assert.equal(
+      runningContainer('supabase_db_p', () => ({ status: 0, stdout: 'other\n' })),
+      null
+    );
+    assert.equal(
+      runningContainer('supabase_db_p', () => ({ status: 0, stdout: 'supabase_db_p\n' })),
+      'supabase_db_p'
+    );
   });
 });

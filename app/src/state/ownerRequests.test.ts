@@ -401,6 +401,33 @@ describe("the owner's change log", () => {
     expect(o.noticesRead).toBe(false);
   });
 
+  it("keeps a newer read's notices when its requests fail and an older read answers after", async () => {
+    const { o, port } = gm2();
+    await o.read();
+    const stale = await port.requests.notices();
+    const list = port.requests.list.bind(port.requests);
+    vi.spyOn(port.requests, 'list')
+      .mockImplementationOnce((held) => list(held))
+      .mockResolvedValueOnce({ ok: false });
+    let release: () => void = () => undefined;
+    vi.spyOn(port.requests, 'notices')
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = () => {
+              resolve(stale);
+            };
+          })
+      )
+      .mockResolvedValueOnce({ ok: true, notices: stale.ok ? stale.notices.slice(1) : [] });
+    const older = o.read();
+    await o.read();
+    expect(o.noticesFor(GM2_LIST)).toHaveLength(1);
+    release();
+    await older;
+    expect(o.noticesFor(GM2_LIST)).toHaveLength(1);
+  });
+
   it('marks a list with unread notices read, and hides notices by id at once', async () => {
     const { o, port } = gm2();
     o.focus(GM2_LIST);
@@ -512,5 +539,119 @@ describe("the owner's change log", () => {
     await settle();
     expect(o.noticesRead).toBe(true);
     expect(o.noticesFor(uuid(9110)).map((n) => n.id)).toEqual([uuid(21000)]);
+  });
+});
+
+describe('the re-read that names the held requests', () => {
+  it('reads only a new request with its lines and keeps a held object while it is unchanged', async () => {
+    const { cloud, o, list } = owner();
+    const a = cloud.request('player-token-1', TWO);
+    await o.read();
+    const held = o.requests[0];
+    await later(60_000);
+    const before = o.arrived;
+    const b = cloud.request('player-token-1', [{ item: 'q1', qty: 1 }]);
+    await o.read();
+    expect(list).toHaveBeenLastCalledWith([a]);
+    expect(o.requests[0]).toBe(held);
+    expect(o.requests.map((r) => r.id).sort()).toEqual([a, b].sort());
+    expect(o.requests.find((r) => r.id === b)?.lines).toEqual([
+      { item: 'q1', qty: 1, price: null, applied: null }
+    ]);
+    expect(o.arrived).toBe(before + 1);
+    await o.read();
+    expect(o.arrived).toBe(before + 1);
+  });
+
+  it('takes a new read mark and expiry onto a held request', async () => {
+    const { cloud, o } = owner();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    const held = o.requests[0];
+    await o.markRead(SHOP);
+    const now = o.requests[0];
+    expect(now).not.toBe(held);
+    expect(now?.readAt).not.toBeNull();
+    expect(now?.lines).toEqual(held?.lines);
+  });
+
+  it('drops a request decided elsewhere', async () => {
+    const { cloud, o } = owner();
+    const a = cloud.request('player-token-1', TWO);
+    await o.read();
+    if (!a) throw new Error('the seed refused the request');
+    cloud.decide(a, 'declined');
+    await o.read();
+    expect(o.requests).toEqual([]);
+  });
+
+  it('keeps a request decided here gone when a read that held it answers after', async () => {
+    const { cloud, o, list } = owner();
+    const a = cloud.request('player-token-1', TWO);
+    await o.read();
+    if (!a) throw new Error('the seed refused the request');
+    const answer = await cloud.requests.list([a]);
+    let release: () => void = () => undefined;
+    list.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = () => {
+            resolve(answer);
+          };
+        })
+    );
+    /* The decline's own read fails, so only the kept-id rule can keep it gone. */
+    list.mockResolvedValueOnce({ ok: false });
+    const reading = o.read();
+    await o.decline(a);
+    release();
+    await reading;
+    expect(o.requests.some((r) => r.id === a)).toBe(false);
+  });
+
+  it('keeps the shown requests when the re-read fails', async () => {
+    const { cloud, o, list } = owner();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    const shown = o.requests;
+    list.mockResolvedValueOnce({ ok: false });
+    await o.read();
+    expect(o.requests).toBe(shown);
+  });
+
+  it('drops an older read that answers after a newer one', async () => {
+    const { cloud, o, list } = owner();
+    const a = cloud.request('player-token-1', TWO);
+    await o.read();
+    if (!a) throw new Error('the seed refused the request');
+    const stale = await cloud.requests.list();
+    let release: () => void = () => undefined;
+    list.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = () => {
+            resolve(stale);
+          };
+        })
+    );
+    const older = o.read();
+    cloud.decide(a, 'declined');
+    await o.read();
+    expect(o.requests).toEqual([]);
+    release();
+    await older;
+    expect(o.requests).toEqual([]);
+  });
+
+  it('counts the unexpired requests of every list in one pass', async () => {
+    const { cloud, o } = owner();
+    cloud.request('player-token-1', TWO);
+    await later(60_000);
+    cloud.request('gm-token-1', [{ item: 'q1', qty: 1 }]);
+    await o.read();
+    const counts = o.pendingCounts(Date.now());
+    expect(counts.get(SHOP)).toBe(o.pendingCount(SHOP, Date.now()));
+    expect(counts.has(TROPHIES)).toBe(false);
+    expect(o.pendingCounts(Date.now() + 31 * 24 * 3_600_000).size).toBe(0);
   });
 });

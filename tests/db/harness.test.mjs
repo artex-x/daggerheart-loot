@@ -171,6 +171,7 @@ const EXPECTED_ANON_FUNCTIONS = [
   'get_item_preview(uuid,text)',
   'get_shared_list(text)',
   'get_shared_list(text,bigint)',
+  'get_shared_list(text,bigint,jsonb)',
   'get_shared_list_preview(text)'
 ];
 function anonFunctions(db) {

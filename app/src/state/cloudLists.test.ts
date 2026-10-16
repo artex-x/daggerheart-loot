@@ -1975,3 +1975,78 @@ describe('the linked records in memory', () => {
     expect(store.get(list)?.linked).toBe(linked);
   });
 });
+
+describe('a statement timeout', () => {
+  it('halves a timed-out request at once, with no wait and no «Не сохранено»', async () => {
+    const { cloud, store, apply, real } = await loaded({ limits: { lists: 300 } });
+    cloud.setFault(true, { timeout: true });
+    apply.mockImplementationOnce(async (ops) => {
+      const r = await real(ops);
+      cloud.setFault(false);
+      return r;
+    });
+    for (let i = 0; i < 200; i++) store.create('Список ' + String(i));
+    const seen: string[] = [];
+    const watch = setInterval(() => {
+      seen.push(store.sync);
+    }, 1);
+    await quiet();
+    clearInterval(watch);
+    expect(sizes(apply)).toEqual([200, 100, 100]);
+    expect(seen).not.toContain('failed');
+    expect(store.sync).toBe('saved');
+    expect(said).toEqual([]);
+    expect(store.lists).toHaveLength(203);
+  });
+
+  it('keeps the counted fault path for a lone timed-out write', async () => {
+    const { cloud, store, apply } = await loaded();
+    cloud.setFault(true, { timeout: true });
+    store.rename(SHOP, 'x');
+    await quiet();
+    expect(sizes(apply)).toEqual([1]);
+    expect(store.sync).toBe('failed');
+    await later(RETRY_MS);
+    expect(sizes(apply)).toEqual([1, 1]);
+  });
+});
+
+describe('overlapping reads', () => {
+  it('keeps the held list when a read answers it at a lower revision', async () => {
+    const { cloud, store } = await loaded();
+    const held = store.get(SHOP);
+    const read = await cloud.lists.list();
+    if (!read.ok) throw new Error('the read failed');
+    const older = read.lists.map((l) =>
+      l.id === SHOP
+        ? { ...l, revision: 0, name: 'Старое', updated_at: '2020-01-01T00:00:00Z' }
+        : l
+    );
+    vi.spyOn(cloud.lists, 'list').mockResolvedValueOnce({ ...read, lists: older });
+    cloud.play(SHOP, { name: 'Новое' });
+    await store.refresh();
+    expect(store.get(SHOP)).toBe(held);
+  });
+
+  it('drops an older read that answers after a newer one', async () => {
+    const { cloud, store } = await loaded();
+    const stale = await cloud.lists.list();
+    let release: () => void = () => undefined;
+    vi.spyOn(cloud.lists, 'list').mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = () => {
+            resolve(stale);
+          };
+        })
+    );
+    const older = store.refresh();
+    await cloud.as('gm1').lists.apply([{ op: 'remove', id: TROPHIES }]);
+    await store.refresh();
+    expect(store.get(TROPHIES)).toBeUndefined();
+    release();
+    await older;
+    await settle();
+    expect(store.get(TROPHIES)).toBeUndefined();
+  });
+});

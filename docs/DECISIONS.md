@@ -14,6 +14,10 @@ deleted.
 
 ## Index
 
+- 2026-10-16 - [An account delete removes its purchase requests in bounded calls first](decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md)
+- 2026-10-15 - [A shared page re-read names its held snapshots by hash](decisions/2026-10-15-a-shared-page-re-read-names-its-held-snapshots-by-hash.md)
+- 2026-10-15 - [A statement timeout halves a request at once](decisions/2026-10-15-a-statement-timeout-halves-a-request-at-once.md)
+- 2026-10-15 - [A timed component case leaves axe to its sibling test](decisions/2026-10-15-a-timed-component-case-leaves-axe-to-its-sibling-test.md)
 - 2026-10-15 - [AI assistants read a compact index and the record pages](decisions/2026-10-15-ai-assistants-read-a-compact-index-and-the.md)
 - 2026-10-15 - [Catalog text follows the SRD card style for names, costs and conditions](decisions/2026-10-15-catalog-text-follows-the-srd-card-style.md)
 - 2026-10-15 - [Descriptions use a line-based Markdown subset parsed by one module](decisions/2026-10-15-descriptions-use-a-line-based-markdown-subset.md)

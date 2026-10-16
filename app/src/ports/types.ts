@@ -34,6 +34,7 @@ import type {
   ListOp,
   ListRow,
   ShareAudience,
+  SharedHeld,
   SharedRow,
   ShareRow
 } from '../lib/cloudLists.js';
@@ -54,7 +55,7 @@ import type { HomebrewImported, HomebrewImportRows } from '../lib/homebrewFile.j
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
-import type { NoticeRow, OwnerRequest, ShortLine } from '../lib/requests.js';
+import type { NoticeRow, OwnerRequest, RequestHead, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
 
 export interface StoragePort {
@@ -391,8 +392,9 @@ export type ListWrites =
   /** No answer, a lapsed session or a passing server fault: the call may be sent again. */
   | { ok: false; error: 'network' }
   /** The database failed the call itself (a statement timeout, a defect): the caller
-   *  counts it and splits a request that keeps failing. */
-  | { ok: false; error: 'fault' }
+   *  counts it and splits a request that keeps failing; `timeout` is a statement timeout
+   *  (`57014`), whose cancelled statement rolled back, so the caller halves it at once. */
+  | { ok: false; error: 'fault'; timeout?: true }
   /** The call was refused whole: every write in it is dropped. */
   | { ok: false; error: 'refused' };
 
@@ -459,8 +461,10 @@ export interface ShareRepository {
   /** Stops the share; a stopped one stays as it is (`revoke_list_share`). */
   revoke(shareId: string): Promise<ListWrite>;
   /** The list as the link's audience sees it (`get_shared_list`), signed out too. With
-   *  `since`, a list whose revision is at most `since` answers `unchanged`. */
-  read(token: string, since?: number): Promise<SharedRead>;
+   *  `since`, a list whose revision is at most `since` answers `unchanged`. `held` names
+   *  the linked records the page shows by their `rev`: the database leaves an unchanged one
+   *  out, and the answer takes it from `held`, so it equals a whole read. */
+  read(token: string, since?: number, held?: SharedHeld): Promise<SharedRead>;
   /** The reader's own list id behind the token; null signed out, for another user's
    *  list, or when the read failed. */
   ownerOf(token: string): Promise<string | null>;
@@ -499,15 +503,20 @@ export type RequestApplied =
 /** A decline, or why not; the errors read as an apply's. */
 export type RequestDeclined =
   { ok: true } | { ok: false; error: 'decided' | 'expired' | 'gone' | 'network' | 'refused' };
-/** `{ ok: false }` is signed out or a read that failed, never an empty account. */
-export type RequestsRead = { ok: true; requests: OwnerRequest[] } | { ok: false };
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. With
+ *  `kept`, `requests` holds only the requests the caller did not name, and `kept` the
+ *  named ones still pending; a named id in neither is gone. */
+export type RequestsRead =
+  { ok: true; requests: OwnerRequest[]; kept?: RequestHead[] } | { ok: false };
 
 /** Purchase requests from a share link to its list's owner (docs/specs/FEATURES.md,
  *  "Account and browser lists"). Any link holder sends; the owner reads and decides. */
 export interface RequestRepository {
   /** The signed-in owner's pending requests over all lists, lines included; expired rows
-   *  too (the caller hides them by `expiresAt`). */
-  list(): Promise<RequestsRead>;
+   *  too (the caller hides them by `expiresAt`). With `held`, the ids the caller holds, a
+   *  held request answers in `kept` with no lines, and only the others come whole; more
+   *  than 50 new ones read everything, with no `kept`. All or nothing. */
+  list(held?: readonly string[]): Promise<RequestsRead>;
   /** `id` is made by the caller; the same id again is a replay that inserts nothing and
    *  answers ok. */
   send(id: string, token: string, lines: { item: string; qty: number }[]): Promise<RequestSent>;
@@ -525,14 +534,23 @@ export interface RequestRepository {
   hideNotices(listId: string, ids: readonly string[]): Promise<ListWrite>;
 }
 
+/** The revision the caller holds of each row, by row id, per table. */
+export interface HomebrewKnown {
+  books: Readonly<Record<string, number>>;
+  items: Readonly<Record<string, number>>;
+  cards: Readonly<Record<string, number>>;
+}
 /** `{ ok: false }` is signed out or a read that failed; a limit is null for no limit and
- *  undefined when its read failed, so the caller keeps the limit it knows. */
+ *  undefined when its read failed, so the caller keeps the limit it knows. With `kept`
+ *  (a read given `HomebrewKnown`), each table's rows are only those whose revision the
+ *  caller does not hold, and `kept` names the rest; an id in neither is gone. */
 export type HomebrewRead =
   | {
       ok: true;
       books: BookRow[];
       items: ItemRow[];
       cards: CardRow[];
+      kept?: { books: string[]; items: string[]; cards: string[] };
       itemLimit: number | null | undefined;
       bookLimit: number | null | undefined;
       cardLimit: number | null | undefined;
@@ -561,7 +579,9 @@ export interface HomebrewRepository {
   newId(): string;
   /** A fresh `hb_` key for a source, a section or an item. */
   newKey(): string;
-  load(): Promise<HomebrewRead>;
+  /** The author's rows; with `known`, only the rows whose revision differs from the one
+   *  held (more than 50 changed rows of a table read that table whole). */
+  load(known?: HomebrewKnown): Promise<HomebrewRead>;
   createBook(row: NewBookRow): Promise<ListWrite>;
   /** `revision` null writes whatever the row's revision is. */
   updateBook(id: string, content: BookContent, revision: number | null): Promise<HomebrewSaved>;

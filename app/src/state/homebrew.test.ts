@@ -845,3 +845,128 @@ describe('the import and the bulk move', () => {
     expect(read).toHaveBeenCalledOnce();
   });
 });
+
+describe('the re-read by revision', () => {
+  it('names every held revision and keeps the row objects and the arrays', async () => {
+    const { cloud, store } = await loaded();
+    const load = vi.spyOn(cloud.homebrew, 'load');
+    const [books, items, cards] = [store.books, store.items, store.cards];
+    expect(await store.read()).toBe(true);
+    expect(load).toHaveBeenCalledWith({
+      books: Object.fromEntries(books.map((b) => [b.id, b.revision])),
+      items: Object.fromEntries(items.map((r) => [r.id, r.revision])),
+      cards: Object.fromEntries(cards.map((c) => [c.id, c.revision]))
+    });
+    expect(store.books).toBe(books);
+    expect(store.items).toBe(items);
+    expect(store.cards).toBe(cards);
+  });
+
+  it('drops a row deleted elsewhere and takes a row changed elsewhere', async () => {
+    const { cloud, store } = await loaded();
+    const elsewhere = cloud.as('gm1').homebrew;
+    const axe = store.item(AXE);
+    const ring = store.item(RING);
+    if (!axe || !ring) throw new Error('the seed lost its items');
+    expect((await elsewhere.removeItem(ring.id)).ok).toBe(true);
+    const content = { ...axe.content, ru: 'Топор Пепла' };
+    expect(
+      (await elsewhere.updateItem(axe.id, { content, book_id: axe.book_id }, null)).ok
+    ).toBe(true);
+    await store.read();
+    expect(store.has(RING)).toBe(false);
+    expect(store.item(AXE)?.content.ru).toBe('Топор Пепла');
+  });
+
+  it('keeps the held row when a read answers it at a lower revision', async () => {
+    let lower = false;
+    const { store } = make('gm1', (cloud) => ({
+      ...cloud.homebrew,
+      load: async (known) => {
+        const r = await cloud.homebrew.load(known);
+        if (!r.ok || !lower) return r;
+        const all = await cloud.homebrew.load();
+        if (!all.ok) return r;
+        const old = all.items.map((x) =>
+          x.key === AXE ? { ...x, revision: 0, content: { ...x.content, ru: 'Старое' } } : x
+        );
+        return { ...all, items: old };
+      }
+    }));
+    await store.load();
+    const held = store.item(AXE);
+    lower = true;
+    await store.read();
+    expect(store.item(AXE)).toBe(held);
+  });
+
+  it('drops an older read that answers after a newer one', async () => {
+    const { cloud, store } = await loaded();
+    const stale = await cloud.homebrew.load();
+    const ring = store.item(RING);
+    if (!stale.ok || !ring) throw new Error('the seed read failed');
+    let release: (() => void) | null = null;
+    const real = cloud.homebrew.load.bind(cloud.homebrew);
+    vi.spyOn(cloud.homebrew, 'load')
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = () => {
+              resolve(stale);
+            };
+          })
+      )
+      .mockImplementation(real);
+    const older = store.read();
+    expect((await cloud.as('gm1').homebrew.removeItem(ring.id)).ok).toBe(true);
+    await store.read();
+    expect(store.has(RING)).toBe(false);
+    (release as (() => void) | null)?.();
+    expect(await older).toBe(true);
+    expect(store.has(RING)).toBe(false);
+  });
+
+  it("reads a row written here whole at the next read, with the database's times", async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-10-15T10:00:00Z') });
+    const { cloud, store } = make('gm1', (c) => ({
+      ...c.homebrew,
+      load: (known) => (known ? c.homebrew.load(known) : c.homebrew.load()),
+      createItem: async (row) => {
+        const r = await c.homebrew.createItem(row);
+        /* The answer arrives a minute later: the store stamps the client's time. */
+        vi.setSystemTime(Date.now() + 60_000);
+        return r;
+      }
+    }));
+    await store.load();
+    const ids = store.newIds();
+    expect(await store.createItem(ids, null, { kind: 'item', ru: 'Новое' })).toEqual({
+      ok: true
+    });
+    const local = store.items.find((r) => r.id === ids.id);
+    const load = vi.spyOn(cloud.homebrew, 'load');
+    await store.read();
+    const known = load.mock.calls[0]?.[0];
+    expect(known && ids.id in known.items).toBe(false);
+    const db = await cloud.homebrew.load();
+    const stored = db.ok ? db.items.find((r) => r.id === ids.id) : undefined;
+    expect(stored?.created_at).not.toBe(local?.created_at);
+    expect(store.items.find((r) => r.id === ids.id)?.created_at).toBe(stored?.created_at);
+    load.mockClear();
+    await store.read();
+    expect(load.mock.calls[0]?.[0]?.items[ids.id]).toBe(1);
+  });
+
+  it('answers has() and the key sets from the rows held, after a create and a delete', async () => {
+    const { store } = await loaded();
+    expect(store.itemKeys.has(AXE)).toBe(true);
+    expect(store.cardKeys.has('hb_aldersetaaaaaaaa')).toBe(true);
+    const ids = store.newIds();
+    await store.createItem(ids, null, { kind: 'item', ru: 'Новое' });
+    expect(store.has(ids.key)).toBe(true);
+    const row = store.item(ids.key);
+    if (!row) throw new Error('the create was not applied');
+    await store.removeItem(row);
+    expect(store.has(ids.key)).toBe(false);
+  });
+});

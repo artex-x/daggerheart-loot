@@ -8,7 +8,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { fastPlan } from './lib.mjs';
+import { fastPlan, findUp } from './lib.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 
@@ -61,13 +61,14 @@ function main(argv) {
     ]
   ];
   if (plan.related.length > 0) {
+    const vitest = findUp(ROOT, path.join('node_modules', 'vitest', 'vitest.mjs'), existsSync);
+    if (vitest === null) {
+      console.log(`check:fast: vitest not found from ${ROOT}. Run npm ci in ${ROOT}.`);
+      console.log('check:fast: FAIL at vitest');
+      return 1;
+    }
     // No shell: the argument list is not bound by cmd.exe's 8191 characters.
-    const args = [
-      path.join(ROOT, 'node_modules', 'vitest', 'vitest.mjs'),
-      'related',
-      ...plan.related.map((p) => path.join(ROOT, p)),
-      '--run'
-    ];
+    const args = [vitest, 'related', ...plan.related.map((p) => path.join(ROOT, p)), '--run'];
     if (plan.sources.length > 0) {
       args.push('--coverage', ...plan.sources.map((p) => `--coverage.include=${p}`));
     }

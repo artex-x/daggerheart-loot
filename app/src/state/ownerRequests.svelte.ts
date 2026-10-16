@@ -24,6 +24,7 @@ import {
   pendingFor,
   type ListNotice,
   type OwnerRequest,
+  type RequestHead,
   type ShortLine
 } from '../lib/requests.js';
 import type { RequestRepository } from '../ports/index.js';
@@ -79,6 +80,11 @@ export class OwnerRequests {
   /* Bumped by `clear()`: an answer that started before it is dropped. */
   #epoch = 0;
   #first = true;
+  /* Each read's number, taken when it is sent, and the newest one applied: an older answer
+     is dropped, so it can neither remove a request a newer read brought nor bring back one
+     it found decided. */
+  #readSeq = 0;
+  #appliedSeq = 0;
   /* Plain records, not reactive: nothing draws them. */
   #seen: Record<string, true> = {};
   /* Requests whose decision got no answer: the transport may have sent it twice. */
@@ -99,6 +105,17 @@ export class OwnerRequests {
   /** The list's requests that have not expired at `now`, newest first. */
   forList(listId: string, now: number): OwnerRequest[] {
     return pendingFor(this.requests, listId, now);
+  }
+
+  /** The count of each list's requests that have not expired at `now`, by list id, in one
+   *  pass; a list with none is absent. */
+  pendingCounts(now: number): Map<string, number> {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a count made per call, never state
+    const counts = new Map<string, number>();
+    for (const r of this.requests) {
+      if (Date.parse(r.expiresAt) > now) counts.set(r.listId, (counts.get(r.listId) ?? 0) + 1);
+    }
+    return counts;
   }
 
   pendingCount(listId: string, now: number): number {
@@ -132,17 +149,22 @@ export class OwnerRequests {
     this.decided = this.decided.filter((d) => d.listId !== listId);
   }
 
-  /** Reads the pending requests and the notices; a failed read keeps what is shown. */
+  /** Reads the pending requests and the notices; a failed read keeps what is shown. After
+   *  the first read, the requests held are named, so only the new ones come with lines. */
   async read(): Promise<void> {
     const epoch = this.#epoch;
     const focus = this.#focus;
+    const held = this.#first ? [] : this.requests.map((x) => x.id);
+    const seq = ++this.#readSeq;
     const [r, all, one] = await Promise.all([
-      this.#repo.list(),
+      held.length ? this.#repo.list(held) : this.#repo.list(),
       this.#repo.notices(),
       focus === null ? null : this.#repo.notices(focus)
     ]);
-    if (epoch !== this.#epoch) return;
+    if (epoch !== this.#epoch || seq < this.#appliedSeq) return;
     this.#readNotices(all, focus, one);
+    /* Any part applied: an older read's notices must not land over these. */
+    if (r.ok || all.ok || one?.ok) this.#appliedSeq = seq;
     this.#readRequests(r);
   }
 
@@ -191,11 +213,32 @@ export class OwnerRequests {
       this.arrived++;
     }
     this.#first = false;
-    this.requests = r.requests;
-    const pending = (id: string): boolean => r.requests.some((x) => x.id === id);
+    const next = r.kept ? this.#merged(r.requests, r.kept) : r.requests;
+    if (next.length !== this.requests.length || next.some((x, i) => x !== this.requests[i])) {
+      this.requests = next;
+    }
+    const pending = (id: string): boolean => next.some((x) => x.id === id);
     if (Object.keys(this.short).some((id) => !pending(id))) {
       this.short = Object.fromEntries(Object.entries(this.short).filter(([id]) => pending(id)));
     }
+  }
+
+  /* A re-read's requests: each held one still pending, with the head's read mark and expiry
+     (the same object when neither moved), then the new ones. A kept id this store no longer
+     holds stays gone: this tab decided it while the read was out. */
+  #merged(fresh: readonly OwnerRequest[], kept: readonly RequestHead[]): OwnerRequest[] {
+    const heads: Record<string, RequestHead> = Object.fromEntries(kept.map((h) => [h.id, h]));
+    const next: OwnerRequest[] = [];
+    for (const x of this.requests) {
+      const h = heads[x.id];
+      if (!h) continue;
+      next.push(
+        h.readAt === x.readAt && h.expiresAt === x.expiresAt
+          ? x
+          : { ...x, readAt: h.readAt, expiresAt: h.expiresAt }
+      );
+    }
+    return [...next, ...fresh];
   }
 
   /** Marks the list's unread requests and notices read (`mark_list_read`) when it holds

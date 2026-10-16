@@ -54,7 +54,8 @@ export function assertTestProject(url) {
   }
 }
 
-/** Where supabase-js keeps the session in the browser. */
+/** Returns where auth-js keeps the session: the key that
+ * `app/src/ports/supabase.ts` names by supabase-js's rule. */
 export function storageKey(url) {
   return 'sb-' + projectRef(url) + '-auth-token';
 }
@@ -122,7 +123,7 @@ export function probeVerdict({ bare, forged }) {
   return null;
 }
 
-/** A `Storage`-shaped object over a `Map`, for supabase-js in Node. */
+/** A `Storage`-shaped object over a `Map`, for auth-js in Node. */
 export function memoryStorage() {
   const map = new Map();
   return {

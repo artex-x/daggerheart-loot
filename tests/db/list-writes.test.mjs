@@ -887,3 +887,39 @@ describe('a retry', () => {
     assert.deepEqual(out.counts, { lists: 0, entries: 0 });
   });
 });
+
+describe('a big delete at three times the limits', () => {
+  /* 150 lists of 300 entries removed in one call under half the hosted `authenticated`
+     statement timeout of 8 s: 172 ms measured 2026-10-15 on this host. */
+  it('removes 150 lists of 300 entries in one call within a 4 s statement timeout', async () => {
+    const out = await asA(
+      async (tx) => {
+        await users(tx);
+        await tx`insert into public.user_limit_overrides (user_id, key, value)
+          select ${A}, d.key, d.value * 3 from public.limit_defaults d`;
+        await tx`insert into public.lists (id, owner_id, name)
+          select gen_random_uuid(), ${A}, 'Список ' || g from generate_series(1, 150) g`;
+        await tx`insert into public.list_entries (id, list_id, item_key, position)
+          select gen_random_uuid(), l.id, 'k' || g, g - 1
+          from public.lists l, generate_series(1, 300) g where l.owner_id = ${A}`;
+      },
+      async (tx) => {
+        const ids = await unbound(tx, async (u) =>
+          (await u`select id from public.lists where owner_id = ${A}`).map((l) => l.id)
+        );
+        await tx.unsafe(`set local statement_timeout = '4s'`);
+        const t0 = performance.now();
+        const results = await batch(
+          tx,
+          ids.map((id) => ({ op: 'remove', id }))
+        );
+        const ms = Math.round(performance.now() - t0);
+        console.log(`list-writes: 150 lists of 300 entries removed in ${ms} ms`);
+        return { results, left: await unbound(tx, counts) };
+      }
+    );
+    assert.equal(out.results.length, 150);
+    assert.ok(out.results.every((r) => r.ok === true));
+    assert.deepEqual(out.left, { lists: 0, entries: 0 });
+  });
+});

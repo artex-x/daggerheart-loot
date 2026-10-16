@@ -144,7 +144,27 @@ describe('lazyCloud', () => {
       ok: true,
       unchanged: true
     });
-    expect(read.mock.calls).toEqual([['player-token-1'], ['player-token-1', revision]]);
+    const held = new Map([['h1', { rev: 'r1', snapshot: {} }]]);
+    await shares.read('player-token-1', revision, held);
+    expect(read.mock.calls).toEqual([
+      ['player-token-1'],
+      ['player-token-1', revision],
+      ['player-token-1', revision, held]
+    ]);
+  });
+
+  it('forwards the held homebrew revisions and the held request ids', async () => {
+    const real = fakeCloud(SEED, 'gm1');
+    const load = vi.spyOn(real.homebrew, 'load');
+    const list = vi.spyOn(real.requests, 'list');
+    const { homebrew, requests } = lazyCloud(() => Promise.resolve(real));
+    const known = { books: {}, items: { [uuid(511)]: 1 }, cards: {} };
+    await homebrew.load();
+    await homebrew.load(known);
+    expect(load.mock.calls).toEqual([[], [known]]);
+    await requests.list();
+    await requests.list(['r1']);
+    expect(list.mock.calls).toEqual([[], [['r1']]]);
   });
 
   it('forwards every share call to the loaded port', async () => {

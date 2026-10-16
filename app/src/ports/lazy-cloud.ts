@@ -97,9 +97,10 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     list: async (id) => (await port())?.shares.list(id) ?? NO_SHARES,
     create: async (id, audience) => (await port())?.shares.create(id, audience) ?? UNSENT,
     revoke: async (id) => (await port())?.shares.revoke(id) ?? UNSENT,
-    read: async (token, since) => {
+    read: async (token, since, held) => {
       const p = await port();
       if (!p) return UNSHARED;
+      if (held !== undefined) return p.shares.read(token, since, held);
       return since === undefined ? p.shares.read(token) : p.shares.read(token, since);
     },
     ownerOf: async (token) => (await port())?.shares.ownerOf(token) ?? null,
@@ -126,7 +127,11 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     }
   };
   const requests: RequestRepository = {
-    list: async () => (await port())?.requests.list() ?? UNREQUESTED,
+    list: async (held) => {
+      const p = await port();
+      if (!p) return UNREQUESTED;
+      return held === undefined ? p.requests.list() : p.requests.list(held);
+    },
     send: async (id, token, lines) => (await port())?.requests.send(id, token, lines) ?? UNSENT,
     apply: async (id, clamp) => (await port())?.requests.apply(id, clamp) ?? UNSENT,
     decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT,
@@ -143,7 +148,11 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
   const homebrew: HomebrewRepository = {
     newId: () => crypto.randomUUID(),
     newKey: () => keyFrom(crypto.getRandomValues(new Uint8Array(10))),
-    load: async () => (await port())?.homebrew.load() ?? NO_HOMEBREW,
+    load: async (known) => {
+      const p = await port();
+      if (!p) return NO_HOMEBREW;
+      return known === undefined ? p.homebrew.load() : p.homebrew.load(known);
+    },
     createBook: async (row) => (await port())?.homebrew.createBook(row) ?? UNSENT,
     updateBook: async (id, content, revision) =>
       (await port())?.homebrew.updateBook(id, content, revision) ?? UNSENT,

@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   FREE_PLAN,
+  bytesText,
   evaluate,
   exitCodeOf,
   fetchApiCounts,
@@ -54,6 +55,22 @@ const hangingFetch = (_url, init) =>
       reject(Object.assign(new Error('aborted'), { name: 'AbortError' }));
     });
   });
+
+describe('bytesText', () => {
+  it('reads kB with one decimal under 1 MB and MB from 1 MB', () => {
+    assert.equal(bytesText(39362), '39.4 kB');
+    assert.equal(bytesText(0), '0.0 kB');
+    assert.equal(bytesText(1500000), '1.5 MB');
+    assert.equal(bytesText(1000000), '1.0 MB');
+    assert.equal(bytesText(2500000, 2), '2.50 MB');
+    assert.equal(bytesText(12345, 2), '12.3 kB');
+  });
+
+  it('reads a value that rounds to 1000 kB as MB', () => {
+    assert.equal(bytesText(999950), '1.0 MB');
+    assert.equal(bytesText(999949), '999.9 kB');
+  });
+});
 
 describe('slopePerDay', () => {
   it('returnsNullSlopeBelowSevenSnapshots', () => {

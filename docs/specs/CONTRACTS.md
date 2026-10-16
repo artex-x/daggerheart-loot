@@ -56,7 +56,10 @@ Frozen as written in `ROUTES.md`. In particular:
   (`get_shared_list`) draws each homebrew entry live from the linked item,
   with the item's id as `hid` beside the entry's `snapshot`, and its own
   picture's stored name as `img` when it has one (`p/<32 hex>.<ext>` or a
-  catalog basename, never inside `snapshot`); a players'
+  catalog basename, never inside `snapshot`); its overload
+  `get_shared_list(text, bigint, jsonb)` adds `rev`, the database's opaque
+  hash of each linked record, and leaves out a `snapshot` that its `p_have`
+  map names by that `rev`; a players'
   link's projection holds no entry marked GM only (`list_entries.gm_only`),
   and a GM's link writes `gm_only` on each entry; the token is optionally
   followed by a filter, `#/s/<token>/f_<filter>`, in the grammar and with the

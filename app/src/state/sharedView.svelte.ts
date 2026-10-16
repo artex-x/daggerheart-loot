@@ -5,7 +5,7 @@
  * through `refresh()`, a failed first read included (docs/specs/FEATURES.md,
  * "Account and browser lists"). */
 
-import { sameProjection, type SharedRow } from '../lib/cloudLists.js';
+import { heldSnapshots, sameProjection, type SharedRow } from '../lib/cloudLists.js';
 import { COALESCE_MS, readShareMessage } from '../lib/live.js';
 import type { Random } from '../lib/roll.js';
 import type { EventsPort, ShareRepository } from '../ports/index.js';
@@ -29,6 +29,10 @@ export class SharedView {
   /* The user the owner check last ran for; `undefined` until it ran. */
   #checkedFor: string | null | undefined = undefined;
   #coalesce: ReturnType<typeof setTimeout> | null = null;
+  /* Each read's number, taken when it is sent, and the newest one applied: an older
+     answer is dropped, so it cannot draw an older list over a newer one. */
+  #readSeq = 0;
+  #appliedSeq = 0;
 
   constructor(repo: ShareRepository, live?: { events: EventsPort; random: Random }) {
     this.#repo = repo;
@@ -61,8 +65,10 @@ export class SharedView {
       this.changes = 0;
       this.#checkedFor = undefined;
       this.status = 'loading';
+      const seq = ++this.#readSeq;
       const read = await this.#repo.read(token);
-      if (this.token !== token) return;
+      if (this.token !== token || seq < this.#appliedSeq) return;
+      this.#appliedSeq = seq;
       if (!read.ok) this.status = 'error';
       else if (read.shared) this.#ready(read.shared);
       else this.status = 'gone';
@@ -89,12 +95,16 @@ export class SharedView {
     const token = this.token;
     if (token === null || this.status === 'idle' || this.status === 'loading') return;
     const failed = this.status === 'error';
-    /* The shown revision: an unchanged list answers with nothing to download. */
-    const since = this.status === 'ready' ? this.shared?.revision : undefined;
-    const read = await (since === undefined
-      ? this.#repo.read(token)
-      : this.#repo.read(token, since));
-    if (this.token !== token || !read.ok || read.unchanged) return;
+    /* The shown revision and records: an unchanged list answers with nothing to
+       download, an unchanged record comes without its body. */
+    const shown = this.status === 'ready' ? this.shared : null;
+    const seq = ++this.#readSeq;
+    const read = await (shown
+      ? this.#repo.read(token, shown.revision, heldSnapshots(shown))
+      : this.#repo.read(token));
+    if (this.token !== token || seq < this.#appliedSeq || !read.ok) return;
+    this.#appliedSeq = seq;
+    if (read.unchanged) return;
     if (!read.shared) {
       this.shared = null;
       this.status = 'gone';

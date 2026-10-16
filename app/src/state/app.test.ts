@@ -2955,6 +2955,30 @@ describe('the exports', () => {
     return { app, image };
   }
 
+  /* The seed with gm1's list `name` of one entry past the file's bound: the database refuses
+     a create of that many entries, so the list comes from the seed, not from a write. */
+  const LONG = uuid(9900);
+  const withLong = (name: string): Seed => ({
+    ...SEED,
+    lists: {
+      ...SEED.lists,
+      gm1: [
+        ...SEED.lists.gm1,
+        {
+          id: LONG,
+          name,
+          entries: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => ({
+            id: uuid(20000 + i),
+            itemKey: 'r' + String(i),
+            position: i
+          })),
+          createdAgoMs: 1000,
+          editedAgoMs: 1000
+        }
+      ]
+    }
+  });
+
   const AXE = 'hb_emberaxeaaaaaaaa';
   /* The lists file as the export writes it: the axe gm1's first list refers to carries the
      live item as its snapshot. */
@@ -3059,12 +3083,12 @@ describe('the exports', () => {
   });
 
   it('says a failed download, and nothing about the bounds', async () => {
-    const { app } = await signedIn(fakeImage({ failDownload: true }), {
-      entries: ENTRIES_MAX + 100
-    });
-    app.cloudLists!.create('Длинный', {
-      ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
-    });
+    const { app } = await signedIn(
+      fakeImage({ failDownload: true }),
+      { entries: ENTRIES_MAX + 100 },
+      'gm1',
+      withLong('Длинный')
+    );
     await app.exportLists();
     expect(app.toast).toMatchObject({ msg: app.t.accountFailed, mode: 'err' });
     await app.exportData();
@@ -3166,10 +3190,13 @@ describe('the exports', () => {
   });
 
   it("downloads a list past the file's entry bound whole and names it in one toast", async () => {
-    const { app, image } = await signedIn(fakeImage(), { entries: ENTRIES_MAX + 100 });
-    const ids = Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i));
-    const long = app.cloudLists!.create('Склад', { ids });
-    await app.exportLists([long.id]);
+    const { app, image } = await signedIn(
+      fakeImage(),
+      { entries: ENTRIES_MAX + 100 },
+      'gm1',
+      withLong('Склад')
+    );
+    await app.exportLists([LONG]);
     const text = await image.downloaded[0]!.blob.text();
     expect(
       (JSON.parse(text) as { lists: { entries: unknown[] }[] }).lists[0]?.entries
@@ -3182,19 +3209,18 @@ describe('the exports', () => {
   });
 
   it("says a file past the file's list bound, and both bounds in one toast", async () => {
-    const { app } = await signedIn(fakeImage(), {
-      lists: LISTS_MAX + 100,
-      entries: ENTRIES_MAX + 100
-    });
+    const { app } = await signedIn(
+      fakeImage(),
+      { lists: LISTS_MAX + 100, entries: ENTRIES_MAX + 100 },
+      'gm1',
+      withLong('Склад')
+    );
     const store = app.cloudLists!;
     for (let i = 0; i < LISTS_MAX - 2; i++) store.create('Список ' + String(i));
-    await app.exportLists();
+    await app.exportLists(store.lists.filter((l) => l.id !== LONG).map((l) => l.id));
     expect(app.toast?.msg).toBe(
       'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями.'
     );
-    store.create('Склад', {
-      ids: Array.from({ length: ENTRIES_MAX + 1 }, (_, i) => 'r' + String(i))
-    });
     await app.exportData();
     expect(app.toast?.msg).toBe(
       'Этот файл нельзя импортировать целиком. В нём больше 1000 списков: экспортируйте их частями. В списках «Склад» позиций больше 5000: разделите такие списки.'
@@ -4525,6 +4551,115 @@ describe('printing', () => {
     expect(await app.loadPrintSet('set-expired1')).toEqual({ ok: true, set: null });
     cloud.setOffline(true);
     expect(await app.loadPrintSet('set-twocards')).toEqual({ ok: false });
+    app.stop();
+  });
+});
+
+describe("another tab's settings", () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const WARN_KEY = 'dhloot.warn.v1';
+  const PREFS_KEY = 'dhloot.prefs.v1';
+
+  const signedOut = (cloud: CloudPort | null) => {
+    const storage = memoryStorage();
+    const app = new AppState(at('#/roll/std', { storage, cloud }));
+    app.start();
+    return { app, storage };
+  };
+
+  it.each([
+    ['with no cloud', null],
+    ['with a cloud, signed out', 'cloud']
+  ] as const)('follows the language, start, warning and display defaults %s', async (_, c) => {
+    const { app, storage } = signedOut(c === null ? null : fakeCloud(SEED));
+    await flush();
+    app.showPrintBW(true);
+    storage.set(LANG_KEY, 'en');
+    storage.fireExternalChange(LANG_KEY);
+    expect(app.lang).toBe('en');
+    storage.set(HOME_KEY, '#/tables/other_frames');
+    storage.fireExternalChange(HOME_KEY);
+    expect(app.home).toBe('#/tables/other_frames');
+    storage.set(WARN_KEY, '1');
+    storage.fireExternalChange(WARN_KEY);
+    expect(app.warnHidden).toBe(true);
+    storage.set(PREFS_KEY, '{"view":"grid","printBw":false,"printCompact":true}');
+    storage.fireExternalChange(null);
+    expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', false, true]);
+    /* A page's own pick stays: only the default moved. */
+    expect(app.shownPrintBW).toBe(true);
+    app.stop();
+  });
+
+  it('falls back on a bad value and writes nothing back', () => {
+    const { app, storage } = signedOut(null);
+    const set = vi.spyOn(storage, 'set');
+    storage.set(LANG_KEY, 'de');
+    storage.set(HOME_KEY, '#/i/ci1');
+    storage.set(PREFS_KEY, '{not');
+    set.mockClear();
+    storage.fireExternalChange(LANG_KEY);
+    expect([app.lang, app.home, app.tablesView]).toEqual(['ru', '#/roll/std', 'list']);
+    expect(set).not.toHaveBeenCalled();
+    app.stop();
+  });
+
+  it('ignores another key, and follows nothing signed in', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage();
+    const app = new AppState(at('#/roll/std', { storage, cloud }));
+    app.start();
+    await flush();
+    expect(app.user).not.toBeNull();
+    const lang = app.lang;
+    storage.set(LANG_KEY, lang === 'ru' ? 'en' : 'ru');
+    storage.fireExternalChange(LANG_KEY);
+    expect(app.lang).toBe(lang);
+    app.stop();
+    const out = signedOut(null);
+    out.storage.set(LANG_KEY, 'en');
+    out.storage.fireExternalChange('dhloot.lists.v2');
+    expect(out.app.lang).toBe('ru');
+    out.app.stop();
+  });
+
+  it('stops following once stopped', () => {
+    const { app, storage } = signedOut(null);
+    app.stop();
+    storage.set(LANG_KEY, 'en');
+    storage.fireExternalChange(LANG_KEY);
+    expect(app.lang).toBe('ru');
+  });
+});
+
+describe('ownKeyFor', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const NONE = 'hb_nosuchitemaaaaaa';
+
+  it('answers the same keys from its memo and follows an items change and a user switch', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const app = new AppState(at('#/homebrew', { storage: memoryStorage(), cloud }));
+    app.start();
+    await flush();
+    const gm2 = SEED.users.gm2.id;
+    expect(app.ownKeyFor(AXE)).toBe(derivedKey(gm2, AXE));
+    expect(app.ownKeyFor(AXE)).toBe(derivedKey(gm2, AXE));
+    expect(app.ownKeyFor('ci1')).toBe('ci1');
+    const store = app.homebrew;
+    if (!store) throw new Error('no homebrew store');
+    const ids = { id: store.newIds().id, key: AXE };
+    expect(await store.createItem(ids, null, { kind: 'item', ru: 'Свой топор' })).toEqual({
+      ok: true
+    });
+    expect(app.ownKeyFor(AXE)).toBe(AXE);
+    expect(app.ownKeyFor(NONE)).toBe(derivedKey(gm2, NONE));
+    await cloud.auth.signOut();
+    await cloud.auth.signIn('google');
+    await flush();
+    const now = app.user?.userId;
+    expect(now).not.toBe(gm2);
+    expect(app.ownKeyFor(NONE)).toBe(derivedKey(now as string, NONE));
     app.stop();
   });
 });

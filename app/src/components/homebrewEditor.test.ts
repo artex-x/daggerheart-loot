@@ -1236,6 +1236,13 @@ describe('the fold «Связи»', () => {
       ''
     );
     expect(name).toMatch(/(^|[^\p{L}\p{N}])меч/iu);
+    /* Only the eight drawn options are built; the rest still count for «Ещё N». */
+    const options = within(screen.getByRole('listbox', { name: t.craftInto })).getAllByRole(
+      'option'
+    );
+    expect(options).toHaveLength(8);
+    expect(options.every((o) => o.textContent.trim() !== '')).toBe(true);
+    expect(screen.getByText(/^Ещё \d+ - уточните запрос$/)).toBeInTheDocument();
   });
 
   it('lists each upgrade line once in «Линия улучшений», at its best-ranked member', async () => {

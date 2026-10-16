@@ -753,10 +753,10 @@ describe('a share link', () => {
     const cloud = fakeCloud(SEED);
     let answer: (() => void) | null = null;
     const real = cloud.shares.read.bind(cloud.shares);
-    cloud.shares.read = (token, since) =>
+    cloud.shares.read = (token, since, held) =>
       new Promise((resolve) => {
         answer = () => {
-          void real(token, since).then(resolve);
+          void real(token, since, held).then(resolve);
         };
       });
     const { container } = open('#/s/player-token-1', cloud);

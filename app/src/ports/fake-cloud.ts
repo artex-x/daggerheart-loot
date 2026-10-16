@@ -15,14 +15,17 @@ import {
   type ListRow,
   type NewListRow,
   type ShareAudience,
+  type SharedHeld,
   type SharedRow,
-  type ShareRow
+  type ShareRow,
+  withSnapshots
 } from '../lib/cloudLists.js';
 import {
   bookProblems,
   canonJson,
   cardProblems,
   contentProblems,
+  fnv1a128,
   isHomebrewKey,
   recordOf,
   type BookRow,
@@ -106,8 +109,9 @@ export interface FakeCloudOptions {
 export type FakeCloud = CloudPort & {
   setOffline(on: boolean): void;
   /** `true`: every `apply` call answers `fault`; a function: a call answers `fault` while
-   *  any of its writes matches, as a write that alone fails the call; `false`: off. */
-  setFault(match: boolean | ((op: ListOp) => boolean)): void;
+   *  any of its writes matches, as a write that alone fails the call; `false`: off. With
+   *  `timeout`, the fault is a statement timeout (`timeout: true`). */
+  setFault(match: boolean | ((op: ListOp) => boolean), how?: { timeout?: boolean }): void;
   /** The `apply` calls answered since the port was made, faulted ones included. */
   writeCount(): number;
   /** The writes inside the `apply` calls that were applied. */
@@ -385,6 +389,10 @@ const ART_FILE = /^[pt]\/[0-9a-f]{32}\.(webp|jpg)$/;
 /* `P0002` in `apply_list_writes`: the row is deleted or not the caller's. */
 const GONE: ListOpResult = { ok: false, error: 'gone' };
 const FAULT: ListWrites = { ok: false, error: 'fault' };
+const TIMED_OUT: ListWrites = { ok: false, error: 'fault', timeout: true };
+/* `apply_list_writes` refuses one `create` or `add` of more than this many entries
+   (`22023`) inside the write's own subtransaction: the other writes apply. */
+const OP_ENTRIES_MAX = 5000;
 const limited = (key: string, value: number): Extract<ListWrite, { error: 'limit' }> => ({
   ok: false,
   error: 'limit',
@@ -422,6 +430,8 @@ interface HeldNotice {
 
 /* PostgREST's row cap (`max_rows`): a read of every list's notices answers this many. */
 const READ_PAGE = 1000;
+/* The real port's `CHANGED_ROWS_MAX`: a re-read with more changed rows reads them all. */
+const CHANGED_ROWS_MAX = 50;
 
 /** A purchase request as the fake holds it. */
 interface HeldRequest {
@@ -900,6 +910,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   let requests = 0;
   let applied = 0;
   let fault: boolean | ((op: ListOp) => boolean) = false;
+  let faultTimeout = false;
 
   /* One write of `apply_list_writes`, as the function applies it: a refused
      write changes nothing, a refused create leaves no list. */
@@ -986,6 +997,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     return OK;
   };
   const applyOne = (mine: Held[], op: ListOp): ListOpResult => {
+    if ((op.op === 'create' || op.op === 'add') && op.entries.length > OP_ENTRIES_MAX) {
+      return REFUSED;
+    }
     switch (op.op) {
       case 'create':
         return createList(mine, op.list, op.entries);
@@ -1078,7 +1092,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const mine = offline ? null : own();
       if (!mine) return Promise.resolve(NETWORK);
       requests++;
-      if (fault === true || (fault && ops.some(fault))) return Promise.resolve(FAULT);
+      if (fault === true || (fault && ops.some(fault))) {
+        return Promise.resolve(faultTimeout ? TIMED_OUT : FAULT);
+      }
       applied += ops.length;
       const was = before();
       const results = ops.map((op) => applyOne(mine, op));
@@ -1183,11 +1199,16 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         .sort(entryOrder)
         .map((e, position) => {
           const { gm_note, hb_item, gm_only, ...rest } = e;
+          const snapshot = hb_item === null ? null : recordById(hb_item);
           const out = {
             ...rest,
             position,
-            snapshot: hb_item === null ? null : recordById(hb_item),
-            ...(hb_item === null ? {} : { hid: hb_item, ...imgOf(hb_item) })
+            snapshot,
+            ...(hb_item === null ? {} : { hid: hb_item, ...imgOf(hb_item) }),
+            /* Opaque, as the database's md5 is to the client. */
+            ...(hb_item !== null && snapshot !== null && typeof snapshot === 'object'
+              ? { rev: fnv1a128(JSON.stringify(snapshot)).toString(16) }
+              : {})
           };
           return gm ? { ...out, gm_note, gm_only: gm_only ?? false } : out;
         })
@@ -1231,13 +1252,29 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         }
         return OK;
       }),
-    read(token, since) {
+    /* As the database does: a held record of the same `rev` leaves the answer, and the
+       fill takes it from `held`, as the hosted port fills. */
+    read(token, since, held) {
       if (offline) return Promise.resolve({ ok: false });
       const shared = projection(token);
       if (shared && since !== undefined && shared.revision <= since) {
         return Promise.resolve({ ok: true, unchanged: true });
       }
-      return Promise.resolve({ ok: true, shared });
+      if (!shared) return Promise.resolve({ ok: true, shared });
+      const have: SharedHeld = new Map(held ?? []);
+      const sent: SharedRow = {
+        ...shared,
+        entries: shared.entries.map((e) => {
+          if (e.hid === undefined || e.rev === undefined || have.get(e.hid)?.rev !== e.rev) {
+            return e;
+          }
+          return Object.fromEntries(
+            Object.entries(e).filter(([k]) => k !== 'snapshot')
+          ) as SharedRow['entries'][number];
+        })
+      };
+      const filled = withSnapshots(sent, have);
+      return Promise.resolve(filled ? { ok: true, shared: filled } : { ok: false });
     },
     ownerOf(token) {
       const mine = own();
@@ -1399,22 +1436,37 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     return { r, h };
   };
   const requestRepo: RequestRepository = {
-    list() {
+    /* With `held`, a held request answers in `kept` with no lines and the others come
+       whole; past 50 new ones every request comes whole, as the real port reads. */
+    list(held) {
       const mine = offline ? null : own();
       if (!mine) return Promise.resolve({ ok: false });
       const ids = new Set(mine.map((h) => h.row.id));
+      const pending = purchases.filter((r) => r.status === 'pending' && ids.has(r.listId));
+      const whole = (rows: HeldRequest[]) =>
+        rows.map((r) => ({
+          id: r.id,
+          listId: r.listId,
+          audience: r.audience,
+          createdAt: iso(r.createdAt),
+          expiresAt: iso(r.expiresAt),
+          readAt: r.readAt === null ? null : iso(r.readAt),
+          lines: r.lines.map((l) => ({ ...l }))
+        }));
+      const holds = new Set(held);
+      const fresh = pending.filter((r) => !holds.has(r.id));
+      if (!holds.size || fresh.length > CHANGED_ROWS_MAX) {
+        return Promise.resolve({ ok: true, requests: whole(pending) });
+      }
       return Promise.resolve({
         ok: true,
-        requests: purchases
-          .filter((r) => r.status === 'pending' && ids.has(r.listId))
+        requests: whole(fresh),
+        kept: pending
+          .filter((r) => holds.has(r.id))
           .map((r) => ({
             id: r.id,
-            listId: r.listId,
-            audience: r.audience,
-            createdAt: iso(r.createdAt),
             expiresAt: iso(r.expiresAt),
-            readAt: r.readAt === null ? null : iso(r.readAt),
-            lines: r.lines.map((l) => ({ ...l }))
+            readAt: r.readAt === null ? null : iso(r.readAt)
           }))
       });
     },
@@ -1572,14 +1624,34 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       } while (n > 0);
       return 'hb_new' + tail.padStart(13, 'a');
     },
-    load() {
+    /* With `known`, a row at the revision held answers in `kept`, as `list(known)` does;
+       past 50 changed rows of a table, that table answers whole. */
+    load(known) {
       const mine = ownHomebrew();
       if (!mine) return Promise.resolve({ ok: false });
+      const whole =
+        !known ||
+        (!Object.keys(known.books).length &&
+          !Object.keys(known.items).length &&
+          !Object.keys(known.cards).length);
+      const split = <R extends { id: string; revision: number }>(
+        rows: R[],
+        held: Readonly<Record<string, number>> | undefined
+      ): { rows: R[]; kept: string[] } => {
+        const kept = whole ? [] : rows.filter((r) => held?.[r.id] === r.revision);
+        const changed = rows.filter((r) => !kept.includes(r));
+        if (changed.length > CHANGED_ROWS_MAX) return { rows: structuredClone(rows), kept: [] };
+        return { rows: structuredClone(changed), kept: kept.map((r) => r.id) };
+      };
+      const books = split(mine.books, known?.books);
+      const items = split(mine.items, known?.items);
+      const cards = split(mine.cards, known?.cards);
       return Promise.resolve({
         ok: true,
-        books: structuredClone(mine.books),
-        items: structuredClone(mine.items),
-        cards: structuredClone(mine.cards),
+        books: books.rows,
+        items: items.rows,
+        cards: cards.rows,
+        ...(whole ? {} : { kept: { books: books.kept, items: items.kept, cards: cards.kept } }),
         itemLimit: maxItems,
         bookLimit: maxBooks,
         cardLimit: maxCards
@@ -2144,8 +2216,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     setOffline(on) {
       offline = on;
     },
-    setFault(match) {
+    setFault(match, how) {
       fault = match;
+      faultTimeout = how?.timeout === true;
     },
     writeCount: () => requests,
     opCount: () => applied,

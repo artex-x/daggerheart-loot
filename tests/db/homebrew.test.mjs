@@ -203,6 +203,7 @@ describe('homebrew grants and functions', () => {
       'get_homebrew_items(uuid[])': pin(true, false, true),
       'get_shared_list(text)': pin(true, true, true),
       'get_shared_list(text,bigint)': pin(false, true, true),
+      'get_shared_list(text,bigint,jsonb)': pin(false, true, true),
       /* The picture policy's two checks (20261014120000_homebrew_art.sql). */
       'homebrew_art_name_ok(text)': validator,
       'homebrew_art_room()': pin(true, false, true),

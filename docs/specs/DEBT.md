@@ -10,55 +10,6 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Search (no task filed yet; the owner names the task)
-
-Owns: search defects found at the review of the words-in-any-order search
-(task 63, 2026-10-02).
-
-### D88 - search does not fold the left single quotation mark
-
-- **Where**: `foldQuery` in `app/src/lib/search.ts`.
-- **What**: the fold reads U+2019 and U+02BC as `'`, but not U+2018 (`‘`).
-  A query typed with `‘` in place of an apostrophe (`keeper‘s`) finds
-  nothing, while `keeper's` and `keeper’s` find "Keeper's Staff".
-- **Why deferred**: found at the closeout review; a keyboard rarely types
-  U+2018 inside a word, and the owner did not place it.
-- **How to verify the fix**: `search.test.ts` finds q80 for `keeper‘s
-  staff`, and the cached and uncached paths agree on it.
-
-## Slimmer account client (no task filed yet)
-
-Owns: an account client built from the Supabase packages the app uses,
-which brings the configured bundle back under its old 170 kB limit.
-
-### D60 - the configured build ships about 1.5 kB of account client that nothing calls
-
-- **Where**: `app/src/ports/supabase.ts` (`createClient` from
-  `@supabase/supabase-js`); `SUPABASE_ONLY_IN_PORT` in `eslint.config.mjs`
-  (its `@supabase/*` pattern already covers the smaller packages); the
-  decision "The account client loads after first paint; a provider redirect
-  settles before mount", which names supabase-js as the one import.
-- **What**: the full client carries functions-js (1.5 kB gzip), which the
-  app does not call; realtime-js is called since the Realtime release and
-  storage-js since the pictures of own items (R8), and both stay. The account
-  chunk is 58.1 kB and the configured build 290.9 kB (measured 2026-10-14),
-  so every signed-in reader downloads it after first paint. The budget is
-  294 kB under the 350 kB ceiling (decision "The configured bundle ceiling
-  rises to 350 kB"), so it does not force this fix.
-- **Why deferred**: the fix replaces `createClient` with `AuthClient` from
-  `@supabase/auth-js`, `PostgrestClient` from `@supabase/postgrest-js`,
-  `RealtimeClient` from `@supabase/realtime-js` and `StorageClient` from
-  `@supabase/storage-js`, and changes who may import
-  what. The risk: the session's access token must follow every auth change
-  into the postgrest client's headers, the Realtime client and the Storage
-  client, or writes run as anon, an owner topic's join is refused and an
-  upload is refused. `npm run e2e` is
-  the gate. It is its own release, not a fix to a pushed commit.
-- **How to verify the fix**: the configured build and its budget
-  (`.claude/README.md`, "The configured bundle budget") report about 1.5 kB
-  less than before the fix; `npm run e2e` passes every flow (F20 uploads a
-  picture) and contract cases J and Q.
-
 ## Focus after a control that removes itself (no task filed yet; the owner names the release)
 
 Owns: where keyboard focus goes when a press removes the pressed control.
@@ -120,8 +71,8 @@ No release plan owns it; the owner decides which one takes it.
 
 ## Harness parity (no task filed yet; the owner names the release)
 
-Owns: the fake's parity with the database's bounds of one write, and the
-browser suites' language runs for a signed-in seed user.
+Owns: how the browser suites name a control, and their language runs for a
+signed-in seed user.
 
 ### D99 - the browser suites name a titled control by its title, not its text
 
@@ -136,19 +87,6 @@ browser suites' language runs for a signed-in seed user.
   of its own, not the print batch's.
 - **How to verify the fix**: `d.click('Печать')` presses the print control on
   `#/i/ci1`, and every browser suite still passes.
-
-### D68 - the fake takes more than 5000 entries in one `create` or `add`
-
-- **Where**: `app/src/ports/fake-cloud.ts`, `lists.apply` (`create`, `add`).
-- **What**: `apply_list_writes()` refuses an op of more than 5000 entries
-  with `22023`; the fake applies it. A test over the fake can pass with a
-  write the database refuses (the export tests build lists of 5001 entries
-  this way, as a shortcut).
-- **Why deferred**: found in the limits audit (2026-09-30); no client path
-  sends more than 5000 entries in one op, and no test depends on the gap.
-- **How to verify the fix**: `fake-cloud.test.ts` expects a `create` of
-  5001 entries answered as the database answers it, and the export tests in
-  `state/app.test.ts` build their long lists another way.
 
 ### D89 - the sweep's English run draws gm1's pages in Russian
 
@@ -257,36 +195,6 @@ scale finding the owner sent to this task's scale re-run.
   app/src/lib/dict.ts` finds nothing; each toast and failure string follows
   rules 2 and 5.
 
-### D86 - the owner's pending requests are read whole after each new request
-
-- **Where**: `requests.list` in `app/src/ports/supabase.ts`;
-  `app/src/state/ownerRequests.svelte.ts` (the owner-topic `request`
-  message and the 300 s safety read).
-- **What**: every new request (an owner-topic `request` message) and every
-  safety read downloads all pending requests with their lines again: up to
-  about 4 MB at the defaults (500 requests of up to 100 lines, estimate)
-  and up to 4500 requests of 300 lines at three times them. A link holder
-  can send 5 requests a minute per link.
-- **Why deferred**: found while R7g was planned (2026-10-01); the owner
-  placed it with this section's scale re-run, not in R7g.
-- **How to verify the fix**: after one new request, the read fetches that
-  request alone (or the rows changed since the last read);
-  `supabase.test.ts` counts the rows of the second read.
-
-### D87 - an older account read can overwrite newer list rows
-
-- **Where**: `CloudLists.#pull` in `app/src/lib/cloudLists.ts`.
-- **What**: two account reads can overlap (a poll, a Realtime message, an
-  other-tab edit). When the older one answers last, its changed rows
-  replace the newer objects the store already holds, until the next read
-  brings them back. The defect is older than the revision-keyed re-read;
-  that change did not add it.
-- **Why deferred**: found in the review of the revision-keyed re-read
-  (2026-10-02), outside that release's scope.
-- **How to verify the fix**: skip a changed row whose `revision` is below
-  the one the store holds; a `cloudLists.test.ts` case answers two reads
-  out of order and expects the newer row to stay.
-
 ## Debt cleanup (`debt-cleanup`)
 
 Owns: scale findings at up to three times the default limits that no
@@ -336,119 +244,41 @@ R7d, R7e, R7f and R7g).
   the line before the bonus and `lang="en"` on it (`record.test.ts`), and
   the `I18N.md` departure sentence goes.
 
-### D97 - the usage report rounds the bucket to 0.1 MB
+### D111 - a shared page of 300 of the longest linked records nears the anon timeout
 
-- **Where**: `tools/supabase/usage-lib.mjs` (the Storage row's MB format).
-- **What**: the Storage row prints megabytes with one decimal, so a bucket
-  under 50 kB reads "0.0 MB" (39 362 bytes on the test project, 2026-10-14);
-  the stored `storage_bytes` and the forecast are exact.
-- **Why deferred**: found at R8's usage line; the forecast warns at 50 % of
-  1 GB, where the rounding does not matter.
-- **How to verify the fix**: `usage-lib.test.mjs` renders 39 362 bytes as a
-  non-zero figure (kB under 1 MB).
-
-### D98 - one homebrew page test costs about 100 s of every coverage run
-
-- **Where**: `app/src/components/homebrewPage.timed.test.ts`.
-- **What**: the test took 96 s alone and timed out at 120 s twice inside
-  the full coverage run (measured 2026-10-14 on this host); its timeout is
-  300 s and its 3000 ms draw bound is unchanged.
-- **Why deferred**: found in R8's gates; the test belongs to
-  `homebrew-followups`, and nothing in R8 touches it.
-- **How to verify the fix**: the file runs under 30 s in
-  `npx vitest run app/src/components/homebrewPage.timed.test.ts` with the
-  same bound.
-
-### D81 - the homebrew read downloads every row each time
-
-- **Where**: `homebrew.load` in `app/src/ports/supabase.ts`;
-  `app/src/state/homebrew.svelte.ts` (`load`); the poll and the `homebrew`
-  message in `app/src/state/app.svelte.ts`.
-- **What**: three whole-table reads (items, sources, cards) run on every
-  45 s poll while the topic is down and after every remote homebrew
-  message. At the defaults, maximal content is about 2.5 MB of items, 1.3 MB
-  of cards and 0.4 MB of sources (estimate); typical use is under 100 KB.
-- **Why deferred**: typical accounts are small; the owner did not place it.
-- **How to verify the fix**: the read asks for `id,revision,updated_at`
-  first and fetches only changed rows; `supabase.test.ts` counts the
-  requests of an unchanged second read.
-
-### D83 - a statement timeout makes the write buffer wait about a minute
-
-- **Where**: the `57014` mapping in `app/src/ports/supabase.ts` (a fault);
-  the retry in `app/src/state/cloudLists.svelte.ts`;
-  `supabase/migrations/20260925120000_delete_account.sql`.
-- **What**: an `apply_list_writes()` batch of big list deletes can pass the
-  8 s timeout; `57014` counts as a fault, so the buffer waits 15 s three
-  times before it halves the batch and shows «Не сохранено» meanwhile. The
-  account delete cascades in one statement and is unmeasured for an
-  override account (up to millions of rows).
-- **Why deferred**: unverified; the default limits keep a batch small.
-- **How to verify the fix**: one measured run on the test project; then
-  `57014` halves at once (`cloudLists.test.ts`), and a chunked account
-  delete passes `tests/db/delete-account.test.mjs` at a large seed.
+- **Where**: `get_shared_list(text, bigint)` and its `(text, bigint, jsonb)`
+  overload (`supabase/migrations/20261015120000_shared_list_have.sql`), which
+  build every linked entry's record with `homebrew_item_record`; the todo case
+  in `tests/db/list-shares.test.mjs`.
+- **What**: one list of 300 entries at three times the limits, each linked to
+  its own item with the longest record the validators allow (about 81 KB with
+  its source and four cards), read as `anon`: the median of three calls, measured
+  2026-10-16 on this host in three runs, 1550-2120 ms for the two-argument form
+  and 2305-3237 ms for the overload with `p_have = {}`. The hosted `anon`
+  statement timeout is 3 s (read on the test project), so the first read of
+  such a page may stop there; a re-read that names every held record sends no
+  snapshot but still builds each record to hash it. Real records are about
+  2 KB, and at the default limits a list holds 100 entries.
+- **Why deferred**: the measurement belongs to `debt-cleanup` B3b, whose
+  plan records a miss as an entry, not a redesign; the fix (a cached record
+  text or hash per item, or a bound on the bytes a page builds) changes the
+  projection's path and is the planner's choice.
+- **How to verify the fix**: the todo case passes (drop its `todo`), with
+  both medians in its log line under 1500 ms.
 
 ### D84 - small costs at three times the limits
 
 - **Where** and **What**, one line each (estimates, none measured):
-  - `matchLists` (`app/src/lib/lists.ts`) folds every list name per
-    keystroke (1000 x 200 characters, 30-80 ms); memoise as `hayFor` does.
-  - `waiting()` in `ListsPage.svelte` calls `pendingFor`
-    (`lib/requests.ts`) per card (1000 x 1000 parses); a `Map` by list id.
-  - `AddToList.svelte` calls `l.ids.includes` twice per chip per render of
-    the open menu; use the set built at open.
-  - `listsHolding` (`state/app.svelte.ts`) is lists x entries x keys per
-    lists change.
   - The `homebrew` table's «Раздел» filter row draws one chip per used
     section (up to 100) with no fold or search (`lib/facets.ts`,
     `FilterBar.svelte`).
-  - `shares.list` returns revoked rows, which stay for ever.
-  - The editor stringifies the draft and rebuilds the preview index per
-    keystroke; `findItems` maps every match before the picker keeps 8.
   - One toast slot: an error can be replaced by the next success, a 7 s
     undo by any later toast.
-  - `exportData` builds one string in memory (5 MiB at the import ceiling);
-    the homebrew export must stay a few files (the zip reader takes 1000).
 - **Why deferred**: each is a nit at the default limits; the owner did not
-  place them.
+  place them. `debt-cleanup` B5 pays both.
 - **How to verify the fix**: per line, a unit test or a timing at three
   times the limits; delete the line when it is paid, and the entry with its
   last line.
-
-### D85 - the shared page downloads the whole list after each owner edit
-
-- **Where**: `app/src/state/sharedView.svelte.ts` (`#message`, then
-  `refresh()`); `get_shared_list` in the migrations.
-- **What**: after each owner commit every open shared page downloads the
-  whole projection again: about 0.1-1 MB for a real list of up to 300
-  entries, up to 300 linked items of up to 81 KB each at three times the
-  limits (estimates). An owner who types with pauses
-  commits every 2 s.
-- **Why deferred**: `p_since` removes the unchanged re-reads only. A
-  smaller changed read needs per-entry change tracking, or sending only the
-  snapshots the page lacks (by the item's `hid` and revision): a
-  projection contract change the owner did not place.
-- **How to verify the fix**: with a shared page open, edit one note; the
-  re-read carries no snapshot of an unchanged item the page already holds.
-
-### D90 - `npm run check:db` waits silently on a stack that cannot start
-
-- **Where**: `tests/db/run.mjs` (the `supabase db reset --local` step).
-- **What**: after a host restart on 2026-10-02, Rancher Desktop came up
-  without seven Supabase images (PostgREST, Studio, postgres-meta and
-  others). `db reset` restarted the database and then waited about 20
-  minutes for containers that never started, with no output and the CPU
-  idle; only a manual `npx supabase stop` and `start` (which pulled the
-  images) recovered it.
-- **Why deferred**: found while gating R7d; a change to tooling every
-  later session runs under needs its own plan and review (owner,
-  2026-10-02: paid in the `debt-cleanup` release).
-- **How to verify the fix**: a preflight checks that every container the
-  stack needs is running before the reset and fails within seconds naming
-  the missing one and the `npx supabase stop` / `start` remedy; a timeout
-  of about 5 minutes stops a hung reset with the same advice; both lines
-  join the "FAIL" table in `.claude/README.md`; a test of
-  `tests/db/run.mjs`'s helpers covers both failures.
 
 ### D105 - a long source line is cut at the side of a print card with no warning
 
@@ -463,6 +293,84 @@ R7d, R7e, R7f and R7g).
   shrink of the source line), which `authoring-print-preview` did not take.
 - **How to verify the fix**: gm4's `hb_longsrcaaaaaaaaa` on the standard and the
   compact sheet: the whole source line is inside the card.
+
+### D106 - the homebrew editor's way back after a save reads «Отмена»
+
+- **Where**: `app/src/components/HomebrewEditor.svelte`, the button row
+  («Сохранить», the ghost link to `HOMEBREW_HASH`, «Удалить»).
+- **What**: after a save the only way back to «Хоумбрю» is a link that reads
+  «Отмена» / "Cancel", which tells the author that the save is undone. The
+  editor already names the same link «К моим предметам» / "To my items"
+  (`t.hbToMyItems`) in its missing and gone states, and the leave guard
+  (`hbDropEdits`) already asks on every navigation while the form is dirty.
+- **Why deferred**: owner carry of 2026-10-14; the label moves the editor's
+  goldens, which `debt-cleanup` B4 re-seeds.
+- **How to verify the fix**: the button row reads «Сохранить», «К моим
+  предметам», «Удалить» on a clean and on a dirty form; a press on a dirty
+  form asks `hbDropEdits` (`homebrewEditor.test.ts`). Paid by `debt-cleanup`
+  B4.
+
+### D107 - the «Сохранить себе» note reads as the note of the whole pick row
+
+- **Where**: `app/src/components/PickRow.svelte` (`p.savenote`, the strings
+  `saveItemNote` and `saveItemNoteList`).
+- **What**: the note about the copy sits under the whole row of pick
+  buttons, so it reads as if it applies to «Добавить в список» too; it
+  belongs to «Сохранить себе» only, and no attribute ties the two.
+- **Why deferred**: owner carry of 2026-10-14; the fix moves the pick row on
+  `#/h/`, the record modal and `#/s/`, a layout change for `debt-cleanup` B4.
+- **How to verify the fix**: the button and its note form one group, and the
+  button's `aria-describedby` names the note (a `PickRow` or item page test);
+  the goldens of `#/h/`, the record modal and `#/s/` show the group. Paid by
+  `debt-cleanup` B4.
+
+### D108 - a shared entry's «Для игроков» note draws between two rows
+
+- **Where**: `app/src/components/SharedListPage.svelte` (the two `HitNote`s
+  in `TableRows`'s `after` snippet, outside the row's `div.row`);
+  `HitNote.svelte` (`.hitnote`, `margin-top: 12px`).
+- **What**: on `#/s/` an entry's note draws as a box under the row's border
+  with a larger gap above it than below, so it reads as the next item's
+  note. The owner's list page draws the notes inside the row's border.
+- **Why deferred**: owner carry of 2026-10-14; the fix moves the shared-list
+  goldens, which `debt-cleanup` B4 re-seeds.
+- **How to verify the fix**: a `sharedListPage` test finds the note inside
+  `div.row`; `TableRows` has no `after` prop; the shared-list goldens at 360
+  and 1180 show it. Paid by `debt-cleanup` B4.
+
+### D109 - the homebrew table hands out a link with no card
+
+- **Where**: `app/src/components/TablesPage.svelte` on `#/tables/homebrew`:
+  `copyTableLink` (the toolbar), `copyFilterLink` (`FilterBar`'s
+  `oncopylink`) and `copySectionLink` (two section heads).
+- **What**: on the homebrew table `linkTo` falls back to the app address,
+  so the three copy buttons hand out a bare app link with no preview card,
+  and the link shows another reader none of the copier's items
+  (`FEATURES.md`, rule 17, names the exclusion).
+- **Why deferred**: owner carry of 2026-10-14; removing three controls moves
+  the table's goldens, which `debt-cleanup` B5 re-seeds.
+- **How to verify the fix**: `#/tables/homebrew` draws no table-link,
+  filter-link or section copy control (`tables.test.ts`, goldens). Paid by
+  `debt-cleanup` B5.
+
+### D110 - Bold on italic text and Italic on bold text do nothing
+
+- **Where**: `toggleMark` in `app/src/lib/markupEdit.ts`, called by
+  `MarkupField.svelte` (`run`).
+- **What**: with the selection inside or around the stars of the other
+  mark, `toggleMark` returns null and the button does nothing, so bold
+  italic text cannot be made from the buttons, on a phone or on a desktop.
+  Repro (2026-10-15): `toggleMark('*word*', 1, 5, '**')` finds one star
+  before and after, neither holds bold, and returns null;
+  `toggleMark('*word*', 0, 6, '**')` and `toggleMark('**word**', 2, 6, '*')`
+  return null too.
+- **Why deferred**: owner carry of 2026-10-14; the fix changes rule 18 of
+  `FEATURES.md` ("Formatted text boxes"), a B4 change.
+- **How to verify the fix**: Bold on an italic span and Italic on a bold
+  span give `***...***` with the selection inside or around the stars, and
+  a second press restores the text (`markupEdit.test.ts`,
+  `markupField.test.ts`); a touch check on a phone width. Paid by
+  `debt-cleanup` B4.
 
 ## Legacy removal (`persist-10-legacy-removal`)
 
@@ -541,18 +449,6 @@ migration drops `move_legacy_list` and `lists.legacy_fingerprint`
 - **Copy** (was D31): `app/src/lib/dict.ts` `badStorage` (`ru`, `en`) tells
   the reader their unreadable data is kept "under a separate key", which no
   one can act on outside devtools. Rewrite it once a backup is reachable.
-
-### D61 - a signed-out tab keeps its old language, start section and warning until reload
-
-- **Where**: `dhloot.lang.v1`, `dhloot.home.v1` and `dhloot.warn.v1` in
-  `app/src/state/app.svelte.ts`; nothing watches them across tabs.
-- **What**: a change in one tab reaches another open tab only when that tab
-  reloads. A signed-in tab re-reads the account row when it is shown again;
-  a signed-out tab does not.
-- **Why deferred**: the consistent-storage ticket owned it and was superseded
-  by the persistence programme (2026-09-26); the cost is one reload.
-- **How to verify the fix**: signed out, open two tabs, change the language
-  in the first, and confirm that the second tab shows it without a reload.
 
 ## Cloudflare Pages move (`cloudflare-pages`)
 

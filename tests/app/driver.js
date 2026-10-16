@@ -120,8 +120,17 @@ const NAME_FN = `(el) => (
 ).replace(/\\s+/g, ' ').trim()`;
 
 /* `url` is the page to drive; a caller with its own server (tests/e2e/)
-   passes it and never reads `TARGETS`, whose getter needs lib.js's server. */
-function makeDriver(page, target, url = TARGETS[target]) {
+   passes it and never reads `TARGETS`, whose getter needs lib.js's server.
+   `waitUntil` is the quiet `open()` waits for: the hosted e2e pages keep a
+   Realtime socket open, so tests/e2e/ waits for 'networkidle2' (at most two
+   connections for 500 ms); a navigation timeout then names the route and the
+   requests still in flight. */
+function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networkidle0' } = {}) {
+  const inFlight = new Set();
+  page.on('request', (r) => inFlight.add(r));
+  page.on('requestfinished', (r) => inFlight.delete(r));
+  page.on('requestfailed', (r) => inFlight.delete(r));
+
   /**
    * `confirm()` blocks the calling script until something answers it, and
    * `el.click()` inside `page.evaluate` never returns while one is open - so
@@ -173,7 +182,6 @@ function makeDriver(page, target, url = TARGETS[target]) {
      * n items and sets the item limit to n (`fillItems`).
      */
     async open(route, { as, today, holdToasts, items } = {}) {
-      await page.goto('about:blank');
       const query = new URLSearchParams();
       if (as) query.set('as', as);
       if (today) query.set('today', today);
@@ -181,9 +189,13 @@ function makeDriver(page, target, url = TARGETS[target]) {
       if (items) query.set('items', String(items));
       const qs = query.toString();
       const search = qs ? '?' + qs : '';
-      await page.goto(url + search + route, {
-        waitUntil: 'networkidle0'
-      });
+      try {
+        await page.goto('about:blank');
+        await page.goto(url + search + route, { waitUntil });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        throw new Error(route + ': ' + message + d.inFlightText(), { cause: e });
+      }
       await ready(page);
       const refused = await page.evaluate(
         () => document.getElementById('boot-error')?.textContent ?? null
@@ -200,6 +212,13 @@ function makeDriver(page, target, url = TARGETS[target]) {
           history.replaceState(history.state, '', u.href);
         });
       }
+    },
+
+    /** Returns `; in flight: <urls>` for the requests the page has not
+     * finished, the query of each cut off, or `; nothing in flight`. */
+    inFlightText() {
+      const urls = [...inFlight].map((r) => r.url().split('?')[0]);
+      return urls.length > 0 ? '; in flight: ' + urls.join(', ') : '; nothing in flight';
     },
 
     /** The window a state is looked at through; the breakpoints depend on it. */

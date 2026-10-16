@@ -14,7 +14,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import postgres from 'postgres';
-import { SUPABASE_CLI } from '../../tools/supabase/lib.mjs';
+import { resetLocal as resetStack, supabaseCli } from '../../tools/supabase/lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ROLES = new Set(['anon', 'authenticated']);
@@ -152,8 +152,8 @@ export function snapshot(schemas) {
   const file = path.join(dir, 'schema.sql');
   try {
     const r = spawnSync(
-      process.execPath,
-      [SUPABASE_CLI, 'db', 'dump', '--local', '--schema', schemas.join(','), '-f', file],
+      supabaseCli(),
+      ['db', 'dump', '--local', '--schema', schemas.join(','), '-f', file],
       { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
     );
     // The CLI runs pg_dump with strict names, so an absent schema is an
@@ -170,17 +170,12 @@ export function snapshot(schemas) {
 
 /** Resets the local database to supabase/migrations/ - with `--version
  * <14 digits>`, only up to that migration. It drops every connection: end
- * yours before, connect again after. Throws on a non-zero exit. */
+ * yours before, connect again after. Throws on a failure or a timeout. */
 export function resetLocal(args = []) {
-  const r = spawnSync(process.execPath, [SUPABASE_CLI, 'db', 'reset', '--local', ...args], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
-  if (r.error || r.status !== 0) {
-    throw new Error(
-      `supabase db reset --local ${args.join(' ')} failed (${r.status}): ${r.stderr}`
-    );
+  const r = resetStack({ args, cwd: ROOT });
+  if (r.failure) {
+    const what = r.failure === 'timeout' ? `did not finish in ${r.seconds} s` : 'failed';
+    throw new Error(`supabase db reset --local ${args.join(' ')} ${what}: ${r.stderr}`);
   }
 }
 

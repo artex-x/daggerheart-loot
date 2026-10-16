@@ -14,14 +14,14 @@ import { createInterface } from 'node:readline/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  SUPABASE_CLI,
   parseProjectArg,
   diffArgs,
   envRefs,
   parseEnvFile,
   missingEnv,
   splitDrift,
-  driftSummary
+  driftSummary,
+  supabaseCli
 } from './lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -41,7 +41,7 @@ function loadEnv(envFile) {
 }
 
 function runCli(args, env) {
-  const r = spawnSync(process.execPath, [SUPABASE_CLI, ...args], {
+  const r = spawnSync(supabaseCli(env), args, {
     cwd: ROOT,
     env,
     stdio: 'inherit'
@@ -54,7 +54,7 @@ function runCli(args, env) {
  * or `drift: N` with one owned path per line. Returns `{ status }`: 0 when
  * clean, 2 on drift, 1 when the CLI failed or printed no JSON. */
 function diffConfig(ref, env) {
-  const r = spawnSync(process.execPath, [SUPABASE_CLI, ...diffArgs(ref)], {
+  const r = spawnSync(supabaseCli(env), diffArgs(ref), {
     cwd: ROOT,
     env,
     stdio: ['ignore', 'pipe', 'inherit'],

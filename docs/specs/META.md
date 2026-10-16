@@ -134,11 +134,14 @@ link - and stores no name, account or address of the sender. A request
 expires 1 hour after the list's owner first reads it, applies or declines it,
 or 30 days after it was sent while nobody reads it (`docs/decisions/`,
 2026-10-07, "A list's change log shares the requests' view and the
-database's clean-up"). `anon` executes four functions,
+database's clean-up"). `anon` executes seven functions,
 `get_shared_list(text)`, its revision overload `get_shared_list(text,bigint)`
 (security invoker: it answers `unchanged` for a revision the list has not
-passed, else what `get_shared_list(text)` answers), that one and
-`get_homebrew_item(uuid)`, and reads no table (`tests/db/harness.test.mjs`;
+passed, else what `get_shared_list(text)` answers), its held-records overload
+`get_shared_list(text,bigint,jsonb)` (security invoker: the two-argument
+answer with each linked record named by `rev` and left out when the caller
+holds it), that one, `get_homebrew_item(uuid)`, `get_item_preview(uuid,text)`
+and `get_shared_list_preview(text)`, and reads no table (`tests/db/harness.test.mjs`;
 `docs/DECISIONS.md`, 2026-09-26, "Purchase requests are written only by a
 bounded function any link holder calls").
 
@@ -214,7 +217,7 @@ delete, still answered 200 from the CDN. Uploads ask for a cache age of one
 day (`cacheControl` 86400, against readers' egress; the decision below), so a removed picture is
 expected to stay readable for at most a day: a bound from the cache age,
 not a measurement.
-`anon` still executes the four functions above and has no storage policy
+`anon` still executes the seven functions above and has no storage policy
 (`docs/decisions/`, 2026-10-14, "Own pictures are random-named files the
 database deletes").
 

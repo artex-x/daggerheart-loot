@@ -349,6 +349,15 @@ describe('finding a list by name', () => {
     expect(matchLists(lists, 'порт').map((l) => l.id)).toEqual(['a', 'd']);
   });
 
+  it('answers the same on every keystroke, and reads a renamed list by its new name', () => {
+    const one = named('x', 'Склад');
+    expect(matchLists([one], 'скл').map((l) => l.id)).toEqual(['x']);
+    expect(matchLists([one], 'склад').map((l) => l.id)).toEqual(['x']);
+    one.name = 'Рынок';
+    expect(matchLists([one], 'скл')).toEqual([]);
+    expect(matchLists([one], 'рын').map((l) => l.id)).toEqual(['x']);
+  });
+
   it('puts the lists that pass first ahead of the rest, each group newest first', () => {
     const mixed = [
       named('old', 'a', 1),

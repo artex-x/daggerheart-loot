@@ -170,6 +170,8 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
        found to have gone vacuous (both sides ASCII, search.ts's fold an
        identity transform on either). */
     expect(find('keeper’s staff').map((x) => x.id)).toContain('q80');
+    /* U+2018, the left quotation mark, typed in place of an apostrophe. */
+    expect(find('keeper‘s staff').map((x) => x.id)).toContain('q80');
   });
 
   it('finds a name with a Latin diacritic typed in plain ASCII', () => {
@@ -202,8 +204,8 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
        provenance is load-bearing, not arbitrary: it is what pins this test's
        query list to the queries a real golden run actually exercises,
        instead of a set invented here and never checked against one.
-       'плетеная сеть' and "keeper's staff" are included so the two defect
-       cases above (which call find(), i.e. the live-fallback path only) are
+       'плетеная сеть', "keeper's staff" and 'keeper‘s staff' are included so
+       the defect cases above (which call find(), i.e. the live-fallback path only) are
        also proven to agree on the cached path the app itself runs through
        SearchPage/TablesPage. */
     const hay = hayFor(statLine);
@@ -216,6 +218,7 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
       'zzzqqqxx123',
       'плетеная сеть',
       "keeper's staff",
+      'keeper‘s staff',
       'спальный мешок',
       'зель',
       '"двуручное"',

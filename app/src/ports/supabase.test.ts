@@ -1,6 +1,7 @@
-/* The real adapter's mapping, over a stub supabase-js client - layer 1's
-   "ports against fake clients". The client itself meets the hosted test
-   project in the E2E layer (docs/specs/COVERAGE.md, "Test layers"). */
+/* The real adapter's mapping, over stubs of the four Supabase clients - layer 1's
+   "ports against fake clients". The real packages run in supabase.real.test.ts;
+   the clients meet the hosted test project in the E2E layer
+   (docs/specs/COVERAGE.md, "Test layers"). */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -14,7 +15,7 @@ import {
   WRITE_TIMEOUT_MS
 } from './supabase.js';
 
-const { client, createClient, rows } = vi.hoisted(() => {
+const { client, ctors, rows } = vi.hoisted(() => {
   /* `from('user_prefs')`'s builder: `select().eq().maybeSingle()` and
      `upsert()`. */
   const rows = {
@@ -47,7 +48,8 @@ const { client, createClient, rows } = vi.hoisted(() => {
     rpc: vi.fn(),
     from: vi.fn<(table: string) => typeof rows>(() => rows),
     channel: vi.fn(),
-    removeChannel: vi.fn(() => Promise.resolve('ok'))
+    removeChannel: vi.fn(() => Promise.resolve('ok')),
+    setAuth: vi.fn()
   };
   /* `rpc()` answers what the test set, through a builder with
      `abortSignal()`: an abort answers as postgrest-js does, `status: 0`. */
@@ -65,14 +67,40 @@ const { client, createClient, rows } = vi.hoisted(() => {
         })
     };
   };
-  const facade = { ...client, rpc: (...args: unknown[]) => signalled(client.rpc(...args)) };
-  return { client, createClient: vi.fn(() => facade), rows };
+  const rest = {
+    rpc: (...args: unknown[]) => signalled(client.rpc(...args)),
+    from: client.from
+  };
+  const realtime = {
+    channel: client.channel,
+    removeChannel: client.removeChannel,
+    setAuth: client.setAuth
+  };
+  /* Each constructor records what it was given and answers its part of the stub. */
+  const ctors = {
+    AuthClient: vi.fn<(...args: unknown[]) => unknown>(function () {
+      return client.auth;
+    }),
+    PostgrestClient: vi.fn<(...args: unknown[]) => unknown>(function () {
+      return rest;
+    }),
+    RealtimeClient: vi.fn<(...args: unknown[]) => unknown>(function () {
+      return realtime;
+    }),
+    StorageClient: vi.fn<(...args: unknown[]) => unknown>(function () {
+      return client.storage;
+    })
+  };
+  return { client, ctors, rows };
 });
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient,
+vi.mock('@supabase/auth-js', () => ({ AuthClient: ctors.AuthClient }));
+vi.mock('@supabase/postgrest-js', () => ({ PostgrestClient: ctors.PostgrestClient }));
+vi.mock('@supabase/realtime-js', () => ({
+  RealtimeClient: ctors.RealtimeClient,
   REALTIME_SUBSCRIBE_STATES: { SUBSCRIBED: 'SUBSCRIBED' }
 }));
+vi.mock('@supabase/storage-js', () => ({ StorageClient: ctors.StorageClient }));
 
 const USER = {
   id: 'u1',
@@ -138,20 +166,185 @@ const redirect = (over: Partial<Redirect> = {}): Redirect => ({
   ...over
 });
 
-describe('createCloud', () => {
-  it('builds a PKCE client that leaves the address alone', () => {
-    make();
-    expect(createClient).toHaveBeenCalledWith('https://x.test', 'k', {
-      auth: {
-        flowType: 'pkce',
-        detectSessionInUrl: false,
-        persistSession: true,
-        autoRefreshToken: true
-      },
-      global: { fetch: expect.any(Function) as unknown }
+type Options = { fetch: typeof fetch; accessToken: () => Promise<string> };
+const authOptions = () => ctors.AuthClient.mock.lastCall?.[0] as Options;
+const restOptions = () => ctors.PostgrestClient.mock.lastCall?.[1] as Options;
+const liveOptions = () => ctors.RealtimeClient.mock.lastCall?.[1] as Options;
+const sessionWith = (token: string | null) => ({
+  data: { session: token === null ? null : { access_token: token, user: USER } },
+  error: null
+});
+
+describe('the account clients', () => {
+  const anyFn = expect.any(Function) as unknown;
+
+  it.each([
+    [
+      'https://abcdefghijklmnopqrst.supabase.co',
+      'https://abcdefghijklmnopqrst.supabase.co',
+      'wss://abcdefghijklmnopqrst.supabase.co',
+      'sb-abcdefghijklmnopqrst-auth-token'
+    ],
+    [
+      'https://ABC.supabase.co:443/',
+      'https://abc.supabase.co',
+      'wss://abc.supabase.co',
+      'sb-abc-auth-token'
+    ],
+    [
+      'http://127.0.0.1:54321',
+      'http://127.0.0.1:54321',
+      'ws://127.0.0.1:54321',
+      'sb-127-auth-token'
+    ]
+  ])(
+    'builds the four clients for %s from one base, under the supabase-js storage key',
+    (url, origin, socket, storageKey) => {
+      createCloud(url, 'k', null, win);
+      expect(ctors.AuthClient.mock.calls).toStrictEqual([
+        [
+          {
+            url: origin + '/auth/v1',
+            headers: { Authorization: 'Bearer k', apikey: 'k' },
+            storageKey,
+            flowType: 'pkce',
+            detectSessionInUrl: false,
+            persistSession: true,
+            autoRefreshToken: true,
+            fetch: anyFn
+          }
+        ]
+      ]);
+      expect(ctors.PostgrestClient.mock.calls).toStrictEqual([
+        [origin + '/rest/v1', { headers: {}, schema: 'public', fetch: anyFn }]
+      ]);
+      expect(ctors.RealtimeClient.mock.calls).toStrictEqual([
+        [socket + '/realtime/v1', { params: { apikey: 'k' }, accessToken: anyFn, fetch: anyFn }]
+      ]);
+      expect(ctors.StorageClient.mock.calls).toStrictEqual([
+        [origin + '/storage/v1', {}, anyFn]
+      ]);
+      const authed = restOptions().fetch;
+      expect(liveOptions().fetch).toBe(authed);
+      expect(ctors.StorageClient.mock.lastCall?.at(2)).toBe(authed);
+      expect(authOptions().fetch).not.toBe(authed);
+    }
+  );
+
+  it('hands a given store to the auth client', () => {
+    const storage = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() };
+    createCloud('https://x.test', 'k', null, win, storage);
+    expect(ctors.AuthClient).toHaveBeenLastCalledWith(
+      expect.objectContaining({ storage, storageKey: 'sb-x-auth-token' })
+    );
+  });
+
+  describe('requests', () => {
+    let sent: [RequestInfo | URL, RequestInit | undefined][];
+    beforeEach(() => {
+      sent = [];
+      vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+        sent.push([input, init]);
+        return Promise.resolve(new Response('[]'));
+      });
+    });
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+    const header = (i: number, name: string) => new Headers(sent[i]?.[1]?.headers).get(name);
+
+    it('sends an auth request as it is: no session read, no token, no tab id', async () => {
+      make();
+      await authOptions().fetch('https://x.test/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        body: '{}'
+      });
+      expect(client.auth.getSession).not.toHaveBeenCalled();
+      expect(sent[0]?.[1]).toEqual({ method: 'POST', body: '{}' });
+    });
+
+    it("reads the session's token for every request, through one fetch for all three clients", async () => {
+      make();
+      const authed = restOptions().fetch;
+      client.auth.getSession.mockResolvedValueOnce(sessionWith('A'));
+      await authed('https://x.test/rest/v1/lists?select=id');
+      expect([header(0, 'apikey'), header(0, 'Authorization')]).toEqual(['k', 'Bearer A']);
+      expect(header(0, 'x-dhloot-tab')).toMatch(/^[0-9a-f-]{36}$/);
+      /* A refresh, a sign-out, then another account's sign-in. */
+      client.auth.getSession.mockResolvedValueOnce(sessionWith('B'));
+      await authed('https://x.test/rest/v1/rpc/apply_list_writes', {
+        method: 'POST',
+        body: '{}'
+      });
+      client.auth.getSession.mockResolvedValueOnce(sessionWith(null));
+      await authed('https://x.test/storage/v1/object/homebrew-art/a.webp', { method: 'POST' });
+      client.auth.getSession.mockResolvedValueOnce(sessionWith('C'));
+      await authed('https://x.test/realtime/v1/api/broadcast', { method: 'POST' });
+      expect([1, 2, 3].map((i) => header(i, 'Authorization'))).toEqual([
+        'Bearer B',
+        'Bearer k',
+        'Bearer C'
+      ]);
+      expect([1, 2, 3].map((i) => header(i, 'apikey'))).toEqual(['k', 'k', 'k']);
+      expect([header(2, 'x-dhloot-tab'), header(3, 'x-dhloot-tab')]).toEqual([null, null]);
+      expect(client.auth.getSession).toHaveBeenCalledTimes(4);
+    });
+
+    it('keeps a header the caller set', async () => {
+      make();
+      client.auth.getSession.mockResolvedValueOnce(sessionWith('A'));
+      await restOptions().fetch('https://x.test/rest/v1/lists', {
+        headers: { Authorization: 'Bearer own', apikey: 'other' }
+      });
+      expect([header(0, 'apikey'), header(0, 'Authorization')]).toEqual([
+        'other',
+        'Bearer own'
+      ]);
     });
   });
 
+  it('answers Realtime the session token, else the key', async () => {
+    make();
+    client.auth.getSession.mockResolvedValueOnce(sessionWith('A'));
+    expect(await liveOptions().accessToken()).toBe('A');
+    client.auth.getSession.mockResolvedValueOnce(sessionWith(null));
+    expect(await liveOptions().accessToken()).toBe('k');
+  });
+
+  it('hands Realtime each new token from the auth events, synchronously', () => {
+    const heard: ((event: string, s: unknown) => unknown)[] = [];
+    client.auth.onAuthStateChange.mockImplementation((cb: (typeof heard)[number]) => {
+      heard.push(cb);
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+    make();
+    const emit = heard[0];
+    if (!emit) throw new Error('The port did not listen to the auth events.');
+    const session = (token: string) => ({ access_token: token, user: USER });
+    const answers = [
+      emit('INITIAL_SESSION', session('A')),
+      emit('TOKEN_REFRESHED', session('B')),
+      emit('TOKEN_REFRESHED', session('B')),
+      emit('SIGNED_OUT', null),
+      emit('SIGNED_IN', session('C'))
+    ];
+    expect(client.setAuth.mock.calls).toStrictEqual([['A'], ['B'], [], ['C']]);
+    expect(answers).toEqual([undefined, undefined, undefined, undefined, undefined]);
+  });
+
+  it('hands Realtime nothing for a first event with no session', () => {
+    const heard: ((event: string, s: unknown) => unknown)[] = [];
+    client.auth.onAuthStateChange.mockImplementation((cb: (typeof heard)[number]) => {
+      heard.push(cb);
+      return { data: { subscription: { unsubscribe: vi.fn() } } };
+    });
+    make();
+    heard[0]?.('INITIAL_SESSION', null);
+    expect(client.setAuth).not.toHaveBeenCalled();
+  });
+});
+
+describe('createCloud', () => {
   it('maps the session, with a provider other than Google or Discord as null', async () => {
     const { auth } = make();
     expect(await auth.session()).toEqual({
@@ -345,17 +538,78 @@ describe('createCloud', () => {
     expect(await auth.signOut()).toEqual({ ok: false, error: 'failed' });
   });
 
-  it('deletes the account, then clears this browser whatever that answers', async () => {
-    const { auth } = make();
-    client.rpc.mockResolvedValueOnce({ data: null, error: null });
-    client.auth.signOut.mockRejectedValueOnce(new Error('user not found'));
-    expect(await auth.deleteAccount()).toEqual({ ok: true });
-    expect(client.rpc).toHaveBeenCalledWith('delete_account');
-    expect(client.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
-    client.rpc.mockResolvedValueOnce({ data: null, error: { code: '28000' } });
-    expect(await auth.deleteAccount()).toEqual({ ok: false, error: 'failed' });
-    client.rpc.mockRejectedValueOnce(new Error('offline'));
-    expect(await auth.deleteAccount()).toEqual({ ok: false, error: 'failed' });
+  describe('the account delete', () => {
+    const answers = (...list: unknown[]) => {
+      for (const a of list) client.rpc.mockResolvedValueOnce(a);
+    };
+    const pruned = (n: number) => ({ data: n, error: null });
+    const names = () => client.rpc.mock.calls.map((c) => c[0] as string);
+
+    it('deletes the requests until a call answers 0, then the account, then clears this browser', async () => {
+      const { auth } = make();
+      answers(pruned(200), pruned(200), pruned(0), { data: null, error: null });
+      client.auth.signOut.mockRejectedValueOnce(new Error('user not found'));
+      expect(await auth.deleteAccount()).toEqual({ ok: true });
+      expect(names()).toEqual([
+        'delete_account_requests',
+        'delete_account_requests',
+        'delete_account_requests',
+        'delete_account'
+      ]);
+      expect(client.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    });
+
+    it('answers failed at a request delete error and calls nothing more', async () => {
+      const { auth } = make();
+      answers(pruned(200), { data: null, error: { code: '57014' } });
+      expect(await auth.deleteAccount()).toEqual({ ok: false, error: 'failed' });
+      expect(names()).toEqual(['delete_account_requests', 'delete_account_requests']);
+      expect(client.auth.signOut).not.toHaveBeenCalled();
+      client.rpc.mockRejectedValueOnce(new Error('offline'));
+      expect(await auth.deleteAccount()).toEqual({ ok: false, error: 'failed' });
+      expect(names()).toHaveLength(3);
+    });
+
+    it('calls delete_account at once when the request delete is not there', async () => {
+      const { auth } = make();
+      answers(
+        { data: null, error: { code: 'PGRST202' }, status: 404 },
+        { data: null, error: null }
+      );
+      expect(await auth.deleteAccount()).toEqual({ ok: true });
+      expect(names()).toEqual(['delete_account_requests', 'delete_account']);
+    });
+
+    it('stops the request deletes at 100 calls, and at an answer that is not a number', async () => {
+      const { auth } = make();
+      client.rpc.mockImplementation((name: string) =>
+        Promise.resolve(name === 'delete_account' ? { data: null, error: null } : pruned(200))
+      );
+      expect(await auth.deleteAccount()).toEqual({ ok: true });
+      expect(names().filter((n) => n === 'delete_account_requests')).toHaveLength(100);
+      expect(names().at(-1)).toBe('delete_account');
+      client.rpc.mockReset();
+      answers({ data: null, error: null }, { data: null, error: null });
+      expect(await auth.deleteAccount()).toEqual({ ok: true });
+      expect(names()).toEqual(['delete_account_requests', 'delete_account']);
+    });
+
+    it('keeps the session when the final step fails, and a second press finishes', async () => {
+      const { auth } = make();
+      answers(pruned(200), pruned(0), { data: null, error: { code: '57014' } });
+      expect(await auth.deleteAccount()).toEqual({ ok: false, error: 'failed' });
+      expect(client.auth.signOut).not.toHaveBeenCalled();
+      answers(pruned(0), { data: null, error: null });
+      expect(await auth.deleteAccount()).toEqual({ ok: true });
+      expect(names()).toEqual([
+        'delete_account_requests',
+        'delete_account_requests',
+        'delete_account',
+        'delete_account_requests',
+        'delete_account'
+      ]);
+      expect(client.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    });
   });
 
   it('forwards every auth change as a session, and unsubscribes', () => {
@@ -406,21 +660,6 @@ describe('createCloud', () => {
     client.auth.signInWithOAuth.mockResolvedValueOnce({ data: {}, error: { code: 'x' } });
     expect(await make().auth.signIn('google')).toEqual({ ok: false, error: 'failed' });
     expect(shows.size).toBe(0);
-  });
-
-  it('hands a given store to the client', () => {
-    const storage = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn() };
-    createCloud('https://x.test', 'k', null, win, storage);
-    expect(createClient).toHaveBeenLastCalledWith('https://x.test', 'k', {
-      auth: {
-        flowType: 'pkce',
-        detectSessionInUrl: false,
-        persistSession: true,
-        autoRefreshToken: true,
-        storage
-      },
-      global: { fetch: expect.any(Function) as unknown }
-    });
   });
 
   it('defaults to the real window', async () => {
@@ -775,7 +1014,6 @@ describe('the lists', () => {
       'network'
     ],
     ['thrown', new Error('offline'), 'network'],
-    ['500 57014', { error: { code: '57014', message: 'x' }, status: 500 }, 'fault'],
     ['500 XX000', { error: { code: 'XX000', message: 'x' }, status: 500 }, 'fault'],
     ['500 P0003', { error: { code: 'P0003', message: 'x' }, status: 500 }, 'fault'],
     ['500 22023', { error: { code: '22023', message: 'x' }, status: 500 }, 'fault'],
@@ -803,6 +1041,15 @@ describe('the lists', () => {
     if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
     else client.rpc.mockResolvedValueOnce({ data: null, ...(answer as object) });
     expect(await make().lists.apply(OPS)).toEqual({ ok: false, error });
+  });
+
+  it('reads a statement timeout (500 57014) as a fault that names the timeout', async () => {
+    client.rpc.mockResolvedValueOnce({
+      data: null,
+      error: { code: '57014', message: 'canceling statement due to statement timeout' },
+      status: 500
+    });
+    expect(await make().lists.apply(OPS)).toEqual({ ok: false, error: 'fault', timeout: true });
   });
 
   it('moves a browser list through move_legacy_list and reads the row it answers', async () => {
@@ -1064,9 +1311,7 @@ describe('the fetch the client is given', () => {
 
   const given = (url = URL_) => {
     createCloud(url, 'k', null, win);
-    const call = createClient.mock.lastCall as unknown[] | undefined;
-    const options = call?.[2] as { global: { fetch: typeof fetch } };
-    return options.global.fetch;
+    return authOptions().fetch;
   };
   const post = (body: string): RequestInit => ({ method: 'POST', body });
   const flags = () => sent.map(([, init]) => init?.keepalive ?? false);
@@ -1085,6 +1330,13 @@ describe('the fetch the client is given', () => {
     await given('https://x.test/base')(URL_ + '/base/rest/v1/rpc/x', post('{}'));
     await given('https://x.test/base')(RPC, post('{}'));
     expect(flags()).toEqual([true, true, true, false]);
+  });
+
+  it('matches the write at the address the clients use for a double slash or spaces', async () => {
+    await given('https://x.test//')(URL_ + '//rest/v1/rpc/x', post('{}'));
+    await given('  https://x.test  ')(RPC, post('{}'));
+    expect(flags()).toEqual([true, true]);
+    expect([tabOf(0), tabOf(1)]).toEqual([expect.any(String), expect.any(String)]);
   });
 
   it('sends a larger body, a read with no body and an auth request as they are', async () => {
@@ -1397,7 +1649,11 @@ describe('the share links', () => {
       .mockRejectedValueOnce(new Error('offline'));
     const { shares } = make();
     expect(await shares.read('t1')).toEqual({ ok: true, shared });
-    expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', { p_token: 't1' });
+    expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+      p_token: 't1',
+      p_since: null,
+      p_have: {}
+    });
     expect(await shares.read('t1')).toEqual({ ok: true, shared: null });
     expect(await shares.read('t1')).toEqual({ ok: false });
     expect(await shares.read('t1')).toEqual({ ok: false });
@@ -1413,13 +1669,105 @@ describe('the share links', () => {
     expect(await shares.read('t1', 7)).toEqual({ ok: true, unchanged: true });
     expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
       p_token: 't1',
-      p_since: 7
+      p_since: 7,
+      p_have: {}
     });
     expect(await shares.read('t1', 7)).toEqual({ ok: true, shared });
     expect(await shares.read('t1', 0)).toEqual({ ok: true, shared: null });
     expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
       p_token: 't1',
-      p_since: 0
+      p_since: 0,
+      p_have: {}
+    });
+  });
+
+  describe('a re-read that names the held records', () => {
+    const HID = '00000000-0000-4000-8000-000000005001';
+    const record = { id: 'hb_heldaaaaaaaaaaaah', kind: 'item', en: 'Held' };
+    const official = {
+      id: 'e0',
+      item_key: 'ci1',
+      source: 'official',
+      position: 0,
+      quantity: 1,
+      price_coins: null,
+      player_note: '',
+      snapshot: null
+    };
+    const linked = {
+      id: 'e1',
+      item_key: record.id,
+      source: 'homebrew',
+      position: 1,
+      quantity: 1,
+      price_coins: null,
+      player_note: '',
+      hid: HID,
+      rev: 'r1'
+    };
+    const row = (entries: object[]) => ({
+      audience: 'player',
+      updated_at: 'x',
+      revision: 9,
+      topic_key: 't',
+      list: { name: 'L', money_mode: 'bag', player_note: '' },
+      entries
+    });
+    const whole = row([official, { ...linked, snapshot: record }]);
+    const stripped = row([official, linked]);
+    const held = new Map([[HID, { rev: 'r1', snapshot: record }]]);
+    const ok = (data: unknown) => ({ data, error: null, status: 200 });
+    const gone = { data: null, error: { code: 'PGRST202', message: 'x' }, status: 404 };
+
+    it('sends each hid with its rev and fills the stripped answer to a whole read', async () => {
+      client.rpc.mockResolvedValueOnce(ok(stripped));
+      const { shares } = make();
+      expect(await shares.read('t1', 8, held)).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenCalledTimes(1);
+      expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+        p_token: 't1',
+        p_since: 8,
+        p_have: { [HID]: 'r1' }
+      });
+    });
+
+    it('reads once more, whole, after an answer it cannot fill, then fails a second', async () => {
+      client.rpc
+        .mockResolvedValueOnce(ok(stripped))
+        .mockResolvedValueOnce(ok(whole))
+        .mockResolvedValueOnce(ok(stripped))
+        .mockResolvedValueOnce(ok(stripped));
+      const { shares } = make();
+      const other = new Map([[HID, { rev: 'r0', snapshot: record }]]);
+      expect(await shares.read('t1', 8, other)).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+        p_token: 't1',
+        p_since: null,
+        p_have: {}
+      });
+      expect(await shares.read('t1', 8, other)).toEqual({ ok: false });
+      expect(client.rpc).toHaveBeenCalledTimes(4);
+    });
+
+    it('takes the calls of before, for this read and the next, after PGRST202', async () => {
+      client.rpc
+        .mockResolvedValueOnce(gone)
+        .mockResolvedValueOnce(ok(whole))
+        .mockResolvedValueOnce(ok({ unchanged: true }))
+        .mockResolvedValueOnce(ok(whole));
+      const { shares } = make();
+      expect(await shares.read('t1', 8, held)).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenNthCalledWith(2, 'get_shared_list', {
+        p_token: 't1',
+        p_since: 8
+      });
+      expect(await shares.read('t1', 9, held)).toEqual({ ok: true, unchanged: true });
+      expect(client.rpc).toHaveBeenNthCalledWith(3, 'get_shared_list', {
+        p_token: 't1',
+        p_since: 9
+      });
+      expect(await shares.read('t1')).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', { p_token: 't1' });
     });
   });
 
@@ -1535,7 +1883,7 @@ describe('the purchase requests', () => {
   function query(answer: unknown) {
     const calls: Call[] = [];
     const q: Record<string, unknown> = {};
-    for (const m of ['select', 'eq', 'gt', 'order', 'limit']) {
+    for (const m of ['select', 'eq', 'gt', 'in', 'order', 'limit']) {
       q[m] = (...args: unknown[]) => {
         calls.push([m, args]);
         return q;
@@ -1624,6 +1972,77 @@ describe('the purchase requests', () => {
     });
     query({ data: null, error: { code: '57014' }, status: 500 });
     expect(await make().requests.list()).toEqual({ ok: false });
+  });
+
+  describe('a re-read that names the held requests', () => {
+    const HEAD = 'id,list_id,audience,created_at,expires_at,read_at';
+    const LINES = ',purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+    const head = (id: string, read_at: string | null = null) => ({
+      id,
+      list_id: LIST,
+      audience: 'player',
+      created_at: ROW.created_at,
+      expires_at: ROW.expires_at,
+      read_at
+    });
+
+    it('pages the heads with no lines and reads only the new request whole', async () => {
+      const heads = query({
+        data: [head('r1', '2026-09-27T10:30:00+00:00'), head('r2')],
+        error: null,
+        status: 200
+      });
+      const fresh = query({ data: [{ ...ROW, id: 'r2' }], error: null, status: 200 });
+      const read = await make().requests.list(['r1', 'gone']);
+      expect(heads).toEqual([
+        ['select', [HEAD]],
+        ['eq', ['status', 'pending']],
+        ['order', ['id']],
+        ['limit', [READ_PAGE]]
+      ]);
+      expect(fresh).toEqual([
+        ['select', [HEAD + LINES]],
+        ['eq', ['status', 'pending']],
+        ['in', ['id', ['r2']]],
+        ['order', ['id']]
+      ]);
+      expect(read.ok && read.requests.map((r) => [r.id, r.lines.length])).toEqual([['r2', 2]]);
+      expect(read.ok && read.kept).toEqual([
+        { id: 'r1', readAt: '2026-09-27T10:30:00+00:00', expiresAt: ROW.expires_at }
+      ]);
+    });
+
+    it('reads nothing more when every request is held', async () => {
+      query({ data: [head('r1')], error: null, status: 200 });
+      expect(await make().requests.list(['r1'])).toEqual({
+        ok: true,
+        requests: [],
+        kept: [{ id: 'r1', readAt: null, expiresAt: ROW.expires_at }]
+      });
+      expect(client.from).toHaveBeenCalledTimes(1);
+    });
+
+    it('reads everything whole past 50 new requests, with no kept', async () => {
+      const ids = Array.from({ length: 51 }, (_, i) => 'n' + String(i).padStart(2, '0'));
+      query({ data: [head('r1'), ...ids.map((id) => head(id))], error: null, status: 200 });
+      const whole = query({ data: [ROW], error: null, status: 200 });
+      const read = await make().requests.list(['r1']);
+      expect(whole).toEqual([
+        ['select', [HEAD + LINES]],
+        ['eq', ['status', 'pending']],
+        ['order', ['id']],
+        ['limit', [READ_PAGE]]
+      ]);
+      expect(read.ok && 'kept' in read).toBe(false);
+    });
+
+    it('answers not ok when the head page or the read of the new ones fails', async () => {
+      query({ data: null, error: { code: '57014' }, status: 500 });
+      expect(await make().requests.list(['r1'])).toEqual({ ok: false });
+      query({ data: [head('r1'), head('r2')], error: null, status: 200 });
+      query({ data: null, error: { code: '57014' }, status: 500 });
+      expect(await make().requests.list(['r1'])).toEqual({ ok: false });
+    });
   });
 
   it("pages by PostgREST's row cap as supabase/config.toml sets it", () => {
@@ -1809,7 +2228,7 @@ describe('the homebrew rows', () => {
     const calls: Call[] = [];
     const q: Record<string, unknown> = {};
     let signal: AbortSignal | null = null;
-    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'is', 'maybeSingle']) {
+    for (const m of ['select', 'upsert', 'update', 'delete', 'eq', 'is', 'in', 'maybeSingle']) {
       q[m] = (...args: unknown[]) => {
         calls.push([m, args]);
         return q;
@@ -1908,6 +2327,101 @@ describe('the homebrew rows', () => {
       ['select', ['id,key,kind,book_id,content,revision,created_at,updated_at']]
     ]);
     expect(client.rpc).toHaveBeenCalledWith('my_limit', { p_key: 'homebrew_items_per_owner' });
+  });
+
+  describe('a re-read with the revisions held', () => {
+    const SELECTS = {
+      books: 'id,key,content,revision,created_at,updated_at',
+      items: 'id,key,book_id,content,art,revision,created_at,updated_at'
+    };
+    const KNOWN = { books: { b1: 1 }, items: { i1: 3 }, cards: { c1: 2 } };
+    const limits = (): void => {
+      for (let i = 0; i < 3; i++) client.rpc.mockResolvedValueOnce(answer(100));
+    };
+
+    it('reads the three heads and the limits alone when nothing changed', async () => {
+      const heads = [
+        query(answer([{ id: 'b1', revision: 1 }])),
+        query(answer([{ id: 'i1', revision: 3 }])),
+        query(answer([{ id: 'c1', revision: 2 }]))
+      ];
+      limits();
+      expect(await make().homebrew.load(KNOWN)).toEqual({
+        ok: true,
+        books: [],
+        items: [],
+        cards: [],
+        kept: { books: ['b1'], items: ['i1'], cards: ['c1'] },
+        itemLimit: 100,
+        bookLimit: 100,
+        cardLimit: 100
+      });
+      for (const calls of heads) expect(calls).toEqual([['select', ['id,revision']]]);
+      expect(client.from).toHaveBeenCalledTimes(3);
+      expect(client.rpc).toHaveBeenCalledTimes(3);
+    });
+
+    it('fetches a changed or new item alone by its id, the others kept', async () => {
+      query(answer([{ id: 'b1', revision: 1 }]));
+      query(
+        answer([
+          { id: 'i1', revision: 4 },
+          { id: 'i2', revision: 1 }
+        ])
+      );
+      query(answer([{ id: 'c1', revision: 2 }]));
+      const changed = query(
+        answer([
+          { ...ITEM, revision: 4 },
+          { ...ITEM, id: 'i2' }
+        ])
+      );
+      limits();
+      const read = await make().homebrew.load(KNOWN);
+      expect(changed).toEqual([
+        ['select', [SELECTS.items]],
+        ['in', ['id', ['i1', 'i2']]]
+      ]);
+      expect(read.ok && read.items.map((r) => r.id)).toEqual(['i1', 'i2']);
+      expect(read.ok && read.kept).toEqual({ books: ['b1'], items: [], cards: ['c1'] });
+    });
+
+    it('reads a table whole past 50 changed rows', async () => {
+      const many = Array.from({ length: 51 }, (_, i) => ({ id: 'n' + String(i), revision: 1 }));
+      query(answer([{ id: 'b1', revision: 1 }]));
+      query(answer(many));
+      query(answer([{ id: 'c1', revision: 2 }]));
+      const whole = query(answer(many.map((r) => ({ ...ITEM, id: r.id }))));
+      limits();
+      const read = await make().homebrew.load(KNOWN);
+      expect(whole).toEqual([['select', [SELECTS.items]]]);
+      expect(read.ok && read.items).toHaveLength(51);
+      expect(read.ok && read.kept?.items).toEqual([]);
+    });
+
+    it('answers not ok when a head or a changed read fails', async () => {
+      query(failed('57014', 500));
+      query(answer([{ id: 'i1', revision: 3 }]));
+      query(answer([{ id: 'c1', revision: 2 }]));
+      limits();
+      expect(await make().homebrew.load(KNOWN)).toEqual({ ok: false });
+      query(answer([{ id: 'b1', revision: 1 }]));
+      query(answer([{ id: 'i1', revision: 9 }]));
+      query(answer([{ id: 'c1', revision: 2 }]));
+      query(failed('57014', 500));
+      limits();
+      expect(await make().homebrew.load(KNOWN)).toEqual({ ok: false });
+    });
+
+    it('reads whole with every map empty, as with none', async () => {
+      const books = query(answer([BOOK]));
+      query(answer([ITEM]));
+      query(answer([CARD]));
+      limits();
+      const read = await make().homebrew.load({ books: {}, items: {}, cards: {} });
+      expect(books).toEqual([['select', [SELECTS.books]]]);
+      expect(read.ok && 'kept' in read).toBe(false);
+    });
   });
 
   it('reads no limit as null, and a limit read that fails or throws as undefined', async () => {

@@ -123,6 +123,11 @@ export class CloudLists implements ListModel {
      made again once the queue is empty. */
   #edits = 0;
   #reread = false;
+  /* Each read's number, taken when it is sent, and the newest one applied: an answer older
+     than the read last applied is dropped, so it can neither remove a list a newer read
+     brought nor bring back one it deleted. */
+  #readSeq = 0;
+  #appliedSeq = 0;
   #timer: ReturnType<typeof setTimeout> | null = null;
   /* Each list as last read, by its `updated_at`: an unchanged row keeps its
      object, so a re-read that finds nothing new redraws nothing. `rev` is the
@@ -296,8 +301,9 @@ export class CloudLists implements ListModel {
     const edits = this.#edits;
     /* The revisions held: the read sends only the lists whose revision moved. */
     const known = Object.fromEntries(Object.entries(this.#read).map(([id, r]) => [id, r.rev]));
+    const seq = ++this.#readSeq;
     const read = await (Object.keys(known).length ? this.#repo.list(known) : this.#repo.list());
-    if (epoch !== this.#epoch) return;
+    if (epoch !== this.#epoch || seq < this.#appliedSeq) return;
     if (edits !== this.#edits || this.#queue.length || this.#flushing) {
       this.#reread = true;
       this.#rereadWhenIdle();
@@ -314,6 +320,7 @@ export class CloudLists implements ListModel {
         this.#rereadWhenIdle();
         return;
       }
+      this.#appliedSeq = seq;
       /* The first draw waits for the linked records, so a card never counts an item short. */
       await this.#fetchLinked();
       if (epoch === this.#epoch) this.status = 'ready';
@@ -401,6 +408,11 @@ export class CloudLists implements ListModel {
     }
     const next = rows.map((row) => {
       const had = this.#read[row.id];
+      /* A row older than the one held is an overlapping read's: the held list stays. */
+      if (had && row.revision < had.rev) {
+        read[row.id] = had;
+        return had.list;
+      }
       const list = had?.at === row.updated_at ? had.list : this.#withLinked(toCloudList(row));
       read[row.id] = { at: row.updated_at, rev: row.revision, list };
       return list;
@@ -490,6 +502,14 @@ export class CloudLists implements ListModel {
       if (!answer.ok && answer.error === 'network') {
         this.#failed();
         return;
+      }
+      if (!answer.ok && answer.error === 'fault' && answer.timeout && n > 1) {
+        /* A statement timeout rolled the call back: the first half goes at once, with no
+           wait and no «Не сохранено». A lone write keeps the counted path below. */
+        this.#faults = 0;
+        this.#faultAt = null;
+        this.#cap = Math.ceil(n / 2);
+        continue;
       }
       if (!answer.ok && answer.error === 'fault') {
         const now = Date.now();
