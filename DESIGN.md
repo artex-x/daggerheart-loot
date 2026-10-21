@@ -539,7 +539,11 @@ a dark arrow in a gold rim that continues the frame in colour, a solid black
 arrow in black and white.
 
 Colour and black-and-white are two distinct layouts, not one layout with the
-colour removed.
+colour removed. The vectors the two layouts share in shape (the tier banner, the
+threshold box, the ribbons, the dice) are drawn inline from the exported files'
+paths and take each layout's paints from `card-vectors.css`; the editor's
+preview draws the card larger by multiplying its `mm` and `pt` values, never by
+a transform.
 
 ## Do's and Don'ts
 

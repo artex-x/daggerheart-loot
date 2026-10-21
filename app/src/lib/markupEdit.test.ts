@@ -58,6 +58,44 @@ describe('bold and italic', () => {
     expect(applied(nested, toggleMark(nested, 3, 4, '**'))).toBe('*a b*');
   });
 
+  it('makesBoldItalicFromTheOtherMarkInsideOrAroundTheStars', () => {
+    const i = 'a *word* b';
+    /* Bold on an italic span, the selection inside the stars, then around them. */
+    const inside = must(toggleMark(i, 3, 7, '**'));
+    expect(applied(i, inside)).toBe('a ***word*** b');
+    expect(picked(i, inside)).toBe('word');
+    const around = must(toggleMark(i, 2, 8, '**'));
+    expect(applied(i, around)).toBe('a ***word*** b');
+    expect(picked(i, around)).toBe('*word*');
+    /* Italic on a bold span, both ways. */
+    const b = 'a **word** b';
+    expect(applied(b, toggleMark(b, 4, 8, '*'))).toBe('a ***word*** b');
+    expect(applied(b, toggleMark(b, 2, 10, '*'))).toBe('a ***word*** b');
+    const parsed = parseMarkup('a ***word*** b')[0];
+    expect(parsed).toMatchObject({ t: 'p' });
+    expect(inlineText(parsed?.t === 'p' ? parsed.c : [])).toBe('a word b');
+  });
+
+  it('restoresTheTextOnASecondPress', () => {
+    for (const [v, s, e, mark] of [
+      ['a *word* b', 3, 7, '**'],
+      ['a *word* b', 2, 8, '**'],
+      ['a **word** b', 4, 8, '*'],
+      ['a **word** b', 2, 10, '*']
+    ] as const) {
+      const first = must(toggleMark(v, s, e, mark));
+      const once = applied(v, first);
+      expect(applied(once, toggleMark(once, first.sel[0], first.sel[1], mark)), v).toBe(v);
+    }
+  });
+
+  it('makesNoEditOnUnequalRunsOfTheOtherMark', () => {
+    expect(toggleMark('**word*', 2, 6, '*')).toBeNull();
+    expect(toggleMark('*word**', 1, 5, '**')).toBeNull();
+    expect(toggleMark('*word', 1, 5, '**')).toBeNull();
+    expect(toggleMark('**word**', 1, 8, '*')).toBeNull();
+  });
+
   it('makesNoEditWhenOneEndTouchesAMark', () => {
     /* A word at the edge of a formatted phrase: a wrap would leave its stars as text. */
     expect(toggleMark('**spend a Hope** to', 10, 14, '**')).toBeNull();
@@ -160,7 +198,11 @@ describe('the wraps always pair', () => {
     ['Стоимость: 3', 0, 10],
     ['**spend a Hope** to', 10, 14],
     ['*Reliable:* +1', 1, 9],
-    ['**a**b', 5, 6]
+    ['**a**b', 5, 6],
+    ['*word*', 1, 5],
+    ['*word*', 0, 6],
+    ['**word**', 2, 6],
+    ['**word**', 0, 8]
   ];
 
   it.each(cases)('writes no literal star into %o at %i-%i', (value, start, end) => {

@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Обычные правила — Генератор лута — Daggerheart" [url=index.html?as=gm1#/roll/std]
+RootWebArea "Обычные правила - Генератор лута Daggerheart" [url=index.html?as=gm1#/roll/std]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -23,17 +23,17 @@ RootWebArea "Обычные правила — Генератор лута — D
   main ""
     heading "Обычные правила" [level=1]
     button "Открывается при запуске" [description=Открывается при запуске pressed=true]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–60)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
     button "На единицу больше"
-    button "Бросить 1d12 ОБЫЧНАЯ" [description=Бросить 1d12 — Обычная]
-    button "2d12 ОБЫЧНАЯ / НЕОБЫЧНАЯ" [description=Бросить 2d12 — Обычная / Необычная]
-    button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 — Необычная / Редкая]
-    button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 — Редкая / Легендарная]
-    button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 — Легендарная]
+    button "Бросить 1d12 ОБЫЧНАЯ" [description=Бросить 1d12 - Обычная]
+    button "2d12 ОБЫЧНАЯ / НЕОБЫЧНАЯ" [description=Бросить 2d12 - Обычная / Необычная]
+    button "3d12 НЕОБЫЧНАЯ / РЕДКАЯ" [description=Бросить 3d12 - Необычная / Редкая]
+    button "4d12 РЕДКАЯ / ЛЕГЕНДАРНАЯ" [description=Бросить 4d12 - Редкая / Легендарная]
+    button "5d12 ЛЕГЕНДАРНАЯ" [description=Бросить 5d12 - Легендарная]
     StaticText "ИСТОЧНИК"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
@@ -81,6 +81,10 @@ RootWebArea "Обычные правила — Генератор лута — D
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+2d12 Обычная / Необычная
+3d12 Необычная / Редкая
+4d12 Редкая / Легендарная
+5d12 Легендарная
 Core
 EN
 Hope & Fear
@@ -89,21 +93,20 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Большое Зелье Быстрого Шага
-Бросить 1d12 — Обычная
-Бросить 2d12 — Обычная / Необычная
-Бросить 3d12 — Необычная / Редкая
-Бросить 4d12 — Редкая / Легендарная
-Бросить 5d12 — Легендарная
+Бросить 1d12 Обычная
 Дополнения
+Зелье Быстрого Шага
 К содержимому
 Как это работает
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
+Оберегающая Свеча
 Обычные правила
 Открывается при запуске
 Отправить
+Первоклассный Спальный Мешок
 Поиск
 Предметы
 Расходники
@@ -118,9 +121,10 @@ daggerheart.com
 Таблицы
 Условия использования
 Установить как приложение
+Шипы
 
 ## en :: tree
-RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=gm1#/roll/std]
+RootWebArea "Standard rules - Daggerheart Loot Generator" [url=index.html?as=gm1#/roll/std]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -139,17 +143,17 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=g
   main ""
     heading "Standard rules" [level=1]
     button "Opens on start" [description=Opens on start pressed=true]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "A roll over the core book and the Hope & Fear tables."
     StaticText "ROLL RESULT (1–60)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
     button "One higher"
-    button "Roll 1d12 COMMON" [description=Roll 1d12 — Common]
-    button "2d12 COMMON / UNCOMMON" [description=Roll 2d12 — Common / Uncommon]
-    button "3d12 UNCOMMON / RARE" [description=Roll 3d12 — Uncommon / Rare]
-    button "4d12 RARE / LEGENDARY" [description=Roll 4d12 — Rare / Legendary]
-    button "5d12 LEGENDARY" [description=Roll 5d12 — Legendary]
+    button "Roll 1d12 COMMON" [description=Roll 1d12 - Common]
+    button "2d12 COMMON / UNCOMMON" [description=Roll 2d12 - Common / Uncommon]
+    button "3d12 UNCOMMON / RARE" [description=Roll 3d12 - Uncommon / Rare]
+    button "4d12 RARE / LEGENDARY" [description=Roll 4d12 - Rare / Legendary]
+    button "5d12 LEGENDARY" [description=Roll 5d12 - Legendary]
     StaticText "SOURCE"
     button "Core" [pressed=true]
     button "Hope & Fear" [pressed=true]
@@ -197,8 +201,13 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=index.html?as=g
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+2d12 Common / Uncommon
+3d12 Uncommon / Rare
+4d12 Rare / Legendary
+5d12 Legendary
 Account: gm1@example.test
 Alt. tables
+Caltrops
 Consumables
 Copy every option
 Copy image
@@ -217,20 +226,19 @@ One higher
 One lower
 Opens on start
 Page
+Premium Bedroll
 Privacy
 RU
-Roll 1d12 — Common
-Roll 2d12 — Common / Uncommon
-Roll 3d12 — Uncommon / Rare
-Roll 4d12 — Rare / Legendary
-Roll 5d12 — Legendary
+Roll 1d12 Common
 Roll result
 Search
 Share
 Skip to content
 Standard rules
+Stride Potion
 Supplements
 Tables
 Terms of use
+Warding Candle
 daggerheart.com
 ЛутDaggerheart

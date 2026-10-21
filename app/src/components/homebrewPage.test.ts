@@ -11,6 +11,7 @@ import CardForm from './CardForm.svelte';
 import HomebrewPage from './HomebrewPage.svelte';
 import { limitText } from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
+import { dict } from '../lib/dict.js';
 import type { CardContent } from '../lib/homebrew.js';
 import type { Record_ } from '../lib/types.js';
 import { COALESCE_MS } from '../lib/live.js';
@@ -401,11 +402,17 @@ describe('#/homebrew', () => {
     await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
     const del = screen.getByRole('button', { name: 'Удалить (2)' });
     await userEvent.click(del);
-    expect(await screen.findByText('Удаляем предметы: 0 из 2')).toBeInTheDocument();
+    /* The visible line; the status region says its first words once. */
+    const line = (): Element | null => container.querySelector('.note.progress');
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Удаляем предметы: 0 из 2');
+    });
     expect(del).toBeDisabled();
     await expectNoA11yViolations(container);
     gates.shift()?.();
-    expect(await screen.findByText('Удаляем предметы: 1 из 2')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Удаляем предметы: 1 из 2');
+    });
     del.click();
     expect(dialog.asked).toHaveLength(1);
     await vi.waitFor(() => {
@@ -414,7 +421,7 @@ describe('#/homebrew', () => {
     gates.shift()?.();
     expect(await screen.findByText('Удалено предметов: 2')).toBeInTheDocument();
     expect(sent).toBe(2);
-    expect(screen.queryByText(/^Удаляем предметы/)).toBeNull();
+    expect(line()).toBeNull();
   });
 
   it('stops a bulk delete at the first failure, keeps the rest and frees the button', async () => {
@@ -637,6 +644,25 @@ describe('the Sets and Rules tabs', () => {
     await userEvent.click(fold);
     expect(fold).toHaveAttribute('aria-expanded', 'false');
     expect(document.getElementById('hb-card-body-' + uuid(521))).toBeNull();
+  });
+
+  it('marks a card text written in English only on a Russian screen', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const set = held.ok ? held.cards.find((c) => c.key === SET) : undefined;
+    if (!set) throw new Error('The seed has no set card. Restore it in fake-cloud-seed.ts.');
+    const content = { ...set.content, ende: 'Two pieces: +1 to Evasion.' };
+    delete content.rud;
+    await cloud.homebrew.updateCard(set.id, { content, book_id: set.book_id }, null);
+    const { container } = page('gm1', { cloud });
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Комплект Ольхи' }));
+    const body = document.getElementById('hb-card-body-' + set.id);
+    const text = body?.querySelector('.text');
+    expect(text).toHaveAttribute('lang', 'en');
+    expect(text).toHaveTextContent('Two pieces: +1 to Evasion.');
+    expect(text?.previousElementSibling).toHaveTextContent(t.textEnOnly);
+    await expectNoA11yViolations(container);
   });
 
   it('opens and scrolls to the card the address names, and nothing for another key', async () => {
@@ -1038,6 +1064,20 @@ describe('the Sets and Rules tabs', () => {
     (cloud as ReturnType<typeof fakeCloud>).setOffline(true);
     await userEvent.click(screen.getByRole('button', { name: t.hbCreateCard }));
     expect(await screen.findByText(t.hbCreateFailed)).toBeInTheDocument();
+  });
+
+  it("redraws a card form's refusal in English after «EN»", async () => {
+    const { cloud } = page();
+    const panel = await rules();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewCard }));
+    await fill(/^Название карты/, 'Огненный след');
+    await fill(/^Текст карты/, 'Цель горит.');
+    (cloud as ReturnType<typeof fakeCloud>).setOffline(true);
+    await userEvent.click(screen.getByRole('button', { name: t.hbCreateCard }));
+    expect(await screen.findByText(t.hbCreateFailed)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(await screen.findByText(dict('en').hbCreateFailed)).toBeInTheDocument();
+    expect(screen.queryByText(t.hbCreateFailed)).toBeNull();
   });
 
   it('asks the used form for a card an item names, and toasts a failed delete', async () => {
@@ -1816,5 +1856,278 @@ describe('a rename in the language that names it', () => {
       const b = read.ok ? read.books.find((x) => x.key === 'hb_englishonlyaaaaa') : undefined;
       expect(b?.content.sections).toEqual([{ key: 'hb_englishsectaaaaa', en: 'Pliers' }]);
     });
+  });
+});
+
+/* One field of the Items tab's open filter panel, by the label it starts with. */
+function facet(label: string): HTMLElement {
+  const found = [...document.querySelectorAll<HTMLElement>('.ffilter .field')].find((f) =>
+    f.querySelector('.lbl')?.textContent.startsWith(label)
+  );
+  if (!found) throw new Error(`No filter field «${label}». Open the filter panel first.`);
+  return found;
+}
+const facetValues = (label: string): string[] =>
+  within(facet(label))
+    .getAllByRole('button')
+    .map((b) => b.textContent.trim());
+const pickIn = (label: string, value: string): Promise<void> =>
+  userEvent.click(within(facet(label)).getByRole('button', { name: value }));
+const rowNames = (): string[] =>
+  [...document.querySelectorAll<HTMLElement>('[data-row]')].map(
+    (r) => r.querySelector('.rt')?.textContent.trim() ?? ''
+  );
+const resetStrip = (): Promise<void> =>
+  userEvent.click(document.querySelector('.fbar .fclear') as HTMLElement);
+const pills = (): string[] =>
+  [...document.querySelectorAll('.fpill')].map((p) => p.textContent.replace('×', '').trim());
+
+describe('the Items tab filter', () => {
+  /* gm1 filled to twelve: the axe in «Мастерская Ольхи · Холодное оружие», generated items
+     in the source, in its «Пистоли» and in «Хоумбрю», and the seeded three in «Хоумбрю». */
+  const twelve = () => page('gm1', { fake: { fillItems: 12 } });
+
+  it('draws no strip at seven items, and the strip under the search box at eight, with no link', async () => {
+    page('gm1', { fake: { fillItems: 7 } });
+    await screen.findByText('7 предметов из 7');
+    expect(screen.queryByRole('button', { name: t.filters })).toBeNull();
+    cleanup();
+    const { container } = page('gm1', { fake: { fillItems: 8 } });
+    await screen.findByText('8 предметов из 8');
+    const toggle = screen.getByRole('button', { name: t.filters });
+    const box = screen.getByRole('searchbox');
+    expect(box.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      toggle.compareDocumentPosition(screen.getByText('8 предметов из 8')) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(screen.queryByRole('button', { name: t.filterLink })).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('filters by kind, source and the picked source sections, with the offer rule', async () => {
+    const { container } = twelve();
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    expect(facetValues(t.kindF)).toEqual([t.fItems, t.fCons, t.fEquip]);
+    expect(facetValues(t.source)).toEqual([t.srcHomebrew, 'Мастерская Ольхи']);
+    expect(facetValues(t.hbSection)).toEqual(['Пистоли', 'Холодное оружие']);
+    await expectNoA11yViolations(container);
+    await pickIn(t.source, 'Мастерская Ольхи');
+    expect(rowNames()).toHaveLength(7);
+    expect(container.querySelector('.fcount')).toHaveTextContent('7 из 12');
+    await pickIn(t.hbSection, 'Холодное оружие');
+    expect(rowNames()).toHaveLength(1);
+    expect(document.querySelector('[data-row]')).toHaveAttribute(
+      'data-row',
+      'hb_emberaxeaaaaaaaa'
+    );
+    expect(pills()).toEqual(['Мастерская Ольхи', 'Холодное оружие']);
+    /* «Хоумбрю» holds no section: picked, the section leaves force with its row. */
+    await pickIn(t.source, 'Мастерская Ольхи');
+    await pickIn(t.source, t.srcHomebrew);
+    expect(pills()).toEqual([t.srcHomebrew]);
+    expect(() => facet(t.hbSection)).toThrow();
+    expect(rowNames()).toHaveLength(5);
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws «Ничего не найдено» with «Сбросить всё» for a pick that draws no row, the count kept', async () => {
+    const { container } = twelve();
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    await pickIn(t.kindF, t.fEquip);
+    await pickIn(t.source, t.srcHomebrew);
+    const empty = screen.getByText(t.nothing).closest('.empty') as HTMLElement;
+    expect(screen.getByText('12 предметов из 12')).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: t.pickAll })).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(empty).getByRole('button', { name: t.resetAll }));
+    expect(rowNames()).toHaveLength(12);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: t.filters })).toHaveFocus();
+    });
+  });
+
+  it('drops a tick that a pick hides, and deletes and moves the drawn ticked rows only', async () => {
+    const { dialog } = twelve();
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Топор Тлеющих Углей' }));
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    await pickIn(t.source, 'Мастерская Ольхи');
+    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeInTheDocument();
+    await pickIn(t.source, 'Мастерская Ольхи');
+    expect(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' })).not.toBeChecked();
+    await pickIn(t.source, 'Мастерская Ольхи');
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (1)' }));
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), t.srcHomebrew);
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить' }));
+    expect(await screen.findByText('Перемещено предметов: 1')).toBeInTheDocument();
+    await resetStrip();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await pickIn(t.kindF, t.fCons);
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+    expect(dialog.asked.at(-1)).toMatch(/^Удалить предмет/);
+    expect(await screen.findByText('Удалено предметов: 1')).toBeInTheDocument();
+    await resetStrip();
+    expect(screen.getByRole('checkbox', { name: 'Кольцо с гравировкой' })).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Настой кузнеца' })).toBeNull();
+  });
+
+  it('starts empty each time the tab opens', async () => {
+    twelve();
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    await pickIn(t.kindF, t.fEquip);
+    expect(pills()).toEqual([t.fEquip]);
+    await sources();
+    await items();
+    expect(pills()).toEqual([]);
+    expect(screen.getByRole('button', { name: t.filters })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(rowNames()).toHaveLength(12);
+  });
+
+  it('folds a section row of 22 values after 10', async () => {
+    const { container } = page('gm1', { fake: { fillItems: 66, fillSections: 20 } });
+    await screen.findByText('66 предметов из 66');
+    await userEvent.click(screen.getByRole('button', { name: t.filters }));
+    const fold = within(facet(t.hbSection)).getByRole('button', { name: 'и ещё 12' });
+    await userEvent.click(fold);
+    expect(fold).toHaveAccessibleName(t.relLess);
+    expect(facetValues(t.hbSection)).toHaveLength(23);
+    await expectNoA11yViolations(container);
+  });
+});
+
+describe('the bulk delete status and the focus after a press removes itself', () => {
+  it('says the start once, counts on screen, and ends with the toast', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    const gates: (() => void)[] = [];
+    cloud.homebrew.removeItem = async (id) => {
+      await new Promise<void>((go) => gates.push(go));
+      return remove(id);
+    };
+    const { container } = page('gm1', { cloud });
+    await screen.findByText('4 предмета из 100');
+    for (const name of ['Кольцо с гравировкой', 'Настой кузнеца', 'Whispering Cap']) {
+      await userEvent.click(screen.getByRole('checkbox', { name }));
+    }
+    const region = (): string =>
+      [...container.querySelectorAll('.said[role="status"]')]
+        .map((r) => r.textContent.trim())
+        .join('|');
+    expect(region()).toBe('');
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
+    const line = (): Element | null => container.querySelector('.note.progress');
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Удаляем предметы: 0 из 3');
+    });
+    expect(line()).not.toHaveAttribute('role');
+    expect(region()).toBe('Удаляем предметы: 0 из 3');
+    expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
+    gates.shift()?.();
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Удаляем предметы: 1 из 3');
+    });
+    expect(region()).toBe('Удаляем предметы: 0 из 3');
+    for (let i = 0; i < 2; i++) {
+      await vi.waitFor(() => {
+        expect(gates).toHaveLength(1);
+      });
+      gates.shift()?.();
+    }
+    expect(await screen.findByText('Удалено предметов: 3')).toBeInTheDocument();
+    expect(region()).toBe('');
+    /* A row is left: focus is back on «Выбрать все». */
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
+    });
+  });
+
+  it('hands focus to «Новый предмет» when the delete leaves no row (rule 20)', async () => {
+    const { container } = page();
+    await screen.findByText('4 предмета из 100');
+    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (4)' }));
+    expect(await screen.findByText(t.hbEmpty)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('hands focus to «Выбрать все» after a move that folds the panel', async () => {
+    page();
+    await screen.findByText('4 предмета из 100');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить (1)' }));
+    await userEvent.selectOptions(screen.getByLabelText('Источник'), 'Мастерская Ольхи');
+    await userEvent.click(screen.getByRole('button', { name: 'Переместить' }));
+    expect(await screen.findByText('Перемещено предметов: 1')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
+    });
+  });
+});
+
+describe('the page head', () => {
+  const homeOff = (): HTMLElement => screen.getByRole('button', { name: t.homeHint });
+
+  it('draws the home button and «?» on every tab, signed out and on a failed load', async () => {
+    page();
+    await screen.findByText('4 предмета из 100');
+    expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: t.helpHint })).toBeInTheDocument();
+    for (const open of [sources, sets, rules]) {
+      await open();
+      expect(homeOff()).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: t.helpHint })).toBeInTheDocument();
+    }
+    cleanup();
+    page(null);
+    await screen.findByText(t.hbSignIn);
+    expect(homeOff()).toBeInTheDocument();
+    cleanup();
+    page('gm1', { cloud: fakeCloud(SEED, 'gm1', { offline: true }) });
+    await screen.findByText(t.hbLoadFailed);
+    expect(homeOff()).toBeInTheDocument();
+  });
+
+  it('pins #/homebrew from any tab, and a second press unpins it', async () => {
+    const { container } = page('gm1', { route: '#/homebrew/sets' });
+    await screen.findByRole('heading', { level: 1, name: t.myItems });
+    await userEvent.click(homeOff());
+    const on = screen.getByRole('button', { name: t.homeOn });
+    expect(on).toHaveAttribute('aria-pressed', 'true');
+    expect(await screen.findByText(t.homeSet)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await items();
+    expect(screen.getByRole('button', { name: t.homeOn })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await userEvent.click(screen.getByRole('button', { name: t.homeOn }));
+    expect(homeOff()).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('opens the help in both languages, five paragraphs with bold leads', async () => {
+    const { container } = page();
+    await screen.findByText('4 предмета из 100');
+    await userEvent.click(screen.getByRole('button', { name: t.helpHint }));
+    const leads = [...container.querySelectorAll('.helpbox p b')].map((b) => b.textContent);
+    expect(leads).toEqual([
+      'Предметы.',
+      'Источники.',
+      'Комплекты.',
+      'Карты правил.',
+      'Импорт из файла.'
+    ]);
+    await expectNoA11yViolations(container);
   });
 });

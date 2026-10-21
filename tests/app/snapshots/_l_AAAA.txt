@@ -3,7 +3,7 @@
 # why: a packed link that cannot be unpacked: the same bad-link page as #/l/zzzz, address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/~AAAA]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/~AAAA]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

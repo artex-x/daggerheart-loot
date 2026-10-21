@@ -214,7 +214,7 @@
     color: var(--muted);
   }
 
-  /* Visually hidden, as `.lsaid`: no text marks a GM-only row on screen
+  /* Visually hidden, as `StatusRegion.svelte`: no text marks a GM-only row on screen
      (docs/specs/FEATURES.md, "Account and browser lists"). */
   .row-main .rt .gmstate {
     position: absolute;

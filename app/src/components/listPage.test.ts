@@ -353,7 +353,7 @@ describe('the money picker', () => {
     const router = memoryRouter('#/lists/a');
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { router, storage }) });
-    expect(screen.getAllByTitle('7 мешков 5 горстей')[0]!).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Подсказка: Цена' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
     expect(readLists(storage)[0]?.money).toBe('coin');
@@ -361,21 +361,47 @@ describe('the money picker', () => {
     await waitFor(() => {
       expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, money: 'coin' }, true));
     });
-    expect(screen.queryAllByTitle('7 мешков 5 горстей')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'Подсказка: Цена' })).toBeNull();
+    expect(screen.queryByText('7 мешков 5 горстей')).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Как в книге' }));
     expect(readLists(storage)[0]?.money).toBeUndefined();
   });
 
-  it('draws the gold hint as a span mirroring itself into title, not a button', () => {
-    /* Ported from tests/lists2.js:322-330: the "?" is a visible cue that a
-       tooltip exists, not something to press. */
+  it('names the price «Цена» and opens its conversion from a «?» by click and by keyboard', async () => {
     const { container } = render(App, { env: withA() });
-    const hint = container.querySelector('[data-goldhint]');
-    expect(hint?.tagName).toBe('SPAN');
-    const value = hint?.getAttribute('data-goldhint');
-    expect(value).toBe('7 мешков 5 горстей');
-    expect(hint).toHaveAttribute('title', value);
+    /* One «?», the priced row's: a row with no price has nothing to convert. */
+    expect(screen.getAllByRole('spinbutton', { name: 'Цена' })).toHaveLength(3);
+    const help = screen.getByRole('button', { name: 'Подсказка: Цена' });
+    expect(help.closest('label')).toBeNull();
+    expect(help).not.toHaveAttribute('title');
+    const hint = document.getElementById(help.getAttribute('aria-controls') ?? '');
+    expect(hint).toHaveTextContent('7 мешков 5 горстей');
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    expect(hint).not.toBeVisible();
+    await expectNoA11yViolations(container);
+    await userEvent.click(help);
+    expect(help).toHaveAttribute('aria-expanded', 'true');
+    expect(hint).toBeVisible();
+    await expectNoA11yViolations(container);
+    help.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(help).toHaveAttribute('aria-expanded', 'false');
+    expect(hint).not.toBeVisible();
+    await userEvent.keyboard(' ');
+    expect(hint).toBeVisible();
+  });
+
+  it('follows a price typed while the conversion is open', async () => {
+    render(App, { env: withA() });
+    await userEvent.click(screen.getByRole('button', { name: 'Подсказка: Цена' }));
+    const gold = screen.getAllByRole('spinbutton', { name: 'Цена' })[1] as HTMLElement;
+    await userEvent.clear(gold);
+    await userEvent.type(gold, '1500');
+    const help = screen.getByRole('button', { name: 'Подсказка: Цена' });
+    const hint = document.getElementById(help.getAttribute('aria-controls') ?? '');
+    expect(hint).toBeVisible();
+    expect(hint).toHaveTextContent('1 сундук 5 мешков');
   });
 
   it('opens the help with five bold runs on its own "?"', async () => {
@@ -931,7 +957,7 @@ describe('a row', () => {
     const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
     render(App, { env: at('#/lists/a', { storage }) });
 
-    expect(screen.getAllByTitle('7 мешков 5 горстей')[0]!).toBeInTheDocument();
+    expect(screen.getByText('7 мешков 5 горстей')).toBeInTheDocument();
 
     const golds = screen.getAllByPlaceholderText('—');
     const goldForCc1 = golds[1] as HTMLElement; // ci1, cc1, q1 in that order
@@ -940,7 +966,7 @@ describe('a row', () => {
     expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(231);
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
-    expect(screen.queryByTitle(/мешк/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/мешк/)).not.toBeInTheDocument();
   });
 
   it('holds a typed quantity to the most a list link carries', async () => {
@@ -1785,7 +1811,7 @@ describe('an account list', () => {
     const live = openAs(fakeCloud(SEED, 'gm1'));
     await screen.findByRole('textbox', { name: 'Название списка' });
     const sync = (c: HTMLElement): Element | undefined =>
-      [...c.querySelectorAll('.lsaid')].at(-1);
+      [...c.querySelectorAll('.said')].at(-1);
     await waitFor(() => {
       expect(sync(live.container)).toHaveAttribute('data-live', 'live');
     });
@@ -1897,7 +1923,7 @@ describe('an account list', () => {
       expect(sub(container)).toBe('4 позиции из 100 · Не сохраненоПовторить');
     });
     expect(input).toHaveValue('Лавка кузнеца!');
-    const status = [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
+    const status = [...container.querySelectorAll('.said')].map((s) => s.textContent.trim());
     expect(status).toContain('Не сохранено');
     await expectNoA11yViolations(container);
     cloud.setOffline(false);
@@ -1905,7 +1931,8 @@ describe('an account list', () => {
     await waitFor(() => {
       expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
     });
-    const said = () => [...container.querySelectorAll('.lsaid')].map((s) => s.textContent);
+    const said = () =>
+      [...container.querySelectorAll('.said')].map((s) => s.textContent.trim());
     expect(said()).toContain('Сохранено');
     const read = await cloud.lists.list();
     expect(read.ok && read.lists.find((l) => l.name === 'Лавка кузнеца!')).toBeTruthy();
@@ -2050,7 +2077,8 @@ describe('a browser list after the cutoff, and while the move is due', () => {
         'Просмотр'
       ]);
     expect(container.querySelectorAll('.npair [role="toolbar"]').length).toBeGreaterThan(0);
-    expect(screen.queryByRole('button', { name: /^Подсказка: / })).toBeNull();
+    /* The price «?» stays: the conversion is information, not an edit. */
+    expect(screen.queryByRole('button', { name: /^Подсказка: (?!Цена$)/ })).toBeNull();
     for (const chip of screen.getAllByRole('button', { name: /Мешками|Монетами/ }))
       expect(chip).toBeDisabled();
     expect(
@@ -2220,11 +2248,15 @@ describe('a browser list after the cutoff, and while the move is due', () => {
     const cloud = fakeCloud(SEED, 'gm1', { offline: true });
     const router = memoryRouter('#/lists/a');
     render(App, { env: withA('#/lists/a', { cloud, router }) });
+    /* The box draws it, and the status region mounted before the box says it. */
     expect(
-      await screen.findByText(
+      await screen.findAllByText(
         'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
       )
-    ).toBeInTheDocument();
+    ).toHaveLength(2);
+    expect(document.querySelector('.slot .box.warn')).toHaveTextContent(
+      'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
+    );
     expect(screen.queryByText('Списки живут только в этом браузере.')).toBeNull();
   });
 });

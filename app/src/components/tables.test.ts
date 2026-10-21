@@ -1187,6 +1187,65 @@ describe('the equipment tables', () => {
     ).toBeInTheDocument();
   });
 
+  it('hands focus to the next pill, the previous one, then «Фильтры» as pills drop (rule 20)', async () => {
+    const env = fakeEnv({
+      router: memoryRouter('#/tables/eq_weapon/f_tier-1-2.cls-mag'),
+      data: fakeData(LOOT)
+    });
+    const { container } = render(App, { env });
+    const pill = (val: string): HTMLElement =>
+      container.querySelector<HTMLElement>(`.fpill[data-val="${val}"]`) as HTMLElement;
+    await userEvent.click(pill('cls:mag'));
+    await waitFor(() => {
+      expect(pill('tier:2')).toHaveFocus();
+    });
+    await userEvent.click(pill('tier:1'));
+    await waitFor(() => {
+      expect(pill('tier:2')).toHaveFocus();
+    });
+    await userEvent.click(pill('tier:2'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    expect(env.router.hash()).toBe('#/tables/eq_weapon');
+    await expectNoA11yViolations(container);
+  });
+
+  it('hands focus to «Фильтры» after «Сбросить всё», in the strip and in the empty state', async () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon/f_tier-2'),
+        data: fakeData(LOOT)
+      })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+    /* The link opened the panel, and the reset leaves it open. */
+    await userEvent.click(screen.getByRole('button', { name: 'Магическое' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Одноручное' }));
+    const empty = screen.getByText('Ничего не найдено').closest('.empty') as HTMLElement;
+    await userEvent.click(within(empty).getByRole('button', { name: 'Сбросить всё' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveFocus();
+    });
+  });
+
+  it('keeps its three link controls on a catalog table', () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/eq_weapon/f_tier-2'),
+        data: fakeData(LOOT)
+      })
+    });
+    expect(screen.getByRole('button', { name: 'Ссылка на таблицу' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: dict('ru').filterLink })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole('button', { name: dict('ru').copySection }).length
+    ).toBeGreaterThan(0);
+  });
+
   it('searching the type word keeps every weapon - the search fix', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })

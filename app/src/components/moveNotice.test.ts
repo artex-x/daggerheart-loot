@@ -31,6 +31,13 @@ function made(migrated: object | null, as: string | null = GM1.id) {
   return { app, storage };
 }
 
+/* The notice box draws with the page, so it is no live region of its own (rule 19). */
+const box = (): HTMLElement => {
+  const found = document.querySelector<HTMLElement>('.box');
+  if (!found) throw new Error('No notice box is drawn.');
+  return found;
+};
+
 describe('MoveNotice', () => {
   it('names the moved lists, and «Скрыть» clears them from the key', async () => {
     const { app, storage } = made({
@@ -39,10 +46,10 @@ describe('MoveNotice', () => {
       notice: ['Клад дракона', 'Лавка в порту']
     });
     const { container } = render(MoveNotice, { app });
-    expect(screen.getByRole('status')).toHaveTextContent(MOVED);
+    expect(box()).toHaveTextContent(MOVED);
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Скрыть' }));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('.box')).toBeNull();
     expect(JSON.parse(storage.get('dhloot.migrated.v1') ?? '{}')).toEqual({
       owner: GM1.id,
       lists: { a: 'x', b: 'y' }
@@ -52,11 +59,11 @@ describe('MoveNotice', () => {
   it('says the damaged backup alone, and «Скрыть» marks it shown', async () => {
     const { app, storage } = made({ owner: GM1.id, lists: {}, bad: true });
     const { container } = render(MoveNotice, { app });
-    expect(screen.getByRole('status')).toHaveTextContent(BAD);
-    expect(screen.getByRole('status')).not.toHaveTextContent('перенесены');
+    expect(box()).toHaveTextContent(BAD);
+    expect(box()).not.toHaveTextContent('перенесены');
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Скрыть' }));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('.box')).toBeNull();
     expect(JSON.parse(storage.get('dhloot.migrated.v1') ?? '{}')).toMatchObject({ bad: false });
   });
 
@@ -68,7 +75,7 @@ describe('MoveNotice', () => {
       bad: true
     });
     const { container } = render(MoveNotice, { app });
-    expect(screen.getByRole('status')).toHaveTextContent(MOVED + ' ' + BAD);
+    expect(box()).toHaveTextContent(MOVED + ' ' + BAD);
     await expectNoA11yViolations(container);
   });
 
@@ -95,7 +102,7 @@ describe('MoveNotice', () => {
     const { app } = made({ owner: GM1.id, lists: {}, notice: ['Клад'] });
     app.setLang('en');
     render(MoveNotice, { app });
-    expect(screen.getByRole('status')).toHaveTextContent(
+    expect(box()).toHaveTextContent(
       'Lists from this browser were moved to your account: "Клад".'
     );
     expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
@@ -127,8 +134,8 @@ describe('the move banner', () => {
 
   it('asks a signed-out reader with browser lists to sign in, before the date', async () => {
     const { container } = render(MoveNotice, { app: signedOut() });
-    const box = screen.getByRole('status');
-    expect(box).toHaveTextContent(BANNER);
+    const banner = box();
+    expect(banner).toHaveTextContent(BANNER);
     const signIn = screen.getByRole('button', { name: 'Войти и перенести списки' });
     const hide = screen.getByRole('button', { name: 'Скрыть напоминание' });
     expect(signIn).toHaveTextContent(/^Войти$/);
@@ -175,25 +182,25 @@ describe('the move banner', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Войти и перенести списки' }));
     expect(app.hash).toBe('#/account');
     expect(app.signInFor?.hash).toBe('#/roll/dread');
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('.box')).toBeNull();
   });
 
   it('hides on «Скрыть», and a navigation does not bring it back', async () => {
     const app = signedOut();
     render(MoveNotice, { app });
     await userEvent.click(screen.getByRole('button', { name: 'Скрыть напоминание' }));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('.box')).toBeNull();
     app.go('#/search');
     app.setLang('en');
     await Promise.resolve();
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(document.querySelector('.box')).toBeNull();
   });
 
   it('says it in English', () => {
     const app = signedOut();
     app.setLang('en');
     render(MoveNotice, { app });
-    expect(screen.getByRole('status')).toHaveTextContent(
+    expect(box()).toHaveTextContent(
       'Your lists are stored only in this browser. Sign in before 26 October 2026 and they move to your account. After that date the app stops showing them.'
     );
     expect(

@@ -107,17 +107,27 @@ async function settle(page) {
 }
 
 /**
- * The accessible name of an element, the way a screen reader would say it.
+ * The accessible name of an element, the way a screen reader would say it:
+ * `aria-labelledby`, `aria-label`, the text, then `title` - a titled button is
+ * named by its text, as the goldens draw it (`button "Печать"`).
  *
  * Deliberately not a CSS selector: a class name is an implementation detail,
  * so anything a spec grips has to be something a person can see.
  */
-const NAME_FN = `(el) => (
-  el.getAttribute('aria-label') ||
-  el.getAttribute('title') ||
-  el.textContent ||
-  ''
-).replace(/\\s+/g, ' ').trim()`;
+const NAME_FN = `(el) => {
+  const tidy = (s) => (s || '').replace(/\\s+/g, ' ').trim();
+  const by = (el.getAttribute('aria-labelledby') || '')
+    .split(/\\s+/)
+    .map((id) => (id ? document.getElementById(id)?.textContent : ''))
+    .filter(Boolean)
+    .join(' ');
+  return (
+    tidy(by) ||
+    tidy(el.getAttribute('aria-label')) ||
+    tidy(el.textContent) ||
+    tidy(el.getAttribute('title'))
+  );
+}`;
 
 /* `url` is the page to drive; a caller with its own server (tests/e2e/)
    passes it and never reads `TARGETS`, whose getter needs lib.js's server.
@@ -179,14 +189,17 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * pinned before the cutoff (`ports/clock.ts`). `holdToasts` opens with
      * `?toasts=held`: a toast stays until the next one replaces it. `items`
      * opens with `?items=<n>`: the fake fills the signed-in user's homebrew to
-     * n items and sets the item limit to n (`fillItems`).
+     * n items and sets the item limit to n (`fillItems`). `lang` opens with
+     * `?lang=<ru|en>`: a signed-in user's stored preferences take that language.
      */
-    async open(route, { as, today, holdToasts, items } = {}) {
+    async open(route, { as, today, holdToasts, items, sections, lang } = {}) {
       const query = new URLSearchParams();
       if (as) query.set('as', as);
+      if (lang) query.set('lang', lang);
       if (today) query.set('today', today);
       if (holdToasts) query.set('toasts', 'held');
       if (items) query.set('items', String(items));
+      if (sections) query.set('sections', String(sections));
       const qs = query.toString();
       const search = qs ? '?' + qs : '';
       try {

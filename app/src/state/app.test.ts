@@ -8,7 +8,7 @@
  * because those are the rules that would be re-derived, differently, by whoever
  * writes that screen. */
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   bundleText,
   ENTRIES_MAX,
@@ -133,6 +133,8 @@ describe('settings are read as untrusted data', () => {
       '#/lists/abc',
       '#/print/w1-w2',
       '#/tables/weapons',
+      '#/homebrew/sets',
+      '#/homebrew/new',
       'nonsense'
     ]) {
       const app = new AppState(at('', { storage: stored({ [HOME_KEY]: bad }) }));
@@ -145,6 +147,14 @@ describe('settings are read as untrusted data', () => {
       const app = new AppState(at('', { storage: stored({ [HOME_KEY]: good }) }));
       expect(app.home, good).toBe(good);
     }
+  });
+
+  it('accepts #/homebrew, the one pin of every tab of «Мои предметы»', () => {
+    const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/homebrew' }) }));
+    expect(app.home).toBe('#/homebrew');
+    expect(app.setHome('#/homebrew')).toBe(true);
+    expect(app.setHome('#/homebrew/rules')).toBe(false);
+    expect(app.home).toBe('#/homebrew');
   });
 
   it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
@@ -204,6 +214,30 @@ describe('the address on the way in', () => {
     );
     expect(app.hash).toBe('#/roll/wondrous_environments');
     expect(router.stack).toEqual(['#/roll/wondrous_environments']);
+  });
+
+  it('opens a #/homebrew pin at boot, signed in, signed out and with no sign-in configured', () => {
+    for (const cloud of [fakeCloud(SEED, 'gm1'), fakeCloud(SEED), null]) {
+      const app = new AppState(
+        at('', { cloud, storage: stored({ [HOME_KEY]: '#/homebrew' }) })
+      );
+      expect(app.hash).toBe('#/homebrew');
+      expect(app.route).toEqual({ kind: 'homebrew', tab: 'items', key: null });
+      /* With no sign-in configured there is no homebrew store: `App.svelte` draws not found. */
+      expect(app.homebrew === null).toBe(cloud === null);
+      app.stop();
+    }
+  });
+
+  it('takes a #/homebrew pin from the account row', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.prefs.save({ lang: 'ru', view: 'grid', home: '#/homebrew' });
+    const app = new AppState(at('#/roll/std', { cloud }));
+    app.start();
+    await vi.waitFor(() => {
+      expect(app.home).toBe('#/homebrew');
+    });
+    app.stop();
   });
 
   it('never overrides a real address with a preference', () => {
@@ -1282,6 +1316,130 @@ describe('the toast', () => {
     expect(app.toast?.action?.label).toBe('Undo');
     expect(app.toast?.action?.run).toBe(run);
     vi.useRealTimers();
+  });
+});
+
+describe('the toast slot, owner 2026-10-08', () => {
+  const made = (clock?: { now: () => number; holdsToasts: () => boolean }) =>
+    new AppState(fakeEnv({ router: memoryRouter('#/i/ci1'), ...(clock ? { clock } : {}) }));
+  const act = { label: () => 'Вернуть', run: vi.fn() };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('replaces a plain toast at once with a plain one, an error or an action', () => {
+    const app = made();
+    app.say(() => 'один');
+    app.say(() => 'два');
+    expect(app.toast?.msg).toBe('два');
+    app.say(() => 'ошибка', { error: true });
+    expect(app.toast?.mode).toBe('err');
+    app.hideToast();
+    app.say(() => 'один');
+    app.say(() => 'убрано', { action: act });
+    expect(app.toast?.mode).toBe('act');
+  });
+
+  it('holds a plain toast said during an error until the error ends, then shows it 1600ms', () => {
+    const app = made();
+    app.say(() => 'ошибка', { error: true });
+    vi.advanceTimersByTime(1000);
+    app.say(() => 'потом');
+    expect(app.toast?.msg).toBe('ошибка');
+    vi.advanceTimersByTime(1599);
+    expect(app.toast?.msg).toBe('ошибка');
+    vi.advanceTimersByTime(1);
+    expect(app.toast?.msg).toBe('потом');
+    expect(app.toast?.mode).toBe('');
+    vi.advanceTimersByTime(1599);
+    expect(app.toast?.msg).toBe('потом');
+    vi.advanceTimersByTime(1);
+    expect(app.toast).toBeNull();
+  });
+
+  it('holds a plain toast said during an action toast until 7000ms, the undo press or the close', () => {
+    const app = made();
+    app.say(() => 'убрано', { action: act });
+    app.say(() => 'потом');
+    vi.advanceTimersByTime(6999);
+    expect(app.toast?.msg).toBe('убрано');
+    vi.advanceTimersByTime(1);
+    expect(app.toast?.msg).toBe('потом');
+    app.hideToast();
+    app.say(() => 'убрано', { action: act });
+    app.say(() => 'после отмены');
+    /* The undo press and the close both end the toast through `hideToast`. */
+    app.hideToast();
+    expect(app.toast?.msg).toBe('после отмены');
+  });
+
+  it('replaces an error or an action at once with an error or an action, a waiting plain one kept', () => {
+    const app = made();
+    app.say(() => 'ошибка', { error: true });
+    app.say(() => 'потом');
+    app.say(() => 'убрано', { action: act });
+    expect(app.toast?.msg).toBe('убрано');
+    app.say(() => 'вторая ошибка', { error: true });
+    expect(app.toast?.msg).toBe('вторая ошибка');
+    vi.advanceTimersByTime(2600);
+    expect(app.toast?.msg).toBe('потом');
+  });
+
+  it('keeps one waiting plain toast: the newer one takes the place', () => {
+    const app = made();
+    app.say(() => 'ошибка', { error: true });
+    app.say(() => 'первая');
+    app.say(() => 'вторая');
+    vi.advanceTimersByTime(2600);
+    expect(app.toast?.msg).toBe('вторая');
+    vi.advanceTimersByTime(1600);
+    expect(app.toast).toBeNull();
+  });
+
+  it('keeps a plain toast waiting while the action toast is held, and shows it when the hold ends', () => {
+    const app = made();
+    app.say(() => 'убрано', { action: act });
+    app.holdToast(true);
+    app.say(() => 'потом');
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('убрано');
+    app.holdToast(false);
+    vi.advanceTimersByTime(7000);
+    expect(app.toast?.msg).toBe('потом');
+  });
+
+  it('shows a waiting plain toast in the language switched to', () => {
+    const app = made();
+    app.say(() => 'ошибка', { error: true });
+    app.say((t) => t.homeSet);
+    app.setLang('en');
+    vi.advanceTimersByTime(2600);
+    expect(app.toast?.msg).toBe(dict('en').homeSet);
+  });
+
+  it('drops a waiting plain toast on stop, leaving no timer', () => {
+    const app = made();
+    app.say(() => 'ошибка', { error: true });
+    app.say(() => 'потом');
+    app.stop();
+    expect(app.toast).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(10_000);
+    expect(app.toast).toBeNull();
+  });
+
+  it('keeps the rule on a clock that holds toasts: a plain toast after an error waits', () => {
+    const app = made({ now: () => 0, holdsToasts: () => true });
+    app.say(() => 'ошибка', { error: true });
+    app.say(() => 'потом');
+    vi.advanceTimersByTime(60_000);
+    expect(app.toast?.msg).toBe('ошибка');
+    app.hideToast();
+    expect(app.toast?.msg).toBe('потом');
   });
 });
 
@@ -4538,6 +4696,32 @@ describe('printing', () => {
     reloaded.app.stop();
   });
 
+  it("resolves a clashing key to the record the page draws: another account's on #/h/ and #/s/, the own one on #/tables", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app } = started(cloud, '#/tables/homebrew');
+    await flush();
+    const store = app.homebrew;
+    if (!store) throw new Error('no homebrew store');
+    const ids = { id: store.newIds().id, key: AXE };
+    expect(await store.createItem(ids, null, { kind: 'item', ru: 'Свой топор' })).toEqual({
+      ok: true
+    });
+    expect(app.printEntriesOf([AXE]).entries).toEqual([{ h: ids.id }]);
+    app.go('#/h/' + AXE_ID);
+    /* ItemPage opens the view; this case has no page. */
+    await app.itemView?.open(AXE_ID, app.user?.userId ?? null);
+    expect(app.itemView?.record?.id).toBe(AXE);
+    expect(app.printEntriesOf([AXE]).entries).toEqual([{ h: AXE_ID }]);
+    await app.print([AXE]);
+    expect(await entriesOf(cloud, app.hash)).toMatchObject([{ hid: AXE_ID }]);
+    app.go('#/s/player-token-1');
+    await app.sharedView?.open('player-token-1', GM2);
+    expect(app.printEntriesOf([AXE]).entries).toEqual([{ h: AXE_ID }]);
+    app.go('#/tables/homebrew');
+    expect(app.printEntriesOf([AXE]).entries).toEqual([{ h: ids.id }]);
+    app.stop();
+  });
+
   it('makes the set a signed-out press left once the sign-in has read the lists', async () => {
     const { app } = started(fakeCloud(SEED), '#/i/ci1');
     await flush();
@@ -4623,11 +4807,21 @@ describe("another tab's settings", () => {
   it('falls back on a bad value and writes nothing back', () => {
     const { app, storage } = signedOut(null);
     const set = vi.spyOn(storage, 'set');
+    /* A good value first, so the fallback is a change the case can see. */
+    storage.set(LANG_KEY, 'en');
+    storage.set(HOME_KEY, '#/tables/other_frames');
+    storage.set(PREFS_KEY, '{"view":"grid"}');
+    storage.fireExternalChange(null);
+    expect([app.lang, app.home, app.tablesView]).toEqual([
+      'en',
+      '#/tables/other_frames',
+      'grid'
+    ]);
     storage.set(LANG_KEY, 'de');
     storage.set(HOME_KEY, '#/i/ci1');
     storage.set(PREFS_KEY, '{not');
     set.mockClear();
-    storage.fireExternalChange(LANG_KEY);
+    storage.fireExternalChange(null);
     expect([app.lang, app.home, app.tablesView]).toEqual(['ru', '#/roll/std', 'list']);
     expect(set).not.toHaveBeenCalled();
     app.stop();

@@ -603,7 +603,8 @@ const COVERED: Record<string, string> = {
   'Toast.svelte':
     'the toast the add-to-list press raises, in the state above, and shell.test.ts',
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
-  'FilterBar.svelte': 'tables.test.ts, and the filter panel state below',
+  'FilterBar.svelte':
+    'tables.test.ts, filterBar.test.ts with the fold closed and open, and the filter panel state below',
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
@@ -660,11 +661,17 @@ const COVERED: Record<string, string> = {
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
   'MoveNotice.svelte': 'moveNotice.test.ts in every form, and the moved-lists state above',
   'MoveStatus.svelte': 'moveStatus.test.ts in every form, and listsPage.test.ts',
-  'NoticeBox.svelte': 'through MoveNotice and MoveStatus, in their tests and the state above',
+  'NoticeBox.svelte':
+    'through MoveNotice and MoveStatus, in their tests and the state above; the editor and print page clip warnings',
+  'StatusRegion.svelte':
+    'itemPage, sharedListPage, listPage, requestsPanel, moveStatus, homebrewEditor, printPage and homebrewPage tests, each with axe',
+  'CardVector.svelte':
+    "printPage.test.ts's axe cases of both layouts and sizes, the 180-weapon sheet, and homebrewPrintPreview.test.ts",
   'NoData.svelte': "record.test.ts's no-data case, and every page test's own",
   'NumberField.svelte': 'the number row on every roll page',
   'NumRow.svelte': 'the number row on every roll page, and the lists index above',
-  'PageHead.svelte': 'the heading of every roll page, with both help states above',
+  'PageHead.svelte':
+    'the heading of every roll page, with both help states above; homebrewPage.test.ts pinned and open',
   'PickerRollPanel.svelte':
     'sections.test.ts: Vault of Ages, communities and the realms, and in English above',
   'PageTitle.svelte':
@@ -698,7 +705,8 @@ const COVERED: Record<string, string> = {
   'SearchBox.svelte':
     "the tables toolbar in tables.test.ts, and the search page's own box below",
   'SearchPage.svelte': 'searchPage.test.ts, and the searched state with a kind off below',
-  'SectionHead.svelte': "tables.test.ts's sectioned-body axe check",
+  'SectionHead.svelte':
+    "tables.test.ts's sectioned-body axe check; homebrewCatalog.test.ts with no copy button",
   'SelBar.svelte': 'the state above, and tables.test.ts',
   'SourcePicker.svelte':
     "homebrewImport.test.ts's «Куда» rows, and the move panel open in homebrewPage.test.ts",

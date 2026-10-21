@@ -12,13 +12,7 @@ import { BOOK_NAME_MAX } from '../lib/homebrew.js';
 import type { Record_ } from '../lib/types.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import {
-  fakeClipboard,
-  fakeData,
-  fakeEnv,
-  memoryRouter,
-  memoryStorage
-} from '../ports/index.js';
+import { fakeData, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 
 afterEach(cleanup);
@@ -88,8 +82,6 @@ function page(
   opts: {
     as?: 'gm1' | 'gm2' | 'gm3' | null;
     cloud?: FakeCloud | null;
-    clipboard?: ReturnType<typeof fakeClipboard>;
-    preview?: string;
   } = {}
 ) {
   const as = opts.as === undefined ? 'gm1' : opts.as;
@@ -105,9 +97,7 @@ function page(
       cloud,
       router,
       storage: memoryStorage(),
-      data: fakeData(LOOT),
-      ...(opts.clipboard ? { clipboard: opts.clipboard } : {}),
-      ...(opts.preview ? { preview: opts.preview } : {})
+      data: fakeData(LOOT)
     })
   });
   return { ...view, cloud, router };
@@ -388,35 +378,25 @@ describe('#/tables/homebrew', () => {
     expect(boxes().filter((b) => b.checked)).toHaveLength(0);
   });
 
-  it('copies the chosen chip as the table link, and the bare address with one source', async () => {
-    const clip = fakeClipboard();
-    page('#/tables/homebrew/f_src-hb', { clipboard: clip });
-    await waitFor(() => {
-      expect(rowIds()).toHaveLength(3);
-    });
-    await userEvent.click(screen.getByRole('button', { name: t.tableLink }));
-    expect(clip.last.text).toMatch(/#\/tables\/homebrew\/f_src-hb$/);
+  it('hands out no link: no table link, no filter link and no section link (rule 17)', async () => {
+    const cloud = await withGuild();
+    const { container } = page('#/tables/homebrew/f_src-' + GUILD + '.kind-item', { cloud });
+    await screen.findAllByText('Гильдейский лук');
+    expect(pill()).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: t.tableLink })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.filterLink })).toBeNull();
+    expect(screen.queryByRole('button', { name: t.copySection })).toBeNull();
+    expect(container.querySelector('.flink, .tsec-link')).toBeNull();
+    expect(headings().length).toBeGreaterThan(0);
+    await userEvent.click(screen.getByRole('button', { name: t.viewGrid }));
+    expect(container.querySelector('.tsec-link')).toBeNull();
     cleanup();
-    const one = fakeClipboard();
-    page('#/tables/homebrew', { as: 'gm3', clipboard: one });
+    page('#/tables/homebrew', { as: 'gm3' });
     await waitFor(() => {
       expect(rowIds().length).toBeGreaterThan(0);
     });
-    await userEvent.click(screen.getByRole('button', { name: t.tableLink }));
-    expect(one.last.text).toMatch(/#\/tables\/homebrew$/);
-  });
-
-  it('keeps the app address of the table link in a build with a preview host', async () => {
-    const clip = fakeClipboard();
-    page('#/tables/homebrew/f_src-hb', {
-      clipboard: clip,
-      preview: 'https://daggerheart-loot.pages.dev'
-    });
-    await waitFor(() => {
-      expect(rowIds()).toHaveLength(3);
-    });
-    await userEvent.click(screen.getByRole('button', { name: t.tableLink }));
-    expect(clip.last.text).toBe('https://example.test/#/tables/homebrew/f_src-hb');
+    expect(screen.queryByRole('button', { name: t.tableLink })).toBeNull();
+    expect(document.querySelector('.tsec-link')).toBeNull();
   });
 
   it('heads a chip by its sections, then «Без раздела», and narrows to one section', async () => {

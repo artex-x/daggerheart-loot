@@ -3,7 +3,7 @@
 # why: a three-member set: the set line with two links, the shared bonus
 
 ## ru :: tree
-RootWebArea "Святой Щит — Генератор лута — Daggerheart" [url=#/i/voa4_t3d]
+RootWebArea "Святой Щит - Генератор лута Daggerheart" [url=#/i/voa4_t3d]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -57,6 +57,7 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Святое Облачение
 Святой Клинок
@@ -64,7 +65,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -73,7 +73,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=#/i/voa4_t3d]
+RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=#/i/voa4_t3d]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -123,9 +123,9 @@ Copy name
 Copy text
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Saintly Blade

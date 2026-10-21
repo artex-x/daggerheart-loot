@@ -2,13 +2,15 @@
   /* A `.tsection`'s own heading: a label and a button that copies a direct
      link to it. Off `sectionHead()` in app.js - the table-link button's
      sibling, one level down, and used identically by every sectioned body
-     (tier, frame, community, and each alternate-table rarity). */
+     (tier, frame, community, and each alternate-table rarity). The homebrew
+     table hands out no link, so it passes no `oncopy` and draws no button
+     (docs/specs/FEATURES.md, rule 17). */
   import Icon from './Icon.svelte';
 
   interface Props {
     label: string;
-    title: string;
-    oncopy: () => void;
+    title?: string | undefined;
+    oncopy?: (() => void) | undefined;
     /** The alternate tables follow this label with their own
      *  `<h3 class="altcol">` column pair, which used to sit straight under
      *  the page's `<h1>` with nothing between - a two-level jump `axe`'s
@@ -35,9 +37,11 @@
   {:else}
     <span class="lbl">{label}</span>
   {/if}
-  <button type="button" class="tsec-link" {title} aria-label={title} onclick={oncopy}>
-    <Icon name="link" />
-  </button>
+  {#if oncopy}
+    <button type="button" class="tsec-link" {title} aria-label={title} onclick={oncopy}>
+      <Icon name="link" />
+    </button>
+  {/if}
 </div>
 
 <style>

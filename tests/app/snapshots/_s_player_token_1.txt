@@ -3,7 +3,7 @@
 # why: the players' view signed out: «Лавка кузнеца», the sub, «Обновлено 3 дня назад», «Сохранить себе», the players' list note, nine rows, no GM note, no 26 October line
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

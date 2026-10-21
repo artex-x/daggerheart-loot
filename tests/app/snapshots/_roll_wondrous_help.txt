@@ -3,7 +3,7 @@
 # why: the help panel, unfolded
 
 ## ru :: tree
-RootWebArea "Wondrous Environments — Генератор лута — Daggerheart" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=#/roll/wondrous_environments]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,9 +22,9 @@ RootWebArea "Wondrous Environments — Генератор лута — Daggerhea
   main ""
     heading "Wondrous Environments" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=true]
+    button "Как это работает" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "В таблице 119 позиций, а не 100 — столько предметов описано в са..." [namelen=236 namehash=52406a3d]
+    StaticText "В таблице 119 позиций, а не 100 - столько предметов описано в са..." [namelen=236 namehash=4bb228e3]
     ... StaticText x4 of 8 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     StaticText "."
@@ -91,6 +91,7 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–119
+Смола Бездны
 Списки
 Страница
 Таблицы
@@ -98,7 +99,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -117,9 +118,9 @@ RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/w
   main ""
     heading "Wondrous Environments" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=true]
+    button "How this works" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
-    StaticText "The table holds 119 entries rather than 100 — that is how many i..." [namelen=244 namehash=e8753b19]
+    StaticText "The table holds 119 entries rather than 100 - that is how many i..." [namelen=244 namehash=06610566]
     ... StaticText x4 of 8 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     StaticText " supplement."
@@ -157,6 +158,7 @@ RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/w
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Abyssal Sap
 Alt. tables
 Arazo's Artifacts
 Community items

@@ -2,7 +2,9 @@
   /* The box the move of browser lists speaks in: the one-time notice under
      the header and the status in the storage notice's slot
      (docs/specs/FEATURES.md, "Account and browser lists"). Gold for news,
-     the warning tint for a list that did not move. The caller places it. */
+     the warning tint for a list that did not move. The caller places it. It has no
+     `role="status"`: a box inserted with its text is not said, so a page that shows it
+     while open says its fact through `StatusRegion` (docs/specs/FEATURES.md, rule 19). */
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -14,7 +16,7 @@
   const { warn = false, children, actions }: Props = $props();
 </script>
 
-<div class="box" class:warn role="status">
+<div class="box" class:warn>
   <div class="lead">{@render children()}</div>
   {#if actions}{@render actions()}{/if}
 </div>

@@ -3,7 +3,7 @@
 # why: a list from another player: heading "Лавка", the sub, the save button, the line saying #/l/ links stop opening on 26 October 2026, three rows with their tails (×2; ×5 · price; price), no notes, no bar. Seeded with two lists, which this page does not draw
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,7 +19,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQs
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
@@ -88,7 +88,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKj
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"

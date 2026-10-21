@@ -3,7 +3,7 @@
 # why: a stored print set signed out: the heading, «Войдите, чтобы печатать карточки.» and one «Войти»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/p/set-twocards]
+RootWebArea "Генератор лута Daggerheart" [url=#/p/set-twocards]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

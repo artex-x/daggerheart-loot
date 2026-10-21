@@ -550,7 +550,9 @@ describe('the Display section', () => {
     expect(d.getByRole('checkbox', { name: 'Компактный лист' })).toBeChecked();
     const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
     expect(select.value).toBe('#/roll/std');
-    expect([...select.options].map((o) => o.textContent)).toHaveLength(12);
+    expect([...select.options].map((o) => o.textContent)).toHaveLength(13);
+    expect(select.options[12]).toHaveTextContent('Мои предметы');
+    expect(select.options[12]).toHaveValue('#/homebrew');
     await expectNoA11yViolations(container);
 
     await userEvent.selectOptions(select, 'Поиск');
@@ -636,6 +638,17 @@ describe('the Display section', () => {
     await userEvent.selectOptions(select, 'Таблицы');
     expect(storage.get(HOME_KEY)).toBe('#/tables/core_item');
     expect(select.selectedOptions[0]?.textContent).toBe('Таблицы');
+  });
+
+  it('offers «Мои предметы» last, selected for a #/homebrew pin, and pins it', async () => {
+    const { storage } = openWith(as('gm2'), { [HOME_KEY]: '#/homebrew' });
+    const select = (await section()).getByLabelText<HTMLSelectElement>('Раздел при запуске');
+    expect(select.value).toBe('#/homebrew');
+    expect(select.selectedOptions[0]?.textContent).toBe('Мои предметы');
+    await userEvent.selectOptions(select, 'Поиск');
+    expect(storage.get(HOME_KEY)).toBe('#/search');
+    await userEvent.selectOptions(select, 'Мои предметы');
+    expect(storage.get(HOME_KEY)).toBe('#/homebrew');
   });
 
   it('shows an older bare Tables pin and an old section name as their sections', async () => {

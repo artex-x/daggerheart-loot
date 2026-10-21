@@ -3,7 +3,7 @@
 # why: the referenced ancestry feature «Сеть фангрилов», unfolded
 
 ## ru :: tree
-RootWebArea "Мицелиевый Плащ — Генератор лута — Daggerheart" [url=#/i/mw9]
+RootWebArea "Мицелиевый Плащ - Генератор лута Daggerheart" [url=#/i/mw9]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -58,12 +58,12 @@ daggerheart.su
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -72,7 +72,7 @@ daggerheart.su
 показать в таблице
 
 ## en :: tree
-RootWebArea "Mycelial Cloak — Daggerheart Loot Generator" [url=#/i/mw9]
+RootWebArea "Mycelial Cloak - Daggerheart Loot Generator" [url=#/i/mw9]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -122,9 +122,9 @@ Copy name
 Copy text
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

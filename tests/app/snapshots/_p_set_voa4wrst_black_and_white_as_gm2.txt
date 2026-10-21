@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/p/set-voa4wrst]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/p/set-voa4wrst]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 9. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=50192277]
+    StaticText "Карточек: 9. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=c0ea1b66]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=false]
@@ -33,6 +33,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=index.html?as=gm2#/account]
     ... StaticText x181 of 185 same-shape siblings elided
+    status ""
     heading "КЛЯТВА РАВНОВЕСИЯ" [level=2]
     LineBreak " "
     LineBreak " "
@@ -107,6 +108,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-voa4wrst]
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=index.html?as=gm2#/account]
     ... StaticText x182 of 186 same-shape siblings elided
+    status ""
     heading "OATH OF BALANCE" [level=2]
     LineBreak " "
     LineBreak " "

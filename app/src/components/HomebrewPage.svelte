@@ -1,30 +1,41 @@
 <script lang="ts">
-  /* `#/homebrew`, «Мои предметы» (m02, m03, m15, m24 in the homebrew mocks): «Импорт из
+  /* `#/homebrew`, «Мои предметы» (m02, m03, m15, m24 in the homebrew mocks): the head with
+     the home button and «?» on every tab and state (one pin, `#/homebrew`), «Импорт из
      файла» above the tab row, then one of four tabs at its own address. The Items tab: «Новый
-     предмет», the search from the eighth item, the count, and the own items under one
-     heading per source and section. A row opens the editor; its tick feeds the frame's
-     selection bar, and the strip above the rows moves, downloads and deletes the ticked
-     items that the search draws (docs/specs/FEATURES.md, "Homebrew"). The import loads as a
-     lazy chunk on its first open and stays open across a tab press. `PageTitle`, not
-     `PageHead`: the page may not be pinned. */
+     предмет», the search and the filter strip from the eighth item, the count, and the own
+     items under one heading per source and section. A row opens the editor; its tick feeds
+     the frame's selection bar, and the strip above the rows moves, downloads and deletes the
+     ticked items that the search and the filter draw (docs/specs/FEATURES.md, "Homebrew").
+     The import loads as a lazy chunk on its first open and stays open across a tab press. */
   import { tick, untrack } from 'svelte';
   import BatchBar from './BatchBar.svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
+  import FilterBar from './FilterBar.svelte';
   import HomebrewCards from './HomebrewCards.svelte';
   import HomebrewSources from './HomebrewSources.svelte';
   import Icon from './Icon.svelte';
   import LoadState from './LoadState.svelte';
-  import PageTitle from './PageTitle.svelte';
+  import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import SourcePicker from './SourcePicker.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import TableRows from './TableRows.svelte';
   import type HomebrewImport from './HomebrewImport.svelte';
-  import { homebrewItemHash, homebrewTabHash, type HomebrewTab } from '../lib/hash.js';
+  import { plainFacets } from '../lib/data.js';
+  import { homebrewFacetRows, narrowRows } from '../lib/facets.js';
+  import { chosenCount, groupsFor, passes, type FilterState } from '../lib/filters.js';
+  import {
+    HOMEBREW_HASH,
+    homebrewItemHash,
+    homebrewTabHash,
+    type HomebrewTab
+  } from '../lib/hash.js';
+  import { helpFor } from '../lib/help.js';
   import { groupsOf, type ItemRow } from '../lib/homebrew.js';
   import { deleteItemAsk, matchRecords } from '../lib/homebrewForm.js';
   import { LIST_SEARCH_AT } from '../lib/lists.js';
@@ -54,18 +65,75 @@
     { tab: 'rules', label: 'hbRefs' }
   ];
 
-  /* The Items tab's search: page memory, empty each time the tab opens. */
+  /* The Items tab's search and filter: page memory, empty each time the tab opens, never in
+     the address (docs/specs/STATE.md, the UI row). */
   let findQ = $state('');
+  let picked = $state<FilterState>({});
+  let filterOpen = $state(false);
   $effect(() => {
-    if (tab !== 'items') findQ = '';
+    if (tab !== 'items') {
+      findQ = '';
+      picked = {};
+      filterOpen = false;
+    }
   });
   const filtering = $derived(store.records.length >= LIST_SEARCH_AT);
-  const drawn = $derived(filtering ? matchRecords(store.records, findQ) : store.records);
+  const found = $derived(filtering ? matchRecords(store.records, findQ) : store.records);
+  const HB_GROUPS = groupsFor('homebrew');
+  const facetOf = (it: Record_, g: string): string => plainFacets(it)[g] ?? '';
+  const facRows = $derived(
+    filtering
+      ? narrowRows(
+          homebrewFacetRows(found, t, app.lang, picked['src'] ?? []),
+          found,
+          facetOf,
+          picked
+        )
+      : []
+  );
+  /* A picked value no row offers is not in force: a re-read that drops a source or a
+     section, or a source pick that leaves another source's section. */
+  const inForce = $derived.by<FilterState>(() => {
+    const out: FilterState = {};
+    for (const row of facRows) {
+      const on = picked[row.group] ?? [];
+      const kept = row.values.map((v) => v.value).filter((v) => on.includes(v));
+      if (kept.length) out[row.group] = kept;
+    }
+    return out;
+  });
+  const drawn = $derived(
+    found.filter((it) => passes(inForce, HB_GROUPS, (g) => facetOf(it, g)))
+  );
+
+  function pickFacet(group: string, value: string): void {
+    const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
+    const current = inForce[group] ?? [];
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : order.filter((v) => current.includes(v) || v === value);
+    picked = { ...inForce, [group]: next };
+  }
+
+  /* Rule 20 (docs/specs/FEATURES.md): the control that removed itself hands focus on. */
+  let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
+  let allBox = $state<HTMLInputElement | undefined>(undefined);
+  let newRow = $state<HTMLDivElement | undefined>(undefined);
+  function focusOr(...els: (HTMLElement | null | undefined)[]): void {
+    (els.find((e) => e?.isConnected) ?? document.getElementById('main'))?.focus();
+  }
+  const newItemLink = (): HTMLElement | null => newRow?.querySelector('a') ?? null;
+
+  async function resetFromEmpty(): Promise<void> {
+    picked = {};
+    await tick();
+    focusOr(filterToggle);
+  }
   const groups = $derived(groupsOf(store.books, drawn, app.lang, t.srcHomebrew));
   const drawnIds = $derived(drawn.map((r) => r.id));
   const ticked = $derived(drawnIds.filter((id) => app.sel.has(id)));
-  /* A tick the search hides is dropped, so the strip never acts on a row out of sight. The
-     other tabs keep the ticks (docs/specs/STATE.md, the UI row). */
+  /* A tick the search or the filter hides is dropped, so the strip never acts on a row out
+     of sight. The other tabs keep the ticks (docs/specs/STATE.md, the UI row). */
   $effect(() => {
     if (tab !== 'items') return;
     const shown = new Set(drawnIds);
@@ -81,8 +149,10 @@
   const count = $derived(
     countOf(store.items.length, store.itemLimit, t.hbItemsN, app.lang, t.ofLimit)
   );
-  /* A bulk delete in flight: one request per item, so 300 items take about a minute. */
+  /* A bulk delete in flight: one request per item, so 300 items take about a minute. The
+     visible line counts; the region says the start once, and the toast says the end. */
   let deleting = $state<{ done: number; of: number } | null>(null);
+  let deletingSaid = $state('');
 
   /* «Импорт из файла»: the toggle, and the panel's component once its chunk loaded. */
   type ImportView = typeof HomebrewImport;
@@ -158,6 +228,8 @@
         app.clearSel();
         moving = false;
         app.say((t) => t.hbMovedN.replace('%n', String(n)));
+        await tick();
+        focusOr(allBox, newItemLink());
       } else if (r.error === 'gone') {
         moveGone = bookId !== null && !store.book(bookId) ? 'book' : 'section';
       } else if (r.error === 'conflict') {
@@ -182,6 +254,9 @@
     if (!app.env.dialog.confirm(deleteItemAsk(lead, true, t))) return;
     const n = rows.length;
     deleting = { done: 0, of: n };
+    deletingSaid = t.hbDeletingN.replace('%n', '0').replace('%m', String(n));
+    /* «Удалить (N)» is disabled while it runs, so focus waits on «Выбрать все». */
+    allBox?.focus();
     try {
       const r = await store.removeItems(rows, (done) => {
         deleting = { done, of: n };
@@ -191,11 +266,20 @@
       else app.say((t) => t.hbDeleteFailed, { error: true });
     } finally {
       deleting = null;
+      deletingSaid = '';
     }
+    await tick();
+    focusOr(allBox, newItemLink());
   }
 </script>
 
-<PageTitle title={t.myItems} sub={t.subHomebrew} />
+<PageHead
+  {app}
+  title={t.myItems}
+  sub={t.subHomebrew}
+  help={helpFor('homebrew', app.lang)}
+  home={HOMEBREW_HASH}
+/>
 
 {#if app.user === null}
   <SignInPrompt {app} lead={t.hbSignIn} after={{ hash: app.hash }} />
@@ -252,12 +336,13 @@
       {:else if tab === 'rules'}
         <HomebrewCards {app} {store} kind="ref" {openKey} />
       {:else}
-        <div class="acts">
+        <div class="acts" bind:this={newRow}>
           <Button variant="primary" href={homebrewItemHash(null)} sameTab
             ><Icon name="plus" />{t.hbNewItem}</Button
           >
         </div>
         <div>
+          <StatusRegion text={deletingSaid} />
           {#if filtering}
             <div class="find">
               <SearchBox
@@ -267,13 +352,34 @@
                   findQ = v;
                 }}
               />
+              <FilterBar
+                rows={facRows}
+                picked={inForce}
+                shown={drawn.length}
+                total={found.length}
+                open={filterOpen}
+                {t}
+                ontoggle={() => {
+                  filterOpen = !filterOpen;
+                }}
+                onpick={pickFacet}
+                onreset={() => {
+                  picked = {};
+                }}
+                bind:toggleEl={filterToggle}
+              />
             </div>
           {/if}
           <p class="note">{count}</p>
           {#if !store.records.length}
             <Empty>{t.hbEmpty}</Empty>
           {:else if !groups.length}
-            <Empty>{t.nothing}</Empty>
+            <Empty>
+              {t.nothing}
+              {#if chosenCount(inForce, HB_GROUPS) > 0}
+                <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
+              {/if}
+            </Empty>
           {:else}
             <BatchBar
               total={drawnIds.length}
@@ -283,6 +389,7 @@
               onall={() => {
                 app.toggleAllIn(drawnIds);
               }}
+              bind:allBox
             >
               {#snippet actions()}
                 <Button size="sm" caret on={moving} expanded={moving} onclick={toggleMove}
@@ -349,7 +456,7 @@
               {/snippet}
             </BatchBar>
             {#if deleting}
-              <p class="note progress" role="status">
+              <p class="note progress">
                 {t.hbDeletingN
                   .replace('%n', String(deleting.done))
                   .replace('%m', String(deleting.of))}
@@ -404,6 +511,11 @@
 
   .find {
     margin-bottom: 12px;
+  }
+
+  /* The filter strip sits 12px under the search box, as on a shared list page. */
+  .find :global(.fbar) {
+    margin-top: 12px;
   }
 
   .acts {

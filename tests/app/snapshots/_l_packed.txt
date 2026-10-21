@@ -3,7 +3,7 @@
 # why: the packed form, expanded and rewritten to the plain form - pixels identical to "~ shared, noted", the 26 October line included; listAddress proves the rewrite
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0KLQsNC50L3QuNC6CjIuN291aH5jaTEsY2MxCh4rfh_Qm9Cw0LLQutCwINC30LDQutGA0YvRgtCwINC00L4g0YPRgtGA0LAefh_QpdC-0LfRj9C40L0gLSDQutC-0L3RgtGA0LDQsdCw0L3QtNC40YHRgh4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0LweY2kxH9Cf0L7QtNC00LXQu9C60LA]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

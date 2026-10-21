@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Новый предмет — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/new]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -31,6 +31,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         ... button x4 of 8 same-shape siblings elided
         button "Тип урона - выберите значение."
         button "Хват - выберите значение."
+      status ""
       StaticText "* - обязательное поле. Остальное можно заполнить позже."
       group "Вид"
         button "Предмет" [pressed=false]
@@ -41,7 +42,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Вторичное оружие" [pressed=false]
         button "Броня" [pressed=false]
       StaticText "Источник"
-      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
+      button "Подсказка: Источник" [expanded=false]
       combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
@@ -50,7 +51,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       button "EN - пусто" [pressed=false]
       ... StaticText x12 of 16 same-shape siblings elided
       textbox "Название*" [description=Введите название. multiline=false readonly=false required=true invalid=true]
-      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      button "Подсказка: Описание" [expanded=false]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
         button "Курсив" [keyshortcuts=Control+I Meta+I]
@@ -99,10 +100,10 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "Одноручное/двуручное" [pressed=false]
       StaticText "Выберите значение."
       button "Второй набор характеристик" [expanded=false]
-      button "Подсказка: Второй набор характеристик" [description=Подсказка: Второй набор характеристик expanded=false]
+      button "Подсказка: Второй набор характеристик" [expanded=false]
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
-      link "Отмена" [url=index.html?as=gm1#/homebrew]
+      link "К моим предметам" [url=index.html?as=gm1#/homebrew]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
     button "Страница"
@@ -145,6 +146,7 @@ daggerheart.com
 Знание
 Инстинкт
 Искусность
+К моим предметам
 К содержимому
 Карты правил
 Класс - выберите значение.
@@ -165,7 +167,6 @@ daggerheart.com
 Одноручное
 Одноручное/двуручное
 Основное оружие
-Отмена
 Очень далеко
 Подсказка: Второй набор характеристик
 Подсказка: Источник
@@ -206,7 +207,7 @@ daggerheart.com
 физ/маг
 
 ## en :: tree
-RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -233,6 +234,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         ... button x4 of 8 same-shape siblings elided
         button "Damage type - choose a value."
         button "Burden - choose a value."
+      status ""
       StaticText "* - required field. The rest can be filled in later."
       group "Kind"
         button "Item" [pressed=false]
@@ -243,7 +245,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "Secondary weapon" [pressed=false]
         button "Armor" [pressed=false]
       StaticText "Source"
-      button "Help: Source" [description=Help: Source expanded=false]
+      button "Help: Source" [expanded=false]
       combobox "Source" [value=Homebrew expanded=false haspopup=menu]
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
@@ -252,7 +254,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       button "EN - empty" [pressed=false]
       ... StaticText x12 of 16 same-shape siblings elided
       textbox "Name*" [description=Enter a name. multiline=false readonly=false required=true invalid=true]
-      button "Help: Description" [description=Help: Description expanded=false]
+      button "Help: Description" [expanded=false]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]
         button "Italic" [keyshortcuts=Control+I Meta+I]
@@ -301,10 +303,10 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "One/Two-Handed" [pressed=false]
       StaticText "Choose a value."
       button "Second stat set" [expanded=false]
-      button "Help: Second stat set" [description=Help: Second stat set expanded=false]
+      button "Help: Second stat set" [expanded=false]
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
-      link "Cancel" [url=index.html?as=gm1#/homebrew]
+      link "To my items" [url=index.html?as=gm1#/homebrew]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     button "Страница"
@@ -331,7 +333,6 @@ Armor
 Bold
 Bulleted list
 Burden - choose a value.
-Cancel
 Choose a file
 Choose from items
 Class - choose a value.
@@ -394,6 +395,7 @@ Table
 Tables
 Terms of use
 Tier - choose a tier from 1 to 4.
+To my items
 Trait - choose a value.
 Two-Handed
 Unique

@@ -3,7 +3,7 @@
 # why: the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it
 
 ## ru :: tree
-RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -669,7 +669,7 @@ daggerheart.com
 Яйцо Катартоида
 
 ## en :: tree
-RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

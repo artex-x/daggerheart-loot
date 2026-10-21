@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -44,7 +44,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Скипетр Ранг 1 · Магическое · Влияние · Далеко · d6 маг · Двуруч..." [namelen=194 namehash=5790d5c3]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Скипетр" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
@@ -53,8 +53,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "ЗОЛОТО"
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "ЦЕНА"
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Топор Тлеющих Углей" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
@@ -87,6 +87,7 @@ daggerheart.com
 Название списка
 Нумерованный список
 Обычные правила
+Печать
 Поделиться
 Подсказка: Для игроков
 Подсказка: Только для мастера
@@ -101,7 +102,6 @@ daggerheart.com
 Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Случайно 1–2
-Собрать карточки для печати: девять на лист A4
 Списки
 Список
 Таблицы
@@ -113,6 +113,7 @@ daggerheart.com
 Удалить
 Условия использования
 Установить как приложение
+Цена
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
@@ -155,7 +156,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Scepter Tier 1 · Magic · Presence · Far · d6 mag · Two-Handed Ve..." [namelen=164 namehash=04ac40ab]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Scepter" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
@@ -164,8 +165,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "GOLD"
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "PRICE"
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Ember Axe" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
@@ -197,7 +198,6 @@ Help: GM only
 Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141 namehash=e3d544a4]
 Install as an app
 Italic
-Lay these out for printing: nine to an A4 sheet
 List name
 Lists
 Note
@@ -207,6 +207,8 @@ One lower
 Own item
 Position in the list
 Preview
+Price
+Print
 Privacy
 RU
 Random 1–2

@@ -3,7 +3,7 @@
 # why: an old long print link: the retired page, the address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/print/ci1-q1]
+RootWebArea "Генератор лута Daggerheart" [url=#/print/ci1-q1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

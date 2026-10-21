@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/p/set-missing1]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/p/set-missing1]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=d40067fa]
+    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=81ed5454]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=true]
@@ -31,6 +31,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
     StaticText "Удалены автором и не попали на лист: 1."
+    status ""
     ... StaticText x3 of 7 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     StaticText "Daggerheart"
@@ -94,6 +95,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-missing1]
     button "Compact" [pressed=false]
     button "Link to this set"
     StaticText "Deleted by their author, not on the sheet: 1."
+    status ""
     ... StaticText x3 of 7 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]
     StaticText "Daggerheart"

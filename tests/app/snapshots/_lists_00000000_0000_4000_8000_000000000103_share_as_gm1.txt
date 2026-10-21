@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -41,7 +41,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Палаш Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Од..." [namelen=122 namehash=a6db75ac]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Палаш" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
@@ -50,8 +50,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     button "Первоклассный Спальный Мешок Во время отдыха вы автоматически оч..." [namelen=91 namehash=0ad88f78]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "ЗОЛОТО"
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "ЦЕНА"
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Только для мастера: Первоклассный Спальный Мешок" [description=Только для мастера pressed=false]
     button "Убрать из списка" [description=Убрать из списка]
@@ -90,6 +90,7 @@ daggerheart.com
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Первоклассный Спальный Мешок
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Печать
 Поделиться
 Подсказка: Для игроков
 Подсказка: Только для мастера
@@ -102,7 +103,6 @@ daggerheart.com
 Скопировать
 Скопировать текст
 Случайно 1–2
-Собрать карточки для печати: девять на лист A4
 Списки
 Список
 Таблицы
@@ -113,6 +113,7 @@ daggerheart.com
 Удалить ссылку
 Условия использования
 Установить как приложение
+Цена
 
 ## en :: tree
 RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
@@ -152,7 +153,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
     button "Broadsword Tier 1 · Physical · Agility · Melee · d8 phy · One-Ha..." [namelen=117 namehash=ebbe60cf]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Broadsword" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
@@ -161,8 +162,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     button "Premium Bedroll During downtime, you automatically clear a Stres..." [namelen=76 namehash=b4b015ab]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "GOLD"
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "PRICE"
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "GM only: Premium Bedroll" [description=GM only pressed=false]
     button "Remove from the list" [description=Remove from the list]
@@ -197,7 +198,6 @@ Help: For players
 Help: GM only
 Install as an app
 Italic
-Lay these out for printing: nine to an A4 sheet
 List name
 Lists
 Note
@@ -209,6 +209,8 @@ Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 Preview
+Price
+Print
 Privacy
 RU
 Random 1–2

@@ -3,7 +3,7 @@
 # why: signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -97,12 +97,12 @@ daggerheart.com
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Первоклассный Спальный Мешок
+Печать
 Поиск
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать
 Снять выделение
-Собрать карточки для печати: девять на лист A4
 Сохранить себе
 Списки
 Стеганый Доспех
@@ -198,7 +198,6 @@ Filters
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Leviathan Harpoon
 Lists
 Max, take all: Premium Bedroll
@@ -206,6 +205,7 @@ Max, take all: Stride Potion
 Min, take 1: Premium Bedroll
 Min, take 1: Stride Potion
 Premium Bedroll
+Print
 Privacy
 RU
 Request sent

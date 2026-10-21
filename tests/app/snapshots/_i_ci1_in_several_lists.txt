@@ -3,7 +3,7 @@
 # why: the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips
 
 ## ru :: tree
-RootWebArea "Первоклассный Спальный Мешок — Генератор лута — Daggerheart" [url=#/i/ci1]
+RootWebArea "Первоклассный Спальный Мешок - Генератор лута Daggerheart" [url=#/i/ci1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,7 +19,7 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
@@ -75,6 +75,7 @@ daggerheart.com
 Найти список
 Обычные правила
 Отправить
+Печать
 Поиск
 Рынок
 Сессия 4
@@ -83,7 +84,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Скрыть напоминание
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Сундук мага
@@ -98,7 +98,7 @@ daggerheart.com
 ✓ Сессия 3
 
 ## en :: tree
-RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
+RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=#/i/ci1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -114,7 +114,7 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"
@@ -151,9 +151,9 @@ Copy text
 Dismiss the reminder
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

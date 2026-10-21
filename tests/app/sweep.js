@@ -22,6 +22,7 @@ const {
   heldNamesFile,
   longNamesFile
 } = require('./inventory.js');
+const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
 
 const argv = process.argv.slice(2);
 const ONLY = argv.map(Number).filter(Boolean);
@@ -62,15 +63,9 @@ async function either(d, how, ru, en) {
   }
 }
 
-/** Presses a print control signed out, which opens its sign-in prompt; its hint names it
- *  for the driver, where `title` wins. */
-const pressPrint = (d) =>
-  either(
-    d,
-    'click',
-    'Собрать карточки для печати: девять на лист A4',
-    'Lay these out for printing: nine to an A4 sheet'
-  );
+/** Presses a print control signed out, which opens its sign-in prompt; the driver names
+ *  it by its text, as a screen reader does. */
+const pressPrint = (d) => either(d, 'click', 'Печать', 'Print');
 
 /** Waits until a `#/p/` page has left its loading line: its sheet, or its sub. */
 async function printed(d) {
@@ -101,6 +96,16 @@ const PAGES = [
   ['#/lists/nope', 'списка нет'],
   ['#/l/%%SHARED%%', 'чужой список'],
   ['#/l/zzzz', 'битая ссылка'],
+  /* Both notes inside the rows of a shared page, and the price «?»'s conversion line
+     open (FEATURES.md, "Lists"). */
+  ['#/l/' + NOTES_BOTH_KINDS.gm.payload, 'чужой список: заметки в строках'],
+  ['#/s/gm-token-1', 'общий список: заметки в строках'],
+  [
+    '#/lists/a',
+    'цена: подсказка открыта',
+    undefined,
+    (d) => either(d, 'click', 'Подсказка: Цена', 'Help: Price')
+  ],
   ['#/i/ci1', 'карточка Кольцо Тишины'],
   ['#/i/w1', 'карточка'],
   ['#/i/di1', 'карточка Dread'],
@@ -210,7 +215,7 @@ const PAGES = [
       async (d) => {
         await hbImportOpen(d);
         await d.upload(longNamesFile());
-        for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (1)'); i++)
+        for (let i = 0; i < 40 && !/Импортировать \(1\)|Import \(1\)/.test(await d.text()); i++)
           await d.settle();
       }
     ],
@@ -231,7 +236,7 @@ const PAGES = [
       async (d) => {
         for (const name of ['Настой кузнеца', 'Whispering Cap', 'Кольцо с гравировкой'])
           await d.tick(name);
-        await d.click('Переместить (3)');
+        await either(d, 'click', 'Переместить (3)', 'Move (3)');
       }
     ],
     /* The lists import's longest skip line: an own item the account does not hold. */
@@ -242,9 +247,34 @@ const PAGES = [
       async (d) => {
         await importOpen(d);
         await d.upload(IMPORT('keys-only-v2.json'));
-        for (let i = 0; i < 40 && !(await d.text()).includes('Пропущено позиций'); i++)
+        for (let i = 0; i < 40 && !/Пропущено позиций|Items skipped/.test(await d.text()); i++)
           await d.settle();
       }
+    ],
+    /* A fifth element seeds the fake: the Items tab's filter with a section row of 22
+       values, its fold open (rule 16 at 360), and the page head's help open. */
+    [
+      '#/homebrew',
+      'фильтры своих предметов: раздел развёрнут',
+      'gm1',
+      async (d) => {
+        await either(d, 'click', 'Фильтры', 'Filters');
+        await either(d, 'click', 'и ещё 12', 'and 12 more');
+      },
+      { items: 66, sections: 20 }
+    ],
+    [
+      '#/tables/homebrew',
+      'таблица своих предметов: длинный ряд разделов',
+      'gm1',
+      (d) => either(d, 'click', 'Фильтры', 'Filters'),
+      { items: 66, sections: 20 }
+    ],
+    [
+      '#/homebrew',
+      'мои предметы: подсказка раздела',
+      'gm1',
+      (d) => either(d, 'click', 'Как это работает', 'How this works')
     ],
     ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],
     ['#/i/q1', 'лестница рангов со своими ступенями', 'gm3'],
@@ -466,16 +496,25 @@ async function landedUnderHeader(page, id) {
       });
 
       const pages = width === 1180 ? PAGES.concat(PRINT_ONLY_1180) : PAGES;
-      for (const [hash, label, as, enter] of pages) {
+      for (const [hash, label, as, enter, seed] of pages) {
         const asked = hash.replace('%%SHARED%%', shared);
         const where = label + ' @' + width + ' ' + lang;
         try {
-          await d.open(asked, { as });
+          /* A signed-in seed user's stored language would replace the run's (gm1 holds
+             `ru`), so the run's language goes into the address too. */
+          await d.open(asked, as ? { as, lang, ...seed } : {});
           if (as) await d.moveSettled(where);
           if (enter) await enter(d);
         } catch (e) {
           ok(false, where + ': the page did not render - ' + e.message);
           continue;
+        }
+        if (as) {
+          const drawn = await page.evaluate(() => document.documentElement.lang);
+          ok(
+            drawn === lang,
+            where + ': the page draws lang="' + drawn + '", not "' + lang + '"'
+          );
         }
         await page.evaluate(() => window.scrollTo(0, 0));
 

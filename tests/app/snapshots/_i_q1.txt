@@ -3,7 +3,7 @@
 # why: an equipment record
 
 ## ru :: tree
-RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/i/q1]
+RootWebArea "Палаш - Генератор лута Daggerheart" [url=#/i/q1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -59,13 +59,13 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Продвинутый Палаш
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -75,7 +75,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
+RootWebArea "Broadsword - Daggerheart Loot Generator" [url=#/i/q1]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -128,10 +128,10 @@ Copy text
 EN
 Improved Broadsword
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Legendary Broadsword
 Lists
 Page
+Print
 Privacy
 RU
 Search

@@ -21,7 +21,9 @@
  * `kind` and `sect` over its own rows; its `src` is the source chip above the table
  * (docs/specs/ROUTES.md, "Values").
  *
- * A share link's filter is a third shape: `listFacetRows` builds its own candidates.
+ * A share link's filter is a third shape: `listFacetRows` builds its own candidates. The
+ * Items tab of `#/homebrew` is a fourth: `homebrewFacetRows` offers kind, source and the
+ * sections of the picked sources over the author's own items.
  *
  * Every page passes its candidates through `narrowRows`: a row offers only the values
  * its drawn records answer and is drawn only when it can narrow (docs/specs/FEATURES.md,
@@ -146,6 +148,50 @@ function homebrewSectValues(
     if (s && (source === null || srcOf(it) === source)) named.set(s.key, s[lang]);
   }
   return [...named].map(([value, label]) => ({ value, label })).sort(byLabel(lang));
+}
+
+/**
+ * The Items tab's candidate rows (docs/specs/FEATURES.md, "Homebrew"), in the homebrew
+ * table's group order: the three kind words, the sources, and the sections of the records
+ * whose source is in `srcPick` (every record's when it is empty). Two sections with one
+ * name each take their source's name in brackets. The caller passes them through
+ * `narrowRows`.
+ */
+export function homebrewFacetRows(
+  records: readonly Record_[],
+  t: Dict,
+  lang: Lang,
+  srcPick: readonly string[]
+): FacetRow[] {
+  const own = records.filter(isHomebrewRecord);
+  const sects = new Map<string, { label: string; book: string }>();
+  for (const it of own) {
+    const s = it.book?.section;
+    if (it.book && s && (!srcPick.length || srcPick.includes(srcOf(it)))) {
+      sects.set(s.key, { label: s[lang], book: it.book[lang] });
+    }
+  }
+  const named = [...sects.values()].map((v) => v.label);
+  const sect = [...sects]
+    .map(([value, v]) => ({
+      value,
+      label: named.filter((l) => l === v.label).length > 1 ? `${v.label} (${v.book})` : v.label
+    }))
+    .sort(byLabel(lang));
+  const order: Kind[] = ['item', 'consumable', 'equip'];
+  const build: Record<string, FacetRow> = {
+    kind: {
+      group: 'kind',
+      label: t.kindF,
+      values: order.map((k) => ({ value: k, label: t[KIND_LABEL[k]] }))
+    },
+    src: { group: 'src', label: t.source, values: homebrewSrcValues(own, t, lang) },
+    sect: { group: 'sect', label: t.hbSection, values: sect }
+  };
+  return groupsFor('homebrew').flatMap((g) => {
+    const row = build[g];
+    return row ? [row] : [];
+  });
 }
 
 /**

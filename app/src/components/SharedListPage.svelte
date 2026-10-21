@@ -11,7 +11,7 @@
      draws the tables' search box and filter strip over the entries it draws;
      on `#/s/` the filter lives in the address (`#/s/<token>/f_<filter>`), on
      `#/l/` in page memory (docs/specs/FEATURES.md, "Lists"). */
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
@@ -24,6 +24,7 @@
   import RecordHost from './RecordHost.svelte';
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import TableRows from './TableRows.svelte';
   import UpdatedLine from './UpdatedLine.svelte';
   import { sharedListOf, snapshotRecords } from '../lib/cloudLists.js';
@@ -201,6 +202,14 @@
 
   function resetFacets(): void {
     applyFilter({});
+  }
+
+  /* Rule 20: the empty state's «Сбросить всё» goes with it; focus goes to «Фильтры». */
+  let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
+  async function resetFromEmpty(): Promise<void> {
+    resetFacets();
+    await tick();
+    (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))?.focus();
   }
 
   /* The audience and the link are read at the press: the toast is drawn later, and a
@@ -385,6 +394,7 @@
               : () => {
                   void copyFilterLink(token);
                 }}
+            bind:toggleEl={filterToggle}
           />
         </div>
       {/if}
@@ -392,7 +402,7 @@
         <Empty>
           {t.nothing}
           {#if chosenCount(inForce, LIST_GROUPS) > 0}
-            <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
+            <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
           {/if}
         </Empty>
       {:else}
@@ -416,6 +426,14 @@
         >
           {#snippet inside(it: Record_)}
             {@const m = metaOf(it.id)}
+            {#if m.note || m.hnote}
+              <!-- Inside the row's border, as the owner's list page draws them: drawn after
+                   the row they read as the next entry's notes. -->
+              <div class="rnotes">
+                <HitNote icon="eye" label={t.notePub} text={m.note} />
+                <HitNote icon="eyeOff" label={t.noteHid} text={m.hnote} />
+              </div>
+            {/if}
             {#if app.sel.has(it.id) && (m.qty ?? 0) > 1}
               {@const taken = takenQty(m, app.picked.get(it.id))}
               <div class="pickrow">
@@ -437,10 +455,6 @@
               </div>
             {/if}
           {/snippet}
-          {#snippet after(it: Record_)}
-            <HitNote icon="eye" label={t.notePub} text={metaOf(it.id).note} />
-            <HitNote icon="eyeOff" label={t.noteHid} text={metaOf(it.id).hnote} />
-          {/snippet}
         </TableRows>
       {/if}
     {/if}
@@ -450,11 +464,11 @@
            changed what the page draws; keyed, so a second change is announced
            again. `data-live` marks a joined topic for the hosted E2E and draws
            nothing. -->
-      <div class="said" role="status" data-live={view?.live ? 'live' : undefined}>
-        {#if revoked}<span>{t.shareGone}</span
-          >{:else}{#key view?.changes}{#if view?.changes}<span>{t.listUpdated}</span
-              >{/if}{/key}{/if}
-      </div>
+      <StatusRegion
+        text={revoked ? t.shareGone : view?.changes ? t.listUpdated : ''}
+        key={revoked ? -1 : view?.changes}
+        live={view?.live}
+      />
     {/if}
   {/snippet}
 </RecordHost>
@@ -485,16 +499,6 @@
     max-width: 70ch;
   }
 
-  /* Visually hidden, as `ListPage.svelte`'s `.lsaid`. */
-  .said {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   .ownline {
     margin: 0 0 16px;
     padding: 10px 12px;
@@ -515,8 +519,23 @@
     padding: 8px 11px 8px 53px;
   }
 
+  /* An entry's notes, under its main line at the take line's inset. */
+  .rnotes {
+    flex: 0 0 100%;
+    min-width: 0;
+    padding: 0 11px 11px 53px;
+  }
+
+  .rnotes :global(.hitnote:first-child) {
+    margin-top: 0;
+  }
+
   @media (max-width: 600px) {
     .pickrow {
+      padding-left: 49px;
+    }
+
+    .rnotes {
       padding-left: 49px;
     }
   }

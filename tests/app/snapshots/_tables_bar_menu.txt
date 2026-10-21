@@ -3,7 +3,7 @@
 # why: the bar's own add-to-list menu, above it, right-aligned
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,14 +19,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -177,6 +177,7 @@ daggerheart.com
 Первоклассный Спальный Мешок
 Перо Феникса
 Перчатки Геккона
+Печать
 Плетёная Сеть
 Подвешенный Жезл
 Поиск
@@ -213,7 +214,6 @@ daggerheart.com
 Скрыть напоминание
 Снаряжение
 Снять выделение
-Собрать карточки для печати: девять на лист A4
 Списки
 Списком
 Ссылка на таблицу
@@ -227,7 +227,7 @@ daggerheart.com
 Цепь Парагона
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -243,14 +243,14 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -402,7 +402,6 @@ Infinite Bag
 Install as an app
 Items
 Lakestrider Boots
-Lay these out for printing: nine to an A4 sheet
 Link to this table
 List
 Lists
@@ -419,6 +418,7 @@ Piercing Arrows
 Piper Whistle
 Portal Seed
 Premium Bedroll
+Print
 Privacy
 RU
 Ring of Resistance

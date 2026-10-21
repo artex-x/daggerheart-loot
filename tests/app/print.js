@@ -49,6 +49,22 @@ const LOOT = require('../../data.json');
 
 const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//, '')), 'utf8');
 
+/* A folded vector (`CardVector.svelte`) as its shape and paint, read in the page, and the
+   file the `<img>` it replaced drew: a die's colour paint is its `-phy` file, black and
+   white the shape's `-bw` file (docs/specs/FEATURES.md, "Print"). */
+const vecFile = ([shape, paint]) =>
+  shape +
+  (shape.startsWith('die-')
+    ? '-' + (paint === 'colour' ? 'phy' : paint)
+    : paint === 'bw'
+      ? '-bw'
+      : '') +
+  '.svg';
+const vecOf = async (page, sel) =>
+  vecFile(
+    await page.$eval(sel, (e) => [e.getAttribute('data-vector'), e.getAttribute('data-paint')])
+  );
+
 /* The print sheets shared between the card-layout assertions above and the
  * four ported specs below - `tests/parity/specs.js`'s own `NINE`/`LONG`/
  * `TEN`, and `MAX`, the catalog's first 180 ids off `data.json`. Each is
@@ -163,6 +179,10 @@ function readPNG(buf) {
     lum(x, y) {
       const i = (y * w + x) * ch;
       return 0.2126 * out[i] + 0.7152 * out[i + 1] + 0.0722 * out[i + 2];
+    },
+    rgb(x, y) {
+      const i = (y * w + x) * ch;
+      return [out[i], out[i + 1], out[i + 2]];
     }
   };
 }
@@ -190,6 +210,8 @@ const { ok } = rep;
   };
 
   const PRINT_HINT = 'Собрать карточки для печати: девять на лист A4';
+  /* The driver names a titled button by its text, as a screen reader does. */
+  const PRINT = 'Печать';
   /* Waits until a press has opened `#/p/<id>` and its sheet is drawn. */
   const waitForSet = async () => {
     for (let i = 0; i < 200; i++) {
@@ -460,6 +482,51 @@ const { ok } = rep;
     'the community card is missing the book: ' + commBottom
   );
 
+  /* gm4's item in a source and section of 80 code points each: the source line wraps
+     inside the card on both sheets, in colour and in black and white, and
+     «Daggerheart» keeps its one line (FEATURES.md, "Print"). */
+  console.log('a long source line');
+  for (const [isBw, isCompact] of [
+    [false, false],
+    [false, true],
+    [true, false],
+    [true, true]
+  ]) {
+    await openAs(
+      d,
+      [{ h: '00000000-0000-4000-8000-000000000461' }],
+      isBw,
+      isCompact,
+      bw,
+      compact
+    );
+    const where = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : ' standard');
+    const fit = await page.$eval('.pcard', (c) => {
+      const box = c.querySelector('.pc-content').getBoundingClientRect();
+      const bottom = c.querySelector('.pc-bottom');
+      const src = bottom.querySelector('.pc-src').getBoundingClientRect();
+      const game = bottom.querySelector('.pc-game');
+      return {
+        inside:
+          src.left >= box.left - 0.5 &&
+          src.right <= box.right + 0.5 &&
+          src.bottom <= box.bottom + 0.5,
+        wide: bottom.scrollWidth > bottom.clientWidth + 1,
+        gameLines: game.getClientRects().length,
+        srcLines: Math.round(src.height / parseFloat(getComputedStyle(game).lineHeight))
+      };
+    });
+    ok(
+      fit.inside && !fit.wide,
+      where + ': the long source line leaves the card: ' + JSON.stringify(fit)
+    );
+    ok(fit.gameLines === 1, where + ': «Daggerheart» broke over lines: ' + JSON.stringify(fit));
+    ok(
+      fit.srcLines >= 2,
+      where + ': the long source line did not wrap: ' + JSON.stringify(fit)
+    );
+  }
+
   /* Damage with a bonus: "d6 +2" beside the die, not a digit over it. */
   await openPrint(d, 'w7');
   ok(
@@ -591,11 +658,15 @@ const { ok } = rep;
   console.log('die by class');
   await openPrint(d, 'q1');
   ok(
-    /die-d8-phy\.svg$/.test(await page.$eval('.pc-die img', (e) => e.getAttribute('src'))),
+    (await vecOf(page, '.pc-die svg')) === 'die-d8-phy.svg',
     'the physical d8 does not have its own die'
   );
   await openPrint(d, 'q35');
-  const md = await page.$$eval('.pc-die img', (e) => e.map((x) => x.getAttribute('src')));
+  const md = (
+    await page.$$eval('.pc-die svg', (e) =>
+      e.map((x) => [x.getAttribute('data-vector'), x.getAttribute('data-paint')])
+    )
+  ).map(vecFile);
   ok(/die-d6-mag\.svg$/.test(md[0]), 'the magical d6 does not have a magical die: ' + md[0]);
   ok(await page.$('.pc-die.mag'), 'the magical die is not marked with its class');
   /* Every die has its own shape, and none draws as the generic hexagon - d4
@@ -610,7 +681,7 @@ const { ok } = rep;
   ];
   for (const [id, die] of DICE) {
     await openPrint(d, id);
-    const src = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
+    const src = await vecOf(page, '.pc-die svg');
     ok(
       new RegExp('die-' + die + '-(phy|mag)\\.svg$').test(src),
       die + ' took the wrong shape: ' + src
@@ -876,7 +947,7 @@ const { ok } = rep;
     'in black-and-white the ribbon and tag did not gather into a row'
   );
   ok(
-    /-bw\.svg$/.test(await page.$eval('.pc-tier img', (e) => e.getAttribute('src'))),
+    /-bw\.svg$/.test(await vecOf(page, '.pc-tier svg')),
     'black-and-white uses a colour asset'
   );
   /* The rank ribbon hangs from the card's top edge - in the design it starts
@@ -918,14 +989,18 @@ const { ok } = rep;
   /* A faceted die, as in the design, and a light outline saves the digit
      from the facets. The facets were once simply removed, and the die
      stopped looking like a die. */
-  const bwDie = await page.$eval('.pc-die img', (e) => e.getAttribute('src'));
+  const bwDie = await vecOf(page, '.pc-die svg');
   ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a colour die: ' + bwDie);
-  const bwFile = svgFile(bwDie);
+  const drawnDie = await page.$eval('.pc-die svg', (e) => ({
+    paths: e.querySelectorAll('path').length,
+    box: e.getAttribute('viewBox')
+  }));
+  ok(drawnDie.paths === 2, "the black-and-white die's facets are missing");
+  ok(/0 0 [\d.]+ [\d.]+/.test(drawnDie.box ?? ''), 'the black-and-white die has no frame');
   ok(
-    (bwFile.match(/<path/g) || []).length === 2,
-    "the black-and-white die's facets are missing"
+    drawnDie.box === /viewBox="([^"]+)"/.exec(svgFile(bwDie))?.[1],
+    'the black-and-white die is not drawn in its file frame: ' + drawnDie.box
   );
-  ok(/0 0 [\d.]+ [\d.]+/.test(bwFile), 'the black-and-white die has no frame');
   /* The outline is a vector stroke: Chrome prints a blurred `text-shadow` as
      a raster patch. */
   const halo = await page.$eval('.pc-die b', (e) =>
@@ -997,8 +1072,7 @@ const { ok } = rep;
      black-and-white the picture stays: it is its own there too, and the
      general "drop -mag in black-and-white" rule - which is about the dice -
      was standing in for it with the physical frame. */
-  const ribbonOf = () =>
-    page.$eval('.pc-ribbon', (e) => e.getAttribute('src').replace(/^.*\//, ''));
+  const ribbonOf = () => vecOf(page, '.pc-ribbon');
   for (const isBw of [false, true]) {
     await openPrint(d, 'q23');
     if (isBw) {
@@ -1027,13 +1101,15 @@ const { ok } = rep;
         await bw();
         await d.settle();
       }
-      return page.$$eval('.pcard[data-pid="' + id + '"]', (cards) =>
+      const vecs = await page.$$eval('.pcard[data-pid="' + id + '"]', (cards) =>
         cards.flatMap((c) =>
-          [...c.querySelectorAll('.pc-ribbon, .pc-die img')].map((e) =>
-            e.getAttribute('src').replace(/^.*\//, '')
-          )
+          [...c.querySelectorAll('.pc-ribbon, .pc-die svg')].map((e) => [
+            e.getAttribute('data-vector'),
+            e.getAttribute('data-paint')
+          ])
         )
       );
+      return vecs.map(vecFile);
     };
     const tag = isBw ? 'bw: ' : 'colour: ';
     const q33 = await frameOf('q33');
@@ -1490,7 +1566,7 @@ const { ok } = rep;
   await d.open('#/tables/core_item', { as: 'gm2' });
   await page.click('.rows .row .selbox input');
   await d.settle();
-  await d.click(PRINT_HINT);
+  await d.click(PRINT);
   await waitForSet();
   ok(await d.has('Назад'), 'there is no way back from print');
   await d.click('Назад');
@@ -1514,7 +1590,7 @@ const { ok } = rep;
     !(await page.$('.card.full .card-acts button[title="' + PRINT_HINT + '"]')),
     'the print button remained among the copy buttons'
   );
-  await d.click(PRINT_HINT);
+  await d.click(PRINT);
   await waitForSet();
   ok(
     (await d.count('.pcard:not(.blank)')) === 1 &&
@@ -1540,14 +1616,14 @@ const { ok } = rep;
     )) === 'none',
     'the print button is underlined, and its neighbours are not'
   );
-  await d.click(PRINT_HINT);
+  await d.click(PRINT);
   await waitForSet();
   ok((await d.count('.pcard:not(.blank)')) === 1, 'the selection bar does not print');
 
   /* An account list prints its entries with their counts: ten entries, ci1 x2 and
      cc1 x5. */
   await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
-  await d.click(PRINT_HINT);
+  await d.click(PRINT);
   await waitForSet();
   const counted = await page.$$eval('.pcard[data-pid]', (e) =>
     e.map((x) => x.getAttribute('data-pid') + (x.querySelector('.pc-qty')?.textContent ?? ''))
@@ -1564,7 +1640,7 @@ const { ok } = rep;
     ])
   });
   await d.open('#/lists/p');
-  await d.click(PRINT_HINT);
+  await d.click(PRINT);
   ok(
     (await d.text()).includes('Войдите, чтобы печатать карточки.'),
     'a signed-out list print does not ask for a sign-in'
@@ -2488,12 +2564,165 @@ const { ok } = rep;
     }
   }
 
+  /* ---------- the folded vectors against their files (docs/specs/FEATURES.md, "Print") ----------
+     Every inline `CardVector` on a sheet of every folded shape - the tier banner, each die
+     physical and magic, both ribbons, the threshold box - is compared at device pixel
+     ratio 2 with the file the card drew before the fold, put in its place in the box the
+     `<img>` had (clipped to it; a die fitted as `object-fit: contain` fitted it): every
+     channel of every pixel within 8, in colour and in black and white, on both sheets (the
+     parity with Figma nodes 714-42387 and 3773-90792). The file is drawn as its own inline
+     markup, ids made unique: an `<img>` snaps its box to device pixels, which moves an edge
+     by up to half a pixel (measured 2026-10-21: up to 255 on a ribbon stroke, at most 3 with
+     the markup). The texts over the vectors are hidden in both captures, which are
+     full-page in a context of their own: a clip capture or a page the suite has driven
+     re-antialiases a die's edge over its ribbon (measured 2026-10-21). */
+  console.log('the folded vectors against their files');
+  {
+    const dpr = 2;
+    const LIMIT = 8;
+    const VECTOR_SET = 'q241-q13-q1-q2-q6-q251-q22-q17-q16-q72-q143-q23-q313';
+    const pv = await fresh({ width: 1180, height: 950 });
+    await pv.page.setViewport({ width: 1180, height: 950, deviceScaleFactor: dpr });
+    const worst = {};
+    for (const [isBw, isCompact] of [
+      [false, false],
+      [true, false],
+      [false, true],
+      [true, true]
+    ]) {
+      const layout = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
+      await openAs(
+        pv.d,
+        VECTOR_SET,
+        isBw,
+        isCompact,
+        () => pv.d.click('Чёрно-белая'),
+        () => pv.d.click('Компактная')
+      );
+      await pv.page.addStyleTag({
+        content:
+          '.psheet .pc-cells, .psheet .pc-tier b, .psheet .pc-tier i, .psheet .pc-die b,' +
+          ' .psheet .pc-th-box b { visibility: hidden !important; }'
+      });
+      await pv.d.settle();
+      /* Each vector's box in page pixels, the file it replaced read in the page. */
+      const boxes = await pv.page.$$eval('.psheet [data-vector]', (els) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          return {
+            shape: e.getAttribute('data-vector'),
+            paint: e.getAttribute('data-paint'),
+            x: r.left + window.scrollX,
+            y: r.top + window.scrollY,
+            w: r.width,
+            h: r.height
+          };
+        })
+      );
+      const shapes = new Set(boxes.map((b) => b.shape));
+      ok(
+        shapes.size === 10,
+        layout + ': the sheet does not draw every folded shape - ' + [...shapes].join(', ')
+      );
+      const inline = readPNG(await pv.page.screenshot({ fullPage: true }));
+      /* The file the old markup drew, in the vector's place and box. */
+      await pv.page.evaluate(async () => {
+        let n = 0;
+        for (const v of document.querySelectorAll('.psheet [data-vector]')) {
+          const shape = v.getAttribute('data-vector');
+          const paint = v.getAttribute('data-paint');
+          const file =
+            shape +
+            (shape.startsWith('die-')
+              ? '-' + (paint === 'colour' ? 'phy' : paint)
+              : paint === 'bw'
+                ? '-bw'
+                : '') +
+            '.svg';
+          const text = await (await fetch('card/' + file)).text();
+          const tag = 'pvf' + String(n++) + '-';
+          const own = text
+            .replace(/id="([^"]+)"/g, 'id="' + tag + '$1"')
+            .replace(/url\(#([^)]+)\)/g, 'url(#' + tag + '$1)');
+          const ref = document.importNode(
+            new DOMParser().parseFromString(own, 'image/svg+xml').documentElement,
+            true
+          );
+          for (const a of ['width', 'height', 'style', 'overflow']) ref.removeAttribute(a);
+          if (shape.startsWith('die-'))
+            ref.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+          ref.classList.add('pv-file');
+          const parent = v.parentElement;
+          const pr = parent.getBoundingClientRect();
+          const r = v.getBoundingClientRect();
+          Object.assign(ref.style, {
+            display: 'block',
+            overflow: 'hidden',
+            position: 'absolute',
+            left: r.left - pr.left - parent.clientLeft + 'px',
+            top: r.top - pr.top - parent.clientTop + 'px',
+            width: r.width + 'px',
+            height: r.height + 'px',
+            margin: '0'
+          });
+          parent.insertBefore(ref, v);
+          v.style.visibility = 'hidden';
+        }
+      });
+      await pv.d.settle();
+      const files = readPNG(await pv.page.screenshot({ fullPage: true }));
+      for (const b of boxes) {
+        const key = b.shape + ':' + b.paint + (isCompact ? ' compact' : '');
+        let max = 0;
+        let over = 0;
+        const x0 = Math.floor(b.x * dpr);
+        const y0 = Math.floor(b.y * dpr);
+        const x1 = Math.ceil((b.x + b.w) * dpr);
+        const y1 = Math.ceil((b.y + b.h) * dpr);
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            const p = inline.rgb(x, y);
+            const q = files.rgb(x, y);
+            const diff = Math.max(
+              Math.abs(p[0] - q[0]),
+              Math.abs(p[1] - q[1]),
+              Math.abs(p[2] - q[2])
+            );
+            if (diff > max) max = diff;
+            if (diff > LIMIT) over++;
+          }
+        }
+        const was = worst[key];
+        if (!was || max > was.max) worst[key] = { max, over, px: (x1 - x0) * (y1 - y0) };
+      }
+    }
+    for (const [key, w] of Object.entries(worst)) {
+      console.log(
+        '  ' + key + ': max ' + w.max + ', over ' + LIMIT + ': ' + w.over + ' of ' + w.px
+      );
+      ok(
+        w.max <= LIMIT,
+        key +
+          ': the inline vector differs from its file by ' +
+          w.max +
+          ' (' +
+          w.over +
+          ' pixels over ' +
+          LIMIT +
+          ')'
+      );
+    }
+    await pv.ctx.close();
+  }
+
   /* ---------- the editor's print view (docs/specs/FEATURES.md, "Homebrew") ----------
-     The same card with the same fit, at the printed size, in each of the four layouts;
-     the visit pick is the print page's, so `d.go` keeps it on the way to the sheet. */
+     The same card with the same fit, drawn at the preview column's width (at most 420 px:
+     every mm and pt value times the scale, no transform), in each of the four layouts; the
+     visit pick is the print page's, so `d.go` keeps it on the way to the sheet. The fit is
+     compared in cqw: the text size within 0.1, the same `--pcpad`, the picture band, and
+     the clip verdict - the editor's warning against the sheet's. */
   console.log("the editor's print view");
   {
-    const EDITOR = '#/homebrew/hb_emberaxeaaaaaaaa';
     const fitOf = (sel) =>
       page.evaluate((s) => {
         const c = document.querySelector(s);
@@ -2502,52 +2731,101 @@ const { ok } = rep;
         const text = c.querySelector('.pc-text');
         const box = c.querySelector('.pc-content');
         const art = c.querySelector('.pc-art');
+        const cq = (px) => (px / r.width) * 100;
+        const frame = c.closest('.pframe');
         return {
           w: r.width,
           h: r.height,
-          font: text ? parseFloat(getComputedStyle(text).fontSize) : null,
+          scale: frame ? parseFloat(frame.style.getPropertyValue('--pv-scale')) : 1,
+          column: frame ? frame.parentElement.clientWidth : null,
+          transform: getComputedStyle(c).transform,
+          font: text ? cq(parseFloat(getComputedStyle(text).fontSize)) : null,
           pad: box ? box.style.getPropertyValue('--pcpad') : null,
-          art: art ? art.getBoundingClientRect().height : null
+          art:
+            art && getComputedStyle(art).display !== 'none'
+              ? cq(art.getBoundingClientRect().height)
+              : null
         };
       }, sel);
-    const near = (a, b) => (a === null && b === null) || Math.abs(a - b) < 0.05;
-    await d.open(EDITOR, { as: 'gm1' });
-    await d.click('На печати');
-    for (const [isBw, isCompact] of [
-      [false, false],
-      [true, false],
-      [false, true],
-      [true, true]
-    ]) {
-      const name = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
-      await d.click(isBw ? 'Чёрно-белая' : 'Цветная');
-      await d.click(isCompact ? 'Компактная' : 'Обычная');
-      await d.settle();
-      const shown = await fitOf('.preview .pframe .pcard');
-      await d.go('#/p/set-emberaxe');
-      await waitForSet();
-      await d.settle();
-      const printed = await fitOf('.psheet .pcard[data-pid]');
-      console.log('  ' + name + ': ' + JSON.stringify({ shown, printed }));
-      const [w, h] = isCompact ? [44, 63] : [63, 88];
-      ok(
-        !!shown && Math.abs(shown.w - w * MM) < 0.5 && Math.abs(shown.h - h * MM) < 0.5,
-        name + ': the preview card is not ' + w + 'x' + h + ' mm - ' + JSON.stringify(shown)
+    const near = (a, b, d) => (a === null && b === null) || Math.abs(a - b) < d;
+    const editorWarned = () =>
+      page.evaluate(
+        (words) =>
+          [...document.querySelectorAll('.hbform .fld .box.warn')].some((b) =>
+            b.textContent.includes(words)
+          ),
+        CLIP_CARD
       );
-      ok(
-        !!shown &&
-          !!printed &&
-          near(shown.font, printed.font) &&
-          shown.pad === printed.pad &&
-          near(shown.art, printed.art),
-        name +
-          ': the preview fits otherwise than the sheet - ' +
-          JSON.stringify({ shown, printed })
-      );
-      await d.go(EDITOR);
-      for (let i = 0; i < 40 && !(await d.has('На печати')); i++) await d.settle();
+    const parity = async (label, as, editor, set) => {
+      await d.open(editor, { as });
       await d.click('На печати');
-    }
+      for (const [isBw, isCompact] of [
+        [false, false],
+        [true, false],
+        [false, true],
+        [true, true]
+      ]) {
+        const name = label + ', ' + (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
+        await d.click(isBw ? 'Чёрно-белая' : 'Цветная');
+        await d.click(isCompact ? 'Компактная' : 'Обычная');
+        await new Promise((r) => setTimeout(r, 300));
+        await d.settle();
+        const shown = await fitOf('.preview .pframe .pcard');
+        const shownCut = await editorWarned();
+        await d.go('#/p/' + set);
+        await waitForSet();
+        await d.settle();
+        const printed = await fitOf('.psheet .pcard[data-pid]');
+        const printedCut = (await d.count('.clipwarn')) > 0;
+        console.log(
+          '  ' + name + ': ' + JSON.stringify({ shown, printed, shownCut, printedCut })
+        );
+        const [w, h] = isCompact ? [44, 63] : [63, 88];
+        ok(
+          !!shown &&
+            shown.scale > 1 &&
+            Math.abs(shown.w - shown.scale * w * MM) < 0.5 &&
+            Math.abs(shown.h - shown.scale * h * MM) < 0.5 &&
+            shown.w <= Math.min(420, shown.column) + 0.5 &&
+            shown.w > Math.min(420, shown.column) - 0.02 * w * MM - 0.5 &&
+            shown.transform === 'none',
+          name +
+            ': the preview card is not ' +
+            w +
+            'x' +
+            h +
+            ' mm at the column width - ' +
+            JSON.stringify(shown)
+        );
+        ok(
+          !!printed && Math.abs(printed.w - w * MM) < 0.5 && printed.scale === 1,
+          name + ': the sheet card is not ' + w + 'x' + h + ' mm - ' + JSON.stringify(printed)
+        );
+        ok(
+          !!shown &&
+            !!printed &&
+            near(shown.font, printed.font, 0.1) &&
+            shown.pad === printed.pad &&
+            /* The picture band is set from `offsetTop`, a whole pixel on each card. */
+            near(shown.art, printed.art, 100 / shown.w + 100 / printed.w) &&
+            shownCut === printedCut,
+          name +
+            ': the preview fits otherwise than the sheet - ' +
+            JSON.stringify({ shown, printed, shownCut, printedCut })
+        );
+        await d.go(editor);
+        for (let i = 0; i < 40 && !(await d.has('На печати')); i++) await d.settle();
+        await d.click('На печати');
+      }
+    };
+    await parity('the axe', 'gm1', '#/homebrew/hb_emberaxeaaaaaaaa', 'set-emberaxe');
+    await parity(
+      'the long source line',
+      'gm4',
+      '#/homebrew/hb_longsrcaaaaaaaaa',
+      'set-longsrc1'
+    );
+    await parity('the clipped draft', 'gm4', '#/homebrew/hb_longtextaaaaaaaa', 'set-clipped1');
 
     /* (b) A 3000-character description: cut off, and the warning after the pause. */
     const editorCut = async (name, desc, layout) => {
@@ -2607,10 +2885,19 @@ const { ok } = rep;
       await d.settle();
     const bar = await page.evaluate(() => {
       const w = document.querySelector('.printbar .clipwarn .box.warn');
-      return { role: w?.getAttribute('role') ?? null, text: w?.textContent ?? null };
+      const said = document.querySelector('.printbar .said[role="status"]');
+      return {
+        role: w?.getAttribute('role') ?? null,
+        text: w?.textContent ?? null,
+        said: said?.textContent.trim() ?? null
+      };
     });
+    /* The box is no live region; the bar's region says it (rule 19). */
     ok(
-      bar.role === 'status' && !!bar.text && bar.text.includes(CLIP_SHEET.replace('%d', '1')),
+      bar.role === null &&
+        !!bar.text &&
+        bar.text.includes(CLIP_SHEET.replace('%d', '1')) &&
+        (bar.said ?? '').includes(CLIP_SHEET.replace('%d', '1')),
       'set-clipped1 draws no warning with 1 in the bar - ' + JSON.stringify(bar)
     );
     await d.media('print');

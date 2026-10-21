@@ -98,8 +98,8 @@ const CLIPPED_TEXT =
     .repeat(40)
     .slice(0, 3000);
 
-/** The print controls' hint, which names them for the driver (`title` wins). */
-const PRINT_HINT = 'Собрать карточки для печати: девять на лист A4';
+/** The print controls' name: the driver names a titled button by its text. */
+const PRINT = 'Печать';
 
 /** Waits until a `#/p/` page has left «Загружаем...»: its sheet, or its sub. */
 async function sheet(d) {
@@ -295,17 +295,29 @@ function heldNamesFile() {
   );
   return file;
 }
+/* The control the page names in its language: the sweep's English run draws a signed-in
+   user's pages in English (`?lang=`). */
+async function clickEither(d, ru, en) {
+  if ((await d.text()).includes(ru)) await d.click(ru);
+  else await d.click(en);
+}
+
 /* «Импорт из файла» open on «Мои предметы», its lazy chunk loaded. */
 async function hbImportOpen(d) {
-  await d.click('Импорт из файла');
-  for (let i = 0; i < 40 && !(await d.text()).includes('Импорт предметов из файла JSON'); i++)
+  await clickEither(d, 'Импорт из файла', 'Import from file');
+  for (
+    let i = 0;
+    i < 40 &&
+    !/Импорт предметов из файла JSON|Import items from a JSON file/.test(await d.text());
+    i++
+  )
     await d.settle();
 }
 
 /** Waits for gm1's account cards, then opens «Импорт из файла». */
 async function importOpen(d) {
   for (let i = 0; i < 40 && !(await d.count('.listcard-pick')); i++) await d.settle();
-  await d.click('Импорт из файла');
+  await clickEither(d, 'Импорт из файла', 'Import from file');
 }
 
 /** Waits for gm1's account cards, then ticks «Пустой список» and «Трофеи». */
@@ -1793,6 +1805,15 @@ const STATES = [
     }
   },
   {
+    id: '#/lists/a ~ price help',
+    route: '#/lists/a',
+    storage: noted,
+    why: "the priced row's «Цена» «?» pressed: the conversion in book units on a line under the row's fields",
+    enter: async (d) => {
+      await d.click('Подсказка: Цена');
+    }
+  },
+  {
     id: '#/lists/a ~ roll panel',
     route: '#/lists/a',
     storage: seven,
@@ -2577,7 +2598,7 @@ const STATES = [
     route: '#/i/ci1',
     why: '«Печать» pressed signed out: the boxed sign-in prompt under the pick row, «Войдите, чтобы печатать карточки.»',
     enter: async (d) => {
-      await d.click(PRINT_HINT);
+      await d.click(PRINT);
     }
   },
   {
@@ -2586,7 +2607,7 @@ const STATES = [
     why: "the selection bar's «Печать» pressed signed out: the compact sign-in prompt and «Отмена» in place of the bar's action row",
     enter: async (d) => {
       await d.tick(ROW1_CI1);
-      await d.click(PRINT_HINT);
+      await d.click(PRINT);
     }
   },
   {
@@ -2595,7 +2616,7 @@ const STATES = [
     storage: seven,
     why: "the list toolbar's «Печать» pressed signed out: the boxed sign-in prompt under the toolbar",
     enter: async (d) => {
-      await d.click(PRINT_HINT);
+      await d.click(PRINT);
     }
   },
   {
@@ -2708,7 +2729,7 @@ const STATES = [
     id: '#/homebrew ~ import panel as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json, schema/homebrew-v2.json and llms.txt',
+    why: '«Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v2.json and llms.txt',
     enter: hbImportOpen
   },
   {
@@ -2772,6 +2793,93 @@ const STATES = [
       await d.click('Переместить (3)');
       /* The seed's «Мастерская Ольхи», `uuid(501)`. */
       await d.choose('#hb-move', '00000000-0000-4000-8000-000000000501');
+    }
+  },
+  /* The head's home button and «?», the Items tab's filter from the eighth item and the
+     fold of a filter row of more than 12 values. `items` and `sections` seed the fake
+     (`?items=`, `?sections=`): twelve items in two sources, or 66 with the first source's
+     22 sections all used. */
+  {
+    id: '#/homebrew ~ help open as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'the head «Мои предметы» with the home button and «Как это работает» pressed: the help under the head, five paragraphs with bold leads «Предметы.», «Источники.», «Комплекты.», «Карты правил.», «Импорт из файла.»',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
+  {
+    id: '#/homebrew ~ pinned as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    why: 'the home button pressed: «Открывается при запуске» pressed, the toast «Приложение будет открываться на этом разделе»',
+    enter: async (d) => {
+      await d.click('Открывать этот раздел при запуске');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/homebrew ~ filters as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 12,
+    why: 'twelve own items: the search box, «Фильтры» 12 px under it with the count 12 and no link button, then «12 предметов из 12», the strip and the groups'
+  },
+  {
+    id: '#/homebrew ~ filters open as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 12,
+    why: '«Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие), page memory',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/homebrew ~ filter hides a tick as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 12,
+    why: '«Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked',
+    enter: async (d) => {
+      await d.tick('Кольцо с гравировкой');
+      await d.click('Фильтры');
+      await d.click('Мастерская Ольхи');
+    }
+  },
+  {
+    id: '#/homebrew ~ section fold as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 66,
+    sections: 20,
+    why: 'the panel open over 66 items: «Раздел» draws its first 10 sections, then «и ещё 12» collapsed (a row of more than 12 values folds)',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/homebrew ~ section fold open as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 66,
+    sections: 20,
+    why: 'the same, «и ещё 12» pressed: all 22 sections and «свернуть» expanded, the focus kept on it',
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('и ещё 12');
+    }
+  },
+  {
+    id: '#/tables/homebrew ~ section fold as gm1',
+    route: '#/tables/homebrew',
+    as: 'gm1',
+    items: 66,
+    sections: 20,
+    why: 'the homebrew table on «Мастерская Ольхи» with its 22 sections: the panel open, «Раздел» folded after 10 with «и ещё 12»; no table, filter or section link',
+    enter: async (d) => {
+      await d.click('Фильтры');
     }
   },
   {
@@ -3365,6 +3473,23 @@ const STATES = [
       await sheet(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
         await d.settle();
+    }
+  },
+  {
+    id: '#/p/set-longsrc1 as gm2',
+    route: '#/p/set-longsrc1',
+    as: 'gm2',
+    why: "gm4's item with an 80-code-point source and section on the standard colour sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws img/_none.webp",
+    enter: sheet
+  },
+  {
+    id: '#/p/set-longsrc1 ~ compact as gm2',
+    route: '#/p/set-longsrc1',
+    as: 'gm2',
+    why: 'the same card on the compact colour sheet: the source line still inside the card',
+    enter: async (d) => {
+      await sheet(d);
+      await d.click('Компактная');
     }
   },
   {

@@ -3,7 +3,7 @@
 # why: arriving opens the panel; the cls row reads "Класс", as on weapons
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_secondary/f_cls-mag]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/eq_secondary/f_cls-mag]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -124,6 +124,7 @@ daggerheart.com
 Легендарный Священный ЩитРанг 4 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=74e995d3]
 ЛутDaggerheart
 Магическое
+Магическое×
 Обычные правила
 Оружие
 Осколок Ворпала
@@ -166,7 +167,6 @@ daggerheart.com
 Сфера МёбиусаРанг 4 · Магическое · Знание · Вплотную · d8+6 маг ... [namelen=284 namehash=a160495f]
 Таблицы
 Тёмное сердце Андалурии
-Убрать из фильтра
 Улучшаемые
 Улучшенные Руны Концентрации
 Улучшенные Руны КонцентрацииРанг 2 · Магическое · Инстинкт · Бли... [namelen=200 namehash=6eb099a6]
@@ -184,7 +184,7 @@ daggerheart.com
 Щупальце Черной КровиРанг 4 · Магическое · Инстинкт · Средне · d... [namelen=240 namehash=f3a9427d]
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_cls-mag]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_cls-mag]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -203,7 +203,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -321,6 +321,7 @@ Link to this table
 List
 Lists
 Magic
+Magic×
 Many Worlds Tavern
 Melee
 Möbius Orb
@@ -331,7 +332,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Ritual Blade of Sekhmet
 Rune Shield

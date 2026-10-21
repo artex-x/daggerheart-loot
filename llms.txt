@@ -315,7 +315,7 @@ Lists page for the lists ticked there and on a list's own page, and
 «Скачать мои данные (ZIP)» ("Download my data (ZIP)") on the account page
 writes a zip whose `lists.json` is this same document, beside
 `homebrew.json`, the account's own items (see "Homebrew items as a file
-(homebrew-v1)"). A file a GM gives you reads the same way - see "Reading an
+(homebrew-v2)"). A file a GM gives you reads the same way - see "Reading an
 export" below.
 
 Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v1.json
@@ -645,7 +645,10 @@ Schema: https://artex-x.github.io/daggerheart-loot/schema/import-v3.json
   homebrew entry may carry it, with or without its `snapshot`. On import a
   GM-only entry keeps its mark, also when it links a fixed copy of its item.
 
-## Homebrew items as a file (homebrew-v1)
+## Homebrew items as a file (homebrew-v2)
+
+The schema files call this section "Homebrew items as a file (homebrew-v1)"
+and its subsection "Version 2: book items in a card (homebrew-v2)".
 
 A signed-in GM keeps their own items on the «Мои предметы» ("My items") page
 (`#/homebrew`): items, the sources they come from (a book, a supplement, a
@@ -658,7 +661,7 @@ file") on the «Мои предметы» page.
 The site writes the same format when the GM downloads their items. A file a
 GM gives you reads the same way - see "Reading a homebrew export" below.
 
-Schema: https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json
+Schema: https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json
 (JSON Schema, draft 2020-12). The site checks every file against it before
 it imports anything. Every key is checked, and a key the schema does not
 name is an error. The field names are the catalog's: an item is written as
@@ -668,9 +671,9 @@ a record of `data.json` is.
 
 ```json
 {
-  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json",
+  "$schema": "https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json",
   "format": "daggerheart-loot/homebrew",
-  "version": 1,
+  "version": 2,
   "books": [
     {
       "key": "hb_alderworkshopaaa",
@@ -779,15 +782,15 @@ a record of `data.json` is.
 }
 ```
 
-### Version 2: book items in a card (homebrew-v2)
+### Book items in a card
 
-Version 2 is version 1 with one addition: a set card or a rule card may hold
-book items in `items`, 1 to 100 unique ids from `catalog.csv`, never an own
-`hb_` key (an own item names the card in its own `set` or `refs`). The GM
-sees the card's set bonus or rule on those book items; other readers see the
-book's item. Write `"version": 2` only when a card holds `items`; any other
-file stays version 1, which the site also reads. A record that the book puts
-in a set already (`set` in `data.json`) takes no own set card.
+A set card or a rule card may hold book items in `items`, 1 to 100 unique ids
+from `catalog.csv`, never an own `hb_` key (an own item names the card in its
+own `set` or `refs`). The GM sees the card's set bonus or rule on those book
+items; other readers see the book's item. Write `"version": 2`. A version 1
+file (`schema/homebrew-v1.json`, no `items` in a card) is an older form the
+site still reads. A record that the book puts in a set already (`set` in
+`data.json`) takes no own set card.
 
 Schema: https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json
 
@@ -814,13 +817,15 @@ On «Обновить» ("Update") a version 2 file states each card's book item
 card without `items` loses them. A version 1 file keeps the book items a
 held card has.
 
+To change a card the GM holds, copy its `items` from their export.
+
 ### The homebrew fields
 
 | Key | Required | Value |
 |---|---|---|
 | `$schema` | no | The schema URL above. Ignored. |
 | `format` | yes | Exactly `daggerheart-loot/homebrew`. |
-| `version` | yes | `1`, or `2` when a card holds `items` ("Version 2" above). |
+| `version` | yes | `2`; the site also reads `1`, an older file with no card `items`. |
 | `exported_at` | no | When the site wrote the file (ISO 8601). Ignored on import. |
 | `books` | no | 0 to 100 sources. |
 | `cards` | no | 0 to 1000 set cards and rule cards. |
@@ -835,7 +840,7 @@ held card has.
 | card `ensub`, `rusub` | no | A rule card's subtitles, up to 60 characters each. Never on a set card. |
 | card `ende`, `rud` | no | A set card's bonus or a rule card's text, up to 1500 characters each, markup counted; Markdown subset source ("Data" above). |
 | card `url` | no | A rule card's link: empty, or `https://` and printable ASCII, up to 300 characters. Never on a set card. |
-| card `items` | version 2 | 1 to 100 unique ids from `catalog.csv` the card also holds; never an `hb_` key. |
+| card `items` | no | 1 to 100 unique ids from `catalog.csv` the card also holds; never an `hb_` key. |
 | item `key` | yes | The item's key. |
 | item `book` | no | The `key` of a source of this file. Leave it out for no source. |
 | item `section` | no | The `key` of a section of the item's own source; never without `book`. |
@@ -925,7 +930,7 @@ GM's own items live only in their account.
 ### What a homebrew file never carries
 
 `img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, row ids
-and edit dates. Version 1 carries no art.
+and edit dates. The file carries no art.
 
 ### How to hand a homebrew file over
 
@@ -1008,7 +1013,7 @@ from the book.
 - No public API. Signing in is optional; a signed-in GM's lists live in the
   account and reach players through `#/s/` links. A list reaches an account
   as a file ("Lists as a file (import-v1)"), and a GM's own items as a
-  homebrew file ("Homebrew items as a file (homebrew-v1)"); you cannot import
+  homebrew file ("Homebrew items as a file (homebrew-v2)"); you cannot import
   either yourself - the GM does, on the Lists page and on «Мои предметы».
 - You cannot edit someone else's list.
 - Art is at `img/<id>.webp`, link previews at `og/<id>.jpg`.

@@ -45,6 +45,13 @@ describe('the formatted text', () => {
     await expectNoA11yViolations(container);
   });
 
+  it('draws a head-only table as one row of plain cells', async () => {
+    const { container } = render(Markup, { blocks: parseMarkup('| a | b |\n|---|---|') });
+    expect(html(container)).toBe('<table><tbody><tr><td>a</td><td>b</td></tr></tbody></table>');
+    expect(container.querySelector('th, thead')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
   it('draws an empty text as one empty paragraph', () => {
     const { container } = render(Markup, { blocks: parseMarkup('') });
     expect(html(container)).toBe('<p></p>');
@@ -76,5 +83,12 @@ describe('the inline runs', () => {
     });
     expect(html(container)).toBe('a <b><i>b</i></b>');
     expect(container.querySelector('span')).toBeNull();
+  });
+
+  it('draws a space between two marked runs inside the first, so a name keeps it', () => {
+    const [first] = parseMarkup('***Свет:*** **Потратьте Надежду**, чтобы');
+    const { container } = render(MarkupInline, { c: first?.t === 'p' ? first.c : [] });
+    expect(html(container)).toBe('<b><i>Свет: </i></b><b>Потратьте Надежду</b>, чтобы');
+    expect(container.textContent).toBe('Свет: Потратьте Надежду, чтобы');
   });
 });

@@ -46,6 +46,7 @@ import {
   appUrl,
   canonicalHash,
   cardVersion,
+  HOMEBREW_HASH,
   homebrewItemHash,
   itemHash,
   keepsTicks,
@@ -184,8 +185,11 @@ function pinOf(v: string): string | null {
      TABLE_IDS is not, because there is nothing specific behind it to reopen.
      `parseHash` cannot tell "no name" from "a name it did not recognise"
      (both come back `table: null`), so the bare case is read off the string
-     itself rather than off the route. */
+     itself rather than off the route. «Мои предметы» is pinned by `#/homebrew` alone, one
+     pin for every tab; like `#/tables/homebrew`, a build with no sign-in draws it as not
+     found, address kept (docs/specs/FEATURES.md, "Homebrew"). */
   if (v === '#/tables/frames') return '#/tables/other_frames';
+  if (v === HOMEBREW_HASH) return v;
   /* A pin of a renamed id reads as its slug; `#applyPrefs` then stores the slug
      (docs/specs/STATE.md). */
   const c = canonicalHash(v);
@@ -444,6 +448,9 @@ export class AppState {
   /* An action toast's deadline while it runs, and its time left while held. */
   #toastDue = 0;
   #toastLeft: number | null = null;
+  /* A plain message said while an error or an action toast shows: it waits for that
+     toast's end (owner, 2026-10-08). One waits; a newer plain message takes its place. */
+  #waiting: Msg | null = null;
 
   #home = $state(DEFAULT_HOME);
   /** Whether the "lists live in this browser only" notice has been dismissed
@@ -1058,6 +1065,28 @@ export class AppState {
     return this.index?.byId.get(id) ?? this.linkedRecord(id);
   }
 
+  /** Returns the record the page on screen draws for `id`: on `#/h/` the open item, on `#/s/`
+   *  the share's, on an account list's page that list's linked record, else `recordFor`. A
+   *  print press resolves by it, so an own item of a clashing key wins only where the page
+   *  draws it (docs/specs/FEATURES.md, "Print"). Only a homebrew key can clash, so a
+   *  catalogue id skips the share's snapshot. */
+  pageRecordFor(id: string): Record_ | undefined {
+    if (isHomebrewKey(id)) {
+      const r = this.route;
+      if (r.kind === 'item') {
+        const open = this.itemView?.record;
+        if (open?.id === id) return open;
+      } else if (r.kind === 'share') {
+        const shown = snapshotRecords(this.sharedView?.shared).find((x) => x.id === id);
+        if (shown) return shown;
+      } else if (this.openList) {
+        const linked = this.cloudLists?.get(this.openList)?.linked?.[id];
+        if (linked) return linked;
+      }
+    }
+    return this.recordFor(id);
+  }
+
   /** Returns whether `it` is another account's homebrew item: a record with an id that is not
    *  one of the reader's own items. Signed in, only once the own items are read. */
   isForeignItem(it: Record_): boolean {
@@ -1329,7 +1358,7 @@ export class AppState {
     qty: Readonly<Record<string, number>> = {}
   ): { entries: PrintSetEntry[]; cut: number } {
     const items = ids.flatMap((id) => {
-      const it = this.recordFor(id);
+      const it = this.pageRecordFor(id);
       return it ? [it] : [];
     });
     return printSetEntries(items, qty);
@@ -1343,7 +1372,7 @@ export class AppState {
   ): Promise<void> {
     if (!this.env.cloud || !this.user || this.printing) return;
     const unread = this.homebrew?.status !== 'ready' || this.cloudLists?.status !== 'ready';
-    if (unread && ids.some((id) => isHomebrewKey(id) && !this.recordFor(id))) {
+    if (unread && ids.some((id) => isHomebrewKey(id) && !this.pageRecordFor(id))) {
       this.say((t) => t.hbNotReady, { error: true });
       return;
     }
@@ -1684,6 +1713,7 @@ export class AppState {
     /* A timer left running past the listeners it would otherwise update is a
        leak of the same kind `#stopRouter`/`#stopListWatch` already guard
        against. */
+    this.#waiting = null;
     this.hideToast();
   }
 
@@ -1691,13 +1721,19 @@ export class AppState {
    * Says something with no place on screen - a toast, off `showToast` in
    * app.js. Plain notices last 1600ms, an error 2600ms and `role="alert"`,
    * and one with an action 7000ms. A second call replaces the first and
-   * restarts the clock, the same as the live app's single timer.
+   * restarts the clock, except a plain notice said while an error or an action
+   * toast shows: it waits and shows when that toast ends (docs/specs/FEATURES.md,
+   * "Chrome").
    */
   say(
     msg: Msg,
     opts: { error?: boolean | undefined; action?: ToastAction | undefined } = {}
   ): void {
     const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
+    if (mode === '' && this.#said && this.#said.mode !== '') {
+      this.#waiting = msg;
+      return;
+    }
     const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
     this.#said = { msg, mode, action: opts.action };
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
@@ -1747,6 +1783,8 @@ export class AppState {
     this.say(success ? ok : (t) => t.copyFailed, { error: !success });
   }
 
+  /** Ends the shown toast - its timer, its close or its action - and shows a waiting
+   *  plain message with its own 1600ms. */
   hideToast(): void {
     this.#said = null;
     this.#toastLeft = null;
@@ -1754,6 +1792,9 @@ export class AppState {
       clearTimeout(this.#toastTimer);
       this.#toastTimer = null;
     }
+    const next = this.#waiting;
+    this.#waiting = null;
+    if (next) this.say(next);
   }
 
   #applySource(): void {
@@ -2111,8 +2152,8 @@ export class AppState {
    * table underneath (`lastTable`, kept by that component alone - `App.svelte`
    * does not remount it between two `tables` addresses, so `AppState` cannot
    * see which one is genuinely on screen the way live's own `S.tables.t`
-   * can). `PageHead` passes it through from there; every other caller pins
-   * `this.hash` exactly as before.
+   * can). `PageHead` passes it through from there, and from `HomebrewPage`, whose
+   * tabs share the pin `#/homebrew`; every other caller pins `this.hash`.
    */
   toggleHome(hash?: string): boolean {
     const current = canonicalHash(hash ?? this.hash);

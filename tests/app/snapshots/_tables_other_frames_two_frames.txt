@@ -3,7 +3,7 @@
 # why: two frames picked in one row: values OR, and the second pick keeps the first
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/other_frames/f_frame-beast_feast-colossus]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/other_frames/f_frame-beast_feast-colossus]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -56,7 +56,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "Выбрать все (21)"
     checkbox "Легендарный Малый Револьвер" [checked=false]
-    button "Легендарный Малый Револьвер Ранг 4 · Физическое · Искусность · Д..." [namelen=215 namehash=7810fc4a]
+    button "Легендарный Малый Револьвер Ранг 4 · Физическое · Искусность · Д..." [namelen=216 namehash=d672baf5]
     checkbox "Динамит" [checked=false]
     button "Динамит Вы можете поджечь эту динамитную шашку и бросить её в пр..." [namelen=358 namehash=6652d180]
   contentinfo ""
@@ -116,6 +116,7 @@ daggerheart.com
 Кожаный Фартук
 Кожаный ФартукРанг 1 · Пороги 6/13 · Броня 3БроняУникальноеПир з... [namelen=69 namehash=0d76c9c7]
 Колоссы Сухоземья
+Колоссы Сухоземья×
 Конфиденциальность
 Коса
 КосаРанг 1 · Физическое · Искусность · Близко · d8+2 физ · Двуру... [namelen=103 namehash=4652d252]
@@ -150,6 +151,7 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Пир зверей
+Пир зверей×
 Поиск
 Походная Палка
 Походная ПалкаРанг 1 · Физическое · Инстинкт · Вплотную · d10+3 ... [namelen=114 namehash=71d486bb]
@@ -192,7 +194,6 @@ daggerheart.com
 Тесак
 ТесакРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=134 namehash=44409116]
 Тёмное сердце Андалурии
-Убрать из фильтра
 Удочка
 УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=07683ec0]
 Улучшенная Винтовка
@@ -218,7 +219,7 @@ daggerheart.com
 Щиток Крышки БочкиРанг 1 · Физическое · Сила · Вплотную · d4 физ... [namelen=144 namehash=cec9105d]
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f_frame-beast_feast-colossus]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/other_frames/f_frame-beast_feast-colossus]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -237,7 +238,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -271,7 +272,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_frames/f
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "Select all (21)"
     checkbox "Legendary Small Revolver" [checked=false]
-    button "Legendary Small Revolver Tier 4 · Physical · Finesse · Far · d6+..." [namelen=193 namehash=bb179dc9]
+    button "Legendary Small Revolver Tier 4 · Physical · Finesse · Far · d6+..." [namelen=194 namehash=1c6ec51c]
     checkbox "Dynamite" [checked=false]
     button "Dynamite You can light this dynamite and toss it within Close ra..." [namelen=353 namehash=a88f5f1f]
   contentinfo ""
@@ -298,11 +299,13 @@ Baking Tray BreastplateTier 1 · Thresholds 8/17 · Armor 4Very He... [namelen=1
 Barrel Lid Shield
 Barrel Lid ShieldTier 1 · Physical · Strength · Melee · d4 phy ·... [namelen=137 namehash=4fbf5cdc]
 Beast Feast
+Beast Feast×
 Butcher's Axe
 Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
 Cleaver
 CleaverTier 1 · Physical · Agility · Melee · d8 phy · One-Handed... [namelen=123 namehash=54f99894]
 Colossus of the Drylands
+Colossus of the Drylands×
 Cooking Knife
 Cooking KnifeTier 1 · Physical · Finesse · Melee · d8+1 phy · On... [namelen=103 namehash=ec6c4540]
 Copy a link to this section
@@ -389,7 +392,6 @@ Privacy
 Quilted Clothing
 Quilted ClothingTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 t... [namelen=95 namehash=a59647cc]
 RU
-Remove from the filter
 Reset all
 Revolver
 RevolverTier 1 · Physical · Finesse · Far · d6+1 phy · One-Hande... [namelen=246 namehash=dd6af21b]

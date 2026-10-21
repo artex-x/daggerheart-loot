@@ -3,7 +3,7 @@
 # why: the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint
 
 ## ru :: tree
-RootWebArea "Лавка в порту — Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+RootWebArea "Лавка в порту - Генератор лута Daggerheart" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,7 +19,7 @@ RootWebArea "Лавка в порту — Генератор лута — Dagger
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
@@ -75,7 +75,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
+RootWebArea "Лавка в порту - Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsCDQsiDQv9C-0YDRgtGDCjAubnRmcH4]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -91,7 +91,7 @@ RootWebArea "Лавка в порту — Daggerheart Loot Generator" [url=#/l/0
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"

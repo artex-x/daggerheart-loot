@@ -92,6 +92,12 @@ const requestsOf = (p: HTMLElement): HTMLElement[] => [
 const cells = (req: HTMLElement): string[] =>
   [...req.querySelectorAll('td')].map((td) => td.textContent.trim());
 
+/* The list page holds three status regions (`StatusRegion.svelte`); the requests' one is
+   told apart by what it says. */
+const regions = (c: HTMLElement): Element[] => [...c.querySelectorAll('.said[role="status"]')];
+const saying = (c: HTMLElement, words: string): Element | undefined =>
+  regions(c).find((r) => r.textContent.trim() === words);
+
 describe('the requests panel', () => {
   it('draws each pending request, newest first, with its lines against the stock and the total', async () => {
     const { container } = openShop(TWO);
@@ -269,15 +275,15 @@ describe('the requests panel', () => {
       c.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
     });
     const p = await panel();
-    const said = container.querySelector('.rsaid[role="status"]');
-    expect(said).toHaveTextContent('');
+    const before = regions(container);
+    expect(before.map((r) => r.textContent.trim())).not.toContain('Новый запрос');
     cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
     await waitFor(() => {
       expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
         'Новое в списке (2)'
       );
     });
-    expect(said).toHaveTextContent('Новый запрос');
+    expect(before).toContain(saying(container, 'Новый запрос'));
     await expectNoA11yViolations(container);
   });
 
@@ -287,17 +293,16 @@ describe('the requests panel', () => {
     /* The first read of the requests starts beside the owner topic's join; once the
        page draws the join, that read has landed, and what comes now is an arrival. */
     await waitFor(() => {
-      expect(container.querySelector('.lsaid[data-live="live"]')).toBeInTheDocument();
+      expect(container.querySelector('.said[data-live="live"]')).toBeInTheDocument();
     });
-    const said = container.querySelector('.rsaid[role="status"]');
-    expect(said).toBeInTheDocument();
-    expect(said).toHaveTextContent('');
+    const before = regions(container);
+    expect(before.map((r) => r.textContent.trim())).not.toContain('Новый запрос');
     cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
     await panel();
     await waitFor(() => {
-      expect(said).toHaveTextContent('Новый запрос');
+      expect(saying(container, 'Новый запрос')).not.toBeUndefined();
     });
-    expect(container.querySelector('.rsaid[role="status"]')).toBe(said);
+    expect(before).toContain(saying(container, 'Новый запрос'));
     await expectNoA11yViolations(container);
   });
 

@@ -34,8 +34,9 @@ const starsAfter = (s: string, at: number): number => {
 /** Returns the edit of Bold (`**`) or Italic (`*`): it removes the mark around a selection
  *  that holds it, else wraps the selection's non-blank part; with no selection it inserts
  *  the mark twice with the caret between. A selection over several lines wraps each line.
- *  Null, no edit, when an end of the selection touches stars that do not wrap it: a wrap
- *  there would leave stars as text. */
+ *  Bold on an italic span and Italic on a bold span, the selection inside or around the
+ *  stars, wrap it into `***...***`. Null, no edit, when an end of the selection touches
+ *  other stars that do not wrap it: a wrap there would leave stars as text. */
 export function toggleMark(
   value: string,
   start: number,
@@ -73,8 +74,16 @@ export function toggleMark(
     const text = core.slice(m, core.length - m);
     return { from: s, to: e, text, sel: [s, s + text.length] };
   }
+  const wrap: MarkupEdit = { from: s, to: e, text: mark + core + mark, sel: [s + m, e + m] };
+  /* The other mark's stars, equal on both ends, inside or around the selection: the wrap
+     makes bold italic `***...***`, and a second press unwraps it above. */
+  const other = 3 - m;
+  if (before === other && after === other && !lead && !tail) return wrap;
+  if (!before && !after && lead === other && tail === other && core.length > 2 * other) {
+    return wrap;
+  }
   if (before || after || lead || tail) return null;
-  return { from: s, to: e, text: mark + core + mark, sel: [s + m, e + m] };
+  return wrap;
 }
 
 const PREFIX = { ul: /^- /, ol: /^\d{1,3}\. / } as const;

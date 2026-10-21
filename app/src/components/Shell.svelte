@@ -37,6 +37,15 @@
   /* The account menu forgets itself on a navigation and on a user change. */
   let menuOpen = $state(false);
   let acctButton = $state<HTMLButtonElement | undefined>(undefined);
+  let signInLink = $state<HTMLAnchorElement | undefined>(undefined);
+
+  /* Rule 20: «Выйти» removed itself with the menu, so focus goes to «Войти», which now
+     holds the account control's place; a refused sign-out keeps the account button. */
+  function afterSignOut(): void {
+    if (signInLink?.isConnected) signInLink.focus();
+    else if (acctButton?.isConnected) acctButton.focus();
+    else document.getElementById('main')?.focus();
+  }
   $effect(() => {
     void app.navigations;
     void userId;
@@ -62,7 +71,7 @@
 
   /**
    * A record, a section or an owned list titles the tab
-   * with its own name ahead of the app's - `<name> — <docTitle>` - and every
+   * with its own name ahead of the app's - `<name> - <docTitle>` - and every
    * other route keeps the plain title. Built and reverted once because it
    * moved goldens a batch was not allowed to re-record; landed with the
    * re-record.
@@ -98,7 +107,7 @@
                 : route.kind === 'homebrewItem'
                   ? homebrewTitle(route.key)
                   : undefined;
-    document.title = name ? `${name} — ${app.t.docTitle}` : app.t.docTitle;
+    document.title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
   });
 
   /* The editor's tab: the item's stored name, or «Новый предмет». */
@@ -172,6 +181,7 @@
                 onclose={() => {
                   menuOpen = false;
                 }}
+                onsignedout={afterSignOut}
               />
             {/if}
           </div>
@@ -179,6 +189,7 @@
           <a
             class="acct"
             class:on={onAccount}
+            bind:this={signInLink}
             href={ACCOUNT_HASH}
             aria-current={onAccount ? 'page' : undefined}
             ><Icon name="user" /><span class="t">{app.t.signIn}</span></a

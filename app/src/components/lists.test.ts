@@ -259,7 +259,7 @@ describe('the row under a full card', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено'
+      'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено'
     );
     // added for the session even though nothing persisted
     expect(screen.getByRole('button', { name: '✓ Клад дракона' })).toBeInTheDocument();

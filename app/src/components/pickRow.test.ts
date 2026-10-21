@@ -115,6 +115,29 @@ describe('«Сохранить себе»', () => {
     app.stop();
   });
 
+  it('ties the note to its button in a group of their own, under the other pick buttons', async () => {
+    const world = fakeCloud(SEED, 'gm2');
+    const { container } = page('#/h/' + ROLL_B, world);
+    const save = await saveButton();
+    const note = screen.getByText(t.saveItemNote);
+    const group = save.parentElement;
+    expect(group).toHaveClass('savegroup');
+    expect(note.parentElement).toBe(group);
+    expect([...(group?.children ?? [])]).toEqual([save, note]);
+    expect(note.id).toBe('savenote-p-' + ROLL_B);
+    expect(save).toHaveAttribute('aria-describedby', note.id);
+    expect(save).toHaveAccessibleDescription(t.saveItemNote);
+    /* «Добавить в список» and «Печать» stay outside the group. */
+    expect(within(group!).queryByRole('button', { name: t.print })).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(save);
+    await waitFor(async () => {
+      expect(await saveButton()).toHaveTextContent(t.saveItemDone);
+    });
+    expect(await saveButton()).not.toHaveAttribute('aria-describedby');
+    expect(document.getElementById('savenote-p-' + ROLL_B)).toBeNull();
+  });
+
   it('(b) reads «Сохранено» and copies once', async () => {
     const world = fakeCloud(SEED, 'gm2');
     const imported = vi.spyOn(world.homebrew, 'import');

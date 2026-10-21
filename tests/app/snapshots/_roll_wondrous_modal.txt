@@ -3,7 +3,7 @@
 # why: the card opened over the roll
 
 ## ru :: tree
-RootWebArea "Wondrous Environments — Генератор лута — Daggerheart" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=#/roll/wondrous_environments]
   dialog "Смола Бездны" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -45,6 +45,7 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Отправить
+Печать
 Поиск
 Предметы сообществ
 Результат броска
@@ -53,7 +54,7 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–119
-Собрать карточки для печати: девять на лист A4
+Смола Бездны
 Списки
 Страница
 Таблицы
@@ -61,7 +62,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
   dialog "Abyssal Sap" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
@@ -80,6 +81,7 @@ RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/w
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
 
 ## en :: controls
+Abyssal Sap
 Add to list
 Alt. tables
 Arazo's Artifacts
@@ -93,13 +95,13 @@ Dread GM Toolbox
 EN
 How this works
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Many Worlds Tavern
 One higher
 One lower
 Open this section on start
 Page
+Print
 Privacy
 RU
 Random 1–119

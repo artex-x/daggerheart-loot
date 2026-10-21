@@ -3,7 +3,7 @@
 # why: the crit box with a single table to open
 
 ## ru :: tree
-RootWebArea "Альт. таблицы — Генератор лута — Daggerheart" [url=#/roll/alt]
+RootWebArea "Альт. таблицы - Генератор лута Daggerheart" [url=#/roll/alt]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
   main ""
     heading "Альтернативные таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
     StaticText "РЕДКОСТЬ"
     button "Обычная Ранг 1–2" [pressed=true]
@@ -90,16 +90,18 @@ daggerheart.com
 Кость Страха: Результат броска
 ЛегендарнаяРанг 3–4
 ЛутDaggerheart
+Металлические Шарики
 НеобычнаяРанг 1–2
-Нужен хотя бы один тип
 ОбычнаяРанг 1–2
 Обычные правила
 Открывать этот раздел при запуске
 Открыть таблицу
 Отправить
 Очень редкаяРанг 3–4
+Первоклассный Спальный Мешок
 Поднять до Необычной
 Поиск
+Предметы
 Расходники
 РедкаяРанг 2–3
 Скопировать все варианты
@@ -114,7 +116,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
+RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -133,7 +135,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
   main ""
     heading "Alternate tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
     StaticText "RARITY"
     button "Common Tier 1–2" [pressed=true]
@@ -184,7 +186,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
 
 ## en :: controls
 Alt. tables
-At least one type has to stay on
+Ball Bearings
 Bump to Uncommon
 CommonTier 1–2
 Consumables
@@ -202,11 +204,13 @@ Hope Die: One lower
 Hope Die: Roll result
 How this works
 Install as an app
+Items
 LegendaryTier 3–4
 Lists
 Open table
 Open this section on start
 Page
+Premium Bedroll
 Privacy
 RU
 RareTier 2–3

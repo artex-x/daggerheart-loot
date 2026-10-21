@@ -3,7 +3,7 @@
 # why: row 1 ticked: no percentage row, no clear button - the two `priced` branches off
 
 ## ru :: tree
-RootWebArea "Клад дракона — Генератор лута — Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+RootWebArea "Клад дракона - Генератор лута Daggerheart" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,7 +19,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
@@ -43,13 +43,13 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     checkbox "Первоклассный Спальный Мешок" [checked=true]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Пронзительная Свирель" [checked=false]
     spinbutton "Позиция в списке" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Заряжающий Колчан" [checked=false]
@@ -65,7 +65,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     spinbutton "Позиция в списке" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Наручники Эта пара наручников с замком поставляется с ключом. ПР..." [namelen=74 namehash=9df2647c]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Мистический Плащ" [checked=false]
@@ -73,8 +73,8 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Мистический Плащ Существо с Характеристикой Заклинателя, носящее..." [namelen=150 namehash=e6d5f2f2]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "ЗОЛОТО"
-    spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "ЦЕНА"
+    spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
     button "Убрать из списка" [description=Убрать из списка]
     status ""
@@ -113,6 +113,7 @@ daggerheart.com
 Обычные правила
 Первоклассный Спальный Мешок
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Печать
 Подсказка: Для игроков
 Подсказка: Только для мастера
 Позиция в списке
@@ -129,7 +130,6 @@ daggerheart.com
 Скрыть
 Скрыть напоминание
 Случайно 1–7
-Собрать карточки для печати: девять на лист A4
 Списки
 Список
 Ссылка игрокам
@@ -142,10 +142,11 @@ daggerheart.com
 Установить как приложение
 Факел Алистера
 Факел АлистераВы можете зажигать этот магический факел по желани... [namelen=193 namehash=dd2e26d8]
+Цена
 Цены
 
 ## en :: tree
-RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
+RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -161,7 +162,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"
@@ -185,13 +186,13 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     checkbox "Premium Bedroll" [checked=true]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Piper Whistle" [checked=false]
     spinbutton "Position in the list" [value=2 valuetext=2 required=false valuemin=1 valuemax=7]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Charging Quiver" [checked=false]
@@ -207,7 +208,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     spinbutton "Position in the list" [value=6 valuetext=6 required=false valuemin=1 valuemax=7]
     button "Manacles This pair of locking cuffs comes with a key. ITEM CORE"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     checkbox "Arcane Cloak" [checked=false]
@@ -215,8 +216,8 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     button "Arcane Cloak A creature with a Spellcast trait wearing this cloa..." [namelen=124 namehash=e33646cf]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
-    StaticText "GOLD"
-    spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
+    StaticText "PRICE"
+    spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
     button "Remove from the list" [description=Remove from the list]
     status ""
@@ -248,7 +249,6 @@ Help: For players
 Help: GM only
 Install as an app
 Italic
-Lay these out for printing: nine to an A4 sheet
 List name
 Lists
 Manacles
@@ -264,7 +264,9 @@ Position in the list
 Premium Bedroll
 Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
 Preview
+Price
 Prices
+Print
 Privacy
 RU
 Random 1–7

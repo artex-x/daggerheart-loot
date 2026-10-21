@@ -1,10 +1,10 @@
 # #/homebrew ~ import panel as gm1
 # route: #/homebrew
-# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v1.json, schema/homebrew-v2.json and llms.txt
+# why: «Импорт из файла» pressed and expanded: the panel «Импорт предметов из файла JSON» with «Выбрать файл...» and the hint linking schema/homebrew-v2.json and llms.txt
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -22,13 +22,14 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=true]
     StaticText "ИМПОРТ ПРЕДМЕТОВ ИЗ ФАЙЛА JSON"
     button "Выбрать файл..."
-    ... StaticText x4 of 8 same-shape siblings elided
-    link "схеме homebrew-v1" [url=schema/homebrew-v1.json]
-    link "homebrew-v2" [url=schema/homebrew-v2.json]
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "схеме homebrew-v2" [url=schema/homebrew-v2.json]
     link "описание для ИИ-помощников" [url=llms.txt]
     navigation "Мои предметы"
       link "Предметы" [url=index.html?as=gm1#/homebrew]
@@ -36,6 +37,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
       link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    status ""
     StaticText "4 предмета из 100"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
@@ -63,7 +65,6 @@ RU
 Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 daggerheart.com
-homebrew-v2
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
@@ -72,6 +73,7 @@ homebrew-v2
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -82,6 +84,7 @@ homebrew-v2
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
 Новый предмет
 Обычные правила
+Открывать этот раздел при запуске
 Поиск
 Предметы
 Списки
@@ -91,10 +94,10 @@ homebrew-v2
 Условия использования
 Установить как приложение
 описание для ИИ-помощников
-схеме homebrew-v1
+схеме homebrew-v2
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -112,13 +115,14 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=true]
     StaticText "IMPORT ITEMS FROM A JSON FILE"
     button "Choose a file..."
-    ... StaticText x4 of 8 same-shape siblings elided
-    link "homebrew-v1 schema" [url=schema/homebrew-v1.json]
-    link "homebrew-v2" [url=schema/homebrew-v2.json]
+    ... StaticText x3 of 7 same-shape siblings elided
+    link "homebrew-v2 schema" [url=schema/homebrew-v2.json]
     link "a description for AI assistants" [url=llms.txt]
     navigation "My items"
       link "Items" [url=index.html?as=gm1#/homebrew]
@@ -126,6 +130,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Sets" [url=index.html?as=gm1#/homebrew/sets]
       link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
+    status ""
     StaticText "4 items of 100"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
@@ -154,11 +159,13 @@ Choose a file...
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+How this works
 Import from file
 Install as an app
 Items
 Lists
 New item
+Open this section on start
 Privacy
 RU
 Rule cards
@@ -175,8 +182,7 @@ Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
 a description for AI assistants
 daggerheart.com
-homebrew-v1 schema
-homebrew-v2
+homebrew-v2 schema
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
 ЛутDaggerheart

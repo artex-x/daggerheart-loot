@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]

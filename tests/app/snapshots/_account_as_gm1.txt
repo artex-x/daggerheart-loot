@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Аккаунт — Генератор лута — Daggerheart" [url=index.html?as=gm1#/account]
+RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=index.html?as=gm1#/account]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -32,9 +32,9 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
       option "Обычные правила" [selected=true]
       option "Альт. таблицы" [selected=false]
       option "Wondrous Environments" [selected=false]
-      ... option x7 of 11 same-shape siblings elided
-      option "Списки" [selected=false]
+      ... option x8 of 12 same-shape siblings elided
       option "Поиск" [selected=false]
+      option "Мои предметы" [selected=false]
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
     button "Цветная" [pressed=false]
@@ -76,7 +76,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
-Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=167 namehash=9fd03eaf]
+Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=179 namehash=fd2ce01b]
 Отключить Discord
 Отключить Google
 Поиск
@@ -93,7 +93,7 @@ daggerheart.com
 Чёрно-белая
 
 ## en :: tree
-RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/account]
+RootWebArea "Account - Daggerheart Loot Generator" [url=index.html?as=gm1#/account]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -121,9 +121,9 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
       option "Standard rules" [selected=true]
       option "Alt. tables" [selected=false]
       option "Wondrous Environments" [selected=false]
-      ... option x7 of 11 same-shape siblings elided
-      option "Lists" [selected=false]
+      ... option x8 of 12 same-shape siblings elided
       option "Search" [selected=false]
+      option "My items" [selected=false]
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Colour" [pressed=false]
@@ -174,7 +174,7 @@ Sign out
 Sign out everywhere
 Skip to content
 Standard rules
-Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=160 namehash=f8c10d3b]
+Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=168 namehash=63dd1856]
 Supplements
 Tables
 Terms of use

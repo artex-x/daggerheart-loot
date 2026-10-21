@@ -54,6 +54,11 @@ const POTION = 'hb_smithpotionaaaaa';
 const dieBox = (): HTMLElement => screen.getByRole('combobox', { name: t.hbDmgDie });
 const bonusBox = (): HTMLElement => screen.getByRole('textbox', { name: t.hbDmgBonus });
 const altButton = (): HTMLElement => screen.getByRole('button', { name: t.hbAlt });
+/* The banner's own text, apart from the status region that says it (rule 19). */
+const BOX = { selector: '.box .lead' };
+const said = (): string =>
+  document.querySelector('.hbform .said[role="status"]')?.textContent.trim() ?? '';
+
 describe('the form', () => {
   it('draws a new loot item: the legend, the marks, the default source and a preview', async () => {
     const { container } = await editor(null);
@@ -264,6 +269,16 @@ describe('saving', () => {
     expect(screen.getByLabelText(/Название/)).toHaveValue('Пятый');
   });
 
+  it('redraws a refused save in English after «EN»', async () => {
+    const { app } = await editor(null, { fake: { limits: { items: 4 } } });
+    await userEvent.type(screen.getByLabelText(/Название/), 'Пятый');
+    await save();
+    await screen.findByText(/^Не сохранено\. Достигнут предел/);
+    app.setLang('en');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/^Not saved\. /);
+    expect(screen.queryByText(/^Не сохранено/)).toBeNull();
+  });
+
   it('says how many lists hold the item', async () => {
     const { app } = await editor(RING);
     app.listsHolding = () => 2;
@@ -354,12 +369,16 @@ describe('another device', () => {
     );
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await save();
-    expect(await screen.findByText(t.hbConflict)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbConflict, BOX)).toBeInTheDocument();
+    /* The box is no live region; the form's region, there before it, says it once. */
+    expect(screen.getByText(t.hbConflict, BOX).closest('.box')).not.toHaveAttribute('role');
+    expect(said()).toBe(t.hbConflict);
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
     await waitFor(async () => {
       expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей!');
     });
-    expect(screen.queryByText(t.hbConflict)).toBeNull();
+    expect(screen.queryByText(t.hbConflict, BOX)).toBeNull();
+    expect(said()).toBe('');
   });
 
   it("«Сохранить мою версию» keeps another device's write in a language this form did not change", async () => {
@@ -376,12 +395,12 @@ describe('another device', () => {
     );
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await save();
-    expect(await screen.findByText(t.hbConflict)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbConflict, BOX)).toBeInTheDocument();
     /* A failed read writes nothing and keeps the banner. */
     cloud.setOffline(true);
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
     expect(await screen.findByText(t.hbWriteFailed)).toBeInTheDocument();
-    expect(screen.getByText(t.hbConflict)).toBeInTheDocument();
+    expect(screen.getByText(t.hbConflict, BOX)).toBeInTheDocument();
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
     await waitFor(async () => {
@@ -405,19 +424,19 @@ describe('another device', () => {
     );
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await save();
-    await screen.findByText(t.hbConflict);
+    await screen.findByText(t.hbConflict, BOX);
     cloud.setOffline(true);
     await userEvent.click(screen.getByRole('button', { name: t.hbShowNew }));
     expect(dialog.asked.at(-1)).toBe(t.hbDropEdits);
     expect(await screen.findByText(t.hbWriteFailed)).toBeInTheDocument();
     expect(screen.getByLabelText(/Название/)).toHaveValue('Топор Тлеющих Углей!');
-    expect(screen.getByText(t.hbConflict)).toBeInTheDocument();
+    expect(screen.getByText(t.hbConflict, BOX)).toBeInTheDocument();
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: t.hbShowNew }));
     await waitFor(() => {
       expect(screen.getByLabelText(/Название/)).toHaveValue('Чужое');
     });
-    expect(screen.queryByText(t.hbConflict)).toBeNull();
+    expect(screen.queryByText(t.hbConflict, BOX)).toBeNull();
   });
 
   it('a dirty form whose item another tab deletes keeps the typed text and draws the gone banner', async () => {
@@ -429,12 +448,12 @@ describe('another device', () => {
     };
     await cloud.homebrew.removeItem(read.items.find((i) => i.key === RING)!.id);
     await store.read();
-    expect(await screen.findByText(t.hbGone)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbGone, BOX)).toBeInTheDocument();
     expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой мой');
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveAsNew }));
     await toastSays('Предмет «Кольцо с гравировкой мой» создан');
     expect(router.hash()).toMatch(/^#\/homebrew\/hb_new/);
-    expect(screen.queryByText(t.hbGone)).toBeNull();
+    expect(screen.queryByText(t.hbGone, BOX)).toBeNull();
     expect(screen.getByLabelText(/Название/)).toHaveValue('Кольцо с гравировкой мой');
   });
 
@@ -447,11 +466,12 @@ describe('another device', () => {
     await userEvent.type(screen.getByLabelText(/Название/), '!');
     await cloud.homebrew.removeItem(read.items.find((i) => i.key === RING)!.id);
     await save();
-    expect(await screen.findByText(t.hbGone)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
-      'href',
-      '#/homebrew'
-    );
+    expect(await screen.findByText(t.hbGone, BOX)).toBeInTheDocument();
+    expect(said()).toBe(t.hbGone);
+    /* The banner's way back and the button row's: the same name, the same place. */
+    const back = screen.getAllByRole('link', { name: t.hbToMyItems });
+    expect(back).toHaveLength(2);
+    for (const a of back) expect(a).toHaveAttribute('href', '#/homebrew');
   });
 
   it('reloads a clean form when a read brings a newer row', async () => {
@@ -474,6 +494,29 @@ describe('another device', () => {
 });
 
 describe('the guard', () => {
+  it('names the way back «К моим предметам» clean and dirty, links it to #/homebrew, and asks before that navigation drops edits', async () => {
+    const { app, dialog } = await editor(RING, { answer: false });
+    const row = (): string[] =>
+      [...document.querySelectorAll('.buttons > *')].map((b) => b.textContent.trim());
+    expect(row()).toEqual([t.save, t.hbToMyItems, t.del]);
+    await userEvent.type(screen.getByLabelText(/Название/), '!');
+    expect(row()).toEqual([t.save, t.hbToMyItems, t.del]);
+    expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
+      'href',
+      '#/homebrew'
+    );
+    /* The memory router sees no link press, so the test makes the link's navigation. */
+    app.go('#/homebrew');
+    expect(dialog.asked).toEqual([t.leaveUnsaved]);
+    expect(app.hash).toBe('#/homebrew/' + RING);
+  });
+
+  it('draws no «Удалить» on a new item', async () => {
+    await editor(null);
+    const row = [...document.querySelectorAll('.buttons > *')].map((b) => b.textContent.trim());
+    expect(row).toEqual([t.save, t.hbToMyItems]);
+  });
+
   it('asks on an in-app navigation and on unload while dirty, never after a save', async () => {
     const { app, dialog, page } = await editor(RING, { answer: false });
     expect(page.unloadAsks()).toBe(false);
@@ -737,7 +780,7 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
     await userEvent.type(name, ' мой');
     await cloud.homebrew.removeItem(read.items.find((i) => i.key === RING)!.id);
     await store.read();
-    expect(await screen.findByText(t.hbGone)).toBeInTheDocument();
+    expect(await screen.findByText(t.hbGone, BOX)).toBeInTheDocument();
     expect(page.unloadAsks()).toBe(true);
     const again = screen.getByRole('button', { name: t.hbSaveAsNew });
     await userEvent.click(again);
@@ -769,7 +812,7 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
     await userEvent.click(screen.getByRole('button', { name: t.del }));
     await flush();
     await flush();
-    expect(screen.queryByText(t.hbGone)).toBeNull();
+    expect(screen.queryByText(t.hbGone, BOX)).toBeNull();
     expect(screen.queryByText(t.notFound)).toBeNull();
     expect(app.hash).toBe('#/homebrew/' + RING);
     (answer as unknown as () => void)();
@@ -1577,7 +1620,7 @@ describe('the picture', () => {
     /* The other tab's message reads the account again under the dirty form. */
     await store.read();
     await save();
-    await screen.findByText(t.hbConflict);
+    await screen.findByText(t.hbConflict, BOX);
     await userEvent.click(screen.getByRole('button', { name: t.hbSaveMine }));
     await waitFor(async () => {
       expect((await stored(cloud, AXE))?.ru).toBe('Топор Тлеющих Углей!');

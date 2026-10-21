@@ -3,7 +3,7 @@
 # why: signed out, after «Сохранить себе»: the button pressed and the sign-in prompt under it
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

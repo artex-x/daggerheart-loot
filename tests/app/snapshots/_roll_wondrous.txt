@@ -3,7 +3,7 @@
 # why: a roll on a table with a real die
 
 ## ru :: tree
-RootWebArea "Wondrous Environments — Генератор лута — Daggerheart" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=#/roll/wondrous_environments]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Wondrous Environments — Генератор лута — Daggerhea
   main ""
     heading "Wondrous Environments" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -87,6 +87,7 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–119
+Смола Бездны
 Списки
 Страница
 Таблицы
@@ -94,7 +95,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -113,7 +114,7 @@ RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/w
   main ""
     heading "Wondrous Environments" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -149,6 +150,7 @@ RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/w
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Abyssal Sap
 Alt. tables
 Arazo's Artifacts
 Community items

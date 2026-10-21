@@ -1206,6 +1206,184 @@ const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 
   ok(got[2] === want[0] && got[3] === want[1], 'd' + d + ': the paths diverge from the file');
 });
 
+/* The print card's folded vectors (`app/src/lib/cardVectors.ts`, drawn inline by
+   `CardVector.svelte`) are the exported files' own geometry: per shape, the viewBox and,
+   path by path, `d`, `stroke-width`, `stroke-linecap` and `stroke-linejoin` equal the colour
+   file's, the black-and-white file's and a die's magic file's; each gradient line equals
+   the colour (or magic) file's. The pairs whose two files differ in shape are named
+   unfolded and must still differ (docs/specs/FEATURES.md, "Print"). Read as text: the
+   module imports `dice.ts`, whose paths the dice check above already pins. */
+console.log('folded print vectors');
+{
+  const vecTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'cardVectors.ts'), 'utf8');
+  const card = (name) => fs.readFileSync(path.join(ROOT, 'card', name + '.svg'), 'utf8');
+  const attrsOf = (tag) =>
+    Object.fromEntries(
+      [...tag.matchAll(/([a-zA-Z0-9-]+)="([^"]*)"/g)].map((m) => [m[1], m[2]])
+    );
+  /* A file's viewBox, its paths' geometry and the line of each gradient a path names. */
+  const fileOf = (name) => {
+    const text = card(name);
+    const grads = {};
+    for (const m of text.matchAll(/<linearGradient\b([^>]*)>/g)) {
+      const a = attrsOf(m[1]);
+      grads[a.id] = a;
+    }
+    const lineOf = (v) => {
+      const id = /^url\(#(.+)\)$/.exec(v || '');
+      const g = id && grads[id[1]];
+      if (!g || g.gradientUnits !== 'userSpaceOnUse') return null;
+      return [g.x1, g.y1, g.x2, g.y2].map(Number);
+    };
+    const root = attrsOf(/<svg\b[^>]*>/.exec(text)[0]);
+    return {
+      box: root.viewBox,
+      stretch: root.preserveAspectRatio === 'none',
+      paths: [...text.matchAll(/<path\b[^>]*>/g)].map((m) => {
+        const a = attrsOf(m[0]);
+        return {
+          geo: [
+            a.d,
+            a['stroke-width'] || '',
+            a['stroke-linecap'] || '',
+            a['stroke-linejoin'] || ''
+          ],
+          fill: lineOf(a.fill),
+          stroke: lineOf(a.stroke)
+        };
+      })
+    };
+  };
+  const num = (v) => (v === undefined ? '' : String(Number(v)));
+  const lineIn = (text, slot) => {
+    const m = new RegExp(
+      slot +
+        ':\\s*\\{\\s*x1: (-?[\\d.]+), y1: (-?[\\d.]+), x2: (-?[\\d.]+), y2: (-?[\\d.]+)\\s*\\}'
+    ).exec(text);
+    return m ? m.slice(1, 5).map(Number) : null;
+  };
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  /* The four flat shapes, block by block. */
+  const FLAT = ['banner', 'thbox', 'ribbon', "'ribbon-mag'"];
+  const start = vecTs.indexOf('const FLAT = {');
+  const end = vecTs.indexOf('} satisfies Record<string, CardVectorShape>;');
+  ok(start > 0 && end > start, 'cardVectors.ts: no FLAT block');
+  const flat = vecTs.slice(start, end);
+  FLAT.forEach(function (key, i) {
+    const name = key.replace(/'/g, '');
+    const from = flat.indexOf('\n  ' + key + ': {');
+    const to = i + 1 < FLAT.length ? flat.indexOf('\n  ' + FLAT[i + 1] + ': {') : flat.length;
+    ok(from >= 0, 'cardVectors.ts: no shape ' + name);
+    if (from < 0) return;
+    const block = flat.slice(from, to);
+    const box = /viewBox: '([^']+)'/.exec(block)[1];
+    const paths = [...block.matchAll(/\{\s*d: '([^']+)',([^}]*)\}/g)].map((m) => {
+      const rest = m[2];
+      return [
+        m[1],
+        num((/width: ([\d.]+)/.exec(rest) || [])[1]),
+        (/cap: '(\w+)'/.exec(rest) || ['', ''])[1],
+        (/join: '(\w+)'/.exec(rest) || ['', ''])[1]
+      ];
+    });
+    const colour = fileOf(name);
+    for (const [file, f] of [
+      [name, colour],
+      [name + '-bw', fileOf(name + '-bw')]
+    ]) {
+      ok(box === f.box, name + ': the viewBox diverges from ' + file + '.svg');
+      ok(
+        /stretch: true/.test(block) === f.stretch,
+        name + ': the stretch diverges from the preserveAspectRatio of ' + file + '.svg'
+      );
+      ok(
+        same(
+          paths,
+          f.paths.map((p) => [p.geo[0], num(p.geo[1] || undefined), p.geo[2], p.geo[3]])
+        ),
+        name + ': the paths diverge from ' + file + '.svg'
+      );
+    }
+    for (const slot of ['fill', 'stroke']) {
+      const want = colour.paths.map((p) => p[slot]).find(Boolean) || null;
+      ok(
+        same(lineIn(block, slot), want),
+        name + ': the ' + slot + ' line diverges from ' + name + '.svg'
+      );
+    }
+  });
+  /* The dice: the paths are dice.ts's (pinned above to the -bw file, and here each colour
+     file's to the -bw file's); the stroke and the lines here. */
+  [4, 6, 8, 10, 12, 20].forEach(function (n) {
+    const m = new RegExp('\\n  ' + n + ': \\{([\\s\\S]*?)\\n  \\}').exec(
+      vecTs.slice(vecTs.indexOf('const DIE_PAINT'))
+    );
+    ok(m, 'cardVectors.ts: no paint for d' + n);
+    if (!m) return;
+    const block = m[1];
+    const width = num((/width: ([\d.]+)/.exec(block) || [])[1]);
+    const colourBlock = /colour: \{([\s\S]*?)\},\s*\n\s*mag:/.exec(block)[1];
+    const magBlock = /mag: \{([\s\S]*)$/.exec(block)[1];
+    const files = ['phy', 'mag', 'bw'].map((v) => fileOf('die-d' + n + '-' + v));
+    for (const [v, f] of [
+      ['phy', files[0]],
+      ['mag', files[1]],
+      ['bw', files[2]]
+    ]) {
+      ok(f.paths.length === 2, 'die-d' + n + '-' + v + '.svg: not a body and its faces');
+      ok(
+        f.paths[1] && num(f.paths[1].geo[1]) === width && f.paths[1].geo[3] === 'round',
+        'd' + n + ': the stroke diverges from die-d' + n + '-' + v + '.svg'
+      );
+      ok(
+        f.box === files[2].box,
+        'd' + n + ': the frame of die-d' + n + '-' + v + '.svg differs'
+      );
+      ok(
+        f.paths.every((p, i) => p.geo[0] === files[2].paths[i]?.geo[0]),
+        'd' + n + ': the paths of die-d' + n + '-' + v + '.svg diverge from the -bw file'
+      );
+    }
+    ok(
+      same(lineIn(colourBlock, 'fill'), files[0].paths[0].fill),
+      'd' + n + ': the physical fill line diverges'
+    );
+    ok(
+      same(lineIn(colourBlock, 'stroke'), files[0].paths[1].stroke),
+      'd' + n + ': the physical stroke line diverges'
+    );
+    ok(
+      same(lineIn(magBlock, 'fill'), files[1].paths[0].fill),
+      'd' + n + ': the magic fill line diverges'
+    );
+    ok(
+      same(lineIn(magBlock, 'stroke'), files[1].paths[1].stroke),
+      'd' + n + ': the magic stroke line diverges'
+    );
+  });
+  /* The unfolded pairs: named, and their two files still differ in shape. */
+  const unfolded = /UNFOLDED: readonly string\[\] = \[([^\]]*)\]/.exec(vecTs);
+  ok(
+    unfolded &&
+      same(
+        [...unfolded[1].matchAll(/'([^']+)'/g)].map((m) => m[1]),
+        ['shield', 'burden-1', 'burden-2']
+      ),
+    'cardVectors.ts: the unfolded pairs are not shield, burden-1 and burden-2'
+  );
+  for (const name of ['shield', 'burden-1', 'burden-2']) {
+    const geo = (f) => JSON.stringify(f.paths.map((p) => p.geo));
+    ok(
+      geo(fileOf(name)) !== geo(fileOf(name + '-bw')),
+      name + ': its two files share one shape - fold it'
+    );
+    ok(
+      !new RegExp("\\n  '?" + name + "'?: \\{").test(vecTs),
+      name + ': folded though its files differ'
+    );
+  }
+}
+
 /* The source citation is not decoration, it is a licence condition (DPCGL
    2.0, clause 4.1): without it there is no right to use the text. The
    wording is fixed verbatim, and it has to stand everywhere the site

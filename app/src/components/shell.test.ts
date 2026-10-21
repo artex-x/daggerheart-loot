@@ -57,12 +57,12 @@ const listA: StoredList = { id: 'a', name: 'Тайник', ids: ['ci1'], created
 describe('the tab title', () => {
   it("titles a record page with the record's own name", () => {
     render(App, { env: at('#/i/ci1', { data: fakeData(LOOT) }) });
-    expect(document.title).toBe('Спальный мешок — Генератор лута — Daggerheart');
+    expect(document.title).toBe('Спальный мешок - Генератор лута Daggerheart');
   });
 
   it('keeps the plain title on a record that is not found', () => {
     render(App, { env: at('#/i/nope', { data: fakeData(LOOT) }) });
-    expect(document.title).toBe('Генератор лута — Daggerheart');
+    expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
   it("titles an owned list page with the list's own name", async () => {
@@ -75,7 +75,7 @@ describe('the tab title', () => {
     /* `app.openList` is only set once ListPage's own debounced
        URL sync runs, 150ms after mount. */
     await waitFor(() => {
-      expect(document.title).toBe('Тайник — Генератор лута — Daggerheart');
+      expect(document.title).toBe('Тайник - Генератор лута Daggerheart');
     });
   });
 
@@ -83,7 +83,7 @@ describe('the tab title', () => {
     /* The retired print page lights no tab (`AppState.section` is null for `route.kind
        === 'printRetired'`) and opens no one's own list either. */
     render(App, { env: at('#/print/ci1', { data: fakeData(LOOT) }) });
-    expect(document.title).toBe('Генератор лута — Daggerheart');
+    expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
   it('shows a shared list’s name on screen but keeps the plain tab title', () => {
@@ -96,7 +96,7 @@ describe('the tab title', () => {
     const payload = encodeList({ name: 'Тайник', ids: ['ci1'] }, true);
     render(App, { env: at('#/l/' + payload, { data: fakeData(LOOT) }) });
     expect(screen.getByRole('heading', { level: 1, name: 'Тайник' })).toBeInTheDocument();
-    expect(document.title).toBe('Генератор лута — Daggerheart');
+    expect(document.title).toBe('Генератор лута Daggerheart');
   });
 });
 
@@ -135,9 +135,9 @@ describe('the frame', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(document.documentElement.lang).toBe('en');
     /* A section titles the tab with its own name too, not only a
-       record - "Standard rules — Daggerheart Loot Generator", not the plain
+       record - "Standard rules - Daggerheart Loot Generator", not the plain
        title alone. */
-    expect(document.title).toBe('Standard rules — Daggerheart Loot Generator');
+    expect(document.title).toBe('Standard rules - Daggerheart Loot Generator');
   });
 });
 
@@ -449,6 +449,25 @@ describe('the toast component, directly', () => {
     for (const el of page.splice(0)) el.remove();
   });
 
+  it('draws an error, then a plain toast said during it once the error ends', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      render(Toast, { app });
+      app.say(() => 'Не получилось', { error: true });
+      app.say(() => 'Скопировано');
+      await tick();
+      expect(screen.getByRole('alert')).toHaveTextContent('Не получилось');
+      expect(screen.queryByText('Скопировано')).toBeNull();
+      vi.advanceTimersByTime(2600);
+      await tick();
+      expect(screen.getByRole('status')).toHaveTextContent('Скопировано');
+      expect(screen.queryByRole('alert')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('runs the action and hides the toast when its button is pressed', async () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
     const run = vi.fn();
@@ -749,7 +768,7 @@ describe('the account control', () => {
     render(App, { env });
     expect(screen.getByRole('heading', { name: 'Предмет не найден', level: 1 })).toBeVisible();
     expect(env.router.hash()).toBe('#/account');
-    expect(document.title).toBe('Генератор лута — Daggerheart');
+    expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
   it('says «Войти» signed out and leads to #/account', async () => {
@@ -826,7 +845,7 @@ describe('the account control', () => {
     expect(button).toHaveClass('on');
     const tabs = screen.getByRole('navigation', { name: 'Разделы' });
     expect(tabs.querySelector('[aria-current]')).toBeNull();
-    expect(document.title).toBe('Аккаунт — Генератор лута — Daggerheart');
+    expect(document.title).toBe('Аккаунт - Генератор лута Daggerheart');
     await expectNoA11yViolations(container);
   });
 
@@ -834,25 +853,25 @@ describe('the account control', () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const { container } = render(App, { env: at('#/homebrew', { cloud }) });
     await screen.findByText('4 предмета из 100');
-    expect(document.title).toBe('Мои предметы — Генератор лута — Daggerheart');
+    expect(document.title).toBe('Мои предметы - Генератор лута Daggerheart');
     expect(container.querySelector('main')?.dataset['homebrew']).toBe('ready');
     cleanup();
     render(App, {
       env: at('#/homebrew/hb_emberaxeaaaaaaaa', { cloud: fakeCloud(SEED, 'gm1') })
     });
     await screen.findByLabelText(/^Название/);
-    expect(document.title).toBe('Топор Тлеющих Углей — Генератор лута — Daggerheart');
+    expect(document.title).toBe('Топор Тлеющих Углей - Генератор лута Daggerheart');
     cleanup();
     render(App, { env: at('#/homebrew/new', { cloud: fakeCloud(SEED, 'gm1') }) });
     await screen.findByLabelText(/^Название/);
-    expect(document.title).toBe('Новый предмет — Генератор лута — Daggerheart');
+    expect(document.title).toBe('Новый предмет - Генератор лута Daggerheart');
     cleanup();
     const out = render(App, { env: at('#/homebrew', { cloud: fakeCloud(SEED) }) });
     await screen.findByText('Войдите, чтобы создавать свои предметы.');
     expect(out.container.querySelector('main')?.hasAttribute('data-homebrew')).toBe(false);
     cleanup();
     render(App, { env: at('#/homebrew') });
-    expect(document.title).toBe('Генератор лута — Daggerheart');
+    expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
   it('marks the signed-out control as current on #/account too', async () => {

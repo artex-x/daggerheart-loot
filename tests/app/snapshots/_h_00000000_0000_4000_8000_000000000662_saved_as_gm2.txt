@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Скатка следопыта — Генератор лута — Daggerheart" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
+RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -65,6 +65,7 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Подушка из мха (HB)
 Поиск
 Походный плед (HB)
@@ -74,7 +75,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Сохранено
 Списки
 Страница
@@ -83,7 +83,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
+RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
   link "Skip to content" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -142,10 +142,10 @@ Copy text
 EN
 Edit
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Moss Pillow (HB)
 Page
+Print
 Privacy
 RU
 Saved

@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -22,6 +22,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -64,6 +66,7 @@ https://example.test/alder-brand
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Клеймо Ольхи
 Комплекты
@@ -71,6 +74,7 @@ https://example.test/alder-brand
 ЛутDaggerheart
 Новая карта правил
 Обычные правила
+Открывать этот раздел при запуске
 Поиск
 Предметы
 Списки
@@ -82,7 +86,7 @@ https://example.test/alder-brand
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/rules/hb_alderrulecardaaa]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -100,6 +104,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -138,11 +144,13 @@ Delete
 EN
 Edit
 Ember Axe
+How this works
 Import from file
 Install as an app
 Items
 Lists
 New rule card
+Open this section on start
 Privacy
 RU
 Remove: Ember Axe

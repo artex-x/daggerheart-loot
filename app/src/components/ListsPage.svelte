@@ -58,6 +58,25 @@
 
   let draft = $state('');
   let nameInput = $state<HTMLInputElement | undefined>(undefined);
+  let allBox = $state<HTMLInputElement | undefined>(undefined);
+  let accountGrid = $state<HTMLDivElement | undefined>(undefined);
+  let localGrid = $state<HTMLDivElement | undefined>(undefined);
+
+  /* Rule 20 (docs/specs/FEATURES.md): a delete removed the pressed control, so focus goes
+     to the control now in its place, else the one before it, else the «Новый список» field,
+     else `#main`. */
+  function focusOr(...els: (HTMLElement | null | undefined)[]): void {
+    const next = els.find((e) => e?.isConnected) ?? document.getElementById('main');
+    next?.focus();
+  }
+
+  async function focusAfterCard(grid: HTMLDivElement | undefined, at: number): Promise<void> {
+    await tick();
+    const dels = grid?.isConnected
+      ? [...grid.querySelectorAll<HTMLElement>('.btn.danger')]
+      : [];
+    focusOr(dels[at], dels[at - 1], nameInput);
+  }
 
   /* The name filter and the fold run over the account lists, then the
      browser's, as one sequence (docs/specs/FEATURES.md, "Lists"). The query
@@ -116,7 +135,7 @@
 
   /* One confirm names the lists; they go through the write buffer, with no
      undo, as one list does. */
-  function delPicked(): void {
+  async function delPicked(): Promise<void> {
     const gone = ticked;
     const names = fewNames(
       gone.map((l) => t.quoted.replace('%s', l.name || t.untitled)),
@@ -130,6 +149,8 @@
     sel.clear();
     const n = gone.length;
     app.say((t) => t.listsDeleted.replace('%n', String(n)));
+    await tick();
+    focusOr(allBox, nameInput);
   }
 
   /* An account list's pending, unexpired purchase requests and its unread notices, for its
@@ -199,9 +220,10 @@
     );
   }
 
-  function del(l: StoredList): void {
+  function del(l: StoredList, at: number): void {
     const name = l.name;
     if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
+    void focusAfterCard(localGrid, at);
     /* After the cutoff the only browser writes are removals: no undo. */
     if (!app.legacyWritable) {
       if (app.lists.removeMany([l.id])) app.say((t) => t.listDeleted.replace('%s', name));
@@ -223,11 +245,12 @@
 
   /* An account list goes for good: the confirm names its share links, and
      there is no undo. */
-  function delAccount(l: CloudList): void {
+  function delAccount(l: CloudList, at: number): void {
     if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
     const name = l.name;
     cloud?.remove(l.id);
     app.say((t) => t.listDeleted.replace('%s', name));
+    void focusAfterCard(accountGrid, at);
   }
 </script>
 
@@ -312,18 +335,19 @@
               label={t.pickAll}
               count={`${t.selected} ${String(ticked.length)}`}
               onall={pickAllCards}
+              bind:allBox
             >
               {#snippet actions()}
                 <Button size="sm" onclick={() => void app.exportLists(ticked.map((l) => l.id))}
                   >{`${t.exportJson} (${String(ticked.length)})`}</Button
                 >
-                <Button size="sm" variant="danger" onclick={delPicked}
+                <Button size="sm" variant="danger" onclick={() => void delPicked()}
                   >{`${t.del} (${String(ticked.length)})`}</Button
                 >
               {/snippet}
             </BatchBar>
-            <div class="listgrid">
-              {#each drawnAccount as l (l.id)}
+            <div class="listgrid" bind:this={accountGrid}>
+              {#each drawnAccount as l, i (l.id)}
                 <ListCard
                   {app}
                   list={l}
@@ -342,7 +366,7 @@
                       size="sm"
                       variant="danger"
                       onclick={() => {
-                        delAccount(l);
+                        delAccount(l, i);
                       }}>{t.del}</Button
                     >
                   {/snippet}
@@ -362,8 +386,8 @@
             <StorageNotice {app} />
           {/if}
           {#if drawnLocal.length}
-            <div class="listgrid">
-              {#each drawnLocal as l (l.id)}
+            <div class="listgrid" bind:this={localGrid}>
+              {#each drawnLocal as l, i (l.id)}
                 <!-- Read-only, a card opens the list at its own address:
                      after the cutoff `#/l/` draws the retired page. -->
                 <ListCard
@@ -385,7 +409,7 @@
                         size="sm"
                         variant="danger"
                         onclick={() => {
-                          del(l);
+                          del(l, i);
                         }}>{t.del}</Button
                       >
                     {/if}

@@ -3,7 +3,7 @@
      snippet (app.js's `notePairHTML`, 3109-3128, drawn one label at a time).
      Extracted on its second real use - the list page's rolled entry
      and the shared page, which draws two above the rows and two more
-     after every entry. Renders nothing when `text` is empty. The note is formatted
+     inside every entry's row. Renders nothing when `text` is empty. The note is formatted
      text (docs/specs/FEATURES.md, "Lists"), drawn by Markup. */
   import Icon from './Icon.svelte';
   import Markup from './Markup.svelte';
@@ -52,12 +52,14 @@
     flex: none;
   }
 
+  /* `--muted`: inside a shared page's row, `--muted2` on the gold tint over `--surface`
+     reads 4.48:1, under axe's 4.5 (tests/app/sweep.js at 360, measured 2026-10-21). */
   .hitnote b {
     display: block;
     font-size: 10.5px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--muted2);
+    color: var(--muted);
     font-weight: 650;
     margin-bottom: 2px;
   }

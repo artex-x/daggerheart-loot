@@ -4,7 +4,7 @@
 # as: gm3
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm3#/homebrew/sets/hb_starsleepsetaaaa]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm3#/homebrew/sets/hb_starsleepsetaaaa]
   link "К содержимому" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
@@ -22,6 +22,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -61,12 +63,14 @@ daggerheart.com
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Новый комплект
 Обычные правила
+Открывать этот раздел при запуске
 Подушка из мха
 Поиск
 Походный плед
@@ -83,7 +87,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/homebrew/sets/hb_starsleepsetaaaa]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm3#/homebrew/sets/hb_starsleepsetaaaa]
   link "Skip to content" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
@@ -101,6 +105,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -136,12 +142,14 @@ Camp Blanket
 Delete
 EN
 Edit
+How this works
 Import from file
 Install as an app
 Items
 Lists
 Moss Pillow
 New set
+Open this section on start
 Privacy
 RU
 Ranger's Roll

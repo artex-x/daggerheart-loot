@@ -3,7 +3,7 @@
 # why: a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", the save button, the 26 October line, no rows, the dropped-entries toast (not the bad-link page)
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

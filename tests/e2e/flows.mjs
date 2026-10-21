@@ -710,7 +710,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       waitFor(
         page,
         "e2e F11: the list page never joined the owner's topic",
-        () => !!document.querySelector('.lsaid[data-live="live"]')
+        () => !!document.querySelector('.said[data-live="live"]')
       );
     await withPage(ctx, await mint(env, admin, member.email), async (pageA, a) => {
       await a.open('#/lists/' + listId);
@@ -777,7 +777,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await waitFor(
         pageA,
         "e2e F12: the list page never joined the owner's topic",
-        () => !!document.querySelector('.lsaid[data-live="live"]')
+        () => !!document.querySelector('.said[data-live="live"]')
       );
       await withPage(ctx, null, async (pageB, b) => {
         await b.open('#/s/' + share.token);
@@ -1099,8 +1099,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
   /* F17: homebrew files on the hosted project. example.json imported through the page under
      the member's derived keys, imported again with «Обновить» from example-edited.json (its
      derived keys are held), the two pistols moved to «Холодное оружие» in one call, the data
-     zip's homebrew.json holding every row, and example-v2.json imported into lists: the held
-     derived pistol linked, the lamp copied under its derived key and linked. */
+     zip's homebrew.json a version 2 file holding every row, and example-v2.json imported into
+     lists: the held derived pistol linked, the lamp copied under its derived key and linked. */
   await deleteListsOf(admin, member.id);
   await deleteHomebrewOf(admin, member.id);
   const fixture = (dir, name) =>
@@ -1195,6 +1195,12 @@ export async function runFlows({ env, admin, member, browser, base }) {
       );
       if (!read.ok) throw new Error('e2e F17: the zip holds no homebrew.json');
       const file = JSON.parse(read.text);
+      const HB2 = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
+      if (file.version !== 2 || file.$schema !== HB2) {
+        throw new Error(
+          'e2e F17: the zip homebrew.json is version ' + file.version + ', ' + file.$schema
+        );
+      }
       const rows = await mine();
       const keys = (list) => list.map((x) => x.key).sort();
       if (
@@ -1319,7 +1325,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         await waitFor(
           page,
           "e2e F19: the list page never joined the owner's topic",
-          () => !!document.querySelector('.lsaid[data-live="live"]')
+          () => !!document.querySelector('.said[data-live="live"]')
         );
         await d.press('Только для мастера: Палаш');
         await d.writesSettled();

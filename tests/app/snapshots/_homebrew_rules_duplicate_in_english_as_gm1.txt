@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/rules]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/rules]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -22,6 +22,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -35,7 +37,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     ... StaticText x9 of 13 same-shape siblings elided
     textbox "Название карты*" [value=Alder Brand description=Карта правил «Alder Brand» уже есть. focused=true multiline=false readonly=false required=true invalid=true]
     textbox "Подзаголовок" [description=Необязательно. Например: Мудрость · Уровень 1 · Заклинание. multiline=false readonly=false required=false]
-    button "Подсказка: Текст карты" [description=Подсказка: Текст карты expanded=false]
+    button "Подсказка: Текст карты" [expanded=false]
     toolbar "Оформление: Текст карты" [orientation=horizontal]
       button "Жирный" [keyshortcuts=Control+B Meta+B]
       button "Курсив" [keyshortcuts=Control+I Meta+I]
@@ -74,6 +76,7 @@ daggerheart.com
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Клеймо Ольхи
 Комплекты
@@ -82,6 +85,7 @@ daggerheart.com
 ЛутDaggerheart
 Нумерованный список
 Обычные правила
+Открывать этот раздел при запуске
 Отмена
 Подсказка: Текст карты
 Поиск
@@ -98,7 +102,7 @@ daggerheart.com
 ХоумбрюМастерская Ольхи
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/rules]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/rules]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -116,6 +120,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -129,7 +135,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     ... StaticText x9 of 13 same-shape siblings elided
     textbox "Card name*" [value=Alder Brand description=The rule card "Alder Brand" already exists. focused=true multiline=false readonly=false required=true invalid=true]
     textbox "Subtitle" [description=Optional. For example: Sage · Level 1 · Spell. multiline=false readonly=false required=false]
-    button "Help: Card text" [description=Help: Card text expanded=false]
+    button "Help: Card text" [expanded=false]
     toolbar "Formatting: Card text" [orientation=horizontal]
       button "Bold" [keyshortcuts=Control+B Meta+B]
       button "Italic" [keyshortcuts=Control+I Meta+I]
@@ -169,12 +175,14 @@ EN
 Edit
 Help: Card text
 HomebrewAlder Workshop
+How this works
 Import from file
 Install as an app
 Italic
 Items
 Lists
 Numbered list
+Open this section on start
 Preview
 Privacy
 RU

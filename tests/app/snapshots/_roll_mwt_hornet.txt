@@ -3,7 +3,7 @@
 # why: the fifth realm, Hornet Hold: 11 cards, the button picks 1-11 at random
 
 ## ru :: tree
-RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=#/roll/many_worlds_tavern]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart"
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Выберите мир и бросьте кость по нему."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -88,6 +88,7 @@ daggerheart.com
 На единицу больше
 На единицу меньше
 Обычные правила
+Одолженная Лапа
 Оплот Шершней
 Открывать этот раздел при запуске
 Отправить
@@ -107,7 +108,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -126,7 +127,7 @@ RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Pick a realm and roll within it."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -182,6 +183,7 @@ Godsvale
 Hornet Hold
 How this works
 Install as an app
+Lent Leg
 Lists
 Many Worlds Tavern
 One higher

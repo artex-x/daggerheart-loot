@@ -283,60 +283,64 @@ describe('delete_account() at three times every default limit', () => {
     let seeded = 0;
     const calls = [];
     let deleted = 0;
-    const left = await asRole(
-      sql,
-      {
-        role: 'authenticated',
-        sub: BIG,
-        setup: async (tx) => {
-          const t0 = performance.now();
-          await seed(tx);
-          seeded = Math.round(performance.now() - t0);
-          /* A hosted database keeps statistics (autovacuum's analyze); a fresh seed has
-             none, and then the homebrew_items cascade took 9.0 s (2026-10-16). */
-          await tx.unsafe(`analyze ${SEEDED.join(', ')}`);
-        }
-      },
-      async (tx) => {
-        const [{ ids }] = await tx`select coalesce(array_agg(id), '{}') as ids
-          from public.lists where owner_id = ${BIG}`;
-        await tx.unsafe(`set local statement_timeout = '4s'`);
-        try {
-          for (let i = 0; i < 100; i++) {
+    let left;
+    try {
+      left = await asRole(
+        sql,
+        {
+          role: 'authenticated',
+          sub: BIG,
+          setup: async (tx) => {
             const t0 = performance.now();
-            const [{ n }] = await tx`select public.delete_account_requests() as n`;
-            calls.push(Math.round(performance.now() - t0));
-            if (n === 0) break;
+            await seed(tx);
+            seeded = Math.round(performance.now() - t0);
+            /* A hosted database keeps statistics (autovacuum's analyze); a fresh seed has
+               none, and then the homebrew_items cascade took 9.0 s (2026-10-16). */
+            await tx.unsafe(`analyze ${SEEDED.join(', ')}`);
           }
-          const t0 = performance.now();
-          await tx`select public.delete_account()`;
-          deleted = Math.round(performance.now() - t0);
-        } finally {
-          console.log(
-            `delete-account: 3x seed ${seeded} ms, ${calls.length} calls, slowest ${Math.max(0, ...calls)} ms, delete ${deleted} ms`
-          );
+        },
+        async (tx) => {
+          const [{ ids }] = await tx`select coalesce(array_agg(id), '{}') as ids
+            from public.lists where owner_id = ${BIG}`;
+          await tx.unsafe(`set local statement_timeout = '4s'`);
+          try {
+            for (let i = 0; i < 100; i++) {
+              const t0 = performance.now();
+              const [{ n }] = await tx`select public.delete_account_requests() as n`;
+              calls.push(Math.round(performance.now() - t0));
+              if (n === 0) break;
+            }
+            const t0 = performance.now();
+            await tx`select public.delete_account()`;
+            deleted = Math.round(performance.now() - t0);
+          } finally {
+            console.log(
+              `delete-account: 3x seed ${seeded} ms, ${calls.length} calls, slowest ${Math.max(0, ...calls)} ms, delete ${deleted} ms`
+            );
+          }
+          await tx.unsafe('reset role');
+          const [n] = await tx`select
+            (select count(*) from auth.users where id = ${BIG})::int
+            + (select count(*) from public.lists where owner_id = ${BIG})::int
+            + (select count(*) from public.homebrew_items where owner_id = ${BIG})::int
+            + (select count(*) from public.print_sets where owner_id = ${BIG})::int
+            + (select count(*) from public.purchase_requests where list_id = any(${ids}))::int
+            + (select count(*) from public.purchase_request_lines p
+                join public.purchase_requests r on r.id = p.request_id
+                where r.list_id = any(${ids}))::int as rows`;
+          return n.rows;
         }
-        await tx.unsafe('reset role');
-        const [n] = await tx`select
-          (select count(*) from auth.users where id = ${BIG})::int
-          + (select count(*) from public.lists where owner_id = ${BIG})::int
-          + (select count(*) from public.homebrew_items where owner_id = ${BIG})::int
-          + (select count(*) from public.print_sets where owner_id = ${BIG})::int
-          + (select count(*) from public.purchase_requests where list_id = any(${ids}))::int
-          + (select count(*) from public.purchase_request_lines p
-              join public.purchase_requests r on r.id = p.request_id
-              where r.list_id = any(${ids}))::int as rows`;
-        return n.rows;
-      }
-    );
+      );
+    } finally {
+      /* The first analyze may write pg_class.reltuples in place with the seeded rows counted,
+         and that outlives the rollback while the column statistics do not; a second analyze
+         outside the transaction leaves the next case the real row counts, on a failure too. */
+      const before = await reltuples();
+      await sql.unsafe(`analyze ${SEEDED.join(', ')}`);
+      console.log(
+        `delete-account: reltuples after the rollback ${before}; after analyze ${await reltuples()}`
+      );
+    }
     assert.equal(left, 0);
-    /* The first analyze may write pg_class.reltuples in place with the seeded rows counted,
-       and that outlives the rollback while the column statistics do not; a second analyze
-       outside the transaction leaves the next case the real row counts. */
-    const before = await reltuples();
-    await sql.unsafe(`analyze ${SEEDED.join(', ')}`);
-    console.log(
-      `delete-account: reltuples after the rollback ${before}; after analyze ${await reltuples()}`
-    );
   });
 });

@@ -208,7 +208,7 @@ describe('creating a list', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено'
+      'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено'
     );
     expect(screen.queryByText(/создан/)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Клад дракона/ })).toBeInTheDocument();
@@ -240,7 +240,7 @@ describe('sharing a list', () => {
     const payload = await plainCompress().pack(encodeListRaw(listA, true));
     expect(clip.last.text).toBe('https://example.test/#/l/' + payload);
     expect(
-      screen.getByText('Ссылка для игроков скопирована — заметок мастера в ней нет')
+      screen.getByText('Ссылка для игроков скопирована - заметок мастера в ней нет')
     ).toBeInTheDocument();
   });
 
@@ -869,7 +869,10 @@ describe('the move into the account and the cutoff', () => {
     };
     const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
     const { container } = render(App, { env: at({ cloud, storage }) });
-    expect(await screen.findByText('Переносим списки в аккаунт...')).toBeInTheDocument();
+    /* The box's own words: the status region before it says them too (rule 19). */
+    expect(
+      await screen.findByText('Переносим списки в аккаунт...', { selector: '.lead' })
+    ).toBeInTheDocument();
     expect(actionsOf(/Клад дракона/)).toEqual([]);
     expect(screen.getByRole('link', { name: /Клад дракона/ })).toHaveAttribute(
       'href',
@@ -893,7 +896,8 @@ describe('the move into the account and the cutoff', () => {
     const { container } = render(App, { env: at({ cloud, storage }) });
     expect(
       await screen.findByText(
-        'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
+        'Не все списки перенесены: нет связи. Попробуем при следующем открытии.',
+        { selector: '.lead' }
       )
     ).toBeInTheDocument();
     expect(actionsOf(/Лавка в порту/)).toEqual([]);
@@ -1146,6 +1150,42 @@ describe('selecting account lists', () => {
     await waitFor(async () => {
       const read = await cloud.lists.list();
       expect(read.ok && read.lists.map((l) => l.name)).toEqual(['Лавка кузнеца']);
+    });
+  });
+
+  it('hands focus to «Выбрать все» after «Удалить (N)» with a card left, else to the name field (rule 20)', async () => {
+    const { container } = await signedIn();
+    await userEvent.click(pick(EMPTY));
+    await userEvent.click(pick(TROPHIES));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toHaveFocus();
+    });
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
+    expect(cardNames(container)).toEqual([]);
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Новый список' })).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it("hands focus to the next card's «Удалить», the previous one's, then the name field", async () => {
+    const { container } = await signedIn();
+    const dels = (): HTMLElement[] => screen.getAllByRole('button', { name: 'Удалить' });
+    await userEvent.click(dels()[0] as HTMLElement);
+    expect(cardNames(container)).toEqual(['Лавка кузнеца', TROPHIES]);
+    await waitFor(() => {
+      expect(dels()[0]).toHaveFocus();
+    });
+    await userEvent.click(dels()[1] as HTMLElement);
+    expect(cardNames(container)).toEqual(['Лавка кузнеца']);
+    await waitFor(() => {
+      expect(dels()[0]).toHaveFocus();
+    });
+    await userEvent.click(dels()[0] as HTMLElement);
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Новый список' })).toHaveFocus();
     });
   });
 

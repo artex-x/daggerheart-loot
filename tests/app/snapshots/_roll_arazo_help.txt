@@ -3,7 +3,7 @@
 # why: the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment
 
 ## ru :: tree
-RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" [url=#/roll/arazos_artifacts]
+RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=#/roll/arazos_artifacts]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,9 +22,9 @@ RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" 
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=true]
+    button "Как это работает" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "В таблице 78 позиций — 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=f9b0e2c5]
+    StaticText "В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, ..." [namelen=157 namehash=cce2a6c7]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     StaticText "."
@@ -85,6 +85,7 @@ daggerheart.com
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
+Нестареющее Око Зверя
 Обычные правила
 Открывать этот раздел при запуске
 Отправить
@@ -105,7 +106,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazos_artifacts]
+RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=#/roll/arazos_artifacts]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -124,9 +125,9 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=true]
+    button "How this works" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
-    StaticText "The table holds 78 entries — 10 items and 68 weapons and armor, ..." [namelen=154 namehash=8f8178ff]
+    StaticText "The table holds 78 entries - 10 items and 68 weapons and armor, ..." [namelen=154 namehash=80f65c5e]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Guide to Arazo's Artifacts" [url=https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts]
     StaticText " supplement."
@@ -199,6 +200,7 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Ageless Eye of the Beast
 The Dragon's Vault
 The Guide to Arazo's Artifacts
 Vault of Ages

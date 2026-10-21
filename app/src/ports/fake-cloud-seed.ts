@@ -13,7 +13,7 @@
  * `gm3`'s one list, «Склад», has a players' link with 8 entries, the shared page's
  * filter threshold. `gm4` holds no list, one item in a source at the longest name,
  * which «Склад» links, a formatted item and an item whose text the print card cuts off;
- * the formatted item's states sign in as `gm4`. `gm4` made the 15 seeded print sets,
+ * the formatted item's states sign in as `gm4`. `gm4` made the 16 seeded print sets,
  * which the goldens open as `gm2`, `gm1` and `gm4`.
  * `gm2`'s list holds two unread notices: gm1 changed the axe, and deleted an item at the
  * longest name. docs/specs/COVERAGE.md, "Test layers". */
@@ -736,6 +736,9 @@ const PRINT_SETS: SeedPrintSet[] = [
   printSet('set-emberaxe', [{ h: AXE_ID }]),
   printSet('set-markup01', [{ h: MARKUP_ID }]),
   printSet('set-clipped1', [{ h: LONG_TEXT_ID }]),
+  /* gm4's item whose source and section names are 80 code points each: the wrapped
+     source line, and a colour card with no picture. */
+  printSet('set-longsrc1', [{ h: LONG_SRC_ITEM_ID }]),
   /* `uuid(598)` and `uuid(599)` name no item: a deleted one. */
   printSet('set-missing1', [{ k: 'ci1' }, { h: uuid(599) }]),
   printSet('set-allgone1', [{ h: uuid(598) }, { h: uuid(599) }]),

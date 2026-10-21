@@ -6,7 +6,14 @@
 
      Owns none of the routing: the caller hands in what is picked, what is
      open, and a callback for every action. `TablesPage` and `SharedListPage`
-     are what turn a pick into an address. */
+     are what turn a pick into an address.
+
+     It owns two things of its own: the focus after a pill or «Сбросить всё»
+     removes itself (docs/specs/FEATURES.md, rule 20), and the fold of a row of
+     more than `FOLD_AT` values, page memory closed when the strip mounts
+     ("Tables and search"). */
+  import { tick } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -25,12 +32,64 @@
     ontoggle: () => void;
     onpick: (group: string, value: string) => void;
     onreset: () => void;
-    /** Absent where the address cannot carry the filter (`#/l/`): no link button. */
+    /** Absent where the address cannot carry the filter (`#/l/`, the homebrew table and the
+     *  Items tab): no link button. */
     oncopylink?: (() => void) | undefined;
+    /** The «Фильтры» toggle, for a caller's empty state whose «Сбросить всё» focuses it. */
+    toggleEl?: HTMLButtonElement | undefined;
   }
 
-  const { rows, picked, shown, total, open, t, ontoggle, onpick, onreset, oncopylink }: Props =
-    $props();
+  let {
+    rows,
+    picked,
+    shown,
+    total,
+    open,
+    t,
+    ontoggle,
+    onpick,
+    onreset,
+    oncopylink,
+    toggleEl = $bindable()
+  }: Props = $props();
+
+  /* A row of more than FOLD_AT values draws FOLD_SHOWN of them, then every picked one. */
+  const FOLD_AT = 12;
+  const FOLD_SHOWN = 10;
+  const unfolded = new SvelteSet<string>();
+
+  let bar = $state<HTMLDivElement | undefined>(undefined);
+
+  /* Rule 20: the control now at the pressed place, else the one before it, else the toggle,
+     else `#main` (the strip left: no row narrows any more). */
+  function focusAfter(at: number): void {
+    const live = bar?.isConnected ? bar : null;
+    const pills = live ? [...live.querySelectorAll<HTMLElement>('.fpill')] : [];
+    const toggle = live?.querySelector<HTMLElement>('button[aria-expanded]');
+    (pills[at] ?? pills[at - 1] ?? toggle ?? document.getElementById('main'))?.focus();
+  }
+
+  async function dropPill(at: number, group: string, value: string): Promise<void> {
+    onpick(group, value);
+    await tick();
+    focusAfter(at);
+  }
+
+  async function resetAll(): Promise<void> {
+    onreset();
+    await tick();
+    focusAfter(-1);
+  }
+
+  /** The values a row draws: all of them, or the first FOLD_SHOWN and every picked one. */
+  function drawnValues(row: FacetRow): { values: FacetRow['values']; more: number } {
+    if (row.values.length <= FOLD_AT || unfolded.has(row.group)) {
+      return { values: row.values, more: 0 };
+    }
+    const on = picked[row.group] ?? [];
+    const values = row.values.filter((v, i) => i < FOLD_SHOWN || on.includes(v.value));
+    return { values, more: row.values.length - values.length };
+  }
 
   /* Everything picked, in the order the rows are drawn - `fChosen` in app.js.
      A bare number takes its row's name rather than standing for itself - but
@@ -68,29 +127,29 @@
 </script>
 
 {#if rows.length}
-  <div class="fbar">
+  <div class="fbar" bind:this={bar}>
     <Button
       variant={chosen.length ? 'toggle' : 'plain'}
       size="sm"
       expanded={open}
       caret
+      bind:el={toggleEl}
       onclick={ontoggle}
     >
       {toggleLabel}
     </Button>
-    {#each chosen as c (c.group + ':' + c.value)}
+    {#each chosen as c, i (c.group + ':' + c.value)}
       <button
         type="button"
         class="fpill"
         data-val={c.group + ':' + c.value}
         title={t.dropValue}
-        onclick={() => {
-          onpick(c.group, c.value);
-        }}>{c.label}<i aria-hidden="true">&times;</i></button
+        onclick={() => void dropPill(i, c.group, c.value)}
+        >{c.label}<i aria-hidden="true">&times;</i></button
       >
     {/each}
     {#if chosen.length}
-      <button type="button" class="fclear" onclick={onreset}>{t.resetAll}</button>
+      <button type="button" class="fclear" onclick={() => void resetAll()}>{t.resetAll}</button>
       {#if oncopylink}
         <button
           type="button"
@@ -113,6 +172,7 @@
          `TablesPage`'s `.tablenav` is. -->
     <div class="panel ffilter">
       {#each rows as row (row.group)}
+        {@const fold = drawnValues(row)}
         <div class="field">
           <!-- Whitespace below is content - see docs/specs/COVERAGE.md,
                "Whitespace text nodes are content". -->
@@ -122,7 +182,7 @@
               >{:else}{row.label}{/if}</span
           >
           <ChipRow>
-            {#each row.values as v (v.value)}
+            {#each fold.values as v (v.value)}
               <Chip
                 label={v.label}
                 on={!!picked[row.group]?.includes(v.value)}
@@ -131,6 +191,22 @@
                 }}
               />
             {/each}
+            {#if row.values.length > FOLD_AT}
+              <!-- Rule 12: «и ещё N» closed, «свернуть» open; one button, so focus stays. -->
+              <Button
+                variant="bare"
+                size="sm"
+                caret
+                expanded={unfolded.has(row.group)}
+                onclick={() => {
+                  if (unfolded.has(row.group)) unfolded.delete(row.group);
+                  else unfolded.add(row.group);
+                }}
+                >{unfolded.has(row.group)
+                  ? t.relLess
+                  : t.andMore.replace('%n', String(fold.more))}</Button
+              >
+            {/if}
           </ChipRow>
         </div>
       {/each}

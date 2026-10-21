@@ -1492,7 +1492,10 @@ async function announceOnTouchAndHideInertGrip() {
   await d.settle();
 
   const said = await page.evaluate(() => {
-    const r = document.querySelector('.lsaid');
+    /* The list page holds more than one region; this one says the move. */
+    const r = [...document.querySelectorAll('.said')].find((x) =>
+      x.textContent.includes('позиция')
+    );
     if (!r) return null;
     const rect = r.getBoundingClientRect();
     return {
@@ -1503,7 +1506,7 @@ async function announceOnTouchAndHideInertGrip() {
       h: rect.height
     };
   });
-  ok(!!said, '26 (announce on touch): the live region .lsaid was not found');
+  ok(!!said, '26 (announce on touch): the live region .said was not found');
   if (said) {
     ok(
       said.role === 'status' && (said.text ?? '').includes('позиция 1 из 4'),
@@ -2580,7 +2583,7 @@ async function printAfterSignIn() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables');
   await d.tick('Первоклассный Спальный Мешок');
-  await d.press('Собрать карточки для печати: девять на лист A4');
+  await d.press('Печать');
   const text = () => page.evaluate(() => document.body.innerText);
   ok(
     (await text()).includes('Войдите, чтобы печатать карточки.') &&
@@ -2592,7 +2595,7 @@ async function printAfterSignIn() {
     !!(await page.$('.selbarwrap .selacts')),
     at + '«Отмена» did not bring the action row back'
   );
-  await d.press('Собрать карточки для печати: девять на лист A4');
+  await d.press('Печать');
   await pressPromptSignIn(page);
   ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
   await d.press('Войти через Google');
@@ -3034,7 +3037,7 @@ async function liveAccountList() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]')),
+    await waitIn(page, () => !!document.querySelector('.said[data-live="live"]')),
     at + 'the owner topic did not join'
   );
   const title = (name) => document.querySelector('input.titleinput')?.value === name;
@@ -3057,7 +3060,7 @@ async function liveAccountList() {
   });
   await d.fake('setLive', false);
   ok(
-    await waitIn(page, () => !document.querySelector('.lsaid[data-live]')),
+    await waitIn(page, () => !document.querySelector('.said[data-live]')),
     at + 'the sync status stayed live with Realtime down'
   );
   ok(
@@ -3100,7 +3103,7 @@ async function liveRequests() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
   ok(
-    await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]')),
+    await waitIn(page, () => !!document.querySelector('.said[data-live="live"]')),
     at + 'the owner topic did not join'
   );
   await d.fake('request', 'player-token-1', [{ item: 'ci1', qty: 1 }]);
@@ -3188,7 +3191,7 @@ async function applyARequest() {
   const at = '56 (apply a request): ';
   let { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open(SHOP, { as: 'gm1' });
-  await waitIn(page, () => !!document.querySelector('.lsaid[data-live="live"]'));
+  await waitIn(page, () => !!document.querySelector('.said[data-live="live"]'));
   await d.fake('request', 'player-token-1', [
     { item: 'ci1', qty: 1 },
     { item: 'cc1', qty: 5 }

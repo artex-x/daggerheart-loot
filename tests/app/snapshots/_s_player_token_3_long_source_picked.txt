@@ -3,7 +3,7 @@
 # why: gm3's «Склад», 8 entries: the source at the 80-code-point name picked; its chip and its pill wrap inside the strip at 360 px; one row, gm4's «Фляга туманов»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -73,6 +73,7 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Мастерская старого оружейника из долины туманов за перевалом у С... [namelen=80 namehash=9bd5cf26]
+Мастерская старого оружейника из долины туманов за перевалом у С... [namelen=81 namehash=f185497b]
 Обычные правила
 Одноручное
 Оружие
@@ -85,7 +86,6 @@ daggerheart.com
 Списки
 Ссылка на фильтры
 Таблицы
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -171,7 +171,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Search
@@ -187,5 +186,6 @@ Upgradable
 Weapons
 Wondrous Environments
 Workshop of the old armourer from the valley of mists past the N... [namelen=80 namehash=a1da31ad]
+Workshop of the old armourer from the valley of mists past the N... [namelen=81 namehash=51235604]
 daggerheart.com
 ЛутDaggerheart

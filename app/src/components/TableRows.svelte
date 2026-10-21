@@ -49,12 +49,8 @@
     onartfail: (id: string) => void;
     onopen: (it: Record_) => void;
     ontoggleall?: (ids: string[]) => void;
-    /** Drawn right after a list-view row - the shared page's per-entry
-     *  hitnotes, which the live `renderSharedList` puts between the rows,
-     *  app.js 3163-3166. */
-    after?: Snippet<[Record_]>;
     /** Drawn as the last child of a list-view row, inside its border - the
-     *  shared page's take line. The tile view draws nothing. */
+     *  shared page's entry notes and take line. The tile view draws nothing. */
     inside?: Snippet<[Record_]>;
     /** The id of the row the anchor effect is outlining right now - state
      *  rather than a DOM write, so a keyed re-render (a view switch, a
@@ -75,7 +71,6 @@
     onartfail,
     onopen,
     ontoggleall,
-    after,
     inside,
     flash
   }: Props = $props();
@@ -146,7 +141,6 @@
         />
         {#if inside}{@render inside(it)}{/if}
       </div>
-      {#if after}{@render after(it)}{/if}
     {:else}
       {@const sub = lang === 'ru' ? it.en : it.ru || ''}
       {@const n = rollNum ? String(rollNum) : tileTier(it)}

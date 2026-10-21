@@ -25,6 +25,8 @@
     expanded?: boolean | undefined;
     /** `aria-controls`: the region a disclosure button shows. */
     controls?: string | undefined;
+    /** `aria-describedby`: the id of a note that tells what the button does. */
+    describedby?: string | undefined;
     /** The button element, for a caller that moves focus back to it. */
     el?: HTMLButtonElement | undefined;
     /** The pressed look - `.btn.on` / `.btn.primary.on` - for a toggle that
@@ -65,6 +67,7 @@
     label,
     expanded,
     controls,
+    describedby,
     el = $bindable(),
     on,
     caret,
@@ -97,6 +100,7 @@
     aria-label={label}
     aria-expanded={expanded}
     aria-controls={controls}
+    aria-describedby={describedby}
     bind:this={el}
     {disabled}
     {onclick}

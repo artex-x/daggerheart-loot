@@ -3,7 +3,7 @@
 # why: signed out, after "Сохранить себе": the button pressed and the sign-in prompt under it, the 26 October line under the prompt; no browser list is made
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

@@ -3,7 +3,7 @@
 # why: signed out, after another device marked «Брошюра по Истории Искусства» GM only while the share topic was joined: the row gone with no reload, one entry fewer in the sub, and the hidden status «Список обновлён»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

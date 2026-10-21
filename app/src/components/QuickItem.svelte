@@ -12,6 +12,7 @@
   import Panel from './Panel.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
+  import type { Msg } from '../lib/dict.js';
   import { homebrewItemHash } from '../lib/hash.js';
   import {
     counterFrom,
@@ -44,7 +45,8 @@
   let name = $state('');
   let desc = $state('');
   let problems = $state<Problem[]>([]);
-  let refused = $state<string | null>(null);
+  /* Kept as a `Msg`, so a language switch redraws the line in the new language. */
+  let refused = $state<Msg | null>(null);
   let busy = $state(false);
   let ids: NewIds | null = null;
   let nameEl = $state<HTMLInputElement | undefined>(undefined);
@@ -86,14 +88,14 @@
       return;
     }
     if (store.status !== 'ready') {
-      refused = store.status === 'error' ? t.hbLoadFailed : t.hbNotReady;
+      refused = store.status === 'error' ? (t) => t.hbLoadFailed : (t) => t.hbNotReady;
       return;
     }
     /* A full list would refuse the entry after the item is made, leaving the item out of
        the list: nothing is written. With no limit known the write goes as before. */
     const full = lists.entryLimit;
     if (full !== null && (lists.get(listId)?.ids.length ?? 0) >= full) {
-      refused = limitText('entries_per_list', full, t);
+      refused = (t) => limitText('entries_per_list', full, t);
       return;
     }
     busy = true;
@@ -101,7 +103,10 @@
     try {
       const r = await store.createItem(pair, null, contentOf(draft, null) as HomebrewContent);
       if (!r.ok) {
-        refused = r.error === 'limit' ? limitText(r.key, r.value, t) : t.quickFailed;
+        if (r.error === 'limit') {
+          const { key, value } = r;
+          refused = (t) => limitText(key, value, t);
+        } else refused = (t) => t.quickFailed;
         return;
       }
       ids = store.newIds();
@@ -197,7 +202,7 @@
       >
       <Button size="sm" variant="ghost" onclick={onclose}>{t.cancel}</Button>
     </Actions>
-    {#if refused}<p class="refused" role="alert">{refused}</p>{/if}
+    {#if refused}<p class="refused" role="alert">{refused(t, app.lang)}</p>{/if}
     <p class="note">{t.quickNote}</p>
   </section>
 </Panel>

@@ -15,6 +15,7 @@ import {
 import { dict } from './dict.js';
 import {
   facetRows,
+  homebrewFacetRows,
   listFacetRows,
   narrowRows,
   type FacetRow,
@@ -479,6 +480,50 @@ describe('the own items', () => {
   it('drops the own values with the chip off', () => {
     expect(values(browseIndex(index, base, false), 'eq_weapon', 'src')).toEqual(['Core']);
     expect(values(browseIndex(index, base, true), 'eq_weapon', 'src')).toHaveLength(3);
+  });
+
+  describe("the Items tab's rows", () => {
+    const labels = (rows: FacetRow[], group: string): string[] =>
+      rows.find((r) => r.group === group)?.values.map((v) => v.label) ?? [];
+
+    it('builds kind, source and section in the homebrew table order', () => {
+      const rows = homebrewFacetRows(own, t, 'ru', []);
+      expect(rows.map((r) => r.group)).toEqual(['kind', 'src', 'sect']);
+      expect(rows.map((r) => r.label)).toEqual([t.kindF, t.source, t.hbSection]);
+      expect(labels(rows, 'kind')).toEqual([t.fItems, t.fCons, t.fEquip]);
+      expect(labels(rows, 'src')).toEqual([t.srcHomebrew, 'Гильдия', 'Мастерская Ольхи']);
+    });
+
+    it('names two sections of one name by their sources, in the language on screen', () => {
+      expect(labels(homebrewFacetRows(own, t, 'ru', []), 'sect')).toEqual([
+        'Клинки (Гильдия)',
+        'Клинки (Мастерская Ольхи)'
+      ]);
+      expect(labels(homebrewFacetRows(own, dict('en'), 'en', []), 'sect')).toEqual([
+        'Blades',
+        'Клинки'
+      ]);
+    });
+
+    it('offers the sections of the picked sources only', () => {
+      const rows = homebrewFacetRows(own, t, 'ru', ['hb_guildaaaaaaaaaaa']);
+      expect(rows.find((r) => r.group === 'sect')?.values).toEqual([
+        { value: 'hb_guildbladesaaaaa', label: 'Клинки' }
+      ]);
+      expect(homebrewFacetRows(own, t, 'ru', ['hb'])[2]?.values).toEqual([]);
+    });
+
+    it('keeps through the offer rule the values the own items answer', () => {
+      const facetOf = (it: Record_, g: string): string => plainFacets(it)[g] ?? '';
+      const rows = narrowRows(homebrewFacetRows(own, t, 'ru', []), own, facetOf);
+      expect(labels(rows, 'kind')).toEqual([t.fCons, t.fEquip]);
+      const one = narrowRows(
+        homebrewFacetRows([own[1] as Record_], t, 'ru', []),
+        [own[1] as Record_],
+        facetOf
+      );
+      expect(one).toEqual([]);
+    });
   });
 });
 

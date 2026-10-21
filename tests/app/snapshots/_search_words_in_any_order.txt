@@ -3,7 +3,7 @@
 # why: two words in another order and form: the healing potions, which a contiguous match misses
 
 ## ru :: tree
-RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -80,7 +80,7 @@ daggerheart.com
 Фляга Путника
 
 ## en :: tree
-RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

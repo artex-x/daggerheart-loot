@@ -39,7 +39,7 @@
     upgradeLine,
     upgradesTo
   } from '../lib/data.js';
-  import { isHomebrewKey, isHomebrewRecord, textLangOf } from '../lib/homebrew.js';
+  import { isHomebrewKey, isHomebrewRecord, oneLangOf, textLangOf } from '../lib/homebrew.js';
   import { eqParts, nameOf } from '../lib/i18n.js';
   import { parseMarkup } from '../lib/markup.js';
   import type { AltCol, Index } from '../lib/data.js';
@@ -124,6 +124,12 @@
   });
   const art = $derived(artSrc(it.img, artBroken));
   const badges = $derived(cardBadges(it, lang, t));
+  /* The same as `textLang` for a homebrew set bonus or rule card text, whose language the
+     stored card decides, not the record. */
+  const cardLang = (key: string, c: { rud?: string; ende?: string }): Lang | undefined => {
+    const l = isHomebrewKey(key) ? oneLangOf(c.rud, c.ende) : null;
+    return l && l !== lang ? l : undefined;
+  };
 
   const into = $derived(relOrder(upgradesTo(index, it), lang));
   const from = $derived(relOrder(madeFrom(index, it), lang));
@@ -167,7 +173,11 @@
     const b = setBonusOf(index, it);
     if (!b) return undefined;
     const text = lang === 'ru' ? b.rud : b.ende;
-    return { name: lang === 'ru' ? b.ru : b.en, blocks: parseMarkup(text) };
+    return {
+      name: lang === 'ru' ? b.ru : b.en,
+      blocks: parseMarkup(text),
+      lang: setKey ? cardLang(setKey, b) : undefined
+    };
   });
   /* The account's own set or rule card on a catalog record (`index.ownSetOf`). */
   const ownSet = $derived(
@@ -358,7 +368,10 @@
           <!-- The name leads the first paragraph of the bonus text. A frozen copy
                alone in its set draws the bonus with no set line. -->
           {@const bonus = setBonus}
-          <div class="set-bonus mdtext">
+          {#if bonus.lang}
+            <p class="text-lang">{bonus.lang === 'en' ? t.textEnOnly : t.textRuOnly}</p>
+          {/if}
+          <div class="set-bonus mdtext" lang={bonus.lang}>
             <Markup blocks={bonus.blocks}>
               {#snippet lead()}<i
                   >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
@@ -377,13 +390,19 @@
            one that does not. -->
       <div class="refs">
         {#each refs as { key, card: r }, i (i)}
+          {@const refLang = cardLang(key, r)}
           <details>
             <summary>
               <Icon name="ref" />
               <span class="ref-n">{lang === 'ru' ? r.ru : r.en}</span>
               <i class="ref-s">{lang === 'ru' ? r.rusub : r.ensub}</i>
             </summary>
-            <div class="ref-text mdtext">
+            {#if refLang}
+              <p class="text-lang ref-lang">
+                {refLang === 'en' ? t.textEnOnly : t.textRuOnly}
+              </p>
+            {/if}
+            <div class="ref-text mdtext" lang={refLang}>
               <Markup blocks={parseMarkup(lang === 'ru' ? r.rud : r.ende)} />
             </div>
             {#if !isHomebrewKey(key)}
@@ -674,6 +693,17 @@
 
   .craft p > :global(*) {
     min-width: 0;
+  }
+
+  /* Inside the chain's 3px gap the line needs no pull toward its text. */
+  .craft .text-lang {
+    margin: 0;
+  }
+
+  /* The rule card text's own inset. */
+  .ref-lang {
+    padding: 7px 9px 0;
+    margin: 0;
   }
 
   /* The bonus is a block of its own, not a flex row: its first paragraph holds the name. */

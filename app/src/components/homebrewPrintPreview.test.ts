@@ -97,6 +97,58 @@ describe('the view switch', () => {
   });
 });
 
+describe("the print card at the column's width", () => {
+  /* jsdom lays nothing out: the preview column's width is stubbed on `.pwrap`. */
+  function columnOf(width: number): () => void {
+    const base = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
+    Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+      configurable: true,
+      get(this: HTMLElement): number {
+        return this.classList.contains('pwrap') ? width : (base?.get?.call(this) as number);
+      }
+    });
+    return () => {
+      Reflect.deleteProperty(HTMLElement.prototype, 'clientWidth');
+    };
+  }
+  const scaleOf = (): { cell: string; card: string } => ({
+    cell:
+      document
+        .querySelector<HTMLElement>('.preview .pframe')
+        ?.style.getPropertyValue('--pv-scale') ?? '',
+    card: printCard()?.style.getPropertyValue('--pc-scale') ?? ''
+  });
+
+  it.each([
+    [328, '1.97', '1.37'],
+    [340, '2.04', '1.42'],
+    [420, '2.52', '1.76']
+  ])('draws a %i px column at %s compact and %s standard', async (width, compact, std) => {
+    const restore = columnOf(width);
+    try {
+      const { container } = await editor(AXE);
+      await printView();
+      expect(scaleOf()).toEqual({ cell: compact, card: compact });
+      await press(t.printSize, t.printStd);
+      expect(scaleOf()).toEqual({ cell: std, card: std });
+      await expectNoA11yViolations(container);
+    } finally {
+      restore();
+    }
+  });
+
+  it('draws the card at scale 1 with no inline scale before the column has a width', async () => {
+    await editor(AXE);
+    await printView();
+    expect(
+      document
+        .querySelector<HTMLElement>('.preview .pframe')
+        ?.style.getPropertyValue('--pv-scale')
+    ).toBe('1');
+    expect(printCard()?.getAttribute('style')).toBeNull();
+  });
+});
+
 describe('the follow after a pause', () => {
   it('changes the print card only once the typing has paused', async () => {
     await editor(AXE);
@@ -166,7 +218,11 @@ describe('the clip warning', () => {
       await waitFor(() => {
         expect(warning()).toHaveTextContent(t.hbPrintClipped);
       });
-      expect(warning()).toHaveAttribute('role', 'status');
+      /* The box is not a live region; the form's region says it once (rule 19). */
+      expect(warning()).not.toHaveAttribute('role');
+      expect(document.querySelector('.hbform .said[role="status"]')).toHaveTextContent(
+        t.hbPrintClipped
+      );
       expect(screen.queryByRole('alert')).toBeNull();
       const counter = container.querySelector('.fld .counter');
       expect(counter).toHaveTextContent('3000 / 3000');

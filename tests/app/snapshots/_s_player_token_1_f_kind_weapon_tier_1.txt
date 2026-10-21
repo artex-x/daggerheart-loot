@@ -3,7 +3,7 @@
 # why: a filter link as it opens: the panel open with «Оружие» and «1» pressed, two pills, «Сбросить всё», the copy-link button, «3 из 10», three rows
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1/f_kind-weapon.tier-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1/f_kind-weapon.tier-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -89,11 +89,13 @@ daggerheart.com
 Обычные правила
 Одноручное
 Оружие
+Оружие×
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Поиск
 Предметы
 Проворность
+Ранг 1×
 Расходники
 Сбросить всё
 Сила
@@ -104,7 +106,6 @@ daggerheart.com
 Средне
 Ссылка на фильтры
 Таблицы
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -200,7 +201,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Scepter
@@ -213,11 +213,13 @@ Strength
 Supplements
 Tables
 Terms of use
+Tier 1×
 Two-Handed
 Unique
 Upgradable
 Vault of Ages
 Weapons
+Weapons×
 Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

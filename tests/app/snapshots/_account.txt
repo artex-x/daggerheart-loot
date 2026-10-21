@@ -3,7 +3,7 @@
 # why: signed out: the sign-in chooser, both providers and the consent line
 
 ## ru :: tree
-RootWebArea "Аккаунт — Генератор лута — Daggerheart" [url=#/account]
+RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=#/account]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -59,7 +59,7 @@ daggerheart.com
 условия
 
 ## en :: tree
-RootWebArea "Account — Daggerheart Loot Generator" [url=#/account]
+RootWebArea "Account - Daggerheart Loot Generator" [url=#/account]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

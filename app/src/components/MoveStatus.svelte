@@ -6,6 +6,7 @@
      is done with nothing left (docs/specs/FEATURES.md, "Account and browser
      lists"). */
   import NoticeBox from './NoticeBox.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import type { AppState } from '../state/app.svelte.js';
 
   interface Props {
@@ -24,7 +25,20 @@
     const ids = app.lists.migrated.held ?? [];
     return quote(app.lists.lists.filter((l) => ids.includes(l.id)).map((l) => l.name));
   });
+  /* The boxes' words as one plain line, said by a region that is mounted before any box
+     appears (rule 19). */
+  const said = $derived(
+    [
+      move?.status === 'moving' ? t.moving : move?.status === 'failed' ? t.moveFailed : '',
+      refused ? `${t.moveAttention.replace('%s', refused)} ${t.moveAttentionWhy}` : '',
+      held ? `${t.moveAttention.replace('%s', held)} ${t.moveHeldWhy}` : ''
+    ]
+      .filter(Boolean)
+      .join(' ')
+  );
 </script>
+
+<StatusRegion text={said} />
 
 {#if move?.status === 'moving'}
   <div class="slot"><NoticeBox>{t.moving}</NoticeBox></div>

@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/p/set-tencards]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/p/set-tencards]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 10. Листов A4: 2. Размер карты 63×88 мм — как у обычно..." [namelen=76 namehash=a5df22c7]
+    StaticText "Карточек: 10. Листов A4: 2. Размер карты 63×88 мм - как у обычно..." [namelen=76 namehash=0d7019f1]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=true]
@@ -30,6 +30,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Обычная" [pressed=true]
     button "Компактная" [pressed=false]
     button "Ссылка на набор"
+    status ""
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
     ... StaticText x38 of 42 same-shape siblings elided
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
@@ -97,6 +98,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-tencards]
     button "Standard" [pressed=true]
     button "Compact" [pressed=false]
     button "Link to this set"
+    status ""
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
     ... StaticText x38 of 42 same-shape siblings elided
     heading "PREMIUM BEDROLL" [level=2]

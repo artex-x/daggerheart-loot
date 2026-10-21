@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Новый предмет — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/new]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -24,13 +24,14 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
     heading "Новый предмет" [level=1]
     StaticText "Хоумбрю"
     form ""
+      status ""
       StaticText "* - обязательное поле. Остальное можно заполнить позже."
       group "Вид"
         button "Предмет" [pressed=true]
         button "Расходник" [pressed=false]
         button "Снаряжение" [pressed=false]
       StaticText "Источник"
-      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
+      button "Подсказка: Источник" [expanded=false]
       combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
         option "Хоумбрю" [selected=true]
         option "Мастерская Ольхи" [selected=false]
@@ -39,7 +40,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       button "EN - пусто" [pressed=false]
       ... StaticText x3 of 7 same-shape siblings elided
       textbox "Название*" [multiline=false readonly=false required=true]
-      button "Подсказка: Описание" [description=Подсказка: Описание expanded=true]
+      button "Подсказка: Описание" [expanded=true]
       StaticText "Жирный - **текст**, курсив - *текст*; в каталоге свойство пишетс..." [namelen=342 namehash=93c3a8b9]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
@@ -59,7 +60,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
         button "4" [pressed=false]
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
-      link "Отмена" [url=index.html?as=gm1#/homebrew]
+      link "К моим предметам" [url=index.html?as=gm1#/homebrew]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
     button "Страница"
@@ -90,6 +91,7 @@ daggerheart.com
 Выбрать файл
 Дополнения
 Жирный
+К моим предметам
 К содержимому
 Карты правил
 Конфиденциальность
@@ -101,7 +103,6 @@ daggerheart.com
 Новая карта правил
 Нумерованный список
 Обычные правила
-Отмена
 Подсказка: Источник
 Подсказка: Карты правил
 Подсказка: Комплект
@@ -125,7 +126,7 @@ daggerheart.com
 ХоумбрюМастерская Ольхи+ Новый источник...
 
 ## en :: tree
-RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -145,13 +146,14 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     heading "New item" [level=1]
     StaticText "Homebrew"
     form ""
+      status ""
       StaticText "* - required field. The rest can be filled in later."
       group "Kind"
         button "Item" [pressed=true]
         button "Consumable" [pressed=false]
         button "Equipment" [pressed=false]
       StaticText "Source"
-      button "Help: Source" [description=Help: Source expanded=false]
+      button "Help: Source" [expanded=false]
       combobox "Source" [value=Homebrew expanded=false haspopup=menu]
         option "Homebrew" [selected=true]
         option "Alder Workshop" [selected=false]
@@ -160,7 +162,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       button "EN - empty" [pressed=false]
       ... StaticText x3 of 7 same-shape siblings elided
       textbox "Name*" [multiline=false readonly=false required=true]
-      button "Help: Description" [description=Help: Description expanded=true]
+      button "Help: Description" [expanded=true]
       StaticText "Bold is **text**, italic is *text*; the catalog writes ***Name:*..." [namelen=365 namehash=04bc8e3b]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]
@@ -180,7 +182,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
         button "4" [pressed=false]
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
-      link "Cancel" [url=index.html?as=gm1#/homebrew]
+      link "To my items" [url=index.html?as=gm1#/homebrew]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     button "Страница"
@@ -203,7 +205,6 @@ Account: gm1@example.test
 Alt. tables
 Bold
 Bulleted list
-Cancel
 Choose a file
 Choose from items
 Consumable
@@ -240,6 +241,7 @@ Supplements
 Table
 Tables
 Terms of use
+To my items
 Upgrades to
 daggerheart.com
 ЛутDaggerheart

@@ -432,7 +432,12 @@ if (require.main === module) {
         storage: state.storage
       });
       try {
-        await d.open(state.route, { as: state.as, today: state.today });
+        await d.open(state.route, {
+          as: state.as,
+          today: state.today,
+          items: state.items,
+          sections: state.sections
+        });
         if (state.enter) await state.enter(d);
         /* Every capture waits for the move of browser lists to settle; a
            state with no move passes at once. */
@@ -457,7 +462,13 @@ if (require.main === module) {
       try {
         /* Held: a toast raised at mount lives 1600 ms, less than a slow host
            takes to arrive (docs/decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md). */
-        await d.open(state.route, { as: state.as, today: state.today, holdToasts: true });
+        await d.open(state.route, {
+          as: state.as,
+          today: state.today,
+          holdToasts: true,
+          items: state.items,
+          sections: state.sections
+        });
         if (state.enter) await state.enter(d);
         await d.moveSettled(state.id);
         if (lang !== 'ru') await d.click('EN');

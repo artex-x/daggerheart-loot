@@ -3,7 +3,7 @@
 # why: «Первоклассный Спальный Мешок» ticked, then «Оружие» and Ранг «1» picked and the panel folded: two pills, the copy-link button, «3 из 10», the bar «Выбрана 1 позиция» for the hidden tick; the address ends /f_kind-weapon.tier-1
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1/f_kind-weapon.tier-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1/f_kind-weapon.tier-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -72,21 +72,22 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
+Оружие×
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+Печать
 Поиск
+Ранг 1×
 Сбросить всё
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать
 Снять выделение
-Собрать карточки для печати: девять на лист A4
 Сообщить владельцу
 Сохранить себе
 Списки
 Ссылка на фильтры
 Таблицы
-Убрать из фильтра
 Условия использования
 Установить как приложение
 Фильтры (2)
@@ -160,12 +161,11 @@ EN
 Filter link
 Filters (2)
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Notify the owner
+Print
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Scepter
@@ -177,5 +177,7 @@ Standard rules
 Supplements
 Tables
 Terms of use
+Tier 1×
+Weapons×
 daggerheart.com
 ЛутDaggerheart

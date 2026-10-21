@@ -4,7 +4,7 @@
 # as: gm3
 
 ## ru :: tree
-RootWebArea "Поиск — Генератор лута — Daggerheart" [url=index.html?as=gm3#/search]
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=index.html?as=gm3#/search]
   link "К содержимому" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
@@ -105,7 +105,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/search]
+RootWebArea "Search - Daggerheart Loot Generator" [url=index.html?as=gm3#/search]
   link "Skip to content" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]

@@ -121,7 +121,7 @@ describe('the item page', () => {
       await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' })
     ).toBeInTheDocument();
     expect(sub().startsWith(t.itemFrom + ' · ')).toBe(true);
-    expect(document.title).toBe('Скатка следопыта — ' + t.docTitle);
+    expect(document.title).toBe('Скатка следопыта - ' + t.docTitle);
     const pick = container.querySelector('.cardpick') as HTMLElement;
     expect(within(pick).getByRole('button', { name: t.addToList })).toBeInTheDocument();
     expect(within(pick).getByRole('button', { name: t.saveItem })).toBeInTheDocument();

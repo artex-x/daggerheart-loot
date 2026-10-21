@@ -33,3 +33,14 @@ if (typeof proto.showModal !== 'function') {
     this.dispatchEvent(new Event('close'));
   };
 }
+
+/* jsdom has no ResizeObserver (jsdom 30), and Svelte's `bind:clientWidth` observes with
+   one (`PrintPreview.svelte`). The binding still reads the size once at mount, which is
+   what a component test can assert; a resize belongs to the browser suites. */
+if (typeof globalThis.ResizeObserver !== 'function') {
+  globalThis.ResizeObserver = class {
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+  };
+}

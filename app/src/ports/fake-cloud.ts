@@ -35,6 +35,7 @@ import {
 } from '../lib/homebrew.js';
 import { isArtName, isOwnArt, newArtName, thumbOf } from '../lib/art.js';
 import type { Prefs } from '../lib/prefs.js';
+import type { Lang } from '../lib/types.js';
 import { PRINT_SET_DAYS, PRINT_SET_ID, printEntriesValid } from '../lib/printSet.js';
 import type { NoticeRow, RequestLine, ShortLine } from '../lib/requests.js';
 import {
@@ -102,6 +103,14 @@ export interface FakeCloudOptions {
   /** Fills the signed-in user's homebrew to this many items with generated ones and sets
    *  the item limit to it: the test build's `?items=<n>`, the 300-item measure. */
   fillItems?: number;
+  /** With `fillItems`: the first source gains this many generated sections (1-30), and the
+   *  generated items of its first section take its sections round robin - the test
+   *  build's `?sections=<n>`, a long section row. */
+  fillSections?: number;
+  /** The signed-in user's stored preferences take this language, so a language run of
+   *  the browser suites draws that language (the test build's `?lang=`). A user with no
+   *  stored preferences keeps none. */
+  lang?: Lang;
 }
 
 /** The fake, plus the test build's switches and counters, which are not part of
@@ -240,11 +249,28 @@ const FILL_ART = ['ci1.webp', 'ci2.webp', 'w1.webp'];
 
 /* Generated items «Предмет 001» ... after the seeded ones: when the user holds a source,
    every third in its first source with no section, every third in that source's first
-   section, the rest in «Хоумбрю». The texts hold no digit, so a digit query matches
-   names only. */
-function fillHomebrew(h: HeldHomebrew, to: number, boot: number): void {
+   section, the rest in «Хоумбрю». With `sections`, the first source gains «Раздел NN»
+   after its own, and the items of its first section take the first section and the new
+   ones round robin. The texts hold no digit, so a digit query matches names only. */
+function fillHomebrew(h: HeldHomebrew, to: number, boot: number, sections = 0): void {
   const first = [...h.books].sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
-  const section = first?.content.sections?.[0]?.key;
+  const made = first && sections >= 1 && sections <= 30 ? sections : 0;
+  const added = Array.from({ length: made }, (_, i) => {
+    let tail = '';
+    for (let v = i, k = 0; k < 12; k++, v = Math.floor(v / 32))
+      tail = BASE32.charAt(v % 32) + tail;
+    const num = String(i + 1).padStart(2, '0');
+    return { key: 'hb_sect' + tail, ru: 'Раздел ' + num, en: 'Section ' + num };
+  });
+  if (first && added.length) {
+    first.content = {
+      ...first.content,
+      sections: [...(first.content.sections ?? []), ...added]
+    };
+  }
+  const own = first?.content.sections?.[0]?.key;
+  const ring = own ? [own, ...added.map((a) => a.key)] : [];
+  let turn = 0;
   const n = to - h.items.length;
   for (let i = 0; i < n; i++) {
     let tail = '';
@@ -263,7 +289,7 @@ function fillHomebrew(h: HeldHomebrew, to: number, boot: number): void {
         en: 'Item ' + num,
         rud: 'Сгенерированный предмет для замера.',
         ende: 'A generated item for the measure.',
-        ...(place === 1 && section ? { section } : {})
+        ...(place === 1 && ring.length ? { section: ring[turn++ % ring.length] } : {})
       },
       art: FILL_ART[i % FILL_ART.length] ?? null,
       revision: 1,
@@ -472,6 +498,10 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       u.prefs ? [[k, copyPrefs(u.prefs)]] : []
     )
   );
+  const stored = as === undefined ? undefined : rows.get(as);
+  if (as !== undefined && stored && options.lang) {
+    rows.set(as, { ...stored, lang: options.lang });
+  }
   if (as !== undefined && !users.has(as)) {
     throw new Error('fake cloud: unknown user "' + as + '"');
   }
@@ -491,7 +521,9 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     ])
   );
   const filled = as === undefined ? undefined : homebrewHeld.get(as);
-  if (options.fillItems !== undefined && filled) fillHomebrew(filled, options.fillItems, boot);
+  if (options.fillItems !== undefined && filled) {
+    fillHomebrew(filled, options.fillItems, boot, options.fillSections);
+  }
   /* A seeded homebrew entry with no item id links its owner's item of the key. */
   for (const [k, all] of lists) {
     for (const h of all) {
@@ -2261,19 +2293,25 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   };
 }
 
-/** Builds the port from `?as=<user>` (signed out without it) and `?items=<n>` (1-1000,
- *  `fillItems`) and exposes it
+/** Builds the port from `?as=<user>` (signed out without it), `?items=<n>` (1-1000,
+ *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only) and
+ *  `?lang=<ru|en>` (`lang`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
   const query = new URLSearchParams(search);
   const as = query.get('as') ?? undefined;
   const items = Number(query.get('items'));
-  const port = fakeCloud(
-    SEED,
-    as,
-    Number.isInteger(items) && items >= 1 && items <= 1000 ? { fillItems: items } : {}
-  );
+  const sections = Number(query.get('sections'));
+  const lang = query.get('lang');
+  const filling = Number.isInteger(items) && items >= 1 && items <= 1000;
+  const port = fakeCloud(SEED, as, {
+    ...(filling ? { fillItems: items } : {}),
+    ...(filling && Number.isInteger(sections) && sections >= 1 && sections <= 30
+      ? { fillSections: sections }
+      : {}),
+    ...(lang === 'ru' || lang === 'en' ? { lang } : {})
+  });
   window.__dhlootFake = { marker: MARKER, ...port };
   return port;
 }

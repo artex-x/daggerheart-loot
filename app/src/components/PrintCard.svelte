@@ -10,22 +10,17 @@
    * `RecordCard`'s `<p>`s, and has no whitespace of any kind between the tags
    * in that block (docs/specs/COVERAGE.md, "Whitespace text nodes are content"). */
   import { untrack } from 'svelte';
+  import CardVector from './CardVector.svelte';
   import MarkupInline from './MarkupInline.svelte';
+  import '../styles/card-vectors.css';
+  import { dieVector } from '../lib/cardVectors.js';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
   import { printSrc } from '../lib/label.js';
   import { afterLead, parseMarkup, type MarkupBlock } from '../lib/markup.js';
   import { qtySuffix } from '../lib/share.js';
-  import {
-    cardArt,
-    CARD_DIR,
-    dmgParts,
-    DICE_WITH_ART,
-    glyphKey,
-    PRINT_GLYPH,
-    printTrait
-  } from '../lib/print.js';
+  import { cardArt, CARD_DIR, dmgParts, printTrait } from '../lib/print.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   const GROW_CAP = 5;
@@ -46,16 +41,30 @@
      *  bonus text, formatted. `PrintPage` builds it: the card has no index. */
     setLine?: { label: string; body: string } | undefined;
     /** Told after each fit whether the card still cuts off text: the text box down or
-     *  across, the name across, the content box down (FEATURES.md, "Print"). */
+     *  across, the name and the bottom line across, the content box down (FEATURES.md,
+     *  "Print"). */
     onfit?: ((clipped: boolean) => void) | undefined;
+    /** The editor's preview draws the card larger than it prints: every `mm` and `pt`
+     *  value of the stylesheet is multiplied by it, and the rest is in `cqw`
+     *  (docs/specs/FEATURES.md, "Homebrew"). 1 on the print sheet. */
+    scale?: number;
   }
 
-  const { it, lang, bw, artBroken, onartfail, qty, setLine, onfit }: Props = $props();
+  const {
+    it,
+    lang,
+    bw,
+    artBroken,
+    onartfail,
+    qty,
+    setLine,
+    onfit,
+    scale = 1
+  }: Props = $props();
 
   const t = $derived(dict(lang));
   const counter = $derived(qtySuffix(qty));
   const eq = $derived(it.eq ?? null);
-  const kindKey = $derived(glyphKey(it));
   const armor = $derived(!!(eq && eq.t === 'armor'));
   const burden = $derived(eq && !armor && eq.bu ? eq.bu : 0);
   /* An artifact weapon reads as a loot artifact card: the section tag, the
@@ -100,7 +109,11 @@
     return [...own, ...head, ...rest.map((b) => ({ b }))];
   });
   const src = $derived(printSrc(it, lang));
-  const hasArt = $derived(!!it.img && !artBroken);
+  /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`, as
+     every page does: the owner's departure from Figma node 714-42387 (FEATURES.md, "Print"). */
+  const artUrl = $derived(artSrc(it.img, artBroken));
+  /* The folded vectors' paint: one geometry, the layout's colours (card-vectors.css). */
+  const paint = $derived(bw ? 'bw' : 'colour');
   const pkClass = $derived(
     eq ? `pk-${eq.t}` : `pk-${it.kind === 'consumable' ? 'cons' : 'item'}`
   );
@@ -182,7 +195,9 @@
         v.style.fontSize = '';
         const px = parseFloat(getComputedStyle(v).fontSize);
         let z = el.clientWidth > 0 && Number.isFinite(px) ? Math.round(cq(px) * 10) : 30;
-        const pt = (tenths: number): number => (tenths / 1000) * el.clientWidth * 0.75;
+        /* Paper points: the card's own size, not the preview's larger one. */
+        const pt = (tenths: number): number =>
+          (tenths / 1000) * (el.clientWidth / scale) * 0.75;
         while (lines(v).wide > v.clientWidth && pt(z - 1) >= 4.5) {
           z -= 1;
           v.style.fontSize = (z / 10).toFixed(1) + 'cqw';
@@ -217,11 +232,12 @@
 
     const tall = (e: HTMLElement | null): boolean => !!e && e.scrollHeight > e.clientHeight + 1;
     const wide = (e: HTMLElement | null): boolean => !!e && e.scrollWidth > e.clientWidth + 1;
-    /* The content box counts down only: across, a long source line on the compact
-       card overflows it, which no shorter name or description mends. */
+    /* The content box counts down only; across, the source line wraps, and a bottom line
+       still too wide counts beside the name. */
     const report = (): void => {
       const name = el.querySelector<HTMLElement>('.pc-name');
-      const clipped = tall(text) || wide(text) || wide(name) || tall(box);
+      const bottom = el.querySelector<HTMLElement>('.pc-bottom');
+      const clipped = tall(text) || wide(text) || wide(name) || wide(bottom) || tall(box);
       untrack(() => onfit?.(clipped));
     };
 
@@ -293,7 +309,7 @@
 {#snippet band()}
   {#if tier}
     <span class="pc-tier"
-      ><img src={cardArt('banner', bw)} alt="" /><b>{tier}</b><i>{t.tier}</i></span
+      ><CardVector shape="banner" {paint} /><b>{tier}</b><i>{t.tier}</i></span
     >
   {/if}
 {/snippet}
@@ -329,12 +345,11 @@
 
 {#snippet die(e: Pick<Equip, 'tr' | 'rg' | 'dmg' | 'dt'>, mag: boolean)}
   {@const parts2 = dmgParts(e.dmg)}
-  {@const own = DICE_WITH_ART.has(parts2.die)}
-  <span class="pc-die" class:own class:mag data-die={parts2.die}
-    >{#if own}<img
-        src={cardArt(`die-${parts2.die}-${mag ? 'mag' : 'phy'}`, bw)}
-        alt=""
-      />{/if}<b>{parts2.die}</b></span
+  {@const shape = dieVector(parts2.die)}
+  <span class="pc-die" class:own={!!shape} class:mag data-die={parts2.die}
+    >{#if shape}<CardVector {shape} paint={bw ? 'bw' : mag ? 'mag' : 'colour'} />{/if}<b
+      >{parts2.die}</b
+    ></span
   >
 {/snippet}
 
@@ -346,7 +361,7 @@
   {@const parts2 = dmgParts(e.dmg)}
   <div class="pc-strip">
     <span class="pc-lead">{@render die(e, mag)}</span><span class="pc-frame"
-      ><img class="pc-ribbon" src={cardArt(mag ? 'ribbon-mag' : 'ribbon', bw)} alt="" /><span
+      ><CardVector class="pc-ribbon" shape={mag ? 'ribbon-mag' : 'ribbon'} {paint} /><span
         class="pc-cells"
         ><span class="pc-c1" class:wbonus={!!parts2.bonus}
           >{#if parts2.bonus}<span class="pc-bonus">{parts2.bonus}</span>{/if}{@render box(
@@ -367,12 +382,10 @@
     <div class="pc-cells">
       <span class="pc-th-lab"
         ><img src="{CARD_DIR}dots1.svg" alt="" /><small>{t.thLight}</small></span
-      ><span class="pc-th-box"
-        ><img src={cardArt('thbox', bw)} alt="" /><b>{String(th[0])}</b></span
+      ><span class="pc-th-box"><CardVector shape="thbox" {paint} /><b>{String(th[0])}</b></span
       ><img class="pc-th-arrow" src="{CARD_DIR}arrow.svg" alt="" /><span class="pc-th-lab"
         ><img src="{CARD_DIR}dots2.svg" alt="" /><small>{t.thMajor}</small></span
-      ><span class="pc-th-box"
-        ><img src={cardArt('thbox', bw)} alt="" /><b>{String(th[1])}</b></span
+      ><span class="pc-th-box"><CardVector shape="thbox" {paint} /><b>{String(th[1])}</b></span
       ><img class="pc-th-arrow" src="{CARD_DIR}arrow.svg" alt="" /><span class="pc-th-lab"
         ><img src="{CARD_DIR}dots3.svg" alt="" /><small>{t.thSevere}</small></span
       >
@@ -383,24 +396,20 @@
 <!-- Whitespace below is content, covering the whole card - see
      docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
 <!-- prettier-ignore -->
-<article class="pcard {pkClass}" class:bw data-pid={it.id} bind:this={card}
+<article class="pcard {pkClass}" class:bw data-pid={it.id} style:--pc-scale={scale === 1 ? undefined : scale} bind:this={card}
   >{#if !bw}<div class="pc-art"
-      >{#if hasArt}<img
+      ><img
           class="pc-back"
-          src={artSrc(it.img, artBroken)}
+          src={artUrl}
           alt=""
           aria-hidden="true"
           onerror={() => onartfail(it.id)}
         /><img
           class="pc-img"
-          src={artSrc(it.img, artBroken)}
+          src={artUrl}
           alt=""
           onerror={() => onartfail(it.id)}
-        />{:else}<svg
-          class="pc-glyph"
-          viewBox="0 0 48 50"
-          aria-hidden="true"><path d={PRINT_GLYPH[kindKey]} /></svg
-        >{/if}</div
+        /></div
     >{@render band()}{@render mark()}{/if}<div class="pc-content"
     >{#if bw}<div class="pc-head" class:withtier={!!tier}
         >{@render band()}{@render tags()}{@render mark()}</div
@@ -413,12 +422,14 @@
           >{#each b.items as item, k (k)}<li><MarkupInline c={item} /></li>{/each}</ul
         >{:else if b.t === 'ol'}<ol class="dlist" start={b.start}
           >{#each b.items as item, k (k)}<li><MarkupInline c={item} /></li>{/each}</ol
-        >{:else if b.t === 'table'}<table class="dtable"
+        >{:else if b.t === 'table' && b.rows.length === 0}<table class="dtable"
+          ><tbody><tr>{#each b.head as cell, k (k)}<td><MarkupInline c={cell} /></td>{/each}</tr></tbody
+        ></table>{:else if b.t === 'table'}<table class="dtable"
           ><thead><tr>{#each b.head as cell, k (k)}<th scope="col"><MarkupInline c={cell} /></th>{/each}</tr></thead
           ><tbody>{#each b.rows as row, k (k)}<tr>{#each row as cell, m (m)}<td><MarkupInline c={cell} /></td>{/each}</tr>{/each}</tbody
         ></table>{:else}{#if i > 0 && blocks[i - 1]?.b.t === 'p'}<br
           />{/if}{#if lead}<i>{lead}:</i>{/if}<MarkupInline c={b.c} />{/if}{/each}</div
-    ><div class="pc-bottom"><span>Daggerheart</span><span>{src}</span></div></div
+    ><div class="pc-bottom"><span class="pc-game">Daggerheart</span><span class="pc-src">{src}</span></div></div
   ></article
 >
 
@@ -435,7 +446,7 @@
     position: relative;
     overflow: hidden;
     container-type: size;
-    border: 0.4mm dashed #c9c4d2;
+    border: calc(0.4mm * var(--pc-scale, 1)) dashed #c9c4d2;
     background: #fff;
     color: #000;
     display: flex;
@@ -444,8 +455,8 @@
     font-family: var(--ui);
     /* The paper floor for small text (docs/DECISIONS.md, "Print card small
        text keeps the ribbon and gets one paper floor in every view"). */
-    --pc-min-label: 4.5pt;
-    --pc-min-value: 5pt;
+    --pc-min-label: calc(4.5pt * var(--pc-scale, 1));
+    --pc-min-value: calc(5pt * var(--pc-scale, 1));
   }
 
   .pc-art {
@@ -489,13 +500,6 @@
     filter: blur(5cqw) brightness(0.62) saturate(0.85);
   }
 
-  .pc-glyph {
-    width: 34cqw;
-    height: 36cqw;
-    fill: #e6e3ec;
-    margin: auto;
-  }
-
   .pc-tier {
     position: absolute;
     left: 6.9cqw;
@@ -507,7 +511,7 @@
     color: #000;
   }
 
-  .pc-tier img {
+  .pc-tier :global(svg) {
     display: block;
     width: 100%;
     height: auto;
@@ -526,7 +530,7 @@
     left: 0;
     top: 9.6cqw;
     width: 100%;
-    font: 500 max(2.6cqw, 4pt) / 1 var(--ui);
+    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--ui);
     font-style: normal;
     letter-spacing: 0;
     text-transform: uppercase;
@@ -622,7 +626,7 @@
      and a value fit between the ribbon's ornament lines. */
   .pc-strip {
     position: relative;
-    height: max(14cqw, 20pt);
+    height: max(14cqw, calc(20pt * var(--pc-scale, 1)));
     margin: 1.2cqw 0 0.6cqw;
   }
 
@@ -646,7 +650,7 @@
 
   .pc-thstrip {
     position: relative;
-    height: max(10.4cqw, 18.5pt);
+    height: max(10.4cqw, calc(18.5pt * var(--pc-scale, 1)));
     margin: 1.6cqw 0 0.8cqw;
     border: 0.28cqw solid #75788a;
     border-radius: 2.4cqw;
@@ -668,7 +672,7 @@
     flex: 1 1 auto;
     align-self: stretch;
     min-width: 0;
-    padding-top: max(1cqw, 0.6mm);
+    padding-top: max(1cqw, calc(0.6mm * var(--pc-scale, 1)));
     text-align: center;
     line-height: 1;
   }
@@ -676,8 +680,8 @@
   .pc-th-lab img {
     display: block;
     width: auto;
-    height: max(2.6cqw, 1.3mm);
-    margin: 0 auto max(0.9cqw, 0.4mm);
+    height: max(2.6cqw, calc(1.3mm * var(--pc-scale, 1)));
+    margin: 0 auto max(0.9cqw, calc(0.4mm * var(--pc-scale, 1)));
   }
 
   .pc-th-lab small {
@@ -693,9 +697,9 @@
     position: relative;
     flex: none;
     width: 8.8cqw;
-    height: max(11.2cqw, 20pt);
+    height: max(11.2cqw, calc(20pt * var(--pc-scale, 1)));
     /* Room for the arrow's tip, 4.27pt right of the notch (x 33 of 36). */
-    margin-right: calc(4.27pt - 0.733cqw + 0.2cqw);
+    margin-right: calc(calc(4.27pt * var(--pc-scale, 1)) - 0.733cqw + 0.2cqw);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -726,7 +730,7 @@
 
   .pc-th-box::after {
     left: 83.333%;
-    width: calc(0.7333cqw + 2.97pt);
+    width: calc(0.7333cqw + calc(2.97pt * var(--pc-scale, 1)));
     background: #18171c;
   }
 
@@ -742,7 +746,7 @@
     display: none;
   }
 
-  .pc-th-box img {
+  .pc-th-box :global(svg) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -854,7 +858,7 @@
 
   .bw .pc-tier i {
     top: 6.6cqw;
-    font-size: max(2cqw, 4pt);
+    font-size: max(2cqw, calc(4pt * var(--pc-scale, 1)));
   }
 
   .bw .pc-shield {
@@ -897,7 +901,7 @@
     color: #fff;
   }
 
-  .pc-ribbon {
+  .pc-frame :global(.pc-ribbon) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1031,7 +1035,7 @@
     display: none;
   }
 
-  .pc-die.own img {
+  .pc-die.own :global(svg) {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -1135,7 +1139,7 @@
 
   .pc-text .dtable th,
   .pc-text .dtable td {
-    border: 0.2mm solid #000;
+    border: calc(0.2mm * var(--pc-scale, 1)) solid #000;
     padding: 0.4cqw 0.8cqw;
     text-align: left;
     vertical-align: top;
@@ -1149,7 +1153,19 @@
     padding-top: 1.4cqw;
     font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--ui);
     color: #000;
+  }
+
+  /* A long homebrew source line wraps, right-aligned, beside «Daggerheart»: the fit ladder
+     then shrinks the text for the taller bottom (FEATURES.md, "Print"). */
+  .pc-game {
+    flex: none;
     white-space: nowrap;
+  }
+
+  .pc-src {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
   }
 
   @media print {

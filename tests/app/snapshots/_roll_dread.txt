@@ -3,7 +3,7 @@
 # why: a roll on a table with no die of its own
 
 ## ru :: tree
-RootWebArea "Dread GM Toolbox — Генератор лута — Daggerheart" [url=#/roll/dread_gm_toolbox]
+RootWebArea "Dread GM Toolbox - Генератор лута Daggerheart" [url=#/roll/dread_gm_toolbox]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Dread GM Toolbox — Генератор лута — Daggerheart" [
   main ""
     heading "Dread GM Toolbox" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -92,9 +92,10 @@ daggerheart.com
 Таблицы
 Условия использования
 Установить как приложение
+Эфирная Винтовка
 
 ## en :: tree
-RootWebArea "Dread GM Toolbox — Daggerheart Loot Generator" [url=#/roll/dread_gm_toolbox]
+RootWebArea "Dread GM Toolbox - Daggerheart Loot Generator" [url=#/roll/dread_gm_toolbox]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -113,7 +114,7 @@ RootWebArea "Dread GM Toolbox — Daggerheart Loot Generator" [url=#/roll/dread_
   main ""
     heading "Dread GM Toolbox" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -149,6 +150,7 @@ RootWebArea "Dread GM Toolbox — Daggerheart Loot Generator" [url=#/roll/dread_
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Aether Rifle
 Alt. tables
 Arazo's Artifacts
 Community items

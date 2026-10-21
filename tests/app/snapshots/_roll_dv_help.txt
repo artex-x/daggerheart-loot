@@ -3,7 +3,7 @@
 # why: the help panel, unfolded: why the table has no die, and where the equipment half lives
 
 ## ru :: tree
-RootWebArea "The Dragon's Vault — Генератор лута — Daggerheart" [url=#/roll/dragons_vault]
+RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=#/roll/dragons_vault]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,9 +22,9 @@ RootWebArea "The Dragon's Vault — Генератор лута — Daggerheart"
   main ""
     heading "The Dragon's Vault" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=true]
+    button "Как это работает" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
-    StaticText "В таблице 145 позиций — 68 предметов, 9 расходников и 68 единиц ..." [namelen=156 namehash=48e82bb7]
+    StaticText "В таблице 145 позиций - 68 предметов, 9 расходников и 68 единиц ..." [namelen=156 namehash=523ff9b1]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText "."
@@ -85,6 +85,7 @@ daggerheart.com
 Поиск
 Предметы сообществ
 Результат броска
+Святилище Оградителя
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
@@ -97,7 +98,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dragons_vault]
+RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=#/roll/dragons_vault]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -116,9 +117,9 @@ RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/drag
   main ""
     heading "The Dragon's Vault" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=true]
+    button "How this works" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
-    StaticText "The table holds 145 entries — 68 items, 9 consumables and 68 wea..." [namelen=145 namehash=42e95203]
+    StaticText "The table holds 145 entries - 68 items, 9 consumables and 68 wea..." [namelen=145 namehash=52a67d55]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText " supplement."
@@ -155,6 +156,7 @@ RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/drag
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Abjurer's Fane
 Alt. tables
 Arazo's Artifacts
 Community items

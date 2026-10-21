@@ -14,6 +14,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import TableLink from './TableLink.svelte';
   import UpdatedLine from './UpdatedLine.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
@@ -137,11 +138,10 @@
     {#if readable}
       <!-- Mounted across the ready, gone and error branches; keyed, so a second change
            is said again. -->
-      <div class="said" role="status">
-        {#if lost}<span>{t.notFound}</span>{:else}{#key view?.changes}{#if view?.changes}<span
-                >{t.itemUpdated}</span
-              >{/if}{/key}{/if}
-      </div>
+      <StatusRegion
+        text={lost ? t.notFound : view?.changes ? t.itemUpdated : ''}
+        key={lost ? -1 : view?.changes}
+      />
     {/if}
   {/snippet}
 </RecordHost>
@@ -149,15 +149,5 @@
 <style>
   .itempage {
     max-width: 520px;
-  }
-
-  /* Visually hidden, as `SharedListPage.svelte`'s `.said`. */
-  .said {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 </style>

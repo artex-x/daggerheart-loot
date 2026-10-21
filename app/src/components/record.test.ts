@@ -1840,6 +1840,50 @@ describe("the account's own card on a book item", () => {
     await expectNoA11yViolations(container);
   });
 
+  it('marks a set bonus and a rule card text written in English only on a Russian screen', async () => {
+    const ix = withRecords(
+      catalog,
+      [],
+      [],
+      [
+        {
+          key: SET,
+          kind: 'set',
+          ru: 'Комплект Ольхи',
+          ende: 'Spend a Hope.',
+          items: ['q1', 'q2']
+        },
+        { key: RULE, kind: 'ref', ru: 'Клеймо Ольхи', ende: 'The mark burns.', items: ['q1'] }
+      ]
+    );
+    const { container } = draw('q1', ix);
+    const bonus = container.querySelector('.set-bonus');
+    expect(bonus).toHaveAttribute('lang', 'en');
+    expect(bonus?.previousElementSibling).toHaveTextContent('Текст только на английском');
+    const text = [...container.querySelectorAll('.ref-text')].find((e) =>
+      e.textContent.includes('The mark burns.')
+    );
+    expect(text).toHaveAttribute('lang', 'en');
+    expect(text?.previousElementSibling).toHaveTextContent('Текст только на английском');
+    /* A book card's text has both languages: no mark. */
+    const book = [...container.querySelectorAll('.ref-text')].filter((e) => e !== text);
+    for (const e of book) expect(e).not.toHaveAttribute('lang');
+    await userEvent.click(screen.getByText('Клеймо Ольхи'));
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws no mark on a two-language bonus or on the screen of its own language', () => {
+    const ix = withRecords(
+      catalog,
+      [],
+      [],
+      [{ key: SET, kind: 'set', ru: 'Комплект Ольхи', rud: 'Бонус.', items: ['q1', 'q2'] }]
+    );
+    const { container } = draw('q1', ix);
+    expect(container.querySelector('.set-bonus')).not.toHaveAttribute('lang');
+    expect(container.querySelector('.craft .text-lang')).toBeNull();
+  });
+
   it('folds an own set of 100 book items past the third member, the catalog members in catalog order', async () => {
     const order = [...catalog.allEquip, ...catalog.all]
       .filter((r, i, a) => !r.set && a.indexOf(r) === i)

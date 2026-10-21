@@ -1,0 +1,55 @@
+/* The paints of the print card's folded vectors (`lib/cardVectors.ts`,
+   `components/CardVector.svelte`): two stops per slot, each value copied from the file
+   Figma exported for that shape and layout (`card/<shape>.svg`, `card/die-dN-mag.svg`,
+   `card/<shape>-bw.svg`); the six dice share one paint per layout (`--pv-die-*`), as their
+   files do. A solid paint is two equal stops. The black-and-white die rule
+   comes after the magic one at the same weight, so every die takes one paint there
+   (docs/specs/FEATURES.md, "Print"). */
+
+.pcard {
+  --pv-banner-fill-0: #faee88;
+  --pv-banner-fill-1: #edd050;
+  --pv-banner-stroke-0: #fbeb23;
+  --pv-banner-stroke-1: #d09101;
+  --pv-thbox-fill-0: #18171c;
+  --pv-thbox-fill-1: #18171c;
+  --pv-thbox-stroke-0: #fcec9c;
+  --pv-thbox-stroke-1: #edc659;
+  --pv-ribbon-stroke-0: #cca300;
+  --pv-ribbon-stroke-1: #cca300;
+  --pv-ribbon-mag-stroke-0: #403088;
+  --pv-ribbon-mag-stroke-1: #403088;
+  --pv-die-fill-0: #fefbd5;
+  --pv-die-fill-1: #f7ef83;
+  --pv-die-stroke-0: #fbeb23;
+  --pv-die-stroke-1: #d09101;
+}
+
+.pcard .pc-die.mag {
+  --pv-die-fill-0: #382296;
+  --pv-die-fill-1: #1a77bb;
+  --pv-die-stroke-0: #1b1535;
+  --pv-die-stroke-1: #1b1535;
+}
+
+.pcard.bw {
+  --pv-banner-fill-0: #fff;
+  --pv-banner-fill-1: #fff;
+  --pv-banner-stroke-0: #18171c;
+  --pv-banner-stroke-1: #18171c;
+  --pv-thbox-fill-0: #fff;
+  --pv-thbox-fill-1: #fff;
+  --pv-thbox-stroke-0: #18171c;
+  --pv-thbox-stroke-1: #18171c;
+  --pv-ribbon-stroke-0: #2f2f37;
+  --pv-ribbon-stroke-1: #2f2f37;
+  --pv-ribbon-mag-stroke-0: #2f2f37;
+  --pv-ribbon-mag-stroke-1: #2f2f37;
+}
+
+.pcard.bw .pc-die {
+  --pv-die-fill-0: #fff;
+  --pv-die-fill-1: #e3e5e8;
+  --pv-die-stroke-0: #9194a1;
+  --pv-die-stroke-1: #5e5f6e;
+}

@@ -3,7 +3,7 @@
 # why: the set line and the set's shared bonus: every member listed, the record itself inert
 
 ## ru :: tree
-RootWebArea "Уголёк — Генератор лута — Daggerheart" [url=#/i/dve19]
+RootWebArea "Уголёк - Генератор лута Daggerheart" [url=#/i/dve19]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -57,12 +57,12 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -71,7 +71,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Ember — Daggerheart Loot Generator" [url=#/i/dve19]
+RootWebArea "Ember - Daggerheart Loot Generator" [url=#/i/dve19]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -120,9 +120,9 @@ Copy name
 Copy text
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

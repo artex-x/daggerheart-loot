@@ -3,7 +3,7 @@
 # why: a roll on Dragon's Vault, the tenth section
 
 ## ru :: tree
-RootWebArea "The Dragon's Vault — Генератор лута — Daggerheart" [url=#/roll/dragons_vault]
+RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=#/roll/dragons_vault]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "The Dragon's Vault — Генератор лута — Daggerheart"
   main ""
     heading "The Dragon's Vault" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -81,6 +81,7 @@ daggerheart.com
 Поиск
 Предметы сообществ
 Результат броска
+Святилище Оградителя
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
@@ -93,7 +94,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dragons_vault]
+RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=#/roll/dragons_vault]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -112,7 +113,7 @@ RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/drag
   main ""
     heading "The Dragon's Vault" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -147,6 +148,7 @@ RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/drag
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+Abjurer's Fane
 Alt. tables
 Arazo's Artifacts
 Community items

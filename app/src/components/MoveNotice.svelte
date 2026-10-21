@@ -50,7 +50,7 @@
 </script>
 
 {#if shown}
-  <div class="movenotice">
+  <aside class="movenotice">
     <NoticeBox>
       {text}
       {#snippet actions()}
@@ -62,9 +62,9 @@
         >
       {/snippet}
     </NoticeBox>
-  </div>
+  </aside>
 {:else if banner}
-  <div class="movenotice">
+  <aside class="movenotice">
     <NoticeBox>
       {`${t.moveBannerLead} ${t.localOnlyMove}`}
       {#snippet actions()}
@@ -87,11 +87,12 @@
         </div>
       {/snippet}
     </NoticeBox>
-  </div>
+  </aside>
 {/if}
 
 <style>
-  /* Between the header and the page, at the page's width. */
+  /* Between the header and the page, at the page's width; a landmark of its own, since
+     the box is no live region (docs/specs/FEATURES.md, rule 19) and sits outside `main`. */
   .movenotice {
     width: var(--wrap);
     margin: 14px auto 0;

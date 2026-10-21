@@ -3,7 +3,7 @@
 # why: arriving at a filter link, which opens the panel with that value picked
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous_environments/f_kind-item]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/wondrous_environments/f_kind-item]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -168,6 +168,7 @@ daggerheart.com
 Превосходный Алконитовый Кристалл
 Предметы
 Предметы сообществ
+Предметы×
 Призракоуловитель
 Прочее
 Пузырная Палочка
@@ -189,7 +190,6 @@ daggerheart.com
 Сухожилие Тарраска
 Таблицы
 Тростник Трясинного Стекла
-Убрать из фильтра
 Удерживающий Крюк
 Условия использования
 Усмиряющее Кадило
@@ -204,7 +204,7 @@ daggerheart.com
 Эфироцвет
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous_environments/f_kind-item]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/wondrous_environments/f_kind-item]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -223,7 +223,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous_envir
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -351,6 +351,7 @@ Ice Gloves
 Incantor's Chalk
 Install as an app
 Items
+Items×
 Jamming Spanner
 Lantern of Shadows
 Lightning Scarab
@@ -369,7 +370,6 @@ Pure Crystal
 Quill of Memory
 RU
 Red Nose of Hope
-Remove from the filter
 Reset all
 Rootslicer Gauntlet
 Search

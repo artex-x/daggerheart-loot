@@ -3,7 +3,7 @@
 # why: Many Worlds Tavern on its first realm, Sporopolis: the seven-chip supplements panel, «Мир» and a d20
 
 ## ru :: tree
-RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=#/roll/many_worlds_tavern]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart"
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Выберите мир и бросьте кость по нему."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -93,6 +93,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Порхающие Бесы
 Предметы сообществ
 Результат броска
 Скопировать изображение
@@ -107,7 +108,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -126,7 +127,7 @@ RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Pick a realm and roll within it."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -178,6 +179,7 @@ Copy name
 Copy text
 Dread GM Toolbox
 EN
+Flutterfiends
 Godsvale
 Hornet Hold
 How this works

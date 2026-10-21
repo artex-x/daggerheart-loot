@@ -218,6 +218,7 @@ const PRINT_SETS = {
   ownItems: 'set-ownitems',
   emberAxe: 'set-emberaxe',
   clipped: 'set-clipped1',
+  longSource: 'set-longsrc1',
   missing: 'set-missing1',
   allGone: 'set-allgone1',
   expired: 'set-expired1'

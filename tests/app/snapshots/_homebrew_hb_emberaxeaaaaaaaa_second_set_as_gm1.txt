@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Топор Тлеющих Углей — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+RootWebArea "Топор Тлеющих Углей - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -29,6 +29,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Второй набор характеристик: Дистанция - заполните все четыре пол..." [namelen=117 namehash=b57e6ec0]
         button "Второй набор характеристик: Урон - заполните все четыре поля вто..." [namelen=112 namehash=8049943f]
         button "Второй набор характеристик: Тип урона - заполните все четыре пол..." [namelen=117 namehash=bc364fec]
+      status ""
       StaticText "* - обязательное поле. Остальное можно заполнить позже."
       group "Вид"
         button "Предмет" [pressed=false]
@@ -39,7 +40,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Вторичное оружие" [pressed=false]
         button "Броня" [pressed=false]
       StaticText "Источник"
-      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
+      button "Подсказка: Источник" [expanded=false]
       combobox "Источник" [value=Мастерская Ольхи expanded=false haspopup=menu]
         option "Хоумбрю" [selected=false]
         option "Мастерская Ольхи" [selected=true]
@@ -53,7 +54,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       button "RU" [pressed=true]
       button "EN" [pressed=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
-      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      button "Подсказка: Описание" [expanded=false]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
         button "Курсив" [keyshortcuts=Control+I Meta+I]
@@ -101,7 +102,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Двуручное" [pressed=true]
         button "Одноручное/двуручное" [pressed=false]
       button "Второй набор характеристик" [expanded=true]
-      button "Подсказка: Второй набор характеристик" [description=Подсказка: Второй набор характеристик expanded=false]
+      button "Подсказка: Второй набор характеристик" [expanded=false]
       group "Второй набор характеристик: Характеристика"
         button "Проворность" [pressed=true]
         button "Сила" [pressed=false]
@@ -131,7 +132,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       button "Очистить второй набор"
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
-      link "Отмена" [url=index.html?as=gm1#/homebrew]
+      link "К моим предметам" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=true]
@@ -182,6 +183,7 @@ daggerheart.com
 Знание
 Инстинкт
 Искусность
+К моим предметам
 К содержимому
 Карты правил
 Конфиденциальность
@@ -200,7 +202,6 @@ daggerheart.com
 Одноручное
 Одноручное/двуручное
 Основное оружие
-Отмена
 Очень далеко
 Очистить второй набор
 Подсказка: Второй набор характеристик
@@ -239,7 +240,7 @@ daggerheart.com
 физ/маг
 
 ## en :: tree
-RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -264,6 +265,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Second stat set: Range - fill in all four fields of the second s..." [namelen=100 namehash=f93f5e7a]
         button "Second stat set: Damage - fill in all four fields of the second ..." [namelen=101 namehash=97066181]
         button "Second stat set: Damage type - fill in all four fields of the se..." [namelen=106 namehash=a24e506c]
+      status ""
       StaticText "* - required field. The rest can be filled in later."
       group "Kind"
         button "Item" [pressed=false]
@@ -274,7 +276,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Secondary weapon" [pressed=false]
         button "Armor" [pressed=false]
       StaticText "Source"
-      button "Help: Source" [description=Help: Source expanded=false]
+      button "Help: Source" [expanded=false]
       combobox "Source" [value=Alder Workshop expanded=false haspopup=menu]
         option "Homebrew" [selected=false]
         option "Alder Workshop" [selected=true]
@@ -288,7 +290,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       button "RU" [pressed=true]
       button "EN" [pressed=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
-      button "Help: Description" [description=Help: Description expanded=false]
+      button "Help: Description" [expanded=false]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]
         button "Italic" [keyshortcuts=Control+I Meta+I]
@@ -336,7 +338,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Two-Handed" [pressed=true]
         button "One/Two-Handed" [pressed=false]
       button "Second stat set" [expanded=true]
-      button "Help: Second stat set" [description=Help: Second stat set expanded=false]
+      button "Help: Second stat set" [expanded=false]
       group "Second stat set: Trait"
         button "Agility" [pressed=true]
         button "Strength" [pressed=false]
@@ -366,7 +368,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       button "Clear the second set"
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
-      link "Cancel" [url=index.html?as=gm1#/homebrew]
+      link "To my items" [url=index.html?as=gm1#/homebrew]
       button "Delete"
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
     button "On screen" [pressed=true]
@@ -398,7 +400,6 @@ Any
 Armor
 Bold
 Bulleted list
-Cancel
 Clear the second set
 Close
 Consumable
@@ -461,6 +462,7 @@ Supplements
 Table
 Tables
 Terms of use
+To my items
 Two-Handed
 Unique
 Upgrades to

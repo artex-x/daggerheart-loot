@@ -3,6 +3,7 @@
      the own items and signing out (docs/specs/FEATURES.md, "Chrome"). The class is
      `acctmenu`, never `dropmenu`: the browser suite reads `.dropmenu` as the
      add-to-list menu. */
+  import { tick } from 'svelte';
   import { ACCOUNT_HASH, HOMEBREW_HASH, sectionHash } from '../lib/hash.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -11,9 +12,12 @@
     /** The button that opens the menu: a click on it is its own, and Escape returns focus to it. */
     control: HTMLElement;
     onclose: () => void;
+    /** Called once the sign-out answered and the page drew it: the caller moves focus
+     *  (docs/specs/FEATURES.md, rule 20). */
+    onsignedout?: (() => void) | undefined;
   }
 
-  const { app, control, onclose }: Props = $props();
+  const { app, control, onclose, onsignedout }: Props = $props();
 
   const t = $derived(app.t);
 
@@ -57,10 +61,16 @@
     if (!inside(e.target)) onclose();
   }
 
+  /* The menu unmounts on close, so the callback is read first; the account button keeps
+     focus while the call runs. */
   function signOut(): void {
+    const after = onsignedout;
     onclose();
-    void app.signOut('local').then((r) => {
+    control.focus();
+    void app.signOut('local').then(async (r) => {
       app.say(r.ok ? (t) => t.signedOut : (t) => t.accountFailed, { error: !r.ok });
+      await tick();
+      after?.();
     });
   }
 </script>

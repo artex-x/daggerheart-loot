@@ -1769,6 +1769,57 @@ describe('the share links', () => {
       expect(await shares.read('t1')).toEqual({ ok: true, shared: whole });
       expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', { p_token: 't1' });
     });
+
+    /* The hosted `anon` statement timeout (DEBT.md D111). */
+    const timedOut = {
+      data: null,
+      error: { code: '57014', message: 'canceling statement due to statement timeout' },
+      status: 500
+    };
+
+    it('reads a first read whole with the call of before on 57014, and names the overload next', async () => {
+      client.rpc
+        .mockResolvedValueOnce(timedOut)
+        .mockResolvedValueOnce(ok(whole))
+        .mockResolvedValueOnce(ok(stripped));
+      const { shares } = make();
+      expect(await shares.read('t1')).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenNthCalledWith(1, 'get_shared_list', {
+        p_token: 't1',
+        p_since: null,
+        p_have: {}
+      });
+      expect(client.rpc).toHaveBeenNthCalledWith(2, 'get_shared_list', { p_token: 't1' });
+      /* The flag stays unset: the next read names the overload again. */
+      expect(await shares.read('t1', 8, held)).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenNthCalledWith(3, 'get_shared_list', {
+        p_token: 't1',
+        p_since: 8,
+        p_have: { [HID]: 'r1' }
+      });
+      expect(client.rpc).toHaveBeenCalledTimes(3);
+    });
+
+    it('passes an unchanged answer of the call of before through on a re-read', async () => {
+      client.rpc.mockResolvedValueOnce(timedOut).mockResolvedValueOnce(ok({ unchanged: true }));
+      const { shares } = make();
+      expect(await shares.read('t1', 8, held)).toEqual({ ok: true, unchanged: true });
+      expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', {
+        p_token: 't1',
+        p_since: 8
+      });
+    });
+
+    it('answers a failed read when the call of before fails too', async () => {
+      client.rpc.mockResolvedValueOnce(timedOut).mockResolvedValueOnce({
+        data: null,
+        error: { code: 'XX000', message: 'x' },
+        status: 500
+      });
+      const { shares } = make();
+      expect(await shares.read('t1')).toEqual({ ok: false });
+      expect(client.rpc).toHaveBeenCalledTimes(2);
+    });
   });
 
   const NETWORK = { ok: false, error: 'network' };

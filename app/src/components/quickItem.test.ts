@@ -196,6 +196,20 @@ describe('the own-item panel', () => {
     expect(name).toHaveValue('Пятый');
   });
 
+  it('redraws the refusal in English after «EN»', async () => {
+    openShop({ limits: { items: 4 } });
+    const name = await openPanel();
+    await userEvent.type(name, 'Пятый');
+    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    const line = await screen.findByRole('alert');
+    expect(line).toHaveTextContent(/^Достигнут предел своих предметов: 4\./);
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/limit of 4 items/);
+    });
+    expect(screen.getByRole('alert').textContent).not.toMatch(/[А-яЁё]/);
+  });
+
   it('makes no item at a full list and says the entry limit in the panel', async () => {
     const { cloud } = openShop({ limits: { entries: 4 } });
     const create = vi.spyOn(cloud.homebrew, 'createItem');

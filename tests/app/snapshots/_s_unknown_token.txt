@@ -3,7 +3,7 @@
 # why: a link that opens nothing: «Список больше не доступен», «Владелец удалил эту ссылку или список.», «На главную»; the address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/unknown-token]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/unknown-token]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

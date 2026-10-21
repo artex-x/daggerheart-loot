@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2#/p/set-clipped1]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/p/set-clipped1]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм — как у обычной..." [namelen=75 namehash=d40067fa]
+    StaticText "Карточек: 1. Листов A4: 1. Размер карты 63×88 мм - как у обычной..." [namelen=75 namehash=81ed5454]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=true]
@@ -32,8 +32,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     button "Ссылка на набор"
     status ""
       StaticText "Текст не помещается на карточки при печати: 1. Конец текста на н..." [namelen=83 namehash=23295f6c]
-    StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "Текст не помещается на карточки при печати: 1. Конец текста на н..." [namelen=83 namehash=23295f6c]
+    ... StaticText x3 of 7 same-shape siblings elided
     heading "СВИТОК ДОЛГОЙ НОЧИ" [level=2]
     StaticText "Daggerheart"
     StaticText "Хоумбрю"
@@ -97,8 +97,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-clipped1]
     button "Link to this set"
     status ""
       StaticText "The text does not fit some cards in print: 1. The end of the tex..." [namelen=89 namehash=72741af4]
-    StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x2 of 6 same-shape siblings elided
+    StaticText "The text does not fit some cards in print: 1. The end of the tex..." [namelen=89 namehash=72741af4]
+    ... StaticText x3 of 7 same-shape siblings elided
     heading "SCROLL OF THE LONG NIGHT" [level=2]
     StaticText "Daggerheart"
     StaticText "Homebrew"

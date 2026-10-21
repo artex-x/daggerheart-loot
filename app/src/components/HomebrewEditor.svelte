@@ -31,11 +31,12 @@
   import RecordCard from './RecordCard.svelte';
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import TextInput from './TextInput.svelte';
   import { newArtName, shownArt, type ArtValue } from '../lib/art.js';
   import { limitText } from '../lib/cloudLists.js';
   import { lineMembers } from '../lib/data.js';
-  import { dict } from '../lib/dict.js';
+  import { dict, type Msg } from '../lib/dict.js';
   import { HOMEBREW_HASH, homebrewItemHash } from '../lib/hash.js';
   import {
     BOOK_NAME_MAX,
@@ -118,7 +119,8 @@
   let missing = $state(false);
   let problems = $state.raw<Problem[]>([]);
   let banner = $state<'conflict' | 'gone' | null>(null);
-  let refused = $state<string | null>(null);
+  /* Kept as a `Msg`, so a language switch redraws the line in the new language. */
+  let refused = $state<Msg | null>(null);
   let busy = $state(false);
   let leaving = $state(false);
   /* A delete in this tab: the row leaves the store before the lists are read again, and
@@ -136,7 +138,7 @@
      the save's refusal for it, the upload in flight, and a preview that failed to draw. */
   let art = $state<ArtValue>({ kind: 'keep' });
   let loadedArt = $state<string | null>(null);
-  let artLine = $state<string | null>(null);
+  let artLine = $state<Msg | null>(null);
   let uploadingArt = $state(false);
   let previewBroken = $state(false);
   /* The preview column's view: the screen card, or the print card with its clip report.
@@ -392,9 +394,12 @@
     altSummary?.focus();
   }
 
-  function refusedLine(r: ListWrite | HomebrewSaved): string {
-    if (!r.ok && r.error === 'limit') return t.hbNotSaved + ' ' + limitText(r.key, r.value, t);
-    return t.hbSaveNetwork;
+  function refusedLine(r: ListWrite | HomebrewSaved): Msg {
+    if (!r.ok && r.error === 'limit') {
+      const { key, value } = r;
+      return (t) => t.hbNotSaved + ' ' + limitText(key, value, t);
+    }
+    return (t) => t.hbSaveNetwork;
   }
 
   /* After a write that created or wrote over the row: the draft is what is stored, and the
@@ -482,7 +487,7 @@
   ): Promise<void> {
     const v = art;
     if (v.kind !== 'file' || retried) {
-      artLine = t.hbArtGone;
+      artLine = (t) => t.hbArtGone;
       return;
     }
     const next = {
@@ -503,10 +508,10 @@
     const r = await store.uploadArt(name, v.full, v.thumb);
     uploadingArt = false;
     if (r.ok) return name;
-    refused =
-      r.error === 'limit'
-        ? t.hbNotSaved + ' ' + limitText(r.key, r.value, t)
-        : t.hbArtUploadFailed;
+    if (r.error === 'limit') {
+      const { key, value } = r;
+      refused = (t) => t.hbNotSaved + ' ' + limitText(key, value, t);
+    } else refused = (t) => t.hbArtUploadFailed;
     return null;
   }
 
@@ -568,7 +573,7 @@
     if (rowKey === null || busy) return;
     refused = null;
     if (!(await store.read())) {
-      refused = t.hbWriteFailed;
+      refused = (t) => t.hbWriteFailed;
       return;
     }
     const now = store.item(rowKey)?.content ?? base;
@@ -585,7 +590,7 @@
     if (dirty && !app.env.dialog.confirm(t.hbDropEdits)) return;
     refused = null;
     if (!(await store.read())) {
-      refused = t.hbWriteFailed;
+      refused = (t) => t.hbWriteFailed;
       return;
     }
     const r = rowKey === null ? undefined : store.item(rowKey);
@@ -616,7 +621,7 @@
     busy = false;
     if (!r.ok) {
       deleting = false;
-      refused = t.hbDeleteFailed;
+      refused = (t) => t.hbDeleteFailed;
       return;
     }
     leaving = true;
@@ -891,6 +896,15 @@
             </ul>
           </div>
         {/if}
+        <StatusRegion
+          text={banner === 'conflict'
+            ? t.hbConflict
+            : banner === 'gone'
+              ? t.hbGone
+              : view === 'print' && clipped
+                ? t.hbPrintClipped
+                : ''}
+        />
         {#if banner === 'conflict'}
           <NoticeBox warn>
             {t.hbConflict}
@@ -1080,7 +1094,14 @@
             <NoticeBox warn>{t.hbPrintClipped}</NoticeBox>
           {/if}
         </FormField>
-        <ArtField {app} {store} {selfKey} saved={loadedArt} bind:value={art} line={artLine} />
+        <ArtField
+          {app}
+          {store}
+          {selfKey}
+          saved={loadedArt}
+          bind:value={art}
+          line={artLine?.(t, lang) ?? null}
+        />
 
         {#if draft.kind !== 'equip'}
           <FormField label={t.tier} error={errText('hb-tier')} errorId={errId('hb-tier')}>
@@ -1332,7 +1353,7 @@
         <div class="buttons">
           <Button variant="primary" disabled={busy} onclick={() => void save()}>{t.save}</Button
           >
-          <Button variant="ghost" href={HOMEBREW_HASH} sameTab>{t.cancel}</Button>
+          <Button variant="ghost" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
           {#if rowKey !== null && row}
             <Button variant="danger" onclick={() => void remove()}>{t.del}</Button>
           {/if}
@@ -1341,7 +1362,7 @@
           <p class="hint" role="status">{t.hbArtUploading}</p>
         {/if}
         {#if refused}
-          <p class="refused" role="alert">{refused}</p>
+          <p class="refused" role="alert">{refused(t, lang)}</p>
         {/if}
         {#if inLists > 0}
           <p class="hint">{plural(inLists, t.hbInListsN, lang)}</p>
@@ -1403,6 +1424,8 @@
     align-items: start;
   }
 
+  /* 340px from 800px, 420px from 1100px: the print card is drawn at the column's width
+     (`PrintPreview.svelte`). */
   @media (min-width: 800px) {
     .hbedit {
       grid-template-columns: minmax(0, 1fr) 340px;
@@ -1415,6 +1438,12 @@
       top: 130px;
       max-height: calc(100vh - 146px);
       overflow-y: auto;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .hbedit {
+      grid-template-columns: minmax(0, 1fr) 420px;
     }
   }
 

@@ -2,6 +2,7 @@
    network, a list the server refused, a held list, and nothing once done.
    docs/specs/FEATURES.md, "Account and browser lists". */
 import { cleanup, render, screen } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import MoveStatus from './MoveStatus.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
@@ -29,7 +30,11 @@ function made(migrated?: object) {
   return { app, move };
 }
 
-const text = (container: HTMLElement): string => container.textContent.trim();
+/* The boxes' words; the status region says the same words apart from them. */
+const text = (container: HTMLElement): string =>
+  [...container.querySelectorAll('.slot')].map((s) => s.textContent.trim()).join(' ');
+const said = (container: HTMLElement): string =>
+  container.querySelector('.said[role="status"]')?.textContent.trim() ?? '';
 
 describe('MoveStatus', () => {
   it('says the lists are moving', async () => {
@@ -82,8 +87,24 @@ describe('MoveStatus', () => {
     const { app, move } = made();
     const { container } = render(MoveStatus, { app });
     expect(text(container)).toBe('');
+    expect(said(container)).toBe('');
     move.status = 'done';
     cleanup();
     expect(text(render(MoveStatus, { app }).container)).toBe('');
+  });
+
+  it('says a box that appears through the region mounted before it, not the box', async () => {
+    const { app, move } = made();
+    const { container } = render(MoveStatus, { app });
+    const region = container.querySelector('.said[role="status"]');
+    expect(region).not.toBeNull();
+    move.status = 'failed';
+    await tick();
+    expect(container.querySelector('.said[role="status"]')).toBe(region);
+    expect(said(container)).toBe(
+      'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
+    );
+    expect(container.querySelector('.box')).not.toHaveAttribute('role');
+    await expectNoA11yViolations(container);
   });
 });

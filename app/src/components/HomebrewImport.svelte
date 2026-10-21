@@ -36,6 +36,7 @@
     SECTIONS_MAX
   } from '../lib/homebrew.js';
   import {
+    bookItemsDropped,
     defaultTarget,
     deriveFile,
     ERRORS_MAX,
@@ -567,12 +568,13 @@
     const problems = rows.map((_r, i) => customProblem(i));
     customErr = problems;
     if (problems.some((p) => p !== null) || plan.some((p) => p.full)) return;
-    if (
-      update &&
-      heldN &&
-      !app.env.dialog.confirm(t.hbImportUpdateConfirm.replace('%n', String(heldN)))
-    ) {
-      return;
+    if (update && heldN) {
+      const dropped = bookItemsDropped(file, store);
+      const warn = dropped
+        ? ' ' + t.hbImportBookItemsDropped.replace('%n', String(dropped))
+        : '';
+      const text = t.hbImportUpdateConfirm.replace('%n', String(heldN)).replace('%s', warn);
+      if (!app.env.dialog.confirm(text)) return;
     }
     const sent = targets.map((x, i): Target =>
       x.kind === 'custom' ? { ...x, name: custom[i] ?? '', lang } : x
@@ -795,11 +797,8 @@
   {/if}
 
   <p class="hint">
-    {t.hbImportHintBefore}<a href="schema/homebrew-v1.json" target="_blank" rel="noopener"
+    {t.hbImportHintBefore}<a href="schema/homebrew-v2.json" target="_blank" rel="noopener"
       >{t.hbImportSchema}</a
-    >
-    /
-    <a href="schema/homebrew-v2.json" target="_blank" rel="noopener">{t.hbImportSchemaV2}</a
     >{t.importHintMid}<a href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
     >{t.hbImportHintAfter}
   </p>

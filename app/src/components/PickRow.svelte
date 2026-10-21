@@ -1,7 +1,8 @@
 <script lang="ts">
   /* The card's pick row on the record page, in the record modal and on `#/h/`: add to a
      list, print, «Изменить» on an own item, and «Сохранить себе» on another account's item
-     with a line under the row saying what the copy does (docs/specs/FEATURES.md, "Records").
+     in a group of its own with the note saying what the copy does, tied to the button by
+     `aria-describedby` (docs/specs/FEATURES.md, "Records").
      Signed out the press opens the sign-in prompt under the row, and the copy is made once
      the sign-in comes back and the account's items are read. «Печать» makes a print set
      and opens `#/p/<id>`; signed out it opens its own sign-in prompt under the row, and the
@@ -43,6 +44,8 @@
       : !!app.homebrew?.has(copyKey) && app.relinkTargets(it).length === 0
   );
   const toLists = $derived(offered && app.relinkTargets(it).length > 0);
+  /* The page can draw the row twice (the page and the record modal over it). */
+  const noteId = $derived(`savenote-${inModal ? 'm' : 'p'}-${hid ?? ''}`);
   let asking = $state(false);
   let printAsking = $state(false);
 
@@ -86,15 +89,18 @@
   <Button size="sm" href={homebrewItemHash(it.id)} sameTab>{t.edit}</Button>
 {/if}
 {#if offered && typeof hid === 'string'}
-  <Button
-    size="sm"
-    disabled={saved || app.savingItem === hid || app.newListTarget === 'wait'}
-    expanded={app.newListTarget === 'prompt' ? asking : undefined}
-    onclick={press}>{saved ? t.saveItemDone : t.saveItem}</Button
-  >
-  {#if !saved}
-    <p class="savenote">{toLists ? t.saveItemNoteList : t.saveItemNote}</p>
-  {/if}
+  <div class="savegroup">
+    <Button
+      size="sm"
+      disabled={saved || app.savingItem === hid || app.newListTarget === 'wait'}
+      expanded={app.newListTarget === 'prompt' ? asking : undefined}
+      describedby={saved ? undefined : noteId}
+      onclick={press}>{saved ? t.saveItemDone : t.saveItem}</Button
+    >
+    {#if !saved}
+      <p class="savenote" id={noteId}>{toLists ? t.saveItemNoteList : t.saveItemNote}</p>
+    {/if}
+  </div>
   {#if asking && app.newListTarget === 'prompt'}
     <div class="saveprompt">
       <SignInPrompt
@@ -121,8 +127,18 @@
 {/if}
 
 <style>
-  .savenote {
+  /* A line of its own under the other pick buttons; the note beside the button where at
+     least 16em fit, else under it. */
+  .savegroup {
     flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .savenote {
+    flex: 1 1 16em;
     margin: 0;
     font-size: 12.5px;
     color: var(--muted2);

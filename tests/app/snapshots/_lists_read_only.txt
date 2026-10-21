@@ -4,7 +4,7 @@
 # today: 2026-10-26
 
 ## ru :: tree
-RootWebArea "Списки — Генератор лута — Daggerheart" [url=index.html?today=2026-10-26#/lists]
+RootWebArea "Списки - Генератор лута Daggerheart" [url=index.html?today=2026-10-26#/lists]
   link "К содержимому" [url=index.html?today=2026-10-26#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
   main ""
     heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     heading "НОВЫЙ СПИСОК" [level=2]
     StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
@@ -67,7 +67,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists]
+RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists]
   link "Skip to content" [url=index.html?today=2026-10-26#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
@@ -85,7 +85,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10
   main ""
     heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     heading "NEW LIST" [level=2]
     StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]

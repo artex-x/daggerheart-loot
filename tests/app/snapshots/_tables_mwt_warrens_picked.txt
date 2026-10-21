@@ -3,7 +3,7 @@
 # why: the filter panel open with its kind and realm rows, Warrin' Warrens picked: 21 rows
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/many_worlds_tavern/f_realm-warrens]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/many_worlds_tavern/f_realm-warrens]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -108,6 +108,7 @@ daggerheart.com
 Взыскательный Баклер
 Войти
 Воюющие Норы
+Воюющие Норы×
 Второй Резак
 Графин Позёра
 Долина Богов
@@ -150,7 +151,6 @@ daggerheart.com
 Табельный Секач
 Таблицы
 Трубка Здоровяка
-Убрать из фильтра
 Условия использования
 Установить как приложение
 Фильтры (1)
@@ -159,7 +159,7 @@ daggerheart.com
 Шляпа из Колючей Коры
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/many_worlds_tavern/f_realm-warrens]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/many_worlds_tavern/f_realm-warrens]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -178,7 +178,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/many_worlds_ta
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -288,7 +288,6 @@ Poison-Colored Paint
 Pokey Pauldrons
 Privacy
 RU
-Remove from the filter
 Reset all
 Scorekeeper
 Scorpion Spear
@@ -309,6 +308,7 @@ The Drome
 Vault of Ages
 Wagerwood
 Warrin' Warrens
+Warrin' Warrens×
 Wondrous Environments
 Wriggle
 daggerheart.com

@@ -3,7 +3,7 @@
 # why: signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Генератор лута Daggerheart" [url=#/lists/00000000-0000-4000-8000-000000000101]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

@@ -4,7 +4,7 @@
 # today: 2026-10-26
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=2026-10-26#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?today=2026-10-26#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
   link "К содержимому" [url=index.html?today=2026-10-26#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]

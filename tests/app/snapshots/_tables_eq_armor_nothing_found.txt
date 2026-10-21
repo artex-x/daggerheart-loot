@@ -3,7 +3,7 @@
 # why: the three-row panel open, a pill, 0 из 100, the empty state with its own reset
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/eq_armor/f_line-uniq]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -96,15 +96,15 @@ daggerheart.com
 Ссылка на фильтры
 Таблицы
 Тёмное сердце Андалурии
-Убрать из фильтра
 Улучшаемые
 Уникальные
+Уникальные×
 Условия использования
 Установить как приложение
 Фильтры (1)
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-uniq]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-uniq]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -123,7 +123,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -186,7 +186,6 @@ Open this section on start
 Other
 Privacy
 RU
-Remove from the filter
 Reset all
 Search
 Secondary
@@ -198,6 +197,7 @@ Tables
 Terms of use
 The Dragon's Vault
 Unique
+Unique×
 Upgradable
 Vault of Ages
 Weapons

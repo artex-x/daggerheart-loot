@@ -47,18 +47,17 @@ describe('the import panel', () => {
     const toggle = screen.getByRole('button', { name: 'Импорт из файла' });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
-    const schema = screen.getByRole('link', { name: 'схеме homebrew-v1' });
-    expect(schema).toHaveAttribute('href', 'schema/homebrew-v1.json');
-    const v2 = screen.getByRole('link', { name: 'homebrew-v2' });
-    expect(v2).toHaveAttribute('href', 'schema/homebrew-v2.json');
-    expect(v2).toHaveAttribute('target', '_blank');
-    expect(v2).toHaveAttribute('rel', 'noopener');
+    const schema = screen.getByRole('link', { name: 'схеме homebrew-v2' });
+    expect(schema).toHaveAttribute('href', 'schema/homebrew-v2.json');
+    expect(schema).toHaveAttribute('target', '_blank');
+    expect(schema).toHaveAttribute('rel', 'noopener');
+    expect(container.querySelector('a[href="schema/homebrew-v1.json"]')).toBeNull();
     expect(screen.getByRole('link', { name: 'описание для ИИ-помощников' })).toHaveAttribute(
       'href',
       'llms.txt'
     );
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v1 / homebrew-v2 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
+      'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v2 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
     );
     await expectNoA11yViolations(container);
   });
@@ -455,6 +454,49 @@ describe("a card's book items on «Обновить»", () => {
     expect(
       await heldWithItems(doc({ version: 2, cards: [{ ...card, items: ['ci1', 'q2'] }] }), true)
     ).toMatchObject({ items: ['ci1', 'q2'] });
+  });
+
+  /* The confirm's text on «Обновить» with `file`; the confirm is declined. */
+  const confirmText = async (file: Uint8Array, lang: 'ru' | 'en' = 'ru'): Promise<unknown> => {
+    const { container, dialog } = await opened('gm1', {}, false, seed);
+    const confirm = vi.spyOn(dialog, 'confirm');
+    if (lang === 'en') {
+      await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+      await screen.findByText('Import items from a JSON file');
+      const schema = screen.getByRole('link', { name: 'homebrew-v2 schema' });
+      expect(schema).toHaveAttribute('href', 'schema/homebrew-v2.json');
+      expect(schema).toHaveAttribute('target', '_blank');
+      expect(schema).toHaveAttribute('rel', 'noopener');
+      expect(container.querySelector('a[href="schema/homebrew-v1.json"]')).toBeNull();
+      expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
+        'A file saved with "Download JSON" or written to the homebrew-v2 schema (a description for AI assistants), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.'
+      );
+    }
+    const [update, go] =
+      lang === 'en' ? ['Update', 'Import (1)'] : ['Обновить', 'Импортировать (1)'];
+    choose(container, file);
+    await userEvent.click(await screen.findByRole('button', { name: update }));
+    await userEvent.click(screen.getByRole('button', { name: go }));
+    expect(confirm).toHaveBeenCalledOnce();
+    return confirm.mock.calls[0]?.[0];
+  };
+
+  it('names the cards that lose their book items in the confirm', async () => {
+    expect(await confirmText(doc({ version: 2, cards: [card] }))).toBe(
+      'Обновить существующие предметы и карты (1)? Их текст и характеристики заменятся данными из файла. Книжные предметы уберутся из карт: 1. Отменить нельзя.'
+    );
+  });
+
+  it('names no book items in the confirm for a version 1 file', async () => {
+    expect(await confirmText(doc({ cards: [card] }))).toBe(
+      'Обновить существующие предметы и карты (1)? Их текст и характеристики заменятся данными из файла. Отменить нельзя.'
+    );
+  });
+
+  it('links the one schema and names the lost book items in English', async () => {
+    expect(await confirmText(doc({ version: 2, cards: [card] }), 'en')).toBe(
+      'Update the items and cards you hold (1)? Their text and stats are replaced from the file. Book items are removed from cards: 1. This cannot be undone.'
+    );
   });
 
   it('writes no card on «Пропустить»', async () => {

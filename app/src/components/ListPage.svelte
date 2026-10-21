@@ -38,6 +38,7 @@
   import MoveStatus from './MoveStatus.svelte';
   import SharedListPage from './SharedListPage.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
@@ -373,7 +374,7 @@
     return own ? itemMeta(own, id) : {};
   }
 
-  /** The gold hint / field title - empty in coin mode, where there is
+  /** The price field's conversion hint - empty in coin mode, where there is
    *  nothing to translate. */
   function goldText(coins: number): string {
     return coins > 0 && mode !== 'coin' ? priceText(coins, mode, app.lang) : '';
@@ -797,6 +798,8 @@
   const drafts = new SvelteMap<string, string>();
   /* The note boxes whose «?» hint is open, by box id. */
   const noteHelp = new SvelteSet<string>();
+  /* The rows whose price «?» shows its conversion, by entry id. */
+  const priceHelp = new SvelteSet<string>();
   /* The share and own-item panels fold when another list opens, and the hand
      heights, keyed by record id, belong to the list that set them. */
   let sharing = $state(false);
@@ -809,6 +812,7 @@
     handHeight.clear();
     drafts.clear();
     noteHelp.clear();
+    priceHelp.clear();
   });
   $effect(() => {
     const el = rowsEl;
@@ -1354,6 +1358,7 @@
           {#each items as it, i (it.id)}
             {@const m = metaOf(it.id)}
             {@const hasNote = !!(m.note || m.hnote)}
+            {@const goldHint = goldText(m.gold ?? 0)}
             <div
               class="row lrow"
               class:sel={lsel.has(it.id)}
@@ -1427,14 +1432,25 @@
                         }}
                   /></label
                 >
-                <label
-                  ><span
-                    >{t.gold}{#if goldText(m.gold ?? 0)}<span
-                        class="goldhint"
-                        data-goldhint={goldText(m.gold ?? 0)}
-                        title={goldText(m.gold ?? 0)}>?</span
-                      >{/if}</span
+                <!-- No `<label>`: a button inside one would be a second control of the label
+                     (FEATURES.md, rule 15), and 300 `label[for]` lookups stalled jsdom's role
+                     queries past the timed suite's 30 s (2026-10-16), so the caption names the
+                     field by `aria-labelledby`. -->
+                <div class="gfield">
+                  <span
+                    ><span id="gcap-{it.id}">{t.price}</span>{#if goldHint}<HelpButton
+                        lang={app.lang}
+                        size="sm"
+                        open={priceHelp.has(it.id)}
+                        label={t.fieldHelp.replace('%s', t.price)}
+                        controls="ghint-{it.id}"
+                        onclick={() => {
+                          if (priceHelp.has(it.id)) priceHelp.delete(it.id);
+                          else priceHelp.add(it.id);
+                        }}
+                      />{/if}</span
                   ><input
+                    aria-labelledby="gcap-{it.id}"
                     type="number"
                     min="0"
                     max="99999"
@@ -1442,15 +1458,14 @@
                     data-gold
                     value={m.gold || ''}
                     placeholder="—"
-                    title={goldText(m.gold ?? 0) || undefined}
                     readonly={readOnly}
                     oninput={readOnly
                       ? undefined
                       : (e) => {
                           setGold(it.id, e);
                         }}
-                  /></label
-                >
+                  />
+                </div>
               </div>
               <div class="lrow-acts">
                 <button
@@ -1487,6 +1502,11 @@
                   >
                 {/if}
               </div>
+              {#if goldHint}
+                <p class="ghint" id="ghint-{it.id}" hidden={!priceHelp.has(it.id)}>
+                  {goldHint}
+                </p>
+              {/if}
               {#if lsel.has(it.id) && (m.qty ?? 0) > 1}
                 {@const n = takenOf(it.id)}
                 <div class="lrow-take">
@@ -1553,11 +1573,9 @@
           {/if}
         </div>
       {/if}
-      <div class="lsaid" role="status" aria-live="polite">{said}</div>
+      <StatusRegion text={said} />
       {#if isCloud}
-        <div class="lsaid" role="status" data-live={app.cloudLists?.live ? 'live' : undefined}>
-          {syncSaid}
-        </div>
+        <StatusRegion text={syncSaid} live={app.cloudLists?.live} />
       {/if}
     {/if}
   {/snippet}
@@ -2147,15 +2165,6 @@
     cursor: pointer;
   }
 
-  .lsaid {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   /* the `.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`,
      `.lrow-acts .lrow-note`, `.on`, `svg` (style.css:618-623) */
   .lrow {
@@ -2189,6 +2198,17 @@
     justify-content: flex-start;
     border-top: 1px solid rgb(216 171 94 / 22%);
     padding: 8px 11px 8px 107px;
+  }
+
+  /* The price's conversion, under the row's fields while its «?» is open, at the take
+     line's inset. */
+  .ghint {
+    flex: 0 0 100%;
+    margin: 0;
+    padding: 0 11px 8px 107px;
+    font-size: 12.5px;
+    color: var(--muted2);
+    overflow-wrap: anywhere;
   }
 
   .lrow-acts .lrow-note,
@@ -2300,18 +2320,20 @@
     box-shadow: inset 0 -3px 0 0 var(--gold);
   }
 
-  /* off `.lrow-meta` and its nine, including `.goldhint` and the
-     `:hover`/`:focus-within` pair (style.css:750-776) */
+  /* off `.lrow-meta` and its labels (style.css:750-776); the price field's caption holds
+     its «?», so the field is a `.gfield`, not a `<label>`. The «?» makes that caption
+     taller, so the fields align at the end and the two inputs stay on one line. */
   .lrow-meta {
     flex: none;
     display: flex;
     gap: 6px;
-    align-items: center;
+    align-items: flex-end;
     padding: 8px 10px;
     border-left: 1px solid var(--line);
   }
 
-  .lrow-meta label {
+  .lrow-meta > label,
+  .lrow-meta > .gfield {
     display: flex;
     flex-direction: column;
     gap: 3px;
@@ -2327,29 +2349,9 @@
     gap: 4px;
   }
 
-  .goldhint {
-    width: 13px;
-    height: 13px;
-    flex: none;
-    border-radius: 50%;
-    cursor: help;
-    border: 1px solid var(--line2);
-    color: var(--muted2);
-    font: 700 9px/1 var(--ui);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.15s;
-  }
-
-  .goldhint:hover,
-  .lrow-meta label:hover .goldhint,
-  .lrow-meta label:focus-within .goldhint {
-    border-color: var(--gold);
-    color: var(--gold-soft);
-  }
-
+  /* `position`: the input paints over the price «?»'s 44 px target, which reaches into it. */
   .lrow-meta input {
+    position: relative;
     width: 64px;
     height: 30px;
     padding: 0 8px;
@@ -2474,7 +2476,8 @@
       border-left: 1px solid var(--line);
     }
 
-    .lrow-take {
+    .lrow-take,
+    .ghint {
       padding-left: 11px;
     }
   }

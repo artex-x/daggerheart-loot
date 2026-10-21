@@ -3,7 +3,7 @@
 # why: the same key signed out: «Предмет не найден», the address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/hb_emberaxeaaaaaaaa]
+RootWebArea "Генератор лута Daggerheart" [url=#/i/hb_emberaxeaaaaaaaa]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

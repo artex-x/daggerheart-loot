@@ -3,7 +3,7 @@
 # why: a weapon with a referenced adversary card
 
 ## ru :: tree
-RootWebArea "Губитель из Сухостоя — Генератор лута — Daggerheart" [url=#/i/voa4_t1b]
+RootWebArea "Губитель из Сухостоя - Генератор лута Daggerheart" [url=#/i/voa4_t1b]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -56,12 +56,12 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -70,7 +70,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Deadwood Slayer — Daggerheart Loot Generator" [url=#/i/voa4_t1b]
+RootWebArea "Deadwood Slayer - Daggerheart Loot Generator" [url=#/i/voa4_t1b]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -119,9 +119,9 @@ Copy name
 Copy text
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

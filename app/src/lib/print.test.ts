@@ -3,9 +3,10 @@ import {
   cardArt,
   COMPACT_PER_SHEET,
   dmgParts,
-  glyphKey,
   pages,
-  PRINT_GLYPH,
+  PREVIEW_MAX_PX,
+  previewScale,
+  PRINTED_PX,
   printTrait,
   setLineOf
 } from './print.js';
@@ -27,19 +28,42 @@ describe("the trait cell's word", () => {
 
 describe('a vector file name', () => {
   it('is plain in colour', () => {
-    expect(cardArt('banner', false)).toBe('card/banner.svg');
+    expect(cardArt('shield', false)).toBe('card/shield.svg');
   });
 
-  it('takes -bw in black and white', () => {
-    expect(cardArt('banner', true)).toBe('card/banner-bw.svg');
+  it('takes -bw in black and white for each pair drawn as two files', () => {
+    expect(cardArt('shield', true)).toBe('card/shield-bw.svg');
+    expect(cardArt('burden-1', true)).toBe('card/burden-1-bw.svg');
+    expect(cardArt('burden-2', true)).toBe('card/burden-2-bw.svg');
+  });
+});
+
+describe("the editor preview's scale", () => {
+  it('holds the printed widths of the two cells in CSS px', () => {
+    expect(PRINTED_PX.std).toBeCloseTo((63 / 25.4) * 96, 2);
+    expect(PRINTED_PX.compact).toBeCloseTo((44 / 25.4) * 96, 2);
+    expect(PREVIEW_MAX_PX).toBe(420);
   });
 
-  it('collapses a die name before appending -bw - colour was the only split', () => {
-    expect(cardArt('die-d8-phy', true)).toBe('card/die-d8-bw.svg');
+  it('draws the card at the column width, at most 420 px, cut to two decimals', () => {
+    expect(previewScale(328, false)).toBe(1.37);
+    expect(previewScale(340, false)).toBe(1.42);
+    expect(previewScale(420, false)).toBe(1.76);
+    expect(previewScale(900, false)).toBe(1.76);
+    expect(previewScale(328, true)).toBe(1.97);
+    expect(previewScale(420, true)).toBe(2.52);
   });
 
-  it('keeps the magic ribbon its own drawing in black and white', () => {
-    expect(cardArt('ribbon-mag', true)).toBe('card/ribbon-mag-bw.svg');
+  it('never passes the column', () => {
+    for (const w of [300, 328, 333, 340, 401, 420]) {
+      expect(previewScale(w, false) * PRINTED_PX.std).toBeLessThanOrEqual(w);
+      expect(previewScale(w, true) * PRINTED_PX.compact).toBeLessThanOrEqual(w);
+    }
+  });
+
+  it('is 1 before the column has a width', () => {
+    expect(previewScale(0, false)).toBe(1);
+    expect(previewScale(Number.NaN, true)).toBe(1);
   });
 });
 
@@ -114,37 +138,6 @@ describe('sixteen-up compact sheets', () => {
     expect(r.pages).toHaveLength(12);
     expect(r.pages[11]).toHaveLength(4);
     expect(r.blanks).toBe(12);
-  });
-});
-
-describe('the fallback glyph for a record with no image', () => {
-  const rec = (over: Partial<Record_>): Record_ => ({
-    id: 'x1',
-    src: 'core',
-    kind: 'item',
-    en: 'T',
-    ende: '',
-    ru: 'Т',
-    rud: '',
-    ...over
-  });
-
-  it('reads off equipment kind', () => {
-    expect(glyphKey(rec({ eq: { t: 'weapon', tier: 1 } }))).toBe('weapon');
-    expect(glyphKey(rec({ eq: { t: 'secondary', tier: 1 } }))).toBe('secondary');
-    expect(glyphKey(rec({ eq: { t: 'armor', tier: 1 } }))).toBe('armor');
-  });
-
-  it('splits loot into item and consumable', () => {
-    expect(glyphKey(rec({ kind: 'item' }))).toBe('item');
-    expect(glyphKey(rec({ kind: 'consumable' }))).toBe('cons');
-  });
-
-  it('has a path for every kind, and every path starts with a moveto', () => {
-    for (const d of Object.values(PRINT_GLYPH)) expect(d.startsWith('M')).toBe(true);
-    expect(Object.keys(PRINT_GLYPH).sort()).toEqual(
-      ['weapon', 'secondary', 'armor', 'item', 'cons'].sort()
-    );
   });
 });
 

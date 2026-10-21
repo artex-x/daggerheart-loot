@@ -3,7 +3,7 @@
 # why: a community other than the one it opens on
 
 ## ru :: tree
-RootWebArea "Предметы сообществ — Генератор лута — Daggerheart" [url=#/roll/community_items]
+RootWebArea "Предметы сообществ - Генератор лута Daggerheart" [url=#/roll/community_items]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Предметы сообществ — Генератор лута
   main ""
     heading "Предметы сообществ" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -76,6 +76,7 @@ daggerheart.com
 Альт. таблицы
 Бросить d10
 Великородное
+Вечная Свеча
 Войти
 Горное
 Догматичное
@@ -109,7 +110,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Community items — Daggerheart Loot Generator" [url=#/roll/community_items]
+RootWebArea "Community items - Daggerheart Loot Generator" [url=#/roll/community_items]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -128,7 +129,7 @@ RootWebArea "Community items — Daggerheart Loot Generator" [url=#/roll/communi
   main ""
     heading "Community items" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Pick an origin and roll d10."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -179,6 +180,7 @@ Copy name
 Copy text
 Dread GM Toolbox
 EN
+Everlasting Candle
 Highborne
 How this works
 Install as an app

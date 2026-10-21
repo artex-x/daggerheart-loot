@@ -221,7 +221,7 @@ describe('untitled', () => {
 });
 
 describe('the notes', () => {
-  it("draws both list notes above the rows, and each entry's own after its row", () => {
+  it("draws both list notes above the rows, and each entry's own inside its row", async () => {
     const { container } = render(App, {
       env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
     });
@@ -231,16 +231,31 @@ describe('the notes', () => {
     expect(notes[1]).toHaveTextContent('Только для мастера');
     expect(notes[1]).toHaveTextContent('Хозяин - контрабандист');
 
+    /* Inside the row's border, under its main line (FEATURES.md, "Lists"). */
     const ci1Row = container.querySelector('[data-row="ci1"]');
-    const afterA = ci1Row?.nextElementSibling;
-    const afterB = afterA?.nextElementSibling;
-    expect(afterA).toHaveClass('hitnote');
-    expect(afterA).toHaveTextContent('Видно игрокам');
-    expect(afterB).toHaveClass('hitnote');
-    expect(afterB).toHaveTextContent('Подделка');
+    const inside = ci1Row?.querySelector(':scope > .rnotes');
+    expect(inside?.previousElementSibling).toHaveClass('row-main');
+    const [a, b] = [...(inside?.querySelectorAll('.hitnote') ?? [])];
+    expect(a).toHaveTextContent('Видно игрокам');
+    expect(b).toHaveTextContent('Подделка');
+    expect(ci1Row?.nextElementSibling).toBe(container.querySelector('[data-row="cc1"]'));
+    /* An entry with no note draws no box. */
+    expect(container.querySelector('[data-row="cc1"] .rnotes')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
 
-    const cc1Row = container.querySelector('[data-row="cc1"]');
-    expect(afterB?.nextElementSibling).toBe(cc1Row);
+  it('draws the notes before the take line of a ticked row', async () => {
+    const payload = encodeList(
+      { name: 'X', ids: ['ci1'], meta: { ci1: { qty: 2, note: 'Видно игрокам' } } },
+      true
+    );
+    const { container } = render(App, { env: at('#/l/' + payload) });
+    const row = container.querySelector('[data-row="ci1"]');
+    await userEvent.click(row?.querySelector('input[type="checkbox"]') as HTMLElement);
+    const notes = row?.querySelector(':scope > .rnotes');
+    expect(notes?.nextElementSibling).toHaveClass('pickrow');
+    expect(notes).toHaveTextContent('Видно игрокам');
+    await expectNoA11yViolations(container);
   });
 
   it('draws each line of a note as its own paragraph', () => {
@@ -1825,6 +1840,23 @@ describe('the filter', () => {
       await userEvent.click(resets.at(-1) as HTMLElement);
       expect(router.hash()).toBe('#/s/player-token-1');
       expect(rowsOf(container)).toHaveLength(10);
+      /* Rule 20: the empty state's reset left with it; «Фильтры» takes the focus. */
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: ru.filters })).toHaveFocus();
+      });
+    });
+
+    it('hands focus to the next pill, then «Фильтры», as pills drop', async () => {
+      const { container } = open('#/s/player-token-1/f_kind-armor.tier-2');
+      await shopReady();
+      await userEvent.click(pill(container, 'kind:armor'));
+      await waitFor(() => {
+        expect(pill(container, 'tier:2')).toHaveFocus();
+      });
+      await userEvent.click(pill(container, 'tier:2'));
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: ru.filters })).toHaveFocus();
+      });
     });
 
     it('keeps a tick the filter hides, and ticks only the drawn rows from select-all', async () => {

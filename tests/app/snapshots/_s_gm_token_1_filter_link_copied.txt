@@ -3,7 +3,7 @@
 # why: «Оружие» picked and the copy-link button pressed on the GM's link: the toast «Ссылка на фильтры скопирована - это ссылка для мастера: в ней есть заметки и позиции «Только для мастера»»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1/f_kind-weapon]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/gm-token-1/f_kind-weapon]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -92,6 +92,7 @@ daggerheart.com
 Обычные правила
 Одноручное
 Оружие
+Оружие×
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Поиск
@@ -109,7 +110,6 @@ daggerheart.com
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих Углей800 зол.Ранг 2 · Магическое · Характеристика ... [namelen=192 namehash=8354c34e]
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -210,7 +210,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Scepter
@@ -228,6 +227,7 @@ Unique
 Upgradable
 Vault of Ages
 Weapons
+Weapons×
 Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

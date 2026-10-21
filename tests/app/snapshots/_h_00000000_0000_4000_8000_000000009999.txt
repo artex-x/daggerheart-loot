@@ -3,7 +3,7 @@
 # why: an id no item has, after the read: «Предмет не найден», its sub and «На главную», the address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/h/00000000-0000-4000-8000-000000009999]
+RootWebArea "Генератор лута Daggerheart" [url=#/h/00000000-0000-4000-8000-000000009999]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

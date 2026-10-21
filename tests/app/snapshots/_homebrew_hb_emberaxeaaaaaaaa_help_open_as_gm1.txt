@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Топор Тлеющих Углей — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+RootWebArea "Топор Тлеющих Углей - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -24,6 +24,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     heading "Топор Тлеющих Углей" [level=1]
     StaticText "Хоумбрю · Мастерская Ольхи · Холодное оружие · Ранг 2"
     form ""
+      status ""
       StaticText "* - обязательное поле. Остальное можно заполнить позже."
       group "Вид"
         button "Предмет" [pressed=false]
@@ -34,7 +35,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Вторичное оружие" [pressed=false]
         button "Броня" [pressed=false]
       StaticText "Источник"
-      button "Подсказка: Источник" [description=Подсказка: Источник expanded=false]
+      button "Подсказка: Источник" [expanded=false]
       combobox "Источник" [value=Мастерская Ольхи expanded=false haspopup=menu]
         option "Хоумбрю" [selected=false]
         option "Мастерская Ольхи" [selected=true]
@@ -48,7 +49,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       button "RU" [pressed=true]
       button "EN" [pressed=false]
       textbox "Название*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
-      button "Подсказка: Описание" [description=Подсказка: Описание expanded=false]
+      button "Подсказка: Описание" [expanded=false]
       toolbar "Оформление: Описание" [orientation=horizontal]
         button "Жирный" [keyshortcuts=Control+B Meta+B]
         button "Курсив" [keyshortcuts=Control+I Meta+I]
@@ -95,31 +96,29 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
         button "Одноручное" [pressed=false]
         button "Двуручное" [pressed=true]
         button "Одноручное/двуручное" [pressed=false]
-      button "Второй набор характеристик" [expanded=false]
-      button "Подсказка: Второй набор характеристик" [description=Подсказка: Второй набор характеристик expanded=true]
+      ... button x3 of 7 same-shape siblings elided
+      button "Подсказка: Второй набор характеристик" [expanded=true]
       DisclosureTriangle "Связи" [expanded=true]
-      button "Подсказка: Линия улучшений" [description=Подсказка: Линия улучшений expanded=false]
       group "Линия улучшений"
         button "Уникальный" [pressed=true]
         button "В линии" [pressed=false]
         button "Новая линия" [pressed=false]
-      button "Подсказка: Улучшается до" [description=Подсказка: Улучшается до expanded=false]
       combobox "Улучшается до" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "Подсказка: Получается из" [description=Подсказка: Получается из expanded=false]
+      button "Подсказка: Получается из" [expanded=false]
       combobox "Получается из" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=true]
+      button "Подсказка: Комплект" [expanded=true]
       combobox "Комплект" [value=Нет expanded=false haspopup=menu]
         option "Нет" [selected=true]
         option "Пылающие близнецы" [selected=false]
         option "Убранство Святого" [selected=false]
         option "Комплект Ольхи (HB)" [selected=false]
         option "+ Новый комплект..." [selected=false]
-      button "Подсказка: Карты правил" [description=Подсказка: Карты правил expanded=false]
+      button "Подсказка: Карты правил" [expanded=false]
       combobox "Карты правил" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "Новая карта правил"
       StaticText "До 3 карт."
       button "Сохранить"
-      link "Отмена" [url=index.html?as=gm1#/homebrew]
+      link "К моим предметам" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=true]
@@ -165,6 +164,7 @@ daggerheart.com
 Знание
 Инстинкт
 Искусность
+К моим предметам
 К содержимому
 Карты правил
 Конфиденциальность
@@ -183,7 +183,6 @@ daggerheart.com
 Одноручное
 Одноручное/двуручное
 Основное оружие
-Отмена
 Очень далеко
 Подсказка: Второй набор характеристик
 Подсказка: Источник
@@ -221,7 +220,7 @@ daggerheart.com
 физ/маг
 
 ## en :: tree
-RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
+RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -241,6 +240,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
     heading "Ember Axe" [level=1]
     StaticText "Homebrew · Alder Workshop · Blades · Tier 2"
     form ""
+      status ""
       StaticText "* - required field. The rest can be filled in later."
       group "Kind"
         button "Item" [pressed=false]
@@ -251,7 +251,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "Secondary weapon" [pressed=false]
         button "Armor" [pressed=false]
       StaticText "Source"
-      button "Help: Source" [description=Help: Source expanded=false]
+      button "Help: Source" [expanded=false]
       combobox "Source" [value=Alder Workshop expanded=false haspopup=menu]
         option "Homebrew" [selected=false]
         option "Alder Workshop" [selected=true]
@@ -265,7 +265,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       button "RU" [pressed=true]
       button "EN" [pressed=false]
       textbox "Name*" [value=Топор Тлеющих Углей multiline=false readonly=false required=true]
-      button "Help: Description" [description=Help: Description expanded=false]
+      button "Help: Description" [expanded=false]
       toolbar "Formatting: Description" [orientation=horizontal]
         button "Bold" [keyshortcuts=Control+B Meta+B]
         button "Italic" [keyshortcuts=Control+I Meta+I]
@@ -312,31 +312,29 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
         button "One-Handed" [pressed=false]
         button "Two-Handed" [pressed=true]
         button "One/Two-Handed" [pressed=false]
-      button "Second stat set" [expanded=false]
-      button "Help: Second stat set" [description=Help: Second stat set expanded=true]
+      ... button x3 of 7 same-shape siblings elided
+      button "Help: Second stat set" [expanded=true]
       DisclosureTriangle "Relations" [expanded=true]
-      button "Help: Upgrade line" [description=Help: Upgrade line expanded=false]
       group "Upgrade line"
         button "Unique" [pressed=true]
         button "In a line" [pressed=false]
         button "New line" [pressed=false]
-      button "Help: Upgrades to" [description=Help: Upgrades to expanded=false]
       combobox "Upgrades to" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "Help: Made from" [description=Help: Made from expanded=false]
+      button "Help: Made from" [expanded=false]
       combobox "Made from" [expanded=false required=false autocomplete=list haspopup=listbox]
-      button "Help: Set" [description=Help: Set expanded=true]
+      button "Help: Set" [expanded=true]
       combobox "Set" [value=None expanded=false haspopup=menu]
         option "None" [selected=true]
         option "Blazing Twins" [selected=false]
         option "Saint's Ensemble" [selected=false]
         option "Alder Set (HB)" [selected=false]
         option "+ New set..." [selected=false]
-      button "Help: Rule cards" [description=Help: Rule cards expanded=false]
+      button "Help: Rule cards" [expanded=false]
       combobox "Rule cards" [expanded=false required=false autocomplete=list haspopup=listbox]
       button "New rule card"
       StaticText "Up to 3 cards."
       button "Save"
-      link "Cancel" [url=index.html?as=gm1#/homebrew]
+      link "To my items" [url=index.html?as=gm1#/homebrew]
       button "Delete"
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
     button "On screen" [pressed=true]
@@ -368,7 +366,6 @@ Any
 Armor
 Bold
 Bulleted list
-Cancel
 Close
 Consumable
 Delete
@@ -425,6 +422,7 @@ Supplements
 Table
 Tables
 Terms of use
+To my items
 Two-Handed
 Unique
 Upgrades to

@@ -3,7 +3,7 @@
 # why: signed out on the GM's link, after another device marked «Брошюра по Истории Искусства» GM only: every row kept, that row dashed with its art at 45%, and its button named with «, Только для мастера» for a screen reader only
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/gm-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

@@ -3,7 +3,7 @@
 # why: 121 rows of loot and gear together, ranked: the names with «меч» at a word start first, then the rest; "Выбрать все (121)"
 
 ## ru :: tree
-RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/search]
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -346,7 +346,7 @@ daggerheart.com
 Ярость Зантака
 
 ## en :: tree
-RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
+RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

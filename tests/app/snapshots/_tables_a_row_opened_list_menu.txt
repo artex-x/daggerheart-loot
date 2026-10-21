@@ -3,7 +3,7 @@
 # why: the add-to-list menu inside the modal, and which side of the button it opens on
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables]
   dialog "Кольцо Тишины" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -133,6 +133,7 @@ daggerheart.com
 Первоклассный Спальный Мешок
 Перо Феникса
 Перчатки Геккона
+Печать
 Плетёная Сеть
 Подвешенный Жезл
 Поиск
@@ -171,7 +172,6 @@ daggerheart.com
 Скопировать текст
 Скрыть напоминание
 Снаряжение
-Собрать карточки для печати: девять на лист A4
 Списки
 Списком
 Ссылка на таблицу
@@ -186,7 +186,7 @@ daggerheart.com
 Цепь Парагона
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
   dialog "Ring of Silence" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
@@ -319,7 +319,6 @@ Infinite Bag
 Install as an app
 Items
 Lakestrider Boots
-Lay these out for printing: nine to an A4 sheet
 Link to this table
 List
 Lists
@@ -337,6 +336,7 @@ Piercing Arrows
 Piper Whistle
 Portal Seed
 Premium Bedroll
+Print
 Privacy
 RU
 Ring of Resistance

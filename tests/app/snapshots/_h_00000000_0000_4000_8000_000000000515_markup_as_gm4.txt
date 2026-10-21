@@ -4,7 +4,7 @@
 # as: gm4
 
 ## ru :: tree
-RootWebArea "Свиток Узоролиста — Генератор лута — Daggerheart" [url=index.html?as=gm4#/h/00000000-0000-4000-8000-000000000515]
+RootWebArea "Свиток Узоролиста - Генератор лута Daggerheart" [url=index.html?as=gm4#/h/00000000-0000-4000-8000-000000000515]
   link "К содержимому" [url=index.html?as=gm4#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm4#/roll/std]
@@ -58,11 +58,11 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -71,7 +71,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Patternleaf Scroll — Daggerheart Loot Generator" [url=index.html?as=gm4#/h/00000000-0000-4000-8000-000000000515]
+RootWebArea "Patternleaf Scroll - Daggerheart Loot Generator" [url=index.html?as=gm4#/h/00000000-0000-4000-8000-000000000515]
   link "Skip to content" [url=index.html?as=gm4#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm4#/roll/std]
@@ -121,9 +121,9 @@ Copy text
 EN
 Edit
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

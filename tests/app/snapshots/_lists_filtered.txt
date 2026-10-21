@@ -3,7 +3,7 @@
 # why: the two cards whose name holds «порт», and no button
 
 ## ru :: tree
-RootWebArea "Списки — Генератор лута — Daggerheart" [url=#/lists]
+RootWebArea "Списки - Генератор лута Daggerheart" [url=#/lists]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -19,14 +19,14 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
     button "Войти и перенести списки"
     button "Скрыть напоминание"
   main ""
     heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     heading "НОВЫЙ СПИСОК" [level=2]
     StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
@@ -79,7 +79,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
+RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -95,14 +95,14 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=#/lists]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  status ""
+  complementary ""
     StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
     button "Sign in and move the lists"
     button "Dismiss the reminder"
   main ""
     heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     heading "NEW LIST" [level=2]
     StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]

@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1#/p/set-twocards]
+RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/p/set-twocards]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Печать карточек" [level=1]
-    StaticText "Карточек: 2. Листов A4: 1. Размер карты 44×63 мм — шестнадцать н..." [namelen=71 namehash=a55798f5]
+    StaticText "Карточек: 2. Листов A4: 1. Размер карты 44×63 мм - шестнадцать н..." [namelen=71 namehash=a23f0853]
     button "Назад"
     button "Отправить на печать"
     button "Цветная" [pressed=true]
@@ -33,6 +33,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=index.html?as=gm1#/account]
     ... StaticText x20 of 24 same-shape siblings elided
+    status ""
     heading "ПЕРВОКЛАССНЫЙ СПАЛЬНЫЙ МЕШОК" [level=2]
     heading "ПАЛАШ" [level=2]
     StaticText "Daggerheart"
@@ -99,6 +100,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/p/set-twocards]
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=index.html?as=gm1#/account]
     ... StaticText x20 of 24 same-shape siblings elided
+    status ""
     heading "PREMIUM BEDROLL" [level=2]
     heading "BROADSWORD" [level=2]
     StaticText "Daggerheart"

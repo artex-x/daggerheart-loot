@@ -3,7 +3,7 @@
 # why: a #/l/ list of 8 entries with «Оружие» picked: the 26 October line, the strip with one pill and «Сбросить всё», no copy-link button, «4 из 8»; the address as it opened
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -85,6 +85,7 @@ daggerheart.com
 Обычные правила
 Одноручное
 Оружие
+Оружие×
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Поиск
@@ -98,7 +99,6 @@ daggerheart.com
 Списки
 Средне
 Таблицы
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -190,7 +190,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Scepter
@@ -206,6 +205,7 @@ Two-Handed
 Unique
 Upgradable
 Weapons
+Weapons×
 Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

@@ -14,6 +14,7 @@
   import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
   import { limitText } from '../lib/cloudLists.js';
+  import type { Msg } from '../lib/dict.js';
   import {
     CARD_NAME_MAX,
     CARD_SUB_MAX,
@@ -97,7 +98,8 @@
     };
   });
   let problems = $state.raw<Problem[]>([]);
-  let refused = $state<string | null>(null);
+  /* Kept as a `Msg`, so a language switch redraws the line in the new language. */
+  let refused = $state<Msg | null>(null);
   let busy = $state(false);
   let nameEl = $state<HTMLInputElement | undefined>(undefined);
 
@@ -184,12 +186,11 @@
           app.say((t) => t.hbCardGone, { error: true });
           return;
         }
-        refused =
-          r.error === 'limit'
-            ? limitText(r.key, r.value, t)
-            : r.error === 'conflict'
-              ? t.hbCardChanged
-              : t.hbWriteFailed;
+        if (r.error === 'limit') {
+          const { key, value } = r;
+          refused = (t) => limitText(key, value, t);
+        } else
+          refused = r.error === 'conflict' ? (t) => t.hbCardChanged : (t) => t.hbWriteFailed;
         return;
       }
       const r = await store.createCard(ids, kind, draft.bookId, content);
@@ -198,7 +199,10 @@
         onsaved(ids.key);
         return;
       }
-      refused = r.error === 'limit' ? limitText(r.key, r.value, t) : t.hbCreateFailed;
+      if (r.error === 'limit') {
+        const { key, value } = r;
+        refused = (t) => limitText(key, value, t);
+      } else refused = (t) => t.hbCreateFailed;
     } finally {
       busy = false;
     }
@@ -348,7 +352,7 @@
     <Button variant="ghost" size="sm" onclick={oncancel}>{t.cancel}</Button>
   </div>
   {#if refused}
-    <p class="refused" role="alert">{refused}</p>
+    <p class="refused" role="alert">{refused(t, lang)}</p>
   {/if}
   {#if hint}
     <p class="hint">{hint}</p>

@@ -3,7 +3,7 @@
 # why: the help panel, unfolded: the six decks, the die, no domain cards and no rarity, one link per realm
 
 ## ru :: tree
-RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=#/roll/many_worlds_tavern]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,9 +22,9 @@ RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart"
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=true]
+    button "Как это работает" [expanded=true]
     StaticText "Выберите мир и бросьте кость по нему."
-    StaticText "В разделе шесть миров Many Worlds Tavern, у каждого своя колода:..." [namelen=337 namehash=8756911b]
+    StaticText "В разделе шесть миров Many Worlds Tavern, у каждого своя колода:..." [namelen=337 namehash=7f81e4cd]
     ... StaticText x9 of 13 same-shape siblings elided
     link "Sporopolis" [url=https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/]
     link "Wagerwood" [url=https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/]
@@ -107,6 +107,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Порхающие Бесы
 Предметы сообществ
 Результат броска
 Скопировать изображение
@@ -121,7 +122,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
+RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -140,7 +141,7 @@ RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=true]
+    button "How this works" [expanded=true]
     StaticText "Pick a realm and roll within it."
     StaticText "This section holds the six realms of Many Worlds Tavern, each wi..." [namelen=312 namehash=1bacacf5]
     ... StaticText x9 of 13 same-shape siblings elided
@@ -200,6 +201,7 @@ Copy name
 Copy text
 Dread GM Toolbox
 EN
+Flutterfiends
 Godsvale
 Hornet Hold
 How this works

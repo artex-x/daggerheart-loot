@@ -26,9 +26,11 @@
     actions: Snippet;
     /** A full-width part inside the strip (the list page's price panel). */
     below?: Snippet | undefined;
+    /** The «Выбрать все» box, for a caller that moves focus to it after a delete. */
+    allBox?: HTMLInputElement | undefined;
   }
 
-  const {
+  let {
     total,
     picked,
     label,
@@ -37,7 +39,8 @@
     joined = false,
     summary,
     actions,
-    below
+    below,
+    allBox = $bindable()
   }: Props = $props();
 </script>
 
@@ -45,6 +48,7 @@
   <label class="batch-all"
     ><input
       type="checkbox"
+      bind:this={allBox}
       aria-label={label}
       checked={picked > 0 && picked === total}
       indeterminate={picked > 0 && picked < total}

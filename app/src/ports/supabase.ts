@@ -849,16 +849,20 @@ export function createCloud(
     /* Every read names `(text, bigint, jsonb)`, which leaves out a held record of the same
        `rev`; `{ unchanged: true }` answers a known revision. After a `PGRST202` (its
        reversal pushed) this port takes the calls of before: `{ p_token }` names
-       `get_shared_list(text)`, `{ p_token, p_since }` the `(text, bigint)` overload. */
+       `get_shared_list(text)`, `{ p_token, p_since }` the `(text, bigint)` overload. On a
+       `57014` (the `anon` statement timeout) this one read takes them too, and the next read
+       tries the overload again (docs/specs/DEBT.md, D111). */
     async read(token, since, held) {
       /* Captured before the call: the fill reads nothing the store changes meanwhile. */
       const have: SharedHeld = new Map(held ?? []);
+      const before = (s: number | undefined) =>
+        client.rest.rpc(
+          'get_shared_list',
+          s === undefined ? { p_token: token } : { p_token: token, p_since: s }
+        );
       const ask = (s: number | undefined, h: SharedHeld) =>
         sharedHaveGone
-          ? client.rest.rpc(
-              'get_shared_list',
-              s === undefined ? { p_token: token } : { p_token: token, p_since: s }
-            )
+          ? before(s)
           : client.rest.rpc('get_shared_list', {
               p_token: token,
               p_since: s ?? null,
@@ -866,9 +870,14 @@ export function createCloud(
             });
       try {
         let answer = await ask(since, have);
+        let whole = sharedHaveGone;
         if (answer.error?.code === 'PGRST202' && !sharedHaveGone) {
           sharedHaveGone = true;
+          whole = true;
           answer = await ask(since, have);
+        } else if (answer.error?.code === '57014' && !sharedHaveGone) {
+          whole = true;
+          answer = await before(since);
         }
         if (answer.error) return { ok: false };
         const shared: unknown = answer.data;
@@ -876,15 +885,15 @@ export function createCloud(
         if (since !== undefined && (shared as { unchanged?: unknown }).unchanged === true) {
           return { ok: true, unchanged: true };
         }
-        if (sharedHaveGone) return { ok: true, shared: shared as SharedRow };
+        if (whole) return { ok: true, shared: shared as SharedRow };
         const filled = withSnapshots(shared as SharedRow, have);
         if (filled) return { ok: true, shared: filled };
         /* An answer that left out a record this read did not hold: once more, whole. */
-        const whole = await ask(undefined, new Map());
-        if (whole.error || whole.data === null || typeof whole.data !== 'object') {
-          return whole.error ? { ok: false } : { ok: true, shared: null };
+        const full = await ask(undefined, new Map());
+        if (full.error || full.data === null || typeof full.data !== 'object') {
+          return full.error ? { ok: false } : { ok: true, shared: null };
         }
-        const again = withSnapshots(whole.data as SharedRow, new Map());
+        const again = withSnapshots(full.data as SharedRow, new Map());
         return again ? { ok: true, shared: again } : { ok: false };
       } catch {
         return { ok: false };

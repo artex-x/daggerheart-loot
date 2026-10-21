@@ -3,7 +3,7 @@
 # why: the bad-link page: "Предмет не найден", the badShare line, the "На главную" button
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/l/zzzz]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/zzzz]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

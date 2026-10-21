@@ -1,7 +1,7 @@
 <script lang="ts">
-  /* The "?" that folds a help box open - off `.helpbtn` in style.css and the
-   * live app's several `data-act="...Help"` buttons, which all carry the
-   * same title/aria-label (`whatIsThis`, the rewrite's `helpHint`).
+  /* The "?" that folds a help box open - off `.helpbtn` in style.css. It has
+   * no `title`: Chrome would expose it as a description equal to the name, and
+   * the hint is the open box, not a hover (FEATURES.md, rule 15 (c)).
    *
    * Extracted on its second use: the page-level button (`PageHead.svelte`)
    * and the money picker's own, smaller one (`ListPage.svelte`) draw
@@ -16,7 +16,7 @@
     /** `.helpbtn.sm` (style.css:696) - 22x22 at every width, the class
      *  specificity keeping it there even inside the 600px override. */
     size?: 'sm';
-    /** The name and the title; a field's «?» names its field. */
+    /** The name; a field's «?» names its field. */
     label?: string;
     /** The id of the hint this button shows. */
     controls?: string;
@@ -33,7 +33,6 @@
   class="helpbtn"
   class:sm={size === 'sm'}
   class:on={open}
-  title={name}
   aria-label={name}
   aria-expanded={open}
   aria-controls={controls}

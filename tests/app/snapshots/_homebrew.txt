@@ -3,7 +3,7 @@
 # why: signed out: the heading and «Войдите, чтобы создавать свои предметы.» with «Войти»
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=#/homebrew]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=#/homebrew]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -21,6 +21,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     StaticText "Войдите, чтобы создавать свои предметы."
     button "Войти"
@@ -39,9 +41,11 @@ daggerheart.com
 Войти
 Дополнения
 К содержимому
+Как это работает
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
+Открывать этот раздел при запуске
 Поиск
 Списки
 Таблицы
@@ -49,7 +53,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=#/homebrew]
+RootWebArea "My items - Daggerheart Loot Generator" [url=#/homebrew]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -67,6 +71,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=#/homebrew]
       link "Search" [url=#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     StaticText "Sign in to create your own items."
     button "Sign in"
@@ -80,8 +86,10 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=#/homebrew]
 ## en :: controls
 Alt. tables
 EN
+How this works
 Install as an app
 Lists
+Open this section on start
 Privacy
 RU
 Search

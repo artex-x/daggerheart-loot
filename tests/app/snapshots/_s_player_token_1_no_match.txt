@@ -3,7 +3,7 @@
 # why: «Броня» and Ранг «2»: «0 из 10», «Ничего не найдено» and «Сбросить всё», no rows and no «Выбрать все»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1/f_kind-armor.tier-2]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1/f_kind-armor.tier-2]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -64,6 +64,7 @@ Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
+Броня×
 Влияние
 Войти
 Вплотную
@@ -84,6 +85,7 @@ daggerheart.com
 Поиск
 Предметы
 Проворность
+Ранг 2×
 Расходники
 Сбросить всё
 Сила
@@ -92,7 +94,6 @@ daggerheart.com
 Средне
 Ссылка на фильтры
 Таблицы
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -156,6 +157,7 @@ Agility
 Alder Workshop
 Alt. tables
 Armor
+Armor×
 Close
 Consumables
 Core
@@ -178,7 +180,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Save to my lists
 Search
@@ -189,6 +190,7 @@ Strength
 Supplements
 Tables
 Terms of use
+Tier 2×
 Two-Handed
 Unique
 Upgradable

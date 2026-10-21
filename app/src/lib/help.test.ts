@@ -129,10 +129,36 @@ describe('the help for a section', () => {
         'The Drome'
       ]);
     }
-    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Воюющие Норы — 21');
+    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Воюющие Норы - 21');
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain("Warrin' Warrens 21");
-    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Оплот Шершней — 11, Дром — 17');
+    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Оплот Шершней - 11, Дром - 17');
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain('Hornet Hold 11 and The Drome 17');
+  });
+
+  it('writes «Мои предметы» five paragraphs in each language, each with a bold lead', () => {
+    const ru = helpFor('homebrew', 'ru');
+    const en = helpFor('homebrew', 'en');
+    expect(ru?.paragraphs.map((p) => p.lead)).toEqual([
+      'Предметы.',
+      'Источники.',
+      'Комплекты.',
+      'Карты правил.',
+      'Импорт из файла.'
+    ]);
+    expect(en?.paragraphs.map((p) => p.lead)).toEqual([
+      'Items.',
+      'Sources.',
+      'Sets.',
+      'Rule cards.',
+      'Import from file.'
+    ]);
+    for (const p of [...(ru?.paragraphs ?? []), ...(en?.paragraphs ?? [])]) {
+      /* Plain text after the lead, as every lead's paragraph is written. */
+      const text = p.parts.filter((x): x is string => typeof x === 'string');
+      expect(text).toHaveLength(p.parts.length);
+      expect(text[0]).toMatch(/^ \S/);
+      expect(text.join('')).not.toMatch(/[\u2013\u2014\u2018\u2019\u201c\u201d]/);
+    }
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {

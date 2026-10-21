@@ -28,7 +28,7 @@
     <button
       type="button"
       class="btn primary"
-      title="{rollWord} {d.n}d12 — {caption(d)}"
+      title="{rollWord} {d.n}d12 - {caption(d)}"
       onclick={() => {
         onroll(d.n);
       }}

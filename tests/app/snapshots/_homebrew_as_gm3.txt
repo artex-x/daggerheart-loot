@@ -4,7 +4,7 @@
 # as: gm3
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm3#/homebrew]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm3#/homebrew]
   link "К содержимому" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
@@ -22,6 +22,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -30,7 +32,10 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Комплекты" [url=index.html?as=gm3#/homebrew/sets]
       link "Карты правил" [url=index.html?as=gm3#/homebrew/rules]
     link "Новый предмет" [url=index.html?as=gm3#/homebrew/new]
+    status ""
     searchbox "Найти предмет"
+    button "Фильтры" [expanded=false]
+    StaticText "39"
     StaticText "39 предметов из 100"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
@@ -63,6 +68,7 @@ daggerheart.com
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Комплекты
 Конфиденциальность
@@ -71,6 +77,7 @@ daggerheart.com
 Мешок спокойных сновСпальный мешок для долгой дороги.Получается ... [namelen=110 namehash=16461ca1]
 Новый предмет
 Обычные правила
+Открывать этот раздел при запуске
 Подушка из мха
 Подушка из мхаСвёрнутая постель для ночёвки в пути.ПредметХоумбр... [namelen=65 namehash=45f7967e]
 Поиск
@@ -153,9 +160,10 @@ daggerheart.com
 Учебный палаш 8Ранг 2 · Физическое · Проворность · Вплотную · d8... [namelen=136 namehash=9bb17431]
 Учебный палаш 9
 Учебный палаш 9Ранг 3 · Физическое · Проворность · Вплотную · d8... [namelen=136 namehash=84c647ca]
+Фильтры
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/homebrew]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm3#/homebrew]
   link "Skip to content" [url=index.html?as=gm3#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm3#/roll/std]
@@ -173,6 +181,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -181,7 +191,10 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
       link "Sets" [url=index.html?as=gm3#/homebrew/sets]
       link "Rule cards" [url=index.html?as=gm3#/homebrew/rules]
     link "New item" [url=index.html?as=gm3#/homebrew/new]
+    status ""
     searchbox "Find an item"
+    button "Filters" [expanded=false]
+    StaticText "39"
     StaticText "39 items of 100"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
@@ -219,10 +232,12 @@ Campfire BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 
 Dreamcatcher's Bedroll
 Dreamcatcher's BedrollA bedroll for a long road.Made from: Premi... [namelen=86 namehash=5a65f31d]
 EN
+Filters
 Healer's Bedroll
 Healer's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=a22c9756]
 Hermit's Bedroll
 Hermit's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=bdd52709]
+How this works
 Import from file
 Install as an app
 Items
@@ -232,6 +247,7 @@ Moss PillowA rolled bed for a night on the road.ItemHomebrew
 New item
 Nomad's Bedroll
 Nomad's BedrollA bedroll for a long road.Made from: Premium Bedr... [namelen=79 namehash=4876bc1f]
+Open this section on start
 Pilgrim's Bedroll
 Pilgrim's BedrollA bedroll for a long road.Made from: Premium Be... [namelen=81 namehash=c78e4b31]
 Practice Broadsword 1

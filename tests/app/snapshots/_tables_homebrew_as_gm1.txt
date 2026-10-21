@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/homebrew]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=index.html?as=gm1#/tables/homebrew]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -23,7 +23,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
@@ -35,11 +35,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Мастерская Ольхи" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию…"
-    button "Ссылка на таблицу"
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
     StaticText "ХОЛОДНОЕ ОРУЖИЕ"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
     StaticText "Выбрать все (1)"
     checkbox "Топор Тлеющих Углей" [checked=false]
@@ -71,11 +69,9 @@ daggerheart.com
 Прочее
 Ранг 2Топор Тлеющих УглейEmber Axe
 Сеткой
-Скопировать ссылку на этот раздел
 Снаряжение
 Списки
 Списком
-Ссылка на таблицу
 Таблицы
 Топор Тлеющих Углей
 Условия использования
@@ -83,7 +79,7 @@ daggerheart.com
 Хоумбрю
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/homebrew]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/homebrew]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -102,7 +98,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
@@ -114,11 +110,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Alder Workshop" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
     searchbox "Search by name or description…"
-    button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     StaticText "BLADES"
-    button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
     StaticText "Select all (1)"
     checkbox "Ember Axe" [checked=false]
@@ -134,7 +128,6 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 Account: gm1@example.test
 Alder Workshop
 Alt. tables
-Copy a link to this section
 Core
 EN
 Ember Axe
@@ -144,7 +137,6 @@ Homebrew
 Hope & Fear
 How this works
 Install as an app
-Link to this table
 List
 Lists
 Open this section on start

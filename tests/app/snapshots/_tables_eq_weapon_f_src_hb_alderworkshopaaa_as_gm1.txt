@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/eq_weapon/f_src-hb_alderworkshopaaa]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=index.html?as=gm1#/tables/eq_weapon/f_src-hb_alderworkshopaaa]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -23,7 +23,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
@@ -101,6 +101,7 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Мастерская Ольхи
+Мастерская Ольхи×
 Обычные правила
 Одноручное
 Оружие
@@ -124,7 +125,6 @@ daggerheart.com
 Таблицы
 Топор Тлеющих Углей
 Тёмное сердце Андалурии
-Убрать из фильтра
 Улучшаемые
 Уникальные
 Условия использования
@@ -134,7 +134,7 @@ daggerheart.com
 Хоумбрю
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/eq_weapon/f_src-hb_alderworkshopaaa]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/eq_weapon/f_src-hb_alderworkshopaaa]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -153,7 +153,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
@@ -202,6 +202,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 Account: gm1@example.test
 Agility
 Alder Workshop
+Alder Workshop×
 Alt. tables
 Arazo's Artifacts
 Armor
@@ -240,7 +241,6 @@ Physical
 Presence
 Privacy
 RU
-Remove from the filter
 Reset all
 Search
 Secondary

@@ -3,7 +3,7 @@
 # why: the not-found record page: "Предмет не найден", the sub line, the "На главную" button
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/i/nope]
+RootWebArea "Генератор лута Daggerheart" [url=#/i/nope]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

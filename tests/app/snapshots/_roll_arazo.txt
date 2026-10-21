@@ -3,7 +3,7 @@
 # why: a roll on Arazo's Artifacts, the eleventh section
 
 ## ru :: tree
-RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" [url=#/roll/arazos_artifacts]
+RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=#/roll/arazos_artifacts]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Arazo's Artifacts — Генератор лута — Daggerheart" 
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -80,6 +80,7 @@ daggerheart.com
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
+Нестареющее Око Зверя
 Обычные правила
 Открывать этот раздел при запуске
 Отправить
@@ -100,7 +101,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazos_artifacts]
+RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=#/roll/arazos_artifacts]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -119,7 +120,7 @@ RootWebArea "Arazo's Artifacts — Daggerheart Loot Generator" [url=#/roll/arazo
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
       link "Wondrous Environments" [url=#/roll/wondrous_environments]
@@ -190,6 +191,7 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Ageless Eye of the Beast
 The Dragon's Vault
 Vault of Ages
 Wondrous Environments

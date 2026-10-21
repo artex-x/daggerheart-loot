@@ -28,6 +28,7 @@
     cardMembers,
     isHomebrewKey,
     isHomebrewRecord,
+    oneLangOf,
     REFS_MAX,
     type CardContent,
     type CardKind,
@@ -42,7 +43,7 @@
   import { LIST_SEARCH_AT } from '../lib/lists.js';
   import { countOf, plural } from '../lib/plural.js';
   import { foldQuery, hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
-  import type { Record_ } from '../lib/types.js';
+  import type { Lang, Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Homebrew } from '../state/homebrew.svelte.js';
 
@@ -71,6 +72,12 @@
 
   const named = (v: { en?: string | undefined; ru?: string | undefined }): string =>
     (lang === 'ru' ? v.ru || v.en : v.en || v.ru) ?? '';
+  /* A card text written in one language only, shown on a screen of the other; the stored
+     card keeps an empty language empty, so both are filled first, as the index does. */
+  const cardTextLang = (c: CardContent): Lang | undefined => {
+    const l = oneLangOf(c.rud || c.ende, c.ende || c.rud);
+    return l && l !== lang ? l : undefined;
+  };
   const cards = $derived(
     store.cards
       .filter((c) => c.kind === kind)
@@ -438,13 +445,17 @@
             </div>
             {#if isOpen}
               {@const memberKeys = new Set(members.map((m) => m.id))}
+              {@const onlyIn = cardTextLang(c.content)}
               <div class="body" id={'hb-card-body-' + c.id}>
                 {#if kind === 'ref' && named({ en: c.content.ensub, ru: c.content.rusub })}
                   <p class="sub">
                     <i>{named({ en: c.content.ensub, ru: c.content.rusub })}</i>
                   </p>
                 {/if}
-                <div class="text mdtext">
+                {#if onlyIn}
+                  <p class="sub">{onlyIn === 'en' ? t.textEnOnly : t.textRuOnly}</p>
+                {/if}
+                <div class="text mdtext" lang={onlyIn}>
                   <Markup
                     blocks={parseMarkup(named({ en: c.content.ende, ru: c.content.rud }))}
                   />

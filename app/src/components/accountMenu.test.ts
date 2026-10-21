@@ -150,6 +150,17 @@ describe('the account menu', () => {
     }
   });
 
+  it('gives focus to «Войти» after the sign-out, the control that took the place (rule 20)', async () => {
+    const { container } = signedIn();
+    await openMenu();
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Выйти' }));
+    const signIn = await screen.findByRole('link', { name: 'Войти' });
+    await waitFor(() => {
+      expect(signIn).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
   it('says a refused sign-out as an error and stays signed in', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.auth.signOut = () => Promise.resolve({ ok: false, error: 'failed' });
@@ -160,6 +171,8 @@ describe('the account menu', () => {
       'Не получилось. Проверьте соединение и попробуйте ещё раз.'
     );
     expect(screen.getByRole('button', { name: CONTROL })).toBeInTheDocument();
+    /* Rule 20: «Выйти» left with the menu; the account button stays and takes focus. */
+    expect(screen.getByRole('button', { name: CONTROL })).toHaveFocus();
   });
 });
 

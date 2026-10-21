@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Списки — Генератор лута — Daggerheart" [url=index.html?as=gm1#/lists]
+RootWebArea "Списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -20,13 +20,13 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
-  status ""
+  complementary ""
     StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
     button "Скрыть"
   main ""
     heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     StaticText "НОВЫЙ СПИСОК"
     textbox "Новый список" [multiline=false readonly=false required=false]
@@ -106,7 +106,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
+RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -122,13 +122,13 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
-  status ""
+  complementary ""
     StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
     button "Dismiss"
   main ""
     heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     StaticText "NEW LIST"
     textbox "New list" [multiline=false readonly=false required=false]

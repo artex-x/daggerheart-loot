@@ -282,12 +282,16 @@ All of them except the five `schema/` files are generated from `data.js` by
   field names, every fixed-key object closed. Its bounds are one
   `import_homebrew` call's ceilings, at least three times the default limits:
   100 sources, 1000 cards, 1000 items, 30 sections per source; the account's
-  limits are the database's. The «Мои предметы» page imports it and writes
-  it; `llms.txt`, "Homebrew items as a file (homebrew-v1)", describes it.
+  limits are the database's. The «Мои предметы» page reads it by the import
+  and no longer writes it (the export writes `homebrew-v2`); frozen as
+  before. `llms.txt`, "Homebrew items as a file (homebrew-v2)", describes it
+  as the older form. The schema's description keeps its published wording
+  ("...writes it on export", and the `llms.txt` section name it gives);
+  `llms.txt` and this section carry the rule.
   Frozen: a bound may widen in place and never narrows, and so may a value
   list (the trait `any`, 2026-10-21, in all four homebrew and lists
   schemas); any other change is `homebrew-v2.json` beside it. Fixtures: `docs/fixtures/homebrew-file/`, the
-  hand-test files, `export.json` (gm1's homebrew written by the export) and
+  hand-test files and
   `from-llms.json` (the blind round), each canonical; `tests/contracts.js`
   checks both schemas, the fixtures and the two `llms.txt` sections, and
   `lib/homebrewFile.test.ts` and `lib/bundle.test.ts` keep the validators
@@ -309,19 +313,22 @@ All of them except the five `schema/` files are generated from `data.js` by
 - `schema/homebrew-v2.json` - the homebrew file `homebrew-v2`, `$id`
   `https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json`:
   `homebrew-v1` with `version` 2 and a card's `items`, 1 to 100 unique catalog
-  ids, never an `hb_` key. The export writes it only when a card holds
-  `items`, else `homebrew-v1` byte for byte; the import reads both. Frozen as
-  `homebrew-v1` is: any other change is `homebrew-v3.json`. Its other
-  definitions equal `homebrew-v1.json`'s (`lib/homebrewFile.test.ts`);
-  fixtures `example-v2.json` and `errors-v2.json`; `llms.txt`, "Version 2:
-  book items in a card (homebrew-v2)", describes it.
+  ids, never an `hb_` key. The export writes it always; the import reads
+  both (`docs/decisions/2026-10-21-the-homebrew-export-writes-homebrew-v2-always.md`).
+  Frozen as `homebrew-v1` is: any other change is `homebrew-v3.json`. Its
+  other definitions equal `homebrew-v1.json`'s (`lib/homebrewFile.test.ts`);
+  fixtures `export.json`, `example.json`, `example-v2.json` and
+  `errors-v2.json`; `llms.txt`, "Homebrew items as a file (homebrew-v2)" and
+  its "Book items in a card", describes it. The schema's description keeps
+  its published wording ("...only when a card holds them, else version 1",
+  and the `llms.txt` section name it gives); `llms.txt` and this section
+  carry the rule.
 - The account's data zip (`daggerheart-loot-data-<YYYY-MM-DD>.zip`, from
   «Скачать мои данные» on `#/account`): one JSON file per kind at the root,
   each with its own `format` and `version`: `lists.json`, exactly the lists
   file of every account list (`import-v1`, `import-v2` when it holds a
   homebrew entry, or `import-v3` when it holds a GM-only entry), then
-  `homebrew.json`, exactly the account's whole `homebrew-v1` file, or
-  `homebrew-v2` when a card holds book items, when the
+  `homebrew.json`, exactly the account's whole `homebrew-v2` file, when the
   account holds a source, a card or an item. Frozen: a data zip written today imports for good, and a new kind is
   a new root file. A data zip holds its files at its root and no folders;
   every entry is stored (method 0) with a UTF-8 name (flag bit 11), no

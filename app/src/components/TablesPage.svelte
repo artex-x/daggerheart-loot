@@ -22,7 +22,7 @@
      their own, with up to seven facet rows - `eqKind`, `eqFacetRows` and
      `equipOfKind`/`equipFacets` are what tell that shape apart from the
      plain one below. */
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -223,6 +223,19 @@
   function resetFacets(): void {
     applyFilter({});
   }
+
+  /* Rule 20: the empty state's «Сбросить всё» goes with the empty state; focus goes to
+     «Фильтры», else `#main`. */
+  let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
+  async function resetFromEmpty(): Promise<void> {
+    resetFacets();
+    await tick();
+    (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))?.focus();
+  }
+
+  /* The homebrew table hands out no link: its address opens nothing for anyone else
+     (docs/specs/FEATURES.md, rule 17). */
+  const linkable = $derived(table !== 'homebrew');
 
   /* Hiding the own items also drops their `src` values: a hidden value would empty the
      table. */
@@ -656,9 +669,11 @@
             }}
           />
         </div>
-        <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
-          <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
-        </Button>
+        {#if linkable}
+          <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
+            <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
+          </Button>
+        {/if}
         <Seg
           small
           options={VIEWS}
@@ -686,7 +701,8 @@
         }}
         onpick={pickFacet}
         onreset={resetFacets}
-        oncopylink={() => void copyFilterLink()}
+        oncopylink={linkable ? () => void copyFilterLink() : undefined}
+        bind:toggleEl={filterToggle}
       />
 
       {#if bodyKind === 'alt'}
@@ -704,9 +720,11 @@
                 label={s.label}
                 title={t.copySection}
                 heading={2}
-                oncopy={() => {
-                  void copySectionLink(s.key);
-                }}
+                oncopy={linkable
+                  ? () => {
+                      void copySectionLink(s.key);
+                    }
+                  : undefined}
               />
               {#each s.cols as col (col.key)}
                 <h3 class="altcol {col.key}">{col.label}</h3>
@@ -734,7 +752,7 @@
         <Empty>
           {t.nothing}
           {#if chosenCount(facetState, facetGroups) > 0}
-            <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
+            <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
           {/if}
         </Empty>
       {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'realm' || bodyKind === 'eq' || bodyKind === 'hb'}
@@ -748,9 +766,11 @@
             <SectionHead
               label={s.label}
               title={t.copySection}
-              oncopy={() => {
-                void copySectionLink(s.key);
-              }}
+              oncopy={linkable
+                ? () => {
+                    void copySectionLink(s.key);
+                  }
+                : undefined}
             />
             <TableRows
               entries={s.entries}

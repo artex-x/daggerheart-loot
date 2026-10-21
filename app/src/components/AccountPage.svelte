@@ -14,7 +14,7 @@
   import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
   import { SECTION_LABEL } from '../lib/dict.js';
-  import { parseHash, sectionHash, tablesHash } from '../lib/hash.js';
+  import { HOMEBREW_HASH, parseHash, sectionHash, tablesHash } from '../lib/hash.js';
   import type { NotifyGm } from '../lib/prefs.js';
   import { BARE_TABLE, SECTIONS, type Lang, type Section } from '../lib/types.js';
   import type { AuthResult, Identity, Provider } from '../ports/index.js';
@@ -284,6 +284,7 @@
               {#each SECTIONS as s (s)}
                 <option value={optionOf(s)}>{t[SECTION_LABEL[s]]}</option>
               {/each}
+              <option value={HOMEBREW_HASH}>{t.myItems}</option>
             </select>
           </div>
           <div class="set">

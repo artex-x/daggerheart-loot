@@ -3,7 +3,7 @@
 # why: the search box and «Фильтры» pressed: the panel with Тип (4), Источник (6), Ранг (1, 2), Класс, Характеристика (6), Дистанция (3), Хват and Линейка, each «любое»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

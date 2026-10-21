@@ -1,12 +1,12 @@
 <script lang="ts">
   /* The item editor's print view: the print sheet's own card and fit, in one cell of
-     the sheet's grid, at the printed size (docs/specs/FEATURES.md, "Homebrew" and
-     "Print"). The card follows the draft `PREVIEW_FIT_MS` after the last change, so a
-     burst of typing fits it once. */
+     the sheet's grid, drawn at the preview column's width, at most 420 px
+     (docs/specs/FEATURES.md, "Homebrew" and "Print"). The card follows the draft
+     `PREVIEW_FIT_MS` after the last change, so a burst of typing fits it once. */
   import { untrack } from 'svelte';
   import PrintCard from './PrintCard.svelte';
   import type { Index } from '../lib/data.js';
-  import { PREVIEW_FIT_MS, setLineOf } from '../lib/print.js';
+  import { PREVIEW_FIT_MS, previewScale, setLineOf } from '../lib/print.js';
   import type { Lang, Record_ } from '../lib/types.js';
 
   interface Props {
@@ -39,30 +39,45 @@
     };
   });
   const setLine = $derived(shown.index ? setLineOf(shown.index, shown.it, lang) : undefined);
+
+  let width = $state(0);
+  const scale = $derived(previewScale(width, compact));
 </script>
 
-<!-- A size change remounts the card, so `fit()` measures it at the size it prints. -->
-<div class="pframe" class:compact>
-  {#key compact}
-    <PrintCard it={shown.it} {lang} {bw} {artBroken} {onartfail} {setLine} onfit={onclipped} />
-  {/key}
+<!-- A size or scale change remounts the card, so `fit()` measures it at the size it is
+     drawn. -->
+<div class="pwrap" bind:clientWidth={width}>
+  <div class="pframe" class:compact style:--pv-scale={scale}>
+    {#key `${String(compact)}:${String(scale)}`}
+      <PrintCard
+        it={shown.it}
+        {lang}
+        {bw}
+        {artBroken}
+        {onartfail}
+        {setLine}
+        {scale}
+        onfit={onclipped}
+      />
+    {/key}
+  </div>
 </div>
 
 <style>
   /* One cell of the sheet's grid: 63x88 mm, or 44x63 mm on the compact sheet
-     (docs/specs/FEATURES.md, "Print"). No transform, zoom or scale here or on an
-     ancestor: `fit()` compares layout sizes with rendered ones, and a scale moves only
-     the second. */
+     (docs/specs/FEATURES.md, "Print"), times the preview's scale. No transform, zoom or
+     scale here or on an ancestor: `fit()` compares layout sizes with rendered ones, and a
+     transform moves only the second; the card multiplies its own mm and pt values. */
   .pframe {
     display: grid;
-    grid-template-columns: 63mm;
-    grid-template-rows: 88mm;
+    grid-template-columns: calc(63mm * var(--pv-scale, 1));
+    grid-template-rows: calc(88mm * var(--pv-scale, 1));
     justify-content: center;
   }
 
   .pframe.compact {
-    grid-template-columns: 44mm;
-    grid-template-rows: 63mm;
+    grid-template-columns: calc(44mm * var(--pv-scale, 1));
+    grid-template-rows: calc(63mm * var(--pv-scale, 1));
   }
 
   .pframe > :global(.pcard) {

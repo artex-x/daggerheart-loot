@@ -3,7 +3,7 @@
 # why: "Список не найден", the sub, the "Списки" button; the address not rewritten
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/lists/nope]
+RootWebArea "Генератор лута Daggerheart" [url=#/lists/nope]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

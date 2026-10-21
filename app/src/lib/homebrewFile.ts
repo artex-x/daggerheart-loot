@@ -1,5 +1,5 @@
 /* The homebrew file `homebrew-v1` and `homebrew-v2`: the import reads both, the export
- * writes version 2 only when a card holds book items (`items`), else version 1.
+ * writes version 2.
  *
  * `schema/homebrew-v1.json` and `schema/homebrew-v2.json` are the published contract and
  * this module their
@@ -36,14 +36,12 @@ import {
 import type { Lang } from './types.js';
 
 export const HOMEBREW_FORMAT = 'daggerheart-loot/homebrew';
-export const HOMEBREW_VERSION = 1;
+/** The version the export writes. */
+export const HOMEBREW_VERSION = 2;
 /** The versions the import reads. */
 export const HOMEBREW_VERSIONS = [1, 2] as const;
-/** The schema's `$id`; an export names it as its `$schema`. */
+/** The schema the export writes: its `$id`, which an export names as its `$schema`. */
 export const HOMEBREW_SCHEMA =
-  'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json';
-/** Version 2's schema `$id`: version 1 and a card's `items`. */
-export const HOMEBREW_SCHEMA_V2 =
   'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
 /** The most sources, cards and items one file holds: `import_homebrew`'s bounds per call,
  *  at least three times the default limits; the account's limits are the database's. */
@@ -583,8 +581,7 @@ const byCreation = <T extends { created_at: string }>(rows: readonly T[]): T[] =
 
 /** Returns the homebrew file of the rows: `$schema`, `format`, `version`, `exported_at`,
  *  then the sources, the cards and the items by creation, each object's keys in the
- *  schema's order and `book` as the source's key. Empty arrays are written. Version 2
- *  with its schema when a card holds `items`, else version 1. */
+ *  schema's order and `book` as the source's key. Empty arrays are written. */
 export function toHomebrewFile(
   books: readonly BookRow[],
   items: readonly ItemRow[],
@@ -597,11 +594,10 @@ export function toHomebrewFile(
     const key = id === null ? undefined : keyById.get(id);
     return key === undefined ? {} : { book: key };
   };
-  const v2 = cards.some((c) => c.content.items?.length);
   return {
-    $schema: v2 ? HOMEBREW_SCHEMA_V2 : HOMEBREW_SCHEMA,
+    $schema: HOMEBREW_SCHEMA,
     format: HOMEBREW_FORMAT,
-    version: v2 ? 2 : HOMEBREW_VERSION,
+    version: HOMEBREW_VERSION,
     exported_at: now.toISOString(),
     books: byCreation(books).map((b) => {
       const sections = b.content.sections?.map((s: SectionRow) => ordered(s, SECTION_KEYS));
@@ -966,6 +962,18 @@ export function toHomebrewRows(
     return { id: ids.id('item:' + key), key, book: d.key, content };
   });
   return { books, cards, items, update };
+}
+
+/** Returns how many held cards «Обновить» with `file` takes book items from: for a version
+ *  2 file, the held cards of which a file card of the same key and kind leaves out at least
+ *  one book item; 0 for version 1, which keeps them. */
+export function bookItemsDropped(file: HomebrewFile, held: HeldRows): number {
+  if (file.version === 1) return 0;
+  const stated = new Map(file.cards.map((c) => [c.kind + ':' + c.key, c.items ?? []]));
+  return held.cards.filter((h) => {
+    const kept = stated.get(h.kind + ':' + h.key);
+    return kept !== undefined && (h.content.items ?? []).some((id) => !kept.includes(id));
+  }).length;
 }
 
 const namesOf = (v: { en?: string; ru?: string }): { en?: string; ru?: string } => ({

@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Топор Тлеющих Углей — Генератор лута — Daggerheart" [url=index.html?as=gm1#/i/hb_emberaxeaaaaaaaa]
+RootWebArea "Топор Тлеющих Углей - Генератор лута Daggerheart" [url=index.html?as=gm1#/i/hb_emberaxeaaaaaaaa]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -58,12 +58,12 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Поиск
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Списки
 Страница
 Таблицы
@@ -72,7 +72,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/i/hb_emberaxeaaaaaaaa]
+RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/hb_emberaxeaaaaaaaa]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -123,9 +123,9 @@ Copy text
 EN
 Edit
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Page
+Print
 Privacy
 RU
 Search

@@ -1,5 +1,6 @@
 # 2026-10-15 - The editor previews the print with the print card at its printed size
 
+- Superseded in part by "The editor draws the print card at the preview column's width" (2026-10-21): the size.
 - Task: `authoring-print-preview` (owner, 2026-10-14: Q1-Q4; refresh defaults, 2026-10-15).
 - Decision: the item editor's «На печати» draws `PrintCard` with its own `fit()` in a one-cell frame of the sheet's track
   (63x88 mm, 44x63 mm compact), never scaled, in the form's text language; its colour and size switches are

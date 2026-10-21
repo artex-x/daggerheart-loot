@@ -1,11 +1,11 @@
 # 2026-10-08 - An own set or rule card holds book items; only its account sees them
 
+- Amended by "The homebrew export writes homebrew-v2 always" (2026-10-21): the export, which wrote `homebrew-v2` only when a card held `items`, writes it always.
 - Task: `homebrew-followups` (owner, 2026-10-08, question Q1 answered A).
-- Decision: an own card stores catalog ids in `content.items` (1-100 unique, never an `hb_` key; an own item
-  still names the card itself). Only the account's own index applies them (`withRecords`, `ownSetOf`,
-  `ownRefsOf`): the record page and dialog, rows, search, print, copied text and the account's own share
-  links; a book set wins over an own set. The export writes `homebrew-v2` only when a card holds `items`;
-  `homebrew_cards_touch` skips an update of `items` alone, which changes no linked item's record.
+- Decision: an own card stores catalog ids in `content.items` (1-100 unique, never an `hb_` key; an own item still
+  names the card itself). Only the account's own index applies them (`withRecords`, `ownSetOf`, `ownRefsOf`): the
+  record page and dialog, rows, search, print, copied text and the account's own share links; a book set wins over
+  an own set. `homebrew_cards_touch` skips an update of `items` alone, which changes no linked item's record.
 - Rejected: B, the share projection carries the GM's card on a book item (a second definer change, more
   notices; it can follow with no data change); C, an own copy joins the set (two items of one name); a member
   table (a table, policies and export for one list); the members on the item (a book record is never written).

@@ -3,7 +3,7 @@
 # why: signed out, after another device renamed the list while the share topic was joined: «Лавка у моста», «Обновлено только что», and the hidden status «Список обновлён», with no reload
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

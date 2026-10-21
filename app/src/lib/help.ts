@@ -55,14 +55,14 @@ const p = (text: string): HelpPara => ({ parts: [text] });
 const rarityLine = (word: string, where: string): HelpPart[] => [
   BR,
   { b: word },
-  ` — ${where}`
+  ` - ${where}`
 ];
 
 const WONDROUS: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'В таблице 119 позиций, а не 100 — столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».'
+        'В таблице 119 позиций, а не 100 - столько предметов описано в самом дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно. Если бросаете d100 за столом, введите выпавшее число в поле «Результат броска».'
       ),
       p(
         'Порядок взят из книги: там предметы отсортированы по английскому алфавиту, а не по силе. В русском переводе он поэтому выглядит произвольным. Большинство предметов слабые или средние.'
@@ -88,7 +88,7 @@ const WONDROUS: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'The table holds 119 entries rather than 100 — that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.'
+        'The table holds 119 entries rather than 100 - that is how many items the supplement actually describes. No die covers that range, so the button picks an entry at random. If you roll d100 at the table, type the number into the Roll result field.'
       ),
       p(
         "The order is the book's own: alphabetical by English name, not by power. Most items are weak to moderate."
@@ -117,13 +117,13 @@ const DREAD: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'В таблице 29 позиций — столько предметов описано в дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'В таблице 29 позиций - столько предметов описано в дополнении. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
         'Порядок взят из книги: сначала семь единиц снаряжения с характеристиками (их ранг книга указывает сама), затем предметы по английскому алфавиту.'
       ),
       p(
-        'Книга не делит вещи на постоянные и расходуемые. Здесь это проставлено по смыслу описания: масла, гранаты и сыворотка помечены расходниками, остальное — предметами.'
+        'Книга не делит вещи на постоянные и расходуемые. Здесь это проставлено по смыслу описания: масла, гранаты и сыворотка помечены расходниками, остальное - предметами.'
       ),
       p(
         'Часть предметов рассчитана на окружения и сюжеты своей книги: вне их вещь может оказаться бесполезной или странной. Случайную выдачу отсюда стоит просматривать глазами, а не отдавать игрокам вслепую.'
@@ -194,56 +194,56 @@ const VOA: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Четыре тома одного автора: 144 карточки, разложенные по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть — четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт — награды разного веса, и на одной кости им не место.'
+        'Четыре тома одного автора: 144 карточки, разложенные по рангам. Своей таблицы броска у книги нет, поэтому и разделов шесть - четыре ранга плюс артефакты и проклятые предметы, ровно как в самих томах. Бросок идёт внутри выбранного раздела: ранг 1 и артефакт - награды разного веса, и на одной кости им не место.'
       ),
       {
         lead: 'Стоимость Призыва.',
         parts: [
-          ' Вещи из этой книги сильнее того, что лежит в корнике, поэтому у большинства есть Стоимость Призыва. Если баланс важен, пусть игрок платит её Стрессом и меняет предмет на одну из карт домена в Руке — только тогда предмет считается снаряжённым. Если баланс не важен, правило можно не применять.'
+          ' Вещи из этой книги сильнее того, что лежит в корнике, поэтому у большинства есть Стоимость Призыва. Если баланс важен, пусть игрок платит её Стрессом и меняет предмет на одну из карт домена в Руке - только тогда предмет считается снаряжённым. Если баланс не важен, правило можно не применять.'
         ]
       },
       {
         lead: 'Артефакты.',
         parts: [
-          ' Предметы из легенд: последствия применения некоторых способны изменить мир и вытянуть на себе целую кампанию. Их не раздают всем — они должны появляться редко и работать на историю.'
+          ' Предметы из легенд: последствия применения некоторых способны изменить мир и вытянуть на себе целую кампанию. Их не раздают всем - они должны появляться редко и работать на историю.'
         ]
       },
       {
         lead: 'Проклятые предметы.',
         parts: [
-          ' Дают сильное преимущество, но не бесплатно. Когда персонаж запускает проклятие, карта немедленно занимает место одной из карт в его Руке, и предмет привязывается навсегда. Снять его можно только трудным заданием, мощной магией или особыми обстоятельствами — условие придумывает Мастер или стол. Носить несколько проклятых предметов можно, но неразумно.'
+          ' Дают сильное преимущество, но не бесплатно. Когда персонаж запускает проклятие, карта немедленно занимает место одной из карт в его Руке, и предмет привязывается навсегда. Снять его можно только трудным заданием, мощной магией или особыми обстоятельствами - условие придумывает Мастер или стол. Носить несколько проклятых предметов можно, но неразумно.'
         ]
       },
       voaSource(
-        'Источник: четыре тома Криса ДеШамплейна, тома 1-3 в версии 1.5, том 4 в версии 1.0 — '
+        'Источник: четыре тома Криса ДеШамплейна, тома 1-3 в версии 1.5, том 4 в версии 1.0 - '
       )
     ]
   },
   en: {
     paragraphs: [
       p(
-        'Four volumes by one author: 144 cards sorted by tier. The book has no roll table of its own, so there are six sections here — four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
+        'Four volumes by one author: 144 cards sorted by tier. The book has no roll table of its own, so there are six sections here - four tiers plus artifacts and cursed objects, exactly as the volumes are laid out. The roll happens inside the section you pick: a tier 1 item and an artifact are rewards of a different weight and do not belong on one die.'
       ),
       {
         lead: 'Recall Cost.',
         parts: [
-          ' Items in this book are often stronger than those in the core book, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout — only then does it count as equipped. If balance does not matter, skip the rule.'
+          ' Items in this book are often stronger than those in the core book, so most carry a Recall Cost. If balance matters at your table, have the player pay it in Stress and swap the item for one of the domain cards in their loadout - only then does it count as equipped. If balance does not matter, skip the rule.'
         ]
       },
       {
         lead: 'Artifacts.',
         parts: [
-          ' Objects out of legend: the consequences of using some of them can reshape a world and carry a whole campaign. Do not hand them to everyone — they should be rare and serve the story.'
+          ' Objects out of legend: the consequences of using some of them can reshape a world and carry a whole campaign. Do not hand them to everyone - they should be rare and serve the story.'
         ]
       },
       {
         lead: 'Cursed objects.',
         parts: [
-          ' A strong benefit that is not free. The moment a character triggers the curse, the card takes the place of one of the cards in their loadout, and the item is bound to them permanently. Removing it takes a hard task, powerful magic or special circumstances — the GM or the table invents the condition. Carrying several cursed objects is possible but unwise.'
+          ' A strong benefit that is not free. The moment a character triggers the curse, the card takes the place of one of the cards in their loadout, and the item is bound to them permanently. Removing it takes a hard task, powerful magic or special circumstances - the GM or the table invents the condition. Carrying several cursed objects is possible but unwise.'
         ]
       },
       voaSource(
-        'Source: four volumes by Chris DeChamplain, Volumes 1-3 at v1.5, Volume 4 at v1.0 — '
+        'Source: four volumes by Chris DeChamplain, Volumes 1-3 at v1.5, Volume 4 at v1.0 - '
       )
     ]
   }
@@ -258,13 +258,13 @@ const DV: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'В таблице 145 позиций — 68 предметов, 9 расходников и 68 единиц оружия и брони. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'В таблице 145 позиций - 68 предметов, 9 расходников и 68 единиц оружия и брони. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
-        'Сначала идёт добыча, потом оружие и броня, и то и другое в порядке книги. Дополнение прямо говорит, что своей таблицы броска у него нет: находку стоит подбирать по истории, а не бросать вслепую — кнопка здесь только на случай, когда бросок всё же нужен.'
+        'Сначала идёт добыча, потом оружие и броня, и то и другое в порядке книги. Дополнение прямо говорит, что своей таблицы броска у него нет: находку стоит подбирать по истории, а не бросать вслепую - кнопка здесь только на случай, когда бросок всё же нужен.'
       ),
       p(
-        'Оружие и броня из этой книги есть и в таблицах снаряжения — там их отбирает фильтр «Источник». Фроствирд улучшается в два шага, от Дремлющего до Возвышенного. Уголёк и Искра — комплект: на карточке каждого есть строка «Комплект» и их общее свойство «Пылающие близнецы».'
+        'Оружие и броня из этой книги есть и в таблицах снаряжения - там их отбирает фильтр «Источник». Фроствирд улучшается в два шага, от Дремлющего до Возвышенного. Уголёк и Искра - комплект: на карточке каждого есть строка «Комплект» и их общее свойство «Пылающие близнецы».'
       ),
       { parts: ['Источник: дополнение ', DV_LINK, '.'] }
     ]
@@ -272,13 +272,13 @@ const DV: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'The table holds 145 entries — 68 items, 9 consumables and 68 weapons and armor. No die covers that range, so the button picks an entry at random.'
+        'The table holds 145 entries - 68 items, 9 consumables and 68 weapons and armor. No die covers that range, so the button picks an entry at random.'
       ),
       p(
-        "Loot comes first, then the weapons and armor, each in the book's own order. The supplement says outright that it has no roll table of its own: pick a find for the story rather than rolling it blind — the button here is only for when a roll is still wanted."
+        "Loot comes first, then the weapons and armor, each in the book's own order. The supplement says outright that it has no roll table of its own: pick a find for the story rather than rolling it blind - the button here is only for when a roll is still wanted."
       ),
       p(
-        'The weapons and armor from this book are in the equipment tables too — the "Source" filter picks them out there. Frostwyrd upgrades in two steps, Dormant to Exalted. Ember and Spark are a set: each card carries a "Set" line and their shared Blazing Twins bonus.'
+        'The weapons and armor from this book are in the equipment tables too - the "Source" filter picks them out there. Frostwyrd upgrades in two steps, Dormant to Exalted. Ember and Spark are a set: each card carries a "Set" line and their shared Blazing Twins bonus.'
       ),
       { parts: ['Source: the ', DV_LINK, ' supplement.'] }
     ]
@@ -294,13 +294,13 @@ const ARAZO: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'В таблице 78 позиций — 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
+        'В таблице 78 позиций - 10 предметов и 68 единиц оружия и брони, в порядке книги. Кости на такой диапазон не бывает, поэтому кнопка выбирает позицию случайно.'
       ),
       p(
-        'Своей таблицы броска у книги нет, вместо неё — «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух — о предмете только говорят; Немезида — им владеет враг; Приз — его нужно заслужить или купить; Суждённый — он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
+        'Своей таблицы броска у книги нет, вместо неё - «Предназначение»: на нулевой сессии каждый игрок выбирает из всех карточек четыре интересные, а мастер раскладывает их по ролям в кампании. Слух - о предмете только говорят; Немезида - им владеет враг; Приз - его нужно заслужить или купить; Суждённый - он найдётся сам, в нужный момент. Кнопка здесь только на случай, когда бросок всё же нужен.'
       ),
       p(
-        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии — базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню корника, поэтому они отличаются от книги.'
+        'Все семнадцать единиц снаряжения растут вместе с владельцем: у каждой четыре версии - базовая, Улучшенная, Продвинутая и Легендарная. У каждой версии свой номер, поэтому снаряжение выпадает чаще предметов. Урон, пороги и часть свойств мы подогнали под оружие и броню корника, поэтому они отличаются от книги.'
       ),
       { parts: ['Источник: дополнение ', ARAZO_LINK, '.'] }
     ]
@@ -308,13 +308,13 @@ const ARAZO: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        "The table holds 78 entries — 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
+        "The table holds 78 entries - 10 items and 68 weapons and armor, in the book's own order. No die covers that range, so the button picks an entry at random."
       ),
       p(
         'The book has no roll table; it offers Destiny instead: at session zero each player picks four cards that interest them from the whole set, and the GM gives each a role in the campaign. A Rumor is only talked about; a Nemesis item is borne by an enemy; a Prize must be earned or bought; a Fated item turns up on its own, at the right moment. The button is here only for when a roll is still wanted.'
       ),
       p(
-        'All seventeen pieces of equipment grow with their bearer: each has four versions — base, Improved, Advanced and Legendary. Each version has its own number, so equipment comes up more often than items. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
+        'All seventeen pieces of equipment grow with their bearer: each has four versions - base, Improved, Advanced and Legendary. Each version has its own number, so equipment comes up more often than items. Damage, thresholds and some feature text are matched to the Core weapons and armor by this site, so they differ from the book.'
       ),
       { parts: ['Source: the ', ARAZO_LINK, ' supplement.'] }
     ]
@@ -330,7 +330,7 @@ const COMMUNITY: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Предметы каждого сообщества перечислены по возрастанию редкости: 1 — самый простой, 10 — самый сильный.'
+        'Предметы каждого сообщества перечислены по возрастанию редкости: 1 - самый простой, 10 - самый сильный.'
       ),
       p(
         'Такие предметы уместны как награда от сообщества, семейная реликвия или находка на его территории.'
@@ -380,13 +380,13 @@ const MWT: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'В разделе шесть миров Many Worlds Tavern, у каждого своя колода: Спорополис — 20 карточек, Лес Пари — 20, Воюющие Норы — 21, Долина Богов — 20, Оплот Шершней — 11, Дром — 17. Сначала выберите мир, потом бросьте кость: в колоде из 20 карточек это d20. На 11, 17 и 21 карточку кости не бывает, поэтому там кнопка выбирает позицию случайно.'
+        'В разделе шесть миров Many Worlds Tavern, у каждого своя колода: Спорополис - 20 карточек, Лес Пари - 20, Воюющие Норы - 21, Долина Богов - 20, Оплот Шершней - 11, Дром - 17. Сначала выберите мир, потом бросьте кость: в колоде из 20 карточек это d20. На 11, 17 и 21 карточку кости не бывает, поэтому там кнопка выбирает позицию случайно.'
       ),
       p(
-        'В колодах есть предметы, расходники, оружие и броня, в порядке карточек набора. На карточках Оплота Шершней и Дрома номеров нет, поэтому там сначала оружие, потом броня, предметы и расходники, а внутри — по английскому названию. Такие находки уместнее всего, когда группа путешествует по этому миру. Оружие и броня есть и в таблицах снаряжения — там их отбирает фильтр «Источник».'
+        'В колодах есть предметы, расходники, оружие и броня, в порядке карточек набора. На карточках Оплота Шершней и Дрома номеров нет, поэтому там сначала оружие, потом броня, предметы и расходники, а внутри - по английскому названию. Такие находки уместнее всего, когда группа путешествует по этому миру. Оружие и броня есть и в таблицах снаряжения - там их отбирает фильтр «Источник».'
       ),
       p(
-        'В наборах есть ещё карточки доменов — их здесь нет, это не добыча. Редкость, напечатанную на карточках предметов, мы тоже не переносим.'
+        'В наборах есть ещё карточки доменов - их здесь нет, это не добыча. Редкость, напечатанную на карточках предметов, мы тоже не переносим.'
       ),
       {
         parts: [
@@ -413,7 +413,7 @@ const MWT: Record<Lang, Help> = {
         "This section holds the six realms of Many Worlds Tavern, each with its own deck: Sporopolis has 20 cards, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11 and The Drome 17. Pick a realm, then roll: a 20-card deck rolls a d20. No die covers 11, 17 or 21, so there the button picks an entry at random."
       ),
       p(
-        'The decks hold items, consumables, weapons and armor, in the set\'s own card order. Hornet Hold and The Drome print no card numbers, so their decks run weapons, armor, items, then consumables, each by name. They fit best as finds while the party travels that realm. The weapons and armor are in the equipment tables too — the "Source" filter picks them out there.'
+        'The decks hold items, consumables, weapons and armor, in the set\'s own card order. Hornet Hold and The Drome print no card numbers, so their decks run weapons, armor, items, then consumables, each by name. They fit best as finds while the party travels that realm. The weapons and armor are in the equipment tables too - the "Source" filter picks them out there.'
       ),
       p(
         'The sets also carry domain cards; they are not here, because they are not loot. The rarity printed on the item cards is not carried over either.'
@@ -443,11 +443,11 @@ const STD: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Бросьте d12 и сложите результаты — сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
+        'Бросьте d12 и сложите результаты - сумма и есть номер в таблице. Одно и то же число есть и в таблице предметов, и в таблице расходников, поэтому на один бросок приходится несколько вариантов, а игрок выбирает один.'
       ),
       {
         parts: [
-          'Сколько костей брать, решает редкость добычи — она подписана под каждой кнопкой. Где какая редкость уместна:',
+          'Сколько костей брать, решает редкость добычи - она подписана под каждой кнопкой. Где какая редкость уместна:',
           ...rarityLine('Обычная', 'заброшенный лагерь, обычная лавка.'),
           ...rarityLine(
             'Необычная',
@@ -464,18 +464,18 @@ const STD: Record<Lang, Help> = {
         ]
       },
       p(
-        'Ранги у редкостей — рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
+        'Ранги у редкостей - рекомендация, а не ограничение. Мастер вправе выдать снаряжение любой редкости на любом уровне, если это уместно за столом.'
       )
     ]
   },
   en: {
     paragraphs: [
       p(
-        'Roll d12 and add them up — the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
+        'Roll d12 and add them up - the total is the row number. The same number exists in both the item and the consumable table, so one roll yields several options and the player takes one.'
       ),
       {
         parts: [
-          'How many dice you take depends on the rarity you are after — each button is captioned with the rarities it covers. Where each one fits:',
+          'How many dice you take depends on the rarity you are after - each button is captioned with the rarities it covers. Where each one fits:',
           ...rarityLine('Common', 'an abandoned camp, a local shop.'),
           ...rarityLine(
             'Uncommon',
@@ -511,7 +511,7 @@ const ALT: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» — то, что вредит, обманывает и работает исподтишка.'
+        'Предметы разнесены по колонкам «Надежда» и «Страх» по смыслу: в «Надежде» то, что помогает, защищает и решает задачи, в «Страхе» - то, что вредит, обманывает и работает исподтишка.'
       ),
       p(
         'Выберите редкость и бросьте Кости Дуальности. Игрок выбирает между вариантом по Кости Надежды и вариантом по Кости Страха.'
@@ -519,7 +519,7 @@ const ALT: Record<Lang, Help> = {
       p(
         'При критическом успехе, когда обе кости совпали, игрок берёт любую позицию из таблицы этой редкости, а Мастер может разрешить подняться на ступень выше.'
       ),
-      p('Ранги у редкостей — рекомендация, а не ограничение.'),
+      p('Ранги у редкостей - рекомендация, а не ограничение.'),
       {
         parts: [
           'Автор таблиц: ',
@@ -564,7 +564,7 @@ const TABLES: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        "Здесь лежат все таблицы целиком. В верхнем ряду — корник, Hope & Fear, «Альт. таблицы», «Дополнения», «Снаряжение» и «Прочее», а ряд под ним выбирает книгу или раздел группы, если внутри есть из чего выбирать. В «Дополнениях» семь книг: Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, предметы сообществ и Many Worlds Tavern. В «Прочем» сначала стартовый инвентарь, по которому не бросают, потом фреймы. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
+        "Здесь лежат все таблицы целиком. В верхнем ряду - корник, Hope & Fear, «Альт. таблицы», «Дополнения», «Снаряжение» и «Прочее», а ряд под ним выбирает книгу или раздел группы, если внутри есть из чего выбирать. В «Дополнениях» семь книг: Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, предметы сообществ и Many Worlds Tavern. В «Прочем» сначала стартовый инвентарь, по которому не бросают, потом фреймы. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
       ),
       {
         lead: 'Снаряжение',
@@ -579,34 +579,34 @@ const TABLES: Record<Lang, Help> = {
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
       ),
       p(
-        'Ранг есть у всего снаряжения, включая Wondrous Environments. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 — значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.'
+        'Ранг есть у всего снаряжения, включая Wondrous Environments. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 - значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.'
       ),
       {
         lead: 'Класс',
         parts: [
-          ' — это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.'
+          ' - это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.'
         ]
       },
       {
         parts: [
           'Фильтр «Линейка» делит снаряжение надвое. ',
           { b: 'Улучшаемые' },
-          ' — вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана — это одна и та же катана на четырёх рангах. ',
+          ' - вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана - это одна и та же катана на четырёх рангах. ',
           { b: 'Уникальные' },
-          ' — то, что существует в единственном виде и не улучшается.'
+          ' - то, что существует в единственном виде и не улучшается.'
         ]
       },
       p(
-        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у Many Worlds Tavern вид и мир, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
+        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ - сообщество, у Many Worlds Tavern вид и мир, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию - строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» - это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» - сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
       ),
       p(
         "Оружие и броня из Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
       ),
       {
         parts: [
-          'Источники: Daggerheart Core Set и Hope & Fear. Русские названия и формулировки — перевод ',
+          'Источники: Daggerheart Core Set и Hope & Fear. Русские названия и формулировки - перевод ',
           DAGGERHEART_SU,
-          ', для Hope & Fear — таблица сообщества. Значения даны с учётом эрраты.'
+          ', для Hope & Fear - таблица сообщества. Значения даны с учётом эрраты.'
         ]
       }
     ]
@@ -623,7 +623,7 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        "Equipment works differently from loot: outside Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
+        "Equipment works differently from loot: outside Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern it has no roll number, but it does have a trait, a range, damage and burden - or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
       ),
       p(
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
@@ -667,7 +667,7 @@ const LISTS: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета — меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
+        'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
       ),
       p(
         'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве. Списки, созданные до входа, при входе переносятся в аккаунт сами; после 26 октября 2026 года приложение перестанет их показывать.'
@@ -705,7 +705,7 @@ const LISTS: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card — the menu stays open, so one item goes into several lists without reopening anything.'
+        'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
       ),
       p(
         'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in move to your account by themselves when you sign in; after 26 October 2026 the app stops showing them.'
@@ -756,13 +756,13 @@ const MONEY: Record<Lang, Help> = {
         parts: [
           'Корник считает золото ',
           { b: 'горстями, мешками и сундуками' },
-          ': 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты — опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Читается она так, как о деньгах говорят за столом — двумя старшими единицами и с округлением до ближайшей: 750 — это ',
+          ': 10 горстей = 1 мешок, 10 мешков = 1 сундук. Монеты - опциональное правило, по которому 1 горсть = 10 монет, значит мешок = 100, а сундук = 1000. Цена вводится монетами в любом случае: режим меняет только то, как её прочитают. Читается она так, как о деньгах говорят за столом - двумя старшими единицами и с округлением до ближайшей: 750 - это ',
           { b: '7 мешков 5 горстей' },
-          ', 894 — ',
+          ', 894 - ',
           { b: '8 мешков 9 горстей' },
-          ', а 899 — уже ',
+          ', а 899 - уже ',
           { b: '9 мешков' },
-          '. Монет в этом виде нет вовсе: 804 — просто ',
+          '. Монет в этом виде нет вовсе: 804 - просто ',
           { b: '8 мешков' },
           '.'
         ]
@@ -795,6 +795,78 @@ export function moneyHelpFor(lang: Lang): Help {
   return MONEY[lang];
 }
 
+/** «Мои предметы» (`#/homebrew`): one help for every tab, as one pin serves them. */
+const HOMEBREW: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      {
+        lead: 'Предметы.',
+        parts: [
+          ' «Новый предмет» открывает форму, а рядом с ней карточку: «На экране» - как на сайте, «На печати» - как на листе печати. Свои предметы находятся в «Поиске» вместе с каталогом, видны в «Таблицах» и добавляются в списки. С восьмого предмета появляются поиск и фильтры; отмеченные предметы можно переместить, скачать файлом или удалить.'
+        ]
+      },
+      {
+        lead: 'Источники.',
+        parts: [
+          ' Источник - книга, дополнение или сеттинг, откуда ваши предметы; в нём может быть до 30 разделов. Предмет без источника лежит в «Хоумбрю».'
+        ]
+      },
+      {
+        lead: 'Комплекты.',
+        parts: [
+          ' Карта комплекта хранит бонус предметов, которые в него входят. В комплект можно добавить и предметы из книг: бонус на них видите только вы.'
+        ]
+      },
+      {
+        lead: 'Карты правил.',
+        parts: [
+          ' Карта правил хранит правило, на которое ссылаются предметы, например свойство оружия. Её тоже можно дать предметам из книг.'
+        ]
+      },
+      {
+        lead: 'Импорт из файла.',
+        parts: [
+          ' Принимает файл из «Скачать JSON», архив из «Скачать мои данные» или файл, собранный по описанию в llms.txt. Предметы, которые уже есть, можно пропустить или обновить.'
+        ]
+      }
+    ]
+  },
+  en: {
+    paragraphs: [
+      {
+        lead: 'Items.',
+        parts: [
+          ' "New item" opens the form with the card beside it: "On screen" as on the site, "In print" as on the print sheet. Your items show up in "Search" with the catalog, in "Tables" and in lists. From the eighth item a search box and filters appear; ticked items can be moved, downloaded as a file or deleted.'
+        ]
+      },
+      {
+        lead: 'Sources.',
+        parts: [
+          ' A source is the book, supplement or setting your items come from; it can hold up to 30 sections. An item with no source is in "Homebrew".'
+        ]
+      },
+      {
+        lead: 'Sets.',
+        parts: [
+          ' A set card holds the bonus of the items in the set. Book items can join a set too: only you see the bonus on them.'
+        ]
+      },
+      {
+        lead: 'Rule cards.',
+        parts: [
+          ' A rule card holds a rule items refer to, such as a weapon feature. Book items can take it too.'
+        ]
+      },
+      {
+        lead: 'Import from file.',
+        parts: [
+          ' Takes a file from "Download JSON", the archive from "Download my data", or a file written to the description in llms.txt. Items you already have can be skipped or updated.'
+        ]
+      }
+    ]
+  }
+};
+
 const HELP: Record<string, Record<Lang, Help>> = {
   std: STD,
   alt: ALT,
@@ -806,7 +878,8 @@ const HELP: Record<string, Record<Lang, Help>> = {
   community: COMMUNITY,
   mwt: MWT,
   tables: TABLES,
-  lists: LISTS
+  lists: LISTS,
+  homebrew: HOMEBREW
 };
 
 /** What this section explains about itself, or null where nothing is written. */

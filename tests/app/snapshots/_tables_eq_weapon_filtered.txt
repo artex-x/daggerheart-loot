@@ -3,7 +3,7 @@
 # why: both branches of the pill rule on one screen - "Ранг 1" and "Двуручное" - and a two-group address
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/eq_weapon/f_tier-1.burden-2]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/eq_weapon/f_tier-1.burden-2]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -22,7 +22,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [description=Как это работает expanded=false]
+    button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -119,6 +119,7 @@ daggerheart.com
 Двойной Посох
 Двойной ПосохРанг 1 · Магическое · Инстинкт · Далеко · d6+3 маг ... [namelen=94 namehash=558e0fec]
 Двуручное
+Двуручное×
 Двуручный Меч
 Двуручный МечРанг 1 · Физическое · Сила · Вплотную · d10+3 физ ·... [namelen=219 namehash=de9b781d]
 Двуручный Посох
@@ -191,6 +192,7 @@ daggerheart.com
 Проворность
 Прочее
 Разящие Клыки
+Ранг 1×
 Рогатка
 РогаткаРанг 1 · Физическое · Искусность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=c74ce571]
 Сбросить всё
@@ -216,7 +218,6 @@ daggerheart.com
 Таблицы
 Топор Рассвета
 Тёмное сердце Андалурии
-Убрать из фильтра
 Удочка
 УдочкаРанг 1 · Физическое · Проворность · Далеко · d6+3 физ · Дв... [namelen=106 namehash=07683ec0]
 Улучшаемые
@@ -230,7 +231,7 @@ daggerheart.com
 Фрикционные Обмотки
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-1.burden-2]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier-1.burden-2]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -249,7 +250,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [description=How this works expanded=false]
+    button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hope_and_fear_item]
@@ -401,7 +402,6 @@ Privacy
 Quarterstaff
 QuarterstaffTier 1 · Physical · Instinct · Melee · d10+3 phy · T... [namelen=91 namehash=b6a19e52]
 RU
-Remove from the filter
 Repeating Crossbow
 Repeating CrossbowTier 1 · Physical · Finesse · Far · d6+2 phy ·... [namelen=206 namehash=4715c425]
 Reset all
@@ -438,8 +438,10 @@ Tables
 Taryan's Morningstar
 Terms of use
 The Dragon's Vault
+Tier 1×
 Tuning Spear
 Two-Handed
+Two-Handed×
 Unique
 Upgradable
 Urzo's Halberd

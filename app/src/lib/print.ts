@@ -3,7 +3,8 @@
  *
  * Everything a card draws that is not text is a vector exported into `card/`
  * by the live app's author, not redrawn here - CLAUDE.md's "Export vectors;
- * do not redraw them." This module names which file a card wants, how the
+ * do not redraw them." This module names which file an unfolded vector is
+ * (`cardVectors.ts` holds the folded ones), the editor preview's scale, how the
  * deck of cards is cut into nine- or sixteen-up sheets, and a card's set line.
  *
  * Pure module: no DOM, no `S.printBW` - `bw` arrives as an argument. */
@@ -25,42 +26,30 @@ export const COMPACT_PER_SHEET = 16;
  *  one `fit()` per pause instead of one per key on a 3000-character card. */
 export const PREVIEW_FIT_MS = 150;
 
-export type GlyphKey = 'weapon' | 'secondary' | 'armor' | 'item' | 'cons';
+/** A printed cell's width in CSS px (96 per inch): 63 mm, and 44 mm on the compact sheet. */
+export const PRINTED_PX = { std: 238.11, compact: 166.3 } as const;
 
-/** The mark a card with no image falls back to - one path per kind, off
- *  `PRINT_GLYPH` (app.js 3259-3266). */
-export const PRINT_GLYPH: Record<GlyphKey, string> = {
-  weapon:
-    'M24 1 L29 12 V30 H19 V12 Z M9 32 H39 V36 H9 Z M21 36 H27 V44 H21 Z' +
-    ' M24 41 A4 4 0 1 0 24 49 A4 4 0 1 0 24 41 Z',
-  secondary: 'M24 3 L28 14 V25 H20 V14 Z M13 27 H35 V30 H13 Z M21 30 H27 V45 H21 Z',
-  armor: 'M24 3 L42 10 V26 C42 36 34 43 24 47 C14 43 6 36 6 26 V10 Z',
-  item: 'M24 2 L41 18 L24 48 L7 18 Z',
-  cons: 'M18 4 H30 V14 L38 30 V42 A4 4 0 0 1 34 46 H14 A4 4 0 0 1 10 42 V30 L18 14 Z'
-};
-
-/** Which glyph a record with no image falls back to - off app.js 3374-3375. */
-export function glyphKey(it: Record_): GlyphKey {
-  return it.eq ? it.eq.t : it.kind === 'consumable' ? 'cons' : 'item';
-}
-
-/** The dice the layout has a shape for; any other die falls back to a plain
- *  hexagon clipped in CSS - off `DIE_ART` (app.js 3271). Named `DICE_WITH_ART`
- *  here, not `DIE_ART`: `dice.ts` already exports a `DIE_ART` for a different
- *  concept (the roll wheel's per-die SVG), and the two are unrelated maps
- *  that happened to share a name. */
-export const DICE_WITH_ART = new Set(['d4', 'd6', 'd8', 'd10', 'd12', 'd20']);
+/** The editor's print card is drawn at the preview column's width, at most this wide. */
+export const PREVIEW_MAX_PX = 420;
 
 /**
- * A vector's file name, off `cardArt` (app.js 3282-3291).
- *
- * In black and white a die loses the physical/magic split - colour was the
- * only difference between them - but the magic weapon's ribbon keeps its own
- * drawing, so only the die name collapses before `-bw` is appended.
+ * The scale the editor draws the print card at: the column's width, at most
+ * `PREVIEW_MAX_PX`, over the printed width, cut to two decimals so the cell never
+ * passes the column. 1 before the column has a width.
+ */
+export function previewScale(width: number, compact: boolean): number {
+  if (!(width > 0)) return 1;
+  const printed = compact ? PRINTED_PX.compact : PRINTED_PX.std;
+  return Math.floor((Math.min(width, PREVIEW_MAX_PX) / printed) * 100) / 100;
+}
+
+/**
+ * A vector's file name, off `cardArt` (app.js 3282-3291), for the pairs whose two files
+ * differ in shape (`shield`, `burden-1`, `burden-2`): they stay two files drawn by `<img>`.
+ * The folded vectors are drawn inline by `CardVector.svelte`.
  */
 export function cardArt(name: string, bw: boolean): string {
-  const collapsed = bw ? name.replace(/^(die-d\d+)-(phy|mag)$/, '$1') : name;
-  return CARD_DIR + collapsed + (bw ? '-bw' : '') + '.svg';
+  return CARD_DIR + name + (bw ? '-bw' : '') + '.svg';
 }
 
 /** A damage string split into its die and its bonus - off `dmgStripHTML`

@@ -1,8 +1,10 @@
 <script lang="ts">
   /* Formatted text as card blocks (lib/markup.ts): a paragraph per line, a list,
-     a numbered list, a table. The list and table rules are global under `mdtext`, a class
-     each caller puts on its wrapper; the caller keeps its font, colour and box. The
-     image review page reads these rules too (tools/artwork/lib.test.mjs, `CARD_FILES`). */
+     a numbered list, a table. A table with a head and no rows draws its head as one row
+     of plain cells: header cells with no data mislead a screen reader. The list and
+     table rules are global under `mdtext`, a class each caller puts on its wrapper; the
+     caller keeps its font, colour and box. The image review page reads these rules too
+     (tools/artwork/lib.test.mjs, `CARD_FILES`). */
   import MarkupInline from './MarkupInline.svelte';
   import { afterLead, type MarkupBlock } from '../lib/markup.js';
   import type { Snippet } from 'svelte';
@@ -14,6 +16,8 @@
   }
 
   const { blocks, lead }: Props = $props();
+
+  const headOnly = (b: MarkupBlock): boolean => b.t === 'table' && b.rows.length === 0;
 </script>
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag reads
@@ -28,7 +32,13 @@
       {#each b.items as item, j (j)}<li><MarkupInline c={item} /></li>{/each}
     </ul>{:else if b.t === 'ol'}<ol start={b.start}>
       {#each b.items as item, j (j)}<li><MarkupInline c={item} /></li>{/each}
-    </ol>{:else}<table>
+    </ol>{:else if headOnly(b)}<table>
+      <tbody
+        ><tr
+          >{#each b.head as cell, j (j)}<td><MarkupInline c={cell} /></td>{/each}</tr
+        ></tbody
+      >
+    </table>{:else}<table>
       <thead
         ><tr
           >{#each b.head as cell, j (j)}<th scope="col"><MarkupInline c={cell} /></th

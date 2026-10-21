@@ -3,7 +3,7 @@
 # why: the GM view signed out: the same page with the GM notes on the list and on «Проклят.»
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1]
+RootWebArea "Генератор лута Daggerheart" [url=#/s/gm-token-1]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

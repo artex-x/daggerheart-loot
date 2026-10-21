@@ -20,11 +20,12 @@
     /** What this section explains about itself, where anything is written. */
     help: Help | null;
     /**
-     * The address this page is really showing, where it differs from the
-     * address bar - only `TablesPage` passes this: a bare `#/tables` still
-     * shows a named table underneath, which `AppState` cannot see on its own
-     * (`app.svelte.ts`'s `toggleHome`). Every other caller leaves this unset
-     * and pins the bar itself, exactly as before.
+     * The address this page pins, where it differs from the address bar. Two
+     * callers pass it: `TablesPage`, because a bare `#/tables` still shows a
+     * named table underneath, which `AppState` cannot see on its own
+     * (`app.svelte.ts`'s `toggleHome`); and `HomebrewPage`, whose four tabs
+     * share one pin, `#/homebrew`. Every other caller leaves this unset and
+     * pins the bar itself.
      */
     home?: string;
   }

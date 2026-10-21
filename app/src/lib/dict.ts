@@ -20,7 +20,7 @@ const ru = {
   /* The chrome that has no text of its own, and so has no other place to be
      named. Without these the tab bar and the language group are unlabelled to
      a screen reader. */
-  docTitle: 'Генератор лута — Daggerheart',
+  docTitle: 'Генератор лута Daggerheart',
   skipToContent: 'К содержимому',
   sectionsLabel: 'Разделы',
   langLabel: 'Язык',
@@ -180,7 +180,7 @@ const ru = {
   voaArtifact1: 'Артефакт',
   voaCursed1: 'Проклятый предмет',
   unique: 'Уникальное',
-  uniqueHint: 'В книге стоит одним рангом — лестницы улучшений у этой вещи нет',
+  uniqueHint: 'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
   homeHint: 'Открывать этот раздел при запуске',
   /* The same button once it is on: the live app renames it rather than only
      filling it in, so a screen reader hears the state and not just the offer. */
@@ -306,7 +306,7 @@ const ru = {
   nameFirst: 'Сначала назовите список',
   untitled: 'Без названия',
   saveFailed:
-    'Не удалось сохранить: браузер не дал записать в локальное хранилище — оно заблокировано или переполнено',
+    'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено',
   /* The shared page - app.js 3130-3170: a list from another player, the
      bad-link page's own link home, and the button that saves the shared
      list as a new own list. */
@@ -323,8 +323,8 @@ const ru = {
   printNow: 'Отправить на печать',
   printLink: 'Ссылка на набор',
   printTitle: 'Печать карточек',
-  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм — как у обычной игральной.',
-  printSubCompact: 'Карточек: %n. Листов A4: %p. Размер карты 44×63 мм — шестнадцать на лист.',
+  printSub: 'Карточек: %n. Листов A4: %p. Размер карты 63×88 мм - как у обычной игральной.',
+  printSubCompact: 'Карточек: %n. Листов A4: %p. Размер карты 44×63 мм - шестнадцать на лист.',
   printNote:
     'В окне печати выберите A4, книжную ориентацию и поля «нет». Лист светлый нарочно: так он читается и на чёрно-белом принтере, и не съедает картридж.',
   printEmpty: 'Печатать нечего: в наборе не осталось карточек.',
@@ -353,11 +353,11 @@ const ru = {
     'Похоже, их записала другая версия приложения, расширение браузера или другая вкладка на этом сайте. Исходное содержимое сохранено под отдельным ключом и не потеряно; дальнейшие изменения будут сохраняться заново, начиная с чистого списка.',
   localOnlyTitle: 'Списки живут только в этом браузере.',
   localOnly:
-    'Очистка данных сайта, режим инкогнито или другое устройство — и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас — в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка — это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку — сохраните ссылку заново.',
+    'Очистка данных сайта, режим инкогнито или другое устройство - и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас - в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка - это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку - сохраните ссылку заново.',
   deleteConfirm: 'Удалить список «%s»? Отменить удаление нельзя.',
   /* Delete gets an undo, like every other destructive action. */
   listDeleted: 'Список «%s» удалён',
-  playersLinkCopied: 'Ссылка для игроков скопирована — заметок мастера в ней нет',
+  playersLinkCopied: 'Ссылка для игроков скопирована - заметок мастера в ней нет',
   badShare: 'Ссылка повреждена или собрана в другой версии данных.',
   /* An old link naming a renumbered or deleted record would otherwise lose
      those entries with no sign anything was missing - toasted once, on the
@@ -370,7 +370,7 @@ const ru = {
   rename: 'Название списка',
   sharePlayers: 'Ссылка игрокам',
   shareGm: 'Ссылка себе',
-  gmLinkCopied: 'Ссылка со всеми заметками скопирована — она только для вас',
+  gmLinkCopied: 'Ссылка со всеми заметками скопирована - она только для вас',
   listCopied: 'Список скопирован',
   listEmptyHint:
     'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» - или сделайте это прямо с карточки предмета.',
@@ -399,7 +399,7 @@ const ru = {
   noteClear: 'Очистить заметку',
   noteCleared: 'Заметка очищена',
   qty: 'Кол-во',
-  gold: 'Золото',
+  price: 'Цена',
   position: 'Позиция в списке',
   dragHint: 'Перетащите, чтобы изменить порядок',
   removeItem: 'Убрать из списка',
@@ -819,8 +819,7 @@ const ru = {
   hbImportHeldReplace: '%k. Уже есть - заменятся из файла:',
   hbImportSameNamed: 'Новые с тем же названием, что у ваших:',
   hbImportHintBefore: 'Файл, сохранённый кнопкой «Скачать JSON» или собранный по ',
-  hbImportSchema: 'схеме homebrew-v1',
-  hbImportSchemaV2: 'homebrew-v2',
+  hbImportSchema: 'схеме homebrew-v2',
   hbImportHintAfter:
     '), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.',
   hbImportCounts: 'Источников: %b, разделов: %s, карт: %c, предметов: %i.',
@@ -850,7 +849,8 @@ const ru = {
   hbImportUpdateBooksNote:
     'Названия существующих источников заменятся данными из файла; новые разделы добавятся.',
   hbImportUpdateConfirm:
-    'Обновить существующие предметы и карты (%n)? Их текст и характеристики заменятся данными из файла. Отменить нельзя.',
+    'Обновить существующие предметы и карты (%n)? Их текст и характеристики заменятся данными из файла.%s Отменить нельзя.',
+  hbImportBookItemsDropped: 'Книжные предметы уберутся из карт: %n.',
   hbImportPosBook: 'Источник %n',
   hbImportPosCard: 'Карта %n',
   hbImportPosItem: 'Предмет %n',
@@ -1399,10 +1399,10 @@ const en: Dict = {
     'Something else on this site - another build, a browser extension, or another tab - seems to have written them. The original content was kept under a separate key rather than lost; further changes save again from a clean list.',
   localOnlyTitle: 'Lists live in this browser only.',
   localOnly:
-    'Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone — it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
+    'Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone - it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
   deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
   listDeleted: 'List "%s" deleted',
-  playersLinkCopied: "Players' link copied — it carries no GM notes",
+  playersLinkCopied: "Players' link copied - it carries no GM notes",
   badShare: 'The link is damaged or was built from a different data version.',
   droppedItems:
     'Skipped %n item - no longer in the data|Skipped %n items - no longer in the data',
@@ -1410,7 +1410,7 @@ const en: Dict = {
   rename: 'List name',
   sharePlayers: "Players' link",
   shareGm: 'Your own link',
-  gmLinkCopied: 'Link with every note copied — this one is for you',
+  gmLinkCopied: 'Link with every note copied - this one is for you',
   listCopied: 'List copied',
   listEmptyHint:
     'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
@@ -1439,7 +1439,7 @@ const en: Dict = {
   noteClear: 'Clear the note',
   noteCleared: 'Note cleared',
   qty: 'Qty',
-  gold: 'Gold',
+  price: 'Price',
   position: 'Position in the list',
   dragHint: 'Drag to reorder',
   removeItem: 'Remove from the list',
@@ -1840,8 +1840,7 @@ const en: Dict = {
   hbImportHeldReplace: '%k. Already held - replaced from the file:',
   hbImportSameNamed: 'New, with the same name as yours:',
   hbImportHintBefore: 'A file saved with "Download JSON" or written to the ',
-  hbImportSchema: 'homebrew-v1 schema',
-  hbImportSchemaV2: 'homebrew-v2',
+  hbImportSchema: 'homebrew-v2 schema',
   hbImportHintAfter:
     '), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.',
   hbImportCounts: 'Sources: %b, sections: %s, cards: %c, items: %i.',
@@ -1871,7 +1870,8 @@ const en: Dict = {
   hbImportUpdateBooksNote:
     'The names of the sources you hold are replaced from the file; new sections are added.',
   hbImportUpdateConfirm:
-    'Update the items and cards you hold (%n)? Their text and stats are replaced from the file. This cannot be undone.',
+    'Update the items and cards you hold (%n)? Their text and stats are replaced from the file.%s This cannot be undone.',
+  hbImportBookItemsDropped: 'Book items are removed from cards: %n.',
   hbImportPosBook: 'Source %n',
   hbImportPosCard: 'Card %n',
   hbImportPosItem: 'Item %n',
@@ -2154,7 +2154,7 @@ export function dict(lang: Lang): Dict {
 }
 
 /** Which dictionary key names a section, for the tab title
- *  (`<section label> — <docTitle>`), the start-section select and the
+ *  (`<section label> - <docTitle>`), the start-section select and the
  *  supplements panel's chips. The exhaustive `Record<Section, ...>` makes a new
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {

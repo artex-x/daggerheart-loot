@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/homebrew]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -22,6 +22,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -30,6 +32,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
       link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
       link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
     link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+    status ""
     StaticText "4 предмета из 100"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
@@ -64,6 +67,7 @@ daggerheart.com
 Импорт из файла
 Источники
 К содержимому
+Как это работает
 Карты правил
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -74,6 +78,7 @@ daggerheart.com
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
 Новый предмет
 Обычные правила
+Открывать этот раздел при запуске
 Поиск
 Предметы
 Списки
@@ -84,7 +89,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -102,6 +107,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -110,6 +117,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       link "Sets" [url=index.html?as=gm1#/homebrew/sets]
       link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
     link "New item" [url=index.html?as=gm1#/homebrew/new]
+    status ""
     StaticText "4 items of 100"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
@@ -137,11 +145,13 @@ Alt. tables
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+How this works
 Import from file
 Install as an app
 Items
 Lists
 New item
+Open this section on start
 Privacy
 RU
 Rule cards

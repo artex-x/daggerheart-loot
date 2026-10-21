@@ -14,6 +14,7 @@
   import PageTitle from './PageTitle.svelte';
   import PrintCard from './PrintCard.svelte';
   import PrintSwitches from './PrintSwitches.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import { printSetHash, sectionHash } from '../lib/hash.js';
   import { withRecords } from '../lib/homebrew.js';
   import { COMPACT_PER_SHEET, pages, setLineOf } from '../lib/print.js';
@@ -161,6 +162,9 @@
     {#if missing > 0}
       <p class="printnote warnnote">{missingNote}</p>
     {/if}
+    <StatusRegion
+      text={clippedCount ? t.printClipped.replace('%d', String(clippedCount)) : ''}
+    />
     {#if clippedCount}
       <div class="clipwarn">
         <NoticeBox warn>{t.printClipped.replace('%d', String(clippedCount))}</NoticeBox>

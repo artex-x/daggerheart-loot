@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
+import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
@@ -315,6 +316,10 @@ const withoutAnchors = (html: string): string =>
     .replace(/\s*svelte-\w+/g, '')
     .replace(/\sclass=""/g, '');
 
+/* A folded vector as its shape and paint (`CardVector.svelte`). */
+const vec = (e: Element | null | undefined): string | null =>
+  e ? `${e.getAttribute('data-vector') ?? ''}:${e.getAttribute('data-paint') ?? ''}` : null;
+
 describe('arrival, colour', () => {
   it('draws the bar, the controls in order, and one sheet with the two cards and seven blanks', async () => {
     render(App, { env: await atSet('ci1-q1') });
@@ -322,7 +327,7 @@ describe('arrival, colour', () => {
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
@@ -383,35 +388,48 @@ describe('the loot card', () => {
 });
 
 describe('no art', () => {
-  it('draws the glyph for a record with no image, and swaps a broken one for it too', async () => {
+  /* The site's own picture for no picture, in place of Figma's outline (owner, 2026-10-15;
+     FEATURES.md, "Print"). */
+  const NONE = 'img/_none.webp';
+
+  it('draws the no-picture image for a record with no image, on both sheets', async () => {
     render(App, { env: await atSet('ni1-ci1') });
     await opened();
-
-    const bare = document.querySelector('.pcard[data-pid="ni1"]');
-    expect(bare?.querySelector('svg.pc-glyph')).toBeInTheDocument();
-    expect(bare?.querySelector('img')).toBeNull();
-
-    const withArt = document.querySelector('.pcard[data-pid="ci1"]');
-    expect(withArt?.querySelector('.pc-img')).toBeInTheDocument();
-    withArt?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
+    const bare = (): Element | null => document.querySelector('.pcard[data-pid="ni1"]');
+    expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
+    expect(bare()?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
+    expect(bare()?.querySelector('svg')).toBeNull();
+    expect(document.querySelector('.pcard[data-pid="ci1"] .pc-img')).toHaveAttribute(
+      'src',
+      'img/ci1.webp'
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
+    await waitFor(() => {
+      expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+    await waitFor(() => {
+      expect(bare()?.querySelector('.pc-art')).toBeNull();
+    });
+    expect(bare()?.querySelector('img[src="' + NONE + '"]')).toBeNull();
   });
 
-  it('swaps to the glyph once the picture 404s, reached directly at a set address', async () => {
+  it('swaps to the no-picture image once the picture 404s, reached directly at a set address', async () => {
     /* Unlike every other route, a handed-over #/p/ address may be the first (and only)
        page this session ever draws for this id - nothing else could already have caught
        the failure the way RecordCard's own onerror does elsewhere. */
     render(App, { env: await atSet('ci1') });
     await opened();
     const card = document.querySelector('.pcard[data-pid="ci1"]');
-    expect(card?.querySelector('svg.pc-glyph')).toBeNull();
+    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', 'img/ci1.webp');
     /* Both `<img>`s carry their own `onerror` - either one reports the same
        id, so whichever the browser happens to fail first still catches it. */
     card?.querySelector('.pc-back')?.dispatchEvent(new Event('error'));
     card?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
     await tick();
-    expect(card?.querySelector('.pc-img')).toBeNull();
-    expect(card?.querySelector('.pc-back')).toBeNull();
-    expect(card?.querySelector('svg.pc-glyph')).toBeInTheDocument();
+    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
+    expect(card?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
+    expect(card?.querySelector('svg')).toBeNull();
   });
 });
 
@@ -429,9 +447,11 @@ describe('the weapon card', () => {
     expect(card?.querySelector('.pc-burden small')?.textContent).toBe('Хват');
     expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-1.svg');
     const die = card?.querySelector('.pc-die.own[data-die="d8"]');
-    expect(die?.querySelector('img')).toHaveAttribute('src', 'card/die-d8-phy.svg');
+    expect(vec(die?.querySelector('svg'))).toBe('die-d8:colour');
+    expect(die?.querySelector('img')).toBeNull();
     expect(die?.querySelector('b')?.textContent).toBe('d8');
-    expect(card?.querySelector('.pc-ribbon')).toHaveAttribute('src', 'card/ribbon.svg');
+    expect(vec(card?.querySelector('.pc-ribbon'))).toBe('ribbon:colour');
+    expect(vec(card?.querySelector('.pc-tier svg'))).toBe('banner:colour');
     expect(card?.querySelector('.pc-cells')?.textContent).toBe(
       'УронфизЧертаПроворностьДистанцияВплотную'
     );
@@ -451,7 +471,7 @@ describe('the versatile magic weapon', () => {
     expect(strips).toHaveLength(2);
     expect(strips?.[1]?.querySelector('.pc-cells')?.textContent).toContain('Далеко');
     expect(card?.querySelectorAll('.pc-die.mag')).toHaveLength(2);
-    expect(card?.querySelector('.pc-ribbon')).toHaveAttribute('src', 'card/ribbon-mag.svg');
+    expect(vec(card?.querySelector('.pc-ribbon'))).toBe('ribbon-mag:colour');
     expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-2.svg');
     expect(card?.querySelector('.pc-tag.out')?.textContent).toBe('Магическое');
   });
@@ -464,30 +484,26 @@ describe('the print frame', () => {
     const card = (id: string): Element | null =>
       document.querySelector(`.pcard[data-pid="${id}"]`);
     const ribbons = (id: string): (string | null)[] =>
-      Array.from(card(id)?.querySelectorAll('.pc-ribbon') ?? []).map((e) =>
-        e.getAttribute('src')
-      );
+      Array.from(card(id)?.querySelectorAll('.pc-ribbon') ?? []).map(vec);
     const dice = (id: string): (string | null)[] =>
-      Array.from(card(id)?.querySelectorAll('.pc-die img') ?? []).map((e) =>
-        e.getAttribute('src')
-      );
+      Array.from(card(id)?.querySelectorAll('.pc-die svg') ?? []).map(vec);
     const dmg = (id: string): (string | undefined)[] =>
       Array.from(card(id)?.querySelectorAll('.pc-c1 .pc-box b') ?? []).map(
         (e) => e.textContent
       );
 
-    expect(ribbons('q33')).toEqual(['card/ribbon-mag.svg']);
-    expect(dice('q33')).toEqual(['card/die-d8-mag.svg']);
+    expect(ribbons('q33')).toEqual(['ribbon-mag:colour']);
+    expect(dice('q33')).toEqual(['die-d8:mag']);
     expect(card('q33')?.querySelector('.pc-die')).toHaveClass('mag');
     expect(dmg('q33')).toEqual(['физ/маг']);
 
-    expect(ribbons('dve38')).toEqual(['card/ribbon.svg']);
-    expect(dice('dve38')).toEqual(['card/die-d8-phy.svg']);
+    expect(ribbons('dve38')).toEqual(['ribbon:colour']);
+    expect(dice('dve38')).toEqual(['die-d8:colour']);
     expect(card('dve38')?.querySelector('.pc-die')).not.toHaveClass('mag');
     expect(dmg('dve38')).toEqual(['маг']);
 
-    expect(ribbons('q171')).toEqual(['card/ribbon-mag.svg', 'card/ribbon-mag.svg']);
-    expect(dice('q171')).toEqual(['card/die-d6-mag.svg', 'card/die-d8-mag.svg']);
+    expect(ribbons('q171')).toEqual(['ribbon-mag:colour', 'ribbon-mag:colour']);
+    expect(dice('q171')).toEqual(['die-d6:mag', 'die-d8:mag']);
     expect(dmg('q171')).toEqual(['маг', 'физ']);
     await expectNoA11yViolations(container);
   });
@@ -560,6 +576,10 @@ describe('the armour card', () => {
       '5',
       '11'
     ]);
+    expect(Array.from(boxes ?? []).map((b) => vec(b.querySelector('svg')))).toEqual([
+      'thbox:colour',
+      'thbox:colour'
+    ]);
     expect(card?.querySelectorAll('.pc-th-arrow')).toHaveLength(2);
 
     expect(card?.querySelector('.pc-tier')?.textContent).toBe('2Ранг');
@@ -595,6 +615,21 @@ describe('formatted text', () => {
         '<tbody><tr><td>1-3</td><td>Нет</td></tr><tr><td>4-6</td><td><b>Да</b></td></tr></tbody></table>'
     );
     await expectNoA11yViolations(document.body);
+  });
+
+  it('draws a head-only table as one row of plain cells', async () => {
+    const text = '| a | b |\n|---|---|';
+    const { container } = render(PrintCard, {
+      it: row({ id: 'x1', ende: text, rud: text }),
+      lang: 'ru',
+      bw: false,
+      artBroken: false,
+      onartfail: () => {}
+    });
+    expect(withoutAnchors(container.querySelector('.pc-text')?.innerHTML ?? '')).toBe(
+      '<table class="dtable"><tbody><tr><td>a</td><td>b</td></tr></tbody></table>'
+    );
+    await expectNoA11yViolations(container);
   });
 });
 
@@ -647,27 +682,26 @@ describe('black and white', () => {
     expect(document.querySelector('.pc-art')).toBeNull();
     expect(document.querySelector('.pc-img')).toBeNull();
     expect(document.querySelector('.pc-back')).toBeNull();
-    expect(document.querySelector('.pc-glyph')).toBeNull();
 
     const weapon = document.querySelector('.pcard[data-pid="q1"]');
     const head = weapon?.querySelector('.pc-head');
     expect(head).toHaveClass('withtier');
     const order = Array.from(head?.children ?? []).map((c) => c.classList[0]);
     expect(order).toEqual(['pc-tier', 'pc-tags', 'pc-burden']);
-    expect(head?.querySelector('.pc-tier img')).toHaveAttribute('src', 'card/banner-bw.svg');
+    expect(vec(head?.querySelector('.pc-tier svg'))).toBe('banner:bw');
     expect(head?.querySelector('.pc-burden img')).toHaveAttribute(
       'src',
       'card/burden-1-bw.svg'
     );
-    expect(weapon?.querySelector('.pc-die img')).toHaveAttribute('src', 'card/die-d8-bw.svg');
-    expect(weapon?.querySelector('.pc-ribbon')).toHaveAttribute('src', 'card/ribbon-bw.svg');
+    expect(vec(weapon?.querySelector('.pc-die svg'))).toBe('die-d8:bw');
+    expect(vec(weapon?.querySelector('.pc-ribbon'))).toBe('ribbon:bw');
 
     const armour = document.querySelector('.pcard[data-pid="a1"]');
     expect(armour?.querySelector('.pc-shield img')).toHaveAttribute(
       'src',
       'card/shield-bw.svg'
     );
-    expect(armour?.querySelector('.pc-th-box img')).toHaveAttribute('src', 'card/thbox-bw.svg');
+    expect(vec(armour?.querySelector('.pc-th-box svg'))).toBe('thbox:bw');
     expect(armour?.querySelector('.pc-th-lab img')).toHaveAttribute('src', 'card/dots1.svg');
 
     const loot = document.querySelector('.pcard[data-pid="ci1"]');
@@ -776,7 +810,7 @@ describe('compact', () => {
     expect(document.querySelectorAll('.pc-art')).toHaveLength(2);
     expect(
       screen.getByText(
-        'Карточек: 2. Листов A4: 1. Размер карты 44×63 мм — шестнадцать на лист.'
+        'Карточек: 2. Листов A4: 1. Размер карты 44×63 мм - шестнадцать на лист.'
       )
     ).toBeInTheDocument();
 
@@ -792,7 +826,7 @@ describe('compact', () => {
     expect(pressed('Чёрно-белая')).toBe('true');
     expect(
       screen.getByText(
-        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
   });
@@ -846,7 +880,7 @@ describe('a second sheet', () => {
     expect(sheets[0]?.querySelectorAll('.pcard.blank')).toHaveLength(0);
     expect(
       screen.getByText(
-        'Карточек: 10. Листов A4: 2. Размер карты 63×88 мм — как у обычной игральной.'
+        'Карточек: 10. Листов A4: 2. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
     expect(document.querySelector('.warnnote')).toBeNull();
@@ -861,7 +895,7 @@ describe('a second sheet', () => {
     expect(document.querySelector('.psheet[data-next]')).toBeNull();
     expect(
       screen.getByText(
-        'Карточек: 10. Листов A4: 1. Размер карты 44×63 мм — шестнадцать на лист.'
+        'Карточек: 10. Листов A4: 1. Размер карты 44×63 мм - шестнадцать на лист.'
       )
     ).toBeInTheDocument();
   });
@@ -890,6 +924,41 @@ describe('the cap', () => {
     expect(document.querySelectorAll('.psheet')).toHaveLength(20);
     expect(document.querySelector('.warnnote')).toBeNull();
   });
+
+  it('gives every folded vector of a 180-weapon sheet its own gradient ids', async () => {
+    const ARMS: Loot = {
+      items: {},
+      eq: Array.from({ length: 180 }, (_, i) =>
+        row({
+          id: `w${String(i + 1)}`,
+          kind: 'equip',
+          en: `Blade ${String(i + 1)}`,
+          ru: `Клинок ${String(i + 1)}`,
+          eq: {
+            t: 'weapon',
+            tier: 1,
+            cls: 'phy',
+            tr: 'agility',
+            rg: 'melee',
+            dmg: 'd8',
+            dt: 'phy'
+          }
+        })
+      ),
+      refs: {}
+    };
+    const ids = Array.from({ length: 180 }, (_, i) => `w${String(i + 1)}`).join('-');
+    render(App, { env: await atSet(ids, { data: fakeData(ARMS) }) });
+    await opened();
+    /* A banner, a die and a ribbon per card: two, two and one gradient. */
+    const grads = [...document.querySelectorAll('.pcard linearGradient')].map((g) => g.id);
+    expect(grads).toHaveLength(180 * 5);
+    expect(new Set(grads).size).toBe(grads.length);
+    const refs = [...document.querySelectorAll('.pcard [data-vector] path')].flatMap((p) =>
+      [p.getAttribute('fill'), p.getAttribute('stroke')].filter((v) => v?.startsWith('url('))
+    );
+    expect(refs.every((r) => grads.includes(r?.slice(5, -1) ?? ''))).toBe(true);
+  }, 120_000);
 
   it('prints the same 180 cards on twelve compact sheets', async () => {
     render(App, { env: await atSet(ids180, { data: fakeData(MANY) }) });
@@ -1015,7 +1084,7 @@ describe('a count from a list', () => {
     expect(document.querySelector('.pcard[data-pid="q1"] .pc-qty')).toBeNull();
     expect(
       screen.getByText(
-        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм — как у обычной игральной.'
+        'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
   };
@@ -1206,7 +1275,11 @@ describe('the clip warning', () => {
       await waitFor(() => {
         expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
       });
-      expect(warning()).toHaveAttribute('role', 'status');
+      /* The box is not a live region; the bar's region, mounted before it, says it. */
+      expect(warning()).not.toHaveAttribute('role');
+      expect(document.querySelector('.printbar .said[role="status"]')).toHaveTextContent(
+        ru.printClipped.replace('%d', '1')
+      );
       expect(warning()).toHaveClass('warn');
       expect(warning()?.closest('.warnnote')).toBeNull();
       expect(document.querySelector('[role="alert"]')).toBeNull();
@@ -1216,6 +1289,28 @@ describe('the clip warning', () => {
       expect(dialog.printed).toBe(1);
       await expectNoA11yViolations(container);
     } finally {
+      restore();
+    }
+  });
+
+  it('counts a card whose bottom line is still too wide after it wraps', async () => {
+    const restore = tightOn();
+    const wide = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollWidth');
+    Object.defineProperty(HTMLElement.prototype, 'scrollWidth', {
+      configurable: true,
+      get(this: HTMLElement) {
+        return this.classList.contains('pc-bottom') && pidOf(this) === 'q1' ? 400 : 0;
+      }
+    });
+    try {
+      render(App, { env: await atSet('ci1-q1') });
+      await opened();
+      await waitFor(() => {
+        expect(warning()).toHaveTextContent(ru.printClipped.replace('%d', '1'));
+      });
+    } finally {
+      if (wide) Object.defineProperty(HTMLElement.prototype, 'scrollWidth', wide);
+      else Reflect.deleteProperty(HTMLElement.prototype, 'scrollWidth');
       restore();
     }
   });

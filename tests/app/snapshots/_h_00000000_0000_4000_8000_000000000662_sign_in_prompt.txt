@@ -3,7 +3,7 @@
 # why: signed out, «Сохранить себе» pressed: the button expanded and under it the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»
 
 ## ru :: tree
-RootWebArea "Скатка следопыта — Генератор лута — Daggerheart" [url=#/h/00000000-0000-4000-8000-000000000662]
+RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=#/h/00000000-0000-4000-8000-000000000662]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -36,7 +36,7 @@ RootWebArea "Скатка следопыта — Генератор лута —
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
-    button "Сохранить себе" [expanded=true]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=true]
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
     StaticText "Войдите, и копия предмета сохранится в «Мои предметы»."
     button "Войти"
@@ -61,6 +61,7 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Отправить
+Печать
 Подушка из мха (HB)
 Поиск
 Походный плед (HB)
@@ -70,7 +71,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Собрать карточки для печати: девять на лист A4
 Сохранить себе
 Списки
 Страница
@@ -79,7 +79,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000000662]
+RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000000662]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -112,7 +112,7 @@ RootWebArea "Ranger's Roll — Daggerheart Loot Generator" [url=#/h/00000000-000
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
-    button "Save to my items" [expanded=true]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=true]
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
     StaticText "Sign in and a copy of the item is saved to My items."
     button "Sign in"
@@ -134,10 +134,10 @@ Copy name
 Copy text
 EN
 Install as an app
-Lay these out for printing: nine to an A4 sheet
 Lists
 Moss Pillow (HB)
 Page
+Print
 Privacy
 RU
 Save to my items

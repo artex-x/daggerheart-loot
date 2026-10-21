@@ -1013,6 +1013,35 @@ describe('installFakeCloud', () => {
       expect(read.ok && read.itemLimit).toBe(100);
     }
   });
+
+  it('gives the first source ?sections= more sections with ?items=, and ignores it alone or out of range', async () => {
+    const read = await installFakeCloud('?as=gm1&items=66&sections=20').homebrew.load();
+    if (!read.ok) throw new Error('The fake did not read.');
+    const alder = read.books[0];
+    expect(alder?.content.sections?.map((x) => x.ru)).toEqual([
+      'Пистоли',
+      'Холодное оружие',
+      ...Array.from({ length: 20 }, (_, i) => 'Раздел ' + String(i + 1).padStart(2, '0'))
+    ]);
+    const used = new Set(read.items.map((i) => i.content.section).filter(Boolean));
+    expect(used.size).toBe(22);
+    for (const bad of ['?as=gm1&sections=20', '?as=gm1&items=66&sections=31']) {
+      const plain = await installFakeCloud(bad).homebrew.load();
+      expect(plain.ok && plain.books[0]?.content.sections).toHaveLength(2);
+    }
+  });
+
+  it('gives a stored preferences row the ?lang= language, and makes none for a user without one', async () => {
+    const en = await installFakeCloud('?as=gm1&lang=en').prefs.load();
+    expect(en.ok && en.prefs).toMatchObject({ lang: 'en', view: 'grid' });
+    const kept = await installFakeCloud('?as=gm1&lang=de').prefs.load();
+    expect(kept.ok && kept.prefs?.lang).toBe('ru');
+    const none = await installFakeCloud('?as=gm2&lang=en').prefs.load();
+    expect(none.ok && none.prefs).toBeNull();
+    /* The seed itself keeps its row. */
+    const again = await installFakeCloud('?as=gm1').prefs.load();
+    expect(again.ok && again.prefs?.lang).toBe('ru');
+  });
 });
 
 describe('fillItems', () => {
@@ -3205,7 +3234,10 @@ describe('the print sets', () => {
     const clipped = await prints.read('set-clipped1');
     const clippedSet = clipped.ok ? (clipped.set as { entries: { hid?: string }[] }) : null;
     expect(clippedSet?.entries.map((e) => e.hid)).toEqual([uuid(516)]);
-    expect(SEED.printSets).toHaveLength(15);
+    const longSrc = await prints.read('set-longsrc1');
+    const longSrcSet = longSrc.ok ? (longSrc.set as { entries: { hid?: string }[] }) : null;
+    expect(longSrcSet?.entries.map((e) => e.hid)).toEqual([uuid(461)]);
+    expect(SEED.printSets).toHaveLength(16);
   });
 
   it("deletes an account's sets with the account", async () => {

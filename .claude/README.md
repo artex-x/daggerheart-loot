@@ -2081,7 +2081,7 @@ SECURITY DEFINER functions: seven executable by a signed-in user, and
 
 | Function | Reason |
 |---|---|
-| `delete_account` | Deletes the caller's `auth.users` row, which the caller may not touch; the user is always `auth.uid()`. |
+| `delete_account`, `delete_account_requests` | Delete the caller's `auth.users` row, and before it the purchase requests on the caller's lists 200 a call; the user is always `auth.uid()`. |
 | `reorder_list` | Rewrites every position of the caller's list in one statement; it checks the owner itself. |
 | `create_list_share`, `revoke_list_share` | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
 | `get_shared_list` | Returns the projection to whoever holds the token, never the table. It is also executable by `anon` for the anonymous shared page: a second warning. |
@@ -2203,9 +2203,11 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-242 kB for the unconfigured build and 303 kB for the configured one, which
-carries the account client chunk. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 242 kB limit. The 303 kB limit runs in
+250 kB for the unconfigured build and 308 kB for the configured one, which
+carries the account client chunk. The owner set the unconfigured budget at its
+250 kB ceiling on 2026-10-21 (248.1 kB measured, 1.9 kB of headroom), not at the
+measured size plus 5 kB. `npm run check:built` builds `dist/`
+unconfigured and so measures only the 250 kB limit. The 308 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2217,42 +2219,43 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 303 kB budget (with the account client chunk)`; 296.8
-kB on 2026-10-16 at `debt-cleanup` (the account client from four packages,
-4.0 kB under 300.8 kB before it), 239.1 kB unconfigured; 299.4
-kB on 2026-10-15 at `authoring-print-preview` (the editor's print view, the
-clip report, five strings in two languages), 238.2 kB unconfigured, which
-leaves 50.6 kB under the 350 kB ceiling; 297.5
-kB on 2026-10-15 at `rich-descriptions` (the formatted text box, its
-toolbar and the two-language forms), 236.3 kB unconfigured, which leaves
-52.5 kB under the 350 kB ceiling; 290.9
-kB on 2026-10-14 at `print-snapshots` (every print a stored set: the pure module, the
+Expected: `within the 308 kB budget (with the account client chunk)`; 306.0 kB
+on 2026-10-21 at `debt-cleanup` (the folded print vectors, the Items tab's
+filter, the status regions, the page help, the six-tab header), 248.0 kB
+unconfigured; 296.8 kB on 2026-10-16 at `debt-cleanup` (the account client from
+four packages, 4.0 kB under 300.8 kB before it), 239.1 kB unconfigured; 299.4 kB
+on 2026-10-15 at `authoring-print-preview` (the editor's print view, the clip
+report, five strings in two languages), 238.2 kB unconfigured, which leaves 50.6
+kB under the 350 kB ceiling; 297.5 kB on 2026-10-15 at `rich-descriptions` (the
+formatted text box, its toolbar and the two-language forms), 236.3 kB
+unconfigured, which leaves 52.5 kB under the 350 kB ceiling; 290.9 kB on
+2026-10-14 at `print-snapshots` (every print a stored set: the pure module, the
 print page states, the three prompts, eight strings in two languages), 229.8 kB
-unconfigured, which leaves
-59.1 kB under the 350 kB ceiling (owner, 2026-10-14) for `debt-cleanup` and R10; 288.8
-kB on 2026-10-14 at R8 (own pictures: the field, the lazy crop dialog of
-2.3 kB plus 0.6 kB CSS, the media port), 228.0 kB unconfigured. 282.0 kB on 2026-10-14 with R8's storage calls, 221.4 kB
-unconfigured; 264.2
-kB on 2026-10-02 at R7d's closeout, rebased on the search's Snowball stemmers
-and ranking, with the homebrew import, the bulk move, the downloads and the
-export byte warning, 204.4 kB unconfigured (260.9 kB on 2026-10-02 at R7d
-before the rebase, 10.3 kB of it the lazy import and file chunks:
-`HomebrewImport` 5.6 kB, its CSS 0.5 kB, `homebrewFile` 4.2 kB, 201.1 kB
+unconfigured, which leaves 59.1 kB under the 350 kB ceiling (owner, 2026-10-14)
+for `debt-cleanup` and R10; 288.8 kB on 2026-10-14 at R8 (own pictures: the
+field, the lazy crop dialog of 2.3 kB plus 0.6 kB CSS, the media port), 228.0 kB
+unconfigured. 282.0 kB on 2026-10-14 with R8's storage calls, 221.4 kB
+unconfigured; 264.2 kB on 2026-10-02 at R7d's closeout, rebased on the search's
+Snowball stemmers and ranking, with the homebrew import, the bulk move, the
+downloads and the export byte warning, 204.4 kB unconfigured (260.9 kB on
+2026-10-02 at R7d before the rebase, 10.3 kB of it the lazy import and file
+chunks: `HomebrewImport` 5.6 kB, its CSS 0.5 kB, `homebrewFile` 4.2 kB, 201.1 kB
 unconfigured; 246.0 kB on 2026-10-02 with the search's stemmers, 186.6 kB
 unconfigured; 242.8 kB on 2026-10-02 with the revision-keyed reads and the
-frozen-copy byte limit, 183.4 kB unconfigured; 242.2 kB on 2026-10-02 with the homebrew editor's field
-help, 183.1 kB unconfigured; 236.6 kB on 2026-10-01 with the homebrew relations, 177.6 kB unconfigured; 224.8 kB
-on 2026-10-01 with homebrew in the catalog pages, 165.9 kB unconfigured;
-220.8 kB on 2026-09-30 with the homebrew pages, 203.0 kB before them, after the
-import and export and the requests polish; 184.5 kB on 2026-09-27 with the
-Realtime client, 178.2 kB on 2026-09-26). `dist/` stays configured until `npm run build` or
-`check:built` rebuilds it. During R7-R7d a batch whose build passes a limit
-raises it to the measured size plus about 5 kB in the same commit, never past
-350 kB configured (owner, 2026-10-14) and 250 kB unconfigured, and past a ceiling it stops and
+frozen-copy byte limit, 183.4 kB unconfigured; 242.2 kB on 2026-10-02 with the
+homebrew editor's field help, 183.1 kB unconfigured; 236.6 kB on 2026-10-01 with
+the homebrew relations, 177.6 kB unconfigured; 224.8 kB on 2026-10-01 with
+homebrew in the catalog pages, 165.9 kB unconfigured; 220.8 kB on 2026-09-30
+with the homebrew pages, 203.0 kB before them, after the import and export and
+the requests polish; 184.5 kB on 2026-09-27 with the Realtime client, 178.2 kB
+on 2026-09-26). `dist/` stays configured until `npm run build` or `check:built`
+rebuilds it. During R7-R7d a batch whose build passes a limit raises it to the
+measured size plus about 5 kB in the same commit, never past 350 kB configured
+(owner, 2026-10-14) and 250 kB unconfigured, and past a ceiling it stops and
 asks the owner. Decisions: "The configured bundle budget is 210 kB; the
-unconfigured stays 150 kB", amended by "The bundle budget steps up per batch
-to 250 kB configured and 190 unconfigured", amended by "The bundle ceilings
-rise to 300 kB configured and 250 unconfigured", amended by "The configured bundle
+unconfigured stays 150 kB", amended by "The bundle budget steps up per batch to
+250 kB configured and 190 unconfigured", amended by "The bundle ceilings rise to
+300 kB configured and 250 unconfigured", amended by "The configured bundle
 ceiling rises to 350 kB".
 
 Branch migrations on the test project: `migrate-test` runs on every

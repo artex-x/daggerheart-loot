@@ -15,6 +15,7 @@
   import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import StatusRegion from './StatusRegion.svelte';
   import { linkedOf } from '../lib/cloudLists.js';
   import { itemHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
@@ -324,11 +325,14 @@
   <!-- Mounted before any request, outside the panel, so the first arrival is a
        change to a live region that already exists; keyed, so a second arrival is
        announced again. -->
-  <div class="rsaid" role="status">
-    {#key owner.arrived}{#if owner.arrived && owner.arrivedList === list.id}<span
-          >{owner.arrivedKind === 'notice' ? t.noticeArrived : t.requestNew}</span
-        >{/if}{/key}
-  </div>
+  <StatusRegion
+    text={owner.arrived && owner.arrivedList === list.id
+      ? owner.arrivedKind === 'notice'
+        ? t.noticeArrived
+        : t.requestNew
+      : ''}
+    key={owner.arrived}
+  />
 {/if}
 
 <style>
@@ -484,17 +488,6 @@
 
   .st-no {
     color: var(--danger-text);
-  }
-
-  /* Heard, not seen: a new request is announced once (the `.said` pattern of
-     SharedListPage.svelte). */
-  .rsaid {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   @media (max-width: 600px) {

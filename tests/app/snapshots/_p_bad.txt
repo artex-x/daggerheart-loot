@@ -3,7 +3,7 @@
 # why: a malformed set id signed out: the set-not-found sub and «На главную», no read
 
 ## ru :: tree
-RootWebArea "Генератор лута — Daggerheart" [url=#/p/bad]
+RootWebArea "Генератор лута Daggerheart" [url=#/p/bad]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]

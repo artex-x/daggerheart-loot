@@ -107,6 +107,25 @@ describe('an edit', () => {
     expect(box).toHaveFocus();
   });
 
+  it('makes bold italic from an italic word on Bold and restores it on a second press', async () => {
+    const { box, bar } = field({ value: 'a *word* b' });
+    select(box, 3, 7);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Жирный' }));
+    expect(box).toHaveValue('a ***word*** b');
+    expect([box.selectionStart, box.selectionEnd]).toEqual([5, 9]);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Жирный' }));
+    expect(box).toHaveValue('a *word* b');
+  });
+
+  it('makes bold italic from a bold word on Italic, the selection around the stars', async () => {
+    const { box, bar } = field({ value: 'a **word** b' });
+    select(box, 2, 10);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Курсив' }));
+    expect(box).toHaveValue('a ***word*** b');
+    await userEvent.click(within(bar).getByRole('button', { name: 'Курсив' }));
+    expect(box).toHaveValue('a **word** b');
+  });
+
   it('does Bold on Ctrl+B and Italic on Cmd+I in the box', async () => {
     const { box } = field({ value: 'one two' });
     select(box, 0, 3);

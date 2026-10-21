@@ -224,6 +224,42 @@ export function afterLead(c: readonly MarkupInline[]): MarkupInline[] {
     : [{ t: 'text', v: ' ' }, ...c];
 }
 
+/* Returns `n` with `tail` added to its deepest last text, or null when it ends in no text. */
+function withTail(n: MarkupInline, tail: string): MarkupInline | null {
+  if (n.t === 'text') return { t: 'text', v: n.v + tail };
+  const last = n.c[n.c.length - 1];
+  const glued = last ? withTail(last, tail) : null;
+  return glued ? { t: n.t, c: [...n.c.slice(0, -1), glued] } : null;
+}
+
+/** Returns `c` with each text node of spaces only between two marked runs joined to the
+ *  last text of the run before it, at every depth. Between Svelte's anchor comments Chrome
+ *  drops a space-only text node from a button's name ("Свет:Потратьте", measured
+ *  2026-10-16); a space at the end of a text it keeps. */
+export function glueSpaces(c: readonly MarkupInline[]): MarkupInline[] {
+  const out: MarkupInline[] = [];
+  c.forEach((n, k) => {
+    const prev = out[out.length - 1];
+    const next = c[k + 1];
+    if (
+      n.t === 'text' &&
+      /^ +$/.test(n.v) &&
+      prev !== undefined &&
+      prev.t !== 'text' &&
+      next !== undefined &&
+      next.t !== 'text'
+    ) {
+      const glued = withTail(prev, n.v);
+      if (glued) {
+        out[out.length - 1] = glued;
+        return;
+      }
+    }
+    out.push(n.t === 'text' ? n : { t: n.t, c: glueSpaces(n.c) });
+  });
+  return out;
+}
+
 /** Returns the text of an inline tree with no markers. */
 export function inlineText(c: readonly MarkupInline[]): string {
   return c.map((n) => (n.t === 'text' ? n.v : inlineText(n.c))).join('');

@@ -264,7 +264,8 @@ What stays:
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
   `closeBundle` copies `catalog.csv`, `data.json` and `llms.txt` into
   `dist/`, `schema/import-v1.json`, `schema/import-v2.json`,
-  `schema/import-v3.json` and `schema/homebrew-v1.json` resolve through the
+  `schema/import-v3.json`, `schema/homebrew-v1.json` and
+  `schema/homebrew-v2.json` resolve through the
   `schema` entry of `vite.config.mts`' `ROOT_DIRS` (a junction in `dist/`,
   as `img/`), and `tools/smoke-http.mjs` asserts every `noscript a[href]`
   resolves to a real file under `dist/`.

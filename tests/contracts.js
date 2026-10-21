@@ -13,7 +13,7 @@
 
    This file covers only its fs-only half - the list-encoding
    check, the docs-name check, the lists file import-v1, import-v2 and import-v3 and the
-   homebrew file homebrew-v1 (their schemas, fixtures, llms.txt sections and
+   homebrew files homebrew-v1 and homebrew-v2 (their schemas, fixtures, llms.txt sections and
    the data zip). The browser half (the link against a real
    app, the address grammar, the stat line, the filter-group probe) moved to
    `tests/app/contracts.js`, which reads the rewrite instead of the live app;
@@ -461,9 +461,14 @@ const N_REC = '\x1e',
      their own. */
   console.log('homebrew file and import-v2');
   const HB_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v1.json';
+  const HB2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
   const V2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/import-v2.json';
   const HB_DIR = path.join(FIX, 'homebrew-file');
   const hb = JSON.parse(fs.readFileSync(path.join(ROOT, 'schema', 'homebrew-v1.json'), 'utf8'));
+  const hb2 = JSON.parse(
+    fs.readFileSync(path.join(ROOT, 'schema', 'homebrew-v2.json'), 'utf8')
+  );
+  const hd2 = hb2.$defs;
   const v2 = JSON.parse(fs.readFileSync(path.join(ROOT, 'schema', 'import-v2.json'), 'utf8'));
   ok(hb.$id === HB_URL, 'schema/homebrew-v1.json: $id is not ' + HB_URL);
   ok(v2.$id === V2_URL, 'schema/import-v2.json: $id is not ' + V2_URL);
@@ -543,9 +548,9 @@ const N_REC = '\x1e',
       'docs/fixtures/homebrew-file/' + f + ' is not canonical JSON (two-space, a final newline)'
     );
   });
-  /* A valid homebrew file uses only the keys the schema declares, at each level. */
+  /* A valid homebrew file uses only the keys the schema declares, at each level: these
+     are version 1 files, the import's v1 cases; the version 2 files are checked below. */
   [
-    'example.json',
     'example-edited.json',
     'no-book.json',
     'bedrolls.json',
@@ -553,7 +558,6 @@ const N_REC = '\x1e',
     'crlf.json',
     'over-limit.json',
     'same-names.json',
-    'export.json',
     'from-llms.json'
   ].forEach(function (f) {
     const doc = JSON.parse(fs.readFileSync(path.join(HB_DIR, f), 'utf8'));
@@ -617,14 +621,14 @@ const N_REC = '\x1e',
     const next = rest.search(new RegExp('\\n#{2,' + level + '} '));
     return next < 0 ? rest : rest.slice(0, next);
   };
-  const hbSection = sectionOf('## Homebrew items as a file (homebrew-v1)', 2);
+  const hbSection = sectionOf('## Homebrew items as a file (homebrew-v2)', 2);
   const hbExample = fs.readFileSync(path.join(HB_DIR, 'example.json'), 'utf8');
   ok(
     hbSection.includes('```json\n' + hbExample + '```'),
     'llms.txt does not hold docs/fixtures/homebrew-file/example.json verbatim in a json block'
   );
   const namedKeys = new Set();
-  [hb, hd.book, hd.section, hd.card, hd.item, hd.eq, hd.stats].forEach((s) =>
+  [hb2, hd2.book, hd2.section, hd2.card, hd2.item, hd2.eq, hd2.stats].forEach((s) =>
     Object.keys(s.properties).forEach((k) => namedKeys.add(k))
   );
   /* A stat block key is named as `eq.<key>`: a bare `rg` or `bu` reads as a filter group. */
@@ -667,7 +671,7 @@ const N_REC = '\x1e',
   );
   [
     '5 MB',
-    HB_URL,
+    HB2_URL,
     'catalog.csv',
     'never work it out from the stats',
     '`catalog.csv`, `data.json`, `i/` and `og/` never carry a homebrew record'
@@ -716,7 +720,7 @@ const N_REC = '\x1e',
     'llms.txt: the entry source row still says official is the only value'
   );
   ok(
-    /What this site cannot do[\s\S]*Homebrew items as a file \(homebrew-v1\)/.test(machine),
+    /What this site cannot do[\s\S]*Homebrew items as a file \(homebrew-v2\)/.test(machine),
     'llms.txt: "What this site cannot do" does not name the homebrew file'
   );
   [
@@ -732,11 +736,6 @@ const N_REC = '\x1e',
   /* Frozen as homebrew-v1 is. Its other definitions are homebrew-v1's, held equal by
      app/src/lib/homebrewFile.test.ts; this checks what a reader of the published file sees. */
   console.log('homebrew-v2');
-  const HB2_URL = 'https://artex-x.github.io/daggerheart-loot/schema/homebrew-v2.json';
-  const hb2 = JSON.parse(
-    fs.readFileSync(path.join(ROOT, 'schema', 'homebrew-v2.json'), 'utf8')
-  );
-  const hd2 = hb2.$defs;
   ok(hb2.$id === HB2_URL, 'schema/homebrew-v2.json: $id is not ' + HB2_URL);
   ok(
     hb2.properties.format.const === 'daggerheart-loot/homebrew' &&
@@ -758,26 +757,53 @@ const N_REC = '\x1e',
       cardItems.items.pattern === '^(?!hb_[a-z2-7]{16}$)[A-Za-z0-9_-]{1,64}$',
     "homebrew-v2: a card's items is not 1-100 unique catalog ids that are not an own key"
   );
+  /* The version 2 files: the export writes version 2 always (CONTRACTS.md section 4). */
+  ['example.json', 'export.json', 'example-v2.json'].forEach(function (f) {
+    const doc = JSON.parse(fs.readFileSync(path.join(HB_DIR, f), 'utf8'));
+    ok(
+      doc.format === 'daggerheart-loot/homebrew' &&
+        doc.version === 2 &&
+        doc.$schema === HB2_URL,
+      f + ': not format daggerheart-loot/homebrew, version 2, ' + HB2_URL
+    );
+    declared(doc, hb2, f);
+    (doc.books || []).forEach(function (b, i) {
+      declared(b, hd2.book, f + ' books[' + i + ']');
+      (b.sections || []).forEach((sec, j) =>
+        declared(sec, hd2.section, f + ' books[' + i + '].sections[' + j + ']')
+      );
+    });
+    (doc.cards || []).forEach((c, i) => declared(c, hd2.card, f + ' cards[' + i + ']'));
+    (doc.items || []).forEach(function (it, i) {
+      declared(it, hd2.item, f + ' items[' + i + ']');
+      if (it.eq) declared(it.eq, hd2.eq, f + ' items[' + i + '].eq');
+    });
+  });
   const hb2Example = JSON.parse(fs.readFileSync(path.join(HB_DIR, 'example-v2.json'), 'utf8'));
-  ok(
-    hb2Example.format === 'daggerheart-loot/homebrew' && hb2Example.version === 2,
-    'example-v2.json: not format daggerheart-loot/homebrew, version 2'
-  );
-  declared(hb2Example, hb2, 'example-v2.json');
-  hb2Example.cards.forEach((c, i) => declared(c, hd2.card, 'example-v2.json cards[' + i + ']'));
-  hb2Example.items.forEach((it, i) =>
-    declared(it, hd2.item, 'example-v2.json items[' + i + ']')
-  );
   ok(
     hb2Example.cards.some((c) => Array.isArray(c.items) && c.items.length),
     'example-v2.json: no card holds book items'
   );
-  const hb2Section = sectionOf('### Version 2: book items in a card (homebrew-v2)', 3);
+  const hb2Section = sectionOf('### Book items in a card', 3);
   ok(hb2Section.includes(HB2_URL), 'llms.txt homebrew-v2 section does not name ' + HB2_URL);
   ok(
     hb2Section.includes('`items`') && hb2Section.includes('```json'),
     'llms.txt homebrew-v2 section does not name `items` or show a json example'
   );
+  /* Each frozen schema's description names an llms.txt section by its published name. */
+  [
+    ['homebrew-v1', hb],
+    ['homebrew-v2', hb2]
+  ].forEach(function ([name, s]) {
+    const cited = /section "([^"]+)"/.exec(s.description);
+    ok(cited !== null, 'schema/' + name + '.json: its description names no llms.txt section');
+    if (cited) {
+      ok(
+        machine.includes(cited[1]),
+        'llms.txt does not hold "' + cited[1] + '", the section schema/' + name + '.json names'
+      );
+    }
+  });
 
   /* ---------- the lists file import-v3: import-v2 plus the GM-only mark ---------- */
   /* Frozen as import-v2 is. Its other definitions are import-v2's, held deep-equal by

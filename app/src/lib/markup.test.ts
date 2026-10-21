@@ -4,7 +4,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { afterLead, inlineText, markupHtml, markupText, parseMarkup } from './markup.js';
+import {
+  afterLead,
+  glueSpaces,
+  inlineText,
+  markupHtml,
+  markupText,
+  parseMarkup,
+  type MarkupInline
+} from './markup.js';
 import type { Loot } from './data.js';
 
 const LOOT = JSON.parse(
@@ -139,6 +147,29 @@ describe('the string forms', () => {
       { t: 'b', c: [{ t: 'text', v: 'x' }] }
     ]);
     expect(afterLead([])).toEqual([{ t: 'text', v: ' ' }]);
+  });
+
+  it('joinsASpaceBetweenTwoMarksToTheLastTextOfTheFirst', () => {
+    const b = (v: string): MarkupInline => ({ t: 'b', c: [{ t: 'text', v }] });
+    const i = (v: string): MarkupInline => ({ t: 'i', c: [{ t: 'text', v }] });
+    expect(glueSpaces([b('a'), { t: 'text', v: ' ' }, i('b')])).toEqual([b('a '), i('b')]);
+    /* The deepest last text: «***Свет:*** **Потратьте**». */
+    expect(glueSpaces([{ t: 'b', c: [i('Свет:')] }, { t: 'text', v: ' ' }, b('x')])).toEqual([
+      { t: 'b', c: [i('Свет: ')] },
+      b('x')
+    ]);
+    /* A space beside text, at an end, or after a run with no text stays where it is. */
+    const beside: MarkupInline[] = [b('a'), { t: 'text', v: ' x ' }, i('b')];
+    expect(glueSpaces(beside)).toEqual(beside);
+    const atEnd: MarkupInline[] = [{ t: 'text', v: ' ' }, b('a'), { t: 'text', v: ' ' }];
+    expect(glueSpaces(atEnd)).toEqual(atEnd);
+    const empty: MarkupInline[] = [{ t: 'b', c: [] }, { t: 'text', v: ' ' }, b('a')];
+    expect(glueSpaces(empty)).toEqual(empty);
+    /* Inside a mark, at every depth. */
+    expect(glueSpaces([{ t: 'b', c: [i('a'), { t: 'text', v: '  ' }, i('b')] }])).toEqual([
+      { t: 'b', c: [i('a  '), i('b')] }
+    ]);
+    expect(inlineText(glueSpaces([b('a'), { t: 'text', v: ' ' }, b('c')]))).toBe('a c');
   });
 
   it('projectsPlainTextWithListMarksKept', () => {
