@@ -7,7 +7,8 @@
   unconfigured one. Reason: R6's import and export and R4b's requests
   polish took the configured build to 203.0 kB (unconfigured 144.9 kB), and
   the owner accepts the growth. `docs/specs/DEBT.md` D60 (the slimmer
-  account client) still owes the real cut.
+  account client) still owes the real cut (`git show
+  dbcad73a^:docs/specs/DEBT.md`; paid in `dbcad73a`).
 - Rejected: a lazy `import()` of `ImportPanel` (the budget counts every
   chunk, lazy ones included: 204.1 kB, more than before); counting only the
   chunks loaded on first paint (it changes what the budget measures and

@@ -9,7 +9,8 @@
   the app does not use yet) put the lists release at 172.0 kB against 170.
   The limit returns below 170 when `ports/supabase.ts` builds its client
   from `@supabase/auth-js` and `@supabase/postgrest-js` (about 27 kB
-  against 54.8 kB, measured 2026-09-26); `docs/specs/DEBT.md` D60 owes it.
+  against 54.8 kB, measured 2026-09-26); `docs/specs/DEBT.md` D60 owes it
+  (`git show dbcad73a^:docs/specs/DEBT.md`; paid in `dbcad73a`).
 - Rejected: lazy-loading the share panel (the budget counts every chunk,
   lazy ones included, so the total does not move); measuring first paint
   only (it changes what the budget means); cutting app code (no cheap

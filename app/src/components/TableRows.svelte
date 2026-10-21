@@ -49,8 +49,9 @@
     onartfail: (id: string) => void;
     onopen: (it: Record_) => void;
     ontoggleall?: (ids: string[]) => void;
-    /** Drawn as the last child of a list-view row, inside its border - the
-     *  shared page's entry notes and take line. The tile view draws nothing. */
+    /** Drawn under `RowMain` in a list-view row's second column, at most two
+     *  lines (`.row`'s grid) - the shared page's entry notes and take line.
+     *  The tile view draws nothing. */
     inside?: Snippet<[Record_]>;
     /** The id of the row the anchor effect is outlining right now - state
      *  rather than a DOM write, so a keyed re-render (a view switch, a
@@ -206,10 +207,6 @@
     cursor: pointer;
   }
 
-  .selbox[data-on] {
-    background: rgb(216 171 94 / 10%);
-  }
-
   /* off `style.css:1013`. The row clips everything past its edge, so an
      outside ring would only ever show one sliver of itself - a gold streak
      along the checkbox. It also fired from the mouse: `:focus-within` does
@@ -241,7 +238,6 @@
 
   .selall .selbox {
     border-right: 0;
-    background: none;
     width: 42px;
     align-self: stretch;
   }
@@ -277,18 +273,27 @@
     gap: 8px;
   }
 
-  /* `wrap` lets an `inside` line take a row of its own; a row without one
-     never wraps, because `RowMain` shrinks (`flex: 1`, `min-width: 0`). */
+  /* Two columns: the select box, then `RowMain` with each `inside` line
+     under it. The box spans three lines - the main line, the shared page's
+     notes and its take line; a row without them keeps two empty, zero-tall lines. */
   .row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     width: 100%;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 11px;
     transition: 0.15s;
     overflow: hidden;
+  }
+
+  /* The divider and the tick target run the row's full height; the subgrid
+     keeps the checkbox centred on the main line, not on the whole row. */
+  .row > .selbox {
+    grid-row: 1 / span 3;
+    display: grid;
+    grid-template-rows: subgrid;
+    place-items: center;
   }
 
   /* Before hover and `.sel`, so they still win (docs/specs/FEATURES.md, "Account and browser lists"). */
@@ -307,10 +312,6 @@
   .row.sel {
     border-color: rgb(216 171 94 / 55%);
     background: rgb(216 171 94 / 5%);
-  }
-
-  .row.sel .selbox[data-on] {
-    background: none;
   }
 
   /* off `.tgrid` and the `.tile*` family */

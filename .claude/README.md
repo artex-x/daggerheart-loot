@@ -2112,33 +2112,43 @@ The history rows that `migrate-test` writes hold a version and a name and
 no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
-**Expected Security Advisor warnings.** On both projects after R5's
-`migrate-prod` (2026-09-26) the Security Advisor reports 0 errors, 9
-warnings and 2 info. Eight warnings are the execute grants of seven
-SECURITY DEFINER functions: seven executable by a signed-in user, and
-`get_shared_list` also by `anon`; the reasons below:
+**Expected Security Advisor warnings.** Measured 2026-10-21 on both projects
+(production and test), the Security Advisor reports 0 errors, 26 warnings
+and 5 info; `supabase/migrations/` at `eb899604` derives the same counts. A
+SECURITY DEFINER function whose latest grant gives `execute` to
+`authenticated` is one warning, and `anon` is a second warning on the same
+function. 20 functions are such definers (20 warnings), and 5 of them are
+also executable by `anon` (5 more); the reasons below:
 
-| Function | Reason |
-|---|---|
-| `delete_account`, `delete_account_requests` | Delete the caller's `auth.users` row, and before it the purchase requests on the caller's lists 200 a call; the user is always `auth.uid()`. |
-| `reorder_list` | Rewrites every position of the caller's list in one statement; it checks the owner itself. |
-| `create_list_share`, `revoke_list_share` | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
-| `get_shared_list` | Returns the projection to whoever holds the token, never the table. It is also executable by `anon` for the anonymous shared page: a second warning. |
-| `clone_shared_list` | Copies a list that the caller reaches only through the token. |
-| `move_legacy_list` | Moves a browser list whole, past the count limits (`docs/specs/DEBT.md` D62). |
+| Function | `anon` | Reason |
+|---|---|---|
+| `delete_account()`, `delete_account_requests()` | no | Delete the caller's `auth.users` row, and before it the purchase requests on the caller's lists 200 a call; the user is always `auth.uid()`. |
+| `reorder_list` | no | Rewrites every position of the caller's list in one statement; it checks the owner itself. |
+| `create_list_share`, `revoke_list_share` | no | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
+| `get_shared_list(text)` | yes | Returns the projection to whoever holds the token, never the table; `anon` reads the shared page. |
+| `clone_shared_list` | no | Copies a list that the caller reaches only through the token. |
+| `move_legacy_list` | no | Moves a browser list whole, past the count limits (`docs/specs/DEBT.md` D62). |
+| `create_purchase_request` | yes | A share link's holder sends a request signed out; `purchase_requests` has no insert grant. |
+| `apply_purchase_request`, `decline_purchase_request` | no | The owner decides a request: they write the owner's list and a request row that no Data API role may write. |
+| `my_limit` | no | Shows the account its own effective limit; the limit tables have no Data API grant. |
+| `mark_list_read` | no | Sets read times with the database clock and caps a request's expiry; `list_notices` and `purchase_requests` are read-only to the user. |
+| `get_homebrew_item` | yes | Returns one item to whoever holds its random id, without the owner or another uuid, never the table. |
+| `get_homebrew_items` | no | Reads the linked items of the caller's lists, which belong to other owners. |
+| `homebrew_art_room` | no | Counts the caller's files in `storage.objects`, which the user cannot read. |
+| `create_print_set`, `get_print_set` | no | `print_sets` has no Data API grant; the functions store and read a sheet and move `opened_at`. |
+| `get_item_preview`, `get_shared_list_preview` | yes | The link-card Worker reads the card of an item or share link by its id or token, signed out, and never the table. |
 
-The ninth warning is leaked password protection, which is off because there
-is no password sign-in (Google and Discord only). `apply_list_writes` is
-`security invoker` and adds none, and so is the revision overload
-`get_shared_list(text, bigint)` that `anon` executes
-(`20261002120000_read_scale`). That migration's trigger function
-`list_entries_snapshot_limit()` is SECURITY DEFINER and executable by no
-Data API role, so it adds none either. After R11's `migrate-prod` the report
-is 0 errors, 9 warnings and 3 info. The three info are "RLS enabled, no
-policy" for `limit_defaults`, `user_limit_overrides` and `usage_snapshots`,
-by design: no Data API role reads them. A warning that is not in this list
-stops the release until a review accepts it and adds it here with its
-reason.
+A definer that is a trigger function,
+or that is revoked from `public`, `anon` and `authenticated`, adds no
+warning (the count and limit triggers, the broadcast triggers,
+`effective_limit`, `homebrew_links_touch`), and every `security invoker`
+function adds none. The 26th warning is
+leaked password protection, which is off because there is no password
+sign-in (Google and Discord only). The five info are "RLS enabled, no
+policy" for `homebrew_art_released`, `limit_defaults`, `print_sets`,
+`usage_snapshots` and `user_limit_overrides`, by design: no Data API role
+reads them. A warning that is not in this list stops the release until a
+review accepts it and adds it here with its reason.
 
 **The local stack lock.** One local Supabase stack serves every checkout on
 this host, and `npm run check:db` and `npm run restore:drill` reset it.
@@ -3097,8 +3107,8 @@ Owner setup, in order, after R11 is on `main`:
    production project. Expected: the dispatch day is not visibly above the
    days around it. If it is more than 1 GB above them, delete the secret
    `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
-8. Re-run the Security Advisor on production. Expected: 0 errors, 9
-   warnings, 3 info ("Expected Security Advisor warnings").
+8. Re-run the Security Advisor on production. Expected: 0 errors, 26
+   warnings, 5 info ("Expected Security Advisor warnings").
 9. After seven nights, open the latest summary. Expected: a forecast on the
    Database row.
 

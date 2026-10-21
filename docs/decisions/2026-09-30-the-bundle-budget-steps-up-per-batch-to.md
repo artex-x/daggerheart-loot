@@ -11,5 +11,6 @@
   became 226 and 167.
 - Rejected: B, homebrew kept out of the unconfigured build (an import seam
   for a build nobody deploys); C, the slimmer account client first
-  (`docs/specs/DEBT.md` D60 buys one batch and delays R7).
+  (`docs/specs/DEBT.md` D60 buys one batch and delays R7;
+  `git show dbcad73a^:docs/specs/DEBT.md`; paid in `dbcad73a`).
 - Amends "The configured bundle budget is 210 kB; the unconfigured stays 150 kB" (2026-09-30): the ceilings, and a raise per batch in the same commit.

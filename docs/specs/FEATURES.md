@@ -494,7 +494,10 @@ across.
   link card plain. A read-only list keeps «Просмотр» only. On `#/s/` and
   `#/l/` the list's notes draw above the rows, and an entry's notes inside
   its row's border, under its main line and above its take line, as the
-  owner's list page draws them.
+  owner's list page draws them. On the shared page only, the tick column and
+  its divider run the full height of the row, through the notes and the take
+  line, and a press anywhere in the column ticks the row; the checkbox stays
+  level with the main line.
 - The address bar always holds the player link and is refreshed on every edit
   - opening the page, and after every writer on it. A read-only browser list
   (after the cutoff, or while the move is due) keeps the address it opened at.

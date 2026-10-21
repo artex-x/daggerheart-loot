@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-four cases in
- * seventy-three runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-seven cases in
+ * seventy-six runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -5162,6 +5162,62 @@ async function drawsListNotesAsFormattedText() {
   await ctx.close();
 }
 
+/** A `#/l/` players' link, `encodeList` of ci1 (2 x 150, the players' note
+ *  «Видно игрокам») and cc1 (x5): ticked, ci1 draws the main line, its note
+ *  and its take line. No fake-cloud share holds a noted entry with a count. */
+const NOTED_AND_COUNTED =
+  'WAoyLjFpazh-Y2kxKjIqMTUwLGNjMSo1Ch4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0Lw';
+
+/** 77. A shared row's tick column runs through its note and its take line at
+ *  360 and 1180: the select box ends at the row's inner bottom, the checkbox
+ *  sits on the main line, and a press low in the column unticks the row
+ *  (docs/specs/FEATURES.md, "Lists"). */
+async function sharedRowTickColumn() {
+  for (const width of [360, 1180]) {
+    const at = `77 (the shared row's tick column) at ${width}: `;
+    const { ctx, page, d } = await fresh({ width, height: 900 });
+    await d.open('#/l/' + NOTED_AND_COUNTED);
+    await page.click('[data-row="ci1"] .selbox input');
+    ok(
+      await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .pickrow')),
+      at + 'the ticked row drew no take line'
+    );
+    const g = await page.evaluate(() => {
+      const row = document.querySelector('[data-row="ci1"]');
+      /* `scroll-margin-top` keeps the row under the sticky header and above the bar. */
+      row.scrollIntoView({ block: 'start' });
+      const box = row.querySelector(':scope > .selbox').getBoundingClientRect();
+      const tick = row.querySelector(':scope > .selbox input').getBoundingClientRect();
+      const main = row.querySelector(':scope > .row-main').getBoundingClientRect();
+      const r = row.getBoundingClientRect();
+      return {
+        notes: !!row.querySelector(':scope > .rnotes'),
+        inner: r.bottom - parseFloat(getComputedStyle(row).borderBottomWidth),
+        boxBottom: box.bottom,
+        boxX: box.left + box.width / 2,
+        tickY: tick.top + tick.height / 2,
+        mainTop: main.top,
+        mainBottom: main.bottom
+      };
+    });
+    ok(g.notes, at + 'the row drew no note');
+    ok(
+      Math.abs(g.boxBottom - g.inner) <= 1,
+      at + 'the select box stops short of the row - ' + JSON.stringify(g)
+    );
+    ok(
+      g.tickY > g.mainTop && g.tickY < g.mainBottom,
+      at + 'the checkbox is off the main line - ' + JSON.stringify(g)
+    );
+    await page.mouse.click(g.boxX, g.boxBottom - 6);
+    ok(
+      await waitIn(page, () => !document.querySelector('[data-row="ci1"].sel')),
+      at + 'a press low in the tick column did not untick the row'
+    );
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5240,7 +5296,8 @@ const CASES = [
   ['73 (print after sign-in)', printAfterSignIn],
   ['74 (the card text keeps its look)', keepsTheCardDescriptionLook],
   ['75 (the browser undoes a toolbar edit)', undoesAToolbarEditWithTheBrowsersUndo],
-  ['76 (list notes draw as formatted text)', drawsListNotesAsFormattedText]
+  ['76 (list notes draw as formatted text)', drawsListNotesAsFormattedText],
+  ["77 (the shared row's tick column)", sharedRowTickColumn]
 ];
 
 (async () => {

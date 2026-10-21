@@ -508,35 +508,23 @@
     font-size: 13.5px;
   }
 
-  /* The take line inside a ticked row, under the art: the 42px select box
-     plus the row's 11px inset (docs/specs/FEATURES.md, "Lists"). No fill -
+  /* The take line inside a ticked row, in the column right of the select box
+     at the row's 11px inset (docs/specs/FEATURES.md, "Lists"). No fill -
      the row's own selected wash shows through. */
   .pickrow {
-    flex: 0 0 100%;
     display: flex;
     align-items: center;
     border-top: 1px solid rgb(216 171 94 / 22%);
-    padding: 8px 11px 8px 53px;
+    padding: 8px 11px;
   }
 
   /* An entry's notes, under its main line at the take line's inset. */
   .rnotes {
-    flex: 0 0 100%;
     min-width: 0;
-    padding: 0 11px 11px 53px;
+    padding: 0 11px 11px;
   }
 
   .rnotes :global(.hitnote:first-child) {
     margin-top: 0;
-  }
-
-  @media (max-width: 600px) {
-    .pickrow {
-      padding-left: 49px;
-    }
-
-    .rnotes {
-      padding-left: 49px;
-    }
   }
 </style>
