@@ -577,7 +577,10 @@ const { ok } = rep;
       how + 'Standard Issue Slicer strip text is clipped: ' + clipped.join(', ')
     );
     const src = await page.$eval('.pc-bottom span:last-child', (e) => e.textContent.trim());
-    ok(src === 'Many Worlds Tavern · Воюющие Норы', how + 'Standard Issue Slicer source line: ' + src);
+    ok(
+      src === 'Many Worlds Tavern · Воюющие Норы',
+      how + 'Standard Issue Slicer source line: ' + src
+    );
     await colour();
     await d.click('Обычная');
     await d.settle();
