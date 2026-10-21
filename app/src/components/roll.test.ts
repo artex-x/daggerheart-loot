@@ -10,7 +10,14 @@ import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
 import App from '../App.svelte';
-import { brokenStorage, fakeData, fakeEnv, memoryRouter, noData } from '../ports/index.js';
+import {
+  brokenStorage,
+  fakeData,
+  fakeEnv,
+  memoryRouter,
+  memoryStorage,
+  noData
+} from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
@@ -439,5 +446,18 @@ describe('switching between two tables', () => {
       await screen.findByRole('heading', { level: 2, name: 'w вещь 1' })
     ).toBeInTheDocument();
     expect(field().value).toBe('1');
+  });
+});
+
+/* An old roll address names the page the stored slug pin points at. */
+describe('the home button on an old roll address', () => {
+  it('is pressed on #/roll/dread when #/roll/dread_gm_toolbox is pinned', async () => {
+    const { container } = render(App, {
+      env: at('#/roll/dread', {
+        storage: memoryStorage({ 'dhloot.home.v1': '#/roll/dread_gm_toolbox' })
+      })
+    });
+    expect(container.querySelector('.homebtn')).toHaveAttribute('aria-pressed', 'true');
+    await expectNoA11yViolations(container);
   });
 });

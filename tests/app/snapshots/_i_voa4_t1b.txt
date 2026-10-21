@@ -15,14 +15,14 @@ RootWebArea "Губитель из Сухостоя — Генератор лу�
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Губитель из Сухостоя" [level=1]
     StaticText "Vault of Ages · номер 26 "
-    link "показать в таблице" [url=#/tables/voa/voa4_t1b]
+    link "показать в таблице" [url=#/tables/vault_of_ages/voa4_t1b]
     button "Страница"
     StaticText "26"
     ... StaticText x14 of 18 same-shape siblings elided
@@ -82,14 +82,14 @@ RootWebArea "Deadwood Slayer — Daggerheart Loot Generator" [url=#/i/voa4_t1b]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Deadwood Slayer" [level=1]
     StaticText "Vault of Ages · roll 26 "
-    link "show in the table" [url=#/tables/voa/voa4_t1b]
+    link "show in the table" [url=#/tables/vault_of_ages/voa4_t1b]
     button "Page"
     StaticText "26"
     ... StaticText x14 of 18 same-shape siblings elided

@@ -15,14 +15,14 @@ RootWebArea "Табельный Секач — Генератор лута — D
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Табельный Секач" [level=1]
     StaticText "Many Worlds Tavern · Воюющие Норы · номер 7 "
-    link "показать в таблице" [url=#/tables/mwt/mw47]
+    link "показать в таблице" [url=#/tables/many_worlds_tavern/mw47]
     button "Страница"
     StaticText "7"
     ... StaticText x10 of 14 same-shape siblings elided
@@ -81,14 +81,14 @@ RootWebArea "Standard Issue Slicer — Daggerheart Loot Generator" [url=#/i/mw47
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Standard Issue Slicer" [level=1]
     StaticText "Many Worlds Tavern · Warrin' Warrens · roll 7 "
-    link "show in the table" [url=#/tables/mwt/mw47]
+    link "show in the table" [url=#/tables/many_worlds_tavern/mw47]
     button "Page"
     StaticText "7"
     ... StaticText x10 of 14 same-shape siblings elided

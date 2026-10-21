@@ -16,7 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -124,7 +124,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     checkbox "Брошюра по Истории Искусства" [checked=false]
     spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
-    button "Брошюра по Истории Искусства Это прекрасно иллюстрированная брош..." [namelen=613 namehash=7f8d998e]
+    button "Брошюра по Истории Искусства Это прекрасно иллюстрированная брош..." [namelen=624 namehash=793612a8]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЗОЛОТО" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -160,10 +160,10 @@ daggerheart.com
 Альт. таблицы
 Бросить d10
 Брошюра по Истории Искусства
-Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная брошю... [namelen=610 namehash=514fcfb2]
+Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная брошю... [namelen=621 namehash=8e34be84]
 Выбрать все
 Гарпун Левиафана
-Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=359 namehash=d7ce48f5]
+Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=372 namehash=18076c75]
 Дополнения
 Жирный
 Заметка
@@ -242,7 +242,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -350,7 +350,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     checkbox "Art History Booklet" [checked=false]
     spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
-    button "Art History Booklet This is a finely illustrated booklet (donati..." [namelen=535 namehash=4a6f01f1]
+    button "Art History Booklet This is a finely illustrated booklet (donati..." [namelen=546 namehash=fd813d99]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "GOLD" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -383,7 +383,7 @@ Account: gm1@example.test
 Alt. tables
 Apply
 Art History Booklet
-Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532 namehash=f84ac14a]
+Art History BookletThis is a finely illustrated booklet (donatio... [namelen=543 namehash=25f277dc]
 As in the book
 Bold
 Broadsword
@@ -421,7 +421,7 @@ Install as an app
 Italic
 Lay these out for printing: nine to an A4 sheet
 Leviathan Harpoon
-Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=341 namehash=99adf1d2]
+Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=354 namehash=5d62421d]
 List name
 Lists
 Note

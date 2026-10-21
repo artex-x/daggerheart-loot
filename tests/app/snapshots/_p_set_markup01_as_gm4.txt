@@ -16,7 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm4
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm4#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm4#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm4#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm4#/tables]
       link "Списки" [url=index.html?as=gm4#/lists]
       link "Поиск" [url=index.html?as=gm4#/search]
@@ -79,7 +79,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm4#/p/set-markup01]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm4#/roll/std]
       link "Alt. tables" [url=index.html?as=gm4#/roll/alt]
-      link "Supplements" [url=index.html?as=gm4#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm4#/tables]
       link "Lists" [url=index.html?as=gm4#/lists]
       link "Search" [url=index.html?as=gm4#/search]

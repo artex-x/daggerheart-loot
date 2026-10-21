@@ -16,7 +16,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -40,7 +40,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     combobox "Добавить предмет" [value=меч expanded=true focused=true required=false autocomplete=list haspopup=listbox]
     listbox "Добавить предмет" [multiselectable=false required=false orientation=vertical]
     status ""
-      StaticText "Ещё 131 - уточните запрос"
+      StaticText "Ещё 132 - уточните запрос"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -88,7 +88,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -112,7 +112,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     combobox "Add an item" [value=меч expanded=true focused=true required=false autocomplete=list haspopup=listbox]
     listbox "Add an item" [multiselectable=false required=false orientation=vertical]
     status ""
-      StaticText "131 more - narrow the search"
+      StaticText "132 more - narrow the search"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

@@ -15,7 +15,7 @@ RootWebArea "Обычные правила — Генератор лута — D
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -118,7 +118,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]

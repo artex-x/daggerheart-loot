@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,9 +25,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -41,7 +41,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Магическое" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "26 из 133"
+    StaticText "26 из 135"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
     ... button x26 of 30 same-shape siblings elided
@@ -71,27 +71,27 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 1
-120Кинжал СангромантииРанг 1 · Магическое · Влияние · Вплотную ·... [namelen=272 namehash=efd0f032]
+120Кинжал СангромантииРанг 1 · Магическое · Влияние · Вплотную ·... [namelen=276 namehash=eb048488]
 1Порхающие БесыРанг 2 · Магическое · Инстинкт · Далеко · d4+2 ма... [namelen=197 namehash=84bdbfd1]
 2
 28Святой ЩитРанг 3 · Магическое · Инстинкт · Вплотную · d6+3 маг... [namelen=356 namehash=048ae74f]
 3
 4
 6Ритуальный Клинок СехметРанг 3 · Магическое · Искусность · Впло... [namelen=300 namehash=a127fa90]
-6Щит СолнцаРанг 3 · Магическое · Сила · Вплотную · d4+4 маг · Од... [namelen=203 namehash=59685891]
-7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=197 namehash=4a18cab6]
-87Пылающий БраслетРанг 1 · Магическое · Искусность · Далеко · d6... [namelen=263 namehash=85319130]
-97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=313 namehash=2e6e07f1]
+6Щит СолнцаРанг 3 · Магическое · Сила · Вплотную · d4+4 маг · Од... [namelen=214 namehash=65e9fac5]
+7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=210 namehash=c6b11936]
+87Пылающий БраслетРанг 1 · Магическое · Искусность · Далеко · d6... [namelen=267 namehash=0bd4aabe]
+97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=317 namehash=7badcb82]
 Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Арканный Скальпель
@@ -196,7 +196,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -206,9 +206,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -222,7 +222,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "Magic" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "26 of 133"
+    StaticText "26 of 135"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
     ... button x26 of 30 same-shape siblings elided
@@ -252,17 +252,17 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
 
 ## en :: controls
 1
-120Sangromancy DaggerTier 1 · Magic · Presence · Melee · d6 mag ... [namelen=226 namehash=d4c8cf68]
+120Sangromancy DaggerTier 1 · Magic · Presence · Melee · d6 mag ... [namelen=230 namehash=230652c9]
 1FlutterfiendsTier 2 · Magic · Instinct · Far · d4+2 mag · One-H... [namelen=206 namehash=7e5475b4]
 2
 28Saintly GuardTier 3 · Magic · Instinct · Melee · d6+3 mag · On... [namelen=323 namehash=a7f3ecbb]
 3
 4
 6Ritual Blade of SekhmetTier 3 · Magic · Finesse · Melee · d8+4 ... [namelen=274 namehash=938b6ddd]
-6Shield of the SunTier 3 · Magic · Strength · Melee · d4+4 mag ·... [namelen=193 namehash=e0c7a562]
-7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=196 namehash=238e063d]
-87Burning BraceletTier 1 · Magic · Finesse · Far · d6 mag · One-... [namelen=225 namehash=2e21c214]
-97SparkTier 2 · Magic · Agility · Melee · d8+2 mag · One-HandedF... [namelen=299 namehash=b0fe6a9d]
+6Shield of the SunTier 3 · Magic · Strength · Melee · d4+4 mag ·... [namelen=204 namehash=30a51296]
+7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=209 namehash=2b432800]
+87Burning BraceletTier 1 · Magic · Finesse · Far · d6 mag · One-... [namelen=229 namehash=26e514a5]
+97SparkTier 2 · Magic · Agility · Melee · d8+2 mag · One-HandedF... [namelen=303 namehash=3ffed9d7]
 Advanced Focus Runes
 Advanced Focus RunesTier 3 · Magic · Instinct · Very Close · d6+... [namelen=180 namehash=0c28ce1b]
 Advanced Hallowed Shield
@@ -283,8 +283,7 @@ Colossus of the Drylands
 Copy a link to this section
 Core
 Dark Heart of Andaluria
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Echo Blade
 Echo BladeTier 4 · Magic · Presence · Melee · d4+6 mag · One-Han... [namelen=225 namehash=ddb6e149]
@@ -352,6 +351,7 @@ Strength
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Unique
 Upgradable
 Vault of Ages
@@ -360,6 +360,6 @@ Very Far
 Vorpal Shard
 Vorpal ShardTier 3 · Magic · Knowledge · Melee · d4 mag · One-Ha... [namelen=201 namehash=0bdd2dce]
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

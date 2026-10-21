@@ -1,9 +1,9 @@
 # #/roll/dv ~ help
-# route: #/roll/dv
+# route: #/roll/dragons_vault
 # why: the help panel, unfolded: why the table has no die, and where the equipment half lives
 
 ## ru :: tree
-RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [url=#/roll/dv]
+RootWebArea "The Dragon's Vault — Генератор лута — Daggerheart" [url=#/roll/dragons_vault]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -29,13 +29,13 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText "."
     navigation "Дополнения"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–145)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
@@ -45,7 +45,7 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
       button "Страница"
       StaticText "1"
       StaticText "ПРЕДМЕТ"
-      StaticText "DRAGON'S VAULT"
+      StaticText "THE DRAGON'S VAULT"
       link "Святилище Оградителя" [description=Страница url=#/i/dv1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -62,14 +62,13 @@ RootWebArea "Dragon's Vault — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 Arazo's Artifacts
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Many Worlds Tavern
 RU
 The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Войти
@@ -84,13 +83,13 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Предметы сообществ
 Результат броска
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
 Случайно 1–145
-Сообщества
 Списки
 Страница
 Таблицы
@@ -98,7 +97,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
+RootWebArea "The Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dragons_vault]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -110,7 +109,7 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -124,13 +123,13 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText " supplement."
     navigation "Supplements"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Community items" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "ROLL RESULT (1–145)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
@@ -140,7 +139,7 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
       button "Page"
       StaticText "1"
       StaticText "ITEM"
-      StaticText "DRAGON'S VAULT"
+      StaticText "THE DRAGON'S VAULT"
       link "Abjurer's Fane" [description=Page url=#/i/dv1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -158,13 +157,12 @@ RootWebArea "Dragon's Vault — Daggerheart Loot Generator" [url=#/roll/dv]
 ## en :: controls
 Alt. tables
 Arazo's Artifacts
-Communities
+Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 How this works
 Install as an app
@@ -188,6 +186,6 @@ Tables
 Terms of use
 The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

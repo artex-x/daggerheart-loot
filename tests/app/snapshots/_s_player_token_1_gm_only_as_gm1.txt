@@ -16,7 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -55,7 +55,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
 1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=141 namehash=88f7ef0b]
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
-51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
+51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=384 namehash=5fd42fa8]
 EN
 RU
 daggerheart.com
@@ -102,7 +102,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/s/player-token-
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -141,7 +141,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/s/player-token-
 1Premium Bedroll×2 · 150 gpDuring downtime, you automatically cl... [namelen=85 namehash=b9388206]
 1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=116 namehash=1d3add45]
 3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
-51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
+51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
 Account: gm1@example.test
 Alt. tables
 Broadsword

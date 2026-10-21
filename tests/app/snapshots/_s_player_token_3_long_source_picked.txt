@@ -15,7 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -57,7 +57,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 Core
 EN
 RU
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
@@ -109,7 +109,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longso
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -185,7 +185,7 @@ Two-Handed
 Unique
 Upgradable
 Weapons
-Wondrous
+Wondrous Environments
 Workshop of the old armourer from the valley of mists past the N... [namelen=80 namehash=a1da31ad]
 daggerheart.com
 ЛутDaggerheart

@@ -16,7 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm2#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
@@ -39,7 +39,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     heading "КОЛДУЮЩИЙ КИНЖАЛ" [level=2]
     heading "БРОШЮРА ПО ИСТОРИИ ИСКУССТВА" [level=2]
     StaticText "Daggerheart"
-    StaticText "Dread"
+    StaticText "Dread GM Toolbox"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -84,7 +84,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-ninecard]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm2#/roll/std]
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
-      link "Supplements" [url=index.html?as=gm2#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
@@ -107,7 +107,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-ninecard]
     heading "CASTING DAGGER" [level=2]
     heading "ART HISTORY BOOKLET" [level=2]
     StaticText "Daggerheart"
-    StaticText "Dread"
+    StaticText "Dread GM Toolbox"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

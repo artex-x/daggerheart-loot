@@ -104,7 +104,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -1197,7 +1197,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',

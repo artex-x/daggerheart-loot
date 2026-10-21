@@ -16,14 +16,14 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1431 позиции - добыча, расходники и снаряжение, н..." [namelen=112 namehash=2ef1c9e3]
+    StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=113 namehash=d54a9164]
     searchbox "Поиск по названию или описанию…" [value=спальный мешок focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
@@ -117,14 +117,14 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1431 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=07a4b4f6]
+    StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=bf571e43]
     searchbox "Search by name or description…" [value=спальный мешок focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]

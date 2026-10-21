@@ -1,0 +1,211 @@
+# #/roll/mwt ~ drome
+# route: #/roll/many_worlds_tavern
+# why: the sixth realm, The Drome: 17 cards, the button picks 1-17 at random
+
+## ru :: tree
+RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart" [url=#/roll/many_worlds_tavern]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Дополнения" [url=#/roll/wondrous_environments]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Many Worlds Tavern" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=false]
+    StaticText "Выберите мир и бросьте кость по нему."
+    navigation "Дополнения"
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+    StaticText "МИР"
+    button "Спорополис" [pressed=false]
+    button "Лес Пари" [pressed=false]
+    button "Воюющие Норы" [pressed=false]
+    button "Долина Богов" [pressed=false]
+    button "Оплот Шершней" [pressed=false]
+    button "Дром" [pressed=true]
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–17)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–17"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ОСНОВНОЕ ОРУЖИЕ"
+      ... StaticText x8 of 12 same-shape siblings elided
+      link "Чакка" [description=Страница url=#/i/mw93]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Возвращающееся:"
+      StaticText " Когда это оружие брошено в пределах дистанции, оно появляется в..." [namelen=94 namehash=aa87bd9a]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Arazo's Artifacts
+Dread GM Toolbox
+EN
+Many Worlds Tavern
+RU
+The Dragon's Vault
+Vault of Ages
+Wondrous Environments
+daggerheart.com
+Альт. таблицы
+Войти
+Воюющие Норы
+Долина Богов
+Дополнения
+Дром
+К содержимому
+Как это работает
+Конфиденциальность
+Лес Пари
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Оплот Шершней
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Предметы сообществ
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–17
+Списки
+Спорополис
+Страница
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Supplements" [url=#/roll/wondrous_environments]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Many Worlds Tavern" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=false]
+    StaticText "Pick a realm and roll within it."
+    navigation "Supplements"
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Community items" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+    StaticText "REALM"
+    button "Sporopolis" [pressed=false]
+    button "Wagerwood" [pressed=false]
+    button "Warrin' Warrens" [pressed=false]
+    button "Godsvale" [pressed=false]
+    button "Hornet Hold" [pressed=false]
+    button "The Drome" [pressed=true]
+    StaticText "ROLL RESULT (1–17)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–17"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "PRIMARY WEAPON"
+      ... StaticText x8 of 12 same-shape siblings elided
+      link "Chukka" [description=Page url=#/i/mw93]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "Returning:"
+      StaticText " When this weapon is thrown within its range, it appears in your..." [namelen=99 namehash=7730571f]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Alt. tables
+Arazo's Artifacts
+Community items
+Copy image
+Copy link
+Copy name
+Copy text
+Dread GM Toolbox
+EN
+Godsvale
+Hornet Hold
+How this works
+Install as an app
+Lists
+Many Worlds Tavern
+One higher
+One lower
+Open this section on start
+Page
+Privacy
+RU
+Random 1–17
+Roll result
+Search
+Share
+Sign in
+Skip to content
+Sporopolis
+Standard rules
+Supplements
+Tables
+Terms of use
+The Dragon's Vault
+The Drome
+Vault of Ages
+Wagerwood
+Warrin' Warrens
+Wondrous Environments
+daggerheart.com
+ЛутDaggerheart

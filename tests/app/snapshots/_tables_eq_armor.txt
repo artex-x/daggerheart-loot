@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,9 +25,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -38,23 +38,23 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "112"
+    StaticText "114"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (18)" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     button "Стеганый Доспех Ранг 1 · Пороги 5/11 · Броня 3 Гибкое: +1 к Укло..." [namelen=80 namehash=1a6d1d56]
-    ... checkbox x112 of 116 same-shape siblings elided
-    ... button x109 of 113 same-shape siblings elided
+    ... checkbox x114 of 118 same-shape siblings elided
+    ... button x111 of 115 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (30)"
-    checkbox "Легендарные Латы Принца" [checked=false]
-    button "36 Легендарные Латы Принца Ранг 4 · Пороги 17/44 · Броня 8 Крепо..." [namelen=204 namehash=ca3d03d8]
+    StaticText "Выбрать все (31)"
     checkbox "Легендарная Кольчуга из Змиевой Чешуи" [checked=false]
     button "73 Легендарная Кольчуга из Змиевой Чешуи Ранг 4 · Пороги 14/38 ·..." [namelen=248 namehash=b1d90cf0]
+    checkbox "Панцирь Тарана" [checked=false]
+    button "5 Панцирь Тарана Ранг 4 · Пороги 18/48 · Броня 6 Бычье: Когда вы..." [namelen=199 namehash=02cac838]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -64,10 +64,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 12Одеяние ПосланникаРанг 2 · Пороги 11/24 · Броня 5Стоимость При... [namelen=286 namehash=e2dee282]
-142Непробиваемые ОдеянияРанг 4 · Пороги 15/38 · Броня 5Защищающе... [namelen=237 namehash=e259c09d]
-143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=297 namehash=a94aca4a]
-144Чешуя Ордена ДраконаРанг 3 · Пороги 13/31 · Броня 6Драконья ч... [namelen=276 namehash=867eceff]
-145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=163 namehash=96e791e6]
+142Непробиваемые ОдеянияРанг 4 · Пороги 15/38 · Броня 5Защищающе... [namelen=241 namehash=65bc5d47]
+143Ночной ПокровРанг 2 · Пороги 8/18 · Броня 4Теневые оковы: Ког... [namelen=301 namehash=404437b2]
+144Чешуя Ордена ДраконаРанг 3 · Пороги 13/31 · Броня 6Драконья ч... [namelen=280 namehash=e18a0613]
+145Оберег ТенейРанг 2 · Пороги 9/20 · Броня 4Укрытое тенями: Пок... [namelen=167 namehash=3981dd33]
 17Одеяния Повелителя ТруповРанг 2 · Пороги 9/19 · Броня 3Стоимос... [namelen=410 namehash=b0da6c4d]
 19Латный Доспех ДемоностражаРанг 4 · Пороги 17/44 · Броня 7Стоим... [namelen=326 namehash=973b56c2]
 24Панцирь Подземного ОбитателяРанг 2 · Пороги 10/22 · Броня 4Сто... [namelen=260 namehash=a24f855b]
@@ -83,6 +83,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 36Легендарные Латы ПринцаРанг 4 · Пороги 17/44 · Броня 8Крепость... [namelen=199 namehash=fa17e2cf]
 3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
 4Сердце Небесного ПоэтаРанг 2 · Пороги 9/20 · Броня 2Опытное: По... [namelen=170 namehash=0e59eca8]
+5Панцирь ТаранаРанг 4 · Пороги 18/48 · Броня 6Бычье: Когда вы от... [namelen=192 namehash=36478362]
+6Гибкие ЛатыРанг 3 · Пороги 10/25 · Броня 4Гибкое: Добавьте свою... [namelen=121 namehash=695d5e60]
 6Кожаный Доспех ПерфекционистаРанг 3 · Пороги 7/16 · Броня 4Безу... [namelen=226 namehash=c49d7b26]
 70Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 7/15 · Броня 3Оберега... [namelen=230 namehash=c776eff2]
 71Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=7237bb07]
@@ -105,6 +107,7 @@ daggerheart.com
 Броня
 Войти
 Вторичное
+Гибкие Латы
 Глубинный Коралловый Доспех
 Глубинный Коралловый ДоспехРанг 3 · Пороги 13/35 · Броня 6Водное... [namelen=182 namehash=1b3c357a]
 Грибной Кожаный Доспех
@@ -204,6 +207,7 @@ daggerheart.com
 Оружие
 Открывать этот раздел при запуске
 Панцирь Подземного Обитателя
+Панцирь Тарана
 Парадный Доспех Белламуа
 Парадный Доспех БелламуаРанг 3 · Пороги 11/27 · Броня 5Позолочен... [namelen=100 namehash=99628e1b]
 Пластинчатый Доспех Стража Неба
@@ -330,7 +334,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -340,9 +344,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -353,23 +357,23 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "112"
+    StaticText "114"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (18)" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     button "Gambeson Armor Tier 1 · Thresholds 5/11 · Armor 3 Flexible: +1 t..." [namelen=84 namehash=86e0c136]
-    ... checkbox x112 of 116 same-shape siblings elided
-    ... button x109 of 113 same-shape siblings elided
+    ... checkbox x114 of 118 same-shape siblings elided
+    ... button x111 of 115 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (30)"
-    checkbox "Legendary Plate of the Prince" [checked=false]
-    button "36 Legendary Plate of the Prince Tier 4 · Thresholds 17/44 · Arm..." [namelen=188 namehash=cfcd9b74]
+    StaticText "Select all (31)"
     checkbox "Legendary Wyrmscale Hauberk" [checked=false]
     button "73 Legendary Wyrmscale Hauberk Tier 4 · Thresholds 14/38 · Armor..." [namelen=216 namehash=f70552f9]
+    checkbox "Charger's Carapace" [checked=false]
+    button "5 Charger's Carapace Tier 4 · Thresholds 18/48 · Armor 6 Bullish..." [namelen=183 namehash=09ad75d4]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -379,10 +383,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 
 ## en :: controls
 12Envoy's AttireTier 2 · Thresholds 11/24 · Armor 5Recall Cost: ... [namelen=251 namehash=4ba6f07f]
-142Impervious VestmentsTier 4 · Thresholds 15/38 · Armor 5Warded... [namelen=215 namehash=e6620189]
-143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=277 namehash=a005c78d]
-144Ordo Draconis ScaleTier 3 · Thresholds 13/31 · Armor 6Dragon ... [namelen=236 namehash=b77d1998]
-145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=147 namehash=61584e08]
+142Impervious VestmentsTier 4 · Thresholds 15/38 · Armor 5Warded... [namelen=219 namehash=cb48a908]
+143NightshroudTier 2 · Thresholds 8/18 · Armor 4Shadowbind: When... [namelen=281 namehash=31e48833]
+144Ordo Draconis ScaleTier 3 · Thresholds 13/31 · Armor 6Dragon ... [namelen=240 namehash=1af864bd]
+145Ward of ShadowsTier 2 · Thresholds 9/20 · Armor 4Shrouded: Wh... [namelen=151 namehash=ca50ba69]
 17Corpse Lord's RaimentsTier 2 · Thresholds 9/19 · Armor 3Recall... [namelen=360 namehash=2789c1d4]
 19Demonguard PlatemailTier 4 · Thresholds 17/44 · Armor 7Recall ... [namelen=301 namehash=916e1970]
 24Underdweller CarapaceTier 2 · Thresholds 10/22 · Armor 4Recall... [namelen=239 namehash=2e95d7fb]
@@ -398,6 +402,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 36Legendary Plate of the PrinceTier 4 · Thresholds 17/44 · Armor... [namelen=183 namehash=3e76b4fb]
 3Frost-Kissed ArmorTier 1 · Thresholds 7/14 · Armor 3Recall Cost... [namelen=197 namehash=54905261]
 4The Sky-Poet's HeartTier 2 · Thresholds 9/20 · Armor 2Experient... [namelen=158 namehash=0cd4acc7]
+5Charger's CarapaceTier 4 · Thresholds 18/48 · Armor 6Bullish: W... [namelen=176 namehash=935d9e8b]
+6Flexible PlateTier 3 · Thresholds 10/25 · Armor 4Flexible: Add ... [namelen=124 namehash=65e6c962]
 6Perfectionist's LeathersTier 3 · Thresholds 7/16 · Armor 4Perfe... [namelen=224 namehash=8d54c954]
 70Wyrmscale HauberkTier 1 · Thresholds 7/15 · Armor 3Guarding: W... [namelen=200 namehash=a8d81d4d]
 71Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=738a8860]
@@ -450,6 +456,7 @@ Chainmail Armor
 Chainmail ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to Ev... [namelen=78 namehash=5e3d4d3e]
 Channeling Armor
 Channeling ArmorTier 4 · Thresholds 13/36 · Armor 5Channeling: +... [namelen=99 namehash=326c7706]
+Charger's Carapace
 Circle-Forged Dreadplate
 Circle-Forged DreadplateTier 4 · Thresholds 14/38 · Armor 6Accur... [namelen=224 namehash=7e650623]
 Cloverweave Cloak
@@ -480,6 +487,7 @@ Envoy's Attire
 Epidermal Robe
 Equipment
 Filters
+Flexible Plate
 Frost-Kissed Armor
 Full Fortified Armor
 Full Fortified ArmorTier 4 · Thresholds 15/40 · Armor 4Fortified... [namelen=180 namehash=1278cafb]

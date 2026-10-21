@@ -15,14 +15,14 @@ RootWebArea "Молот Грифона — Генератор лута — Dagge
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Молот Грифона" [level=1]
-    StaticText "Dragon's Vault · номер 107 "
-    link "показать в таблице" [url=#/tables/dv/dve30]
+    StaticText "The Dragon's Vault · номер 107 "
+    link "показать в таблице" [url=#/tables/dragons_vault/dve30]
     button "Страница"
     StaticText "107"
     ... StaticText x10 of 14 same-shape siblings elided
@@ -81,14 +81,14 @@ RootWebArea "Gryphon Hammer — Daggerheart Loot Generator" [url=#/i/dve30]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Gryphon Hammer" [level=1]
-    StaticText "Dragon's Vault · roll 107 "
-    link "show in the table" [url=#/tables/dv/dve30]
+    StaticText "The Dragon's Vault · roll 107 "
+    link "show in the table" [url=#/tables/dragons_vault/dve30]
     button "Page"
     StaticText "107"
     ... StaticText x10 of 14 same-shape siblings elided

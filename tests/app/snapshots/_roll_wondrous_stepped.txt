@@ -1,9 +1,9 @@
 # #/roll/wondrous ~ stepped
-# route: #/roll/wondrous
+# route: #/roll/wondrous_environments
 # why: the roll stepped up twice
 
 ## ru :: tree
-RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/roll/wondrous]
+RootWebArea "Wondrous Environments — Генератор лута — Daggerheart" [url=#/roll/wondrous_environments]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,23 +15,23 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
-    heading "Wondrous Loot" [level=1]
+    heading "Wondrous Environments" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
     button "На единицу меньше"
     textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
@@ -41,7 +41,7 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
       button "Страница"
       StaticText "3"
       StaticText "ПРЕДМЕТ"
-      StaticText "WONDROUS"
+      StaticText "WONDROUS ENVIRONMENTS"
       link "Эфироцвет" [description=Страница url=#/i/w3]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -60,13 +60,13 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
 
 ## ru :: controls
 Arazo's Artifacts
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Войти
@@ -81,13 +81,13 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Предметы сообществ
 Результат броска
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
 Случайно 1–119
-Сообщества
 Списки
 Страница
 Таблицы
@@ -96,7 +96,7 @@ daggerheart.com
 Чай Эфироцвета
 
 ## en :: tree
-RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
+RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -108,23 +108,23 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
-    heading "Wondrous Loot" [level=1]
+    heading "Wondrous Environments" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Community items" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "ROLL RESULT (1–119)"
     button "One lower"
     textbox "Roll result" [value=3 multiline=false readonly=false required=false]
@@ -134,7 +134,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
       button "Page"
       StaticText "3"
       StaticText "ITEM"
-      StaticText "WONDROUS"
+      StaticText "WONDROUS ENVIRONMENTS"
       link "Aetherflower" [description=Page url=#/i/w3]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
@@ -155,13 +155,12 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
 Aetherflower Tea
 Alt. tables
 Arazo's Artifacts
-Communities
+Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 How this works
 Install as an app
@@ -183,7 +182,8 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

@@ -1,9 +1,9 @@
 # #/tables/wondrous ~ filter link
-# route: #/tables/wondrous/f_kind-item
+# route: #/tables/wondrous_environments/f_kind-item
 # why: arriving at a filter link, which opens the panel with that value picked
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/wondrous_environments/f_kind-item]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,18 +25,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Предметы сообществ" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -56,9 +56,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     ... button x47 of 51 same-shape siblings elided
     ... checkbox x46 of 50 same-shape siblings elided
     checkbox "Призракоуловитель" [checked=false]
-    button "117 Призракоуловитель Эта шкатулка может вмещать до трёх духов н..." [namelen=295 namehash=2c109f50]
+    button "117 Призракоуловитель Эта шкатулка может вмещать до трёх духов н..." [namelen=308 namehash=eb798061]
     checkbox "Шкура Йети" [checked=false]
-    button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=282 namehash=c9dc228e]
+    button "118 Шкура Йети Пока вы носите эту шкуру, вы получаете половину у..." [namelen=295 namehash=e7794b22]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -67,65 +67,65 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-102Искажённая ЛинзаКогда вы смотрите через эту линзу, вы можете ... [namelen=249 namehash=f9c5cce2]
-105Плащ-ЗавесаПока вы носите этот плащ, вы получаете преимуществ... [namelen=319 namehash=5d88c913]
-106Капюшон Туманного ПокроваПока вы носите этот плащ, вы получае... [namelen=291 namehash=9a9fa04f]
-109Сигил Бога ВойныВы можете перенести этот узор на броню без св... [namelen=204 namehash=d24ee9af]
-112Плащ Зимнего ВолкаПока вы носите этот плащ, когда вы вынуждае... [namelen=246 namehash=e09e6d3f]
-113Оберег Вянущего КорняОдин раз за продолжительный отдых вы мож... [namelen=263 namehash=08895f59]
-116Подвеска Волчьего ДругаПока вы носите этот предмет, собаки и ... [namelen=246 namehash=911c3c43]
-117ПризракоуловительЭта шкатулка может вмещать до трёх духов неж... [namelen=291 namehash=bcbfc701]
-118Шкура ЙетиПока вы носите эту шкуру, вы получаете половину уро... [namelen=278 namehash=2b65cb0b]
-12Отвадитель ЖуковОдин раз до следующего отдыха наведите эту ант... [namelen=284 namehash=7a95ea61]
-15Тростник Трясинного СтеклаОдин раз до следующего отдыха, держа... [namelen=147 namehash=ffd90e68]
-21Пузырная ПалочкаОдин раз за продолжительный отдых вы можете ак... [namelen=259 namehash=eeed3392]
-23Усмиряющее КадилоЭто приспособление рассеивает дым, успокаиваю... [namelen=243 namehash=2e4bf586]
-26Кувшинка-ПифияВ качестве Хода Отдыха вы можете медитировать на... [namelen=240 namehash=45429806]
-30РасстроительОдин раз за продолжительный отдых вы можете потрат... [namelen=293 namehash=e196ae60]
-33Сапоги Жуткого ПлетенияПока вы носите эти сапоги, вы получаете... [namelen=150 namehash=bdc14671]
-34Осколок СновидцаВо время продолжительного отдыха вы можете исп... [namelen=342 namehash=95b3a529]
-36Чёрная НитьВы можете разматывать эту нить до 150 метров в пути... [namelen=229 namehash=1bfef12f]
-38Эфирный ЯкорьПока вы несёте этот якорь, вы можете отметить 2 С... [namelen=207 namehash=db4f8b4f]
-3ЭфироцветЭтот цветок чувствителен к магии и указывает в направл... [namelen=225 namehash=d51ca413]
-40МерцацветПока вы несёте этот цветок, вы получаете преимущество... [namelen=186 namehash=2f7f9605]
-41Гравитационная ПривязьПока вы носите этот пояс, вы получаете п... [namelen=226 namehash=b335cdd3]
-46Полотенце ПутешественникаПока вы знаете, где находится это пол... [namelen=289 namehash=8171b6fc]
-47Ледяные РукавицыКогда вы берёте снег в эти рукавицы, вы можете... [namelen=172 namehash=e8094a09]
-48Мел ЗаклинателяВы можете начертить заклинание из вашей Руки на... [namelen=261 namehash=8f9a80f2]
-49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=355 namehash=691d5d78]
-4Алконитовый КристаллВы можете использовать энергию этого криста... [namelen=249 namehash=a363f6e1]
-50Фонарь ТенейПока вы используете этот фонарь, вы можете распозн... [namelen=266 namehash=c7a9c474]
-55Громовой СкарабейКогда вы получаете электрический урон, вы мож... [namelen=249 namehash=3c76e897]
-56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=221 namehash=9365b7da]
-59Маска ПодражателяПока вы носите эту маску, один раз за сцену в... [namelen=343 namehash=e5ea7d06]
-5Удерживающий КрюкКогда вы совершаете Бросок Реакции, чтобы избе... [namelen=225 namehash=e866eceb]
-64Гроссбух ПервопроходцаЕсли вы записываете свой путь в эту книг... [namelen=248 namehash=7cc09e1f]
-6Древний Рунный КаменьОбведите пальцем эту забытую руну и потрат... [namelen=231 namehash=e592be3d]
-71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
-72Чистый КристаллОдин раз за сессию, когда вы используете свойст... [namelen=142 namehash=ca11a32d]
-73Перо ПамятиВы можете написать до ста слов этим пером в качеств... [namelen=248 namehash=fae9ebb2]
-75Красный Нос НадеждыПока вы носите этот нос, вы получаете преим... [namelen=254 namehash=af187e2c]
-76Перчатка КорнерезаВы получаете преимущество на атаки и Броски ... [namelen=198 namehash=5466bac7]
-81Камень СиреныЕсли вы помещаете этот выщербленный, покрытый рак... [namelen=363 namehash=26407f37]
-83Факел ДушиЭтот факел горит холодным магическим огнём, пока вы ... [namelen=213 namehash=d3792eda]
-84Душетканый ПлащПока вы носите этот плащ, один раз за продолжит... [namelen=349 namehash=4ac44c23]
-86Искатель ДуховВытяните этот ивовый жезл и потратьте Надежду, ч... [namelen=187 namehash=d9166c99]
-89Робы ЖалозащитыПока вы носите эту одежду, защищающую от насеко... [namelen=238 namehash=19d051bf]
-91Превосходный Алконитовый КристаллВы можете использовать энерги... [namelen=341 namehash=1304865c]
-92Сухожилие ТарраскаКогда вы натягиваете лук этой мощной тетивой... [namelen=222 namehash=b8e51091]
-93Сумочка КассираКошель может вместить горсть золота. Когда вы и... [namelen=208 namehash=01ab6fa1]
-94ВремястеклоОдин раз за сессию вы можете смотреть в эту подзорн... [namelen=221 namehash=f88a8591]
-97Рог ЧерепахиЕсли вы используете этот костяной фрагмент как нав... [namelen=252 namehash=56988e4f]
+102Искажённая ЛинзаКогда вы смотрите через эту линзу, вы можете ... [namelen=262 namehash=630477b7]
+105Плащ-ЗавесаПока вы носите этот плащ, вы получаете преимуществ... [namelen=332 namehash=efa0b766]
+106Капюшон Туманного ПокроваПока вы носите этот плащ, вы получае... [namelen=304 namehash=cde449d7]
+109Сигил Бога ВойныВы можете перенести этот узор на броню без св... [namelen=217 namehash=8eadda0c]
+112Плащ Зимнего ВолкаПока вы носите этот плащ, когда вы вынуждае... [namelen=259 namehash=7c54b223]
+113Оберег Вянущего КорняОдин раз за продолжительный отдых вы мож... [namelen=276 namehash=c925ee88]
+116Подвеска Волчьего ДругаПока вы носите этот предмет, собаки и ... [namelen=259 namehash=46a343af]
+117ПризракоуловительЭта шкатулка может вмещать до трёх духов неж... [namelen=304 namehash=f0cf08ca]
+118Шкура ЙетиПока вы носите эту шкуру, вы получаете половину уро... [namelen=291 namehash=9fef894b]
+12Отвадитель ЖуковОдин раз до следующего отдыха наведите эту ант... [namelen=297 namehash=0891f9ba]
+15Тростник Трясинного СтеклаОдин раз до следующего отдыха, держа... [namelen=160 namehash=45f53aa5]
+21Пузырная ПалочкаОдин раз за продолжительный отдых вы можете ак... [namelen=272 namehash=9ef655bc]
+23Усмиряющее КадилоЭто приспособление рассеивает дым, успокаиваю... [namelen=256 namehash=8b6d5fc3]
+26Кувшинка-ПифияВ качестве Хода Отдыха вы можете медитировать на... [namelen=253 namehash=e06a3f40]
+30РасстроительОдин раз за продолжительный отдых вы можете потрат... [namelen=306 namehash=eff08a57]
+33Сапоги Жуткого ПлетенияПока вы носите эти сапоги, вы получаете... [namelen=163 namehash=0a6d573a]
+34Осколок СновидцаВо время продолжительного отдыха вы можете исп... [namelen=355 namehash=7889522a]
+36Чёрная НитьВы можете разматывать эту нить до 150 метров в пути... [namelen=242 namehash=e195928d]
+38Эфирный ЯкорьПока вы несёте этот якорь, вы можете отметить 2 С... [namelen=220 namehash=38b7087a]
+3ЭфироцветЭтот цветок чувствителен к магии и указывает в направл... [namelen=238 namehash=590f51d2]
+40МерцацветПока вы несёте этот цветок, вы получаете преимущество... [namelen=199 namehash=d6f26a20]
+41Гравитационная ПривязьПока вы носите этот пояс, вы получаете п... [namelen=239 namehash=25949517]
+46Полотенце ПутешественникаПока вы знаете, где находится это пол... [namelen=302 namehash=6804add2]
+47Ледяные РукавицыКогда вы берёте снег в эти рукавицы, вы можете... [namelen=185 namehash=83c6644b]
+48Мел ЗаклинателяВы можете начертить заклинание из вашей Руки на... [namelen=274 namehash=b514b1e3]
+49Стопорный КлючПри успешном Броске Искусности вставьте этот инс... [namelen=368 namehash=73df351e]
+4Алконитовый КристаллВы можете использовать энергию этого криста... [namelen=262 namehash=9f6f11c9]
+50Фонарь ТенейПока вы используете этот фонарь, вы можете распозн... [namelen=279 namehash=6768bd86]
+55Громовой СкарабейКогда вы получаете электрический урон, вы мож... [namelen=262 namehash=8cc25ddd]
+56Жуки-ВлюблённыеПоместите одного из этих керамических жуков в л... [namelen=234 namehash=d37bd2e7]
+59Маска ПодражателяПока вы носите эту маску, один раз за сцену в... [namelen=356 namehash=ec29197c]
+5Удерживающий КрюкКогда вы совершаете Бросок Реакции, чтобы избе... [namelen=238 namehash=d7df9fd2]
+64Гроссбух ПервопроходцаЕсли вы записываете свой путь в эту книг... [namelen=261 namehash=5511160e]
+6Древний Рунный КаменьОбведите пальцем эту забытую руну и потрат... [namelen=244 namehash=f7cb5f6b]
+71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=280 namehash=b2a24d54]
+72Чистый КристаллОдин раз за сессию, когда вы используете свойст... [namelen=155 namehash=1562c7f0]
+73Перо ПамятиВы можете написать до ста слов этим пером в качеств... [namelen=261 namehash=9c5c80c1]
+75Красный Нос НадеждыПока вы носите этот нос, вы получаете преим... [namelen=267 namehash=a126f74d]
+76Перчатка КорнерезаВы получаете преимущество на атаки и Броски ... [namelen=211 namehash=059fbfc8]
+81Камень СиреныЕсли вы помещаете этот выщербленный, покрытый рак... [namelen=376 namehash=027ebf41]
+83Факел ДушиЭтот факел горит холодным магическим огнём, пока вы ... [namelen=226 namehash=addee74b]
+84Душетканый ПлащПока вы носите этот плащ, один раз за продолжит... [namelen=362 namehash=7fc7f59e]
+86Искатель ДуховВытяните этот ивовый жезл и потратьте Надежду, ч... [namelen=200 namehash=69c325a4]
+89Робы ЖалозащитыПока вы носите эту одежду, защищающую от насеко... [namelen=251 namehash=5d9a0279]
+91Превосходный Алконитовый КристаллВы можете использовать энерги... [namelen=354 namehash=39d2fd7b]
+92Сухожилие ТарраскаКогда вы натягиваете лук этой мощной тетивой... [namelen=235 namehash=a62efb0d]
+93Сумочка КассираКошель может вместить горсть золота. Когда вы и... [namelen=221 namehash=09be0e54]
+94ВремястеклоОдин раз за сессию вы можете смотреть в эту подзорн... [namelen=234 namehash=6c5d3a7c]
+97Рог ЧерепахиЕсли вы используете этот костяной фрагмент как нав... [namelen=265 namehash=1313472c]
 Arazo's Artifacts
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 Алконитовый Кристалл
 Альт. таблицы
@@ -167,6 +167,7 @@ daggerheart.com
 Полотенце Путешественника
 Превосходный Алконитовый Кристалл
 Предметы
+Предметы сообществ
 Призракоуловитель
 Прочее
 Пузырная Палочка
@@ -179,7 +180,6 @@ daggerheart.com
 Сеткой
 Сигил Бога Войны
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -204,7 +204,7 @@ daggerheart.com
 Эфироцвет
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kind-item]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous_environments/f_kind-item]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -216,7 +216,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -226,18 +226,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Community items" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -257,9 +257,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     ... button x47 of 51 same-shape siblings elided
     ... checkbox x46 of 50 same-shape siblings elided
     checkbox "Wraith Trap" [checked=false]
-    button "117 Wraith Trap This box can hold up to three undead spirits. Yo..." [namelen=285 namehash=3a2cad99]
+    button "117 Wraith Trap This box can hold up to three undead spirits. Yo..." [namelen=298 namehash=2a6dd81a]
     checkbox "Yeti Coat" [checked=false]
-    button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=239 namehash=3040652f]
+    button "118 Yeti Coat While wearing this coat you take half damage from ..." [namelen=252 namehash=f9dcdaaa]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -268,55 +268,55 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/wondrous/f_kin
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
-102Twisted LensWhen you look through this lens, you can see into... [namelen=231 namehash=e7db1354]
-105VeilcloakWhile wearing this, you have advantage on Finesse Ro... [namelen=262 namehash=36cd6338]
-106Veilshroud HoodWhile wearing this cloak you have advantage on... [namelen=289 namehash=fe0937a4]
-109War God's SigilYou can transfer this design onto armor that d... [namelen=224 namehash=be0fcbde]
-112Winter Wolf CloakWhile wearing this cloak, when you cause an ... [namelen=223 namehash=c139aa55]
-113Witherroot CharmOnce per long rest, you can ignore all damage... [namelen=223 namehash=34e39e1d]
-116Wolffriend PendantWhile wearing this item, dogs and wolves wi... [namelen=197 namehash=17f3dd41]
-117Wraith TrapThis box can hold up to three undead spirits. You ... [namelen=281 namehash=973d3f5e]
-118Yeti CoatWhile wearing this coat you take half damage from ex... [namelen=235 namehash=71c755d7]
-12Big Bug BegoneOnce per rest, point this giant beetle antenna a... [namelen=253 namehash=a926dd64]
-15Bogglass ReedOnce per rest, while holding this reed, you can t... [namelen=120 namehash=971841e9]
-21Bubble WandOnce per long rest, you can activate this wand with... [namelen=230 namehash=e3776509]
-23Calming CenserThis contraption disperses smoke that calms inse... [namelen=224 namehash=509ce1ec]
-26Croakroot PadAs a downtime move you can meditate on this pad t... [namelen=218 namehash=0def3853]
-30DetunerOnce per long rest, you can spend a Hope to activate th... [namelen=230 namehash=0e3415b3]
-33Dread-Weave BootsWhile wearing these boots, you have resistanc... [namelen=135 namehash=dfea2a54]
-34Dreamer's ShardDuring a long rest, you can use this crystal to... [namelen=286 namehash=52bf4e14]
-36Ebony ThreadYou can unspool this thread up to 500 feet as you ... [namelen=233 namehash=1d3a5d96]
-38Etheric AnchorWhile carrying this anchor you can mark 2 Stress... [namelen=191 namehash=ad93f4a9]
-3AetherflowerThis flower is sensitive to magic, and will point i... [namelen=240 namehash=e7e09b6e]
-40FlickerbloomWhile carrying this flower, you have advantage on ... [namelen=177 namehash=7d8edbb9]
-41Gravitic TetherWhile wearing this belt, you take half damage f... [namelen=205 namehash=19451c14]
-46Hitcher's TowelAs long as you know where this towel is, your H... [namelen=243 namehash=0639efcf]
-47Ice GlovesWhen you pick up snow with these gloves you can form... [namelen=154 namehash=93b69e84]
-48Incantor's ChalkYou can inscribe a spell in your loadout onto ... [namelen=241 namehash=60ef36ba]
-49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=335 namehash=b33f324c]
-4Alconite CrystalYou can expend the energy in this crystal to ga... [namelen=219 namehash=8db1a319]
-50Lantern of ShadowsWhile using this lantern, you can determine ... [namelen=248 namehash=92b156df]
-55Lightning ScarabWhen you're hit by electrical damage, you can ... [namelen=255 namehash=c7e50a53]
-56LovebugsPlace one of these ceramic bugs in any location. When ... [namelen=198 namehash=de0fcbdb]
-59Mimicry MaskWhile wearing this mask, once per scene you can mi... [namelen=313 namehash=b022bee9]
-5Anchoring HookWhen you make a reaction roll to avoid being move... [namelen=211 namehash=2abef25e]
-64Pathfinder's LedgerIf you scribe your path into this book as y... [namelen=244 namehash=abd1720d]
-6Ancient RunestoneTrace this forgotten rune with your finger and... [namelen=217 namehash=2820e3f9]
-71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
-72Pure CrystalOnce per session, when you use a feature that rest... [namelen=125 namehash=666ea671]
-73Quill of MemoryYou can write up to a hundred words with this q... [namelen=237 namehash=88aef944]
-75Red Nose of HopeWhile wearing this nose you have advantage on ... [namelen=211 namehash=8d482697]
-76Rootslicer GauntletYou have advantage on attacks and Reaction ... [namelen=177 namehash=2d7851e2]
-81Siren's RockIf you place this weathered and barnacle-laden sto... [namelen=310 namehash=71c70644]
-83Soul TorchThis torch burns with a cold, magical fire whenever ... [namelen=206 namehash=29ee1147]
-84Soulweave CloakWhile wearing this cloak, once per long rest yo... [namelen=329 namehash=af750432]
-86Spirit SeekerHold out this willow wand and spend a Hope to sen... [namelen=166 namehash=471d2848]
-89Stingshield RobesWhile wearing these bug-resistant clothes, un... [namelen=240 namehash=cc10d51b]
-91Superior Alconite CrystalYou can use the energy in this crysta... [namelen=280 namehash=c9440788]
-92Tarrasque SinewWhen you string a bow with this powerful cord, ... [namelen=212 namehash=81c127d5]
-93Ticket Master's PouchThe pouch can hold a handful of gold. Whe... [namelen=222 namehash=81b55cbb]
-94TimeglassOnce per session, you can look through this spyglass ... [namelen=209 namehash=d096f2d6]
-97Tortoise HornIf you use this bony fragment as a pommel for a w... [namelen=280 namehash=985e0ee0]
+102Twisted LensWhen you look through this lens, you can see into... [namelen=244 namehash=1cfbf84d]
+105VeilcloakWhile wearing this, you have advantage on Finesse Ro... [namelen=275 namehash=8ba30d70]
+106Veilshroud HoodWhile wearing this cloak you have advantage on... [namelen=302 namehash=b300a95e]
+109War God's SigilYou can transfer this design onto armor that d... [namelen=237 namehash=8ccaf297]
+112Winter Wolf CloakWhile wearing this cloak, when you cause an ... [namelen=236 namehash=fb1fa6eb]
+113Witherroot CharmOnce per long rest, you can ignore all damage... [namelen=236 namehash=8ea5daf8]
+116Wolffriend PendantWhile wearing this item, dogs and wolves wi... [namelen=210 namehash=1c38363d]
+117Wraith TrapThis box can hold up to three undead spirits. You ... [namelen=294 namehash=9f32d99c]
+118Yeti CoatWhile wearing this coat you take half damage from ex... [namelen=248 namehash=71c71c2f]
+12Big Bug BegoneOnce per rest, point this giant beetle antenna a... [namelen=266 namehash=80f0be0a]
+15Bogglass ReedOnce per rest, while holding this reed, you can t... [namelen=133 namehash=357ebeb9]
+21Bubble WandOnce per long rest, you can activate this wand with... [namelen=243 namehash=9920cd02]
+23Calming CenserThis contraption disperses smoke that calms inse... [namelen=237 namehash=f3d46744]
+26Croakroot PadAs a downtime move you can meditate on this pad t... [namelen=231 namehash=c4d9172f]
+30DetunerOnce per long rest, you can spend a Hope to activate th... [namelen=243 namehash=4f9d92c2]
+33Dread-Weave BootsWhile wearing these boots, you have resistanc... [namelen=148 namehash=a50c1d14]
+34Dreamer's ShardDuring a long rest, you can use this crystal to... [namelen=299 namehash=9fa16860]
+36Ebony ThreadYou can unspool this thread up to 500 feet as you ... [namelen=246 namehash=2cade7d7]
+38Etheric AnchorWhile carrying this anchor you can mark 2 Stress... [namelen=204 namehash=deacc19b]
+3AetherflowerThis flower is sensitive to magic, and will point i... [namelen=253 namehash=e9e2312f]
+40FlickerbloomWhile carrying this flower, you have advantage on ... [namelen=190 namehash=e72f42e4]
+41Gravitic TetherWhile wearing this belt, you take half damage f... [namelen=218 namehash=59674903]
+46Hitcher's TowelAs long as you know where this towel is, your H... [namelen=256 namehash=7517a6e5]
+47Ice GlovesWhen you pick up snow with these gloves you can form... [namelen=167 namehash=9bad71ec]
+48Incantor's ChalkYou can inscribe a spell in your loadout onto ... [namelen=254 namehash=14a785bc]
+49Jamming SpannerMake a successful Finesse Roll to place this to... [namelen=348 namehash=870c7b7b]
+4Alconite CrystalYou can expend the energy in this crystal to ga... [namelen=232 namehash=8c31dd88]
+50Lantern of ShadowsWhile using this lantern, you can determine ... [namelen=261 namehash=9a5a50d1]
+55Lightning ScarabWhen you're hit by electrical damage, you can ... [namelen=268 namehash=0f94fe35]
+56LovebugsPlace one of these ceramic bugs in any location. When ... [namelen=211 namehash=d366d762]
+59Mimicry MaskWhile wearing this mask, once per scene you can mi... [namelen=326 namehash=62e157fd]
+5Anchoring HookWhen you make a reaction roll to avoid being move... [namelen=224 namehash=156785c2]
+64Pathfinder's LedgerIf you scribe your path into this book as y... [namelen=257 namehash=26e6de24]
+6Ancient RunestoneTrace this forgotten rune with your finger and... [namelen=230 namehash=cff25f4a]
+71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=289 namehash=f7f4f494]
+72Pure CrystalOnce per session, when you use a feature that rest... [namelen=138 namehash=909efecf]
+73Quill of MemoryYou can write up to a hundred words with this q... [namelen=250 namehash=c2abacfa]
+75Red Nose of HopeWhile wearing this nose you have advantage on ... [namelen=224 namehash=3bd6d1e5]
+76Rootslicer GauntletYou have advantage on attacks and Reaction ... [namelen=190 namehash=5ac77a70]
+81Siren's RockIf you place this weathered and barnacle-laden sto... [namelen=323 namehash=bd5ca7a6]
+83Soul TorchThis torch burns with a cold, magical fire whenever ... [namelen=219 namehash=2ba787eb]
+84Soulweave CloakWhile wearing this cloak, once per long rest yo... [namelen=342 namehash=02faaa45]
+86Spirit SeekerHold out this willow wand and spend a Hope to sen... [namelen=179 namehash=4eb8b3cd]
+89Stingshield RobesWhile wearing these bug-resistant clothes, un... [namelen=253 namehash=642a1711]
+91Superior Alconite CrystalYou can use the energy in this crysta... [namelen=293 namehash=1ada5c70]
+92Tarrasque SinewWhen you string a bow with this powerful cord, ... [namelen=225 namehash=783c1946]
+93Ticket Master's PouchThe pouch can hold a handful of gold. Whe... [namelen=235 namehash=70871981]
+94TimeglassOnce per session, you can look through this spyglass ... [namelen=222 namehash=9d78142e]
+97Tortoise HornIf you use this bony fragment as a pommel for a w... [namelen=293 namehash=b5f1aa2c]
 Aetherflower
 Alconite Crystal
 Alt. tables
@@ -327,12 +327,11 @@ Big Bug Begone
 Bogglass Reed
 Bubble Wand
 Calming Censer
-Communities
+Community items
 Consumables
 Core
 Croakroot Pad
 Detuner
-Dragon's Vault
 Dread GM Toolbox
 Dread-Weave Boots
 Dreamer's Shard
@@ -387,6 +386,7 @@ Supplements
 Tables
 Tarrasque Sinew
 Terms of use
+The Dragon's Vault
 Ticket Master's Pouch
 Timeglass
 Tortoise Horn
@@ -398,7 +398,7 @@ War God's Sigil
 Winter Wolf Cloak
 Witherroot Charm
 Wolffriend Pendant
-Wondrous Loot
+Wondrous Environments
 Wraith Trap
 Yeti Coat
 daggerheart.com

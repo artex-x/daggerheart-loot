@@ -15,14 +15,14 @@ RootWebArea "Мицелиевый Плащ — Генератор лута — D
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Мицелиевый Плащ" [level=1]
     StaticText "Many Worlds Tavern · Спорополис · номер 9 "
-    link "показать в таблице" [url=#/tables/mwt/mw9]
+    link "показать в таблице" [url=#/tables/many_worlds_tavern/mw9]
     button "Страница"
     StaticText "9"
     ... StaticText x3 of 7 same-shape siblings elided
@@ -84,14 +84,14 @@ RootWebArea "Mycelial Cloak — Daggerheart Loot Generator" [url=#/i/mw9]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Mycelial Cloak" [level=1]
     StaticText "Many Worlds Tavern · Sporopolis · roll 9 "
-    link "show in the table" [url=#/tables/mwt/mw9]
+    link "show in the table" [url=#/tables/many_worlds_tavern/mw9]
     button "Page"
     StaticText "9"
     ... StaticText x3 of 7 same-shape siblings elided

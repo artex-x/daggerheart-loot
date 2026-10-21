@@ -16,7 +16,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -26,9 +26,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
-    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=index.html?as=gm1#/tables/alt_item]
-    link "Дополнения" [url=index.html?as=gm1#/tables/wondrous]
+    link "Дополнения" [url=index.html?as=gm1#/tables/wondrous_environments]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
@@ -47,8 +47,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     checkbox "Выбрать все (91)" [checked=false]
     checkbox "Палаш" [checked=false]
     button "Ранг 1 Палаш Broadsword"
-    ... checkbox x454 of 458 same-shape siblings elided
-    ... button x450 of 454 same-shape siblings elided
+    ... checkbox x459 of 463 same-shape siblings elided
+    ... button x455 of 459 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
@@ -124,6 +124,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 1Верная МотыгаTrusty Cultivator
 1Искатель ВраговFoeseeker
 1Нестареющее Око ЗверяThe Ageless Eye of the Beast
+1Одолженная ЛапаLent Leg
+1ЧаккаChukka
 1Эфирная ВинтовкаAether Rifle
 20Железный КонстебльIron Constable
 20Улучшенный Лук из Эльфийских ВолосImproved Elfhair Bow
@@ -141,8 +143,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 29Святой КлинокSaintly Blade
 2Бабушкина СкалкаGrandma's Rolling Pin
 2Животворная СабляGenerative Cutlass
+2Клинки БогомолаMantis Blades
 2Клинок ЖивущихBlade of the Living
 2Рассекатель НебесSkycutter
+2Скрт-ПалкаSkrtstick
 2Улучшенное Нестареющее Око ЗверяImproved Ageless Eye of the Bea... [namelen=66 namehash=18a1d081]
 30Крушитель МонолитовMonolith Smasher
 30ТенерубShadowcull
@@ -163,6 +167,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 3Кулаки РазорителяFists of the Ravager
 3Посох Полого КамняHollowstone Staff
 3Посох УченикаStudent's Staff
+3Пробиватель ЛатPlate Piercer
 3Продвинутое Нестареющее Око ЗверяAdvanced Ageless Eye of the Be... [namelen=67 namehash=981e63b1]
 3ШугалкаThe Scrammer
 40Легендарный Жезл СопротивленияLegendary Rod of Resistance
@@ -342,6 +347,7 @@ daggerheart.com
 Кислотное Лезвие
 Клевец
 Клеймор Дуговой Молнии
+Клинки Богомола
 Клинки-Когти
 Клинковый Кнут
 Клинок Браксуса
@@ -476,6 +482,7 @@ daggerheart.com
 Нимойрас
 Обоюдоострый Меч
 Обычные правила
+Одолженная Лапа
 Оружие
 Открывать этот раздел при запуске
 Падение Природы
@@ -513,6 +520,7 @@ daggerheart.com
 Поющий Меч
 Праща Феникса
 Призрачный Клинок
+Пробиватель Лат
 Пробник
 Продвинутая Алебарда
 Продвинутая Алебарда Урзо
@@ -894,6 +902,7 @@ daggerheart.com
 Скипетр Инея
 Скипетр Элиаса
 Скопировать ссылку на этот раздел
+Скрт-Палка
 Снакс
 Снаряжение
 Снежный Клинок
@@ -993,6 +1002,7 @@ daggerheart.com
 Хладноклинок
 Хоумбрю
 Церебральный Шип
+Чакка
 Часовой Арбалет
 Шип Дриады
 Шипастый Лук
@@ -1017,7 +1027,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -1027,9 +1037,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
-    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
     link "Alt. tables" [url=index.html?as=gm1#/tables/alt_item]
-    link "Supplements" [url=index.html?as=gm1#/tables/wondrous]
+    link "Supplements" [url=index.html?as=gm1#/tables/wondrous_environments]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
@@ -1048,8 +1058,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     checkbox "Select all (91)" [checked=false]
     checkbox "Broadsword" [checked=false]
     button "Tier 1 Broadsword Палаш"
-    ... checkbox x454 of 458 same-shape siblings elided
-    ... button x450 of 454 same-shape siblings elided
+    ... checkbox x459 of 463 same-shape siblings elided
+    ... button x455 of 459 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
@@ -1123,7 +1133,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 19Meat CleaverМясницкий Тесак
 1Aether RifleЭфирная Винтовка
 1Blessed Chef's KnifeБлагословенный Нож Шеф-Повара
+1ChukkaЧакка
 1FoeseekerИскатель Врагов
+1Lent LegОдолженная Лапа
 1The Ageless Eye of the BeastНестареющее Око Зверя
 1Trusty CultivatorВерная Мотыга
 20Improved Elfhair BowУлучшенный Лук из Эльфийских Волос
@@ -1144,6 +1156,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 2Generative CutlassЖивотворная Сабля
 2Grandma's Rolling PinБабушкина Скалка
 2Improved Ageless Eye of the BeastУлучшенное Нестареющее Око Зве... [namelen=66 namehash=8ac1a1d0]
+2Mantis BladesКлинки Богомола
+2SkrtstickСкрт-Палка
 2SkycutterРассекатель Небес
 30Improved Phoenix SlingУлучшенная Праща Феникса
 30Monolith SmasherКрушитель Монолитов
@@ -1164,6 +1178,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 3Hole-y BladeДырявый Клинок
 3Hollowstone StaffПосох Полого Камня
 3Longbow of FyrДлинный Лук Фира
+3Plate PiercerПробиватель Лат
 3Student's StaffПосох Ученика
 3The ScrammerШугалка
 40Legendary Rod of ResistanceЛегендарный Жезл Сопротивления
@@ -1337,6 +1352,7 @@ Casting Sword
 Cerebral Spike
 Chained Scythe
 Chillblade
+Chukka
 Claws of Yifang
 Cleaver
 Clockwork Crossbow
@@ -1563,6 +1579,7 @@ Legendary Warhammer
 Legendary Warhammer of Baz
 Legendary Whipsword
 Legendary Wyverntail Whip
+Lent Leg
 Leviathan Harpoon
 Life Wand
 Link to this table
@@ -1574,6 +1591,7 @@ Longsword
 Mace
 Mage Orb
 Magus Revolver
+Mantis Blades
 Many-Hit Mangler
 Meat Cleaver
 Meridian Cutlass
@@ -1590,6 +1608,7 @@ Open this section on start
 Other
 Phoenix Sling
 Pitchfork
+Plate Piercer
 Platinum Estoc
 Privacy
 Quarterstaff
@@ -1635,6 +1654,7 @@ Sickle
 Singing Sword
 Siphoning Gauntlets
 Skip to content
+Skrtstick
 Sky Gnome Pickaxe
 Skycutter
 Sledge Axe

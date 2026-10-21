@@ -16,7 +16,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     navigation "Разделы"
       link "Обычные правила" [url=index.html?today=2026-10-26#/roll/std]
       link "Альт. таблицы" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Дополнения" [url=index.html?today=2026-10-26#/roll/wondrous]
+      link "Дополнения" [url=index.html?today=2026-10-26#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
   main ""
@@ -79,7 +79,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?today=2026-10
     navigation "Sections"
       link "Standard rules" [url=index.html?today=2026-10-26#/roll/std]
       link "Alt. tables" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Supplements" [url=index.html?today=2026-10-26#/roll/wondrous]
+      link "Supplements" [url=index.html?today=2026-10-26#/roll/wondrous_environments]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
       link "Search" [url=index.html?today=2026-10-26#/search]
   main ""

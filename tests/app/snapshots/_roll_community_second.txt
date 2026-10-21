@@ -1,9 +1,9 @@
 # #/roll/community ~ second
-# route: #/roll/community
+# route: #/roll/community_items
 # why: a community other than the one it opens on
 
 ## ru :: tree
-RootWebArea "Сообщества — Генератор лута — Daggerheart" [url=#/roll/community]
+RootWebArea "Предметы сообществ — Генератор лута — Daggerheart" [url=#/roll/community_items]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,13 +25,13 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
     navigation "Дополнения"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "СООБЩЕСТВО"
     button "Великородное" [pressed=false]
     button "Научное" [pressed=true]
@@ -65,13 +65,13 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
 
 ## ru :: controls
 Arazo's Artifacts
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Бросить d10
@@ -96,12 +96,12 @@ daggerheart.com
 Отправить
 Подземное
 Поиск
+Предметы сообществ
 Результат броска
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Сообщества
 Списки
 Страница
 Таблицы
@@ -109,7 +109,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
+RootWebArea "Community items — Daggerheart Loot Generator" [url=#/roll/community_items]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -121,7 +121,7 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -131,13 +131,13 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
     button "How this works" [description=How this works expanded=false]
     StaticText "Pick an origin and roll d10."
     navigation "Supplements"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Community items" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "COMMUNITY"
     button "Highborne" [pressed=false]
     button "Loreborne" [pressed=true]
@@ -172,13 +172,12 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
 ## en :: controls
 Alt. tables
 Arazo's Artifacts
-Communities
+Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Highborne
 How this works
@@ -206,10 +205,11 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Underborne
 Vault of Ages
 Wanderborne
 Wildborne
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

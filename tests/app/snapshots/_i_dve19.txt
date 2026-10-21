@@ -15,14 +15,14 @@ RootWebArea "Уголёк — Генератор лута — Daggerheart" [url=
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Уголёк" [level=1]
-    StaticText "Dragon's Vault · номер 96 "
-    link "показать в таблице" [url=#/tables/dv/dve19]
+    StaticText "The Dragon's Vault · номер 96 "
+    link "показать в таблице" [url=#/tables/dragons_vault/dve19]
     button "Страница"
     StaticText "96"
     ... StaticText x20 of 24 same-shape siblings elided
@@ -83,14 +83,14 @@ RootWebArea "Ember — Daggerheart Loot Generator" [url=#/i/dve19]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Ember" [level=1]
-    StaticText "Dragon's Vault · roll 96 "
-    link "show in the table" [url=#/tables/dv/dve19]
+    StaticText "The Dragon's Vault · roll 96 "
+    link "show in the table" [url=#/tables/dragons_vault/dve19]
     button "Page"
     StaticText "96"
     ... StaticText x20 of 24 same-shape siblings elided

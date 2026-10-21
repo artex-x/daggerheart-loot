@@ -62,10 +62,11 @@ across.
   seven chips the panel measures 206 px at 360, 206 px in Russian and 162 px in
   English at 390, 119 px at 768 and 75 px at 1180 (measured 2026-10-21 on a
   static page with the app's chip CSS). On a 360x740 phone the top of the roll
-  button then sits at about 567 px on Wondrous Environments (all of it shows),
-  712 px on Many Worlds Tavern (28 px show), 734 px on Vault of Ages in Russian
-  (6 px show, accepted by the owner, 2026-10-21) and 799 px on Community items,
-  below the fold (accepted by the owner, 2026-10-20).
+  button sits, in the built app (measured 2026-10-21, Russian / English), at
+  611 / 588 px on Wondrous Environments (all of it shows), 711 / 653 px on Many
+  Worlds Tavern (29 px show in Russian), 734 / 667 px on Vault of Ages (6 px show
+  in Russian, accepted by the owner, 2026-10-21) and 799 / 755 px on Community
+  items, below the fold (accepted by the owner, 2026-10-20).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.

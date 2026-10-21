@@ -15,14 +15,14 @@ RootWebArea "Узы Души — Генератор лута — Daggerheart" [u
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Узы Души" [level=1]
     StaticText "Vault of Ages · Артефакт · номер 1 "
-    link "показать в таблице" [url=#/tables/voa/voa2_a1]
+    link "показать в таблице" [url=#/tables/vault_of_ages/voa2_a1]
     button "Страница"
     StaticText "1"
     ... StaticText x15 of 19 same-shape siblings elided
@@ -81,14 +81,14 @@ RootWebArea "Anima Colligationem — Daggerheart Loot Generator" [url=#/i/voa2_a
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Anima Colligationem" [level=1]
     StaticText "Vault of Ages · Artifact · roll 1 "
-    link "show in the table" [url=#/tables/voa/voa2_a1]
+    link "show in the table" [url=#/tables/vault_of_ages/voa2_a1]
     button "Page"
     StaticText "1"
     ... StaticText x15 of 19 same-shape siblings elided

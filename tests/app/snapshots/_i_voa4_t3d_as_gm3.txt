@@ -16,14 +16,14 @@ RootWebArea "Святой Щит — Генератор лута — Daggerheart
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Святой Щит" [level=1]
     StaticText "Vault of Ages · номер 28 "
-    link "показать в таблице" [url=index.html?as=gm3#/tables/voa/voa4_t3d]
+    link "показать в таблице" [url=index.html?as=gm3#/tables/vault_of_ages/voa4_t3d]
     button "Страница"
     StaticText "28"
     ... StaticText x23 of 27 same-shape siblings elided
@@ -94,14 +94,14 @@ RootWebArea "Saintly Guard — Daggerheart Loot Generator" [url=index.html?as=gm
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Saintly Guard" [level=1]
     StaticText "Vault of Ages · roll 28 "
-    link "show in the table" [url=index.html?as=gm3#/tables/voa/voa4_t3d]
+    link "show in the table" [url=index.html?as=gm3#/tables/vault_of_ages/voa4_t3d]
     button "Page"
     StaticText "28"
     ... StaticText x23 of 27 same-shape siblings elided

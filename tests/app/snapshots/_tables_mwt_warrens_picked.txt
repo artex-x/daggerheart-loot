@@ -1,9 +1,9 @@
 # #/tables/mwt ~ warrens picked
-# route: #/tables/mwt
+# route: #/tables/many_worlds_tavern
 # why: the filter panel open with its kind and realm rows, Warrin' Warrens picked: 21 rows
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/mwt/f_realm-warrens]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/many_worlds_tavern/f_realm-warrens]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,18 +25,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Предметы сообществ" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -45,13 +45,13 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Воюющие Норы" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "21 из 81"
+    StaticText "21 из 109"
     ... StaticText x3 of 7 same-shape siblings elided
     button "Предметы" [pressed=false]
-    ... button x3 of 7 same-shape siblings elided
-    button "Лес Пари" [pressed=false]
+    ... button x5 of 9 same-shape siblings elided
     button "Воюющие Норы" [pressed=true]
-    button "Долина Богов" [pressed=false]
+    button "Оплот Шершней" [pressed=false]
+    button "Дром" [pressed=false]
     StaticText "ВОЮЮЩИЕ НОРЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (21)" [checked=false]
@@ -94,14 +94,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Шляпа из Колючей КорыОтметьте Стресс, чтобы дать помеху тому, к... [namelen=107 namehash=215f89ea]
 Arazo's Artifacts
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Боевая Летучая Мышь
@@ -112,6 +112,7 @@ daggerheart.com
 Графин Позёра
 Долина Богов
 Дополнения
+Дром
 Дурная Краска
 Дырявый Клинок
 Извивашка
@@ -129,17 +130,18 @@ daggerheart.com
 Многоударный Кромсатель
 Невероятный Мешок Шефа
 Обычные правила
+Оплот Шершней
 Оружие Шефа
 Открывать этот раздел при запуске
 Поиск
 Предметы
+Предметы сообществ
 Прочее
 Расходники
 Сбросить всё
 Сеткой
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Списки
 Списком
 Спорополис
@@ -157,7 +159,7 @@ daggerheart.com
 Шляпа из Колючей Коры
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt/f_realm-warrens]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/many_worlds_tavern/f_realm-warrens]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -169,7 +171,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt/f_realm-wa
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -179,18 +181,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt/f_realm-wa
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Community items" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -199,13 +201,13 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt/f_realm-wa
     button "Warrin' Warrens" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "21 of 81"
+    StaticText "21 of 109"
     ... StaticText x3 of 7 same-shape siblings elided
     button "Items" [pressed=false]
-    ... button x3 of 7 same-shape siblings elided
-    button "Wagerwood" [pressed=false]
+    ... button x5 of 9 same-shape siblings elided
     button "Warrin' Warrens" [pressed=true]
-    button "Godsvale" [pressed=false]
+    button "Hornet Hold" [pressed=false]
+    button "The Drome" [pressed=false]
     StaticText "WARRIN' WARRENS"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (21)" [checked=false]
@@ -253,11 +255,10 @@ Battlebat
 Buff Puffer
 Chef's Incredible Sack
 Chef's Weapons
-Communities
+Community items
 Consumables
 Copy a link to this section
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Equipment
@@ -271,6 +272,7 @@ Gunshow Plate
 Harvesting Sack
 Hole-y Blade
 Hope & Fear
+Hornet Hold
 How this works
 Immunity Rings
 Install as an app
@@ -302,10 +304,12 @@ Supplements
 Tables
 Terms of use
 The Bad Dye
+The Dragon's Vault
+The Drome
 Vault of Ages
 Wagerwood
 Warrin' Warrens
-Wondrous Loot
+Wondrous Environments
 Wriggle
 daggerheart.com
 ЛутDaggerheart

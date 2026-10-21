@@ -42,8 +42,8 @@ const CORE_GROUP: TableGroup = {
 };
 
 /* The record path words, in path-word order: `whereFrom` and
-   `tools/share-card.mjs` `PATH_TEXT` read these groups, so an existing entry
-   never changes. The tables page draws `TABLE_NAV` below, in its own order.
+   `tools/share-card.mjs` `PATH_TEXT` read these groups, so an entry changes
+   only with its source's name (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). The tables page draws `TABLE_NAV` below, in its own order.
    Equipment is a slice through every book at once rather than a book, while
    Other groups starting inventory and campaign-frame equipment, neither of
    which is rollable content from a book. */

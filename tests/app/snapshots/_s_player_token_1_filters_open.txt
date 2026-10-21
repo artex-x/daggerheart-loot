@@ -15,7 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -40,7 +40,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     StaticText "ДЛЯ ИГРОКОВ"
     StaticText "Последний в наличии."
     checkbox "Брошюра по Истории Искусства" [checked=false]
-    button "11 Брошюра по Истории Искусства Это прекрасно иллюстрированная б..." [namelen=616 namehash=5c84c6ba]
+    button "11 Брошюра по Истории Искусства Это прекрасно иллюстрированная б..." [namelen=627 namehash=d9e91c64]
     checkbox "Топор Тлеющих Углей" [checked=false]
     button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
     status ""
@@ -55,19 +55,19 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 
 ## ru :: controls
 1
-11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=612 namehash=094e189a]
+11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=623 namehash=42418dff]
 1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=141 namehash=88f7ef0b]
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 2
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
-51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
+51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=384 namehash=5fd42fa8]
 Core
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
@@ -132,7 +132,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -157,7 +157,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     StaticText "FOR PLAYERS"
     StaticText "Последний в наличии."
     checkbox "Art History Booklet" [checked=false]
-    button "11 Art History Booklet This is a finely illustrated booklet (don..." [namelen=538 namehash=326f6b17]
+    button "11 Art History Booklet This is a finely illustrated booklet (don..." [namelen=549 namehash=3e31d03e]
     checkbox "Ember Axe" [checked=false]
     button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
     status ""
@@ -172,12 +172,12 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
 
 ## en :: controls
 1
-11Art History BookletThis is a finely illustrated booklet (donat... [namelen=534 namehash=84c3b132]
+11Art History BookletThis is a finely illustrated booklet (donat... [namelen=545 namehash=eadfaf74]
 1Premium Bedroll×2 · 150 gpDuring downtime, you automatically cl... [namelen=85 namehash=b9388206]
 1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=116 namehash=1d3add45]
 2
 3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
-51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
+51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
 Agility
 Alder Workshop
 Alt. tables
@@ -190,7 +190,7 @@ Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namele
 Close
 Consumables
 Core
-Dread
+Dread GM Toolbox
 EN
 Ember Axe
 Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
@@ -232,6 +232,6 @@ Unique
 Upgradable
 Vault of Ages
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

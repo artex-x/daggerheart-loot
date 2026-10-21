@@ -1,9 +1,9 @@
 # #/tables/mwt
-# route: #/tables/mwt
-# why: a sectioned body: Many Worlds Tavern by realm, four realm headings, 81 rows
+# route: #/tables/many_worlds_tavern
+# why: a sectioned body: Many Worlds Tavern by realm, six realm headings, 109 rows
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/mwt]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/many_worlds_tavern]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,40 +25,41 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Предметы сообществ" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "81"
-    ... StaticText x6 of 10 same-shape siblings elided
+    StaticText "109"
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (20)" [checked=false]
     checkbox "Порхающие Бесы" [checked=false]
     button "1 Порхающие Бесы Ранг 2 · Магическое · Инстинкт · Далеко · d4+2 ..." [namelen=203 namehash=add7e68a]
-    ... checkbox x81 of 85 same-shape siblings elided
-    ... button x78 of 82 same-shape siblings elided
+    ... checkbox x111 of 115 same-shape siblings elided
+    ... button x106 of 110 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
+    ... button x2 of 6 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "ДОЛИНА БОГОВ"
+    StaticText "ДРОМ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (20)"
-    checkbox "Творец Облаков" [checked=false]
-    button "19 Творец Облаков Бросьте его о землю в точку в пределах Далекой..." [namelen=179 namehash=fbfa8739]
-    checkbox "Модальный Манипулятор Материи" [checked=false]
-    button "20 Модальный Манипулятор Материи Когда вы бросаете его в точку в..." [namelen=349 namehash=85c69de5]
+    StaticText "Выбрать все (17)"
+    checkbox "Кристалл Хаоса" [checked=false]
+    button "16 Кристалл Хаоса Отметьте 2 Стресса, чтобы разбить этот кристал..." [namelen=116 namehash=fb12230f]
+    checkbox "Хромшары" [checked=false]
+    button "17 Хромшары Когда вы включаете один из этих дронов, он следует з..." [namelen=226 namehash=299184a1]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -69,36 +70,46 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 10Длинный РогКогда вы выбираете Ход Отдыха «Подготовка», до след... [namelen=217 namehash=eb509b9c]
 10Искатель СмертиВы получаете преимущество на атаки против проти... [namelen=102 namehash=743c3b74]
+10Пламя МотылькаПока вы держите этот фонарь, вы и ваши союзники ... [namelen=140 namehash=8cd201c7]
 10ПомброзияПотратьте 2 Надежды, чтобы напоить растение этим неис... [namelen=168 namehash=7f996a9b]
+10Счастливый ПротезЭтот предмет должен заменить одну из ваших ру... [namelen=177 namehash=fd58c1a2]
 10Трубка ЗдоровякаДобавляйте своё Влияние к Броскам Атаки, котор... [namelen=119 namehash=3e92d022]
+11Милость КоролевыОдин раз за сессию вы можете использовать d20 ... [namelen=122 namehash=fe7879e7]
 11Невероятный Мешок ШефаОдин раз за продолжительный отдых вы мож... [namelen=410 namehash=19058052]
+11Очки МеханикаКогда вы используете способность, чтобы очистить ... [namelen=235 namehash=54fe095e]
 11Питьевая ПеревязьВ качестве Хода Отдыха вы можете поместить жи... [namelen=198 namehash=0015924f]
 11Рюкзак КочевниковОдин раз за сессию этот рюкзак может создать ... [namelen=150 namehash=3733bf6b]
 11Шаль МудрецаВы получаете бонус +2 к Инстинкту, но вы получаете... [namelen=165 namehash=6ff3254c]
+12МартышкаПока вы верхом на этом мотоцикле, вы получаете 1 Ячейк... [namelen=227 namehash=862303fa]
 12Оружие ШефаКогда вы выбираете Ход Отдыха «Снять Стресс» или «С... [namelen=159 namehash=a5992012]
 12Порхающие ИскателиЭти порхающие насекомые следуют за вами, пок... [namelen=163 namehash=cc19c77d]
 12Счастливые Кости ТайтаКаждый раз, когда вы бросаете d6, вы мож... [namelen=161 namehash=ee414801]
 12Шлем Небесного ПоэтаКогда вы преуспеваете с Надеждой, использу... [namelen=123 namehash=a6d4e543]
 13Брошь СтражаВне опасной ситуации вы получаете преимущество на ... [namelen=161 namehash=2dc15b77]
 13Мягкие НапоминанияВы можете вбить их в себя в качестве Хода От... [namelen=184 namehash=0eb4f983]
+13ПегасПока вы верхом на этом мотоцикле, вы получаете +1 к Уклон... [namelen=235 namehash=66c873b7]
 13СтивКогда вы повышаете уровень, вы также можете выбирать из ка... [namelen=276 namehash=03b7c06b]
 13ФлирпОдин раз за сцену, когда эффект заклинания ограничен цель... [namelen=193 namehash=bd7700f5]
 14Любимый ФартукВы получаете следующий Ход Отдыха, который можно... [namelen=248 namehash=8f878470]
 14Мешок СобирателяВы получаете следующий Ход Отдыха.Сбор Ингреди... [namelen=261 namehash=35c05bb9]
+14ПлаззерКогда на коротком отдыхе вы выбираете Ход Отдыха «Ремон... [namelen=351 namehash=39ba1e2c]
 14Реликвия Полого КамняВы получаете бонус +2 к Инстинкту и -1 к ... [namelen=128 namehash=4c851997]
 14Солнечная КоронаКогда вы преуспеваете с Надеждой, отметьте Стр... [namelen=149 namehash=be0e7551]
 15TR-U57-YПока TR-U57-Y сопровождает вас, максимальное количеств... [namelen=223 namehash=281bdc18]
 15Колючие НаплечникиКогда вас атакуют Вплотную, атакующий станов... [namelen=106 namehash=0e294747]
 15ЛюмусПо желанию вы можете заставить этот предмет светить, как ... [namelen=224 namehash=13ce3caa]
 15Трубка Мудрого ДреваВне опасной ситуации вы можете отметить 1 ... [namelen=174 namehash=60512455]
+15Шипастая ПластинаОтметьте Стресс, чтобы вычесть 2 из Броска Ат... [namelen=90 namehash=4d1c4972]
 16Желудёвый Тарт с КремомВне опасной ситуации бросьте 1d4 и съеш... [namelen=172 namehash=69877d36]
 16Заплечные КрыльяВы можете летать так же быстро, как бегать. Во... [namelen=220 namehash=bf82764b]
+16Кристалл ХаосаОтметьте 2 Стресса, чтобы разбить этот кристалл ... [namelen=112 namehash=7ad7e732]
 16Метка МицелияВы получаете следующий Предсмертный Ход:Возвращен... [namelen=283 namehash=4723b88c]
 16Хранитель СчётаЕсли вы видите, как член вашей группы преуспева... [namelen=179 namehash=6b9a8bd0]
 17Волшебные МанжетыПотратьте 2 Надежды, чтобы получить преимущес... [namelen=108 namehash=27793e4a]
 17Графин ПозёраВ опасной ситуации совершите Бросок Влияния проти... [namelen=220 namehash=ff0cf129]
 17Клеверный КонцентратВаш следующий бросок совершается с преимущ... [namelen=88 namehash=041ef5e2]
 17Реликвия ЗренияВы получаете +1 ко всем Броскам Атаки. Вы может... [namelen=111 namehash=dbcf97b7]
+17ХромшарыКогда вы включаете один из этих дронов, он следует за ... [namelen=222 namehash=3385a3e4]
 18ИзвивашкаПотратьте 2 Надежды, чтобы добавить +1 к любому Броск... [namelen=92 namehash=a373c6b9]
 18Карман ЗоллиВнутри этого мешочка лежит маленький сложенный дом... [namelen=400 namehash=dcfc6ff5]
 18Шарф-ЧёткиВы получаете преимущество на броски для взаимодейств... [namelen=121 namehash=edc28a17]
@@ -110,7 +121,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 1Боевая Летучая МышьРанг 2 · Физическое · Инстинкт · Очень далек... [namelen=269 namehash=6ec85e98]
 1Верная МотыгаРанг 3 · Магическое · Инстинкт · Средне · d8+2 маг... [namelen=251 namehash=d8c1535b]
 1Искатель ВраговРанг 2 · Магическое · Инстинкт · Близко · d8+4 м... [namelen=301 namehash=677ea1e7]
+1Одолженная ЛапаРанг 2 · Магическое · Знание · Далеко · d6+6 маг... [namelen=202 namehash=3e656f28]
 1Порхающие БесыРанг 2 · Магическое · Инстинкт · Далеко · d4+2 ма... [namelen=197 namehash=84bdbfd1]
+1ЧаккаРанг 2 · Физическое · Проворность · Далеко · d6+3 физ · Од... [namelen=210 namehash=9698ced4]
 20Запоминатель РобурусаВы можете сохранить заклинание или умение... [namelen=286 namehash=5456bb9c]
 20Кольца ИммунитетаКогда вы совершаете Бросок со Страхом, вы мож... [namelen=149 namehash=73eeb98e]
 20Модальный Манипулятор МатерииКогда вы бросаете его в точку в п... [namelen=342 namehash=1a30bef0]
@@ -119,61 +132,81 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 2Бабушкина СкалкаРанг 2 · Физическое · Влияние · Вплотную · d4+3... [namelen=174 namehash=ee0c3f18]
 2Взыскательный БаклерРанг 2 · Физическое · Искусность · Вплотную... [namelen=275 namehash=06d5fa1e]
 2Животворная СабляРанг 2 · Физическое · Инстинкт · Вплотную · d6... [namelen=216 namehash=7cc402f7]
+2Клинки БогомолаРанг 3 · Физическое · Сила · Близко · d10+9 физ ... [namelen=300 namehash=7b05d713]
 2Рассекатель НебесРанг 4 · Физическое · Сила · Очень далеко · d1... [namelen=313 namehash=0fb5cbf8]
+2Скрт-ПалкаРанг 3 · Магическое · Искусность · Близко · d10+5 маг... [namelen=297 namehash=e8a2a404]
 3Дырявый КлинокРанг 3 · Физическое · Сила · Вплотную · d8+6 физ ... [namelen=222 namehash=bc054f9e]
+3Наручный КлинокРанг 2 · Физическое · Проворность · Вплотную · d... [namelen=168 namehash=1decdf2a]
 3Посох Полого КамняРанг 2 · Магическое · Знание · Далеко · d6+4 ... [namelen=196 namehash=41555989]
 3Посох УченикаРанг 4 · Магическое · Знание · Далеко · d6+7 маг ·... [namelen=222 namehash=ceb94207]
+3Пробиватель ЛатРанг 3 · Физическое · Сила · Близко · d10+9 физ ... [namelen=226 namehash=ed1deb7f]
 3ШугалкаРанг 2 · Физическое · Искусность · Далеко · d4+4 физ · Д... [namelen=191 namehash=215bae07]
+4АэрокрылоЕсли во время своей предыдущей активации вы перемещали... [namelen=149 namehash=aeaf2829]
 4Многоударный КромсательРанг 2 · Физическое · Сила · Вплотную · ... [namelen=199 namehash=24b80857]
 4Неприметный НожРанг 3 · Физическое · Искусность · Вплотную · d8... [namelen=264 namehash=0f5a8a68]
 4Сердце Небесного ПоэтаРанг 2 · Пороги 9/20 · Броня 2Опытное: По... [namelen=170 namehash=0e59eca8]
 4СнаксРанг 2 · Физическое · Сила · Вплотную · d10+6 физ · Двуруч... [namelen=210 namehash=e4296ead]
+4Щит СкарабеяРанг 3 · Физическое · Сила · Вплотную · d6+4 физ · ... [namelen=219 namehash=73993dde]
 5ДвустрелРанг 3 · Физическое · Проворность · Очень далеко · d6+6... [namelen=237 namehash=af6c3d79]
 5Защитник Леса ПариРанг 3 · Физическое · Проворность · Вплотную ... [namelen=207 namehash=e3e5f2fd]
+5КамеронВы можете перемещать этого дрона куда угодно в пределах ... [namelen=308 namehash=be53ec3d]
 5Копьё-СкорпионРанг 1 · Физическое · Проворность · Далеко · d6+2... [namelen=200 namehash=bed39199]
 5Лик ПредковОтметьте 3 Стресса, чтобы немедленно надеть магическ... [namelen=217 namehash=d6a09acf]
+5Панцирь ТаранаРанг 4 · Пороги 18/48 · Броня 6Бычье: Когда вы от... [namelen=192 namehash=36478362]
 6Второй РезакРанг 3 · Физическое · Искусность · Вплотную · d6+8 ... [namelen=254 namehash=c8dfd68c]
+6Гибкие ЛатыРанг 3 · Пороги 10/25 · Броня 4Гибкое: Добавьте свою... [namelen=121 namehash=695d5e60]
 6Гнилозубый КинжалРанг 3 · Магическое · Искусность · Вплотную · ... [namelen=191 namehash=0c59d370]
 6Кожаный Доспех ПерфекционистаРанг 3 · Пороги 7/16 · Броня 4Безу... [namelen=226 namehash=c49d7b26]
 6Магическая БатареяКогда вы призываете карту домена из своего Хр... [namelen=180 namehash=92f84736]
+6Тёмная ЛошадкаПока вы верхом на этом мотоцикле, добавляйте 1 к ... [namelen=178 namehash=b3883601]
+7ДаксЭтот дрон всё время следует за вами. Вне опасной ситуации в... [namelen=341 namehash=45d04bff]
 7Клинок РезчикаРанг 2 · Физическое · Проворность · Вплотную · d6... [namelen=249 namehash=7796f57e]
 7Колпак Семьи БрэдвингВы получаете +2 к Броскам Атаки оружием, к... [namelen=118 namehash=9b07a616]
 7Кристаллизованная ДушаМаксимальное количество карт домена в ваш... [namelen=366 namehash=5456b5bc]
+7Перчатки АртистаВы получаете способность мастерски играть на лю... [namelen=148 namehash=070d0775]
 7Табельный СекачРанг 1 · Физическое · Любая · Вплотную · d6 физ ... [namelen=189 namehash=f5f7e330]
 8Грибной Кожаный ДоспехРанг 3 · Пороги 12/30 · Броня 6Максимальн... [namelen=175 namehash=e89c54da]
 8Латы СилачаРанг 3 · Пороги 10/25 · Броня 5Безрукавное: Добавьте... [namelen=118 namehash=c25b05b7]
+8Лютня ГрацииКогда вы произносите заклинание домена Грации, очис... [namelen=133 namehash=d13b8138]
 8Очищающее ВедроЕсли налить в это ведро 4 литра любой жидкости и... [namelen=138 namehash=1dec0002]
 8ФриллПока Фрилл следует за вами, максимальное количество карт д... [namelen=230 namehash=ba277140]
+8Шлем ДромераПока вы носите этот шлем, вы получаете 1 Ячейку Стр... [namelen=97 namehash=6493dab1]
 9Вещая ТрескаКогда вы выполняете Ход Отдыха «Подготовка», вы мож... [namelen=205 namehash=46d7abc9]
+9Взрывные ЗвёздочкиВ начале сессии положите 3 жетона на эту карт... [namelen=267 namehash=f0a842c7]
 9Мицелиевый ПлащПока вы носите этот плащ, вы получаете преимущес... [namelen=161 namehash=29cb21e9]
 9Рукавицы Былых ВремёнЕсли оружие использует Знание в качестве х... [namelen=178 namehash=3bee052b]
+9Шляпа Мага-МотылькаЗа каждую карту домена Полночи или Величия в... [namelen=192 namehash=018a4520]
 9Шляпа из Колючей КорыОтметьте Стресс, чтобы дать помеху тому, к... [namelen=107 namehash=215f89ea]
 Arazo's Artifacts
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
 TR-U57-Y
+The Dragon's Vault
 Vault of Ages
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
+Аэрокрыло
 Бабушкина Скалка
 Боевая Летучая Мышь
 Брошь Стража
 Верная Мотыга
 Вещая Треска
+Взрывные Звёздочки
 Взыскательный Баклер
 Возвышающие Сандалии
 Войти
 Волшебные Манжеты
 Второй Резак
+Гибкие Латы
 Гнилозубый Кинжал
 Графин Позёра
 Грибной Кожаный Доспех
+Дакс
 Двустрел
 Длинный Рог
 Домашние Вкусности
@@ -190,8 +223,10 @@ daggerheart.com
 Искатель Смерти
 К содержимому
 Как это работает
+Камерон
 Карман Золли
 Клеверный Концентрат
+Клинки Богомола
 Клинок Резчика
 Кожаный Доспех Перфекциониста
 Колпак Семьи Брэдвинг
@@ -200,32 +235,46 @@ daggerheart.com
 Конфиденциальность
 Копьё-Скорпион
 Краска Цвета Яда
+Кристалл Хаоса
 Кристаллизованная Душа
 Латы Силача
 Лик Предков
 ЛутDaggerheart
 Любимый Фартук
 Люмус
+Лютня Грации
 Магическая Батарея
+Мартышка
 Метка Мицелия
 Мешок Собирателя
+Милость Королевы
 Мицелиевый Плащ
 Многоударный Кромсатель
 Модальный Манипулятор Материи
 Мягкие Напоминания
+Наручный Клинок
 Невероятный Мешок Шефа
 Неприметный Нож
 Обычные правила
+Одолженная Лапа
 Оружие Шефа
 Открывать этот раздел при запуске
 Очищающее Ведро
+Очки Механика
+Панцирь Тарана
+Пегас
+Перчатки Артиста
 Питьевая Перевязь
+Плаззер
+Пламя Мотылька
 Поиск
 Помброзия
 Порхающие Бесы
 Порхающие Искатели
 Посох Полого Камня
 Посох Ученика
+Предметы сообществ
+Пробиватель Лат
 Прочее
 Рассекатель Небес
 Реликвия Зрения
@@ -235,36 +284,44 @@ daggerheart.com
 Сердце Небесного Поэта
 Сеткой
 Скопировать ссылку на этот раздел
+Скрт-Палка
 Снакс
 Снаряжение
 Солнечная Корона
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
 Стив
 Счастливые Кости Тайта
+Счастливый Протез
 Табельный Секач
 Таблицы
 Творец Облаков
 Традиционный Каравай с Рагу
 Трубка Здоровяка
 Трубка Мудрого Древа
+Тёмная Лошадка
 Условия использования
 Установить как приложение
 Фильтры
 Флирп
 Фрилл
 Хранитель Счёта
+Хромшары
+Чакка
 Шаль Мудреца
 Шарф-Чётки
+Шипастая Пластина
+Шлем Дромера
 Шлем Небесного Поэта
+Шляпа Мага-Мотылька
 Шляпа Урожая
 Шляпа из Колючей Коры
 Шугалка
+Щит Скарабея
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/many_worlds_tavern]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -276,7 +333,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -286,40 +343,41 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Community items" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "81"
-    ... StaticText x6 of 10 same-shape siblings elided
+    StaticText "109"
+    ... StaticText x10 of 14 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (20)" [checked=false]
     checkbox "Flutterfiends" [checked=false]
     button "1 Flutterfiends Tier 2 · Magic · Instinct · Far · d4+2 mag · One..." [namelen=212 namehash=194239c9]
-    ... checkbox x81 of 85 same-shape siblings elided
-    ... button x78 of 82 same-shape siblings elided
+    ... checkbox x111 of 115 same-shape siblings elided
+    ... button x106 of 110 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
+    ... button x2 of 6 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "GODSVALE"
+    StaticText "THE DROME"
     button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (20)"
-    checkbox "Cloud Creator" [checked=false]
-    button "19 Cloud Creator Throw this against the ground at a point within..." [namelen=156 namehash=bb41a90b]
-    checkbox "Modal Matter Manipulator" [checked=false]
-    button "20 Modal Matter Manipulator When you throw this at a point withi..." [namelen=295 namehash=9a52356c]
+    StaticText "Select all (17)"
+    checkbox "Chaos Crystal" [checked=false]
+    button "16 Chaos Crystal Mark 2 Stress to break this crystal and double ..." [namelen=115 namehash=c831888d]
+    checkbox "Chromeballs" [checked=false]
+    button "17 Chromeballs When you turn one of these drones on, it follows ..." [namelen=272 namehash=637e99d9]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -331,31 +389,41 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
 10Buff PufferAdd your Presence to attack rolls that uses a diffe... [namelen=94 namehash=3c6f4d3d]
 10DeadseekerYou gain advantage on attacks against Skulk-type adv... [namelen=87 namehash=8070a5b3]
 10LonghornWhen you choose to Prepare as a downtime move, each ot... [namelen=195 namehash=59fb801c]
+10Lucky LimbThis item must replace one of your arms. If you fail... [namelen=146 namehash=36c4254a]
 10PombrosiaSpend 2 Hope to feed a plant with this endless magica... [namelen=142 namehash=78605697]
+10The Moth's FlameWhile holding this lantern, you and your allie... [namelen=129 namehash=02f546a4]
 11Chef's Incredible SackOnce per long rest, you can reach into t... [namelen=362 namehash=170517b4]
 11Drinking SlingAs a downtime move, you can add a liquid consuma... [namelen=196 namehash=5a80c813]
+11Mechanic's GogglesWhen you use an ability to clear Hit Points ... [namelen=239 namehash=76ece56e]
 11Pack of the WanderborneOnce per session, this pack can produce... [namelen=147 namehash=ec556c84]
 11Sage's ShawlYou gain a +2 bonus to your Instinct but have disa... [namelen=160 namehash=fa2764cc]
+11The Queen's FavorOnce per session, you can use a d20 as a Hope... [namelen=102 namehash=6ba8ba43]
 12Chef's WeaponsWhen choosing the Clear Stress or Clear All Stre... [namelen=182 namehash=415baee2]
 12FlutterfindersThese fluttering insects follow you around until... [namelen=172 namehash=b05cc86b]
+12MonkeyWhile mounted on this motorcycle, you gain 1 Armor Slot.... [namelen=210 namehash=8521e1a1]
 12The Sky-Poet's HelmWhen you succeed with Hope while using an E... [namelen=111 namehash=f5451b58]
 12Tithe's Lucky DiceAny time you roll a d6, you may Mark a Stres... [namelen=136 namehash=87516ad7]
 13FlirpOnce per scene, when a spell effect is limited to a targe... [namelen=166 namehash=a58c581d]
 13Gentle RemindersYou can nail these into yourself as a downtime... [namelen=177 namehash=086800bb]
+13PegasusWhile mounted on this motorcycle, you gain 1 Evasion. I... [namelen=240 namehash=ec29b8b1]
 13SteveWhen you level up, you can also choose from Sage domain c... [namelen=212 namehash=dc01ea9e]
 13Warden's BroochYou have advantage on rolls to deal with guards... [namelen=150 namehash=e2995a71]
 14Harvesting SackGain the following downtime move.Gather Ingredi... [namelen=237 namehash=a4312098]
 14Hollowstone RelicYou gain a +2 bonus to your Instinct and -1 t... [namelen=124 namehash=3c960e86]
+14PlazzerWhen you choose the Repair Armor downtime move at a Sho... [namelen=321 namehash=848813d8]
 14Sun CrownWhen you succeed with Hope, mark a Stress for another... [namelen=121 namehash=00fc9a0d]
 14Well-Loved ApronGain the following downtime move, which can on... [namelen=217 namehash=d8348f3b]
 15LumusAt will, you can choose to have this item shed light like... [namelen=191 namehash=d78a78b9]
 15Pokey PauldronsWhen you are attacked within Melee range, the a... [namelen=122 namehash=51e978fb]
+15SpikeplateMark a Stress to subtract 2 from an attack roll agai... [namelen=85 namehash=4d6fec09]
 15TR-U57-YWhile TR-U57-Y follows you around, your maximum loadou... [namelen=181 namehash=3f458848]
 15Wisewood PipeWhen not in a dangerous situation, you can mark 1... [namelen=165 namehash=a054868b]
 16Acorn Cream TartWhen not in a dangerous situation, roll 1d4 an... [namelen=167 namehash=8493d5e9]
+16Chaos CrystalMark 2 Stress to break this crystal and double th... [namelen=111 namehash=b228f8b4]
 16Mark of the MyceliumGain the following death move:Return to Ro... [namelen=292 namehash=6873b2dc]
 16ScorekeeperIf you witness a party member succeed with Hope, yo... [namelen=159 namehash=7ab06049]
 16WingbackYou can fly at the same speed you can run. While flyin... [namelen=199 namehash=de11ad4a]
+17ChromeballsWhen you turn one of these drones on, it follows yo... [namelen=268 namehash=92ac7f99]
 17Clover ConcentrateThe next roll you make is made with advantag... [namelen=85 namehash=f8a6ad74]
 17Relic of SightYou gain +1 to all attack rolls. You can only ca... [namelen=92 namehash=6542ca1f]
 17Showboat's DecanterWhile in a dangerous situation, make a Pres... [namelen=205 namehash=34aff164]
@@ -369,8 +437,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
 19The Bad DyeApply this to your skin or clothing to add +2 to yo... [namelen=145 namehash=a950dae0]
 19Upstanding SandalsYou have advantage on rolls in social intera... [namelen=119 namehash=4b77ba5a]
 1BattlebatTier 2 · Physical · Instinct · Very Far · d6+2 phy · O... [namelen=233 namehash=f40ec425]
+1ChukkaTier 2 · Physical · Agility · Far · d6+3 phy · One-Handed... [namelen=202 namehash=2178cf72]
 1FlutterfiendsTier 2 · Magic · Instinct · Far · d4+2 mag · One-H... [namelen=206 namehash=7e5475b4]
 1FoeseekerTier 2 · Magic · Instinct · Very Close · d8+4 mag · Tw... [namelen=271 namehash=675ca8bd]
+1Lent LegTier 2 · Magic · Knowledge · Far · d6+6 mag · Two-Hande... [namelen=170 namehash=483a61a6]
 1Trusty CultivatorTier 3 · Magic · Instinct · Close · d8+2 mag ·... [namelen=225 namehash=460e1dac]
 20Immunity RingsWhen you roll with Fear, you may prevent the GM ... [namelen=140 namehash=d03cb2c7]
 20Modal Matter ManipulatorWhen you throw this at a point within ... [namelen=288 namehash=d99dec31]
@@ -380,36 +450,53 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/mwt]
 2Exacting BucklerTier 2 · Physical · Finesse · Melee · d4 phy · ... [namelen=244 namehash=eba9e226]
 2Generative CutlassTier 2 · Physical · Instinct · Melee · d6+4 p... [namelen=202 namehash=dd059cb1]
 2Grandma's Rolling PinTier 2 · Physical · Presence · Melee · d4+... [namelen=172 namehash=50fc0e33]
+2Mantis BladesTier 3 · Physical · Strength · Very Close · d10+9 ... [namelen=323 namehash=84ef7e73]
+2SkrtstickTier 3 · Magic · Finesse · Very Close · d10+5 mag · Tw... [namelen=275 namehash=1039e822]
 2SkycutterTier 4 · Physical · Strength · Very Far · d10+10 phy ·... [namelen=314 namehash=560758e0]
 3Hole-y BladeTier 3 · Physical · Strength · Melee · d8+6 phy · O... [namelen=217 namehash=4604969c]
 3Hollowstone StaffTier 2 · Magic · Knowledge · Far · d6+4 mag · ... [namelen=172 namehash=cf700a2e]
+3Plate PiercerTier 3 · Physical · Strength · Very Close · d10+9 ... [namelen=216 namehash=df022c76]
 3Student's StaffTier 4 · Magic · Knowledge · Far · d6+7 mag · Tw... [namelen=212 namehash=28952c3f]
 3The ScrammerTier 2 · Physical · Finesse · Far · d4+4 phy · Two-... [namelen=181 namehash=03d0dbe7]
+3WristbladeTier 2 · Physical · Agility · Melee · d8+2 phy · One-... [namelen=159 namehash=a8a0467e]
+4AerowingIf you moved the last time you took the spotlight while... [namelen=159 namehash=88ae0f3b]
 4An Unassuming KnifeTier 3 · Physical · Finesse · Melee · d8 phy... [namelen=247 namehash=b28e1c06]
 4Many-Hit ManglerTier 2 · Physical · Strength · Melee · d4+4 phy... [namelen=192 namehash=92813b94]
+4Scarab ShieldTier 3 · Physical · Strength · Melee · d6+4 phy · ... [namelen=207 namehash=54f5c903]
 4SnaxTier 2 · Physical · Strength · Melee · d10+6 phy · Two-Hand... [namelen=205 namehash=e00b2b5b]
 4The Sky-Poet's HeartTier 2 · Thresholds 9/20 · Armor 2Experient... [namelen=158 namehash=0cd4acc7]
 5Ancestral VisageMark 3 Stress to immediately don a magical disg... [namelen=178 namehash=e21f27d0]
+5CameronYou can move this drone anywhere within Very Far range o... [namelen=293 namehash=969df9ff]
+5Charger's CarapaceTier 4 · Thresholds 18/48 · Armor 6Bullish: W... [namelen=176 namehash=935d9e8b]
 5Scorpion SpearTier 1 · Physical · Agility · Far · d6+2 phy · On... [namelen=195 namehash=cc6ecd1d]
 5SplitshooterTier 3 · Physical · Agility · Very Far · d6+6 phy ·... [namelen=199 namehash=fd7c9797]
 5Wagerwood DefenderTier 3 · Physical · Agility · Melee · d8+3 ph... [namelen=202 namehash=a8580781]
 6Arcane BatteryWhen recalling a domain card from your vault, you... [namelen=146 namehash=76678fd1]
+6Flexible PlateTier 3 · Thresholds 10/25 · Armor 4Flexible: Add ... [namelen=124 namehash=65e6c962]
 6Perfectionist's LeathersTier 3 · Thresholds 7/16 · Armor 4Perfe... [namelen=224 namehash=8d54c954]
 6Rottooth DaggerTier 3 · Magic · Finesse · Melee · d6+6 mag · On... [namelen=165 namehash=7e478618]
 6Second SlasherTier 3 · Physical · Finesse · Melee · d6+8 phy · ... [namelen=233 namehash=246c903d]
+6The Dark HorseWhile mounted on this motorcycle, add 1 to attack... [namelen=174 namehash=3c57ff72]
 7Breadwing Family ToqueYou gain +2 to attack rolls with weapons ... [namelen=111 namehash=3086e0e8]
 7Crystallized SoulYour maximum loadout size is reduced by 1. Cho... [namelen=294 namehash=85bf2ff1]
+7DaxThis drone follows you around at all times. When you are not... [namelen=312 namehash=9f3ab602]
+7Entertainer's HandwearYou gain the ability to proficiently play... [namelen=161 namehash=730a2781]
 7Standard Issue SlicerTier 1 · Physical · Any · Melee · d6 phy ·... [namelen=162 namehash=781c5984]
 7Whittling BladeTier 2 · Physical · Agility · Melee · d6 phy · O... [namelen=199 namehash=1ce7ddf2]
 8Cleansing PailPlacing one gallon of any liquid within this cont... [namelen=125 namehash=1b3bcb6e]
+8Dromer's HelmYou gain 1 Stress Slot and 1 Armor Slot while wear... [namelen=91 namehash=159b0e84]
 8FrillWhile Frill follows you, your maximum loadout size is redu... [namelen=198 namehash=0f25ddcc]
 8Fungal LeathersTier 3 · Thresholds 12/30 · Armor 6The number of... [namelen=167 namehash=73872bf1]
 8Gunshow PlateTier 3 · Thresholds 10/25 · Armor 5Arm-Bearing: Ad... [namelen=132 namehash=a71e1043]
+8The Lute of GraceClear 1 Stress from a party member who can hea... [namelen=113 namehash=abd2e6b8]
 9Barb Bark HatMark a Stress to impose disadvantage on someone at... [namelen=114 namehash=10f81152]
 9Divining CodWhen you Prepare as a downtime move, you can choose... [namelen=194 namehash=3a84f3fd]
+9Explosive JacksAt the beginning of a session, place 3 tokens on... [namelen=243 namehash=bd8ffbc3]
+9Mage-Moth's HatFor each Midnight or Splendor card in your loado... [namelen=183 namehash=023d721f]
 9Mitts of YoreIf a weapon uses Knowledge as its trait, you can i... [namelen=120 namehash=d75ca1b1]
 9Mycelial CloakWhile wearing this, gain advantage on your Instin... [namelen=133 namehash=d8f1bda9]
 Acorn Cream Tart
+Aerowing
 Alt. tables
 An Unassuming Knife
 Ancestral Visage
@@ -419,24 +506,33 @@ Barb Bark Hat
 Battlebat
 Breadwing Family Toque
 Buff Puffer
+Cameron
+Chaos Crystal
+Charger's Carapace
 Chef's Incredible Sack
 Chef's Weapons
+Chromeballs
+Chukka
 Cleansing Pail
 Cloud Creator
 Clover Concentrate
-Communities
+Community items
 Copy a link to this section
 Core
 Crystallized Soul
+Dax
 Deadseeker
 Divining Cod
-Dragon's Vault
 Dread GM Toolbox
 Drinking Sling
+Dromer's Helm
 EN
+Entertainer's Handwear
 Equipment
 Exacting Buckler
+Explosive Jacks
 Filters
+Flexible Plate
 Flirp
 Flutterfiends
 Flutterfinders
@@ -458,21 +554,30 @@ Hope & Fear
 How this works
 Immunity Rings
 Install as an app
+Lent Leg
 Link to this table
 List
 Lists
 Longhorn
+Lucky Limb
 Lumus
+Mage-Moth's Hat
+Mantis Blades
 Many Worlds Tavern
 Many-Hit Mangler
 Mark of the Mycelium
+Mechanic's Goggles
 Mitts of Yore
 Modal Matter Manipulator
+Monkey
 Mycelial Cloak
 Open this section on start
 Other
 Pack of the Wanderborne
+Pegasus
 Perfectionist's Leathers
+Plate Piercer
+Plazzer
 Poison-Colored Paint
 Pokey Pauldrons
 Pombrosia
@@ -483,6 +588,7 @@ Roburus's Rememberer
 Rosary Scarf
 Rottooth Dagger
 Sage's Shawl
+Scarab Shield
 Scorekeeper
 Scorpion Spear
 Search
@@ -490,8 +596,10 @@ Second Slasher
 Showboat's Decanter
 Sign in
 Skip to content
+Skrtstick
 Skycutter
 Snax
+Spikeplate
 Splitshooter
 Standard Issue Slicer
 Standard rules
@@ -503,6 +611,11 @@ TR-U57-Y
 Tables
 Terms of use
 The Bad Dye
+The Dark Horse
+The Dragon's Vault
+The Lute of Grace
+The Moth's Flame
+The Queen's Favor
 The Scrammer
 The Sky-Poet's Heart
 The Sky-Poet's Helm
@@ -518,8 +631,9 @@ Whittling Blade
 Wingback
 Wisewood Pipe
 Wizticuffs
-Wondrous Loot
+Wondrous Environments
 Wriggle
+Wristblade
 Zolly Pocket
 daggerheart.com
 ЛутDaggerheart

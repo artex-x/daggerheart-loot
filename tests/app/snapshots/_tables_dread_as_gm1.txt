@@ -1,10 +1,10 @@
 # #/tables/dread as gm1
-# route: #/tables/dread
+# route: #/tables/dread_gm_toolbox
 # why: the account's tables view: the grid, where signed out the list is drawn
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/dread]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=index.html?as=gm1#/tables/dread_gm_toolbox]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -16,7 +16,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -26,19 +26,19 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
-    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=index.html?as=gm1#/tables/alt_item]
-    link "Дополнения" [url=index.html?as=gm1#/tables/wondrous]
+    link "Дополнения" [url=index.html?as=gm1#/tables/wondrous_environments]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
-    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
-    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
-    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
-    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
-    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
-    link "Сообщества" [url=index.html?as=gm1#/tables/community]
-    link "Many Worlds Tavern" [url=index.html?as=gm1#/tables/mwt]
+    link "Wondrous Environments" [url=index.html?as=gm1#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=index.html?as=gm1#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazos_artifacts]
+    link "Предметы сообществ" [url=index.html?as=gm1#/tables/community_items]
+    link "Many Worlds Tavern" [url=index.html?as=gm1#/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=false]
@@ -94,14 +94,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Амулет ЖизнестойкостиAmulet of Vitality
 Arazo's Artifacts
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -129,6 +129,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Посох Тайного Пламени
+Предметы сообществ
 Проклятая Брошюра
 Прочее
 Пурпурный Прицел
@@ -137,7 +138,6 @@ daggerheart.com
 Сеткой
 Склянка Святой Воды
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -156,7 +156,7 @@ daggerheart.com
 Эфирная Винтовка
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/dread]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tables/dread_gm_toolbox]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -168,7 +168,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -178,19 +178,19 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=index.html?as=gm1#/tables/core_item]
-    link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
+    link "Hope & Fear" [url=index.html?as=gm1#/tables/hope_and_fear_item]
     link "Alt. tables" [url=index.html?as=gm1#/tables/alt_item]
-    link "Supplements" [url=index.html?as=gm1#/tables/wondrous]
+    link "Supplements" [url=index.html?as=gm1#/tables/wondrous_environments]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
-    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
-    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
-    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
-    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
-    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
-    link "Communities" [url=index.html?as=gm1#/tables/community]
-    link "Many Worlds Tavern" [url=index.html?as=gm1#/tables/mwt]
+    link "Wondrous Environments" [url=index.html?as=gm1#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=index.html?as=gm1#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=index.html?as=gm1#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazos_artifacts]
+    link "Community items" [url=index.html?as=gm1#/tables/community_items]
+    link "Many Worlds Tavern" [url=index.html?as=gm1#/tables/many_worlds_tavern]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=false]
@@ -253,11 +253,10 @@ Arazo's Artifacts
 Arcane Resin
 Art History Booklet
 Blade of the Living
-Communities
+Community items
 Core
 Cursed Booklet
 Devil's Vestments
-Dragon's Vault
 Dread GM Toolbox
 EN
 Equipment
@@ -299,10 +298,11 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Tiara of Talking
 Vault of Ages
 Vial of Holy Water
-Wondrous Loot
+Wondrous Environments
 Yithian Lightning Gun
 daggerheart.com
 ЛутDaggerheart

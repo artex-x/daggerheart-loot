@@ -15,14 +15,14 @@ RootWebArea "Клятва Равновесия — Генератор лута �
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Клятва Равновесия" [level=1]
     StaticText "Vault of Ages · Артефакт · номер 9 "
-    link "показать в таблице" [url=#/tables/voa/voa4_a3]
+    link "показать в таблице" [url=#/tables/vault_of_ages/voa4_a3]
     button "Страница"
     StaticText "9"
     ... StaticText x21 of 25 same-shape siblings elided
@@ -81,14 +81,14 @@ RootWebArea "Oath of Balance — Daggerheart Loot Generator" [url=#/i/voa4_a3]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Oath of Balance" [level=1]
     StaticText "Vault of Ages · Artifact · roll 9 "
-    link "show in the table" [url=#/tables/voa/voa4_a3]
+    link "show in the table" [url=#/tables/vault_of_ages/voa4_a3]
     button "Page"
     StaticText "9"
     ... StaticText x21 of 25 same-shape siblings elided

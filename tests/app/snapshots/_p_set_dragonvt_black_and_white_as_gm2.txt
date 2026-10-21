@@ -16,7 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm2#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous]
+      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
@@ -44,7 +44,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     heading "ЧАША ХАОСА" [level=2]
     LineBreak " "
     StaticText "Daggerheart"
-    StaticText "Dragon's Vault"
+    StaticText "The Dragon's Vault"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -90,7 +90,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-dragonvt]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm2#/roll/std]
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
-      link "Supplements" [url=index.html?as=gm2#/roll/wondrous]
+      link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
@@ -118,7 +118,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-dragonvt]
     heading "CHALICE OF CHAOS" [level=2]
     LineBreak " "
     StaticText "Daggerheart"
-    StaticText "Dragon's Vault"
+    StaticText "The Dragon's Vault"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]

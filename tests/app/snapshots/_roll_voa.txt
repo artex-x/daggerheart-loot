@@ -1,9 +1,9 @@
 # #/roll/voa
-# route: #/roll/voa
+# route: #/roll/vault_of_ages
 # why: Vault of Ages
 
 ## ru :: tree
-RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url=#/roll/voa]
+RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url=#/roll/vault_of_ages]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,13 +25,13 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Выберите раздел книги и бросьте кость по нему."
     navigation "Дополнения"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "РАЗДЕЛ КНИГИ"
     button "Ранг 1" [pressed=true]
     button "Ранг 2" [pressed=false]
@@ -66,13 +66,13 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
 
 ## ru :: controls
 Arazo's Artifacts
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Артефакты
@@ -88,6 +88,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Предметы сообществ
 Проклятые предметы
 Ранг 1
 Ранг 2
@@ -99,7 +100,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–30
-Сообщества
 Списки
 Страница
 Таблицы
@@ -107,7 +107,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
+RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/vault_of_ages]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -119,7 +119,7 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -129,13 +129,13 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
     button "How this works" [description=How this works expanded=false]
     StaticText "Pick a section of the book and roll within it."
     navigation "Supplements"
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
-      link "Many Worlds Tavern" [url=#/roll/mwt]
+      link "Wondrous Environments" [url=#/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=#/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=#/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
+      link "Community items" [url=#/roll/community_items]
+      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
     StaticText "SECTION"
     button "Tier 1" [pressed=true]
     button "Tier 2" [pressed=false]
@@ -172,14 +172,13 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
 Alt. tables
 Arazo's Artifacts
 Artifacts
-Communities
+Community items
 Copy image
 Copy link
 Copy name
 Copy text
 Cursed objects
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 How this works
 Install as an app
@@ -201,11 +200,12 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Tier 1
 Tier 2
 Tier 3
 Tier 4
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

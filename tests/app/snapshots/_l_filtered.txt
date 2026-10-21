@@ -15,7 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KHQutC70LDQt
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -42,7 +42,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KHQutC70LDQt
     ... button x2 of 6 same-shape siblings elided
     checkbox "Скипетр" [checked=false]
     checkbox "Гарпун Левиафана" [checked=false]
-    button "51 Гарпун Левиафана Ранг 2 · Физическое · Искусность · Далеко · ..." [namelen=367 namehash=48191761]
+    button "51 Гарпун Левиафана Ранг 2 · Физическое · Искусность · Далеко · ..." [namelen=380 namehash=6d098536]
     checkbox "Колдующий Кинжал" [checked=false]
     button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
   region "Выбранные записи"
@@ -57,13 +57,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/l/0KHQutC70LDQt
 ## ru :: controls
 1
 2
-51Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8... [namelen=361 namehash=fbca8d2d]
+51Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8... [namelen=374 namehash=6d0b2dd3]
 Core
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
@@ -119,7 +119,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLG
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -146,7 +146,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLG
     ... button x2 of 6 same-shape siblings elided
     checkbox "Scepter" [checked=false]
     checkbox "Leviathan Harpoon" [checked=false]
-    button "51 Leviathan Harpoon Tier 2 · Physical · Finesse · Far · d8+3 ph..." [namelen=349 namehash=d3e92bbf]
+    button "51 Leviathan Harpoon Tier 2 · Physical · Finesse · Far · d8+3 ph..." [namelen=362 namehash=30f143a5]
     checkbox "Casting Dagger" [checked=false]
     button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
   region "Selected records"
@@ -161,7 +161,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLG
 ## en :: controls
 1
 2
-51Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy ... [namelen=343 namehash=74182c52]
+51Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy ... [namelen=356 namehash=c727d6d7]
 Agility
 Alt. tables
 Armor
@@ -172,7 +172,7 @@ Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namele
 Close
 Consumables
 Core
-Dread
+Dread GM Toolbox
 EN
 Far
 Filters (1)
@@ -206,6 +206,6 @@ Two-Handed
 Unique
 Upgradable
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

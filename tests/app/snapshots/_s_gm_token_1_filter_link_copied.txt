@@ -15,7 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1/f_
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -61,14 +61,14 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/gm-token-1/f_
 ## ru :: controls
 1
 2
-51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
+51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=384 namehash=5fd42fa8]
 Core
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
@@ -130,7 +130,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/gm-token-1/f_kind-weapon]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -176,7 +176,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/gm-token-1/f_kind-weapon]
 ## en :: controls
 1
 2
-51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
+51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
 Agility
 Alder Workshop
 Alt. tables
@@ -188,7 +188,7 @@ Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namele
 Close
 Consumables
 Core
-Dread
+Dread GM Toolbox
 EN
 Ember Axe
 Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
@@ -228,6 +228,6 @@ Unique
 Upgradable
 Vault of Ages
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

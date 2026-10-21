@@ -1,9 +1,9 @@
 # #/tables/community ~ panel open
-# route: #/tables/community
+# route: #/tables/community_items
 # why: the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from
 
 ## ru :: tree
-RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/community]
+RootWebArea "Таблицы — Генератор лута — Daggerheart" [url=#/tables/community_items]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,18 +25,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Предметы сообществ" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -164,14 +164,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
 Arazo's Artifacts
 Core
-Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Амулет Скарабея
@@ -246,6 +246,7 @@ daggerheart.com
 Позолоченный Точильный Камень Дуэлянта
 Поиск
 Предательский Кастет
+Предметы сообществ
 Прочее
 Прутья Слепого Лозоходца
 Рог Благородства
@@ -265,7 +266,6 @@ daggerheart.com
 Скопировать ссылку на этот раздел
 Снаряжение
 Совиный Амулет Каравана
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -296,7 +296,7 @@ daggerheart.com
 Эхо-Табличка
 
 ## en :: tree
-RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
+RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community_items]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -308,7 +308,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -318,18 +318,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/community]
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
-    link "Many Worlds Tavern" [url=#/tables/mwt]
+    link "Wondrous Environments" [url=#/tables/wondrous_environments]
+    link "Dread GM Toolbox" [url=#/tables/dread_gm_toolbox]
+    link "Vault of Ages" [url=#/tables/vault_of_ages]
+    link "The Dragon's Vault" [url=#/tables/dragons_vault]
+    link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
+    link "Community items" [url=#/tables/community_items]
+    link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -471,12 +471,11 @@ Cave Spider Fang
 Chronometric Timepiece
 Climbing Pitons
 Codex of Orderborne Dicta
-Communities
+Community items
 Copy a link to this section
 Core
 Crown of Living Vines
 Dimensional Prison Sphere
-Dragon's Vault
 Dread GM Toolbox
 Duelist's Gilded Whetstone
 EN
@@ -569,6 +568,7 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Thief's Chime Bracelet
 Tome of a Thousand Subjects
 Totem of the Ridge Beast
@@ -584,6 +584,6 @@ Wayfarer's Pack
 Waytamer Saddle
 Whispering Skillet
 Wildborne
-Wondrous Loot
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

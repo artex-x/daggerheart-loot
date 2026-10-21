@@ -15,7 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -25,9 +25,9 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous]
+    link "Дополнения" [url=#/tables/wondrous_environments]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -42,7 +42,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "48 из 453"
+    StaticText "48 из 458"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
@@ -70,8 +70,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 
 ## ru :: controls
 1
-100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=262 namehash=11ea77f4]
-132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=259 namehash=759c5181]
+100Фрикционные ОбмоткиРанг 1 · Физическое · Проворность · Вплотн... [namelen=266 namehash=5169329f]
+132Разящие КлыкиРанг 1 · Физическое · Проворность · Близко · d8+... [namelen=263 namehash=3510eb69]
 19Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Оче... [namelen=246 namehash=6a448ce6]
 2
 24Дубина из Зубов ОграРанг 1 · Физическое · Сила · Близко · d12+... [namelen=313 namehash=07958b4d]
@@ -86,14 +86,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 66Боевой Молот БазаРанг 1 · Физическое · Сила · Вплотную · d12+2... [namelen=247 namehash=22d353e0]
 Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Алебарда
 Алебарда Урзо
@@ -242,7 +242,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -252,9 +252,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "How this works" [description=How this works expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hnf_item]
+    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous]
+    link "Supplements" [url=#/tables/wondrous_environments]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -269,7 +269,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "48 of 453"
+    StaticText "48 of 458"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
@@ -297,8 +297,8 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
 
 ## en :: controls
 1
-100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=246 namehash=036eb4fb]
-132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=256 namehash=d8b9474b]
+100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=250 namehash=8230b7ea]
+132Striking FangsTier 1 · Physical · Agility · Very Close · d8+2... [namelen=260 namehash=03e7c4b0]
 19Elfhair BowTier 1 · Physical · Agility · Very Far · d10+1 phy ... [namelen=230 namehash=9b572916]
 2
 24Ogre-teeth ClubTier 1 · Physical · Strength · Very Close · d12... [namelen=287 namehash=253d35d6]
@@ -335,8 +335,7 @@ Core
 Crop Scythe
 Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy ·... [namelen=106 namehash=b6a427df]
 Dark Heart of Andaluria
-Dragon's Vault
-Dread
+Dread GM Toolbox
 Dualstaff
 DualstaffTier 1 · Magic · Instinct · Far · d6+3 mag · Two-Handed... [namelen=82 namehash=c9686662]
 EN
@@ -438,6 +437,7 @@ Supplements
 Tables
 Taryan's Morningstar
 Terms of use
+The Dragon's Vault
 Tuning Spear
 Two-Handed
 Unique
@@ -452,6 +452,6 @@ Warhammer
 Warhammer of Baz
 WarhammerTier 1 · Physical · Strength · Melee · d12+3 phy · Two-... [namelen=108 namehash=0f0f38af]
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

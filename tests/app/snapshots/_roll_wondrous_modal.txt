@@ -1,15 +1,15 @@
 # #/roll/wondrous ~ modal
-# route: #/roll/wondrous
+# route: #/roll/wondrous_environments
 # why: the card opened over the roll
 
 ## ru :: tree
-RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/roll/wondrous]
+RootWebArea "Wondrous Environments — Генератор лута — Daggerheart" [url=#/roll/wondrous_environments]
   dialog "Смола Бездны" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
     StaticText "1"
     StaticText "РАСХОДНИК"
-    StaticText "WONDROUS"
+    StaticText "WONDROUS ENVIRONMENTS"
     StaticText "Смола Бездны"
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
@@ -23,13 +23,13 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
 
 ## ru :: controls
 Arazo's Artifacts
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 Many Worlds Tavern
 RU
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Войти
@@ -46,6 +46,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Отправить
 Поиск
+Предметы сообществ
 Результат броска
 Скопировать изображение
 Скопировать название
@@ -53,7 +54,6 @@ daggerheart.com
 Скопировать текст
 Случайно 1–119
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Страница
 Таблицы
@@ -61,13 +61,13 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
+RootWebArea "Wondrous Environments — Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
   dialog "Abyssal Sap" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
     StaticText "1"
     StaticText "CONSUMABLE"
-    StaticText "WONDROUS"
+    StaticText "WONDROUS ENVIRONMENTS"
     StaticText "Abyssal Sap"
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
@@ -84,13 +84,12 @@ Add to list
 Alt. tables
 Arazo's Artifacts
 Close
-Communities
+Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
+Dread GM Toolbox
 EN
 How this works
 Install as an app
@@ -113,7 +112,8 @@ Standard rules
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

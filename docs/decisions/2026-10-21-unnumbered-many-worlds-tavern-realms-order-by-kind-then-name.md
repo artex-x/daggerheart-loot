@@ -1,6 +1,6 @@
 # 2026-10-21 - Unnumbered Many Worlds Tavern realms order by kind, then name
 
-- Task: `mwt-drome` (owner, 2026-10-21: Q1, Q3; realm order by release date).
+- Task: `mwt-drome` (owner, 2026-10-21: the Hornet Hold name and the Russian realm names; realm order by release date).
 - Decision: Hornet Hold (`hornet`, «Оплот Шершней», February 2026) and The Drome (`drome`,
   «Дром», March 2026) are the fifth and sixth realms of `mwt` (`app/src/lib/realms.ts`). Their
   cards print no number, so ids `mw82`-`mw92` and `mw93`-`mw109` and `roll` run weapons, armor,

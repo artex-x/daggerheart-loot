@@ -15,7 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -55,12 +55,12 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 1
 2
 Core
-Dread
+Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
-Wondrous
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Броня
@@ -113,7 +113,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1/f_kind-armor.ti
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -159,7 +159,7 @@ Armor
 Close
 Consumables
 Core
-Dread
+Dread GM Toolbox
 EN
 Far
 Filter link
@@ -194,6 +194,6 @@ Unique
 Upgradable
 Vault of Ages
 Weapons
-Wondrous
+Wondrous Environments
 daggerheart.com
 ЛутDaggerheart

@@ -15,14 +15,14 @@ RootWebArea "Королевская Брошь — Генератор лута �
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous]
+      link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Королевская Брошь" [level=1]
-    StaticText "Сообщества · Великородное · номер 1 "
-    link "показать в таблице" [url=#/tables/community/cm1]
+    StaticText "Предметы сообществ · Великородное · номер 1 "
+    link "показать в таблице" [url=#/tables/community_items/cm1]
     button "Страница"
     StaticText "1"
     ... StaticText x2 of 6 same-shape siblings elided
@@ -81,14 +81,14 @@ RootWebArea "Royal Brooch — Daggerheart Loot Generator" [url=#/i/cm1]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous]
+      link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Royal Brooch" [level=1]
-    StaticText "Communities · Highborne · roll 1 "
-    link "show in the table" [url=#/tables/community/cm1]
+    StaticText "Community items · Highborne · roll 1 "
+    link "show in the table" [url=#/tables/community_items/cm1]
     button "Page"
     StaticText "1"
     ... StaticText x2 of 6 same-shape siblings elided

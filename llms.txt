@@ -152,7 +152,7 @@ are tiered because a tier 3 sword is numerically stronger than a tier 1 one, and
 every piece of equipment here carries one, whichever book it came from. An
 artifact weapon carries `A` instead of a number, and `tier` takes `A` on an
 equipment table that holds one. Wondrous
-Loot is the awkward case: it prints no tier beside the item, but its "Loot items
+Environments is the awkward case: it prints no tier beside the item, but its "Loot items
 by environment" table binds each piece to a location, and the location has a
 tier — so the tier is read off the book rather than guessed from the damage.
 Plain loot from Core, Hope & Fear, Wondrous Environments, Dread GM Toolbox and the community items has no
