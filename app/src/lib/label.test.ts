@@ -99,6 +99,12 @@ describe("the print card's source line", () => {
     expect(printSrc(c, 'en')).toBe('Community items · Highborne');
   });
 
+  it('names Many Worlds Tavern and then the realm', () => {
+    const m = rec({ src: 'mwt', realm: 'sporopolis' });
+    expect(printSrc(m, 'ru')).toBe('Many Worlds Tavern · Спорополис');
+    expect(printSrc(m, 'en')).toBe('Many Worlds Tavern · Sporopolis');
+  });
+
   it('names only the frame for a campaign-frame record (D11, paid off)', () => {
     /* Used to print the full path (`Снаряжение · Сеттинги · <frame>`), the
        same special case the stat line's tier word got - both dropped

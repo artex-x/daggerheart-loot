@@ -127,14 +127,15 @@ export function srcName(key: string, lang: Lang): string {
  *
  * A table row's badge names the community, because other communities sit
  * beside it and the book is obvious. A card leaves the table and goes to the
- * table alone, so a community record also names the book it came from. A
+ * table alone, so a community record also names the book it came from; a Many
+ * Worlds Tavern record likewise names the supplement before its realm. A
  * frame record used to get the same treatment (D11, paid off) - the tag
  * `srcLabel` gives it is already the frame's own name, not a generic word, so
  * it names the card's source exactly as any other piece of equipment's tag
  * does.
  */
 export function printSrc(it: Record_, lang: Lang): string {
-  return it.src === 'community' || it.src === 'homebrew'
+  return it.src === 'community' || it.src === 'homebrew' || it.src === 'mwt'
     ? whereFrom(it, lang)
     : srcLabel(it, lang);
 }

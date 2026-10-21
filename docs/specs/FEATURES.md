@@ -1223,7 +1223,8 @@ browser lists writable after the date.
   Vault of Ages artifact or cursed object carries that word in the same line
   (`Vault of Ages · Артефакт` / `Vault of Ages · Artifact`, `· Проклятый
   предмет` / `· Cursed object`). The print card's source line and a generated
-  share stub's subtitle are paths too, and are held to the same rule. An
+  share stub's subtitle are paths too, and are held to the same rule: a Many Worlds Tavern card prints
+  `Many Worlds Tavern · Спорополис` / `Many Worlds Tavern · Sporopolis`. An
   equipment record's stub subtitle follows the path with its stat line,
   which drops the equipment type on the `eq_*` tables (the path names it)
   and the tier wherever the path already names it (a record with no roll
