@@ -9,7 +9,7 @@
 # blanket Disallow would break those as well.
 #
 # Readable data, for an agent someone has handed the link to:
-#   catalog-index.csv  1350 records, one per row, without the text
+#   catalog-index.csv  1431 records, one per row, without the text
 #   catalog.csv        the same rows with the text and the page link
 #   data.json          the same records in full
 #   llms.txt           what this is, the URL grammar, the list link format

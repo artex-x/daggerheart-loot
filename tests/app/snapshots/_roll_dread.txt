@@ -31,6 +31,7 @@ RootWebArea "Dread — Генератор лута — Daggerheart" [url=#/roll/
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–29)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
@@ -61,6 +62,7 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -120,6 +122,7 @@ RootWebArea "Dread — Daggerheart Loot Generator" [url=#/roll/dread]
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "ROLL RESULT (1–29)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
@@ -159,6 +162,7 @@ EN
 How this works
 Install as an app
 Lists
+Many Worlds Tavern
 One higher
 One lower
 Open this section on start

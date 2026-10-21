@@ -9,7 +9,7 @@ import {
 } from './tables.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
-describe('the twelve groups', () => {
+describe('the thirteen groups', () => {
   it('together cover every table id exactly once', () => {
     const all = TABLE_GROUPS.flatMap((g) => g.subs);
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
@@ -30,6 +30,7 @@ describe('the twelve groups', () => {
       'dv',
       'arazo',
       'comm',
+      'mwt',
       'hb'
     ]);
   });
@@ -68,7 +69,7 @@ describe('the tables page groups', () => {
     expect([...all].sort()).toEqual([...TABLE_IDS].sort());
   });
 
-  it('put the six supplement books under one chip, between the alternate tables and equipment', () => {
+  it('put the seven supplement books under one chip, between the alternate tables and equipment', () => {
     expect(TABLE_NAV.map((g) => g.id)).toEqual([
       'core',
       'hnf',
@@ -81,7 +82,7 @@ describe('the tables page groups', () => {
     const supp = navGroupOf('voa');
     expect(supp.label).toBe('grpSupplements');
     expect(supp.top).toBe('wondrous');
-    expect(supp.subs).toEqual(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community']);
+    expect(supp.subs).toEqual(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt']);
   });
 
   it('keep every other group as the path words have it', () => {
@@ -113,6 +114,7 @@ describe('the second-row caption on the tables page', () => {
     expect(navSubLabel('dv')).toBe('dv');
     expect(navSubLabel('arazo')).toBe('arazo');
     expect(navSubLabel('community')).toBe('community');
+    expect(navSubLabel('mwt')).toBe('mwt');
   });
 
   it('keeps the short sub-table word where one exists', () => {

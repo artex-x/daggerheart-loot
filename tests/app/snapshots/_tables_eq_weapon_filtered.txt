@@ -42,11 +42,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Двуручное" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "48 из 437"
+    StaticText "48 из 453"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x27 of 31 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     button "Двуручное" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -90,6 +90,7 @@ Dragon's Vault
 Dread
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -268,11 +269,11 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     button "Two-Handed" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "48 of 437"
+    StaticText "48 of 453"
     ... StaticText x12 of 16 same-shape siblings elided
     button "1" [pressed=true]
     button "2" [pressed=false]
-    ... button x27 of 31 same-shape siblings elided
+    ... button x28 of 32 same-shape siblings elided
     button "Two-Handed" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -386,6 +387,7 @@ LongbowTier 1 · Physical · Agility · Very Far · d8+3 phy · Two-H... [namele
 Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]
 Magic
+Many Worlds Tavern
 Melee
 Ogre-teeth Club
 One-Handed

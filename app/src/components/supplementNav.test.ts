@@ -26,7 +26,8 @@ describe('SupplementNav', () => {
       'Vault of Ages',
       "Dragon's Vault",
       "Arazo's Artifacts",
-      'Сообщества'
+      'Сообщества',
+      'Many Worlds Tavern'
     ]);
   });
 

@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Eight modes. Each keeps its own input in memory only. A mode starts at its
+Nine modes. Each keeps its own input in memory only. A mode starts at its
 first row on every visit: a switch between two modes carries no number
 across.
 
@@ -20,6 +20,7 @@ across.
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
 | Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
 | Communities | community + 1-10 | 1 | `comm {c, n}` |
+| Many Worlds Tavern | realm + 1-20 (1-21 in Warrin' Warrens) | 1 | `mwt {r, n}` |
 
 - The source switch on Core rules cannot be emptied - unticking the last one is
   refused.
@@ -43,16 +44,17 @@ across.
   500 px wide, 150 px under 1000 px and 130 px above (`tests/app/sweep.js`).
   Six group chips (seven signed in, with Homebrew) and the second row of
   seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
-  1180 (measured 2026-10-20).
-- The six supplement modes (Wondrous to Communities) share one header tab,
+  1180 in Russian signed out (measured 2026-10-21, with Many Worlds Tavern).
+- The seven supplement modes (Wondrous to Many Worlds Tavern) share one header tab,
   «Дополнения» / "Supplements"
   (`docs/decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md`).
   Each of their pages draws a panel under its heading with one chip per
   supplement, in table order, each a link to its section; the open one is gold
   and the current page. The chip reads the section's own word. Core rules and
-  the alternate tables draw no panel. The panel measures 162 px at 360 and
-  390, 119 px at 768 and 75 px at 1180; on a 360x740 phone the roll button
-  then sits at 523 px on Wondrous and 755 px on Communities, below the fold
+  the alternate tables draw no panel. With its seven chips the panel measures
+  162 px at 360 and 390, 119 px at 768 and 75 px at 1180 (measured 2026-10-21);
+  on a 360x740 phone the roll button then sits at 523 px on Wondrous, 624 px on
+  Many Worlds Tavern and 755 px on Communities, the last below the fold
   (accepted by the owner, 2026-10-20).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
@@ -67,8 +69,19 @@ across.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
-- Vault of Ages sections are different lengths, so changing section resets the
-  roll: a number from one section would point past the end of another.
+- Vault of Ages sections, communities and Many Worlds Tavern realms are
+  different lengths, so changing the part resets the roll to 1: a number from
+  one part would point past the end of another. One panel draws the three
+  pickers (`PickerRollPanel.svelte`). A realm is a fixed chip: with no
+  `mwt` rows (a `data.js` from before the source, held in the HTTP cache) the
+  page says that the data did not load, as every roll page does with no rows.
+- Many Worlds Tavern is four card sets, one per realm, in release order:
+  Sporopolis, Wagerwood, Warrin' Warrens (21 cards, so its button picks 1-21
+  at random) and Godsvale. A record's badge, the equipment table's row badge
+  and the print card name its realm («Спорополис»), as a frame record names
+  its frame; the equipment `src` chip reads "Many Worlds Tavern", one value
+  for the four realms. The printed rarity is not shipped, and the domain cards
+  of the sets are not loot.
 - The number field accepts digits only, clamps to the range, and keeps the caret
   where the person put it. On the list page an empty field means "no roll yet";
   on roll pages it waits for `change`.
@@ -84,12 +97,12 @@ across.
 
 ## Tables and search
 
-- 18 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
-  the eighteenth, `homebrew`, has its group chip signed in only.
+- 19 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
+  the nineteenth, `homebrew`, has its group chip signed in only.
 - The group chips are Core, Hope & Fear, the alternate tables, «Дополнения» /
   "Supplements", Equipment, Other and, signed in, Homebrew (`TABLE_NAV`).
   «Дополнения» opens Wondrous Loot and is lit on each supplement table; its
-  second row holds the six books by their own names. A record's path
+  second row holds the seven books by their own names, in `SUPPLEMENTS` order. A record's path
   (`whereFrom`, the stubs under `i/`) keeps the book and never says
   «Дополнения».
   The switch changes the view until the page reloads; the default is the
@@ -97,7 +110,7 @@ across.
   the default, a build with sign-in draws the note «Только до перезагрузки.
   Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
   last words a link to `#/account`.
-- Search covers all 1350 records: names, descriptions and stat lines, both
+- Search covers all 1431 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -146,13 +159,15 @@ across.
   `homebrew` they keep the app address `<site>[en/]#/tables/homebrew...`. The
   card: the table's name in the stub's words («Core · Предметы»), «N
   позиций» / "N items" of the table, a community or frame block's label and
-  count («Сообщество: Великородное. 10 позиций»), the `comm` and `frame`
+  count («Сообщество: Великородное. 10 позиций»), a realm block's label and
+  count («Мир: Воюющие Норы. 21 позиция»), the `comm`, `frame` and `realm`
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 437 weapons, 127 secondary, 108 armour. The `src` facet is how you
+  two books**: 453 weapons, 133 secondary, 112 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
-  The Dragon's Vault, Arazo's Artifacts, Wondrous and Dread equipment appears there too.
+  The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Wondrous and Dread
+  equipment appears there too.
 - An equipment table is sectioned by tier, `Ранг 1` to `Ранг 4`, then
   `Артефакты` (key `tA`) for equipment the book prints in its Artifacts
   section (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
@@ -1592,6 +1607,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
   «Тип урона», «Хват», each *, and the disclosure «Второй набор
   характеристик», for armour «Показатель брони» * and «Пороги урона» *.
+  «Характеристика» and the second set's offer the six traits, «Характеристика
+  Заклинателя» and «Любая» / "Any" (`any`, the weapon takes any trait, as the
+  catalog's mw47 does; owner, 2026-10-21).
   «Артефакт» and «Проклятый предмет» are Vault of Ages categories: a new
   item cannot take them, and an item stored with one shows it after 4,
   pressed, until a saved change of the tier drops it; the store and the
@@ -2196,7 +2214,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   on all your devices. A tables view or a print layout picked on its own
   page is kept only until the page reloads.", then five rows with six
   controls, each saving the account row: «Язык» (the RU/EN switch); «Раздел при
-  запуске» / "Section on start" (a select over the eleven sections; choosing
+  запуске» / "Section on start" (a select over the twelve sections; choosing
   «Таблицы» pins `#/tables/core_item`, the table a bare `#/tables` opens
   on, never the bare address (`STATE.md`, "localStorage keys"); a pinned
   table, or an older bare `#/tables` pin, shows as «Таблицы» and keeps its
@@ -2216,7 +2234,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 
 ## Chrome
 
-- Language switch, tab bar, skip link, starting-section pin (ten sections
+- Language switch, tab bar, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   never a record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
@@ -2298,13 +2316,14 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 - The tab bar draws six tabs: «Обычные правила», «Альт. таблицы»,
   «Дополнения», then «Таблицы», «Списки», «Поиск» ("Standard rules", "Alt.
   tables", "Supplements", "Tables", "Lists", "Search"). «Дополнения» links to
-  `#/roll/wondrous` and is lit, with `aria-current="page"`, on each of the six
+  `#/roll/wondrous` and is lit, with `aria-current="page"`, on each of the seven
   supplement sections. From the legacy write cutoff (2026-10-26,
   `legacyWritable`) a build with sign-in draws five, without «Списки»:
   `#/lists` is then reached from the account menu (`ROUTES.md`, "Sections").
-  A build with no sign-in keeps six. From 640 px the tabs hold one row in both
-  languages (607 px in Russian, 510 in English); the header is 106 px. Under
-  640 px the row scrolls sideways and the header is 112 px.
+  A build with no sign-in keeps six. At 768 and 1180 px the tabs hold one row
+  in both languages, measured: 607 px in Russian, 510 in English, and the
+  header is 106 px. Under 640 px the row scrolls sideways and the header is
+  112 px.
 - No tab is lit on a record, a list page, a print sheet or the account page -
   the live `renderTabs` compared against the raw route string, and none of
   those route kinds was ever that string.
@@ -2357,7 +2376,7 @@ Each rule keeps its number: a review cites it by number.
   the same way. Departure until 2026-10-26: the tab bar, the pin label and
   the window title of `#/lists` say «Списки» / "Lists" for the page headed
   «Мои списки» / "My lists". Departure: the «Дополнения» / "Supplements" tab
-  names the six supplement pages as one group; each page's own word is on its
+  names the seven supplement pages as one group; each page's own word is on its
   chip in the supplements panel ("Rolling").
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>

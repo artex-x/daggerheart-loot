@@ -42,6 +42,7 @@ const TABLES = [
   'voa',
   'dv',
   'arazo',
+  'mwt',
   'frames',
   'community',
   'alt_item',
@@ -92,6 +93,7 @@ const PAGES = [
   ['#/roll/dv', "dragon's vault"],
   ['#/roll/arazo', "arazo's artifacts"],
   ['#/roll/community', 'сообщества'],
+  ['#/roll/mwt', 'many worlds tavern'],
   ['#/lists', 'списки'],
   ['#/lists/a', 'список'],
   ['#/lists/b', 'вторая сумка'],
@@ -111,6 +113,7 @@ const PAGES = [
   ['#/i/voa4_a3', 'артефакт-оружие Vault of Ages'],
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
+  ['#/i/mw47', 'карточка с любой характеристикой'],
   ['#/i/nope', 'предмета нет'],
   /* The four craft-heavy worst cases the legacy craftmob.js swept - the
    * mobile craft block and the dice bar overflow checks below need a page that actually
@@ -129,7 +132,8 @@ const PAGES = [
   .concat([
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
-    ['#/tables/community/Seaborne', 'якорь сообщества']
+    ['#/tables/community/Seaborne', 'якорь сообщества'],
+    ['#/tables/mwt/warrens', 'якорь мира']
   ])
   /* The print page's states and the three print prompts, signed out at every width. */
   .concat([
@@ -420,8 +424,9 @@ async function focusWalk(page, where) {
   }
 }
 
-/** Returns the anchored section's top and the header's bottom once the scroll settles. */
-async function landedUnderHeader(page) {
+/** Returns the scroll offset, the anchored section's top and the header's bottom once the
+ *  scroll settles. */
+async function landedUnderHeader(page, id) {
   let last = -1;
   for (let i = 0; i < 60; i++) {
     const y = await page.evaluate(() => window.scrollY);
@@ -429,14 +434,15 @@ async function landedUnderHeader(page) {
     last = y;
     await new Promise((r) => setTimeout(r, 100));
   }
-  return page.evaluate(() => {
-    const sec = document.getElementById('sec-tA');
+  return page.evaluate((id) => {
+    const sec = document.getElementById(id);
     const head = document.querySelector('header');
     return {
+      scrollY: window.scrollY,
       section: sec ? Math.round(sec.getBoundingClientRect().top) : null,
       header: head ? Math.round(head.getBoundingClientRect().bottom) : 0
     };
-  });
+  }, id);
 }
 
 (async () => {
@@ -554,7 +560,7 @@ async function landedUnderHeader(page) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community|mwt)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -591,7 +597,7 @@ async function landedUnderHeader(page) {
           where + ': link to nowhere — ' + rep2.badLinks.slice(0, 3).join(', ')
         );
         ok(!rep2.craftBad.length, where + ': craft — ' + rep2.craftBad.slice(0, 3).join(' | '));
-        /* Six tabs hold one row from 640 px in both languages: docs/specs/FEATURES.md, "Chrome". */
+        /* Six tabs hold one row at 768 and 1180 in both languages: docs/specs/FEATURES.md, "Chrome". */
         if (width >= 768)
           ok(rep2.tabRows <= 1, where + ': the header tabs wrap to ' + rep2.tabRows + ' rows');
 
@@ -602,8 +608,8 @@ async function landedUnderHeader(page) {
               ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
               : 0;
           });
-          /* Six group chips, seven signed in, and a second row of up to seven
-             books: docs/specs/FEATURES.md, "Tables and search". */
+          /* Six group chips, seven signed in, and a second row of seven books: 283, 118 and
+             79 px at 360, 768 and 1180 (2026-10-21); docs/specs/FEATURES.md, "Rolling". */
           const cap = width < 500 ? 300 : width < 1000 ? 150 : 130;
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
@@ -636,14 +642,23 @@ async function landedUnderHeader(page) {
           }
         }
       }
-      /* A section link lands with its heading below the sticky header. */
-      {
-        const where = 'раздел таблицы #/tables/voa/tA @' + width + ' ' + lang;
-        await d.open('#/tables/voa/tA');
-        const at = await landedUnderHeader(page);
+      /* A section link scrolls, and lands with its heading just below the sticky header:
+         at or under its bottom, and within 40 px of it. */
+      for (const [hash, id] of [
+        ['#/tables/voa/tA', 'sec-tA'],
+        ['#/tables/mwt/warrens', 'sec-warrens']
+      ]) {
+        const where = 'раздел таблицы ' + hash + ' @' + width + ' ' + lang;
+        await d.open(hash);
+        const at = await landedUnderHeader(page, id);
+        ok(at.scrollY > 0, where + ': the page did not scroll to the section');
         ok(
-          at.section !== null && at.section >= at.header - 1,
-          where + ': the section top ' + at.section + ' is above the header bottom ' + at.header
+          at.section !== null && at.section >= at.header - 1 && at.section <= at.header + 40,
+          where +
+            ': the section top ' +
+            at.section +
+            ' is not within 40 px under the header bottom ' +
+            at.header
         );
       }
       await ctx.close();

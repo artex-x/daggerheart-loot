@@ -13,7 +13,8 @@ export const SUPPLEMENTS = [
   'roll/voa',
   'roll/dv',
   'roll/arazo',
-  'roll/community'
+  'roll/community',
+  'roll/mwt'
 ] as const satisfies readonly Section[];
 
 /** Returns whether a section is a supplement, that is, drawn under the supplements tab. */

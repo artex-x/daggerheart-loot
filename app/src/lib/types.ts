@@ -2,6 +2,7 @@
    bar understands - with no assumption about who renders any of it. */
 
 import type { FrameId } from './frames.js';
+import type { Realm } from './realms.js';
 
 export type Lang = 'ru' | 'en';
 
@@ -27,8 +28,8 @@ export const CHARACTER_TRAITS = [
 ] as const;
 
 /** `spellcast` is a weapon that uses its wielder's Spellcast trait, whichever
- *  of the six that is. */
-export type Trait = (typeof CHARACTER_TRAITS)[number] | 'spellcast';
+ *  of the six that is; `any` is a weapon its wielder attacks with by any trait. */
+export type Trait = (typeof CHARACTER_TRAITS)[number] | 'spellcast' | 'any';
 
 export type Range = 'melee' | 'veryclose' | 'close' | 'far' | 'veryfar';
 
@@ -49,6 +50,7 @@ export const TABLE_IDS = [
   'voa',
   'dv',
   'arazo',
+  'mwt',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -68,7 +70,7 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The eleven sections: what may be pinned as the start. The tab bar draws six tabs
+/** The twelve sections: what may be pinned as the start. The tab bar draws six tabs
  *  over them; the supplements share one (`nav.ts`). */
 export const SECTIONS = [
   'roll/std',
@@ -79,6 +81,7 @@ export const SECTIONS = [
   'roll/dv',
   'roll/arazo',
   'roll/community',
+  'roll/mwt',
   'tables',
   'lists',
   'search'
@@ -165,6 +168,8 @@ export interface Record_ {
   starting?: boolean;
   community?: string;
   community_ru?: string;
+  /** The Many Worlds Tavern realm, the card set the record is printed in. */
+  realm?: Realm;
   /** The set this record belongs to; members are derived by grouping, never
    *  stored. A lowercase key, `[a-z0-9-]+`. */
   set?: string;

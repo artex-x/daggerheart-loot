@@ -40,6 +40,7 @@ const PLAIN_GROUPS: Partial<Record<TableId, readonly string[]>> = {
   dread: ['kind'],
   dv: ['kind'],
   arazo: ['kind'],
+  mwt: ['kind', 'realm'],
   voa: ['kind', 'tier'],
   other_frames: ['kind', 'frame'],
   community: ['comm'],

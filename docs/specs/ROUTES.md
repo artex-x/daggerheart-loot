@@ -20,19 +20,20 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 | `#/roll/dv` | The Dragon's Vault, 1-145 |
 | `#/roll/arazo` | Arazo's Artifacts, 1-78 |
 | `#/roll/community` | Community items, community plus 1-10 |
+| `#/roll/mwt` | Many Worlds Tavern, realm plus 1-20 (1-21 in Warrin' Warrens) |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These eleven (`SECTIONS`) are what a person may pin as their starting
-section - ten pin as their own hash; `#/tables` pins as
+These twelve (`SECTIONS`) are what a person may pin as their starting
+section - eleven pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
 The tab bar draws six tabs over them: Core rules, the alternate tables, one
-«Дополнения» / "Supplements" tab for the six supplement sections (`roll/wondrous`
-to `roll/community`, `app/src/lib/nav.ts`), Tables, Lists and Search. The
+«Дополнения» / "Supplements" tab for the seven supplement sections (`roll/wondrous`
+to `roll/mwt`, `app/src/lib/nav.ts`), Tables, Lists and Search. The
 supplements tab links to `#/roll/wondrous`; every supplement address stays its
 own section (`FEATURES.md`, "Chrome").
 
@@ -59,7 +60,7 @@ working and keeps its own text.
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
 Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `arazo`, `other_starting`, `other_frames`, `alt_item`,
+`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `arazo`, `mwt`, `other_starting`, `other_frames`, `alt_item`,
 `alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`.
 
 `frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
@@ -75,7 +76,7 @@ Changing to a different, valid table folds the filter panel and clears the
 filter.
 
 A tail that does not start with `f_` is an anchor - a block to scroll to, such
-as `rare` on `alt_item` or `Seaborne` on `community`.
+as `rare` on `alt_item`, `Seaborne` on `community` or `warrens` on `mwt`.
 
 ### Filter grammar
 
@@ -103,6 +104,7 @@ Group keys, by table:
 | `other_starting` | none |
 | `other_frames` | `kind`, `frame` |
 | `community` | `comm` |
+| `mwt` | `kind`, `realm` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 | `#/s/<token>` | `kind`, `src`, `tier`, `cls`, `trait`, `range`, `burden`, `line` |
@@ -113,7 +115,9 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `melee`, `veryclose`, `close`, `far`, `veryfar`; `burden` `1`/`2`; `line`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
-community name. On `homebrew` and the equipment tables `src` also takes `hb`
+community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`. A
+weapon of trait `any` answers every `trait` value, as a `spellcast` one does;
+`any` is no value of its own. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own
 section's key. Such a value lives in one account: on the equipment tables
 another account's key narrows to nothing, as any unknown value does.

@@ -641,7 +641,7 @@ const COVERED: Record<string, string> = {
   'StdPanel.svelte': 'std.test.ts, and both pressed states below',
   'Button.svelte':
     'the roll button and the card actions, on every roll page; the second set disclosure in homebrewEditor.test.ts',
-  'Chip.svelte': 'the Vault of Ages and community pickers - sections.test.ts and above',
+  'Chip.svelte': 'the Vault of Ages, community and realm pickers - sections.test.ts and above',
   'AltPanel.svelte': 'alt.test.ts, and the critical-success state below',
   'BatchBar.svelte':
     'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
@@ -649,7 +649,6 @@ const COVERED: Record<string, string> = {
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
-  'CommunityPanel.svelte': 'sections.test.ts, and in English above',
   'Die.svelte': 'the roll button on every roll page',
   'Empty.svelte': "tables.test.ts's nothing-found states, and the lists index above",
   'Field.svelte': 'the number row on every roll page, and both pickers',
@@ -666,6 +665,8 @@ const COVERED: Record<string, string> = {
   'NumberField.svelte': 'the number row on every roll page',
   'NumRow.svelte': 'the number row on every roll page, and the lists index above',
   'PageHead.svelte': 'the heading of every roll page, with both help states above',
+  'PickerRollPanel.svelte':
+    'sections.test.ts: Vault of Ages, communities and the realms, and in English above',
   'PageTitle.svelte':
     "record.test.ts's record and not-found pages, listPage/printPage/sharedListPage.test.ts",
   'Panel.svelte': 'every roll page state above, the lists index and search',
@@ -723,8 +724,7 @@ const COVERED: Record<string, string> = {
   'TableRows.svelte': "tables.test.ts's sectioned-body axe check, and the plain table above",
   'TablesPage.svelte': 'tables.test.ts, and the pressed states below',
   'UpdatedLine.svelte':
-    'itemPage.test.ts just now, minutes and days, and the share links in sharedListPage.test.ts',
-  'VoaPanel.svelte': 'sections.test.ts, and in English above'
+    'itemPage.test.ts just now, minutes and days, and the share links in sharedListPage.test.ts'
 };
 
 describe('the guard', () => {

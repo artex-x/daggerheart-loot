@@ -31,6 +31,7 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "СООБЩЕСТВО"
     button "Великородное" [pressed=true]
     button "Научное" [pressed=false]
@@ -67,6 +68,7 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -135,6 +137,7 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "COMMUNITY"
     button "Highborne" [pressed=true]
     button "Loreborne" [pressed=false]
@@ -182,6 +185,7 @@ How this works
 Install as an app
 Lists
 Loreborne
+Many Worlds Tavern
 One higher
 One lower
 Open this section on start

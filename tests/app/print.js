@@ -549,6 +549,40 @@ const { ok } = rep;
   await colour();
   await d.settle();
 
+  /* The trait «Любая» fits its cell on every layout, and the card names its realm. */
+  for (const [isBw, isCompact] of [
+    [false, false],
+    [true, false],
+    [false, true],
+    [true, true]
+  ]) {
+    const how = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '') + ': ';
+    await openPrint(d, 'mw47');
+    if (isBw) await bw();
+    if (isCompact) await compact();
+    await d.settle();
+    const trait = await page.$eval('.pc-c2 .pc-box b', (e) => e.textContent.trim());
+    ok(trait === 'Любая', how + 'Standard Issue Slicer trait: ' + trait);
+    const clipped = await page.$$eval('.pc-strip .pc-box b', (all) => {
+      const rng = document.createRange();
+      return all
+        .filter((v) => {
+          rng.selectNodeContents(v);
+          return rng.getBoundingClientRect().width > v.clientWidth + 1;
+        })
+        .map((v) => v.textContent);
+    });
+    ok(
+      !clipped.length,
+      how + 'Standard Issue Slicer strip text is clipped: ' + clipped.join(', ')
+    );
+    const src = await page.$eval('.pc-bottom span:last-child', (e) => e.textContent.trim());
+    ok(src === 'Воюющие Норы', how + 'Standard Issue Slicer source line: ' + src);
+    await colour();
+    await d.click('Обычная');
+    await d.settle();
+  }
+
   /* Each die has its own shape, and colour follows the weapon's class:
      physical gold, magical blue-violet. */
   console.log('die by class');

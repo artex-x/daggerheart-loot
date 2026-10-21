@@ -231,6 +231,29 @@
       }
     },
     {
+      "name": "a weapon of any trait, its second set any too",
+      "content": {
+        "kind": "equip",
+        "en": "Slicer",
+        "eq": {
+          "t": "weapon",
+          "tier": 1,
+          "cls": "phy",
+          "tr": "any",
+          "rg": "melee",
+          "dmg": "d6",
+          "dt": "phy",
+          "bu": 1,
+          "alt": {
+            "tr": "any",
+            "rg": "close",
+            "dmg": "d6",
+            "dt": "phy"
+          }
+        }
+      }
+    },
+    {
       "name": "loot that upgrades into a catalog and an own record and is made from one",
       "content": {
         "kind": "item",
@@ -1006,6 +1029,29 @@
       "problems": [
         {
           "path": "eq.bu",
+          "rule": "enum"
+        }
+      ]
+    },
+    {
+      "name": "the trait luck",
+      "content": {
+        "kind": "equip",
+        "ru": "Клинок",
+        "eq": {
+          "t": "weapon",
+          "tier": 2,
+          "cls": "mag",
+          "tr": "luck",
+          "rg": "melee",
+          "dmg": "d10+2",
+          "dt": "mag",
+          "bu": 1
+        }
+      },
+      "problems": [
+        {
+          "path": "eq.tr",
           "rule": "enum"
         }
       ]

@@ -36,6 +36,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Dragon's Vault" [url=#/tables/dv]
     link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
+    link "Many Worlds Tavern" [url=#/tables/mwt]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -211,6 +212,7 @@ Dragon's Vault
 Dread GM Toolbox
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous Loot
@@ -416,6 +418,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dv]
     link "Dragon's Vault" [url=#/tables/dv]
     link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
+    link "Many Worlds Tavern" [url=#/tables/mwt]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -681,6 +684,7 @@ List
 Listening Coins
 Lists
 Love Spoon
+Many Worlds Tavern
 Mistweave Brooch
 Monarch's Fortune
 Monster-Squashing Potion

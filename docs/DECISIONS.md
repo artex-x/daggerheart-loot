@@ -14,7 +14,12 @@ deleted.
 
 ## Index
 
+- 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
+- 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)
 - 2026-10-20 - [Supplement roll sections share one tab and a chip panel](decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md)
+- 2026-10-18 - [Many Worlds Tavern equipment keeps its printed stats](decisions/2026-10-18-many-worlds-tavern-equipment-keeps-its-printed-stats.md)
+- 2026-10-18 - [Many Worlds Tavern is source mwt, rolled inside one realm](decisions/2026-10-18-many-worlds-tavern-is-source-mwt-rolled-inside-one-realm.md)
+- 2026-10-18 - [Many Worlds Tavern ships no rarity and no flavor text](decisions/2026-10-18-many-worlds-tavern-ships-no-rarity-and-no-flavor-text.md)
 - 2026-10-16 - [An account delete removes its purchase requests in bounded calls first](decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md)
 - 2026-10-15 - [A shared page re-read names its held snapshots by hash](decisions/2026-10-15-a-shared-page-re-read-names-its-held-snapshots-by-hash.md)
 - 2026-10-15 - [A statement timeout halves a request at once](decisions/2026-10-15-a-statement-timeout-halves-a-request-at-once.md)

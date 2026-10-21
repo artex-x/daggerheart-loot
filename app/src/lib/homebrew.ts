@@ -339,7 +339,8 @@ const TRAITS: readonly unknown[] = [
   'instinct',
   'presence',
   'knowledge',
-  'spellcast'
+  'spellcast',
+  'any'
 ];
 const RANGES: readonly unknown[] = ['melee', 'veryclose', 'close', 'far', 'veryfar'];
 const DAMAGE: readonly unknown[] = ['phy', 'mag', 'any'];

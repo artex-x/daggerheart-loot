@@ -2720,6 +2720,23 @@ previous frontend never names the overload and calls `delete_account()`
 alone, and this one does both after `PGRST202`. Push a new migration whose
 body is the reversal file.
 
+To undo `20261021120000_homebrew_trait_any`, revert the app alone: the
+previous frontend writes the seven traits, which the widened
+`homebrew_content_valid()` takes. Its editor refuses to save an `any` item
+until the author picks a trait, and its pages drop a linked `any` item of
+another account; the rows stay. Narrow the database too only as a second
+push, a new migration whose body is the reversal file, and push it only
+after this read gives 0:
+
+```sql
+select count(*) from public.homebrew_items
+where content #>> '{eq,tr}' = 'any' or content #>> '{eq,alt,tr}' = 'any';
+```
+
+A CHECK runs on every UPDATE: after the narrowing, such an item refuses
+every save, the delete of its source fails (`on delete set null` updates the
+item), and a backup restore into the narrowed database refuses those rows.
+
 ### Usage monitoring
 
 `.github/workflows/usage.yml` reports production's free-plan usage every

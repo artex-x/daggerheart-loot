@@ -48,6 +48,7 @@ describe('the label rule (S1)', () => {
     assert.equal(isLabelled({ eq: { t: 'weapon' }, src: 'core' }), true);
     assert.equal(isLabelled({ src: 'voa' }), true);
     assert.equal(isLabelled({ src: 'arazo' }), true);
+    assert.equal(isLabelled({ src: 'mwt' }), true);
     assert.equal(isLabelled({ src: 'wondrous' }), false);
     assert.equal(en('Sharp: very'), 'Sharp: very');
   });

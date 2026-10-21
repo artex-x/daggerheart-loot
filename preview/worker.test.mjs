@@ -58,14 +58,21 @@ const NAMES = {
     alt_item: { n: 120 },
     eq_weapon: { n: 437 },
     community: { n: 90 },
-    other_frames: { n: 95 }
+    other_frames: { n: 95 },
+    mwt: { n: 81 }
   },
   communities: {
     Highborne: { ru: 'Великородное', n: 10 },
     Loreborne: { ru: 'Научное', n: 10 },
     Orderborne: { ru: 'Догматичное', n: 10 }
   },
-  frames: { beast_feast: { n: 36 }, colossus: { n: 21 } }
+  frames: { beast_feast: { n: 36 }, colossus: { n: 21 } },
+  realms: {
+    sporopolis: { n: 20 },
+    wagerwood: { n: 20 },
+    warrens: { n: 21 },
+    godsvale: { n: 20 }
+  }
 };
 
 /* get_item_preview's item keys: the record's drawn keys only. */
@@ -1239,6 +1246,14 @@ describe('/tables/: a catalog table', () => {
     const f = await card('/tables/other_frames/beast_feast');
     assert.equal(meta(f.body, 'og:title'), 'Прочее · Сеттинги · Пир зверей');
     assert.equal(meta(f.body, 'og:description'), 'Сеттинг: Пир зверей. 36 позиций');
+    const r = await card('/tables/mwt/warrens');
+    assert.equal(meta(r.body, 'og:title'), 'Many Worlds Tavern · Воюющие Норы');
+    assert.equal(meta(r.body, 'og:description'), 'Мир: Воюющие Норы. 21 позиция');
+    assertRedirect(r.body, SITE + '#/tables/mwt/warrens');
+    assert.equal(
+      meta((await card('/en/tables/mwt/warrens')).body, 'og:description'),
+      'Realm: Warrin&#39; Warrens. 21 items'
+    );
   });
 
   it('labels a filter with no count', async () => {
@@ -1259,6 +1274,10 @@ describe('/tables/: a catalog table', () => {
     assertRedirect(alias.body, SITE + '#/tables/frames/f_frame-beast_feast-colossus');
     const legacy = await card('/tables/other_frames/f_kind-armor_frame-colossus');
     assert.equal(meta(legacy.body, 'og:description'), 'Сеттинг: Колоссы Сухоземья');
+    const realm = await card('/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
+    assert.equal(meta(realm.body, 'og:title'), 'Many Worlds Tavern');
+    assert.equal(meta(realm.body, 'og:description'), 'Мир: Спорополис, Долина Богов');
+    assertRedirect(realm.body, SITE + '#/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
   });
 
   it('draws the open line for a filter with no labelled group, and the plain card for an unlabelled anchor', async () => {

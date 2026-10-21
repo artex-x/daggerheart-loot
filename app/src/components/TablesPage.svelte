@@ -59,6 +59,7 @@
     type FilterState
   } from '../lib/filters.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
+  import { REALM_ORDER, realmName } from '../lib/realms.js';
   import { homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import {
@@ -308,10 +309,10 @@
   }
 
   /* Which body shape this table draws, off `renderTables()`'s own branches:
-     a plain list, or one split by tier, frame, community, the equipment
+     a plain list, or one split by tier, frame, community, realm, the equipment
      tables' own tier sections, or the alternate tables' rarity/hope-fear
      columns. */
-  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'eq' | 'alt' | 'hb';
+  type BodyKind = 'plain' | 'tier' | 'other' | 'comm' | 'realm' | 'eq' | 'alt' | 'hb';
   const bodyKind = $derived<BodyKind>(
     eqKind
       ? 'eq'
@@ -323,9 +324,11 @@
             ? 'other'
             : table === 'community'
               ? 'comm'
-              : table === 'alt_item' || table === 'alt_consumable'
-                ? 'alt'
-                : 'plain'
+              : table === 'mwt'
+                ? 'realm'
+                : table === 'alt_item' || table === 'alt_consumable'
+                  ? 'alt'
+                  : 'plain'
   );
 
   interface Section {
@@ -365,6 +368,16 @@
       .filter((s) => s.entries.length > 0);
   });
 
+  const realmSections = $derived.by<Section[]>(() =>
+    bodyKind !== 'realm'
+      ? []
+      : REALM_ORDER.map((id) => ({
+          key: id,
+          label: realmName(id, app.lang),
+          entries: filtered.filter((it) => it.realm === id).map((it) => ({ it }))
+        })).filter((s) => s.entries.length > 0)
+  );
+
   /* The equipment tables' own tier sections, off `renderEquipTable`
      (app.js 2735-2761): `voa`'s tier body without cursed objects (`t1`-`t4`,
      then `tA` for artifact equipment) and a different source field
@@ -396,9 +409,9 @@
         }))
   );
 
-  /* One list, whichever of the five above is actually populated - `bodyKind`
+  /* One list, whichever of the six above is actually populated - `bodyKind`
      gates them so only one ever is, and the template draws them through a
-     single branch rather than five copies of the same markup. */
+     single branch rather than six copies of the same markup. */
   const activeSections = $derived<Section[]>(
     bodyKind === 'tier'
       ? tierSections
@@ -406,11 +419,13 @@
         ? otherSections
         : bodyKind === 'comm'
           ? commSections
-          : bodyKind === 'eq'
-            ? eqSections
-            : bodyKind === 'hb'
-              ? hbSections
-              : []
+          : bodyKind === 'realm'
+            ? realmSections
+            : bodyKind === 'eq'
+              ? eqSections
+              : bodyKind === 'hb'
+                ? hbSections
+                : []
   );
 
   interface AltCol {
@@ -716,7 +731,7 @@
             <Button size="sm" onclick={resetFacets}>{t.resetAll}</Button>
           {/if}
         </Empty>
-      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'eq' || bodyKind === 'hb'}
+      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'realm' || bodyKind === 'eq' || bodyKind === 'hb'}
         {#each activeSections as s (s.key)}
           <div
             class="tsection"

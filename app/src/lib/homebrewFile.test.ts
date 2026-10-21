@@ -257,7 +257,8 @@ describe('the schema and the validator (the drift guard)', () => {
       'instinct',
       'presence',
       'knowledge',
-      'spellcast'
+      'spellcast',
+      'any'
     ]);
     expect(def('range').enum).toEqual(['melee', 'veryclose', 'close', 'far', 'veryfar']);
     expect(def('damageType').enum).toEqual(['phy', 'mag', 'any']);
@@ -409,6 +410,29 @@ describe('parseHomebrew', () => {
       { path: 'items[4].section', rule: 'unknown' },
       { path: 'items[5].section', rule: 'unknown' }
     ]);
+  });
+
+  it('imports a homebrew-v1 weapon of any trait, its second set any too', () => {
+    const text = doc({
+      items: [
+        item(0, {
+          kind: 'equip',
+          eq: {
+            t: 'weapon',
+            tier: 1,
+            cls: 'phy',
+            tr: 'any',
+            rg: 'melee',
+            dmg: 'd6',
+            dt: 'phy',
+            bu: 1,
+            alt: { tr: 'any', rg: 'close', dmg: 'd6', dt: 'phy' }
+          }
+        })
+      ]
+    });
+    const [only] = okOf(parseHomebrew(text, CTX)).file.items;
+    expect(only?.eq).toMatchObject({ tr: 'any', alt: { tr: 'any' } });
   });
 
   it('refuses a line whose known members hold another equipment type, and leaves out an own item the file replaces', () => {

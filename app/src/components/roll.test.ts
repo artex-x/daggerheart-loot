@@ -382,7 +382,7 @@ describe('the supplements panel', () => {
     const nav = panel();
     expect(nav).not.toBeNull();
     const links = within(nav as HTMLElement).getAllByRole('link');
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(7);
     expect(
       links
         .filter((a) => a.getAttribute('aria-current') === 'page')

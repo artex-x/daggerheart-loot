@@ -302,6 +302,57 @@
       }
     },
     {
+      "name": "a weapon of any trait with no source",
+      "key": "hb_slicerpickanyaaa",
+      "content": {
+        "kind": "equip",
+        "en": "Slicer",
+        "ende": "Attack with any trait.",
+        "eq": {
+          "t": "weapon",
+          "tier": 1,
+          "cls": "phy",
+          "tr": "any",
+          "rg": "melee",
+          "dmg": "d6",
+          "dt": "phy",
+          "bu": 1,
+          "alt": {
+            "tr": "any",
+            "rg": "close",
+            "dmg": "d6",
+            "dt": "phy"
+          }
+        }
+      },
+      "book": null,
+      "snapshot": {
+        "kind": "equip",
+        "en": "Slicer",
+        "ende": "Attack with any trait.",
+        "eq": {
+          "t": "weapon",
+          "tier": 1,
+          "cls": "phy",
+          "tr": "any",
+          "rg": "melee",
+          "dmg": "d6",
+          "dt": "phy",
+          "bu": 1,
+          "alt": {
+            "tr": "any",
+            "rg": "close",
+            "dmg": "d6",
+            "dt": "phy"
+          }
+        },
+        "id": "hb_slicerpickanyaaa",
+        "src": "homebrew",
+        "ru": "Slicer",
+        "rud": "Attack with any trait."
+      }
+    },
+    {
       "name": "an item with its set card and two rule cards; an unnamed card and a catalog rule card left out",
       "key": "hb_relateditemaaaaa",
       "content": {

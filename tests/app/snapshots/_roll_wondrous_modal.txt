@@ -26,6 +26,7 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -95,6 +96,7 @@ How this works
 Install as an app
 Lay these out for printing: nine to an A4 sheet
 Lists
+Many Worlds Tavern
 One higher
 One lower
 Open this section on start

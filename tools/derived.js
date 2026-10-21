@@ -10,6 +10,7 @@
 const SITE = 'https://artex-x.github.io/daggerheart-loot/';
 /* The csv carries record text as it reads: no markup (docs/specs/CONTRACTS.md section 4). */
 const { markupText } = require('../app/src/lib/markup.ts');
+const { realmName } = require('../app/src/lib/realms.ts');
 
 /* Spelled out into human names: the csv and json are read aloud from the
    source, not matched against the code. A forgotten key used to leak out
@@ -23,7 +24,8 @@ const SRC = {
   frame: 'Campaign Frames',
   voa: 'Vault of Ages',
   dv: "The Dragon's Vault",
-  arazo: "Arazo's Artifacts"
+  arazo: "Arazo's Artifacts",
+  mwt: 'Many Worlds Tavern'
 };
 const RANGE = {
   melee: 'Melee',
@@ -39,7 +41,8 @@ const TRAIT = {
   instinct: 'Instinct',
   presence: 'Presence',
   knowledge: 'Knowledge',
-  spellcast: 'Spellcast'
+  spellcast: 'Spellcast',
+  any: 'Any'
 };
 const BURDEN = { 1: 'One-Handed', 2: 'Two-Handed', any: 'One/Two-Handed' };
 const CLS = { phy: 'physical', mag: 'magic' };
@@ -86,7 +89,8 @@ const CSV_HEAD = [
   'community',
   'url',
   'text_ru',
-  'text_en'
+  'text_en',
+  'realm'
 ];
 
 /* An item's description with two properties is stored across two lines. In
@@ -125,7 +129,8 @@ function catalogRow(L, rarity, sets, x) {
     community: x.community || '',
     url: SITE + 'i/' + x.id + '.html',
     text_ru: markupText(x.rud || '') + set.ru,
-    text_en: markupText(x.ende || '') + set.en
+    text_en: markupText(x.ende || '') + set.en,
+    realm: x.realm ? realmName(x.realm, 'en') : ''
   };
 }
 
@@ -193,6 +198,7 @@ const CARD_TABLES = [
   'voa',
   'dv',
   'arazo',
+  'mwt',
   'other_starting',
   'other_frames',
   'alt_item',
@@ -263,6 +269,11 @@ function namesJson(L) {
     if (!x.frame) return;
     frames[x.frame] = { n: ((frames[x.frame] && frames[x.frame].n) || 0) + 1 };
   });
+  const realms = {};
+  (L.items.mwt || []).forEach(function (x) {
+    if (!x.realm) return;
+    realms[x.realm] = { n: ((realms[x.realm] && realms[x.realm].n) || 0) + 1 };
+  });
   return (
     JSON.stringify({
       format: 'daggerheart-loot/names',
@@ -271,7 +282,8 @@ function namesJson(L) {
       sets,
       tables,
       communities,
-      frames
+      frames,
+      realms
     }) + '\n'
   );
 }

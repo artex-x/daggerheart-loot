@@ -324,6 +324,16 @@ describe('the validators over docs/fixtures/homebrew/', () => {
       byCode('23514', /homebrew_items_content_check/)
     );
   });
+
+  it('takes from its owner a weapon of any trait, its second set any too', async () => {
+    const slicer = ITEMS.valid.find((c) => c.content.eq?.tr === 'any').content;
+    const rows = await asA(
+      users,
+      (tx) => tx`insert into public.homebrew_items (id, owner_id, key, content)
+        values (${IA}, ${A}, ${AXE}, ${tx.json(slicer)}) returning content`
+    );
+    assert.deepEqual(rows[0].content.eq, slicer.eq);
+  });
 });
 
 describe('the rows', () => {

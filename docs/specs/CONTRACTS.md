@@ -22,7 +22,7 @@ homebrew validators of `app/src/lib/homebrew.ts` and of the database share
 
 Frozen as written in `ROUTES.md`. In particular:
 
-- the ten section names, and the three legacy ones that fold into `roll/std`
+- the twelve section names, and the three legacy ones that fold into `roll/std`
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
@@ -90,6 +90,7 @@ shared list. Never renumber a record that has shipped.
 | `voa` | Vault of Ages (`voa<vol>_<tier><n>`) |
 | `dv` / `dve` | The Dragon's Vault loot / equipment |
 | `aa` | Arazo's Artifacts, book order, an upgrade line's rungs after its head |
+| `mw` | Many Worlds Tavern, realm by realm in release order, card order inside a realm |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
@@ -178,10 +179,12 @@ plain form, so everything downstream sees one format.
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
   order and quoting, from `tools/derived.js`'s `catalogIndexCsv(L)`. Budget:
-  at most 196608 bytes, which `tests/derived.js` holds; 150197 bytes at 1350
-  records, measured 2026-10-15, about 111 bytes a row, so the budget holds
-  about 1767 records, about 417 more than today. A column may be added at
-  the end; any other change is a new file name. An ingest that passes the
+  at most 196608 bytes, which `tests/derived.js` holds; 160678 bytes at 1431
+  records, measured 2026-10-21, about 112 bytes a row, so the budget holds
+  about 1750 records, about 319 more than today. A column may be added at
+  the end, as `realm` was (2026-10-21, the last column of both files: a Many
+  Worlds Tavern record's realm in English, empty elsewhere); any other change
+  is a new file name. An ingest that passes the
   budget raises `INDEX_BUDGET` and the `llms.txt` words "under 200 KB" in
   one commit, or publishes a new file name. Not committed, like `names.json`.
 - `names.json` - what the preview host reads at request time
@@ -193,10 +196,11 @@ plain form, so everything downstream sees one format.
   `rud`, `ende` and `members`, the ids in the stubs' order; `tables` maps
   each catalog table id (no `homebrew`) to `{ n }`, the rows the signed-out
   tables page draws; `communities` maps a community's English name to `ru`
-  and `n`; `frames` maps a frame key to `{ n }`. A new key may be added;
-  any other change is `version` 2. Budget: at most 196608 bytes, which
-  `tests/derived.js` holds; 93407 bytes at 1350 records, measured
-  2026-10-14. Not committed, like `i/`.
+  and `n`; `frames` maps a frame key to `{ n }`; `realms` maps a Many
+  Worlds Tavern realm key to `{ n }`. A new key may be added; any other
+  change is `version` 2. Budget: at most 196608 bytes, which
+  `tests/derived.js` holds; 98317 bytes at 1431 records, measured
+  2026-10-21. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English.
 - `en/index.html` - the English entry document, published at `<site>en/`:
@@ -244,8 +248,8 @@ All of them except the five `schema/` files are generated from `data.js` by
   distinct key and snapshot; a later differing snapshot of a key gets a new
   key. The database stores a link (`list_entries.hb_item`), never a
   snapshot. Frozen: v1's bounds (1000 lists, 5000 entries per list) hold, a
-  bound widens, or a required key becomes optional, in place, and nothing
-  narrows; any other change is `import-v3.json`. Its `eq` and `key`
+  bound or a value list widens, or a required key becomes optional, in place,
+  and nothing narrows; any other change is `import-v3.json`. Its `eq` and `key`
   definitions are copies of `homebrew-v1.json`'s, held deep-equal by
   `lib/homebrewFile.test.ts`.
   `llms.txt`, "Version 2: homebrew entries (import-v2)", describes it.
@@ -279,8 +283,9 @@ All of them except the five `schema/` files are generated from `data.js` by
   100 sources, 1000 cards, 1000 items, 30 sections per source; the account's
   limits are the database's. The «Мои предметы» page imports it and writes
   it; `llms.txt`, "Homebrew items as a file (homebrew-v1)", describes it.
-  Frozen: a bound may widen in place and never narrows; any other change is
-  `homebrew-v2.json` beside it. Fixtures: `docs/fixtures/homebrew-file/`, the
+  Frozen: a bound may widen in place and never narrows, and so may a value
+  list (the trait `any`, 2026-10-21, in all four homebrew and lists
+  schemas); any other change is `homebrew-v2.json` beside it. Fixtures: `docs/fixtures/homebrew-file/`, the
   hand-test files, `export.json` (gm1's homebrew written by the export) and
   `from-llms.json` (the blind round), each canonical; `tests/contracts.js`
   checks both schemas, the fixtures and the two `llms.txt` sections, and

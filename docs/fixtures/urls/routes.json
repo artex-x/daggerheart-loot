@@ -107,6 +107,17 @@
     }
   },
   {
+    "hash": "#/roll/mwt",
+    "why": "Many Worlds Tavern, a supplement under the supplements tab",
+    "resolves": {
+      "hash": "#/roll/mwt",
+      "tab": "#/roll/wondrous",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
     "hash": "#/roll/core",
     "why": "legacy: folds into roll/std with only Core picked",
     "resolves": {
@@ -168,10 +179,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 437,
+      "rows": 453,
       "printCards": 0,
       "picked": [],
-      "count": "437"
+      "count": "453"
     }
   },
   {
@@ -196,6 +207,32 @@
       "printCards": 0,
       "picked": [],
       "count": "78"
+    }
+  },
+  {
+    "hash": "#/tables/mwt",
+    "why": "a table sectioned by realm",
+    "resolves": {
+      "hash": "#/tables/mwt",
+      "tab": "#/tables",
+      "rows": 81,
+      "printCards": 0,
+      "picked": [],
+      "count": "81"
+    }
+  },
+  {
+    "hash": "#/tables/mwt/f_realm-warrens",
+    "why": "a realm filter",
+    "resolves": {
+      "hash": "#/tables/mwt/f_realm-warrens",
+      "tab": "#/tables",
+      "rows": 21,
+      "printCards": 0,
+      "picked": [
+        "realm:warrens"
+      ],
+      "count": "21 из 81"
     }
   },
   {
@@ -227,13 +264,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
       "tab": "#/tables",
-      "rows": 42,
+      "rows": 44,
       "printCards": 0,
       "picked": [
         "tier:2",
         "cls:mag"
       ],
-      "count": "42 из 437"
+      "count": "44 из 453"
     }
   },
   {
@@ -242,12 +279,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
       "tab": "#/tables",
-      "rows": 202,
+      "rows": 210,
       "printCards": 0,
       "picked": [
         "range:melee"
       ],
-      "count": "202 из 437"
+      "count": "210 из 453"
     }
   },
   {
@@ -256,12 +293,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 236,
+      "rows": 244,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "236 из 437"
+      "count": "244 из 453"
     }
   },
   {
@@ -270,13 +307,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 208,
+      "rows": 217,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "208 из 437"
+      "count": "217 из 453"
     }
   },
   {
@@ -290,7 +327,7 @@
       "picked": [
         "tier:A"
       ],
-      "count": "1 из 437"
+      "count": "1 из 453"
     }
   },
   {
@@ -349,13 +386,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
       "tab": "#/tables",
-      "rows": 58,
+      "rows": 60,
       "printCards": 0,
       "picked": [
         "tier:1",
         "cls:phy"
       ],
-      "count": "58 из 437"
+      "count": "60 из 453"
     }
   },
   {
@@ -364,10 +401,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 437,
+      "rows": 453,
       "printCards": 0,
       "picked": [],
-      "count": "437"
+      "count": "453"
     }
   },
   {
@@ -537,7 +574,10 @@
       "tab": null,
       "rows": 3,
       "printCards": 0,
-      "picked": ["kind:weapon", "tier:1"]
+      "picked": [
+        "kind:weapon",
+        "tier:1"
+      ]
     }
   },
   {
@@ -548,7 +588,10 @@
       "tab": null,
       "rows": 3,
       "printCards": 0,
-      "picked": ["kind:weapon", "tier:1"]
+      "picked": [
+        "kind:weapon",
+        "tier:1"
+      ]
     }
   },
   {
@@ -581,7 +624,9 @@
       "tab": null,
       "rows": 5,
       "printCards": 0,
-      "picked": ["kind:weapon"]
+      "picked": [
+        "kind:weapon"
+      ]
     }
   },
   {

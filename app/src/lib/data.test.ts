@@ -51,6 +51,9 @@ function rollPools(loot: Loot): RollPool[] {
     } else if (name === 'community') {
       for (const community of new Set(rows.map((row) => row.community)))
         pools.push(rows.filter((row) => row.community === community));
+    } else if (name === 'mwt') {
+      for (const realm of new Set(rows.map((row) => row.realm)))
+        pools.push(rows.filter((row) => row.realm === realm));
     } else pools.push(rows);
   }
   return pools;
@@ -73,12 +76,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1350);
-    expect(index.searchable).toHaveLength(1350);
+    expect(index.byId.size).toBe(1431);
+    expect(index.searchable).toHaveLength(1431);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(969);
+    expect(index.all).toHaveLength(1050);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -89,8 +92,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(969);
-    expect(index.searchable).toHaveLength(1350);
+    expect(index.all).toHaveLength(1050);
+    expect(index.searchable).toHaveLength(1431);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -132,11 +135,11 @@ describe('the index over the real dataset', () => {
   });
 
   it('finds equipment wherever it lives, not only in eq', () => {
-    /* 381 in `eq`, and another 291 keeping their source-table placement. */
+    /* 381 in `eq`, and another 317 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(437);
-    expect(equipOfKind(index, 'secondary')).toHaveLength(127);
-    expect(equipOfKind(index, 'armor')).toHaveLength(108);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(453);
+    expect(equipOfKind(index, 'secondary')).toHaveLength(133);
+    expect(equipOfKind(index, 'armor')).toHaveLength(112);
   });
 
   it('narrows to the two books through the source, as the tables do', () => {
@@ -509,14 +512,15 @@ describe("a weapon that uses its wielder's Spellcast trait", () => {
 
 describe('referenced cards', () => {
   it('are kept beside the items that point at them', () => {
-    expect(Object.keys(index.refs)).toHaveLength(13);
+    expect(Object.keys(index.refs)).toHaveLength(14);
   });
 
   it('are pointed at by records that exist', () => {
     /* `index.all` holds the roll tables, equipment with a roll included:
-       w88, voa4_t1b, dve38 and dve59 carry a stat block, dve66 an adversary feature. */
+       w88, voa4_t1b, dve38 and dve59 carry a stat block, dve66 an adversary feature;
+       mw9 and mw15 are Many Worlds Tavern loot. */
     const pointing = index.all.filter((it) => it.refs?.length);
-    expect(pointing).toHaveLength(13);
+    expect(pointing).toHaveLength(15);
     for (const it of pointing) {
       for (const key of it.refs ?? []) expect(index.refs).toHaveProperty(key);
     }

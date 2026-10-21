@@ -1,9 +1,11 @@
-/* The two sections that roll inside a chosen part of their book.
+/* The three sections that roll inside a chosen part of their book.
  *
  * Vault of Ages has no roll table of its own, so the book's own six divisions
  * are the choice: four tiers, then artifacts and cursed objects, which are
  * categories rather than tiers and exist nowhere else. Community items are
  * grouped by the community they belong to, and the roll is a d10 inside one.
+ * Many Worlds Tavern is four card sets, one per realm, and the roll is inside
+ * one realm's deck.
  *
  * The list of communities is derived from the records rather than written down
  * again. app.js keeps a hardcoded pair list, and a second copy of nine proper
@@ -13,7 +15,14 @@
 
 import type { Index } from './data.js';
 import type { Dict } from './dict.js';
+import { REALM_ORDER, realmName } from './realms.js';
 import type { Lang, Record_, VoaTier } from './types.js';
+
+/** One choice of a picker: the id the rows are looked up by, and its chip caption. */
+export interface Part {
+  id: string;
+  label: string;
+}
 
 /** The book's divisions, in its order. Artifacts and cursed objects last. */
 export const VOA_SECTIONS: readonly VoaTier[] = [1, 2, 3, 4, 'A', 'C'];
@@ -30,8 +39,13 @@ export function voaSectionName(k: VoaTier, t: Dict): string {
   return `${t.tier} ${String(k)}`;
 }
 
+/** The six divisions as picker choices, keyed by `String(k)`. */
+export function voaParts(t: Dict): Part[] {
+  return VOA_SECTIONS.map((k) => ({ id: String(k), label: voaSectionName(k, t) }));
+}
+
 /** The records of one section, in the order the book prints them. */
-export function voaGroup(index: Index, k: VoaTier): readonly Record_[] {
+export function voaGroup(index: Index, k: number | string): readonly Record_[] {
   return (index.rows.get('voa') ?? []).filter((x) => String(x.tier) === String(k));
 }
 
@@ -65,4 +79,22 @@ export function communityName(c: Community, lang: Lang): string {
 /** The ten records of one community, which is what the d10 rolls over. */
 export function communityGroup(index: Index, id: string): readonly Record_[] {
   return (index.rows.get('community') ?? []).filter((x) => x.community === id);
+}
+
+/** Every community as a picker choice, in the records' order. */
+export function communityParts(index: Index | null, lang: Lang): Part[] {
+  return index
+    ? communities(index).map((c) => ({ id: c.id, label: communityName(c, lang) }))
+    : [];
+}
+
+/** The four realms as picker choices, in release order. A fixed set: it does not wait
+ *  for the index. */
+export function realmParts(lang: Lang): Part[] {
+  return REALM_ORDER.map((id) => ({ id, label: realmName(id, lang) }));
+}
+
+/** The records of one realm, in card order: what its roll picks from. */
+export function realmGroup(index: Index, id: string): readonly Record_[] {
+  return (index.rows.get('mwt') ?? []).filter((x) => x.realm === id);
 }

@@ -22,23 +22,23 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1350 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=30fa12d7]
+    StaticText "Поиск сразу по 1431 позиции - добыча, расходники и снаряжение, н..." [namelen=90 namehash=e732135a]
     searchbox "Поиск по названию или описанию…" [value=меч focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=false]
-    checkbox "Выбрать все (46)" [checked=false]
-    StaticText "Выбрать все (46)"
+    checkbox "Выбрать все (48)" [checked=false]
+    StaticText "Выбрать все (48)"
     checkbox "Лист Исполинского Дерева" [checked=false]
     button "3 Лист Исполинского Дерева Огромный лист, прочный как кожа и шир..." [namelen=224 namehash=36578017]
-    ... checkbox x43 of 47 same-shape siblings elided
+    ... checkbox x45 of 49 same-shape siblings elided
     button "18 Ледяное Масло Покрывает предмет размером не больше двуручного..." [namelen=198 namehash=2896df44]
-    ... button x42 of 46 same-shape siblings elided
-    checkbox "Чаша Обета" [checked=false]
-    button "10 Чаша Обета Один раз за продолжительный отдых вы получаете доп..." [namelen=334 namehash=6fffb22e]
-    checkbox "Перчатка Скорпиона" [checked=false]
-    button "41 Перчатка Скорпиона Когда вы держите в перчатке оружие, нанося..." [namelen=279 namehash=2a7ca390]
+    ... button x44 of 48 same-shape siblings elided
+    checkbox "Краска Цвета Яда" [checked=false]
+    button "21 Краска Цвета Яда Вы можете нанести её на оружие, которое ещё ..." [namelen=222 namehash=2b953547]
+    checkbox "Магическая Батарея" [checked=false]
+    button "6 Магическая Батарея Когда вы призываете карту домена из своего ..." [namelen=184 namehash=0c4f982f]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -65,6 +65,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 20Масло Зелёной СлизиПокрывает предмет размером не больше двуруч... [namelen=290 namehash=e64799bc]
 20Монета ПалачаСтоимость Призыва: 1Совершите Бросок Заклинания (... [namelen=373 namehash=1770234c]
 20Ртутный ФамильярВы можете разбить это, чтобы создать ртутного ... [namelen=377 namehash=51f1d97a]
+21Краска Цвета ЯдаВы можете нанести её на оружие, которое ещё не... [namelen=217 namehash=e9b54bb5]
 21Перчатка Ползучего КороляЧтобы использовать этот предмет, позв... [namelen=563 namehash=1f76777b]
 23Карманные Часы Странника ВремениСтоимость Призыва: 1Один раз з... [namelen=392 namehash=990dcc8a]
 29Успокаивающий КулонКогда вы должны отметить последний Стресс, ... [namelen=131 namehash=734f72e2]
@@ -85,6 +86,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 5Маска ФаибосаКак только вы надеваете эту маску, она срастается ... [namelen=656 namehash=f6df1b2d]
 5Предательский КастетВы можете отметить Стресс перед Броском Ата... [namelen=128 namehash=bf531987]
 5Стенающая Костяная ФлейтаСтоимость Призыва: 1Один раз за продол... [namelen=394 namehash=01e31635]
+6Магическая БатареяКогда вы призываете карту домена из своего Хр... [namelen=180 namehash=92f84736]
 6Пифийская ВилкаСтоимость Призыва: 3Выберите место для путешеств... [namelen=382 namehash=a467e3e4]
 71Ласты ЛужелуточкиПока вы носите эти ласты, вы должны отметить ... [namelen=267 namehash=47fce802]
 76Теневая ПризмаБросьте d8 и положите её на эту карту как Теневу... [namelen=483 namehash=df517ac1]
@@ -117,10 +119,12 @@ daggerheart.com
 Кольца Товарищества
 Кольцо Кровавой Матроны
 Конфиденциальность
+Краска Цвета Яда
 Ласты Лужелуточки
 Ледяное Масло
 Лист Исполинского Дерева
 ЛутDaggerheart
+Магическая Батарея
 Маленький Лесной Дух
 Маска Фаибоса
 Масло Зелёной Слизи
@@ -179,23 +183,23 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1350 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=da2b2a4c]
+    StaticText "Search all 1431 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=68be8576]
     searchbox "Search by name or description…" [value=меч focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=false]
-    checkbox "Select all (46)" [checked=false]
-    StaticText "Select all (46)"
+    checkbox "Select all (48)" [checked=false]
+    StaticText "Select all (48)"
     checkbox "Leaf of the Giant Tree" [checked=false]
     button "3 Leaf of the Giant Tree A massive leaf sturdy as leather and br..." [namelen=197 namehash=1a3732f4]
-    ... checkbox x43 of 47 same-shape siblings elided
+    ... checkbox x45 of 49 same-shape siblings elided
     button "18 Frost Oil Coats an item no bigger than a greatsword and turns..." [namelen=169 namehash=f4601efe]
-    ... button x42 of 46 same-shape siblings elided
-    checkbox "Chalice of Commitment" [checked=false]
-    button "10 Chalice of Commitment Once per long rest, you gain an additio..." [namelen=339 namehash=16790799]
-    checkbox "Scorpion Gauntlet" [checked=false]
-    button "41 Scorpion Gauntlet When you hold a weapon that does physical d..." [namelen=277 namehash=b8355a2b]
+    ... button x44 of 48 same-shape siblings elided
+    checkbox "Poison-Colored Paint" [checked=false]
+    button "21 Poison-Colored Paint You can put this on a weapon that doesn'..." [namelen=248 namehash=864474e4]
+    checkbox "Arcane Battery" [checked=false]
+    button "6 Arcane Battery When recalling a domain card from your vault, y..." [namelen=150 namehash=ca9244ac]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -223,6 +227,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 20Mercurial FamiliarYou can smash this to create a mercury dupli... [namelen=372 namehash=99f1e743]
 20Sprite BottleWhen you mark your last Hit Point, this bottle sh... [namelen=196 namehash=32835a4a]
 21Crawling King's GauntletTo use this item, you must allow it to... [namelen=513 namehash=af0a0834]
+21Poison-Colored PaintYou can put this on a weapon that doesn't ... [namelen=243 namehash=37b08cb0]
 23Timewalker PocketwatchRecall Cost: 1Once per long rest, when y... [namelen=337 namehash=b7140399]
 29Calming PendantWhen you would mark your last Stress, roll a d6... [namelen=116 namehash=ab3edc19]
 2Cursed HeadRecall Cost: 2Once per long rest, you allow the head... [namelen=293 namehash=99e6b3dd]
@@ -242,6 +247,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 5Keening Bone FluteRecall Cost: 1Once per long rest, you can pla... [namelen=302 namehash=c2058871]
 5Phaibos MaskOnce you don this mask, it fuses to your flesh maki... [namelen=651 namehash=fa9b72a4]
 5Treacherous Knuckle-DusterYou may mark 1 Stress before an attac... [namelen=134 namehash=6c5d102e]
+6Arcane BatteryWhen recalling a domain card from your vault, you... [namelen=146 namehash=76678fd1]
 6Pythian ForkRecall Cost: 3Choose a location to travel to on any... [namelen=340 namehash=716a8df7]
 71Puddleduck's FinsWhile wearing these fins on your feet, you mu... [namelen=276 namehash=b8ac17aa]
 76Umbral PrismRoll a d8 and place it on this card as the Umbral ... [namelen=452 namehash=ff956f00]
@@ -254,6 +260,7 @@ Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
+Arcane Battery
 Arcane Resin
 Bracers of the Sun and Moon
 Calming Pendant
@@ -288,6 +295,7 @@ Mercurial Familiar
 Open this section on start
 Phaibos Mask
 Pirate's Treasure Map
+Poison-Colored Paint
 Privacy
 Puddleduck's Fins
 Pythian Fork

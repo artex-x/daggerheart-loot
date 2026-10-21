@@ -20,7 +20,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1350, 'records are not 1350, but ' + ALL.length);
+ok(ALL.length === 1431, 'records are not 1431, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -43,12 +43,27 @@ ALL.forEach((x) => {
   });
   ok(['item', 'consumable', 'equip'].indexOf(x.kind) >= 0, x.id + ': unknown kind ' + x.kind);
   ok(
-    ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'frame', 'community', 'arazo'].indexOf(
-      x.src
-    ) >= 0,
+    [
+      'core',
+      'hnf',
+      'wondrous',
+      'dread',
+      'voa',
+      'dv',
+      'frame',
+      'community',
+      'arazo',
+      'mwt'
+    ].indexOf(x.src) >= 0,
     x.id + ': unknown src ' + x.src
   );
 });
+ALL.forEach((x) =>
+  ok(
+    (x.src === 'mwt') === (x.realm !== undefined),
+    x.id + ': a realm off mwt, or mwt with none'
+  )
+);
 
 console.log('text hygiene');
 function hygiene(x) {
@@ -250,6 +265,24 @@ Object.keys(DATA).forEach((table) => {
       'Vault of Ages sections are not 6, but ' + Object.keys(byT).length
     );
     Object.entries(byT).forEach(([tier, rows]) => ROLL_POOLS.push([table + '/' + tier, rows]));
+  } else if (table === 'mwt') {
+    /* Each realm is its own card set, rolled inside its own deck. */
+    const byR = {};
+    DATA[table].forEach((x) => {
+      (byR[x.realm] = byR[x.realm] || []).push(x);
+    });
+    ok(
+      JSON.stringify(Object.keys(byR)) ===
+        JSON.stringify(['sporopolis', 'wagerwood', 'warrens', 'godsvale']),
+      'Many Worlds Tavern realms are not the four in release order: ' + Object.keys(byR)
+    );
+    ok(
+      JSON.stringify(Object.values(byR).map((rows) => rows.length)) === '[20,20,21,20]',
+      'Many Worlds Tavern realm sizes are not 20/20/21/20'
+    );
+    Object.entries(byR).forEach(([realm, rows]) =>
+      ROLL_POOLS.push([table + '/' + realm, rows])
+    );
   } else {
     ROLL_POOLS.push([table, DATA[table]]);
   }
@@ -320,7 +353,8 @@ const TRAITS = [
   'instinct',
   'presence',
   'knowledge',
-  'spellcast'
+  'spellcast',
+  'any'
 ];
 const RANGES = ['melee', 'veryclose', 'close', 'far', 'veryfar'];
 /* A book's equipment that rolls on its own table lives in items.<book> with
@@ -570,10 +604,12 @@ const HEADWORDS = [
   'Пороги',
   'Показатель'
 ];
+/* Names whose first word is their own noun, as the card prints it: mw52 Chef's Weapons. */
+const HEADWORD_NAMES = new Set(['mw52']);
 ALL.forEach((x) => {
   const first = x.ru.split(' ')[0];
   ok(
-    !(HEADWORDS.indexOf(first) >= 0 && x.ru.split(' ').length > 1),
+    HEADWORD_NAMES.has(x.id) || !(HEADWORDS.indexOf(first) >= 0 && x.ru.split(' ').length > 1),
     x.id + ': name starts with a header word — ' + x.ru
   );
   ok(

@@ -301,6 +301,26 @@ describe('the equipment tables', () => {
     expect(traits('eq_secondary')).not.toContain('spellcast');
   });
 
+  it('offers all six trait chips for an Any weapon and no any chip', () => {
+    const any = buildIndex({
+      items: {},
+      eq: [
+        row({
+          id: 'sl',
+          src: 'mwt',
+          kind: 'equip',
+          eq: { t: 'weapon', tier: 1, cls: 'phy', tr: 'any', rg: 'melee', bu: 1 }
+        })
+      ]
+    });
+    const values =
+      facetRows(any, 'eq_weapon', t, 'ru')
+        .find((r) => r.group === 'trait')
+        ?.values.map((v) => v.value) ?? [];
+    expect(values).toEqual([...CHARACTER_TRAITS]);
+    expect(values).not.toContain('any');
+  });
+
   it("labels the line row's two values", () => {
     const lineRow = facetRows(index, 'eq_armor', t, 'ru').find((r) => r.group === 'line');
     expect(lineRow).toEqual({
@@ -309,6 +329,32 @@ describe('the equipment tables', () => {
       values: [
         { value: 'line', label: 'Улучшаемые' },
         { value: 'uniq', label: 'Уникальные' }
+      ]
+    });
+  });
+});
+
+describe('the realm row', () => {
+  it('follows the kind row on Many Worlds Tavern and lists the four realms in release order', () => {
+    const realms = buildIndex({
+      items: {
+        mwt: [
+          row({ id: 'm1', src: 'mwt', kind: 'item', realm: 'warrens' }),
+          row({ id: 'm2', src: 'mwt', kind: 'consumable', realm: 'sporopolis' })
+        ]
+      },
+      eq: []
+    });
+    const rows = facetRows(realms, 'mwt', t, 'ru');
+    expect(rows.map((r) => r.group)).toEqual(['kind', 'realm']);
+    expect(rows[1]).toEqual({
+      group: 'realm',
+      label: 'Мир',
+      values: [
+        { value: 'sporopolis', label: 'Спорополис' },
+        { value: 'wagerwood', label: 'Лес Пари' },
+        { value: 'warrens', label: 'Воюющие Норы' },
+        { value: 'godsvale', label: 'Долина Богов' }
       ]
     });
   });

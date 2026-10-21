@@ -1253,7 +1253,7 @@ describe('the chip nav', () => {
     });
   });
 
-  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community'])(
+  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'])(
     'lights «Дополнения» on %s and draws the book row with that book current',
     async (table) => {
       const { container } = render(App, {
@@ -1270,7 +1270,8 @@ describe('the chip nav', () => {
         'Vault of Ages',
         "Dragon's Vault",
         "Arazo's Artifacts",
-        'Сообщества'
+        'Сообщества',
+        'Many Worlds Tavern'
       ]);
       expect(
         books
@@ -1280,6 +1281,15 @@ describe('the chip nav', () => {
       if (table === 'voa') await expectNoA11yViolations(container);
     }
   );
+
+  it('draws the nothing-found state on Many Worlds Tavern when the catalog has no realm rows', async () => {
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/mwt'), data: fakeData(LOOT) })
+    });
+    expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
+    expect(container.querySelectorAll('.rows .row')).toHaveLength(0);
+    await expectNoA11yViolations(container);
+  });
 
   it("draws Core's own sub-tables, not the books, on a Core table", () => {
     render(App, {

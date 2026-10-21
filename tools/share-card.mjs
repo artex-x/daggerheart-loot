@@ -5,7 +5,7 @@
   shared list, print set and table cards with it at request time.
 
   Pure: no imports, no file system, no window. The words are copies of the
-  app's (app/src/lib/dict.ts, i18n.ts, frames.ts, tables.ts, label.ts,
+  app's (app/src/lib/dict.ts, i18n.ts, frames.ts, realms.ts, tables.ts, label.ts,
   filters.ts, plural.ts), pinned equal by app/src/lib/i18n.test.ts.
 */
 
@@ -48,7 +48,8 @@ export const TEXT = {
     printSetGone: 'Набор не найден: ссылку не открывали 90 дней, или в адресе ошибка.',
     communityLabel: 'Сообщество',
     commF: 'Сообщество',
-    frameF: 'Сеттинг'
+    frameF: 'Сеттинг',
+    realmF: 'Мир'
   },
   en: {
     site: 'Daggerheart Loot Generator',
@@ -78,7 +79,8 @@ export const TEXT = {
     printSetGone: 'Set not found: nobody opened the link for 90 days, or the address is wrong.',
     communityLabel: 'Community',
     commF: 'Community',
-    frameF: 'Frame'
+    frameF: 'Frame',
+    realmF: 'Realm'
   }
 };
 
@@ -87,6 +89,13 @@ export const FRAME_LABEL = {
   colossus: ['Колоссы Сухоземья', 'Colossus of the Drylands'],
   dark_heart: ['Тёмное сердце Андалурии', 'Dark Heart of Andaluria'],
   motherboard: ['Материнская Плата', 'Motherboard']
+};
+
+export const REALM_LABEL = {
+  sporopolis: ['Спорополис', 'Sporopolis'],
+  wagerwood: ['Лес Пари', 'Wagerwood'],
+  warrens: ['Воюющие Норы', "Warrin' Warrens"],
+  godsvale: ['Долина Богов', 'Godsvale']
 };
 
 export const EQ_TYPE = {
@@ -101,7 +110,8 @@ export const EQ_TRAIT = {
   instinct: ['Инстинкт', 'Instinct'],
   presence: ['Влияние', 'Presence'],
   knowledge: ['Знание', 'Knowledge'],
-  spellcast: ['Характеристика Заклинателя', 'Spellcast']
+  spellcast: ['Характеристика Заклинателя', 'Spellcast'],
+  any: ['Любая', 'Any']
 };
 export const EQ_RANGE = {
   melee: ['Вплотную', 'Melee'],
@@ -171,6 +181,7 @@ export const PATH_TEXT = {
     dv: "Dragon's Vault",
     arazo: "Arazo's Artifacts",
     community: 'Сообщества',
+    mwt: 'Many Worlds Tavern',
     eq: 'Снаряжение',
     other: 'Прочее',
     alt: 'Альт. таблицы',
@@ -195,6 +206,7 @@ export const PATH_TEXT = {
     dv: "Dragon's Vault",
     arazo: "Arazo's Artifacts",
     community: 'Communities',
+    mwt: 'Many Worlds Tavern',
     eq: 'Equipment',
     other: 'Other',
     alt: 'Alt. tables',
@@ -224,6 +236,7 @@ export const TABLE_PATH = {
   dv: ['dv'],
   arazo: ['arazo'],
   community: ['community'],
+  mwt: ['mwt'],
   eq_weapon: ['eq', 'weapon'],
   eq_secondary: ['eq', 'secondary'],
   eq_armor: ['eq', 'armor'],
@@ -239,6 +252,7 @@ export function tableOf(it) {
   if (it.starting) return 'other_starting';
   if (it.src === 'voa') return 'voa';
   if (it.src === 'arazo') return 'arazo';
+  if (it.src === 'mwt') return 'mwt';
   if (it.eq && !it.roll) return EQ_TABLE_OF[it.eq.t];
   if (['wondrous', 'dread', 'dv', 'community'].includes(it.src)) return it.src;
   if (it.src === 'core' || it.src === 'hnf')
@@ -259,9 +273,10 @@ export function where(it, lang) {
   const table = tableOf(it);
   if (!table) throw new Error('No table for record ' + it.id + '; extend tableOf');
   const bits = [tablePath(table, lang)];
-  // the two tables sectioned by a value the record carries name its section
+  // the three tables sectioned by a value the record carries name its section
   if (it.frame) bits.push(pick(FRAME_LABEL[it.frame], lang) || it.frame);
   else if (it.community) bits.push(lang === 'ru' ? it.community_ru : it.community);
+  else if (it.realm) bits.push(pick(REALM_LABEL[it.realm], lang) || it.realm);
   if (it.tier === 'A') bits.push(p.artifact);
   else if (it.tier === 'C') bits.push(p.cursed);
   if (it.roll) bits.push(p.rollNo + ' ' + it.roll);
@@ -321,9 +336,13 @@ export function decodeFilter(segment, groups) {
   return out;
 }
 
-/** The filter groups of the two tables whose labels a table card draws:
+/** The filter groups of the three tables whose labels a table card draws:
  *  app/src/lib/filters.ts `groupsFor`. */
-export const LABEL_GROUPS = { community: ['comm'], other_frames: ['kind', 'frame'] };
+export const LABEL_GROUPS = {
+  community: ['comm'],
+  other_frames: ['kind', 'frame'],
+  mwt: ['kind', 'realm']
+};
 
 const UTF8 = new TextEncoder();
 const escBytes = (s) => UTF8.encode(esc(s)).length;

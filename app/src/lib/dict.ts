@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1350 pairs maintained with
+ * small, typed and reviewed, while record text is 1431 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -26,7 +26,8 @@ const ru = {
   langLabel: 'Язык',
   close: 'Закрыть',
 
-  /* The eleven sections, in `SECTIONS` order; the tab bar draws six of them */
+  /* The twelve sections, in `SECTIONS` order; the tab bar draws five of these words
+     and `grpSupplements` */
   std: 'Обычные правила',
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
@@ -35,6 +36,7 @@ const ru = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   community: 'Сообщества',
+  mwt: 'Many Worlds Tavern',
   tables: 'Таблицы',
   lists: 'Списки',
   search: 'Поиск',
@@ -66,6 +68,7 @@ const ru = {
   srcVoa: 'Vault of Ages',
   srcDv: "Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
+  srcMwt: 'Many Worlds Tavern',
   /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
      that page's own title and its term for one entry on it). */
@@ -101,7 +104,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -121,6 +124,7 @@ const ru = {
   pageDv: "The Dragon's Vault",
   pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Предметы сообществ',
+  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Обычные правила',
   subStd: 'Бросок по таблицам корника и дополнения Hope & Fear.',
   /* The five dice buttons say which rarity band they cover */
@@ -141,6 +145,7 @@ const ru = {
   subWondrous: 'Введите результат броска или получите случайную позицию.',
   subVoa: 'Выберите раздел книги и бросьте кость по нему.',
   subCommunity: 'Выберите происхождение и бросьте d10.',
+  subMwt: 'Выберите мир и бросьте кость по нему.',
 
   /* The alternate tables. Two dice with names instead of a sum, so each one
      is labelled and the card says which of them found it. */
@@ -186,6 +191,7 @@ const ru = {
   /* Singular, and not the tab's word: the tab says "Сообщества" because it
      names a section, the label above the picker asks for one community. */
   communityLabel: 'Сообщество',
+  realmLabel: 'Мир',
 
   notFound: 'Предмет не найден',
   notFoundSub: 'Возможно, ссылка устарела или данные были изменены.',
@@ -237,7 +243,7 @@ const ru = {
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
   subSearch:
-    'Поиск сразу по 1350 позициям - добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1431 позиции - добыча, расходники и снаряжение, на русском и на английском.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию…',
@@ -268,6 +274,7 @@ const ru = {
   kindF: 'Тип',
   frameF: 'Сеттинг',
   commF: 'Сообщество',
+  realmF: 'Мир',
   anyValue: 'любое',
   outOf: 'из',
   dropValue: 'Убрать из фильтра',
@@ -1142,6 +1149,7 @@ const en: Dict = {
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
   community: 'Communities',
+  mwt: 'Many Worlds Tavern',
   tables: 'Tables',
   lists: 'Lists',
   search: 'Search',
@@ -1168,6 +1176,7 @@ const en: Dict = {
   srcVoa: 'Vault of Ages',
   srcDv: "Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
+  srcMwt: 'Many Worlds Tavern',
   srcFrame: 'Frame',
   srcComm: 'Communities',
   copyLink: 'Copy link',
@@ -1189,7 +1198,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',
@@ -1204,6 +1213,7 @@ const en: Dict = {
   pageDv: "The Dragon's Vault",
   pageArazo: "The Guide to Arazo's Artifacts",
   pageCommunity: 'Community items',
+  pageMwt: 'Many Worlds Tavern',
   pageStd: 'Standard rules',
   subStd: 'A roll over the core book and the Hope & Fear tables.',
   common: 'Common',
@@ -1223,6 +1233,7 @@ const en: Dict = {
   subWondrous: 'Enter your roll result, or pick a random entry.',
   subVoa: 'Pick a section of the book and roll within it.',
   subCommunity: 'Pick an origin and roll d10.',
+  subMwt: 'Pick a realm and roll within it.',
 
   pageAlt: 'Alternate tables',
   subAlt: 'A Duality Dice roll over both books merged into one set of tables.',
@@ -1256,6 +1267,7 @@ const en: Dict = {
   fieldHelp: 'Help: %s',
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',
+  realmLabel: 'Realm',
 
   notFound: 'Item not found',
   notFoundSub: 'The link may be out of date, or the data has changed.',
@@ -1292,7 +1304,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included - browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1350 entries at once - loot, consumables and equipment, in Russian and English.',
+    'Search all 1431 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description…',
@@ -1319,6 +1331,7 @@ const en: Dict = {
   kindF: 'Type',
   frameF: 'Frame',
   commF: 'Community',
+  realmF: 'Realm',
   anyValue: 'any',
   outOf: 'of',
   dropValue: 'Remove from the filter',
@@ -2154,6 +2167,7 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/dv': 'dv',
   'roll/arazo': 'arazo',
   'roll/community': 'community',
+  'roll/mwt': 'mwt',
   tables: 'tables',
   lists: 'lists',
   search: 'search'

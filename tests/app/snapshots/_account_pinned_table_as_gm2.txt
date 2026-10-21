@@ -31,7 +31,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     combobox "Раздел при запуске" [value=Таблицы expanded=false haspopup=menu]
       option "Обычные правила" [selected=false]
       option "Альт. таблицы" [selected=false]
-      ... option x6 of 10 same-shape siblings elided
+      ... option x7 of 11 same-shape siblings elided
       option "Таблицы" [selected=true]
       option "Списки" [selected=false]
       option "Поиск" [selected=false]
@@ -75,7 +75,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
-Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=113 namehash=e6fe3645]
+Обычные правилаАльт. таблицыWondrousDreadVault of AgesDragon's V... [namelen=131 namehash=9e6e3e7f]
 Подключить Discord
 Поиск
 Сеткой
@@ -118,7 +118,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm2#/acc
     combobox "Section on start" [value=Tables expanded=false haspopup=menu]
       option "Standard rules" [selected=false]
       option "Alt. tables" [selected=false]
-      ... option x6 of 10 same-shape siblings elided
+      ... option x7 of 11 same-shape siblings elided
       option "Tables" [selected=true]
       option "Lists" [selected=false]
       option "Search" [selected=false]
@@ -170,7 +170,7 @@ Sign out
 Sign out everywhere
 Skip to content
 Standard rules
-Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=110 namehash=288ab316]
+Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=128 namehash=4545ba27]
 Supplements
 Tables
 Terms of use

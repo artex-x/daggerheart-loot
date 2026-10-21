@@ -22,23 +22,23 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    StaticText "Поиск сразу по 1350 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=30fa12d7]
+    StaticText "Поиск сразу по 1431 позиции - добыча, расходники и снаряжение, н..." [namelen=90 namehash=e732135a]
     searchbox "Поиск по названию или описанию…" [value=лечения зелья focused=true]
     StaticText "ТИП"
     button "Предметы" [pressed=true]
     button "Расходники" [pressed=true]
     button "Снаряжение" [pressed=true]
-    checkbox "Выбрать все (5)" [checked=false]
-    StaticText "Выбрать все (5)"
+    checkbox "Выбрать все (6)" [checked=false]
+    StaticText "Выбрать все (6)"
     checkbox "Рецепт Малого Зелья Лечения" [checked=false]
     button "19 Рецепт Малого Зелья Лечения В качестве Хода Отдыха вы можете ..." [namelen=175 namehash=4e8dc348]
-    ... checkbox x2 of 6 same-shape siblings elided
+    ... checkbox x3 of 7 same-shape siblings elided
     button "7 Малое Зелье Лечения Излечите 1d4 Ран. Получается из: Рецепт Ма..." [namelen=128 namehash=02726f7c]
-    button "19 Зелье Лечения Излечите 1d4+1 Ран. Получается из: Малое Зелье ..." [namelen=125 namehash=0abec79d]
-    checkbox "Большое Зелье Лечения" [checked=false]
-    button "43 Большое Зелье Лечения Излечите 1d4+2 Ран. Получается из: Зель..." [namelen=88 namehash=a03637e6]
+    ... button x2 of 6 same-shape siblings elided
     checkbox "Фляга Путника" [checked=false]
     button "29 Фляга Путника Стоимость Призыва: 1 Эта фляга всегда полна хол..." [namelen=241 namehash=497a1b97]
+    checkbox "Мешок Собирателя" [checked=false]
+    button "14 Мешок Собирателя Вы получаете следующий Ход Отдыха. Сбор Ингр..." [namelen=266 namehash=8c366643]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -47,6 +47,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+14Мешок СобирателяВы получаете следующий Ход Отдыха.Сбор Ингреди... [namelen=261 namehash=35c05bb9]
 19Зелье ЛеченияИзлечите 1d4+1 Ран.Получается из: Малое Зелье Леч... [namelen=118 namehash=c1a74b10]
 19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=170 namehash=963ee2dd]
 29Фляга ПутникаСтоимость Призыва: 1Эта фляга всегда полна холодн... [namelen=236 namehash=9a994db9]
@@ -64,6 +65,7 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Малое Зелье Лечения
+Мешок Собирателя
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
@@ -97,23 +99,23 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
-    StaticText "Search all 1350 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=da2b2a4c]
+    StaticText "Search all 1431 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=68be8576]
     searchbox "Search by name or description…" [value=лечения зелья focused=true]
     StaticText "TYPE"
     button "Items" [pressed=true]
     button "Consumables" [pressed=true]
     button "Equipment" [pressed=true]
-    checkbox "Select all (5)" [checked=false]
-    StaticText "Select all (5)"
+    checkbox "Select all (6)" [checked=false]
+    StaticText "Select all (6)"
     checkbox "Minor Health Potion Recipe" [checked=false]
     button "19 Minor Health Potion Recipe As a downtime move, you can use a ..." [namelen=152 namehash=ac148939]
-    ... checkbox x2 of 6 same-shape siblings elided
+    ... checkbox x3 of 7 same-shape siblings elided
     button "7 Minor Health Potion Clear 1d4 HP. Made from: Minor Health Poti..." [namelen=118 namehash=d9955d5b]
-    button "19 Health Potion Clear 1d4+1 HP. Made from: Minor Health Potion ..." [namelen=114 namehash=7957a0d0]
-    checkbox "Major Health Potion" [checked=false]
-    button "43 Major Health Potion Clear 1d4+2 HP. Made from: Health Potion ..." [namelen=79 namehash=ab950a0d]
+    ... button x2 of 6 same-shape siblings elided
     checkbox "Traveler's Flask" [checked=false]
     button "29 Traveler's Flask Recall Cost: 1 This flask is always full of ..." [namelen=218 namehash=56284955]
+    checkbox "Harvesting Sack" [checked=false]
+    button "14 Harvesting Sack Gain the following downtime move. Gather Ingr..." [namelen=242 namehash=b776814e]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -122,6 +124,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
+14Harvesting SackGain the following downtime move.Gather Ingredi... [namelen=237 namehash=a4312098]
 19Health PotionClear 1d4+1 HP.Made from: Minor Health Potion·Upg... [namelen=107 namehash=c27d0002]
 19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=147 namehash=ae04911f]
 29Traveler's FlaskRecall Cost: 1This flask is always full of col... [namelen=213 namehash=9be572d2]
@@ -131,6 +134,7 @@ Alt. tables
 Consumables
 EN
 Equipment
+Harvesting Sack
 Health Potion
 Install as an app
 Items

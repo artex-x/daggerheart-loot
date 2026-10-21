@@ -15,6 +15,7 @@
 import {
   TEXT,
   FRAME_LABEL,
+  REALM_LABEL,
   LABEL_GROUPS,
   TABLE_PATH,
   card,
@@ -430,6 +431,10 @@ function frameLabel(f, lang) {
   return has(FRAME_LABEL, f) ? pick(FRAME_LABEL[f], lang) : null;
 }
 
+function realmLabel(r, lang) {
+  return has(REALM_LABEL, r) ? pick(REALM_LABEL[r], lang) : null;
+}
+
 /** Returns the card of the catalog table `table`, with the anchor or the filter `tail`. */
 function tableCard(table, tail, lang, names, env, run) {
   const t = TEXT[lang];
@@ -447,6 +452,7 @@ function tableCard(table, tail, lang, names, env, run) {
     };
     if (table === 'community') label('comm', t.commF, (c) => communityLabel(names, c, lang));
     if (table === 'other_frames') label('frame', t.frameF, (f) => frameLabel(f, lang));
+    if (table === 'mwt') label('realm', t.realmF, (r) => realmLabel(r, lang));
     desc = parts.length ? parts.join('. ') : t.open;
   } else if (tail && table === 'community' && communityLabel(names, tail, lang)) {
     const name = communityLabel(names, tail, lang);
@@ -461,6 +467,10 @@ function tableCard(table, tail, lang, names, env, run) {
     const name = frameLabel(tail, lang);
     title += ' · ' + name;
     desc = t.frameF + ': ' + name + '. ' + plural(n(names.frames, tail) ?? 0, t.itemsN, lang);
+  } else if (tail && table === 'mwt' && realmLabel(tail, lang)) {
+    const name = realmLabel(tail, lang);
+    title += ' · ' + name;
+    desc = t.realmF + ': ' + name + '. ' + plural(n(names.realms, tail) ?? 0, t.itemsN, lang);
   }
   const path = run + (tail ? '/' + tail : '');
   return siteCard(env, lang, {

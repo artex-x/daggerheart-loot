@@ -550,7 +550,7 @@ describe('the Display section', () => {
     expect(d.getByRole('checkbox', { name: 'Компактный лист' })).toBeChecked();
     const select = d.getByLabelText<HTMLSelectElement>('Раздел при запуске');
     expect(select.value).toBe('#/roll/std');
-    expect([...select.options].map((o) => o.textContent)).toHaveLength(11);
+    expect([...select.options].map((o) => o.textContent)).toHaveLength(12);
     await expectNoA11yViolations(container);
 
     await userEvent.selectOptions(select, 'Поиск');

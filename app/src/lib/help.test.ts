@@ -5,11 +5,13 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Loot } from './data.js';
 import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
+import { SECTION_LABEL, dict } from './dict.js';
+import { SUPPLEMENTS } from './nav.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
-const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community'];
+const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
 
 /** What one part reads as, so a paragraph can be compared as plain text. */
 const partText = (part: HelpPart): string => {
@@ -116,6 +118,19 @@ describe('the help for a section', () => {
     expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
   });
 
+  it('links each of the four Many Worlds Tavern realms to its own product page', () => {
+    for (const lang of LANGS) {
+      expect(linksOf(helpFor('mwt', lang)).map((l) => l.label)).toEqual([
+        'Sporopolis',
+        'Wagerwood',
+        "Warrin' Warrens",
+        'Godsvale'
+      ]);
+    }
+    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Воюющие Норы — 21');
+    expect(textOf(helpFor('mwt', 'en'), 0)).toContain("Warrin' Warrens 21");
+  });
+
   it('has nothing to say about a section nobody wrote one for', () => {
     expect(helpFor('nonsense', 'ru')).toBe(null);
   });
@@ -210,7 +225,8 @@ describe('the tables help against the data', () => {
     dread: 'Dread',
     voa: 'Vault of Ages',
     dv: "The Dragon's Vault",
-    arazo: "Arazo's Artifacts"
+    arazo: "Arazo's Artifacts",
+    mwt: 'Many Worlds Tavern'
   };
   const rolled = [
     ...new Set(
@@ -251,6 +267,26 @@ describe('the tables help for a signed-in author', () => {
     expect(textOf(en, 0)).toContain('one more group, "Homebrew": your own items');
     expect(textOf(en, 7)).toContain(
       'and type and section for Homebrew, where the row above the table picks the source.'
+    );
+  });
+});
+
+describe('the tables help on the supplements group', () => {
+  it.each(LANGS)('names the seven books in panel order and the realm filter in %s', (lang) => {
+    const help = helpFor('tables', lang);
+    const first = textOf(help, 0);
+    const t = dict(lang);
+    /* The panel chips' own words, except where the help names a book in full. */
+    const names: Record<string, string> = {
+      'roll/wondrous': 'Wondrous Loot',
+      'roll/dread': 'Dread GM Toolbox',
+      'roll/community': lang === 'ru' ? 'сообщества' : 'communities'
+    };
+    const at = SUPPLEMENTS.map((s) => first.indexOf(names[s] ?? t[SECTION_LABEL[s]]));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect([...at].sort((a, b) => a - b)).toEqual(at);
+    expect(textOf(help, 7)).toContain(
+      lang === 'ru' ? 'у Many Worlds Tavern вид и мир' : 'kind and realm for Many Worlds Tavern'
     );
   });
 });

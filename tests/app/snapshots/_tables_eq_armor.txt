@@ -38,14 +38,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "108"
+    StaticText "112"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (18)" [checked=false]
     checkbox "Стеганый Доспех" [checked=false]
     button "Стеганый Доспех Ранг 1 · Пороги 5/11 · Броня 3 Гибкое: +1 к Укло..." [namelen=80 namehash=1a6d1d56]
-    ... checkbox x108 of 112 same-shape siblings elided
-    ... button x105 of 109 same-shape siblings elided
+    ... checkbox x112 of 116 same-shape siblings elided
+    ... button x109 of 113 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
@@ -82,10 +82,14 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 35Продвинутые Латы ПринцаРанг 3 · Пороги 15/35 · Броня 6Крепость... [namelen=199 namehash=2bcf1cdb]
 36Легендарные Латы ПринцаРанг 4 · Пороги 17/44 · Броня 8Крепость... [namelen=199 namehash=fa17e2cf]
 3Доспех Морозного ПоцелуяРанг 1 · Пороги 7/14 · Броня 3Стоимость... [namelen=219 namehash=b4f7e7ce]
+4Сердце Небесного ПоэтаРанг 2 · Пороги 9/20 · Броня 2Опытное: По... [namelen=170 namehash=0e59eca8]
+6Кожаный Доспех ПерфекционистаРанг 3 · Пороги 7/16 · Броня 4Безу... [namelen=226 namehash=c49d7b26]
 70Кольчуга из Змиевой ЧешуиРанг 1 · Пороги 7/15 · Броня 3Оберега... [namelen=230 namehash=c776eff2]
 71Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=7237bb07]
 72Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 12/29 · Б... [namelen=243 namehash=4a3709d5]
 73Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 14/38 · Б... [namelen=243 namehash=985138fe]
+8Грибной Кожаный ДоспехРанг 3 · Пороги 12/30 · Броня 6Максимальн... [namelen=175 namehash=e89c54da]
+8Латы СилачаРанг 3 · Пороги 10/25 · Броня 5Безрукавное: Добавьте... [namelen=118 namehash=c25b05b7]
 Core
 EN
 Hope & Fear
@@ -103,6 +107,7 @@ daggerheart.com
 Вторичное
 Глубинный Коралловый Доспех
 Глубинный Коралловый ДоспехРанг 3 · Пороги 13/35 · Броня 6Водное... [namelen=182 namehash=1b3c357a]
+Грибной Кожаный Доспех
 Дополнения
 Доспех Дикой Розы
 Доспех Дикой РозыРанг 2 · Пороги 11/23 · Броня 5Надежда: Когда в... [namelen=156 namehash=2671ab38]
@@ -126,6 +131,7 @@ daggerheart.com
 Кожаный Длинный Плащ
 Кожаный Длинный ПлащРанг 1 · Пороги 5/12 · Броня 3Тихое: Вы полу... [namelen=143 namehash=dcdec5ca]
 Кожаный Доспех
+Кожаный Доспех Перфекциониста
 Кожаный ДоспехРанг 1 · Пороги 6/13 · Броня 3БроняCore
 Кожаный Фартук
 Кожаный ФартукРанг 1 · Пороги 6/13 · Броня 3БроняУникальноеПир з... [namelen=69 namehash=0d76c9c7]
@@ -141,6 +147,7 @@ daggerheart.com
 Латы Кровокамня
 Латы КровокамняРанг 3 · Пороги 13/35 · Броня 6Кровожадное: Когда... [namelen=166 namehash=aebc2e7a]
 Латы Принца
+Латы Силача
 Латы Ужаса
 Латы УжасаРанг 4 · Пороги 14/38 · Броня 6Проклятое: Когда вы отм... [namelen=202 namehash=fec7b8b6]
 Легендарная Кольчуга из Змиевой Чешуи
@@ -251,6 +258,7 @@ daggerheart.com
 Святое Облачение
 Священные Латы Героя
 Священные Латы ГерояРанг 4 · Пороги 13/35 · Броня 7Благословленн... [namelen=302 namehash=be9a0a59]
+Сердце Небесного Поэта
 Сеткой
 Скопировать ссылку на этот раздел
 Славная Кираса
@@ -345,14 +353,14 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "108"
+    StaticText "112"
     ... StaticText x6 of 10 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (18)" [checked=false]
     checkbox "Gambeson Armor" [checked=false]
     button "Gambeson Armor Tier 1 · Thresholds 5/11 · Armor 3 Flexible: +1 t..." [namelen=84 namehash=86e0c136]
-    ... checkbox x108 of 112 same-shape siblings elided
-    ... button x105 of 109 same-shape siblings elided
+    ... checkbox x112 of 116 same-shape siblings elided
+    ... button x109 of 113 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
@@ -389,10 +397,14 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
 35Advanced Plate of the PrinceTier 3 · Thresholds 15/35 · Armor ... [namelen=182 namehash=2fc73505]
 36Legendary Plate of the PrinceTier 4 · Thresholds 17/44 · Armor... [namelen=183 namehash=3e76b4fb]
 3Frost-Kissed ArmorTier 1 · Thresholds 7/14 · Armor 3Recall Cost... [namelen=197 namehash=54905261]
+4The Sky-Poet's HeartTier 2 · Thresholds 9/20 · Armor 2Experient... [namelen=158 namehash=0cd4acc7]
+6Perfectionist's LeathersTier 3 · Thresholds 7/16 · Armor 4Perfe... [namelen=224 namehash=8d54c954]
 70Wyrmscale HauberkTier 1 · Thresholds 7/15 · Armor 3Guarding: W... [namelen=200 namehash=a8d81d4d]
 71Improved Wyrmscale HauberkTier 2 · Thresholds 10/22 · Armor 4G... [namelen=210 namehash=738a8860]
 72Advanced Wyrmscale HauberkTier 3 · Thresholds 12/29 · Armor 5G... [namelen=210 namehash=bb68cb2c]
 73Legendary Wyrmscale HauberkTier 4 · Thresholds 14/38 · Armor 6... [namelen=211 namehash=efd18413]
+8Fungal LeathersTier 3 · Thresholds 12/30 · Armor 6The number of... [namelen=167 namehash=73872bf1]
+8Gunshow PlateTier 3 · Thresholds 10/25 · Armor 5Arm-Bearing: Ad... [namelen=132 namehash=a71e1043]
 Advanced Banded Armor
 Advanced Banded ArmorTier 3 · Thresholds 15/34 · Armor 6Bulky: −... [namelen=146 namehash=5c24eac4]
 Advanced Brigandine Armor
@@ -473,6 +485,7 @@ Full Fortified Armor
 Full Fortified ArmorTier 4 · Thresholds 15/40 · Armor 4Fortified... [namelen=180 namehash=1278cafb]
 Full Plate Armor
 Full Plate ArmorTier 1 · Thresholds 8/17 · Armor 4Very Heavy: −2... [namelen=99 namehash=a4922bf3]
+Fungal Leathers
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Gilded Sunplate
@@ -483,6 +496,7 @@ Godbound LaminarTier 4 · Thresholds 13/36 · Armor 6Divine: When ... [namelen=1
 Granminster's Finery
 Granminster's FineryTier 3 · Thresholds 11/27 · Armor 2Magnifice... [namelen=146 namehash=f86ce2e7]
 Grid
+Gunshow Plate
 Hallowed Heroplate
 Hallowed HeroplateTier 4 · Thresholds 13/35 · Armor 7Blessed: On... [namelen=263 namehash=7b8ecc89]
 Harrowbone Armor
@@ -561,6 +575,7 @@ Nightshroud
 Open this section on start
 Ordo Draconis Scale
 Other
+Perfectionist's Leathers
 Plate of the Prince
 Privacy
 Quilted Clothing
@@ -599,6 +614,7 @@ Stormthread HabitTier 2 · Thresholds 9/20 · Armor 4Absorbing: On... [namelen=1
 Supplements
 Tables
 Terms of use
+The Sky-Poet's Heart
 Tree Bark Armor
 Tree Bark ArmorTier 1 · Thresholds 7/15 · Armor 4Heavy: −1 to Ev... [namelen=91 namehash=a50d78cc]
 Trollhide Cuirass

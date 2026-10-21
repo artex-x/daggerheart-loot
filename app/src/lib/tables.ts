@@ -41,11 +41,12 @@ const CORE_GROUP: TableGroup = {
   subs: ['core_item', 'core_consumable']
 };
 
-/* Order matches the tabs above: rolling first, then browsing. Equipment and
-   Other have no tab of their own, for different reasons: Equipment is a slice
-   through every book at once rather than a book, while Other groups starting
-   inventory and campaign-frame equipment, neither of which is rollable
-   content from a book. Both go last. */
+/* The record path words, in path-word order: `whereFrom` and
+   `tools/share-card.mjs` `PATH_TEXT` read these groups, so an existing entry
+   never changes. The tables page draws `TABLE_NAV` below, in its own order.
+   Equipment is a slice through every book at once rather than a book, while
+   Other groups starting inventory and campaign-frame equipment, neither of
+   which is rollable content from a book. */
 export const TABLE_GROUPS: readonly TableGroup[] = [
   CORE_GROUP,
   { id: 'hnf', label: 'srcHnf', top: 'hnf_item', subs: ['hnf_item', 'hnf_consumable'] },
@@ -56,6 +57,7 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
   { id: 'dv', label: 'dv', top: 'dv', subs: ['dv'] },
   { id: 'arazo', label: 'arazo', top: 'arazo', subs: ['arazo'] },
   { id: 'comm', label: 'community', top: 'community', subs: ['community'] },
+  { id: 'mwt', label: 'mwt', top: 'mwt', subs: ['mwt'] },
   {
     id: 'eq',
     label: 'grpEquipment',
@@ -96,7 +98,7 @@ export function groupOf(table: TableId): TableGroup {
   return TABLE_GROUPS.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
 }
 
-/* The groups the tables page draws, a second layer over `TABLE_GROUPS`. The six
+/* The groups the tables page draws, a second layer over `TABLE_GROUPS`. The seven
    supplement books share one chip, as their roll sections share one header tab
    (`nav.ts`), and their own names move to the second row. `TABLE_GROUPS` and
    `SUB_LABEL` stay the record path words: `whereFrom`, and through it every
@@ -105,7 +107,7 @@ const SUPP_GROUP: TableGroup = {
   id: 'supp',
   label: 'grpSupplements',
   top: 'wondrous',
-  subs: ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community']
+  subs: ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt']
 };
 
 /** The tables page's group chips, in order. Each `TableId` sits in one group. */

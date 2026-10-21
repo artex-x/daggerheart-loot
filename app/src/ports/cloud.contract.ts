@@ -1184,6 +1184,37 @@ async function homebrewCases(port: CloudPort, assert: Assert): Promise<void> {
     'homebrew: an update of a removed item answered ' + JSON.stringify(gone)
   );
 
+  /* The trait "any", in the weapon's own set and in its second one. */
+  const slicerId = homebrew.newId();
+  const slicer: HomebrewContent = {
+    kind: 'equip',
+    en: 'Slicer',
+    eq: {
+      t: 'weapon',
+      tier: 1,
+      cls: 'phy',
+      tr: 'any',
+      rg: 'melee',
+      dmg: 'd6',
+      dt: 'phy',
+      bu: 1,
+      alt: { tr: 'any', rg: 'close', dmg: 'd6', dt: 'phy' }
+    }
+  };
+  const slicerRow = { id: slicerId, key: homebrew.newKey(), book_id: null, content: slicer };
+  const slicerMade = await homebrew.createItem(slicerRow);
+  assert(slicerMade.ok, 'homebrew: an any-trait weapon answered ' + JSON.stringify(slicerMade));
+  const slicerRead = await homebrew.load();
+  const slicerBack = slicerRead.ok ? slicerRead.items.find((i) => i.id === slicerId) : null;
+  assert(
+    canonJson(slicerBack?.content) === canonJson(slicer),
+    'homebrew: the any-trait weapon does not read back as created'
+  );
+  assert(
+    (await homebrew.removeItem(slicerId)).ok,
+    'homebrew: the any-trait weapon removal was refused'
+  );
+
   assert((await homebrew.removeBook(bookId)).ok, 'homebrew: the source removal was refused');
   const end = await homebrew.load();
   assert(end.ok && !end.books.length, 'homebrew: the removed source is still read');

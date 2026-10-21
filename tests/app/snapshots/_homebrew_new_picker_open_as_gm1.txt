@@ -62,7 +62,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
       combobox "Получается из" [value=зель expanded=true focused=true required=false autocomplete=list haspopup=listbox]
       listbox "Получается из" [multiselectable=false required=false orientation=vertical]
       status ""
-        StaticText "Ещё 39 - уточните запрос"
+        StaticText "Ещё 40 - уточните запрос"
       button "Подсказка: Комплект" [description=Подсказка: Комплект expanded=false]
       combobox "Комплект" [value=Нет expanded=false haspopup=menu]
         option "Нет" [selected=true]
@@ -200,7 +200,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
       combobox "Made from" [value=зель expanded=true focused=true required=false autocomplete=list haspopup=listbox]
       listbox "Made from" [multiselectable=false required=false orientation=vertical]
       status ""
-        StaticText "39 more - narrow the search"
+        StaticText "40 more - narrow the search"
       button "Help: Set" [description=Help: Set expanded=false]
       combobox "Set" [value=None expanded=false haspopup=menu]
         option "None" [selected=true]

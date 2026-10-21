@@ -47,7 +47,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     ... StaticText x14 of 18 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x29 of 33 same-shape siblings elided
+    ... button x30 of 34 same-shape siblings elided
     button "Мастерская Ольхи" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -75,6 +75,7 @@ Dragon's Vault
 Dread
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -176,7 +177,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Filter link" [description=Filter link]
     ... StaticText x14 of 18 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x29 of 33 same-shape siblings elided
+    ... button x30 of 34 same-shape siblings elided
     button "Alder Workshop" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -231,6 +232,7 @@ Link to this table
 List
 Lists
 Magic
+Many Worlds Tavern
 Melee
 One-Handed
 Open this section on start

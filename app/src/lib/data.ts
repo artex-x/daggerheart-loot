@@ -223,8 +223,8 @@ export function srcOf(it: Record_): string {
 
 /** The facet values a record answers with, for the equipment tables. Burden
  *  answers two values at once for `'any'`: the record fits under either
- *  chip, because the book prints it both ways. A `spellcast` weapon answers
- *  all six traits. */
+ *  chip, because the book prints it both ways. A `spellcast` or an `any` weapon
+ *  answers all six traits. */
 export function equipFacets(it: Record_): Record<string, string | readonly string[]> {
   const e = it.eq;
   if (!e) return {};
@@ -233,7 +233,7 @@ export function equipFacets(it: Record_): Record<string, string | readonly strin
     src: srcOf(it),
     line: e.line ? 'line' : 'uniq',
     cls: e.cls ?? '',
-    trait: e.tr === 'spellcast' ? CHARACTER_TRAITS : (e.tr ?? ''),
+    trait: e.tr === 'spellcast' || e.tr === 'any' ? CHARACTER_TRAITS : (e.tr ?? ''),
     range: e.rg ?? '',
     burden: e.bu == null ? '' : e.bu === 'any' ? ['1', '2'] : String(e.bu)
   };
@@ -253,6 +253,7 @@ export function plainFacets(it: Record_): Record<string, string> {
     tier: it.tier == null ? '' : String(it.tier),
     frame: it.frame ?? '',
     comm: it.community ?? '',
+    realm: it.realm ?? '',
     src: srcOf(it),
     sect: isHomebrewRecord(it) ? (it.book?.section?.key ?? '') : ''
   };

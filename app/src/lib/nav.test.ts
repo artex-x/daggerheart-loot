@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SUPPLEMENTS, isSupplement, tabOf } from './nav.js';
+import { navGroupOf } from './tables.js';
 import { SECTIONS } from './types.js';
 
 const OWN_TAB = ['roll/std', 'roll/alt', 'tables', 'lists', 'search'] as const;
@@ -21,6 +22,11 @@ describe('the supplements tab', () => {
       expect(isSupplement(s), s).toBe(false);
       expect(tabOf(s), s).toBe(s);
     }
+  });
+
+  it('lists the supplement books in the order of the tables page row', () => {
+    expect(SUPPLEMENTS.map((s) => s.slice(5))).toEqual(navGroupOf('wondrous').subs);
+    expect(SUPPLEMENTS.at(-1)).toBe('roll/mwt');
   });
 
   it('lights nothing when no section is open', () => {

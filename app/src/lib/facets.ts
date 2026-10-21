@@ -32,6 +32,7 @@
 import { equipFacets, kindOf, listFacets, srcOf, type Index } from './data.js';
 import { EQ_GROUPS, EQ_TABLE, groupsFor, LIST_GROUPS, type FilterState } from './filters.js';
 import { FRAME_ORDER, frameName } from './frames.js';
+import { REALM_ORDER, realmName } from './realms.js';
 import { isHomebrewRecord } from './homebrew.js';
 import { srcName } from './label.js';
 import { communities, communityName, voaSectionName, VOA_SECTIONS } from './sections.js';
@@ -78,7 +79,16 @@ function kindRow(index: Index, table: TableId, t: Dict): FacetRow | null {
 }
 
 /* The book sources in book order, the roll sections' order. */
-const BOOK_SRC: readonly string[] = ['core', 'hnf', 'wondrous', 'dread', 'voa', 'dv', 'arazo'];
+const BOOK_SRC: readonly string[] = [
+  'core',
+  'hnf',
+  'wondrous',
+  'dread',
+  'voa',
+  'dv',
+  'arazo',
+  'mwt'
+];
 
 /* The equipment `src` row's candidates, off `EQ_SRC` in app.js: the books
    in book order, then the campaign frames. `motherboard` never survives the
@@ -177,7 +187,7 @@ export function eqFacetRows(index: Index, kind: EquipKind, t: Dict, lang: Lang):
       label: t.eqTrait,
       values: (Object.keys(EQ_TRAIT) as (keyof typeof EQ_TRAIT)[])
         /* A chip is drawn only for a trait some record of this kind answers:
-           the Spellblade answers all six, so `spellcast` never gets one. */
+           the Spellblade answers all six, so `spellcast` never gets one, nor `any`. */
         .filter((k) =>
           index.allEquip.some(
             (it) => it.eq?.t === kind && [equipFacets(it)['trait'] ?? ''].flat().includes(k)
@@ -239,6 +249,12 @@ export function facetRows(
       group: 'comm',
       label: t.commF,
       values: communities(index).map((c) => ({ value: c.id, label: communityName(c, lang) }))
+    });
+  } else if (table === 'mwt') {
+    rows.push({
+      group: 'realm',
+      label: t.realmF,
+      values: REALM_ORDER.map((id) => ({ value: id, label: realmName(id, lang) }))
     });
   } else if (table === 'homebrew') {
     const sect = homebrewSectValues(index.rows.get('homebrew') ?? [], lang, hbSource);

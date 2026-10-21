@@ -1,10 +1,10 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1350
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1431
 > records covering items, consumables, weapons and armour from the Core Set,
 > Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon's
-> Vault, Arazo's Artifacts and community sets. Static site with an optional
-> account (Google or Discord sign-in); no public API.
+> Vault, Arazo's Artifacts, Many Worlds Tavern and community sets. Static site
+> with an optional account (Google or Discord sign-in); no public API.
 
 Site: https://artex-x.github.io/daggerheart-loot/
 Source: https://github.com/artex-x/daggerheart-loot
@@ -36,7 +36,7 @@ Four things trip agents up here, in order of how often:
    2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
-`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1350
+`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1431
 records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
 file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
 `i/en/<id>.html` or `i/<id>.html` (the page text is plain; the Markdown source
@@ -59,11 +59,12 @@ text, not the rules those items refer to.
   — the catalog without its text, for one fetch: the same rows in the same
   order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
   class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
-  community`.
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1350
+  community, realm`.
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1431
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
-  crafts_into, community, url, text_ru, text_en`. A set member's `text_ru`
+  crafts_into, community, url, text_ru, text_en, realm`. `realm` names a
+  Many Worlds Tavern record's realm in English and is empty elsewhere. A set member's `text_ru`
   and `text_en` end with the set's shared bonus: `<bonus name> (Set:
   <members>): <text>`, with `Комплект` for `Set` in Russian.
   `crafts_into` holds the ids a record upgrades into, joined with `;`.
@@ -71,9 +72,9 @@ text, not the rules those items refer to.
   `catalog-index.csv`.
 - [data.json](https://artex-x.github.io/daggerheart-loot/data.json) — the same
   records in full (a record's `craft` is a list of the ids it upgrades
-  into), plus the rarity tables (`alt`), the text of the thirteen
+  into), plus the rarity tables (`alt`), the text of the fourteen
   rulebook cards some records refer to (`refs`: domain cards, two beastforms,
-  an ancestry feature, an adversary feature, a transformation and three
+  two ancestry features, an adversary feature, a transformation and three
   adversary stat blocks), and
   the shared bonus of an item set (`sets`).
 - [names.json](https://artex-x.github.io/daggerheart-loot/names.json) — catalog id to
@@ -108,10 +109,10 @@ example: `***Grappling:*** On a successful attack, you can **spend a Hope** to
 Stress") or that a sentence only mentions ("when you would spend a Hope") stays
 plain.
 
-## The eight sources, and when to reach for each
+## The nine sources, and when to reach for each
 
 `source` is not decoration on the record — it is the best single predictor of
-whether a thing will fit the table you are furnishing. The eight sets are not
+whether a thing will fit the table you are furnishing. The nine sets are not
 interchangeable, and mixing them without saying so is how a selection goes
 wrong.
 
@@ -125,6 +126,7 @@ wrong.
 | `Vault of Ages` | 144 | Four third-party volumes by one author, sorted by tier: 30-34 per tier plus 9 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
 | `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Loot plus named, feature-heavy equipment. |
 | `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. | You want a signature item a character keeps for the whole campaign. |
+| `Many Worlds Tavern` | 81 | Four third-party card sets, one per realm (Sporopolis 20, Wagerwood 20, Warrin' Warrens 21, Godsvale 20): 45 items, 10 consumables and 26 pieces of equipment, stats as printed. A record's `realm` names its set. | The party travels that realm, or you want a themed deck. |
 | `Community` | 90 | A fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
@@ -133,7 +135,7 @@ Three practical consequences:
   If a request is for "official items", it means those two. The rest were not
   written by Darrington Press.
 - **Equipment lives in `Core`, `Hope & Fear`, `Campaign Frames`,
-  `The Dragon's Vault` and `Arazo's Artifacts`.** Wondrous Loot, Dread and
+  `The Dragon's Vault`, `Arazo's Artifacts` and `Many Worlds Tavern`.** Wondrous Loot, Dread and
   Vault of Ages carry a few pieces each. A question about weapons or armour
   has no answer in Community — do not go looking there.
 - **`Campaign Frames` is the one to filter out by default.** Its entries look
@@ -214,10 +216,10 @@ of two or three usually plays better than assigning one each.
 
 - `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
   `#/roll/wondrous`; `#/roll/dread`; `#/roll/voa`; `#/roll/dv`; `#/roll/arazo`;
-  `#/roll/community`
+  `#/roll/community`; `#/roll/mwt` (a realm, then a roll inside it)
 - `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
   `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`, `arazo`, `community`,
-  `other_starting`, `other_frames`, `eq_weapon`, `eq_secondary`, `eq_armor`,
+  `mwt`, `other_starting`, `other_frames`, `eq_weapon`, `eq_secondary`, `eq_armor`,
   and `homebrew`: `#/tables/homebrew` is a signed-in GM's own items; signed
   out it asks to sign in
 - `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
@@ -226,7 +228,8 @@ of two or three usually plays better than assigning one each.
   the table holds an artifact), `cls` (`phy`/`mag`),
   `src`, `trait`, `range`, `burden`, `line`. Other tables: `kind`
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
-  `frame` on `other_frames`, `comm` on `community`, `src` and `sect` on
+  `frame` on `other_frames`, `comm` on `community`, `realm` on `mwt`
+  (`sporopolis`, `wagerwood`, `warrens`, `godsvale`), `src` and `sect` on
   `homebrew`. On `homebrew` and the equipment tables `src` also takes `hb`, an
   own source key or (`sect`) a section key: these live in one account, so you
   cannot build them. On `homebrew`, `src` holds one value and picks the
@@ -838,7 +841,7 @@ held card has.
 | `eq.t` | yes | `weapon` (primary), `secondary` or `armor`. |
 | `eq.tier` | yes | `1` to `4`, or `A` for an artifact. |
 | `eq.cls` | weapon | `phy` (physical) or `mag` (magic). |
-| `eq.tr` | weapon | The trait: `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge` or `spellcast`. |
+| `eq.tr` | weapon | The trait: `agility`, `strength`, `finesse`, `instinct`, `presence`, `knowledge`, `spellcast` or `any` (the weapon takes any trait). |
 | `eq.rg` | weapon | The range: `melee`, `veryclose`, `close`, `far` or `veryfar`. |
 | `eq.dmg` | weapon | A die `d4`, `d6`, `d8`, `d10`, `d12` or `d20` with an optional bonus `+1` to `+99`: `d8`, `d10+2`. |
 | `eq.dt` | weapon | The damage type: `phy`, `mag` or `any`. |
@@ -911,7 +914,7 @@ GM's own items live only in their account.
 
 ### What a homebrew file never carries
 
-`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, row ids
+`img` (art), `roll`, `frame`, `starting`, `recall`, `community`, `realm`, row ids
 and edit dates. Version 1 carries no art.
 
 ### How to hand a homebrew file over
@@ -1009,6 +1012,6 @@ https://www.daggerheart.com. There are no previous modifications by others.
 
 Core and Hope & Fear are covered by that licence; Wondrous Loot, Dread GM
 Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts,
-Community Magic Items and the Alternate Loot & Consumable Tables are not - they
+the Many Worlds Tavern card sets, Community Magic Items and the Alternate Loot & Consumable Tables are not - they
 belong to their own authors.
 The project code is MIT.

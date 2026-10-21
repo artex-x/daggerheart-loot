@@ -764,6 +764,47 @@ const STATES = [
       await d.click('Научное');
     }
   },
+
+  /* Many Worlds Tavern rolls inside one realm's deck: each realm is a state, because the
+     deck, the range and the card underneath change with it. Warrin' Warrens holds 21
+     cards, one past a d20, so its button picks at random. */
+  {
+    id: '#/roll/mwt',
+    route: '#/roll/mwt',
+    why: 'Many Worlds Tavern on its first realm, Sporopolis: the seven-chip supplements panel, «Мир» and a d20'
+  },
+  {
+    id: '#/roll/mwt ~ wagerwood',
+    route: '#/roll/mwt',
+    why: 'the second realm, Wagerwood',
+    enter: async (d) => {
+      await d.click('Лес Пари');
+    }
+  },
+  {
+    id: '#/roll/mwt ~ warrens',
+    route: '#/roll/mwt',
+    why: "the third realm, Warrin' Warrens: 21 cards, the button picks 1-21 at random",
+    enter: async (d) => {
+      await d.click('Воюющие Норы');
+    }
+  },
+  {
+    id: '#/roll/mwt ~ godsvale',
+    route: '#/roll/mwt',
+    why: 'the fourth realm, Godsvale',
+    enter: async (d) => {
+      await d.click('Долина Богов');
+    }
+  },
+  {
+    id: '#/roll/mwt ~ help',
+    route: '#/roll/mwt',
+    why: 'the help panel, unfolded: the four decks, the die, no domain cards and no rarity, one link per realm',
+    enter: async (d) => {
+      await d.click('Как это работает');
+    }
+  },
   {
     id: '#/tables/wondrous',
     route: '#/tables/wondrous',
@@ -994,6 +1035,25 @@ const STATES = [
     why: 'a plain body with a kind row, 78 rows in book order, four rungs per piece of equipment'
   },
   {
+    id: '#/tables/mwt',
+    route: '#/tables/mwt',
+    why: 'a sectioned body: Many Worlds Tavern by realm, four realm headings, 81 rows'
+  },
+  {
+    id: '#/tables/mwt ~ warrens picked',
+    route: '#/tables/mwt',
+    why: "the filter panel open with its kind and realm rows, Warrin' Warrens picked: 21 rows",
+    enter: async (d) => {
+      await d.click('Фильтры');
+      await d.click('Воюющие Норы');
+    }
+  },
+  {
+    id: '#/tables/mwt ~ warrens anchor',
+    route: '#/tables/mwt/warrens',
+    why: 'the realm section anchor'
+  },
+  {
     id: '#/tables/other_starting',
     route: '#/tables/other_starting',
     why: 'the plain starting-items subtable'
@@ -1134,6 +1194,21 @@ const STATES = [
     id: '#/i/voa4_a2',
     route: '#/i/voa4_a2',
     why: 'a consumable artifact'
+  },
+
+  /* Many Worlds Tavern: a weapon with no printed trait, and the one new rulebook card. */
+  {
+    id: '#/i/mw47',
+    route: '#/i/mw47',
+    why: 'a weapon of any trait: «Любая» on the stat line, the realm on the badge and the path'
+  },
+  {
+    id: '#/i/mw9 ~ ref open',
+    route: '#/i/mw9',
+    why: 'the referenced ancestry feature «Сеть фангрилов», unfolded',
+    enter: async (d) => {
+      await d.click('Сеть фангрилов');
+    }
   },
 
   /* The lists index, off `renderLists`/`storageWarning` in app.js. */

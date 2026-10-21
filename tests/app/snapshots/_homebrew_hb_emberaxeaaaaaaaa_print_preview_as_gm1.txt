@@ -69,10 +69,10 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
       group "Характеристика"
         button "Проворность" [pressed=false]
         button "Сила" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Влияние" [pressed=false]
+        ... button x3 of 7 same-shape siblings elided
         button "Знание" [pressed=false]
         button "Характеристика Заклинателя" [pressed=true]
+        button "Любая" [pressed=false]
       group "Дистанция"
         button "Вплотную" [pressed=true]
         button "Близко" [pressed=false]
@@ -154,6 +154,7 @@ daggerheart.com
 Костьd4d6d8d10d12d20
 Курсив
 ЛутDaggerheart
+Любая
 Магическое
 На печати
 На экране
@@ -270,10 +271,10 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
       group "Trait"
         button "Agility" [pressed=false]
         button "Strength" [pressed=false]
-        ... button x2 of 6 same-shape siblings elided
-        button "Presence" [pressed=false]
+        ... button x3 of 7 same-shape siblings elided
         button "Knowledge" [pressed=false]
         button "Spellcast" [pressed=true]
+        button "Any" [pressed=false]
       group "Range"
         button "Melee" [pressed=true]
         button "Very Close" [pressed=false]
@@ -330,6 +331,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
 Account: gm1@example.test
 Agility
 Alt. tables
+Any
 Armor
 Black and white
 Bold

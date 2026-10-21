@@ -41,10 +41,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Уникальные" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "0 из 108"
+    StaticText "0 из 112"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     button "Тёмное сердце Андалурии" [pressed=false]
     StaticText "ЛИНЕЙКА"
     button "Улучшаемые" [pressed=false]
@@ -68,6 +68,7 @@ Core
 Dragon's Vault
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
 Vault of Ages
 daggerheart.com
@@ -141,10 +142,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     button "Unique" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "0 of 108"
+    StaticText "0 of 112"
     ... StaticText x4 of 8 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x9 of 13 same-shape siblings elided
+    ... button x10 of 14 same-shape siblings elided
     button "Dark Heart of Andaluria" [pressed=false]
     StaticText "LINE"
     button "Upgradable" [pressed=false]
@@ -181,6 +182,7 @@ Install as an app
 Link to this table
 List
 Lists
+Many Worlds Tavern
 Open this section on start
 Other
 Privacy

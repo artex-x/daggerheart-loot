@@ -41,18 +41,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Магическое" [description=Убрать из фильтра]
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "25 из 127"
+    StaticText "26 из 133"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x25 of 29 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
     button "Магическое" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (5)" [checked=false]
     checkbox "Рунный Щит" [checked=false]
-    ... button x23 of 27 same-shape siblings elided
-    ... checkbox x25 of 29 same-shape siblings elided
+    ... button x24 of 28 same-shape siblings elided
+    ... checkbox x26 of 30 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     StaticText "РАНГ 4"
@@ -72,6 +72,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 1
 120Кинжал СангромантииРанг 1 · Магическое · Влияние · Вплотную ·... [namelen=272 namehash=efd0f032]
+1Порхающие БесыРанг 2 · Магическое · Инстинкт · Далеко · d4+2 ма... [namelen=197 namehash=84bdbfd1]
 2
 28Святой ЩитРанг 3 · Магическое · Инстинкт · Вплотную · d6+3 маг... [namelen=356 namehash=048ae74f]
 3
@@ -87,6 +88,7 @@ Dragon's Vault
 Dread
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -132,6 +134,7 @@ daggerheart.com
 Плеть Душ
 Плеть ДушРанг 3 · Магическое · Влияние · Близко · d6+5 маг · Одн... [namelen=239 namehash=395488ee]
 Поиск
+Порхающие Бесы
 Проворность
 Продвинутые Руны Концентрации
 Продвинутые Руны КонцентрацииРанг 3 · Магическое · Инстинкт · Бл... [namelen=201 namehash=374069b2]
@@ -219,18 +222,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
     button "Magic" [description=Remove from the filter]
     button "Reset all"
     button "Filter link" [description=Filter link]
-    StaticText "25 of 127"
+    StaticText "26 of 133"
     ... StaticText x17 of 21 same-shape siblings elided
     button "1" [pressed=false]
-    ... button x25 of 29 same-shape siblings elided
+    ... button x26 of 30 same-shape siblings elided
     button "Magic" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (5)" [checked=false]
     checkbox "Rune Shield" [checked=false]
-    ... button x23 of 27 same-shape siblings elided
-    ... checkbox x25 of 29 same-shape siblings elided
+    ... button x24 of 28 same-shape siblings elided
+    ... checkbox x26 of 30 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     StaticText "TIER 4"
@@ -250,6 +253,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary/f
 ## en :: controls
 1
 120Sangromancy DaggerTier 1 · Magic · Presence · Melee · d6 mag ... [namelen=226 namehash=d4c8cf68]
+1FlutterfiendsTier 2 · Magic · Instinct · Far · d4+2 mag · One-H... [namelen=206 namehash=7e5475b4]
 2
 28Saintly GuardTier 3 · Magic · Instinct · Melee · d6+3 mag · On... [namelen=323 namehash=a7f3ecbb]
 3
@@ -291,6 +295,7 @@ Far
 Filter link
 Filters (1)
 Finesse
+Flutterfiends
 Focus Runes
 Focus RunesTier 1 · Magic · Instinct · Very Close · d6 mag · One... [namelen=169 namehash=72b77368]
 Grid
@@ -317,6 +322,7 @@ Link to this table
 List
 Lists
 Magic
+Many Worlds Tavern
 Melee
 Möbius Orb
 Möbius OrbTier 4 · Magic · Knowledge · Melee · d8+6 mag · One-Ha... [namelen=267 namehash=6e4115af]

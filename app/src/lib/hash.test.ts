@@ -62,8 +62,8 @@ describe('golden route fixtures', () => {
     it(fx.hash + ' - ' + fx.why, () => {
       const route = parseHash(fx.hash);
 
-      /* The fixture recorded which tab lit up. For the parser that is the same
-         question: which section does the address lead to. */
+      /* The fixture records which tab lit up, which for a supplement is the supplements
+         tab and not its own section (nav.ts `tabOf`); only the tables tab is read here. */
       if (fx.resolves.tab === '#/tables') {
         expect(route.kind).toBe('tables');
       }

@@ -249,7 +249,7 @@ describe('a tag and a path, pinned apart', () => {
      records: `srcLabel` (the badge tag) and `whereFrom` (the record-page path)
      asserted side by side, so the two abstractions are pinned apart rather
      than one being derived from the other. */
-  const shapes = ['ci61', 'hi61', 'f1', 'f95', 'cm1', 'voa2_a1'];
+  const shapes = ['ci61', 'hi61', 'f1', 'f95', 'cm1', 'voa2_a1', 'mw9', 'mw36', 'mw47', 'mw65'];
 
   it('never puts a path in a tag', () => {
     for (const id of shapes) {
@@ -272,6 +272,8 @@ describe('a tag and a path, pinned apart', () => {
     expect(srcLabel(byId('cm1'), 'ru')).toBe('Великородное');
     expect(srcLabel(byId('cm1'), 'en')).toBe('Highborne');
     expect(srcLabel(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
+    expect(srcLabel(byId('mw9'), 'ru')).toBe('Спорополис');
+    expect(srcLabel(byId('mw47'), 'en')).toBe("Warrin' Warrens");
   });
 
   it('pins the exact path for each shape', () => {
@@ -283,6 +285,12 @@ describe('a tag and a path, pinned apart', () => {
     expect(whereFrom(byId('cm1'), 'ru')).toBe('Сообщества · Великородное');
     expect(whereFrom(byId('cm1'), 'en')).toBe('Communities · Highborne');
     expect(whereFrom(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
+    /* Many Worlds Tavern: an item, a consumable, a weapon and an armor, each in its realm. */
+    expect(whereFrom(byId('mw9'), 'ru')).toBe('Many Worlds Tavern · Спорополис');
+    expect(whereFrom(byId('mw36'), 'en')).toBe('Many Worlds Tavern · Wagerwood');
+    expect(whereFrom(byId('mw47'), 'en')).toBe("Many Worlds Tavern · Warrin' Warrens");
+    expect(whereFrom(byId('mw65'), 'ru')).toBe('Many Worlds Tavern · Долина Богов');
+    expect(tableOf(byId('mw47'))).toBe('mwt');
   });
 });
 

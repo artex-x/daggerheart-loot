@@ -251,6 +251,19 @@
       "why": "the older group separator"
     },
     {
+      "url": "https://daggerheart-loot.pages.dev/tables/mwt/warrens",
+      "status": 200,
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/mwt/warrens",
+      "ogUrl": "https://daggerheart-loot.pages.dev/tables/mwt/warrens",
+      "why": "a realm block"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/tables/mwt/f_realm-warrens",
+      "status": 200,
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/mwt/f_realm-warrens",
+      "why": "a realm filter"
+    },
+    {
       "url": "https://daggerheart-loot.pages.dev/tables/homebrew",
       "status": 200,
       "app": "https://artex-x.github.io/daggerheart-loot/#/tables/homebrew",

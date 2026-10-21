@@ -351,6 +351,78 @@ const COMMUNITY: Record<Lang, Help> = {
   }
 };
 
+const MWT_SPOROPOLIS: HelpLink = {
+  href: 'https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/',
+  label: 'Sporopolis'
+};
+const MWT_WAGERWOOD: HelpLink = {
+  href: 'https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/',
+  label: 'Wagerwood'
+};
+const MWT_WARRENS: HelpLink = {
+  href: 'https://heartofdaggers.com/products/warrin-warrens-items-and-domains/',
+  label: "Warrin' Warrens"
+};
+const MWT_GODSVALE: HelpLink = {
+  href: 'https://heartofdaggers.com/products/godsvale-items-and-domains/',
+  label: 'Godsvale'
+};
+
+const MWT: Record<Lang, Help> = {
+  ru: {
+    paragraphs: [
+      p(
+        'В разделе четыре мира Many Worlds Tavern, у каждого своя колода: Спорополис — 20 карточек, Лес Пари — 20, Воюющие Норы — 21, Долина Богов — 20. Сначала выберите мир, потом бросьте d20. В Воюющих Норах карточек 21, кости на такой диапазон не бывает, поэтому там кнопка выбирает позицию случайно.'
+      ),
+      p(
+        'В каждой колоде есть предметы, расходники, оружие и броня, в порядке карточек набора. Такие находки уместнее всего, когда группа путешествует по этому миру. Оружие и броня есть и в таблицах снаряжения — там их отбирает фильтр «Источник».'
+      ),
+      p(
+        'В наборах есть ещё карточки доменов — их здесь нет, это не добыча. Редкость, напечатанную на карточках предметов, мы тоже не переносим.'
+      ),
+      {
+        parts: [
+          'Источник: наборы карточек ',
+          MWT_SPOROPOLIS,
+          ', ',
+          MWT_WAGERWOOD,
+          ', ',
+          MWT_WARRENS,
+          ' и ',
+          MWT_GODSVALE,
+          ' от Many Worlds Tavern.'
+        ]
+      }
+    ]
+  },
+  en: {
+    paragraphs: [
+      p(
+        "This section holds the four realms of Many Worlds Tavern, each with its own deck: Sporopolis has 20 cards, Wagerwood 20, Warrin' Warrens 21 and Godsvale 20. Pick a realm, then roll a d20. Warrin' Warrens has 21 cards, and no die covers that range, so there the button picks an entry at random."
+      ),
+      p(
+        'Each deck holds items, consumables, weapons and armor, in the set\'s own card order. They fit best as finds while the party travels that realm. The weapons and armor are in the equipment tables too — the "Source" filter picks them out there.'
+      ),
+      p(
+        'The sets also carry domain cards; they are not here, because they are not loot. The rarity printed on the item cards is not carried over either.'
+      ),
+      {
+        parts: [
+          'Source: the ',
+          MWT_SPOROPOLIS,
+          ', ',
+          MWT_WAGERWOOD,
+          ', ',
+          MWT_WARRENS,
+          ' and ',
+          MWT_GODSVALE,
+          ' card sets by Many Worlds Tavern.'
+        ]
+      }
+    ]
+  }
+};
+
 const STD: Record<Lang, Help> = {
   ru: {
     paragraphs: [
@@ -476,16 +548,16 @@ const TABLES: Record<Lang, Help> = {
   ru: {
     paragraphs: [
       p(
-        "Здесь лежат все таблицы целиком. Сверху выбирается книга — корник, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, фреймы, сообщества, — а под ней её разделы, если внутри есть из чего выбирать. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
+        "Здесь лежат все таблицы целиком. В верхнем ряду — корник, Hope & Fear, «Альт. таблицы», «Дополнения», «Снаряжение» и «Прочее», а ряд под ним выбирает книгу или раздел группы, если внутри есть из чего выбирать. В «Дополнениях» семь книг: Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, сообщества и Many Worlds Tavern. В «Прочем» сначала стартовый инвентарь, по которому не бросают, потом фреймы. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
       ),
       {
         lead: 'Снаряжение',
         parts: [
-          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
+          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
         ]
       },
       p(
-        "Снаряжение устроено иначе, чем добыча: вне Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и Arazo's Artifacts у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
+        "Снаряжение устроено иначе, чем добыча: вне Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
       ),
       p(
         'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
@@ -509,10 +581,10 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
+        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ — сообщество, у Many Worlds Tavern вид и мир, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию — строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» — это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» — сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
       ),
       p(
-        "Оружие и броня из Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault и Arazo's Artifacts лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
+        "Оружие и броня из Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
       ),
       {
         parts: [
@@ -526,16 +598,16 @@ const TABLES: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Every table in full. The top row picks a book — the core set, Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Other, communities — and the row under it picks a section of that book, when there is more than one. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items, where the row under it picks a source when there are several, and the items sit by section; your own equipment also sits in "Equipment", after the books\'.'
+        'Every table in full. The top row holds the core set, Hope & Fear, "Alt. tables", "Supplements", "Equipment" and "Other", and the row under it picks a book or a section of that group, when there is more than one. "Supplements" holds seven books: Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, communities and Many Worlds Tavern. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items, where the row under it picks a source when there are several, and the items sit by section; your own equipment also sits in "Equipment", after the books\'.'
       ),
       {
         lead: 'Equipment',
         parts: [
-          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts and the campaign frames too. Narrow it to one book with the "Source" filter.'
+          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Loot, Dread, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Many Worlds Tavern and the campaign frames too. Narrow it to one book with the "Source" filter.'
         ]
       },
       p(
-        "Equipment works differently from loot: outside Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault and Arazo's Artifacts it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
+        "Equipment works differently from loot: outside Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern it has no roll number, but it does have a trait, a range, damage and burden — or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
       ),
       p(
         'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
@@ -559,10 +631,10 @@ const TABLES: Record<Lang, Help> = {
         ]
       },
       p(
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, and type and section for Homebrew, where the row above the table picks the source. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
+        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, kind and realm for Many Worlds Tavern, and type and section for Homebrew, where the row above the table picks the source. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
       ),
       p(
-        "The weapons and armor of Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault and Arazo's Artifacts sit in two places: in their book's table, with a roll number, and here."
+        "The weapons and armor of Wondrous Loot, Dread, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern sit in two places: in their book's table, with a roll number, and here."
       ),
       p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
     ]
@@ -716,6 +788,7 @@ const HELP: Record<string, Record<Lang, Help>> = {
   dv: DV,
   arazo: ARAZO,
   community: COMMUNITY,
+  mwt: MWT,
   tables: TABLES,
   lists: LISTS
 };

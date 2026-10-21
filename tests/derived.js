@@ -765,8 +765,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 291,
-  'equipment outside the two base books is not 291, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 317,
+  'equipment outside the two base books is not 317, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -1970,6 +1970,34 @@ ok(
     aaById.aa23.ru === 'Волшебное Зеркало' &&
     !/Зерцал/.test(aaById.aa23.rud),
   'aa23 The Looking Glass is not «Волшебное Зеркало» throughout (I18N.md, Rules)'
+);
+
+console.log('Many Worlds Tavern');
+const mwt = L.items.mwt;
+ok(mwt.length === 81, 'items.mwt is not 81, but ' + mwt.length);
+ok(
+  mwt.every((x, i) => x.id === 'mw' + (i + 1) && x.img === x.id + '.webp'),
+  'items.mwt is not mw1..mw81, each with its own picture'
+);
+const mwByKind = {};
+mwt.forEach((x) => {
+  const k = x.eq ? x.eq.t : x.kind;
+  mwByKind[k] = (mwByKind[k] || 0) + 1;
+});
+ok(
+  JSON.stringify(mwByKind) ===
+    JSON.stringify({ secondary: 6, weapon: 16, armor: 4, item: 45, consumable: 10 }),
+  'mwt records by kind: ' + JSON.stringify(mwByKind)
+);
+ok(
+  mwt.every((x) => !x.eq || !x.eq.line),
+  'a Many Worlds Tavern piece joins an upgrade line; every card is a one-off as printed'
+);
+const mw47 = parsed.find((r) => r[idx.id] === 'mw47');
+ok(!!mw47 && mw47[idx.trait] === 'Any', 'catalog.csv mw47 trait is not Any');
+ok(
+  head[head.length - 1] === 'realm' && !!mw47 && mw47[idx.realm] === "Warrin' Warrens",
+  "catalog.csv: realm is not the last column, or mw47 is not in Warrin' Warrens"
 );
 
 console.log('Vault of Ages Volume 4');

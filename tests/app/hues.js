@@ -140,7 +140,8 @@ const gap = (a, b) => {
     '#/roll/wondrous',
     '#/roll/voa',
     '#/roll/dv',
-    '#/roll/arazo'
+    '#/roll/arazo',
+    '#/roll/mwt'
   ]) {
     const one = await rollLook(h);
     ok(one.length === 1, h + ': not exactly one roll button');

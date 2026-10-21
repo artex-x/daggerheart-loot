@@ -285,7 +285,34 @@ export const OVERRIDES = [
     n: 1,
     as: 'italic',
     why: 'the Dominated condition: «Контролируемые вами существа» is EN "Dominated creatures"'
-  }
+  },
+  {
+    id: 'mw63',
+    lang: 'ru',
+    rule: 'cost',
+    text: 'отметьте Стресс',
+    n: 1,
+    as: 'bold',
+    why: 'the price of each range beyond Very Close: EN "Mark a Stress for each", RU «за каждую»'
+  },
+  {
+    id: 'mw77',
+    lang: 'en',
+    rule: 'cost',
+    text: 'mark a Stress',
+    n: 1,
+    as: 'bold',
+    why: 'an option for a purpose with the trigger between: "mark a Stress when ... to gain a +1"'
+  },
+  ...['en', 'ru'].map((lang) => ({
+    id: 'mw34',
+    lang,
+    rule: 'cost',
+    text: lang === 'en' ? 'Mark 2 Stress' : 'Отметьте 2 Стресса',
+    n: 1,
+    as: 'bold',
+    why: 'the price of the move: "Mark 2 Stress, and all other party members clear a Stress"'
+  }))
 ];
 
 /** The records whose EN and RU markup shapes differ on purpose, with the reason. */
@@ -397,9 +424,9 @@ function wordsRe(words, lang) {
 const CONDITION_RE = { en: wordsRe(CONDITIONS.en, 'en'), ru: wordsRe(CONDITIONS.ru, 'ru') };
 
 /** Returns whether a record's text names its properties, as a catalog book does:
- *  equipment, Vault of Ages and Arazo's Artifacts. */
+ *  equipment, Vault of Ages, Arazo's Artifacts and Many Worlds Tavern. */
 export function isLabelled(record) {
-  return !!record.eq || record.src === 'voa' || record.src === 'arazo';
+  return !!record.eq || record.src === 'voa' || record.src === 'arazo' || record.src === 'mwt';
 }
 
 /** Returns the label of a line by the rule the app used before 2026-10-15

@@ -912,6 +912,26 @@ describe('the second set', () => {
     for (const line of lines) expect(line).toBeVisible();
   });
 
+  it('offers «Любая» in the trait group and the second set, and saves both as any', async () => {
+    const { cloud, container } = await editor(AXE);
+    await press(t.hbTrait, 'Любая');
+    expect(pressedIn(t.hbTrait)).toHaveTextContent('Любая');
+    await userEvent.click(altButton());
+    await press(ALT_TRAIT, 'Любая');
+    await press(t.hbAlt + ': ' + t.hbRange, 'Средне');
+    await userEvent.selectOptions(
+      screen.getByRole('combobox', { name: t.hbAlt + ': ' + t.hbDmgDie }),
+      'd6'
+    );
+    await press(t.hbAlt + ': ' + t.hbDt, 'физ');
+    await expectNoA11yViolations(container);
+    await save();
+    await waitFor(async () => {
+      expect((await stored(cloud, AXE))?.eq?.alt?.tr).toBe('any');
+    });
+    expect((await stored(cloud, AXE))?.eq?.tr).toBe('any');
+  });
+
   it('keeps the values of the set across a fold', async () => {
     await editor(AXE);
     await oneChipLeft();

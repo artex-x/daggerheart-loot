@@ -59,7 +59,7 @@ const ROOT_TEXT = {
     n.loot +
     ' items and consumables, ' +
     n.eq +
-    " weapons and armour. Core, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, community items and alternative tables. Russian and English.",
+    " weapons and armour. Core, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, community items and alternative tables. Russian and English.",
   card: (n) =>
     n.all +
     ' entries with pictures: loot, consumables, weapons and armour from Core, Hope & Fear, Wondrous Loot and community items. Russian and English.',

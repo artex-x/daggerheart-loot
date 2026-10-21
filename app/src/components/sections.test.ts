@@ -1,4 +1,4 @@
-/* The two roll pages that choose a part of their book first.
+/* The three roll pages that choose a part of their book first.
  *
  * Driven through App, which is what covers the picker components with them:
  * a chip is a button with a label and a pressed state, and a test that asserts
@@ -57,11 +57,28 @@ const LOOT: Loot = {
         community_ru: 'Горное',
         ru: 'Первое горное'
       })
+    ],
+    mwt: [
+      rec({ id: 'm1', src: 'mwt', realm: 'sporopolis', roll: 1, ru: 'Первый спорополисский' }),
+      rec({ id: 'm2', src: 'mwt', realm: 'sporopolis', roll: 2, ru: 'Второй спорополисский' }),
+      /* Twenty-one cards, one past a d20, as the Warrin' Warrens deck prints. */
+      ...Array.from({ length: 21 }, (_, i) =>
+        rec({
+          id: `w${String(i + 1)}`,
+          src: 'mwt',
+          realm: 'warrens' as const,
+          roll: i + 1,
+          ru: `Норный ${String(i + 1)}`
+        })
+      )
     ]
   },
   eq: [],
   refs: {}
 };
+
+/** The same catalog with no Many Worlds Tavern rows: a data.js from before the source. */
+const NO_MWT: Loot = { ...LOOT, items: { voa: LOOT.items['voa'] ?? [] } };
 
 const at = (route: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(route), data: fakeData(LOOT), ...over });
@@ -159,13 +176,80 @@ describe('community items', () => {
   });
 });
 
+describe('Many Worlds Tavern', () => {
+  it('opens on the first realm and draws the four realm chips', () => {
+    render(App, { env: at('#/roll/mwt') });
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
+    ).toBeInTheDocument();
+    for (const name of ['Спорополис', 'Лес Пари', 'Воюющие Норы', 'Долина Богов'])
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Спорополис' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    expect(within(screen.getByRole('main')).getByText('Мир')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
+  });
+
+  it('lights the supplements chip of its own section', () => {
+    render(App, { env: at('#/roll/mwt') });
+    const panel = screen.getByRole('navigation', { name: 'Дополнения' });
+    expect(within(panel).getByRole('link', { name: 'Many Worlds Tavern' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  });
+
+  it("picks 1-21 at random in Warrin' Warrens, where no die covers the deck", async () => {
+    /* random() just under 1 is the top face: the last card of the deck. */
+    render(App, { env: at('#/roll/mwt', { random: () => 0.999 }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
+    expect(screen.getByText('Результат броска (1–21)')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Случайно 1–21/ }));
+    expect(field().value).toBe('21');
+    expect(screen.getByRole('link', { name: 'Норный 21' })).toBeInTheDocument();
+  });
+
+  it('puts a held 21 back to one in a shorter realm', async () => {
+    render(App, { env: at('#/roll/mwt', { random: () => 0.999 }) });
+    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
+    await userEvent.click(screen.getByRole('button', { name: /Случайно 1–21/ }));
+    expect(field().value).toBe('21');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Спорополис' }));
+    expect(field().value).toBe('1');
+    expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
+  });
+
+  it('names the realms in the language on screen', async () => {
+    render(App, { env: at('#/roll/mwt') });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(screen.getByRole('button', { name: "Warrin' Warrens" })).toBeInTheDocument();
+    expect(within(screen.getByRole('main')).getByText('Realm')).toBeInTheDocument();
+    expect(screen.getByText('Pick a realm and roll within it.')).toBeInTheDocument();
+  });
+
+  it('says the data is missing when the catalog has no realm rows', () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/roll/mwt'), data: fakeData(NO_MWT) })
+    });
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
+    ).toBeInTheDocument();
+    expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+  });
+});
+
 describe('a dataset that did not load', () => {
   /* data.js served as HTML by a broken deploy, or missing from one. Both
      pages read the catalogue twice - once to build the picker, once to roll -
      and both have to say so rather than draw an empty panel. */
   it.each([
     ['#/roll/voa', 'Vault of Ages'],
-    ['#/roll/community', 'Предметы сообществ']
+    ['#/roll/community', 'Предметы сообществ'],
+    ['#/roll/mwt', 'Many Worlds Tavern']
   ])('says so on %s rather than rendering an empty picker', (route, heading) => {
     render(App, { env: fakeEnv({ router: memoryRouter(route), data: noData() }) });
     expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument();
@@ -189,6 +273,12 @@ describe('accessibility', () => {
 
   it('has no axe violations on communities', async () => {
     const { container } = render(App, { env: at('#/roll/community') });
+    await expectNoA11yViolations(container);
+  });
+
+  it('has no axe violations on Many Worlds Tavern with a realm pressed', async () => {
+    const { container } = render(App, { env: at('#/roll/mwt') });
+    await userEvent.click(screen.getByRole('button', { name: 'Воюющие Норы' }));
     await expectNoA11yViolations(container);
   });
 });

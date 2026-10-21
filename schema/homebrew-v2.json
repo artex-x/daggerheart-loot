@@ -231,7 +231,7 @@
     },
     "trait": {
       "title": "Trait",
-      "description": "The trait the weapon attacks with.",
+      "description": "The trait the weapon attacks with; any: the wielder picks any trait.",
       "enum": [
         "agility",
         "strength",
@@ -239,7 +239,8 @@
         "instinct",
         "presence",
         "knowledge",
-        "spellcast"
+        "spellcast",
+        "any"
       ]
     },
     "range": {

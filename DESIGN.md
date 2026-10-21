@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalogue of 1350 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalogue of 1431 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -184,7 +184,7 @@ seal wax. It appears on the thing a person has chosen, and almost nowhere else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalogue holds 1350 records in two languages, so
+one accent is rationed. The catalogue holds 1431 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -347,8 +347,9 @@ so a one-field panel has no trailing gap.
 full-width element does not invent its own container or its own gutter.
 
 **The Two Breakpoints Rule.** The system has two. At 640px the tab strip stops
-wrapping and becomes a horizontal scroller that keeps the current tab centred;
-from 640px the six tabs hold one row, so the header stays 106px.
+wrapping and becomes a horizontal scroller that keeps the current tab centred.
+Above it the six tabs hold one row at 768px and 1180px in both languages (607px
+in Russian, measured), so the header stays 106px.
 At 600px touch targets grow: segment padding to 8px 14px, the section copy-link
 button from about 20px to a 36px hit area, row actions onto their own line.
 Every other media query in the code belongs to one component and its own
@@ -479,7 +480,7 @@ means "a thing". Do not round a card to a pill or square a chip.
   560 in Ash Violet, each with a 2px transparent bottom border. The current
   route turns that border gold and the label Seal Gold Soft. Rolling and
   browsing are separated by `margin-left: auto`, not by a divider. One tab,
-  «Дополнения», stands for the six supplement sections and is lit on each; the
+  «Дополнения», stands for the seven supplement sections and is lit on each; the
   page under it draws a panel of chips, one per supplement, the open one gold,
   as the tables page draws its group chips.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it.
@@ -559,7 +560,7 @@ colour removed.
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
   gradient text, no coloured drop shadow. The ground is violet, which makes this
-  a short slide, and the palette's restraint is what keeps 1350 records legible.
+  a short slide, and the palette's restraint is what keeps 1431 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states, no marketing gradient. The density
   these tables need is the opposite of that language.

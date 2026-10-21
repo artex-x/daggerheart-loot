@@ -18,7 +18,7 @@ import { dict } from './dict.js';
 import { EQ_TABLE, decodeFilter, groupsFor } from './filters.js';
 import { whereFrom } from './label.js';
 import type { Rarity } from './money.js';
-import { communities, communityGroup } from './sections.js';
+import { communities, communityGroup, realmGroup } from './sections.js';
 import {
   descOf,
   eqLine,
@@ -36,6 +36,7 @@ import {
   type StatLabels
 } from './i18n.js';
 import { FRAME_ORDER, frameName } from './frames.js';
+import { REALM_ORDER, realmName } from './realms.js';
 import { TABLE_IDS, type Lang, type Record_, type TableId } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -376,6 +377,7 @@ describe('the preview card quotes the app', () => {
     homebrewSubtitle: (it: Record_, lang: Lang) => string;
     decodeFilter: (segment: string, groups: readonly string[]) => Record<string, string[]>;
     LABEL_GROUPS: Record<string, readonly string[]>;
+    REALM_LABEL: Record<string, readonly [string, string]>;
   };
   const derived = require_('../../../tools/derived.js') as {
     namesJson: (l: Loot) => string;
@@ -396,13 +398,22 @@ describe('the preview card quotes the app', () => {
     'printSetGone',
     'communityLabel',
     'commF',
-    'frameF'
+    'frameF',
+    'realmF'
   ] as const;
 
   it.each(['ru', 'en'] as const)('copies the words of dict.ts (%s)', (lang) => {
     const t = dict(lang);
     for (const key of WORDS) expect(share.TEXT[lang][key], key).toBe(t[key]);
     expect(share.PATH_TEXT[lang]['alt']).toBe(t.alt);
+    expect(share.PATH_TEXT[lang]['mwt']).toBe(t.mwt);
+  });
+
+  it('names every realm as realms.ts does, in both languages', () => {
+    const want = Object.fromEntries(
+      REALM_ORDER.map((id) => [id, [realmName(id, 'ru'), realmName(id, 'en')]])
+    );
+    expect(share.REALM_LABEL).toEqual(want);
   });
 
   it.each(['ru', 'en'] as const)(
@@ -469,7 +480,7 @@ describe('the preview card quotes the app', () => {
     }
   );
 
-  it('reads a filter as decodeFilter does on the two labelled tables', () => {
+  it('reads a filter as decodeFilter does on the three labelled tables', () => {
     const cases: [TableId, string][] = [
       ['community', 'f_comm-Loreborne-Orderborne'],
       ['community', 'f_comm-Highborne-Highborne'],
@@ -478,7 +489,10 @@ describe('the preview card quotes the app', () => {
       ['other_frames', 'f_kind-armor.frame-colossus'],
       ['other_frames', 'f_kind-armor_frame-colossus'],
       ['other_frames', 'f_frame-beast_feast'],
-      ['other_frames', 'tail']
+      ['other_frames', 'tail'],
+      ['mwt', 'f_realm-warrens'],
+      ['mwt', 'f_kind-equip.realm-sporopolis-godsvale'],
+      ['mwt', 'f_kind-item_realm-wagerwood']
     ];
     for (const [table, segment] of cases) {
       expect(share.LABEL_GROUPS[table]).toEqual(groupsFor(table));
@@ -493,6 +507,7 @@ describe('the preview card quotes the app', () => {
       tables: Record<string, { n: number }>;
       communities: Record<string, { ru: string; n: number }>;
       frames: Record<string, { n: number }>;
+      realms: Record<string, { n: number }>;
     };
     const altCount = (kind: 'item' | 'consumable'): number =>
       (Object.keys(LOOT.alt?.[kind] ?? {}) as Rarity[]).reduce(
@@ -512,7 +527,7 @@ describe('the preview card quotes the app', () => {
       else if (EQ_TABLE[t]) want[t] = equipOfKind(index, EQ_TABLE[t]).length;
       else want[t] = index.rows.get(t)?.length ?? -1;
     }
-    expect(Object.keys(want)).toHaveLength(17);
+    expect(Object.keys(want)).toHaveLength(18);
     expect(Object.fromEntries(Object.entries(names.tables).map(([k, v]) => [k, v.n]))).toEqual(
       want
     );
@@ -529,6 +544,9 @@ describe('the preview card quotes the app', () => {
       Object.fromEntries(
         FRAME_ORDER.map((f) => [f, { n: frameRows.filter((x) => x.frame === f).length }])
       )
+    );
+    expect(names.realms).toEqual(
+      Object.fromEntries(REALM_ORDER.map((r) => [r, { n: realmGroup(index, r).length }]))
     );
   });
 });

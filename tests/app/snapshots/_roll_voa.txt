@@ -31,6 +31,7 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Сообщества" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "РАЗДЕЛ КНИГИ"
     button "Ранг 1" [pressed=true]
     button "Ранг 2" [pressed=false]
@@ -68,6 +69,7 @@ Arazo's Artifacts
 Dragon's Vault
 Dread
 EN
+Many Worlds Tavern
 RU
 Vault of Ages
 Wondrous
@@ -133,6 +135,7 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
       link "Dragon's Vault" [url=#/roll/dv]
       link "Arazo's Artifacts" [url=#/roll/arazo]
       link "Communities" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
     StaticText "SECTION"
     button "Tier 1" [pressed=true]
     button "Tier 2" [pressed=false]
@@ -181,6 +184,7 @@ EN
 How this works
 Install as an app
 Lists
+Many Worlds Tavern
 One higher
 One lower
 Open this section on start

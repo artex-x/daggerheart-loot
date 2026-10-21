@@ -44,15 +44,15 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Фильтры" [expanded=false]
     ... StaticText x9 of 13 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (89)" [checked=false]
+    checkbox "Выбрать все (91)" [checked=false]
     checkbox "Палаш" [checked=false]
     button "Ранг 1 Палаш Broadsword"
-    ... checkbox x439 of 443 same-shape siblings elided
-    ... button x435 of 439 same-shape siblings elided
+    ... checkbox x455 of 459 same-shape siblings elided
+    ... button x451 of 455 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    button "77 Легендарный Кнут из Хвоста Виверны Legendary Wyverntail Whip"
+    button "3 Посох Ученика Student's Staff"
     StaticText "АРТЕФАКТЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
@@ -121,6 +121,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 19Лук из Эльфийских ВолосElfhair Bow
 19Мясницкий ТесакMeat Cleaver
 1Благословенный Нож Шеф-ПовараBlessed Chef's Knife
+1Верная МотыгаTrusty Cultivator
+1Искатель ВраговFoeseeker
 1Нестареющее Око ЗверяThe Ageless Eye of the Beast
 1Эфирная ВинтовкаAether Rifle
 20Железный КонстебльIron Constable
@@ -137,7 +139,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 27Посох Чёрной ДырыBlack Hole Staff
 29Праща ФениксаPhoenix Sling
 29Святой КлинокSaintly Blade
+2Бабушкина СкалкаGrandma's Rolling Pin
+2Животворная СабляGenerative Cutlass
 2Клинок ЖивущихBlade of the Living
+2Рассекатель НебесSkycutter
 2Улучшенное Нестареющее Око ЗверяImproved Ageless Eye of the Bea... [namelen=66 namehash=18a1d081]
 30Крушитель МонолитовMonolith Smasher
 30ТенерубShadowcull
@@ -154,13 +159,19 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 38Улучшенный Жезл СопротивленияImproved Rod of Resistance
 39Продвинутый Жезл СопротивленияAdvanced Rod of Resistance
 3Длинный Лук ФираLongbow of Fyr
+3Дырявый КлинокHole-y Blade
 3Кулаки РазорителяFists of the Ravager
+3Посох Полого КамняHollowstone Staff
+3Посох УченикаStudent's Staff
 3Продвинутое Нестареющее Око ЗверяAdvanced Ageless Eye of the Be... [namelen=67 namehash=981e63b1]
+3ШугалкаThe Scrammer
 40Легендарный Жезл СопротивленияLegendary Rod of Resistance
 47Посох Запредельной ПустотыStaff of the Void Beyond
 48Улучшенный Посох Запредельной ПустотыImproved Staff of the Voi... [namelen=72 namehash=f164a640]
 49Продвинутый Посох Запредельной ПустотыAdvanced Staff of the Vo... [namelen=73 namehash=f34ba64b]
 4Легендарное Нестареющее Око ЗверяLegendary Ageless Eye of the B... [namelen=68 namehash=dff7a95f]
+4Многоударный КромсательMany-Hit Mangler
+4СнаксSnax
 4Туманный Проектор Ми-ГоMi-Go Mist Projector
 50Легендарный Посох Запредельной ПустотыLegendary Staff of the V... [namelen=74 namehash=da14dfb6]
 51Гарпун ЛевиафанаLeviathan Harpoon
@@ -171,7 +182,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 55Легендарный Моргенштерн ТарианаLegendary Taryan's Morningstar
 58Копьё-КамертонTuning Spear
 59Улучшенное Копьё-КамертонImproved Tuning Spear
+5ДвустрелSplitshooter
+5Защитник Леса ПариWagerwood Defender
 5ИнееметательRimecaster
+5Копьё-СкорпионScorpion Spear
 5Посох Тайного ПламениStaff of the Secret Flame
 5Топор РассветаAxe of the Dawn
 60Продвинутое Копьё-КамертонAdvanced Tuning Spear
@@ -184,6 +198,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 67Улучшенный Боевой Молот БазаImproved Warhammer of Baz
 68Продвинутый Боевой Молот БазаAdvanced Warhammer of Baz
 69Легендарный Боевой Молот БазаLegendary Warhammer of Baz
+6Гнилозубый КинжалRottooth Dagger
 6Последний РубежLast Stand
 6Улучшенный Топор РассветаImproved Axe of the Dawn
 74Кнут из Хвоста ВиверныWyverntail Whip
@@ -194,6 +209,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 79Лук ИскателяSeeker's Bow
 7Молниевая Пушка ЙитианцевYithian Lightning Gun
 7Продвинутый Топор РассветаAdvanced Axe of the Dawn
+7Табельный СекачStandard Issue Slicer
 80Янтарный МолотAmber Hammer
 81Крюк АнанимусаAnanimus Hook
 82Клеймор Дуговой МолнииArc-Lightning Claymore
@@ -230,6 +246,7 @@ daggerheart.com
 Арбалет Костяных Осколков
 Аркебуза
 Астральная Глефа
+Бабушкина Скалка
 Благословенный Клинок
 Благословенный Нож Шеф-Повара
 Благословленный Медный Кастет
@@ -245,6 +262,7 @@ daggerheart.com
 Булава Скверны
 Веер из Лезвий
 Венчик
+Верная Мотыга
 Взрывной Молот
 Взрывные Зелья
 Вилы
@@ -264,12 +282,14 @@ daggerheart.com
 Ганблейд
 Гарпун Левиафана
 Глефа Тирана
+Гнилозубый Кинжал
 Губитель из Сухостоя
 Двойной Посох
 Двойной Цеп
 Двуручный Меч
 Двуручный Меч Вайаты
 Двуручный Посох
+Двустрел
 Длинный Лук
 Длинный Лук Фира
 Длинный Меч
@@ -282,6 +302,7 @@ daggerheart.com
 Дротик Гребня Волны
 Дубина из Зубов Огра
 Дука Саламет
+Дырявый Клинок
 Жало Осы
 Жезл Жизни
 Жезл Нестабильной Арканы
@@ -289,6 +310,7 @@ daggerheart.com
 Жезл Сопротивления
 Железная Сковорода
 Железный Констебль
+Животворная Сабля
 Заклинательный Клинок
 Заколдованные Браслеты
 Заточенные Грабли
@@ -302,10 +324,12 @@ daggerheart.com
 Зачарованный Воздушный Змей
 Зачарованный Молот
 Зачарованный Чакрам
+Защитник Леса Пари
 Звёздное Копьё
 Изогнутый Кинжал
 Инееметатель
 Инфернальные Кастеты
+Искатель Врагов
 К содержимому
 Как это работает
 Кастет
@@ -341,6 +365,7 @@ daggerheart.com
 Конфиденциальность
 Копьё
 Копьё-Камертон
+Копьё-Скорпион
 Короткий Лук
 Короткий Посох
 Кортик Мёртвых
@@ -434,6 +459,7 @@ daggerheart.com
 Меч-Трость
 Меч-Хлыст
 Многозарядный Арбалет
+Многоударный Кромсатель
 Молниевая Пушка Йитианцев
 Молниеносный Молот
 Молот Гнева
@@ -477,7 +503,9 @@ daggerheart.com
 Посох Мохового Цветка
 Посох Огня
 Посох Поганки
+Посох Полого Камня
 Посох Тайного Пламени
+Посох Ученика
 Посох Хранителя
 Посох Чёрной Дыры
 Посох Шепчущего Архива
@@ -836,6 +864,7 @@ daggerheart.com
 Ранг 4ШэнбяоSwinging Ropeblade
 Ранг 4Эфирный Двуручный МечEthereal Zweihänder
 Рапира
+Рассекатель Небес
 Расщепляющийся Лук
 Револьвер
 Револьвер Магуса
@@ -866,6 +895,7 @@ daggerheart.com
 Скипетр Инея
 Скипетр Элиаса
 Скопировать ссылку на этот раздел
+Снакс
 Снаряжение
 Снежный Клинок
 Солдатская Пика
@@ -878,6 +908,7 @@ daggerheart.com
 Сумеречное Крыло
 Сухожильный Лук
 Сюрикен
+Табельный Секач
 Таблицы
 Темпрус
 Тенеруб
@@ -967,6 +998,7 @@ daggerheart.com
 Часовой Арбалет
 Шип Дриады
 Шипастый Лук
+Шугалка
 Шэнбяо
 Шёлковый Лук
 Эфирная Винтовка
@@ -1015,15 +1047,15 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     button "Filters" [expanded=false]
     ... StaticText x9 of 13 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (89)" [checked=false]
+    checkbox "Select all (91)" [checked=false]
     checkbox "Broadsword" [checked=false]
     button "Tier 1 Broadsword Палаш"
-    ... checkbox x439 of 443 same-shape siblings elided
-    ... button x435 of 439 same-shape siblings elided
+    ... checkbox x455 of 459 same-shape siblings elided
+    ... button x451 of 455 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
-    button "77 Legendary Wyverntail Whip Легендарный Кнут из Хвоста Виверны"
+    button "3 Student's Staff Посох Ученика"
     StaticText "ARTIFACTS"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
@@ -1093,7 +1125,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 19Meat CleaverМясницкий Тесак
 1Aether RifleЭфирная Винтовка
 1Blessed Chef's KnifeБлагословенный Нож Шеф-Повара
+1FoeseekerИскатель Врагов
 1The Ageless Eye of the BeastНестареющее Око Зверя
+1Trusty CultivatorВерная Мотыга
 20Improved Elfhair BowУлучшенный Лук из Эльфийских Волос
 20Iron ConstableЖелезный Констебль
 21Advanced Elfhair BowПродвинутый Лук из Эльфийских Волос
@@ -1109,7 +1143,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 29Phoenix SlingПраща Феникса
 29Saintly BladeСвятой Клинок
 2Blade of the LivingКлинок Живущих
+2Generative CutlassЖивотворная Сабля
+2Grandma's Rolling PinБабушкина Скалка
 2Improved Ageless Eye of the BeastУлучшенное Нестареющее Око Зве... [namelen=66 namehash=8ac1a1d0]
+2SkycutterРассекатель Небес
 30Improved Phoenix SlingУлучшенная Праща Феникса
 30Monolith SmasherКрушитель Монолитов
 30ShadowcullТенеруб
@@ -1126,13 +1163,19 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 39Advanced Rod of ResistanceПродвинутый Жезл Сопротивления
 3Advanced Ageless Eye of the BeastПродвинутое Нестареющее Око Зв... [namelen=67 namehash=42c1cd5c]
 3Fists of the RavagerКулаки Разорителя
+3Hole-y BladeДырявый Клинок
+3Hollowstone StaffПосох Полого Камня
 3Longbow of FyrДлинный Лук Фира
+3Student's StaffПосох Ученика
+3The ScrammerШугалка
 40Legendary Rod of ResistanceЛегендарный Жезл Сопротивления
 47Staff of the Void BeyondПосох Запредельной Пустоты
 48Improved Staff of the Void BeyondУлучшенный Посох Запредельной... [namelen=72 namehash=8940664e]
 49Advanced Staff of the Void BeyondПродвинутый Посох Запредельно... [namelen=73 namehash=d3ae330e]
 4Legendary Ageless Eye of the BeastЛегендарное Нестареющее Око З... [namelen=68 namehash=28f89414]
+4Many-Hit ManglerМногоударный Кромсатель
 4Mi-Go Mist ProjectorТуманный Проектор Ми-Го
+4SnaxСнакс
 50Legendary Staff of the Void BeyondЛегендарный Посох Запредельн... [namelen=74 namehash=57078097]
 51Leviathan HarpoonГарпун Левиафана
 52Taryan's MorningstarМоргенштерн Тариана
@@ -1144,7 +1187,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 59Improved Tuning SpearУлучшенное Копьё-Камертон
 5Axe of the DawnТопор Рассвета
 5RimecasterИнееметатель
+5Scorpion SpearКопьё-Скорпион
+5SplitshooterДвустрел
 5Staff of the Secret FlameПосох Тайного Пламени
+5Wagerwood DefenderЗащитник Леса Пари
 60Advanced Tuning SpearПродвинутое Копьё-Камертон
 61Legendary Tuning SpearЛегендарное Копьё-Камертон
 62Urzo's HalberdАлебарда Урзо
@@ -1157,6 +1203,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 69Legendary Warhammer of BazЛегендарный Боевой Молот База
 6Improved Axe of the DawnУлучшенный Топор Рассвета
 6Last StandПоследний Рубеж
+6Rottooth DaggerГнилозубый Кинжал
 74Wyverntail WhipКнут из Хвоста Виверны
 75Improved Wyverntail WhipУлучшенный Кнут из Хвоста Виверны
 76Advanced Wyverntail WhipПродвинутый Кнут из Хвоста Виверны
@@ -1164,6 +1211,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 79Acid EdgeКислотное Лезвие
 79Seeker's BowЛук Искателя
 7Advanced Axe of the DawnПродвинутый Топор Рассвета
+7Standard Issue SlicerТабельный Секач
 7Yithian Lightning GunМолниевая Пушка Йитианцев
 80Amber HammerЯнтарный Молот
 81Ananimus HookКрюк Ананимуса
@@ -1349,6 +1397,7 @@ Fishing Rod
 Fists of the Ravager
 Flickerfly Blade
 Floating Bladeshards
+Foeseeker
 Forge Poker
 Friction Wraps
 Frostwyrd (Awakened)
@@ -1357,11 +1406,13 @@ Frostwyrd (Exalted)
 Fury Gem
 Fusion Gloves
 Gelatinous Hammer
+Generative Cutlass
 Ghost Touch Sword
 Ghostblade
 Gilded Bow
 Gilded Falchion
 Glowing Rings
+Grandma's Rolling Pin
 Gravity Arbalest
 Greatbow
 Greatstaff
@@ -1379,6 +1430,8 @@ Harrowcleave
 Hellfire Sword
 Herald's Will
 Hilarad's Meteor
+Hole-y Blade
+Hollowstone Staff
 Holy Shotgun
 Homebrew
 Hope & Fear
@@ -1524,6 +1577,7 @@ Longsword
 Mace
 Mage Orb
 Magus Revolver
+Many-Hit Mangler
 Meat Cleaver
 Meridian Cutlass
 Mi-Go Mist Projector
@@ -1559,6 +1613,7 @@ Rod of Resistance
 Rolling Pin
 Rope Dart
 Roseblade
+Rottooth Dagger
 Runelock Pistol
 Runes of Ruination
 Saintly Blade
@@ -1566,6 +1621,7 @@ Sampler
 Scepter
 Scepter of Elias
 Scimitar
+Scorpion Spear
 Search
 Secondary
 Seeker's Bow
@@ -1583,9 +1639,11 @@ Singing Sword
 Siphoning Gauntlets
 Skip to content
 Sky Gnome Pickaxe
+Skycutter
 Sledge Axe
 Sledgehammer
 Slingshot
+Snax
 Snowblade
 Soldier's Pike
 Somnus Blade
@@ -1597,11 +1655,13 @@ Spellbound Bangles
 Spider's Sting
 Spiked Bow
 Splintershaft Bow
+Splitshooter
 Staff of Augma
 Staff of Laethys
 Staff of the Secret Flame
 Staff of the Void Beyond
 Staff of the Whispering Archive
+Standard Issue Slicer
 Standard rules
 Star Lance
 Starmetal Blade
@@ -1609,6 +1669,7 @@ Steampowered Gauntlets
 Steelforged Halberd
 Storm God's Greataxe
 Striking Fangs
+Student's Staff
 Supplements
 Swinging Ropeblade
 Sword of Angels
@@ -1621,6 +1682,7 @@ Temprus
 Tendon Bow
 Terms of use
 The Ageless Eye of the Beast
+The Scrammer
 Thistlebow
 Tier 1Arcane GauntletsМагические Наручи
 Tier 1Arcane RifleМагическая Винтовка
@@ -1913,6 +1975,7 @@ Tier 4ThistlebowКолючий Лук
 Tier 4Wand of EssekПалочка Эссека
 Toadstool Staff
 Trinity Club
+Trusty Cultivator
 Tuning Spear
 Twisted Dagger
 Tyrant's Glaive
@@ -1920,6 +1983,7 @@ Urok Broadsword
 Urzo's Halberd
 Verdant Daughter
 Voynarian Crossbow
+Wagerwood Defender
 Waiata Greatsword
 Walking Staff
 Wand

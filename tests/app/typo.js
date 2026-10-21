@@ -34,10 +34,12 @@ const PAGES = [
   '#/roll/dv',
   '#/roll/arazo',
   '#/roll/community',
+  '#/roll/mwt',
   '#/tables/core_item',
   '#/tables/eq_weapon',
   '#/tables/alt_item',
   '#/tables/community',
+  '#/tables/mwt',
   '#/lists',
   '#/lists/a',
   '#/i/w1',
@@ -76,7 +78,8 @@ const STORAGE = {
 /* Which of the five grips each page actually offers - read off the
  * components, not assumed: `FilterBar.svelte` draws nothing at all where a
  * table has no facets (`core_item`, `alt_item`), so 'filters' is only for
- * the two with some (`eq_weapon`'s equipment facets, `community`'s `comm`);
+ * the three with some (`eq_weapon`'s equipment facets, `community`'s `comm`, `mwt`'s
+ * `kind` and `realm`);
  * `AddToList.svelte`'s trigger sits on `RecordPage` alone among these pages,
  * not on a roll/tables card, which only opens it inside a modal `typo.js`
  * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
@@ -91,10 +94,12 @@ const EXPECTED = {
   '#/roll/dv': ['help'],
   '#/roll/arazo': ['help'],
   '#/roll/community': ['help'],
+  '#/roll/mwt': ['help'],
   '#/tables/core_item': ['help'],
   '#/tables/eq_weapon': ['filters', 'help'],
   '#/tables/alt_item': ['help'],
   '#/tables/community': ['filters', 'help'],
+  '#/tables/mwt': ['filters', 'help'],
   '#/lists': ['help'],
   '#/lists/a': ['note', 'listNote'],
   '#/i/w1': ['addToList'],

@@ -38,18 +38,18 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
     button "Фильтры" [expanded=false]
-    StaticText "437"
+    StaticText "453"
     ... StaticText x8 of 12 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (89)" [checked=false]
+    checkbox "Выбрать все (91)" [checked=false]
     checkbox "Палаш" [checked=false]
     button "Палаш Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Од..." [namelen=122 namehash=a6db75ac]
-    ... checkbox x438 of 442 same-shape siblings elided
-    ... button x434 of 438 same-shape siblings elided
+    ... checkbox x454 of 458 same-shape siblings elided
+    ... button x450 of 454 same-shape siblings elided
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    button "77 Легендарный Кнут из Хвоста Виверны Ранг 4 · Физическое · Пров..." [namelen=351 namehash=2f3c4b71]
+    button "3 Посох Ученика Ранг 4 · Магическое · Знание · Далеко · d6+7 маг..." [namelen=228 namehash=2724d254]
     StaticText "АРТЕФАКТЫ"
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
     checkbox "Выбрать все (1)" [checked=false]
@@ -118,6 +118,8 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 19Лук из Эльфийских ВолосРанг 1 · Физическое · Проворность · Оче... [namelen=246 namehash=6a448ce6]
 19Мясницкий ТесакРанг 3 · Физическое · Влияние · Близко · d8+7 ф... [namelen=491 namehash=f7f4f0bc]
 1Благословенный Нож Шеф-ПовараРанг 1 · Физическое · Искусность ·... [namelen=341 namehash=e119584c]
+1Верная МотыгаРанг 3 · Магическое · Инстинкт · Средне · d8+2 маг... [namelen=251 namehash=d8c1535b]
+1Искатель ВраговРанг 2 · Магическое · Инстинкт · Близко · d8+4 м... [namelen=301 namehash=677ea1e7]
 1Нестареющее Око ЗверяРанг 1 · Физическое · Проворность · Вплотн... [namelen=369 namehash=2491c790]
 1Эфирная ВинтовкаРанг 3 · Магическое · Инстинкт · Очень далеко ·... [namelen=301 namehash=b7bacd80]
 20Железный КонстебльРанг 2 · Физическое · Сила · Вплотную · d8+5... [namelen=308 namehash=325982b4]
@@ -134,7 +136,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 27Посох Чёрной ДырыРанг 4 · Магическое · Знание · Далеко · d20+7... [namelen=666 namehash=f24f876c]
 29Праща ФениксаРанг 1 · Физическое · Искусность · Далеко · d10+1... [namelen=243 namehash=a9aecbaa]
 29Святой КлинокРанг 3 · Физическое · Сила · Вплотную · d10+10 фи... [namelen=534 namehash=ea387960]
+2Бабушкина СкалкаРанг 2 · Физическое · Влияние · Вплотную · d4+3... [namelen=174 namehash=ee0c3f18]
+2Животворная СабляРанг 2 · Физическое · Инстинкт · Вплотную · d6... [namelen=216 namehash=7cc402f7]
 2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=216 namehash=cf0225f3]
+2Рассекатель НебесРанг 4 · Физическое · Сила · Очень далеко · d1... [namelen=313 namehash=0fb5cbf8]
 2Улучшенное Нестареющее Око ЗверяРанг 2 · Физическое · Проворнос... [namelen=382 namehash=d9b78db2]
 30Крушитель МонолитовРанг 2 · Физическое · Сила · Вплотную · d8+... [namelen=450 namehash=f5d94d86]
 30ТенерубРанг 4 · Физическое · Искусность · Вплотную · d10+9 физ... [namelen=571 namehash=43bbb55f]
@@ -151,13 +156,19 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 38Улучшенный Жезл СопротивленияРанг 2 · Магическое · Характерист... [namelen=346 namehash=b85e6686]
 39Продвинутый Жезл СопротивленияРанг 3 · Магическое · Характерис... [namelen=349 namehash=7e25ccad]
 3Длинный Лук ФираРанг 3 · Магическое · Проворность · Далеко · d6... [namelen=187 namehash=c4e64a35]
+3Дырявый КлинокРанг 3 · Физическое · Сила · Вплотную · d8+6 физ ... [namelen=222 namehash=bc054f9e]
 3Кулаки РазорителяРанг 4 · Магическое · Сила · Вплотную · d10+15... [namelen=243 namehash=518b4a38]
+3Посох Полого КамняРанг 2 · Магическое · Знание · Далеко · d6+4 ... [namelen=196 namehash=41555989]
+3Посох УченикаРанг 4 · Магическое · Знание · Далеко · d6+7 маг ·... [namelen=222 namehash=ceb94207]
 3Продвинутое Нестареющее Око ЗверяРанг 3 · Физическое · Проворно... [namelen=383 namehash=d1f71d56]
+3ШугалкаРанг 2 · Физическое · Искусность · Далеко · d4+4 физ · Д... [namelen=191 namehash=215bae07]
 40Легендарный Жезл СопротивленияРанг 4 · Магическое · Характерис... [namelen=349 namehash=3bba1dbd]
 47Посох Запредельной ПустотыРанг 1 · Магическое · Характеристика... [namelen=208 namehash=30468a73]
 48Улучшенный Посох Запредельной ПустотыРанг 2 · Магическое · Хар... [namelen=221 namehash=da8c1c03]
 49Продвинутый Посох Запредельной ПустотыРанг 3 · Магическое · Ха... [namelen=222 namehash=2134d3bc]
 4Легендарное Нестареющее Око ЗверяРанг 4 · Физическое · Проворно... [namelen=383 namehash=4d6c1343]
+4Многоударный КромсательРанг 2 · Физическое · Сила · Вплотную · ... [namelen=199 namehash=24b80857]
+4СнаксРанг 2 · Физическое · Сила · Вплотную · d10+6 физ · Двуруч... [namelen=210 namehash=e4296ead]
 4Туманный Проектор Ми-ГоРанг 3 · Магическое · Знание · Средне · ... [namelen=405 namehash=0153d0d5]
 50Легендарный Посох Запредельной ПустотыРанг 4 · Магическое · Ха... [namelen=222 namehash=60467fbd]
 51Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8... [namelen=361 namehash=fbca8d2d]
@@ -168,7 +179,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 55Легендарный Моргенштерн ТарианаРанг 4 · Физическое · Сила · Бл... [namelen=299 namehash=bf7f07b3]
 58Копьё-КамертонРанг 1 · Физическое · Искусность · Близко · d10+... [namelen=348 namehash=02c8306a]
 59Улучшенное Копьё-КамертонРанг 2 · Физическое · Искусность · Бл... [namelen=359 namehash=4251ccc2]
+5ДвустрелРанг 3 · Физическое · Проворность · Очень далеко · d6+6... [namelen=237 namehash=af6c3d79]
+5Защитник Леса ПариРанг 3 · Физическое · Проворность · Вплотную ... [namelen=207 namehash=e3e5f2fd]
 5ИнееметательРанг 1 · Магическое · Знание · Далеко · d6+1 маг · ... [namelen=287 namehash=4396ebb1]
+5Копьё-СкорпионРанг 1 · Физическое · Проворность · Далеко · d6+2... [namelen=200 namehash=bed39199]
 5Посох Тайного ПламениРанг 3 · Магическое · Инстинкт · Далеко · ... [namelen=244 namehash=dc426b83]
 5Топор РассветаРанг 1 · Физическое · Сила · Вплотную · d12+2 физ... [namelen=309 namehash=3a06bb17]
 60Продвинутое Копьё-КамертонРанг 3 · Физическое · Искусность · Б... [namelen=360 namehash=a91677dd]
@@ -181,6 +195,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 67Улучшенный Боевой Молот БазаРанг 2 · Физическое · Сила · Вплот... [namelen=258 namehash=f1a98c56]
 68Продвинутый Боевой Молот БазаРанг 3 · Физическое · Сила · Впло... [namelen=259 namehash=ff306325]
 69Легендарный Боевой Молот БазаРанг 4 · Физическое · Сила · Впло... [namelen=259 namehash=8cfbc0de]
+6Гнилозубый КинжалРанг 3 · Магическое · Искусность · Вплотную · ... [namelen=191 namehash=0c59d370]
 6Последний РубежРанг 2 · Физическое · Искусность · Близко · d10+... [namelen=258 namehash=287c4d5e]
 6Улучшенный Топор РассветаРанг 2 · Физическое · Сила · Вплотную ... [namelen=320 namehash=f321922c]
 74Кнут из Хвоста ВиверныРанг 1 · Физическое · Проворность · Близ... [namelen=331 namehash=7e181f01]
@@ -191,6 +206,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 79Лук ИскателяРанг 2 · Физическое · Искусность · Далеко · d6+4 ф... [namelen=372 namehash=eff71575]
 7Молниевая Пушка ЙитианцевРанг 4 · Магическое · Знание · Очень д... [namelen=485 namehash=832190f9]
 7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=321 namehash=9a94ce7a]
+7Табельный СекачРанг 1 · Физическое · Любая · Вплотную · d6 физ ... [namelen=189 namehash=f5f7e330]
 80Янтарный МолотРанг 3 · Физическое · Сила · Вплотную · d8+7 физ... [namelen=237 namehash=26ecab45]
 81Крюк АнанимусаРанг 3 · Магическое · Влияние · Вплотную · d8+6 ... [namelen=358 namehash=b0d2bfc7]
 82Клеймор Дуговой МолнииРанг 3 · Физическое · Сила · Вплотную · ... [namelen=395 namehash=fb5e61c4]
@@ -230,6 +246,7 @@ daggerheart.com
 Аркебуза
 АркебузаРанг 4 · Физическое · Знание · Далеко · d8+10 физ · Двур... [namelen=235 namehash=8d72a13d]
 Астральная Глефа
+Бабушкина Скалка
 Благословенный Клинок
 Благословенный КлинокРанг 3 · Магическое · Инстинкт · Вплотную ·... [namelen=179 namehash=85b81151]
 Благословенный Нож Шеф-Повара
@@ -255,6 +272,7 @@ daggerheart.com
 Веер из ЛезвийРанг 2 · Физическое · Влияние · Вплотную · d8+3 фи... [namelen=302 namehash=61b5bc57]
 Венчик
 ВенчикРанг 1 · Магическое · Знание · Далеко · d6+1 маг · Одноруч... [namelen=102 namehash=1ccbe8c8]
+Верная Мотыга
 Взрывной Молот
 Взрывной МолотРанг 3 · Магическое · Сила · Вплотную · d10+7 маг ... [namelen=214 namehash=e1ceab33]
 Взрывные Зелья
@@ -287,6 +305,7 @@ daggerheart.com
 ГанблейдРанг 3 · Магическое · Проворность · Далеко · d6+6 маг · ... [namelen=225 namehash=dc66a76d]
 Гарпун Левиафана
 Глефа Тирана
+Гнилозубый Кинжал
 Губитель из Сухостоя
 Двойной Посох
 Двойной ПосохРанг 1 · Магическое · Инстинкт · Далеко · d6+3 маг ... [namelen=94 namehash=558e0fec]
@@ -297,6 +316,7 @@ daggerheart.com
 Двуручный МечРанг 1 · Физическое · Сила · Вплотную · d10+3 физ ·... [namelen=219 namehash=de9b781d]
 Двуручный Посох
 Двуручный ПосохРанг 1 · Магическое · Знание · Очень далеко · d6 ... [namelen=205 namehash=71a5dfa5]
+Двустрел
 Длинный Лук
 Длинный Лук Фира
 Длинный ЛукРанг 1 · Физическое · Проворность · Очень далеко · d8... [namelen=128 namehash=522ff51f]
@@ -313,6 +333,7 @@ daggerheart.com
 Дротик Гребня Волны
 Дубина из Зубов Огра
 Дука Саламет
+Дырявый Клинок
 Жало Осы
 Жезл Жизни
 Жезл Нестабильной Арканы
@@ -321,6 +342,7 @@ daggerheart.com
 Железная Сковорода
 Железная СковородаРанг 1 · Физическое · Сила · Вплотную · d8+1 ф... [namelen=114 namehash=a533ad82]
 Железный Констебль
+Животворная Сабля
 Заклинательный Клинок
 Заколдованные Браслеты
 Заколдованные БраслетыРанг 2 · Магическое · Знание · Вплотную · ... [namelen=121 namehash=7fe18a70]
@@ -346,11 +368,13 @@ daggerheart.com
 Зачарованный МолотРанг 1 · Магическое · Сила · Вплотную · d10+1 ... [namelen=115 namehash=0cf569de]
 Зачарованный Чакрам
 Зачарованный ЧакрамРанг 1 · Магическое · Искусность · Средне · d... [namelen=272 namehash=8526e551]
+Защитник Леса Пари
 Звёздное Копьё
 Изогнутый Кинжал
 Изогнутый КинжалРанг 4 · Физическое · Искусность · Вплотную · d8... [namelen=195 namehash=d781a6d8]
 Инееметатель
 Инфернальные Кастеты
+Искатель Врагов
 К содержимому
 Как это работает
 Кастет
@@ -404,6 +428,7 @@ daggerheart.com
 Конфиденциальность
 Копьё
 Копьё-Камертон
+Копьё-Скорпион
 КопьёРанг 1 · Физическое · Искусность · Близко · d8+3 физ · Двур... [namelen=88 namehash=1aaad172]
 Короткий Лук
 Короткий ЛукРанг 1 · Физическое · Проворность · Далеко · d6+3 фи... [namelen=96 namehash=86eb6e82]
@@ -562,6 +587,7 @@ daggerheart.com
 Меч-ХлыстРанг 1 · Физическое · Искусность · Близко · d8 физ · Од... [namelen=211 namehash=2e50a47f]
 Многозарядный Арбалет
 Многозарядный АрбалетРанг 1 · Физическое · Искусность · Далеко ·... [namelen=245 namehash=a52c33ff]
+Многоударный Кромсатель
 Молниевая Пушка Йитианцев
 Молниеносный Молот
 Молниеносный МолотРанг 3 · Физическое · Сила · Вплотную · d10+7 ... [namelen=244 namehash=a19827ad]
@@ -628,7 +654,9 @@ daggerheart.com
 Посох Огня
 Посох ОгняРанг 3 · Магическое · Инстинкт · Далеко · d6+7 маг · Д... [namelen=178 namehash=6b72ef26]
 Посох Поганки
+Посох Полого Камня
 Посох Тайного Пламени
+Посох Ученика
 Посох Хранителя
 Посох ХранителяРанг 2 · Магическое · Знание · Далеко · d6+4 маг ... [namelen=132 namehash=3ded5242]
 Посох Чёрной Дыры
@@ -747,6 +775,7 @@ daggerheart.com
 Разящие Клыки
 Рапира
 РапираРанг 1 · Физическое · Влияние · Вплотную · d8 физ · Однору... [namelen=209 namehash=0506df0d]
+Рассекатель Небес
 Расщепляющийся Лук
 Расщепляющийся ЛукРанг 2 · Магическое · Проворность · Далеко · d... [namelen=261 namehash=0151ade3]
 Револьвер
@@ -802,6 +831,7 @@ daggerheart.com
 Скипетр ЭлиасаРанг 2 · Магическое · Влияние · Далеко · d6+3 маг ... [namelen=181 namehash=7be76b6c]
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать ссылку на этот раздел
+Снакс
 Снаряжение
 Снежный Клинок
 Солдатская Пика
@@ -817,6 +847,7 @@ daggerheart.com
 Сухожильный Лук
 Сюрикен
 СюрикенРанг 3 · Физическое · Знание · Средне · d8+7 физ · Однору... [namelen=224 namehash=bcf8f509]
+Табельный Секач
 Таблицы
 Темпрус
 Тенеруб
@@ -958,6 +989,7 @@ daggerheart.com
 Шип Дриады
 Шипастый Лук
 Шипастый ЛукРанг 3 · Физическое · Проворность · Очень далеко · d... [namelen=224 namehash=2cc80352]
+Шугалка
 Шэнбяо
 ШэнбяоРанг 4 · Физическое · Влияние · Средне · d8+9 физ · Двуруч... [namelen=211 namehash=113c3326]
 Шёлковый Лук
@@ -1004,18 +1036,18 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
     button "List" [pressed=true]
     button "Grid" [pressed=false]
     button "Filters" [expanded=false]
-    StaticText "437"
+    StaticText "453"
     ... StaticText x8 of 12 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (89)" [checked=false]
+    checkbox "Select all (91)" [checked=false]
     checkbox "Broadsword" [checked=false]
     button "Broadsword Tier 1 · Physical · Agility · Melee · d8 phy · One-Ha..." [namelen=117 namehash=ebbe60cf]
-    ... checkbox x438 of 442 same-shape siblings elided
-    ... button x434 of 438 same-shape siblings elided
+    ... checkbox x454 of 458 same-shape siblings elided
+    ... button x450 of 454 same-shape siblings elided
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
     button "Copy a link to this section" [description=Copy a link to this section]
-    button "77 Legendary Wyverntail Whip Tier 4 · Physical · Agility · Very ..." [namelen=305 namehash=abd02141]
+    button "3 Student's Staff Tier 4 · Magic · Knowledge · Far · d6+7 mag · ..." [namelen=218 namehash=88523d5b]
     StaticText "ARTIFACTS"
     button "Copy a link to this section" [description=Copy a link to this section]
     checkbox "Select all (1)" [checked=false]
@@ -1085,7 +1117,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 19Meat CleaverTier 3 · Physical · Presence · Very Close · d8+7 p... [namelen=449 namehash=dd1efb1c]
 1Aether RifleTier 3 · Magic · Instinct · Very Far · d8+8 mag · T... [namelen=270 namehash=91af9cef]
 1Blessed Chef's KnifeTier 1 · Physical · Finesse · Melee · d8+1 ... [namelen=305 namehash=ce1aa63f]
+1FoeseekerTier 2 · Magic · Instinct · Very Close · d8+4 mag · Tw... [namelen=271 namehash=675ca8bd]
 1The Ageless Eye of the BeastTier 1 · Physical · Agility · Melee... [namelen=366 namehash=f043a9bd]
+1Trusty CultivatorTier 3 · Magic · Instinct · Close · d8+2 mag ·... [namelen=225 namehash=460e1dac]
 20Improved Elfhair BowTier 2 · Physical · Agility · Very Far · d... [namelen=239 namehash=c43ccd3e]
 20Iron ConstableTier 2 · Physical · Strength · Melee · d8+5 phy ... [namelen=292 namehash=d8467a8d]
 21Advanced Elfhair BowTier 3 · Physical · Agility · Very Far · d... [namelen=239 namehash=b47f28f2]
@@ -1101,7 +1135,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 29Phoenix SlingTier 1 · Physical · Finesse · Far · d10+1 phy · T... [namelen=234 namehash=e4f8bb48]
 29Saintly BladeTier 3 · Physical · Strength · Melee · d10+10 phy... [namelen=491 namehash=8f87f457]
 2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=223 namehash=1352e44d]
+2Generative CutlassTier 2 · Physical · Instinct · Melee · d6+4 p... [namelen=202 namehash=dd059cb1]
+2Grandma's Rolling PinTier 2 · Physical · Presence · Melee · d4+... [namelen=172 namehash=50fc0e33]
 2Improved Ageless Eye of the BeastTier 2 · Physical · Agility · ... [namelen=373 namehash=6ee7b0c6]
+2SkycutterTier 4 · Physical · Strength · Very Far · d10+10 phy ·... [namelen=314 namehash=560758e0]
 30Improved Phoenix SlingTier 2 · Physical · Finesse · Far · d10+... [namelen=243 namehash=c939c84a]
 30Monolith SmasherTier 2 · Physical · Strength · Melee · d8+5 ph... [namelen=402 namehash=01fb6537]
 30ShadowcullTier 4 · Physical · Finesse · Melee · d10+9 phy · On... [namelen=518 namehash=451abd7e]
@@ -1118,13 +1155,19 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 39Advanced Rod of ResistanceTier 3 · Magic · Spellcast · Far · d... [namelen=292 namehash=6a91232d]
 3Advanced Ageless Eye of the BeastTier 3 · Physical · Agility · ... [namelen=373 namehash=713936a8]
 3Fists of the RavagerTier 4 · Magic · Strength · Melee · d10+15 ... [namelen=239 namehash=da7bcff5]
+3Hole-y BladeTier 3 · Physical · Strength · Melee · d8+6 phy · O... [namelen=217 namehash=4604969c]
+3Hollowstone StaffTier 2 · Magic · Knowledge · Far · d6+4 mag · ... [namelen=172 namehash=cf700a2e]
 3Longbow of FyrTier 3 · Magic · Agility · Far · d6+10 mag · Two-... [namelen=171 namehash=0f27ca11]
+3Student's StaffTier 4 · Magic · Knowledge · Far · d6+7 mag · Tw... [namelen=212 namehash=28952c3f]
+3The ScrammerTier 2 · Physical · Finesse · Far · d4+4 phy · Two-... [namelen=181 namehash=03d0dbe7]
 40Legendary Rod of ResistanceTier 4 · Magic · Spellcast · Far · ... [namelen=293 namehash=617d87b1]
 47Staff of the Void BeyondTier 1 · Magic · Spellcast · Very Far ... [namelen=182 namehash=4c9c09e2]
 48Improved Staff of the Void BeyondTier 2 · Magic · Spellcast · ... [namelen=193 namehash=e1ce8545]
 49Advanced Staff of the Void BeyondTier 3 · Magic · Spellcast · ... [namelen=193 namehash=00097702]
 4Legendary Ageless Eye of the BeastTier 4 · Physical · Agility ·... [namelen=374 namehash=a972d445]
+4Many-Hit ManglerTier 2 · Physical · Strength · Melee · d4+4 phy... [namelen=192 namehash=92813b94]
 4Mi-Go Mist ProjectorTier 3 · Magic · Knowledge · Close · d8+10 ... [namelen=368 namehash=e95117be]
+4SnaxTier 2 · Physical · Strength · Melee · d10+6 phy · Two-Hand... [namelen=205 namehash=e00b2b5b]
 50Legendary Staff of the Void BeyondTier 4 · Magic · Spellcast ·... [namelen=194 namehash=99bc5117]
 51Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy ... [namelen=343 namehash=74182c52]
 52Taryan's MorningstarTier 1 · Physical · Strength · Very Close ... [namelen=294 namehash=4a668e11]
@@ -1136,7 +1179,10 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 59Improved Tuning SpearTier 2 · Physical · Finesse · Very Close ... [namelen=333 namehash=1db5e338]
 5Axe of the DawnTier 1 · Physical · Strength · Melee · d12+2 phy... [namelen=266 namehash=6419d1ef]
 5RimecasterTier 1 · Magic · Knowledge · Far · d6+1 mag · One-Han... [namelen=272 namehash=35ca6e7d]
+5Scorpion SpearTier 1 · Physical · Agility · Far · d6+2 phy · On... [namelen=195 namehash=cc6ecd1d]
+5SplitshooterTier 3 · Physical · Agility · Very Far · d6+6 phy ·... [namelen=199 namehash=fd7c9797]
 5Staff of the Secret FlameTier 3 · Magic · Instinct · Far · d6+7... [namelen=240 namehash=b27d6e59]
+5Wagerwood DefenderTier 3 · Physical · Agility · Melee · d8+3 ph... [namelen=202 namehash=a8580781]
 60Advanced Tuning SpearTier 3 · Physical · Finesse · Very Close ... [namelen=333 namehash=99c30085]
 61Legendary Tuning SpearTier 4 · Physical · Finesse · Very Close... [namelen=334 namehash=4a272fef]
 62Urzo's HalberdTier 1 · Physical · Presence · Very Close · d12+... [namelen=210 namehash=2b1d2a5c]
@@ -1149,6 +1195,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 69Legendary Warhammer of BazTier 4 · Physical · Strength · Melee... [namelen=235 namehash=fe1bb96b]
 6Improved Axe of the DawnTier 2 · Physical · Strength · Melee · ... [namelen=275 namehash=0580efd5]
 6Last StandTier 2 · Physical · Finesse · Very Close · d10+5 phy ... [namelen=231 namehash=3382489a]
+6Rottooth DaggerTier 3 · Magic · Finesse · Melee · d6+6 mag · On... [namelen=165 namehash=7e478618]
 74Wyverntail WhipTier 1 · Physical · Agility · Very Close · d10 ... [namelen=287 namehash=61e2ccc3]
 75Improved Wyverntail WhipTier 2 · Physical · Agility · Very Clo... [namelen=298 namehash=b90236f4]
 76Advanced Wyverntail WhipTier 3 · Physical · Agility · Very Clo... [namelen=298 namehash=5fc76cff]
@@ -1156,6 +1203,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
 79Acid EdgeTier 2 · Physical · Agility · Melee · d8+3 phy · One-... [namelen=230 namehash=dfb3dbeb]
 79Seeker's BowTier 2 · Physical · Finesse · Far · d6+4 phy · Two... [namelen=357 namehash=488ad05f]
 7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=275 namehash=0f3a6a16]
+7Standard Issue SlicerTier 1 · Physical · Any · Melee · d6 phy ·... [namelen=162 namehash=781c5984]
 7Yithian Lightning GunTier 4 · Magic · Knowledge · Very Far · d1... [namelen=462 namehash=b2e77451]
 80Amber HammerTier 3 · Physical · Strength · Melee · d8+7 phy · ... [namelen=226 namehash=a5d06dea]
 81Ananimus HookTier 3 · Magic · Presence · Melee · d8+6 mag · On... [namelen=333 namehash=dfa6d2e6]
@@ -1447,6 +1495,7 @@ Flickerfly Blade
 Flickerfly BladeTier 3 · Physical · Agility · Melee · d8+5 phy ·... [namelen=166 namehash=faf7c192]
 Floating Bladeshards
 Floating BladeshardsTier 4 · Magic · Instinct · Close · d8+9 mag... [namelen=195 namehash=4e14efb9]
+Foeseeker
 Forge Poker
 Forge PokerTier 1 · Physical · Strength · Very Close · d8+2 phy ... [namelen=107 namehash=645396aa]
 Friction Wraps
@@ -1458,6 +1507,7 @@ Fury GemTier 2 · Magic · Instinct · Close · d8+3 mag · One-Hande... [namele
 Fusion Gloves
 Fusion GlovesTier 4 · Magic · Knowledge · Very Far · d6+9 mag · ... [namelen=160 namehash=02cb85a2]
 Gelatinous Hammer
+Generative Cutlass
 Ghost Touch Sword
 Ghostblade
 GhostbladeTier 3 · Magic · Presence · Melee · d10+7 phy/mag · On... [namelen=172 namehash=9aa83613]
@@ -1467,6 +1517,7 @@ Gilded Falchion
 Gilded FalchionTier 2 · Physical · Strength · Melee · d10+4 phy ... [namelen=194 namehash=b74f6acd]
 Glowing Rings
 Glowing RingsTier 1 · Magic · Agility · Very Close · d10+2 mag ·... [namelen=93 namehash=1bac227d]
+Grandma's Rolling Pin
 Gravity Arbalest
 Gravity ArbalestTier 4 · Magic · Knowledge · Far · d8+6 mag · Tw... [namelen=353 namehash=2fb3b3eb]
 Greatbow
@@ -1495,6 +1546,8 @@ Harrowcleave
 Hellfire Sword
 Herald's Will
 Hilarad's Meteor
+Hole-y Blade
+Hollowstone Staff
 Holy Shotgun
 Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
@@ -1741,6 +1794,7 @@ Mage Orb
 Mage OrbTier 3 · Magic · Knowledge · Far · d6+7 mag · One-Handed... [namelen=182 namehash=4773e1fc]
 Magus Revolver
 Magus RevolverTier 4 · Magic · Finesse · Very Far · d6+13 mag · ... [namelen=238 namehash=617a9ae5]
+Many-Hit Mangler
 Meat Cleaver
 Meridian Cutlass
 Meridian CutlassTier 3 · Physical · Presence · Melee · d10+5 phy... [namelen=226 namehash=884ba372]
@@ -1792,6 +1846,7 @@ Rolling PinTier 1 · Physical · Presence · Melee · d8+1 phy · One... [namele
 Rope Dart
 Rope DartTier 1 · Physical · Instinct · Close · d6+1 phy · Two-H... [namelen=94 namehash=c7787d12]
 Roseblade
+Rottooth Dagger
 Runelock Pistol
 Runelock PistolTier 1 · Magic · Knowledge · Far · d6+3 mag · One... [namelen=236 namehash=6a708303]
 Runes of Ruination
@@ -1804,6 +1859,7 @@ Scepter of EliasTier 2 · Magic · Presence · Far · d6+3 mag · One... [namele
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
 Scimitar
 ScimitarTier 1 · Physical · Presence · Melee · d8+1 phy · One-Ha... [namelen=93 namehash=16c483d6]
+Scorpion Spear
 Search
 Secondary
 Seeker's Bow
@@ -1831,12 +1887,14 @@ Siphoning Gauntlets
 Siphoning GauntletsTier 4 · Magic · Presence · Melee · d10+9 mag... [namelen=204 namehash=19d31126]
 Skip to content
 Sky Gnome Pickaxe
+Skycutter
 Sledge Axe
 Sledge AxeTier 4 · Physical · Strength · Melee · d12+13 phy · Tw... [namelen=207 namehash=a1016417]
 Sledgehammer
 SledgehammerTier 1 · Physical · Strength · Melee · d10+3 phy · T... [namelen=212 namehash=975ae8b9]
 Slingshot
 SlingshotTier 1 · Physical · Finesse · Far · d6+3 phy · Two-Hand... [namelen=97 namehash=e2ce210e]
+Snax
 Snowblade
 Soldier's Pike
 Soldier's PikeTier 3 · Physical · Agility · Very Close · d10+5 p... [namelen=240 namehash=1c73a4b8]
@@ -1854,12 +1912,14 @@ Spiked Bow
 Spiked BowTier 3 · Physical · Agility · Very Far · d6+7 phy · Tw... [namelen=180 namehash=6ce297b7]
 Splintershaft Bow
 Splintershaft BowTier 2 · Magic · Agility · Far · d6+6 mag · Two... [namelen=215 namehash=c1e37e9b]
+Splitshooter
 Staff of Augma
 Staff of AugmaTier 3 · Magic · Instinct · Far · d6+7 mag · One-H... [namelen=229 namehash=94359d62]
 Staff of Laethys
 Staff of the Secret Flame
 Staff of the Void Beyond
 Staff of the Whispering Archive
+Standard Issue Slicer
 Standard rules
 Star Lance
 Starmetal Blade
@@ -1870,6 +1930,7 @@ Steelforged HalberdTier 2 · Physical · Strength · Very Close · d... [namelen
 Storm God's Greataxe
 Storm God's GreataxeTier 4 · Magic · Strength · Very Close · d10... [namelen=214 namehash=3d2c55f7]
 Striking Fangs
+Student's Staff
 Supplements
 Swinging Ropeblade
 Swinging RopebladeTier 4 · Physical · Presence · Close · d8+9 ph... [namelen=220 namehash=aee3693b]
@@ -1885,10 +1946,12 @@ Temprus
 Tendon Bow
 Terms of use
 The Ageless Eye of the Beast
+The Scrammer
 Thistlebow
 ThistlebowTier 4 · Magic · Instinct · Far · d6+13 mag · Two-Hand... [namelen=118 namehash=752e0f9d]
 Toadstool Staff
 Trinity Club
+Trusty Cultivator
 Tuning Spear
 Twisted Dagger
 Twisted DaggerTier 1 · Physical · Knowledge · Melee · d8 phy · O... [namelen=197 namehash=52e3916a]
@@ -1898,6 +1961,7 @@ Urok BroadswordTier 2 · Physical · Finesse · Melee · d8+3 phy · ... [namele
 Urzo's Halberd
 Verdant Daughter
 Voynarian Crossbow
+Wagerwood Defender
 Waiata Greatsword
 Walking Staff
 Walking StaffTier 1 · Physical · Instinct · Melee · d10+3 phy · ... [namelen=105 namehash=94b13a2f]

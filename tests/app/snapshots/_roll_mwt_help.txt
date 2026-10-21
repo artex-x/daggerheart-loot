@@ -1,0 +1,219 @@
+# #/roll/mwt ~ help
+# route: #/roll/mwt
+# why: the help panel, unfolded: the four decks, the die, no domain cards and no rarity, one link per realm
+
+## ru :: tree
+RootWebArea "Many Worlds Tavern — Генератор лута — Daggerheart" [url=#/roll/mwt]
+  link "К содержимому" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=#/account]
+    navigation "Разделы"
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Дополнения" [url=#/roll/wondrous]
+      link "Таблицы" [url=#/tables]
+      link "Списки" [url=#/lists]
+      link "Поиск" [url=#/search]
+  main ""
+    heading "Many Worlds Tavern" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [description=Как это работает expanded=true]
+    StaticText "Выберите мир и бросьте кость по нему."
+    StaticText "В разделе четыре мира Many Worlds Tavern, у каждого своя колода:..." [namelen=294 namehash=ea3af4bb]
+    ... StaticText x7 of 11 same-shape siblings elided
+    link "Sporopolis" [url=https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/]
+    link "Wagerwood" [url=https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/]
+    link "Warrin' Warrens" [url=https://heartofdaggers.com/products/warrin-warrens-items-and-domains/]
+    link "Godsvale" [url=https://heartofdaggers.com/products/godsvale-items-and-domains/]
+    navigation "Дополнения"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
+    StaticText "МИР"
+    button "Спорополис" [pressed=true]
+    button "Лес Пари" [pressed=false]
+    button "Воюющие Норы" [pressed=false]
+    button "Долина Богов" [pressed=false]
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–20)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Бросить d20"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ВТОРИЧНОЕ ОРУЖИЕ"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Порхающие Бесы" [description=Страница url=#/i/mw1]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText "Уязвимой"
+      StaticText " вместо нанесения урона."
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+Arazo's Artifacts
+Dragon's Vault
+Dread
+EN
+Godsvale
+Many Worlds Tavern
+RU
+Sporopolis
+Vault of Ages
+Wagerwood
+Warrin' Warrens
+Wondrous
+daggerheart.com
+Альт. таблицы
+Бросить d20
+Войти
+Воюющие Норы
+Долина Богов
+Дополнения
+К содержимому
+Как это работает
+Конфиденциальность
+Лес Пари
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать этот раздел при запуске
+Отправить
+Поиск
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Сообщества
+Списки
+Спорополис
+Страница
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Many Worlds Tavern — Daggerheart Loot Generator" [url=#/roll/mwt]
+  link "Skip to content" [url=#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=#/account]
+    navigation "Sections"
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Supplements" [url=#/roll/wondrous]
+      link "Tables" [url=#/tables]
+      link "Lists" [url=#/lists]
+      link "Search" [url=#/search]
+  main ""
+    heading "Many Worlds Tavern" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [description=How this works expanded=true]
+    StaticText "Pick a realm and roll within it."
+    StaticText "This section holds the four realms of Many Worlds Tavern, each w..." [namelen=293 namehash=706d06f9]
+    ... StaticText x7 of 11 same-shape siblings elided
+    link "Sporopolis" [url=https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/]
+    link "Wagerwood" [url=https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/]
+    link "Warrin' Warrens" [url=https://heartofdaggers.com/products/warrin-warrens-items-and-domains/]
+    link "Godsvale" [url=https://heartofdaggers.com/products/godsvale-items-and-domains/]
+    navigation "Supplements"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
+      link "Many Worlds Tavern" [url=#/roll/mwt]
+    StaticText "REALM"
+    button "Sporopolis" [pressed=true]
+    button "Wagerwood" [pressed=false]
+    button "Warrin' Warrens" [pressed=false]
+    button "Godsvale" [pressed=false]
+    StaticText "ROLL RESULT (1–20)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Roll d20"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "SECONDARY WEAPON"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Flutterfiends" [description=Page url=#/i/mw1]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText "Vulnerable"
+      StaticText " instead of dealing damage."
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Alt. tables
+Arazo's Artifacts
+Communities
+Copy image
+Copy link
+Copy name
+Copy text
+Dragon's Vault
+Dread
+EN
+Godsvale
+How this works
+Install as an app
+Lists
+Many Worlds Tavern
+One higher
+One lower
+Open this section on start
+Page
+Privacy
+RU
+Roll d20
+Roll result
+Search
+Share
+Sign in
+Skip to content
+Sporopolis
+Standard rules
+Supplements
+Tables
+Terms of use
+Vault of Ages
+Wagerwood
+Warrin' Warrens
+Wondrous
+daggerheart.com
+ЛутDaggerheart
