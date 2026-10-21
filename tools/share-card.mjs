@@ -95,7 +95,9 @@ export const REALM_LABEL = {
   sporopolis: ['Спорополис', 'Sporopolis'],
   wagerwood: ['Лес Пари', 'Wagerwood'],
   warrens: ['Воюющие Норы', "Warrin' Warrens"],
-  godsvale: ['Долина Богов', 'Godsvale']
+  godsvale: ['Долина Богов', 'Godsvale'],
+  hornet: ['Оплот Шершней', 'Hornet Hold'],
+  drome: ['Дром', 'The Drome']
 };
 
 export const EQ_TYPE = {
@@ -175,12 +177,12 @@ export const PATH_TEXT = {
   ru: {
     core: 'Core',
     hnf: 'Hope & Fear',
-    wondrous: 'Wondrous Loot',
+    wondrous: 'Wondrous Environments',
     dread: 'Dread GM Toolbox',
     voa: 'Vault of Ages',
-    dv: "Dragon's Vault",
+    dv: "The Dragon's Vault",
     arazo: "Arazo's Artifacts",
-    community: 'Сообщества',
+    community: 'Предметы сообществ',
     mwt: 'Many Worlds Tavern',
     eq: 'Снаряжение',
     other: 'Прочее',
@@ -200,12 +202,12 @@ export const PATH_TEXT = {
   en: {
     core: 'Core',
     hnf: 'Hope & Fear',
-    wondrous: 'Wondrous Loot',
+    wondrous: 'Wondrous Environments',
     dread: 'Dread GM Toolbox',
     voa: 'Vault of Ages',
-    dv: "Dragon's Vault",
+    dv: "The Dragon's Vault",
     arazo: "Arazo's Artifacts",
-    community: 'Communities',
+    community: 'Community items',
     mwt: 'Many Worlds Tavern',
     eq: 'Equipment',
     other: 'Other',
@@ -244,6 +246,19 @@ export const TABLE_PATH = {
   other_frames: ['other', 'frames'],
   alt_item: ['alt', 'items'],
   alt_consumable: ['alt', 'cons']
+};
+/* table id -> its URL id: a copy of app/src/lib/hash.ts `TABLE_SLUG`. An old id
+   still opens the same card (docs/specs/CONTRACTS.md section 1). */
+export const TABLE_SLUG = {
+  hnf_item: 'hope_and_fear_item',
+  hnf_consumable: 'hope_and_fear_consumable',
+  wondrous: 'wondrous_environments',
+  dread: 'dread_gm_toolbox',
+  voa: 'vault_of_ages',
+  dv: 'dragons_vault',
+  arazo: 'arazos_artifacts',
+  community: 'community_items',
+  mwt: 'many_worlds_tavern'
 };
 const EQ_TABLE_OF = { weapon: 'eq_weapon', secondary: 'eq_secondary', armor: 'eq_armor' };
 

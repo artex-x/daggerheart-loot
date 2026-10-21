@@ -70,7 +70,11 @@ const LOOT: Loot = {
           roll: i + 1,
           ru: `Норный ${String(i + 1)}`
         })
-      )
+      ),
+      rec({ id: 'h1', src: 'mwt', realm: 'hornet', roll: 1, ru: 'Первый шершневый' }),
+      rec({ id: 'h2', src: 'mwt', realm: 'hornet', roll: 2, ru: 'Второй шершневый' }),
+      rec({ id: 'd1', src: 'mwt', realm: 'drome', roll: 1, ru: 'Первый дромовый' }),
+      rec({ id: 'd2', src: 'mwt', realm: 'drome', roll: 2, ru: 'Второй дромовый' })
     ]
   },
   eq: [],
@@ -167,9 +171,9 @@ describe('community items', () => {
     ).toBeInTheDocument();
   });
 
-  it('labels the picker with the singular, not the tab’s word', () => {
-    /* The tab says "Сообщества" because it names a section; the label above
-       the picker asks for one. */
+  it('labels the picker with the singular, not the book’s name', () => {
+    /* The chip names the book, «Предметы сообществ»; the label above the
+       picker asks for one community. */
     render(App, { env: at('#/roll/community') });
     const main = screen.getByRole('main');
     expect(within(main).getByText('Сообщество')).toBeInTheDocument();
@@ -177,12 +181,19 @@ describe('community items', () => {
 });
 
 describe('Many Worlds Tavern', () => {
-  it('opens on the first realm and draws the four realm chips', () => {
+  it('opens on the first realm and draws the six realm chips', () => {
     render(App, { env: at('#/roll/mwt') });
     expect(
       screen.getByRole('heading', { level: 1, name: 'Many Worlds Tavern' })
     ).toBeInTheDocument();
-    for (const name of ['Спорополис', 'Лес Пари', 'Воюющие Норы', 'Долина Богов'])
+    for (const name of [
+      'Спорополис',
+      'Лес Пари',
+      'Воюющие Норы',
+      'Долина Богов',
+      'Оплот Шершней',
+      'Дром'
+    ])
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Спорополис' })).toHaveAttribute(
       'aria-pressed',
@@ -221,6 +232,19 @@ describe('Many Worlds Tavern', () => {
     expect(field().value).toBe('1');
     expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
+  });
+
+  it('puts a held roll back to one when The Drome gives way to Hornet Hold', async () => {
+    render(App, { env: at('#/roll/mwt') });
+    await userEvent.click(screen.getByRole('button', { name: 'Дром' }));
+    await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
+    expect(field().value).toBe('2');
+    expect(screen.getByRole('link', { name: 'Второй дромовый' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Оплот Шершней' }));
+    expect(field().value).toBe('1');
+    expect(screen.getByText('Результат броска (1–2)')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Первый шершневый' })).toBeInTheDocument();
   });
 
   it('names the realms in the language on screen', async () => {

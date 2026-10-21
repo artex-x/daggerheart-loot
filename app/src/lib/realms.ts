@@ -1,4 +1,4 @@
-/* The four realms of Many Worlds Tavern, and what each one is called.
+/* The realms of Many Worlds Tavern, and what each one is called.
  *
  * Each realm is its own card set, so a record names its realm as a frame
  * record names its frame (`frames.ts`). The order is the release order of
@@ -8,8 +8,15 @@
 
 import type { Lang } from './types.js';
 
-/** The four realms, in release order. */
-export const REALM_ORDER = ['sporopolis', 'wagerwood', 'warrens', 'godsvale'] as const;
+/** The realms, in release order. */
+export const REALM_ORDER = [
+  'sporopolis',
+  'wagerwood',
+  'warrens',
+  'godsvale',
+  'hornet',
+  'drome'
+] as const;
 
 export type Realm = (typeof REALM_ORDER)[number];
 
@@ -18,13 +25,17 @@ const REALM_LABEL: Record<Lang, Record<Realm, string>> = {
     sporopolis: 'Спорополис',
     wagerwood: 'Лес Пари',
     warrens: 'Воюющие Норы',
-    godsvale: 'Долина Богов'
+    godsvale: 'Долина Богов',
+    hornet: 'Оплот Шершней',
+    drome: 'Дром'
   },
   en: {
     sporopolis: 'Sporopolis',
     wagerwood: 'Wagerwood',
     warrens: "Warrin' Warrens",
-    godsvale: 'Godsvale'
+    godsvale: 'Godsvale',
+    hornet: 'Hornet Hold',
+    drome: 'The Drome'
   }
 };
 

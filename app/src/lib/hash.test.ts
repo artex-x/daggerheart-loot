@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ACCOUNT_HASH,
+  canonicalHash,
   cardVersion,
   HOMEBREW_HASH,
   previewUrl,
@@ -28,6 +29,8 @@ import {
   appUrl,
   stripHash,
   tablesHash,
+  SECTION_SLUG,
+  TABLE_SLUG,
   type Route
 } from './hash.js';
 import { decodeFilter, encodeFilter, groupsFor, passes } from './filters.js';
@@ -545,7 +548,8 @@ describe('building back', () => {
       if (r.kind !== 'section') continue;
       /* Except the old names: they lead to roll/std but must not be rewritten */
       if (legacySource(fx.hash)) continue;
-      expect(sectionHash(r.section)).toBe(fx.hash);
+      /* An old id builds back as its slug; the slug builds back as itself. */
+      expect(sectionHash(r.section)).toBe(canonicalHash(fx.hash));
     }
   });
 
@@ -566,6 +570,85 @@ describe('building back', () => {
       );
       expect(again).toEqual({ kind: 'tables', table, anchor: r.anchor, filter: kept });
     }
+  });
+});
+
+describe('the URL ids of the source products', () => {
+  const OLD_SECTIONS = Object.keys(SECTION_SLUG) as (keyof typeof SECTION_SLUG)[];
+  const OLD_TABLES = Object.keys(TABLE_SLUG) as TableId[];
+
+  it('reads a section slug and its old id as the same section', () => {
+    for (const s of OLD_SECTIONS) {
+      const slug = SECTION_SLUG[s] ?? '';
+      expect(parseHash('#/' + slug), slug).toEqual({ kind: 'section', section: s });
+      expect(parseHash('#/' + s), s).toEqual({ kind: 'section', section: s });
+    }
+  });
+
+  it('reads a table slug and its old id as the same table, with an anchor and a filter', () => {
+    for (const id of OLD_TABLES) {
+      const slug = TABLE_SLUG[id] ?? '';
+      for (const name of [slug, id]) {
+        expect(parseHash('#/tables/' + name), name).toEqual({
+          kind: 'tables',
+          table: id,
+          anchor: '',
+          filter: {}
+        });
+        expect(parseHash('#/tables/' + name + '/t1'), name).toEqual({
+          kind: 'tables',
+          table: id,
+          anchor: 't1',
+          filter: {}
+        });
+        expect(parseHash('#/tables/' + name + '/f_kind-item'), name).toMatchObject({
+          kind: 'tables',
+          table: id,
+          anchor: ''
+        });
+      }
+    }
+    expect(parseHash('#/tables/vault_of_ages/f_tier-2')).toEqual({
+      kind: 'tables',
+      table: 'voa',
+      anchor: '',
+      filter: { tier: ['2'] }
+    });
+  });
+
+  it('writes the slug for every renamed id', () => {
+    expect(sectionHash('roll/dread')).toBe('#/roll/dread_gm_toolbox');
+    expect(sectionHash('roll/std')).toBe('#/roll/std');
+    expect(tablesHash('dv', { anchor: 'dv3' })).toBe('#/tables/dragons_vault/dv3');
+    expect(tablesHash('mwt', { filter: { realm: ['drome'] } })).toBe(
+      '#/tables/many_worlds_tavern/f_realm-drome'
+    );
+    expect(tablesHash('hnf_item')).toBe('#/tables/hope_and_fear_item');
+    expect(tablesHash('core_item')).toBe('#/tables/core_item');
+  });
+
+  it('keeps an unknown name unknown', () => {
+    expect(parseHash('#/tables/dread_gm')).toEqual({ kind: 'unknown' });
+    expect(parseHash('#/roll/dread_gm')).toEqual({ kind: 'unknown' });
+  });
+
+  it('swaps only a renamed name segment and keeps the rest as written', () => {
+    expect(canonicalHash('#/tables/dread')).toBe('#/tables/dread_gm_toolbox');
+    expect(canonicalHash('#/tables/dv/f_tier-2_x')).toBe('#/tables/dragons_vault/f_tier-2_x');
+    expect(canonicalHash('#/roll/voa')).toBe('#/roll/vault_of_ages');
+    expect(canonicalHash('#/tables/hnf_consumable')).toBe('#/tables/hope_and_fear_consumable');
+    for (const kept of [
+      '#/roll/hnf',
+      '#/roll/core',
+      '#/roll/all',
+      '#/roll/std',
+      '#/roll/dread_gm_toolbox',
+      '#/tables/frames',
+      '#/tables/eq_weapon/f_tier-1',
+      '#/tables',
+      '#/i/q1'
+    ])
+      expect(canonicalHash(kept), kept).toBe(kept);
   });
 });
 

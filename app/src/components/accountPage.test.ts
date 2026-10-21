@@ -622,8 +622,8 @@ describe('the Display section', () => {
     expect(select.value).toBe('#/tables/core_item');
     expect(select.selectedOptions[0]?.textContent).toBe('Таблицы');
     expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
-    await userEvent.selectOptions(select, 'Сообщества');
-    expect(storage.get(HOME_KEY)).toBe('#/roll/community');
+    await userEvent.selectOptions(select, 'Предметы сообществ');
+    expect(storage.get(HOME_KEY)).toBe('#/roll/community_items');
     await userEvent.selectOptions(select, 'Обычные правила');
     expect(storage.get(HOME_KEY)).toBeNull();
   });

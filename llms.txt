@@ -1,9 +1,9 @@
 # Daggerheart Loot Generator
 
-> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1431
+> A bilingual (Russian/English) loot reference and roller for Daggerheart: 1459
 > records covering items, consumables, weapons and armour from the Core Set,
-> Hope & Fear, Wondrous Loot, the Dread GM Toolbox, Vault of Ages, The Dragon's
-> Vault, Arazo's Artifacts, Many Worlds Tavern and community sets. Static site
+> Hope & Fear, Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The
+> Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern and community items. Static site
 > with an optional account (Google or Discord sign-in); no public API.
 
 Site: https://artex-x.github.io/daggerheart-loot/
@@ -36,7 +36,7 @@ Four things trip agents up here, in order of how often:
    2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
-`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1431
+`catalog.csv` but the two texts and the page link, under 200 KB. It holds 1459
 records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
 file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
 `i/en/<id>.html` or `i/<id>.html` (the page text is plain; the Markdown source
@@ -60,7 +60,7 @@ text, not the rules those items refer to.
   order, columns `id, kind, source, name_ru, name_en, tier, rarity, roll,
   class, trait, range, damage, burden, armor_score, thresholds, crafts_into,
   community, realm`.
-- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1431
+- [catalog.csv](https://artex-x.github.io/daggerheart-loot/catalog.csv) — 1459
   rows, one per record. Columns: `id, kind, source, name_ru, name_en, tier,
   rarity, roll, class, trait, range, damage, burden, armor_score, thresholds,
   crafts_into, community, url, text_ru, text_en, realm`. `realm` names a
@@ -121,13 +121,13 @@ wrong.
 | `Core` | 346 | The Daggerheart Core Set: the full tier 1–4 equipment ladders and the two baseline loot tables. | Always. This is the default unless there is a reason for something else — everything below is measured against it. |
 | `Hope & Fear` | 275 | The Hope & Fear expansion. More equipment on the same ladders, more loot in the same shape, deliberately on the same curve. | You want variety without changing the maths. Safe to shuffle together with Core. |
 | `Campaign Frames` | 94 | Equipment written for one campaign frame each (Beast Feast, Colossus, Dark Heart, Motherboard). Tied to that frame's premise and often to its special mechanics. | The table is running that frame. Outside it, the item is usually inert or unbalanced — the text assumes rules the party does not have. |
-| `Wondrous Loot` | 119 | A third-party book of magical oddities, mostly items and consumables, with eleven pieces of equipment. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
+| `Wondrous Loot` | 119 | Wondrous Environments, a third-party book of magical oddities, mostly items and consumables, with eleven pieces of equipment. | You want a memorable object. Several entries rewrite a scene rather than colour it, so read the text before handing it over. |
 | `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavoured. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
 | `Vault of Ages` | 144 | Four third-party volumes by one author, sorted by tier: 30-34 per tier plus 9 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
-| `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Loot plus named, feature-heavy equipment. |
+| `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Environments plus named, feature-heavy equipment. |
 | `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. | You want a signature item a character keeps for the whole campaign. |
-| `Many Worlds Tavern` | 81 | Four third-party card sets, one per realm (Sporopolis 20, Wagerwood 20, Warrin' Warrens 21, Godsvale 20): 45 items, 10 consumables and 26 pieces of equipment, stats as printed. A record's `realm` names its set. | The party travels that realm, or you want a themed deck. |
-| `Community` | 90 | A fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
+| `Many Worlds Tavern` | 109 | Six third-party card sets, one per realm (Sporopolis 20, Wagerwood 20, Warrin' Warrens 21, Godsvale 20, Hornet Hold 11, The Drome 17): 62 items, 12 consumables and 35 pieces of equipment, stats as printed. A record's `realm` names its set. | The party travels that realm, or you want a themed deck. |
+| `Community` | 90 | Community Magic Items, a fan-made set from the community spreadsheet. Unplaytested — treat it as homebrew. | The GM asked for it, or nothing else fits. Say where it came from. |
 
 Three practical consequences:
 
@@ -135,9 +135,9 @@ Three practical consequences:
   If a request is for "official items", it means those two. The rest were not
   written by Darrington Press.
 - **Equipment lives in `Core`, `Hope & Fear`, `Campaign Frames`,
-  `The Dragon's Vault`, `Arazo's Artifacts` and `Many Worlds Tavern`.** Wondrous Loot, Dread and
+  `The Dragon's Vault`, `Arazo's Artifacts` and `Many Worlds Tavern`.** Wondrous Environments, Dread GM Toolbox and
   Vault of Ages carry a few pieces each. A question about weapons or armour
-  has no answer in Community — do not go looking there.
+  has no answer in Community items — do not go looking there.
 - **`Campaign Frames` is the one to filter out by default.** Its entries look
   ordinary in a list and stop making sense the moment they leave their frame.
 
@@ -155,7 +155,7 @@ equipment table that holds one. Wondrous
 Loot is the awkward case: it prints no tier beside the item, but its "Loot items
 by environment" table binds each piece to a location, and the location has a
 tier — so the tier is read off the book rather than guessed from the damage.
-Plain loot from Core, Hope & Fear, Wondrous, Dread and the community sets has no
+Plain loot from Core, Hope & Fear, Wondrous Environments, Dread GM Toolbox and the community items has no
 tier at all — it is not balanced on that axis, and the column is empty there.
 
 The exception is `Vault of Ages`, which sorts its whole catalogue by tier
@@ -205,7 +205,7 @@ A few things that make a selection read badly:
 - Ignoring who will hold it. On equipment, `trait` and `range` say who can
   actually use the thing — a Very Far weapon is wasted on a melee fighter, and
   one keyed to Strength is close to useless for a Finesse character.
-- Wondrous Loot and the Dread GM Toolbox are written for the environments and
+- Wondrous Environments and the Dread GM Toolbox are written for the environments and
   plots of their own books: Cthulhu-mythos entries, Mi-go equipment, items that
   only matter in one location. Read what you picked before handing it over.
 
@@ -215,13 +215,23 @@ of two or three usually plays better than assigning one each.
 ## URL grammar
 
 - `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
-  `#/roll/wondrous`; `#/roll/dread`; `#/roll/voa`; `#/roll/dv`; `#/roll/arazo`;
-  `#/roll/community`; `#/roll/mwt` (a realm, then a roll inside it)
-- `#/tables/<table>` — `core_item`, `core_consumable`, `hnf_item`,
+  `#/roll/wondrous_environments`; `#/roll/dread_gm_toolbox`;
+  `#/roll/vault_of_ages`; `#/roll/dragons_vault`; `#/roll/arazos_artifacts`;
+  `#/roll/community_items`; `#/roll/many_worlds_tavern` (a realm, then a roll
+  inside it)
+- `#/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
+  `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`,
+  `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`,
+  `many_worlds_tavern`, `other_starting`, `other_frames`, `eq_weapon`,
+  `eq_secondary`, `eq_armor`, and `homebrew`: `#/tables/homebrew` is a
+  signed-in GM's own items; signed out it asks to sign in
+- Old ids: `#/roll/wondrous`, `#/roll/dread`, `#/roll/voa`, `#/roll/dv`,
+  `#/roll/arazo`, `#/roll/community`, `#/roll/mwt` and the tables `hnf_item`,
   `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`, `arazo`, `community`,
-  `mwt`, `other_starting`, `other_frames`, `eq_weapon`, `eq_secondary`, `eq_armor`,
-  and `homebrew`: `#/tables/homebrew` is a signed-in GM's own items; signed
-  out it asks to sign in
+  `mwt`. An old id still opens the same page; the address is not rewritten.
+  Build new links with the ids above. Filter values keep the old keys
+  (`src-dread`, `src-community`), and the filter keys below name a table by
+  its old id
 - `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
   rather than only on equipment. After `f_`, parts are separated by `.` and
   values inside a part by `-`. Equipment keys: `tier` (`1`–`4`, and `A` where
@@ -229,7 +239,7 @@ of two or three usually plays better than assigning one each.
   `src`, `trait`, `range`, `burden`, `line`. Other tables: `kind`
   (`item`/`consumable`/`equip`), plus `tier` on `voa` (`1`–`4`, `A`, `C`),
   `frame` on `other_frames`, `comm` on `community`, `realm` on `mwt`
-  (`sporopolis`, `wagerwood`, `warrens`, `godsvale`), `src` and `sect` on
+  (`sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`), `src` and `sect` on
   `homebrew`. On `homebrew` and the equipment tables `src` also takes `hb`, an
   own source key or (`sect`) a section key: these live in one account, so you
   cannot build them. On `homebrew`, `src` holds one value and picks the
@@ -1010,7 +1020,7 @@ This product includes materials from the Daggerheart System Reference Document
 Gaming (DPCGL) License. More information can be found at
 https://www.daggerheart.com. There are no previous modifications by others.
 
-Core and Hope & Fear are covered by that licence; Wondrous Loot, Dread GM
+Core and Hope & Fear are covered by that licence; Wondrous Environments, Dread GM
 Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts,
 the Many Worlds Tavern card sets, Community Magic Items and the Alternate Loot & Consumable Tables are not - they
 belong to their own authors.

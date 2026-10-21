@@ -141,7 +141,7 @@ describe('settings are read as untrusted data', () => {
   });
 
   it('accepts a section or a named table as the pinned address', () => {
-    for (const good of ['#/roll/wondrous', '#/tables/eq_weapon']) {
+    for (const good of ['#/roll/wondrous_environments', '#/tables/eq_weapon']) {
       const app = new AppState(at('', { storage: stored({ [HOME_KEY]: good }) }));
       expect(app.home, good).toBe(good);
     }
@@ -165,9 +165,11 @@ describe('settings are read as untrusted data', () => {
 describe('the address on the way in', () => {
   it('opens the pinned section when there is no address', () => {
     for (const empty of ['', '#', '#/']) {
-      const env = at(empty, { storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) });
+      const env = at(empty, {
+        storage: stored({ [HOME_KEY]: '#/roll/wondrous_environments' })
+      });
       const app = new AppState(env);
-      expect(app.hash, empty).toBe('#/roll/wondrous');
+      expect(app.hash, empty).toBe('#/roll/wondrous_environments');
     }
   });
 
@@ -198,10 +200,10 @@ describe('the address on the way in', () => {
        navigation; see 'navigation' below for the navigation half. */
     const router = memoryRouter('#/nonsense');
     const app = new AppState(
-      fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/wondrous' }) })
+      fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/roll/wondrous_environments' }) })
     );
-    expect(app.hash).toBe('#/roll/wondrous');
-    expect(router.stack).toEqual(['#/roll/wondrous']);
+    expect(app.hash).toBe('#/roll/wondrous_environments');
+    expect(router.stack).toEqual(['#/roll/wondrous_environments']);
   });
 
   it('never overrides a real address with a preference', () => {
@@ -216,9 +218,34 @@ describe('the address on the way in', () => {
 
 describe('pinning', () => {
   it('pins the current address', () => {
+    const app = new AppState(at('#/roll/wondrous_environments'));
+    expect(app.toggleHome()).toBe(true);
+    expect(app.home).toBe('#/roll/wondrous_environments');
+  });
+
+  it('pins an old roll address as its slug', () => {
     const app = new AppState(at('#/roll/wondrous'));
     expect(app.toggleHome()).toBe(true);
-    expect(app.home).toBe('#/roll/wondrous');
+    expect(app.home).toBe('#/roll/wondrous_environments');
+  });
+
+  it('reads a stored old table pin as its slug', () => {
+    const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/tables/dread' }) }));
+    expect(app.home).toBe('#/tables/dread_gm_toolbox');
+  });
+
+  it('keeps a stored legacy #/roll/hnf pin as written, with its source choice', () => {
+    const app = new AppState(at('', { storage: stored({ [HOME_KEY]: '#/roll/hnf' }) }));
+    expect(app.home).toBe('#/roll/hnf');
+  });
+
+  it('unpins the slug from its old roll address rather than storing the old id', () => {
+    const storage = stored({ [HOME_KEY]: '#/roll/dread_gm_toolbox' });
+    const app = new AppState(at('#/roll/dread', { storage }));
+    expect(app.home).toBe('#/roll/dread_gm_toolbox');
+    expect(app.toggleHome()).toBe(true);
+    expect(app.home).toBe('#/roll/std');
+    expect(storage.get(HOME_KEY)).toBeNull();
   });
 
   it('unpins back to the default, not to nothing', () => {
@@ -1428,8 +1455,8 @@ describe('account preferences', () => {
     const cloud = fakeCloud(SEED, 'gm2');
     await cloud.prefs.save({ home: '#/tables/dread' });
     const { app, storage, router } = await signedIn(cloud);
-    expect(app.home).toBe('#/tables/dread');
-    expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
+    expect(app.home).toBe('#/tables/dread_gm_toolbox');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/dread_gm_toolbox');
     expect(router.hash()).toBe('#/roll/std');
     app.stop();
   });
@@ -1437,7 +1464,7 @@ describe('account preferences', () => {
   it('removes the pin key for the default section', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     await cloud.prefs.save({ home: '#/roll/std' });
-    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
+    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread_gm_toolbox' });
     expect(app.home).toBe('#/roll/std');
     expect(storage.get(HOME_KEY)).toBeNull();
     app.stop();
@@ -1446,9 +1473,11 @@ describe('account preferences', () => {
   it('ignores a starting section the pin check refuses', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     await cloud.prefs.save({ home: '#/i/w1' });
-    const { app, storage, router } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
-    expect(app.home).toBe('#/tables/dread');
-    expect(storage.get(HOME_KEY)).toBe('#/tables/dread');
+    const { app, storage, router } = await signedIn(cloud, {
+      [HOME_KEY]: '#/tables/dread_gm_toolbox'
+    });
+    expect(app.home).toBe('#/tables/dread_gm_toolbox');
+    expect(storage.get(HOME_KEY)).toBe('#/tables/dread_gm_toolbox');
     expect(router.hash()).toBe('#/roll/std');
     app.stop();
   });
@@ -1458,13 +1487,13 @@ describe('account preferences', () => {
     const save = vi.spyOn(cloud.prefs, 'save');
     const { app } = await signedIn(cloud, {
       [LANG_KEY]: 'en',
-      [HOME_KEY]: '#/tables/dread',
+      [HOME_KEY]: '#/tables/dread_gm_toolbox',
       [PREFS_KEY]: '{"view":"grid","printBw":false,"printCompact":true}'
     });
     expect(save).toHaveBeenCalledOnce();
     expect(save).toHaveBeenCalledWith({
       lang: 'en',
-      home: '#/tables/dread',
+      home: '#/tables/dread_gm_toolbox',
       view: 'grid',
       printBw: false,
       printCompact: true,
@@ -1502,7 +1531,7 @@ describe('account preferences', () => {
           app.setTablesView('list');
         }
       ],
-      ['toggleHome', () => app.toggleHome('#/tables/dread')],
+      ['toggleHome', () => app.toggleHome('#/tables/dread_gm_toolbox')],
       [
         'setPrintBW',
         () => {
@@ -1524,7 +1553,7 @@ describe('account preferences', () => {
     }
     expect(save).toHaveBeenLastCalledWith({
       lang: 'en',
-      home: '#/tables/dread',
+      home: '#/tables/dread_gm_toolbox',
       view: 'list',
       printBw: false,
       printCompact: false,
@@ -1535,7 +1564,7 @@ describe('account preferences', () => {
       ok: true,
       prefs: {
         lang: 'en',
-        home: '#/tables/dread',
+        home: '#/tables/dread_gm_toolbox',
         view: 'list',
         printBw: false,
         printCompact: false,
@@ -1583,7 +1612,7 @@ describe('account preferences', () => {
     const { app } = await signedIn(out);
     app.setLang('en');
     app.setTablesView('grid');
-    app.toggleHome('#/tables/dread');
+    app.toggleHome('#/tables/dread_gm_toolbox');
     app.setPrintBW(true);
     app.setPrintCompact(true);
     expect(outSave).not.toHaveBeenCalled();
@@ -1596,7 +1625,7 @@ describe('account preferences', () => {
     );
     broken.start();
     await flush();
-    expect(broken.toggleHome('#/tables/dread')).toBe(false);
+    expect(broken.toggleHome('#/tables/dread_gm_toolbox')).toBe(false);
     expect(save).not.toHaveBeenCalled();
     broken.stop();
   });
@@ -1700,7 +1729,7 @@ describe('account preferences', () => {
     const { app, storage } = await signedIn(cloud);
     for (const [hash, pin] of [
       ['#/search', '#/search'],
-      ['#/tables/dread', '#/tables/dread'],
+      ['#/tables/dread', '#/tables/dread_gm_toolbox'],
       ['#/tables/frames', '#/tables/other_frames']
     ] as const) {
       expect(app.setHome(hash), hash).toBe(true);
@@ -1714,7 +1743,7 @@ describe('account preferences', () => {
 
   it('removes the pin key for the default section, and saves it to the row', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread' });
+    const { app, storage } = await signedIn(cloud, { [HOME_KEY]: '#/tables/dread_gm_toolbox' });
     expect(app.setHome('#/roll/std')).toBe(true);
     expect(app.home).toBe('#/roll/std');
     expect(storage.get(HOME_KEY)).toBeNull();
@@ -1738,7 +1767,7 @@ describe('account preferences', () => {
     );
     broken.start();
     await flush();
-    expect(broken.setHome('#/tables/dread')).toBe(false);
+    expect(broken.setHome('#/tables/dread_gm_toolbox')).toBe(false);
     expect(broken.home).toBe('#/roll/std');
     expect(save).not.toHaveBeenCalled();
     broken.stop();

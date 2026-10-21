@@ -14,13 +14,13 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 |---|---|
 | `#/roll/std` | Core rules, the shared 1-60 Nd12 table for Core and Hope & Fear |
 | `#/roll/alt` | Alternate tables, rarity plus Hope and Fear dice |
-| `#/roll/wondrous` | Wondrous Loot, 1-119 |
-| `#/roll/dread` | Dread GM Toolbox, 1-29 |
-| `#/roll/voa` | Vault of Ages, by section |
-| `#/roll/dv` | The Dragon's Vault, 1-145 |
-| `#/roll/arazo` | Arazo's Artifacts, 1-78 |
-| `#/roll/community` | Community items, community plus 1-10 |
-| `#/roll/mwt` | Many Worlds Tavern, realm plus 1-20 (1-21 in Warrin' Warrens) |
+| `#/roll/wondrous_environments` | Wondrous Environments, 1-119 |
+| `#/roll/dread_gm_toolbox` | Dread GM Toolbox, 1-29 |
+| `#/roll/vault_of_ages` | Vault of Ages, by section |
+| `#/roll/dragons_vault` | The Dragon's Vault, 1-145 |
+| `#/roll/arazos_artifacts` | Arazo's Artifacts, 1-78 |
+| `#/roll/community_items` | Community items, community plus 1-10 |
+| `#/roll/many_worlds_tavern` | Many Worlds Tavern, realm plus a roll inside it (1-11 to 1-21) |
 | `#/tables` | Tables index |
 | `#/lists` | Lists index |
 | `#/search` | Search |
@@ -31,10 +31,26 @@ whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
+## URL ids and old ids
+
+The seven supplement sections and nine tables have a URL id from the name of
+their source product (owner, 2026-10-21;
+`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`); the
+app writes it (`hash.ts` `SECTION_SLUG`, `TABLE_SLUG`). The internal id is the
+old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
+`roll/arazo`, `roll/community`, `roll/mwt`, and the tables `hnf_item` ->
+`hope_and_fear_item`, `hnf_consumable` -> `hope_and_fear_consumable`,
+`wondrous` -> `wondrous_environments`, `dread` -> `dread_gm_toolbox`, `voa` ->
+`vault_of_ages`, `dv` -> `dragons_vault`, `arazo` -> `arazos_artifacts`,
+`community` -> `community_items`, `mwt` -> `many_worlds_tavern`.
+An old id still opens the same page, with its anchor or filter tail; the
+address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
+
 The tab bar draws six tabs over them: Core rules, the alternate tables, one
-«Дополнения» / "Supplements" tab for the seven supplement sections (`roll/wondrous`
-to `roll/mwt`, `app/src/lib/nav.ts`), Tables, Lists and Search. The
-supplements tab links to `#/roll/wondrous`; every supplement address stays its
+«Дополнения» / "Supplements" tab for the seven supplement sections
+(`roll/wondrous_environments` to `roll/many_worlds_tavern`, `app/src/lib/nav.ts`),
+Tables, Lists and Search. The supplements tab links to
+`#/roll/wondrous_environments`; every supplement address stays its
 own section (`FEATURES.md`, "Chrome").
 
 From the legacy write cutoff (2026-10-26) a build with sign-in draws five
@@ -59,9 +75,13 @@ working and keeps its own text.
 
 `TABLES_RE` is `/^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/`.
 
-Table names (`TABLE_IDS`): `core_item`, `core_consumable`, `hnf_item`,
-`hnf_consumable`, `wondrous`, `community`, `dread`, `voa`, `dv`, `arazo`, `mwt`, `other_starting`, `other_frames`, `alt_item`,
-`alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`.
+Table names in an address: `core_item`, `core_consumable`, `hope_and_fear_item`,
+`hope_and_fear_consumable`, `wondrous_environments`, `community_items`,
+`dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`,
+`many_worlds_tavern`, `other_starting`, `other_frames`, `alt_item`,
+`alt_consumable`, `eq_weapon`, `eq_secondary`, `eq_armor`, `homebrew`. The
+internal ids (`TABLE_IDS`) still parse ("URL ids and old ids" above). The
+tables below name a table by its internal id.
 
 `frames` is an alias for `other_frames` (`TABLE_ALIASES`, `hash.ts:39`):
 `#/tables/frames` resolves the same as `#/tables/other_frames`, not to being
@@ -115,7 +135,7 @@ whose kind has an artifact record); `cls` `phy`/`mag`; `trait`
 `melee`, `veryclose`, `close`, `far`, `veryfar`; `burden` `1`/`2`; `line`
 `line`/`uniq`; `kind` `item`/`consumable`/`equip`; `src` one of the source keys;
 `frame` `beast_feast`, `colossus`, `dark_heart`, `motherboard`; `comm` a
-community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`. A
+community name; `realm` `sporopolis`, `wagerwood`, `warrens`, `godsvale`, `hornet`, `drome`. A
 weapon of trait `any` answers every `trait` value, as a `spellcast` one does;
 `any` is no value of its own. On `homebrew` and the equipment tables `src` also takes `hb`
 (own items with no source) and an own source's key; `sect` takes an own

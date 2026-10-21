@@ -75,7 +75,7 @@
   } from '../lib/homebrew.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
-  import { TABLE_NAV, navGroupOf, navSubLabel } from '../lib/tables.js';
+  import { CHIP_SHORT, TABLE_NAV, navGroupOf, navSubLabel } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
   import { BARE_TABLE, type Record_, type TableId } from '../lib/types.js';
 
@@ -86,6 +86,11 @@
   const { app }: Props = $props();
 
   const t = $derived(app.t);
+  /* A book chip's short form under 640 px, where `CHIP_SHORT` gives one. */
+  const shortOf = (sub: TableId): string | undefined => {
+    const key = CHIP_SHORT[sub];
+    return key ? t[key] : undefined;
+  };
   const index = $derived(app.index);
   /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
      «Свои предметы» switch never hides an own record inside a dialog or a row. */
@@ -607,6 +612,7 @@
             <Chip
               size="sm"
               label={t[navSubLabel(sub)]}
+              short={shortOf(sub)}
               on={sub === table}
               href={tablesHash(sub)}
             />

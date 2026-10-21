@@ -41,77 +41,77 @@
     }
   },
   {
-    "hash": "#/roll/wondrous",
+    "hash": "#/roll/wondrous_environments",
     "why": "Wondrous",
     "resolves": {
-      "hash": "#/roll/wondrous",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/wondrous_environments",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/dread",
+    "hash": "#/roll/dread_gm_toolbox",
     "why": "Dread",
     "resolves": {
-      "hash": "#/roll/dread",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/dread_gm_toolbox",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/voa",
+    "hash": "#/roll/vault_of_ages",
     "why": "Vault of Ages",
     "resolves": {
-      "hash": "#/roll/voa",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/vault_of_ages",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/dv",
+    "hash": "#/roll/dragons_vault",
     "why": "Dragon's Vault",
     "resolves": {
-      "hash": "#/roll/dv",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/dragons_vault",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/arazo",
+    "hash": "#/roll/arazos_artifacts",
     "why": "Arazo's Artifacts",
     "resolves": {
-      "hash": "#/roll/arazo",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/arazos_artifacts",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/community",
+    "hash": "#/roll/community_items",
     "why": "communities",
     "resolves": {
-      "hash": "#/roll/community",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/community_items",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
     }
   },
   {
-    "hash": "#/roll/mwt",
+    "hash": "#/roll/many_worlds_tavern",
     "why": "Many Worlds Tavern, a supplement under the supplements tab",
     "resolves": {
-      "hash": "#/roll/mwt",
-      "tab": "#/roll/wondrous",
+      "hash": "#/roll/many_worlds_tavern",
+      "tab": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -179,17 +179,17 @@
     "resolves": {
       "hash": "#/tables/eq_weapon",
       "tab": "#/tables",
-      "rows": 453,
+      "rows": 458,
       "printCards": 0,
       "picked": [],
-      "count": "453"
+      "count": "458"
     }
   },
   {
-    "hash": "#/tables/dv",
+    "hash": "#/tables/dragons_vault",
     "why": "a plain table by name, the tenth book chip",
     "resolves": {
-      "hash": "#/tables/dv",
+      "hash": "#/tables/dragons_vault",
       "tab": "#/tables",
       "rows": 145,
       "printCards": 0,
@@ -198,10 +198,10 @@
     }
   },
   {
-    "hash": "#/tables/arazo",
+    "hash": "#/tables/arazos_artifacts",
     "why": "a plain table by name, the book chip after Dragon's Vault",
     "resolves": {
-      "hash": "#/tables/arazo",
+      "hash": "#/tables/arazos_artifacts",
       "tab": "#/tables",
       "rows": 78,
       "printCards": 0,
@@ -210,29 +210,43 @@
     }
   },
   {
-    "hash": "#/tables/mwt",
+    "hash": "#/tables/many_worlds_tavern",
     "why": "a table sectioned by realm",
     "resolves": {
-      "hash": "#/tables/mwt",
+      "hash": "#/tables/many_worlds_tavern",
       "tab": "#/tables",
-      "rows": 81,
+      "rows": 109,
       "printCards": 0,
       "picked": [],
-      "count": "81"
+      "count": "109"
     }
   },
   {
-    "hash": "#/tables/mwt/f_realm-warrens",
+    "hash": "#/tables/many_worlds_tavern/f_realm-warrens",
     "why": "a realm filter",
     "resolves": {
-      "hash": "#/tables/mwt/f_realm-warrens",
+      "hash": "#/tables/many_worlds_tavern/f_realm-warrens",
       "tab": "#/tables",
       "rows": 21,
       "printCards": 0,
       "picked": [
         "realm:warrens"
       ],
-      "count": "21 из 81"
+      "count": "21 из 109"
+    }
+  },
+  {
+    "hash": "#/tables/many_worlds_tavern/f_realm-drome",
+    "why": "the sixth realm, The Drome",
+    "resolves": {
+      "hash": "#/tables/many_worlds_tavern/f_realm-drome",
+      "tab": "#/tables",
+      "rows": 17,
+      "printCards": 0,
+      "picked": [
+        "realm:drome"
+      ],
+      "count": "17 из 109"
     }
   },
   {
@@ -247,10 +261,10 @@
     }
   },
   {
-    "hash": "#/tables/community/Seaborne",
+    "hash": "#/tables/community_items/Seaborne",
     "why": "table plus a community anchor",
     "resolves": {
-      "hash": "#/tables/community/Seaborne",
+      "hash": "#/tables/community_items/Seaborne",
       "tab": "#/tables",
       "rows": 90,
       "printCards": 0,
@@ -264,13 +278,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
       "tab": "#/tables",
-      "rows": 44,
+      "rows": 45,
       "printCards": 0,
       "picked": [
         "tier:2",
         "cls:mag"
       ],
-      "count": "44 из 453"
+      "count": "45 из 458"
     }
   },
   {
@@ -284,7 +298,7 @@
       "picked": [
         "range:melee"
       ],
-      "count": "210 из 453"
+      "count": "210 из 458"
     }
   },
   {
@@ -293,12 +307,12 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
       "tab": "#/tables",
-      "rows": 244,
+      "rows": 248,
       "printCards": 0,
       "picked": [
         "burden:2"
       ],
-      "count": "244 из 453"
+      "count": "248 из 458"
     }
   },
   {
@@ -307,13 +321,13 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
       "tab": "#/tables",
-      "rows": 217,
+      "rows": 219,
       "printCards": 0,
       "picked": [
         "tier:1",
         "tier:2"
       ],
-      "count": "217 из 453"
+      "count": "219 из 458"
     }
   },
   {
@@ -327,7 +341,7 @@
       "picked": [
         "tier:A"
       ],
-      "count": "1 из 453"
+      "count": "1 из 458"
     }
   },
   {
@@ -392,7 +406,7 @@
         "tier:1",
         "cls:phy"
       ],
-      "count": "60 из 453"
+      "count": "60 из 458"
     }
   },
   {
@@ -401,10 +415,10 @@
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
       "tab": "#/tables",
-      "rows": 453,
+      "rows": 458,
       "printCards": 0,
       "picked": [],
-      "count": "453"
+      "count": "458"
     }
   },
   {
@@ -844,6 +858,263 @@
       "rows": 0,
       "printCards": 0,
       "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/wondrous",
+    "why": "the old id of #/roll/wondrous_environments, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/wondrous",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/dread",
+    "why": "the old id of #/roll/dread_gm_toolbox, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/dread",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/voa",
+    "why": "the old id of #/roll/vault_of_ages, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/voa",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/dv",
+    "why": "the old id of #/roll/dragons_vault, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/dv",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/arazo",
+    "why": "the old id of #/roll/arazos_artifacts, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/arazo",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/community",
+    "why": "the old id of #/roll/community_items, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/community",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/roll/mwt",
+    "why": "the old id of #/roll/many_worlds_tavern, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/roll/mwt",
+      "tab": "#/roll/wondrous_environments",
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/tables/hope_and_fear_item",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/hope_and_fear_item",
+      "tab": "#/tables",
+      "rows": 60,
+      "printCards": 0,
+      "picked": [],
+      "count": "60"
+    }
+  },
+  {
+    "hash": "#/tables/hnf_item",
+    "why": "the old id of #/tables/hope_and_fear_item, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/hnf_item",
+      "tab": "#/tables",
+      "rows": 60,
+      "printCards": 0,
+      "picked": [],
+      "count": "60"
+    }
+  },
+  {
+    "hash": "#/tables/hope_and_fear_consumable",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/hope_and_fear_consumable",
+      "tab": "#/tables",
+      "rows": 60,
+      "printCards": 0,
+      "picked": [],
+      "count": "60"
+    }
+  },
+  {
+    "hash": "#/tables/hnf_consumable",
+    "why": "the old id of #/tables/hope_and_fear_consumable, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/hnf_consumable",
+      "tab": "#/tables",
+      "rows": 60,
+      "printCards": 0,
+      "picked": [],
+      "count": "60"
+    }
+  },
+  {
+    "hash": "#/tables/wondrous_environments",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/wondrous_environments",
+      "tab": "#/tables",
+      "rows": 119,
+      "printCards": 0,
+      "picked": [],
+      "count": "119"
+    }
+  },
+  {
+    "hash": "#/tables/wondrous",
+    "why": "the old id of #/tables/wondrous_environments, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/wondrous",
+      "tab": "#/tables",
+      "rows": 119,
+      "printCards": 0,
+      "picked": [],
+      "count": "119"
+    }
+  },
+  {
+    "hash": "#/tables/dread_gm_toolbox",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/dread_gm_toolbox",
+      "tab": "#/tables",
+      "rows": 29,
+      "printCards": 0,
+      "picked": [],
+      "count": "29"
+    }
+  },
+  {
+    "hash": "#/tables/dread",
+    "why": "the old id of #/tables/dread_gm_toolbox, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/dread",
+      "tab": "#/tables",
+      "rows": 29,
+      "printCards": 0,
+      "picked": [],
+      "count": "29"
+    }
+  },
+  {
+    "hash": "#/tables/vault_of_ages",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/vault_of_ages",
+      "tab": "#/tables",
+      "rows": 144,
+      "printCards": 0,
+      "picked": [],
+      "count": "144"
+    }
+  },
+  {
+    "hash": "#/tables/voa",
+    "why": "the old id of #/tables/vault_of_ages, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/voa",
+      "tab": "#/tables",
+      "rows": 144,
+      "printCards": 0,
+      "picked": [],
+      "count": "144"
+    }
+  },
+  {
+    "hash": "#/tables/dv",
+    "why": "the old id of #/tables/dragons_vault, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/dv",
+      "tab": "#/tables",
+      "rows": 145,
+      "printCards": 0,
+      "picked": [],
+      "count": "145"
+    }
+  },
+  {
+    "hash": "#/tables/arazo",
+    "why": "the old id of #/tables/arazos_artifacts, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/arazo",
+      "tab": "#/tables",
+      "rows": 78,
+      "printCards": 0,
+      "picked": [],
+      "count": "78"
+    }
+  },
+  {
+    "hash": "#/tables/community_items",
+    "why": "a plain table by its URL id",
+    "resolves": {
+      "hash": "#/tables/community_items",
+      "tab": "#/tables",
+      "rows": 90,
+      "printCards": 0,
+      "picked": [],
+      "count": "90"
+    }
+  },
+  {
+    "hash": "#/tables/community",
+    "why": "the old id of #/tables/community_items, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/community",
+      "tab": "#/tables",
+      "rows": 90,
+      "printCards": 0,
+      "picked": [],
+      "count": "90"
+    }
+  },
+  {
+    "hash": "#/tables/mwt",
+    "why": "the old id of #/tables/many_worlds_tavern, read as it without rewriting the address",
+    "resolves": {
+      "hash": "#/tables/mwt",
+      "tab": "#/tables",
+      "rows": 109,
+      "printCards": 0,
+      "picked": [],
+      "count": "109"
     }
   }
 ]

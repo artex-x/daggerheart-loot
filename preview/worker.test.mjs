@@ -59,7 +59,7 @@ const NAMES = {
     eq_weapon: { n: 437 },
     community: { n: 90 },
     other_frames: { n: 95 },
-    mwt: { n: 81 }
+    mwt: { n: 109 }
   },
   communities: {
     Highborne: { ru: 'Великородное', n: 10 },
@@ -71,7 +71,9 @@ const NAMES = {
     sporopolis: { n: 20 },
     wagerwood: { n: 20 },
     warrens: { n: 21 },
-    godsvale: { n: 20 }
+    godsvale: { n: 20 },
+    hornet: { n: 11 },
+    drome: { n: 17 }
   }
 };
 
@@ -1235,7 +1237,7 @@ describe('/tables/: a catalog table', () => {
 
   it('labels a community block and a frame block', async () => {
     const c = await card('/tables/community/Highborne');
-    assert.equal(meta(c.body, 'og:title'), 'Сообщества · Великородное');
+    assert.equal(meta(c.body, 'og:title'), 'Предметы сообществ · Великородное');
     assert.equal(meta(c.body, 'og:description'), 'Сообщество: Великородное. 10 позиций');
     assert.equal(meta(c.body, 'og:url'), HOST + '/tables/community/Highborne');
     assertRedirect(c.body, SITE + '#/tables/community/Highborne');
@@ -1256,9 +1258,27 @@ describe('/tables/: a catalog table', () => {
     );
   });
 
+  it('draws the same card for a URL id and its old id, each with its own address', async () => {
+    for (const [lang, pre] of [
+      ['ru', ''],
+      ['en', '/en']
+    ]) {
+      const slug = await card(pre + '/tables/dread_gm_toolbox');
+      const old = await card(pre + '/tables/dread');
+      assert.equal(meta(slug.body, 'og:title'), meta(old.body, 'og:title'), lang);
+      assert.equal(meta(slug.body, 'og:description'), meta(old.body, 'og:description'), lang);
+      assert.equal(meta(slug.body, 'og:url'), HOST + pre + '/tables/dread_gm_toolbox');
+      assert.equal(meta(old.body, 'og:url'), HOST + pre + '/tables/dread');
+    }
+    const drome = await card('/tables/many_worlds_tavern/drome');
+    assert.equal(meta(drome.body, 'og:title'), 'Many Worlds Tavern · Дром');
+    assert.equal(meta(drome.body, 'og:description'), 'Мир: Дром. 17 позиций');
+    assertRedirect(drome.body, SITE + '#/tables/many_worlds_tavern/drome');
+  });
+
   it('labels a filter with no count', async () => {
     const c = await card('/tables/community/f_comm-Loreborne-Orderborne');
-    assert.equal(meta(c.body, 'og:title'), 'Сообщества');
+    assert.equal(meta(c.body, 'og:title'), 'Предметы сообществ');
     assert.equal(meta(c.body, 'og:description'), 'Сообщество: Научное, Догматичное');
     assertRedirect(c.body, SITE + '#/tables/community/f_comm-Loreborne-Orderborne');
     assert.equal(
@@ -1295,7 +1315,7 @@ describe('/tables/: a catalog table', () => {
   it('reads a prototype key as an unknown one', async () => {
     for (const p of ['/tables/community/constructor', '/tables/community/__proto__']) {
       const r = await card(p);
-      assert.equal(meta(r.body, 'og:title'), 'Сообщества', p);
+      assert.equal(meta(r.body, 'og:title'), 'Предметы сообществ', p);
       assert.equal(meta(r.body, 'og:description'), '90 позиций', p);
     }
     for (const p of [

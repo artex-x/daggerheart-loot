@@ -49,15 +49,15 @@
       "why": "a catalog table: no v"
     },
     {
-      "hash": "#/tables/community/Highborne",
+      "hash": "#/tables/community_items/Highborne",
       "lang": "en",
-      "url": "https://daggerheart-loot.pages.dev/en/tables/community/Highborne",
+      "url": "https://daggerheart-loot.pages.dev/en/tables/community_items/Highborne",
       "why": "a table block keeps its anchor"
     },
     {
-      "hash": "#/tables/community/f_comm-Loreborne-Orderborne",
+      "hash": "#/tables/community_items/f_comm-Loreborne-Orderborne",
       "lang": "ru",
-      "url": "https://daggerheart-loot.pages.dev/tables/community/f_comm-Loreborne-Orderborne",
+      "url": "https://daggerheart-loot.pages.dev/tables/community_items/f_comm-Loreborne-Orderborne",
       "why": "a table filter keeps its segment"
     },
     {
@@ -219,16 +219,16 @@
       "why": "a stray character after the table is dropped"
     },
     {
-      "url": "https://daggerheart-loot.pages.dev/tables/community/Highborne",
+      "url": "https://daggerheart-loot.pages.dev/tables/community_items/Highborne",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community/Highborne",
-      "ogUrl": "https://daggerheart-loot.pages.dev/tables/community/Highborne",
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community_items/Highborne",
+      "ogUrl": "https://daggerheart-loot.pages.dev/tables/community_items/Highborne",
       "why": "og:url keeps the anchor"
     },
     {
-      "url": "https://daggerheart-loot.pages.dev/tables/community/f_comm-Loreborne-Orderborne",
+      "url": "https://daggerheart-loot.pages.dev/tables/community_items/f_comm-Loreborne-Orderborne",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community/f_comm-Loreborne-Orderborne",
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community_items/f_comm-Loreborne-Orderborne",
       "why": "a community filter"
     },
     {
@@ -251,17 +251,30 @@
       "why": "the older group separator"
     },
     {
-      "url": "https://daggerheart-loot.pages.dev/tables/mwt/warrens",
+      "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/warrens",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/mwt/warrens",
-      "ogUrl": "https://daggerheart-loot.pages.dev/tables/mwt/warrens",
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/warrens",
+      "ogUrl": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/warrens",
       "why": "a realm block"
     },
     {
-      "url": "https://daggerheart-loot.pages.dev/tables/mwt/f_realm-warrens",
+      "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/f_realm-warrens",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/mwt/f_realm-warrens",
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/f_realm-warrens",
       "why": "a realm filter"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/f_realm-drome",
+      "status": 200,
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/f_realm-drome",
+      "why": "the sixth realm's filter"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/tables/dread",
+      "status": 200,
+      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/dread",
+      "ogUrl": "https://daggerheart-loot.pages.dev/tables/dread",
+      "why": "an old table id opens the card of its URL id and stays as written"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/homebrew",

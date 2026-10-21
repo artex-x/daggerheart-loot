@@ -44,6 +44,7 @@ import { buildIndex, type Index } from '../lib/data.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
+  canonicalHash,
   cardVersion,
   homebrewItemHash,
   itemHash,
@@ -185,9 +186,12 @@ function pinOf(v: string): string | null {
      (both come back `table: null`), so the bare case is read off the string
      itself rather than off the route. */
   if (v === '#/tables/frames') return '#/tables/other_frames';
-  const r = parseHash(v);
-  if (r.kind === 'section') return v;
-  if (r.kind === 'tables' && (r.table || stripHash(v) === 'tables')) return v;
+  /* A pin of a renamed id reads as its slug; `#applyPrefs` then stores the slug
+     (docs/specs/STATE.md). */
+  const c = canonicalHash(v);
+  const r = parseHash(c);
+  if (r.kind === 'section') return c;
+  if (r.kind === 'tables' && (r.table || stripHash(c) === 'tables')) return c;
   return null;
 }
 
@@ -2111,7 +2115,7 @@ export class AppState {
    * `this.hash` exactly as before.
    */
   toggleHome(hash?: string): boolean {
-    const current = hash ?? this.hash;
+    const current = canonicalHash(hash ?? this.hash);
     const next = this.#home === current ? '' : current;
     if (next) {
       if (!this.env.storage.set(HOME_KEY, next)) return false;

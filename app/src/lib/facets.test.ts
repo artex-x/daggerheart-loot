@@ -335,7 +335,7 @@ describe('the equipment tables', () => {
 });
 
 describe('the realm row', () => {
-  it('follows the kind row on Many Worlds Tavern and lists the four realms in release order', () => {
+  it('follows the kind row on Many Worlds Tavern and lists every realm in release order', () => {
     const realms = buildIndex({
       items: {
         mwt: [
@@ -354,7 +354,9 @@ describe('the realm row', () => {
         { value: 'sporopolis', label: 'Спорополис' },
         { value: 'wagerwood', label: 'Лес Пари' },
         { value: 'warrens', label: 'Воюющие Норы' },
-        { value: 'godsvale', label: 'Долина Богов' }
+        { value: 'godsvale', label: 'Долина Богов' },
+        { value: 'hornet', label: 'Оплот Шершней' },
+        { value: 'drome', label: 'Дром' }
       ]
     });
   });
@@ -533,7 +535,14 @@ describe("a share link's facet rows", () => {
       [
         'src',
         'Источник',
-        ['Core', 'Hope & Fear', 'Wondrous', 'Dread', 'Vault of Ages', 'Мастерская Ольхи']
+        [
+          'Core',
+          'Hope & Fear',
+          'Wondrous Environments',
+          'Dread GM Toolbox',
+          'Vault of Ages',
+          'Мастерская Ольхи'
+        ]
       ],
       ['tier', 'Ранг', ['1', '2']],
       ['cls', 'Класс', ['Физическое', 'Магическое']],
@@ -623,14 +632,14 @@ describe("a share link's facet rows", () => {
       { value: 'core', label: 'Core' },
       { value: 'voa', label: 'Vault of Ages' },
       { value: 'arazo', label: t.srcArazo },
-      { value: 'community', label: 'Сообщества' },
+      { value: 'community', label: 'Предметы сообществ' },
       { value: 'colossus', label: 'Колоссы Сухоземья' },
       { value: 'hb', label: t.srcHomebrew },
       { value: 'hb_baaaaaaaaaaaaaaa', label: 'Берёза' },
       { value: 'hb_yaaaaaaaaaaaaaaa', label: 'Ясень' }
     ]);
     const enSrc = listFacetRows(records, dict('en'), 'en').find((r) => r.group === 'src');
-    expect(enSrc?.values.find((v) => v.value === 'community')?.label).toBe('Communities');
+    expect(enSrc?.values.find((v) => v.value === 'community')?.label).toBe('Community items');
   });
 
   it('draws no row for 8 entries all alike', () => {
@@ -667,7 +676,11 @@ describe("a share link's facet rows", () => {
       })
     );
     expect(shape(listFacetRows(armours, t, 'ru'))).toEqual([
-      ['src', 'Источник', ['Core', 'Hope & Fear', 'Wondrous', 'Dread', 'Vault of Ages']],
+      [
+        'src',
+        'Источник',
+        ['Core', 'Hope & Fear', 'Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages']
+      ],
       ['line', 'Линейка', ['Улучшаемые', 'Уникальные']]
     ]);
   });
@@ -720,7 +733,8 @@ describe("a share link's facet rows", () => {
         for (const [g, most] of Object.entries(bound))
           expect(size(g), g).toBeLessThanOrEqual(most);
         const ownSources = new Set(records.filter((it) => it.src === 'homebrew').map(srcOf));
-        expect(size('src')).toBeLessThanOrEqual(12 + ownSources.size);
+        /* Nine books and four campaign frames. */
+        expect(size('src')).toBeLessThanOrEqual(13 + ownSources.size);
         const picked = { kind: ['weapon'], tier: ['2'] };
         const passed = records.filter((it) =>
           passes(picked, LIST_GROUPS, (g) => listFacets(it)[g] ?? '')

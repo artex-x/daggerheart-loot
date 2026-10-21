@@ -14,7 +14,7 @@
 ссылка на неё в подвале рядом с политикой конфиденциальности
 (`pages/privacy.html`) и условиями использования (`pages/terms.html`).
 
-Всего 1431 запись - 1050 предметов и расходников плюс 381 единица снаряжения, - у
+Всего 1459 записей - 1078 предметов и расходников плюс 381 единица снаряжения, - у
 каждой название, описание, строка характеристик, если она есть, и картинка.
 Слежки нет; вход в аккаунт необязателен, и без него ничего о вас не попадает
 на сервер.
@@ -37,19 +37,19 @@
 |---|---|---|
 | Обычные правила | 1-60 или бросок 1d12...5d12 | до 4 вариантов: предмет и расходник из корника и из Hope & Fear |
 | Альт. таблицы | редкость + Кость Надежды + Кость Страха | 4 варианта; при крите - ссылка на таблицу ступенью выше |
-| Wondrous | 1-119 | 1 предмет |
-| Dread | 1-29 | 1 предмет |
+| Wondrous Environments | 1-119 | 1 предмет |
+| Dread GM Toolbox | 1-29 | 1 предмет |
 | Vault of Ages | 1-144 | 1 предмет |
 | The Dragon's Vault | 1-145 | 1 предмет |
 | Arazo's Artifacts | 1-78 | 1 предмет |
-| Сообщества | сообщество + 1-10 | 1 предмет |
-| Many Worlds Tavern | мир + 1-20 (1-21 в Воюющих Норах) | 1 предмет |
+| Предметы сообществ | сообщество + 1-10 | 1 предмет |
+| Many Worlds Tavern | мир + бросок внутри него (от 1-11 до 1-21) | 1 предмет |
 
 Корник и Hope & Fear - это один и тот же бросок Nd12 по таблице 1-60, поэтому
 они собраны в один режим с переключателем источника. Редкость там влияет только
 на количество костей, поэтому кнопки подписаны и числом костей, и редкостями,
 которые это число покрывает. Там, где диапазон не совпадает с реальной костью -
-119 в Wondrous, 29 в Dread, - кнопка называется «Случайно 1-N», а не выдумывает
+119 в Wondrous Environments, 29 в Dread GM Toolbox, - кнопка называется «Случайно 1-N», а не выдумывает
 несуществующую кость.
 
 Кнопка **?** рядом с заголовком объясняет режим: как распределены колонки
@@ -60,7 +60,7 @@
 
 **Таблицы** - это все таблицы целиком, включая альтернативные и три таблицы
 снаряжения (оружие, вторичное оружие, броня), у каждой свой поиск и переключение
-списком или сеткой. **Поиск** идёт сразу по 1431 записи: названия,
+списком или сеткой. **Поиск** идёт сразу по 1459 записям: названия,
 описания и характеристики, на обоих языках.
 
 Разделы адресуются напрямую, и у каждого заголовка есть кнопка копирования
@@ -69,7 +69,7 @@
 ```
 #/tables/alt_item            альтернативная таблица предметов
 #/tables/alt_item/rare       она же, сразу к блоку «Редкая · Ранг 2-3»
-#/tables/community/Seaborne  предметы Морских
+#/tables/community_items/Seaborne  предметы Морских
 #/tables/other_frames/dark_heart  предметы сеттингов: снаряжение Тёмного Сердца
 ```
 
@@ -215,7 +215,7 @@ https://artex-x.github.io/daggerheart-loot/i/ci15.html
 |---|---|---|
 | `ci` / `cc` | Core, предмет / расходник | `ci15`, `cc56` |
 | `hi` / `hc` | Hope & Fear, предмет / расходник | `hi45`, `hc60` |
-| `w` | Wondrous Loot | `w119` |
+| `w` | Wondrous Environments | `w119` |
 | `di` | Dread GM Toolbox | `di3` |
 | `voa` | Vault of Ages | `voa2_a1` |
 | `dv` / `dve` | The Dragon's Vault, добыча / снаряжение | `dv26`, `dve19` |
@@ -228,7 +228,9 @@ https://artex-x.github.io/daggerheart-loot/i/ci15.html
 Сообщества идут по десять подряд в алфавитном порядке: Highborne `cm1`-`cm10`,
 Loreborne `cm11`-`cm20` и так далее. Many Worlds Tavern идёт по мирам в порядке
 выхода наборов: Спорополис `mw1`-`mw20`, Лес Пари `mw21`-`mw40`, Воюющие Норы
-`mw41`-`mw61`, Долина Богов `mw62`-`mw81`.
+`mw41`-`mw61`, Долина Богов `mw62`-`mw81`, Оплот Шершней `mw82`-`mw92`, Дром
+`mw93`-`mw109`. На карточках Оплота Шершней и Дрома номеров нет, поэтому внутри
+каждого мира порядок такой: вид, потом название.
 
 Ссылка на собственный предмет, ссылка для доступа к списку, ссылка на набор
 для печати и ссылка на таблицу ведут через хост превью
@@ -308,10 +310,10 @@ app/src/styles/       tokens.css и общие стили
 app/index.html        входной документ, собирается в dist/index.html
 data.js               данные: window.LOOT
 card/*.svg            36 векторов для печатных карточек, экспорт из Figma
-img/*.webp            1165 картинок, 640x640, ~34 МБ
+img/*.webp            1193 картинки, 640x640, ~35 МБ
 img/thumb/*.webp      по одной миниатюре 160x160 на картинку, для строк
-og/*.jpg              те же картинки в JPEG для превью ссылок, ~36 МБ
-i/*.html              1431 страница-заглушка на каждом языке с Open Graph разметкой:
+og/*.jpg              те же картинки в JPEG для превью ссылок, ~37 МБ
+i/*.html              1459 страниц-заглушек на каждом языке с Open Graph разметкой:
                       i/ на русском, i/en/ на английском; генерируются, не в репозитории
 en/index.html         английская входная страница (английское превью сайта),
                       генерируется, не в репозитории
@@ -460,7 +462,7 @@ build:test`) - `npm run check` не собирает.
 
 У тридцати одной записи есть поле `craft` - список `id` того, во что вещь превращается:
 ингредиенты корника, становящиеся зельями, и рецепты из корника (17), ингредиенты
-Wondrous Loot (12) и два улучшения Фроствирда.
+Wondrous Environments (12) и два улучшения Фроствирда.
 Хранится только одно направление, обратная связь («Получается из») строится при
 загрузке, поэтому две половины цепочки не могут разъехаться. Пятнадцать описаний
 ссылаются полем `refs` на карты и противников; их текст уезжает вместе с
@@ -508,11 +510,11 @@ Wondrous Loot (12) и два улучшения Фроствирда.
 `cls:'mag'` при `dt:'any'`. Фильтр работает по `cls`, и `any` попадает и туда и
 туда.
 
-Снаряжение лежит не только в `eq`. Одиннадцать записей Wondrous Loot, все 68
-единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 26 единиц Many Worlds Tavern, всё снаряжение фреймов, часть Vault
-of Ages и Dread несут такой же блок `eq`,
+Снаряжение лежит не только в `eq`. Одиннадцать записей Wondrous Environments, все 68
+единиц оружия и брони The Dragon's Vault, все 68 единиц Arazo's Artifacts, все 35 единиц Many Worlds Tavern, всё снаряжение фреймов, часть Vault
+of Ages и Dread GM Toolbox несут такой же блок `eq`,
 оставаясь в `items`; фреймы кампаний не образуют таблицу бросков. Три таблицы снаряжения собирают их
-все: основного оружия там 453, вторичного 133, брони 112. До двух книг их сужает
+все: основного оружия там 458, вторичного 135, брони 114. До двух книг их сужает
 фильтр по источнику (239 / 73 / 69).
 
 ## Цвета категорий
@@ -534,12 +536,12 @@ of Ages и Dread несут такой же блок `eq`,
 | Core - расходники | 60 | Daggerheart SRD | [daggerheart.su](https://ru.daggerheart.su/) |
 | Hope & Fear - предметы | 60 | Daggerheart: Hope & Fear | любительский перевод |
 | Hope & Fear - расходники | 60 | Daggerheart: Hope & Fear | любительский перевод |
-| Wondrous Loot | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | любительский перевод |
+| Wondrous Environments | 119 | [Wondrous Environments](https://www.drivethrurpg.com/en/product/552648/wondrous-environments) | любительский перевод |
 | Dread GM Toolbox | 29 | [Dread GM Toolbox](https://www.drivethrurpg.com/en/product/573714/dread-gm-toolbox-for-daggerheart) | любительский перевод |
 | Vault of Ages | 144 | Vault of Ages [1](https://www.drivethrurpg.com/en/product/562876/vault-of-ages-volume-1), [2](https://www.drivethrurpg.com/en/product/567176/vault-of-ages-volume-2), [3](https://www.drivethrurpg.com/en/product/574145/vault-of-ages-volume-3), [4](https://www.drivethrurpg.com/en/product/582544/vault-of-ages-volume-4) | любительский перевод |
 | The Dragon's Vault | 145 | [The Dragon's Vault](https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault) | любительский перевод |
 | Arazo's Artifacts | 78 | [The Guide to Arazo's Artifacts](https://www.drivethrurpg.com/en/product/581640/the-guide-to-arazo-s-artifacts) | любительский перевод |
-| Many Worlds Tavern | 81 | [Sporopolis](https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/), [Wagerwood](https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/), [Warrin' Warrens](https://heartofdaggers.com/products/warrin-warrens-items-and-domains/), [Godsvale](https://heartofdaggers.com/products/godsvale-items-and-domains/) | любительский перевод |
+| Many Worlds Tavern | 109 | [Sporopolis](https://heartofdaggers.com/products/sporopolis-item-and-domain-cards/), [Wagerwood](https://heartofdaggers.com/products/wagerwood-item-and-domain-cards/), [Warrin' Warrens](https://heartofdaggers.com/products/warrin-warrens-items-and-domains/), [Godsvale](https://heartofdaggers.com/products/godsvale-items-and-domains/), [Hornet Hold](https://heartofdaggers.com/products/hornet-hold-items-and-domains/), [The Drome](https://heartofdaggers.com/products/the-drome-items-and-domains/) | любительский перевод |
 | Предметы сообществ | 90 | [Community Magic Items](https://www.drivethrurpg.com/en/product/558159/community-magic-items-a-daggerheart-compatible-toolkit) | любительский перевод, названия сообществ по [daggerheart.su](https://ru.daggerheart.su/community) |
 | Снаряжение фреймов | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | любительский перевод |
 | Оружие | 239 | Daggerheart SRD, Hope & Fear | Core - [daggerheart.su](https://ru.daggerheart.su/), H&F - таблица сообщества |

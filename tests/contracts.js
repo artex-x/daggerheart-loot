@@ -145,6 +145,27 @@ const N_REC = '\x1e',
     );
     ok(text.includes('#/h/<uuid>'), name + ' does not name the item address #/h/<uuid>');
   });
+  /* The URL ids follow the source products and the old ids still resolve
+     (CONTRACTS.md section 1): an agent builds the new id and reads an old link. */
+  const { TABLE_SLUG } = require('../tools/share-card.mjs');
+  const SECTION_IDS = ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
+  const slugs = Object.values(TABLE_SLUG).concat(
+    SECTION_IDS.map((id) => 'roll/' + TABLE_SLUG[id])
+  );
+  ok(slugs.length === 16, 'the URL ids are not 9 tables and 7 sections, but ' + slugs.length);
+  [
+    ['llms.txt', machine],
+    ['CONTRACTS.md', contractsText],
+    ['ROUTES.md', routesDoc]
+  ].forEach(function ([name, text]) {
+    slugs.forEach((slug) =>
+      ok(text.includes(slug), name + ' does not name the URL id ' + slug)
+    );
+    ok(
+      text.includes('An old id still opens the same page'),
+      name + ' does not say that an old id still opens the same page'
+    );
+  });
   /* A share link's `kind` names the gear a table calls `equip` (ROUTES.md, "Filter
      grammar"); an agent that writes `kind-equip` gets the whole list. */
   ok(

@@ -118,17 +118,21 @@ describe('the help for a section', () => {
     expect(linksOf(helpFor('alt', 'ru'))[1]?.label).toBe('пост на Reddit');
   });
 
-  it('links each of the four Many Worlds Tavern realms to its own product page', () => {
+  it('links each Many Worlds Tavern realm to its own product page', () => {
     for (const lang of LANGS) {
       expect(linksOf(helpFor('mwt', lang)).map((l) => l.label)).toEqual([
         'Sporopolis',
         'Wagerwood',
         "Warrin' Warrens",
-        'Godsvale'
+        'Godsvale',
+        'Hornet Hold',
+        'The Drome'
       ]);
     }
     expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Воюющие Норы — 21');
     expect(textOf(helpFor('mwt', 'en'), 0)).toContain("Warrin' Warrens 21");
+    expect(textOf(helpFor('mwt', 'ru'), 0)).toContain('Оплот Шершней — 11, Дром — 17');
+    expect(textOf(helpFor('mwt', 'en'), 0)).toContain('Hornet Hold 11 and The Drome 17');
   });
 
   it('has nothing to say about a section nobody wrote one for', () => {
@@ -221,8 +225,8 @@ describe('the tables help against the data', () => {
     readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
   ) as Loot;
   const BOOK: Record<string, string> = {
-    wondrous: 'Wondrous Loot',
-    dread: 'Dread',
+    wondrous: 'Wondrous Environments',
+    dread: 'Dread GM Toolbox',
     voa: 'Vault of Ages',
     dv: "The Dragon's Vault",
     arazo: "Arazo's Artifacts",
@@ -248,7 +252,7 @@ describe('the tables help against the data', () => {
     const help = helpFor('tables', lang);
     const paras = (help?.paragraphs ?? [])
       .map((_, i) => textOf(help, i))
-      .filter((text) => mark.test(text) && text.includes('Wondrous Loot'));
+      .filter((text) => mark.test(text) && text.includes('Wondrous Environments'));
     expect(paras.length).toBe(2);
     for (const text of paras) {
       for (const src of rolled) expect(text, src).toContain(BOOK[src]);
@@ -276,11 +280,9 @@ describe('the tables help on the supplements group', () => {
     const help = helpFor('tables', lang);
     const first = textOf(help, 0);
     const t = dict(lang);
-    /* The panel chips' own words, except where the help names a book in full. */
+    /* The panel chips' own words, in lowercase where the sentence runs on. */
     const names: Record<string, string> = {
-      'roll/wondrous': 'Wondrous Loot',
-      'roll/dread': 'Dread GM Toolbox',
-      'roll/community': lang === 'ru' ? 'сообщества' : 'communities'
+      'roll/community': lang === 'ru' ? 'предметы сообществ' : 'community items'
     };
     const at = SUPPLEMENTS.map((s) => first.indexOf(names[s] ?? t[SECTION_LABEL[s]]));
     expect(at.every((i) => i >= 0)).toBe(true);

@@ -18,6 +18,7 @@ import {
   REALM_LABEL,
   LABEL_GROUPS,
   TABLE_PATH,
+  TABLE_SLUG,
   card,
   decodeFilter,
   descOf,
@@ -420,7 +421,11 @@ function printRoute(rest, lang, env, method) {
 
 /* ---------- /tables/: a catalog table ---------- */
 
-const TABLE_ALIASES = { frames: 'other_frames' };
+/* An alias, a slug or an old id names the same table; the URL stays as written. */
+const TABLE_ALIASES = {
+  frames: 'other_frames',
+  ...Object.fromEntries(Object.entries(TABLE_SLUG).map(([id, slug]) => [slug, id]))
+};
 
 function communityLabel(names, c, lang) {
   if (!names || !has(names.communities, c)) return null;

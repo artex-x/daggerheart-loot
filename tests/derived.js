@@ -765,8 +765,8 @@ ok(
   'equipment grew a new kind: ' + Object.keys(BY_T).join()
 );
 ok(
-  EVERY_EQ.length === L.eq.length + 317,
-  'equipment outside the two base books is not 317, but ' + (EVERY_EQ.length - L.eq.length)
+  EVERY_EQ.length === L.eq.length + 326,
+  'equipment outside the two base books is not 326, but ' + (EVERY_EQ.length - L.eq.length)
 );
 /* Every piece of equipment must carry a tier. Wondrous's is derived from the
    book: the "Loot items by environment" table ties an item to a location,
@@ -1974,10 +1974,10 @@ ok(
 
 console.log('Many Worlds Tavern');
 const mwt = L.items.mwt;
-ok(mwt.length === 81, 'items.mwt is not 81, but ' + mwt.length);
+ok(mwt.length === 109, 'items.mwt is not 109, but ' + mwt.length);
 ok(
   mwt.every((x, i) => x.id === 'mw' + (i + 1) && x.img === x.id + '.webp'),
-  'items.mwt is not mw1..mw81, each with its own picture'
+  'items.mwt is not mw1..mw109, each with its own picture'
 );
 const mwByKind = {};
 mwt.forEach((x) => {
@@ -1986,7 +1986,7 @@ mwt.forEach((x) => {
 });
 ok(
   JSON.stringify(mwByKind) ===
-    JSON.stringify({ secondary: 6, weapon: 16, armor: 4, item: 45, consumable: 10 }),
+    JSON.stringify({ secondary: 8, weapon: 21, armor: 6, item: 62, consumable: 12 }),
   'mwt records by kind: ' + JSON.stringify(mwByKind)
 );
 ok(

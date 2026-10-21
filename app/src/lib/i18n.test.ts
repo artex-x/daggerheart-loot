@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 import { buildIndex, equipOfKind, otherTableRows, type Loot } from './data.js';
 import { dict } from './dict.js';
 import { EQ_TABLE, decodeFilter, groupsFor } from './filters.js';
+import { TABLE_SLUG } from './hash.js';
 import { whereFrom } from './label.js';
 import type { Rarity } from './money.js';
 import { communities, communityGroup, realmGroup } from './sections.js';
@@ -378,6 +379,7 @@ describe('the preview card quotes the app', () => {
     decodeFilter: (segment: string, groups: readonly string[]) => Record<string, string[]>;
     LABEL_GROUPS: Record<string, readonly string[]>;
     REALM_LABEL: Record<string, readonly [string, string]>;
+    TABLE_SLUG: Record<string, string>;
   };
   const derived = require_('../../../tools/derived.js') as {
     namesJson: (l: Loot) => string;
@@ -407,6 +409,10 @@ describe('the preview card quotes the app', () => {
     for (const key of WORDS) expect(share.TEXT[lang][key], key).toBe(t[key]);
     expect(share.PATH_TEXT[lang]['alt']).toBe(t.alt);
     expect(share.PATH_TEXT[lang]['mwt']).toBe(t.mwt);
+    expect(share.PATH_TEXT[lang]['wondrous']).toBe(t.pageWondrous);
+    expect(share.PATH_TEXT[lang]['dread']).toBe(t.pageDread);
+    expect(share.PATH_TEXT[lang]['dv']).toBe(t.pageDv);
+    expect(share.PATH_TEXT[lang]['community']).toBe(t.pageCommunity);
   });
 
   it('names every realm as realms.ts does, in both languages', () => {
@@ -414,6 +420,10 @@ describe('the preview card quotes the app', () => {
       REALM_ORDER.map((id) => [id, [realmName(id, 'ru'), realmName(id, 'en')]])
     );
     expect(share.REALM_LABEL).toEqual(want);
+  });
+
+  it('gives every table the URL id hash.ts gives it', () => {
+    expect(share.TABLE_SLUG).toEqual(TABLE_SLUG);
   });
 
   it.each(['ru', 'en'] as const)(

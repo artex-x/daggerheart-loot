@@ -14,6 +14,7 @@ import { brokenStorage, fakeData, fakeEnv, memoryRouter, noData } from '../ports
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
+import { sectionHash } from '../lib/hash.js';
 import { SUPPLEMENTS } from '../lib/nav.js';
 import type { Record_ } from '../lib/types.js';
 
@@ -387,7 +388,7 @@ describe('the supplements panel', () => {
       links
         .filter((a) => a.getAttribute('aria-current') === 'page')
         .map((a) => a.getAttribute('href'))
-    ).toEqual([`#/${s}`]);
+    ).toEqual([sectionHash(s)]);
   });
 
   it.each(['#/roll/std', '#/roll/alt'])('draws no panel on %s', (hash) => {

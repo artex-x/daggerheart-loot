@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalogue of 1431 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalogue of 1459 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -184,7 +184,7 @@ seal wax. It appears on the thing a person has chosen, and almost nowhere else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalogue holds 1431 records in two languages, so
+one accent is rationed. The catalogue holds 1459 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -482,7 +482,10 @@ means "a thing". Do not round a card to a pill or square a chip.
   browsing are separated by `margin-left: auto`, not by a divider. One tab,
   «Дополнения», stands for the seven supplement sections and is lit on each; the
   page under it draws a panel of chips, one per supplement, the open one gold,
-  as the tables page draws its group chips.
+  as the tables page draws its group chips. Below 640px three of those chips,
+  and the same three in the tables book row, show a short form of their source
+  name ("Wondrous", "Dread", "Dragon's Vault") with the full name as their
+  accessible name; no other breakpoint is added.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it.
 - **Brand:** a gold star glyph with a 35 per cent gold drop shadow beside a
   two-line wordmark. The wordmark is never translated.
@@ -560,7 +563,7 @@ colour removed.
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
   gradient text, no coloured drop shadow. The ground is violet, which makes this
-  a short slide, and the palette's restraint is what keeps 1431 records legible.
+  a short slide, and the palette's restraint is what keeps 1459 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states, no marketing gradient. The density
   these tables need is the opposite of that language.

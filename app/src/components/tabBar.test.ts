@@ -107,7 +107,7 @@ describe('the supplements tab', () => {
 
   it.each(SUPPLEMENTS)('lights «Дополнения» with aria-current on %s', (s) => {
     const { container } = render(TabBar, { t: dict('ru'), current: s, label: 'Разделы' });
-    expect(lit(container)).toEqual(['#/roll/wondrous']);
+    expect(lit(container)).toEqual(['#/roll/wondrous_environments']);
     const tab = container.querySelector('a.on') as HTMLElement;
     expect(tab.textContent).toBe('Дополнения');
   });

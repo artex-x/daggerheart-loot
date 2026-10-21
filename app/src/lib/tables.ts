@@ -54,9 +54,9 @@ export const TABLE_GROUPS: readonly TableGroup[] = [
   { id: 'wond', label: 'pageWondrous', top: 'wondrous', subs: ['wondrous'] },
   { id: 'dread', label: 'pageDread', top: 'dread', subs: ['dread'] },
   { id: 'voa', label: 'voa', top: 'voa', subs: ['voa'] },
-  { id: 'dv', label: 'dv', top: 'dv', subs: ['dv'] },
+  { id: 'dv', label: 'pageDv', top: 'dv', subs: ['dv'] },
   { id: 'arazo', label: 'arazo', top: 'arazo', subs: ['arazo'] },
-  { id: 'comm', label: 'community', top: 'community', subs: ['community'] },
+  { id: 'comm', label: 'pageCommunity', top: 'community', subs: ['community'] },
   { id: 'mwt', label: 'mwt', top: 'mwt', subs: ['mwt'] },
   {
     id: 'eq',
@@ -121,6 +121,15 @@ export const TABLE_NAV: readonly TableGroup[] = [
 export function navGroupOf(table: TableId): TableGroup {
   return TABLE_NAV.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
 }
+
+/** A chip's short form under 640 px; the full name stays its accessible name
+ *  (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). Community
+ *  items and Vault of Ages have none: a short word must be part of the full name. */
+export const CHIP_SHORT: Partial<Record<TableId, keyof Dict>> = {
+  wondrous: 'wondrous',
+  dread: 'dread',
+  dv: 'dv'
+};
 
 /** Returns a second-row chip's caption: the `SUB_LABEL` word, or else the book's own name. */
 export function navSubLabel(table: TableId): keyof Dict {

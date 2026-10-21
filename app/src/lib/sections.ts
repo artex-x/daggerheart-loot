@@ -4,7 +4,7 @@
  * are the choice: four tiers, then artifacts and cursed objects, which are
  * categories rather than tiers and exist nowhere else. Community items are
  * grouped by the community they belong to, and the roll is a d10 inside one.
- * Many Worlds Tavern is four card sets, one per realm, and the roll is inside
+ * Many Worlds Tavern is one card set per realm, and the roll is inside
  * one realm's deck.
  *
  * The list of communities is derived from the records rather than written down
@@ -88,7 +88,7 @@ export function communityParts(index: Index | null, lang: Lang): Part[] {
     : [];
 }
 
-/** The four realms as picker choices, in release order. A fixed set: it does not wait
+/** The realms as picker choices, in release order. A fixed set: it does not wait
  *  for the index. */
 export function realmParts(lang: Lang): Part[] {
   return REALM_ORDER.map((id) => ({ id, label: realmName(id, lang) }));

@@ -42,7 +42,15 @@
   /* One or the other, never both: a chip that both navigates and handles a
      click is not what either the roll pickers or the table nav actually is. */
   type Props = Base &
-    ({ href: string; onclick?: never } | { href?: never; onclick: () => void });
+    (
+      | {
+          href: string;
+          onclick?: never;
+          /** The chip's text under 640 px; the label stays its accessible name. */
+          short?: string | undefined;
+        }
+      | { href?: never; onclick: () => void; short?: never }
+    );
 
   const {
     label,
@@ -53,7 +61,8 @@
     href,
     onclick,
     value,
-    disabled
+    disabled,
+    short
   }: Props = $props();
 </script>
 
@@ -64,9 +73,12 @@
     class:sm={size === 'sm'}
     aria-current={on ? 'page' : undefined}
     data-val={value}
+    aria-label={short ? label : undefined}
     {title}
     {href}
-    >{label}{#if sub}<small>{sub}</small>{/if}</a
+    >{#if short}<span class="full">{label}</span><span class="short" aria-hidden="true"
+        >{short}</span
+      >{:else}{label}{/if}{#if sub}<small>{sub}</small>{/if}</a
   >
 {:else}
   <button
@@ -124,6 +136,22 @@
     border-color: var(--gold);
     color: var(--ink-on-gold);
     font-weight: 650;
+  }
+
+  /* A short form is part of its full name (WCAG 2.5.3); 640 px is the system
+     breakpoint (DESIGN.md), and a media query cannot read a token. */
+  .short {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    .full {
+      display: none;
+    }
+
+    .short {
+      display: inline;
+    }
   }
 
   /* off `.chip.sm` in style.css */

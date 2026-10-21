@@ -35,7 +35,8 @@ import { buildIndex, type Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
-import type { Record_ } from '../lib/types.js';
+import { tablesHash } from '../lib/hash.js';
+import type { Record_, TableId } from '../lib/types.js';
 
 afterEach(cleanup);
 
@@ -705,7 +706,7 @@ describe('the table link', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
-    expect(filter.last.text).toBe(ORIGIN + '/tables/wondrous/f_kind-item');
+    expect(filter.last.text).toBe(ORIGIN + '/tables/wondrous_environments/f_kind-item');
     cleanup();
     const block = fakeClipboard();
     render(App, {
@@ -720,7 +721,7 @@ describe('the table link', () => {
       name: 'Скопировать ссылку на этот раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
-    expect(block.last.text).toBe(ORIGIN + '/tables/voa/tA');
+    expect(block.last.text).toBe(ORIGIN + '/tables/vault_of_ages/tA');
   });
 });
 
@@ -808,14 +809,14 @@ describe('the filter', () => {
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
-    expect(env.router.hash()).not.toBe('#/tables/wondrous');
+    expect(env.router.hash()).not.toBe('#/tables/wondrous_environments');
     await userEvent.click(screen.getByRole('button', { name: 'Сбросить всё' }));
     expect(screen.getByText('Зелье Ветра')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Сбросить всё' })).not.toBeInTheDocument();
     /* The strip's reset clears the filter in memory (proven above by the
        empty-state assertions) and must also clear the address a reload or a
        shared link would read back - not just the panel state. */
-    expect(env.router.hash()).toBe('#/tables/wondrous');
+    expect(env.router.hash()).toBe('#/tables/wondrous_environments');
   });
 
   it('hides reset and the copy-link button while the filter is empty, and keeps both reachable with the panel folded', async () => {
@@ -936,7 +937,9 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
-    expect(clip.last.text).toBe('https://example.test/#/tables/wondrous/f_kind-item');
+    expect(clip.last.text).toBe(
+      'https://example.test/#/tables/wondrous_environments/f_kind-item'
+    );
     expect(screen.getByText('Ссылка на фильтры скопирована')).toBeInTheDocument();
   });
 });
@@ -1262,22 +1265,37 @@ describe('the chip nav', () => {
       const tablenav = document.querySelector('.tablenav') as HTMLElement;
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
-      expect(group).toHaveAttribute('href', '#/tables/wondrous');
-      const books = within(bookRow() as HTMLElement).getAllByRole('link');
-      expect(books.map((a) => a.textContent)).toEqual([
-        'Wondrous Loot',
+      expect(group).toHaveAttribute('href', '#/tables/wondrous_environments');
+      const row = bookRow() as HTMLElement;
+      const books = within(row).getAllByRole('link');
+      const names = [
+        'Wondrous Environments',
         'Dread GM Toolbox',
         'Vault of Ages',
-        "Dragon's Vault",
+        "The Dragon's Vault",
         "Arazo's Artifacts",
-        'Сообщества',
+        'Предметы сообществ',
         'Many Worlds Tavern'
+      ];
+      expect(books).toEqual(names.map((name) => within(row).getByRole('link', { name })));
+      /* The three chips with a short form under 640 px carry the full name as their label. */
+      expect(books.map((a) => a.getAttribute('aria-label'))).toEqual([
+        'Wondrous Environments',
+        'Dread GM Toolbox',
+        null,
+        "The Dragon's Vault",
+        null,
+        null,
+        null
       ]);
+      expect(
+        books.map((a) => a.querySelector('.short')?.getAttribute('aria-hidden') ?? null)
+      ).toEqual(['true', 'true', null, 'true', null, null, null]);
       expect(
         books
           .filter((a) => a.getAttribute('aria-current') === 'page')
           .map((a) => a.getAttribute('href'))
-      ).toEqual([`#/tables/${table}`]);
+      ).toEqual([tablesHash(table as TableId)]);
       if (table === 'voa') await expectNoA11yViolations(container);
     }
   );
@@ -1325,7 +1343,7 @@ describe('a sectioned body: Vault of Ages by tier', () => {
       name: 'Скопировать ссылку на этот раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
-    expect(clip.last.text).toBe('https://example.test/#/tables/voa/tA');
+    expect(clip.last.text).toBe('https://example.test/#/tables/vault_of_ages/tA');
     expect(screen.getByText('Ссылка на раздел скопирована')).toBeInTheDocument();
   });
 

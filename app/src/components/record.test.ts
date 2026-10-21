@@ -516,7 +516,7 @@ describe('the path at the top of the page, and the tag on the badge', () => {
     const sub = container.querySelector('p.page-sub');
     // childNodes[0] is positional on purpose: it isolates the path's own
     // text node from the badges that follow it in the same element.
-    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Сообщества · Великородное');
+    expect(sub?.childNodes[0]?.textContent?.trim()).toBe('Предметы сообществ · Великородное');
   });
 
   it('names the community alone on the badge, with no path in it', () => {

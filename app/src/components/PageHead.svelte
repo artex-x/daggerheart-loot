@@ -9,6 +9,7 @@
   import HelpBox from './HelpBox.svelte';
   import HelpButton from './HelpButton.svelte';
   import Icon from './Icon.svelte';
+  import { canonicalHash } from '../lib/hash.js';
   import type { Help } from '../lib/help.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -31,7 +32,7 @@
   const { app, title, sub, help, home }: Props = $props();
 
   const t = $derived(app.t);
-  const pinned = $derived(home ?? app.hash);
+  const pinned = $derived(canonicalHash(home ?? app.hash));
   const on = $derived(app.home === pinned);
 
   let helpOpen = $state(false);

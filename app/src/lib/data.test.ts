@@ -76,12 +76,12 @@ function expectRollPools(loot: Loot): void {
 
 describe('the index over the real dataset', () => {
   it('holds every record under its id', () => {
-    expect(index.byId.size).toBe(1431);
-    expect(index.searchable).toHaveLength(1431);
+    expect(index.byId.size).toBe(1459);
+    expect(index.searchable).toHaveLength(1459);
   });
 
   it('separates loot from equipment the way the data does', () => {
-    expect(index.all).toHaveLength(1050);
+    expect(index.all).toHaveLength(1078);
     expect(LOOT.eq).toHaveLength(381);
   });
 
@@ -92,8 +92,8 @@ describe('the index over the real dataset', () => {
     expect(frames).toHaveLength(95);
     expect(new Set([...starting, ...frames]).size).toBe(124);
     expect(index.rows.get('frames')).toHaveLength(94);
-    expect(index.all).toHaveLength(1050);
-    expect(index.searchable).toHaveLength(1431);
+    expect(index.all).toHaveLength(1078);
+    expect(index.searchable).toHaveLength(1459);
   });
 
   it('keeps roll numbers only in complete, independent roll pools', () => {
@@ -137,9 +137,9 @@ describe('the index over the real dataset', () => {
   it('finds equipment wherever it lives, not only in eq', () => {
     /* 381 in `eq`, and another 317 keeping their source-table placement. */
     expect(index.allEquip.length).toBeGreaterThan(LOOT.eq?.length ?? 0);
-    expect(equipOfKind(index, 'weapon')).toHaveLength(453);
-    expect(equipOfKind(index, 'secondary')).toHaveLength(133);
-    expect(equipOfKind(index, 'armor')).toHaveLength(112);
+    expect(equipOfKind(index, 'weapon')).toHaveLength(458);
+    expect(equipOfKind(index, 'secondary')).toHaveLength(135);
+    expect(equipOfKind(index, 'armor')).toHaveLength(114);
   });
 
   it('narrows to the two books through the source, as the tables do', () => {

@@ -14,13 +14,13 @@ across.
 |---|---|---|---|
 | Core rules | 1-60, or Nd12 for N in 1..5 | up to 4 records: item and consumable, from each picked source | `std {n, src{core,hnf}}` |
 | Alternate tables | rarity + Hope die + Fear die | 4 records | `alt {rarity, hope, fear}` |
-| Wondrous | 1-119 | 1 | `wond {n}` |
-| Dread | 1-29 | 1 | `dread {n}` |
+| Wondrous Environments | 1-119 | 1 | `wond {n}` |
+| Dread GM Toolbox | 1-29 | 1 | `dread {n}` |
 | Vault of Ages | section + roll within it | 1 | `voa {k, n}` |
 | The Dragon's Vault | 1-145 | 1 | `dv {n}` |
 | Arazo's Artifacts | 1-78 | 1 | `arazo {n}` |
-| Communities | community + 1-10 | 1 | `comm {c, n}` |
-| Many Worlds Tavern | realm + 1-20 (1-21 in Warrin' Warrens) | 1 | `mwt {r, n}` |
+| Community items | community + 1-10 | 1 | `comm {c, n}` |
+| Many Worlds Tavern | realm + a roll inside it (1-11 to 1-21) | 1 | `mwt {r, n}` |
 
 - The source switch on Core rules cannot be emptied - unticking the last one is
   refused.
@@ -44,18 +44,28 @@ across.
   500 px wide, 150 px under 1000 px and 130 px above (`tests/app/sweep.js`).
   Six group chips (seven signed in, with Homebrew) and the second row of
   seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
-  1180 in Russian signed out (measured 2026-10-21, with Many Worlds Tavern).
-- The seven supplement modes (Wondrous to Many Worlds Tavern) share one header tab,
+  1180 in Russian signed out, and 283 / 244 px at 360 signed in, Russian /
+  English (measured 2026-10-21, with the source names and their short forms).
+- The seven supplement modes (Wondrous Environments to Many Worlds Tavern) share one header tab,
   «Дополнения» / "Supplements"
   (`docs/decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md`).
   Each of their pages draws a panel under its heading with one chip per
   supplement, in table order, each a link to its section; the open one is gold
-  and the current page. The chip reads the section's own word. Core rules and
-  the alternate tables draw no panel. With its seven chips the panel measures
-  162 px at 360 and 390, 119 px at 768 and 75 px at 1180 (measured 2026-10-21);
-  on a 360x740 phone the roll button then sits at 523 px on Wondrous, 624 px on
-  Many Worlds Tavern and 755 px on Communities, the last below the fold
-  (accepted by the owner, 2026-10-20).
+  and the current page. The chip reads the source's product name
+  (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`); under
+  640 px, the system breakpoint, the Wondrous Environments, Dread GM Toolbox and
+  The Dragon's Vault chips show "Wondrous", "Dread" and "Dragon's Vault", with
+  the full name as their `aria-label`, so the accessible name is the full name
+  at every width. The same three chips of the tables book row do the same.
+  Community items and Vault of Ages have no short form: a short word must be
+  part of the name. Core rules and the alternate tables draw no panel. With its
+  seven chips the panel measures 206 px at 360, 206 px in Russian and 162 px in
+  English at 390, 119 px at 768 and 75 px at 1180 (measured 2026-10-21 on a
+  static page with the app's chip CSS). On a 360x740 phone the top of the roll
+  button then sits at about 567 px on Wondrous Environments (all of it shows),
+  712 px on Many Worlds Tavern (28 px show), 734 px on Vault of Ages in Russian
+  (6 px show, accepted by the owner, 2026-10-21) and 799 px on Community items,
+  below the fold (accepted by the owner, 2026-10-20).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -75,12 +85,17 @@ across.
   pickers (`PickerRollPanel.svelte`). A realm is a fixed chip: with no
   `mwt` rows (a `data.js` from before the source, held in the HTTP cache) the
   page says that the data did not load, as every roll page does with no rows.
-- Many Worlds Tavern is four card sets, one per realm, in release order:
-  Sporopolis, Wagerwood, Warrin' Warrens (21 cards, so its button picks 1-21
-  at random) and Godsvale. A record's badge, the equipment table's row badge
+- Many Worlds Tavern is six card sets, one per realm, in release order:
+  Sporopolis (20), Wagerwood (20), Warrin' Warrens (21), Godsvale (20), Hornet
+  Hold (11) and The Drome (17). 11, 17 and 21 cards are not a die, so on those
+  three the button picks at random. Hornet Hold and The Drome print no card
+  number: their decks run weapons, armor, items, then consumables, each by
+  name
+  (`docs/decisions/2026-10-21-unnumbered-many-worlds-tavern-realms-order-by-kind-then-name.md`).
+  A record's badge, the equipment table's row badge
   and the print card name its realm («Спорополис»), as a frame record names
   its frame; the equipment `src` chip reads "Many Worlds Tavern", one value
-  for the four realms. The printed rarity is not shipped, and the domain cards
+  for the six realms. The printed rarity is not shipped, and the domain cards
   of the sets are not loot.
 - The number field accepts digits only, clamps to the range, and keeps the caret
   where the person put it. On the list page an empty field means "no roll yet";
@@ -101,7 +116,7 @@ across.
   the nineteenth, `homebrew`, has its group chip signed in only.
 - The group chips are Core, Hope & Fear, the alternate tables, «Дополнения» /
   "Supplements", Equipment, Other and, signed in, Homebrew (`TABLE_NAV`).
-  «Дополнения» opens Wondrous Loot and is lit on each supplement table; its
+  «Дополнения» opens Wondrous Environments and is lit on each supplement table; its
   second row holds the seven books by their own names, in `SUPPLEMENTS` order. A record's path
   (`whereFrom`, the stubs under `i/`) keeps the book and never says
   «Дополнения».
@@ -110,7 +125,7 @@ across.
   the default, a build with sign-in draws the note «Только до перезагрузки.
   Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
   last words a link to `#/account`.
-- Search covers all 1431 records: names, descriptions and stat lines, both
+- Search covers all 1459 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
   hits, a "300 из <n>" line - the same shown-of-total wording the table
@@ -164,10 +179,10 @@ across.
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 453 weapons, 133 secondary, 112 armour. The `src` facet is how you
+  two books**: 458 weapons, 135 secondary, 114 armour. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
-  The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Wondrous and Dread
-  equipment appears there too.
+  The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Wondrous
+  Environments and Dread GM Toolbox equipment appears there too.
 - An equipment table is sectioned by tier, `Ранг 1` to `Ранг 4`, then
   `Артефакты` (key `tA`) for equipment the book prints in its Artifacts
   section (`eq.tier: 'A'`); a section with no rows is not drawn. The stat
@@ -782,7 +797,7 @@ browser lists writable after the date.
   removes it. The strip is drawn only while a row can narrow, so a list of
   alike entries shows the search box alone. The rows are Тип / Type
   («Предметы», «Расходники», «Оружие», «Вторичное», «Броня»), Источник /
-  Source (the books in book order, «Сообщества», the frames, then
+  Source (the books in book order, «Предметы сообществ», the frames, then
   «Хоумбрю» and each own or linked source by name), Ранг / Tier, Класс,
   Характеристика, Дистанция, Хват and Линейка. A row offers only the values
   the entries the page draws answer, so a players' link never offers a
@@ -1203,7 +1218,7 @@ browser lists writable after the date.
   complete table path - the group, its sub-table, and, for the two tables
   sectioned by a value the record itself carries (`other_frames` by `frame`,
   `community` by `community`), the record's own section leaf: a community
-  record reads `Сообщества · Великородное` / `Communities · Highborne`, and a
+  record reads `Предметы сообществ · Великородное` / `Community items · Highborne`, and a
   Vault of Ages artifact or cursed object carries that word in the same line
   (`Vault of Ages · Артефакт` / `Vault of Ages · Artifact`, `· Проклятый
   предмет` / `· Cursed object`). The print card's source line and a generated
@@ -2316,7 +2331,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 - The tab bar draws six tabs: «Обычные правила», «Альт. таблицы»,
   «Дополнения», then «Таблицы», «Списки», «Поиск» ("Standard rules", "Alt.
   tables", "Supplements", "Tables", "Lists", "Search"). «Дополнения» links to
-  `#/roll/wondrous` and is lit, with `aria-current="page"`, on each of the seven
+  `#/roll/wondrous_environments` and is lit, with `aria-current="page"`, on each of the seven
   supplement sections. From the legacy write cutoff (2026-10-26,
   `legacyWritable`) a build with sign-in draws five, without «Списки»:
   `#/lists` is then reached from the account menu (`ROUTES.md`, "Sections").

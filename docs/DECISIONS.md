@@ -16,6 +16,9 @@ deleted.
 
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
 - 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)
+- 2026-10-21 - [Scarab Shield is a secondary weapon](decisions/2026-10-21-scarab-shield-is-a-secondary-weapon.md)
+- 2026-10-21 - [Source names follow the source product, in labels and URL ids](decisions/2026-10-21-source-names-follow-the-source-product.md)
+- 2026-10-21 - [Unnumbered Many Worlds Tavern realms order by kind, then name](decisions/2026-10-21-unnumbered-many-worlds-tavern-realms-order-by-kind-then-name.md)
 - 2026-10-20 - [Supplement roll sections share one tab and a chip panel](decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md)
 - 2026-10-18 - [Many Worlds Tavern equipment keeps its printed stats](decisions/2026-10-18-many-worlds-tavern-equipment-keeps-its-printed-stats.md)
 - 2026-10-18 - [Many Worlds Tavern is source mwt, rolled inside one realm](decisions/2026-10-18-many-worlds-tavern-is-source-mwt-rolled-inside-one-realm.md)

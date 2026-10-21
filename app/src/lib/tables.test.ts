@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CHIP_SHORT,
   SUB_LABEL,
   TABLE_GROUPS,
   TABLE_NAV,
@@ -111,10 +112,14 @@ describe('the second-row caption on the tables page', () => {
     expect(navSubLabel('wondrous')).toBe('pageWondrous');
     expect(navSubLabel('dread')).toBe('pageDread');
     expect(navSubLabel('voa')).toBe('voa');
-    expect(navSubLabel('dv')).toBe('dv');
+    expect(navSubLabel('dv')).toBe('pageDv');
     expect(navSubLabel('arazo')).toBe('arazo');
-    expect(navSubLabel('community')).toBe('community');
+    expect(navSubLabel('community')).toBe('pageCommunity');
     expect(navSubLabel('mwt')).toBe('mwt');
+  });
+
+  it('gives a short form under 640 px only where the short word is part of the name', () => {
+    expect(CHIP_SHORT).toEqual({ wondrous: 'wondrous', dread: 'dread', dv: 'dv' });
   });
 
   it('keeps the short sub-table word where one exists', () => {

@@ -14,7 +14,9 @@ const { realmName } = require('../app/src/lib/realms.ts');
 
 /* Spelled out into human names: the csv and json are read aloud from the
    source, not matched against the code. A forgotten key used to leak out
-   verbatim as `dread`/`frame`. */
+   verbatim as `dread`/`frame`. Frozen: agents filter on these values, so a
+   renamed UI name does not move them
+   (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
 const SRC = {
   core: 'Core',
   hnf: 'Hope & Fear',

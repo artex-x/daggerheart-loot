@@ -625,7 +625,7 @@ describe('the community card', () => {
     const spans = card?.querySelectorAll('.pc-bottom span');
     // spans[1] is positional on purpose: it isolates the source line's own
     // span from its sibling in `.pc-bottom`.
-    expect(spans?.[1]?.textContent).toBe('Сообщества · Великородное');
+    expect(spans?.[1]?.textContent).toBe('Предметы сообществ · Великородное');
   });
 });
 

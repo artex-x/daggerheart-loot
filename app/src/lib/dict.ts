@@ -1,7 +1,7 @@
 /* The interface dictionary.
  *
  * docs/specs/I18N.md keeps this separate from record text on purpose: this is
- * small, typed and reviewed, while record text is 1431 pairs maintained with
+ * small, typed and reviewed, while record text is 1459 pairs maintained with
  * the data. Only interface strings belong here.
  *
  * Parity is a compile error rather than a test. `Dict` is derived from the
@@ -26,8 +26,9 @@ const ru = {
   langLabel: 'Язык',
   close: 'Закрыть',
 
-  /* The twelve sections, in `SECTIONS` order; the tab bar draws five of these words
-     and `grpSupplements` */
+  /* The sections, in `SECTIONS` order; the tab bar draws five of these words
+     and `grpSupplements`. `wondrous`, `dread` and `dv` are also the short form of
+     their supplements chip under 640 px (`tables.ts` `CHIP_SHORT`). */
   std: 'Обычные правила',
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
@@ -35,7 +36,6 @@ const ru = {
   voa: 'Vault of Ages',
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
-  community: 'Сообщества',
   mwt: 'Many Worlds Tavern',
   tables: 'Таблицы',
   lists: 'Списки',
@@ -63,17 +63,17 @@ const ru = {
   /* The book a record comes from, as the badge and the metadata line name it */
   srcCore: 'Core',
   srcHnf: 'Hope & Fear',
-  srcWond: 'Wondrous',
-  srcDread: 'Dread',
+  srcWond: 'Wondrous Environments',
+  srcDread: 'Dread GM Toolbox',
   srcVoa: 'Vault of Ages',
-  srcDv: "Dragon's Vault",
+  srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
   /* Matches `frameF`/`subFrames` below - one word for the concept in
      Russian, verified against ru.daggerheart.su/frame ("Сеттинги" is both
      that page's own title and its term for one entry on it). */
   srcFrame: 'Сеттинг',
-  srcComm: 'Сообщества',
+  srcComm: 'Предметы сообществ',
   copyLink: 'Скопировать ссылку',
   sendAll: 'Отправить',
   nameCopied: 'Название скопировано',
@@ -104,7 +104,7 @@ const ru = {
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
-    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Данные: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Перевод: daggerheart.su и собственные материалы. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   /* The folded notice's one visible line; the full text above sits under it. */
@@ -115,10 +115,10 @@ const ru = {
   privacyLink: 'Конфиденциальность',
   termsLink: 'Условия использования',
 
-  /* The heading of each section, and the line under it. The heading is not
-     always the tab's word: the tab says "Сообщества" and the page says
-     "Предметы сообществ", because on the page it is the things that matter. */
-  pageWondrous: 'Wondrous Loot',
+  /* The heading of each section, and the line under it. The heading and the
+     supplements chip of a source both carry its product name, «Предметы
+     сообществ» included (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
+  pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
@@ -188,8 +188,8 @@ const ru = {
   helpHint: 'Как это работает',
   fieldHelp: 'Подсказка: %s',
   rollLabelFor: 'Результат броска',
-  /* Singular, and not the tab's word: the tab says "Сообщества" because it
-     names a section, the label above the picker asks for one community. */
+  /* Singular: the chip names the book, the label above the picker asks for
+     one community. */
   communityLabel: 'Сообщество',
   realmLabel: 'Мир',
 
@@ -243,7 +243,7 @@ const ru = {
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
   subSearch:
-    'Поиск сразу по 1431 позиции - добыча, расходники и снаряжение, на русском и на английском.',
+    'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию…',
@@ -1148,7 +1148,6 @@ const en: Dict = {
   voa: 'Vault of Ages',
   dv: "Dragon's Vault",
   arazo: "Arazo's Artifacts",
-  community: 'Communities',
   mwt: 'Many Worlds Tavern',
   tables: 'Tables',
   lists: 'Lists',
@@ -1171,14 +1170,14 @@ const en: Dict = {
 
   srcCore: 'Core',
   srcHnf: 'Hope & Fear',
-  srcWond: 'Wondrous',
-  srcDread: 'Dread',
+  srcWond: 'Wondrous Environments',
+  srcDread: 'Dread GM Toolbox',
   srcVoa: 'Vault of Ages',
-  srcDv: "Dragon's Vault",
+  srcDv: "The Dragon's Vault",
   srcArazo: "Arazo's Artifacts",
   srcMwt: 'Many Worlds Tavern',
   srcFrame: 'Frame',
-  srcComm: 'Communities',
+  srcComm: 'Community items',
   copyLink: 'Copy link',
   sendAll: 'Share',
   nameCopied: 'Name copied',
@@ -1198,7 +1197,7 @@ const en: Dict = {
   stepUp: 'One higher',
 
   footBefore:
-    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
+    "Data: Daggerheart Core Set, Hope & Fear, Wondrous Loot, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
   footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',
@@ -1207,7 +1206,7 @@ const en: Dict = {
   privacyLink: 'Privacy',
   termsLink: 'Terms of use',
 
-  pageWondrous: 'Wondrous Loot',
+  pageWondrous: 'Wondrous Environments',
   pageDread: 'Dread GM Toolbox',
   pageVoa: 'Vault of Ages',
   pageDv: "The Dragon's Vault",
@@ -1304,7 +1303,7 @@ const en: Dict = {
   subTables: 'Every table in full, weapons and armor included - browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
-    'Search all 1431 entries at once - loot, consumables and equipment, in Russian and English.',
+    'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description…',
@@ -2161,12 +2160,12 @@ export function dict(lang: Lang): Dict {
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'std',
   'roll/alt': 'alt',
-  'roll/wondrous': 'wondrous',
-  'roll/dread': 'dread',
+  'roll/wondrous': 'pageWondrous',
+  'roll/dread': 'pageDread',
   'roll/voa': 'voa',
-  'roll/dv': 'dv',
+  'roll/dv': 'pageDv',
   'roll/arazo': 'arazo',
-  'roll/community': 'community',
+  'roll/community': 'pageCommunity',
   'roll/mwt': 'mwt',
   tables: 'tables',
   lists: 'lists',

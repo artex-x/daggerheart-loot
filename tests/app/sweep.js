@@ -35,16 +35,16 @@ const { ok } = rep;
 const TABLES = [
   'core_item',
   'core_consumable',
-  'hnf_item',
-  'hnf_consumable',
-  'wondrous',
-  'dread',
-  'voa',
-  'dv',
-  'arazo',
-  'mwt',
+  'hope_and_fear_item',
+  'hope_and_fear_consumable',
+  'wondrous_environments',
+  'dread_gm_toolbox',
+  'vault_of_ages',
+  'dragons_vault',
+  'arazos_artifacts',
+  'many_worlds_tavern',
   'frames',
-  'community',
+  'community_items',
   'alt_item',
   'alt_consumable',
   'eq_weapon',
@@ -87,13 +87,13 @@ async function printed(d) {
 const PAGES = [
   ['#/roll/std', 'бросок d12'],
   ['#/roll/alt', 'альт. таблицы'],
-  ['#/roll/wondrous', 'wondrous'],
-  ['#/roll/dread', 'dread'],
-  ['#/roll/voa', 'vault of ages'],
-  ['#/roll/dv', "dragon's vault"],
-  ['#/roll/arazo', "arazo's artifacts"],
-  ['#/roll/community', 'сообщества'],
-  ['#/roll/mwt', 'many worlds tavern'],
+  ['#/roll/wondrous_environments', 'wondrous environments'],
+  ['#/roll/dread_gm_toolbox', 'dread gm toolbox'],
+  ['#/roll/vault_of_ages', 'vault of ages'],
+  ['#/roll/dragons_vault', "the dragon's vault"],
+  ['#/roll/arazos_artifacts', "arazo's artifacts"],
+  ['#/roll/community_items', 'предметы сообществ'],
+  ['#/roll/many_worlds_tavern', 'many worlds tavern'],
   ['#/lists', 'списки'],
   ['#/lists/a', 'список'],
   ['#/lists/b', 'вторая сумка'],
@@ -132,8 +132,8 @@ const PAGES = [
   .concat([
     ['#/tables/eq_weapon/t3', 'якорь раздела'],
     ['#/tables/eq_weapon/f_tier-2_cls-mag', 'ссылка на фильтры'],
-    ['#/tables/community/Seaborne', 'якорь сообщества'],
-    ['#/tables/mwt/warrens', 'якорь мира']
+    ['#/tables/community_items/Seaborne', 'якорь сообщества'],
+    ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
   ])
   /* The print page's states and the three print prompts, signed out at every width. */
   .concat([
@@ -560,7 +560,7 @@ async function landedUnderHeader(page, id) {
           document.querySelectorAll('a[href^="#/"]').forEach((a) => {
             const h = a.getAttribute('href').slice(2);
             const known =
-              /^(roll\/(std|alt|wondrous|dread|voa|dv|arazo|community|mwt)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
+              /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
               );
             if (!known) out.badLinks.push(h);
@@ -645,8 +645,8 @@ async function landedUnderHeader(page, id) {
       /* A section link scrolls, and lands with its heading just below the sticky header:
          at or under its bottom, and within 40 px of it. */
       for (const [hash, id] of [
-        ['#/tables/voa/tA', 'sec-tA'],
-        ['#/tables/mwt/warrens', 'sec-warrens']
+        ['#/tables/vault_of_ages/tA', 'sec-tA'],
+        ['#/tables/many_worlds_tavern/warrens', 'sec-warrens']
       ]) {
         const where = 'раздел таблицы ' + hash + ' @' + width + ' ' + lang;
         await d.open(hash);
@@ -660,6 +660,39 @@ async function landedUnderHeader(page, id) {
             ' is not within 40 px under the header bottom ' +
             at.header
         );
+      }
+      /* Three supplement chips show a short form under 640 px and the full name from
+         641 px; the accessible name is the full name at every width
+         (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
+      const SHORT = [
+        ['Wondrous Environments', 'Wondrous'],
+        ['Dread GM Toolbox', 'Dread'],
+        ["The Dragon's Vault", "Dragon's Vault"]
+      ];
+      for (const [hash, rows] of [
+        ['#/roll/wondrous_environments', 'a.chip[aria-label]'],
+        ['#/tables/wondrous_environments', '.tablenav a.chip[aria-label]']
+      ]) {
+        const where = 'короткие чипы ' + hash + ' @' + width + ' ' + lang;
+        await d.open(hash);
+        const chips = await page.evaluate(
+          (sel) =>
+            [...document.querySelectorAll(sel)].map((a) => ({
+              name: a.getAttribute('aria-label'),
+              text: a.innerText.trim()
+            })),
+          rows
+        );
+        for (const [full, short] of SHORT) {
+          const chip = chips.find((c) => c.name === full);
+          ok(!!chip, where + ': no chip named ' + full);
+          if (!chip) continue;
+          const want = width <= 640 ? short : full;
+          ok(
+            chip.text === want,
+            where + ': ' + full + ' shows "' + chip.text + '", not "' + want + '"'
+          );
+        }
       }
       await ctx.close();
     }

@@ -22,7 +22,7 @@ is always complete.
 ## Product Purpose
 
 The product turns the published Daggerheart loot tables into a tool for play. A
-person rolls on any table, browses a table in full, searches all 1431 records,
+person rolls on any table, browses a table in full, searches all 1459 records,
 collects records into a list, hands that list to the players as one link, or
 prints the list as cards. Success has two parts. The GM gets a result without
 leaving the session. The players read and keep what they received.
@@ -55,13 +55,14 @@ The app is served over HTTP only; running from `file://` was retired on
 
 **Confirmed capabilities**
 
-- Nine roll modes: Core rules, alternate tables, Wondrous, Dread, Vault of
-  Ages, The Dragon's Vault, Arazo's Artifacts, Communities and Many Worlds Tavern. Other is two browsable tables, not
+- Nine roll modes: Core rules, alternate tables, Wondrous Environments, Dread
+  GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Community
+  items and Many Worlds Tavern. Other is two browsable tables, not
   a roll mode.
 - 19 catalog tables with per-table search, a list and grid switch, addressable
   sections, copy-link buttons and a filter panel driven from the address, and a
   eighteenth for a signed-in GM's own items.
-- One search across all 1431 records, over names, descriptions and stat lines, in
+- One search across all 1459 records, over names, descriptions and stat lines, in
   both languages at once.
 - Lists: create, rename, reorder, remove with undo, share as a link, copy as
   text, print as cards.
@@ -104,8 +105,8 @@ The app is served over HTTP only; running from `file://` was retired on
 
 ## Evidence on Hand
 
-- 1431 records, each with a name, a description, a stat line where it has one,
-  and an illustration. 1050 items and consumables, 381 pieces of equipment.
+- 1459 records, each with a name, a description, a stat line where it has one,
+  and an illustration. 1078 items and consumables, 381 pieces of equipment.
 - Published machine-readable artefacts: `catalog-index.csv`, `catalog.csv`,
   `data.json`, `llms.txt`, `schema/import-v1.json`.
 - Behaviour specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,

@@ -70,6 +70,55 @@ const LEGACY: Record<string, { core: boolean; hnf: boolean }> = {
 const TABLES_RE = /^tables(?:\/([a-z_]+))?(?:\/([A-Za-z0-9_.-]+))?$/;
 const TABLE_ALIASES: Record<string, TableId> = { frames: 'other_frames' };
 
+/* URL ids follow the source product
+   (docs/decisions/2026-10-21-source-names-follow-the-source-product.md); the
+   internal ids are data keys and never change; an old id still parses. */
+export const TABLE_SLUG: Partial<Record<TableId, string>> = {
+  hnf_item: 'hope_and_fear_item',
+  hnf_consumable: 'hope_and_fear_consumable',
+  wondrous: 'wondrous_environments',
+  dread: 'dread_gm_toolbox',
+  voa: 'vault_of_ages',
+  dv: 'dragons_vault',
+  arazo: 'arazos_artifacts',
+  community: 'community_items',
+  mwt: 'many_worlds_tavern'
+};
+export const SECTION_SLUG: Partial<Record<Section, string>> = {
+  'roll/wondrous': 'roll/wondrous_environments',
+  'roll/dread': 'roll/dread_gm_toolbox',
+  'roll/voa': 'roll/vault_of_ages',
+  'roll/dv': 'roll/dragons_vault',
+  'roll/arazo': 'roll/arazos_artifacts',
+  'roll/community': 'roll/community_items',
+  'roll/mwt': 'roll/many_worlds_tavern'
+};
+const TABLE_OF_SLUG = new Map(
+  Object.entries(TABLE_SLUG).map(([id, slug]) => [slug, id as TableId])
+);
+const SECTION_OF_SLUG = new Map(
+  Object.entries(SECTION_SLUG).map(([id, slug]) => [slug, id as Section])
+);
+
+/** Returns the internal table id a URL name stands for: a slug, an old id or an alias. */
+function tableOfName(name: string): TableId | null {
+  return TABLE_OF_SLUG.get(name) ?? TABLE_ALIASES[name] ?? (isTableId(name) ? name : null);
+}
+
+/**
+ * Returns `hash` with a renamed old id in its name segment swapped for its slug,
+ * the rest kept as written; any other address comes back unchanged. The legacy
+ * `#/roll/core|hnf|all` names stay: `legacySource` reads them raw.
+ */
+export function canonicalHash(hash: string): string {
+  const m = /^#\/(roll|tables)\/([a-z_]+)(.*)$/.exec(hash);
+  if (!m) return hash;
+  const [, kind = '', name = '', rest = ''] = m;
+  const slug =
+    kind === 'roll' ? SECTION_SLUG[('roll/' + name) as Section] : TABLE_SLUG[name as TableId];
+  return slug ? '#/' + (kind === 'roll' ? slug : 'tables/' + slug) + rest : hash;
+}
+
 /** Strips `#` and the leading `/`: everything below works on a bare path. */
 export function stripHash(hash: string): string {
   return hash.replace(/^#\/?/, '');
@@ -148,8 +197,8 @@ export function parseHash(hash: string): Route {
        settled it the other way - one unreadable-address rule for every case,
        so it falls to `unknown` and the caller replaces it with the home
        section, the same as any other address nothing here can parse. */
-    if (name && !TABLE_ALIASES[name] && !isTableId(name)) return { kind: 'unknown' };
-    const table = name ? (TABLE_ALIASES[name] ?? (isTableId(name) ? name : null)) : null;
+    const table = name ? tableOfName(name) : null;
+    if (name && !table) return { kind: 'unknown' };
     return tail.startsWith('f_')
       ? {
           kind: 'tables',
@@ -160,7 +209,8 @@ export function parseHash(hash: string): Route {
       : { kind: 'tables', table, anchor: tail, filter: {} };
   }
 
-  if (isSection(h)) return { kind: 'section', section: h };
+  const section = SECTION_OF_SLUG.get(h) ?? (isSection(h) ? h : null);
+  if (section) return { kind: 'section', section };
   return { kind: 'unknown' };
 }
 
@@ -180,7 +230,7 @@ export function keepsTicks(from: Route, to: Route): boolean {
 /* ---------- back again ---------- */
 
 export function sectionHash(section: Section): string {
-  return '#/' + section;
+  return '#/' + (SECTION_SLUG[section] ?? section);
 }
 
 export function recordHash(id: string): string {
@@ -240,7 +290,7 @@ export function tablesHash(
 ): string {
   const seg = opts.filter ? encodeFilter(opts.filter, groupsFor(table)) : '';
   const tail = seg || opts.anchor || '';
-  return '#/tables/' + table + (tail ? '/' + tail : '');
+  return '#/tables/' + (TABLE_SLUG[table] ?? table) + (tail ? '/' + tail : '');
 }
 
 /* ---------- links to hand somebody else ---------- */

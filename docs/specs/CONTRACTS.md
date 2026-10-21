@@ -23,6 +23,7 @@ homebrew validators of `app/src/lib/homebrew.ts` and of the database share
 Frozen as written in `ROUTES.md`. In particular:
 
 - the twelve section names, and the three legacy ones that fold into `roll/std`
+- the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items` and `roll/many_worlds_tavern`, and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items` and `many_worlds_tavern`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
@@ -85,12 +86,12 @@ shared list. Never renumber a record that has shipped.
 |---|---|
 | `ci` / `cc` | Core item / consumable |
 | `hi` / `hc` | Hope & Fear item / consumable |
-| `w` | Wondrous Loot |
+| `w` | Wondrous Environments |
 | `di` | Dread GM Toolbox |
 | `voa` | Vault of Ages (`voa<vol>_<tier><n>`) |
 | `dv` / `dve` | The Dragon's Vault loot / equipment |
 | `aa` | Arazo's Artifacts, book order, an upgrade line's rungs after its head |
-| `mw` | Many Worlds Tavern, realm by realm in release order, card order inside a realm |
+| `mw` | Many Worlds Tavern, realm by realm in release order, card order inside a realm; Hornet Hold and The Drome print no number, so kind, then name |
 | `cm` | Community items |
 | `f` | Campaign frame equipment |
 | `q` | Core and Hope & Fear equipment |
@@ -179,9 +180,9 @@ plain form, so everything downstream sees one format.
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
   order and quoting, from `tools/derived.js`'s `catalogIndexCsv(L)`. Budget:
-  at most 196608 bytes, which `tests/derived.js` holds; 160678 bytes at 1431
+  at most 196608 bytes, which `tests/derived.js` holds; 163562 bytes at 1459
   records, measured 2026-10-21, about 112 bytes a row, so the budget holds
-  about 1750 records, about 319 more than today. A column may be added at
+  about 1750 records, about 296 more than today. A column may be added at
   the end, as `realm` was (2026-10-21, the last column of both files: a Many
   Worlds Tavern record's realm in English, empty elsewhere); any other change
   is a new file name. An ingest that passes the
@@ -199,7 +200,7 @@ plain form, so everything downstream sees one format.
   and `n`; `frames` maps a frame key to `{ n }`; `realms` maps a Many
   Worlds Tavern realm key to `{ n }`. A new key may be added; any other
   change is `version` 2. Budget: at most 196608 bytes, which
-  `tests/derived.js` holds; 98317 bytes at 1431 records, measured
+  `tests/derived.js` holds; 99779 bytes at 1459 records, measured
   2026-10-21. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
   `i/en/<id>.html` - the same page in English.

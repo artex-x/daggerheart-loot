@@ -20,7 +20,7 @@ ALL.forEach((x) => {
   ok(!byId[x.id], 'duplicate id: ' + x.id);
   byId[x.id] = x;
 });
-ok(ALL.length === 1431, 'records are not 1431, but ' + ALL.length);
+ok(ALL.length === 1459, 'records are not 1459, but ' + ALL.length);
 /* Vault of Ages numbers its cards by book volume and section, not straight
    through: voa2_a1 - volume two, first artifact. Links, filenames and list
    codes all hang on id, so the book's own scheme is different but just as
@@ -273,12 +273,12 @@ Object.keys(DATA).forEach((table) => {
     });
     ok(
       JSON.stringify(Object.keys(byR)) ===
-        JSON.stringify(['sporopolis', 'wagerwood', 'warrens', 'godsvale']),
-      'Many Worlds Tavern realms are not the four in release order: ' + Object.keys(byR)
+        JSON.stringify(['sporopolis', 'wagerwood', 'warrens', 'godsvale', 'hornet', 'drome']),
+      'Many Worlds Tavern realms are not the six in release order: ' + Object.keys(byR)
     );
     ok(
-      JSON.stringify(Object.values(byR).map((rows) => rows.length)) === '[20,20,21,20]',
-      'Many Worlds Tavern realm sizes are not 20/20/21/20'
+      JSON.stringify(Object.values(byR).map((rows) => rows.length)) === '[20,20,21,20,11,17]',
+      'Many Worlds Tavern realm sizes are not 20/20/21/20/11/17'
     );
     Object.entries(byR).forEach(([realm, rows]) =>
       ROLL_POOLS.push([table + '/' + realm, rows])

@@ -54,10 +54,10 @@ describe('the book a record comes from', () => {
   it('names each book', () => {
     expect(srcLabel(rec({ src: 'core' }), 'ru')).toBe('Core');
     expect(srcLabel(rec({ src: 'hnf' }), 'ru')).toBe('Hope & Fear');
-    expect(srcLabel(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous');
-    expect(srcLabel(rec({ src: 'dread' }), 'ru')).toBe('Dread');
+    expect(srcLabel(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous Environments');
+    expect(srcLabel(rec({ src: 'dread' }), 'ru')).toBe('Dread GM Toolbox');
     expect(srcLabel(rec({ src: 'voa' }), 'ru')).toBe('Vault of Ages');
-    expect(srcLabel(rec({ src: 'dv' }), 'ru')).toBe("Dragon's Vault");
+    expect(srcLabel(rec({ src: 'dv' }), 'ru')).toBe("The Dragon's Vault");
     expect(srcLabel(rec({ src: 'arazo' }), 'ru')).toBe("Arazo's Artifacts");
   });
 
@@ -73,7 +73,7 @@ describe('the book a record comes from', () => {
     const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
     expect(srcLabel(c, 'ru')).toBe('Великородное');
     expect(srcLabel(c, 'en')).toBe('Highborne');
-    expect(srcLabel(rec({ src: 'community' }), 'ru')).toBe('Сообщества');
+    expect(srcLabel(rec({ src: 'community' }), 'ru')).toBe('Предметы сообществ');
   });
 
   it('falls back to the raw source rather than to nothing', () => {
@@ -95,8 +95,8 @@ describe("the print card's source line", () => {
 
   it('names the community and then the book, because the card leaves the table', () => {
     const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
-    expect(printSrc(c, 'ru')).toBe('Сообщества · Великородное');
-    expect(printSrc(c, 'en')).toBe('Communities · Highborne');
+    expect(printSrc(c, 'ru')).toBe('Предметы сообществ · Великородное');
+    expect(printSrc(c, 'en')).toBe('Community items · Highborne');
   });
 
   it('names only the frame for a campaign-frame record (D11, paid off)', () => {
@@ -114,16 +114,16 @@ describe('naming a source key with no record behind it', () => {
   it('names each book', () => {
     expect(srcName('core', 'ru')).toBe('Core');
     expect(srcName('hnf', 'ru')).toBe('Hope & Fear');
-    expect(srcName('wondrous', 'ru')).toBe('Wondrous');
-    expect(srcName('dread', 'ru')).toBe('Dread');
+    expect(srcName('wondrous', 'ru')).toBe('Wondrous Environments');
+    expect(srcName('dread', 'ru')).toBe('Dread GM Toolbox');
     expect(srcName('voa', 'ru')).toBe('Vault of Ages');
-    expect(srcName('dv', 'ru')).toBe("Dragon's Vault");
+    expect(srcName('dv', 'ru')).toBe("The Dragon's Vault");
     expect(srcName('arazo', 'en')).toBe("Arazo's Artifacts");
   });
 
   it('names the community loot, which a share link offers as a source', () => {
-    expect(srcName('community', 'ru')).toBe('Сообщества');
-    expect(srcName('community', 'en')).toBe('Communities');
+    expect(srcName('community', 'ru')).toBe('Предметы сообществ');
+    expect(srcName('community', 'en')).toBe('Community items');
   });
 
   it('falls through to a frame name', () => {
@@ -202,14 +202,14 @@ describe('the line under the heading', () => {
   });
 
   it('gives a one-table book no second half', () => {
-    expect(whereFrom(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous Loot');
+    expect(whereFrom(rec({ src: 'wondrous' }), 'ru')).toBe('Wondrous Environments');
     expect(whereFrom(rec({ src: 'dread' }), 'en')).toBe('Dread GM Toolbox');
   });
 
   it("names a supplement by its book, not by the tables page's supplements chip", () => {
     /* The stubs under i/ print this path; the supplements group is navigation only. */
     expect(whereFrom(rec({ src: 'arazo' }), 'en')).toBe("Arazo's Artifacts");
-    expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("Dragon's Vault");
+    expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("The Dragon's Vault");
   });
 
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {
@@ -231,8 +231,8 @@ describe('the line under the heading', () => {
 
   it('completes the path with the community, the leaf it is sectioned by', () => {
     const c = rec({ src: 'community', community: 'Highborne', community_ru: 'Великородное' });
-    expect(whereFrom(c, 'ru')).toBe('Сообщества · Великородное');
-    expect(whereFrom(c, 'en')).toBe('Communities · Highborne');
+    expect(whereFrom(c, 'ru')).toBe('Предметы сообществ · Великородное');
+    expect(whereFrom(c, 'en')).toBe('Community items · Highborne');
   });
 
   it('falls back to the source where there is no table', () => {
@@ -282,14 +282,16 @@ describe('a tag and a path, pinned apart', () => {
     expect(whereFrom(byId('hi61'), 'en')).toBe('Other · Starting');
     expect(whereFrom(byId('f1'), 'ru')).toBe('Прочее · Сеттинги · Пир зверей');
     expect(whereFrom(byId('f95'), 'ru')).toBe('Прочее · Сеттинги · Материнская Плата');
-    expect(whereFrom(byId('cm1'), 'ru')).toBe('Сообщества · Великородное');
-    expect(whereFrom(byId('cm1'), 'en')).toBe('Communities · Highborne');
+    expect(whereFrom(byId('cm1'), 'ru')).toBe('Предметы сообществ · Великородное');
+    expect(whereFrom(byId('cm1'), 'en')).toBe('Community items · Highborne');
     expect(whereFrom(byId('voa2_a1'), 'en')).toBe('Vault of Ages');
     /* Many Worlds Tavern: an item, a consumable, a weapon and an armor, each in its realm. */
     expect(whereFrom(byId('mw9'), 'ru')).toBe('Many Worlds Tavern · Спорополис');
     expect(whereFrom(byId('mw36'), 'en')).toBe('Many Worlds Tavern · Wagerwood');
     expect(whereFrom(byId('mw47'), 'en')).toBe("Many Worlds Tavern · Warrin' Warrens");
     expect(whereFrom(byId('mw65'), 'ru')).toBe('Many Worlds Tavern · Долина Богов');
+    expect(whereFrom(byId('mw85'), 'ru')).toBe('Many Worlds Tavern · Оплот Шершней');
+    expect(whereFrom(byId('mw100'), 'en')).toBe('Many Worlds Tavern · The Drome');
     expect(tableOf(byId('mw47'))).toBe('mwt');
   });
 });

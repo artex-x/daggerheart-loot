@@ -376,9 +376,10 @@ function stampOf(parts) {
     ['dv', 'kind-equip'],
     ['arazo', 'kind-equip'],
     ['mwt', 'kind-equip'],
-    ['mwt', 'realm-warrens']
+    ['mwt', 'realm-warrens'],
+    ['mwt', 'realm-drome']
   ];
-  /* One context reused across all 26 opens (18 probes, 8 whole tables) - same
+  /* One context reused across all 27 opens (19 probes, 8 whole tables) - same
    * reasoning as the address-grammar loop above: no probe here seeds
    * storage, so a full `d.open` navigation already starts each one clean. */
   const { ctx: pCtx, page: pPage, d: pD } = await fresh({ width: 1280, height: 900 });

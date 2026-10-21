@@ -465,10 +465,14 @@ const STATES = [
     route: '#/i/nope',
     why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
   },
-  { id: '#/roll/wondrous', route: '#/roll/wondrous', why: 'a roll on a table with a real die' },
+  {
+    id: '#/roll/wondrous',
+    route: '#/roll/wondrous_environments',
+    why: 'a roll on a table with a real die'
+  },
   {
     id: '#/roll/dread',
-    route: '#/roll/dread',
+    route: '#/roll/dread_gm_toolbox',
     why: 'a roll on a table with no die of its own'
   },
 
@@ -476,7 +480,7 @@ const STATES = [
      on a result, which is the only way in, and drawn by neither route. */
   {
     id: '#/roll/wondrous ~ modal',
-    route: '#/roll/wondrous',
+    route: '#/roll/wondrous_environments',
     why: 'the card opened over the roll',
     enter: async (d) => {
       await d.click('Страница');
@@ -487,7 +491,7 @@ const STATES = [
      for. Four paragraphs and a link to the book, none of it on a first paint. */
   {
     id: '#/roll/wondrous ~ help',
-    route: '#/roll/wondrous',
+    route: '#/roll/wondrous_environments',
     why: 'the help panel, unfolded',
     enter: async (d) => {
       await d.click('Как это работает');
@@ -500,7 +504,7 @@ const STATES = [
      the live app's randomness cannot be seeded from here. */
   {
     id: '#/roll/wondrous ~ stepped',
-    route: '#/roll/wondrous',
+    route: '#/roll/wondrous_environments',
     why: 'the roll stepped up twice',
     enter: async (d) => {
       await d.click('На единицу больше');
@@ -513,7 +517,7 @@ const STATES = [
      and its own name changes. */
   {
     id: '#/roll/wondrous ~ pinned',
-    route: '#/roll/wondrous',
+    route: '#/roll/wondrous_environments',
     why: 'the section pinned as the one to open on',
     enter: async (d) => {
       await d.click('Открывать этот раздел при запуске');
@@ -718,11 +722,15 @@ const STATES = [
       await d.click('На единицу больше');
     }
   },
-  { id: '#/roll/voa', route: '#/roll/voa', why: 'Vault of Ages' },
-  { id: '#/roll/dv', route: '#/roll/dv', why: "a roll on Dragon's Vault, the tenth section" },
+  { id: '#/roll/voa', route: '#/roll/vault_of_ages', why: 'Vault of Ages' },
+  {
+    id: '#/roll/dv',
+    route: '#/roll/dragons_vault',
+    why: "a roll on Dragon's Vault, the tenth section"
+  },
   {
     id: '#/roll/dv ~ help',
-    route: '#/roll/dv',
+    route: '#/roll/dragons_vault',
     why: 'the help panel, unfolded: why the table has no die, and where the equipment half lives',
     enter: async (d) => {
       await d.click('Как это работает');
@@ -730,18 +738,18 @@ const STATES = [
   },
   {
     id: '#/roll/arazo',
-    route: '#/roll/arazo',
+    route: '#/roll/arazos_artifacts',
     why: "a roll on Arazo's Artifacts, the eleventh section"
   },
   {
     id: '#/roll/arazo ~ help',
-    route: '#/roll/arazo',
+    route: '#/roll/arazos_artifacts',
     why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
     enter: async (d) => {
       await d.click('Как это работает');
     }
   },
-  { id: '#/roll/community', route: '#/roll/community', why: 'communities' },
+  { id: '#/roll/community', route: '#/roll/community_items', why: 'communities' },
 
   /* The picker is the whole point of these two, and it is a state: the length
      of the roll, the die on the button and the card underneath all change with
@@ -750,7 +758,7 @@ const STATES = [
      at all has to put the roll back to 1. */
   {
     id: '#/roll/voa ~ artifacts',
-    route: '#/roll/voa',
+    route: '#/roll/vault_of_ages',
     why: 'a division of the book that is not a tier',
     enter: async (d) => {
       await d.click('Артефакты');
@@ -758,7 +766,7 @@ const STATES = [
   },
   {
     id: '#/roll/community ~ second',
-    route: '#/roll/community',
+    route: '#/roll/community_items',
     why: 'a community other than the one it opens on',
     enter: async (d) => {
       await d.click('Научное');
@@ -766,16 +774,16 @@ const STATES = [
   },
 
   /* Many Worlds Tavern rolls inside one realm's deck: each realm is a state, because the
-     deck, the range and the card underneath change with it. Warrin' Warrens holds 21
-     cards, one past a d20, so its button picks at random. */
+     deck, the range and the card underneath change with it. Warrin' Warrens (21),
+     Hornet Hold (11) and The Drome (17) are not a die, so their button picks at random. */
   {
     id: '#/roll/mwt',
-    route: '#/roll/mwt',
+    route: '#/roll/many_worlds_tavern',
     why: 'Many Worlds Tavern on its first realm, Sporopolis: the seven-chip supplements panel, «Мир» and a d20'
   },
   {
     id: '#/roll/mwt ~ wagerwood',
-    route: '#/roll/mwt',
+    route: '#/roll/many_worlds_tavern',
     why: 'the second realm, Wagerwood',
     enter: async (d) => {
       await d.click('Лес Пари');
@@ -783,7 +791,7 @@ const STATES = [
   },
   {
     id: '#/roll/mwt ~ warrens',
-    route: '#/roll/mwt',
+    route: '#/roll/many_worlds_tavern',
     why: "the third realm, Warrin' Warrens: 21 cards, the button picks 1-21 at random",
     enter: async (d) => {
       await d.click('Воюющие Норы');
@@ -791,28 +799,44 @@ const STATES = [
   },
   {
     id: '#/roll/mwt ~ godsvale',
-    route: '#/roll/mwt',
+    route: '#/roll/many_worlds_tavern',
     why: 'the fourth realm, Godsvale',
     enter: async (d) => {
       await d.click('Долина Богов');
     }
   },
   {
+    id: '#/roll/mwt ~ hornet',
+    route: '#/roll/many_worlds_tavern',
+    why: 'the fifth realm, Hornet Hold: 11 cards, the button picks 1-11 at random',
+    enter: async (d) => {
+      await d.click('Оплот Шершней');
+    }
+  },
+  {
+    id: '#/roll/mwt ~ drome',
+    route: '#/roll/many_worlds_tavern',
+    why: 'the sixth realm, The Drome: 17 cards, the button picks 1-17 at random',
+    enter: async (d) => {
+      await d.click('Дром');
+    }
+  },
+  {
     id: '#/roll/mwt ~ help',
-    route: '#/roll/mwt',
-    why: 'the help panel, unfolded: the four decks, the die, no domain cards and no rarity, one link per realm',
+    route: '#/roll/many_worlds_tavern',
+    why: 'the help panel, unfolded: the six decks, the die, no domain cards and no rarity, one link per realm',
     enter: async (d) => {
       await d.click('Как это работает');
     }
   },
   {
     id: '#/tables/wondrous',
-    route: '#/tables/wondrous',
+    route: '#/tables/wondrous_environments',
     why: 'the first table with a filter: the strip folded, nothing picked'
   },
   {
     id: '#/tables/wondrous ~ panel open',
-    route: '#/tables/wondrous',
+    route: '#/tables/wondrous_environments',
     why: 'the filter panel, unfolded and empty',
     enter: async (d) => {
       await d.click('Фильтры');
@@ -820,7 +844,7 @@ const STATES = [
   },
   {
     id: '#/tables/wondrous ~ filtered',
-    route: '#/tables/wondrous',
+    route: '#/tables/wondrous_environments',
     why: 'a value picked, which narrows the table and writes the address',
     enter: async (d) => {
       await d.click('Фильтры');
@@ -831,12 +855,12 @@ const STATES = [
   },
   {
     id: '#/tables/wondrous ~ filter link',
-    route: '#/tables/wondrous/f_kind-item',
+    route: '#/tables/wondrous_environments/f_kind-item',
     why: 'arriving at a filter link, which opens the panel with that value picked'
   },
   {
     id: '#/tables/wondrous ~ nothing found',
-    route: '#/tables/wondrous',
+    route: '#/tables/wondrous_environments',
     why: "a filter and a query together leaving nothing, with the empty state's own reset",
     enter: async (d) => {
       await d.click('Фильтры');
@@ -846,13 +870,13 @@ const STATES = [
   },
   {
     id: '#/tables/dread',
-    route: '#/tables/dread',
+    route: '#/tables/dread_gm_toolbox',
     why: 'the second table with a kind row, and the smallest'
   },
   { id: '#/tables', route: '#/tables', why: 'the table index, which is core_item' },
   {
     id: '#/tables/hnf_consumable',
-    route: '#/tables/hnf_consumable',
+    route: '#/tables/hope_and_fear_consumable',
     why: 'a second table: the chosen chip moves, and the sub-row changes'
   },
   {
@@ -965,7 +989,7 @@ const STATES = [
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
-    why: 'the biggest table: four tier sections and the artifacts, .fcount 381, the strip folded'
+    why: 'the biggest table: four tier sections and the artifacts, the strip folded'
   },
   {
     id: '#/tables/eq_weapon/f_tier-A',
@@ -1023,25 +1047,29 @@ const STATES = [
       await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
     }
   },
-  { id: '#/tables/voa', route: '#/tables/voa', why: 'a sectioned body: Vault of Ages by tier' },
+  {
+    id: '#/tables/voa',
+    route: '#/tables/vault_of_ages',
+    why: 'a sectioned body: Vault of Ages by tier'
+  },
   {
     id: '#/tables/dv',
-    route: '#/tables/dv',
+    route: '#/tables/dragons_vault',
     why: "a plain body with a kind row, 145 rows: the tenth table's loot, then its equipment"
   },
   {
     id: '#/tables/arazo',
-    route: '#/tables/arazo',
+    route: '#/tables/arazos_artifacts',
     why: 'a plain body with a kind row, 78 rows in book order, four rungs per piece of equipment'
   },
   {
     id: '#/tables/mwt',
-    route: '#/tables/mwt',
-    why: 'a sectioned body: Many Worlds Tavern by realm, four realm headings, 81 rows'
+    route: '#/tables/many_worlds_tavern',
+    why: 'a sectioned body: Many Worlds Tavern by realm, six realm headings, 109 rows'
   },
   {
     id: '#/tables/mwt ~ warrens picked',
-    route: '#/tables/mwt',
+    route: '#/tables/many_worlds_tavern',
     why: "the filter panel open with its kind and realm rows, Warrin' Warrens picked: 21 rows",
     enter: async (d) => {
       await d.click('Фильтры');
@@ -1050,7 +1078,7 @@ const STATES = [
   },
   {
     id: '#/tables/mwt ~ warrens anchor',
-    route: '#/tables/mwt/warrens',
+    route: '#/tables/many_worlds_tavern/warrens',
     why: 'the realm section anchor'
   },
   {
@@ -1085,12 +1113,12 @@ const STATES = [
   },
   {
     id: '#/tables/community',
-    route: '#/tables/community',
+    route: '#/tables/community_items',
     why: 'a sectioned body: communities'
   },
   {
     id: '#/tables/community ~ panel open',
-    route: '#/tables/community',
+    route: '#/tables/community_items',
     why: 'the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from',
     enter: async (d) => {
       await d.click('Фильтры');
@@ -1110,7 +1138,7 @@ const STATES = [
      table gets verified. */
   {
     id: '#/tables/voa ~ section anchor',
-    route: '#/tables/voa/tA',
+    route: '#/tables/vault_of_ages/tA',
     why: 'arriving at a section link scrolls to and flashes it'
   },
   {
@@ -3256,7 +3284,7 @@ const STATES = [
   },
   {
     id: '#/tables/dread as gm1',
-    route: '#/tables/dread',
+    route: '#/tables/dread_gm_toolbox',
     as: 'gm1',
     why: "the account's tables view: the grid, where signed out the list is drawn"
   },
