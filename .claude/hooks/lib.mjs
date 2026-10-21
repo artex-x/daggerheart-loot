@@ -288,9 +288,10 @@ export function programName(token) {
   return String(token).replace(LAUNCHER_SUFFIX_RE, '');
 }
 
-function isSupabaseProgram(token) {
+export function isSupabaseProgram(token) {
   if (!token) return false;
-  const name = programName(token).split('/').pop();
+  // Case folded: win32 runs `SUPABASE` as `supabase`.
+  const name = programName(token).split('/').pop().toLowerCase();
   return name === 'supabase' || name.startsWith('supabase@');
 }
 

@@ -38,7 +38,9 @@ function sqlFiles(dir) {
 }
 
 function runCli(args, env = process.env) {
-  const r = spawnSync(supabaseCli(env), args, {
+  // An explicit --workdir wins over a SUPABASE_WORKDIR from the environment,
+  // which rule 2r cannot see in an --env-file or a shell profile.
+  const r = spawnSync(supabaseCli(env), ['--workdir', ROOT, ...args], {
     cwd: ROOT,
     env,
     stdio: 'inherit'

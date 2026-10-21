@@ -33,6 +33,7 @@ import {
   dropAssignments,
   normalizeCommand,
   isSupabaseCall,
+  isSupabaseProgram,
   programName,
   remoteRefsHoldingMigration,
   migrationLockedMessage,
@@ -94,8 +95,10 @@ const MSG = {
     'Blocked: LOOT_GH_CMD and LOOT_HOOK_ROOT replace `gh` and the checkout of ci-credit.mjs for its selftest; a run that sets one could arm the gates with no CI run. Run `node <worktree>/.claude/hooks/ci-credit.mjs <sha>` with neither set.',
   reviewerWrite:
     'Blocked: the reviewer is read-only in Bash and PowerShell: no git write, file writer, in-place sed or perl, writing cmdlet, npm script, Supabase CLI call but status or help, or output redirect to a file (docs/decisions/, 2026-09-27, "The reviewer writes its report to issues/<id>/reviews/ and nowhere else"). Write the report with the Write tool; return every other fix to the orchestrator.',
-  migrationUnapproved: (tree, seen) =>
-    `Blocked: this writes supabase/migrations to the test project, and no report under issues/*/reviews/ approves that tree (${tree}): a report with "Verdict: approve" and a "Reviewed: <sha>" whose supabase/migrations tree equals the written tree is required first (docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+  migrationUnapproved: (tree, files, seen) =>
+    `Blocked: this writes supabase/migrations to the test project (tree ${tree}), and these files are on neither origin/main nor a tree that a report under issues/*/reviews/ approves ("Verdict: approve" and a "Reviewed: <sha>"; docs/decisions/, 2026-10-21, "A script write to the test project is judged per file, like a push"): ${files.join(', ')} - seen: ${seen}. If main moved, run git fetch origin and retry; else run npm run check:db, commit, get the review, then write; --dry-run is allowed now.`,
+  migrationCheckoutUnpinned:
+    'Blocked: rule 2r judges a test-project migration write only as one plain command, so it cannot tell which checkout this one writes from. Run the write alone, in its own call, from the top directory of the checkout that holds the migrations: npm run db:push -- --project test --yes, or node --env-file=.env.test.local <checkout>/tools/supabase/db-push.mjs --project test --yes with the script\'s absolute path. No cd, ;, &&, pipe, group, wrapper, assignment, quote or escape, variable or ~ in the path, npm flag, --workdir or SUPABASE_WORKDIR (.claude/README.md, "Hooks", rule 2r).',
   migrationPushUnapproved: (source, files, seen) =>
     `Blocked: a push of ${source} starts CI's migrate-test, which writes supabase/migrations to the test project, and ${files.join(', ')} is not on origin/main, on a refs/remotes/origin/* ref, or in a tree that a report under issues/*/reviews/ approves ("Verdict: approve" and a "Reviewed: <sha>"; docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
   migrationPushWide:
@@ -1214,7 +1217,8 @@ const HOSTED_SCRIPTS = new Set(['config:push', 'db:push', 'limits:set']);
 // npm's verbs that run a package script: `run` and its aliases.
 const NPM_RUN_VERBS = new Set(['run', 'run-script', 'rum', 'urn']);
 // npm flags whose value is the next token when written without `=`.
-const NPM_VALUE_FLAGS = new Set(['--loglevel', '--prefix', '-w', '--workspace']);
+// `-C` is npm's short form of `--prefix`.
+const NPM_VALUE_FLAGS = new Set(['--loglevel', '--prefix', '-C', '-w', '--workspace']);
 
 /** Returns the script that `tokens` (already unwrapped) run through `npm
  * run` or an alias of it, past a leading `rtk` and npm's own flags on
@@ -1279,29 +1283,35 @@ function evaluateHostedWrite(segList) {
 // production or unnamed target. A report under issues/*/reviews/ approves
 // when its head (lib.mjs, parseReviewHead; the shape is
 // .claude/templates/review.template.md) reads "Verdict: approve" and its
-// "Reviewed:" commit has the written supabase/migrations tree, so a `.md`
-// amend or a rebase keeps the approval and a changed migration needs a new
-// one. Reports, trees and status come from the checkout the command writes
-// from: the one that holds a named db-push.mjs or migrate-test.mjs (each
-// pushes its own checkout's migrations), else cwd's (`git -C` moves it).
+// "Reviewed:" commit holds the written files, so a `.md` amend or a rebase
+// keeps the approval and a changed migration needs a new one. Reports, trees
+// and status come from the checkout the command writes from: the one that
+// holds a named db-push.mjs or migrate-test.mjs (each pushes its own
+// checkout's migrations), else cwd's (`git -C` moves it). A script or CLI
+// write is judged only as one plain command; any other command that holds
+// one denies, because the hook cannot pin its checkout.
 //
-// A `git push` in any session starts CI's migrate-test, so each refspec
-// source is judged. A file that has the same blob on origin/main, on a
-// refs/remotes/origin/* ref or in an approved tree passes: a file already on
-// the remote has already reached migrate-test (or production), so a second
-// push of it writes nothing new. That holds whoever made the first push, and
-// it also passes the union tree of a merge of origin/main into a task branch.
-// Git runs only for a matching command.
+// A script or CLI write, and each refspec source of a `git push` (every push
+// starts CI's migrate-test), passes when every migration file has its blob on
+// origin/main or in an approved tree; a push also takes a refs/remotes/origin/*
+// ref (docs/decisions/, 2026-10-21, "A script write to the test project is
+// judged per file, like a push"). Git runs only for a matching command.
 
 const DB_PUSH_FILE = 'db-push.mjs';
+// The full name: a local branch or tag named `origin/main` would shadow it.
+const ORIGIN_MAIN = 'refs/remotes/origin/main';
 const MIGRATE_TEST_FILE = 'migrate-test.mjs';
 
 /** Returns the path in `token` (the token, or its value after `=`) whose
- * last segment is `file`, or null. */
+ * last segment is `file` (lower case), or null. Case folded: NTFS opens
+ * `DB-PUSH.mjs` as `db-push.mjs`. */
 function scriptPathIn(token, file) {
   const eq = token.indexOf('=');
   const candidates = eq === -1 ? [token] : [token, token.slice(eq + 1)];
-  return candidates.find((c) => c.replace(/\\/g, '/').split('/').pop() === file) ?? null;
+  return (
+    candidates.find((c) => c.replace(/\\/g, '/').split('/').pop().toLowerCase() === file) ??
+    null
+  );
 }
 
 function namesDbPushFile(token) {
@@ -1363,6 +1373,140 @@ function writesTestMigrations(info) {
   return false;
 }
 
+// D9: the one command shape in which rule 2r judges a test-project write
+// (docs/decisions/, 2026-10-21, "A script write to the test project is
+// judged per file, like a push", "Decision (checkout)").
+const NOT_ONE_SEGMENT_RE = /[;|&(){}`\n]|\$\(/;
+const READ_ONLY_PROGRAMS = new Set([
+  'ls',
+  'find',
+  'wc',
+  'diff',
+  'stat',
+  'file',
+  'dir',
+  'gc',
+  'gci',
+  'get-content',
+  'get-childitem',
+  'get-item',
+  'select-string',
+  'sls',
+  'test-path'
+]);
+const RTK_READ_VERBS = new Set(['grep', 'read', 'ls', 'find', 'diff', 'wc']);
+const SUPABASE_ENTRY_RE = /(?:^|\/)supabase\/dist\/supabase\.js$/;
+
+// `find` runs a command with these actions, so it is then no reader.
+const FIND_ACTIONS = new Set(['-exec', '-execdir', '-ok', '-okdir']);
+
+function isReaderSegment(info) {
+  let program = info.program.toLowerCase();
+  let rest = info.tokens.slice(1);
+  if (program === 'rtk') {
+    if (rest[0] === 'proxy') rest = rest.slice(1);
+    if (!RTK_READ_VERBS.has(rest[0])) return false;
+    program = rest[0];
+    rest = rest.slice(1);
+  } else if (!READ_ONLY_PROGRAMS.has(program)) {
+    return false;
+  }
+  return !(program === 'find' && rest.some((t) => FIND_ACTIONS.has(t)));
+}
+
+/** True for a git segment that runs another command: `bisect run`,
+ * `submodule foreach`, `rebase -x` or `--exec`. */
+function gitRunsCommand(info) {
+  const { subcommand, rest } = gitSubcommand(info.tokens);
+  if (subcommand === 'bisect') return rest[0] === 'run';
+  if (subcommand === 'submodule') return rest.includes('foreach');
+  if (subcommand === 'rebase') {
+    return rest.some((t) => t === '-x' || t === '--exec' || t.startsWith('--exec='));
+  }
+  return false;
+}
+
+/** True when the tokens name a test-project migration write anywhere, not
+ * only at the program position: a launcher flag can hide the program. */
+function namesMigrationWrite(tokens) {
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === 'db:push') return true;
+    if (scriptPathIn(t, DB_PUSH_FILE) !== null || scriptPathIn(t, MIGRATE_TEST_FILE) !== null) {
+      return true;
+    }
+    if (!isSupabaseProgram(programName(t)) && !SUPABASE_ENTRY_RE.test(t)) continue;
+    for (let j = i + 1; j < tokens.length; j++) {
+      if (tokens[j] === 'db' && tokens[j + 1] === 'push' && !tokens.includes('--dry-run')) {
+        return true;
+      }
+      if (tokens[j] === 'migration' && tokens[j + 1] === 'up') return true;
+    }
+  }
+  return false;
+}
+
+function plainNpm(t) {
+  const end = t.indexOf('--');
+  const rest = (end === -1 ? t : t.slice(0, end))
+    .slice(1)
+    .filter((x) => x !== '-s' && x !== '--silent');
+  return rest.length === 2 && ['run', 'run-script'].includes(rest[0]) && rest[1] === 'db:push';
+}
+
+/** True for `node [--env-file=<path>...] <script>` whose script path, read
+ * literally, is `<toplevel>/tools/supabase/<file>` of an existing checkout. */
+function plainNode(t, cwd) {
+  let i = 1;
+  while (i < t.length && t[i].startsWith('--env-file=')) i++;
+  const token = t[i];
+  if (token === undefined || token.startsWith('-') || /[~$]/.test(token)) return false;
+  const file = [DB_PUSH_FILE, MIGRATE_TEST_FILE].find((f) => scriptPathIn(token, f) === token);
+  if (file === undefined) return false;
+  const p = path.resolve(cwd || repoRoot(), nativePath(token));
+  try {
+    if (!statSync(path.dirname(p)).isDirectory()) return false;
+  } catch {
+    return false;
+  }
+  const top = toplevelOf(path.dirname(p));
+  return top !== null && pathKey(p) === pathKey(path.join(top, 'tools', 'supabase', file));
+}
+
+/** Returns the segment info of the command when it is one plain write
+ * command (D9.1-D9.4), else null. */
+function plainWrite(sanitized, cwd, raw) {
+  // A quote or a Bash escape inside a word splits it for the sanitiser but not
+  // for the shell (`--work''dir=sub`). PowerShell's `\` is `/` by now.
+  if (/['"\\]/.test(raw)) return null;
+  const s = sanitized.replace(/(^|\s)(?:2>&1|>&2)(?=\s|$)/g, '$1');
+  if (NOT_ONE_SEGMENT_RE.test(s)) return null;
+  if (process.env.SUPABASE_WORKDIR !== undefined) return null;
+  const all = tokensOf(s);
+  if (all.some((t) => /^--workdir(?:=|$)/.test(t) || /supabase_workdir/i.test(t))) return null;
+  let t = all;
+  if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
+  if (!t.length) return null;
+  const head = programName(t[0]);
+  if (head === 'node') return plainNode(t, cwd) ? segmentInfo(s) : null;
+  const plain =
+    head === 'npm'
+      ? plainNpm(t)
+      : head === 'npx'
+        ? isSupabaseProgram(t[1])
+        : isSupabaseProgram(head);
+  return plain && cwdIsToplevel(cwd) ? segmentInfo(s) : null;
+}
+
+/** True when cwd is its checkout's toplevel: npm runs the nearest
+ * package.json and the CLI the nearest supabase/ above cwd, while rule 2r
+ * judges the toplevel's migrations. */
+function cwdIsToplevel(cwd) {
+  const base = path.resolve(nativePath(cwd || repoRoot()));
+  const top = toplevelOf(base);
+  return top !== null && pathKey(base) === pathKey(top);
+}
+
 /** Returns every issues/<task>/reviews/*.md of `checkout` as
  * `{ task, file, full }`. */
 function reviewReports(checkout) {
@@ -1408,8 +1552,33 @@ function approvals(checkout) {
   return { seen: seen.length ? seen.join(', ') : 'none', approved };
 }
 
-/** Returns null when a report approves HEAD's migrations tree in
- * `checkout`, else a verdict. */
+/** Returns `{ missing, seen }`: the names of the supabase/migrations files
+ * of `ref` whose blob is on none of origin/main, an approved tree and, with
+ * `remoteRefs`, a refs/remotes/origin/* ref; and the reports seen. */
+function unknownMigrations(ref, checkout, { remoteRefs }) {
+  let missing = migrationBlobs(ref, checkout);
+  const { seen, approved } = approvals(checkout);
+  const drop = (source) => {
+    const known = new Set(migrationBlobs(source, checkout));
+    missing = missing.filter((entry) => !known.has(entry));
+    return missing.length === 0;
+  };
+  const names = () => missing.map((entry) => entry.slice(entry.indexOf(' ') + 1));
+  if (missing.length === 0 || drop(ORIGIN_MAIN)) return { missing: [], seen };
+  for (const sha of new Set(approved)) if (drop(sha)) return { missing: [], seen };
+  if (remoteRefs) {
+    const refs = git(['for-each-ref', '--format=%(refname)', 'refs/remotes/origin/'], {
+      cwd: checkout
+    });
+    for (const r of (refs || '').split('\n').filter(Boolean)) {
+      if (!r.endsWith('/HEAD') && drop(r)) return { missing: [], seen };
+    }
+  }
+  return { missing: names(), seen };
+}
+
+/** Returns null when every migration file of HEAD in `checkout` is on
+ * origin/main or in an approved tree, else a verdict. */
 function migrationsApproved(checkout) {
   const status = git(
     ['status', '--porcelain', '--untracked-files=all', '--', 'supabase/migrations'],
@@ -1420,13 +1589,11 @@ function migrationsApproved(checkout) {
   }
   const head = migrationTree('HEAD', checkout);
   if (head === null) return null;
-  const { seen, approved } = approvals(checkout);
-  for (const sha of new Set(approved)) {
-    if (migrationTree(sha, checkout) === head) return null;
-  }
+  const { missing, seen } = unknownMigrations('HEAD', checkout, { remoteRefs: false });
+  if (missing.length === 0) return null;
   return {
     id: 'migration-unapproved',
-    message: MSG.migrationUnapproved(head.slice(0, 12), seen)
+    message: MSG.migrationUnapproved(head.slice(0, 12), missing, seen)
   };
 }
 
@@ -1471,36 +1638,19 @@ function resolveCommit(source, checkout) {
 }
 
 /** Returns null when the pushed migrations of `source` (`sha`) write nothing
- * unapproved, else a verdict (D3 in the comment above). */
+ * unapproved, else a verdict. */
 function judgePushSource(source, sha, checkout) {
   const upstream = `${source}@{u}`;
   const hasUpstream =
     git(['rev-parse', '--verify', '--quiet', upstream], { cwd: checkout }) !== null;
-  const base = migrationTree(hasUpstream ? upstream : 'origin/main', checkout);
+  const base = migrationTree(hasUpstream ? upstream : ORIGIN_MAIN, checkout);
   const head = migrationTree(sha, checkout);
   if (base === null || head === null || base === head) return null;
-  let missing = migrationBlobs(sha, checkout);
-  const drop = (ref) => {
-    const known = new Set(migrationBlobs(ref, checkout));
-    missing = missing.filter((entry) => !known.has(entry));
-    return missing.length === 0;
-  };
-  if (drop('origin/main')) return null;
-  const { seen, approved } = approvals(checkout);
-  for (const reviewed of new Set(approved)) if (drop(reviewed)) return null;
-  const refs = git(['for-each-ref', '--format=%(refname)', 'refs/remotes/origin/'], {
-    cwd: checkout
-  });
-  for (const ref of (refs || '').split('\n').filter(Boolean)) {
-    if (!ref.endsWith('/HEAD') && drop(ref)) return null;
-  }
+  const { missing, seen } = unknownMigrations(sha, checkout, { remoteRefs: true });
+  if (missing.length === 0) return null;
   return {
     id: 'migration-push-unapproved',
-    message: MSG.migrationPushUnapproved(
-      source,
-      missing.map((entry) => entry.slice(entry.indexOf(' ') + 1)),
-      seen
-    )
+    message: MSG.migrationPushUnapproved(source, missing, seen)
   };
 }
 
@@ -1527,20 +1677,28 @@ function evaluateGitPushMigrations(info, cwd) {
   return null;
 }
 
-function evaluateMigrationPush(segList, cwd) {
+function evaluateMigrationPush(sanitized, segList, cwd, raw) {
+  let write = false;
   for (const segment of segList) {
     const info = segmentInfo(segment);
     if (!info) continue;
     if (info.program === 'git') {
       const verdict = evaluateGitPushMigrations(info, cwd);
       if (verdict) return verdict;
+      if (gitRunsCommand(info) && namesMigrationWrite(info.tokens)) write = true;
       continue;
     }
-    if (!writesTestMigrations(info)) continue;
-    const checkout = segmentCheckout(info, cwd);
-    return checkout === null ? null : migrationsApproved(checkout);
+    if (writesTestMigrations(info)) write = true;
+    else if (!isReaderSegment(info) && namesMigrationWrite(info.tokens)) write = true;
   }
-  return null;
+  if (!write) return null;
+  const plain = plainWrite(sanitized, cwd, raw);
+  if (plain === null) {
+    return { id: 'migration-checkout-unpinned', message: MSG.migrationCheckoutUnpinned };
+  }
+  if (!writesTestMigrations(plain)) return null;
+  const checkout = segmentCheckout(plain, cwd);
+  return checkout === null ? null : migrationsApproved(checkout);
 }
 
 // ---------- 2u: a manual local-stack command under a foreign lock (deny) ----------
@@ -2424,7 +2582,7 @@ guard(() => {
   const cloudPush = evaluateCloudPush(segList, cwd);
   if (cloudPush) return deny(event, cloudPush.message);
 
-  const migrationPush = evaluateMigrationPush(segList, cwd);
+  const migrationPush = evaluateMigrationPush(sanitized, segList, cwd, rawCommand);
   if (migrationPush) return deny(event, migrationPush.message);
 
   const stackLock = evaluateStackLock(segList, cwd);

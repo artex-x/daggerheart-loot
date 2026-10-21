@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-21 - [A script write to the test project is judged per file, like a push](decisions/2026-10-21-a-script-write-to-the-test-project-is-judged-per-file.md)
 - 2026-10-21 - [A task branch pushes every batch; a green CI run of the same tree gates main](decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md)
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
 - 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)

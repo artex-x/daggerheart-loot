@@ -151,6 +151,9 @@ function setupScratch() {
   // A committed file citing issues/orphan-demo/plan.md, for the orphan-task rule
   // (#102-#104): it stays clean throughout, so no dirty-path count moves.
   writeFile('tools/cites-plan.js', '// See issues/orphan-demo/plan.md section 4.\n');
+  // Rule 2r's plain node shape needs the script's directory (#275, #298). A
+  // tracked file keeps it: `git stash push -u` removes an empty directory.
+  writeFile('tools/supabase/.gitkeep', '');
 
   // Not `main`, whatever init.defaultBranch says: rules 2e and 2x judge `main`
   // apart, and the cases that need it switch to it themselves.
@@ -1290,7 +1293,6 @@ async function testPersistenceGuards() {
     'npm -s run db:push -- --project test',
     'npm run-script db:push -- --project test',
     'npm --silent urn config:push -- --project test',
-    'npm --registry x run db:push -- --project test',
     'bunx supabase status',
     'pnpm dlx supabase@2 db reset --local',
     'bun x supabase migration list --local',
@@ -1302,6 +1304,25 @@ async function testPersistenceGuards() {
   for (const command of runnerSilent) {
     const result = runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-runner' }));
     check(`#242 runner or npm alias allowed: ${command}`, isSilent(result), result.stdout);
+  }
+  {
+    // An npm flag is outside rule 2r's one plain shape; rule 2n still reads
+    // the script past the value flag, so the prod form keeps its 2n deny.
+    const flag = (command) =>
+      runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-runner' }));
+    const test = flag('npm --registry x run db:push -- --project test');
+    check(
+      '#242 an npm flag is outside the plain shape: npm --registry x run db:push -- --project test',
+      !denyReason(test).includes('test project only') &&
+        denyReason(test).includes('cannot tell which checkout'),
+      denyReason(test)
+    );
+    const prod = flag('npm --registry x run db:push -- --project prod');
+    check(
+      '#242 rule 2n reads the script past an npm value flag: npm --registry x run db:push -- --project prod',
+      isDeny(prod) && denyReason(prod).includes('test project only'),
+      denyReason(prod)
+    );
   }
   // #248-#249 - `limits:set` writes a hosted project's rows: the test
   // project only, as db:push.
@@ -5994,6 +6015,27 @@ function testMigrationPush() {
       check(`#298 ${label}: allowed: ${command}`, !isDeny(result), denyReason(result));
     }
   };
+  // Each of `pushes` is denied with every needle and none of `absent`.
+  const scriptsDenied = (title, needles, absent = []) => {
+    for (const command of pushes) {
+      const result = run(command);
+      const reason = denyReason(result);
+      check(`${title}: denied: ${command}`, isDeny(result), result.stdout);
+      check(
+        `${title}: reason: ${command}`,
+        needles.every((needle) => reason.includes(needle)) &&
+          !absent.some((needle) => reason.includes(needle)),
+        reason
+      );
+    }
+  };
+  const scriptsAllowed = (title) => {
+    for (const command of pushes) {
+      const result = run(command);
+      check(`${title}: allowed: ${command}`, !isDeny(result), denyReason(result));
+    }
+  };
+  const migrationFile = (name) => path.join(scratchRoot, 'supabase/migrations', name);
   try {
     const c1 = commitFile(
       'supabase/migrations/20261101120000_reviewed.sql',
@@ -6156,7 +6198,11 @@ function testMigrationPush() {
         denyReason(result)
       );
     }
-    commitFile('supabase/migrations/20261106120000_own.sql', 'select 6;\n', 'chore: own');
+    const ownSha = commitFile(
+      'supabase/migrations/20261106120000_own.sql',
+      'select 6;\n',
+      'chore: own'
+    );
     {
       const result = run('git push -u origin task-y');
       check(
@@ -6167,13 +6213,320 @@ function testMigrationPush() {
         denyReason(result)
       );
     }
+
+    // #353 - a script write is judged per file, and a file only on another
+    // refs/remotes/origin/* ref is unknown to it; the push of the same tree
+    // takes that ref (#347 above).
+    scriptsDenied(
+      '#353 a file only on another origin/* ref denies a script write',
+      ['20261105120000_other.sql', '20261106120000_own.sql', 'git fetch origin'],
+      ['20261101120000_reviewed.sql', '20261102120000_second.sql']
+    );
+    gitSh(['branch', 'origin/main', ownSha]);
+    try {
+      scriptsDenied('#353 a local branch named origin/main does not shadow the remote ref', [
+        '20261106120000_own.sql'
+      ]);
+      const result = run('git push -u origin task-y');
+      check(
+        '#353 a local branch named origin/main does not shadow the remote ref for a push',
+        isDeny(result) && denyReason(result).includes('20261106120000_own.sql'),
+        denyReason(result)
+      );
+    } finally {
+      gitSh(['branch', '-q', '-D', 'origin/main']);
+    }
+
+    // #354 - a merge of main: every file on origin/main allows a script
+    // write with no approving report.
+    report('B9.md', head('fix-then-continue', c1));
+    gitSh(['update-ref', 'refs/remotes/origin/main', ownSha]);
+    scriptsAllowed('#354 every file on origin/main');
+    writeFile('supabase/migrations/20261107120000_dirty.sql', 'select 7;\n');
+    scriptsDenied('#354 an untracked migration still denies', ['uncommitted']);
+    fs.rmSync(migrationFile('20261107120000_dirty.sql'));
+    writeFile('supabase/migrations/20261101120000_reviewed.sql', 'select 11;\n');
+    scriptsDenied('#354 an uncommitted change to a tracked migration still denies', [
+      'uncommitted'
+    ]);
+    writeFile('supabase/migrations/20261101120000_reviewed.sql', 'select 1;\n');
+
+    // #357 - a write that is not one plain command denies, also when every
+    // file is on origin/main: the hook cannot pin its checkout.
+    const R = 'rdjxcjkhsklhprmzxajq';
+    const W = 'npm run db:push -- --project test --yes';
+    const expectUnpinned = (title, command, payload = bashPayload, opts = {}, needles = []) => {
+      const result = runHook(
+        'bash-guard.mjs',
+        payload(command, { session_id: 's-migration-push' }),
+        opts
+      );
+      const reason = denyReason(result);
+      check(
+        `${title}: ${command}`,
+        isDeny(result) &&
+          reason.includes('cannot tell which checkout') &&
+          needles.every((needle) => reason.includes(needle)),
+        reason
+      );
+    };
+    const notPlain = '#357 a write that is not one plain command denies';
+    for (const [command, payload] of [
+      [`cd sub && ${W}`, bashPayload],
+      ['npm --prefix sub run db:push -- --project test --yes', bashPayload],
+      ['npm --prefix=sub run db:push -- --project test --yes', bashPayload],
+      ['npm -C sub run db:push -- --project test --yes', bashPayload],
+      [`npx supabase --workdir sub db push --project-ref ${R}`, bashPayload],
+      [`npx supabase --workdir=sub db push --project-ref ${R}`, bashPayload],
+      [
+        'pushd sub; node --env-file=.env.test.local tools/supabase/db-push.mjs --project test --yes',
+        bashPayload
+      ],
+      [
+        'Set-Location sub; node --env-file=.env.test.local tools/supabase/migrate-test.mjs',
+        psPayload
+      ],
+      ['sl sub; node --env-file=.env.test.local tools/supabase/migrate-test.mjs', psPayload],
+      [`(cd sub && ${W})`, bashPayload],
+      [`( cd sub && ${W} )`, bashPayload],
+      [`{ cd sub; ${W}; }`, bashPayload],
+      [`builtin cd sub && ${W}`, bashPayload],
+      [`& { Set-Location sub; ${W} }`, psPayload],
+      [`cd.. ; ${W}`, psPayload],
+      ['npm run --prefix sub db:push -- --project test --yes', bashPayload],
+      ['npm run db:push --prefix sub -- --project test --yes', bashPayload],
+      ['npm run db:push --prefix=sub -- --project test --yes', bashPayload],
+      ['npm run db:push -C sub -- --project test --yes', bashPayload],
+      [`env --chdir=sub ${W}`, bashPayload],
+      [`SUPABASE_WORKDIR=sub npx supabase db push --project-ref ${R}`, bashPayload],
+      [`env SUPABASE_WORKDIR=sub npx supabase db push --project-ref ${R}`, bashPayload],
+      [`export SUPABASE_WORKDIR=sub; npx supabase db push --project-ref ${R}`, bashPayload],
+      [`$env:SUPABASE_WORKDIR='sub'; npx supabase db push --project-ref ${R}`, psPayload],
+      // A prefix, a keyword, a sourced script or a script block before a cd.
+      [`command cd sub && ${W}`, bashPayload],
+      [`time cd sub && ${W}`, bashPayload],
+      [`X=1 cd sub && ${W}`, bashPayload],
+      [`CDPATH=x cd sub && ${W}`, bashPayload],
+      [`eval cd sub && ${W}`, bashPayload],
+      [`! cd sub; ${W}`, bashPayload],
+      [`if true; then cd sub; fi; ${W}`, bashPayload],
+      [`for d in sub; do cd $d; ${W}; done`, bashPayload],
+      [`source x.sh; ${W}`, bashPayload],
+      [`. ./x.sh; ${W}`, bashPayload],
+      [`try { cd sub; ${W} } catch {}`, psPayload],
+      [`Invoke-Command -ScriptBlock { Set-Location sub; ${W} }`, psPayload],
+      [`. { Set-Location sub; ${W} }`, psPayload],
+      [`'sub' | ForEach-Object { Set-Location $_; ${W} }`, psPayload],
+      [`Set-Item env:SUPABASE_WORKDIR sub; npx supabase db push --project-ref ${R}`, psPayload],
+      [
+        `Set-Item -Path Env:SUPABASE_WORKDIR -Value sub; npx supabase db push --project-ref ${R}`,
+        psPayload
+      ],
+      [`\${env:SUPABASE_WORKDIR}='sub'; npx supabase db push --project-ref ${R}`, psPayload],
+      [`env --chd=sub ${W}`, bashPayload],
+      [`env X=1 env --chdir=sub ${W}`, bashPayload],
+      // The shell expands ~ and $VAR in a script path; the hook does not.
+      [
+        'node --env-file=.env.test.local ~/x/tools/supabase/db-push.mjs --project test --yes',
+        bashPayload
+      ],
+      ['node --env-file=.env.test.local $TMP/x/tools/supabase/migrate-test.mjs', bashPayload],
+      // Outside the plain shape.
+      [`${W} | tee log`, bashPayload],
+      [`npx supabase db push --project-ref ${R} --workdir=sub`, bashPayload],
+      ['npm run db:push --userconfig x -- --project test --yes', bashPayload],
+      [`node node_modules/supabase/dist/supabase.js db push --project-ref ${R}`, bashPayload]
+    ]) {
+      expectUnpinned(notPlain, command, payload);
+    }
+    // The owner's trade-off: an approved write in a chain needs its own call.
+    expectUnpinned(notPlain, `git fetch origin && ${W}`, bashPayload, {}, [W]);
+    // The script reads <script dir>/../../supabase/migrations, which is not
+    // the checkout that git names for the script's directory.
+    fs.mkdirSync(path.join(scratchRoot, 'copy', 'tools', 'supabase'), { recursive: true });
+    try {
+      expectUnpinned(
+        notPlain,
+        'node --env-file=.env.test.local copy/tools/supabase/db-push.mjs --project test --yes'
+      );
+    } finally {
+      fs.rmSync(path.join(scratchRoot, 'copy'), { recursive: true, force: true });
+    }
+    // npm runs the nearest package.json and the CLI the nearest supabase/
+    // above cwd, so a cwd below the toplevel is not plain; a node script path
+    // still pins the checkout.
+    const preview = path.join(scratchRoot, 'preview');
+    fs.mkdirSync(preview, { recursive: true });
+    try {
+      const inPreview = (command, extra = {}) =>
+        bashPayload(command, { ...extra, cwd: preview });
+      for (const command of [
+        W,
+        `npx supabase db push --project-ref ${R}`,
+        `node_modules/.bin/supabase db push --project-ref ${R}`
+      ]) {
+        expectUnpinned(notPlain, command, inPreview);
+      }
+      const result = runHook(
+        'bash-guard.mjs',
+        inPreview(
+          'node --env-file=.env.test.local ../tools/supabase/db-push.mjs --project test --yes',
+          {
+            session_id: 's-migration-push'
+          }
+        )
+      );
+      check(
+        '#357 a node script path pins the checkout from a subdirectory',
+        !denyReason(result).includes('cannot tell which checkout'),
+        denyReason(result)
+      );
+    } finally {
+      fs.rmSync(preview, { recursive: true, force: true });
+    }
+    // A quote or a Bash escape inside a word splits it for the hook only.
+    for (const command of [
+      `npx supabase db push --project-ref ${R} --work''dir=sub`,
+      `npx supabase db push --project-ref ${R} --work\\dir=sub`,
+      "npm run db:push -- --project 'test' --yes",
+      'node "tools/supabase/db-push.mjs" --project test --yes'
+    ]) {
+      expectUnpinned(notPlain, command);
+    }
+    // Supabase CLI 2.117.0 reads the hook's inherited SUPABASE_WORKDIR too.
+    for (const command of pushes) {
+      expectUnpinned(
+        '#357 the hook process SUPABASE_WORKDIR denies a plain write',
+        command,
+        bashPayload,
+        { env: { SUPABASE_WORKDIR: 'sub' } }
+      );
+    }
+    scriptsAllowed('#357 the plain forms stay allowed');
+    for (const command of [
+      `rtk ${W}`,
+      'npm run -s db:push -- --project test --yes',
+      `git fetch origin && npx supabase db push --project-ref ${R} --dry-run`
+    ]) {
+      const result = run(command);
+      check(
+        `#357 a plain or dry-run form stays allowed: ${command}`,
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    {
+      const result = run('npm -C sub run db:push -- --project prod --yes');
+      check(
+        '#357 npm -C takes a value, so rule 2n still reads the script',
+        isDeny(result) && denyReason(result).includes('allowlist'),
+        denyReason(result)
+      );
+    }
+
+    // #358 - a write is found by its tokens in any segment, so a launcher
+    // flag that hides the program does not hide the write.
+    for (const command of [
+      `env -C sub ${W}`,
+      `env --chdir sub ${W}`,
+      'exec npm --prefix sub run db:push -- --project test --yes',
+      `npx --prefix sub supabase db push --project-ref ${R}`,
+      `npm exec --prefix sub -- supabase db push --project-ref ${R}`,
+      `then ${W}`,
+      `do ${W}`,
+      'env -C sub node tools/supabase/migrate-test.mjs',
+      // Accepted: a non-reader command that names a write script denies.
+      'npx eslint tools/supabase/db-push.mjs',
+      // find with an action, and a git command that runs another command.
+      `find . -maxdepth 0 -execdir ${W} +`,
+      'find sub -maxdepth 0 -exec node {}/tools/supabase/migrate-test.mjs +',
+      `find . -ok ${W} +`,
+      `rtk find . -execdir ${W} +`,
+      `git bisect run ${W}`,
+      `git submodule foreach ${W}`,
+      `git rebase -x ${W} HEAD~1`,
+      `git rebase --exec ${W} HEAD~1`,
+      // win32 opens a name without case.
+      'node --env-file=.env.test.local copy/tools/supabase/DB-PUSH.mjs --project test --yes',
+      'env -C sub node tools/supabase/Migrate-Test.mjs',
+      `env -C sub npx SUPABASE db push --project-ref ${R}`,
+      `cd sub && node_modules/.bin/SUPABASE db push --project-ref ${R}`
+    ]) {
+      expectUnpinned('#358 a write found by its tokens denies', command);
+    }
+    for (const [command, payload] of [
+      ['git grep db-push.mjs', bashPayload],
+      ['git log -S migrate-test.mjs', bashPayload],
+      ['git add tools/supabase/db-push.mjs', bashPayload],
+      ['rtk grep migrate-test.mjs tools', bashPayload],
+      ['rtk read tools/supabase/db-push.mjs', bashPayload],
+      ['cat tools/supabase/db-push.mjs', bashPayload],
+      ['ls tools/supabase/db-push.mjs', bashPayload],
+      ['Get-Content tools/supabase/migrate-test.mjs', psPayload],
+      ['rtk proxy grep db:push .claude', bashPayload],
+      ['find tools -name db-push.mjs', bashPayload],
+      ['git rebase --continue', bashPayload]
+    ]) {
+      const result = runHook(
+        'bash-guard.mjs',
+        payload(command, { session_id: 's-migration-push' })
+      );
+      check(
+        `#358 a reader that names a write script is not denied: ${command}`,
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+
+    // #355 - a union of origin/main's files and an approved tree's files
+    // allows a script write, though no single tree equals HEAD's.
+    gitSh(['checkout', '-q', '-B', 'own-only', c3]);
+    const ownOnly = commitFile(
+      'supabase/migrations/20261106120000_own.sql',
+      'select 6;\n',
+      'chore: own only'
+    );
+    gitSh(['checkout', '-q', 'task-y']);
+    gitSh(['update-ref', 'refs/remotes/origin/main', c4]);
+    report('B11.md', head('approve', ownOnly));
+    scriptsAllowed('#355 a union of origin/main and an approved tree');
+
+    // #356 - a known name with a different blob, and a known blob under a
+    // new name, are unknown files.
+    commitFile(
+      'supabase/migrations/20261105120000_other.sql',
+      'select 55;\n',
+      'chore: a changed body'
+    );
+    scriptsDenied(
+      '#356 a known name with a different blob denies a script write',
+      ['20261105120000_other.sql'],
+      ['20261106120000_own.sql']
+    );
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#356 a known name with a different blob denies a push',
+        isDeny(result) && denyReason(result).includes('20261105120000_other.sql'),
+        denyReason(result)
+      );
+    }
+    commitFile(
+      'supabase/migrations/20261108120000_copy.sql',
+      'select 6;\n',
+      'chore: a copied body'
+    );
+    scriptsDenied('#356 a known blob under a new name denies a script write', [
+      '20261108120000_copy.sql'
+    ]);
   } finally {
     for (const ref of ['refs/remotes/origin/main', 'refs/remotes/origin/other-x']) {
       spawnSync('git', ['update-ref', '-d', ref], { cwd: scratchRoot });
     }
     gitSh(['checkout', '-q', originalBranch]);
-    spawnSync('git', ['branch', '-q', '-D', 'task-y'], { cwd: scratchRoot });
-    spawnSync('git', ['branch', '-q', '-D', 'other-x'], { cwd: scratchRoot });
+    for (const branch of ['task-y', 'other-x', 'own-only', 'origin/main']) {
+      spawnSync('git', ['branch', '-q', '-D', branch], { cwd: scratchRoot });
+    }
     // A soft reset keeps the working tree, so the dirty baseline survives.
     gitSh(['reset', '-q', '--soft', originalHead]);
     gitSh(['reset', '-q']);
