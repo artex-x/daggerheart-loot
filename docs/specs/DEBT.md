@@ -479,3 +479,51 @@ GitHub Pages: a robots file at a host root and an `X-Robots-Tag` header.
   `Content-Signal` line and the named blocks;
   `curl -I https://daggerheart-loot.pages.dev/llms.txt` shows
   `X-Robots-Tag: noindex`.
+
+## Many Worlds Tavern follow-ups (no task filed yet; the owner names the release)
+
+Owns: three small defects left by the Many Worlds Tavern sources: a missing
+landmark, a strip over its cap at mid widths, and a rule text with two Russian
+bodies. No release plan owns them; the owner decides which one takes them.
+
+### D112 - the tables page chip panel has no navigation landmark
+
+- **Where**: `app/src/components/TablesPage.svelte` (`div.panel.tablenav`, the
+  group chips and the book subchips).
+- **What**: the chip panel is a `div`, not a `nav`, so a screen reader lists
+  no navigation landmark for the tables page.
+- **Why deferred**: found in the review of the supplements panel (2026-10-20).
+  A `nav` with a label changes the goldens of every tables page and the
+  landmark list of the axe checks, so the fix is its own change.
+- **How to verify the fix**: `#/tables/mwt` exposes one `navigation` landmark
+  with an accessible name around the group and book chips; `tablesPage.test.ts`
+  asserts it, and the goldens of the tables pages are re-seeded.
+
+### D113 - the tables strip measures 162 px against its 150 px cap from 500 to 767 px
+
+- **Where**: `.tablenav .chips` in `app/src/components/TablesPage.svelte`;
+  the cap is in `docs/specs/FEATURES.md`, "Rolling" (150 px under 1000 px),
+  and `tests/app/sweep.js` (`WIDTHS`).
+- **What**: between 500 and 767 px the strip is 162 px high for every chip
+  set, the set before the Many Worlds Tavern tasks included (measured
+  2026-10-21 in the built app). The cap holds at 360, 390, 768 and 1180 px.
+- **Why deferred**: `sweep.js` runs only those four widths, so no run sees the
+  gap. It is today's state, not a change of the Many Worlds Tavern tasks, and
+  the owner did not ask for a fix (2026-10-21).
+- **How to verify the fix**: the sweep measures the strip at 500, 600 and 767
+  px and finds at most 150 px at each width.
+
+### D114 - the Scary rule text has two Russian bodies
+
+- **Where**: `data.js`, records `q57`, `q74`, `q90` (body «При успешной атаке
+  по цели, она должна отметить Стресс.») and `mw22` (body «При успешной
+  атаке цель должна отметить Стресс.»). Arazo's `aa47`-`aa50` carry the same
+  body under the name «Сводящее с Ума» (English "Maddening").
+- **What**: one English rule text, "On a successful attack, the target must
+  mark a Stress.", reads in two Russian ways. The name «Устрашающее» is the
+  same in all four records.
+- **Why deferred**: the older bodies belong to shipped Core and Hope and Fear
+  records; a change of their Russian moves their goldens and the `names.json`
+  bytes, and the owner has not chosen which body stays.
+- **How to verify the fix**: `q57`, `q74`, `q90` and `mw22` carry
+  one Russian body, the one the owner chooses.
