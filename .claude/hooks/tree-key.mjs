@@ -1,7 +1,7 @@
 // Working-tree fingerprint for the commit gates in bash-guard.mjs, and the
-// caches that check-observer.mjs and gate-credit.mjs write after a passing
-// `npm run check` (`.check-cache.json`) or `npm run check:db`
-// (`.check-db-cache.json`).
+// caches that check-observer.mjs, gate-credit.mjs and ci-credit.mjs write
+// after a passing `npm run check` (`.check-cache.json`), `npm run check:db`
+// (`.check-db-cache.json`) or a green CI run (both).
 // See .claude/README.md, "Hooks", for the commit gate's rationale.
 
 import { createHash } from 'node:crypto';
@@ -76,20 +76,34 @@ export function indexRows(cwd, copyPath) {
  * always means "cannot tell", and callers treat that as allow.
  */
 export function treeKey(cwd) {
+  const rows = treeRows(cwd);
+  return rows === null ? null : keyOf(rows);
+}
+
+/** The path of an `ls-files -s` row. */
+export function rowPath(line) {
+  const tab = line.indexOf('\t');
+  return tab === -1 ? line : line.slice(tab + 1);
+}
+
+// Drop every isExempt() row before hashing: the commit gate in
+// bash-guard.mjs only requires a passing check for covered paths, so a row
+// this fingerprint would otherwise move on (a handoff edit, a plan edit) must
+// not change the key - see isExempt()'s comment in lib.mjs.
+function covered(lines) {
+  return lines.filter((line) => !isExempt(rowPath(line)));
+}
+
+function keyOf(rows) {
+  return createHash('sha256').update(rows.join('\n')).digest('hex').slice(0, 16);
+}
+
+/** The covered `ls-files -s` rows that treeKey hashes, or null. */
+export function treeRows(cwd) {
   const copy = checkIndexPath(cwd);
   try {
     const lines = indexRows(cwd, copy);
-    if (lines === null) return null;
-    // Drop every isExempt() row before hashing: the commit gate in
-    // bash-guard.mjs only requires a passing check for covered paths, so a
-    // row this fingerprint would otherwise move on (a handoff edit, a plan
-    // edit) must not change the key - see isExempt()'s comment in lib.mjs.
-    const covered = lines.filter((line) => {
-      const tab = line.indexOf('\t');
-      const p = tab === -1 ? line : line.slice(tab + 1);
-      return !isExempt(p);
-    });
-    return createHash('sha256').update(covered.join('\n')).digest('hex').slice(0, 16);
+    return lines === null ? null : covered(lines);
   } catch {
     return null;
   } finally {
@@ -101,11 +115,44 @@ export function treeKey(cwd) {
   }
 }
 
+/** The covered rows of commit `sha` in the checkout that holds `cwd`, in
+ * the `ls-files -s` shape (`<mode> <object> 0\t<path>`), or null on any
+ * failure. ls-tree and the index list paths in the same order. */
+export function commitRows(sha, cwd) {
+  try {
+    const r = spawnSync('git', ['ls-tree', '-r', '--full-tree', sha], {
+      cwd: checkoutRoot(cwd),
+      encoding: 'utf8',
+      // headroom: `ls-tree -r` printed 349 KB here (2026-10-21), and a
+      // truncated listing would give a wrong key
+      maxBuffer: 64 * 1024 * 1024
+    });
+    if (r.error || r.status !== 0) return null;
+    const rows = [];
+    for (const line of r.stdout.split('\n')) {
+      if (!line) continue;
+      const m = /^(\d+) \S+ ([0-9a-f]+)\t(.*)$/.exec(line);
+      if (!m) return null;
+      rows.push(`${m[1]} ${m[2]} 0\t${m[3]}`);
+    }
+    return covered(rows);
+  } catch {
+    return null;
+  }
+}
+
+/** The treeKey that the working tree has when it equals commit `sha`, or
+ * null on any failure. ci-credit.mjs compares it with treeKey. */
+export function commitKey(sha, cwd) {
+  const rows = commitRows(sha, cwd);
+  return rows === null ? null : keyOf(rows);
+}
+
 /** { key, at, command, by } of the last passing run recorded in the named
  * cache file, or null if there is none or the file is unreadable or
  * corrupt. `by` is `observer` (check-observer.mjs saw the output), `exit`
- * (gate-credit.mjs, after the check's own exit 0) or `halves`
- * (gate-credit.mjs, when `check:1` and `check:2` passed on one tree key). */
+ * (gate-credit.mjs, after the check's own exit 0), `ci` (ci-credit.mjs,
+ * after a green CI run of the same tree) or, in an old record, `halves`. */
 export function readCache(name = '.check-cache.json', cwd) {
   try {
     const raw = readFileSync(cacheFilePath(name, cwd), 'utf8');

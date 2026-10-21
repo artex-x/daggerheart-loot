@@ -63,7 +63,7 @@ Session rules:
   review nit, a nit carried from an earlier batch) is only done when its own
   acceptance-criteria line is checked, not when it is merely mentioned in a
   commit or a comment - a plan has already lost items this way
-* A schema batch (a change under `supabase/migrations/`) stops after `npm run check`, `npm run check:db` and the commit: it does not push migrations to the test project and does not run `npm run e2e` before the review approves (rule 2r denies the push); the orchestrator resumes you for the push
+* A schema batch (a change under `supabase/migrations/`) stops after `rtk npm run check:fast`, `npm run check:db` and the commit: it does not push before the review approves (rule 2r denies the push, which starts CI's `migrate-test` on the test project); the orchestrator resumes you for the push
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
 * Write a durable fact or decision to its permanent home in this batch (`CLAUDE.md`, "Task and session protocol"); a comment follows `CLAUDE.md`, "Comments"
@@ -75,28 +75,29 @@ For the current batch:
 4. Run focused checks during development. Before the gate, run `rtk npm run check:fast`
    (one call, Bash timeout 600000): prettier, svelte-check and the snapshot test on the
    tree, vitest with coverage on the tests of the changed files, and the bundle budget
-   when app code changed. It arms nothing; fix what it finds.
+   when app code changed. Its exit 0 arms the commit gate on a task branch; fix what it
+   finds.
 5. Run verification from handoff, including as applicable:
-   - `npm run check` when code/app surface changed, as its two halves (step 7)
-   - `npm run check:built` when screen output / dist assets may change (per CLAUDE.md)
+   - `npm run check:db` (PowerShell) when `supabase/` or `tests/db/` changed
    - data/image/stub/build steps for data batches
+   - the heavy gates (`npm run check`, `check:built`, the browser suites, `e2e`) are CI's
+     run on the pushed commit; run one locally only when the handoff names it
 6. Do not commit if required checks fail
 7. Never end a turn with a check still running: its output dies with your shell, and
-   from outside a stopped turn is indistinguishable from a dead agent. Run the gate as
-   two foreground calls, `rtk npm run check:1`, then `rtk npm run check:2`, each with the
-   Bash timeout set to 600000 (no pipe, no `set -o pipefail`, no redirect). The commit
-   gate arms when both halves pass on one tree. If the tool moves a half to the
-   background, stay in the turn until it exits and read its output for the
-   `gate credit:` line; run the half again only when that line is missing (a re-run
-   repeats the uncached stages). A redirect to a file
+   from outside a stopped turn is indistinguishable from a dead agent. Run each check as
+   one foreground call with the Bash timeout set to 600000 (no pipe, no `set -o
+   pipefail`, no redirect). If the tool moves it to the background, stay in the turn
+   until it exits and read its output for the `gate credit:` line; run it again only
+   when that line is missing. Never run a cold full `npm run check` in a subagent: it
+   takes 10-18 min, and the main session runs it in the background. A redirect to a file
    hides the result from the commit gate and blocks the commit. See `.claude/README.md`.
    If you must stop first, name the command and its task id in your final message - the
    orchestrator can resume you with your context intact, so say exactly
    where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
-10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; record the pre-batch sha (`git rev-parse HEAD` before the amend) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
-11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - the first batch commits, every later batch amends (`git commit --amend`) the task's one commit; commit the coherent batch, not unrelated foreign changes. The message body names the task id (a `Task: <id>` line, or the id stated in a sentence) - this is what `git log --grep=<id>` and a `docs/decisions/` file's provenance pointer resolve through; a commit that never names it leaves that pointer dead.
-12. Do not push. The task's commit is pushed once, at closeout, after the task directory is retired (`CLAUDE.md`, "Source and commit conventions"; `.claude/skills/handoff/SKILL.md`).
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; record the pre-batch sha (`git rev-parse HEAD` before the commit) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
+11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - each batch is a new commit on the task branch, never an amend of a pushed one; commit the coherent batch, not unrelated foreign changes. The message body names the task id (a `Task: <id>` line, or the id stated in a sentence) - this is what `git log --grep=<id>` and a `docs/decisions/` file's provenance pointer resolve through; a commit that never names it leaves that pointer dead.
+12. Push the task branch (`git push -u origin <branch>`) unless the dispatch says not to, or the batch is a schema batch before its approve; the orchestrator then waits on CI with the CI credit (`CLAUDE.md`, "Source and commit conventions"; `.claude/README.md`, "CI credit").
 
-Finish with a concise summary of the batch, verification, commit (amended sha, previous sha), and next batch.
+Finish with a concise summary of the batch, verification, commit (sha, previous sha, pushed or not), and next batch.

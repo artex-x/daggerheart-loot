@@ -71,8 +71,8 @@ and the fixed cost of a run".
 When the human says stop, handoff, or the session is ending: start no new work,
 leave code at a committed boundary (never a half-batch), and run `/handoff`.
 A finished task is closed by auditing its directory against `/handoff`'s
-durable list, moving what qualifies, deleting the directory in the task's
-commit, and pushing once. No directory is exempt; a task that is planned
+durable list, moving what qualifies, deleting the directory in a closeout
+commit, and pushing. No directory is exempt; a task that is planned
 but not started keeps its directory until it ships.
 
 ## Specs are the behaviour source of truth
@@ -112,17 +112,9 @@ aligned, reuse identical image bytes, and never renumber a shipped record id.
 
 ## Quality gates
 
-Before every commit:
-
-```text
-npm run check
-```
-Agents: two foreground calls, `rtk npm run check:1` then `rtk npm run check:2`, Bash timeout 600000 each; the gate arms when both pass on one tree. Before them, `rtk npm run check:fast` - see `.claude/README.md`, "Run a long check".
-
-If a change alters what a screen draws, also run `npm run check:built`; a change under
-`supabase/` or `tests/db/` also runs `npm run check:db` (on Windows through the PowerShell tool), which the commit gate requires.
-Focused: `npm run test`, `node tests/run-all.js`, `node tests/run-all.js contracts,dataint`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
-`app/sweep` and `app/golden` are each too slow for one foreground call; run them per width/shard - `.claude/README.md`, "Batch size and the fixed cost of a run".
+Before a task-branch commit: `rtk npm run check:fast` (Bash timeout 600000). Push every batch; CI's green run of the exact tree is the full gate (one re-run of a failed `e2e` counts; a docs-only push skips `e2e`), and the CI credit arms it for the squash onto `main` - `.claude/README.md`, "Run a long check", "CI credit". Offline, `npm run check` is the full local gate (10-18 min cold: main session in the background, or the owner's terminal).
+A change under `supabase/` or `tests/db/` also runs `npm run check:db` locally (on Windows through the PowerShell tool), which the commit gate requires.
+Focused: `npm run test`, `node tests/run-all.js contracts,dataint`, `npm run check:built`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
 
 Definition of done: checks pass, fixed defects and changed behaviour have meaningful coverage, specs and fixtures match,
 and the handoff records exact commands/results. If a required check cannot run, report why before committing.
@@ -151,13 +143,10 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 - Product text may be Russian; otherwise use ASCII punctuation and characters.
 - Preserve unrelated working-tree changes. Commit only the coherent task scope.
 - Use Conventional Commits.
-- One commit per task: the first batch commits, every later batch and the
-  closeout amend it (`git commit --amend`), each amend green on its gates.
-  Push once, at closeout, after the task directory is deleted. A push closes
-  the amend window: never force-push in any form; work after a push is a new
-  commit. A push before closeout is the human's call and costs one more commit.
-  A cloud release pushes each green commit and never amends a pushed one; at
-  closeout the orchestrator squash-merges it onto `main` as one commit.
+- A task branch (`claude/<task>`) takes a new commit per batch and pushes it; never amend
+  a pushed commit, never force-push in any form. At closeout the orchestrator
+  squash-merges the branch onto `main` as the task's one commit, after a green CI run
+  of its tip (`docs/decisions/`, 2026-10-21, "A task branch pushes every batch; a green CI run of the same tree gates main").
 
 ## Comments
 

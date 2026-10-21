@@ -76,7 +76,7 @@ Batch size preference (human):
 - Split only for risk, reviewability, or independent verification
 - When you split, each batch should still be a meaningful vertical slice
 - Required outputs of a planning pass: for every split, the criterion it invokes (`CLAUDE.md`, "Task and session protocol", or a review that cannot be held in one pass), and the plan's total gate cost summed from `.claude/README.md`, "Batch size and the fixed cost of a run"
-- A batch is an amend of the task's one commit; a split is never for a commit boundary's own sake
+- A batch is one new commit on the task branch and one push; a split is never for a commit boundary's own sake
 
 Design decisions - ask sparingly:
 - Default: decide from repo, issue, screenshots, specs, and existing patterns; do not ask the human to approve routine choices
@@ -119,7 +119,7 @@ Each implement-ready batch must include:
 - Verification commands (see gate matrix below)
 - Risks / do-nots / settled decisions not to reopen
 - Fallback alternatives only when a meaningful secondary approach was considered
-- A schema batch lists `db:push --project test` and `npm run e2e` after the review's approve, never before
+- A schema batch pushes after the review's approve; CI's `migrate-test` and `e2e` run on that push
 
 A placement has to be acceptance, not a footnote: an item this plan places in a
 future batch (a deferred review nit, a nit from an earlier batch, anything not

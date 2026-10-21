@@ -414,46 +414,23 @@ describe('the stage table', () => {
     );
   });
 
-  it('runs each half between its own gate-credit steps', () => {
-    for (const n of [1, 2]) {
-      assert.equal(
-        pkg.scripts[`check:${n}`],
-        `node .claude/hooks/gate-credit.mjs begin check-${n} && node --test --test-reporter=dot tools/check/lib.test.mjs && node tools/check/run.mjs --half=${n} && node .claude/hooks/gate-credit.mjs arm check-${n}`
-      );
-    }
-    assert.equal(pkg.scripts['check:fast'], 'node tools/check/fast.mjs');
+  it('runs check:fast between its own gate-credit steps', () => {
+    assert.equal(
+      pkg.scripts['check:fast'],
+      'node .claude/hooks/gate-credit.mjs begin check-fast && node tools/check/fast.mjs && node .claude/hooks/gate-credit.mjs arm check-fast'
+    );
   });
 
-  it('puts vitest alone in half 2 and every other stage in half 1', () => {
-    for (const s of STAGES) assert.ok(s.half === 1 || s.half === 2, s.name);
+  it('has no split of the check', () => {
     assert.deepEqual(
-      STAGES.filter((s) => s.half === 2).map((s) => s.name),
-      ['vitest']
-    );
-    assert.deepEqual(
-      [...selectStages(STAGES, { half: 1 }), ...selectStages(STAGES, { half: 2 })],
-      STAGES
+      Object.keys(pkg.scripts).filter((name) => /^check:\d+$/.test(name)),
+      []
     );
   });
 });
 
 describe('selectStages', () => {
-  const table = [
-    { name: 'a', half: 1 },
-    { name: 'b', half: 1 },
-    { name: 'c', half: 2 }
-  ];
-
-  it('returns one half in table order', () => {
-    assert.deepEqual(
-      selectStages(table, { half: 1 }).map((s) => s.name),
-      ['a', 'b']
-    );
-    assert.deepEqual(
-      selectStages(table, { half: 2 }).map((s) => s.name),
-      ['c']
-    );
-  });
+  const table = [{ name: 'a' }, { name: 'b' }, { name: 'c' }];
 
   it('returns the named stages in table order, not argument order', () => {
     assert.deepEqual(
@@ -467,9 +444,7 @@ describe('selectStages', () => {
     assert.deepEqual(selectStages(table), table);
   });
 
-  it('throws on both filters, another half and an unknown name', () => {
-    assert.throws(() => selectStages(table, { half: 1, only: ['a'] }), /not both/);
-    assert.throws(() => selectStages(table, { half: 3 }), /^Error: check: no half 3/);
+  it('throws on an unknown name', () => {
     assert.throws(
       () => selectStages(table, { only: ['x'] }),
       /^Error: check: no stage named x$/

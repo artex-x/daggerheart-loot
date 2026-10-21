@@ -1,0 +1,8 @@
+# 2026-10-21 - A worktree gets the test env file at creation; db:push uses the pooler
+
+- Task: `worktree-supabase` (owner, 2026-10-21: copy the env file into each worktree, and move the token out of it; mechanism by the planner).
+- Decision: `.worktreeinclude` lists `.env.test.local`, so Claude Code copies the file into every worktree it creates, agent worktrees included; those copies accumulate, and a closeout deletes only its task worktree's copy. A worktree made by hand takes one `cp` from the main checkout (`.claude/README.md`, "A new worktree").
+- Decision (token): worktree copies of `.env.test.local` carry no account-wide token: `SUPABASE_ACCESS_TOKEN` lives in `C:\Users\Ignat\.dhloot\.env.supabase-owner`, outside every checkout, read only by the owner's interactive CLI use through `--env-file`.
+- Decision (pooler): with `SUPABASE_DB_URL_TEST` set, `db-push.mjs --project test` refuses a string that is not the test project's and runs `migrate-test.mjs` over it, CI's own path; without it, and for production, the CLI path stays.
+- Rejected: `supabase link` per worktree and an allowlist entry for it (state outside the command, the token in the CLI's reach, and it fixes IPv6 only); writing `supabase/.temp/pooler-url` (CLI-internal state); `--db-url` with `db push` (it still refuses another branch's history rows); a `WorktreeCreate` hook (it disables `.worktreeinclude`); a setup script (no creation path runs it); a loader that reads the main checkout's file (`--env-file` exits before any script runs); the token in `~/.supabase/access-token` or the keyring (the CLI reads them for agents too).
+- Evidence: the pinned CLI (2.117.0) falls back from the IPv6-only direct host only to `supabase/.temp/pooler-url`, which only `supabase link` writes.

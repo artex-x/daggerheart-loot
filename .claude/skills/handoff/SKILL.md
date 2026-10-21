@@ -21,13 +21,13 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    `.claude/templates/handoff.template.md`): decisions, deviations, partial
    progress, exact commands and results, blockers, and the exact next action.
 4. Change `CLAUDE.md` only for a new standing rule or a recurring mistake.
-5. Amend the task's commit with the task documents (`git commit --amend`),
-   green on its gates.
-6. Push only when the task is finished (below) - not at every session's end.
+5. Commit the task documents as a new commit on the task branch (never an
+   amend of a pushed commit), green on its gates, and push it.
+6. The squash onto `main` happens only when the task is finished (below).
 
 ## Finishing a task
 
-1. Start no new work; code at a committed (amended) boundary.
+1. Start no new work; code at a committed boundary.
 2. Audit every file in the directory against the durable list (below). For
    each qualifying item: grep the candidate home for a distinctive phrase
    first (it may already be there), then write it there, self-contained.
@@ -49,9 +49,12 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    an idea is named to the human in the closeout summary; then it drops.
    `issues/<id>/reviews.md` and `issues/<id>/reviews/` are scratch: their
    open rows go the same way, and the files drop with the directory.
-5. `git rm -r issues/<id>`; `git commit --amend`. Rule 2i denies while a
-   citation stands; that is the rule working - repair, do not bypass.
-6. `git push`. Once. Record the sha in the closeout summary.
+5. `git rm -r issues/<id>`; commit it as the closeout commit on the task
+   branch. Rule 2i denies while a citation stands; that is the rule working -
+   repair, do not bypass.
+6. Push the branch, credit its tip, then squash it onto `main` and push
+   `main` (`orchestrate.prompt.md`, "Task closeout and cleanup", step 8).
+   Record the sha in the closeout summary.
    A conflict on `docs/DECISIONS.md` at a rebase: `node tools/decisions.js`,
    `git add docs/DECISIONS.md`, continue. A branch that still carries inline
    `## <date> - <title>` entries: `node tools/decisions.js --split
@@ -139,4 +142,4 @@ The permanent homes of owner rules have their own budgets, in one table:
 Before collapsing, run `git log --oneline -3 -- issues/<id>/` and name the
 last pre-collapse commit in the handoff's `Cleanup performed / retained
 artifacts` line; history keeps the full text. Compaction is folded into the
-task's next amend, `.md`-only and gate-exempt.
+task's next commit, `.md`-only and gate-exempt.

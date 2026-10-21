@@ -21,6 +21,12 @@ const crypto = require('crypto');
 const { STATES } = require('./inventory.js');
 
 const DIR = path.join(__dirname, 'snapshots');
+/* In compare mode a missing or diverging state's `--update` text lands here;
+ * CI's `browser` job uploads test-output/ on failure, so a batch can take the
+ * text from the run instead of re-seeding locally (.claude/README.md, "CI
+ * credit"). */
+const ROOT = path.join(__dirname, '..', '..');
+const OUT_DIR = path.join(ROOT, 'test-output', 'golden');
 const WIDTH = 1100;
 const HEIGHT = 900;
 
@@ -511,14 +517,28 @@ if (require.main === module) {
         continue;
       }
 
+      /* Writes the text `--update` would write; returns its repository path. */
+      const keep = () => {
+        fs.mkdirSync(OUT_DIR, { recursive: true });
+        const out = path.join(OUT_DIR, slugOf(state.id) + '.txt');
+        fs.writeFileSync(out, text);
+        return path.relative(ROOT, out).split(path.sep).join('/');
+      };
       if (!fs.existsSync(file)) {
         ok(
           false,
-          `${state.id}: no golden file (${slugOf(state.id)}.txt) - node tests/app/golden.js --update`
+          `${state.id}: no golden file (${slugOf(state.id)}.txt) - node tests/app/golden.js --update; its text: ${keep()}`
         );
         continue;
       }
-      compareGolden(state.id, fs.readFileSync(file, 'utf8'), text, ok);
+      const diverged = [];
+      compareGolden(state.id, fs.readFileSync(file, 'utf8'), text, (cond, message) => {
+        if (!cond) diverged.push(message);
+      });
+      if (diverged.length) {
+        const out = keep();
+        for (const message of diverged) ok(false, `${message}\n       --update text: ${out}`);
+      }
       compared++;
     }
 

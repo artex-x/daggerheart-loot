@@ -4,9 +4,7 @@
 // states the verdict in one line either way. Never blocks. Since gate credit
 // (gate-credit.mjs) a check also arms its gate by its own exit 0, so a run
 // this hook cannot attribute may still have armed it; the line says so.
-// A half (`npm run check:1` or `check:2`) gets a verdict line from the
-// records gate-credit.mjs wrote; this hook writes nothing for it. A leading
-// `cd <dir>` names the checkout whose records are read and written.
+// A leading `cd <dir>` names the checkout whose records are read and written.
 // See .claude/README.md, "Hooks".
 //
 // It speaks because the verdict was measurably not obvious. Across 65
@@ -52,13 +50,11 @@ import {
   tokensOf,
   unwrap,
   normalizeCommand,
-  stateDir,
   CHECK_INVOCATION_RE,
-  CHECK_HALF_INVOCATION_RE,
   CHECK_DB_INVOCATION_RE
 } from './lib.mjs';
 import { readCache, treeKey, writeCache } from './tree-key.mjs';
-import { readFileSync, statSync } from 'node:fs';
+import { statSync } from 'node:fs';
 import path from 'node:path';
 
 const EVENT = 'PostToolUse';
@@ -204,56 +200,6 @@ function checkCwd(command, cwd) {
 const UNRESOLVED =
   'but its leading `cd` names no directory this hook can find, so the run cannot be attributed and nothing is recorded.';
 
-/** The verdict of `npm run check:<half>`. gate-credit.mjs writes the half
- * records; this hook only reads them, because it cannot see a run that the
- * harness moved to the background. */
-function observeHalf(half, response, cwd) {
-  if (response.interrupted === true) return undefined;
-  const other = half === '1' ? '2' : '1';
-  const exitCode = firstExitCode(response);
-  const text = responseText(response);
-  const code = exitCode === undefined ? '' : ` (exit ${exitCode})`;
-  if (
-    (exitCode !== undefined && exitCode !== 0) ||
-    FAILURE_MARKERS.some((re) => re.test(text))
-  ) {
-    return speak(
-      EVENT,
-      `npm run check:${half}: FAIL${code}. The half is not recorded - fix the failure above and run \`rtk npm run check:${half}\` again.`
-    );
-  }
-  const key = cwd === null ? null : treeKey(cwd);
-  const cache = key === null ? null : readCache('.check-cache.json', cwd);
-  if (key !== null && cache && cache.key === key) {
-    return speak(
-      EVENT,
-      cache.by === 'halves'
-        ? `npm run check:${half}: PASS - both halves passed on this tree. Commit gate armed.`
-        : `npm run check:${half}: PASS - the commit gate is armed for this tree.`
-    );
-  }
-  let record = null;
-  try {
-    if (key !== null) {
-      record = JSON.parse(
-        readFileSync(path.join(stateDir(cwd), `.check-${half}-pass.json`), 'utf8')
-      );
-    }
-  } catch {
-    // no record of this half
-  }
-  if (key !== null && record && record.key === key) {
-    return speak(
-      EVENT,
-      `npm run check:${half}: PASS - recorded for this tree. Run \`rtk npm run check:${other}\` to arm the commit gate.`
-    );
-  }
-  return speak(
-    EVENT,
-    `npm run check:${half}: no failure seen${code}, but no pass is recorded for this tree (the tree changed during the run, or its key could not be read). Run it again.`
-  );
-}
-
 function observeCheckDb(response, cwd) {
   if (response && typeof response === 'object' && response.interrupted === true)
     return undefined;
@@ -313,10 +259,6 @@ guard(() => {
 
   if (isCheckInvocation(command, CHECK_DB_INVOCATION_RE)) {
     return observeCheckDb(input.tool_response, cwd);
-  }
-  if (tool === 'Bash' && isCheckInvocation(command, CHECK_HALF_INVOCATION_RE)) {
-    const half = /\bcheck:([12])(?![:\w-])/.exec(command)[1];
-    return observeHalf(half, input.tool_response || {}, cwd);
   }
   // `npm run check` arms from Bash only: its attribution rests on the Bash
   // result shape measured in the header above.

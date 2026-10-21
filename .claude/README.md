@@ -260,7 +260,7 @@ Host and tool facts behind this design, kept so nobody re-derives them:
 | Event | Matcher | Script | What it does | Block or warn |
 |---|---|---|---|---|
 | `SessionStart` | - | `session-start.mjs` | Reports branch, HEAD, dirty files, most recently touched `issues/<id>/`. In a cloud session (`CLAUDE_CODE_REMOTE=true`) also runs seven probes - Node against `.nvmrc`, `docker info` (3 s), the puppeteer cache, `node_modules`, `gitleaks version` and `rtk --version` (2 s each), and the proxy's authorities in `~/.pki/nssdb` (`bash .claude/cloud-nss.sh --check`, 3 s: every CA by sha256 fingerprint; on a failure it names `bash .claude/cloud-nss.sh`) - each "ok" or what failed, and states the three cloud rules ("Cloud sessions"). `LOOT_SKIP_PROBES=1` (selftest) reads each probe as "skipped". | warn (informational) |
-| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The owner-only restore: a segment whose program (past `rtk`) is a package runner - `npm`, `pnpm`, `yarn`, `bun`, `npx`, `pnpx`, `bunx`, `corepack` - with a token that is exactly `restore:prod` (quoted as one word or not), or a `node` run (past `rtk`, `rtk proxy`, `npx`, `npm exec`) with a token, or the value after its first `=`, whose last path segment is `restore-prod.mjs` is denied, because only the owner restores production ("Restore production (owner)"); a search for the name (`git grep restore:prod`, `rtk grep restore:prod docs`, `git log -S restore:prod`) and reading, diffing or staging the file are not. Not matched, and left to `main`'s terminal check: `bash -c "npm run restore:prod"`, `bun <file>` and PowerShell's `Start-Process`; the rule stops accidents, and the TTY check stops an agent's run of any of them. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (CI's entry in `ci.yml` and `backup.yml`, and `RESET_COMMAND` in `tools/supabase/lib.mjs`, the drill's printed remedy; the tools spawn the platform binary), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2q** (after 2n) denies a Bash or PowerShell command with a token, or the value after a token's first `=`, whose last path segment is exactly `.env.restore.local` (the owner's backup key; readers such as `cat` and `type`, a quoted single-word path and a `<` redirect included, a quoted phrase such as a commit message not), because only `npm run restore:drill` reads that file ("Run the agent drill"); a glob that expands to it, and a PowerShell colon-bound parameter (`-Path:.env.restore.local`, whose last segment is the whole token), are not caught; **2u** (after 2n) denies a Supabase CLI command that starts, stops or resets the local stack - `start`, `stop`, `db start`, and `db reset`, `db push`, `db diff`, `migration up`, `migration down`, `test db` or `seed buckets` with none of `--linked`/`--db-url`/`--project-ref` (help is never judged) - while `stack-lock.mjs`'s `foreignStackLock()` finds a fresh lock of another checkout (a hand-written lock is always foreign), naming the holder and "45 minutes" ("Supabase configuration", "The local stack lock"); **2t** (after 2q) denies a dot-source, `source` or a file printer - `cat`, `type`, `gc`, `Get-Content`, `more`, `less`, `head`, `tail`, `bat`, `nl`, `od`, `xxd`, `strings`, `rtk read` - with an operand (a leading `<` stripped) whose last path segment starts with `.env`, because `. .env.test.local` once printed part of a value; `node --env-file=<file>`, `npm run e2e`, a search (`git grep`, `rtk grep`) and a quoted phrase are not judged (`docs/decisions/`, 2026-09-27, "Agents read no .env file; the program loads it with `--env-file`"); **2v** (after 2t) denies a `node` run with a token whose last path segment is `gate-credit.mjs`, because only the check chain arms a gate by its exit ("Run a long check", "Gate credit"); **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2s** (right after the blocklist, so a reviewer's `git reset --hard` keeps the blocklist's message) judges only `agent_type` `reviewer` and denies a git write subcommand (`add`, `am`, `apply`, `checkout`, `cherry-pick`, `clean`, `commit`, `merge`, `mv`, `pull`, `push`, `rebase`, `reset`, `restore`, `revert`, `rm`, `stash` but `stash list` and `stash show`, `switch`, `update-ref`, `worktree`; `branch` with a delete, move, copy or force flag; `tag` with a delete flag), a file writer (`rm`, `rmdir`, `mv`, `cp`, `touch`, `mkdir`, `tee`, `ln`, `chmod`, `chown`, `truncate`, `dd`, `patch`, `sed` or `perl` with `-i` alone, with a suffix, in a cluster or as `--in-place`), a writing cmdlet (`Set-Content`, `Add-Content`, `Out-File`, `New-Item`, `Remove-Item`, `Move-Item`, `Copy-Item`, `Rename-Item`, `Clear-Content`, `Set-Item` and their aliases, `del`, `erase`, `rd`, `copy`, `move`, `ren` and `md` included), a formatter or linter run with a `--write` or `--fix` token (Prettier's `-w` too, directly or through `npx`, `pnpx` or `bunx`), an `npm` verb but `ls`, `list`, `ll`, `la`, `view`, `info`, `show`, `outdated`, `explain`, `why` and `help`, a Supabase CLI call but `status` and help, and an output redirect to a file but `/dev/null`, `nul` or `$null` (`2>&1` and `>&2` are not a file), because the reviewer is read-only except its report (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"); **2r** (right after 2n) denies a migration write to the test project - `npm run db:push` with `--project test`, a `node` run of `db-push.mjs` with `--project test`, a Supabase CLI `db push` without `--dry-run` or `migration up` whose target is the test project, and, in a cloud session only, a `git push` without `--dry-run`/`-n` whose `HEAD:supabase/migrations` tree differs from its upstream's (else `origin/main`'s) - while `supabase/migrations` has uncommitted changes, or while no `issues/*/reviews/*.md` of the session's checkout reads `Verdict: approve` with a `Reviewed:` commit whose `supabase/migrations` tree equals `HEAD`'s (`lib.mjs`, `parseReviewHead`; the head lines of `.claude/templates/review.template.md`); the deny names the short tree hash and each report seen; no migrations tree at `HEAD`, or a git failure, allows; a local `git push` is not judged, because a local release pushes once, at closeout, after its review (`docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); **2o** in a cloud session only, denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (the
+| `PreToolUse` | `Bash\|PowerShell` | `bash-guard.mjs` | A PowerShell command is normalised first (each backtick and the character after it become a space, `\` becomes `/`) and then judged by the same families; a cmdlet such as `Remove-Item` is not judged (`docs/DECISIONS.md`, 2026-09-24). Every git rule reads `rtk git` and `rtk proxy git` as `git`, and skips git's value-less global options (`--no-pager`, `-P`, `-p`, `--paginate`, `--no-replace-objects`, the pathspec flags, `--no-optional-locks`, `--bare`) before the subcommand. Persistence-era families, after attribution: **2n** is an allowlist of `supabase` commands, deny by default (`docs/DECISIONS.md`, 2026-09-25, "Agents may write to the test project; production is CI's or the owner's"): `--help` or `-h` anywhere is allowed (help never writes, and the CLI refuses a help flag in a value position), while `--version` and `-v` pass only on the bare CLI (`db reset --version <timestamp>` is a reset); a `db *`, `migration *` or `config push` command whose every target is the test project - `--project-ref rdjxcjkhsklhprmzxajq` (`TEST_PROJECT_REF`, equal to `PROJECTS.test` in `tools/supabase/lib.mjs`, which `tests/derived.js` asserts), or a `--db-url` with no query string whose host is `db.<ref>.supabase.co` (user `postgres` or `postgres.<ref>`) or a `*.pooler.supabase.com` host with the user `postgres.<ref>` - is allowed, while `--linked`, a variable or no target is no proof; otherwise the first two words look up a table: always allowed are the bare CLI, `start`, `stop`, `status`, `init`, `completion`, `migration new`, `functions new`, `functions serve`, `test new`, `config diff` and `db start` (it has no `--local` flag and only ever starts the local database); `db push` and `db dump` need `--dry-run` or the local stack; `db reset`, `migration down`, `migration list`, `migration squash`, `db diff`, `db lint`, `gen types`, `test db`, `inspect db` and `seed buckets` need `--local` with none of `--linked`/`--db-url`/`--project-ref`; `migration up` needs none of those three; every other pair (`link`, `login`, `secrets`, `functions deploy`, `storage`, `projects`, `config push` or `migration repair` without the test target, an unknown word) is denied. `npm run config:push`/`db:push`/`limits:set` is allowed only with `--project test` and no other `--project`; the script is read past a leading `rtk`, npm's flags on either side of the verb (`-s`, `--silent`, `-q`, `--loglevel <v>` or `=<v>`, any other `-` token; before the verb, any other `--name` without `=` takes the next token as its value unless that token is a verb or a flag, so `npm --registry x run db:push` is judged) and the verbs `run`, `run-script`, `rum` and `urn`. The owner-only restore: a segment whose program (past `rtk`) is a package runner - `npm`, `pnpm`, `yarn`, `bun`, `npx`, `pnpx`, `bunx`, `corepack` - with a token that is exactly `restore:prod` (quoted as one word or not), or a `node` run (past `rtk`, `rtk proxy`, `npx`, `npm exec`) with a token, or the value after its first `=`, whose last path segment is `restore-prod.mjs` is denied, because only the owner restores production ("Restore production (owner)"); a search for the name (`git grep restore:prod`, `rtk grep restore:prod docs`, `git log -S restore:prod`) and reading, diffing or staging the file are not. Not matched, and left to `main`'s terminal check: `bash -c "npm run restore:prod"`, `bun <file>` and PowerShell's `Start-Process`; the rule stops accidents, and the TTY check stops an agent's run of any of them. The CLI counts as run through a path ending in `supabase` (`node_modules/.bin/supabase`), `node <...>/supabase/dist/supabase.js` (CI's entry in `ci.yml` and `backup.yml`, and `RESET_COMMAND` in `tools/supabase/lib.mjs`, the drill's printed remedy; the tools spawn the platform binary), a package runner - `npx`, `bunx`, `pnpx`, `npm exec`/`x`, `pnpm exec`/`dlx`, `yarn exec`/`dlx`, `bun x` (past its flags, a `-p`/`--package` value and a bare `--`) - or `rtk`; **2q** (after 2n) denies a Bash or PowerShell command with a token, or the value after a token's first `=`, whose last path segment is exactly `.env.restore.local` (the owner's backup key; readers such as `cat` and `type`, a quoted single-word path and a `<` redirect included, a quoted phrase such as a commit message not), because only `npm run restore:drill` reads that file ("Run the agent drill"); a glob that expands to it, and a PowerShell colon-bound parameter (`-Path:.env.restore.local`, whose last segment is the whole token), are not caught; **2u** (after 2n) denies a Supabase CLI command that starts, stops or resets the local stack - `start`, `stop`, `db start`, and `db reset`, `db push`, `db diff`, `migration up`, `migration down`, `test db` or `seed buckets` with none of `--linked`/`--db-url`/`--project-ref` (help is never judged) - while `stack-lock.mjs`'s `foreignStackLock()` finds a fresh lock of another checkout (a hand-written lock is always foreign), naming the holder and "45 minutes" ("Supabase configuration", "The local stack lock"); **2t** (after 2q) denies a dot-source, `source` or a file printer - `cat`, `type`, `gc`, `Get-Content`, `more`, `less`, `head`, `tail`, `bat`, `nl`, `od`, `xxd`, `strings`, `rtk read` - with an operand (a leading `<` stripped) whose last path segment starts with `.env`, because `. .env.test.local` once printed part of a value; `node --env-file=<file>`, `npm run e2e`, a search (`git grep`, `rtk grep`) and a quoted phrase are not judged (`docs/decisions/`, 2026-09-27, "Agents read no .env file; the program loads it with `--env-file`"); **2v** (after 2t) denies a `node` run with a token whose last path segment is `gate-credit.mjs`, because `gate-credit.mjs` trusts its caller's exit code, so only the check chain may run it ("Run a long check", "Gate credit"); it also denies a `node` run of `ci-credit.mjs` when the command sets `LOOT_GH_CMD` or `LOOT_HOOK_ROOT` (an env prefix, `env`, `export` or `$env:`), the script's selftest overrides, because otherwise it verifies every fact through GitHub ("CI credit"); **2p** (after 2i) denies a `git rm`, `git mv`, `rm` or `mv` whose positional token is a `supabase/migrations/<file>` that a remote-tracking ref holds, with edit-guard's lookup, fetch and message (a deletion or a rename never reaches an Edit-family tool); a source token that is a directory at, under or above `supabase/migrations/` expands to the migrations under it, and a glob in a token's last segment (`*` or `?`) expands against its parent directory, because the shell expands it only after the hook has judged the command; a move's destination directory only receives and is not expanded; a `.exe`/`.cmd`/`.ps1`/`.bat` suffix is dropped from every program (`git.exe` is `git`), and `--local=false` or `--dry-run=false` counts as absent; **2s** (right after the blocklist, so a reviewer's `git reset --hard` keeps the blocklist's message) judges only `agent_type` `reviewer` and denies a git write subcommand (`add`, `am`, `apply`, `checkout`, `cherry-pick`, `clean`, `commit`, `merge`, `mv`, `pull`, `push`, `rebase`, `reset`, `restore`, `revert`, `rm`, `stash` but `stash list` and `stash show`, `switch`, `update-ref`, `worktree`; `branch` with a delete, move, copy or force flag; `tag` with a delete flag), a file writer (`rm`, `rmdir`, `mv`, `cp`, `touch`, `mkdir`, `tee`, `ln`, `chmod`, `chown`, `truncate`, `dd`, `patch`, `sed` or `perl` with `-i` alone, with a suffix, in a cluster or as `--in-place`), a writing cmdlet (`Set-Content`, `Add-Content`, `Out-File`, `New-Item`, `Remove-Item`, `Move-Item`, `Copy-Item`, `Rename-Item`, `Clear-Content`, `Set-Item` and their aliases, `del`, `erase`, `rd`, `copy`, `move`, `ren` and `md` included), a formatter or linter run with a `--write` or `--fix` token (Prettier's `-w` too, directly or through `npx`, `pnpx` or `bunx`), an `npm` verb but `ls`, `list`, `ll`, `la`, `view`, `info`, `show`, `outdated`, `explain`, `why` and `help`, a Supabase CLI call but `status` and help, and an output redirect to a file but `/dev/null`, `nul` or `$null` (`2>&1` and `>&2` are not a file), because the reviewer is read-only except its report (`docs/decisions/`, 2026-09-27, "The reviewer writes its report to `issues/<id>/reviews/` and nowhere else"); **2r** (right after 2n and 2o) denies a migration write to the test project - `npm run db:push` with `--project test`, a `node` run of `db-push.mjs` with `--project test`, any `node` run of `migrate-test.mjs` (it refuses every other target), a Supabase CLI `db push` without `--dry-run` or `migration up` whose target is the test project - while `supabase/migrations` has uncommitted changes, or while no `issues/*/reviews/*.md` reads `Verdict: approve` with a `Reviewed:` commit whose `supabase/migrations` tree equals `HEAD`'s (`lib.mjs`, `parseReviewHead`; the head lines of `.claude/templates/review.template.md`); the checkout that decides is the one that holds a named `db-push.mjs` or `migrate-test.mjs` (`git rev-parse --show-toplevel` in the script's directory, because each script pushes its own checkout's migrations), else the one of `cwd` (`git -C <dir>` moves it); the deny names the short tree hash and each report seen; no migrations tree at `HEAD`, or a git failure, allows. In every session it also judges a `git push` without `--dry-run`/`-n`, because every pushed `claude/**` branch runs CI's `migrate-test`: it denies `--all` and `--mirror` and a source that does not resolve; for each refspec source (no refspec: `HEAD`) whose `supabase/migrations` tree differs from its upstream's (else `origin/main`'s), every file must have the same blob on `origin/main`, in the tree of an approving report, or on a `refs/remotes/origin/*` ref - a file already on the remote has reached `migrate-test` (or production) already, whoever pushed it, and the rule passes the union tree of a merge of `origin/main` - else it denies, naming the files (`docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review", amended 2026-10-21); **2o** in a cloud session only (before 2r, so it keeps its own message), denies a `git push` from `main` or a detached HEAD, with `--all`/`--mirror`/`--tags`/`--delete`/`-d`, or to any destination but the current branch or `HEAD`; **2x** (after 2v, every host) denies a push that updates `main` - the current branch `main` with no refspec or with `HEAD`, a bare push whose `@{push}` is `refs/remotes/<remote>/main` (`push.default=upstream`), a refspec destination `main`, `heads/main` or `refs/heads/main` (`HEAD:main` from a task branch included), a delete of `main` (`:main`, `--delete main`), `--all`, `--mirror` - unless `.check-cache.json` holds `commitKey(<source sha>)` (`tree-key.mjs`: the tree key that the working tree has when it equals that commit), because a task-branch commit passes 2e on `check:fast` alone, and `merge`, `cherry-pick` and `revert` commit on `main` without a `git commit` that 2e could see; the deny names `node <checkout>/.claude/hooks/ci-credit.mjs <tip sha>` and `npm run check` ("CI credit"); **2l** runs `gitleaks git --pre-commit --staged --config .gitleaks.toml --redact` (4 s timeout per scan, so two scans fit the hook's 10 s) before every non-dry-run `git commit` and denies on a finding, naming `file:line (rule)` and never the secret - it speaks, and allows, when gitleaks is missing, slow or fails, and has no bypass; for `git commit -a` or a commit with a pathspec (`--pathspec-from-file` counts as the whole tree) it runs a second scan without `--staged` (the unstaged working-tree diff), so the two scans cover whatever any commit form can take from the tree, and a finding in either denies; **2m** after the check gate: a commit staging `supabase/**` or `tests/db/**` (or `-a` over them, or a pathspec that names their unstaged changes - 2e unions the unstaged paths a pathspec matches, as it unions all of them for `-a`) needs a passing `npm run check:db` for the tree key (`.check-db-cache.json`). `SKIP_CHECK_GATE=1` bypasses 2e and 2m together. Then, as before: blocks `git reset --hard`, forced `git clean`, a `git push` with any force form, `git checkout`/`restore` discards (including `restore --staged --worktree`), `git stash drop`/`clear`, `rm -r` inside the repo with or without `-f`, `rm`/`git rm` of any file under an `issues/<id>/` or of the directory while a tracked line outside it cites `issues/<id>/` (a `git show <sha>:path` citation is exempt), blanket staging (`git add -A`, `git commit -a`) with 2+ dirty paths, AI attribution in a commit message, commits when `npm run check` has not passed for the covered paths (rule 2e: `.check-cache.json` holds the tree key; on a branch other than `main`, not detached, also `.check-fast-pass.json`, the record of a `check:fast` exit 0 - the `main` rule, `.check-cache.json` only, also applies when the branch cannot be read, when `git -C` names another checkout, and when an earlier segment of the command runs `checkout`, `switch`, `merge`, `pull`, `rebase`, `reset` or `stash`, because the hook reads the branch before the command runs; the
 fingerprint drops every `isExempt()` path - `issues/<id>/` markdown,
 `.claude/README.md`, `docs/specs/` - so an edit confined to those cannot
 arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a subagent (rule 2g, plain or `rtk`-prefixed; only when `agent_id` is in the hook input, because a subagent's background run dies with its turn, while the main session is notified at the exit and the check arms the gate by its own exit), a `npm run check`/`check:built` inside a pipe or redirected to a file (rule 2k - the pipe hands the tool the last stage's status, so a failed check reads as a pass; the redirect hides the stdout the gate needs), and `grep -n`/`tail -c` in a shape `rtk 0.48.0` is measured never to rewrite (`grep -n`: a non-final pipe stage, inside `$(...)`/backtick, or wrapped by `xargs`/`nohup`/`time`; `tail -c`/`--bytes`: any position at all, chain or pipe - it has no byte-offset rewrite) - a bare, chained (`&&`/`;`/`cd`), or pipe-final-stage `grep -n` passes through for RTK's own hook to rewrite; restructure a denied one into `rtk grep`/`rtk read`. **2w** (right after 2j) denies `git status`, `git log` without `-p`/`-u`/`--patch`/`-L`, `git branch`, `git worktree list`, `ls`, `cat`, `grep`, `rg`, `vitest` or `npx vitest` without `--coverage`, `prettier`/`npx prettier` and `eslint`/`npx eslint` in a pipe stage whose next stage is `head` or `tail`, because `rtk 0.48.0` never rewrites a pipe stage that is not the last; the deny names the bounded form (`git log -<n>`, `rtk read <file> --max-lines <n>`, `rtk grep --max <n>`, the command without the pipe) and, for git, `git.exe` in an isolated `agent-*` worktree. Not judged: `git show` and `git diff` (RTK never truncates them, so dropping the pipe raises the output), `npm run <script>` (2k owns `check`), a `--coverage` vitest run (RTK drops the coverage table), `git.exe`, a wrapper (`time`, `nohup`, `xargs`, `env`, `command`; an env-var prefix is judged), a pipe into any program but `head`/`tail`, and a substitution (`docs/decisions/`, 2026-10-01, "An RTK command piped into head or tail is denied when RTK bounds it"). Reminds once per session per command family before a long check, including an unsharded `golden.js`/`sweep.js` call - a sharded `run-all.js --shard=n/m` call is not read as the safe form by contrast, it gets the same reminder on its own merits, since a single bin can itself run past the idle-host minute mark (`.claude/README.md`, "Batch size and the fixed cost of a run"). | **block** (+ one allow-and-remind case) |
@@ -271,12 +271,15 @@ arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a suba
 | `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`, where the review register `reviews.md` and the reports under `reviews/` count as task documents too), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
-Two modules under `.claude/hooks/` are not registered hooks: `gate-credit.mjs`
-(the `begin` and `arm` steps of the `npm run check` chain, and the credit
-that `tests/db/run.mjs` imports; "Run a long check", "Gate credit") and
-`stack-lock.mjs` (the local stack lock that `tests/db/run.mjs`,
+Three modules under `.claude/hooks/` are not registered hooks: `gate-credit.mjs`
+(the `begin` and `arm` steps of the `npm run check` and `check:fast` chains,
+and the credit that `tests/db/run.mjs` imports; "Run a long check", "Gate
+credit"), `stack-lock.mjs` (the local stack lock that `tests/db/run.mjs`,
 `restore-drill.mjs` and rule 2u read; "Supabase configuration", "The local
-stack lock"). Both are in the selftest's fail-open loop.
+stack lock") and `ci-credit.mjs` (the CLI that arms the gates from a green
+CI run; "CI credit"). The first two are in the selftest's fail-open loop;
+`ci-credit.mjs` reads no stdin, and the selftest runs it against a fixture
+checkout with a fake `gh` (`LOOT_GH_CMD`).
 
 **Settings besides hooks.** `.claude/settings.json` also sets `attribution`
 (`commit` and `pr` empty, so the harness adds no attribution line) and `env`
@@ -316,16 +319,17 @@ mid-session blocked a command minutes later, so the scripts are re-read per
 invocation here. Do not rely on either behaviour across hosts.
 
 These runtime files live under `.claude/` and are gitignored
-(`.claude/.gitignore`). A worktree session keeps the two caches, the
-pending files, the half records and the index copies in the worktree's own
-`.claude/` ("Known limitations", the desktop worktree session):
+(`.claude/.gitignore`). A worktree session keeps the caches, the pending
+files, the fast record and the index copies in the worktree's own `.claude/`
+("Known limitations", the desktop worktree session):
 
 | File | Written by | Contents |
 |---|---|---|
-| `.check-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check`; `by` is `observer` (the hook saw the output), `exit` (the check's own exit armed it) or `halves` (`check:1` and `check:2` passed on this key). |
-| `.check-1-pass.json`, `.check-2-pass.json` | `gate-credit.mjs` | `{ key, at }` of the last pass of that half ("Two halves" below). Only `gate-credit.mjs` writes them; `check-observer.mjs` reads them. |
-| `.check-1-pending.json`, `.check-2-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running half, as `.check-pending.json`. |
-| `.check-db-cache.json` | `check-observer.mjs`, `gate-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check:db`, against the same tree key. |
+| `.check-cache.json` | `check-observer.mjs`, `gate-credit.mjs`, `ci-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check`; `by` is `observer` (the hook saw the output), `exit` (the check's own exit armed it), `ci` (a green CI run of the same tree; `command` is `ci run <id>`) or, in an old record, `halves` (the retired two-call check). |
+| `.check-fast-pass.json` | `gate-credit.mjs` | `{ key, at, command, by: "exit" }` of the last `npm run check:fast` exit 0. Rule 2e accepts it on a task branch only. |
+| `.check-fast-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running `check:fast`, as `.check-pending.json`. |
+| `.check-1-pass.json`, `.check-2-pass.json`, `.check-1-pending.json`, `.check-2-pending.json` | `gate-credit.mjs` before 2026-10-21 | The records of the retired two-call check. Nothing reads them; they stay ignored because old checkouts still hold them. |
+| `.check-db-cache.json` | `check-observer.mjs`, `gate-credit.mjs`, `ci-credit.mjs` | `{ key, at, command, by }` for the last passing `npm run check:db`, against the same tree key. |
 | `.check-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }`: the tree key at the start of the running `npm run check` and its script shell; `arm` reads it, and deletes it when the `ppid` is its own run's. Gitignored, because an unignored file would change the key it records (`tests/derived.js` pins the line). |
 | `.check-db-pending.json` | `gate-credit.mjs` | `{ key, at, ppid }` of the running `npm run check:db`. |
 | `.check-index-<pid>` | `tree-key.mjs` | A throwaway copy of the real index for one process, never the index itself; `treeKey()` deletes it after the read, so two processes never share one copy. Main's older `tree-key.mjs` writes `.check-index`, which stays ignored. |
@@ -357,10 +361,14 @@ to 600000:
 rtk npm run check
 ```
 
-An agent runs it as its two halves, `rtk npm run check:1` and `rtk npm run
-check:2`, after the fast pre-check `rtk npm run check:fast` ("Two halves"
-and "The fast pre-check" below); the rules below apply to each call. Each
-part is load-bearing:
+On a task branch an agent runs only the fast pre-check `rtk npm run
+check:fast` before a commit, then pushes: CI's run on the pushed commit is
+the full gate ("The fast pre-check" and "CI credit" below). The full `npm
+run check` takes 10-18 min cold, so it runs in the main session with
+`run_in_background` or in the owner's terminal, never in a subagent, whose
+turn can end before the run and lose the verdict; it arms the gate by its
+own exit. The rules below apply to every check call. Each part is
+load-bearing:
 
 - **No pipe needed to learn whether it passed** - and, since candidate 46,
   no pipe allowed. `rtk` propagates the
@@ -445,7 +453,8 @@ npm run check:db
 A run resets the database three times whatever the migration count (the
 runner, the applier test, the walk; `docs/DECISIONS.md`, 2026-09-25). One
 `db reset --local` took 77 s and a warm run 532-811 s (measured 2026-10-14/15
-on this host), past the tool's 600 s cap, so a run arms the gate by its own
+on this host; 817 s of suite time for 562 tests on 2026-10-21, about 15 min
+with the stack start), past the tool's 600 s cap, so a run arms the gate by its own
 exit ("Run a long check", "Gate credit"). The runner fails in seconds:
 
 | FAIL line | Cause | Remedy |
@@ -499,59 +508,145 @@ passed and armed the gate. A hand run of `gate-credit.mjs` is denied (rule
 trusts the chain's exit, so a step that exits 0 on a failure would credit
 it; the observer's FAIL markers still speak for a foreground run.
 
-**Two halves.** An agent runs the gate as two foreground calls, each with the
-Bash timeout set to 600000 (`docs/decisions/`, 2026-10-07, "The commit gate
-arms when both halves of the check pass on one tree"):
+**CI credit.** A task branch pushes every batch, and a green CI run of the
+exact tree is the full gate (`docs/decisions/`, 2026-10-21, "A task branch
+pushes every batch; a green CI run of the same tree gates main"). `ci.yml`
+runs on a push of `claude/**` beside `main`. After a push the orchestrator,
+in the main session, runs one background call with the script's path in the
+batch's worktree:
 
 ```text
-rtk npm run check:1
-rtk npm run check:2
+node <worktree>/.claude/hooks/ci-credit.mjs <sha> [--run <id>]
 ```
 
-`check:1` runs every stage of `STAGES` except `vitest`; `check:2` runs
-`vitest`. Each half has its own `begin` and `arm` (`check-1`, `check-2`).
-`arm` writes `.check-<n>-pass.json` with the tree key, then reads the other
-half's record:
-- the same key: it writes `.check-cache.json` with `by: "halves"` and prints
-  `gate credit: armed (npm run check:1 and npm run check:2 passed on this tree)`;
-- no record or another key: it prints `gate credit: npm run check:<n>
-  passed; run npm run check:<m> on this tree to arm the gate`;
-- a half that fails, or a tree that changed during the half, writes nothing.
-The order of the halves is free. An edit between them gives two keys, so the
-half with the old key runs again; an edit undone (K, K', K) is the same
-content and arms. When the tool moves a half to the background, stay in the
-turn until it exits and read its output for the `gate credit:` line; run the
-half again only when that line is missing, because a re-run repeats the
-uncached stages. The exception to "each under 600 s" covers both halves:
-`check:1` runs the selftest uncached in a batch that changes the hooks (252 s
-on an idle host, 2026-10-07), and `check:2` took 308 s idle, 465-682 s
-under load (2026-10-07). Past 600 s the exit still records the half, and the
-`gate credit:` line is the evidence. `npm run check` stays the full chain,
-arms alone and is what CI runs. Until the main checkout holds this change,
-a worktree session may run the main checkout's older hooks ("Known
-limitations", the desktop worktree session): then the observer says nothing
-about a half and rules 2g and 2k do not know the halves, but the commit gate
-accepts a `.check-cache.json` with any `by`, so the halves arm it all the
-same.
+The script takes its checkout from its own location, never from the
+session's cwd, which is the main checkout and moves on a `cd`. It finds the
+newest `ci.yml` run of that commit made by a push or a dispatch (a pull
+request run does not count, and a `skip_e2e` dispatch fails condition 2),
+retrying every 10 s for 600 s (a push run can appear 6-8 min late), waits with `gh run watch <id> --exit-status`, and arms
+`.check-cache.json` and `.check-db-cache.json` (`by: "ci"`, `command: "ci
+run <id>"`) only when all three hold, each fact from GitHub through the
+authenticated `gh`:
+1. the run (`gh api repos/{owner}/{repo}/actions/runs/<id>`): `path`
+   `.github/workflows/ci.yml`, a head repository equal to this repository
+   (no fork), event `push` or `workflow_dispatch`, `completed`, `success`,
+   and `head_sha` the full sha asked for;
+2. the latest attempt's jobs: each job of `REQUIRED_JOBS` (`changes`,
+   `check`, `browser (1)` to `browser (5)`, `db`, `e2e`, `audit`,
+   `secrets`; `tests/derived.js` keeps it equal to `ci.yml`) concluded
+   `success`, with two exceptions (owner, 2026-10-21; the test host stalls
+   under frequent E2E runs):
+   - one re-run of `e2e`: the run is at attempt 2 (`run_attempt`), its
+     latest jobs are all green, and in attempt 1 (`.../attempts/1/jobs`)
+     every required job but `e2e` concluded `success` and `e2e` concluded
+     `failure`, `cancelled` or `timed_out`. Attempt 3 or later never counts,
+     and neither does a re-run after a failure outside `e2e`;
+   - a skipped `e2e`, only when the path rule below says skip. A `skip_e2e`
+     dispatch still fails here;
+3. `commitKey(<sha>)` equals `treeKey()` of the checkout: the tree that CI
+   tested is the tree about to be committed. A key that cannot be read
+   refuses, the opposite of the hooks' usual null-is-allow. On a mismatch it
+   prints the paths that differ (paths only), for example an untracked,
+   unignored file that `treeKey` counts and `commitKey` cannot see; the
+   owner removes it, or the main session runs `npm run check` instead.
+
+It prints `ci credit: armed for <short sha> (run <id>)` and exits 0, or one
+`ci credit: refused - <reason>` line per reason, writes nothing and exits 1
+(2 for a usage error). After `git fetch origin main`, a run whose `ci.yml`
+differs from `origin/main`'s is accepted with the line `ci credit: note -
+ci.yml differs from origin/main` (the owner accepts any `ci.yml`, 2026-10-21). The residual the
+owner accepted: for a push GitHub runs the pushed commit's own workflow
+file, so a branch that weakens `ci.yml` gets a green run from that file;
+`REQUIRED_JOBS` does not stop it, because the branch edits it together with
+`ci.yml`, and after the squash `main`'s own run follows the weakened file.
+The barrier is a person reading the diff: `orchestrate.prompt.md`, "When to
+run reviewer", fires on a change under `.github/workflows/`, a check script
+in `package.json`, `tools/check/` or `tests/run-all.js`, and the note
+prints. Rule 2v treats `ci-credit.mjs` apart: `gate-credit.mjs` trusts
+its caller's exit code, so only the check chain may run it, while
+`ci-credit.mjs` takes every fact from GitHub. Its two selftest overrides,
+`LOOT_GH_CMD` (a fake `gh`) and `LOOT_HOOK_ROOT` (another checkout), would
+let a hand run arm with no CI run, so rule 2v denies a `ci-credit.mjs` run
+whose command sets either.
+
+- The path rule of `e2e` (`changes` job; `e2eRuns` and `isE2eFree` in
+  `ci-credit.mjs`, one rule for CI and the credit): a push of a branch other
+  than `main` skips `e2e` when every path changed between its merge base
+  with `origin/main` and the pushed commit is E2E-free. The E2E-free paths
+  are exactly:
+  - anything under `.claude/` (the hooks, prompts, skills, settings);
+  - anything under `issues/`;
+  - anything under `docs/` except `docs/fixtures/`;
+  - any file ending in `.md`, in any directory.
+  A push of `main`, a dispatch, a pull request, an empty diff or a diff that
+  cannot be read always runs `e2e`. The diff is cumulative since the fork
+  from `main`, so a task branch that once changed code runs `e2e` on every
+  later push. `migrate-prod` and `deploy` need `changes` too.
+- Late and duplicate runs: a push run can appear minutes after the push, and
+  twice (the `c329dcc7` push of 2026-10-21 showed after about 7.5 min, as
+  two runs). Push and dispatch runs of one branch share the concurrency
+  group `ci-refs/heads/<branch>` with `cancel-in-progress`, so the newest
+  survives. The credit takes the newest push or dispatch run of the sha in
+  one `gh run list --workflow ci.yml --commit <sha>` call and waits up to
+  600 s for it. Never dispatch CI by hand for a pushed commit (owner,
+  2026-10-21: two late push runs cancelled a hand dispatch); wait for the
+  push run.
+
+- Red outside `e2e`: read `gh run view <id> --log-failed`; the fix is a
+  new commit and a new push. A failed or cancelled `e2e` alone (a newer
+  pending `e2e` of another run took the `e2e-test-project` slot, which also
+  cancels `main`'s pending `e2e` and skips its `migrate-prod` and
+  `deploy`, or the test host stalled): re-run it once with `gh run rerun
+  <id> --failed`, then the credit again; a second failure needs a new push.
+  A run cancelled by a newer push of the branch: credit the newer run. `gh` missing, signed out or
+  offline: the script names the cause and writes nothing; the offline path
+  is `npm run check` (main session, background), `npm run check:built`,
+  `node tests/run-all.js --shard=n/5` per call, `npm run check:db`, and
+  `db:push` plus `npm run e2e`.
+- A golden that CI finds missing or changed: `tests/app/golden.js` writes
+  the text `--update` would write to `test-output/golden/<slug>.txt` and
+  names the path in the failure line; the `browser` job uploads
+  `test-output/` on failure. Take it with `gh run download <id> --pattern
+  "failure-output-browser-*" --dir <scratch>`, copy the `golden/*.txt` files
+  into `tests/app/snapshots/`, read the diff, commit and push; or re-seed
+  locally with `node tests/app/golden.js --update --only=<id>` after `npm
+  run build:test`.
+- A CI `e2e` and a local `db:push` or `npm run e2e` are each a session on
+  the test project. Before a local one, run `gh run list --workflow ci.yml
+  --status in_progress --json databaseId,headBranch` once; for a listed run,
+  wait with one background `gh run watch <id> --exit-status`.
+- Closeout: merge `origin/main` into the task branch if `main` moved (never
+  a rebase of pushed commits), push, credit; then in the main checkout `git
+  pull`, `git merge --squash <branch>`, `node
+  E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>` (the
+  squash put the script in the main checkout's working tree), commit, push
+  `main` (rule 2x checks the key), and delete the remote task branch after
+  `main`'s run is green.
 
 **The fast pre-check.** `rtk npm run check:fast` (one call, Bash timeout
-600000) finds the cheap failures before the halves, and arms nothing.
+600000) finds the cheap failures before a push pays for a CI run, and its
+exit 0 arms the task-branch commit gate: the chain is `gate-credit.mjs begin
+check-fast`, `tools/check/fast.mjs`, `gate-credit.mjs arm check-fast`, which
+writes `.check-fast-pass.json` and prints `gate credit: armed (npm run
+check:fast exited 0)`. Rule 2e accepts that record on a branch other than
+`main` only.
 `tools/check/fast.mjs` takes the paths changed against `HEAD` (or
 `--base=<rev>`) and untracked files, then runs, stopping at the first
 failure:
 1. `stages`: `node tools/check/run.mjs --only=format,typecheck,test:golden`
    (prettier, svelte-check, and the 1 s test that reads every golden
-   snapshot). A passing typecheck is recorded, so `check:1` skips it.
+   snapshot). A passing typecheck is recorded, so a later local `npm run
+   check` skips it.
 2. `vitest` (when a path under `app/src/` changed): `vitest related` on the
    changed files, with coverage and its per-file thresholds limited to the
    changed sources.
 3. `budget` (when app code or the build changed): `npm run build`, then
    `npm run budget`.
 Each step prints `check:fast: <step> passed (<s> s)` or `failed (exit <n>)`;
-the last line is `check:fast: PASS in <s> s - this arms nothing; ...` or
-`check:fast: FAIL at <step>`. A change to a module that most files import
-(`lib/dict.ts`, `state/app.svelte.ts`) makes the related run close to the
-whole vitest stage; then go straight to `check:2`. Measured 215-310 s (2026-10-07).
+the last line is `check:fast: PASS in <s> s - this arms the task-branch
+commit gate; ...` or `check:fast: FAIL at <step>`. A change to a module that
+most files import (`lib/dict.ts`, `state/app.svelte.ts`) makes the related
+run close to the whole vitest stage. Measured 215-310 s (2026-10-07).
 
 **Stage cache.** Between `begin` and `arm`, the chain runs `node --test
 tools/check/lib.test.mjs` and then `node tools/check/run.mjs`, which runs
@@ -734,6 +829,14 @@ them mid-batch:
   unflushed one.
 - Docker is Rancher Desktop 1.24 (engine 29.5.3, measured 2026-09-24);
   Docker Desktop 3.6.0 is unused (its client panicked on `docker info`).
+  Its `C:\Program Files\Docker\Docker\resources\bin\docker.exe` still comes
+  first on the PATH of an agent's PowerShell (2026-10-21): `docker info`
+  panics ("indirection through nil pointer") although Rancher's engine is up.
+  Put `C:\Program Files\Rancher Desktop\resources\resources\win32\bin` first
+  on that one call's PATH (`$env:PATH = "<dir>;" + $env:PATH; npm run
+  check:db`). `rdctl start` on an app that is up without its VM says "no
+  settings to change were given" and `rdctl info` says "can't open
+  '/run/wsl-init.pid'": run `rdctl shutdown`, then `rdctl start`.
   Git Bash hangs on `docker version`: run `docker`, `npx supabase` and
   `npm run check:db` through PowerShell. Never run plain `npx supabase
   start`: the full stack's `supabase_vector` restart-loops, and `check:db`
@@ -794,14 +897,13 @@ documented; the parity rows below are replaced by the gates that survive.
 
 | gate | idle host | loaded host |
 |---|---|---|
-| `npm run check` | 10-18 min with nothing cached (2026-10-07); agents run its halves below | past the Bash tool's 600s foreground cap; a run that crosses it is backgrounded and still arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
-| `npm run check:fast` | 215-310 s (2026-10-07) | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background |
-| `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | longer; past 600 s it records the half by its exit |
-| `npm run check:2` | 308 s (2026-10-07); 344-566 s with the stack stopped and 3496-3532 tests (2026-10-08) | 465-682 s (2026-10-07); past 600 s it records the half by its exit |
+| a CI run (push to the last gate job) | 10.5-11.5 min, about 65 runner-minutes, no Actions cost (public repository; runs 39563712504 and 39599556984, 2026-10-21) | remote; the orchestrator waits with one background `ci-credit.mjs` call ("CI credit") |
+| `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21); the local floor before every task-branch commit | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background and still arms by its exit |
+| `npm run check` | 10-18 min with nothing cached (2026-10-07); the offline path only, in the main session with `run_in_background` or the owner's terminal | past the Bash tool's 600s foreground cap; it arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:built` | a few minutes | longer |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer; 723 s with WSL and Rancher up (2026-10-15) |
-| `node tests/app/sweep.js <width>` | ~320-590s per width | longer; `app/sweep` as a whole (`run-all.js app/sweep`, all four widths) is past the cap and must run width by width |
-| `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; the four shards must run separately, never as one bare `node tests/app/golden.js` call |
+| `node tests/app/sweep.js <width>` | ~320-590s per width | longer; CI's `browser` matrix runs every width; locally (the offline path) run `node tests/run-all.js --shard=n/5` per call |
+| `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | longer; CI's `browser` matrix runs every shard; a batch that adds states re-seeds them with `--update --only=<id>` or takes CI's text ("CI credit") |
 | `node tests/run-all.js <suites> --shard=n/m` | varies with what the packer bins together - measured up to ~372s for one bin (`sweep1180-ru`: 371.9s(ru)/172.7s(en), CI run `35232880507`) | longer; a shard's own bins are not interchangeable with `ci.yml`'s matrix count (`tests/derived.js` asserts the two agree) |
 
 Re-measured on this host on 2026-09-25, at the end of the accounts release:
@@ -1097,6 +1199,33 @@ adversary:
   the commit gate; CI still runs the suite.
 - Wrapper stripping covers `env`, `command`, `nohup`, `time` and `xargs`, not
   every possible launcher.
+- Rule 2r's `refs/remotes/origin/*` exemption assumes that a file already on
+  the remote has reached CI's `migrate-test`. That is false for a ref pushed
+  before 2026-10-21, when only `main` ran CI on a push, and for a ref outside
+  `claude/**` and `main`. On 2026-10-21 only `origin/claude/many-worlds-tavern`
+  adds a migration (`20261021120000_homebrew_trait_any.sql`), and a dispatch
+  applied it.
+- Nothing enforces the owner's token file: no rule denies an agent's
+  `--env-file=C:\Users\Ignat\.dhloot\.env.supabase-owner`. Rule 2n still
+  limits a Supabase CLI target to the test project.
+- The checkout of a command is read from a named script, `git -C` and the
+  session's cwd; `npm --prefix <dir>` and a `cd <dir> &&` prefix are not
+  tracked, so rules 2e, 2r and 2x judge such a command against cwd's
+  checkout.
+- Rule 2r judges a script or CLI write (`db-push.mjs --project test`,
+  `migrate-test.mjs`, `supabase db push`) by whole-tree equality of
+  `supabase/migrations` with an approved review's tree, while a `git push`
+  takes the per-file `origin/main` exemption. So a task branch that merges a
+  `main` carrying a new migration needs a fresh approval before a
+  test-project script write, even when every file is already on
+  `origin/main` (2026-10-21). Planner follow-up: extend the per-file rule to
+  script and CLI writes.
+- The `e2e` path rule (`isE2eFree` in `ci-credit.mjs`) assumes that the
+  `e2e` job reads no `*.md` file and no `docs/` file outside `docs/fixtures/`.
+  True on 2026-10-21; no test asserts it, so a change that makes `e2e` read
+  such a file must also narrow the rule.
+- `gh` can update `main` with no `git push`: `gh pr merge` and `gh api -X
+  PATCH .../git/refs/heads/main`. Rule 2x does not see them.
 - There is no guard at all against two heavy runs (`npm run check`, a
   `run-all.js` pool, a `golden.js` shard) colliding on one tree - the
   `test-output/parity.lock` mechanism that used to catch this retired with
@@ -1126,7 +1255,8 @@ adversary:
   reaches it only when the main checkout's working tree carries the commit.
   On 2026-10-07 the opposite was seen: an implementer subagent working in a
   worktree (its session cwd the worktree) got the worktree's new
-  `LONG_CHECKS` reminders for `check:fast` and `check:1`, which the main
+  `LONG_CHECKS` reminders for `check:fast` and the first half of the
+  retired two-call check, which the main
   checkout's `bash-guard.mjs` did not have. Which copy runs may depend on
   the session type; do not rely on either. The gates read the session's checkout, `lib.mjs`'s `checkoutRoot(cwd)`:
   the commit gate's tree key and caches (`stateDir(cwd)`, the worktree's
@@ -1844,8 +1974,8 @@ CLI facts (2.117.0, measured 2026-09-24):
 |---|---|---|
 | `npm run config:diff -- --project test\|prod [--env-file <path>]` | anyone; an agent only against `test` | read-only diff of `config.toml` against the project; prints `drift: none (N not-owned)` or `drift: N`, exits 2 on drift |
 | `npm run config:push -- --project test\|prod [--env-file <path>]` | the owner, in an interactive terminal | refuses without a TTY; for `prod` refuses while an `env(...)` name is unset; diffs, asks for a typed `yes`, then runs `config push` with the CLI's own prompt |
-| `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"); `--yes` needs `SUPABASE_DB_PASSWORD_TEST` | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; dry run, then `db push` (a typed `yes` without `--yes`); records nothing. It keeps `db push`, so it refuses while another branch's migration sits on the test project; CI's `migrate-test` is the path then. On a host with no IPv6 it fails with `LegacyDbConfigIpv6Error` (the CLI resolves the direct IPv6 host; this host, 2026-10-07); there the working path is `tools/supabase/migrate-test.mjs` with `SUPABASE_DB_URL` set to the test project's session pooler string (`SUPABASE_DB_URL_TEST`) |
-| `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing |
+| `npm run db:push -- --project test [--yes]` | the owner; an agent only after an approving report under `issues/*/reviews/` whose `Reviewed:` commit has `HEAD`'s `supabase/migrations` tree (rule 2r; `docs/decisions/`, 2026-09-27, "An agent pushes migrations to the test project only after an approving review"), and only while CI is down: CI's `migrate-test` applies a branch's migrations at its push | the manual path beside CI's `migrate-test`; refuses on a migration pairing error; records nothing. With `SUPABASE_DB_URL_TEST` set (the `.env.test.local` route: `node --env-file=.env.test.local tools/supabase/db-push.mjs --project test --yes`) it refuses a string that is not the test project's, asks a typed `yes` without `--yes`, and runs `tools/supabase/migrate-test.mjs` with `SUPABASE_DB_URL` set to that string in the child's environment only: file by file, each in a transaction, another branch's versions listed and not refused, and no IPv6 needed. Without it (a cloud session) the CLI path stays: dry run, then `db push`, `--yes` needs `SUPABASE_DB_PASSWORD_TEST`; it refuses while another branch's migration sits on the test project and fails with `LegacyDbConfigIpv6Error` on a host with no IPv6 route ("A new worktree" below) |
+| `npm run db:push -- --project prod` | the owner, in an interactive terminal | the fallback while CI's `migrate-prod` is broken; refuses without a TTY, and refuses `--yes`; dry run, typed `yes`, `db push`; records nothing. On a host with no IPv6 route it fails with `LegacyDbConfigIpv6Error`, as the CLI path of the test project does; a pooler route for production would need `SUPABASE_DB_URL_PROD` on the host, the owner's call (2026-10-21) |
 | `npm run limits:set -- --project test\|prod --user <email\|uuid> --key <key> --value <n>\|--default\|--clear\|--unlimited` | an agent only against `test` (rule 2n); `prod` the owner, in an interactive terminal | sets or removes one user's override of one count limit over `SUPABASE_DB_URL` from the environment; refuses a string that is not the named project's, a key not in `limit_defaults`, and a user that is not exactly one row; prints `before:` and `after:` (`200`, `unlimited`, `default 50`). `--clear` is `--default`: it deletes the override; an override does not lift the ceilings of one call (`FEATURES.md`, "Limits") |
 | `npm run check:db` | anyone (Docker; PowerShell on Windows) | layer 3 against the local stack |
 | `npm run restore:drill [-- --backup <YYYY-MM-DD\|run id> \| --safety <stamp>]` | anyone, an agent included (Docker, `gh`, the key; PowerShell on Windows) | loads a backup (the newest by default) or a safety backup into the local stack, compares the rows and resets; a PASS writes the receipt that `restore:prod` needs ("Run the agent drill") |
@@ -1871,6 +2001,41 @@ prints part of its value in the error (2026-09-26). `bash-guard.mjs` rule
 Write of the path); `node --env-file=<file>` stays the way to load one
 (`docs/decisions/`, 2026-09-27, "Agents read no .env file; the program
 loads it with `--env-file`").
+
+**A new worktree.** `.worktreeinclude` at the repository root lists
+`.env.test.local`, and `.gitignore` (`.env.*`) ignores it, so Claude Code
+copies the file into every worktree it creates - `claude --worktree`, a
+subagent with `isolation: worktree`, the desktop app's worktree sessions -
+and `node --env-file=.env.test.local tools/supabase/db-push.mjs --project
+test --yes` and `npm run e2e` run there with no owner step (`docs/decisions/`,
+2026-10-21, "A worktree gets the test env file at creation; db:push uses the
+pooler"). The file takes effect when the main checkout holds it. A worktree
+made by hand (`git worktree add`), or from a main checkout without the
+file, gets no copy; run from the main checkout `cp .env.test.local
+.claude/worktrees/<name>/` (rule 2t judges printers, not `cp`). The copies
+also reach every agent worktree, which is kept, so copies accumulate; a
+task's closeout deletes its own worktree's copy only. No copy carries an
+account-wide token: the file holds the four `E2E_*` names,
+`E2E_USER_PASSWORD`, `SUPABASE_DB_PASSWORD_TEST` and `SUPABASE_DB_URL_TEST`,
+all scoped to the test project. `SUPABASE_ACCESS_TOKEN` (a Management API
+token that can reach production) lives in
+`C:\Users\Ignat\.dhloot\.env.supabase-owner`, outside every checkout, and
+only the owner's interactive CLI use reads it, through `--env-file`: `npm
+run config:diff -- --project test --env-file
+C:\Users\Ignat\.dhloot\.env.supabase-owner` (the same for `config:push`),
+or `node --env-file=C:\Users\Ignat\.dhloot\.env.supabase-owner
+node_modules/supabase/dist/supabase.js <command>`. Not
+`~/.supabase/access-token` or the keyring: the CLI reads those for every
+caller, agents included. Why the pooler route: the pinned CLI (2.117.0)
+opens `db.<ref>.supabase.co:5432`, which answers on IPv6 only, and on a
+failure falls back only to `supabase/.temp/pooler-url`, which only
+`supabase link` writes; no checkout on this host has it, so the CLI path
+fails host-wide on a network with no IPv6 route. Proven 2026-10-21 in an
+agent worktree on this host: `node --env-file=.env.test.local
+tools/supabase/db-push.mjs --project test --yes` took the pooler route and
+printed `migrate-test: none pending` in under 1 s, exit 0. A local `npm run
+e2e` from a worktree is not proven yet; CI's green `e2e` stood in for it
+(owner, 2026-10-21).
 
 **Migration names.** A new migration's 14-digit stamp must sort after every
 migration already applied: `supabase db push` refuses a local migration that
@@ -2985,22 +3150,22 @@ Node v24.21.0, `node_modules` present from setup (`npm ls` clean):
   build:test`; Chrome for Testing from `npm ci`), golden re-seeds (the goldens are text, and ubuntu CI already
   compares Windows-seeded goldens green) and `npm run check:db` (Docker
   without the PowerShell detour; needs the image blob hosts above). Of layer
-  4 (hosted E2E), both halves run there once `.claude/cloud-nss.sh` has put
+  4 (hosted E2E), both parts run there once `.claude/cloud-nss.sh` has put
   the proxy's certificate authority in `~/.pki/nssdb` (`session-start.mjs`
   probes it): Chrome for Testing reads that store, not the system bundle,
   and without the authority it refuses the test project
   (`net::ERR_CERT_AUTHORITY_INVALID`, measured 2026-09-25), so `npm run e2e`
   stops at the page probe while its Node half (`node tests/e2e/probe.mjs`,
-  the contract, the configured build) still runs. CI's `e2e` job, by a
-  `workflow_dispatch` on the pushed branch, is layer 4's verification of
-  record. Sweep measurements there are advisory.
+  the contract, the configured build) still runs. CI's `e2e` job, on the
+  push of the branch, is layer 4's verification of record. Sweep measurements there are advisory.
 - **Host rule.** A whole release (one task id) runs fully in the cloud or
   fully locally; batches never mix hosts within a release.
-- **Branch rule.** A cloud release starts from the pushed `main` and
-  commits on the branch its session was given, pushing that branch after
-  every green commit (a reclaimed container loses what is not pushed); it
-  never amends a pushed commit, so the branch holds one commit per batch and
-  a remediation after a push is its own commit. `bash-guard.mjs` rule 2o
+- **Branch rule.** The common model of every host ("Run a long check", "CI
+  credit"), with the session's branch: a cloud release starts from the
+  pushed `main` and commits on the branch its session was given, pushing that
+  branch after every green commit (a reclaimed container loses what is not
+  pushed); it never amends a pushed commit, so the branch holds one commit
+  per batch and a remediation after a push is its own commit. `bash-guard.mjs` rule 2o
   allows exactly a push of the current branch and denies any other push in
   a cloud session. At closeout the orchestrator, on a host whose push rule
   allows it, squash-merges the branch onto `main` as the release's one

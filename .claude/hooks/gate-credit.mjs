@@ -5,11 +5,11 @@
 // docs/decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md is the
 // decision; .claude/README.md, "Run a long check", is the procedure.
 //
-// The halves `npm run check:1` and `check:2` each record a pass for their
-// tree key; the second record on the same key arms the check's gate
-// (docs/decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md).
+// `npm run check:fast` arms `.check-fast-pass.json`, which bash-guard.mjs rule
+// 2e accepts on a task branch only
+// (docs/decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md).
 //
-// CLI: `node .claude/hooks/gate-credit.mjs begin|arm check|check-1|check-2|check-db`, run
+// CLI: `node .claude/hooks/gate-credit.mjs begin|arm check|check-fast|check-db`, run
 // only by the check chain in package.json (bash-guard.mjs rule 2v denies a
 // hand run). tests/db/run.mjs imports beginCredit and armCredit. Every path
 // exits 0 and never throws: a credit step must never turn a green check red.
@@ -22,47 +22,12 @@ import { readCache, treeKey, writeCache } from './tree-key.mjs';
 
 const NAMES = {
   check: ['.check-cache.json', 'npm run check'],
-  'check-1': ['.check-1-pass.json', 'npm run check:1'],
-  'check-2': ['.check-2-pass.json', 'npm run check:2'],
+  'check-fast': ['.check-fast-pass.json', 'npm run check:fast'],
   'check-db': ['.check-db-cache.json', 'npm run check:db']
 };
 
-/** The other half of each half: a half records its own pass, and the two
- * records on one tree key arm the check's gate. */
-const OTHER_HALF = { 'check-1': 'check-2', 'check-2': 'check-1' };
-
 function pendingPath(name) {
   return path.join(stateDir(), `.${name}-pending.json`);
-}
-
-function readJson(file) {
-  try {
-    return JSON.parse(readFileSync(file, 'utf8'));
-  } catch {
-    return null;
-  }
-}
-
-/** Records the half's pass for `key`, then arms the check's gate when the
- * other half's record holds the same key. */
-function armHalf(name, key) {
-  const [passName, command] = NAMES[name];
-  writeFileSync(
-    path.join(stateDir(), passName),
-    JSON.stringify({ key, at: Math.floor(Date.now() / 1000) })
-  );
-  const other = OTHER_HALF[name];
-  const [otherPass, otherCommand] = NAMES[other];
-  const record = readJson(path.join(stateDir(), otherPass));
-  if (!record || record.key !== key) {
-    say(`gate credit: ${command} passed; run ${otherCommand} on this tree to arm the gate`);
-    return;
-  }
-  writeCache(key, '.check-cache.json', 'npm run check:1 + npm run check:2', 'halves');
-  const written = readCache('.check-cache.json');
-  if (written && written.key === key && written.by === 'halves') {
-    say('gate credit: armed (npm run check:1 and npm run check:2 passed on this tree)');
-  }
 }
 
 function say(line) {
@@ -125,10 +90,6 @@ export function armCredit(name) {
     }
     if (pending.key !== key) {
       say('gate credit: not armed - the tree changed during the run');
-      return;
-    }
-    if (Object.hasOwn(OTHER_HALF, name)) {
-      armHalf(name, key);
       return;
     }
     writeCache(key, cacheName, command, 'exit');

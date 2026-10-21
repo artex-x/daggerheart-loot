@@ -15,7 +15,7 @@
 - Files changed:
 - Previous sha (batch diff base): the task's HEAD entering this batch - a
   reviewer reads `git diff <this> HEAD`. There is no separate "sha after
-  this amend" field: the handoff is inside the commit it would name, so
+  this commit" field: the handoff is inside the commit it would name, so
   that field is always one step behind the moment it is written.
 - Deviations and rationale:
 - Review: required (trigger: <which>), report issues/<id>/reviews/<batch>.md | not required (no trigger fired) | not run (owner's decision)

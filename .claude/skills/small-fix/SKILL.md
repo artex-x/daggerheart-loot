@@ -31,16 +31,17 @@ change. Anything else is the orchestrate path (`/orchestrate`). Read
    `context.md`.
 4. **Fix the one file**, and extend its test with the reproduced state
    (component tests end with `expectNoA11yViolations`).
-5. **Gates, none skipped**: `rtk npm run check:1` and `rtk npm run check:2`,
-   two calls, each with the Bash timeout at 600000; `npm run check:built`, because a screen
-   changed; and the golden shard(s) whose states render the touched
-   component (`node tests/app/golden.js --shard=n/4`, compare mode -
-   `--update` only when the change is intended, per `.claude/README.md`,
-   "Batch size and the fixed cost of a run").
+5. **Gates, none skipped**: `rtk npm run check:fast` (Bash timeout 600000)
+   before the commit; then push the task branch, and CI's run on it is the
+   full gate (`check`, the built app, every golden shard and sweep width;
+   `.claude/README.md`, "CI credit"). A golden the change moves on purpose
+   is re-seeded with `node tests/app/golden.js --update --only=<id>` after
+   `npm run build:test`, or taken from CI's failure artifact.
 6. **Commit** the coherent change (Conventional Commits; the author comes
    from `.claude/settings.json`), then close out per `/handoff`: status
-   `done`, retire `issues/<id>/` in the same commit (nothing cites it), and
-   push once - a small fix is still one task and one commit.
+   `done`, retire `issues/<id>/` in the same commit (nothing cites it), push,
+   and squash it onto `main` after the green run - a small fix is still one
+   task and one commit on `main`.
 
 Not this path: a second file, a new state (it needs a `STATES` entry), a
 contract or fixture change, or a symptom nobody has pinned to a width.

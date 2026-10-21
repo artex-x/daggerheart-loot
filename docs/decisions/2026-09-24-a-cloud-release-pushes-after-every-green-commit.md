@@ -1,5 +1,6 @@
 # 2026-09-24 - A cloud release pushes after every green commit; the owner squash-merges it
 
+- Amended by "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21): every host pushes every batch, and a tooling commit rides in the squash (no cherry-pick first).
 - Task: `persist-1-auth` (owner confirmation, 2026-09-24, cloud session 2).
 - Decision: a cloud session pushes its branch after every green commit (a
   reclaimed container loses what is not pushed) and never amends a pushed

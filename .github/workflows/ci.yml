@@ -1,8 +1,10 @@
 name: check
 
 on:
+  # A task branch pushes every batch, and its green run of the exact tree is
+  # the full gate for the squash onto main (.claude/README.md, "CI credit").
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   pull_request:
   workflow_dispatch:
     inputs:
@@ -22,13 +24,36 @@ permissions:
 # were "let a PR run join the `pages` group with cancel-in-progress: true",
 # an in-flight publish could be cancelled mid-deploy by an unrelated PR push.
 # So every run on main keeps the shared, never-cancelled `pages` group; any
-# other run (PR, a dispatch or a push on another branch) gets its own group
-# keyed on the ref and may cancel its own superseded runs.
+# other run (PR, a dispatch or a push of a `claude/**` task branch) gets its
+# own group keyed on the ref and may cancel its own superseded runs.
 concurrency:
   group: ${{ github.ref == 'refs/heads/main' && 'pages' || format('ci-{0}', github.ref) }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # The path rule of the hosted E2E: a push of a task branch whose every
+  # change since its merge base with main is under .claude/, issues/, docs/
+  # (not docs/fixtures/) or a *.md file skips `e2e`; the test host stalls
+  # under frequent runs. `ci-credit.mjs` holds the rule (`e2eRuns`) and
+  # accepts a skipped `e2e` only when the same rule says skip.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      e2e: ${{ steps.rule.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - id: rule
+        name: Does this push need the hosted E2E
+        run: node .claude/hooks/ci-credit.mjs --e2e-rule >> "$GITHUB_OUTPUT"
+
   check:
     runs-on: ubuntu-latest
     # No step here waits on the network long enough to need more than this,
@@ -180,7 +205,8 @@ jobs:
   # (`SUPABASE_DB_URL_TEST`, a repository secret: branch runs need it); the
   # database is the record.
   e2e:
-    if: ${{ !inputs.skip_e2e && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    needs: [changes]
+    if: ${{ (github.ref == 'refs/heads/main' || needs.changes.outputs.e2e == 'true') && !inputs.skip_e2e && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     concurrency:
@@ -275,7 +301,7 @@ jobs:
   # whose body is the reversal file (`supabase/reversals/<name>`); restoring
   # data is `.claude/README.md`, "Backups and restore".
   migrate-prod:
-    needs: [check, audit, secrets, browser, db, e2e]
+    needs: [changes, check, audit, secrets, browser, db, e2e]
     if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.skip_e2e) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -364,7 +390,7 @@ jobs:
   # job is what publishes - nothing else does.
   # ---------------------------------------------------------------------------
   deploy:
-    needs: [check, audit, secrets, browser, db, e2e, migrate-prod]
+    needs: [changes, check, audit, secrets, browser, db, e2e, migrate-prod]
     # A skipped `e2e` passes and a failed one blocks. A push to main deploys;
     # so does the owner's dispatch on main with `skip_e2e`, the escape hatch
     # for a test project that is down (.claude/README.md, "Supabase

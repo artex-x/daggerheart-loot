@@ -82,10 +82,10 @@ for the command (`node`/`vitest`/`parity`, plus a stray `chrome.exe`).
   for `check:db`): a `key` equal to `treeKey()` with `by: "exit"` means the
   run passed and armed the gate by its own exit ("Gate credit"), so resume
   the worker to commit. Otherwise resume the worker - `SendMessage` to its
-  name, see "Resume, do not replace" - with one instruction: re-run the
-  check in the foreground as its two halves, `rtk npm run check:1`, then
-  `rtk npm run check:2`, each with the Bash timeout at 600000, then commit
-  or report. It holds the context a
+  name, see "Resume, do not replace" - with one instruction: re-run
+  `rtk npm run check:fast` in the foreground with the Bash timeout at
+  600000, then commit, push or report. A full `npm run check` is yours, in
+  this session with `run_in_background`. The worker holds the context a
   fresh agent would re-derive at full cost.
 
 Prose failed at this three times; `bash-guard.mjs` now denies a subagent's
@@ -99,31 +99,44 @@ and no host-wide lock replaces it (`docs/decisions/`, 2026-09-27, "A green
 check arms the commit gate by its own exit, not a host-wide lock";
 `.claude/README.md`, "One heavy run at a time").
 
-While nothing is running, a foreground `npm run check` of your own is worth
-the few minutes: it is a status, so it is yours to take, it arms the commit
-gate for that exact tree, and it hands the resumed worker its next action
-instead of a shrug. It found eleven typecheck errors on a stalled batch this
-way, 2026-09-10.
+While nothing is running, a `npm run check` of your own, in the background,
+is worth the minutes: it is a status, so it is yours to take, it arms the
+commit gate for that exact tree by its exit, and it hands the resumed worker
+its next action instead of a shrug. It found eleven typecheck errors on a
+stalled batch this way, 2026-09-10.
+
+**CI is the full gate.** After a writer pushes, run one background call,
+`node <worktree>/.claude/hooks/ci-credit.mjs <sha>`, with the script's path
+in the batch's worktree (it judges the checkout that holds it); the harness
+notifies you at its exit. No loop, no sleep, no second call while it runs.
+Red outside `e2e`: read `gh run view <id> --log-failed` and resume the
+writer once; the fix is a new commit and a new push. A failed or cancelled
+`e2e` alone: `gh run rerun <id> --failed` once, then the credit again; the
+credit counts one such re-run (a newer pending `e2e` cancels an older
+pending one, `main`'s included, whose `migrate-prod` and `deploy` then
+skip). A push that changes only `.claude/`, `issues/`, `docs/` (not
+`docs/fixtures/`) or `*.md` since `main` skips `e2e`, and the credit
+accepts that skip. Never dispatch CI by hand for a pushed commit: a push run can appear
+6-8 min late, and twice, and the credit waits 600 s for it. The next
+batch pushes only after its predecessor's run concluded (`.claude/README.md`,
+"CI credit").
 
 Known costs in this repo:
 
 | Command | Wall clock | Fits one foreground call (600s cap)? |
 |---|---|---|
-| `npm run check:fast` | 215-310 s (2026-10-07) | yes |
-| `npm run check:1` | 252 s with the selftest uncached (2026-10-07) | yes; in a hook batch it can pass 600 s and records the half by its exit |
-| `npm run check:2` | 308 s idle, 465-682 s under load (2026-10-07) | yes on an idle host; under load it can pass 600 s and records the half by its exit |
+| `npm run check:fast` | 215-310 s (2026-10-07) | yes; the writer's local floor |
+| a CI run, push to the last gate job | 10.5-11.5 min, about 65 runner-minutes, no Actions cost (2026-10-21) | remote; one background `ci-credit.mjs` |
+| `npm run check` | 10-18 min cold (2026-10-07) | no; yours, in the background, on the offline path |
 | `npm run check:built` | a few minutes | yes |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | yes |
-| `node tests/app/sweep.js <width>` | ~320-590s per width | barely, one width at a time |
-| `node tests/app/golden.js --shard=n/4` | ~100-290s per shard | yes, one shard at a time |
+| `node tests/run-all.js --shard=n/5` | up to ~380 s per shard | yes, one shard per call, on the offline path |
 | any of the above, in a claude.ai/code cloud session | that host's own measured table: `.claude/README.md`, "Cloud sessions" | as there |
 
 So, before dispatching:
 
-- Name the checks the batch needs and say which fit one foreground call.
-- If a full `app/sweep` (all four widths) or `app/golden` (all four shards) is
-  required, expect to run it yourself width by width or shard by shard after
-  the worker commits, rather than asking a worker to babysit it in one call.
+- Name the local checks the batch needs (`check:fast`, plus `check:db` for a
+  schema batch); CI runs the rest at the push.
 - Never let two heavy runs overlap on one tree, and run at most two heavy
   agents on this host (seven exhausted its memory on 2026-09-26, status
   0xC000012D) - a vitest coverage pass started while a
@@ -357,6 +370,7 @@ Run reviewer after implement or add-source when ANY of:
 - worker reported uncertainty or deviation from plan
 - a migration, a SECURITY DEFINER function or an RLS policy changed
 - a hook, an agent definition, a prompt or `.claude/settings.json` changed
+- `.github/workflows/`, a check script in `package.json`, `tools/check/` or `tests/run-all.js` changed (the CI credit accepts a branch's own `ci.yml`; `.claude/README.md`, "CI credit")
 Otherwise skip review. Record the verdict in the batch's handoff Completed
 section: `Review: required (trigger: <which>), report
 issues/<id>/reviews/<batch>.md` or `not required (no trigger fired)` - both
@@ -459,13 +473,16 @@ you count the one cycle.
   look is due, resume the same reviewer - it holds the batch
 - If still blocked after one remediation cycle -> stop and ask the human
 
-**Schema batches.** A schema batch's implementer stops after `npm run check`,
-`npm run check:db` and the commit. After the review approves, resume it once
-for `node --env-file=.env.test.local tools/supabase/db-push.mjs --project
-test --yes`, `npm run e2e` and the handoff amend. A fix that changes a
-migration needs a new approve: rule 2r compares the `supabase/migrations`
-tree of the report's `Reviewed:` commit with `HEAD`'s. In a cloud release the
-branch push waits the same way.
+**Schema batches.** A schema batch's implementer stops after `rtk npm run
+check:fast`, `npm run check:db` and the commit, unpushed. After the review
+approves, resume it once for the push: CI's `migrate-test` applies the
+branch's migrations and `e2e` runs on that push; then the CI credit as
+above. `node --env-file=.env.test.local tools/supabase/db-push.mjs --project
+test --yes` and a local `npm run e2e` are the outage path only, after one
+`gh run list --workflow ci.yml --status in_progress` check (one session on
+the test project at a time). A fix that changes a migration needs a new
+approve: rule 2r judges the pushed source's `supabase/migrations` files
+against the report's `Reviewed:` tree, `origin/main` and `origin/*`.
 
 ### Nits: they ride a fix pass; alone, they defer mid-plan and clear on the terminal batch
 
@@ -521,11 +538,11 @@ Before reporting a batch or task complete:
 1. Wait for every dispatched worker to finish or report a blocker; collect each result. If the host exposes teammate lifecycle controls, request shutdown of any remaining teammates. Do not edit or delete host-managed agent/team state by hand.
 2. Reconcile `context.md`, `plan.md`, and `handoff.md`: status, completed batch, branch/base, commits, exact checks and results, review findings, deferred work, blockers, and next action must agree. If the Stop hook named a task document over its size budget, compact it per `.claude/skills/handoff/SKILL.md` before reporting.
 3. Confirm no required acceptance criterion, review blocker, or `NEEDS_HUMAN_CONFIRMATION: yes` remains unresolved. If one remains, mark the task blocked rather than done.
-4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and amend the task's commit; the reviewer stays read-only.
+4. Inspect the final diff and working tree. Preserve unrelated changes. If in-scope changes remain uncommitted, resume the batch's writer - or dispatch exactly one - to verify and commit them as a new commit on the task branch; the reviewer stays read-only.
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.
-6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, check owner rules, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in the closeout amend - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the amend behind a passing `npm run check`. A directory whose task is planned but not started stays until that task closes.
-7. A retired task leaves nothing behind but its commit and what it wrote to permanent homes. Closeout is not finished until the closeout summary names the pushed sha and every place something was moved to.
-8. Push the task's commit once, now that the task directory is retired; record the pushed sha in the closeout summary. The amend window is closed at that push - any further work on this task is a new commit, never an amend.
+6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, check owner rules, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in a closeout commit on the task branch - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the commit behind `rtk npm run check:fast`. A directory whose task is planned but not started stays until that task closes.
+7. A retired task leaves nothing behind but its commit on `main` and what it wrote to permanent homes. Closeout is not finished until the closeout summary names the pushed sha and every place something was moved to.
+8. Land the branch: if `main` moved, merge `origin/main` into the task branch (a merge commit, never a rebase of pushed commits); push; wait with the background CI credit for its tip. Then in the main checkout: `git pull`, `git merge --squash <branch>`, `node E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>` (the squash put the script in the main checkout's working tree, so this copy judges the main checkout), commit, push `main` (rule 2x checks the key), and watch the `main` run deploy with one background `gh run watch <id> --exit-status`; a cancelled `e2e` there is `gh run rerun <id> --failed`. If the credit refuses for a differing path, the owner removes the file, or this session runs `npm run check` in the background; then commit. After `main`'s run is green, delete the remote task branch (`git push origin --delete <branch>`) and the task worktree's `.env.test.local` copy (never the main checkout's).
 9. Finish with a concise summary: outcome, commit (pushed sha), checks, cleanup, retained artifacts, deferred work, and whether human action is required.
 
 ## Rules

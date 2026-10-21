@@ -229,4 +229,4 @@ Finish with
 - Files changed
 - Commands run and results
 - Deferred items or follow-ups
-- Commit only if checks pass, using Conventional Commits as defined in `CLAUDE.md` - the first batch commits, every later batch amends (`git commit --amend`) the task's one commit; the message body names the task id. Do not push - the task's commit is pushed once, at closeout, after the task directory is retired.
+- Commit only if checks pass, using Conventional Commits as defined in `CLAUDE.md` - each batch is a new commit on the task branch, never an amend of a pushed one; the message body names the task id. Push the task branch after the commit; CI's run on it is the full gate (`.claude/README.md`, "CI credit").

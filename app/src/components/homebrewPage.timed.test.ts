@@ -77,6 +77,6 @@ describe('a set of 300 own members and 100 book items', () => {
        fold's axe runs in homebrewPage.test.ts, "lists own and book members by name, a gone
        id by its own words, and counts both" (docs/decisions/2026-10-15-a-timed-component-case-leaves-axe-to-its-sibling-test.md).
        The case took 2.0 s alone (file 12.2-12.6 s) and 2.7 s with coverage on this host
-       (2026-10-16); check:2 prints no case time. The timeout is over three times either. */
+       (2026-10-16); npm run check prints no case time. The timeout is over three times either. */
   }, 60_000);
 });

@@ -17,7 +17,7 @@ Four layers (owner, 2026-09-24):
 
 | Layer | Name | Runs | Covers |
 |---|---|---|---|
-| 1 | Unit and component | vitest with fakes, `npm run test` (inside `npm run check`; its half `npm run check:2`); a timing bound runs in the `timed` project (`*.timed.test.ts`), one file at a time after the `unit` files; a `timed` component case measures its bound, and the axe of its state runs in the sibling component test at a small count | pure logic, ports against fake clients, components with axe |
+| 1 | Unit and component | vitest with fakes, `npm run test` (inside `npm run check`, and its related files inside `npm run check:fast`); a timing bound runs in the `timed` project (`*.timed.test.ts`), one file at a time after the `unit` files; a `timed` component case measures its bound, and the axe of its state runs in the sibling component test at a small count | pure logic, ports against fake clients, components with axe |
 | 2 | Built app in a browser | `tests/app/` goldens, states, sweep, print, contracts, typo, hues over HTTP against `dist-test/`, the build with the deterministic fake cloud | every screen, signed out and signed in, offline and in parallel |
 | 3 | Database | `tests/db/`, `npm run check:db`, local Supabase in Docker (PowerShell tool on the owner's Windows host) | RLS, SQL functions, migrations and their reversals |
 | 4 | Hosted E2E | `tests/e2e/`, `npm run e2e`, against the test project `rdjxcjkhsklhprmzxajq` | real Auth, network and RLS end to end; the fake-vs-real agreement check |
@@ -1541,7 +1541,7 @@ The real Telegram connection (`client.mjs`) and the real CDN fetch
 Telegram and the CDN themselves. See `docs/tg-preview.md`.
 
 `preview/worker.test.mjs` is a separate suite again, run under `node
---test` as the stage `test:preview` of half 1: it covers the preview host's
+--test` as the stage `test:preview` of `npm run check`: it covers the preview host's
 routes through its fetch handler with a fake `fetch` - every family's 200,
 404, 503 and oversize cards, the host guard, the 302 home and the 405, the
 injection cases, the byte bounds with a cancelled stream, the lines and the
@@ -1552,7 +1552,7 @@ tail` measures them on the deployed host (`.claude/README.md`, "Preview
 host").
 
 `tools/desc-style.test.mjs` is a separate suite, run under `node --test` as
-the stage `test:desc-style` of half 1: it covers the catalog style rules of
+the stage `test:desc-style` of `npm run check`: it covers the catalog style rules of
 `tools/desc-style.mjs` (FEATURES.md, "Records", "Catalog style"): the label
 heads it writes and the prose it leaves, the rule card features and stat
 lines, each bold rule of a cost and the plain penalty, the capitalised
@@ -1660,7 +1660,9 @@ empty table, a table without a single key refused), `sequenceGuard`
 (qualified names, `GREATEST`), `cliShapedDataDump`, `receiptFor`,
 `addReceipt` and `checkReceipt` (every reason, 20 kept, one per source),
 `pgEnvFromUrl` (percent-decoding, defaults, no part of the string in an
-error) and `prodReport` (PASS, ABORTED, a refusal, a load failure with a
+error), `pushRoute` (the pooler for the test project with a test string; a
+string that is not the test project's refused with no part of it in the
+message; the CLI path without the variable and for production) and `prodReport` (PASS, ABORTED, a refusal, a load failure with a
 SQLSTATE (unchanged), a psql stop without one (state unknown, the undo
 line), a verify mismatch, a prefix that stays a prefix; no line holds a fixture
 email). The key
@@ -1671,7 +1673,8 @@ and the scripts that connect to a database
 (`db.mjs`, `migrate-test.mjs`, `pending-check.mjs`) are outside it for the
 same reason as `run.mjs` above;
 `config:push` refuses without a terminal, `db:push` without one unless
-`--project test --yes`, `check:db` exercises the pairing and marker logic
+`--project test --yes` (with `SUPABASE_DB_URL_TEST` it runs `migrate-test.mjs`,
+whose `applyPending` the local suite covers), `check:db` exercises the pairing and marker logic
 against the real directories, `db.mjs`'s `applyPending` against the
 local stack (`apply-pending.test.mjs`) and the drill's `restoreDump` and
 `resetLocal` (`restore-drill.test.mjs`) and the production restore's

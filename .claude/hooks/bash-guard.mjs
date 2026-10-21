@@ -7,8 +7,9 @@
 // so `echo npm run check` never matches and `nohup npm run check` does.
 // 2s (the reviewer's read-only Bash) runs right after the blocklist; 2r (a
 // migration write to the test project needs an approving review report)
-// runs right after 2n. 2w (an RTK command piped into head or tail) runs right
-// after 2j.
+// runs right after 2n and 2o (a cloud session pushes only its own branch).
+// 2x (a push that updates main) runs right after 2v. 2w (an RTK command
+// piped into head or tail) runs right after 2j.
 
 import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -37,10 +38,9 @@ import {
   migrationLockedMessage,
   MIGRATIONS_DIR,
   CHECK_INVOCATION_RE,
-  CHECK_HALF_INVOCATION_RE,
   parseReviewHead
 } from './lib.mjs';
-import { treeKey, readCache } from './tree-key.mjs';
+import { commitKey, treeKey, readCache } from './tree-key.mjs';
 import { foreignStackLock, holderText } from './stack-lock.mjs';
 
 const READERS = new Set([
@@ -89,13 +89,23 @@ const MSG = {
   stackLock: (lock) =>
     `Blocked: the local Supabase stack is held by ${holderText(lock)}. This command starts, stops or resets that stack under the other run. The lock is free when that run ends, or 45 minutes after it started.`,
   creditBypass:
-    'Blocked: only npm run check and npm run check:db run gate-credit.mjs; run the check instead. SKIP_CHECK_GATE=1 is the visible bypass when a check cannot run.',
+    'Blocked: only npm run check, npm run check:fast and npm run check:db run gate-credit.mjs; run the check instead. SKIP_CHECK_GATE=1 is the visible bypass when a check cannot run.',
+  ciCreditOverride:
+    'Blocked: LOOT_GH_CMD and LOOT_HOOK_ROOT replace `gh` and the checkout of ci-credit.mjs for its selftest; a run that sets one could arm the gates with no CI run. Run `node <worktree>/.claude/hooks/ci-credit.mjs <sha>` with neither set.',
   reviewerWrite:
     'Blocked: the reviewer is read-only in Bash and PowerShell: no git write, file writer, in-place sed or perl, writing cmdlet, npm script, Supabase CLI call but status or help, or output redirect to a file (docs/decisions/, 2026-09-27, "The reviewer writes its report to issues/<id>/reviews/ and nowhere else"). Write the report with the Write tool; return every other fix to the orchestrator.',
   migrationUnapproved: (tree, seen) =>
-    `Blocked: this writes supabase/migrations to the test project, and no report under issues/*/reviews/ approves that tree (${tree}): a report with "Verdict: approve" and a "Reviewed: <sha>" whose supabase/migrations tree equals HEAD's is required first (docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+    `Blocked: this writes supabase/migrations to the test project, and no report under issues/*/reviews/ approves that tree (${tree}): a report with "Verdict: approve" and a "Reviewed: <sha>" whose supabase/migrations tree equals the written tree is required first (docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+  migrationPushUnapproved: (source, files, seen) =>
+    `Blocked: a push of ${source} starts CI's migrate-test, which writes supabase/migrations to the test project, and ${files.join(', ')} is not on origin/main, on a refs/remotes/origin/* ref, or in a tree that a report under issues/*/reviews/ approves ("Verdict: approve" and a "Reviewed: <sha>"; docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+  migrationPushWide:
+    'Blocked: `git push --all` and `--mirror` push refs that rule 2r cannot judge one by one, and every pushed branch runs CI, whose migrate-test writes to the test project. Push one branch by name: `git push -u origin <branch>`.',
+  migrationPushUnresolved: (source) =>
+    `Blocked: the push source \`${source}\` does not resolve to a commit here, so rule 2r cannot read its supabase/migrations tree. Push a branch or a sha that exists: \`git push -u origin <branch>\`.`,
   migrationUncommitted:
     'Blocked: supabase/migrations has uncommitted changes; a review approves a commit. Commit them (npm run check:db first), get the review, then push.',
+  mainPush: (source, checkout) =>
+    `Blocked: this push updates \`main\` with ${source}, and \`.claude/.check-cache.json\` does not hold that commit's tree key: \`main\` takes only a commit whose tree passed the full gate. Run \`node ${checkout}/.claude/hooks/ci-credit.mjs <tip sha>\` after a green CI run of the task branch (.claude/README.md, "CI credit"), or \`npm run check\` on this tree, then commit and push again.`,
   cloudPush:
     'Blocked: a cloud session pushes only its own task branch, never `main`; the orchestrator squash-merges it onto `main` (`CLAUDE.md`). Push the current branch by name, for example `git push -u origin <current branch>`, without --all, --mirror, --tags or --delete.',
   gitleaksFinding: (hits) =>
@@ -104,7 +114,7 @@ const MSG = {
   gitleaksFailed: (what) =>
     `gitleaks did not finish (${what}); this commit was not scanned for secrets.`,
   backgroundCheck:
-    "Blocked: a subagent's backgrounded `npm run check` (or one half of it) dies with its turn. The check arms the commit gate by its own exit, but the result is lost. Run it in the foreground in this turn, Bash timeout 600000 for each call: `rtk npm run check:1`, then `rtk npm run check:2` (no pipe, no `set -o pipefail` - with nothing piping the output away, the exit code the tool reports is already the check's).",
+    "Blocked: a subagent's backgrounded `npm run check` dies with its turn. The check arms the commit gate by its own exit, but the verdict is lost. On a task branch run `rtk npm run check:fast` in the foreground (Bash timeout 600000), commit and push: CI's run on the pushed commit is the full gate. A full `npm run check` runs in the main session in the background, or in the owner's terminal.",
   blindCheckPipe:
     "Blocked: piping the check hands the Bash tool the *last* stage's exit status, not the check's, so a failed run comes back indistinguishable from a passing one and you spend a second run learning what you already ran. Drop the pipe: `rtk npm run check`, Bash timeout 600000. `rtk` propagates the child's exit code directly and prints both stdout and stderr (measured: 21,382 characters, under the tool's output cap), and check-observer.mjs reports PASS or FAIL in one line of its own - there is nothing left to recover through a pipe.",
   blindCheckRedirect:
@@ -130,6 +140,27 @@ const MSG = {
 // sanitize/segments/tokensOf/unwrap now live in lib.mjs, because
 // check-observer.mjs has to segment a command the same way this file does.
 
+// git's global options that take no value: `git --no-pager push` is a push.
+const GIT_FLAG_OPTIONS = new Set([
+  '--no-pager',
+  '-P',
+  '-p',
+  '--paginate',
+  '--no-replace-objects',
+  '--literal-pathspecs',
+  '--glob-pathspecs',
+  '--noglob-pathspecs',
+  '--icase-pathspecs',
+  '--no-optional-locks',
+  '--bare'
+]);
+
+/** True for a git global option that `gitSubcommand` and `gitDirOf` skip
+ * as one token. */
+function isGitFlagOption(t) {
+  return GIT_FLAG_OPTIONS.has(t) || t.startsWith('--git-dir=') || t.startsWith('--work-tree=');
+}
+
 function gitSubcommand(tokens) {
   // tokens[0] === 'git'
   let i = 1;
@@ -139,7 +170,7 @@ function gitSubcommand(tokens) {
       i += 2;
       continue;
     }
-    if (t.startsWith('--git-dir=') || t.startsWith('--work-tree=')) {
+    if (isGitFlagOption(t)) {
       i += 1;
       continue;
     }
@@ -148,12 +179,54 @@ function gitSubcommand(tokens) {
   return { subcommand: tokens[i], rest: tokens.slice(i + 1) };
 }
 
+/** A leading `rtk` or `rtk proxy` before git runs git itself, so every git
+ * rule judges `rtk git push` as `git push`. Other programs keep the prefix:
+ * the npm and check rules read it themselves. */
+function dropRtkBeforeGit(tokens) {
+  if (tokens[0] !== 'rtk') return tokens;
+  const skip = tokens[1] === 'proxy' ? 2 : 1;
+  return programName(tokens[skip] || '') === 'git' ? unwrap(tokens.slice(skip)) : tokens;
+}
+
 function segmentInfo(segment) {
-  const tokens = unwrap(tokensOf(segment));
+  const tokens = dropRtkBeforeGit(unwrap(tokensOf(segment)));
   if (!tokens.length) return null;
   const program = tokens[0];
   if (READERS.has(program)) return null;
   return { tokens, program };
+}
+
+// ---------- the checkout of a command (2e, 2r, the main push) ----------
+//
+// checkoutRoot() returns repoRoot() for a path outside the hook copy's own
+// checkout, so it cannot name a sibling worktree; git can.
+
+/** A Git Bash drive path (`/e/dev`) as Node on win32 reads it (`E:/dev`). */
+function nativePath(p) {
+  if (process.platform !== 'win32') return p;
+  return p.replace(/^\/([a-z])(?=\/|$)/i, (_, d) => `${d.toUpperCase()}:`);
+}
+
+/** Returns the toplevel of the checkout that holds `dir`, or null. */
+function toplevelOf(dir) {
+  const out = git(['rev-parse', '--show-toplevel'], { cwd: dir });
+  return out === null || !out.trim() ? null : path.resolve(out.trim());
+}
+
+/** Returns the directory a git segment runs in: `base`, moved by each `-C`. */
+function gitDirOf(tokens, base) {
+  let dir = base;
+  for (let i = 1; i < tokens.length; i++) {
+    const t = tokens[i];
+    if (t === '-C' && i + 1 < tokens.length) {
+      dir = path.resolve(dir, nativePath(tokens[++i]));
+    } else if (t === '-c') {
+      i++;
+    } else if (!isGitFlagOption(t)) {
+      break;
+    }
+  }
+  return dir;
 }
 
 // ---------- 2b: the blocklist ----------
@@ -869,6 +942,39 @@ function matchesPathspec(p, pathspec) {
   });
 }
 
+// A task branch also accepts the `check:fast` record: CI's run on the pushed
+// commit is its full gate (docs/decisions/, 2026-10-21, "A task branch pushes
+// every batch; a green CI run of the same tree gates main"). The hook reads the branch before
+// the command runs, so a segment that can move HEAD first, a `git -C` into
+// another checkout, or an unreadable branch gets the `main` rule.
+const MOVES_HEAD = new Set(['checkout', 'switch', 'merge', 'pull', 'rebase', 'reset', 'stash']);
+
+/** True when the commit may count the `check:fast` record: its checkout is
+ * cwd's, cwd is on a branch other than `main`, and no earlier segment of the
+ * command can move HEAD. */
+function onTaskBranch(segList, cwd) {
+  const base = cwd || repoRoot();
+  const gitSegs = segList
+    .map(segmentInfo)
+    .filter((info) => info && info.program === 'git')
+    .map((info) => ({ info, subcommand: gitSubcommand(info.tokens).subcommand }));
+  // Every segment before the last commit: `git commit; git switch main; git
+  // commit` makes its second commit on main.
+  const last = gitSegs.map((s) => s.subcommand).lastIndexOf('commit');
+  let own;
+  for (const { info, subcommand } of gitSegs.slice(0, last + 1)) {
+    if (subcommand === 'commit') {
+      if (own === undefined) own = toplevelOf(base);
+      if (own === null || toplevelOf(gitDirOf(info.tokens, base)) !== own) return false;
+    } else if (MOVES_HEAD.has(subcommand)) {
+      return false;
+    }
+  }
+  const out = git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: base });
+  const branch = out === null ? null : out.trim();
+  return Boolean(branch) && branch !== 'main' && branch !== 'HEAD';
+}
+
 function evaluateCommitGate(segList, cwd, quotedSegs = segList) {
   const info = commitInfo(segList, quotedSegs);
   if (!info.isCommit || info.hasDryRun) return null;
@@ -901,7 +1007,16 @@ function evaluateCommitGate(segList, cwd, quotedSegs = segList) {
   if (key === null) return null; // fail open: cannot fingerprint the tree
 
   const cache = readCache(undefined, cwd);
-  const needCheck = covered.length > 0 && !(cache && cache.key === key);
+  let needCheck = covered.length > 0 && !(cache && cache.key === key);
+  // Read lazily: the branch costs git calls that a matching cache never needs.
+  let taskBranch = null;
+  if (needCheck) {
+    const fast = readCache('.check-fast-pass.json', cwd);
+    if (fast && fast.key === key) {
+      taskBranch = onTaskBranch(segList, cwd);
+      if (taskBranch) needCheck = false;
+    }
+  }
   const dbCache = readCache('.check-db-cache.json', cwd);
   const needDb = dbPaths.length > 0 && !(dbCache && dbCache.key === key);
   if (!needCheck && !needDb) return null; // already passing
@@ -919,10 +1034,15 @@ function evaluateCommitGate(segList, cwd, quotedSegs = segList) {
   const alsoDb = needDb
     ? ' This commit also stages files under supabase/ or tests/db/, so run `npm run check:db` as well, in the foreground with the tool timeout set to 600000 (on Windows through the PowerShell tool).'
     : '';
+  if (taskBranch === null) taskBranch = onTaskBranch(segList, cwd);
+  const checkout = (toplevelOf(cwd || repoRoot()) || '<checkout>').replace(/\\/g, '/');
+  const run = taskBranch
+    ? "Run `rtk npm run check:fast` (Bash timeout 600000), then commit again; CI's run on the pushed commit is the full gate. The full local option is `npm run check`."
+    : `This commit is on \`main\`, a detached HEAD, another checkout or an unread branch, so only the full gate counts: run \`node ${checkout}/.claude/hooks/ci-credit.mjs <tip sha>\` after a green CI run of the same tree, or \`npm run check\` (10-18 min cold: the main session in the background, or the owner's terminal), then commit again.`;
   return {
     type: 'deny',
     id: 'commit-gate',
-    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). Run \`rtk npm run check:1\` and \`rtk npm run check:2\` (or \`npm run check\`), then commit again - a passing result is remembered until the tree changes.${alsoDb}\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
+    message: `Blocked: \`npm run check\` has not passed for this working tree (${covered.length} checked files in this commit). ${run} A passing result is remembered until the tree changes.${alsoDb}\nIf the check genuinely cannot run, say why in your summary and repeat the command with SKIP_CHECK_GATE=1 in front of it.`
   };
 }
 
@@ -1159,17 +1279,51 @@ function evaluateHostedWrite(segList) {
 // production or unnamed target. A report under issues/*/reviews/ approves
 // when its head (lib.mjs, parseReviewHead; the shape is
 // .claude/templates/review.template.md) reads "Verdict: approve" and its
-// "Reviewed:" commit has HEAD's supabase/migrations tree, so a `.md` amend
-// or a rebase keeps the approval and a changed migration needs a new one.
-// A local `git push` is not judged: a local release pushes once, at
-// closeout, after the review. Git runs only for a matching command.
+// "Reviewed:" commit has the written supabase/migrations tree, so a `.md`
+// amend or a rebase keeps the approval and a changed migration needs a new
+// one. Reports, trees and status come from the checkout the command writes
+// from: the one that holds a named db-push.mjs or migrate-test.mjs (each
+// pushes its own checkout's migrations), else cwd's (`git -C` moves it).
+//
+// A `git push` in any session starts CI's migrate-test, so each refspec
+// source is judged. A file that has the same blob on origin/main, on a
+// refs/remotes/origin/* ref or in an approved tree passes: a file already on
+// the remote has already reached migrate-test (or production), so a second
+// push of it writes nothing new. That holds whoever made the first push, and
+// it also passes the union tree of a merge of origin/main into a task branch.
+// Git runs only for a matching command.
 
 const DB_PUSH_FILE = 'db-push.mjs';
+const MIGRATE_TEST_FILE = 'migrate-test.mjs';
 
-function namesDbPushFile(token) {
+/** Returns the path in `token` (the token, or its value after `=`) whose
+ * last segment is `file`, or null. */
+function scriptPathIn(token, file) {
   const eq = token.indexOf('=');
   const candidates = eq === -1 ? [token] : [token, token.slice(eq + 1)];
-  return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === DB_PUSH_FILE);
+  return candidates.find((c) => c.replace(/\\/g, '/').split('/').pop() === file) ?? null;
+}
+
+function namesDbPushFile(token) {
+  return scriptPathIn(token, DB_PUSH_FILE) !== null;
+}
+
+/** Returns the checkout that a segment writes migrations from: the toplevel
+ * of a named db-push.mjs or migrate-test.mjs, else the toplevel of the git
+ * directory (cwd, moved by `-C`). Null when git cannot say. */
+function segmentCheckout(info, cwd) {
+  const base = cwd || repoRoot();
+  if (runsNode(info.tokens)) {
+    for (const token of info.tokens) {
+      const script =
+        scriptPathIn(token, DB_PUSH_FILE) ?? scriptPathIn(token, MIGRATE_TEST_FILE);
+      if (script === null) continue;
+      const top = toplevelOf(path.dirname(path.resolve(base, nativePath(script))));
+      if (top !== null) return top;
+      break;
+    }
+  }
+  return toplevelOf(info.program === 'git' ? gitDirOf(info.tokens, base) : base);
 }
 
 function migrationTree(ref, cwd) {
@@ -1179,29 +1333,26 @@ function migrationTree(ref, cwd) {
   return out === null ? null : out.trim() || null;
 }
 
-/** True when a cloud session's `git push` carries a supabase/migrations
- * tree that its upstream (else origin/main) does not have. */
-function cloudPushChangesMigrations(info, cwd) {
-  if (process.env.CLAUDE_CODE_REMOTE !== 'true' || info.program !== 'git') return false;
-  const { subcommand, rest } = gitSubcommand(info.tokens);
-  if (subcommand !== 'push' || rest.includes('--dry-run') || rest.includes('-n')) return false;
-  const upstream = git(['rev-parse', '--verify', '--quiet', '@{u}'], {
-    cwd: cwd || repoRoot()
-  });
-  const base = migrationTree(upstream === null ? 'origin/main' : '@{u}', cwd);
-  const head = migrationTree('HEAD', cwd);
-  return base !== null && head !== null && base !== head;
+/** Returns the `<blob> <name>` entries of `ref`'s supabase/migrations. */
+function migrationBlobs(ref, cwd) {
+  const out = git(['ls-tree', '-r', `${ref}:supabase/migrations`], { cwd });
+  if (out === null) return [];
+  return out
+    .split('\n')
+    .map((line) => /^\d+ blob ([0-9a-f]+)\t(.+)$/.exec(line))
+    .filter(Boolean)
+    .map((m) => `${m[1]} ${m[2]}`);
 }
 
-function writesTestMigrations(info, cwd) {
+function writesTestMigrations(info) {
   const { tokens } = info;
   if (npmRunScript(tokens) === 'db:push' && npmTargetsTest(tokens)) return true;
-  if (
-    runsNode(tokens) &&
-    tokens.some(namesDbPushFile) &&
-    flagValues(tokens, '--project').includes('test')
-  ) {
-    return true;
+  if (runsNode(tokens)) {
+    if (tokens.some(namesDbPushFile) && flagValues(tokens, '--project').includes('test')) {
+      return true;
+    }
+    // migrate-test.mjs refuses every target but the test project.
+    if (tokens.some((t) => scriptPathIn(t, MIGRATE_TEST_FILE) !== null)) return true;
   }
   const rest = isSupabaseCall(tokens);
   if (rest !== null && provenTestTarget(rest)) {
@@ -1209,13 +1360,13 @@ function writesTestMigrations(info, cwd) {
     if (pair === 'db push' && !boolFlagOn(rest, '--dry-run')) return true;
     if (pair === 'migration up') return true;
   }
-  return cloudPushChangesMigrations(info, cwd);
+  return false;
 }
 
-/** Returns every issues/<task>/reviews/*.md of the checkout that holds
- * `cwd` as `{ task, file, full }`. */
-function reviewReports(cwd) {
-  const issuesDir = path.join(checkoutRoot(cwd), 'issues');
+/** Returns every issues/<task>/reviews/*.md of `checkout` as
+ * `{ task, file, full }`. */
+function reviewReports(checkout) {
+  const issuesDir = path.join(checkout, 'issues');
   const list = (dir, opts) => {
     try {
       return readdirSync(dir, opts);
@@ -1244,42 +1395,150 @@ function reviewHeadOf(file) {
   }
 }
 
-/** Returns null when a report approves HEAD's migrations tree, else a
- * verdict. */
-function migrationsApproved(cwd) {
+/** Returns `{ seen, approved }`: a line per report, and the `Reviewed:` sha
+ * of each approving report. */
+function approvals(checkout) {
+  const seen = [];
+  const approved = [];
+  for (const { task, file, full } of reviewReports(checkout)) {
+    const report = reviewHeadOf(full);
+    seen.push(`${task}/${file}: ${report.verdict || 'no Verdict: line'}`);
+    if (report.verdict === 'approve' && report.reviewed) approved.push(report.reviewed);
+  }
+  return { seen: seen.length ? seen.join(', ') : 'none', approved };
+}
+
+/** Returns null when a report approves HEAD's migrations tree in
+ * `checkout`, else a verdict. */
+function migrationsApproved(checkout) {
   const status = git(
     ['status', '--porcelain', '--untracked-files=all', '--', 'supabase/migrations'],
-    {
-      cwd: cwd || repoRoot()
-    }
+    { cwd: checkout }
   );
   if (status !== null && status.trim()) {
     return { id: 'migration-uncommitted', message: MSG.migrationUncommitted };
   }
-  const head = migrationTree('HEAD', cwd);
+  const head = migrationTree('HEAD', checkout);
   if (head === null) return null;
-  const trees = new Map();
-  const seen = [];
-  for (const { task, file, full } of reviewReports(cwd)) {
-    const report = reviewHeadOf(full);
-    seen.push(`${task}/${file}: ${report.verdict || 'no Verdict: line'}`);
-    if (report.verdict !== 'approve' || !report.reviewed) continue;
-    if (!trees.has(report.reviewed)) {
-      trees.set(report.reviewed, migrationTree(report.reviewed, cwd));
-    }
-    if (trees.get(report.reviewed) === head) return null;
+  const { seen, approved } = approvals(checkout);
+  for (const sha of new Set(approved)) {
+    if (migrationTree(sha, checkout) === head) return null;
   }
   return {
     id: 'migration-unapproved',
-    message: MSG.migrationUnapproved(head.slice(0, 12), seen.length ? seen.join(', ') : 'none')
+    message: MSG.migrationUnapproved(head.slice(0, 12), seen)
   };
+}
+
+/** Parses `git push` arguments. A redirect (`2>&1`, `> log`) is not a
+ * refspec. */
+function pushArgs(rest) {
+  const positional = [];
+  let dryRun = false;
+  let wide = false;
+  let remove = false;
+  for (let i = 0; i < rest.length; i++) {
+    const t = rest[i];
+    if (PUSH_VALUE_FLAGS.has(t)) {
+      i++;
+      continue;
+    }
+    if (/^(?:\d*|&)[<>]/.test(t)) {
+      if (/^(?:\d*|&)[<>]{1,2}$/.test(t)) i++;
+      continue;
+    }
+    if (t === '--dry-run' || t === '-n') dryRun = true;
+    else if (t === '--all' || t === '--mirror') wide = true;
+    else if (t === '--delete' || t === '-d') remove = true;
+    else if (!t.startsWith('-')) positional.push(t);
+  }
+  return { dryRun, wide, remove, refspecs: positional.slice(1) };
+}
+
+/** Returns `[source, destination]` of a refspec without its `+`; a bare
+ * name is both. */
+function splitRefspec(refspec) {
+  const s = refspec.replace(/^\+/, '');
+  const colon = s.indexOf(':');
+  return colon === -1 ? [s, s] : [s.slice(0, colon), s.slice(colon + 1)];
+}
+
+function resolveCommit(source, checkout) {
+  const out = git(['rev-parse', '--verify', '--quiet', `${source}^{commit}`], {
+    cwd: checkout
+  });
+  return out === null || !out.trim() ? null : out.trim();
+}
+
+/** Returns null when the pushed migrations of `source` (`sha`) write nothing
+ * unapproved, else a verdict (D3 in the comment above). */
+function judgePushSource(source, sha, checkout) {
+  const upstream = `${source}@{u}`;
+  const hasUpstream =
+    git(['rev-parse', '--verify', '--quiet', upstream], { cwd: checkout }) !== null;
+  const base = migrationTree(hasUpstream ? upstream : 'origin/main', checkout);
+  const head = migrationTree(sha, checkout);
+  if (base === null || head === null || base === head) return null;
+  let missing = migrationBlobs(sha, checkout);
+  const drop = (ref) => {
+    const known = new Set(migrationBlobs(ref, checkout));
+    missing = missing.filter((entry) => !known.has(entry));
+    return missing.length === 0;
+  };
+  if (drop('origin/main')) return null;
+  const { seen, approved } = approvals(checkout);
+  for (const reviewed of new Set(approved)) if (drop(reviewed)) return null;
+  const refs = git(['for-each-ref', '--format=%(refname)', 'refs/remotes/origin/'], {
+    cwd: checkout
+  });
+  for (const ref of (refs || '').split('\n').filter(Boolean)) {
+    if (!ref.endsWith('/HEAD') && drop(ref)) return null;
+  }
+  return {
+    id: 'migration-push-unapproved',
+    message: MSG.migrationPushUnapproved(
+      source,
+      missing.map((entry) => entry.slice(entry.indexOf(' ') + 1)),
+      seen
+    )
+  };
+}
+
+function evaluateGitPushMigrations(info, cwd) {
+  const { subcommand, rest } = gitSubcommand(info.tokens);
+  if (subcommand !== 'push') return null;
+  const args = pushArgs(rest);
+  if (args.dryRun) return null;
+  const checkout = segmentCheckout(info, cwd);
+  if (checkout === null) return null;
+  if (args.wide) return { id: 'migration-push-wide', message: MSG.migrationPushWide };
+  if (args.remove) return null;
+  const sources = args.refspecs.length
+    ? args.refspecs.map((r) => splitRefspec(r)[0]).filter(Boolean)
+    : ['HEAD'];
+  for (const source of sources) {
+    const sha = resolveCommit(source, checkout);
+    if (sha === null) {
+      return { id: 'migration-push-unresolved', message: MSG.migrationPushUnresolved(source) };
+    }
+    const verdict = judgePushSource(source, sha, checkout);
+    if (verdict) return verdict;
+  }
+  return null;
 }
 
 function evaluateMigrationPush(segList, cwd) {
   for (const segment of segList) {
     const info = segmentInfo(segment);
-    if (!info || !writesTestMigrations(info, cwd)) continue;
-    return migrationsApproved(cwd);
+    if (!info) continue;
+    if (info.program === 'git') {
+      const verdict = evaluateGitPushMigrations(info, cwd);
+      if (verdict) return verdict;
+      continue;
+    }
+    if (!writesTestMigrations(info)) continue;
+    const checkout = segmentCheckout(info, cwd);
+    return checkout === null ? null : migrationsApproved(checkout);
   }
   return null;
 }
@@ -1474,9 +1733,13 @@ function evaluateEnvReader(quotedSegs) {
 //
 // `gate-credit.mjs arm` writes a commit gate's cache. Only the check chain
 // in package.json and tests/db/run.mjs run it, where no hook sees the call;
-// a hand run would arm a gate that no check earned.
+// a hand run would arm a gate that no check earned. ci-credit.mjs arms only
+// after GitHub reports a green run of the same tree, unless its selftest
+// overrides replace `gh` or the checkout: a run that sets one is denied.
 
 const CREDIT_FILE = 'gate-credit.mjs';
+const CI_CREDIT_FILE = 'ci-credit.mjs';
+const CI_CREDIT_OVERRIDE_RE = /\b(?:LOOT_GH_CMD|LOOT_HOOK_ROOT)\s*=/;
 
 function namesCreditFile(token) {
   const eq = token.indexOf('=');
@@ -1484,12 +1747,20 @@ function namesCreditFile(token) {
   return candidates.some((c) => c.replace(/\\/g, '/').split('/').pop() === CREDIT_FILE);
 }
 
-function evaluateCreditBypass(quotedSegs) {
+/** `rawCommand` is judged whole for the override: an env prefix, `export`
+ * and PowerShell's `$env:X = ...` set it in another word or segment. */
+function evaluateCreditBypass(quotedSegs, rawCommand = '') {
   for (const segment of quotedSegs) {
     const info = segmentInfo(segment);
-    if (!info) continue;
-    if (runsNode(info.tokens) && info.tokens.some(namesCreditFile)) {
+    if (!info || !runsNode(info.tokens)) continue;
+    if (info.tokens.some(namesCreditFile)) {
       return { id: 'credit-bypass', message: MSG.creditBypass };
+    }
+    if (
+      info.tokens.some((t) => scriptPathIn(t, CI_CREDIT_FILE) !== null) &&
+      CI_CREDIT_OVERRIDE_RE.test(rawCommand)
+    ) {
+      return { id: 'ci-credit-override', message: MSG.ciCreditOverride };
     }
   }
   return null;
@@ -1539,6 +1810,67 @@ function evaluateCloudPush(segList, cwd) {
         .replace(/^refs\/heads\//, '');
       if (dest !== branch && dest !== 'HEAD') {
         return { id: 'cloud-push', message: MSG.cloudPush };
+      }
+    }
+  }
+  return null;
+}
+
+// ---------- 2x: a push that updates main needs the full gate (deny) ----------
+//
+// Every host: `main` takes only a commit whose tree passed the full gate, a
+// local `npm run check` or a CI credit (ci-credit.mjs), because a task-branch
+// commit passes 2e on `check:fast` alone. A push guards what 2e cannot see:
+// `git push origin HEAD:main` from a task branch, and the commits that
+// `merge`, `cherry-pick` and `revert` make on `main` without `git commit`.
+
+/** Returns the sources that a push writes to `main` (`HEAD` for the current
+ * branch, '' for a delete), or none. */
+function mainPushSources(args, checkout) {
+  if (args.wide) return ['main'];
+  // git reads a destination outside refs/ through its `refs/%s` and
+  // `refs/heads/%s` rules, so `heads/main` is main too.
+  const isMain = (dest) => ['main', 'heads/main', 'refs/heads/main'].includes(dest);
+  if (args.remove) return args.refspecs.some(isMain) ? [''] : [];
+  const current = () => {
+    const out = git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: checkout });
+    return out === null ? null : out.trim();
+  };
+  if (!args.refspecs.length) {
+    const branch = current();
+    if (branch === null || branch === 'main') return ['HEAD'];
+    // push.default=upstream or a remote push refspec can send a task branch
+    // to main; @{push} names where a bare push goes.
+    const target = git(['rev-parse', '--symbolic-full-name', '@{push}'], { cwd: checkout });
+    return target !== null && /^refs\/remotes\/[^/]+\/main$/.test(target.trim())
+      ? ['HEAD']
+      : [];
+  }
+  const sources = [];
+  for (const refspec of args.refspecs) {
+    const [source, dest] = splitRefspec(refspec);
+    if (isMain(dest === 'HEAD' ? current() || '' : dest)) sources.push(source);
+  }
+  return sources;
+}
+
+function evaluateMainPush(segList, cwd) {
+  for (const segment of segList) {
+    const info = segmentInfo(segment);
+    if (!info || info.program !== 'git') continue;
+    const { subcommand, rest } = gitSubcommand(info.tokens);
+    if (subcommand !== 'push') continue;
+    const args = pushArgs(rest);
+    if (args.dryRun) continue;
+    const checkout = segmentCheckout(info, cwd);
+    if (checkout === null) continue;
+    const shown = checkout.replace(/\\/g, '/');
+    for (const source of mainPushSources(args, checkout)) {
+      const sha = source ? resolveCommit(source, checkout) : null;
+      const key = sha === null ? null : commitKey(sha, checkout);
+      const cache = readCache(undefined, checkout);
+      if (key === null || !cache || cache.key !== key) {
+        return { id: 'main-push', message: MSG.mainPush(source || 'a delete', shown) };
       }
     }
   }
@@ -1647,23 +1979,18 @@ const LONG_CHECKS = [
       `\`${joined}\` takes ${cost}. Set the tool timeout to 600000 and stay in this turn until it prints its final \`check:db: PASS\`, \`check:db: FAIL\` or \`check:db: BUSY\` line (BUSY: another checkout holds the local stack lock, and nothing ran). check-observer.mjs arms the commit gate for supabase/ and tests/db/ from the PASS line, and the suite also arms it by its own exit. Run it in the foreground, with no pipe and no redirect.`
   },
   {
-    re: /^(?:rtk\s+)?npm run check:[12](?![:\w-])/,
-    family: 'check-half',
-    cost: 'check:1 about 250 s with the hook selftest uncached and check:2 (vitest) 308 s idle, 465-682 s under load (measured 2026-10-07 on this host)',
-    message: (joined, cost) =>
-      `${longCheckMessage(joined, cost)} The commit gate arms when both halves, \`rtk npm run check:1\` and \`rtk npm run check:2\`, pass on one tree.`
-  },
-  {
     re: /^(?:rtk\s+)?npm run check(?![:\w-])/,
     family: 'check',
     cost: '10-18 min on this host with nothing cached (2026-10-07), past the 600 s cap',
     message: (joined, cost) =>
-      `\`${joined}\` takes ${cost}. Run \`rtk npm run check:1\`, then \`rtk npm run check:2\`, instead: two foreground calls with the Bash timeout set to 600000 each, and the commit gate arms when both pass on one tree; stay in this turn until each call finishes: a turn that ends with a check still running loses the result. Before them, \`rtk npm run check:fast\` finds the cheap failures and arms nothing.`
+      `\`${joined}\` takes ${cost}. On a task branch run \`rtk npm run check:fast\` instead (Bash timeout 600000; it arms the task-branch commit gate by its exit), commit and push: CI's run on the pushed commit is the full gate. Run the full check only in the main session with run_in_background, or in the owner's terminal; it arms the gate by its own exit. In the foreground, stay in this turn until it finishes: a turn that ends with it still running loses the verdict.`
   },
   {
     re: /^(?:rtk\s+)?npm run check:fast(?![:\w-])/,
     family: 'check-fast',
-    cost: '215-310 s on this host (measured 2026-10-07): longer when the changed files reach many tests'
+    cost: '215-310 s on this host (measured 2026-10-07): longer when the changed files reach many tests',
+    message: (joined, cost) =>
+      `${longCheckMessage(joined, cost)} Its exit 0 arms the commit gate on a task branch only; CI's run on the pushed commit is the full gate.`
   },
   {
     // No `--shard=` exemption, unlike `golden`/`sweep` below: a run-all
@@ -1710,7 +2037,7 @@ function evaluateBackgroundCheck(segList, toolInput, agentId) {
     const info = segmentInfo(segment);
     if (!info) continue;
     const joined = info.tokens.join(' ');
-    if (CHECK_INVOCATION_RE.test(joined) || CHECK_HALF_INVOCATION_RE.test(joined)) {
+    if (CHECK_INVOCATION_RE.test(joined)) {
       return { id: 'background-check', message: MSG.backgroundCheck };
     }
   }
@@ -1749,7 +2076,7 @@ function evaluateBackgroundCheck(segList, toolInput, agentId) {
 // gate. This fires per pipe stage, not first-segment: the recorded shapes
 // put the check behind `cd ... &&` and after `set -o pipefail;` as often as
 // not.
-const BLIND_CHECK_RE = /^(?:rtk\s+)?npm run check(?::built|:1|:2)?(?![:\w-])/;
+const BLIND_CHECK_RE = /^(?:rtk\s+)?npm run check(?::built)?(?![:\w-])/;
 
 function evaluateBlindCheck(sanitized) {
   // `2>&1` is a stderr merge, not a stdout redirect - the retired canonical
@@ -2093,6 +2420,10 @@ guard(() => {
   const hosted = evaluateHostedWrite(segList);
   if (hosted) return deny(event, hosted.message);
 
+  // Before 2r: a cloud session's push gets the cloud rule's own message.
+  const cloudPush = evaluateCloudPush(segList, cwd);
+  if (cloudPush) return deny(event, cloudPush.message);
+
   const migrationPush = evaluateMigrationPush(segList, cwd);
   if (migrationPush) return deny(event, migrationPush.message);
 
@@ -2108,11 +2439,11 @@ guard(() => {
   const envReader = evaluateEnvReader(quotedSegs);
   if (envReader) return deny(event, envReader.message);
 
-  const creditBypass = evaluateCreditBypass(quotedSegs);
+  const creditBypass = evaluateCreditBypass(quotedSegs, rawCommand);
   if (creditBypass) return deny(event, creditBypass.message);
 
-  const cloudPush = evaluateCloudPush(segList, cwd);
-  if (cloudPush) return deny(event, cloudPush.message);
+  const mainPush = evaluateMainPush(segList, cwd);
+  if (mainPush) return deny(event, mainPush.message);
 
   // A gitleaks note (not scanned) rides along with whatever speaks later,
   // or speaks alone; any deny below still wins.

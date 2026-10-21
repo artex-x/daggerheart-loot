@@ -46,6 +46,23 @@ export function dbUrlProject(url) {
   return null;
 }
 
+/** Returns the route of `db:push` for a project: `{ via: 'pooler', url }`
+ * for the test project when `SUPABASE_DB_URL_TEST` is set, else
+ * `{ via: 'cli' }`. The CLI's direct host answers on IPv6 only, and its
+ * pooler fallback needs `supabase link` (.claude/README.md, "Supabase
+ * configuration"). Throws when the variable is set but not the test
+ * project; the message holds no part of the string. */
+export function pushRoute(project, env) {
+  const url = env.SUPABASE_DB_URL_TEST;
+  if (project !== 'test' || !url) return { via: 'cli' };
+  if (dbUrlProject(url) !== 'test') {
+    throw new Error(
+      'SUPABASE_DB_URL_TEST is not the test project (the session pooler form with the user postgres.<test ref>, no query string). Nothing pushed.'
+    );
+  }
+  return { via: 'pooler', url };
+}
+
 /** Returns `{ project, ref, envFile }` from `--project test|prod` and an
  * optional `--env-file <path>`; throws when the project is absent or
  * unknown. */

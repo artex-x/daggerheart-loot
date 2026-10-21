@@ -1,7 +1,8 @@
 // CLI of the fast pre-check `npm run check:fast`: the cheap failures of the
-// gate before an agent pays for `npm run check:1` and `check:2`. It arms
-// nothing. The plan of what runs is fastPlan in lib.mjs; the procedure is
-// .claude/README.md, "Run a long check", "The fast pre-check".
+// gate before a push pays for a CI run. Its exit 0 arms the task-branch
+// commit gate (gate-credit.mjs, `check-fast`). The plan of what runs is
+// fastPlan in lib.mjs; the procedure is .claude/README.md, "Run a long
+// check", "The fast pre-check".
 //
 //   node tools/check/fast.mjs [--base=<rev>]   changes against <rev>, default HEAD
 
@@ -96,7 +97,7 @@ function main(argv) {
   }
   const seconds = Math.round((Date.now() - started) / 1000);
   console.log(
-    `check:fast: PASS in ${seconds} s - this arms nothing; the gate is npm run check:1 and npm run check:2`
+    `check:fast: PASS in ${seconds} s - this arms the task-branch commit gate; CI's run on the pushed commit is the full gate`
   );
   return 0;
 }

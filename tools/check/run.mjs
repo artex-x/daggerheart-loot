@@ -1,5 +1,5 @@
 // CLI of the `npm run check` stages: `node tools/check/run.mjs` runs them,
-// `--half=1|2` one half of them, `--only=a,b` the named ones, and
+// `--only=a,b` the named ones, and
 // `--forget` deletes the stage store and the tool caches and exits. The
 // logic is lib.mjs; this file is the real git, store, clock and spawn.
 // .claude/README.md, "Run a long check", "Stage cache".
@@ -69,15 +69,11 @@ function spawn(command) {
   return r.status;
 }
 
-/** Returns the `selectStages` filter of `--half=1|2` and `--only=a,b`. */
+/** Returns the `selectStages` filter of `--only=a,b`. */
 function parseFilter(argv) {
   const filter = {};
   for (const arg of argv) {
-    if (arg.startsWith('--half=')) {
-      const value = arg.slice('--half='.length);
-      if (!/^\d+$/.test(value)) throw new Error(`check: no half ${value}; use 1 or 2`);
-      filter.half = Number(value);
-    } else if (arg.startsWith('--only=')) {
+    if (arg.startsWith('--only=')) {
       filter.only = arg.slice('--only='.length).split(',').filter(Boolean);
     } else {
       throw new Error(`check: unknown argument ${arg}`);

@@ -1,5 +1,6 @@
 # 2026-10-07 - The commit gate arms when both halves of the check pass on one tree
 
+- Superseded by "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21).
 - Task: `persist-7h-homebrew-page` (owner, 2026-10-07: two foreground calls, each under 600 s; partition by the planner).
 - Decision: `npm run check:1` runs every stage of `STAGES` except vitest, and `npm run check:2` runs
   vitest. Each half records its pass for its tree key by its own exit (`gate-credit.mjs`,
@@ -11,7 +12,6 @@
   shards with merged blob reports (the next step when vitest alone nears 600 s on an idle host);
   arming by the observer (it cannot see a run that the harness moved to the background).
 - Amends "A green check arms the commit gate by its own exit, not a host-wide lock" (2026-09-27): a half records its pass by its exit, and two records on one key arm the gate.
-- Accepted trade-off: two calls instead of one. Either half can pass 600 s: `check:1` in a batch that
-  changes the hooks (the selftest uncached), `check:2` on a loaded host (308 s idle, 465-682 s under load (2026-10-07)). Its
-  exit still records the half; the `gate credit:` line in the background output is the evidence. Past
-  600 s on an idle host, `check:1` splits out the selftest and `check:2` takes vitest shards.
+- Accepted trade-off: two calls instead of one. Either half can pass 600 s: `check:1` in a batch that changes the hooks (the selftest uncached),
+  `check:2` on a loaded host (308 s idle, 465-682 s under load (2026-10-07)). Its exit still records the half; the `gate credit:` line in the
+  background output is the evidence. Past 600 s on an idle host, `check:1` splits out the selftest and `check:2` takes vitest shards.

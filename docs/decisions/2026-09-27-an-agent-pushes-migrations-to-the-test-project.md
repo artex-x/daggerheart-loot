@@ -1,5 +1,6 @@
 # 2026-09-27 - An agent pushes migrations to the test project only after an approving review
 
+- Amended by "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21): every session's push is judged per refspec source and per file, a `migrate-test.mjs` run is a write, and a named script's checkout decides.
 - Task: `process-guards` (owner's rule, 2026-09-26; mechanism by the planner, 2026-09-27).
 - Decision: `bash-guard.mjs` denies an agent's migration write to the test
   project (`db:push --project test`, a `db-push.mjs` run, `supabase db

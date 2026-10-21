@@ -6,3 +6,7 @@ cce10cbe216a9e49113eaff2b9ef478263601f50:docs/tg-preview.md:generic-api-key:72
 cce10cbe216a9e49113eaff2b9ef478263601f50:issues/tg-preview-refresh/plan.md:generic-api-key:690
 # A sample share token in a mock, base64 of an example string (owner, 2026-10-08).
 fdbc14d0721972532aa74ba36f51fc4ca270ef27:issues/71/mocks/index.html:generic-api-key:687
+# 2026-10-21 owner: the issue 71 mock at a second commit, byte-identical to fdbc14d0's, is accepted too.
+# A dispatch run scans the history of every fetched ref (fetch-depth: 0); a push run scans
+# only the pushed range, so this commit, on a stale remote branch, failed only dispatches.
+b63af78a877354dabafad522d26d291b770148d3:issues/71/mocks/index.html:generic-api-key:687

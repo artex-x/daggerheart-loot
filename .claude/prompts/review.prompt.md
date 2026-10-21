@@ -20,7 +20,7 @@ Before reviewing:
 3. Prefer facts already captured in context.md; re-fetch only when missing, stale, or superseded by new human input
 4. Compare handoff against `.claude/templates/handoff.template.md` - missing sections are findings
 5. Read mocks under `<TASK_DIR>/mocks/` if referenced
-6. Inspect `git status` and the working tree; for the batch's own diff use `git diff <previous sha> HEAD` (the previous sha comes from the handoff's `Completed` section, since each batch amends the task's one commit)
+6. Inspect `git status` and the working tree; for the batch's own diff use `git diff <previous sha> HEAD` (the previous sha comes from the handoff's `Completed` section; each batch is its own commit on the task branch)
 7. Read relevant `docs/specs/` for touched behaviour (CONTRACTS, FEATURES, ROUTES, I18N, COVERAGE as needed)
 8. Scope = batch described in handoff as completed, or orchestrator-specified scope
 9. Search with `rtk grep` or `git grep` - see `.claude/README.md`,

@@ -82,82 +82,64 @@ export const VITEST = {
 
 /** The stages of `npm run check` between gate credit's `begin` and `arm`,
  * in order. A stage with `select` is skipped when its key matches a recent
- * local pass; every other stage always runs. `half` is the stage's part of
- * the check in two calls: `npm run check:1` runs half 1, `check:2` half 2. */
+ * local pass; every other stage always runs. */
 export const STAGES = [
-  { name: 'format', command: 'npm run format:check', half: 1 },
-  { name: 'lint:untyped', command: 'npm run lint:untyped', half: 1 },
-  { name: 'lint:typed', command: 'npm run lint:typed', select: TYPED, half: 1 },
-  { name: 'typecheck', command: 'npm run typecheck', select: TYPED, half: 1 },
-  { name: 'site-syntax', command: 'node --check tools/check-site.mjs', half: 1 },
-  { name: 'data', command: 'npm run data', half: 1 },
-  { name: 'derived', command: 'node tests/derived.js', half: 1 },
-  { name: 'dataint', command: 'node tests/dataint.js', half: 1 },
+  { name: 'format', command: 'npm run format:check' },
+  { name: 'lint:untyped', command: 'npm run lint:untyped' },
+  { name: 'lint:typed', command: 'npm run lint:typed', select: TYPED },
+  { name: 'typecheck', command: 'npm run typecheck', select: TYPED },
+  { name: 'site-syntax', command: 'node --check tools/check-site.mjs' },
+  { name: 'data', command: 'npm run data' },
+  { name: 'derived', command: 'node tests/derived.js' },
+  { name: 'dataint', command: 'node tests/dataint.js' },
   {
     name: 'selftest',
     command: 'node .claude/hooks/selftest.mjs',
     select: HOOKS,
-    gitVersion: true,
-    half: 1
+    gitVersion: true
   },
   {
     name: 'test:tg-preview',
-    command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs'
   },
   {
     name: 'test:preview',
-    command: 'node --test --test-reporter=dot preview/worker.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot preview/worker.test.mjs'
   },
   {
     name: 'test:artwork',
-    command: 'node --test --test-reporter=dot tools/artwork/lib.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tools/artwork/lib.test.mjs'
   },
   {
     name: 'test:desc-style',
-    command: 'node --test --test-reporter=dot tools/desc-style.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tools/desc-style.test.mjs'
   },
   {
     name: 'test:supabase',
     command:
-      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs tools/supabase/backup-art.test.mjs',
-    half: 1
+      'node --test --test-reporter=dot tools/supabase/lib.test.mjs tools/supabase/usage-lib.test.mjs tools/supabase/backup-art.test.mjs'
   },
   {
     name: 'test:check-site',
-    command: 'node --test --test-reporter=dot tools/check-site.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tools/check-site.test.mjs'
   },
   {
     name: 'test:golden',
-    command: 'node --test --test-reporter=dot tests/app/golden.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tests/app/golden.test.mjs'
   },
-  { name: 'test:sw', command: 'node --test --test-reporter=dot tests/sw.test.mjs', half: 1 },
+  { name: 'test:sw', command: 'node --test --test-reporter=dot tests/sw.test.mjs' },
   {
     name: 'test:e2e-lib',
-    command: 'node --test --test-reporter=dot tests/e2e/lib.test.mjs',
-    half: 1
+    command: 'node --test --test-reporter=dot tests/e2e/lib.test.mjs'
   },
-  { name: 'vitest', command: 'npm run test', select: VITEST, half: 2 }
+  { name: 'vitest', command: 'npm run test', select: VITEST }
 ];
 
 /**
- * Returns the stages of `stages` to run, in table order: those of `half`
- * (1 or 2), or those named in `only`, or all of them. Throws on both, on
- * another half and on an unknown name.
+ * Returns the stages of `stages` to run, in table order: those named in
+ * `only`, or all of them. Throws on an unknown name.
  */
-export function selectStages(stages, { half, only } = {}) {
-  if (half !== undefined && only !== undefined) {
-    throw new Error('check: give --half or --only, not both');
-  }
-  if (half !== undefined) {
-    if (half !== 1 && half !== 2) throw new Error(`check: no half ${half}; use 1 or 2`);
-    return stages.filter((s) => s.half === half);
-  }
+export function selectStages(stages, { only } = {}) {
   if (only !== undefined) {
     for (const name of only) {
       if (!stages.some((s) => s.name === name))

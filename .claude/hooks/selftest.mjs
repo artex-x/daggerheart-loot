@@ -8,7 +8,7 @@
 // numbering inline (numbered #1 upward in the comments below).
 
 import { spawn, spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -152,7 +152,9 @@ function setupScratch() {
   // (#102-#104): it stays clean throughout, so no dirty-path count moves.
   writeFile('tools/cites-plan.js', '// See issues/orphan-demo/plan.md section 4.\n');
 
-  gitSh(['init', '-q']);
+  // Not `main`, whatever init.defaultBranch says: rules 2e and 2x judge `main`
+  // apart, and the cases that need it switch to it themselves.
+  gitSh(['init', '-q', '--initial-branch=master']);
   gitSh(['add', '-A']);
   gitCommit('chore: scratch init');
 
@@ -1442,7 +1444,7 @@ async function testPersistenceGuards() {
       check(`#217 cloud push of the current branch allowed: ${command}`, isSilent(result));
     }
     {
-      const result = runHook('bash-guard.mjs', bashPayload('git push origin main'));
+      const result = runHook('bash-guard.mjs', bashPayload('git push origin HEAD'));
       check('#218 outside a cloud session the rule is off', isSilent(result), result.stdout);
     }
     gitSh(['checkout', '-q', '-B', 'main']);
@@ -2004,7 +2006,7 @@ function testRtkPipe() {
     ['git diff --stat', 'git diff --stat | head'],
     ['git log -p', 'git log -p -3 | head -100'],
     ['git log --patch', 'git log --patch | head'],
-    ['git push', 'git push -u origin x 2>&1 | tail -3'],
+    ['git push', 'git push -u origin HEAD 2>&1 | tail -3'],
     ['git.exe log', 'git.exe log --oneline | head -20'],
     ['git.exe status', 'git.exe status | head'],
     ['git grep', 'git grep -n x | head'],
@@ -4132,7 +4134,7 @@ async function testGateCredit() {
   clearDbCache();
 }
 
-// ---------- the check in two halves (#317-#332) ----------
+// ---------- check:fast, the task-branch gate, the main push, the CI credit (#317-#345) ----------
 
 /** The gate-state lines of the real .claude/.gitignore: a gate file that
  * is not ignored changes the tree key it records. */
@@ -4141,232 +4143,242 @@ const GATE_STATE_IGNORE = [
   '.check-index',
   '.check-index-*',
   '.check-db-cache.json',
-  '.check-1-pending.json',
-  '.check-2-pending.json',
-  '.check-1-pass.json',
-  '.check-2-pass.json',
+  '.check-pending.json',
+  '.check-db-pending.json',
+  '.check-fast-pending.json',
+  '.check-fast-pass.json',
   ''
 ].join('\n');
 
-function halfPassPath(n, state = scratchState) {
-  return path.join(state, `.check-${n}-pass.json`);
+function fastPassPath(state = scratchState) {
+  return path.join(state, '.check-fast-pass.json');
 }
 
-function clearHalves() {
+function clearFast() {
   clearCache();
-  for (const n of [1, 2]) {
-    fs.rmSync(halfPassPath(n), { force: true });
-    fs.rmSync(path.join(scratchState, `.check-${n}-pending.json`), { force: true });
-  }
+  fs.rmSync(fastPassPath(), { force: true });
+  fs.rmSync(path.join(scratchState, '.check-fast-pending.json'), { force: true });
 }
 
-function runHalf(n) {
-  runCredit(['begin', `check-${n}`]);
-  return runCredit(['arm', `check-${n}`]);
-}
-
-async function testCheckHalves() {
+async function testCheckFast() {
   process.env.LOOT_HOOK_ROOT = scratchRoot;
   process.env.LOOT_HOOK_STATE_DIR = scratchState;
-  const { treeKey, writeCache } = await importTreeKey();
+  const { treeKey, writeCache, commitKey } = await importTreeKey();
   const readJson = (file) =>
     fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
-  const ARMED = 'gate credit: armed (npm run check:1 and npm run check:2 passed on this tree)';
+  const originalBranch = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
 
-  clearHalves();
+  clearFast();
   {
-    const arm = runHalf(1);
+    runCredit(['begin', 'check-fast']);
+    const arm = runCredit(['arm', 'check-fast']);
+    const record = readJson(fastPassPath());
     check(
-      '#317 check:1 alone: says to run check:2',
-      arm.status === 0 &&
-        arm.stdout.trim() ===
-          'gate credit: npm run check:1 passed; run npm run check:2 on this tree to arm the gate',
-      arm.stdout
+      '#317 check:fast arms its own record by its exit',
+      arm.stdout.trim() === 'gate credit: armed (npm run check:fast exited 0)' &&
+        record &&
+        record.key === treeKey() &&
+        record.by === 'exit',
+      arm.stdout + JSON.stringify(record)
     );
-    check('#317 check:1 alone: records its key', readJson(halfPassPath(1))?.key === treeKey());
-    check('#317 check:1 alone: the gate is not armed', !fs.existsSync(cacheFilePath()));
+    check('#317 check:fast does not write the full gate', !fs.existsSync(cacheFilePath()));
   }
+  clearFast();
   {
-    const arm = runHalf(2);
-    const cache = readJson(cacheFilePath());
-    check('#318 check:2 on the same tree: armed', arm.stdout.trim() === ARMED, arm.stdout);
+    runCredit(['begin', 'check-fast']);
+    appendFile('app/src/lib/x.ts', '// changed during check:fast\n');
+    const arm = runCredit(['arm', 'check-fast']);
     check(
-      '#318 check:2 on the same tree: the cache holds the key, by halves',
-      cache && cache.key === treeKey() && cache.by === 'halves',
-      JSON.stringify(cache)
-    );
-  }
-  clearHalves();
-  {
-    runHalf(2);
-    const arm = runHalf(1);
-    check(
-      '#319 the halves in the other order: armed',
-      arm.stdout.trim() === ARMED && readJson(cacheFilePath())?.by === 'halves',
-      arm.stdout
-    );
-  }
-  clearHalves();
-  {
-    runHalf(1);
-    appendFile('app/src/lib/x.ts', '// changed between the halves\n');
-    const arm = runHalf(2);
-    check(
-      '#320 a covered file changed between the halves: not armed',
-      arm.stdout.trim() ===
-        'gate credit: npm run check:2 passed; run npm run check:1 on this tree to arm the gate' &&
-        !fs.existsSync(cacheFilePath()),
-      arm.stdout
-    );
-  }
-  clearHalves();
-  {
-    runCredit(['begin', 'check-1']);
-    appendFile('app/src/lib/x.ts', '// changed during a half\n');
-    const arm = runCredit(['arm', 'check-1']);
-    check(
-      '#321 a covered file changed during a half: no record',
+      '#317 a covered file changed during check:fast: no record',
       arm.stdout.trim() === 'gate credit: not armed - the tree changed during the run' &&
-        !fs.existsSync(halfPassPath(1)),
+        !fs.existsSync(fastPassPath()),
       arm.stdout
     );
   }
 
-  // #322-#325 - the observer reads the records and writes nothing.
-  const passing = {
-    stdout: 'check: 16 stages run, 0 skipped, 1 s\n',
-    stderr: '',
-    interrupted: false
-  };
-  clearHalves();
-  fs.writeFileSync(halfPassPath(1), JSON.stringify({ key: treeKey(), at: 1 }));
-  {
-    const result = runHook(
-      'check-observer.mjs',
-      observerPayload('Bash', 'rtk npm run check:1', passing)
-    );
-    check(
-      '#322 observer: one half recorded names the other',
-      systemMessage(result) ===
-        'npm run check:1: PASS - recorded for this tree. Run `rtk npm run check:2` to arm the commit gate.',
-      systemMessage(result)
-    );
-    check('#322 observer: writes no cache', !fs.existsSync(cacheFilePath()));
-  }
-  {
-    const result = runHook(
-      'check-observer.mjs',
-      observerPayload('Bash', 'rtk npm run check:2', passing)
-    );
-    check(
-      '#322 observer: a half with no record says to run it again',
-      systemMessage(result).startsWith('npm run check:2: no failure seen') &&
-        systemMessage(result).includes('Run it again.'),
-      systemMessage(result)
-    );
-  }
-  writeCache(treeKey(), '.check-cache.json', 'npm run check:1 + npm run check:2', 'halves');
-  {
-    const result = runHook(
-      'check-observer.mjs',
-      observerPayload('Bash', 'rtk npm run check:2', passing)
-    );
-    check(
-      '#323 observer: both halves armed',
-      systemMessage(result) ===
-        'npm run check:2: PASS - both halves passed on this tree. Commit gate armed.',
-      systemMessage(result)
-    );
-  }
-  clearHalves();
-  {
-    const failing = { stdout: 'x\n', stderr: 'npm error code 1\n', interrupted: false };
-    const result = runHook(
-      'check-observer.mjs',
-      observerPayload('Bash', 'rtk npm run check:1', failing)
-    );
-    check(
-      '#324 observer: a failure marker says FAIL',
-      systemMessage(result).startsWith('npm run check:1: FAIL') &&
-        systemMessage(result).includes('`rtk npm run check:1`'),
-      systemMessage(result)
-    );
-  }
-  {
-    const result = runHook(
-      'check-observer.mjs',
-      observerPayload('Bash', 'rtk npm run check:1', passing, true)
-    );
-    check('#325 observer: a backgrounded half is silent', isSilent(result), result.stdout);
-  }
-
-  for (const command of ['npm run check:1 | tail -n 5', 'npm run check:2 > o.txt']) {
-    const result = runHook(
-      'bash-guard.mjs',
-      bashPayload(command, { session_id: 's-half-blind' })
-    );
-    check(`#326 rule 2k denies "${command}"`, isDeny(result), JSON.stringify(result.json));
-  }
-  {
-    const result = runHook(
-      'bash-guard.mjs',
-      bashPayload('rtk npm run check:2', { session_id: 's-half-blind-ok' })
-    );
-    check(
-      '#326 rule 2k allows "rtk npm run check:2"',
-      !isDeny(result),
-      JSON.stringify(result.json)
-    );
-  }
-  {
-    const payload = bashPayload('rtk npm run check:1', {
-      run_in_background: true,
-      session_id: 's-half-bg'
-    });
-    const sub = runHook('bash-guard.mjs', payload);
-    check(
-      '#327 rule 2g denies a subagent backgrounded half',
-      isDeny(sub) &&
-        denyReason(sub).includes('rtk npm run check:1') &&
-        denyReason(sub).includes('rtk npm run check:2'),
-      sub.stdout
-    );
-    delete payload.agent_id;
-    delete payload.agent_type;
-    const main = runHook('bash-guard.mjs', payload);
-    check('#327 rule 2g allows it for the main session', !isDeny(main), main.stdout);
-  }
-  {
-    const first = runHook(
-      'bash-guard.mjs',
-      bashPayload('rtk npm run check:1', { session_id: 's-half-long' })
-    );
-    check(
-      '#328 the half reminder names both halves',
-      systemMessage(first).includes('600000') &&
-        systemMessage(first).includes('rtk npm run check:1') &&
-        systemMessage(first).includes('rtk npm run check:2'),
-      systemMessage(first)
-    );
-    const second = runHook(
-      'bash-guard.mjs',
-      bashPayload('rtk npm run check:2', { session_id: 's-half-long' })
-    );
-    check('#328 the half reminder fires once per session', isSilent(second), second.stdout);
-  }
+  // #318-#322 - rule 2e takes the check:fast record on a task branch only.
+  const other = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-other-'));
+  gitSh(['init', '-q'], other);
+  const commit = (command = 'git commit -m "chore: fast"') =>
+    runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-fast-gate' }));
   gitSh(['add', 'app/src/lib/x.ts']);
-  clearHalves();
   try {
-    const result = runHook('bash-guard.mjs', bashPayload('git commit -m "chore: halves"'));
-    check(
-      '#329 the commit gate deny names both halves',
-      isDeny(result) &&
-        denyReason(result).includes('rtk npm run check:1') &&
-        denyReason(result).includes('rtk npm run check:2'),
-      denyReason(result)
-    );
+    gitSh(['checkout', '-q', '-B', 'claude/fast-task']);
+    clearFast();
+    writeCache(treeKey(), '.check-fast-pass.json', 'npm run check:fast', 'exit');
+    {
+      const result = commit();
+      check(
+        '#318 a task-branch commit passes on the check:fast record',
+        isSilent(result),
+        result.stdout
+      );
+    }
+    for (const [label, command] of [
+      [
+        'a git -C into another checkout',
+        `git -C ${other.replace(/\\/g, '/')} commit -m "chore: x"`
+      ],
+      ['git checkout main && git commit', 'git checkout main && git commit -m "chore: x"'],
+      ['git switch main; git commit', 'git switch main; git commit -m "chore: x"'],
+      [
+        'a second commit after a switch to main',
+        'git commit -m "chore: a"; git switch main; git commit -m "chore: b"'
+      ],
+      [
+        'rtk git checkout main && rtk git commit',
+        'rtk git checkout main && rtk git commit -m "chore: x"'
+      ]
+    ]) {
+      const result = commit(command);
+      check(
+        `#319 ${label}: the check:fast record does not count`,
+        isDeny(result) &&
+          denyReason(result).includes('only the full gate counts') &&
+          denyReason(result).includes('ci-credit.mjs'),
+        denyReason(result)
+      );
+    }
+    gitSh(['checkout', '-q', '-B', 'main']);
+    {
+      const result = commit();
+      check(
+        '#320 a commit on main is denied with only the check:fast record',
+        isDeny(result) &&
+          denyReason(result).includes('ci-credit.mjs') &&
+          denyReason(result).includes('npm run check'),
+        denyReason(result)
+      );
+    }
+    gitSh(['checkout', '-q', '--detach']);
+    {
+      const result = commit();
+      check('#320 a detached HEAD is denied with only the check:fast record', isDeny(result));
+    }
+    gitSh(['checkout', '-q', '-B', 'claude/fast-task']);
+    gitSh(['symbolic-ref', 'HEAD', 'refs/heads/claude/unborn']);
+    {
+      const result = commit();
+      check(
+        '#321 an unreadable branch is denied with only the check:fast record',
+        isDeny(result)
+      );
+    }
+    gitSh(['symbolic-ref', 'HEAD', 'refs/heads/claude/fast-task']);
+    clearFast();
+    {
+      const result = commit();
+      check(
+        '#322 a task-branch deny names check:fast',
+        isDeny(result) && denyReason(result).includes('rtk npm run check:fast'),
+        denyReason(result)
+      );
+    }
+    writeCache(treeKey(), '.check-fast-pass.json', 'npm run check:fast', 'exit');
+    appendFile('app/src/lib/x.ts', '// moved after check:fast\n');
+    gitSh(['add', 'app/src/lib/x.ts']);
+    {
+      const result = commit();
+      check('#322 a stale check:fast record is denied', isDeny(result), result.stdout);
+    }
   } finally {
     gitSh(['reset', '-q']);
+    fs.rmSync(other, { recursive: true, force: true });
+  }
+
+  // #323-#325 - rule 2x: a push that updates main needs the full gate's key.
+  clearFast();
+  try {
+    const head = gitSh(['rev-parse', 'HEAD']).trim();
+    const push = (command) =>
+      runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-main-push' }));
+    for (const command of [
+      'git push origin HEAD:main',
+      'git push origin claude/fast-task:refs/heads/main',
+      'git push origin :main',
+      'git push origin --delete main',
+      'rtk git push origin HEAD:main',
+      'rtk proxy git push origin HEAD:main',
+      'git --no-pager push origin HEAD:main',
+      'git -P push origin HEAD:main',
+      'git push origin HEAD:heads/main'
+    ]) {
+      const result = push(command);
+      check(
+        `#323 "${command}" from a task branch is denied without the key`,
+        isDeny(result) && denyReason(result).includes('updates `main`'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = push('git push -u origin claude/fast-task');
+      check(
+        '#323 a push of the task branch is not judged by 2x',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    {
+      const result = push('git push --dry-run origin HEAD:main');
+      check('#323 a dry-run push to main is allowed', !isDeny(result), denyReason(result));
+    }
+    writeCache(commitKey(head), '.check-cache.json', 'ci run 1', 'ci');
+    {
+      const result = push('git push origin HEAD:main');
+      check(
+        '#324 "git push origin HEAD:main" with the key: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    gitSh(['checkout', '-q', '-B', 'main']);
+    {
+      const result = push('git push');
+      check(
+        '#325 "git push" on main with the key: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    clearCache();
+    for (const command of ['git push', 'git push origin HEAD', 'rtk git push origin HEAD']) {
+      const result = push(command);
+      check(
+        `#325 "${command}" on main without the key: denied`,
+        isDeny(result) && denyReason(result).includes('ci-credit.mjs'),
+        denyReason(result)
+      );
+    }
+    // A bare push whose @{push} is origin/main updates main from a task branch.
+    gitSh(['checkout', '-q', '-B', 'claude/fast-task']);
+    gitSh(['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    gitSh(['config', 'branch.claude/fast-task.remote', 'origin']);
+    gitSh(['config', 'branch.claude/fast-task.merge', 'refs/heads/main']);
+    gitSh(['config', 'push.default', 'upstream']);
+    gitSh(['remote', 'add', 'origin', 'https://example.invalid/r.git']);
+    try {
+      const result = push('git push');
+      check(
+        '#325 a bare push whose @{push} is origin/main: denied without the key',
+        isDeny(result) && denyReason(result).includes('updates `main`'),
+        denyReason(result)
+      );
+    } finally {
+      spawnSync('git', ['config', '--unset', 'push.default'], { cwd: scratchRoot });
+      spawnSync('git', ['remote', 'remove', 'origin'], { cwd: scratchRoot });
+      spawnSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: scratchRoot });
+    }
+    {
+      const result = push('rtk git push --force origin x');
+      check('#326 the blocklist judges rtk git push --force', isDeny(result), result.stdout);
+    }
+  } finally {
+    clearFast();
+    gitSh(['checkout', '-q', originalBranch]);
+    spawnSync('git', ['branch', '-q', '-D', 'claude/fast-task'], { cwd: scratchRoot });
+    if (originalBranch !== 'main') {
+      spawnSync('git', ['branch', '-q', '-D', 'main'], { cwd: scratchRoot });
+    }
   }
 
   // #330 - treeKey() takes one index copy per process and deletes it after the read.
@@ -4410,9 +4422,9 @@ async function testCheckHalves() {
     );
   }
 
-  // #331 - `cd <checkout> && npm run check...` reads and writes that
-  // checkout's records, not the session's.
-  const wt = path.join(scratchRoot, '.claude', 'worktrees', 'halves');
+  // #331 - `cd <checkout> && npm run check` reads and writes that checkout's
+  // records, not the session's.
+  const wt = path.join(scratchRoot, '.claude', 'worktrees', 'cd-check');
   const wtState = path.join(wt, '.claude');
   const wtPosix = wt.replace(/\\/g, '/');
   gitSh(['worktree', 'add', '-q', '--detach', wt]);
@@ -4421,19 +4433,6 @@ async function testCheckHalves() {
     fs.writeFileSync(path.join(wtState, '.gitignore'), GATE_STATE_IGNORE);
     fs.appendFileSync(path.join(wt, 'app/src/lib/x.ts'), '// worktree change\n');
     const wtKey = treeKey(wt);
-    clearHalves();
-    fs.writeFileSync(halfPassPath(1, wtState), JSON.stringify({ key: wtKey, at: 1 }));
-    {
-      const result = runHook(
-        'check-observer.mjs',
-        observerPayload('Bash', `cd ${wtPosix} && rtk npm run check:1`, passing)
-      );
-      check(
-        "#331 cd <checkout> && check:1 reads that checkout's record",
-        systemMessage(result).startsWith('npm run check:1: PASS - recorded for this tree'),
-        systemMessage(result)
-      );
-    }
     fs.writeFileSync(
       path.join(wtState, '.check-cache.json'),
       JSON.stringify({ key: wtKey, at: 1, command: 'npm run check', by: 'exit' })
@@ -4520,9 +4519,10 @@ async function testCheckHalves() {
       bashPayload('npm run check:fast', { session_id: 's-fast' })
     );
     check(
-      '#332 the check:fast reminder names its cost',
+      '#332 the check:fast reminder names its cost and the task-branch gate',
       systemMessage(first).includes('npm run check:fast') &&
-        systemMessage(first).includes('600000'),
+        systemMessage(first).includes('600000') &&
+        systemMessage(first).includes('task branch'),
       systemMessage(first)
     );
     const second = runHook(
@@ -4535,7 +4535,597 @@ async function testCheckHalves() {
       second.stdout
     );
   }
-  clearHalves();
+  {
+    const payload = bashPayload('rtk npm run check', {
+      run_in_background: true,
+      session_id: 's-fast-bg'
+    });
+    const sub = runHook('bash-guard.mjs', payload);
+    check(
+      '#327 rule 2g names check:fast for a subagent backgrounded check',
+      isDeny(sub) && denyReason(sub).includes('rtk npm run check:fast'),
+      sub.stdout
+    );
+  }
+  for (const command of [
+    'LOOT_GH_CMD=x node .claude/hooks/ci-credit.mjs abc',
+    'env LOOT_HOOK_ROOT=/tmp/x node .claude/hooks/ci-credit.mjs abc',
+    'export LOOT_GH_CMD=x; node .claude/hooks/ci-credit.mjs abc'
+  ]) {
+    const result = runHook(
+      'bash-guard.mjs',
+      bashPayload(command, { session_id: 's-ci-override' })
+    );
+    check(
+      `#349 rule 2v denies a ci-credit.mjs run with an override: ${command}`,
+      isDeny(result) && denyReason(result).includes('LOOT_GH_CMD'),
+      denyReason(result)
+    );
+  }
+  {
+    const ps = runHook(
+      'bash-guard.mjs',
+      psPayload("$env:LOOT_GH_CMD = 'x'; node .claude/hooks/ci-credit.mjs abc")
+    );
+    check('#349 rule 2v denies the PowerShell override', isDeny(ps), JSON.stringify(ps.json));
+    const plain = runHook(
+      'bash-guard.mjs',
+      bashPayload('node .claude/hooks/ci-credit.mjs abc', { session_id: 's-ci-plain' })
+    );
+    check('#349 a plain ci-credit.mjs run is allowed', !isDeny(plain), denyReason(plain));
+  }
+  clearFast();
+}
+
+// ---------- ci-credit.mjs (#333-#345) ----------
+
+/** The job `name` of a `greenRun` result. */
+const jobOf = (g, name) => g.jobs.find((j) => j.name === name);
+
+/** A run and its jobs that credit `sha`; each case breaks one field. */
+function greenRun(sha) {
+  return {
+    run: {
+      path: '.github/workflows/ci.yml',
+      head_repository: { full_name: 'o/r' },
+      repository: { full_name: 'o/r' },
+      event: 'push',
+      status: 'completed',
+      conclusion: 'success',
+      head_sha: sha,
+      head_branch: 'claude/x',
+      run_attempt: 1
+    },
+    jobs: [
+      'changes',
+      'check',
+      'browser (1)',
+      'browser (2)',
+      'browser (3)',
+      'browser (4)',
+      'browser (5)',
+      'db',
+      'e2e',
+      'audit',
+      'secrets',
+      'deploy'
+    ].map((name) => ({
+      name,
+      status: 'completed',
+      conclusion: name === 'deploy' ? 'skipped' : 'success'
+    }))
+  };
+}
+
+async function testCiCredit() {
+  const { verifyRun, differingPaths, REQUIRED_JOBS, isE2eFree, e2eRuns } = await import(
+    pathToFileUrlHref('ci-credit.mjs')
+  );
+  const sha = 'a'.repeat(40);
+  check(
+    '#333 a green run of the sha credits it',
+    verifyRun(...Object.values(greenRun(sha)), sha).length === 0
+  );
+  check(
+    '#333 REQUIRED_JOBS has eleven jobs',
+    REQUIRED_JOBS.length === 11,
+    JSON.stringify(REQUIRED_JOBS)
+  );
+  const broken = [
+    [
+      'another workflow path',
+      (g) => (g.run.path = '.github/workflows/backup.yml'),
+      'not .github/workflows/ci.yml'
+    ],
+    ['a fork', (g) => (g.run.head_repository.full_name = 'fork/r'), 'head repository fork/r'],
+    ['a pull request event', (g) => (g.run.event = 'pull_request'), 'pull_request'],
+    ['another sha', (g) => (g.run.head_sha = 'b'.repeat(40)), 'not ' + sha],
+    ['not completed', (g) => (g.run.status = 'in_progress'), 'in_progress'],
+    ['not success', (g) => (g.run.conclusion = 'failure'), 'concluded failure'],
+    [
+      'a failed job',
+      (g) => (jobOf(g, 'browser (1)').conclusion = 'failure'),
+      'browser (1) concluded failure'
+    ],
+    ['a skipped e2e', (g) => (jobOf(g, 'e2e').conclusion = 'skipped'), 'e2e concluded skipped'],
+    [
+      'a missing job',
+      (g) => (g.jobs = g.jobs.filter((j) => j.name !== 'secrets')),
+      'secrets is not in the run'
+    ],
+    [
+      'a failed changes job',
+      (g) => (jobOf(g, 'changes').conclusion = 'failure'),
+      'changes concluded failure'
+    ]
+  ];
+  for (const [label, breakIt, needle] of broken) {
+    const g = greenRun(sha);
+    breakIt(g);
+    const reasons = verifyRun(g.run, g.jobs, sha);
+    check(
+      `#334 verifyRun refuses ${label}`,
+      reasons.some((r) => r.includes(needle)),
+      reasons.join('; ')
+    );
+  }
+  // #350 - one re-run of a failed e2e on the same commit counts.
+  const attempt2 = ({
+    firstE2e = 'failure',
+    firstCheck = 'success',
+    attempt = 2,
+    e2eNow = 'success'
+  } = {}) => {
+    const g = greenRun(sha);
+    g.run.run_attempt = attempt;
+    jobOf(g, 'e2e').conclusion = e2eNow;
+    if (e2eNow !== 'success') g.run.conclusion = 'failure';
+    const first = greenRun(sha);
+    jobOf(first, 'e2e').conclusion = firstE2e;
+    jobOf(first, 'check').conclusion = firstCheck;
+    return verifyRun(g.run, g.jobs, sha, { firstJobs: first.jobs });
+  };
+  {
+    const reasons = attempt2();
+    check(
+      '#350 attempt 2 with the failed e2e re-run green arms',
+      reasons.length === 0,
+      reasons.join('; ')
+    );
+    const cancelled = attempt2({ firstE2e: 'cancelled' });
+    check(
+      '#350 a cancelled e2e re-run green arms',
+      cancelled.length === 0,
+      cancelled.join('; ')
+    );
+    const timedOut = attempt2({ firstE2e: 'timed_out' });
+    check('#350 a timed-out e2e re-run green arms', timedOut.length === 0, timedOut.join('; '));
+    const greenFirst = attempt2({ firstE2e: 'success' });
+    check(
+      '#350 attempt 2 after a green e2e in attempt 1 refuses',
+      greenFirst.some((r) => r.includes("attempt 1's e2e concluded success")),
+      greenFirst.join('; ')
+    );
+    const third = attempt2({ attempt: 3 });
+    check(
+      '#350 a third attempt does not count',
+      third.some((r) => r.includes('attempt 3')),
+      third.join('; ')
+    );
+    const outside = attempt2({ firstCheck: 'failure' });
+    check(
+      '#350 a failure outside e2e in attempt 1 never arms',
+      outside.some((r) => r.includes("attempt 1's check concluded failure")),
+      outside.join('; ')
+    );
+    const again = attempt2({ e2eNow: 'failure' });
+    check(
+      '#350 an e2e that fails again in attempt 2 refuses',
+      again.some((r) => r.includes('e2e concluded failure')),
+      again.join('; ')
+    );
+    const g = greenRun(sha);
+    g.run.run_attempt = 2;
+    const blind = verifyRun(g.run, g.jobs, sha);
+    check(
+      '#350 attempt 2 without the jobs of attempt 1 refuses',
+      blind.some((r) => r.includes('attempt 1')),
+      blind.join('; ')
+    );
+  }
+  // #351 - the path rule of a skipped e2e.
+  check(
+    '#351 isE2eFree: .claude/, issues/, docs/ and *.md; not docs/fixtures/ or code',
+    [
+      '.claude/hooks/x.mjs',
+      'issues/t/plan.md',
+      'docs/specs/X.md',
+      'docs/a.txt',
+      'README.md',
+      'app/x.md'
+    ].every(isE2eFree) &&
+      ![
+        'docs/fixtures/lists/x.json',
+        'app/src/x.ts',
+        '.github/workflows/ci.yml',
+        'package.json',
+        'tools/a.mjs',
+        'supabase/migrations/x.sql'
+      ].some(isE2eFree)
+  );
+  check(
+    '#351 e2eRuns: a docs-only push of a task branch skips; main, a dispatch, code, no diff run',
+    !e2eRuns({
+      event: 'push',
+      ref: 'refs/heads/claude/x',
+      paths: ['docs/a.md', '.claude/hooks/x.mjs']
+    }) &&
+      e2eRuns({ event: 'push', ref: 'refs/heads/main', paths: ['docs/a.md'] }) &&
+      e2eRuns({
+        event: 'workflow_dispatch',
+        ref: 'refs/heads/claude/x',
+        paths: ['docs/a.md']
+      }) &&
+      e2eRuns({
+        event: 'push',
+        ref: 'refs/heads/claude/x',
+        paths: ['docs/a.md', 'app/src/x.ts']
+      }) &&
+      e2eRuns({ event: 'push', ref: 'refs/heads/claude/x', paths: [] }) &&
+      e2eRuns({ event: 'push', ref: 'refs/heads/claude/x', paths: null })
+  );
+  {
+    const g = greenRun(sha);
+    jobOf(g, 'e2e').conclusion = 'skipped';
+    const skip = verifyRun(g.run, g.jobs, sha, { e2eSkip: true });
+    const run = verifyRun(g.run, g.jobs, sha, { e2eSkip: false });
+    check(
+      '#351 a skipped e2e arms when the rule says skip',
+      skip.length === 0,
+      skip.join('; ')
+    );
+    check(
+      '#351 a skipped e2e refuses when the rule says run',
+      run.some((r) => r.includes('the path rule says it runs')),
+      run.join('; ')
+    );
+  }
+  check(
+    '#335 differingPaths names each path once, sorted',
+    JSON.stringify(
+      differingPaths(['1 a 0\tx', '1 b 0\ty'], ['1 a 0\tx', '1 c 0\ty', '1 d 0\tz'])
+    ) === JSON.stringify(['y', 'z'])
+  );
+
+  // A checkout of its own that holds the script, run from another cwd with
+  // no LOOT_HOOK_ROOT: the script judges and writes the checkout of its file.
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-ci-credit-'));
+  const tools = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-ci-credit-gh-'));
+  const git = (args) => gitSh(args, fixture);
+  try {
+    fs.mkdirSync(path.join(fixture, '.claude', 'hooks'), { recursive: true });
+    for (const name of ['ci-credit.mjs', 'tree-key.mjs', 'lib.mjs']) {
+      fs.copyFileSync(path.join(hooksDir, name), path.join(fixture, '.claude', 'hooks', name));
+    }
+    fs.writeFileSync(path.join(fixture, '.claude', '.gitignore'), GATE_STATE_IGNORE);
+    fs.mkdirSync(path.join(fixture, '.github', 'workflows'), { recursive: true });
+    fs.writeFileSync(path.join(fixture, '.github', 'workflows', 'ci.yml'), 'name: check\n');
+    fs.writeFileSync(path.join(fixture, 'a.txt'), 'a\n');
+    git(['init', '-q']);
+    git(['add', '-A']);
+    gitCommit('chore: fixture', fixture);
+    git(['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    fs.writeFileSync(
+      path.join(fixture, '.github', 'workflows', 'ci.yml'),
+      'name: check\n# x\n'
+    );
+    git(['add', '-A']);
+    gitCommit('ci: change ci.yml', fixture);
+    const head = git(['rev-parse', 'HEAD']).trim();
+    const specFile = path.join(tools, 'spec.json');
+    const fakeGh = path.join(tools, 'gh.mjs');
+    fs.writeFileSync(
+      fakeGh,
+      [
+        "import fs from 'node:fs';",
+        "const spec = JSON.parse(fs.readFileSync(process.env.LOOT_FAKE_GH, 'utf8'));",
+        'const a = process.argv.slice(2);',
+        "const id = a[0] === 'api' ? (/\\/runs\\/(\\d+)/.exec(a[1]) || [])[1] : null;",
+        'const one = (spec.runs && spec.runs[id]) || spec;',
+        "if (a[0] === 'run' && a[1] === 'list') {",
+        '  process.stdout.write(JSON.stringify(spec.list));',
+        "} else if (a[0] === 'run' && a[1] === 'watch') {",
+        '  process.exit(0);',
+        "} else if (a[0] === 'api' && a[1].includes('/attempts/1/jobs')) {",
+        '  process.stdout.write(JSON.stringify({ jobs: one.firstJobs || one.jobs }));',
+        "} else if (a[0] === 'api' && a[1].includes('/jobs')) {",
+        '  process.stdout.write(JSON.stringify({ jobs: one.jobs }));',
+        "} else if (a[0] === 'api') {",
+        '  process.stdout.write(JSON.stringify(one.run));',
+        '} else process.exit(3);',
+        ''
+      ].join('\n')
+    );
+    const env = {
+      ...process.env,
+      LOOT_GH_CMD: JSON.stringify([process.execPath, fakeGh]),
+      LOOT_FAKE_GH: specFile
+    };
+    delete env.LOOT_HOOK_ROOT;
+    delete env.LOOT_HOOK_STATE_DIR;
+    const credit = (args, extraEnv = {}) =>
+      spawnSync(
+        process.execPath,
+        [path.join(fixture, '.claude', 'hooks', 'ci-credit.mjs'), ...args],
+        {
+          cwd: scratchRoot,
+          encoding: 'utf8',
+          env: { ...env, ...extraEnv }
+        }
+      );
+    const row = (databaseId, event, minute) => ({
+      databaseId,
+      event,
+      createdAt: `2026-10-21T14:${minute}:00Z`
+    });
+    const writeSpec = (g, list = [row(42, 'push', '00')], runs = {}) =>
+      fs.writeFileSync(specFile, JSON.stringify({ ...g, list, runs }));
+    const cachePath = path.join(fixture, '.claude', '.check-cache.json');
+    const dbPath = path.join(fixture, '.claude', '.check-db-cache.json');
+    const clearFixture = () => {
+      fs.rmSync(cachePath, { force: true });
+      fs.rmSync(dbPath, { force: true });
+    };
+    {
+      const keys = spawnSync(
+        process.execPath,
+        [
+          '--input-type=module',
+          '-e',
+          `import { commitKey, treeKey } from ${JSON.stringify(
+            pathToFileURL(path.join(fixture, '.claude', 'hooks', 'tree-key.mjs')).href
+          )}; process.stdout.write(String(commitKey('HEAD') === treeKey() && treeKey() !== null));`
+        ],
+        { cwd: fixture, encoding: 'utf8', env }
+      );
+      check(
+        '#336 commitKey(HEAD) equals treeKey() on a clean tree',
+        keys.stdout === 'true',
+        keys.stdout + keys.stderr
+      );
+    }
+    writeSpec(greenRun(head));
+    clearFixture();
+    {
+      const r = credit([head]);
+      const cache = fs.existsSync(cachePath)
+        ? JSON.parse(fs.readFileSync(cachePath, 'utf8'))
+        : null;
+      const db = fs.existsSync(dbPath) ? JSON.parse(fs.readFileSync(dbPath, 'utf8')) : null;
+      check(
+        '#337 from another cwd it arms the checkout that holds it',
+        r.status === 0 &&
+          r.stdout.includes(`ci credit: armed for ${head.slice(0, 12)} (run 42)`) &&
+          cache?.by === 'ci' &&
+          cache?.command === 'ci run 42' &&
+          db?.key === cache?.key &&
+          !fs.existsSync(cacheFilePath()),
+        r.stdout + r.stderr
+      );
+      check(
+        '#338 a ci.yml that differs from origin/main is accepted with the note',
+        r.stdout.includes('ci credit: note - ci.yml differs from origin/main'),
+        r.stdout
+      );
+    }
+    clearFixture();
+    {
+      const failed = greenRun(head);
+      failed.run.conclusion = 'failure';
+      writeSpec(
+        greenRun(head),
+        [
+          row(41, 'push', '00'),
+          row(44, 'pull_request', '30'),
+          row(43, 'workflow_dispatch', '20')
+        ],
+        { 41: failed }
+      );
+      const r = credit([head]);
+      check(
+        '#339 an older failed push run and a newer green dispatch run: the dispatch arms',
+        r.status === 0 && r.stdout.includes('(run 43)'),
+        r.stdout
+      );
+    }
+    clearFixture();
+    {
+      const g = greenRun(head);
+      jobOf(g, 'e2e').conclusion = 'skipped';
+      writeSpec(g);
+      const r = credit([head, '--run', '42']);
+      check(
+        '#340 a refused run exits 1, says why and writes nothing',
+        r.status === 1 &&
+          r.stdout.includes('e2e concluded skipped') &&
+          !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+    writeSpec(greenRun(head));
+    fs.writeFileSync(path.join(fixture, 'stray.txt'), 'x\n');
+    {
+      const r = credit([head]);
+      check(
+        '#341 an untracked file refuses and names the path',
+        r.status === 1 && r.stdout.includes('stray.txt') && !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+    fs.rmSync(path.join(fixture, 'stray.txt'));
+    {
+      const r = credit([head], { GIT_INDEX_FILE: path.join(tools, 'no-such-index') });
+      check(
+        '#342 a tree key that cannot be read refuses',
+        r.status === 1 && r.stdout.includes('could not be read') && !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+    {
+      const g = greenRun(head);
+      g.run.status = 'in_progress';
+      writeSpec(g);
+      const r = credit([head, '--run', '42']);
+      check(
+        '#343 a run still in progress after the watch refuses',
+        r.status === 1 &&
+          r.stdout.includes('ci credit: waiting on run 42') &&
+          r.stdout.includes('in_progress'),
+        r.stdout
+      );
+    }
+    {
+      const r = credit([head], {
+        LOOT_GH_CMD: JSON.stringify([path.join(tools, 'no-such-gh')])
+      });
+      check(
+        '#344 gh that does not start refuses and names the cause',
+        r.status === 1 && r.stdout.includes('gh did not start') && !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+    for (const args of [[], [head, '--run'], [head, '--run', 'x'], [head, 'extra']]) {
+      const r = credit(args);
+      check(`#345 usage "${args.join(' ')}": exit 2`, r.status === 2, r.stdout);
+    }
+    {
+      const r = credit(['no-such-ref']);
+      check(
+        '#345 a sha that does not resolve refuses',
+        r.status === 1 && r.stdout.includes('not a commit'),
+        r.stdout
+      );
+    }
+    // #352 - the credit applies the path rule to a skipped e2e: the head
+    // changed ci.yml since origin/main, so e2e runs; a docs-only commit on
+    // top of a moved origin/main skips.
+    clearFixture();
+    {
+      const g = greenRun(head);
+      jobOf(g, 'e2e').conclusion = 'skipped';
+      writeSpec(g);
+      const r = credit([head]);
+      check(
+        '#352 a skipped e2e after a ci.yml change refuses',
+        r.status === 1 &&
+          r.stdout.includes('the path rule says it runs') &&
+          !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+    git(['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    fs.mkdirSync(path.join(fixture, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(fixture, 'docs', 'note.md'), '# note\n');
+    git(['add', 'docs/note.md']);
+    gitCommit('docs: a note', fixture);
+    const docsHead = git(['rev-parse', 'HEAD']).trim();
+    {
+      const g = greenRun(docsHead);
+      jobOf(g, 'e2e').conclusion = 'skipped';
+      writeSpec(g);
+      const r = credit([docsHead]);
+      check(
+        '#352 a skipped e2e after a docs-only change arms',
+        r.status === 0 && r.stdout.includes('ci credit: armed'),
+        r.stdout
+      );
+    }
+    {
+      const e2e = spawnSync(
+        process.execPath,
+        [path.join(fixture, '.claude', 'hooks', 'ci-credit.mjs'), '--e2e-rule'],
+        {
+          cwd: scratchRoot,
+          encoding: 'utf8',
+          env: {
+            ...env,
+            GITHUB_EVENT_NAME: 'push',
+            GITHUB_REF: 'refs/heads/claude/x',
+            GITHUB_SHA: docsHead
+          }
+        }
+      );
+      check(
+        '#352 --e2e-rule says false for the docs-only push',
+        e2e.stdout.trim() === 'e2e=false',
+        e2e.stdout + e2e.stderr
+      );
+      const main = spawnSync(
+        process.execPath,
+        [path.join(fixture, '.claude', 'hooks', 'ci-credit.mjs'), '--e2e-rule'],
+        {
+          cwd: scratchRoot,
+          encoding: 'utf8',
+          env: {
+            ...env,
+            GITHUB_EVENT_NAME: 'push',
+            GITHUB_REF: 'refs/heads/main',
+            GITHUB_SHA: docsHead
+          }
+        }
+      );
+      check(
+        '#352 --e2e-rule says true on main',
+        main.stdout.trim() === 'e2e=true',
+        main.stdout + main.stderr
+      );
+    }
+    // A move from app/ into docs/ changes app/: --no-renames lists both sides.
+    fs.mkdirSync(path.join(fixture, 'app'), { recursive: true });
+    fs.writeFileSync(path.join(fixture, 'app', 'moved.ts'), 'export const moved = 1;\n');
+    git(['add', 'app/moved.ts']);
+    gitCommit('feat: a code file', fixture);
+    git(['update-ref', 'refs/remotes/origin/main', 'HEAD']);
+    git(['mv', 'app/moved.ts', 'docs/moved.ts']);
+    gitCommit('docs: move the code file under docs/', fixture);
+    const movedHead = git(['rev-parse', 'HEAD']).trim();
+    {
+      const rule = spawnSync(
+        process.execPath,
+        [path.join(fixture, '.claude', 'hooks', 'ci-credit.mjs'), '--e2e-rule'],
+        {
+          cwd: scratchRoot,
+          encoding: 'utf8',
+          env: {
+            ...env,
+            GITHUB_EVENT_NAME: 'push',
+            GITHUB_REF: 'refs/heads/claude/x',
+            GITHUB_SHA: movedHead
+          }
+        }
+      );
+      check(
+        '#352 --e2e-rule says true for a move from app/ into docs/',
+        rule.stdout.trim() === 'e2e=true',
+        rule.stdout + rule.stderr
+      );
+      const g = greenRun(movedHead);
+      jobOf(g, 'e2e').conclusion = 'skipped';
+      writeSpec(g);
+      clearFixture();
+      const r = credit([movedHead]);
+      check(
+        '#352 a skipped e2e after a move from app/ into docs/ refuses',
+        r.status === 1 &&
+          r.stdout.includes('the path rule says it runs') &&
+          !fs.existsSync(cachePath),
+        r.stdout
+      );
+    }
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+    fs.rmSync(tools, { recursive: true, force: true });
+  }
 }
 
 // ---------- stack-lock.mjs (#276-#280) ----------
@@ -5382,7 +5972,8 @@ function testMigrationPush() {
     'npm run db:push -- --project test --yes',
     'node --env-file=.env.test.local tools/supabase/db-push.mjs --project test --yes',
     'npx supabase db push --project-ref rdjxcjkhsklhprmzxajq',
-    'npx supabase migration up --db-url postgresql://postgres.rdjxcjkhsklhprmzxajq:x@aws-0.pooler.supabase.com:6543/postgres'
+    'npx supabase migration up --db-url postgresql://postgres.rdjxcjkhsklhprmzxajq:x@aws-0.pooler.supabase.com:6543/postgres',
+    'node --env-file=.env.test.local tools/supabase/migrate-test.mjs'
   ];
   const run = (command, opts) =>
     runHook('bash-guard.mjs', bashPayload(command, { session_id: 's-migration-push' }), opts);
@@ -5475,8 +6066,10 @@ function testMigrationPush() {
     {
       const result = run('git push -u origin task-y');
       check(
-        '#298 a local push is not judged by 2r',
-        !denyReason(result).includes('Verdict: approve'),
+        '#298 a local push is judged by 2r too',
+        isDeny(result) &&
+          denyReason(result).includes('Verdict: approve') &&
+          denyReason(result).includes('20261102120000_second.sql'),
         denyReason(result)
       );
     }
@@ -5495,10 +6088,92 @@ function testMigrationPush() {
       const result = run('git push -u origin task-y', cloud);
       check('#298 cloud push of the same tree: allowed', !isDeny(result), denyReason(result));
     }
+
+    // #346 - every refspec source is judged, not HEAD; per file, a blob on an
+    // origin/* ref passes, which covers a merge of origin/main.
+    gitSh(['checkout', '-q', '-B', 'other-x']);
+    const c4 = commitFile(
+      'supabase/migrations/20261105120000_other.sql',
+      'select 5;\n',
+      'chore: another branch migration'
+    );
+    gitSh(['checkout', '-q', 'task-y']);
+    {
+      const result = run('git push origin other-x');
+      check(
+        '#346 a push is judged by its refspec source, not HEAD',
+        isDeny(result) && denyReason(result).includes('20261105120000_other.sql'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = run(`git push origin ${c4}:refs/heads/x`);
+      check('#346 a sha source is judged', isDeny(result), denyReason(result));
+    }
+    for (const command of ['git push --all origin', 'git push --mirror origin']) {
+      const result = run(command);
+      check(
+        `#346 "${command}" is denied`,
+        isDeny(result) && denyReason(result).includes('--all'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = run('git push origin no-such-branch');
+      check(
+        '#346 a source that does not resolve is denied',
+        isDeny(result) && denyReason(result).includes('does not resolve'),
+        denyReason(result)
+      );
+    }
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#346 a source with every file on origin/main: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    gitSh(['update-ref', 'refs/remotes/origin/other-x', c4]);
+    {
+      const result = run('git push origin other-x');
+      check(
+        '#347 every file on a refs/remotes/origin/* ref: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    // The union tree of a merge: main's files and the other branch's file.
+    gitSh(['checkout', '-q', 'task-y']);
+    writeFile('supabase/migrations/20261105120000_other.sql', 'select 5;\n');
+    gitSh(['add', 'supabase/migrations/20261105120000_other.sql']);
+    gitCommit('chore: merge-union tree');
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#347 a merge-union tree whose files are all on origin/*: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    commitFile('supabase/migrations/20261106120000_own.sql', 'select 6;\n', 'chore: own');
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#347 a union tree with one new file: denied, the file named',
+        isDeny(result) &&
+          denyReason(result).includes('20261106120000_own.sql') &&
+          !denyReason(result).includes('20261105120000_other.sql'),
+        denyReason(result)
+      );
+    }
   } finally {
-    spawnSync('git', ['update-ref', '-d', 'refs/remotes/origin/main'], { cwd: scratchRoot });
+    for (const ref of ['refs/remotes/origin/main', 'refs/remotes/origin/other-x']) {
+      spawnSync('git', ['update-ref', '-d', ref], { cwd: scratchRoot });
+    }
     gitSh(['checkout', '-q', originalBranch]);
     spawnSync('git', ['branch', '-q', '-D', 'task-y'], { cwd: scratchRoot });
+    spawnSync('git', ['branch', '-q', '-D', 'other-x'], { cwd: scratchRoot });
     // A soft reset keeps the working tree, so the dirty baseline survives.
     gitSh(['reset', '-q', '--soft', originalHead]);
     gitSh(['reset', '-q']);
@@ -5604,6 +6279,24 @@ async function testWorktreeGates() {
         denyReason(result)
       );
     }
+    // A script named by path in another checkout pushes that checkout's
+    // migrations, so that checkout's tree and reports decide.
+    fs.mkdirSync(path.join(wt, 'tools', 'supabase'), { recursive: true });
+    const siblingPush = () =>
+      runHook(
+        'bash-guard.mjs',
+        bashPayload(
+          `node --env-file=.env.test.local ${wt.replace(/\\/g, '/')}/tools/supabase/db-push.mjs --project test --yes`
+        )
+      );
+    {
+      const result = siblingPush();
+      check(
+        "#348 a sibling checkout's db-push.mjs is judged against that checkout",
+        isDeny(result) && denyReason(result).includes('seen: none'),
+        denyReason(result)
+      );
+    }
     fs.mkdirSync(path.join(wt, 'issues', 'x', 'reviews'), { recursive: true });
     fs.writeFileSync(
       path.join(wt, 'issues', 'x', 'reviews', 'B9.md'),
@@ -5613,6 +6306,14 @@ async function testWorktreeGates() {
       const result = push();
       check(
         "#310 rule 2r finds a report in the worktree's issues/",
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    {
+      const result = siblingPush();
+      check(
+        "#348 the sibling checkout's own report approves it",
         !isDeny(result),
         denyReason(result)
       );
@@ -5743,7 +6444,8 @@ async function main() {
     await testCheckDbObserver();
     await testCreditObserver();
     await testGateCredit();
-    await testCheckHalves();
+    await testCheckFast();
+    await testCiCredit();
     await testStackLock();
     await testPathKeyPortability();
     testSessionStart();

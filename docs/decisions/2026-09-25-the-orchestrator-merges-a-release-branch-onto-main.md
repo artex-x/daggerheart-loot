@@ -1,5 +1,6 @@
 # 2026-09-25 - The orchestrator merges a release branch onto `main`; the owner keeps the dashboard steps
 
+- Amended by "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21): the CI credit gates the squash commit, and closeout deletes the remote task branch after `main`'s run is green.
 - Task: `persist-1-auth` (owner, 2026-09-25).
 - Decision: at a release's closeout the orchestrator, on a host where the
   push rule allows it, squash-merges the release branch onto `main` as the

@@ -14,8 +14,10 @@ deleted.
 
 ## Index
 
+- 2026-10-21 - [A task branch pushes every batch; a green CI run of the same tree gates main](decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md)
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
 - 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)
+- 2026-10-21 - [A worktree gets the test env file at creation; db:push uses the pooler](decisions/2026-10-21-a-worktree-gets-the-test-env-file-and-db-push-uses-the-pooler.md)
 - 2026-10-21 - [Scarab Shield is a secondary weapon](decisions/2026-10-21-scarab-shield-is-a-secondary-weapon.md)
 - 2026-10-21 - [Source names follow the source product, in labels and URL ids](decisions/2026-10-21-source-names-follow-the-source-product.md)
 - 2026-10-21 - [Unnumbered Many Worlds Tavern realms order by kind, then name](decisions/2026-10-21-unnumbered-many-worlds-tavern-realms-order-by-kind-then-name.md)
@@ -57,7 +59,7 @@ deleted.
 - 2026-10-07 - [Arazo's Artifacts: source arazo, ids aa1-aa51, tier formulas as lines](decisions/2026-10-07-arazos-artifacts-source-arazo-section-roll-arazo-ids-aa.md) - superseded in part
 - 2026-10-07 - [Lifecycle data is deleted by the database on a schedule](decisions/2026-10-07-lifecycle-data-is-deleted-by-the-database-on-a-schedule.md)
 - 2026-10-07 - [Owner rules are written to their homes in the batch that hears them](decisions/2026-10-07-owner-rules-are-written-to-their-homes-in.md)
-- 2026-10-07 - [The commit gate arms when both halves of the check pass on one tree](decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md)
+- 2026-10-07 - [The commit gate arms when both halves of the check pass on one tree](decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md) - superseded
 - 2026-10-07 - [The image review keeps its verdicts in the browser, keyed by hash](decisions/2026-10-07-the-image-review-keeps-its-verdicts-in-the-browser-by-hash.md)
 - 2026-10-06 - [A share link's filter lives in its address; its facets are the drawn entries](decisions/2026-10-06-a-share-links-filter-lives-in-its-address-its-facets.md)
 - 2026-10-02 - [A homebrew import matches items by key, never by name](decisions/2026-10-02-a-homebrew-import-matches-items-by-key-never-by-name.md)
@@ -253,7 +255,7 @@ deleted.
 - 2026-09-18 - [Decisions live in one `docs/DECISIONS.md`, not a `docs/decisions/` folder](decisions/2026-09-18-decisions-live-in-one-docs-decisions-md-not.md) - superseded
 - 2026-09-18 - [Durable knowledge is written to its home the batch that makes it, never parked](decisions/2026-09-18-durable-knowledge-is-written-to-its-home-the.md)
 - 2026-09-18 - [One commit per task, amend freely, push once - replaces the per-batch push rule](decisions/2026-09-18-one-commit-per-task-amend-freely-push-once.md) - superseded
-- 2026-09-18 - [One commit per task, amended per batch, pushed once at closeout](decisions/2026-09-18-one-commit-per-task-amended-per-batch-pushed.md)
+- 2026-09-18 - [One commit per task, amended per batch, pushed once at closeout](decisions/2026-09-18-one-commit-per-task-amended-per-batch-pushed.md) - superseded
 - 2026-09-18 - [Retire scope: audit every shipped directory, then delete - never a blind delete](decisions/2026-09-18-retire-scope-audit-every-shipped-directory-then-delete.md)
 - 2026-09-18 - [Rule 2i generalised from a plan.md file to any task directory](decisions/2026-09-18-rule-2i-generalised-from-a-plan-md-file.md)
 - 2026-09-18 - [Share stubs (`i/`) and artwork (`img/`, `og/`) stay tracked root folders](decisions/2026-09-18-share-stubs-i-and-artwork-img-og-stay.md) - superseded in part

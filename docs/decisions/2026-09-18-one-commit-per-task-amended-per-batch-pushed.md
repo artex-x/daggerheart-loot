@@ -1,5 +1,6 @@
 # 2026-09-18 - One commit per task, amended per batch, pushed once at closeout
 
+- Superseded by "A task branch pushes every batch; a green CI run of the same tree gates main" (2026-10-21).
 - Task: `workflow-hygiene` (human decision).
 - Decision: a task's first batch runs `git commit`; every later batch and
   the closeout amend it (`git commit --amend`, message rewritten to cover

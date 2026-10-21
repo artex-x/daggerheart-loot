@@ -14,6 +14,7 @@ import {
   parseLimitsArgs,
   describeLimit,
   dbUrlProject,
+  pushRoute,
   diffArgs,
   envRefs,
   parseEnvFile,
@@ -257,6 +258,39 @@ describe('dbUrlProject', () => {
       dbUrlProject(`postgresql://postgres.${PROJECTS.test}%zz:x@x.pooler.supabase.com/p`),
       null
     );
+  });
+});
+
+describe('pushRoute', () => {
+  const pooler = (ref) =>
+    `postgresql://postgres.${ref}:p%40ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`;
+
+  it('takes the pooler for the test project with a test pooler string', () => {
+    const url = pooler(PROJECTS.test);
+    assert.deepEqual(pushRoute('test', { SUPABASE_DB_URL_TEST: url }), { via: 'pooler', url });
+  });
+
+  it('refuses a string that is not the test project and prints no part of it', () => {
+    const url = pooler(PROJECTS.prod);
+    assert.throws(
+      () => pushRoute('test', { SUPABASE_DB_URL_TEST: url }),
+      (err) =>
+        /not the test project/.test(err.message) &&
+        !err.message.includes(PROJECTS.prod) &&
+        !err.message.includes('p%40ss') &&
+        !err.message.includes('pooler.supabase.com')
+    );
+  });
+
+  it('keeps the CLI path for the test project without the variable', () => {
+    assert.deepEqual(pushRoute('test', {}), { via: 'cli' });
+    assert.deepEqual(pushRoute('test', { SUPABASE_DB_URL_TEST: '' }), { via: 'cli' });
+  });
+
+  it('keeps the CLI path for production with the variable set', () => {
+    assert.deepEqual(pushRoute('prod', { SUPABASE_DB_URL_TEST: pooler(PROJECTS.test) }), {
+      via: 'cli'
+    });
   });
 });
 

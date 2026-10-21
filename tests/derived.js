@@ -1577,21 +1577,26 @@ ok(
   ),
   '.claude/.gitignore must keep the line `.check-pending.json`: an unignored pending file changes the tree key it records'
 );
-/* The two halves (docs/decisions/2026-10-07-the-commit-gate-arms-when-both-halves-of-the.md):
-   each half records its pass by its own exit, so each chain starts with
-   `begin` and ends with `arm`, and its state files stay out of the tree key. */
+/* The task-branch floor
+   (docs/decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md):
+   `check:fast` arms the task-branch gate by its own exit, so its chain starts
+   with `begin` and ends with `arm`, and its state files stay out of the tree
+   key. The retired half records stay ignored: old checkouts still hold them. */
 const scripts = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).scripts;
-for (const n of [1, 2]) {
-  const half = scripts[`check:${n}`] || '';
-  ok(
-    half.startsWith(`node .claude/hooks/gate-credit.mjs begin check-${n} && `) &&
-      half.endsWith(` && node .claude/hooks/gate-credit.mjs arm check-${n}`),
-    `package.json scripts.check:${n} must start with \`gate-credit.mjs begin check-${n}\` and end with \`gate-credit.mjs arm check-${n}\`: the half records its pass by its own exit`
-  );
-}
+ok(
+  (scripts['check:fast'] || '').startsWith(
+    'node .claude/hooks/gate-credit.mjs begin check-fast && '
+  ) &&
+    (scripts['check:fast'] || '').endsWith(
+      ' && node .claude/hooks/gate-credit.mjs arm check-fast'
+    ),
+  'package.json scripts.check:fast must start with `gate-credit.mjs begin check-fast` and end with `gate-credit.mjs arm check-fast`: it arms the task-branch gate by its own exit'
+);
 {
   const ignore = fs.readFileSync(path.join(ROOT, '.claude', '.gitignore'), 'utf8');
   const missing = [
+    '.check-fast-pending.json',
+    '.check-fast-pass.json',
     '.check-1-pending.json',
     '.check-2-pending.json',
     '.check-1-pass.json',
@@ -1748,6 +1753,35 @@ if (shardList && shardRun) {
         return n === want[i];
       }),
     'browser matrix: shard list is ' + JSON.stringify(list) + ', expected exactly 1..' + divisor
+  );
+}
+
+/* The CI credit (.claude/hooks/ci-credit.mjs) arms the gates only when each
+   job of REQUIRED_JOBS succeeded, so that list must be every gate job of
+   ci.yml, one `browser (n)` per shard; migrate-prod and deploy run on main
+   only. */
+{
+  const creditText = fs.readFileSync(
+    path.join(ROOT, '.claude', 'hooks', 'ci-credit.mjs'),
+    'utf8'
+  );
+  const listText = /REQUIRED_JOBS = Object\.freeze\(\[([^\]]*)\]\)/.exec(creditText);
+  ok(listText, 'ci-credit.mjs: REQUIRED_JOBS is missing or unparseable');
+  const required = listText ? [...listText[1].matchAll(/'([^']+)'/g)].map((m) => m[1]) : [];
+  const jobsBody = /^jobs:\s*\r?\n([\s\S]*)$/m.exec(workflow);
+  const ids = jobsBody
+    ? [...jobsBody[1].matchAll(/^ {2}([A-Za-z0-9_-]+):\s*(?:#.*)?$/gm)].map((m) => m[1])
+    : [];
+  const shards = shardList ? shardList[1].split(',').map((s) => s.trim()) : [];
+  const want = ids
+    .filter((id) => id !== 'migrate-prod' && id !== 'deploy')
+    .flatMap((id) => (id === 'browser' ? shards.map((n) => `browser (${n})`) : [id]));
+  ok(
+    JSON.stringify([...required].sort()) === JSON.stringify([...want].sort()),
+    'ci-credit.mjs REQUIRED_JOBS is ' +
+      JSON.stringify(required) +
+      ' but ci.yml has the gate jobs ' +
+      JSON.stringify(want)
   );
 }
 
