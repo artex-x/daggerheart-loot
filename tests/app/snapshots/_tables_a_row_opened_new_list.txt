@@ -83,17 +83,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Амулет Воздушного Клинка
@@ -105,6 +98,7 @@ daggerheart.com
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
+Дополнения
 Закрыть
 Заряжающий Колчан
 Исправляющий Дух
@@ -173,7 +167,6 @@ daggerheart.com
 Скопировать текст
 Снаряжение
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -270,7 +263,6 @@ Add to list
 Airblade Charm
 Alistair's Torch
 Alt. tables
-Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Attune Relic
@@ -284,7 +276,6 @@ Charging Quiver
 Charm Relic
 Clay Companion
 Close
-Communities
 Companion Case
 Consumables
 Control Relic
@@ -294,9 +285,6 @@ Copy name
 Copy text
 Core
 Corrector Sprite
-Dragon's Vault
-Dread
-Dread GM Toolbox
 Dual Flask
 EN
 Elusive Amulet
@@ -357,14 +345,12 @@ Skip to content
 Speaking Orbs
 Standard rules
 Stride Relic
+Supplements
 Suspended Rod
 Tables
 Terms of use
 Valorstone
-Vault of Ages
 Vial of Darksmoke Recipe
-Wondrous
-Wondrous Loot
 Woven Net
 daggerheart.com
 ЛутDaggerheart

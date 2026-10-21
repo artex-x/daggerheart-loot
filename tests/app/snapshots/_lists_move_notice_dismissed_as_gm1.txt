@@ -16,12 +16,7 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -73,13 +68,8 @@ RootWebArea "Списки — Генератор лута — Daggerheart" [url=
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -89,6 +79,7 @@ daggerheart.com
 Выбрать: Лавка кузнеца
 Выбрать: Пустой список
 Выбрать: Трофеи
+Дополнения
 Импорт из файла
 К содержимому
 Как это работает
@@ -103,7 +94,6 @@ daggerheart.com
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
 Создать
-Сообщества
 Списки
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
@@ -124,12 +114,7 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -183,12 +168,8 @@ RootWebArea "Lists — Daggerheart Loot Generator" [url=index.html?as=gm1#/lists
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
-Arazo's Artifacts
-Communities
 Create
 Delete
-Dragon's Vault
-Dread
 EN
 How this works
 Import from file
@@ -207,10 +188,9 @@ Select: Пустой список
 Select: Трофеи
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 Клад дракона, 0 items, edited just now
 Лавка в порту, 0 items, edited just now

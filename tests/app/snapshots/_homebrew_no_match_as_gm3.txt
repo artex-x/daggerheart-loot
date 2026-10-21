@@ -16,12 +16,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm3#/roll/community]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
@@ -46,16 +41,12 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm3@example.test
 Альт. таблицы
+Дополнения
 Импорт из файла
 Источники
 К содержимому
@@ -67,7 +58,6 @@ daggerheart.com
 Обычные правила
 Поиск
 Предметы
-Сообщества
 Списки
 Таблицы
 Условия использования
@@ -86,12 +76,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Communities" [url=index.html?as=gm3#/roll/community]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
@@ -118,10 +103,6 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
 ## en :: controls
 Account: gm3@example.test
 Alt. tables
-Arazo's Artifacts
-Communities
-Dragon's Vault
-Dread
 EN
 Import from file
 Install as an app
@@ -136,9 +117,8 @@ Sets
 Skip to content
 Sources
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

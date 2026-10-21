@@ -206,6 +206,12 @@ describe('the line under the heading', () => {
     expect(whereFrom(rec({ src: 'dread' }), 'en')).toBe('Dread GM Toolbox');
   });
 
+  it("names a supplement by its book, not by the tables page's supplements chip", () => {
+    /* The stubs under i/ print this path; the supplements group is navigation only. */
+    expect(whereFrom(rec({ src: 'arazo' }), 'en')).toBe("Arazo's Artifacts");
+    expect(whereFrom(rec({ src: 'dv' }), 'ru')).toBe("Dragon's Vault");
+  });
+
   it('names the equipment slice, whichever piece (the last un-pinned group)', () => {
     expect(whereFrom(rec({ src: 'core', eq: { t: 'weapon', tier: 1 } }), 'ru')).toBe(
       'Снаряжение · Оружие'

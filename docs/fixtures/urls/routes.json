@@ -56,7 +56,7 @@
     "why": "Dread",
     "resolves": {
       "hash": "#/roll/dread",
-      "tab": "#/roll/dread",
+      "tab": "#/roll/wondrous",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -67,7 +67,7 @@
     "why": "Vault of Ages",
     "resolves": {
       "hash": "#/roll/voa",
-      "tab": "#/roll/voa",
+      "tab": "#/roll/wondrous",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -78,7 +78,7 @@
     "why": "Dragon's Vault",
     "resolves": {
       "hash": "#/roll/dv",
-      "tab": "#/roll/dv",
+      "tab": "#/roll/wondrous",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -89,7 +89,7 @@
     "why": "Arazo's Artifacts",
     "resolves": {
       "hash": "#/roll/arazo",
-      "tab": "#/roll/arazo",
+      "tab": "#/roll/wondrous",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -100,7 +100,7 @@
     "why": "communities",
     "resolves": {
       "hash": "#/roll/community",
-      "tab": "#/roll/community",
+      "tab": "#/roll/wondrous",
       "rows": 0,
       "printCards": 0,
       "picked": []

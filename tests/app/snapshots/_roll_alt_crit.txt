@@ -15,12 +15,7 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -89,18 +84,14 @@ RootWebArea "Альт. таблицы — Генератор лута — Dagger
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Большое Зелье Усиления
 Бросить кости
 Войти
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -128,7 +119,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Сообщества
 Списки
 Страница
 Таблица предметов
@@ -150,12 +140,7 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -225,10 +210,8 @@ RootWebArea "Alt. tables — Daggerheart Loot Generator" [url=#/roll/alt]
 
 ## en :: controls
 Alt. tables
-Arazo's Artifacts
 Bump to Uncommon
 CommonTier 1–2
-Communities
 Consumables
 Consumables table
 Copy every option
@@ -236,8 +219,6 @@ Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
 EN
 Fear Die: One higher
 Fear Die: One lower
@@ -263,11 +244,10 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 UncommonTier 1–2
-Vault of Ages
 Very rareTier 3–4
-Wondrous
 daggerheart.com
 ЛутDaggerheart

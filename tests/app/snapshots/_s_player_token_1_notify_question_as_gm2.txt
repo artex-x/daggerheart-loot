@@ -16,12 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm2#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm2#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm2#/roll/community]
+      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm2#/tables]
       link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
@@ -76,13 +71,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm2
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
 51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm2@example.test
 Альт. таблицы
@@ -90,6 +80,7 @@ daggerheart.com
 Взять: Зелье Быстрого Шага
 Взять: Первоклассный Спальный Мешок
 Гарпун Левиафана
+Дополнения
 Зелье Быстрого Шага
 К содержимому
 Колдующий Кинжал
@@ -110,7 +101,6 @@ daggerheart.com
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Снять выделение
-Сообщества
 Сообщить
 Сохранить себе
 Списки
@@ -136,12 +126,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/s/player-token-
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm2#/roll/std]
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm2#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm2#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm2#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm2#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm2#/roll/arazo]
-      link "Communities" [url=index.html?as=gm2#/roll/community]
+      link "Supplements" [url=index.html?as=gm2#/roll/wondrous]
       link "Tables" [url=index.html?as=gm2#/tables]
       link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
@@ -198,17 +183,13 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/s/player-token-
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
 Account: gm2@example.test
 Alt. tables
-Arazo's Artifacts
 Art History Booklet
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear selection
-Communities
 Don't notify
-Dragon's Vault
-Dread
 EN
 Ember Axe
 Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
@@ -233,12 +214,11 @@ Search
 Skip to content
 Standard rules
 Stride Potion
+Supplements
 Tables
 Take: Premium Bedroll
 Take: Stride Potion
 Terms of use
 Twilight Deck
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

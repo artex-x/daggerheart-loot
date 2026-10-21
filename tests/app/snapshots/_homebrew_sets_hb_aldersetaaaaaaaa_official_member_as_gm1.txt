@@ -16,12 +16,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -56,17 +51,13 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     StaticText "Сохранено: «Палаш»"
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Добавить предмет
+Дополнения
 Изменить
 Импорт из файла
 Источники
@@ -81,7 +72,6 @@ daggerheart.com
 Палаш
 Поиск
 Предметы
-Сообщества
 Списки
 Таблицы
 Убрать: Палаш
@@ -102,12 +92,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -146,12 +131,8 @@ Account: gm1@example.test
 Add an item
 Alder Set
 Alt. tables
-Arazo's Artifacts
 Broadsword
-Communities
 Delete
-Dragon's Vault
-Dread
 EN
 Edit
 Import from file
@@ -168,9 +149,8 @@ Sets
 Skip to content
 Sources
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

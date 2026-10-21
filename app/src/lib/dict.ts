@@ -26,7 +26,7 @@ const ru = {
   langLabel: 'Язык',
   close: 'Закрыть',
 
-  /* The eleven sections, in tab order */
+  /* The eleven sections, in `SECTIONS` order; the tab bar draws six of them */
   std: 'Обычные правила',
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
@@ -216,6 +216,9 @@ const ru = {
   thMajor: 'Ощутимый урон',
   thSevere: 'Тяжёлый урон',
 
+  /* The supplements tab and table group: every book past Core and the alternate
+     tables. */
+  grpSupplements: 'Дополнения',
   /* The two groups the tab bar has no word for - both a slice through every
      book rather than a book of their own. */
   grpEquipment: 'Снаряжение',
@@ -1277,6 +1280,7 @@ const en: Dict = {
   thMajor: 'Major damage',
   thSevere: 'Severe damage',
 
+  grpSupplements: 'Supplements',
   grpEquipment: 'Equipment',
   grpOther: 'Other',
   subStarting: 'Starting',
@@ -2138,9 +2142,9 @@ export function dict(lang: Lang): Dict {
 }
 
 /** Which dictionary key names a section, for the tab title
- *  (`<section label> — <docTitle>`). Mirrors `TabBar.svelte`'s own `TABS`
- *  pairing exactly - the exhaustive `Record<Section, ...>` is what keeps the
- *  two from drifting apart the moment a tenth section arrives. */
+ *  (`<section label> — <docTitle>`), the start-section select and the
+ *  supplements panel's chips. The exhaustive `Record<Section, ...>` makes a new
+ *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/std': 'std',
   'roll/alt': 'alt',

@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -100,17 +90,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 90Клинок из Драконьей КостиРанг 1 · Физическое · Сила · Вплотную... [namelen=283 namehash=d9a1ed5e]
 97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=313 namehash=2e6e07f1]
 99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=238 namehash=ba3d96dd]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Арканный Скальпель
@@ -134,6 +117,7 @@ daggerheart.com
 Голодный Кулачный Клинок
 Деревянный Кол
 Деревянный КолРанг 1 · Физическое · Сила · Вплотную · d8 физ · О... [namelen=210 namehash=c756983a]
+Дополнения
 Духовая Трубка Скорбного Ежа
 Жуткий Наруч
 Жуткий НаручРанг 2 · Магическое · Инстинкт · Вплотную · d8 маг ·... [namelen=253 namehash=94944c1e]
@@ -286,7 +270,6 @@ daggerheart.com
 Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -377,12 +360,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -394,12 +372,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -502,7 +475,6 @@ Advanced Wooden Stake
 Advanced Wooden StakeTier 3 · Physical · Strength · Melee · d8+4... [namelen=219 namehash=955f17dd]
 Aku-Haptlek's Tooth
 Alt. tables
-Arazo's Artifacts
 Arcane Scalpel
 Armor
 Barrel Lid Shield
@@ -519,13 +491,9 @@ Chain Whip
 Chain WhipTier 1 · Physical · Presence · Very Close · d6+1 phy ·... [namelen=187 namehash=c7469c9d]
 Collapsible Baton
 Collapsible BatonTier 2 · Physical · Strength · Melee · d8 phy ·... [namelen=246 namehash=dca5007c]
-Communities
 Copy a link to this section
 Core
-Dragon's Vault
 Dragonbone Blade
-Dread
-Dread GM Toolbox
 EN
 Echo Blade
 Echo BladeTier 4 · Magic · Presence · Melee · d4+6 mag · One-Han... [namelen=225 namehash=ddb6e149]
@@ -695,6 +663,7 @@ Spider Queen's Protection
 Spiked Shield
 Spiked ShieldTier 2 · Physical · Strength · Melee · d6+2 phy · O... [namelen=177 namehash=b167bc3e]
 Standard rules
+Supplements
 Table Shield
 Table ShieldTier 1 · Physical · Strength · Melee · d6 phy · One-... [namelen=144 namehash=cde02b7b]
 Tables
@@ -708,7 +677,6 @@ Tower ShieldTier 1 · Physical · Strength · Melee · d6 phy · One-... [namele
 Towline Hook
 Towline HookTier 1 · Physical · Finesse · Close · d6 phy · One-H... [namelen=184 namehash=23be0a94]
 Unicorn Knife
-Vault of Ages
 Veil Cutter
 Void Needle
 Void NeedleTier 4 · Physical · Finesse · Melee · d4+6 phy · One-... [namelen=170 namehash=407de0e5]
@@ -719,8 +687,6 @@ War DartTier 3 · Physical · Agility · Far · d6+5 phy · One-Hande... [namele
 Weapons
 Whip
 WhipTier 1 · Physical · Presence · Very Close · d6 phy · One-Han... [namelen=195 namehash=7bc12a96]
-Wondrous
-Wondrous Loot
 Wooden Stake
 Wooden StakeTier 1 · Physical · Strength · Melee · d8 phy · One-... [namelen=208 namehash=539d3efb]
 daggerheart.com

@@ -6,7 +6,7 @@ in `CONTRACTS.md`.
 
 ## Rolling
 
-Seven modes. Each keeps its own input in memory only. A mode starts at its
+Eight modes. Each keeps its own input in memory only. A mode starts at its
 first row on every visit: a switch between two modes carries no number
 across.
 
@@ -39,11 +39,21 @@ across.
   descriptive wording measured 293 px on a 360 px viewport against the
   subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
   truncating, horizontal scroll and any other layout change were rejected -
-  the short wording is the fix. A strip under 500 px wide has a 300 px cap:
-  eleven group chips (twelve signed in, with Homebrew) wrap to six rows. At
-  360 px a strip with subchips measures 298 px, signed in or out, and a
-  strip without them 256 px (measured 2026-10-07). No group label is short
-  enough to put three chips on one row, so a shorter label is no fix here.
+  the short wording is the fix. The tables strip has a cap of 300 px under
+  500 px wide, 150 px under 1000 px and 130 px above (`tests/app/sweep.js`).
+  Six group chips (seven signed in, with Homebrew) and the second row of
+  seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
+  1180 (measured 2026-10-20).
+- The six supplement modes (Wondrous to Communities) share one header tab,
+  «Дополнения» / "Supplements"
+  (`docs/decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md`).
+  Each of their pages draws a panel under its heading with one chip per
+  supplement, in table order, each a link to its section; the open one is gold
+  and the current page. The chip reads the section's own word. Core rules and
+  the alternate tables draw no panel. The panel measures 162 px at 360 and
+  390, 119 px at 768 and 75 px at 1180; on a 360x740 phone the roll button
+  then sits at 523 px on Wondrous and 755 px on Communities, below the fold
+  (accepted by the owner, 2026-10-20).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -76,6 +86,12 @@ across.
 
 - 18 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
   the eighteenth, `homebrew`, has its group chip signed in only.
+- The group chips are Core, Hope & Fear, the alternate tables, «Дополнения» /
+  "Supplements", Equipment, Other and, signed in, Homebrew (`TABLE_NAV`).
+  «Дополнения» opens Wondrous Loot and is lit on each supplement table; its
+  second row holds the six books by their own names. A record's path
+  (`whereFrom`, the stubs under `i/`) keeps the book and never says
+  «Дополнения».
   The switch changes the view until the page reloads; the default is the
   Display section's «Таблицы» row ("Account"). While the view differs from
   the default, a build with sign-in draws the note «Только до перезагрузки.
@@ -2279,10 +2295,16 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the menu and the control, focus moving elsewhere, a navigation or a
   change of user close it. A second press on the control closes it. An
   item is 44px tall at 600px and below.
-- The tab bar draws the eleven sections; from the legacy write cutoff
-  (2026-10-26, `legacyWritable`) a build with sign-in draws ten, without
-  «Списки»: `#/lists` is then reached from the account menu (`ROUTES.md`,
-  "Sections"). A build with no sign-in keeps eleven.
+- The tab bar draws six tabs: «Обычные правила», «Альт. таблицы»,
+  «Дополнения», then «Таблицы», «Списки», «Поиск» ("Standard rules", "Alt.
+  tables", "Supplements", "Tables", "Lists", "Search"). «Дополнения» links to
+  `#/roll/wondrous` and is lit, with `aria-current="page"`, on each of the six
+  supplement sections. From the legacy write cutoff (2026-10-26,
+  `legacyWritable`) a build with sign-in draws five, without «Списки»:
+  `#/lists` is then reached from the account menu (`ROUTES.md`, "Sections").
+  A build with no sign-in keeps six. From 640 px the tabs hold one row in both
+  languages (607 px in Russian, 510 in English); the header is 106 px. Under
+  640 px the row scrolls sideways and the header is 112 px.
 - No tab is lit on a record, a list page, a print sheet or the account page -
   the live `renderTabs` compared against the raw route string, and none of
   those route kinds was ever that string.
@@ -2334,7 +2356,9 @@ Each rule keeps its number: a review cites it by number.
 - **4. One name**: the menu item, the page heading and the tab name a page
   the same way. Departure until 2026-10-26: the tab bar, the pin label and
   the window title of `#/lists` say «Списки» / "Lists" for the page headed
-  «Мои списки» / "My lists".
+  «Мои списки» / "My lists". Departure: the «Дополнения» / "Supplements" tab
+  names the six supplement pages as one group; each page's own word is on its
+  chip in the supplements panel ("Rolling").
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write

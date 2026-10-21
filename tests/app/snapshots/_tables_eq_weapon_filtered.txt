@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -98,13 +88,11 @@ Arazo's Artifacts
 Core
 Dragon's Vault
 Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
 Wondrous
-Wondrous Loot
 daggerheart.com
 Алебарда
 Алебарда Урзо
@@ -138,6 +126,7 @@ daggerheart.com
 Длинный ЛукРанг 1 · Физическое · Проворность · Очень далеко · d8... [namelen=128 namehash=522ff51f]
 Длинный Меч
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
+Дополнения
 Дробовик
 ДробовикРанг 1 · Физическое · Сила · Близко · d6+2 физ · Двуручн... [namelen=204 namehash=6d8ab543]
 Дубина из Зубов Огра
@@ -218,7 +207,6 @@ daggerheart.com
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Списки
 Списком
 Средне
@@ -253,12 +241,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -270,12 +253,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_ti
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -351,7 +329,6 @@ Butcher's Axe
 Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
 Close
 Colossus of the Drylands
-Communities
 Copy a link to this section
 Core
 Crop Scythe
@@ -359,7 +336,6 @@ Crop ScytheTier 1 · Physical · Finesse · Very Close · d8+2 phy ·... [namele
 Dark Heart of Andaluria
 Dragon's Vault
 Dread
-Dread GM Toolbox
 Dualstaff
 DualstaffTier 1 · Magic · Instinct · Far · d6+3 mag · Two-Handed... [namelen=82 namehash=c9686662]
 EN
@@ -456,6 +432,7 @@ Staff of the Void Beyond
 Standard rules
 Strength
 Striking Fangs
+Supplements
 Tables
 Taryan's Morningstar
 Terms of use
@@ -474,6 +451,5 @@ Warhammer of Baz
 WarhammerTier 1 · Physical · Strength · Melee · d12+3 phy · Two-... [namelen=108 namehash=0f0f38af]
 Weapons
 Wondrous
-Wondrous Loot
 daggerheart.com
 ЛутDaggerheart

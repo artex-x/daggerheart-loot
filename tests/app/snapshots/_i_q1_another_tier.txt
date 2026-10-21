@@ -24,17 +24,13 @@ RootWebArea "Палаш — Генератор лута — Daggerheart" [url=#/
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
 Добавить в список
+Дополнения
 Закрыть
 К содержимому
 Конфиденциальность
@@ -50,7 +46,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Страница
 Таблицы
@@ -84,16 +79,12 @@ RootWebArea "Broadsword — Daggerheart Loot Generator" [url=#/i/q1]
 Add to list
 Advanced Broadsword
 Alt. tables
-Arazo's Artifacts
 Broadsword
 Close
-Communities
 Copy image
 Copy link
 Copy name
 Copy text
-Dragon's Vault
-Dread
 EN
 Improved Broadsword
 Install as an app
@@ -108,10 +99,9 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 show in the table
 ЛутDaggerheart

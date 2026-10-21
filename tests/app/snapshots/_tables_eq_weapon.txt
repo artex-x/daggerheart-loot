@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -223,17 +213,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 96УголёкРанг 3 · Магическое · Проворность · Вплотную · d8+5 маг ... [namelen=232 namehash=8a18d037]
 98Булава СкверныРанг 3 · Физическое · Сила · Вплотную · d8+6 физ... [namelen=404 namehash=fa3a857f]
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Алебарда
 Алебарда Урзо
@@ -319,6 +302,7 @@ daggerheart.com
 Длинный ЛукРанг 1 · Физическое · Проворность · Очень далеко · d8... [namelen=128 namehash=522ff51f]
 Длинный Меч
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
+Дополнения
 Дочь Зелени
 Драконий Клык
 Драконий Лук
@@ -822,7 +806,6 @@ daggerheart.com
 Снежный Клинок
 Солдатская Пика
 Солдатская ПикаРанг 3 · Физическое · Проворность · Близко · d10+... [namelen=236 namehash=5b85f6a2]
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -998,12 +981,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -1015,12 +993,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_weapon]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -1315,7 +1288,6 @@ Aether Rifle
 Alt. tables
 Amber Hammer
 Ananimus Hook
-Arazo's Artifacts
 Arc Wand
 Arc WandTier 3 · Magic · Presence · Close · d8+6 mag · One-Hande... [namelen=196 namehash=210e3234]
 Arc-Lightning Claymore
@@ -1386,7 +1358,6 @@ Cleaver
 CleaverTier 1 · Physical · Agility · Melee · d8 phy · One-Handed... [namelen=123 namehash=54f99894]
 Clockwork Crossbow
 Clockwork CrossbowTier 4 · Physical · Finesse · Far · d6+11 phy ... [namelen=201 namehash=49a4507e]
-Communities
 Cooking Knife
 Cooking KnifeTier 1 · Physical · Finesse · Melee · d8+1 phy · On... [namelen=103 namehash=ec6c4540]
 Copy a link to this section
@@ -1417,11 +1388,8 @@ Displacement Razor
 Displacement RazorTier 2 · Magic · Finesse · Melee · d8+3 mag · ... [namelen=211 namehash=9c35955e]
 Double Flail
 Double FlailTier 3 · Physical · Agility · Very Close · d10+8 phy... [namelen=195 namehash=924ff03f]
-Dragon's Vault
 Drakebow
 Draketooth
-Dread
-Dread GM Toolbox
 Dryad's Thorn
 Dual-Ended Sword
 Dual-Ended SwordTier 4 · Physical · Agility · Melee · d10+9 phy ... [namelen=194 namehash=a32ebfcb]
@@ -1902,6 +1870,7 @@ Steelforged HalberdTier 2 · Physical · Strength · Very Close · d... [namelen
 Storm God's Greataxe
 Storm God's GreataxeTier 4 · Magic · Strength · Very Close · d10... [namelen=214 namehash=3d2c55f7]
 Striking Fangs
+Supplements
 Swinging Ropeblade
 Swinging RopebladeTier 4 · Physical · Presence · Close · d8+9 ph... [namelen=220 namehash=aee3693b]
 Sword of Angels
@@ -1927,7 +1896,6 @@ Tyrant's Glaive
 Urok Broadsword
 Urok BroadswordTier 2 · Physical · Finesse · Melee · d8+3 phy · ... [namelen=173 namehash=8f4c8e02]
 Urzo's Halberd
-Vault of Ages
 Verdant Daughter
 Voynarian Crossbow
 Waiata Greatsword
@@ -1958,8 +1926,6 @@ Whisk Wand
 Whisk WandTier 1 · Magic · Knowledge · Far · d6+1 mag · One-Hand... [namelen=97 namehash=bd9517f8]
 Widogast Pendant
 Widogast PendantTier 3 · Magic · Knowledge · Close · d10+5 mag ·... [namelen=179 namehash=9395720d]
-Wondrous
-Wondrous Loot
 Wyverntail Whip
 Yithian Lightning Gun
 Yutari Bloodbow

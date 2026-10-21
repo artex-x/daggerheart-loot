@@ -15,12 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -73,13 +68,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
 51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Брошюра по Истории Искусства
@@ -88,6 +78,7 @@ daggerheart.com
 Войти
 Гарпун Левиафана
 Добавить в список
+Дополнения
 Зелье Быстрого Шага
 К содержимому
 Колдующий Кинжал
@@ -109,7 +100,6 @@ daggerheart.com
 Скопировать
 Снять выделение
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Сообщить владельцу
 Сохранить себе
 Списки
@@ -135,12 +125,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -195,17 +180,13 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=351 namehash=189625cc]
 Add to list
 Alt. tables
-Arazo's Artifacts
 Art History Booklet
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear selection
-Communities
 Copy
-Dragon's Vault
-Dread
 EN
 Ember Axe
 Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
@@ -232,12 +213,11 @@ Sign in
 Skip to content
 Standard rules
 Stride Potion
+Supplements
 Tables
 Take: Premium Bedroll
 Take: Stride Potion
 Terms of use
 Twilight Deck
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

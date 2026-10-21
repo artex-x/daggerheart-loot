@@ -33,6 +33,7 @@ daggerheart.com
 Альт. таблицы
 Войти
 Добавить в список
+Дополнения
 Закрыть
 К содержимому
 Как это работает
@@ -107,6 +108,7 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Vault of Ages

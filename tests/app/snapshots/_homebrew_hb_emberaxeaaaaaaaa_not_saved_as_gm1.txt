@@ -16,12 +16,7 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -131,13 +126,8 @@ RootWebArea "Топор Тлеющих Углей — Генератор лут�
 2
 3
 4
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -152,6 +142,7 @@ daggerheart.com
 Далеко
 Двуручное
 Добавить в список
+Дополнения
 Жирный
 Заменить
 Знание
@@ -191,7 +182,6 @@ daggerheart.com
 Расходник
 Сила
 Снаряжение
-Сообщества
 Сохранить
 Списки
 Список
@@ -225,12 +215,7 @@ RootWebArea "Ember Axe — Daggerheart Loot Generator" [url=index.html?as=gm1#/h
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -344,18 +329,14 @@ Account: gm1@example.test
 Add to list
 Agility
 Alt. tables
-Arazo's Artifacts
 Armor
 Bold
 Bulleted list
 Cancel
 Close
-Communities
 Consumable
 Delete
 Died4d6d8d10d12d20
-Dragon's Vault
-Dread
 EN
 Equipment
 Far
@@ -404,16 +385,15 @@ Skip to content
 Spellcast
 Standard rules
 Strength
+Supplements
 Table
 Tables
 Terms of use
 Two-Handed
 Unique
 Upgrades to
-Vault of Ages
 Very Close
 Very Far
-Wondrous
 daggerheart.com
 mag
 phy

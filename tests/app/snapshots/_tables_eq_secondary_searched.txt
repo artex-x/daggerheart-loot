@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -100,17 +90,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 90Клинок из Драконьей КостиРанг 1 · Физическое · Сила · Вплотную... [namelen=283 namehash=d9a1ed5e]
 97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=313 namehash=2e6e07f1]
 99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=238 namehash=ba3d96dd]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Арканный Скальпель
@@ -134,6 +117,7 @@ daggerheart.com
 Голодный Кулачный Клинок
 Деревянный Кол
 Деревянный КолРанг 1 · Физическое · Сила · Вплотную · d8 физ · О... [namelen=210 namehash=c756983a]
+Дополнения
 Духовая Трубка Скорбного Ежа
 Жуткий Наруч
 Жуткий НаручРанг 2 · Магическое · Инстинкт · Вплотную · d8 маг ·... [namelen=253 namehash=94944c1e]
@@ -286,7 +270,6 @@ daggerheart.com
 Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -377,12 +360,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -394,12 +372,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -438,14 +411,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_secondary]
 Advanced Offhand Brass Knuckles
 Advanced Offhand Brass KnucklesTier 3 · Physical · Strength · Me... [namelen=183 namehash=26c6b964]
 Alt. tables
-Arazo's Artifacts
 Armor
-Communities
 Copy a link to this section
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Equipment
 Filters
@@ -471,11 +439,9 @@ Secondary
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
 Weapons
-Wondrous
-Wondrous Loot
 daggerheart.com
 ЛутDaggerheart

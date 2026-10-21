@@ -16,12 +16,7 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -126,15 +121,10 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
 2
 3
 4
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 EN - пусто
 RU
 RU - пусто
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -150,6 +140,7 @@ daggerheart.com
 Далеко
 Двуручное
 Дистанция - выберите значение.
+Дополнения
 Жирный
 Знание
 Инстинкт
@@ -191,7 +182,6 @@ daggerheart.com
 Расходник
 Сила
 Снаряжение
-Сообщества
 Сохранить
 Списки
 Список
@@ -227,12 +217,7 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -340,7 +325,6 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 Account: gm1@example.test
 Agility
 Alt. tables
-Arazo's Artifacts
 Armor
 Bold
 Bulleted list
@@ -350,13 +334,10 @@ Choose a file
 Choose from items
 Class - choose a value.
 Close
-Communities
 Consumable
 Damage - choose a die d4-d20; a bonus, if any, is a whole number... [namelen=78 namehash=28c28ee8]
 Damage type - choose a value.
 Died4d6d8d10d12d20
-Dragon's Vault
-Dread
 EN
 EN - empty
 Equipment
@@ -406,6 +387,7 @@ Skip to content
 Spellcast
 Standard rules
 Strength
+Supplements
 Table
 Tables
 Terms of use
@@ -414,10 +396,8 @@ Trait - choose a value.
 Two-Handed
 Unique
 Upgrades to
-Vault of Ages
 Very Close
 Very Far
-Wondrous
 daggerheart.com
 mag
 phy

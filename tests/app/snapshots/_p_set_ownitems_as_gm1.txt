@@ -16,12 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -49,16 +44,12 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Дополнения
 К содержимому
 Компактная
 Конфиденциальность
@@ -68,7 +59,6 @@ daggerheart.com
 Обычные правила
 Отправить на печать
 Поиск
-Сообщества
 Списки
 Ссылка на набор
 Таблицы
@@ -90,12 +80,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/p/set-ownitems]
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -125,14 +110,10 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/p/set-ownitems]
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
-Arazo's Artifacts
 Back
 Black and white
 Colour
-Communities
 Compact
-Dragon's Vault
-Dread
 EN
 Install as an app
 Link to this set
@@ -144,9 +125,8 @@ Send to printer
 Skip to content
 Standard
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

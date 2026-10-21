@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/alt_item]
@@ -198,17 +188,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 9Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете исп... [namelen=169 namehash=948602d1]
 9Рюкзак ГэдиманаОдин раз до следующего отдыха вы можете потратит... [namelen=164 namehash=0d9944e1]
 9Утяжелённые КостиПри успешном Броске Искусности (14) вы выбирае... [namelen=191 namehash=bde4efb5]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Амулет Бессонного
@@ -226,6 +209,7 @@ daggerheart.com
 Воровской Компас
 Глиняный Спутник
 Двойная Фляга
+Дополнения
 Железная Вуаль
 Заводная Игрушка
 Заряжающий Колчан
@@ -332,7 +316,6 @@ daggerheart.com
 Складной Шест
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Сосуд Западного Ветра
 Списки
 Списком
@@ -366,12 +349,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_item]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -383,12 +361,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_item]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/alt_item]
@@ -552,7 +525,6 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/alt_item]
 Airblade Charm
 Alistair's Torch
 Alt. tables
-Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Attune Relic
@@ -575,7 +547,6 @@ Clay Companion
 Collapsible Pole
 Collar of Ascendancy
 Communion Relic
-Communities
 Companion Case
 Consumables
 Control Relic
@@ -584,9 +555,6 @@ Core
 Corrector Sprite
 Crucible Frames
 Dagginae's Obsidian Slate
-Dragon's Vault
-Dread
-Dread GM Toolbox
 Dual Flask
 EN
 Eclipse Coin
@@ -681,6 +649,7 @@ Soul-Twin Circlets
 Speaking Orbs
 Standard rules
 Stride Relic
+Supplements
 Suspended Rod
 Tables
 Temporal Sanctuary
@@ -691,14 +660,11 @@ Titan's Girdle
 Traveler's Bell
 Two-Faced Aegis Brooch
 Valorstone
-Vault of Ages
 Vial of Darksmoke Recipe
 Warp Pendant
 Whisperstep Anklet
 Wildrider's Saddle
 Windup Toy
-Wondrous
-Wondrous Loot
 Woven Net
 Zephyr's Jar
 daggerheart.com

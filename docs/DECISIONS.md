@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-20 - [Supplement roll sections share one tab and a chip panel](decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md)
 - 2026-10-16 - [An account delete removes its purchase requests in bounded calls first](decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md)
 - 2026-10-15 - [A shared page re-read names its held snapshots by hash](decisions/2026-10-15-a-shared-page-re-read-names-its-held-snapshots-by-hash.md)
 - 2026-10-15 - [A statement timeout halves a request at once](decisions/2026-10-15-a-statement-timeout-halves-a-request-at-once.md)

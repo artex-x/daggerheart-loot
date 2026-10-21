@@ -15,12 +15,7 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -29,6 +24,13 @@ RootWebArea "Сообщества — Генератор лута — Daggerhear
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
+    navigation "Дополнения"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
     StaticText "СООБЩЕСТВО"
     button "Великородное" [pressed=true]
     button "Научное" [pressed=false]
@@ -75,6 +77,7 @@ daggerheart.com
 Войти
 Горное
 Догматичное
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -116,12 +119,7 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -130,6 +128,13 @@ RootWebArea "Communities — Daggerheart Loot Generator" [url=#/roll/community]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Pick an origin and roll d10."
+    navigation "Supplements"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
     StaticText "COMMUNITY"
     button "Highborne" [pressed=true]
     button "Loreborne" [pressed=false]
@@ -194,6 +199,7 @@ Sign in
 Skip to content
 Slyborne
 Standard rules
+Supplements
 Tables
 Terms of use
 Underborne

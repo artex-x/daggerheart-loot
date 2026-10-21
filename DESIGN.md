@@ -347,7 +347,8 @@ so a one-field panel has no trailing gap.
 full-width element does not invent its own container or its own gutter.
 
 **The Two Breakpoints Rule.** The system has two. At 640px the tab strip stops
-wrapping and becomes a horizontal scroller that keeps the current tab centred.
+wrapping and becomes a horizontal scroller that keeps the current tab centred;
+from 640px the six tabs hold one row, so the header stays 106px.
 At 600px touch targets grow: segment padding to 8px 14px, the section copy-link
 button from about 20px to a 36px hit area, row actions onto their own line.
 Every other media query in the code belongs to one component and its own
@@ -474,10 +475,13 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 ### Navigation
 
-- **Tabs:** ten real links at 13.5px weight 560 in Ash Violet, each with a 2px
-  transparent bottom border. The current route turns that border gold and the
-  label Seal Gold Soft. Rolling and browsing are separated by `margin-left:
-  auto`, not by a divider.
+- **Tabs:** six real links (five from 2026-10-26 with sign-in) at 13.5px weight
+  560 in Ash Violet, each with a 2px transparent bottom border. The current
+  route turns that border gold and the label Seal Gold Soft. Rolling and
+  browsing are separated by `margin-left: auto`, not by a divider. One tab,
+  «Дополнения», stands for the six supplement sections and is lit on each; the
+  page under it draws a panel of chips, one per supplement, the open one gold,
+  as the tables page draws its group chips.
 - **Header:** sticky, translucent, blurred, with a one-pixel seam under it.
 - **Brand:** a gold star glyph with a 35 per cent gold drop shadow beside a
   two-line wordmark. The wordmark is never translated.

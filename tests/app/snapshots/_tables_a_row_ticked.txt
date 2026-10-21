@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/core_item]
@@ -131,17 +121,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Амулет Воздушного Клинка
@@ -153,6 +136,7 @@ daggerheart.com
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
+Дополнения
 Заряжающий Колчан
 Исправляющий Дух
 К содержимому
@@ -216,7 +200,6 @@ daggerheart.com
 Снаряжение
 Снять выделение
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -242,12 +225,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -259,12 +237,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/core_item]
@@ -362,7 +335,6 @@ Add to list
 Airblade Charm
 Alistair's Torch
 Alt. tables
-Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Attune Relic
@@ -376,16 +348,12 @@ Charging Quiver
 Charm Relic
 Clay Companion
 Clear selection
-Communities
 Companion Case
 Consumables
 Control Relic
 Copy
 Core
 Corrector Sprite
-Dragon's Vault
-Dread
-Dread GM Toolbox
 Dual Flask
 EN
 Elusive Amulet
@@ -444,14 +412,12 @@ Skip to content
 Speaking Orbs
 Standard rules
 Stride Relic
+Supplements
 Suspended Rod
 Tables
 Terms of use
 Valorstone
-Vault of Ages
 Vial of Darksmoke Recipe
-Wondrous
-Wondrous Loot
 Woven Net
 daggerheart.com
 ЛутDaggerheart

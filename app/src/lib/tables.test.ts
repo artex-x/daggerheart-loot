@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { SUB_LABEL, TABLE_GROUPS, groupOf, subLabelOf } from './tables.js';
+import {
+  SUB_LABEL,
+  TABLE_GROUPS,
+  TABLE_NAV,
+  groupOf,
+  navGroupOf,
+  navSubLabel
+} from './tables.js';
 import { TABLE_IDS, type TableId } from './types.js';
 
 describe('the twelve groups', () => {
@@ -47,15 +54,69 @@ describe('the sub-chip caption', () => {
     expect(SUB_LABEL.wondrous).toBeUndefined();
   });
 
-  it("every sub of a multi-table group has one, so the tab's word is never actually needed", () => {
+  it('every sub of a multi-table group has one', () => {
     for (const g of TABLE_GROUPS) {
       if (g.subs.length < 2) continue;
       for (const sub of g.subs) expect(SUB_LABEL[sub]).toBeDefined();
     }
   });
+});
 
-  it('falls back to the tab word for an id nothing lists', () => {
-    expect(subLabelOf('nope' as TableId)).toBe('tables');
-    expect(subLabelOf('core_item')).toBe('fItems');
+describe('the tables page groups', () => {
+  it('together cover every table id exactly once', () => {
+    const all = TABLE_NAV.flatMap((g) => g.subs);
+    expect([...all].sort()).toEqual([...TABLE_IDS].sort());
+  });
+
+  it('put the six supplement books under one chip, between the alternate tables and equipment', () => {
+    expect(TABLE_NAV.map((g) => g.id)).toEqual([
+      'core',
+      'hnf',
+      'alt',
+      'supp',
+      'eq',
+      'other',
+      'hb'
+    ]);
+    const supp = navGroupOf('voa');
+    expect(supp.label).toBe('grpSupplements');
+    expect(supp.top).toBe('wondrous');
+    expect(supp.subs).toEqual(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community']);
+  });
+
+  it('keep every other group as the path words have it', () => {
+    for (const id of [
+      'core_item',
+      'hnf_consumable',
+      'alt_item',
+      'eq_armor',
+      'other_frames',
+      'homebrew'
+    ] as const)
+      expect(navGroupOf(id), id).toBe(groupOf(id));
+  });
+
+  it("name each group's own top chip as the first of its sub-tables", () => {
+    for (const g of TABLE_NAV) expect(g.top).toBe(g.subs[0]);
+  });
+
+  it('falls back to the core group for an id nothing lists', () => {
+    expect(navGroupOf('nope' as TableId).id).toBe('core');
+  });
+});
+
+describe('the second-row caption on the tables page', () => {
+  it("names a supplement book by its own group's caption", () => {
+    expect(navSubLabel('wondrous')).toBe('pageWondrous');
+    expect(navSubLabel('dread')).toBe('pageDread');
+    expect(navSubLabel('voa')).toBe('voa');
+    expect(navSubLabel('dv')).toBe('dv');
+    expect(navSubLabel('arazo')).toBe('arazo');
+    expect(navSubLabel('community')).toBe('community');
+  });
+
+  it('keeps the short sub-table word where one exists', () => {
+    expect(navSubLabel('core_item')).toBe('fItems');
+    expect(navSubLabel('eq_weapon')).toBe('subWeapon');
   });
 });

@@ -15,12 +15,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -137,13 +132,8 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 94Сумеречное КрылоРанг 2 · Физическое · Сила · Вплотную · d10+6 ... [namelen=252 namehash=ca1a4459]
 95Стихийный Длинный ЛукРанг 3 · Физическое · Проворность · Очень... [namelen=501 namehash=24bc8a83]
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Алебарда
 Алебарда Урзо
@@ -188,6 +178,7 @@ daggerheart.com
 Длинный ЛукРанг 1 · Физическое · Проворность · Очень далеко · d8... [namelen=128 namehash=522ff51f]
 Длинный Меч
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
+Дополнения
 Дочь Зелени
 Древний Лук
 Древний ЛукРанг 2 · Магическое · Инстинкт · Далеко · d6+4 маг · ... [namelen=209 namehash=b54ae232]
@@ -453,7 +444,6 @@ daggerheart.com
 Снаряжение
 Солдатская Пика
 Солдатская ПикаРанг 3 · Физическое · Проворность · Близко · d10+... [namelen=236 namehash=5b85f6a2]
-Сообщества
 Списки
 Стальная Алебарда
 Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
@@ -562,12 +552,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -590,11 +575,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 
 ## en :: controls
 Alt. tables
-Arazo's Artifacts
-Communities
 Consumables
-Dragon's Vault
-Dread
 EN
 Equipment
 Install as an app
@@ -607,9 +588,8 @@ Search
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

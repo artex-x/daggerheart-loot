@@ -14,6 +14,7 @@ import { brokenStorage, fakeData, fakeEnv, memoryRouter, noData } from '../ports
 import type { Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import type { Loot } from '../lib/data.js';
+import { SUPPLEMENTS } from '../lib/nav.js';
 import type { Record_ } from '../lib/types.js';
 
 afterEach(cleanup);
@@ -369,6 +370,29 @@ describe('the record over the page', () => {
     ]) {
       expect(within(dialog).getByRole('button', { name }), name).toBeInTheDocument();
     }
+  });
+});
+
+describe('the supplements panel', () => {
+  const panel = (): HTMLElement | null =>
+    screen.queryByRole('navigation', { name: 'Дополнения' });
+
+  it.each(SUPPLEMENTS)('draws under the heading of %s, its own chip the current page', (s) => {
+    render(App, { env: at(`#/${s}`) });
+    const nav = panel();
+    expect(nav).not.toBeNull();
+    const links = within(nav as HTMLElement).getAllByRole('link');
+    expect(links).toHaveLength(6);
+    expect(
+      links
+        .filter((a) => a.getAttribute('aria-current') === 'page')
+        .map((a) => a.getAttribute('href'))
+    ).toEqual([`#/${s}`]);
+  });
+
+  it.each(['#/roll/std', '#/roll/alt'])('draws no panel on %s', (hash) => {
+    render(App, { env: at(hash) });
+    expect(panel()).toBeNull();
   });
 });
 

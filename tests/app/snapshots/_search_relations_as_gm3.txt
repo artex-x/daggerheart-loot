@@ -16,12 +16,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm3#/roll/community]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
@@ -56,18 +51,14 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 
 ## ru :: controls
 1Первоклассный Спальный МешокВо время отдыха вы автоматически оч... [namelen=138 namehash=2d9d8575]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm3@example.test
 Альт. таблицы
 Базовые припасы
 Базовые припасыСтартовый предмет базовой книги. Палатка, спальны... [namelen=130 namehash=510c9b6d]
+Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -80,7 +71,6 @@ daggerheart.com
 Предметы
 Расходники
 Снаряжение
-Сообщества
 Спальный мешок дозорного
 Спальный мешок дозорногоСпальный мешок для долгой дороги.Получае... [namelen=114 namehash=ad86dba4]
 Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=120 namehash=084a20d9]
@@ -127,12 +117,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Communities" [url=index.html?as=gm3#/roll/community]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
@@ -169,7 +154,6 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm3#/sear
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=115 namehash=7ce280b8]
 Account: gm3@example.test
 Alt. tables
-Arazo's Artifacts
 Ash Bedroll
 Ash BedrollA bedroll for a long road.Made from: Premium BedrollI... [namelen=75 namehash=d39b7d20]
 Basic supplies
@@ -180,10 +164,7 @@ Bedroll of the long road over the pass, through the marshes, the... [namelen=120
 Bedroll of the long road over the pass, through the marshes, the... [namelen=184 namehash=996433a9]
 Campfire Bedroll
 Campfire BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=6e55a11c]
-Communities
 Consumables
-Dragon's Vault
-Dread
 Dreamcatcher's Bedroll
 Dreamcatcher's BedrollA bedroll for a long road.Made from: Premi... [namelen=86 namehash=5a65f31d]
 EN
@@ -210,17 +191,16 @@ Sentry's Bedroll
 Sentry's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=51ea9f63]
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Tracker's Bedroll
 Tracker's BedrollA bedroll for a long road.Made from: Premium Be... [namelen=81 namehash=d3cc7c29]
-Vault of Ages
 Wanderer's Bedroll
 Wanderer's BedrollA bedroll for a long road.Made from: Premium B... [namelen=82 namehash=77f214bb]
 Warden's Bedroll
 Warden's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=4f92a168]
 Warm Bedroll
 Warm BedrollA bedroll for a long road.Made from: Premium Bedroll... [namelen=76 namehash=b328ce85]
-Wondrous
 daggerheart.com
 ЛутDaggerheart

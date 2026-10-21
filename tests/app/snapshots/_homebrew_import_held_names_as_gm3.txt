@@ -16,12 +16,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm3#/roll/community]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
@@ -69,13 +64,8 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 homebrew-v2
 Аккаунт: gm3@example.test
@@ -83,6 +73,7 @@ homebrew-v2
 В «Хоумбрю»+ Новый источник...
 Выбрать все
 Выбрать файл...
+Дополнения
 Импорт из файла
 Импортировать (12)
 Источники
@@ -118,7 +109,6 @@ homebrew-v2
 Скатка следопытаСвёрнутая постель для ночёвки в пути.Получается ... [namelen=135 namehash=aa613df0]
 Скатка стража
 Скатка стражаСвёрнутая постель для ночёвки в пути.Получается из:... [namelen=100 namehash=30ac9f69]
-Сообщества
 Спальный мешок дозорного
 Спальный мешок дозорногоСпальный мешок для долгой дороги.Получае... [namelen=114 namehash=ad86dba4]
 Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=120 namehash=084a20d9]
@@ -198,12 +188,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Communities" [url=index.html?as=gm3#/roll/community]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
@@ -253,7 +238,6 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
 ## en :: controls
 Account: gm3@example.test
 Alt. tables
-Arazo's Artifacts
 Ash Bedroll
 Ash BedrollA bedroll for a long road.Made from: Premium BedrollI... [namelen=75 namehash=d39b7d20]
 Bedroll of Silence
@@ -266,9 +250,6 @@ Campfire Bedroll
 Campfire BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=6e55a11c]
 Cancel
 Choose a file...
-Communities
-Dragon's Vault
-Dread
 Dreamcatcher's Bedroll
 Dreamcatcher's BedrollA bedroll for a long road.Made from: Premi... [namelen=86 namehash=5a65f31d]
 EN
@@ -345,6 +326,7 @@ Skip
 Skip to content
 Sources
 Standard rules
+Supplements
 Tables
 Terms of use
 Tracker's Bedroll
@@ -352,14 +334,12 @@ Tracker's BedrollA bedroll for a long road.Made from: Premium Be... [namelen=81 
 Traveller's Roll
 Traveller's RollA rolled bed for a night on the road.Upgrades to... [namelen=96 namehash=6071985a]
 Update
-Vault of Ages
 Wanderer's Bedroll
 Wanderer's BedrollA bedroll for a long road.Made from: Premium B... [namelen=82 namehash=77f214bb]
 Warden's Bedroll
 Warden's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=4f92a168]
 Warm Bedroll
 Warm BedrollA bedroll for a long road.Made from: Premium Bedroll... [namelen=76 namehash=b328ce85]
-Wondrous
 a description for AI assistants
 and 2 more
 daggerheart.com

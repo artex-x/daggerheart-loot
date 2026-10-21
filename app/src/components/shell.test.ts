@@ -3,7 +3,7 @@
  * Every one of these would need a browser, a real localStorage and a real
  * address bar without them. With them it is a function of an Env, which is the
  * whole argument for Phase 3 in one file. */
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -268,18 +268,24 @@ describe('the language', () => {
 
 describe('which tab is lit', () => {
   it('marks the section the address names', () => {
-    render(App, { env: at('#/roll/voa') });
-    expect(screen.getByRole('link', { name: 'Vault of Ages' })).toHaveAttribute(
+    render(App, { env: at('#/roll/alt') });
+    const tabs = screen.getByRole('navigation', { name: 'Разделы' });
+    expect(within(tabs).getByRole('link', { name: 'Альт. таблицы' })).toHaveAttribute(
       'aria-current',
       'page'
     );
-    cleanup();
+  });
 
-    render(App, { env: at('#/roll/dv') });
-    expect(screen.getByRole('link', { name: "Dragon's Vault" })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+  it('marks the supplements tab for every supplement section', () => {
+    for (const hash of ['#/roll/voa', '#/roll/dv']) {
+      render(App, { env: at(hash) });
+      const tabs = screen.getByRole('navigation', { name: 'Разделы' });
+      expect(within(tabs).getByRole('link', { name: 'Дополнения' }), hash).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+      cleanup();
+    }
   });
 
   it('lights Tables for a table, and nothing for a list', () => {
@@ -871,31 +877,31 @@ describe('the Lists tab and the cutoff', () => {
       (a) => a.getAttribute('href') ?? ''
     );
 
-  it('draws ten tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
+  it('draws five tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
     render(App, {
       env: at('#/roll/std', {
         cloud: fakeCloud(SEED),
         clock: fixedClock(LEGACY_WRITE_UNTIL)
       })
     });
-    expect(tabLinks()).toHaveLength(10);
+    expect(tabLinks()).toHaveLength(5);
     expect(tabLinks()).not.toContain('#/lists');
   });
 
-  it('draws eleven tabs the moment before the cutoff', () => {
+  it('draws six tabs the moment before the cutoff', () => {
     render(App, {
       env: at('#/roll/std', {
         cloud: fakeCloud(SEED),
         clock: fixedClock(LEGACY_WRITE_UNTIL - 1)
       })
     });
-    expect(tabLinks()).toHaveLength(11);
+    expect(tabLinks()).toHaveLength(6);
     expect(tabLinks()).toContain('#/lists');
   });
 
-  it('keeps eleven tabs after the cutoff in a build with no sign-in', () => {
+  it('keeps six tabs after the cutoff in a build with no sign-in', () => {
     render(App, { env: at('#/roll/std', { clock: fixedClock(LEGACY_WRITE_UNTIL) }) });
-    expect(tabLinks()).toHaveLength(11);
+    expect(tabLinks()).toHaveLength(6);
   });
 });
 

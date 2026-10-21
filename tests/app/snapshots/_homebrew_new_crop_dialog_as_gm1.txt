@@ -19,15 +19,10 @@ RootWebArea "Новый предмет — Генератор лута — Dagge
 2
 3
 4
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 EN - пусто
 RU
 RU - пусто
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -35,6 +30,7 @@ daggerheart.com
 Выбрать из предметов
 Выбрать файл
 Готово
+Дополнения
 Жирный
 К содержимому
 Карты правил
@@ -59,7 +55,6 @@ daggerheart.com
 Предмет
 Расходник
 Снаряжение
-Сообщества
 Сохранить
 Списки
 Список
@@ -89,17 +84,13 @@ RootWebArea "New item — Daggerheart Loot Generator" [url=index.html?as=gm1#/ho
 4
 Account: gm1@example.test
 Alt. tables
-Arazo's Artifacts
 Bold
 Bulleted list
 Cancel
 Choose a file
 Choose from items
-Communities
 Consumable
 Done
-Dragon's Vault
-Dread
 EN
 EN - empty
 Equipment
@@ -129,12 +120,11 @@ Save
 Search
 Skip to content
 Standard rules
+Supplements
 Table
 Tables
 Terms of use
 Upgrades to
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart
 Страница

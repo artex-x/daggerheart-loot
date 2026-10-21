@@ -1220,16 +1220,73 @@ describe('the equipment tables', () => {
 });
 
 describe('the chip nav', () => {
-  it('draws only the top row of chips for a book with one table', () => {
+  const groupChips = (): string[] => {
+    const nav = document.querySelector('.tablenav > .chips:not(.subchips)') as HTMLElement;
+    return [...nav.querySelectorAll('a')].map((a) => a.textContent);
+  };
+  const bookRow = (): HTMLElement | null => document.querySelector('.tablenav .subchips');
+
+  it('draws six group chips signed out, the supplements under one', () => {
     render(App, {
-      env: fakeEnv({ router: memoryRouter('#/tables/wondrous'), data: fakeData(LOOT) })
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item'), data: fakeData(LOOT) })
     });
-    expect(screen.getByRole('link', { name: 'Wondrous Loot' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    /* Nothing under it: a single-table book has no second row of chips. */
-    expect(screen.queryByRole('link', { name: 'Предметы' })).not.toBeInTheDocument();
+    expect(groupChips()).toEqual([
+      'Core',
+      'Hope & Fear',
+      'Альт. таблицы',
+      'Дополнения',
+      'Снаряжение',
+      'Прочее'
+    ]);
+  });
+
+  it('draws a seventh, Homebrew, signed in', async () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/tables/core_item'),
+        data: fakeData(LOOT),
+        cloud: fakeCloud(SEED, 'gm1')
+      })
+    });
+    await waitFor(() => {
+      expect(groupChips()).toHaveLength(7);
+    });
+  });
+
+  it.each(['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community'])(
+    'lights «Дополнения» on %s and draws the book row with that book current',
+    async (table) => {
+      const { container } = render(App, {
+        env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
+      });
+      const tablenav = document.querySelector('.tablenav') as HTMLElement;
+      const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
+      expect(group).toHaveAttribute('aria-current', 'page');
+      expect(group).toHaveAttribute('href', '#/tables/wondrous');
+      const books = within(bookRow() as HTMLElement).getAllByRole('link');
+      expect(books.map((a) => a.textContent)).toEqual([
+        'Wondrous Loot',
+        'Dread GM Toolbox',
+        'Vault of Ages',
+        "Dragon's Vault",
+        "Arazo's Artifacts",
+        'Сообщества'
+      ]);
+      expect(
+        books
+          .filter((a) => a.getAttribute('aria-current') === 'page')
+          .map((a) => a.getAttribute('href'))
+      ).toEqual([`#/tables/${table}`]);
+      if (table === 'voa') await expectNoA11yViolations(container);
+    }
+  );
+
+  it("draws Core's own sub-tables, not the books, on a Core table", () => {
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables/core_item'), data: fakeData(LOOT) })
+    });
+    const subs = within(bookRow() as HTMLElement).getAllByRole('link');
+    expect(subs.map((a) => a.textContent)).toEqual(['Предметы', 'Расходники']);
   });
 });
 

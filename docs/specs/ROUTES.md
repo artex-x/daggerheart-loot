@@ -24,14 +24,20 @@ The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
 | `#/lists` | Lists index |
 | `#/search` | Search |
 
-These eleven are also the tab bar (`SECTIONS`) and the eleven a person may pin as
-their starting section - ten pin as their own hash; `#/tables` pins as
+These eleven (`SECTIONS`) are what a person may pin as their starting
+section - ten pin as their own hash; `#/tables` pins as
 whichever table is on screen (`#/tables/<table>`), never as the bare tab
 address itself. See `STATE.md`, `dhloot.home.v1`, for what a pin actually
 stores and reads back.
 
-From the legacy write cutoff (2026-10-26) a build with sign-in draws ten
-of them in the tab bar, without `#/lists`; `#/lists` stays a section route,
+The tab bar draws six tabs over them: Core rules, the alternate tables, one
+«Дополнения» / "Supplements" tab for the six supplement sections (`roll/wondrous`
+to `roll/community`, `app/src/lib/nav.ts`), Tables, Lists and Search. The
+supplements tab links to `#/roll/wondrous`; every supplement address stays its
+own section (`FEATURES.md`, "Chrome").
+
+From the legacy write cutoff (2026-10-26) a build with sign-in draws five
+tabs, without `#/lists`; `#/lists` stays a section route,
 reached from the account menu's «Мои списки», a bookmark or a pin
 (`FEATURES.md`, "Chrome").
 

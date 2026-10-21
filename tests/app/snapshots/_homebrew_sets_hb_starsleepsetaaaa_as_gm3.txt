@@ -16,12 +16,7 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm3#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm3#/roll/community]
+      link "Дополнения" [url=index.html?as=gm3#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm3#/tables]
       link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
@@ -55,17 +50,13 @@ RootWebArea "Мои предметы — Генератор лута — Daggerh
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm3@example.test
 Альт. таблицы
 Добавить предмет
+Дополнения
 Изменить
 Импорт из файла
 Источники
@@ -82,7 +73,6 @@ daggerheart.com
 Предметы
 Скатка следопыта
 Сон под звёздами
-Сообщества
 Списки
 Таблицы
 Убрать: Подушка из мха
@@ -105,12 +95,7 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm3#/roll/std]
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm3#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm3#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm3#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm3#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm3#/roll/arazo]
-      link "Communities" [url=index.html?as=gm3#/roll/community]
+      link "Supplements" [url=index.html?as=gm3#/roll/wondrous]
       link "Tables" [url=index.html?as=gm3#/tables]
       link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
@@ -147,12 +132,8 @@ RootWebArea "My items — Daggerheart Loot Generator" [url=index.html?as=gm3#/ho
 Account: gm3@example.test
 Add an item
 Alt. tables
-Arazo's Artifacts
 Camp Blanket
-Communities
 Delete
-Dragon's Vault
-Dread
 EN
 Edit
 Import from file
@@ -174,9 +155,8 @@ Skip to content
 Sleep Under the Stars
 Sources
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

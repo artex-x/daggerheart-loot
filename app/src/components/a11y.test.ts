@@ -712,6 +712,8 @@ const COVERED: Record<string, string> = {
     'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
   'StorageNotice.svelte': 'the lists index state above, and the list page below',
+  'SupplementNav.svelte':
+    'supplementNav.test.ts on each supplement section, and Vault of Ages and communities (sections.test.ts)',
   'Switch.svelte':
     'switch.test.ts on and off, and «Свои предметы» on search and the equipment tables (homebrewCatalog.test.ts)',
   'TabBar.svelte': 'the frame, on every state',

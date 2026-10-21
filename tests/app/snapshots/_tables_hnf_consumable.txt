@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/hnf_item]
@@ -124,17 +114,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 7Флакон Мягкого ПаденияВыпейте это зелье, чтобы в течение 10 мин... [namelen=115 namehash=78b5d0d8]
 8Слюна ХимерыСмажьте этой слюной физическое оружие, и до следующ... [namelen=122 namehash=197d5fb9]
 9Пакетик Космической ПылиВсё, что покрыто этой пылью, становится... [namelen=179 namehash=934712ed]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Безоар Виночерпия
@@ -144,6 +127,7 @@ daggerheart.com
 Войти
 Гравитационная Бомба
 Гриб Светящегося Мха
+Дополнения
 Драконья Мантия
 Жетон Подмены
 Зелье Бдительности
@@ -199,7 +183,6 @@ daggerheart.com
 Слёзы Бессмертного Героя
 Снаряжение
 Соль Истребителя
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -231,12 +214,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -248,12 +226,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/hnf_item]
@@ -341,7 +314,6 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/hnf_consumable
 8Chimeric SalivaYou can apply this saliva to a weapon that deals... [namelen=158 namehash=833b7cd8]
 9Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=379f2520]
 Alt. tables
-Arazo's Artifacts
 Arcticite Shard
 Berserker's Brew
 Bundle of Spiderlegs
@@ -349,17 +321,13 @@ Cacophonous Concoction
 Chimeric Saliva
 Ciscan Fog Bottle
 Cockerel Claw Tea
-Communities
 Consumables
 Core
 Cupbearer's Bezoar
 Deathseer's Powder
 Demiurge's Draught
 Displacement Token
-Dragon's Vault
 Drakemantle
-Dread
-Dread GM Toolbox
 EN
 Emberite Shard
 Equipment
@@ -421,15 +389,13 @@ Standard rules
 Steelskin Salve
 Stonemason's Fortune
 Sunlight Orb
+Supplements
 Tables
 Tears of the Undying Hero
 Terms of use
-Vault of Ages
 Verglasian Seed
 Vial of Featherfall
 Warding Candle
-Wondrous
-Wondrous Loot
 Yakamel Milk
 daggerheart.com
 ЛутDaggerheart

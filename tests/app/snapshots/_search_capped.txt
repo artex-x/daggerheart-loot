@@ -15,12 +15,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -330,13 +325,8 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 9Перо ЧернокрылаВ этом пере никогда не кончаются чернила, и его ... [namelen=102 namehash=277cfa47]
 9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
 9Яд СкрежетозубаВы можете нанести этот яд на оружие, наносящее ф... [namelen=199 namehash=7061834b]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Агатовый Паук
 Алебарда
@@ -397,6 +387,7 @@ daggerheart.com
 Грохотягода
 Двойная Фляга
 Диск Аннулирования
+Дополнения
 Доспешный Сшиватель
 Драконья Мантия
 Древний Рунный Камень
@@ -618,7 +609,6 @@ daggerheart.com
 Совиный Амулет Каравана
 Согревающие Пирожки
 Сок Солнечного Древа
-Сообщества
 Сосуд Западного Ветра
 Списки
 Стальная Алебарда
@@ -691,12 +681,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -1034,7 +1019,6 @@ Amulet of the Dawn
 Ananimus Hook
 Anchoring Hook
 Ancient Runestone
-Arazo's Artifacts
 Arcane Cloak
 Arcane Prism
 Arcane Scalpel
@@ -1097,7 +1081,6 @@ Clockwork Crossbow
 Clockwork CrossbowTier 4 · Physical · Finesse · Far · d6+11 phy ... [namelen=201 namehash=49a4507e]
 Cockerel Claw Tea
 Collapsible Pole
-Communities
 Companion Case
 Consumables
 Control Relic
@@ -1118,10 +1101,8 @@ Demon Toad Bile
 Detuner
 Devil's Smithing Hammer
 Devil-Finger Charm
-Dragon's Vault
 Dragonbloom Tea
 Drakemantle
-Dread
 Dread-Weave Boots
 Dreamer's Shard
 Dripfang Poison
@@ -1322,6 +1303,7 @@ Stride Relic
 Sun Tree Sap
 Sunlight Orb
 Superior Alconite Crystal
+Supplements
 Sweet Moss
 Sword of Angels
 Tables
@@ -1335,7 +1317,6 @@ Unstable Arcane Shard
 Urzo's Halberd
 Valorstone
 Varik Leaves
-Vault of Ages
 Verglasian Seed
 Vial of Darksmoke
 Vial of Darksmoke Recipe
@@ -1347,7 +1328,6 @@ Warding Candle
 Whisperstep Anklet
 Wildrider's Saddle
 Windup Toy
-Wondrous
 Woven Net
 Yakamel Milk
 Zephyr's Jar

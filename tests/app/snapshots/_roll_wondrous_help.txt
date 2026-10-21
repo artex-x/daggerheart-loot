@@ -15,12 +15,7 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -33,6 +28,13 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     ... StaticText x4 of 8 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     StaticText "."
+    navigation "Дополнения"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
@@ -70,6 +72,7 @@ Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Войти
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -106,12 +109,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -124,6 +122,13 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     ... StaticText x4 of 8 same-shape siblings elided
     link "Wondrous Environments" [url=https://www.drivethrurpg.com/en/product/552648/wondrous-environments]
     StaticText " supplement."
+    navigation "Supplements"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
     StaticText "ROLL RESULT (1–119)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
@@ -176,6 +181,7 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Vault of Ages

@@ -15,12 +15,7 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -56,18 +51,14 @@ RootWebArea "Первоклассный Спальный Мешок — Гене
 
 ## ru :: controls
 + Новый список
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
 Войти и перенести списки
 Добавить в список
+Дополнения
 К содержимому
 Конфиденциальность
 Лавка в порту
@@ -82,7 +73,6 @@ daggerheart.com
 Скопировать текст
 Скрыть напоминание
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Страница
 Таблицы
@@ -103,12 +93,7 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -142,15 +127,11 @@ RootWebArea "Premium Bedroll — Daggerheart Loot Generator" [url=#/i/ci1]
 ## en :: controls
 Add to list
 Alt. tables
-Arazo's Artifacts
-Communities
 Copy image
 Copy link
 Copy name
 Copy text
 Dismiss the reminder
-Dragon's Vault
-Dread
 EN
 Install as an app
 Lay these out for printing: nine to an A4 sheet
@@ -164,10 +145,9 @@ Sign in
 Sign in and move the lists
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 show in the table
 ЛутDaggerheart

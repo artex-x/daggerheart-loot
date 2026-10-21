@@ -16,12 +16,7 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -86,15 +81,10 @@ RootWebArea "Whispering Cap — Генератор лута — Daggerheart" [ur
 2
 3
 4
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 Page
 RU
 RU - пусто
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -102,6 +92,7 @@ daggerheart.com
 Выбрать из предметов
 Выбрать файл
 Добавить в список
+Дополнения
 Жирный
 К содержимому
 Карты правил
@@ -126,7 +117,6 @@ daggerheart.com
 Предмет
 Расходник
 Снаряжение
-Сообщества
 Сохранить
 Списки
 Список
@@ -151,12 +141,7 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -224,17 +209,13 @@ RootWebArea "Whispering Cap — Daggerheart Loot Generator" [url=index.html?as=g
 Account: gm1@example.test
 Add to list
 Alt. tables
-Arazo's Artifacts
 Bold
 Bulleted list
 Cancel
 Choose a file
 Choose from items
-Communities
 Consumable
 Delete
-Dragon's Vault
-Dread
 EN
 Equipment
 Help: Description
@@ -264,11 +245,10 @@ Save
 Search
 Skip to content
 Standard rules
+Supplements
 Table
 Tables
 Terms of use
 Upgrades to
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

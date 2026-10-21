@@ -16,12 +16,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -33,12 +28,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
     link "Альт. таблицы" [url=index.html?as=gm1#/tables/alt_item]
-    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
-    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
-    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
-    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
-    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
-    link "Сообщества" [url=index.html?as=gm1#/tables/community]
+    link "Дополнения" [url=index.html?as=gm1#/tables/wondrous]
     link "Снаряжение" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Прочее" [url=index.html?as=gm1#/tables/other_starting]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
@@ -71,22 +61,16 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
 Whispering Cap
 Whispering CapWhispering Cap
-Wondrous
-Wondrous Loot
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
+Дополнения
 К содержимому
 Как это работает
 Кольцо с гравировкой
@@ -105,7 +89,6 @@ daggerheart.com
 Сеткой
 Скопировать ссылку на этот раздел
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -128,12 +111,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -145,12 +123,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
     link "Core" [url=index.html?as=gm1#/tables/core_item]
     link "Hope & Fear" [url=index.html?as=gm1#/tables/hnf_item]
     link "Alt. tables" [url=index.html?as=gm1#/tables/alt_item]
-    link "Wondrous Loot" [url=index.html?as=gm1#/tables/wondrous]
-    link "Dread GM Toolbox" [url=index.html?as=gm1#/tables/dread]
-    link "Vault of Ages" [url=index.html?as=gm1#/tables/voa]
-    link "Dragon's Vault" [url=index.html?as=gm1#/tables/dv]
-    link "Arazo's Artifacts" [url=index.html?as=gm1#/tables/arazo]
-    link "Communities" [url=index.html?as=gm1#/tables/community]
+    link "Supplements" [url=index.html?as=gm1#/tables/wondrous]
     link "Equipment" [url=index.html?as=gm1#/tables/eq_weapon]
     link "Other" [url=index.html?as=gm1#/tables/other_starting]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
@@ -186,14 +159,9 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=index.html?as=gm1#/tabl
 Account: gm1@example.test
 Alder Workshop
 Alt. tables
-Arazo's Artifacts
-Communities
 Consumables
 Copy a link to this section
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Equipment
 Filters
@@ -213,13 +181,11 @@ RU
 Search
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
 Whispering Cap
 Whispering CapWhispering Cap
-Wondrous
-Wondrous Loot
 daggerheart.com
 Кольцо с гравировкой
 Кольцо с гравировкойКольцо с гравировкой

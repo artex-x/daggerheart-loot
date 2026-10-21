@@ -16,12 +16,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -64,18 +59,14 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=in
 7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=321 namehash=9a94ce7a]
 84Топор Чёрной ПорчиРанг 4 · Физическое · Влияние · Близко · d10... [namelen=468 namehash=c56be1a8]
 8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=321 namehash=672e07b4]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Возвращающийся Топор
 Возвращающийся ТопорРанг 2 · Физическое · Проворность · Средне ·... [namelen=225 namehash=200c9c41]
+Дополнения
 К содержимому
 Конфиденциальность
 Легендарный Священный Топор
@@ -96,7 +87,6 @@ daggerheart.com
 Священный Топор
 Священный ТопорРанг 1 · Магическое · Сила · Вплотную · d8+1 маг ... [namelen=95 namehash=7f7c9d94]
 Снаряжение
-Сообщества
 Списки
 Стопорный Ключ
 Таблицы
@@ -129,12 +119,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=index.html?as=gm1#/sear
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -182,15 +167,11 @@ Advanced Axe of the Dawn
 Advanced Hallowed Axe
 Advanced Hallowed AxeTier 3 · Magic · Strength · Melee · d8+7 ma... [namelen=96 namehash=6fa84112]
 Alt. tables
-Arazo's Artifacts
 Axe of the Dawn
 Black Corruption Axe
 Butcher's Axe
 Butcher's AxeTier 1 · Physical · Strength · Melee · d12+3 phy · ... [namelen=125 namehash=f9a3c4ef]
-Communities
 Consumables
-Dragon's Vault
-Dread
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
@@ -222,9 +203,8 @@ Ricochet AxesTier 4 · Physical · Agility · Far · d6+11 phy · Two... [namele
 Search
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

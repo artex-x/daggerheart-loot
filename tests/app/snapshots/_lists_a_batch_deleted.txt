@@ -15,12 +15,7 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -89,13 +84,8 @@ RootWebArea "Клад дракона — Генератор лута — Daggerh
     button "Вернуть" [focused=true]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Бросить d6
@@ -103,6 +93,7 @@ daggerheart.com
 Войти
 Войти и перенести списки
 Выбрать все
+Дополнения
 Жирный
 Заметка
 Заряжающий Колчан
@@ -134,7 +125,6 @@ daggerheart.com
 Скрыть
 Скрыть напоминание
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Списки
 Список
 Ссылка игрокам
@@ -160,12 +150,7 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -237,20 +222,16 @@ RootWebArea "Клад дракона — Daggerheart Loot Generator" [url=#/l/0J
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
-Arazo's Artifacts
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 Bold
 Bulleted list
 Charging Quiver
 Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
-Communities
 Copy text
 Delete
 Dismiss
 Dismiss the reminder
-Dragon's Vault
-Dread
 EN
 Help: For players
 Help: GM only
@@ -283,11 +264,10 @@ Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
+Supplements
 Tables
 Terms of use
 Undo
-Vault of Ages
-Wondrous
 Your own link
 daggerheart.com
 ЛутDaggerheart

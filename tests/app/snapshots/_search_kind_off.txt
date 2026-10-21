@@ -15,12 +15,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -97,13 +92,8 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
 9Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=8ea4922a]
 9Пиратская Карта СокровищЭта зачарованная карта постоянно перери... [namelen=298 namehash=088f36f6]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Агатовый Паук
 Альт. таблицы
@@ -118,6 +108,7 @@ daggerheart.com
 Временной Фитиль
 Динамит
 ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
+Дополнения
 Зелье Судного Дня
 К содержимому
 Камень Доблести
@@ -153,7 +144,6 @@ daggerheart.com
 Расходники
 Ртутный Фамильяр
 Снаряжение
-Сообщества
 Списки
 Стекло Разбитой Судьбы
 Стенающая Костяная Флейта
@@ -182,12 +172,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -269,21 +254,17 @@ Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
-Arazo's Artifacts
 Arcane Resin
 Bracers of the Sun and Moon
 Calming Pendant
 Chalice of Commitment
 Charm of Vacitos
 Cloak of the Dunes
-Communities
 Consumables
 Crawling King's Gauntlet
 Cursed Head
 Devil-Finger Charm
 Doomsday Potion
-Dragon's Vault
-Dread
 Dynamite
 DynamiteYou can light this dynamite and toss it within Close ran... [namelen=350 namehash=3e0eb0f2]
 EN
@@ -320,6 +301,7 @@ Skip to content
 Sphere of Insanity
 Sprite Bottle
 Standard rules
+Supplements
 Tables
 Temporal Taper
 Terms of use
@@ -328,10 +310,8 @@ Timewalker Pocketwatch
 Treacherous Knuckle-Duster
 Umbral Prism
 Valorstone
-Vault of Ages
 Vengeance Helm
 Votive Bloom Nectar
 White Talon Helm
-Wondrous
 daggerheart.com
 ЛутDaggerheart

@@ -68,7 +68,8 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The eleven sections: also the tabs, also what may be pinned as the start. */
+/** The eleven sections: what may be pinned as the start. The tab bar draws six tabs
+ *  over them; the supplements share one (`nav.ts`). */
 export const SECTIONS = [
   'roll/std',
   'roll/alt',

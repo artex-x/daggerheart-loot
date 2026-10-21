@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Стартовые" [url=#/tables/other_starting]
@@ -66,17 +56,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 ## ru :: controls
 15 метров верёвки
 15 метров верёвкиСтартовый предмет базовой книги. Полезны, чтобы... [namelen=120 namehash=a6556e8c]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Базовые припасы
@@ -86,6 +69,7 @@ daggerheart.com
 Войти
 Вырезанный символ вашего покровителя
 Вырезанный символ вашего покровителяСтартовый предмет Колдуна. П... [namelen=153 namehash=27c6b58e]
+Дополнения
 К содержимому
 Как это работает
 Камень для прорицания
@@ -131,7 +115,6 @@ daggerheart.com
 Символ вашего бога
 Символ вашего богаСтартовый предмет Серафима. При создании персо... [namelen=129 namehash=f5a0e4d8]
 Снаряжение
-Сообщества
 Списки
 Списком
 Список имён с несколькими вычеркнутыми
@@ -169,12 +152,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_starting
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -186,12 +164,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/other_starting
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Starting" [url=#/tables/other_starting]
@@ -269,14 +242,9 @@ A trophy from your first killRanger starting item. Choose this o... [namelen=127
 A whispering orb
 A whispering orbSorcerer starting item. Choose this or A family ... [namelen=107 namehash=21731800]
 Alt. tables
-Arazo's Artifacts
 Basic supplies
 Basic suppliesCore starting item. Tent, bedroll, tinderbox, rati... [namelen=101 namehash=773aff72]
-Communities
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Equipment
 Frames
@@ -298,14 +266,12 @@ Sign in
 Skip to content
 Standard rules
 Starting
+Supplements
 Tables
 Terms of use
 The drawing of a lover
 The drawing of a loverWarrior starting item. Choose this or A sh... [namelen=113 namehash=4f1ebe53]
 Torch
 TorchCore starting item. Useful for illuminating a dark room.Ite... [namelen=69 namehash=85011fe8]
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 ЛутDaggerheart

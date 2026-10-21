@@ -15,12 +15,7 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -42,16 +37,12 @@ RootWebArea "Поиск — Генератор лута — Daggerheart" [url=#/
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -61,7 +52,6 @@ daggerheart.com
 Предметы
 Расходники
 Снаряжение
-Сообщества
 Списки
 Таблицы
 Условия использования
@@ -80,12 +70,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -108,11 +93,7 @@ RootWebArea "Search — Daggerheart Loot Generator" [url=#/search]
 
 ## en :: controls
 Alt. tables
-Arazo's Artifacts
-Communities
 Consumables
-Dragon's Vault
-Dread
 EN
 Equipment
 Install as an app
@@ -125,9 +106,8 @@ Search
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

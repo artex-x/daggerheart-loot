@@ -211,7 +211,9 @@ export function tableOf(it: Record_): TableId | null {
  * off `tables.ts`'s `groupOf`/`SUB_LABEL` - not a second copy of the taxonomy.
  * A group's sub only prints where the book actually has more than one table:
  * `SUB_LABEL` has no entry for a single-table group's own id, which is what
- * `groupOf`/`SUB_LABEL`'s own shape already encodes.
+ * `groupOf`/`SUB_LABEL`'s own shape already encodes. The page's top row is
+ * `TABLE_NAV`, which puts the supplements under one chip; the path keeps the book,
+ * because every stub under `i/` prints it.
  */
 export function whereFrom(it: Record_, lang: Lang): string {
   if (isHomebrewRecord(it)) {

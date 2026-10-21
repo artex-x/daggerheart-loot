@@ -15,12 +15,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -66,9 +61,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=#/s/player-token-
 2
 3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
 51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=371 namehash=55eaf967]
-Arazo's Artifacts
 Core
-Dragon's Vault
 Dread
 EN
 Hope & Fear
@@ -85,6 +78,7 @@ daggerheart.com
 Гарпун Левиафана
 Далеко
 Двуручное
+Дополнения
 Зелье Быстрого Шага
 Знание
 Инстинкт
@@ -110,7 +104,6 @@ daggerheart.com
 Сила
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
-Сообщества
 Сохранить себе
 Списки
 Средне
@@ -139,12 +132,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -193,7 +181,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
 Agility
 Alder Workshop
 Alt. tables
-Arazo's Artifacts
 Armor
 Art History Booklet
 Broadsword
@@ -201,10 +188,8 @@ BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namele
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Close
-Communities
 Consumables
 Core
-Dragon's Vault
 Dread
 EN
 Ember Axe
@@ -238,6 +223,7 @@ Skip to content
 Standard rules
 Strength
 Stride Potion
+Supplements
 Tables
 Terms of use
 Twilight Deck

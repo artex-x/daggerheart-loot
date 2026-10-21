@@ -74,7 +74,7 @@
   } from '../lib/homebrew.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
-  import { TABLE_GROUPS, groupOf, subLabelOf } from '../lib/tables.js';
+  import { TABLE_NAV, navGroupOf, navSubLabel } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
   import { BARE_TABLE, type Record_, type TableId } from '../lib/types.js';
 
@@ -112,7 +112,7 @@
     app.route.kind === 'tables' ? (app.route.table ?? lastTable) : lastTable
   );
 
-  const group = $derived(groupOf(table));
+  const group = $derived(navGroupOf(table));
   /* The equipment tables draw a second body shape - see the header comment. */
   const eqKind = $derived(EQ_TABLE[table]);
 
@@ -566,7 +566,7 @@
          would have to be `:global()` here - kept inline. -->
     <div class="panel tablenav">
       <ChipRow>
-        {#each TABLE_GROUPS.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
+        {#each TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
           <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
         {/each}
       </ChipRow>
@@ -591,7 +591,7 @@
           {#each group.subs as sub (sub)}
             <Chip
               size="sm"
-              label={t[subLabelOf(sub)]}
+              label={t[navSubLabel(sub)]}
               on={sub === table}
               href={tablesHash(sub)}
             />
@@ -839,8 +839,16 @@
      row/tile anchor's outline (`.row.flash`, `.tilewrap.flash`) is
      `TableRows.svelte`'s. This is only the section anchor's. */
   .tsection {
-    scroll-margin-top: 110px;
+    scroll-margin-top: 118px;
     border-radius: var(--r);
+  }
+
+  /* The row anchor's offsets (`TableRows.svelte`): the header is 106 px from
+     640 px and 112 px below it. */
+  @media (max-width: 600px) {
+    .tsection {
+      scroll-margin-top: 132px;
+    }
   }
 
   .tsection.flash {

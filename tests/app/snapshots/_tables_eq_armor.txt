@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -96,17 +86,10 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 71Улучшенная Кольчуга из Змиевой ЧешуиРанг 2 · Пороги 10/22 · Бр... [namelen=242 namehash=7237bb07]
 72Продвинутая Кольчуга из Змиевой ЧешуиРанг 3 · Пороги 12/29 · Б... [namelen=243 namehash=4a3709d5]
 73Легендарная Кольчуга из Змиевой ЧешуиРанг 4 · Пороги 14/38 · Б... [namelen=243 namehash=985138fe]
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Астральное Одеяние
@@ -120,6 +103,7 @@ daggerheart.com
 Вторичное
 Глубинный Коралловый Доспех
 Глубинный Коралловый ДоспехРанг 3 · Пороги 13/35 · Броня 6Водное... [namelen=182 namehash=1b3c357a]
+Дополнения
 Доспех Дикой Розы
 Доспех Дикой РозыРанг 2 · Пороги 11/23 · Броня 5Надежда: Когда в... [namelen=156 namehash=2671ab38]
 Доспех Дуэлянта
@@ -271,7 +255,6 @@ daggerheart.com
 Скопировать ссылку на этот раздел
 Славная Кираса
 Снаряжение
-Сообщества
 Списки
 Списком
 Среброшелковая Броня
@@ -339,12 +322,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -356,12 +334,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -445,7 +418,6 @@ Advanced Silverweave Armor
 Advanced Silverweave ArmorTier 3 · Thresholds 9/23 · Armor 5Ward... [namelen=194 namehash=8f352fb4]
 Advanced Wyrmscale Hauberk
 Alt. tables
-Arazo's Artifacts
 Arch-Magus's Robes
 Armor
 Astral Raiment
@@ -472,7 +444,6 @@ Cloverweave Cloak
 Cloverweave CloakTier 3 · Thresholds 11/27 · Armor 5Fortune-Favo... [namelen=167 namehash=485d5e73]
 Coffinwood Armor
 Coffinwood ArmorTier 1 · Thresholds 4/10 · Armor 3Splintering: G... [namelen=165 namehash=2560a6b6]
-Communities
 Copy a link to this section
 Core
 Corpse Lord's Raiments
@@ -481,11 +452,8 @@ Darkweave ShroudTier 4 · Thresholds 13/36 · Armor 5Ghostwalker: ... [namelen=1
 Deep-Forged Coral Armor
 Deep-Forged Coral ArmorTier 3 · Thresholds 13/35 · Armor 6Aquati... [namelen=168 namehash=4a208610]
 Demonguard Platemail
-Dragon's Vault
 Dragonscale Armor
 Dragonscale ArmorTier 3 · Thresholds 11/27 · Armor 5Impenetrable... [namelen=173 namehash=f25fd3a8]
-Dread
-Dread GM Toolbox
 Dunamis Silkchain
 Dunamis SilkchainTier 4 · Thresholds 13/36 · Armor 7Timeslowing:... [namelen=185 namehash=6c09309f]
 Dustwander
@@ -628,6 +596,7 @@ Spiked Plate ArmorTier 3 · Thresholds 10/25 · Armor 5Sharp: On a... [namelen=1
 Standard rules
 Stormthread Habit
 Stormthread HabitTier 2 · Thresholds 9/20 · Armor 4Absorbing: On... [namelen=155 namehash=c3b1b4d3]
+Supplements
 Tables
 Terms of use
 Tree Bark Armor
@@ -637,13 +606,10 @@ Trollhide CuirassTier 2 · Thresholds 11/23 · Armor 5Self-Healing... [namelen=1
 Tyris Soft Armor
 Tyris Soft ArmorTier 2 · Thresholds 8/18 · Armor 5Quiet: You gai... [namelen=127 namehash=127abd7a]
 Underdweller Carapace
-Vault of Ages
 Veritas Opal Armor
 Veritas Opal ArmorTier 4 · Thresholds 13/36 · Armor 6Truthseekin... [namelen=152 namehash=459303b3]
 Ward of Shadows
 Weapons
-Wondrous
-Wondrous Loot
 Wyrdwood Splint Armor
 Wyrdwood Splint ArmorTier 2 · Thresholds 10/21 · Armor 5Quick-St... [namelen=173 namehash=ef97f30b]
 Wyrmscale Hauberk

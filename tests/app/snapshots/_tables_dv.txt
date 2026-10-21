@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,14 +27,15 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
+    link "Дополнения" [url=#/tables/wondrous]
+    link "Снаряжение" [url=#/tables/eq_weapon]
+    link "Прочее" [url=#/tables/other_starting]
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
     link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Сообщества" [url=#/tables/community]
-    link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Прочее" [url=#/tables/other_starting]
     searchbox "Поиск по названию или описанию…"
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -212,13 +208,11 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 Arazo's Artifacts
 Core
 Dragon's Vault
-Dread
 Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
-Wondrous
 Wondrous Loot
 daggerheart.com
 Агатовый Паук
@@ -238,6 +232,7 @@ daggerheart.com
 Глефа Тирана
 Громовой Камень
 Двуручный Меч Вайаты
+Дополнения
 Драконий Клык
 Драконье Яйцо
 Дротик Гребня Волны
@@ -400,12 +395,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dv]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -417,14 +407,15 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/dv]
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
+    link "Supplements" [url=#/tables/wondrous]
+    link "Equipment" [url=#/tables/eq_weapon]
+    link "Other" [url=#/tables/other_starting]
     link "Wondrous Loot" [url=#/tables/wondrous]
     link "Dread GM Toolbox" [url=#/tables/dread]
     link "Vault of Ages" [url=#/tables/voa]
     link "Dragon's Vault" [url=#/tables/dv]
     link "Arazo's Artifacts" [url=#/tables/arazo]
     link "Communities" [url=#/tables/community]
-    link "Equipment" [url=#/tables/eq_weapon]
-    link "Other" [url=#/tables/other_starting]
     searchbox "Search by name or description…"
     button "Link to this table"
     button "List" [pressed=true]
@@ -639,7 +630,6 @@ Dragon Egg
 Dragon's Vault
 Dragonbone Blade
 Draketooth
-Dread
 Dread GM Toolbox
 Dryad's Thorn
 Duka Salamet
@@ -746,6 +736,7 @@ Storm Quiver
 Striking Fangs
 Stygian Sand
 Sunpalm Obliterator
+Supplements
 Sword of Angels
 Sword of Undeath
 Tables
@@ -767,7 +758,6 @@ Wand of the Qilin
 Ward of Shadows
 Wasp's Sting
 Wavecrest Javelin
-Wondrous
 Wondrous Loot
 daggerheart.com
 ЛутDaggerheart

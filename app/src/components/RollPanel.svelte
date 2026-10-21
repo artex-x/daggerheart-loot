@@ -7,7 +7,8 @@
      a part of one, and pass a `picker` row that chooses which part. Core
      rules and the alternate tables roll several cards at once and get their
      own panels; what they share with this one is the number field and the
-     result card.
+     result card. Every caller is a supplement, so each draws the supplements
+     panel under its heading.
 
      The rows are a prop rather than a table name, because two of the five
      callers do not have a table name to give - their rows are a slice. */
@@ -23,7 +24,9 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
+  import SupplementNav from './SupplementNav.svelte';
   import { helpFor } from '../lib/help.js';
+  import { isSupplement } from '../lib/nav.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -91,6 +94,10 @@
 </script>
 
 <PageHead {app} {title} {sub} {help} />
+
+{#if isSupplement(app.section)}
+  <SupplementNav {app} />
+{/if}
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}

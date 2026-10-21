@@ -16,12 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
     navigation "Разделы"
       link "Обычные правила" [url=index.html?today=2026-10-26#/roll/std]
       link "Альт. таблицы" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Wondrous" [url=index.html?today=2026-10-26#/roll/wondrous]
-      link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
-      link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
-      link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?today=2026-10-26#/roll/arazo]
-      link "Сообщества" [url=index.html?today=2026-10-26#/roll/community]
+      link "Дополнения" [url=index.html?today=2026-10-26#/roll/wondrous]
       link "Таблицы" [url=index.html?today=2026-10-26#/tables]
       link "Поиск" [url=index.html?today=2026-10-26#/search]
   main ""
@@ -94,17 +89,13 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?today=
 
 ## ru :: controls
 7 мешков 5 горстей
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
 Выбрать все
+Дополнения
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
@@ -135,7 +126,6 @@ daggerheart.com
 Скопировать текст
 Случайно 1–7
 Собрать карточки для печати: девять на лист A4
-Сообщества
 Таблицы
 Удалить
 Условия использования
@@ -156,12 +146,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
     navigation "Sections"
       link "Standard rules" [url=index.html?today=2026-10-26#/roll/std]
       link "Alt. tables" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Wondrous" [url=index.html?today=2026-10-26#/roll/wondrous]
-      link "Dread" [url=index.html?today=2026-10-26#/roll/dread]
-      link "Vault of Ages" [url=index.html?today=2026-10-26#/roll/voa]
-      link "Dragon's Vault" [url=index.html?today=2026-10-26#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?today=2026-10-26#/roll/arazo]
-      link "Communities" [url=index.html?today=2026-10-26#/roll/community]
+      link "Supplements" [url=index.html?today=2026-10-26#/roll/wondrous]
       link "Tables" [url=index.html?today=2026-10-26#/tables]
       link "Search" [url=index.html?today=2026-10-26#/search]
   main ""
@@ -237,17 +222,13 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
 Alt. tables
-Arazo's Artifacts
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book
 Charging Quiver
 Charging QuiverWhen you succeed on an attack with an arrow store... [namelen=149 namehash=2b36c062]
-Communities
 Copy text
 Delete
-Dragon's Vault
-Dread
 EN
 How this works
 In coins
@@ -276,9 +257,8 @@ Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

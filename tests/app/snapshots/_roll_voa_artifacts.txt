@@ -15,12 +15,7 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -29,6 +24,13 @@ RootWebArea "Vault of Ages — Генератор лута — Daggerheart" [url
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Выберите раздел книги и бросьте кость по нему."
+    navigation "Дополнения"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
     StaticText "РАЗДЕЛ КНИГИ"
     button "Ранг 1" [pressed=false]
     button "Ранг 2" [pressed=false]
@@ -73,6 +75,7 @@ daggerheart.com
 Альт. таблицы
 Артефакты
 Войти
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -114,12 +117,7 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -128,6 +126,13 @@ RootWebArea "Vault of Ages — Daggerheart Loot Generator" [url=#/roll/voa]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Pick a section of the book and roll within it."
+    navigation "Supplements"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
     StaticText "SECTION"
     button "Tier 1" [pressed=false]
     button "Tier 2" [pressed=false]
@@ -189,6 +194,7 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Tier 1

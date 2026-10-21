@@ -15,12 +15,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -32,12 +27,7 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Сообщества" [url=#/tables/community]
+    link "Дополнения" [url=#/tables/wondrous]
     link "Снаряжение" [url=#/tables/eq_weapon]
     link "Прочее" [url=#/tables/other_starting]
     link "Оружие" [url=#/tables/eq_weapon]
@@ -76,19 +66,16 @@ RootWebArea "Таблицы — Генератор лута — Daggerheart" [ur
 Arazo's Artifacts
 Core
 Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Hope & Fear
 RU
 Vault of Ages
-Wondrous
-Wondrous Loot
 daggerheart.com
 Альт. таблицы
 Броня
 Войти
 Вторичное
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -102,7 +89,6 @@ daggerheart.com
 Сбросить всё
 Сеткой
 Снаряжение
-Сообщества
 Списки
 Списком
 Ссылка на таблицу
@@ -129,12 +115,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -146,12 +127,7 @@ RootWebArea "Tables — Daggerheart Loot Generator" [url=#/tables/eq_armor/f_lin
     link "Core" [url=#/tables/core_item]
     link "Hope & Fear" [url=#/tables/hnf_item]
     link "Alt. tables" [url=#/tables/alt_item]
-    link "Wondrous Loot" [url=#/tables/wondrous]
-    link "Dread GM Toolbox" [url=#/tables/dread]
-    link "Vault of Ages" [url=#/tables/voa]
-    link "Dragon's Vault" [url=#/tables/dv]
-    link "Arazo's Artifacts" [url=#/tables/arazo]
-    link "Communities" [url=#/tables/community]
+    link "Supplements" [url=#/tables/wondrous]
     link "Equipment" [url=#/tables/eq_weapon]
     link "Other" [url=#/tables/other_starting]
     link "Weapons" [url=#/tables/eq_weapon]
@@ -191,12 +167,9 @@ Alt. tables
 Arazo's Artifacts
 Armor
 Beast Feast
-Communities
 Core
 Dark Heart of Andaluria
 Dragon's Vault
-Dread
-Dread GM Toolbox
 EN
 Equipment
 Filter link
@@ -219,13 +192,12 @@ Secondary
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Unique
 Upgradable
 Vault of Ages
 Weapons
-Wondrous
-Wondrous Loot
 daggerheart.com
 ЛутDaggerheart

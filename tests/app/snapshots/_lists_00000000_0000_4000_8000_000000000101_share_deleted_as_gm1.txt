@@ -16,12 +16,7 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -149,13 +144,8 @@ RootWebArea "Генератор лута — Daggerheart" [url=index.html?as=gm1
 
 ## ru :: controls
 #/s/player-token-1
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
@@ -165,6 +155,7 @@ daggerheart.com
 Выбрать все
 Гарпун Левиафана
 Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=359 namehash=d7ce48f5]
+Дополнения
 Жирный
 Заметка
 Зелье Быстрого Шага
@@ -205,7 +196,6 @@ daggerheart.com
 Скопировать текст
 Собрать карточки для печати: девять на лист A4
 Создать ссылку
-Сообщества
 Списки
 Список
 Стеганый Доспех
@@ -242,12 +232,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -377,7 +362,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
 #/s/player-token-1
 Account: gm1@example.test
 Alt. tables
-Arazo's Artifacts
 Art History Booklet
 Art History BookletThis is a finely illustrated booklet (donatio... [namelen=532 namehash=f84ac14a]
 As in the book
@@ -388,15 +372,12 @@ Bulleted list
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 Clear the note
-Communities
 Copy
 Copy text
 Create link
 Delete
 Delete link
 Download JSON
-Dragon's Vault
-Dread
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
@@ -446,11 +427,10 @@ Skip to content
 Standard rules
 Stride Potion
 Stride PotionYou gain a +1 bonus to your next Agility Roll.Upgra... [namelen=105 namehash=01e4c083]
+Supplements
 Tables
 Terms of use
 Twilight Deck
 Twilight DeckRecall Cost: 2This deck enhances fortunes with the ... [namelen=870 namehash=3e42d83e]
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

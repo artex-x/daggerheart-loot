@@ -16,12 +16,7 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     navigation "Разделы"
       link "Обычные правила" [url=index.html?as=gm1#/roll/std]
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Сообщества" [url=index.html?as=gm1#/roll/community]
+      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous]
       link "Таблицы" [url=index.html?as=gm1#/tables]
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
@@ -69,18 +64,14 @@ RootWebArea "Аккаунт — Генератор лута — Daggerheart" [ur
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dragon's Vault
-Dread
 EN
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выйти
 Выйти на всех устройствах
+Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
@@ -91,7 +82,6 @@ daggerheart.com
 Поиск
 Сеткой
 Скачать мои данные (ZIP)
-Сообщества
 Списки
 Списком
 СпрашиватьСообщать владельцуНе сообщать
@@ -115,12 +105,7 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
     navigation "Sections"
       link "Standard rules" [url=index.html?as=gm1#/roll/std]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Wondrous" [url=index.html?as=gm1#/roll/wondrous]
-      link "Dread" [url=index.html?as=gm1#/roll/dread]
-      link "Vault of Ages" [url=index.html?as=gm1#/roll/voa]
-      link "Dragon's Vault" [url=index.html?as=gm1#/roll/dv]
-      link "Arazo's Artifacts" [url=index.html?as=gm1#/roll/arazo]
-      link "Communities" [url=index.html?as=gm1#/roll/community]
+      link "Supplements" [url=index.html?as=gm1#/roll/wondrous]
       link "Tables" [url=index.html?as=gm1#/tables]
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
@@ -170,17 +155,13 @@ RootWebArea "Account — Daggerheart Loot Generator" [url=index.html?as=gm1#/acc
 ## en :: controls
 Account: gm1@example.test
 Alt. tables
-Arazo's Artifacts
 AskNotify the ownerDon't notify
 Black and white
 Colour
-Communities
 Delete account...
 Disconnect Discord
 Disconnect Google
 Download my data (ZIP)
-Dragon's Vault
-Dread
 EN
 Grid
 Install as an app
@@ -194,9 +175,8 @@ Sign out everywhere
 Skip to content
 Standard rules
 Standard rulesAlt. tablesWondrousDreadVault of AgesDragon's Vaul... [namelen=110 namehash=288ab316]
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

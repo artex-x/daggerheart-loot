@@ -420,6 +420,25 @@ async function focusWalk(page, where) {
   }
 }
 
+/** Returns the anchored section's top and the header's bottom once the scroll settles. */
+async function landedUnderHeader(page) {
+  let last = -1;
+  for (let i = 0; i < 60; i++) {
+    const y = await page.evaluate(() => window.scrollY);
+    if (y > 0 && y === last) break;
+    last = y;
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  return page.evaluate(() => {
+    const sec = document.getElementById('sec-tA');
+    const head = document.querySelector('header');
+    return {
+      section: sec ? Math.round(sec.getBoundingClientRect().top) : null,
+      header: head ? Math.round(head.getBoundingClientRect().bottom) : 0
+    };
+  });
+}
+
 (async () => {
   /* a payload for the "someone else's list" page, built the same way
    * audit2's own boot page does it. */
@@ -462,8 +481,14 @@ async function focusWalk(page, where) {
             badLinks: [],
             undef: false,
             overflow: 0,
-            craftBad: []
+            craftBad: [],
+            tabRows: 0
           };
+          out.tabRows = new Set(
+            [...document.querySelectorAll('nav.tabs a')].map((a) =>
+              Math.round(a.getBoundingClientRect().top)
+            )
+          ).size;
           out.overflow =
             document.documentElement.scrollWidth - document.documentElement.clientWidth;
           out.undef = /\bundefined\b/.test(document.body.innerText);
@@ -566,6 +591,9 @@ async function focusWalk(page, where) {
           where + ': link to nowhere — ' + rep2.badLinks.slice(0, 3).join(', ')
         );
         ok(!rep2.craftBad.length, where + ': craft — ' + rep2.craftBad.slice(0, 3).join(' | '));
+        /* Six tabs hold one row from 640 px in both languages: docs/specs/FEATURES.md, "Chrome". */
+        if (width >= 768)
+          ok(rep2.tabRows <= 1, where + ': the header tabs wrap to ' + rep2.tabRows + ' rows');
 
         if (/^таблица/.test(label)) {
           const strip = await page.evaluate(() => {
@@ -574,8 +602,8 @@ async function focusWalk(page, where) {
               ? Math.round([...c].reduce((h, x) => h + x.getBoundingClientRect().height, 0))
               : 0;
           });
-          /* Eleven group chips, twelve signed in, wrap to six rows under 500 px:
-             docs/specs/FEATURES.md, "Rolling". */
+          /* Six group chips, seven signed in, and a second row of up to seven
+             books: docs/specs/FEATURES.md, "Tables and search". */
           const cap = width < 500 ? 300 : width < 1000 ? 150 : 130;
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
@@ -607,6 +635,16 @@ async function focusWalk(page, where) {
             );
           }
         }
+      }
+      /* A section link lands with its heading below the sticky header. */
+      {
+        const where = 'раздел таблицы #/tables/voa/tA @' + width + ' ' + lang;
+        await d.open('#/tables/voa/tA');
+        const at = await landedUnderHeader(page);
+        ok(
+          at.section !== null && at.section >= at.header - 1,
+          where + ': the section top ' + at.section + ' is above the header bottom ' + at.header
+        );
       }
       await ctx.close();
     }

@@ -15,12 +15,7 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -29,6 +24,13 @@ RootWebArea "Wondrous — Генератор лута — Daggerheart" [url=#/ro
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [description=Как это работает expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
+    navigation "Дополнения"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Сообщества" [url=#/roll/community]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
     button "На единицу меньше"
     textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
@@ -66,6 +68,7 @@ Wondrous
 daggerheart.com
 Альт. таблицы
 Войти
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -103,12 +106,7 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -117,6 +115,13 @@ RootWebArea "Wondrous — Daggerheart Loot Generator" [url=#/roll/wondrous]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [description=How this works expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
+    navigation "Supplements"
+      link "Wondrous" [url=#/roll/wondrous]
+      link "Dread" [url=#/roll/dread]
+      link "Vault of Ages" [url=#/roll/voa]
+      link "Dragon's Vault" [url=#/roll/dv]
+      link "Arazo's Artifacts" [url=#/roll/arazo]
+      link "Communities" [url=#/roll/community]
     StaticText "ROLL RESULT (1–119)"
     button "One lower"
     textbox "Roll result" [value=3 multiline=false readonly=false required=false]
@@ -171,6 +176,7 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
 Vault of Ages

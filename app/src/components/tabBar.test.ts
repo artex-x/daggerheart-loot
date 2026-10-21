@@ -5,6 +5,8 @@
 import { cleanup, render } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
 import { dict } from '../lib/dict.js';
+import { SUPPLEMENTS } from '../lib/nav.js';
+import { expectNoA11yViolations } from '../test/a11y.js';
 import TabBar from './TabBar.svelte';
 
 afterEach(cleanup);
@@ -65,7 +67,7 @@ describe('keeping the lit tab in view', () => {
 });
 
 describe('the Lists tab', () => {
-  it('draws ten links without #/lists when lists is false, and Tables keeps its separator', () => {
+  it('draws five links without #/lists when lists is false, and Tables keeps its separator', () => {
     const { container } = render(TabBar, {
       t: dict('ru'),
       current: null,
@@ -73,14 +75,57 @@ describe('the Lists tab', () => {
       lists: false
     });
     const links = [...container.querySelectorAll('nav.tabs a')];
-    expect(links).toHaveLength(10);
+    expect(links).toHaveLength(5);
     expect(links.map((a) => a.getAttribute('href'))).not.toContain('#/lists');
     expect(container.querySelector('a[href="#/tables"]')).toHaveClass('sep');
   });
 
-  it('draws all eleven by default', () => {
+  it('draws all six by default', () => {
     const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
-    expect(container.querySelectorAll('nav.tabs a')).toHaveLength(11);
+    expect(container.querySelectorAll('nav.tabs a')).toHaveLength(6);
     expect(container.querySelector('a[href="#/lists"]')).not.toBeNull();
+  });
+});
+
+describe('the supplements tab', () => {
+  const lit = (container: HTMLElement): (string | null)[] =>
+    [...container.querySelectorAll('nav.tabs a[aria-current="page"]')].map((a) =>
+      a.getAttribute('href')
+    );
+
+  it('draws Core rules, the alternate tables and one supplements tab before Tables', () => {
+    const { container } = render(TabBar, { t: dict('en'), current: null, label: 'Sections' });
+    expect([...container.querySelectorAll('nav.tabs a')].map((a) => a.textContent)).toEqual([
+      'Standard rules',
+      'Alt. tables',
+      'Supplements',
+      'Tables',
+      'Lists',
+      'Search'
+    ]);
+  });
+
+  it.each(SUPPLEMENTS)('lights «Дополнения» with aria-current on %s', (s) => {
+    const { container } = render(TabBar, { t: dict('ru'), current: s, label: 'Разделы' });
+    expect(lit(container)).toEqual(['#/roll/wondrous']);
+    const tab = container.querySelector('a.on') as HTMLElement;
+    expect(tab.textContent).toBe('Дополнения');
+  });
+
+  it.each(['roll/std', 'roll/alt', 'tables'] as const)(
+    'lights its own tab and not «Дополнения» on %s',
+    (s) => {
+      const { container } = render(TabBar, { t: dict('ru'), current: s, label: 'Разделы' });
+      expect(lit(container)).toEqual([`#/${s}`]);
+    }
+  );
+
+  it('has no axe violations with the supplements tab lit', async () => {
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: 'roll/voa',
+      label: 'Разделы'
+    });
+    await expectNoA11yViolations(container);
   });
 });

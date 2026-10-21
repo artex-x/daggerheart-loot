@@ -15,12 +15,7 @@ RootWebArea "Обычные правила — Генератор лута — D
     navigation "Разделы"
       link "Обычные правила" [url=#/roll/std]
       link "Альт. таблицы" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Сообщества" [url=#/roll/community]
+      link "Дополнения" [url=#/roll/wondrous]
       link "Таблицы" [url=#/tables]
       link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
@@ -73,15 +68,10 @@ RootWebArea "Обычные правила — Генератор лута — D
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
 Core
-Dragon's Vault
-Dread
 EN
 Hope & Fear
 RU
-Vault of Ages
-Wondrous
 daggerheart.com
 Альт. таблицы
 Бросить 1d12 — Обычная
@@ -90,6 +80,7 @@ daggerheart.com
 Бросить 4d12 — Редкая / Легендарная
 Бросить 5d12 — Легендарная
 Войти
+Дополнения
 К содержимому
 Как это работает
 Конфиденциальность
@@ -108,7 +99,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Сообщества
 Списки
 Страница
 Таблицы
@@ -128,12 +118,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
     navigation "Sections"
       link "Standard rules" [url=#/roll/std]
       link "Alt. tables" [url=#/roll/alt]
-      link "Wondrous" [url=#/roll/wondrous]
-      link "Dread" [url=#/roll/dread]
-      link "Vault of Ages" [url=#/roll/voa]
-      link "Dragon's Vault" [url=#/roll/dv]
-      link "Arazo's Artifacts" [url=#/roll/arazo]
-      link "Communities" [url=#/roll/community]
+      link "Supplements" [url=#/roll/wondrous]
       link "Tables" [url=#/tables]
       link "Lists" [url=#/lists]
       link "Search" [url=#/search]
@@ -187,9 +172,7 @@ RootWebArea "Standard rules — Daggerheart Loot Generator" [url=#/roll/std]
 
 ## en :: controls
 Alt. tables
-Arazo's Artifacts
 At least one type has to stay on
-Communities
 Consumables
 Copy every option
 Copy image
@@ -197,8 +180,6 @@ Copy link
 Copy name
 Copy text
 Core
-Dragon's Vault
-Dread
 EN
 Hope & Fear
 How this works
@@ -221,9 +202,8 @@ Share
 Sign in
 Skip to content
 Standard rules
+Supplements
 Tables
 Terms of use
-Vault of Ages
-Wondrous
 daggerheart.com
 ЛутDaggerheart

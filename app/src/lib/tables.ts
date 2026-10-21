@@ -96,12 +96,31 @@ export function groupOf(table: TableId): TableGroup {
   return TABLE_GROUPS.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
 }
 
-/**
- * The sub-chip caption for a table, falling back to the tab's own word for a
- * table that somehow has none - defensive rather than reachable: every sub of
- * every group with more than one table has an entry, which `tables.test.ts`
- * checks directly.
- */
-export function subLabelOf(table: TableId): keyof Dict {
-  return SUB_LABEL[table] ?? 'tables';
+/* The groups the tables page draws, a second layer over `TABLE_GROUPS`. The six
+   supplement books share one chip, as their roll sections share one header tab
+   (`nav.ts`), and their own names move to the second row. `TABLE_GROUPS` and
+   `SUB_LABEL` stay the record path words: `whereFrom`, and through it every
+   stub under `i/`, reads them. */
+const SUPP_GROUP: TableGroup = {
+  id: 'supp',
+  label: 'grpSupplements',
+  top: 'wondrous',
+  subs: ['wondrous', 'dread', 'voa', 'dv', 'arazo', 'community']
+};
+
+/** The tables page's group chips, in order. Each `TableId` sits in one group. */
+export const TABLE_NAV: readonly TableGroup[] = [
+  ...TABLE_GROUPS.filter((g) => ['core', 'hnf', 'alt'].includes(g.id)),
+  SUPP_GROUP,
+  ...TABLE_GROUPS.filter((g) => ['eq', 'other', 'hb'].includes(g.id))
+];
+
+/** Returns the tables page's group chip for a table. Falls back to Core, as `groupOf` does. */
+export function navGroupOf(table: TableId): TableGroup {
+  return TABLE_NAV.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
+}
+
+/** Returns a second-row chip's caption: the `SUB_LABEL` word, or else the book's own name. */
+export function navSubLabel(table: TableId): keyof Dict {
+  return SUB_LABEL[table] ?? groupOf(table).label;
 }

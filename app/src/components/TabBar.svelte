@@ -1,11 +1,14 @@
 <script lang="ts">
-  /* The eleven sections, ten from the cutoff: `#/lists` is then reached from the
-   * account menu (docs/specs/ROUTES.md, "Sections").
+  /* Six tabs, five from the cutoff: `#/lists` is then reached from the account
+   * menu (docs/specs/ROUTES.md, "Sections"). The six supplement roll sections
+   * share one tab, which lights on each of them and links to the first; their
+   * page draws a chip panel for the rest (`SupplementNav.svelte`).
    *
    * Real links, not buttons: middle-click, copy-link and open-in-new-tab all
    * work for free, and the address is the state. The separator before Tables
    * is where rolling ends and browsing begins. */
   import { sectionHash } from '../lib/hash.js';
+  import { tabOf } from '../lib/nav.js';
   import type { Dict } from '../lib/dict.js';
   import type { Section } from '../lib/types.js';
 
@@ -22,18 +25,14 @@
   const TABS: [Section, keyof Dict][] = [
     ['roll/std', 'std'],
     ['roll/alt', 'alt'],
-    ['roll/wondrous', 'wondrous'],
-    ['roll/dread', 'dread'],
-    ['roll/voa', 'voa'],
-    ['roll/dv', 'dv'],
-    ['roll/arazo', 'arazo'],
-    ['roll/community', 'community'],
+    ['roll/wondrous', 'grpSupplements'],
     ['tables', 'tables'],
     ['lists', 'lists'],
     ['search', 'search']
   ];
 
   const tabs = $derived(lists ? TABS : TABS.filter(([s]) => s !== 'lists'));
+  const lit = $derived(tabOf(current));
 
   let nav = $state<HTMLElement | undefined>(undefined);
 
@@ -48,7 +47,7 @@
    * hand it by hand.
    */
   $effect(() => {
-    void current;
+    void lit;
     const el = nav;
     const tab = el?.querySelector<HTMLElement>('a.on');
     if (!el || !tab) return;
@@ -61,9 +60,9 @@
   {#each tabs as [section, key] (section)}
     <a
       href={sectionHash(section)}
-      class:on={section === current}
+      class:on={section === lit}
       class:sep={section === 'tables'}
-      aria-current={section === current ? 'page' : undefined}>{t[key]}</a
+      aria-current={section === lit ? 'page' : undefined}>{t[key]}</a
     >
   {/each}
 </nav>
@@ -81,9 +80,8 @@
     margin-inline: auto;
   }
 
-  /* Eight tabs stopped fitting on one line on a middle-sized screen and the
-     rest went off the right edge - sections simply vanished. Narrow scrolls,
-     wide wraps. */
+  /* Narrow scrolls, wide wraps. Six tabs hold one row from 640 px in both
+     languages (607 px in Russian); the wrap is a guard, not a layout. */
   @media (max-width: 640px) {
     .tabs {
       flex-wrap: nowrap;
