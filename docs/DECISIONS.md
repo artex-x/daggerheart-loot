@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-22 - [A push is judged per file like a script write, and only as one plain command](decisions/2026-10-22-a-push-is-judged-per-file-like-a.md)
 - 2026-10-21 - [A script write to the test project is judged per file, like a push](decisions/2026-10-21-a-script-write-to-the-test-project-is-judged-per-file.md)
 - 2026-10-21 - [A task branch pushes every batch; a green CI run of the same tree gates main](decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md)
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)

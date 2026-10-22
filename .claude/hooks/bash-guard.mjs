@@ -96,13 +96,15 @@ const MSG = {
   reviewerWrite:
     'Blocked: the reviewer is read-only in Bash and PowerShell: no git write, file writer, in-place sed or perl, writing cmdlet, npm script, Supabase CLI call but status or help, or output redirect to a file (docs/decisions/, 2026-09-27, "The reviewer writes its report to issues/<id>/reviews/ and nowhere else"). Write the report with the Write tool; return every other fix to the orchestrator.',
   migrationUnapproved: (tree, files, seen) =>
-    `Blocked: this writes supabase/migrations to the test project (tree ${tree}), and these files are on neither origin/main nor a tree that a report under issues/*/reviews/ approves ("Verdict: approve" and a "Reviewed: <sha>"; docs/decisions/, 2026-10-21, "A script write to the test project is judged per file, like a push"): ${files.join(', ')} - seen: ${seen}. If main moved, run git fetch origin and retry; else run npm run check:db, commit, get the review, then write; --dry-run is allowed now.`,
+    `Blocked: this writes supabase/migrations to the test project (tree ${tree}), and these files are on neither origin/main nor a tree that a report under issues/*/reviews/ approves ("Verdict: approve", "Reviewed: <sha>" and "Scope: batch <id>"; docs/decisions/, 2026-10-21, "A script write to the test project is judged per file, like a push"): ${files.join(', ')} - seen: ${seen}. If main moved, run git fetch origin and retry; else run npm run check:db, commit, get the review, then write; --dry-run is allowed now.`,
   migrationCheckoutUnpinned:
     'Blocked: rule 2r judges a test-project migration write only as one plain command, so it cannot tell which checkout this one writes from. Run the write alone, in its own call, from the top directory of the checkout that holds the migrations: npm run db:push -- --project test --yes, or node --env-file=.env.test.local <checkout>/tools/supabase/db-push.mjs --project test --yes with the script\'s absolute path. No cd, ;, &&, pipe, group, wrapper, assignment, quote or escape, variable or ~ in the path, npm flag, --workdir or SUPABASE_WORKDIR (.claude/README.md, "Hooks", rule 2r).',
-  migrationPushUnapproved: (source, files, seen) =>
-    `Blocked: a push of ${source} starts CI's migrate-test, which writes supabase/migrations to the test project, and ${files.join(', ')} is not on origin/main, on a refs/remotes/origin/* ref, or in a tree that a report under issues/*/reviews/ approves ("Verdict: approve" and a "Reviewed: <sha>"; docs/decisions/, 2026-09-27, "An agent pushes migrations to the test project only after an approving review") - seen: ${seen}. Run npm run check:db, commit, get the review, then push; --dry-run is allowed now.`,
+  migrationPushUnapproved: (source, files, seen, mainCheckout) =>
+    `Blocked: a push of ${source} starts CI's migrate-test, which writes supabase/migrations to the test project, and ${files.join(', ')} is on neither origin/main, the branch it updates (refs/remotes/origin/<branch>), nor a tree that a report under issues/*/reviews/ approves ("Verdict: approve", "Reviewed: <sha>" and "Scope: batch <id>"; docs/decisions/, 2026-10-22, "A push is judged per file like a script write, and only as one plain command") - seen: ${seen}.${mainCheckout ? ` A push of main takes the CI credit of the task branch tip: node ${mainCheckout.replace(/\\/g, '/')}/.claude/hooks/ci-credit.mjs <tip sha>.` : ''} If main moved, run git fetch origin and retry; else run npm run check:db, commit, get the review, then push from the checkout that holds the report (git -C <checkout> push -u origin <branch>); --dry-run is allowed now.`,
+  migrationPushUnpinned: (source, why) =>
+    `Blocked: rule 2r judges a git push that may change supabase/migrations only as one plain command, so it cannot tell which checkout this one pushes ${source} from: ${why}. Run the push alone, in its own call, with the branch named: git push -u origin <branch>, or git -C <checkout> push -u origin <branch>. No cd, ;, &&, pipe, group, wrapper, assignment, -c, --git-dir, --work-tree, --bare, quote or escape (.claude/README.md, "Hooks", rule 2r). A dry run and a delete are allowed now.`,
   migrationPushWide:
-    'Blocked: `git push --all` and `--mirror` push refs that rule 2r cannot judge one by one, and every pushed branch runs CI, whose migrate-test writes to the test project. Push one branch by name: `git push -u origin <branch>`.',
+    'Blocked: `git push --all` and `--mirror` push refs that rule 2r cannot judge one by one, and every pushed branch runs CI, whose migrate-test writes to the test project. The matching refspec `:` (or `+:`), and a push with no refspec under `push.default=matching` or a `remote.origin.push`, push every matching branch the same way. Push one branch by name: `git push -u origin <branch>`.',
   migrationPushUnresolved: (source) =>
     `Blocked: the push source \`${source}\` does not resolve to a commit here, so rule 2r cannot read its supabase/migrations tree. Push a branch or a sha that exists: \`git push -u origin <branch>\`.`,
   migrationUncommitted:
@@ -1291,11 +1293,15 @@ function evaluateHostedWrite(segList) {
 // write is judged only as one plain command; any other command that holds
 // one denies, because the hook cannot pin its checkout.
 //
-// A script or CLI write, and each refspec source of a `git push` (every push
-// starts CI's migrate-test), passes when every migration file has its blob on
-// origin/main or in an approved tree; a push also takes a refs/remotes/origin/*
-// ref (docs/decisions/, 2026-10-21, "A script write to the test project is
-// judged per file, like a push"). Git runs only for a matching command.
+// A script or CLI write passes when every migration file has its blob on
+// origin/main or in a tree that a batch report approves. Each refspec source
+// of a `git push` (every push starts CI's migrate-test) also takes the
+// refs/remotes/origin/<branch> it updates, and a push of main a CI credit of
+// the source. A push is judged only as one plain command; a push in any other
+// command denies when its source depends on the checkout or holds a file on
+// neither origin/main nor its own ref (docs/decisions/, 2026-10-22, "A push
+// is judged per file like a script write, and only as one plain command").
+// Git runs only for a matching command.
 
 const DB_PUSH_FILE = 'db-push.mjs';
 // The full name: a local branch or tag named `origin/main` would shadow it.
@@ -1373,9 +1379,11 @@ function writesTestMigrations(info) {
   return false;
 }
 
-// D9: the one command shape in which rule 2r judges a test-project write
-// (docs/decisions/, 2026-10-21, "A script write to the test project is
-// judged per file, like a push", "Decision (checkout)").
+// D9: the one command shape in which rule 2r judges a test-project write or
+// a git push (docs/decisions/, 2026-10-21, "A script write to the test
+// project is judged per file, like a push", "Decision (checkout)"; 2026-10-22,
+// "A push is judged per file like a script write, and only as one plain
+// command").
 const NOT_ONE_SEGMENT_RE = /[;|&(){}`\n]|\$\(/;
 const READ_ONLY_PROGRAMS = new Set([
   'ls',
@@ -1473,20 +1481,30 @@ function plainNode(t, cwd) {
   return top !== null && pathKey(p) === pathKey(path.join(top, 'tools', 'supabase', file));
 }
 
-/** Returns the segment info of the command when it is one plain write
- * command (D9.1-D9.4), else null. */
-function plainWrite(sanitized, cwd, raw) {
+/** Returns `{ s, t }` of a command that is one segment with no quote or
+ * escape: the sanitised text without `2>&1`/`>&2`, and its tokens past
+ * `rtk` or `rtk proxy`. Else null. */
+function plainTokens(sanitized, raw) {
   // A quote or a Bash escape inside a word splits it for the sanitiser but not
   // for the shell (`--work''dir=sub`). PowerShell's `\` is `/` by now.
   if (/['"\\]/.test(raw)) return null;
   const s = sanitized.replace(/(^|\s)(?:2>&1|>&2)(?=\s|$)/g, '$1');
   if (NOT_ONE_SEGMENT_RE.test(s)) return null;
-  if (process.env.SUPABASE_WORKDIR !== undefined) return null;
-  const all = tokensOf(s);
-  if (all.some((t) => /^--workdir(?:=|$)/.test(t) || /supabase_workdir/i.test(t))) return null;
-  let t = all;
+  let t = tokensOf(s);
   if (t[0] === 'rtk') t = t.slice(t[1] === 'proxy' ? 2 : 1);
-  if (!t.length) return null;
+  return t.length ? { s, t } : null;
+}
+
+/** Returns the segment info of the command when it is one plain write
+ * command (D9.1-D9.4), else null. */
+function plainWrite(sanitized, cwd, raw) {
+  const plainShape = plainTokens(sanitized, raw);
+  if (plainShape === null) return null;
+  const { s, t } = plainShape;
+  if (process.env.SUPABASE_WORKDIR !== undefined) return null;
+  if (tokensOf(s).some((x) => /^--workdir(?:=|$)/.test(x) || /supabase_workdir/i.test(x))) {
+    return null;
+  }
   const head = programName(t[0]);
   if (head === 'node') return plainNode(t, cwd) ? segmentInfo(s) : null;
   const plain =
@@ -1505,6 +1523,37 @@ function cwdIsToplevel(cwd) {
   const base = path.resolve(nativePath(cwd || repoRoot()));
   const top = toplevelOf(base);
   return top !== null && pathKey(base) === pathKey(top);
+}
+
+// `--bare` reads cwd as the git directory, so it moves the checkout.
+const PLAIN_GIT_OPTIONS = new Set([...GIT_FLAG_OPTIONS].filter((o) => o !== '--bare'));
+
+/** True when the command is one plain `git push`: the plain shape, then
+ * `git` with only `-C <dir>` (no `~` or `$`) and value-less options. */
+function plainPush(sanitized, raw) {
+  const plainShape = plainTokens(sanitized, raw);
+  if (plainShape === null) return false;
+  const { t } = plainShape;
+  if (programName(t[0]) !== 'git') return false;
+  let i = 1;
+  while (i < t.length) {
+    if (t[i] === '-C' && i + 1 < t.length && !/[~$]/.test(t[i + 1])) i += 2;
+    else if (PLAIN_GIT_OPTIONS.has(t[i])) i += 1;
+    else break;
+  }
+  return t[i] === 'push';
+}
+
+/** Returns the tokens from the first `git` at or past `from` whose
+ * sub-command is `push`, or null: a launcher or a git command can run it. */
+function hiddenPush(tokens, from) {
+  for (let i = from; i < tokens.length; i++) {
+    // A subshell glues `(` to its program: `(git push)`; a path names git too.
+    if (programName(tokens[i].replace(/^\(+/, '')).split('/').pop() !== 'git') continue;
+    const rest = ['git', ...tokens.slice(i + 1)];
+    if (gitSubcommand(rest).subcommand === 'push') return rest;
+  }
+  return null;
 }
 
 /** Returns every issues/<task>/reviews/*.md of `checkout` as
@@ -1540,40 +1589,40 @@ function reviewHeadOf(file) {
 }
 
 /** Returns `{ seen, approved }`: a line per report, and the `Reviewed:` sha
- * of each approving report. */
+ * of each approving batch report. */
 function approvals(checkout) {
   const seen = [];
   const approved = [];
   for (const { task, file, full } of reviewReports(checkout)) {
     const report = reviewHeadOf(full);
-    seen.push(`${task}/${file}: ${report.verdict || 'no Verdict: line'}`);
-    if (report.verdict === 'approve' && report.reviewed) approved.push(report.reviewed);
+    let line = `${task}/${file}: ${report.verdict || 'no Verdict: line'}`;
+    if (report.verdict === 'approve' && !(report.scope && report.scope.kind === 'batch')) {
+      const why = report.scope ? `plan before ${report.scope.id}` : 'no Scope: line';
+      line += ` (${why}; only a batch review counts)`;
+    } else if (report.verdict === 'approve' && report.reviewed) {
+      approved.push(report.reviewed);
+    }
+    seen.push(line);
   }
   return { seen: seen.length ? seen.join(', ') : 'none', approved };
 }
 
 /** Returns `{ missing, seen }`: the names of the supabase/migrations files
- * of `ref` whose blob is on none of origin/main, an approved tree and, with
- * `remoteRefs`, a refs/remotes/origin/* ref; and the reports seen. */
-function unknownMigrations(ref, checkout, { remoteRefs }) {
+ * of `ref` whose blob is on none of origin/main, `refs` and, with
+ * `reports`, an approved tree; and the reports seen. */
+function unknownMigrations(ref, checkout, { refs = [], reports = true } = {}) {
   let missing = migrationBlobs(ref, checkout);
-  const { seen, approved } = approvals(checkout);
   const drop = (source) => {
     const known = new Set(migrationBlobs(source, checkout));
     missing = missing.filter((entry) => !known.has(entry));
     return missing.length === 0;
   };
   const names = () => missing.map((entry) => entry.slice(entry.indexOf(' ') + 1));
-  if (missing.length === 0 || drop(ORIGIN_MAIN)) return { missing: [], seen };
+  if (missing.length === 0 || drop(ORIGIN_MAIN)) return { missing: [], seen: 'none' };
+  for (const r of refs) if (drop(r)) return { missing: [], seen: 'none' };
+  if (!reports) return { missing: names(), seen: 'none' };
+  const { seen, approved } = approvals(checkout);
   for (const sha of new Set(approved)) if (drop(sha)) return { missing: [], seen };
-  if (remoteRefs) {
-    const refs = git(['for-each-ref', '--format=%(refname)', 'refs/remotes/origin/'], {
-      cwd: checkout
-    });
-    for (const r of (refs || '').split('\n').filter(Boolean)) {
-      if (!r.endsWith('/HEAD') && drop(r)) return { missing: [], seen };
-    }
-  }
   return { missing: names(), seen };
 }
 
@@ -1589,7 +1638,7 @@ function migrationsApproved(checkout) {
   }
   const head = migrationTree('HEAD', checkout);
   if (head === null) return null;
-  const { missing, seen } = unknownMigrations('HEAD', checkout, { remoteRefs: false });
+  const { missing, seen } = unknownMigrations('HEAD', checkout);
   if (missing.length === 0) return null;
   return {
     id: 'migration-unapproved',
@@ -1619,7 +1668,10 @@ function pushArgs(rest) {
     else if (t === '--delete' || t === '-d') remove = true;
     else if (!t.startsWith('-')) positional.push(t);
   }
-  return { dryRun, wide, remove, refspecs: positional.slice(1) };
+  const refspecs = positional.slice(1);
+  // The matching refspec pushes every branch with a same-name remote branch.
+  if (refspecs.some((r) => r === ':' || r === '+:')) wide = true;
+  return { dryRun, wide, remove, remote: positional[0] ?? null, refspecs };
 }
 
 /** Returns `[source, destination]` of a refspec without its `+`; a bare
@@ -1637,23 +1689,116 @@ function resolveCommit(source, checkout) {
   return out === null || !out.trim() ? null : out.trim();
 }
 
-/** Returns null when the pushed migrations of `source` (`sha`) write nothing
- * unapproved, else a verdict. */
-function judgePushSource(source, sha, checkout) {
-  const upstream = `${source}@{u}`;
-  const hasUpstream =
-    git(['rev-parse', '--verify', '--quiet', upstream], { cwd: checkout }) !== null;
-  const base = migrationTree(hasUpstream ? upstream : ORIGIN_MAIN, checkout);
+/** Returns the current branch of `checkout`, or null when HEAD is detached
+ * or git fails. */
+function currentBranch(checkout) {
+  const out = git(['rev-parse', '--abbrev-ref', 'HEAD'], { cwd: checkout });
+  const name = out === null ? '' : out.trim();
+  return name && name !== 'HEAD' ? name : null;
+}
+
+/** True when the push config sends the push `args` somewhere its refspecs do
+ * not name: `remote.origin.mirror`, or, with no refspec, `push.default=matching`
+ * or a `remote.origin.push`, or, for a bare-name refspec, a `remote.origin.push`
+ * or `push.default=upstream`. */
+function pushConfigWide(args, checkout) {
+  const out = git(
+    [
+      'config',
+      '--get-regexp',
+      '^(push\\.default|remote\\.origin\\.push|remote\\.origin\\.mirror)$'
+    ],
+    { cwd: checkout }
+  );
+  if (out === null) return false;
+  const config = new Map();
+  for (const line of out.split('\n').filter(Boolean)) {
+    const [key, value = ''] = line.trim().split(/\s+/, 2);
+    config.set(key, value.trim());
+  }
+  const toOrigin = args.remote === null || args.remote === 'origin';
+  const originPush = toOrigin && config.has('remote.origin.push');
+  if (toOrigin && /^(?:true|yes|on|1)$/i.test(config.get('remote.origin.mirror') || '')) {
+    return true;
+  }
+  if (!args.refspecs.length) return originPush || config.get('push.default') === 'matching';
+  const bareName = args.refspecs.some((r) => !r.includes(':'));
+  return bareName && (originPush || config.get('push.default') === 'upstream');
+}
+
+/** Returns the refs/remotes/origin/<branch> that a push of `refspec` (null:
+ * no refspec) to `remote` updates, or null when it names none. */
+function destinationRef(remote, refspec, checkout) {
+  if (remote !== null && remote !== 'origin') return null;
+  let name;
+  if (refspec === null) {
+    const target = git(['rev-parse', '--symbolic-full-name', '@{push}'], { cwd: checkout });
+    if (target !== null && /^refs\/remotes\/origin\/.+$/.test(target.trim())) {
+      return target.trim();
+    }
+    if (remote === null) return null;
+    name = currentBranch(checkout);
+  } else {
+    name = splitRefspec(refspec)[1];
+    if (name === 'HEAD') name = currentBranch(checkout);
+  }
+  if (name === null) return null;
+  name = name.replace(/^(?:refs\/)?heads\//, '');
+  if (!name || name.startsWith('refs/')) return null;
+  return `refs/remotes/origin/${name}`;
+}
+
+/** True when `.check-cache.json` of `checkout` holds a CI credit of `sha`'s
+ * tree. */
+function ciCredited(sha, checkout) {
+  const cache = readCache(undefined, checkout);
+  const key = commitKey(sha, checkout);
+  return Boolean(cache && cache.by === 'ci' && key !== null && cache.key === key);
+}
+
+/** True for a push source that names the same commit in every checkout of
+ * the repository: a branch, a tag, a remote ref or a sha. */
+function repositorySource(source, checkout) {
+  // `--symbolic-full-name HEAD` prints the current branch (measured 2026-10-22),
+  // so HEAD and the pseudo-refs are refused by name first.
+  if (source === '@' || /[~^:]|@\{|(?:^|[/_])HEAD$/.test(source)) return false;
+  const full = git(['rev-parse', '--symbolic-full-name', source], { cwd: checkout });
+  if (full !== null && /^refs\/(?:heads|tags|remotes)\//.test(full.trim())) return true;
+  return /^[0-9a-f]{7,40}$/i.test(source);
+}
+
+/** Returns null when the pushed migrations of `source` (`sha`) to `dest`
+ * write nothing unapproved, else a verdict. */
+function judgePushSource(source, sha, dest, checkout) {
+  const base = migrationTree(ORIGIN_MAIN, checkout);
   const head = migrationTree(sha, checkout);
   if (base === null || head === null || base === head) return null;
-  const { missing, seen } = unknownMigrations(sha, checkout, { remoteRefs: true });
+  if (dest !== null && migrationTree(dest, checkout) === head) return null;
+  const main = dest === ORIGIN_MAIN;
+  if (main && ciCredited(sha, checkout)) return null;
+  const { missing, seen } = unknownMigrations(sha, checkout, { refs: dest ? [dest] : [] });
   if (missing.length === 0) return null;
   return {
     id: 'migration-push-unapproved',
-    message: MSG.migrationPushUnapproved(source, missing, seen)
+    message: MSG.migrationPushUnapproved(source, missing, seen, main ? checkout : null)
   };
 }
 
+const PUSH_WIDE = { id: 'migration-push-wide', message: MSG.migrationPushWide };
+
+const pushUnresolved = (source) => ({
+  id: 'migration-push-unresolved',
+  message: MSG.migrationPushUnresolved(source)
+});
+
+const pushUnpinned = (source, why) => ({
+  id: 'migration-push-unpinned',
+  message: MSG.migrationPushUnpinned(source, why)
+});
+
+const DEPENDS = 'its source depends on the checkout';
+
+/** Judges the one plain push of a command against its pinned checkout. */
 function evaluateGitPushMigrations(info, cwd) {
   const { subcommand, rest } = gitSubcommand(info.tokens);
   if (subcommand !== 'push') return null;
@@ -1661,35 +1806,122 @@ function evaluateGitPushMigrations(info, cwd) {
   if (args.dryRun) return null;
   const checkout = segmentCheckout(info, cwd);
   if (checkout === null) return null;
-  if (args.wide) return { id: 'migration-push-wide', message: MSG.migrationPushWide };
+  if (args.wide) return PUSH_WIDE;
   if (args.remove) return null;
-  const sources = args.refspecs.length
-    ? args.refspecs.map((r) => splitRefspec(r)[0]).filter(Boolean)
-    : ['HEAD'];
-  for (const source of sources) {
+  if (pushConfigWide(args, checkout)) return PUSH_WIDE;
+  for (const refspec of args.refspecs.length ? args.refspecs : [null]) {
+    const source = refspec === null ? 'HEAD' : splitRefspec(refspec)[0];
+    // An empty source with a destination deletes it; `:` is wide above.
+    if (!source) continue;
     const sha = resolveCommit(source, checkout);
-    if (sha === null) {
-      return { id: 'migration-push-unresolved', message: MSG.migrationPushUnresolved(source) };
-    }
-    const verdict = judgePushSource(source, sha, checkout);
+    if (sha === null) return pushUnresolved(source);
+    const dest = destinationRef(args.remote, refspec, checkout);
+    const verdict = judgePushSource(source, sha, dest, checkout);
     if (verdict) return verdict;
   }
   return null;
 }
 
-function evaluateMigrationPush(sanitized, segList, cwd, raw) {
+/** Judges a push in a command that is not one plain push: its checkout is
+ * not pinned, so only a named source with no new file passes. */
+function judgeUnpinnedPush(tokens, cwd, hidden) {
+  const { rest } = gitSubcommand(tokens);
+  const args = pushArgs(rest);
+  if (args.dryRun) return null;
+  if (args.wide) return PUSH_WIDE;
+  if (args.remove) return null;
+  // An erased quoted span, a substitution or xargs adds refspecs the hook cannot read.
+  if (hidden) return pushUnpinned(args.refspecs.join(' ') || 'HEAD', DEPENDS);
+  const refspecs = args.refspecs.length ? args.refspecs : [null];
+  // An empty source with a destination deletes it; `:` is wide above.
+  const live = refspecs.filter((r) => r === null || splitRefspec(r)[0]);
+  if (!live.length) return null;
+  const base = cwd || repoRoot();
+  const checkout = toplevelOf(gitDirOf(tokens, base)) ?? toplevelOf(base);
+  if (checkout === null) return null;
+  if (pushConfigWide(args, checkout)) return PUSH_WIDE;
+  if (migrationTree(ORIGIN_MAIN, checkout) === null) return null;
+  for (const refspec of live) {
+    const [source, target] = refspec === null ? ['HEAD', null] : splitRefspec(refspec);
+    const sha = resolveCommit(source, checkout);
+    if (sha === null) return pushUnresolved(source);
+    if (!repositorySource(source, checkout) || target === 'HEAD' || target === '@') {
+      return pushUnpinned(source, DEPENDS);
+    }
+    const dest = destinationRef(args.remote, refspec, checkout);
+    const { missing } = unknownMigrations(sha, checkout, {
+      refs: dest ? [dest] : [],
+      reports: false
+    });
+    if (missing.length) {
+      return pushUnpinned(
+        source,
+        `${missing.join(', ')} is on neither origin/main nor the branch it updates`
+      );
+    }
+  }
+  return null;
+}
+
+/** True when the push in `segment` takes refspecs that the sanitised text
+ * does not show: an erased quoted span after `push` (`quotedSegs` keeps it
+ * as `QUOTED`), a `$(` or backtick in its statement, or `xargs`. */
+function pushHasHiddenArgs(segment, sanitized, quotedSegs) {
+  const t = tokensOf(segment);
+  const key = t.join(' ');
+  const quoted = quotedSegs
+    .map(tokensOf)
+    .find((q) => q.filter((x) => x !== QUOTED).join(' ') === key);
+  if (quoted && quoted.slice(quoted.indexOf('push') + 1).includes(QUOTED)) return true;
+  const statements = sanitized.split(/&&|\|\||;|\||&|\n/);
+  if (statements.some((s) => s.includes(segment) && /\$\(|`/.test(s))) return true;
+  const at = t.indexOf('push');
+  return t
+    .slice(0, at === -1 ? t.length : at)
+    .some((x) => programName(x).split('/').pop() === 'xargs');
+}
+
+function evaluateMigrationPush(sanitized, segList, cwd, raw, quotedSegs) {
   let write = false;
+  const pushes = [];
   for (const segment of segList) {
     const info = segmentInfo(segment);
     if (!info) continue;
+    const found = (tokens) => pushes.push({ tokens, program: 'git', segment });
     if (info.program === 'git') {
-      const verdict = evaluateGitPushMigrations(info, cwd);
-      if (verdict) return verdict;
-      if (gitRunsCommand(info) && namesMigrationWrite(info.tokens)) write = true;
+      const { subcommand } = gitSubcommand(info.tokens);
+      if (subcommand === 'push') {
+        found(info.tokens);
+      } else if (subcommand && subcommand.startsWith('-')) {
+        // A global option with a separate value hides the sub-command.
+        const at = info.tokens.indexOf('push', 1);
+        if (at !== -1) found(['git', 'push', ...info.tokens.slice(at + 1)]);
+        if (namesMigrationWrite(info.tokens)) write = true;
+      } else if (gitRunsCommand(info)) {
+        const hidden = hiddenPush(info.tokens, 1);
+        if (hidden) found(hidden);
+        if (namesMigrationWrite(info.tokens)) write = true;
+      }
       continue;
     }
-    if (writesTestMigrations(info)) write = true;
-    else if (!isReaderSegment(info) && namesMigrationWrite(info.tokens)) write = true;
+    if (writesTestMigrations(info)) {
+      write = true;
+    } else if (!isReaderSegment(info)) {
+      if (namesMigrationWrite(info.tokens)) write = true;
+      const hidden = hiddenPush(info.tokens, 0);
+      if (hidden) found(hidden);
+    }
+  }
+  const pinned = pushes.length === 1 && plainPush(sanitized, raw);
+  for (const push of pushes) {
+    const verdict = pinned
+      ? evaluateGitPushMigrations(push, cwd)
+      : judgeUnpinnedPush(
+          push.tokens,
+          cwd,
+          pushHasHiddenArgs(push.segment, sanitized, quotedSegs)
+        );
+    if (verdict) return verdict;
   }
   if (!write) return null;
   const plain = plainWrite(sanitized, cwd, raw);
@@ -2582,7 +2814,7 @@ guard(() => {
   const cloudPush = evaluateCloudPush(segList, cwd);
   if (cloudPush) return deny(event, cloudPush.message);
 
-  const migrationPush = evaluateMigrationPush(sanitized, segList, cwd, rawCommand);
+  const migrationPush = evaluateMigrationPush(sanitized, segList, cwd, rawCommand, quotedSegs);
   if (migrationPush) return deny(event, migrationPush.message);
 
   const stackLock = evaluateStackLock(segList, cwd);

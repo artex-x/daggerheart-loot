@@ -4332,6 +4332,16 @@ async function testCheckFast() {
       );
     }
     {
+      // The matching refspec updates main too; rule 2r denies it as wide
+      // before rule 2x, which reads it as main (mainPushSources).
+      const result = push('git push origin :');
+      check(
+        '#323 the matching refspec "git push origin :" is denied',
+        isDeny(result) && denyReason(result).includes('--all'),
+        denyReason(result)
+      );
+    }
+    {
       const result = push('git push -u origin claude/fast-task');
       check(
         '#323 a push of the task branch is not judged by 2x',
@@ -5976,7 +5986,11 @@ function testReviewerGuards() {
 
 // ---------- bash-guard.mjs rule 2r: a migration push after an approving review (#298) ----------
 
-function testMigrationPush() {
+async function testMigrationPush() {
+  const saved = [process.env.LOOT_HOOK_ROOT, process.env.LOOT_HOOK_STATE_DIR];
+  process.env.LOOT_HOOK_ROOT = scratchRoot;
+  process.env.LOOT_HOOK_STATE_DIR = scratchState;
+  const { writeCache, commitKey } = await importTreeKey();
   const originalBranch = gitSh(['rev-parse', '--abbrev-ref', 'HEAD']).trim();
   const originalHead = gitSh(['rev-parse', 'HEAD']).trim();
   const reviews = path.join(scratchRoot, 'issues', 'x', 'reviews');
@@ -6115,6 +6129,25 @@ function testMigrationPush() {
         denyReason(result)
       );
     }
+    // #359 - only a batch review approves; a plan review and a report with
+    // no Scope: line approve nothing, on both paths.
+    report('plan-B10.md', `Verdict: approve\nReviewed: ${c3}\nScope: plan before B10\n`);
+    report('noscope.md', `Verdict: approve\nReviewed: ${c3}\n`);
+    scriptsDenied('#359 a plan review or a report with no Scope: line approves nothing', [
+      'plan-B10.md: approve (plan before B10; only a batch review counts)',
+      'noscope.md: approve (no Scope: line; only a batch review counts)',
+      '20261102120000_second.sql'
+    ]);
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#359 a plan review approves no push',
+        isDeny(result) && denyReason(result).includes('plan-B10.md: approve (plan before B10'),
+        denyReason(result)
+      );
+    }
+    fs.rmSync(path.join(reviews, 'plan-B10.md'));
+    fs.rmSync(path.join(reviews, 'noscope.md'));
     report('B10.md', head('approve', c3));
     {
       const result = run('git push -u origin task-y', cloud);
@@ -6131,8 +6164,8 @@ function testMigrationPush() {
       check('#298 cloud push of the same tree: allowed', !isDeny(result), denyReason(result));
     }
 
-    // #346 - every refspec source is judged, not HEAD; per file, a blob on an
-    // origin/* ref passes, which covers a merge of origin/main.
+    // #346 - every refspec source is judged, not HEAD; per file, a blob on
+    // origin/main, on the branch's own origin ref or in an approved tree passes.
     gitSh(['checkout', '-q', '-B', 'other-x']);
     const c4 = commitFile(
       'supabase/migrations/20261105120000_other.sql',
@@ -6180,7 +6213,7 @@ function testMigrationPush() {
     {
       const result = run('git push origin other-x');
       check(
-        '#347 every file on a refs/remotes/origin/* ref: allowed',
+        "#347 every file on the branch's own origin ref: allowed",
         !isDeny(result),
         denyReason(result)
       );
@@ -6193,7 +6226,25 @@ function testMigrationPush() {
     {
       const result = run('git push -u origin task-y');
       check(
-        '#347 a merge-union tree whose files are all on origin/*: allowed',
+        "#360 a file only on another branch's origin ref denies a push",
+        isDeny(result) && denyReason(result).includes('20261105120000_other.sql'),
+        denyReason(result)
+      );
+    }
+    gitSh(['update-ref', 'refs/remotes/origin/task-y', 'HEAD']);
+    {
+      const result = run('git push -u origin task-y');
+      check(
+        '#361 a push whose files are on its own origin ref: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    // With no refspec or HEAD, the destination is the current branch's ref.
+    for (const command of ['git push origin', 'git push origin HEAD']) {
+      const result = run(command);
+      check(
+        `#361 the current branch's own origin ref counts: allowed: ${command}`,
         !isDeny(result),
         denyReason(result)
       );
@@ -6214,9 +6265,218 @@ function testMigrationPush() {
       );
     }
 
+    // #363 - a push that may change migrations is judged only as one plain
+    // command; in any other command a source that depends on the checkout,
+    // or a file on neither origin/main nor the branch it updates, denies.
+    report('B12.md', head('approve', ownSha));
+    const pushCase = (command, payload = bashPayload) =>
+      runHook('bash-guard.mjs', payload(command, { session_id: 's-migration-push' }));
+    const posixRoot = (
+      scratchPosix().includes('~') ? fs.realpathSync.native(scratchRoot) : scratchRoot
+    ).replace(/\\/g, '/');
+    for (const [command, payload] of [
+      ['git push -u origin task-y', bashPayload],
+      ['rtk git push -u origin task-y', bashPayload],
+      ['git.exe push -u origin task-y', bashPayload],
+      ['git --no-pager push -u origin task-y', bashPayload],
+      ['git push -u origin task-y 2>&1', bashPayload],
+      ['git push origin task-y > push.log', bashPayload],
+      [`git -C ${posixRoot} push -u origin task-y`, bashPayload],
+      ['cd sub && git push --dry-run origin task-y', bashPayload],
+      ['cd sub && git push origin --delete old-x', bashPayload],
+      ['cd sub && git push origin :old-x', bashPayload],
+      ['git push origin ":old-x"', bashPayload],
+      ['git push origin task-y:refs/heads/task-y', bashPayload],
+      ['cd sub && git push origin other-x', bashPayload],
+      ['git fetch origin && git push origin other-x', bashPayload],
+      ['echo git push -u origin task-y', bashPayload],
+      ['git push origin --delete old-x; git status', psPayload],
+      ['git push origin', bashPayload],
+      ['git push -o x -u origin task-y', bashPayload],
+      ['git push --follow-tags -u origin task-y', bashPayload]
+    ]) {
+      const result = pushCase(command, payload);
+      check(
+        `#363 a plain push, a dry run or a delete: allowed: ${command}`,
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    const expectPushDenied = (title, command, needles, payload = bashPayload) => {
+      const result = pushCase(command, payload);
+      const reason = denyReason(result);
+      check(
+        `${title}: ${command}`,
+        isDeny(result) && needles.every((needle) => reason.includes(needle)),
+        reason
+      );
+    };
+    for (const [command, payload] of [
+      ['cd sub && git push -u origin task-y', bashPayload],
+      ['git fetch origin && git push -u origin task-y', bashPayload],
+      ['git push -u origin task-y | tee log', bashPayload],
+      ['(git push -u origin task-y)', bashPayload],
+      ['env -C sub git push -u origin task-y', bashPayload],
+      ['sudo git push -u origin task-y', bashPayload],
+      ['X=1 git push -u origin task-y', bashPayload],
+      ['git -c push.default=current push -u origin task-y', bashPayload],
+      ['git --git-dir=.git push -u origin task-y', bashPayload],
+      ['git --work-tree=. push -u origin task-y', bashPayload],
+      ['git --bare push -u origin task-y', bashPayload],
+      ['git -C ~/x push -u origin task-y', bashPayload],
+      ['git push -u origin "task-y"', bashPayload],
+      ['git submodule foreach git push -u origin task-y', bashPayload],
+      ['git --git-dir .git push -u origin task-y', bashPayload],
+      ['git --work-tree . push -u origin task-y', bashPayload],
+      ['git --exec-path=/x push -u origin task-y', bashPayload],
+      ['Set-Location sub; git push -u origin task-y', psPayload],
+      ['git push -u origin task-y; git status', psPayload],
+      // An inert quoted word is read as the shell reads it: task-y is judged.
+      ['git push origin "task-y":claude/x', bashPayload],
+      ['/usr/bin/git push -u origin task-y', bashPayload]
+    ]) {
+      expectPushDenied(
+        '#363 a push in a command that is not one plain push denies, approved or not',
+        command,
+        ['cannot tell which checkout', '20261106120000_own.sql'],
+        payload
+      );
+    }
+    for (const command of [
+      'cd sub && git push',
+      'git fetch origin && git push origin HEAD',
+      'git push origin HEAD:refs/heads/x | tee log',
+      'cd sub && git push origin @',
+      'cd sub && git push origin task-y~1:refs/heads/x',
+      'cd sub && git push origin task-y:HEAD',
+      'git push origin "$(git rev-parse HEAD)":claude/x',
+      // A refspec that the sanitiser erases, or that a substitution or
+      // xargs supplies, beside a named one.
+      'git push origin other-x "$(git branch --show-current)"',
+      'git push origin other-x $(git branch --show-current)',
+      'git push origin other-x `git branch --show-current`',
+      'git push origin other-x "HEAD~0:refs/heads/claude/z"',
+      'git push origin other-x "+task-y"',
+      'git push origin other-x "task-y@{0}:refs/heads/claude/z"',
+      'echo task-y | xargs git push origin other-x'
+    ]) {
+      expectPushDenied(
+        '#363 a source or destination that depends on the checkout denies',
+        command,
+        ['depends on the checkout']
+      );
+    }
+    expectPushDenied(
+      '#363 an unknown name does not resolve',
+      'cd sub && git push origin no-such-branch',
+      ['does not resolve']
+    );
+    for (const command of ['git push origin :', 'cd sub && git push origin :']) {
+      expectPushDenied('#363 the matching refspec is wide', command, ['--all']);
+    }
+    {
+      const result = pushCase('git push origin +:');
+      check('#363 the matching refspec with a force is denied', isDeny(result), result.stdout);
+    }
+    // Push config that sends a push where its refspecs do not say is wide.
+    for (const [key, value, command] of [
+      ['remote.origin.mirror', 'true', 'git push origin task-y'],
+      ['remote.origin.push', 'refs/heads/*:refs/heads/*', 'git push origin task-y'],
+      ['push.default', 'upstream', 'git push origin task-y'],
+      ['push.default', 'upstream', 'cd sub && git push origin other-x']
+    ]) {
+      gitSh(['config', key, value]);
+      try {
+        expectPushDenied(`#363 ${key}=${value} is wide`, command, ['--all']);
+      } finally {
+        spawnSync('git', ['config', '--unset', key], { cwd: scratchRoot });
+      }
+    }
+    gitSh(['config', 'push.default', 'upstream']);
+    try {
+      const result = pushCase('git push origin task-y:refs/heads/task-y');
+      check(
+        '#363 push.default=upstream leaves a refspec with a destination alone',
+        !isDeny(result),
+        denyReason(result)
+      );
+    } finally {
+      spawnSync('git', ['config', '--unset', 'push.default'], { cwd: scratchRoot });
+    }
+    fs.rmSync(path.join(reviews, 'B12.md'));
+    expectPushDenied(
+      '#363 a URL remote has no destination ref',
+      'git push https://example.invalid/r.git task-y',
+      ['20261105120000_other.sql']
+    );
+
+    // #364 - the trade-off: a named push that adds no new file passes in any
+    // command, and a bare push in a chain denies also when it changes nothing.
+    gitSh(['checkout', '-q', '-B', 'clean-x', c3]);
+    {
+      const result = pushCase('git fetch origin && git push -u origin clean-x');
+      check(
+        '#364 a chained named push with every file on origin/main: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    expectPushDenied('#364 a chained bare push denies', 'git fetch origin && git push', [
+      'depends on the checkout'
+    ]);
+    gitSh(['checkout', '-q', 'task-y']);
+
+    // #365 - the upstream is no base: a branch whose upstream is another
+    // branch's origin ref is judged against origin/main and its own ref.
+    // `git remote remove` deletes the origin refs, so finally puts them back.
+    const originRefs = ['main', 'other-x', 'task-y'].map((b) => [
+      `refs/remotes/origin/${b}`,
+      gitSh(['rev-parse', `refs/remotes/origin/${b}`]).trim()
+    ]);
+    gitSh(['remote', 'add', 'origin', 'https://example.invalid/r.git']);
+    try {
+      gitSh(['branch', '-q', 'carry-x', c4]);
+      gitSh(['config', 'branch.carry-x.remote', 'origin']);
+      gitSh(['config', 'branch.carry-x.merge', 'refs/heads/other-x']);
+      expectPushDenied(
+        '#365 an upstream on another branch is no source',
+        'git push origin carry-x',
+        ['20261105120000_other.sql']
+      );
+      gitSh(['config', 'branch.task-y.remote', 'origin']);
+      gitSh(['config', 'branch.task-y.merge', 'refs/heads/task-y']);
+      {
+        const result = pushCase('git push');
+        const reason = denyReason(result);
+        check(
+          '#365 a bare push follows @{push}: its own ref covers other.sql',
+          isDeny(result) &&
+            reason.includes('20261106120000_own.sql') &&
+            !reason.includes('20261105120000_other.sql'),
+          reason
+        );
+      }
+      report('B12.md', head('approve', ownSha));
+      {
+        const result = pushCase('git push');
+        check(
+          '#365 a bare push with an approving report: allowed',
+          !isDeny(result),
+          denyReason(result)
+        );
+      }
+    } finally {
+      fs.rmSync(path.join(reviews, 'B12.md'), { force: true });
+      for (const key of ['branch.task-y.remote', 'branch.task-y.merge']) {
+        spawnSync('git', ['config', '--unset', key], { cwd: scratchRoot });
+      }
+      spawnSync('git', ['remote', 'remove', 'origin'], { cwd: scratchRoot });
+      for (const [ref, sha] of originRefs) gitSh(['update-ref', ref, sha]);
+      spawnSync('git', ['branch', '-q', '-D', 'carry-x'], { cwd: scratchRoot });
+    }
+
     // #353 - a script write is judged per file, and a file only on another
-    // refs/remotes/origin/* ref is unknown to it; the push of the same tree
-    // takes that ref (#347 above).
+    // branch's origin ref is unknown to it and to a push (#360).
     scriptsDenied(
       '#353 a file only on another origin/* ref denies a script write',
       ['20261105120000_other.sql', '20261106120000_own.sql', 'git fetch origin'],
@@ -6446,6 +6706,8 @@ function testMigrationPush() {
       `git submodule foreach ${W}`,
       `git rebase -x ${W} HEAD~1`,
       `git rebase --exec ${W} HEAD~1`,
+      // A global option with a separate value hides the sub-command.
+      `git --git-dir .git bisect run ${W}`,
       // win32 opens a name without case.
       'node --env-file=.env.test.local copy/tools/supabase/DB-PUSH.mjs --project test --yes',
       'env -C sub node tools/supabase/Migrate-Test.mjs',
@@ -6519,12 +6781,63 @@ function testMigrationPush() {
     scriptsDenied('#356 a known blob under a new name denies a script write', [
       '20261108120000_copy.sql'
     ]);
+
+    // #362 - a push that updates main with files unknown to origin/main
+    // passes only as a plain push with a CI credit of the source's tree.
+    const tip = gitSh(['rev-parse', 'HEAD']).trim();
+    const mainDenied = (title, command, needles) =>
+      expectPushDenied(title, command, ['20261108120000_copy.sql', ...needles]);
+    mainDenied('#362 a push of main without a credit', 'git push origin HEAD:main', [
+      'ci-credit.mjs'
+    ]);
+    writeCache(commitKey(tip), '.check-cache.json', 'ci run 1', 'ci');
+    {
+      const result = pushCase('git push origin HEAD:main');
+      check(
+        '#362 a push of main with a CI credit: allowed',
+        !isDeny(result),
+        denyReason(result)
+      );
+    }
+    mainDenied(
+      '#362 the credit counts for main only',
+      'git push origin HEAD:refs/heads/claude/z',
+      []
+    );
+    mainDenied(
+      '#362 the credit counts only for the plain push',
+      'git fetch origin && git push origin task-y:main',
+      ['cannot tell which checkout']
+    );
+    writeCache(commitKey(tip), '.check-cache.json', 'npm run check', 'exit');
+    mainDenied('#362 a local check is no credit for rule 2r', 'git push origin HEAD:main', [
+      'ci-credit.mjs'
+    ]);
+    writeCache(commitKey(c3), '.check-cache.json', 'ci run 2', 'ci');
+    mainDenied('#362 a stale credit denies', 'git push origin HEAD:main', []);
+    clearCache();
   } finally {
-    for (const ref of ['refs/remotes/origin/main', 'refs/remotes/origin/other-x']) {
+    clearCache();
+    ['LOOT_HOOK_ROOT', 'LOOT_HOOK_STATE_DIR'].forEach((name, i) => {
+      if (saved[i] === undefined) Reflect.deleteProperty(process.env, name);
+      else process.env[name] = saved[i];
+    });
+    for (const ref of [
+      'refs/remotes/origin/main',
+      'refs/remotes/origin/other-x',
+      'refs/remotes/origin/task-y'
+    ]) {
       spawnSync('git', ['update-ref', '-d', ref], { cwd: scratchRoot });
     }
     gitSh(['checkout', '-q', originalBranch]);
-    for (const branch of ['task-y', 'other-x', 'own-only', 'origin/main']) {
+    for (const branch of [
+      'task-y',
+      'other-x',
+      'own-only',
+      'origin/main',
+      'clean-x',
+      'carry-x'
+    ]) {
       spawnSync('git', ['branch', '-q', '-D', branch], { cwd: scratchRoot });
     }
     // A soft reset keeps the working tree, so the dirty baseline survives.
@@ -6780,7 +7093,7 @@ async function main() {
     await testPersistenceGuards();
     testHostGuards();
     testReviewerGuards();
-    testMigrationPush();
+    await testMigrationPush();
     await testWorktreeGates();
     testLongCheck();
     testBackgroundCheck();
