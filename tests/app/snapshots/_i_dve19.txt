@@ -25,17 +25,18 @@ RootWebArea "Уголёк - Генератор лута Daggerheart" [url=#/i/dv
     link "показать в таблице" [url=#/tables/dragons_vault/dve19]
     button "Страница"
     StaticText "96"
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Искра" [url=#/i/dve20]
-    StaticText "Пылает"
     StaticText ", она должна отметить 1 Рану во время своей активации."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -63,6 +64,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -93,17 +95,18 @@ RootWebArea "Ember - Daggerheart Loot Generator" [url=#/i/dve19]
     link "show in the table" [url=#/tables/dragons_vault/dve19]
     button "Page"
     StaticText "96"
-    ... StaticText x20 of 24 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Spark" [url=#/i/dve20]
-    StaticText "Ablaze"
     StaticText ", they must mark 1 HP when spotlighted."
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -125,6 +128,7 @@ Page
 Print
 Privacy
 RU
+Save to my items
 Search
 Share
 Sign in

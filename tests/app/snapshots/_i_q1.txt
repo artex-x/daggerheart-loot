@@ -25,10 +25,9 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=#/i/q1]
     link "показать в таблице" [url=#/tables/eq_weapon/q1]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "РАНГ"
     StaticText "1"
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
     button "Продвинутый Палаш" [description=Продвинутый Палаш]
@@ -38,6 +37,8 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=#/i/q1]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -66,6 +67,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -97,10 +99,9 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=#/i/q1]
     link "show in the table" [url=#/tables/eq_weapon/q1]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x10 of 14 same-shape siblings elided
+    ... StaticText x11 of 15 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "TIER"
     StaticText "1"
     button "Improved Broadsword" [description=Improved Broadsword]
     button "Advanced Broadsword" [description=Advanced Broadsword]
@@ -110,6 +111,8 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=#/i/q1]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -134,6 +137,7 @@ Page
 Print
 Privacy
 RU
+Save to my items
 Search
 Share
 Sign in

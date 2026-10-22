@@ -26,7 +26,7 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=index.ht
     link "показать в таблице" [url=index.html?as=gm1#/tables/eq_weapon/q1]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
@@ -34,13 +34,14 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=index.ht
     button "Легендарный Палаш" [description=Легендарный Палаш]
     link "Топор Тлеющих Углей (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000000511]
     link "Комплект Ольхи" [url=index.html?as=gm1#/homebrew/sets/hb_aldersetaaaaaaaa]
-    StaticText ":"
     StaticText " Два предмета комплекта: +1 к Уклонению."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -70,6 +71,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -102,7 +104,7 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/
     link "show in the table" [url=index.html?as=gm1#/tables/eq_weapon/q1]
     button "Page"
     StaticText "PRIMARY WEAPON"
-    ... StaticText x15 of 19 same-shape siblings elided
+    ... StaticText x16 of 20 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     button "Improved Broadsword" [description=Improved Broadsword]
@@ -110,13 +112,14 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/
     button "Legendary Broadsword" [description=Legendary Broadsword]
     link "Ember Axe (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000000511]
     link "Alder Set" [url=index.html?as=gm1#/homebrew/sets/hb_aldersetaaaaaaaa]
-    StaticText ":"
     StaticText " Two pieces of the set: +1 to Evasion."
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original.]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -144,6 +147,7 @@ Page
 Print
 Privacy
 RU
+Save to my items
 Search
 Share
 Skip to content

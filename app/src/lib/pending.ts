@@ -3,13 +3,15 @@
  * (docs/specs/STATE.md), so it is read back as untrusted data.
  * Pure module. docs/specs/FEATURES.md, "Account". */
 
+import { isHomebrewKey } from './homebrew.js';
 import { printEntriesValid, type PrintSetEntry } from './printSet.js';
 
 /** An action a signed-out reader started and a sign-in finishes: reopen the add-to-list
  *  menu of `key` with `ids` ticked (and their taken counts) and, when the reader had typed
  *  one, a new list's `name` in its create slot; save the open shared list (`#/l/` or
- *  `#/s/`); save a copy of the homebrew item `hid` («Сохранить себе»); or make a print set
- *  of `entries` (`print`; `cut` counts the records past the 180-card cap). */
+ *  `#/s/`); save a copy of the homebrew item `hid` or of the catalog record `id`
+ *  («Сохранить себе»); or make a print set of `entries` (`print`; `cut` counts the records
+ *  past the 180-card cap). */
 export type PendingAction =
   | {
       do: 'addToList';
@@ -20,6 +22,7 @@ export type PendingAction =
     }
   | { do: 'saveList' }
   | { do: 'saveItem'; hid: string }
+  | { do: 'saveItem'; id: string }
   | { do: 'print'; entries: PrintSetEntry[]; cut?: number };
 
 /** Where a sign-in returns to, and what it finishes there. */
@@ -78,8 +81,14 @@ export function readPending(v: unknown): PendingAction | null {
   if (r['do'] === 'saveList') return { do: 'saveList' };
   if (r['do'] === 'print') return readPrintAction(r);
   if (r['do'] === 'saveItem') {
-    const hid = r['hid'];
-    return typeof hid === 'string' && UUID.test(hid) ? { do: 'saveItem', hid } : null;
+    const { hid, id } = r;
+    if (hid !== undefined && id !== undefined) return null;
+    if (hid !== undefined) {
+      return typeof hid === 'string' && UUID.test(hid) ? { do: 'saveItem', hid } : null;
+    }
+    return typeof id === 'string' && ID.test(id) && !isHomebrewKey(id)
+      ? { do: 'saveItem', id }
+      : null;
   }
   if (r['do'] !== 'addToList') return null;
   const { key, ids, picked, name } = r;

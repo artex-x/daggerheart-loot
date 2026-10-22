@@ -1079,7 +1079,6 @@ const ru = {
   itemFrom: 'Предмет другого игрока',
   itemFailed: 'Предмет не загрузился',
   saveItem: 'Сохранить себе',
-  saveItemDone: 'Сохранено',
   saveItemNote: 'Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.',
   saveItemNoteList:
     'Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут вести на неё.',
@@ -2090,7 +2089,6 @@ const en: Dict = {
   itemFrom: "Another player's item",
   itemFailed: 'The item did not load',
   saveItem: 'Save to my items',
-  saveItemDone: 'Saved',
   saveItemNote: 'The copy goes to "Homebrew" and no longer changes with the original.',
   saveItemNoteList:
     'The copy goes to "Homebrew", and the rows of your lists that hold this item will point to it.',

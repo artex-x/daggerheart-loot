@@ -302,9 +302,12 @@ All of them except the five `schema/` files are generated from `data.js` by
   `hb_` and 16 characters of `a-z2-7` from the FNV-1a 128 hash of the
   account's user id and the old key; a section keeps its key while its
   source keeps its own, and every `hb_` reference of the file follows. So
-  the same file imported again finds its keys held, and «Сохранить себе»
-  and the lists file import (`import-v2`) take the same keys
+  the same file imported again finds its keys held, and the lists file
+  import (`import-v2`) takes the same keys
   (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
+  «Сохранить себе» gives its item a new key at each press, and the set and
+  rule cards it copies keep their derived keys
+  (`docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md`).
   The file format does not change. `llms.txt` and this section carry the
   rule; the frozen schemas' descriptions keep their published wording
   (`import-v2.json` and `import-v3.json`, entry `source`: "An account that

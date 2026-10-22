@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000201 ~ axe saved as gm2
 # route: #/lists/00000000-0000-4000-8000-000000000201
-# why: «Сохранить себе» pressed in the axe's modal: the row moves to the copy's derived key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)
+# why: «Сохранить себе» pressed in the axe's modal: the row moves to the copy's new key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)
 # as: gm2
 
 ## ru :: tree
@@ -74,7 +74,7 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/li
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
     StaticText "Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ..." [namelen=92 namehash=1cbb3319]
-    link "Изменить" [url=index.html?as=gm2#/homebrew/hb_hhwsesekhtl7h4m5]
+    link "Изменить" [url=index.html?as=gm2#/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## ru :: controls
 EN
@@ -198,7 +198,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
     StaticText "Item "Ember Axe" saved to My items; the rows of your lists now p..." [namelen=80 namehash=ff01fffd]
-    link "Edit" [url=index.html?as=gm2#/homebrew/hb_hhwsesekhtl7h4m5]
+    link "Edit" [url=index.html?as=gm2#/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## en :: controls
 Account: gm2@example.test

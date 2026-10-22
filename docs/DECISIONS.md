@@ -19,6 +19,7 @@ deleted.
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
 - 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)
 - 2026-10-21 - [A worktree gets the test env file at creation; db:push uses the pooler](decisions/2026-10-21-a-worktree-gets-the-test-env-file-and-db-push-uses-the-pooler.md)
+- 2026-10-21 - [Each Save to my items press makes a new copy, also of a catalog record](decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md)
 - 2026-10-21 - [Focus moves to the control that takes the place of a removed one](decisions/2026-10-21-focus-moves-to-the-control-that-takes-the.md)
 - 2026-10-21 - [On «Обновить» a homebrew-v2 file states each card's book items](decisions/2026-10-21-on-a-homebrew-v2-file-states-each-cards.md)
 - 2026-10-21 - [Scarab Shield is a secondary weapon](decisions/2026-10-21-scarab-shield-is-a-secondary-weapon.md)
@@ -44,7 +45,7 @@ deleted.
 - 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md)
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
 - 2026-10-14 - [The configured bundle ceiling rises to 350 kB](decisions/2026-10-14-the-configured-bundle-ceiling-rises-to-350-kb.md)
-- 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md)
+- 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md) - superseded in part
 - 2026-10-08 - [A filter row offers only values the drawn rows answer, on every page](decisions/2026-10-08-a-filter-row-offers-only-values-the-drawn-rows-answer.md)
 - 2026-10-08 - [A GM-only entry is dropped by the share projection](decisions/2026-10-08-a-gm-only-entry-is-dropped-by-the-share-projection.md)
 - 2026-10-08 - [A lists file's homebrew entry may leave out its snapshot](decisions/2026-10-08-a-lists-files-homebrew-entry-may-leave-out-its-snapshot.md)

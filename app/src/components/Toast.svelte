@@ -163,6 +163,10 @@
     border: 0;
     overflow: visible;
     transform: translateX(-50%);
+    /* Left at 50%, a shrink-to-fit box gets half the window: a long name then
+       stacks the toast up over the controls (docs/specs/FEATURES.md, rule 16). */
+    width: max-content;
+    max-width: calc(100% - 32px);
     background: var(--gold);
     color: var(--ink-on-gold);
     font-weight: 650;

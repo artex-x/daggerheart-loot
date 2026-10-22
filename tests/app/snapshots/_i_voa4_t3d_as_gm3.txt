@@ -26,7 +26,7 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
     link "показать в таблице" [url=index.html?as=gm3#/tables/vault_of_ages/voa4_t3d]
     button "Страница"
     StaticText "28"
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x24 of 28 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Святой Клинок" [url=index.html?as=gm3#/i/voa4_t3e]
@@ -35,13 +35,14 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
     link "Святой Пояс (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000642]
     link "Святые Перчатки (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000644]
     button "и ещё 1" [expanded=false]
-    StaticText "Убранство Святого:"
     StaticText " Когда все предметы этого комплекта в вашей Руке, получите +1 к ..." [namelen=74 namehash=1545d78d]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -73,6 +74,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -104,7 +106,7 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=index.html?as=gm3#
     link "show in the table" [url=index.html?as=gm3#/tables/vault_of_ages/voa4_t3d]
     button "Page"
     StaticText "28"
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x24 of 28 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Saintly Blade" [url=index.html?as=gm3#/i/voa4_t3e]
@@ -113,13 +115,14 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=index.html?as=gm3#
     link "Saintly Boots (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000641]
     link "Saintly Circlet (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000643]
     button "and 1 more" [expanded=false]
-    StaticText "Saint's Ensemble:"
     StaticText " When every piece of this set is in your loadout, gain +1 Evasio..." [namelen=66 namehash=cd4678aa]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original.]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -147,6 +150,7 @@ Saintly Blade
 Saintly Boots (HB)
 Saintly Circlet (HB)
 Saintly Vestments
+Save to my items
 Search
 Share
 Skip to content

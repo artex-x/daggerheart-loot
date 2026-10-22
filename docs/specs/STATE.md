@@ -44,8 +44,8 @@ action? }`, written just before sign-in or Connect leaves for the provider
 a sign-in prompt's «Войти» led to `#/account` - the prompt's page, and
 `action` the action it started (`app/src/lib/pending.ts`: reopen the
 add-to-list menu with its rows, taken counts and typed name, save the open
-shared list, `#/l/` or `#/s/`, save a copy of a homebrew item (`saveItem`,
-the item's uuid), or make a print set of the entries the press built
+shared list, `#/l/` or `#/s/`, save a copy of a homebrew item or a catalog
+record (`saveItem`, the item's uuid as `hid` or the record's id as `id`), or make a print set of the entries the press built
 (`print`, with the count cut past 180, so the sign-in ends with the same
 cut toast a signed-in press shows)). The print set reads each item live at
 its open, so an item edited meanwhile prints as it is now and one deleted
@@ -192,7 +192,7 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the id of the item «Сохранить себе» copies now), `saveItemFor` (the id of the item a sign-in left to copy, until the item's pick row makes the copy; forgotten with the pending action) |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the uuid of the item or the id of the catalog record «Сохранить себе» copies now), `saveItemFor` (the uuid of the item or the id of the catalog record a sign-in left to copy, until its pick row makes the copy; forgotten with the pending action), and the key of a «Сохранить себе» press whose answer was lost, per user and source, in memory only and never stored (the purchase request's pattern; FEATURES.md, "Records") |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `arazo {n}`, `comm {c, n}`, `mwt {r, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg`, `homebrewShown` (the «Свои предметы» switch on search and the equipment tables: memory only, on by default, kept across pages, on again at each sign-in, never in the address or storage); on the shared list page, the query, the fold of the panel, whether the search box and the strip are drawn, and on `#/l/` the picked values (page memory, reset when another list opens; on `#/s/` the picked values are the address); the open folds of the filter rows of more than 12 values (page memory of the strip, closed when it mounts) |

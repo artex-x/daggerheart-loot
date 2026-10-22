@@ -1474,6 +1474,19 @@ describe('an own homebrew item', () => {
     app.stop();
   });
 
+  it('gives the focus to the close button when the record modal opens', async () => {
+    const app = new AppState(own());
+    app.start();
+    await flush();
+    const index = app.index;
+    const ci1 = index?.byId.get('ci1');
+    if (!index || !ci1) throw new Error('The test data has no ci1.');
+    const { container } = render(RecordModal, { app, index, it: ci1, onclose: () => {} });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Закрыть' }));
+    await expectNoA11yViolations(container);
+    app.stop();
+  });
+
   it('links an own rule card to its address as written, with the host as the text, and draws no link for an empty one', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const bare = 'hb_nourlcardaaaaaaa';

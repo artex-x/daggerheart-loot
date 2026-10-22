@@ -20,7 +20,7 @@ import {
 } from '../lib/bundle.js';
 import { linkedOf } from '../lib/cloudLists.js';
 import { nameOf } from '../lib/i18n.js';
-import { derivedKey } from '../lib/homebrew.js';
+import { derivedKey, HOMEBREW_KEY } from '../lib/homebrew.js';
 import {
   defaultTarget,
   deriveFile,
@@ -4010,7 +4010,18 @@ describe('the item page and «Сохранить себе»', () => {
   const loot: Loot = {
     items: {
       core_item: [
-        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 }
+        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 },
+        {
+          id: 'ci2',
+          src: 'core',
+          kind: 'item',
+          en: 'Ember',
+          ende: '',
+          ru: 'Уголёк',
+          rud: '',
+          roll: 2,
+          img: 'ci2.webp'
+        }
       ]
     }
   };
@@ -4095,7 +4106,24 @@ describe('the item page and «Сохранить себе»', () => {
     app.stop();
   });
 
-  it('saves a copy under the derived key and relinks every list that links the item to it, each entry kept', async () => {
+  /* The keys of the reader's own items, as the server holds them. */
+  async function ownKeys(cloud: CloudPort): Promise<string[]> {
+    const read = await cloud.homebrew.load();
+    return read.ok ? read.items.map((i) => i.key) : [];
+  }
+
+  /* The item keys each `import_homebrew` call sent. */
+  function sentKeys(cloud: CloudPort): string[] {
+    const sent: string[] = [];
+    const real = cloud.homebrew.import.bind(cloud.homebrew);
+    cloud.homebrew.import = (rows) => {
+      sent.push(...rows.items.map((i) => i.key));
+      return real(rows);
+    };
+    return sent;
+  }
+
+  it('saves a copy under a new key and relinks every list that links the item to it, each entry kept; a second press makes a second copy and relinks nothing', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     await cloud.lists.apply([
       {
@@ -4128,7 +4156,10 @@ describe('the item page and «Сохранить себе»', () => {
     expect(app.relinkTargets(record!).sort()).toEqual([GM2_LIST, SECOND].sort());
     await app.saveItem(record!);
     await app.cloudLists?.flushNow();
-    const COPY = derivedKey(SEED.users.gm2.id, AXE);
+    const [COPY] = await ownKeys(cloud);
+    if (!COPY) throw new Error('no copy');
+    expect(COPY).toMatch(HOMEBREW_KEY);
+    expect(COPY).not.toBe(derivedKey(SEED.users.gm2.id, AXE));
     expect(app.homebrew?.has(AXE)).toBe(false);
     const own = app.homebrew?.item(COPY);
     expect(own?.id).not.toBe(AXE_ID);
@@ -4146,10 +4177,24 @@ describe('the item page and «Сохранить себе»', () => {
     expect(app.toast?.action?.href).toBe('#/homebrew/' + COPY);
     expect(app.isForeignItem(record!)).toBe(true);
     expect(app.relinkTargets(record!)).toEqual([]);
+
+    const apply = vi.spyOn(cloud.lists, 'apply');
+    await app.saveItem(record!);
+    await app.cloudLists?.flushNow();
+    const keys = await ownKeys(cloud);
+    expect(keys).toHaveLength(2);
+    const SECOND_COPY = keys.find((k) => k !== COPY);
+    expect(app.homebrew?.records.map((r) => r.ru).sort()).toEqual([
+      'Топор Тлеющих Углей',
+      'Топор Тлеющих Углей (2)'
+    ]);
+    expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Топор Тлеющих Углей (2)'));
+    expect(app.toast?.action?.href).toBe('#/homebrew/' + String(SECOND_COPY));
+    expect(apply.mock.calls.flat(2).some((op) => op.op === 'relink')).toBe(false);
     app.stop();
   });
 
-  it('writes the copy and its set card under the derived keys', async () => {
+  it('writes each copy under a new key and its set card once under the derived key, which the second copy names', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const { app } = started(cloud, '#/h/' + ROLL_B);
     await flush();
@@ -4157,12 +4202,23 @@ describe('the item page and «Сохранить себе»', () => {
     const record = app.itemView?.record;
     if (!record) throw new Error('no record');
     await app.saveItem(record);
+    await app.saveItem(record);
     const GM2 = SEED.users.gm2.id;
     const read = await cloud.homebrew.load();
     if (!read.ok) throw new Error('no read');
-    expect(read.items.map((i) => i.key)).toEqual([derivedKey(GM2, 'hb_rangerrollaaaaaa')]);
-    expect(read.cards.map((c) => c.key)).toEqual([derivedKey(GM2, 'hb_starsleepsetaaaa')]);
-    expect(read.items[0]?.content.set).toBe(derivedKey(GM2, 'hb_starsleepsetaaaa'));
+    const SET = derivedKey(GM2, 'hb_starsleepsetaaaa');
+    expect(read.items).toHaveLength(2);
+    for (const item of read.items) {
+      expect(item.key).toMatch(HOMEBREW_KEY);
+      expect(item.key).not.toBe(derivedKey(GM2, 'hb_rangerrollaaaaaa'));
+      expect(item.content.set).toBe(SET);
+    }
+    expect(read.items.map((i) => i.content.ru)).toEqual([
+      'Скатка следопыта',
+      'Скатка следопыта (2)'
+    ]);
+    expect(read.items.map((i) => i.content.en)).toEqual(["Ranger's Roll", "Ranger's Roll (2)"]);
+    expect(read.cards.map((c) => c.key)).toEqual([SET]);
     app.stop();
   });
 
@@ -4214,15 +4270,15 @@ describe('the item page and «Сохранить себе»', () => {
       const apply = vi.spyOn(cloud.lists, 'apply');
       await app.saveItem(record);
       await app.cloudLists?.flushNow();
-      const COPY = derivedKey(SEED.users.gm2.id, AXE);
-      const copyId = app.homebrew?.item(COPY)?.id;
+      const [COPY] = await ownKeys(cloud);
+      const copyId = app.homebrew?.item(COPY ?? '')?.id;
       const after = await all();
       expect(after.filter((e) => e.item_key === AXE)).toEqual([]);
       const moved = after.filter((e) => e.item_key === COPY);
       const strip = (e: (typeof before)[number]) => ({ ...e, updated_at: '' });
       expect(moved.map(strip).sort((a, b) => a.id.localeCompare(b.id))).toEqual(
         before
-          .map((e) => strip({ ...e, item_key: COPY, hb_item: copyId! }))
+          .map((e) => strip({ ...e, item_key: COPY!, hb_item: copyId! }))
           .sort((a, b) => a.id.localeCompare(b.id))
       );
       const relinks = apply.mock.calls.flatMap(([ops]) => ops.filter((o) => o.op === 'relink'));
@@ -4232,7 +4288,7 @@ describe('the item page and «Сохранить себе»', () => {
     }
   );
 
-  it('makes one copy for a lost answer whose rows landed and a second press', async () => {
+  it('takes a lost answer whose copy landed as a save', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const real = cloud.homebrew.import.bind(cloud.homebrew);
     const imported = vi.fn(async (rows: Parameters<typeof real>[0]) => {
@@ -4245,12 +4301,230 @@ describe('the item page and «Сохранить себе»', () => {
     const record = app.linkedRecord(AXE);
     if (!record) throw new Error('no axe');
     await app.saveItem(record);
+    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
+    expect(await ownKeys(cloud)).toHaveLength(1);
+    app.stop();
+  });
+
+  it('sends the same key at the next press after a lost answer whose copy did not land, and makes one copy', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const sent = sentKeys(cloud);
+    const write = cloud.homebrew.import.bind(cloud.homebrew);
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const record = app.linkedRecord(AXE);
+    if (!record) throw new Error('no axe');
+    cloud.homebrew.import = (rows) => {
+      sent.push(...rows.items.map((i) => i.key));
+      return Promise.resolve({ ok: false, error: 'network' });
+    };
     await app.saveItem(record);
-    expect(imported).toHaveBeenCalledOnce();
+    expect(app.toast?.msg).toBe(ru.saveItemFailed);
+    expect(await ownKeys(cloud)).toEqual([]);
+    cloud.homebrew.import = write;
+    await app.saveItem(record);
+    await app.cloudLists?.flushNow();
+    expect(sent).toHaveLength(2);
+    expect(sent[1]).toBe(sent[0]);
+    expect(await ownKeys(cloud)).toEqual([sent[0]]);
+    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
+    app.stop();
+  });
+
+  /* A first press whose import landed but whose answer and account read were lost: the
+     copy is held without a picture, and the rows still link the author's item. */
+  async function lostFirstPress(cloud: FakeCloud) {
+    const real = cloud.homebrew.import.bind(cloud.homebrew);
+    const load = cloud.homebrew.load.bind(cloud.homebrew);
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const record = app.linkedRecord(AXE);
+    if (!record) throw new Error('no axe');
+    cloud.homebrew.import = async (r) => {
+      await real(r);
+      return { ok: false, error: 'network' };
+    };
+    cloud.homebrew.load = () => Promise.resolve({ ok: false });
+    await app.saveItem(record);
+    expect(app.toast?.msg).toBe(ru.saveItemFailed);
+    cloud.homebrew.load = load;
+    cloud.homebrew.import = real;
+    const [COPY] = await ownKeys(cloud);
+    if (!COPY) throw new Error('no copy');
+    expect(await artOf(cloud, COPY)).toBeFalsy();
+    return { app, record, COPY };
+  }
+
+  it("sends the same key at the next press after a lost answer whose copy landed: no second copy, the author's picture, the rows relinked", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const name = await ownPicture(cloud);
+    const { app, record, COPY } = await lostFirstPress(cloud);
+    const sent = sentKeys(cloud);
+    await app.saveItem(record);
+    await app.cloudLists?.flushNow();
+    expect(sent).toEqual([COPY]);
+    expect(await ownKeys(cloud)).toEqual([COPY]);
+    const copied = await artOf(cloud, COPY);
+    expect(copied).toMatch(/^p\/[0-9a-f]{32}\.webp$/);
+    expect(copied).not.toBe(name);
+    expect((await rows(cloud, GM2_LIST))?.map((e) => e.item_key)).toContain(COPY);
+    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
+    app.stop();
+  });
+
+  it('keeps the picture of a held copy that has one, and one another device set meanwhile', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    await ownPicture(cloud);
+    const { app, record, COPY } = await lostFirstPress(cloud);
     const read = await cloud.homebrew.load();
-    expect(read.ok && read.items.map((i) => i.key)).toEqual([
-      derivedKey(SEED.users.gm2.id, AXE)
-    ]);
+    const held = read.ok ? read.items.find((i) => i.key === COPY) : undefined;
+    if (!held) throw new Error('no held copy');
+    /* Another device sets a picture after this tab's read. */
+    expect((await cloud.homebrew.setArt(held.id, 'w1.webp', false)).ok).toBe(true);
+    const copyArt = vi.spyOn(cloud.homebrew, 'copyArt');
+    await app.saveItem(record);
+    await app.cloudLists?.flushNow();
+    expect(await artOf(cloud, COPY)).toBe('w1.webp');
+    expect(app.homebrew?.item(COPY)?.art).toBe('w1.webp');
+    expect(await ownKeys(cloud)).toEqual([COPY]);
+    expect(copyArt).not.toHaveBeenCalled();
+    app.stop();
+  });
+
+  it("makes no copy of the reader's own item", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const imported = vi.spyOn(cloud.homebrew, 'import');
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    await vi.waitFor(() => {
+      expect(app.homebrew?.status).toBe('ready');
+    });
+    const axe = app.homebrew?.records.find((r) => r.hid === AXE_ID);
+    if (!axe) throw new Error('no own axe');
+    await app.saveItem(axe);
+    expect(imported).not.toHaveBeenCalled();
+    expect(app.savingItem).toBeNull();
+    app.stop();
+  });
+
+  it('makes a new copy in another tab after a relink that never ran, and relinks the rows to it', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const { app: first, COPY } = await lostFirstPress(cloud);
+    first.stop();
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const record = app.linkedRecord(AXE);
+    if (!record) throw new Error('no axe');
+    expect(app.relinkTargets(record)).toEqual([GM2_LIST]);
+    await app.saveItem(record);
+    await app.cloudLists?.flushNow();
+    const keys = await ownKeys(cloud);
+    expect(keys).toHaveLength(2);
+    const NEXT = keys.find((k) => k !== COPY);
+    const listed = (await rows(cloud, GM2_LIST))?.map((e) => e.item_key);
+    expect(listed).toContain(NEXT);
+    expect(listed).not.toContain(COPY);
+    expect(listed).not.toContain(AXE);
+    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей (2)'));
+    app.stop();
+  });
+
+  it.each(['limit', 'refused'] as const)(
+    'drops the kept key at a %s, and the next press sends a new key',
+    async (error) => {
+      const cloud = fakeCloud(SEED, 'gm2');
+      const sent: string[] = [];
+      const answers = [
+        { ok: false as const, error: 'network' as const },
+        error === 'limit'
+          ? {
+              ok: false as const,
+              error: 'limit' as const,
+              key: 'homebrew_items_per_owner',
+              value: 100
+            }
+          : { ok: false as const, error: 'refused' as const },
+        { ok: false as const, error: 'network' as const }
+      ];
+      cloud.homebrew.import = (r) => {
+        sent.push(...r.items.map((i) => i.key));
+        return Promise.resolve(answers.shift() ?? { ok: false, error: 'network' });
+      };
+      const { app } = started(cloud, '#/lists/' + GM2_LIST);
+      await flush();
+      const record = app.linkedRecord(AXE);
+      if (!record) throw new Error('no axe');
+      await app.saveItem(record);
+      await app.saveItem(record);
+      expect(app.toast?.msg).toBe(
+        error === 'limit' ? ru.limitHbItems.replace('%n', '100') : ru.saveItemRefused
+      );
+      await app.saveItem(record);
+      expect(sent).toHaveLength(3);
+      expect(sent[1]).toBe(sent[0]);
+      expect(sent[2]).not.toBe(sent[0]);
+      app.stop();
+    }
+  );
+
+  it("never sends one account's kept key for another account in the same tab", async () => {
+    const cloud = fakeCloud({ ...SEED, defaultUser: 'gm2' }, 'gm1');
+    const sent: string[] = [];
+    cloud.homebrew.import = (r) => {
+      sent.push(...r.items.map((i) => i.key));
+      return Promise.resolve({ ok: false, error: 'network' });
+    };
+    const { app } = started(cloud, '#/i/ci2');
+    await flush();
+    const ember = app.recordFor('ci2');
+    if (!ember) throw new Error('no record');
+    await app.saveItem(ember);
+    expect(app.toast?.msg).toBe(ru.saveItemFailed);
+    await app.signOut();
+    await flush();
+    await app.signIn('google');
+    await flush();
+    expect(app.user?.userId).toBe(SEED.users.gm2.id);
+    await app.saveItem(ember);
+    expect(sent).toHaveLength(2);
+    expect(sent[1]).not.toBe(sent[0]);
+    app.stop();
+  });
+
+  it('makes one copy for two calls in one tick', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const imported = vi.spyOn(cloud.homebrew, 'import');
+    const { app } = started(cloud, '#/lists/' + GM2_LIST);
+    await flush();
+    const record = app.linkedRecord(AXE);
+    if (!record) throw new Error('no axe');
+    await Promise.all([app.saveItem(record), app.saveItem(record)]);
+    expect(imported).toHaveBeenCalledOnce();
+    expect(await ownKeys(cloud)).toHaveLength(1);
+    app.stop();
+  });
+
+  it("makes a copy under a new key for a reader who holds the author's key", async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const made = await cloud.homebrew.createItem({
+      id: uuid(9200),
+      key: 'hb_rangerrollaaaaaa',
+      book_id: null,
+      content: { kind: 'item', ru: 'Моя скатка' }
+    });
+    expect(made.ok).toBe(true);
+    const { app } = started(cloud, '#/h/' + ROLL_B);
+    await flush();
+    await app.itemView?.open(ROLL_B, SEED.users.gm2.id);
+    const record = app.itemView?.record;
+    if (!record) throw new Error('no record');
+    await app.saveItem(record);
+    const keys = await ownKeys(cloud);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe('hb_rangerrollaaaaaa');
+    expect(keys[1]).toMatch(HOMEBREW_KEY);
+    expect(keys[1]).not.toBe('hb_rangerrollaaaaaa');
+    expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Скатка следопыта'));
     app.stop();
   });
 
@@ -4268,38 +4542,6 @@ describe('the item page and «Сохранить себе»', () => {
     app.stop();
   });
 
-  it('offers the press again when the relink never ran, and the press relinks with no second import', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const real = cloud.homebrew.import.bind(cloud.homebrew);
-    const load = cloud.homebrew.load.bind(cloud.homebrew);
-    const imported = vi.fn(async (r: Parameters<typeof real>[0]) => {
-      await real(r);
-      return { ok: false as const, error: 'network' as const };
-    });
-    const { app } = started(cloud, '#/lists/' + GM2_LIST);
-    await flush();
-    const record = app.linkedRecord(AXE);
-    if (!record) throw new Error('no axe');
-    cloud.homebrew.import = imported;
-    cloud.homebrew.load = () => Promise.resolve({ ok: false });
-    await app.saveItem(record);
-    expect(app.toast?.msg).toBe(ru.saveItemFailed);
-    cloud.homebrew.load = load;
-    await app.homebrew?.read();
-    const COPY = derivedKey(SEED.users.gm2.id, AXE);
-    expect(app.homebrew?.has(COPY)).toBe(true);
-    expect(app.relinkTargets(record)).toEqual([GM2_LIST]);
-    await app.saveItem(record);
-    await app.cloudLists?.flushNow();
-    expect(imported).toHaveBeenCalledOnce();
-    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
-    const keys = (await rows(cloud, GM2_LIST))?.map((e) => e.item_key);
-    expect(keys).toContain(COPY);
-    expect(keys).not.toContain(AXE);
-    expect(app.relinkTargets(record)).toEqual([]);
-    app.stop();
-  });
-
   it('says the plain save when the row was removed while the copy was made', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const { app } = started(cloud, '#/lists/' + GM2_LIST);
@@ -4312,6 +4554,106 @@ describe('the item page and «Сохранить себе»', () => {
     };
     await app.saveItem(record);
     expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Топор Тлеющих Углей'));
+    app.stop();
+  });
+
+  it('makes a copy of a catalog record at each press, numbered, with the catalog picture, and changes no list row', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const before = await rows(cloud, GM2_LIST);
+    const setArt = vi.spyOn(cloud.homebrew, 'setArt');
+    const { app } = started(cloud, '#/i/ci2');
+    await flush();
+    const ember = app.recordFor('ci2');
+    if (!ember) throw new Error('no record');
+    expect(app.catalogCopyOffered).toBe(true);
+    expect(app.relinkTargets(ember)).toEqual([]);
+    await app.saveItem(ember);
+    const [FIRST] = await ownKeys(cloud);
+    expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Уголёк'));
+    expect(app.toast?.action?.href).toBe('#/homebrew/' + String(FIRST));
+    await app.saveItem(ember);
+    const keys = await ownKeys(cloud);
+    expect(keys).toHaveLength(2);
+    const NEXT = keys[1];
+    expect(NEXT).not.toBe(FIRST);
+    for (const k of keys) expect(k).toMatch(HOMEBREW_KEY);
+    expect(app.toast?.msg).toBe(ru.saveItemSaved.replace('%s', 'Уголёк (2)'));
+    expect(app.toast?.action?.href).toBe('#/homebrew/' + String(NEXT));
+    const read = await cloud.homebrew.load();
+    if (!read.ok) throw new Error('no read');
+    expect(read.items.map((i) => [i.content.ru, i.content.en, i.book_id, i.art])).toEqual([
+      ['Уголёк', 'Ember', null, 'ci2.webp'],
+      ['Уголёк (2)', 'Ember (2)', null, 'ci2.webp']
+    ]);
+    expect(setArt).toHaveBeenCalledTimes(2);
+    expect(await rows(cloud, GM2_LIST)).toEqual(before);
+    app.stop();
+  });
+
+  it('says the limit, a refusal, a lost connection and unread lists on a catalog record', async () => {
+    const full = fakeCloud(SEED, 'gm2', { limits: { items: 100 } });
+    const own = full.homebrew;
+    for (let i = 0; i < 100; i++) {
+      const r = await own.createItem({
+        id: uuid(9600 + i),
+        key: own.newKey(),
+        book_id: null,
+        content: { kind: 'item', ru: 'П' + String(i) }
+      });
+      expect(r.ok).toBe(true);
+    }
+    const a = started(full, '#/i/ci2').app;
+    await flush();
+    await a.saveItem(a.recordFor('ci2')!);
+    expect(a.toast?.msg).toBe(ru.limitHbItems.replace('%n', '100'));
+    expect(await ownKeys(full)).toHaveLength(100);
+    a.stop();
+
+    for (const [error, text] of [
+      ['refused', ru.saveItemRefused],
+      ['network', ru.saveItemFailed]
+    ] as const) {
+      const cloud = fakeCloud(SEED, 'gm2');
+      cloud.homebrew.import = () => Promise.resolve({ ok: false, error });
+      const { app } = started(cloud, '#/i/ci2');
+      await flush();
+      await app.saveItem(app.recordFor('ci2')!);
+      expect(app.toast?.msg).toBe(text);
+      app.stop();
+    }
+
+    const slow = fakeCloud(SEED, 'gm2');
+    slow.lists.list = () => new Promise(() => undefined);
+    const imported = vi.spyOn(slow.homebrew, 'import');
+    const { app } = started(slow, '#/i/ci2');
+    await flush();
+    await app.saveItem(app.recordFor('ci2')!);
+    expect(app.toast?.msg).toBe(ru.hbNotReady);
+    expect(imported).not.toHaveBeenCalled();
+    app.stop();
+  });
+
+  it('keeps the copy of a catalog record and says a failed picture write', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    cloud.homebrew.setArt = () => Promise.resolve({ ok: false, error: 'network' });
+    const { app } = started(cloud, '#/i/ci2');
+    await flush();
+    await app.saveItem(app.recordFor('ci2')!);
+    expect(await ownKeys(cloud)).toHaveLength(1);
+    expect(app.toast?.msg).toBe(
+      ru.saveItemSaved.replace('%s', 'Уголёк') + ' ' + ru.copyArtFailed
+    );
+    app.stop();
+  });
+
+  it("keeps a catalog record's «Сохранить себе» across the sign-in and hands it to its pick row", async () => {
+    const { app } = started(fakeCloud(SEED), '#/i/ci2');
+    await flush();
+    app.askSignIn({ hash: '#/i/ci2', action: { do: 'saveItem', id: 'ci2' } });
+    await app.signIn('google');
+    await flush();
+    expect(app.hash).toBe('#/i/ci2');
+    expect(app.saveItemFor).toBe('ci2');
     app.stop();
   });
 
@@ -4352,8 +4694,8 @@ describe('the item page and «Сохранить себе»', () => {
     };
     await app.saveItem(record);
     await app.cloudLists?.flushNow();
-    const COPY = derivedKey(SEED.users.gm2.id, AXE);
-    const copied = await artOf(cloud, COPY);
+    const [COPY] = await ownKeys(cloud);
+    const copied = await artOf(cloud, COPY!);
     expect(copied).toMatch(/^p\/[0-9a-f]{32}\.webp$/);
     expect(copied).not.toBe(name);
     expect(cloud.artStatus(copied!)).toBe(200);
@@ -4371,7 +4713,8 @@ describe('the item page and «Сохранить себе»', () => {
     if (!record) throw new Error('no axe');
     expect(record.img).toBe('ci1.webp');
     await app.saveItem(record);
-    expect(await artOf(cloud, derivedKey(SEED.users.gm2.id, AXE))).toBe('ci1.webp');
+    const [COPY] = await ownKeys(cloud);
+    expect(await artOf(cloud, COPY!)).toBe('ci1.webp');
     expect(copyArt).not.toHaveBeenCalled();
     app.stop();
   });
@@ -4386,8 +4729,8 @@ describe('the item page and «Сохранить себе»', () => {
     if (!record) throw new Error('no axe');
     await app.saveItem(record);
     await app.cloudLists?.flushNow();
-    const COPY = derivedKey(SEED.users.gm2.id, AXE);
-    expect((await artOf(cloud, COPY)) ?? null).toBeNull();
+    const [COPY] = await ownKeys(cloud);
+    expect((await artOf(cloud, COPY!)) ?? null).toBeNull();
     expect(app.toast?.msg).toBe(
       ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей') + ' ' + ru.copyArtFailed
     );
@@ -4405,61 +4748,8 @@ describe('the item page and «Сохранить себе»', () => {
     if (!record) throw new Error('no axe');
     await app.saveItem(record);
     expect(setArt).not.toHaveBeenCalled();
-    expect((await artOf(cloud, derivedKey(SEED.users.gm2.id, AXE))) ?? null).toBeNull();
-    app.stop();
-  });
-
-  /* A first press whose import landed but whose answer and account read were lost: the
-     copy is held without a picture, and the rows still link the author's item. */
-  async function lostFirstPress(cloud: FakeCloud) {
-    const real = cloud.homebrew.import.bind(cloud.homebrew);
-    const load = cloud.homebrew.load.bind(cloud.homebrew);
-    const { app } = started(cloud, '#/lists/' + GM2_LIST);
-    await flush();
-    const record = app.linkedRecord(AXE);
-    if (!record) throw new Error('no axe');
-    cloud.homebrew.import = async (r) => {
-      await real(r);
-      return { ok: false, error: 'network' };
-    };
-    cloud.homebrew.load = () => Promise.resolve({ ok: false });
-    await app.saveItem(record);
-    cloud.homebrew.load = load;
-    await app.homebrew?.read();
-    const COPY = derivedKey(SEED.users.gm2.id, AXE);
-    const held = app.homebrew?.item(COPY);
-    if (!held) throw new Error('no held copy');
-    expect(held.art ?? null).toBeNull();
-    return { app, record, COPY, held };
-  }
-
-  it("gives a held copy without a picture the author's picture on the relink-only press", async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const name = await ownPicture(cloud);
-    const { app, record, COPY } = await lostFirstPress(cloud);
-    await app.saveItem(record);
-    await app.cloudLists?.flushNow();
-    const copied = await artOf(cloud, COPY);
-    expect(copied).toMatch(/^p\/[0-9a-f]{32}\.webp$/);
-    expect(copied).not.toBe(name);
-    expect(app.toast?.msg).toBe(ru.saveItemRelinked.replace('%s', 'Топор Тлеющих Углей'));
-    app.stop();
-  });
-
-  it('keeps the picture of a held copy that has one, and one another device set meanwhile', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const { app, record, COPY, held } = await lostFirstPress(cloud);
-    /* Another device sets a picture after this tab's read. */
-    expect((await cloud.homebrew.setArt(held.id, 'w1.webp', false)).ok).toBe(true);
-    await app.saveItem(record);
-    await app.cloudLists?.flushNow();
-    expect(await artOf(cloud, COPY)).toBe('w1.webp');
-    expect(app.homebrew?.item(COPY)?.art).toBe('w1.webp');
-    const copyArt = vi.spyOn(cloud.homebrew, 'copyArt');
-    const setArt = vi.spyOn(cloud.homebrew, 'setArt');
-    await app.saveItem(record);
-    expect(copyArt).not.toHaveBeenCalled();
-    expect(setArt).not.toHaveBeenCalled();
+    const [COPY] = await ownKeys(cloud);
+    expect((await artOf(cloud, COPY!)) ?? null).toBeNull();
     app.stop();
   });
 
@@ -4478,7 +4768,8 @@ describe('the item page and «Сохранить себе»', () => {
     if (!record) throw new Error('no record');
     expect(record.img).toBe('w1.webp');
     await app.saveItem(record);
-    expect(await artOf(cloud, derivedKey(user.userId, 'hb_rangerrollaaaaaa'))).toBe('w1.webp');
+    const COPY = app.toast?.action?.href?.replace('#/homebrew/', '') ?? '';
+    expect(await artOf(cloud, COPY)).toBe('w1.webp');
     app.stop();
   });
 

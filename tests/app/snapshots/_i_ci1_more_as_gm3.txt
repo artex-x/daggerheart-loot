@@ -26,7 +26,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     link "показать в таблице" [url=index.html?as=gm3#/tables/core_item/ci1]
     button "Страница"
     StaticText "1"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Мешок спокойных снов (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000609]
@@ -42,7 +42,6 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     link "Спальный мешок стража (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000613]
     link "Спальный мешок странника (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000601]
     link "Спальный мешок тишины (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000603]
-    StaticText ", "
     link "Спальный мешок у костра (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000611]
     StaticText ", "
     link "Тёплый спальный мешок (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000605]
@@ -52,6 +51,8 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -79,6 +80,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Спальный мешок дозорного (HB)
 Спальный мешок долгой дороги через перевал, болота, пустоши и ст... [namelen=125 namehash=a16051fb]
 Спальный мешок из пепла (HB)
@@ -124,7 +126,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=index.html?as=gm
     link "show in the table" [url=index.html?as=gm3#/tables/core_item/ci1]
     button "Page"
     StaticText "1"
-    ... StaticText x17 of 21 same-shape siblings elided
+    ... StaticText x18 of 22 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Ash Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000604]
@@ -140,7 +142,6 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=index.html?as=gm
     link "Sentry's Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000606]
     link "Tracker's Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000602]
     link "Wanderer's Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000601]
-    StaticText ", "
     link "Warden's Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000613]
     StaticText ", "
     link "Warm Bedroll (HB)" [url=index.html?as=gm3#/h/00000000-0000-4000-8000-000000000605]
@@ -150,6 +151,8 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=index.html?as=gm
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original.]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -182,6 +185,7 @@ Print
 Privacy
 RU
 Sack of Quiet Dreams (HB)
+Save to my items
 Search
 Sentry's Bedroll (HB)
 Share

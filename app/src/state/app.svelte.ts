@@ -306,10 +306,10 @@ export class AppState {
   now = $state(Date.now());
   /** True while «Сохранить себе» copies a share link's list. */
   cloning = $state(false);
-  /** The id of the homebrew item «Сохранить себе» copies now, or null. */
+  /** The id of the homebrew item or catalog record «Сохранить себе» copies now, or null. */
   savingItem = $state<string | null>(null);
-  /** The id of the homebrew item a sign-in left to copy, until the item's pick row makes the
-   *  copy once the account's items are read; forgotten with the pending action
+  /** The id of the homebrew item or catalog record a sign-in left to copy, until its pick
+   *  row makes the copy once the account's items are read; forgotten with the pending action
    *  (docs/specs/STATE.md, "Session"). */
   saveItemFor = $state<string | null>(null);
   /** True while a print control makes a print set. */
@@ -336,6 +336,10 @@ export class AppState {
   #keyMemo = new Map<string, string>();
   #keyMemoUser: string | null = null;
   #keyMemoItems: readonly unknown[] | null = null;
+  /* `<userId>\n<ref>` to the key of that user's last «Сохранить себе» of that source whose
+     answer was lost; memory only, so a key never reaches another account. */
+  // eslint-disable-next-line svelte/prefer-svelte-reactivity -- never drawn
+  #copyRetry = new Map<string, string>();
 
   /**
    * The list currently open on the list page, and the payload its address
@@ -1097,16 +1101,23 @@ export class AppState {
   }
 
   /** Returns the account lists whose entry of `it`'s key links `it`, another account's item:
-   *  the rows «Сохранить себе» relinks to the copy. Empty for an own item. A list that holds
-   *  the copy's key already keeps its row of `it`: a list holds one row per key. */
+   *  the rows «Сохранить себе» relinks to the copy. Empty for an own item and a catalog
+   *  record. */
   relinkTargets(it: Record_): string[] {
     const hid = isHomebrewRecord(it) ? it.hid : undefined;
     if (typeof hid !== 'string' || this.homebrew?.items.some((r) => r.id === hid)) return [];
-    const copyKey = this.ownKeyFor(it.id);
     return (this.cloudLists?.lists ?? [])
       .filter((l) => l.links?.[it.id] === hid)
-      .filter((l) => copyKey === it.id || !l.ids.includes(copyKey))
       .map((l) => l.id);
+  }
+
+  /** Returns whether «Сохранить себе» is offered on a catalog record: signed out, or signed
+   *  in once the own items are read - the terms `isForeignItem` sets for another account's
+   *  item. */
+  get catalogCopyOffered(): boolean {
+    if (!this.homebrew) return false;
+    if (this.user === null) return true;
+    return !!this.user && this.homebrew.status === 'ready';
   }
 
   /** Returns the key an item of `key` takes in the reader's account: itself when held, or
@@ -1140,18 +1151,19 @@ export class AppState {
   }
 
   /**
-   * «Сохранить себе»: copies another account's item into the reader's own items, in the
-   * default source under the item's derived key (`ownKeyFor`), then relinks in place every
-   * row of the reader's lists that links the item to the copy's key, each keeping its
-   * position, quantity, price, notes and mark
-   * (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md).
-   * The account's read after the import decides: a lost answer whose rows landed is a save.
-   * A copy the account holds already gets the rows a relink that never ran left behind.
+   * «Сохранить себе»: copies another account's item or a catalog record into the reader's
+   * own items, in the default source under a new key at each press, named by `copyRows`;
+   * then relinks in place every row of the reader's lists that links another account's item
+   * to the copy, each keeping its position, quantity, price, notes and mark
+   * (docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md). The
+   * account's read after the import decides: a lost answer whose copy landed is a save; one
+   * whose copy did not land keeps its key for the next press of the same source.
    */
-  async saveItem(it: HomebrewRecord): Promise<void> {
+  async saveItem(it: Record_): Promise<void> {
     const own = this.homebrew;
-    const hid = it.hid;
-    if (!own || !this.cloudLists || typeof hid !== 'string' || !this.user) return;
+    const user = this.user;
+    const ref = isHomebrewRecord(it) ? it.hid : it.id;
+    if (!own || !this.cloudLists || typeof ref !== 'string' || !user) return;
     if (this.savingItem !== null) return;
     if (own.status === 'idle' || own.status === 'loading') {
       this.say((t) => t.hbNotReady, { error: true });
@@ -1161,7 +1173,6 @@ export class AppState {
       this.say((t) => t.hbLoadFailed, { error: true });
       return;
     }
-    if (own.has(it.id)) return;
     /* Unread lists relink nothing: their rows would keep the author's link. */
     if (this.cloudLists.status === 'idle' || this.cloudLists.status === 'loading') {
       this.say((t) => t.hbNotReady, { error: true });
@@ -1171,76 +1182,89 @@ export class AppState {
       this.say((t) => t.cloudLoadFailed, { error: true });
       return;
     }
-    const lists = this.relinkTargets(it);
-    const copyKey = this.ownKeyFor(it.id);
-    const store = this.cloudLists;
-    const relink = (ownId: string): boolean => {
-      let relinked = false;
-      for (const list of lists) {
-        if (store.relinkAs(list, it.id, copyKey, ownId)) relinked = true;
-      }
-      return relinked;
-    };
-    const done = (relinked: boolean, artFailed: boolean): void => {
-      this.say(
-        (t, lang) =>
-          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameOf(it, lang)) +
-          (artFailed ? ' ' + t.copyArtFailed : ''),
-        { action: { label: (t) => t.edit, href: homebrewItemHash(copyKey) } }
-      );
-    };
-    /* The copy's own picture, by its row id: an own file of the author is copied to a new
-       name, a catalog picture is named as it is. It runs before the relink, so a tab closed
-       in the middle leaves the rows on the author's item and the next press finishes it.
-       Answers true when the copy holds no picture though the author's item has one. */
-    const img = isArtName(it.img) ? it.img : null;
-    const copyPicture = async (id: string, onlyIfNone: boolean): Promise<boolean> => {
-      if (img === null) return false;
-      let name = img;
-      if (isOwnArt(img)) {
-        const copied = await own.copyArt(img);
-        if (!copied.ok) return true;
-        name = copied.name;
-      }
-      return !(await own.setArt(id, name, onlyIfNone)).ok;
-    };
-    /* The copy landed, but its relink never ran: move the rows, import nothing again; a
-       copy without a picture gets the author's, one with a picture keeps it. */
-    const held = own.item(copyKey);
-    if (held) {
-      this.savingItem = hid;
-      try {
-        const failed = held.art ? false : await copyPicture(held.id, true);
-        if (relink(held.id)) done(true, failed);
-      } finally {
-        this.savingItem = null;
-      }
-      return;
-    }
-    /* A plain copy: a list's linked record is reactive state, which a port may clone. */
-    const rows = copyRows($state.snapshot(it), {
-      newId: () => own.newIds().id,
-      keyFor: (k) => this.ownKeyFor(k),
-      cardKeyFor: (k) => this.#cardKeyFor(k),
-      hasCard: (k) => own.cards.some((c) => c.key === k)
-    });
-    this.savingItem = hid;
+    /* Another account's item the reader authored, by row id: a reader who holds the author's
+       key still gets a copy. */
+    if (isHomebrewRecord(it) && own.items.some((r) => r.id === it.hid)) return;
+    /* Set before the first await: a second call in the same tick returns above. */
+    this.savingItem = ref;
     try {
+      const lists = this.relinkTargets(it);
+      const retry = `${user.userId}\n${ref}`;
+      /* A retry's copy may have landed and been given a picture meanwhile; a new key holds
+         none. */
+      const retried = this.#copyRetry.has(retry);
+      const key = this.#copyRetry.get(retry) ?? own.newIds().key;
+      const store = this.cloudLists;
+      const relink = (ownId: string): boolean => {
+        let relinked = false;
+        for (const list of lists) {
+          if (store.relinkAs(list, it.id, key, ownId)) relinked = true;
+        }
+        return relinked;
+      };
+      /* The own names as drawn, each language filled from the other. */
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup within one call
+      const enNames = new Set(own.records.map((r) => r.en));
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity -- a lookup within one call
+      const ruNames = new Set(own.records.map((r) => r.ru));
+      /* A list's linked record is reactive state, which a port may clone. */
+      const rows = copyRows(
+        $state.snapshot(it),
+        key,
+        {
+          newId: () => own.newIds().id,
+          cardKeyFor: (k) => this.#cardKeyFor(k),
+          hasCard: (k) => own.cards.some((c) => c.key === k),
+          names: { en: enNames, ru: ruNames }
+        },
+        isHomebrewRecord(it)
+          ? []
+          : (this.catalog?.craftedFrom.get(it.id) ?? []).map((r) => r.id)
+      );
+      const sent = rows.items[0]?.content;
       const r = await own.import(rows);
       const made = rows.items[0]?.id ?? null;
-      const ownId =
-        own.item(copyKey)?.id ?? (r.ok && r.counts.items_created === 1 ? made : null);
+      const ownId = own.item(key)?.id ?? (r.ok && r.counts.items_created === 1 ? made : null);
       if (ownId === null) {
         if (!r.ok && r.error === 'limit') {
-          const { key, value } = r;
-          this.say((t) => limitText(key, value, t), { error: true });
+          this.#copyRetry.delete(retry);
+          const { key: limit, value } = r;
+          this.say((t) => limitText(limit, value, t), { error: true });
         } else if (!r.ok && r.error === 'refused') {
+          this.#copyRetry.delete(retry);
           this.say((t) => t.saveItemRefused, { error: true });
-        } else this.say((t) => t.saveItemFailed, { error: true });
+        } else {
+          this.#copyRetry.set(retry, key);
+          this.say((t) => t.saveItemFailed, { error: true });
+        }
         return;
       }
-      const failed = await copyPicture(ownId, false);
-      done(relink(ownId), failed);
+      this.#copyRetry.delete(retry);
+      /* The copy's own picture, by its row id: an own file of the author is copied to a new
+         name, a catalog picture is named as it is. It runs before the relink, so a tab
+         closed in the middle leaves the rows on the author's item. */
+      let artFailed = false;
+      const img = isArtName(it.img) ? it.img : null;
+      if (img !== null && !(retried && own.item(key)?.art)) {
+        let name: string | null = img;
+        if (isOwnArt(img)) {
+          const copied = await own.copyArt(img);
+          name = copied.ok ? copied.name : null;
+        }
+        artFailed = name === null || !(await own.setArt(ownId, name, retried)).ok;
+      }
+      const relinked = relink(ownId);
+      const drawn = own.records.find((x) => x.id === key);
+      const nameIn = (lang: Lang): string =>
+        drawn
+          ? nameOf(drawn, lang)
+          : ((lang === 'ru' ? sent?.ru || sent?.en : sent?.en || sent?.ru) ?? '');
+      this.say(
+        (t, lang) =>
+          (relinked ? t.saveItemRelinked : t.saveItemSaved).replace('%s', nameIn(lang)) +
+          (artFailed ? ' ' + t.copyArtFailed : ''),
+        { action: { label: (t) => t.edit, href: homebrewItemHash(key) } }
+      );
     } finally {
       this.savingItem = null;
     }
@@ -1513,7 +1537,7 @@ export class AppState {
     if (action.do === 'saveItem') {
       /* The item's pick row makes the copy once the account's items are read. */
       this.#pending = null;
-      this.saveItemFor = action.hid;
+      this.saveItemFor = 'hid' in action ? action.hid : action.id;
       return;
     }
     if (action.do === 'print') {

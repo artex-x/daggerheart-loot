@@ -9,10 +9,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     button "Страница"
     StaticText "28"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText ", чтобы активировать это кольцо. Ваши шаги будут бесшумными до с..." [namelen=81 namehash=29328dad]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -22,6 +21,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     button "Лавка в порту" [pressed=false]
     button "+ Новый список" [pressed=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
     status ""
       StaticText "Убрано из «Клад дракона»"
       button "Вернуть" [focused=true]
@@ -176,6 +177,7 @@ daggerheart.com
 Скопировать текст
 Скрыть напоминание
 Снаряжение
+Сохранить себе
 Списки
 Списком
 Ссылка на таблицу
@@ -196,16 +198,17 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
     button "Page"
     StaticText "28"
     StaticText "ITEM"
-    ... StaticText x2 of 6 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "Spend a Hope"
     StaticText " to activate this ring. Your footsteps are silent until your nex..." [namelen=71 namehash=01eb3998]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
     status ""
       StaticText "Removed from "Клад дракона""
       button "Undo" [focused=true]
@@ -349,6 +352,7 @@ RU
 Ring of Resistance
 Ring of Silence
 Ring of Unbreakable Resolve
+Save to my items
 Search
 Shard of Memory
 Share

@@ -1,6 +1,6 @@
 # #/i/ci1 ~ print signed out
 # route: #/i/ci1
-# why: «Печать» pressed signed out: the boxed sign-in prompt under the pick row, «Войдите, чтобы печатать карточки.»
+# why: «Печать» pressed signed out: the boxed sign-in prompt under the pick row and its «Сохранить себе» group, «Войдите, чтобы печатать карточки.»
 
 ## ru :: tree
 RootWebArea "Первоклассный Спальный Мешок - Генератор лута Daggerheart" [url=#/i/ci1]
@@ -25,15 +25,16 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     link "показать в таблице" [url=#/tables/core_item/ci1]
     button "Страница"
     StaticText "1"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    StaticText "Во время отдыха вы автоматически очищаете Стресс."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=true]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
     StaticText "Войдите, чтобы печатать карточки."
     button "Войти"
   contentinfo ""
@@ -62,6 +63,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -92,15 +94,16 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=#/i/ci1]
     link "show in the table" [url=#/tables/core_item/ci1]
     button "Page"
     StaticText "1"
-    ... StaticText x3 of 7 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    StaticText "During downtime, you automatically clear a Stress."
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=true]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
     StaticText "Sign in to print cards."
     button "Sign in"
   contentinfo ""
@@ -124,6 +127,7 @@ Page
 Print
 Privacy
 RU
+Save to my items
 Search
 Share
 Sign in

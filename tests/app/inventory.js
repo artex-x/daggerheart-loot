@@ -1212,6 +1212,22 @@ const STATES = [
     route: '#/i/dve19',
     why: "the set line and the set's shared bonus: every member listed, the record itself inert"
   },
+  {
+    id: '#/i/dve19 ~ saved twice as gm1',
+    route: '#/i/dve19',
+    as: 'gm1',
+    why: '«Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
+      for (let i = 0; i < 40 && !(await d.text()).includes('«Уголёк» сохранён'); i++)
+        await d.settle();
+      await d.click('Сохранить себе');
+      for (let i = 0; i < 40 && !(await d.text()).includes('«Уголёк (2)» сохранён'); i++)
+        await d.settle();
+    },
+    /* a 7000ms action toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
 
   /* Vault of Ages Volume 4: the first artifact with a stat block, a
      three-member set, a referenced adversary card, a consumable artifact. */
@@ -1570,7 +1586,7 @@ const STATES = [
     id: GM2_LIST + ' ~ axe saved as gm2',
     route: GM2_LIST,
     as: 'gm2',
-    why: "«Сохранить себе» pressed in the axe's modal: the row moves to the copy's derived key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)",
+    why: "«Сохранить себе» pressed in the axe's modal: the row moves to the copy's new key, so the modal closes and the list page draws the row of the copy, with the toast «Предмет «Топор Тлеющих Углей» сохранён в «Мои предметы», строки ваших списков ведут на копию» and its «Изменить» (app/src/state/app.test.ts reads the relinked row)",
     enter: async (d) => {
       await d.click('Лезвие тлеет');
       await d.click('Сохранить себе');
@@ -1616,10 +1632,11 @@ const STATES = [
     id: ITEM_H + ' ~ saved as gm2',
     route: ITEM_H,
     as: 'gm2',
-    why: '«Сохранить себе» pressed: «Сохранено» disabled, no note, the toast «Предмет «Скатка следопыта» сохранён в «Мои предметы»» with «Изменить»',
+    why: '«Сохранить себе» pressed: the button «Сохранить себе» again with its note, the toast «Предмет «Скатка следопыта» сохранён в «Мои предметы»» with «Изменить»',
     enter: async (d) => {
       await d.click('Сохранить себе');
-      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено'); i++) await d.settle();
+      for (let i = 0; i < 40 && !(await d.text()).includes('сохранён в «Мои'); i++)
+        await d.settle();
     },
     /* a 7000ms action toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -2596,9 +2613,17 @@ const STATES = [
   {
     id: '#/i/ci1 ~ print signed out',
     route: '#/i/ci1',
-    why: '«Печать» pressed signed out: the boxed sign-in prompt under the pick row, «Войдите, чтобы печатать карточки.»',
+    why: '«Печать» pressed signed out: the boxed sign-in prompt under the pick row and its «Сохранить себе» group, «Войдите, чтобы печатать карточки.»',
     enter: async (d) => {
       await d.click(PRINT);
+    }
+  },
+  {
+    id: '#/i/ci1 ~ save signed out',
+    route: '#/i/ci1',
+    why: '«Сохранить себе» on a catalog record pressed signed out: the button expanded and under its group the boxed «Войдите, и копия предмета сохранится в «Мои предметы».» with «Войти»',
+    enter: async (d) => {
+      await d.click('Сохранить себе');
     }
   },
   {

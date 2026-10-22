@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-seven cases in
- * seventy-six runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-eight cases in
+ * seventy-seven runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -5218,6 +5218,94 @@ async function sharedRowTickColumn() {
   }
 }
 
+/** 78. «Сохранить себе» on a catalog record as `gm1`: at 360x740 on `#/i/cm26`, the longest
+ *  catalog name, the group inside 0..360 and its button as tall as «Печать», nothing
+ *  sideways; two presses, and the second toast names «... (2)» with its «Изменить» inside
+ *  0..360; at 1180x900 the group under the other pick buttons (docs/specs/FEATURES.md,
+ *  "Records"). */
+async function catalogCopyPerPress() {
+  const at = '78 (a copy per press of a catalog record): ';
+  const NAME = 'Стрелы и Болты с Метеоритными Наконечниками';
+  const measure = (page) =>
+    page.evaluate(() => {
+      const group = document.querySelector('.savegroup');
+      const save = group?.querySelector('button');
+      const print = [...document.querySelectorAll('button')].find(
+        (b) => b.textContent.trim() === 'Печать'
+      );
+      const g = group?.getBoundingClientRect();
+      const s = save?.getBoundingClientRect();
+      const p = print?.getBoundingClientRect();
+      return {
+        group: g ? { left: g.left, right: g.right, top: g.top } : null,
+        save: s ? s.height : null,
+        print: p ? { height: p.height, bottom: p.bottom } : null,
+        sideways: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+  {
+    const { ctx, page, d } = await fresh({ width: 360, height: 740 });
+    await d.open('#/i/cm26', { as: 'gm1' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('.savegroup button')),
+      at + 'the group «Сохранить себе» did not draw'
+    );
+    const narrow = await measure(page);
+    ok(
+      !!narrow.group && narrow.group.left >= 0 && narrow.group.right <= 360,
+      at + 'the group lies outside 0..360 - ' + JSON.stringify(narrow)
+    );
+    ok(
+      narrow.save !== null && narrow.print !== null && narrow.save === narrow.print.height,
+      at + 'the button is not as tall as «Печать» - ' + JSON.stringify(narrow)
+    );
+    ok(!narrow.sideways, at + 'the page scrolls sideways at 360');
+    await d.press('Сохранить себе');
+    ok(
+      await waitIn(
+        page,
+        (n) => (document.querySelector('.toast')?.textContent ?? '').includes('«' + n + '»'),
+        NAME
+      ),
+      at + 'the first press raised no toast with the name'
+    );
+    await d.press('Сохранить себе');
+    ok(
+      await waitIn(
+        page,
+        (n) =>
+          (document.querySelector('.toast')?.textContent ?? '').includes('«' + n + ' (2)»') &&
+          !!document.querySelector('.toast a.toast-act'),
+        NAME
+      ),
+      at + 'the second press raised no toast with «... (2)» and «Изменить»'
+    );
+    const edit = await page.evaluate(() => {
+      const r = document.querySelector('.toast a.toast-act').getBoundingClientRect();
+      return { left: r.left, right: r.right };
+    });
+    ok(
+      edit.left >= 0 && edit.right <= 360,
+      at + '«Изменить» lies outside 0..360 - ' + JSON.stringify(edit)
+    );
+    await ctx.close();
+  }
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    await d.open('#/i/cm26', { as: 'gm1' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('.savegroup button')),
+      at + 'the group did not draw at 1180'
+    );
+    const wide = await measure(page);
+    ok(
+      !!wide.group && !!wide.print && wide.group.top >= wide.print.bottom,
+      at + 'the group is not under the other pick buttons - ' + JSON.stringify(wide)
+    );
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5297,7 +5385,8 @@ const CASES = [
   ['74 (the card text keeps its look)', keepsTheCardDescriptionLook],
   ['75 (the browser undoes a toolbar edit)', undoesAToolbarEditWithTheBrowsersUndo],
   ['76 (list notes draw as formatted text)', drawsListNotesAsFormattedText],
-  ["77 (the shared row's tick column)", sharedRowTickColumn]
+  ["77 (the shared row's tick column)", sharedRowTickColumn],
+  ['78 (a copy per press of a catalog record)', catalogCopyPerPress]
 ];
 
 (async () => {

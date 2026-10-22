@@ -753,43 +753,92 @@ export function contentOfRecord(r: HomebrewRecord): HomebrewContent {
   return out;
 }
 
+/** Returns the name of a copy: `name` when no own item holds it, else `<base> (<n>)` with the
+ *  smallest free `n` from 2, the base cut on code points so the name fits `NAME_MAX`. */
+export function copyName(name: string, taken: ReadonlySet<string>): string {
+  if (!taken.has(name)) return name;
+  const points = Array.from(name);
+  for (let n = 2; ; n++) {
+    const suffix = ` (${String(n)})`;
+    const out =
+      points
+        .slice(0, NAME_MAX - suffix.length)
+        .join('')
+        .replace(/\s+$/, '') + suffix;
+    if (!taken.has(out)) return out;
+  }
+}
+
+/** Returns the content of a catalog record's copy: the fields an own item stores, with
+ *  `craftFrom` as its `craft_from`; a record with a stat block copies as equipment, and the
+ *  table and card-set placement (`roll`, `recall`, `frame`, `realm` and the like) is left out. */
+export function copyContentOf(r: Record_, craftFrom: readonly string[]): HomebrewContent {
+  const out: HomebrewContent = { kind: r.eq ? 'equip' : r.kind };
+  for (const k of ['en', 'ru', 'ende', 'rud'] as const) if (r[k]) out[k] = r[k];
+  if (!r.eq && r.tier !== undefined) out.tier = r.tier;
+  const e = r.eq;
+  if (e) {
+    const eq: HomebrewEquip = { t: e.t, tier: e.tier };
+    if (e.cls) eq.cls = e.cls;
+    if (e.tr) eq.tr = e.tr;
+    if (e.rg) eq.rg = e.rg;
+    if (e.dmg) eq.dmg = e.dmg;
+    if (e.dt) eq.dt = e.dt;
+    if (e.bu) eq.bu = e.bu;
+    if (typeof e.as === 'number') eq.as = e.as;
+    if (e.th) eq.th = [e.th[0], e.th[1]];
+    if (e.alt) eq.alt = { ...e.alt } as HomebrewStats;
+    if (typeof e.line === 'string' && e.line) eq.line = e.line;
+    out.eq = eq;
+  }
+  if (r.craft?.length) out.craft = r.craft.slice(0, CRAFT_MAX);
+  if (craftFrom.length) out.craft_from = craftFrom.slice(0, CRAFT_MAX);
+  if (r.set) out.set = r.set;
+  if (r.refs?.length) out.refs = r.refs.slice(0, REFS_MAX);
+  return out;
+}
+
 /** Returns the import rows of «Сохранить себе» (`import_homebrew`): one own item in the
- *  default source from what the reader sees, under `keyFor` of the item's key. The `hb_`
- *  ids of `craft`, `craft_from` and `eq.line` are dropped (the author's other items stay
- *  theirs); catalog ids stay. A set or rule card the record embeds takes `cardKeyFor` of
- *  its key and is copied under it, unless the account holds that key (`hasCard`), which
- *  the copy then names; an `hb_` card key with no card is dropped
- *  (docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md). */
+ *  default source under `key`, from what the reader sees of another account's item or from a
+ *  catalog record (`copyContentOf`), each name numbered against the own names of its
+ *  language (`copyName`). The `hb_` ids of `craft`, `craft_from` and `eq.line` are dropped
+ *  (the author's other items stay theirs); catalog ids stay. A set or rule card the record
+ *  embeds takes `cardKeyFor` of its key and is copied under it, unless the account holds
+ *  that key (`hasCard`), which the copy then names; an `hb_` card key with no card is dropped
+ *  (docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md). */
 export function copyRows(
-  r: HomebrewRecord,
+  r: Record_,
+  key: string,
   account: {
     newId: () => string;
-    keyFor: (key: string) => string;
     cardKeyFor: (key: string) => string;
     hasCard: (key: string) => boolean;
-  }
+    names: { en: ReadonlySet<string>; ru: ReadonlySet<string> };
+  },
+  craftFrom: readonly string[] = []
 ): HomebrewImportRows {
-  const content = contentOfRecord(r);
+  const embedded = isHomebrewRecord(r) ? r.cards : undefined;
+  const content = isHomebrewRecord(r) ? contentOfRecord(r) : copyContentOf(r, craftFrom);
   const cards: ImportCardRow[] = [];
   const catalogOnly = (ids: readonly string[] | undefined): string[] =>
     (ids ?? []).filter((id) => !isHomebrewKey(id));
-  const craft = catalogOnly(content.craft);
-  const craftFrom = catalogOnly(content.craft_from);
+  const into = catalogOnly(content.craft);
+  const from = catalogOnly(content.craft_from);
   delete content.craft;
   delete content.craft_from;
-  if (craft.length) content.craft = craft;
-  if (craftFrom.length) content.craft_from = craftFrom;
+  if (into.length) content.craft = into;
+  if (from.length) content.craft_from = from;
   if (content.eq?.line !== undefined && isHomebrewKey(content.eq.line)) {
     const eq = { ...content.eq };
     delete eq.line;
     content.eq = eq;
   }
   /* A card key the record embeds: copied, or named when the account holds it. */
-  const cardKey = (kind: CardKind, key: string): string | null => {
-    if (!isHomebrewKey(key)) return key;
-    const own = account.cardKeyFor(key);
+  const cardKey = (kind: CardKind, of: string): string | null => {
+    if (!isHomebrewKey(of)) return of;
+    const own = account.cardKeyFor(of);
     if (account.hasCard(own)) return own;
-    const card = kind === 'set' ? r.cards?.sets?.[key] : r.cards?.refs?.[key];
+    const card = kind === 'set' ? embedded?.sets?.[of] : embedded?.refs?.[of];
     if (!card) return null;
     cards.push({ id: account.newId(), key: own, kind, book: null, content: { ...card } });
     return own;
@@ -807,10 +856,12 @@ export function copyRows(
     if (refs.length) content.refs = refs;
     else delete content.refs;
   }
+  if (content.ru !== undefined) content.ru = copyName(content.ru, account.names.ru);
+  if (content.en !== undefined) content.en = copyName(content.en, account.names.en);
   return {
     books: [],
     cards,
-    items: [{ id: account.newId(), key: account.keyFor(r.id), book: null, content }],
+    items: [{ id: account.newId(), key, book: null, content }],
     update: false
   };
 }

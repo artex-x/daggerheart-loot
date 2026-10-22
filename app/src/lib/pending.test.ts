@@ -17,6 +17,10 @@ describe('readPending', () => {
       do: 'saveItem',
       hid: HID
     });
+    expect(readPending({ do: 'saveItem', id: 'dve19' })).toEqual({
+      do: 'saveItem',
+      id: 'dve19'
+    });
     expect(readPending(add({ picked: { ci1: 2 } }))).toEqual({
       do: 'addToList',
       key: 'sel',
@@ -58,7 +62,12 @@ describe('readPending', () => {
       { do: 'saveItem' },
       { do: 'saveItem', hid: 'hb_emberaxeaaaaaaaa' },
       { do: 'saveItem', hid: HID + '0' },
-      { do: 'saveItem', hid: 7 }
+      { do: 'saveItem', hid: 7 },
+      { do: 'saveItem', id: 'bad id' },
+      { do: 'saveItem', id: 'x'.repeat(65) },
+      { do: 'saveItem', id: 7 },
+      { do: 'saveItem', id: 'hb_emberaxeaaaaaaaa' },
+      { do: 'saveItem', hid: HID, id: 'dve19' }
     ]) {
       expect(readPending(bad), JSON.stringify(bad)).toBeNull();
     }

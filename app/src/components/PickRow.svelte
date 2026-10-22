@@ -1,8 +1,9 @@
 <script lang="ts">
   /* The card's pick row on the record page, in the record modal and on `#/h/`: add to a
      list, print, «Изменить» on an own item, and «Сохранить себе» on another account's item
-     in a group of its own with the note saying what the copy does, tied to the button by
-     `aria-describedby` (docs/specs/FEATURES.md, "Records").
+     and on a catalog record, in a group of its own with the note saying what the copy does,
+     tied to the button by `aria-describedby`; each press makes one more copy
+     (docs/specs/FEATURES.md, "Records").
      Signed out the press opens the sign-in prompt under the row, and the copy is made once
      the sign-in comes back and the account's items are read. «Печать» makes a print set
      and opens `#/p/<id>`; signed out it opens its own sign-in prompt under the row, and the
@@ -30,22 +31,17 @@
 
   const t = $derived(app.t);
   const hid = $derived(isHomebrewRecord(it) ? it.hid : undefined);
+  /* What «Сохранить себе» copies: another account's item by its row id, a catalog record by
+     its id. */
+  const ref = $derived(hid ?? it.id);
   const foreign = $derived(owner === undefined ? app.isForeignItem(it) : !owner);
   const offered = $derived(
-    !!app.env.cloud && foreign && typeof hid === 'string' && isHomebrewRecord(it)
-  );
-  /* Saved: the copy's key is held and no row still links the author's item, or the account
-     holds the item's own key (a clash made before keys were derived, which nothing
-     relinks). */
-  const copyKey = $derived(app.ownKeyFor(it.id));
-  const saved = $derived(
-    copyKey === it.id
-      ? !!app.homebrew?.has(it.id)
-      : !!app.homebrew?.has(copyKey) && app.relinkTargets(it).length === 0
+    !!app.env.cloud &&
+      (isHomebrewRecord(it) ? foreign && typeof hid === 'string' : app.catalogCopyOffered)
   );
   const toLists = $derived(offered && app.relinkTargets(it).length > 0);
   /* The page can draw the row twice (the page and the record modal over it). */
-  const noteId = $derived(`savenote-${inModal ? 'm' : 'p'}-${hid ?? ''}`);
+  const noteId = $derived(`savenote-${inModal ? 'm' : 'p'}-${ref}`);
   let asking = $state(false);
   let printAsking = $state(false);
 
@@ -58,16 +54,17 @@
   function press(): void {
     const target = app.newListTarget;
     if (target === 'prompt') asking = !asking;
-    else if (target === 'cloud' && isHomebrewRecord(it)) void app.saveItem(it);
+    else if (target === 'cloud') void app.saveItem(it);
   }
 
-  /* The copy a sign-in left for this item, once the account's items are read. */
+  /* The copy a sign-in left for this record, once the account's items are read. Not gated
+     on `offered`, which waits for that read: a failed read must still say so. */
   $effect(() => {
-    if (!offered || !isHomebrewRecord(it) || app.saveItemFor !== hid) return;
+    if (!app.env.cloud || !app.user || app.saveItemFor !== ref) return;
     const status = app.homebrew?.status;
     if (status === 'ready') {
       app.saveItemFor = null;
-      void app.saveItem(it);
+      if (offered) void app.saveItem(it);
     } else if (status === 'error') {
       app.saveItemFor = null;
       app.say((t) => t.hbLoadFailed, { error: true });
@@ -88,25 +85,26 @@
 {#if app.homebrew?.has(it.id) && !foreign}
   <Button size="sm" href={homebrewItemHash(it.id)} sameTab>{t.edit}</Button>
 {/if}
-{#if offered && typeof hid === 'string'}
+{#if offered}
   <div class="savegroup">
     <Button
       size="sm"
-      disabled={saved || app.savingItem === hid || app.newListTarget === 'wait'}
+      disabled={app.savingItem === ref || app.newListTarget === 'wait'}
       expanded={app.newListTarget === 'prompt' ? asking : undefined}
-      describedby={saved ? undefined : noteId}
-      onclick={press}>{saved ? t.saveItemDone : t.saveItem}</Button
+      describedby={noteId}
+      onclick={press}>{t.saveItem}</Button
     >
-    {#if !saved}
-      <p class="savenote" id={noteId}>{toLists ? t.saveItemNoteList : t.saveItemNote}</p>
-    {/if}
+    <p class="savenote" id={noteId}>{toLists ? t.saveItemNoteList : t.saveItemNote}</p>
   </div>
   {#if asking && app.newListTarget === 'prompt'}
     <div class="saveprompt">
       <SignInPrompt
         {app}
         lead={t.signInToSaveItem}
-        after={{ hash: inModal ? itemHash(hid) : app.hash, action: { do: 'saveItem', hid } }}
+        after={{
+          hash: inModal ? (hid ? itemHash(hid) : recordHref(it)) : app.hash,
+          action: hid ? { do: 'saveItem', hid } : { do: 'saveItem', id: it.id }
+        }}
         boxed
       />
     </div>

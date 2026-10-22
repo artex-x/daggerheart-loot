@@ -508,6 +508,8 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Style:** a fixed gold pill 26px off the bottom, centred, with the Float
   shadow, entering on a 0.2s rise. The error flavour is Alarm Red with white
   text. The action flavour holds a darkened inline button.
+- **Width:** as wide as its text, at most the window less 16px a side; a long
+  name wraps inside it, so it stays a few lines high at 360px.
 - It is a `popover="manual"` element so it survives the inertness of a native
   `<dialog>`, and it is `display: none !important` under print.
 

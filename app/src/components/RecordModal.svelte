@@ -56,10 +56,13 @@
   /* Opened as a modal rather than shown: that is what makes the rest of the
      page inert to a screen reader as well as to the mouse. The flag follows
      `showModal()`: the top layer stacks in entry order, so a toast shown
-     first would sit under the dialog's backdrop. */
+     first would sit under the dialog's backdrop. The close button takes the
+     focus: `showModal()` alone gives it to the card whenever the card scrolls
+     (docs/specs/FEATURES.md, "Records"). */
   $effect(() => {
     if (!dialog) return;
     dialog.showModal();
+    dialog.querySelector<HTMLElement>('.modal-x')?.focus();
     app.dialogOpen = true;
     return () => {
       app.dialogOpen = false;

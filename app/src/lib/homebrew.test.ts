@@ -42,15 +42,21 @@ import {
   type HomebrewRecord,
   type ItemRow,
   type Problem,
+  copyContentOf,
+  copyName,
   copyRows,
   derivedKey,
   fnv1a128,
+  NAME_MAX,
   ownKeyFor
 } from './homebrew.js';
-import { buildIndex, madeFrom, setOf, upgradesTo } from './data.js';
+import { buildIndex, madeFrom, setOf, upgradesTo, type Loot } from './data.js';
 import type { Record_ } from './types.js';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'homebrew');
+const CATALOG = JSON.parse(
+  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
+) as Loot;
 const read = (name: string): unknown => JSON.parse(readFileSync(join(DIR, name), 'utf8'));
 
 interface Cases {
@@ -975,16 +981,17 @@ describe('copyRows', () => {
 
   const GM2 = '00000000-0000-4000-8000-000000000002';
   const derive = (k: string): string => derivedKey(GM2, k);
-  const account = (held: readonly string[] = []) => ({
+  const NONE = { en: new Set<string>(), ru: new Set<string>() };
+  const account = (held: readonly string[] = [], names = NONE) => ({
     newId: ids(),
-    keyFor: derive,
+    names,
     cardKeyFor: (k: string) => ownKeyFor(GM2, (x) => held.includes(x), k),
     hasCard: (k: string) => held.includes(k)
   });
   const ITEM = derive('hb_rangerrollaaaaaa');
 
-  it('takes the derived key, drops the source and the author keys, keeps catalog ids, and copies every embedded card under its derived key', () => {
-    const rows = copyRows(record, account());
+  it('takes the given key, drops the source and the author keys, keeps catalog ids, and copies every embedded card under its derived key', () => {
+    const rows = copyRows(record, ITEM, account());
     expect(rows.books).toEqual([]);
     expect(rows.update).toBe(false);
     expect(rows.items).toEqual([
@@ -1017,14 +1024,14 @@ describe('copyRows', () => {
 
   it('names a card key the account holds and drops an author key with no card', () => {
     const bare = { ...record, cards: { refs: { [REFS[0] as string]: ref('R0') } } };
-    const rows = copyRows(bare, account([SET]));
+    const rows = copyRows(bare, ITEM, account([SET]));
     expect(rows.cards.map((c) => c.key)).toEqual([derive(REFS[0] as string)]);
     expect(rows.items[0]?.content.set).toBe(SET);
     expect(rows.items[0]?.content.refs).toEqual([derive(REFS[0] as string)]);
   });
 
   it('names a held derived card key instead of copying the card again', () => {
-    const rows = copyRows(record, account([derive(SET)]));
+    const rows = copyRows(record, ITEM, account([derive(SET)]));
     expect(rows.items[0]?.content.set).toBe(derive(SET));
     expect(rows.cards.map((c) => c.key)).toEqual(REFS.map(derive));
   });
@@ -1035,7 +1042,7 @@ describe('copyRows', () => {
       { kind: 'item', ru: 'Простое', set: 'saints-ensemble' },
       null
     );
-    const rows = copyRows({ ...plain, hid: 'x' }, account());
+    const rows = copyRows({ ...plain, hid: 'x' } as HomebrewRecord, ITEM, account());
     expect(rows.cards).toEqual([]);
     expect(rows.items[0]?.content).toEqual({
       kind: 'item',
@@ -1050,10 +1057,107 @@ describe('copyRows', () => {
   it('writes no picture into the content: an own file or a catalog basename travels by row id', () => {
     const plain = recordOf('hb_plainaaaaaaaaaaa', { kind: 'item', ru: 'Простое' }, null);
     for (const img of [`p/${'e'.repeat(32)}.webp`, 'q1.webp']) {
-      const content = copyRows({ ...plain, img }, account()).items[0]?.content;
+      const content = copyRows({ ...plain, img }, ITEM, account()).items[0]?.content;
       expect(content && 'img' in content).toBe(false);
       expect(contentProblems(content, 'hb_plainaaaaaaaaaaa')).toEqual([]);
     }
+  });
+
+  it('numbers each language against the own names of that language', () => {
+    const sword = recordOf(
+      'hb_swordaaaaaaaaaaa',
+      { kind: 'item', ru: 'Меч', en: 'Sword' },
+      null
+    );
+    const taken = { ru: new Set(['Меч']), en: new Set(['Меч']) };
+    const content = copyRows(sword, ITEM, account([], taken)).items[0]?.content;
+    expect([content?.ru, content?.en]).toEqual(['Меч (2)', 'Sword']);
+  });
+
+  it('copies a catalog record as one item in the default source under the given key, with its catalog set and rule cards named', () => {
+    const loot = buildIndex(CATALOG);
+    const voa = loot.byId.get('voa4_t3d') as Record_;
+    const rows = copyRows(voa, ITEM, account());
+    expect(rows.cards).toEqual([]);
+    expect(rows.items).toHaveLength(1);
+    expect(rows.items[0]).toMatchObject({ key: ITEM, book: null });
+    expect(rows.items[0]?.content.set).toBe(voa.set);
+    const sap = loot.byId.get('w1') as Record_;
+    expect(copyRows(sap, ITEM, account()).items[0]?.content.refs).toEqual(sap.refs);
+  });
+});
+
+describe('copyName', () => {
+  const long = 'Я'.repeat(119) + '😀';
+
+  it('keeps a free name and numbers a taken one with the smallest free number', () => {
+    expect(copyName('Меч', new Set())).toBe('Меч');
+    expect(copyName('Меч', new Set(['Меч']))).toBe('Меч (2)');
+    expect(copyName('Меч', new Set(['Меч', 'Меч (2)']))).toBe('Меч (3)');
+    expect(copyName('Меч', new Set(['Меч', 'Меч (3)']))).toBe('Меч (2)');
+  });
+
+  it('does not parse a number in the source name', () => {
+    expect(copyName('Меч (2)', new Set(['Меч (2)']))).toBe('Меч (2) (2)');
+  });
+
+  it('cuts a long base on code points so the name fits NAME_MAX', () => {
+    const out = copyName(long, new Set([long]));
+    expect(Array.from(out)).toHaveLength(NAME_MAX);
+    expect(out).toBe('Я'.repeat(116) + ' (2)');
+    const spaced = 'Я'.repeat(115) + ' ' + 'Я'.repeat(4);
+    expect(copyName(spaced, new Set([spaced]))).toBe('Я'.repeat(115) + ' (2)');
+  });
+
+  it('numbers past every own item at the limit', () => {
+    const taken = new Set([
+      'X',
+      ...Array.from({ length: 299 }, (_, i) => `X (${String(i + 2)})`)
+    ]);
+    expect(copyName('X', taken)).toBe('X (301)');
+  });
+});
+
+describe('copyContentOf', () => {
+  const loot = buildIndex(CATALOG);
+  const of = (id: string): HomebrewContent => {
+    const r = loot.byId.get(id);
+    if (!r) throw new Error('no ' + id);
+    return copyContentOf(
+      r,
+      (loot.craftedFrom.get(id) ?? []).map((x) => x.id)
+    );
+  };
+
+  it('maps every catalog record to content with no problems', () => {
+    expect(loot.byId.size).toBe(1459);
+    for (const id of loot.byId.keys()) {
+      expect([id, contentProblems(of(id))]).toEqual([id, []]);
+    }
+  });
+
+  it('keeps a loot tier, copies a record with a stat block as equipment, and leaves out the table placement', () => {
+    expect(of('voa2_c1').tier).toBe('C');
+    const scalpel = of('w7');
+    expect(scalpel.kind).toBe('equip');
+    expect(
+      scalpel.eq && ('as' in scalpel.eq || 'th' in scalpel.eq || 'line' in scalpel.eq)
+    ).toBe(false);
+    const knife = of('voa1_t1a');
+    expect(knife.tier).toBeUndefined();
+    expect('recall' in knife).toBe(false);
+    expect('realm' in of('mw1')).toBe(false);
+    for (const k of ['id', 'src', 'roll', 'img', 'frame']) expect(k in of('f23')).toBe(false);
+  });
+
+  it('keeps alt, set, refs, craft and the given craft_from', () => {
+    expect(of('f23').eq?.alt).toEqual(loot.byId.get('f23')?.eq?.alt);
+    expect(of('voa4_t3d').set).toBe(loot.byId.get('voa4_t3d')?.set);
+    expect(of('w1').refs).toEqual(loot.byId.get('w1')?.refs);
+    expect(of('ci18').craft).toEqual(loot.byId.get('ci18')?.craft);
+    const [into, from] = [...loot.craftedFrom][0] ?? [];
+    if (!into || !from) throw new Error('no craft');
+    expect(of(into).craft_from).toEqual(from.map((x) => x.id));
   });
 });
 

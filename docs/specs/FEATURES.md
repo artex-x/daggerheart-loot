@@ -1189,56 +1189,68 @@ browser lists writable after the date.
   meets a new revision of the drawn item, and «Предмет не найден» once when a
   drawn item goes; a first read that finds nothing says nothing.
 - **«Сохранить себе» / "Save to my items"** on another account's item - on
-  `#/h/` and in the record modal of a list row that links it - makes an
-  ordinary own item in «Хоумбрю» (no source, no section) from what the reader
-  sees, under the reader's derived key of the item's key: the `hb_` keys of
-  the author's other items in its relations are dropped, catalog ids stay,
-  and its set and rule cards are copied under their derived keys, or named
-  when the reader holds a card of the card's key or of its derived key
-  (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
-  The copy no longer changes with the original. The button and its note
-  form one group on a line of their own under the other pick buttons, the
-  note beside the button where it fits, else under it, and the button's
+  `#/h/` and in the record modal of a list row that links it - and on a
+  catalog record - on `#/i/<id>` and in its record modal - makes an ordinary
+  own item in «Хоумбрю» (no source, no section) from what the reader sees,
+  one more at each press, each under a new key
+  (`docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md`).
+  A copy of another account's item drops the `hb_` keys of the author's other
+  items in its relations and keeps catalog ids; its set and rule cards are
+  copied under their derived keys, or named when the reader holds a card of
+  the card's key or of its derived key, so a second press names the cards
+  the first copied. A copy of a catalog record keeps its names, texts, loot
+  tier, stat block (a record with one copies as equipment, with no record
+  tier), `craft`, the records made into it as `craft_from`, upgrade line, set
+  and rule cards, all as catalog keys and ids, and leaves out its table and
+  card-set placement (`roll`, `recall`, `frame`, `starting`, `community`,
+  `realm`). The copy keeps the source's name in each language; when an own
+  item holds that name, it takes the smallest free number from 2, «Меч (2)»,
+  «Меч (3)», "Sword (2)", each language on its own; a long base is cut so
+  the name fits 120 characters, and a «(N)» in the source's name is not
+  read. The copy no longer changes with the original. The button and its
+  note form one group on a line of their own under the other pick buttons,
+  the note beside the button where it fits, else under it, and the button's
   `aria-describedby` names the note, which says
   «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с
-  оригиналом.», or, while one of the reader's account lists links the item,
-  «Копия попадёт в «Хоумбрю», а строки ваших списков с этим предметом будут
-  вести на неё.»: the press relinks in place every such row to the copy,
-  each keeping its position, quantity, price, both notes and the «Только для
-  мастера» mark, and toasts
-  «Предмет «%s» сохранён в «Мои предметы», строки ваших списков ведут на
-  копию», else «Предмет «%s» сохранён в «Мои предметы»», each with
-  «Изменить» to the copy's `#/homebrew/<key>` in a new tab; each relinked
-  row's key becomes the copy's. Then the button reads «Сохранено», disabled,
-  and no second copy is made: also after a reload or in a second tab, which
-  find the copy under the same derived key with no row left on the author's
-  item; a reader who already holds the item's own key (a copy made before
-  keys were derived) sees it so from the start. When the copy is held but a
-  row still links the author's item (the relink never ran), the button offers
-  the press again, and the press relinks those rows to the copy with no
-  second import. A list that already holds a row of the copy keeps its row
-  of the author's item, because a list holds one row per key: the line and
-  the press skip that list. A pending purchase request line of a relinked row's old key
-  draws the raw key and reads short. Signed out the press opens a
-  boxed sign-in prompt under the row, «Войдите, и копия предмета
-  сохранится в «Мои предметы».»; the sign-in returns to the item's page (from
-  a modal too) and the copy is made once the reader's items are read. While
-  the reader's items load it toasts «Ваши предметы ещё загружаются -
-  повторите через секунду.» and writes nothing. A limit says its text; no
-  answer says «Не получилось сохранить предмет себе. Проверьте соединение и
-  попробуйте ещё раз.»; any other refusal «Сервер не принял копию: данные в
-  аккаунте изменились. Нажмите «Сохранить себе» ещё раз.». The account's read
-  after the write decides: a lost answer whose copy landed is a save.
-  The copy takes the item's picture by the copy's row id, never in its
-  content: a catalog picture is named as it is, and an own file of the
-  author is copied to a file of the reader's under a new name, so the
-  author's delete never removes it. The picture is written before the rows
-  are relinked, so a tab closed in the middle leaves the rows on the
-  author's item and the next press finishes it; the button stays busy
-  meanwhile. A failed copy appends «Картинку скопировать не получилось -
-  копия сохранена без неё.» to the toast, and the copy and the relink still
-  land. The press on a held copy without a picture (the relink never ran)
-  gives it the author's picture and never replaces one the copy holds.
+  оригиналом.», or, while one of the reader's account lists links another
+  account's item, «Копия попадёт в «Хоумбрю», а строки ваших списков с этим
+  предметом будут вести на неё.»: the press relinks in place every such row
+  to the copy, each keeping its position, quantity, price, both notes and
+  the «Только для мастера» mark, and toasts «Предмет «%s» сохранён в «Мои
+  предметы», строки ваших списков ведут на копию», else «Предмет «%s»
+  сохранён в «Мои предметы»», with the copy's name, each with «Изменить» to
+  the copy's `#/homebrew/<key>` in a new tab; each relinked row's key
+  becomes the copy's. A catalog record's list rows stay on the record, and
+  its record modal stays open. After each press the button reads «Сохранить
+  себе» again with its note; it is disabled only while a copy is written.
+  The group draws signed out, and signed in once the reader's items are
+  read. A pending purchase request line of a relinked row's old key draws the
+  raw key and reads short. Signed out the press opens a boxed sign-in prompt
+  under the row, «Войдите, и копия предмета сохранится в «Мои предметы».»;
+  the sign-in returns to the page (from a modal, to the item's or the
+  record's own address) and one copy is made once the reader's items are
+  read; a failed read of them says «Не получилось загрузить ваши предметы.»
+  and writes nothing. While the reader's items or lists load it toasts
+  «Ваши предметы ещё загружаются - повторите через секунду.» and writes
+  nothing. A limit says its text; no answer says «Не получилось сохранить
+  предмет себе. Проверьте соединение и попробуйте ещё раз.»; any other
+  refusal «Сервер не принял копию: данные в аккаунте изменились. Нажмите
+  «Сохранить себе» ещё раз.». The account's read after the write decides: a
+  lost answer whose copy landed is a save. A lost answer whose copy is not
+  found keeps the key in this tab's memory for that reader and source, and
+  the next press of the source sends it again: the server skips a key it
+  holds, so a retry never writes a second copy, and it never replaces a
+  picture the landed copy holds. A file copied for a retry that then finds a picture
+  is named by no row; the hourly clean-up deletes it, as any unnamed own file. A limit or a refusal drops
+  the kept key; after a reload, the next press takes a new key. The copy
+  takes the source's picture by the copy's row id, never in its content: a
+  catalog picture is named as it is, and an own file of the author is copied
+  to a file of the reader's under a new name, so the author's delete never
+  removes it. The picture is written before the rows are relinked, so a tab
+  closed in the middle leaves the rows on the author's item, and the next
+  press makes another copy and relinks them to it. A failed picture write
+  appends «Картинку скопировать не получилось - копия сохранена без неё.» to
+  the toast, and the copy and the relink still land.
 - A tag and a table path are two different things, and a record draws each in
   its own place. The line under a record page's heading is the record's
   complete table path - the group, its sub-table, and, for the two tables
@@ -1442,8 +1454,8 @@ browser lists writable after the date.
   the row draws that picture and nothing is remembered as failed
   (`META.md` section 9).
 - The record modal is a native `<dialog>` opened with `showModal()`, so it is
-  modal, the page behind it is inert, and focus moves into it on open and
-  returns to the opener on close - a deliberate improvement over the live
+  modal, the page behind it is inert, and focus moves to its close button on
+  open, also when the card scrolls, and returns to the opener on close - a deliberate improvement over the live
   app, whose card the keyboard never actually enters. The one visible
   consequence is that the modal's close button carries a focus ring the live
   app's does not.
@@ -1892,7 +1904,11 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the record modal of an own item, `#/h/<id>` as the author) the name of an
   own set before its bonus links to the set's fold on the Sets tab, and each
   own rule card ends with «Открыть в «Мои предметы»» / "Open in "My items""
-  to its fold on the Rules tab; a reader's card draws neither.
+  to its fold on the Rules tab; a reader's card draws neither. «Сохранить
+  себе» makes one more own copy at each press, of another account's item or
+  of a catalog record, with one control, write and toast; a copy keeps the
+  source's name or takes the next free number per language (owner,
+  2026-10-20 and 2026-10-21; "Records").
 - **What a delete removes**: the item and its entry in every list that links
   it, the author's and other users' alike, also with the author's account.
   A card delete removes the card. The items keep its key and draw nothing for
@@ -2583,7 +2599,8 @@ Each rule keeps its number: a review cites it by number.
 - **16. Long names**: a name of any allowed length wraps inside its box at
   360 px (`overflow-wrap: anywhere` on the list card, the page heading, the
   toast, the chip, the filter pill and the source and card rows); nothing
-  scrolls sideways.
+  scrolls sideways. A toast takes up to the window's width less 16 px a side,
+  so a long one stays a few lines high at the bottom of the window.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
   that copies or sends a link hands out the preview host's link with its own
   card - an item, a shared list, a print set, a catalog table; a catalog

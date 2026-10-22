@@ -9,8 +9,7 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Страница"
     StaticText "1"
     StaticText "РАСХОДНИК"
-    StaticText "WONDROUS ENVIRONMENTS"
-    StaticText "Смола Бездны"
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     StaticText "Вы можете бросить флакон этой смолы в цель в пределах Далекой ди..." [namelen=127 namehash=0130265a]
@@ -20,6 +19,8 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4 expanded=false]
+    button "Сохранить себе" [description=Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом. expanded=false]
+    StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
 
 ## ru :: controls
 Arazo's Artifacts
@@ -55,6 +56,7 @@ daggerheart.com
 Скопировать текст
 Случайно 1–119
 Смола Бездны
+Сохранить себе
 Списки
 Страница
 Таблицы
@@ -68,8 +70,7 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/won
     button "Page"
     StaticText "1"
     StaticText "CONSUMABLE"
-    StaticText "WONDROUS ENVIRONMENTS"
-    StaticText "Abyssal Sap"
+    ... StaticText x2 of 6 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     StaticText "You can throw a vial of this sap at a target within Far range to..." [namelen=111 namehash=8af0f270]
@@ -79,6 +80,8 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/won
     button "Copy text" [description=Copy text]
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet expanded=false]
+    button "Save to my items" [description=The copy goes to "Homebrew" and no longer changes with the original. expanded=false]
+    StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
 
 ## en :: controls
 Abyssal Sap
@@ -106,6 +109,7 @@ Privacy
 RU
 Random 1–119
 Roll result
+Save to my items
 Search
 Share
 Sign in
