@@ -11,8 +11,8 @@
 - Title: Audit + Improve / Redesign Functional Tool UI
 - Summary (facts only):
   - Dense functional RPG tool (loot roller + reference), bilingual, not a
-    landing page. Primary skill: Impeccable. Quality gate in the issue:
-    Vercel web-design-guidelines (not installed as a skill on this host).
+    landing page. Primary skill: Impeccable. The issue also names Vercel
+    web-design-guidelines; the owner dropped it (2026-10-23).
   - Goals in order: core flows correct; WCAG 2.2 AA; deliberate UI with no
     AI-slop tells; keeps the Daggerheart / fantasy register; polish in place
     unless the system is weak; reuse existing art; lock `design.md`.
@@ -81,7 +81,10 @@
   be understood, or when its label does not say what it does. The fix
   changes the UI so the text can go. Removing a help panel or any visible
   feature needs the owner's yes first.
-- Audit only the post-R10 shape: skip the surfaces R10 deletes.
+- Audit and design only the post-R10 shape: skip the surfaces R10 deletes.
+  R10 does not have to ship first. A batch that touches the header, the tab
+  bar, the notices or the list pages waits for R10 `B10.3` (same files,
+  same goldens); other batches may run before it (owner, 2026-10-23).
 - Contracts: routes, ids, links, asset paths stay. Print layouts (63x88 mm
   nine per sheet, 44x63 mm sixteen, colour and black-and-white, Figma
   nodes) are product law: a redesign does not touch them.

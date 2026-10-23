@@ -11,23 +11,17 @@ the next prompt.
 |---|---|---|---|---|
 | S1 | Critique of all states, widths, languages | no | now | `audit.md`, owner triage |
 | S2 | Direction and mocks | no | after S1 triage | owner approves a direction |
-| S3..Sn | One batch: mock, implement, review, fix | yes | after R10 ships | batch pushed, CI green |
+| S3..Sn | One batch: mock, implement, review, fix | yes | after S2; header, tab bar and list batches after R10 `B10.3` | batch pushed, CI green |
 | Close | `DESIGN.md` lock, re-audit, squash | docs | after the last batch | squash on `main` |
 
 ## Owner questions
 
-Q1. When do the implement sessions start?
-- A (recommended): after R10 ships, before `cloudflare-pages` and
-  `catalog-filter-links`. R10 rewrites the header and the tab bar on every
-  page and re-seeds the goldens; overlap would double the golden re-seeds
-  and conflict in the same files. Trade-off: `cloudflare-pages` then rebases
-  its language-switch change onto the new header.
-- B: after `cloudflare-pages`. One less rebase, but the UI fixes wait longer.
-
-Q2. Which widths does the critique capture?
-- A (recommended): 360, 768, 1180 (sweep widths without 390) plus 1600 for
-  wide desktop. Trade-off: 390 overflow defects are left to `sweep.js`.
-- B: all four sweep widths plus 1600. More evidence, more tokens.
+Settled (owner, 2026-10-23):
+- S1 and S2 assume the post-R10 shape and do not wait for R10.
+- A batch that touches the header, the tab bar, the notices or the list
+  pages waits for R10 `B10.3`. Any other batch may run before R10.
+- Critique widths: 360, 390, 768, 1180, 1600.
+- No Vercel guideline cross-check.
 
 ---
 
@@ -45,16 +39,13 @@ issues/57/context.md and issues/57/sessions.md. Do not re-fetch the issue.
    tests/app/inventory.js: npm run build:test, then one screenshot per
    state family (one representative state per route and per component
    state: empty, loading, error, selected, open, signed in/out, long text)
-   at the widths of Q2, in RU and EN. Skip the surfaces that R10 deletes
+   at 360, 390, 768, 1180 and 1600, in RU and EN. Skip the surfaces that R10 deletes
    (context.md). Save PNGs and a manifest (state id, route, width, lang)
    to C:\Users\Ignat\.dhloot\notes\57\evidence\, outside the checkout, so
    no untracked file blocks the CI credit.
 2. Run Impeccable critique and audit over the set. Dispatch at most two
    helpers in parallel, split by route family; each loads the impeccable
-   skill, reads PRODUCT.md and DESIGN.md first, and returns findings only.
-   Cross-check accessibility against the Vercel web interface guidelines
-   (fetch the guideline file once; say so if it is unavailable).
-3. Apply the clarity rule from context.md to every surface: list each help
+   skill, reads PRODUCT.md and DESIGN.md first, and returns findings only.3. Apply the clarity rule from context.md to every surface: list each help
    text, tooltip, legend and instruction sentence, and each label that does
    not say what it does.
 4. Write issues/57/audit.md: P0/P1/P2 tables, one row per finding - id,
