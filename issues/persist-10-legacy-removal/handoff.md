@@ -2,85 +2,98 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: blocked (planned; not dispatchable before 2026-10-26)
+- Task status: blocked (planned and refreshed; dispatchable from 2026-10-26, 00:00 UTC)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no (Q1 answered by the owner 2026-10-01: B -
-  `B10.4` drops `move_legacy_list`, the `dhloot.move` guard,
-  `lists.legacy_fingerprint` and its index; plan.md section 4)
-- Branch: main (the release branch is chosen at dispatch)
-- Base / starting commit: to be set at dispatch (planned against
-  `930dc986`; the plan itself is in `46cf7c04`)
-- Pushed: the plan only, in `46cf7c04`; no R10 code
+- NEEDS_HUMAN_CONFIRMATION: no (Q1 answered by the owner 2026-10-01, B;
+  the P6 fork settled by the planner 2026-10-23, plan.md section 4)
+- Branch: `claude/persist-10-legacy-removal` (worktree
+  `.claude/worktrees/persist-10-legacy-removal`)
+- Base / starting commit: `0b73fd5c` (`origin/main`, 2026-10-23)
+- Pushed: the refreshed task documents only (this commit); no R10 code
 
 ## Completed
-- Batch name/id: none (planning pass 1, 2026-10-01).
-- What shipped: `issues/persist-10-legacy-removal/context.md`, `plan.md`,
-  this file; the roadmap rows for `debt-cleanup` and R10's batches in
-  `issues/persistent-storage/plan.md` section 9 (owner, 2026-10-01).
-- Files changed: the four above.
-- Previous sha (batch diff base): -
-- Deviations and rationale: the roadmap named one batch `B10.1`; the plan
-  has four (plan.md section 8 gives each split criterion). The roadmap's
-  "states cases 13, 17, 22" are list page cases today, so `B10.2` ports
-  them to account lists instead of deleting them.
+- Batch name/id: none. Planning pass 1 (2026-10-01, `46cf7c04`); pass 2,
+  the dispatch refresh (2026-10-23, this commit).
+- What shipped: `context.md`, `plan.md` and this file, refreshed against
+  `0b73fd5c`.
+- Files changed: the three task documents.
+- Previous sha (batch diff base): `0b73fd5c`
+- Deviations and rationale (pass 2 against pass 1):
+  - Five batches, not four: `B10.4` is carry P6 (D115, the first read takes
+    heads); the migration moved to `B10.5`, the last batch, so the test
+    project window before the landing is one CI run (plan.md section 13).
+  - P6 settled as a PostgREST head read with entry identities, not an
+    `account_heads()` RPC (plan.md section 4); D115's "How to verify"
+    gets one changed clause in `B10.4`.
+  - P36 placed in `B10.3` as its own acceptance line.
+  - `B10.1` ports the shared page's `#/l/` coverage to `#/s/` (unit cases,
+    states case 77, two sweep rows) instead of deleting it; it adds
+    `app/src/test/seed.ts` (`seedWith`), which `B10.2` reuses.
+  - `B10.1` fixes `AppState.pageRecordFor` (its account-list branch read
+    `openList`, which only a browser list sets).
+  - The route kind is `listRetired` (beside `printRetired`), not `retired`.
+  - Gates follow the push-every-batch model: `check:fast` locally, CI as
+    the full gate, a local golden re-seed and the edited browser suites.
+  - D64 goes whole in `B10.3` (`debt-cleanup` fixed its «Выйти» half).
 - Review: plan review required before B10.1 (trigger: public contract
-  change; a migration that drops a SECURITY DEFINER function and a
-  column), report
+  change; a migration that drops a SECURITY DEFINER function and a column;
+  a new sync protocol), report
   `issues/persist-10-legacy-removal/reviews/plan-B10.1.md`
 
 ## Verification
-- Commands run (exact): read-only greps (`git grep`) over `app/src`,
-  `tests`, `supabase`, `docs/specs`, `llms.txt`, the READMEs; no gate run.
-- Results: the inventory is in context.md, "Key paths", and plan.md
-  section 1.
-- Gates: none (planning).
+- Commands run (exact): read-only `git grep` and `git log` over `app/src`,
+  `tests`, `supabase`, `tools`, `docs/specs`, `docs/decisions`,
+  `llms.txt`, the READMEs, `.claude/`; the inventory grep of plan.md
+  section 6, item 2.
+- Results: plan.md sections 1 and 6.
+- Gates: none run (planning; the commit holds only `issues/` documents).
 
 ## Next batch (implement-ready)
 - Name: B10.1 - retire `#/l/`
 - Objective: an old `#/l/` link draws the not-found page with its address
-  kept; nothing reads, writes or documents the list link format.
-- In scope: plan.md section 9 (the codec, `Env.compress`, the `#/l/`
-  pages, buttons and address rewriting, the `retired` route kind, the
-  contract fixtures and suites, the specs and READMEs).
+  kept; nothing reads, writes or documents the list link format; the
+  shared page's tests run on `#/s/` share links.
+- In scope: plan.md section 9.
 - Out of scope: browser lists, the move, the notices, the date gates,
-  `?today=`, the tab bar, the database.
-- Files expected: plan.md section 9, "Files deleted" and "Files edited".
+  `?today=`, the tab bar, the first read, the database.
+- Files expected: plan.md section 9, "Files deleted", "Files created",
+  "Files edited".
 - Steps: plan.md section 9, steps 1-15.
 - Acceptance criteria: plan.md section 9, "Acceptance criteria".
 - Verification commands:
   ```text
-  rtk npm run check                                    # Bash timeout 600000
-  node tests/run-all.js contracts,dataint
   npm run build:test
   node tests/run-all.js app/contracts,app/states
-  node tests/app/golden.js --shard=1/4                 # compare, then 2/4, 3/4, 4/4
   node tests/app/golden.js --update --shard=1/4        # then 2/4, 3/4, 4/4
-  node tests/app/sweep.js 360
-  npm run check:built
-  rtk npm run check                                    # after any fix, before the commit
+  git status -- tests/app/snapshots
+  node tests/run-all.js contracts,dataint
+  rtk npm run check:fast                               # Bash timeout 600000
+  git push -u origin claude/persist-10-legacy-removal  # after git fetch origin and git merge origin/main
   ```
-- Risks / do-nots: plan.md section 9, "Risks and do-nots". Before
-  anything: the dispatch refresh (plan.md section 6) - confirm the date
-  passed, re-run the inventory grep, re-measure the gate costs.
+- Risks / do-nots: plan.md section 9, "Risks and do-nots". Step 1 confirms
+  the date and merges `origin/main`.
 - Fallback (optional): none.
 
 ## Blockers
-- Date: R10 is dispatched only on or after 2026-10-26, after R7c, R7d, R8,
-  R9, `debt-cleanup` and `persist-review`.
-- Order constraint for `B10.4` (Q1 B): it starts only after `B10.3` left no
-  client file that names `legacy_fingerprint`, and R10 reaches production
-  as one push holding both (plan.md section 12, "Order").
+- Date: R10 is dispatched on or after 2026-10-26 (00:00 UTC,
+  `LEGACY_WRITE_UNTIL`).
+- Plan review before `B10.1` (`agent-guard.mjs` denies the implementer
+  dispatch until it approves or its fix-then-continue is applied).
+- Order for `B10.5`: it starts only on a tree where `git grep -n
+  legacy_fingerprint -- app/src tests/app tests/e2e tools` prints nothing,
+  and it is pushed only when no other branch waits to land on `main`; the
+  closeout follows its CI credit (plan.md section 13, "Order").
 
 ## Deferred
-- D64's «Выйти» half, D66 and D61: `debt-cleanup` (owner, 2026-10-01).
-- The Q1 decision file: `B10.4` writes it from plan.md section 4,
-  "Decision for `B10.4` to write".
+- A clean-up of `StoragePort`'s keyed `onExternalChange` signal: named to
+  the owner at closeout, not built.
+- The decision files: `B10.3`, `B10.4` and `B10.5` write them (plan.md
+  sections 11-13).
 
 ## Notes
 - Mocks path: none (no new UI; the not-found page exists).
 - Screenshot findings: none.
-- Cleanup performed / retained artifacts: none.
+- Cleanup performed / retained artifacts: the pass-1 text is in `46cf7c04`.
 - Session end partial progress (if any): none.
-- Durable items written to their homes this batch (file, section): none
-  yet; decision files are written by `B10.3` and `B10.4` (plan.md section 3,
-  item 10).
+- Durable items written to their homes this batch (file, section): none;
+  each batch writes its own (plan.md section 7).

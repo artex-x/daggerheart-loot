@@ -2,604 +2,715 @@
 
 ## Status
 
-- Planning pass 1, 2026-10-01, planner, at HEAD `930dc986` (R7b built,
-  unpushed). Mode A: no plan existed.
-- Not dispatchable before 2026-10-26: R10 is the first release dispatched
-  after `LEGACY_WRITE_UNTIL`. Order (owner, 2026-10-01; R9 before R8, 2026-10-02): R7c, R7d, R9, R8,
-  `debt-cleanup`, `persist-review`, R10.
-- Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4` (outlines).
-  None started.
-- NEEDS_HUMAN_CONFIRMATION: no. Q1 answered by the owner 2026-10-01:
-  option B - `B10.4` drops `move_legacy_list`, the `dhloot.move` guard in
-  both limit triggers, `lists.legacy_fingerprint` and its index (section 4).
-- Plan review: required before B10.1 (trigger: a public contract change -
-  the `#/l/` route, `docs/fixtures/lists/`, `tests/contracts.js`,
-  `CONTRACTS.md` section 3 and `llms.txt` in `B10.1`, `routes.json` in
-  `B10.3`; and a migration in `B10.4` that drops a SECURITY DEFINER
-  function and drops a column with its stored values)
-- Dispatch refresh (mandatory, section 6): the planner re-reads this plan
-  against the tree at dispatch, because R7c-R9, `debt-cleanup` and
-  `persist-review` land first.
+- Planning pass 1, 2026-10-01, planner, at `930dc986` (mode A). Pass 2 (the
+  dispatch refresh of section 6), 2026-10-23, planner, at `0b73fd5c` on
+  `claude/persist-10-legacy-removal` (mode B). The pass-1 text is in
+  `git show 46cf7c04:issues/persist-10-legacy-removal/plan.md`.
+- Dispatchable from 2026-10-26 (00:00 UTC, `LEGACY_WRITE_UNTIL`). Every
+  release the pass-1 order put first has shipped (section 6).
+- Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4`, `B10.5`
+  (outlines). None started.
+- NEEDS_HUMAN_CONFIRMATION: no. Q1 answered by the owner 2026-10-01 (B,
+  section 4). The P6 fork is settled in this pass (section 4, "P6").
+- Plan review: required before B10.1 (trigger: a public contract change - the `#/l/` route, `docs/fixtures/lists/`, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` in `B10.1`, `routes.json` in `B10.3`; a migration in `B10.5` that drops a SECURITY DEFINER function and a column with its stored values; a new sync protocol in `B10.4`)
+- `B10.4` (the first read, a sync protocol change) gets its own
+  `- Plan review: required before B10.4` line at its refresh, when its brief
+  becomes implement-ready.
 
 ## 1. Objective and current state
 
 Objective: after the legacy write cutoff, remove the browser list model and
 everything that served it, so the app has one list model (account lists)
-and one link format (`#/s/<token>`). Source of the scope: the roadmap
-`issues/persistent-storage/plan.md` section 9 (R10 row) and section 10
-(list (c)); the owner decision
-`docs/decisions/2026-09-27-r10-removes-browser-lists-and-the-move.md`.
+and one link format (`#/s/<token>`); and make the account's first read cheap
+at three times the default limits (carry P6, `DEBT.md` D115). Source of the
+scope: the owner decision
+`docs/decisions/2026-09-27-r10-removes-browser-lists-and-the-move.md`, the
+Q1 answer (section 4), and the two carries (context.md, "Carries").
 
-State at HEAD `930dc986` (verified 2026-10-01):
+State at `0b73fd5c` (verified 2026-10-23; the inventory is section 6):
 
-- The codec is `app/src/lib/listLink.ts` (there is no `codec.ts`): encode,
-  decode, base64url, the stamp, plus the shared types `ListEntryMeta`,
-  `ListShape`, `DecodedList`, `QTY_MAX` and a `MoneyMode` re-export that
-  13 modules import. Packed links use `Env.compress`
-  (`app/src/ports/compress.ts`).
-- `hash.ts` parses `#/l/...` to `{ kind: 'sharedList', payload, packed }`;
-  `App.svelte` sends `storedList` and `sharedList` to `ListPage.svelte`,
-  which draws an own browser list, the retired page after the date, or
-  mounts `SharedListPage` with `payload`.
-- `ListStore` (`state/lists.svelte.ts`) holds browser lists, the two-tab
-  merge, the `.bad` backup, `dhloot.migrated.v1` and the move's settle
-  step; it also declares `ListModel`, which `CloudLists` implements.
-- `LegacyMove` runs the move through `ListRepository.move`
-  (`move_legacy_list`). `MoveNotice` (Shell), `MoveStatus` and
-  `StorageNotice` (lists index and list page) draw its states.
-- The date gates: `AppState.legacyWritable` (`!env.cloud ||
-  legacyWritable(clock.now())`), `localWritable`, `moveDue`, `TabBar`'s
-  `lists` prop. The test build pins its clock at 2026-10-01 12:00 UTC
-  (`TEST_NOW`), and `?today=` moves it; four goldens and states case 48
-  run after the date.
-- A build with no sign-in configured keeps writable browser lists for good
-  (`legacyWritable` is true with no cloud).
-- Many tests use a browser list only as a fixture for list page behaviour:
-  `listPage.test.ts` (about 90 references), `listsPage.test.ts`,
-  `components/lists.test.ts`, `a11y.test.ts`, `state/app.test.ts` (about
-  150), states cases 13, 17, 18, 22, 26, 27, 30, 32, 33 and 62 (case 62
-  even seeds account lists through the move), and about 40 goldens.
+- The codec is `app/src/lib/listLink.ts`: encode, decode, base64url, the
+  stamp, and the shared types `ListEntryMeta`, `ListShape`, `DecodedList`,
+  `KnowsId`, `QTY_MAX` and a `MoneyMode` re-export (`lib/money.ts` owns
+  `MoneyMode`). 12 production modules and 9 other test files import it. Packed
+  links use `Env.compress` (`app/src/ports/compress.ts`).
+- `hash.ts` parses `#/l/...` to `{ kind: 'sharedList', payload, packed }`
+  and `#/print/...` to `{ kind: 'printRetired' }` (print-snapshots).
+  `App.svelte` sends `storedList` and `sharedList` to `ListPage.svelte`; its
+  last branch draws the not-found page («Предмет не найден»,
+  `notFoundSub`, «На главную»).
+- `ListStore` (`state/lists.svelte.ts`) holds browser lists and declares
+  `ListModel`, which `CloudLists` implements. `LegacyMove` runs the move
+  through `ListRepository.move` (`move_legacy_list`). `MoveNotice`,
+  `MoveStatus` and `StorageNotice` draw its states.
+- The date gates: `AppState.legacyWritable`, `localWritable`, `moveDue`,
+  `TabBar`'s `lists` prop, and, new since pass 1, `sectionLabel(s, t,
+  legacyWritable)` in `lib/dict.ts` (read by `Shell.svelte` and
+  `AccountPage.svelte`'s home-section menu). The test build pins its clock
+  at 2026-10-01 12:00 UTC (`TEST_NOW`); `?today=` moves it.
+- The first signed-in read of every page load embeds every entry of every
+  list with both notes (`LIST_SELECT` in `ports/supabase.ts`); D115 records
+  8-9 s in the browser at three times the limits.
+- The shared page's unit coverage is mostly on `#/l/` payloads
+  (`sharedListPage.test.ts`: the heading, the notes, the tails, the
+  selection, the taken count, the add-to-list carry, English, axe). Case 77
+  of `tests/app/states.js` (new since pass 1) opens a `#/l/` link. The
+  sweep's only shared-page rows are two `#/l/` rows. These move to `#/s/`
+  in `B10.1`; they do not go.
+- New browser-list fixtures since pass 1: `tests/app/print.js` (two seeds),
+  `tests/app/typo.js` and `tests/app/sweep.js` (`STORAGE`),
+  `components/record.test.ts`, `components/tables.test.ts`,
+  `state/cloudLists.test.ts` (one case runs on both stores), states cases 64
+  and 76. `tests/db/delete-account.test.mjs` reads `l.legacy_fingerprint`.
+- A latent defect in a touched path: `AppState.pageRecordFor` reads
+  `this.openList` for an account list's linked record, but only a browser
+  list sets `openList` (`#claimList`), so the branch never runs on an
+  account list's page. `B10.1` fixes it (step 8).
 
 ## 2. Scope and non-goals
 
-In scope (owner decision 2026-09-27 and roadmap section 10 (c)):
+In scope:
 
 - The codec, its fixtures, the list-encoding half of `tests/contracts.js`,
-  the link half of `tests/app/contracts.js`, `CONTRACTS.md` section 3
-  (a one-line history pointer stays), the `llms.txt` `#/l/` address, the
-  `ROUTES.md` `#/l/` rows, the `#/l/` share buttons and address rewriting,
-  the packed-link expansion and `Env.compress`, the `#/l/` shared page and
-  the retired page. `#/l/<anything>` draws the not-found page, the address
-  kept, never home. `#/print/<id>*<n>` keeps its spelling.
-- `ListStore` and every browser list surface: the browser group of
-  `#/lists`, browser lists in the add-to-list menu, `StorageNotice`,
-  `MoveNotice` (with R5b's signed-out banner), `MoveStatus`, `LegacyMove`,
-  `lib/legacy.ts`, the move's client path (`ListRepository.move`, its fake,
-  contract case I, e2e F9), the date gates, `?today=`, the Lists tab.
+  the link half of `tests/app/contracts.js`, `CONTRACTS.md` section 3 (one
+  history paragraph stays), the `llms.txt` `#/l/` address, the `ROUTES.md`
+  `#/l/` rows, the `#/l/` buttons and address rewriting, the packed-link
+  expansion and `Env.compress`, the `#/l/` shared page and the retired
+  page. `#/l/<anything>` draws the not-found page, the address kept, never
+  home.
+- `ListStore` and every browser list surface, `StorageNotice`, `MoveNotice`,
+  `MoveStatus`, `LegacyMove`, `lib/legacy.ts`, the move's client path, the
+  date gates, `?today=`, the Lists tab, the list print `prompt` state of a
+  browser list.
+- P6 (D115): the first read takes list heads with each entry's identity;
+  an entry's details load when a caller needs them (section 4, "P6").
+- P36: every line citation of the deleted `app.js` and `style.css` in
+  `app/src`.
 - The database (Q1 B): `move_legacy_list`, the `dhloot.move` guard in the
-  two limit triggers, `lists.legacy_fingerprint` and its unique index
-  `lists_legacy_fingerprint`.
-- `DEBT.md`: D24, D63 closed (their code is deleted); D62 closed by
-  `B10.4`; D64 edited (its `MoveNotice` half goes with the component).
+  two limit triggers, `lists.legacy_fingerprint` and its unique index.
+- `DEBT.md`: D24, D63, D64 deleted (their code goes), D115 deleted by
+  `B10.4`, D62 deleted by `B10.5`, the section "Legacy removal" deleted
+  when it is empty.
 - Every spec, README and help text that describes the removed behaviour.
 
 Non-goals:
 
-- No key is deleted or written: `dhloot.lists.v1`, `dhloot.lists.v2`,
-  `dhloot.lists.v2.bad`, `dhloot.migrated.v1`, `dhloot.warn.v1` stay in the
-  browser, unread (owner decision; `STATE.md`).
-- D64's «Выйти» half and D66 (owner, 2026-10-01: `debt-cleanup`). D61 is
-  not a removal, so it is `debt-cleanup`'s too; R10 does not fix it.
+- No storage key is deleted or written: `dhloot.lists.v1`,
+  `dhloot.lists.v2`, `dhloot.lists.v2.bad`, `dhloot.migrated.v1`,
+  `dhloot.warn.v1` stay in the browser, unread (owner decision; `STATE.md`).
 - No new UI, no new copy beyond the shortened help paragraph (`B10.3`).
-- No change to `#/s/`, the import file, the data zip or the account page.
+- No change to `#/s/` behaviour, the import file, the data zip or the
+  account page (but the home-section label, `B10.3`).
+- `DEBT.md` sections other than "Legacy removal" (D104, D112-D114 belong to
+  other tasks).
 
 ## 3. Settled decisions and their consequences
 
-Settled by the owner (2026-09-27, 2026-10-01) or by the repository; the
-implementer does not reopen them.
+Settled by the owner (2026-09-27, 2026-10-01, 2026-10-22) or by the
+repository; the implementer does not reopen them.
 
 1. **`#/l/` is a recognised address that draws the not-found page.**
-   `parseHash` returns `{ kind: 'retired' }` for every hash that starts with
-   `l/` (plain, packed `l/~`, empty or broken payload). No branch of
-   `App.svelte` draws `retired`, so the last branch draws the existing
-   not-found page («Предмет не найден», «Возможно, ссылка устарела или
-   данные были изменены.», «На главную»); `#fallback` keeps the address
-   because the kind is not `unknown`. The payload is never read. Why a kind
-   and not `unknown`: `unknown` sends the reader home, which the owner
-   refused.
+   `parseHash` returns `{ kind: 'listRetired' }` for every hash that starts
+   with `l/` (plain, packed `l/~`, empty or broken payload). The name
+   follows `printRetired`. No branch of `App.svelte` draws `listRetired`, so
+   the last branch draws the existing not-found page; `#fallback` keeps the
+   address because the kind is not `unknown`. The payload is never read.
+   `unknown` sends the reader home, which the owner refused.
 2. **The shared types leave the codec.** `ListEntryMeta`, `ListShape` and
    `QTY_MAX` move to `lib/lists.ts`; `DecodedList` moves to
-   `lib/cloudLists.ts` beside `sharedListOf` and is renamed `SharedList`
-   (the projection a share page draws; nothing decodes any more);
-   `KnowsId` is deleted; importers of the `MoneyMode` re-export import it
-   from `lib/money.ts`.
-3. **A build with no sign-in configured has no lists.** The decision says
-   the app never reads `dhloot.lists.v2` again, and in such a build lists
-   existed only there. From `B10.3`: `#/lists` and `#/lists/<id>` draw the
-   not-found page, the address kept (as `#/homebrew` does), and no
-   add-to-list control is drawn. Production is always configured; the
-   unconfigured build is a developer's and the `dist/` budget's.
-   `META.md` section 3's "keeps making browser lists" bullet goes.
+   `lib/cloudLists.ts` beside `sharedListOf` and becomes `SharedList`;
+   `KnowsId` is deleted; every `MoneyMode` import reads `lib/money.ts`.
+3. **A build with no sign-in configured has no lists.** From `B10.3`:
+   `#/lists` and `#/lists/<id>` draw the not-found page, the address kept
+   (as `#/homebrew` does), and no add-to-list control is drawn. Production
+   is always configured.
 4. **An old `#/lists/<local id>` bookmark is not found.** The redirect of a
-   moved list's local id to its account list reads `dhloot.migrated.v1`,
-   which is move support. From `B10.3` such an address draws the list
-   page's existing not-found state.
-5. **`ListModel` is deleted.** With `ListStore` gone, `CloudLists` is the
-   one implementation; `ListPage`, `ListsPage` and `AddToList` use it
-   directly, and `AppState.storeFor` goes (`CLAUDE.md`: no abstraction
-   ahead of need).
+   moved list's local id reads `dhloot.migrated.v1`, which is move support.
+   From `B10.3` such an address draws the list page's not-found state.
+5. **`ListModel` is deleted.** `CloudLists` is the one implementation;
+   `AppState.storeFor` goes.
 6. **The test build keeps a fixed clock, without `?today=`.** `TEST_NOW`
-   stays: the export file names and the toast hold read `env.clock`. Only
-   the day switch goes (`queryClock` keeps `?toasts=held`), with the
-   driver's `today`, `golden.js`'s `# today:` header and the dated-states
-   block of `golden.test.mjs`.
-7. **The capture signal `data-move` becomes `data-lists`.** `<main>`
-   carries `data-lists`: `pending` while the session is unknown (a build
-   with sign-in), the account lists' status (`idle`, `loading`, `ready`,
-   `error`) signed in, absent signed out or with no sign-in. The driver
-   verb `moveSettled` is renamed `settled` and waits for `data-lists`
-   absent, `ready` or `error`, and `data-homebrew` as now. e2e's
-   `settled(page, ...)` reads the same attribute.
-8. **The heading "Account and browser lists" stays in `FEATURES.md`.**
-   33 files cite it (2026-10-01), two of them applied migrations that
-   `edit-guard.mjs` locks. The section's first paragraph says that browser
-   lists left the app at R10.
-9. **Nine tabs in every build.** `TabBar` loses its `lists` prop; `#/lists`
-   stays a section route (the account menu's «Мои списки», a bookmark, a
-   pin). `routes.json`'s `#/lists` row gets `"tab": null`.
-10. **No decision file is written by this pass.** `B10.3` writes one for
-    settled items 3, 4 and 6 and adds "Superseded in part by" lines to
-    `2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md`
-    and `2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md`
-    (`B10.4`'s decision adds the line to
-    `2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`);
-    `B10.4` writes the Q1 decision (section 4, "Decision for `B10.4` to
-    write"). Each runs `node tools/decisions.js`.
+   stays (export names, relative times); the day switch, the driver's
+   `today`, `golden.js`'s `# today:` and `golden.test.mjs`'s dated-states
+   block go (`B10.3`).
+7. **The capture signal `data-move` becomes `data-lists`** (`B10.3`):
+   `pending` while the session is unknown, the account lists' status
+   signed in, absent signed out or with no sign-in. The driver verb
+   `moveSettled` becomes `settled`; e2e's `settled(page, ...)` reads the
+   same attribute.
+8. **The heading "Account and browser lists" stays in `FEATURES.md`.** Many
+   files cite it, applied migrations among them (locked). Its first
+   paragraph says that browser lists left the app at R10.
+9. **Nine tabs in every build.** `TabBar` loses its `lists` prop;
+   `sectionLabel` loses its `legacyWritable` parameter and names `lists`
+   «Мои списки» (`menuLists`) in every build; `routes.json`'s `#/lists` row
+   gets `"tab": null`.
+10. **Decision files are written by the batches that establish them**
+    (`B10.3`, `B10.4`, `B10.5`; section 4 and each outline give the text).
+    Each runs `node tools/decisions.js`.
+11. **The shared page's coverage moves from `#/l/` to `#/s/`, never
+    deleted** (`B10.1`). A case whose subject is shared-page behaviour runs
+    on a fake-cloud share link seeded by `app/src/test/seed.ts`'s
+    `seedWith`; a case whose subject is the codec, a `#/l/` address, a link
+    button, the address rewrite, a packed link or a browser-list save goes.
 
-## 4. Owner questions
+## 4. Owner questions and design forks
 
-**Q1 - answered 2026-10-01 (owner): B.** `B10.4`'s migration drops
+**Q1 - answered 2026-10-01 (owner): B.** `B10.5`'s migration drops
 `move_legacy_list`, the `dhloot.move` guard in `lists_limit` and
 `list_entries_limit`, the column `lists.legacy_fingerprint` and its unique
-index `lists_legacy_fingerprint`. The owner accepts that a tab still on the
-R9 build fails its account list reads until it reloads: its select names
-the column (`ports/supabase.ts`), and PostgREST refuses a select of a
-column that does not exist.
+index `lists_legacy_fingerprint`. The owner accepts that a tab still on a
+pre-R10 build fails its account list reads until it reloads. Rejected: A
+(keep the column until a later schema release - dead schema with no owner);
+C (revoke EXECUTE only - dead SECURITY DEFINER code and its Security
+Advisor row stay).
 
-Rejected, for the decision file: A (keep the column and the index until a
-later schema release - dead schema with no owner, and a second migration
-to remember); C (revoke EXECUTE only - dead SECURITY DEFINER code and its
-Security Advisor row stay).
+**P6 - settled by the planner, 2026-10-23 (the carry leaves the choice to
+the planner).** The first read is a PostgREST select of list heads with
+each entry's identity; an entry's details load per list.
 
-**Decision for `B10.4` to write** (`docs/decisions/<date of B10.4>-r10-drops-the-move-function-and-the-fingerprint-column.md`,
-template `.claude/templates/decision.template.md`, then `node
-tools/decisions.js`):
+- The head read: each list's own columns (`id,name,money_mode,player_note,
+  gm_note,created_at,updated_at,revision`) and
+  `list_entries(id,item_key,source,hb_item,position)`. It keeps the
+  revision protocol of `lists.list(known)`.
+- The detail read: `rows(ids)` reads the named lists with every entry
+  column (today's `LIST_SELECT` without `legacy_fingerprint`) in chunks of
+  `CHANGED_ROWS_MAX`, as `RequestRepository.lines(ids)` does.
+- `CloudLists` holds every list's `ids`, `entryIds` and `links` from the
+  head read, and a list's `meta` only once its details are read. The list
+  page, the share panel, the requests panel, the copy text, the print of a
+  list, the export (`exportLists`, `exportData`) and the add-to-list
+  menu's remove-with-undo read details first.
+- Why: the add-to-list menu, `listsHolding` and `relinkTargets` need every
+  list's keys at
+  once, so heads without keys would move the whole read to the first menu
+  press. The entry notes are the measured cost (81.7 MB with long notes
+  against an est. 11 MB with short ones, D115). The repository chose
+  PostgREST heads over an RPC for the requests read
+  (`docs/decisions/2026-10-22-the-owners-requests-read-takes-every-head-and-the-open-lists-lines.md`,
+  which rejected a `my_limits()` RPC as "a migration").
+- Rejected: an `account_heads()` RPC with counts and thumbnail keys (a
+  migration with its reversal, a fake mirror of the RPC, a plan review of a
+  new function, and the menu would still need every key); counts through
+  PostgREST aggregates (`db_aggregates_enabled` is off, and turning it on is
+  a role setting for every table `authenticated` reads); lazy notes only
+  (quantities, prices and flags of every entry stay in the first read, est.
+  7-9 MB at 3x, and a half-filled `meta` that no type shows).
+- Accepted trade-off: the first read still carries one small row per entry
+  (est. 4-5 MB at 3x, est. 0.5 MB at the defaults; `B10.4` measures it),
+  and a list page waits one more round trip for its details.
+- Fallback, only if `B10.4`'s measurement at 3x misses the 4000 ms bar: the
+  head read moves to an invoker RPC that answers each list's keys and entry
+  ids as arrays; `B10.4` then carries a migration and a new plan review.
+- Deviation from D115's "How to verify": the first read still embeds
+  `list_entries`, with identity columns only. `B10.4` rewrites that line to
+  "the first read carries no entry note, quantity, price or GM-only flag"
+  with the 4000 ms bar unchanged.
 
-- Task: `persist-10-legacy-removal` (owner, 2026-10-01, Q1 B).
-- Decision: R10's migration drops `move_legacy_list(uuid, text)`, the
-  `dhloot.move` guard in `lists_limit()` and `list_entries_limit()`,
-  `lists.legacy_fingerprint` and the index `lists_legacy_fingerprint`. The
-  R10 build stops selecting the column before the migration reaches
-  production (`B10.3` precedes `B10.4` in the one release commit, and CI's
-  `deploy` follows `migrate-prod` in the same run). A tab still on a
-  pre-R10 build fails its account list reads until it reloads; the owner
-  accepts that. No list or entry row is deleted; only the fingerprint
-  values go, which nothing reads after the move.
-- Rejected: keeping the column and the index until a later schema release
-  (dead schema with no owning release); revoking EXECUTE only (dead
-  SECURITY DEFINER code and its Security Advisor row stay).
-- Closes `DEBT.md` D62. Supersedes in part "A browser list moves through
-  one RPC that hashes its canonical text" (2026-09-26): the RPC and the
-  fingerprint are gone.
-
-No other owner question: settled items 3 and 4 follow from the owner's
-"the app never reads, draws or moves them"; they are named here so the
-owner can object before the plan review.
+No other question is open. Settled items 3 and 4 follow from the owner's
+"the app never reads, draws or moves them".
 
 ## 5. What the app looks like after R10
 
-- `#/l/...`: the not-found page, address kept, signed in or out.
-- `#/lists`: signed in, the account lists (heading «Ваш аккаунт», the batch
-  bar, the cards, import); signed out, the sign-in prompt panel only; no
-  sign-in configured, the not-found page.
-- `#/lists/<uuid>`: the account list page; any other id, the page's
-  not-found state.
-- The tab bar: nine sections. The header: no banner under it.
+- `#/l/...`: the not-found page, the address kept, signed in or out, in
+  every build.
+- `#/lists`: signed in, the account lists; signed out, the sign-in prompt;
+  no sign-in configured, the not-found page.
+- `#/lists/<uuid>`: the account list page («Загружаем...» until its details
+  are read); any other id, the page's not-found state.
+- The tab bar: nine sections. The header: no banner.
 - The add-to-list menu: account lists only (signed in), the sign-in prompt
   (signed out), nothing (no sign-in configured).
-- Modules deleted: `lib/listLink.ts`, `lib/legacy.ts`,
-  `ports/compress.ts`, `state/lists.svelte.ts`,
-  `state/legacyMove.svelte.ts`, `components/MoveNotice.svelte`,
-  `MoveStatus.svelte`, `StorageNotice.svelte`, and their tests.
+- Modules deleted: `lib/listLink.ts`, `lib/legacy.ts`, `ports/compress.ts`,
+  `state/lists.svelte.ts`, `state/legacyMove.svelte.ts`,
+  `components/MoveNotice.svelte`, `MoveStatus.svelte`,
+  `StorageNotice.svelte`, and their tests.
 - `localStorage` keys the app reads: `dhloot.lang.v1`, `dhloot.home.v1`,
-  `dhloot.prefs.v1`, `sb-<ref>-auth-token*`. `dhloot.probe` and
-  `StoragePort.works()` go with the storage warning (their only readers
-  were `StorageNotice` and `LegacyMove`).
-- The database (Q1 B): `lists_limit` and `list_entries_limit` count every
-  insert; no function inserts past a limit; `public.lists` has no
-  `legacy_fingerprint` column and no `lists_legacy_fingerprint` index.
+  `dhloot.prefs.v1`, `dhloot.auth.return`, `sb-<ref>-auth-token*`.
+  `dhloot.probe` and `StoragePort.works()` go with the storage warning.
+- The database: `lists_limit` and `list_entries_limit` count every insert;
+  `public.lists` has no `legacy_fingerprint` column and no
+  `lists_legacy_fingerprint` index.
 
-## 6. What an earlier release may move (the dispatch refresh)
+## 6. The dispatch refresh (done 2026-10-23)
 
-R7c, R7d, R9, R8, `debt-cleanup` and `persist-review` land before R10.
-At dispatch the planner refresh does, in order:
+Results of the pass-1 checklist, at `0b73fd5c`:
 
-1. Confirm the date: `LEGACY_WRITE_UNTIL` in `app/src/lib/legacy.ts` still
-   reads `Date.UTC(2026, 9, 26)` and today is on or after it. If the owner
-   moved the date, R10 waits.
-2. Re-run the inventory and update section 9's file lists:
+1. The date: `LEGACY_WRITE_UNTIL` reads `Date.UTC(2026, 9, 26)`. R10 is
+   dispatchable from 2026-10-26. At dispatch the implementer confirms the
+   date and merges `origin/main` (`B10.1` step 1); no planner pass is due
+   for a small drift (the implementer adapts).
+2. The inventory grep (below) was re-run; sections 9-13 name the files of
+   today's tree. Re-run it at `B10.1` step 1:
    `git grep -n -E "listLink|PACK_MARK|sharedList|compress|legacyWritable|localWritable|moveDue|legacyMove|LegacyMove|MoveNotice|MoveStatus|StorageNotice|ListStore|app\.lists\b|storageWorks|warnHidden|followMoved|today|moveSettled|dhloot\.lists|dhloot\.migrated|move_legacy_list|legacy_fingerprint" -- app/src tests supabase tools docs/specs llms.txt README.md README.ru.md`.
-3. Known overlaps to check: R8 adds `art_url` to the list or homebrew
-   select strings in `ports/supabase.ts` (beside `legacy_fingerprint` at
-   line 244 today); R9 adds `#/print/list/<id>` and `#/print/s/<token>` to
-   `hash.ts`, `routes.json` and `ListPage`'s print button; R7c and R7d may
-   change `ListPage`, `AddToList`, `ImportPanel`, `lib/bundle.ts` (it
-   imports `QTY_MAX` from `listLink.ts`) and the fake seed; R7d adds
-   `import-v2` fixtures (untouched by R10); new states cases and goldens
-   may seed `dhloot.lists.v2` - they join `B10.2`'s port list.
-4. `DEBT.md`: if `debt-cleanup` already closed or moved D64, drop `B10.3`'s
-   D64 line; if D61 is still under "Legacy removal", name it to the owner
-   (it is not R10's). Re-read D24, D62, D63.
-5. Re-measure the gate costs on the host (context.md, "Command costs").
-6. `print-snapshots` shipped (2026-10-14): every print is a stored set at
-   `#/p/<id>`, and every `#/print/...` address draws the retired print page
-   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
-   So: drop the line "`#/print/<id>*<n>` keeps its spelling" (section 2) and the
-   `#/print/list/<id>`/`#/print/s/<token>` overlap (R9 never built them); move
-   `QTY_MAX` out of `listLink.ts` (`hash.ts` no longer imports it; `lib/bundle.ts`
-   and `cloudLists.ts` do); `ListPage`'s print button has a `prompt` state
-   (`SignInPrompt` under the toolbar) that is drawn only for a signed-out reader
-   of a browser list, with the golden `#/lists/a ~ print signed out` and the
-   sweep entry "печать без входа: список" - retire all three with the browser
-   lists.
+   Most `today` and `compress` hits are other words (`zip.ts`,
+   `usage*.mjs`, comments).
+3. Overlaps: R8 and R9 changed nothing R10 owns; print-snapshots retired
+   `#/print/...` (`printRetired`), so the pass-1 line "`#/print/<id>*<n>`
+   keeps its spelling" is gone. `hash.ts` no longer imports `QTY_MAX`;
+   `bundle.ts` and `cloudLists.ts` do. The `ListPage` print `prompt` state
+   for a browser list, its golden `#/lists/a ~ print signed out`, the sweep
+   row «печать без входа: список» and `tests/app/print.js`'s signed-out
+   browser-list check go in `B10.3`.
+4. `DEBT.md`: `debt-cleanup` fixed D64's «Выйти» half; D64 now names only
+   `MoveNotice` and goes whole in `B10.3`. D61 is not in "Legacy removal".
+   D24, D62, D63 are unchanged. `persist-review` added D115 (P6) to the
+   section.
+5. Gate costs: section 8 uses `.claude/README.md`, "Batch size and the
+   fixed cost of a run" (2026-10-07 to 2026-10-22); context.md, "Command
+   costs", holds the table.
+6. New code since 2026-10-01 that depends on the removed model:
+   `sectionLabel(..., legacyWritable)` (`B10.3`); case 77 and the sweep's
+   `#/l/` notes row (`B10.1`); the browser-list seeds of section 1
+   (`B10.2`, `B10.3`); `tests/db/delete-account.test.mjs`'s
+   `legacy_fingerprint` (`B10.5`). Nothing new reads `#/l/` in production
+   code, and nothing new calls `move_legacy_list`.
 
 ## 7. Contracts and specs changed, by batch
 
 | Batch | Public contract | Specs and docs |
 |---|---|---|
-| `B10.1` | `#/l/` grammar (`ROUTES.md`, `CONTRACTS.md` section 1), `CONTRACTS.md` section 3 (history line), `docs/fixtures/lists/*.json` deleted, `routes.json` `#/l/` rows, `tests/contracts.js`, `llms.txt` | `FEATURES.md` ("Lists", "Account and browser lists": the `#/l/` paragraphs), `STATE.md` (hash row, `dhloot.auth.return`, `openList`/`urlPayload`), `META.md` section 3 (`#/l/` bullets), `COVERAGE.md` (link rows), `README.md`, `README.ru.md` (link format, two link buttons), `help.ts` (the browser-list buttons paragraph), `.claude/README.md` line 181 |
-| `B10.2` | none | `COVERAGE.md` (the ported cases' rows) |
-| `B10.3` | `routes.json` `#/lists` `tab: null` | `STATE.md`, `FEATURES.md`, `ROUTES.md` ("Sections", `#/lists/<listId>`), `META.md` section 3, `COVERAGE.md`, `I18N.md` (the cutoff bullet), `DEBT.md` (D24, D63 deleted, D64 edited), `README.md`, `README.ru.md` ("Where lists live", "What the app remembers"), `help.ts`, one decision file |
-| `B10.4` | none | `DEBT.md` (D62 deleted, the section deleted when empty), `COVERAGE.md` (layer 3 rows), `.claude/README.md` ("Expected Security Advisor warnings", "Usage monitoring"), one decision file |
+| `B10.1` | `#/l/` grammar (`ROUTES.md`, `CONTRACTS.md` section 1), `CONTRACTS.md` section 3 (one history paragraph), `docs/fixtures/lists/*.json` deleted, `routes.json` `#/l/` rows, `tests/contracts.js`, `llms.txt` | `FEATURES.md`, `STATE.md`, `META.md`, `COVERAGE.md`, `CONTRACTS.md` section 4 ("Formatted text" table), `README.md`, `README.ru.md`, `help.ts`, `.claude/README.md` ("Hooks" table, `edit-followup.mjs` row) |
+| `B10.2` | none | `COVERAGE.md` (the ported cases) |
+| `B10.3` | `routes.json` `#/lists` `tab: null` | `STATE.md`, `FEATURES.md`, `ROUTES.md`, `META.md` section 3, `COVERAGE.md`, `I18N.md` (the cutoff bullet), `DEBT.md` (D24, D63, D64), `README.md`, `README.ru.md`, `help.ts`, one decision file |
+| `B10.4` | none | `FEATURES.md` ("Account and browser lists": the first read), `COVERAGE.md`, `DEBT.md` (D115), one decision file |
+| `B10.5` | none | `DEBT.md` (D62, the section), `COVERAGE.md` (layer 3), `.claude/README.md` ("Expected Security Advisor warnings", "Usage monitoring"), one decision file |
 
 ## 8. Batches
 
-Costs: context.md, "Command costs" (one green pass, idle host). "check" is
-`npm run check` (~7 min), a golden pass is four shards (~13 min).
+The gate model (`CLAUDE.md`, "Quality gates"; `.claude/README.md`, "CI
+credit"): a batch is one new commit on `claude/persist-10-legacy-removal`
+and one push. The writer's local floor is `rtk npm run check:fast`, plus
+`npm run check:db` (PowerShell tool) for a `supabase/` or `tests/db/`
+change. The writer re-seeds goldens locally when a batch changes screens,
+and runs the browser suites it edits once, so the CI run is not spent on a
+red that a local run finds. CI's green run of the exact tree is the full
+gate; the orchestrator waits on it with one background `ci-credit.mjs`
+call. A schema batch (`B10.5`) stops unpushed after its local gates and
+commit until its batch review approves.
+
+Costs (idle host): `check:fast` 8-12 min when `dict.ts` or
+`state/app.svelte.ts` changes (474-710 s), about 4 min otherwise;
+`check:db` about 15 min with the stack start; `build:test` 1 min; one
+golden pass (`--update`, four shards) about 13 min; `app/contracts,
+app/states` about 10 min; the filter group
+`app/print,app/contracts,app/states,app/typo,app/hues,stub` about 5 min
+pooled; `sweep.js 360` about 8 min; a CI run about 11 min (remote).
 
 | Batch | Goal | Gates (cost) | Review | Split criterion from the previous batch |
 |---|---|---|---|---|
-| `B10.1` | Retire `#/l/`: the codec, the compress port, the `#/l/` pages, buttons and rewriting, the contract fixtures and tests, the specs; `#/l/` draws the not-found page | check x2 (14), `contracts,dataint` (1), `build:test` (1), `app/contracts,app/states` (10), goldens compare then update (26), `sweep.js 360` (8), `check:built` (1) - about 61 min | required: public contract | - (first batch) |
-| `B10.2` | Port every test that uses a browser list only as a fixture onto an account list of the fake cloud; no production change | check x2 (14), `build:test` (1), `app/states` (5) - about 20 min | required: harness changes that later batches rely on (reviewer judges against `COVERAGE.md`) | a commit boundary the harness cannot reach: `B10.3` deletes browser lists, so its states and unit cases need account-list fixtures first; and a review not held in one pass (harness against `COVERAGE.md` vs production removal against the architecture boundaries, the `B12b`/`B12c` precedent) |
-| `B10.3` | Remove browser lists and the move: `ListStore`, `LegacyMove`, the three notices, `legacy.ts`, the date gates, `?today=`, the Lists tab, the move's client path, the unconfigured build's lists | check x2 (14), `check:built` and the configured budget (2), `build:test` (1), filter group `app/print,app/contracts,app/states,app/typo,app/hues,stub` (8), goldens compare then update (26), `sweep.js 360` (8), `npm run e2e` (2) - about 61 min | required: UI changes on every page (tab bar, banner), a public contract fixture (`routes.json`) | a different route and filter set from `B10.1` (`#/lists*`, the header on every route, versus `#/l/*` and the contract suites), and a review not held in one pass |
-| `B10.4` | The migration (Q1 B): drop `move_legacy_list`, the `dhloot.move` guard, `lists.legacy_fingerprint` and its index; its reversal, `tests/db/`, D62 | check (7), `check:db` (9); after the approve `db:push --project test` (1) and `npm run e2e` (2) - about 19 min | required: a migration that drops a SECURITY DEFINER function and a column | a commit boundary the harness cannot reach: layer 4 (contract case I, e2e F9) calls `move_legacy_list`, and the client selects `legacy_fingerprint`, until `B10.3` removes both; and the schema batch rule (`orchestrate.prompt.md`, "Schema batches") |
+| `B10.1` | Retire `#/l/`: the codec, the compress port, the `#/l/` pages, buttons and rewriting, the contract fixtures and suites, the specs; port the shared page's `#/l/` coverage to `#/s/` | `check:fast` (10), `build:test` (1), `app/contracts,app/states` (10), goldens (13), `contracts,dataint` (1), CI (11) - about 46 min | required: public contract | - (first batch) |
+| `B10.2` | Port every test that uses a browser list only as a fixture onto an account list of the fake cloud; no production change | `check:fast` (10), `build:test` (1), the filter group (5), `sweep.js 360` (8), CI (11) - about 35 min | required: harness that later batches rely on, judged against `COVERAGE.md` | a commit boundary the harness cannot reach: `B10.3` deletes browser lists, so the account-list fixtures (`seedWith`'s second use, `accountList`) land first and a later red bisects |
+| `B10.3` | Remove browser lists and the move on the client: `ListStore`, `LegacyMove`, the three notices, `legacy.ts`, the date gates, `?today=`, the Lists tab, the move's client path, the unconfigured build's lists; P36 | `check:fast` (10), `build:test` (1), the filter group (5), goldens (13), `sweep.js 360` (8), CI with `e2e` (11) - about 48 min | required: UI changes on every page, a public contract fixture (`routes.json`) | a different route and filter set from `B10.1` (`#/lists*` and the header on every route, against `#/l/*` and the contract suites), and a review that cannot be held in one pass with `B10.1` |
+| `B10.4` | P6: the first read takes heads with entry identities; details load per list (D115) | `check:fast` (10), `check:db` (15), `build:test` (1), `app/states` (5), goldens (13), CI (11) - about 55 min | required: a sync protocol change (and a plan review at its refresh) | a review that cannot be held in one pass with `B10.3` (a protocol of `CloudLists`, the ports, the fake and the contract suite, against a removal of about 90 paths), and it needs `B10.3`'s tree (no `ListModel`, no browser consumer of `CloudList`) |
+| `B10.5` | The migration (Q1 B): drop `move_legacy_list`, the `dhloot.move` guard, `lists.legacy_fingerprint` and its index; its reversal, `tests/db/`, D62 | `check:fast` (4), `check:db` (15); after the approve, the push and CI with `migrate-test` and `e2e` (11) - about 30 min | required: a migration that drops a SECURITY DEFINER function and a column | a commit boundary the harness cannot reach (contract case I and e2e F9 call the function, and the client selects the column, until `B10.3`); the schema batch rule; and the last batch, so the test project's window (section 13, "Order") is as short as one CI run before the landing |
 
-Total gate cost: about 161 minutes for one green pass of the four batches,
-plus the closeout's check (~7 min) - about 2 h 50 min, before review and
-remediation cycles. No batch needs more than one foreground `npm run check`
-per commit; every listed run fits one Bash call (one shard or one width per
-call).
+Total gate cost: about 214 minutes for one green pass of the five batches
+(about 159 min local, 55 min of CI), plus the closeout (merge `origin/main`,
+push, CI of the tip, the squash and `main`'s run: about 22 min) - about
+4 h, before reviews and remediation. Every local run fits one foreground
+call (one shard or one width per call; `check:db` past 600 s arms by its
+own exit).
 
-Merges considered and rejected: `B10.1`+`B10.3` (one review over about 90
-paths and two contract surfaces; a stall forfeits both); `B10.2`+`B10.3`
-(the test port and the deletions in one diff hide which red belongs to
-which); `B10.3`+`B10.4` (the schema review and its push wait would hold the
-whole removal).
+Merges considered and rejected: `B10.1`+`B10.3` (one review over about 120
+paths and two contract surfaces); `B10.2`+`B10.3` (the port and the
+deletions in one diff hide which red belongs to which); `B10.3`+`B10.4`
+(the review of a removal and of a new read protocol in one pass);
+`B10.4`+`B10.5` (they share `check:db`, but the schema review and its
+unpushed wait would hold the protocol change, and the test project's
+window would open one batch earlier).
 
 ## 9. Batch B10.1 - retire `#/l/` (implement-ready)
 
 **Objective.** An old `#/l/` link draws the not-found page with its address
-kept, and nothing in the app reads, writes or documents the list link
-format any more. Browser lists stay (read-only after the date, as today)
-until `B10.3`.
+kept, nothing in the app reads, writes or documents the list link format,
+and every shared-page test that used a `#/l/` payload as its fixture runs
+on a `#/s/` share link. Browser lists stay (read-only after the date) until
+`B10.3`.
 
-**In scope.** Settled items 1 and 2 (section 3); every file below.
+**In scope.** Settled items 1, 2 and 11 (section 3); the `pageRecordFor`
+fix; every file below.
 
 **Out of scope.** Browser lists, the move, the notices, the date gates,
-`?today=`, the tab bar, the database (later batches). `.claude/hooks/`.
-`docs/fixtures/import/`, `schema/import-v1.json`, `docs/fixtures/share/`.
+`?today=`, the tab bar, the first read, the database (later batches).
+`.claude/hooks/`. `docs/fixtures/import/`, `schema/import-v1.json`,
+`docs/fixtures/share/`.
 
 **Files deleted.**
 
 - `app/src/lib/listLink.ts`, `app/src/lib/listLink.test.ts`
 - `app/src/ports/compress.ts`
-- `docs/fixtures/lists/` (six files: `equipment-entry.json`,
-  `minimal.json`, `money-coin-mode.json`, `notes-both-kinds.json`,
-  `qty-and-price.json`, `unicode-heavy.json`)
+- `docs/fixtures/lists/` (six files: `equipment-entry.json`, `minimal.json`,
+  `money-coin-mode.json`, `notes-both-kinds.json`, `qty-and-price.json`,
+  `unicode-heavy.json`)
 - the golden files of the deleted states (step 12), as `golden.js`'s stale
   sweep names them
 
-**Files edited** (production): `app/src/lib/lists.ts`,
-`app/src/lib/cloudLists.ts`, `app/src/lib/hash.ts`, `app/src/lib/bundle.ts`,
-`app/src/lib/share.ts`, `app/src/lib/pending.ts` (comment),
-`app/src/lib/dict.ts`, `app/src/lib/help.ts`, `app/src/ports/types.ts`,
-`app/src/ports/index.ts`, `app/src/ports/redirect.ts` (comment),
-`app/src/App.svelte`, `app/src/components/ListPage.svelte`,
+**Files created.** `app/src/test/seed.ts` (step 11).
+
+**Files edited** (production): `app/src/lib/lists.ts`, `cloudLists.ts`,
+`hash.ts`, `bundle.ts`, `share.ts`, `pending.ts` (comment), `dict.ts`,
+`help.ts`; `app/src/ports/types.ts`, `index.ts`, `redirect.ts` (comment);
+`app/src/App.svelte`; `app/src/components/ListPage.svelte`,
 `SharedListPage.svelte`, `ListsPage.svelte`, `Shell.svelte`,
-`AddToList.svelte`, `SelBar.svelte` (import paths),
-`app/src/state/app.svelte.ts`, `app/src/state/cloudLists.svelte.ts`
-(import path), `app/src/state/lists.svelte.ts` (import path).
+`AddToList.svelte`, `SelBar.svelte` (import paths); `app/src/state/
+app.svelte.ts`, `cloudLists.svelte.ts` (import path), `lists.svelte.ts`
+(import path).
 
 **Files edited** (tests and harness): `app/src/lib/hash.test.ts`,
-`lists.test.ts`, `bundle.test.ts`, `share.test.ts`, `cloudLists.test.ts`;
-`app/src/components/listPage.test.ts`, `listsPage.test.ts`,
-`sharedListPage.test.ts`, `shell.test.ts`, `sharePanel.test.ts`,
-`a11y.test.ts`, `lists.test.ts`; `app/src/state/app.test.ts`,
-`lists.test.ts`; `app/src/ports/ports.test.ts`;
-`tests/contracts.js`, `tests/derived.js`, `tests/app/contracts.js`,
-`tests/app/states.js`, `tests/app/inventory.js`, `tests/app/sweep.js`,
-`tests/app/driver.js`; `docs/fixtures/urls/routes.json`.
+`lists.test.ts`, `bundle.test.ts`, `share.test.ts`; `app/src/components/
+listPage.test.ts`, `listsPage.test.ts`, `sharedListPage.test.ts`,
+`shell.test.ts`, `sharePanel.test.ts`, `a11y.test.ts`; `app/src/state/
+app.test.ts`; `app/src/ports/ports.test.ts`; `tests/contracts.js`,
+`tests/derived.js`, `tests/app/contracts.js`, `tests/app/states.js`,
+`tests/app/inventory.js`, `tests/app/sweep.js`, `tests/app/driver.js`;
+`docs/fixtures/urls/routes.json`.
 
 **Files edited** (docs): `docs/specs/CONTRACTS.md`, `ROUTES.md`,
 `FEATURES.md`, `STATE.md`, `META.md`, `COVERAGE.md`; `llms.txt`;
-`README.md`, `README.ru.md`; `.claude/README.md` (line 181 only).
+`README.md`, `README.ru.md`; `.claude/README.md` (the `edit-followup.mjs`
+row of "Hooks" only).
 
 **Behaviour and UI constraints.**
 
 - `#/l/<payload>`, `#/l/~<payload>`, `#/l/` and `#/l/ABC.` each draw the
-  not-found page; `location.hash` is unchanged after load; no tab is lit;
-  the document title is the plain `docTitle`.
+  not-found page in every build; `location.hash` is unchanged after load;
+  no tab is lit; the document title is the plain `docTitle`.
 - A browser list's page keeps `#/lists/<id>` (no rewrite before the date
   either); its title is the plain `docTitle` (the `openList` title goes).
 - A browser list's page and card draw no link buttons; the card links to
   `#/lists/<id>`.
-- `#/s/` pages, `SharePanel`, «Сохранить себе» on `#/s/`, the dropped
-  entries toast on `#/s/` do not change.
+- `#/s/` pages, `SharePanel`, «Сохранить себе» on `#/s/` and the
+  dropped-entries toast on `#/s/` do not change.
 - No new text. Removed text keys are listed in step 8.
+- Between `B10.1` and `B10.3` the branch draws `localOnly` and the help
+  paragraph 2 with the names of the removed buttons. Accepted: the branch
+  reaches production only whole, after `B10.3` removes both.
+
+**Standing checks.**
+
+1. Scale. States table (the only screens that change are the `#/l/` pages,
+   a browser list's page and the lists index card):
+
+   | State | What the screen shows | Proof |
+   |---|---|---|
+   | `#/l/<payload>` (plain) | the not-found page, the address kept | golden `#/l/ ~ retired` (rewritten), `app/contracts`, `routes.json` |
+   | `#/l/~AAAA` (packed) | the same page | golden `#/l/~AAAA` (rewritten), `app/contracts` |
+   | `#/l/`, `#/l/ABC.` | the same page | `hash.test.ts`, `routes.json`, `app/contracts` |
+   | a browser list's page, one and many entries | no «Ссылка игрокам», no «Ссылка себе»; the address stays `#/lists/<id>` | goldens `#/lists/a*`, `listPage.test.ts` |
+   | the lists index, one and many browser lists | the card has no link button and links to `#/lists/<id>` | goldens `#/lists ~ two lists`, `~ many lists` |
+   | at the limit, one past it, 3x | unchanged (no collection or cap changes) | unchanged |
+   | the longest list name | unchanged | case 66 |
+   | 360 px and 1180 px | the not-found page as `#/h/<unknown>` draws it; a list page's toolbar holds two buttons fewer | goldens, `sweep.js 360` in CI |
+
+2. Error scenarios. Loading and a failed read: none (`listRetired` reads
+   nothing). Offline: the same page. A conflict, a deleted record: not
+   applicable (no write). A stale tab on the previous bundle keeps decoding
+   `#/l/` until it reloads and writes nothing new. A pending
+   `dhloot.auth.return` action `saveList` that an old bundle stored on a
+   `#/l/` page and that returns to a `#/l/` address on this bundle is
+   dropped: `#runPending` has no `sharedList` arm, the page draws not found,
+   and no list is made (acceptance line; nothing stored is lost, because
+   the old save never ran). A revert (the previous frontend): nothing this
+   batch stores is new; the previous bundle decodes `#/l/` again.
+3. Consistency. No rule of `FEATURES.md`, "Consistency rules", covers a
+   retired address; the sibling pages are the reference: `#/homebrew` and
+   `#/account` with no sign-in draw the same not-found page with the
+   address kept and «На главную», and `#/print/...` keeps its own retired
+   print page (a different kind, decided 2026-10-08). Rule 4 ("One name")
+   is untouched here; `B10.3` ends its departure. The share labels left are «Ссылка для игроков» / «Ссылка для мастера»
+   (`SharePanel`); «Ссылка игрокам» and «Ссылка себе» go (audit #13 of
+   `persist-7e`, owner 2026-10-01). No departure.
+4. RU/EN parity. No new string. Each removed key goes in both languages;
+   the help paragraph 5 goes in both.
 
 **Steps.**
 
-1. Read section 6's inventory grep output once; it is the checklist for
-   steps 2-13.
+1. `git fetch origin`, `git merge origin/main` (a merge, never a rebase).
+   Confirm `date -u` is 2026-10-26 or later and `LEGACY_WRITE_UNTIL` still
+   reads `Date.UTC(2026, 9, 26)`; otherwise stop. Run the inventory grep
+   (section 6, item 2) and `git grep -n -E "#/l/|list link|docs/fixtures/lists" -- docs/specs llms.txt README.md README.ru.md .claude/README.md docs/fixtures/urls/routes.json tests/contracts.js tests/derived.js`;
+   the two outputs are the checklist for steps 2-14.
 2. `lib/lists.ts`: add `ListEntryMeta`, `ListShape` and `QTY_MAX` (moved
    verbatim from `listLink.ts`, with their comments); import `MoneyMode`
-   from `./money.js`; delete `findListByPayload` and `copyInit` (their
-   callers go in steps 5-7). `lib/cloudLists.ts`: add the interface
-   `SharedList` (the old `DecodedList`, same fields, its `dropped` comment
-   reworded for a share projection: "How many entries the projection held
-   that the reader's index does not know"); `sharedListOf` returns it.
-   Point every other importer of `listLink.js` at `lists.js`,
-   `cloudLists.js` or `money.js` (13 modules: the grep in step 1).
+   from `./money.js`; delete `findListByPayload` and `copyInit`.
+   `lib/cloudLists.ts`: add the interface `SharedList` (the old
+   `DecodedList`, the same fields; its `dropped` comment reads "How many
+   entries the projection held that the reader's index does not know");
+   `sharedListOf` returns it. Point every other importer of `listLink.js`
+   at `lists.js`, `cloudLists.js` or `money.js`.
 3. `lib/hash.ts`: replace the `sharedList` member of `Route` with
-   `| { kind: 'retired' }` and a one-line comment: "An old list link
-   (`#/l/...`): the not-found page, the address kept (docs/specs/ROUTES.md)".
-   In `parseHash`, one branch where the packed test is now:
-   `if (/^l\//.test(h)) return { kind: 'retired' };` - the same reach as the
-   two old branches together (plain, packed, empty, stray character).
+   `| { kind: 'listRetired' }` and the comment "An old list link
+   (`#/l/...`): the not-found page, the address kept
+   (docs/specs/ROUTES.md)". In `parseHash`, one branch where the packed
+   test is now: `if (/^l\//.test(h)) return { kind: 'listRetired' };`.
    Delete the later `l/` branch and its comment, `PACK_MARK` and
-   `sharedListHash`. `QTY_MAX` from `./lists.js`.
+   `sharedListHash`.
 4. `ports/types.ts`, `ports/index.ts`: delete `CompressPort`,
-   `Env.compress`, `browserCompress`, `plainCompress` and the
+   `Env.compress`, the `compress.js` import and re-export, and the
    `compress:` entries of `browserEnv` and `fakeEnv`; reword the two
    comments in `types.ts` that mention compression.
 5. `App.svelte`: the list branch reads
    `{:else if app.route.kind === 'storedList'}`. Reword the last branch's
-   comment: it now draws the not-found page for an address this build
-   reads but has no page for (`retired`, `account` with no sign-in, and
-   the homebrew routes with no sign-in) - one or two lines, citing
-   `docs/specs/ROUTES.md`.
+   comment in one or two lines: it draws the not-found page for an address
+   this build reads but has no page for (`listRetired`, and the routes that
+   need sign-in in a build without it), citing `docs/specs/ROUTES.md`.
 6. `ListPage.svelte`:
    - `own` reads only `storedList` (the browser store, the account store,
      the moved-id redirect - unchanged until `B10.3`);
    - delete the URL sync machinery: `syncTimer`, `cancelUrlSync`,
      `scheduleUrlSync`, `flushUrlSync`, the effect that schedules it, the
-     `pagehide`/`visibilitychange` effect, the long comment above them, and
-     the `onDestroy` work that only served them (keep whatever else it
-     does);
+     `pagehide`/`visibilitychange` effect, the comment above them, and the
+     `onDestroy` work that only served them (`app.clearOpenList()`; keep
+     whatever else it does);
    - delete `shareLink`, `sharePlayers`, `shareGm` and the two buttons in
-     the `{:else if !readOnly}` arm (the arm goes; `isCloud` keeps its
-     arm);
-   - delete the `route.kind === 'sharedList' && !app.legacyWritable`
-     retired branch, the packed branch, the `sharedList` branch and the
-     `SharedListPage` import; `{:else if !own}` keeps only what a
-     `storedList` needs;
-   - delete `encodeListRaw`, `findListByPayload` imports; `QTY_MAX`,
-     `ListEntryMeta` from `lists.js`, `MoneyMode` from `money.js`.
+     the `{:else if !readOnly}` arm (the arm goes; `isCloud` keeps its arm);
+   - delete the retired branch (`route.kind === 'sharedList' &&
+     !app.legacyWritable`), the packed branch, the `sharedList` branch and
+     the `SharedListPage` import;
+   - `QTY_MAX` and `ListEntryMeta` from `lists.js`, `MoneyMode` from
+     `money.js`.
 7. `SharedListPage.svelte`: `token: string` is required; delete `payload`,
    the `decodeList` arm of `shared`, the local save (`app.lists.create`,
-   `copyInit`, `openNewList`), the `token === undefined` arms (`index`,
-   `view`, the `!shared` not-found arm with `badShare`, the `legacyLinks`
-   line), and the `#/l/` sentences of the header comment. `saveShared`
-   keeps `cloud` (`saveShareCopy`), `prompt` and `wait`. The dropped
-   entries toast stays, keyed on the token.
-8. `AppState` (`state/app.svelte.ts`): delete `expandFailed`, `#expand`
-   and its three calls, `syncListUrl`, `openNewList`, `#claimList`,
-   `openList`, `urlPayload`, `clearOpenList` (and its callers' calls),
-   `saveCopyOf`; `#runPending` keeps the `share` arm and loses the
-   `sharedList` lines and the packed wait; `followMoved` keeps only the
-   `storedList` arm (`to = r.kind === 'storedList' ? into(r.listId) :
-   undefined`); `shared` is `$state<SharedList | null>`. `Shell.svelte`:
-   the title's `own` arm goes (it read `openList`). `ListsPage.svelte`:
-   the card `href` is `storedListHash(l.id)`; delete `share()`, its button
-   and the `encodeList`, `encodeListRaw`, `sharedListHash` imports.
-   `dict.ts`: delete, in both languages, `legacyLinks`, `linkRetired`,
-   `linkRetiredSub`, `sharePlayers`, `shareGm`, `playersLinkCopied`,
-   `gmLinkCopied`, `badShare`, and any other key the compiler or
-   `git grep -n -w <key> -- app/src` shows without a reader after the
-   edits (`listEmpty`, `share` - check each; `SharePanel` uses its own
-   keys).
-9. `help.ts` `LISTS`: delete the fifth paragraph («У списка в этом браузере
-   вместо неё две кнопки...» and "A list in this browser has two buttons
-   instead..."), both languages. Paragraph 2 stays until `B10.3`.
+   `copyInit`, `openNewList`), the `token === undefined` arms (the
+   not-found arm with `badShare`, the `legacyLinks` line, the `#/l/` filter
+   in page memory) and the `#/l/` sentences of the header comment.
+   `saveShared` keeps `cloud`, `prompt` and `wait`. The dropped-entries
+   toast stays, keyed on the token.
+8. `AppState` (`state/app.svelte.ts`): delete `expandFailed`, `#expand` and
+   its calls, `syncListUrl`, `openNewList`, `#claimList`, `openList`,
+   `urlPayload`, `clearOpenList`, `saveCopyOf`; `#runPending` keeps the
+   `share` arm and loses the `sharedList` lines and the packed wait;
+   `followMoved` keeps only the `storedList` arm (`to = r.kind ===
+   'storedList' ? into(r.listId) : undefined`); `shared` is
+   `$state<SharedList | null>`. `pageRecordFor`: the account-list branch
+   reads the route, `else if (r.kind === 'storedList') { const linked =
+   this.cloudLists?.get(r.listId)?.linked?.[id]; ... }`, with a unit case
+   in `app.test.ts` that fails on the old code (a print press on an
+   account list's page resolves that list's linked record of a clashing
+   homebrew key). `Shell.svelte`: the title's `own` arm goes (it read
+   `openList`); reword its comment. `ListsPage.svelte`: the card `href` is
+   `storedListHash(l.id)`; delete `share()`, its button and the codec
+   imports. `dict.ts`: delete, in both languages, `legacyLinks`,
+   `linkRetired`, `linkRetiredSub`, `sharePlayers`, `shareGm`,
+   `playersLinkCopied`, `gmLinkCopied`, `badShare`, and every other key
+   that `git grep -n -w <key> -- app/src` shows without a reader after the
+   edits.
+9. `help.ts` `LISTS`: delete the fifth paragraph («У списка в этом
+   браузере вместо неё две кнопки...» and "A list in this browser has two
+   buttons instead..."), both languages. Paragraph 2 stays until `B10.3`.
 10. Comments: `pending.ts` (the `saveList` action saves the open share
-    link's list, `#/s/` only), `redirect.ts` (the 16384 bound: "a print
-    address of 180 ids with counts passes 2048"; the bound stays).
-11. Unit tests: delete every case whose subject is a `#/l/` address, a
-    link button, the address rewrite, packed expansion, `compress`, the
-    codec or `findListByPayload`/`copyInit`; in the cases that stay,
-    replace `encodeList(...)` fixtures with the literal hash they need or
-    with a `#/lists/<id>` address. `hash.test.ts` expects `{ kind:
-    'retired' }` for `#/l/x`, `#/l/~x`, `#/l/`, `#/l/ABC.`, and still
-    `unknown` for `#/lx` and `#/list`. `sharePanel.test.ts` keeps its "no
-    `#/l/` copied" assertion as a literal substring check. Add one case
-    in `listPage.test.ts`, in the file's `it('...')` sentence style:
-    `it('draws the not-found page for an old list link and keeps the
-    address')`, rendering `App` at a literal `#/l/` hash.
+    link's list, `#/s/` only); `redirect.ts` (the 16384 bound stays; its
+    reason becomes "`#/l/` links with notes passed 2048 before R10").
+11. Unit tests (settled item 11):
+    - Create `app/src/test/seed.ts`: `seedWith(lists, shares = [])` returns
+      `SEED` with `lists` (a partial record of `SeedUserId` to `SeedList[]`)
+      appended to each named user's own lists and `shares` appended to
+      `SEED.shares`. One-sentence method comment, third-person verb.
+    - `sharedListPage.test.ts`: replace the three payload fixtures with
+      `SeedList` literals of the same content (name, entries with
+      `qty`/`gold`/`note`/`hnote`, `money`) in gm4's lists (`uuid(901)`,
+      `uuid(902)`, `uuid(903)`; entries `uuid(9011)` up), each with a
+      players' and a GM's share (`player-token-9n`, `gm-token-9n`; ids and
+      topic keys from `uuid(911)` up). Each behaviour case (heading and
+      sub, ticked, a dropped entry, every entry gone, untitled, the notes,
+      the tails, selection, adding to a list, the taken count, a row
+      opened, English, accessibility) opens the matching `#/s/` token with
+      `fakeCloud(seedWith(...))` and waits for the heading. Delete the
+      cases whose subject is the codec or `#/l/`: "the bad link", "the
+      legacy announcement", "saving the whole list" (browser save), "draws
+      no region on a #/l/ page", "nor on a #/l/ page" (keep its
+      not-the-owner half), "encodes the 8-entry #/l/ list", "on a #/l/
+      link", "disables «Сохранить себе» while the browser lists move" stays
+      (B10.3's). Where a `#/s/` case already pins the same behaviour, the
+      port may merge into it; record each merge in the handoff.
+    - `listPage.test.ts`: delete the cases on the rewrite to `#/l/`, the
+      own `#/l/` page, the shared and packed pages, the packed buttons,
+      "draws the retired page..." and "follows its own #/l/ page...";
+      add `it('draws the not-found page for an old list link and keeps the
+      address')`, rendering `App` at a literal `#/l/` hash. Its clipboard
+      "no `#/l/`" assertions stay as literal substring checks.
+    - `listsPage.test.ts`: the card `href` is `#/lists/<id>`; delete the
+      share-button cases. `sharePanel.test.ts`, `shell.test.ts`: replace
+      the `#/l/` fixture with a `#/s/` token or delete the case when its
+      subject is `#/l/`. `a11y.test.ts`: the `#/l/` route becomes the GM
+      share of a `seedWith` list with both notes. `lib/lists.test.ts`:
+      delete the `findListByPayload` and `#/l/ payload` cases.
+      `bundle.test.ts`, `share.test.ts`: import paths. `hash.test.ts`
+      expects `{ kind: 'listRetired' }` for `#/l/x`, `#/l/~x`, `#/l/`,
+      `#/l/ABC.`, and `unknown` for `#/lx` and `#/list`. `ports.test.ts`:
+      delete the compress cases. `app.test.ts`: delete the `openList`,
+      `urlPayload`, packed and own-`#/l/` cases; add the `pageRecordFor`
+      case (step 8) and a case for the dropped `saveList` pending action
+      on a `#/l/` return (standing check 2).
 12. Layer 2:
-    - `tests/app/inventory.js`: delete `#/l/ ~ own list`, `#/l/ ~ own list,
-      retired`, `#/l/ ~ shared` and its five variants (`a row ticked`,
-      `picked`, `saved`, `saved as gm2`, `noted`), `#/l/ ~ packed`,
-      `#/l/ ~ every entry gone`, `#/l/zzzz`; rewrite `#/l/ ~ retired` with
-      no `today`, the route literal (copy the payload string from
-      `docs/fixtures/lists/qty-and-price.json`'s `player.payload` before
-      deleting the file) and the why "an old list link draws the not-found
-      page: «Предмет не найден», its sub, «На главную»; the address kept,
-      nothing decoded"; rewrite `#/l/~AAAA` with no `enter` and the why "a
-      packed old list link: the same not-found page, the address kept".
-      Delete the constants `QTY_AND_PRICE`, `NOTES_BOTH_KINDS`, `PACKED`
-      and the `seven` comment's codec sentence if they lose every reader.
+    - `tests/app/inventory.js`: delete `#/l/ ~ own list`, `~ own list,
+      retired`, `~ shared` and its variants (`a row ticked`, `picked`,
+      `saved`, `saved as gm2`, `noted`), `~ packed`, `~ every entry gone`,
+      `~ filtered`, `#/l/zzzz`; rewrite `#/l/ ~ retired` with no `today`,
+      the route as a literal (copy `qty-and-price.json`'s `player.payload`
+      before the file goes) and the why "an old list link draws the
+      not-found page: «Предмет не найден», its sub, «На главную»; the
+      address kept, nothing decoded"; rewrite `#/l/~AAAA` with no `enter`
+      and the why "a packed old list link: the same not-found page, the
+      address kept". Delete `QTY_AND_PRICE`, `NOTES_BOTH_KINDS`, `PACKED`
+      and the comments that explain them when no reader is left.
     - `tests/app/states.js`: delete case 8 (packed link) and case 38 (old
       link saved after sign-in) from the functions and `CASES`; in case 47
-      delete the own-`#/l/` sub-steps (`MOVE_A_GM`, the "OAuth return lands
-      on the first list's own #/l/ page" block) and in case 48 the
-      `READ_ONLY_OWN` sub-steps - the move and read-only cases themselves
-      stay until `B10.3`; drop the `QTY_AND_PRICE` require; update the
+      delete `MOVE_A_GM` and the "OAuth return lands on the first list's
+      own #/l/ page" block; in case 48 delete `READ_ONLY_OWN` and its
+      sub-steps (both cases stay until `B10.3`); port case 77 to
+      `#/s/player-token-1`: open it signed out, `await d.fake('playEntry',
+      SHOP_ID, 'ci1', { player_note: 'Видно игрокам' })`, wait until the
+      ci1 row draws its note, then the existing assertions; delete
+      `NOTED_AND_COUNTED` and the `QTY_AND_PRICE` require; update the
       header's case count. Case 43's "no `#/l/` copied" check stays.
-    - `tests/app/contracts.js`: replace the codec helpers and the four
-      link blocks (lines 15-147 at `930dc986`) with one block "an old list
-      link": for `#/l/<the same literal payload>`, `#/l/~AAAA` and
-      `#/l/ABC.`, open the address, assert the `h1` reads «Предмет не
-      найден» and `location.hash` equals the opened hash. Reword the file
-      header (the codec half no longer exists).
-    - `tests/app/sweep.js`: delete the `#/l/%%SHARED%%` row and its
-      substitution; keep `#/l/zzzz` with the label «старая ссылка».
+    - `tests/app/contracts.js`: replace "the link the app writes" and the
+      other codec blocks with one block "an old list link": for `#/l/<the
+      same literal payload>`, `#/l/~AAAA` and `#/l/ABC.`, open the address,
+      assert that the `h1` reads «Предмет не найден» and `location.hash`
+      equals the opened hash. Reword the file header.
+    - `tests/app/sweep.js`: `['#/l/%%SHARED%%', 'чужой список']` becomes
+      `['#/s/player-token-1', 'чужой список']`; the `#/l/` notes row
+      becomes `['#/s/gm-token-1', 'чужой список: заметки в строках']`;
+      delete the `%%SHARED%%` substitution; keep `#/l/zzzz` with the label
+      «старая ссылка».
     - `tests/app/driver.js`: delete `addressSettled`, `expanded` and
-      `expandFailed` if no caller is left (grep).
+      `expandFailed` when no caller is left.
 13. Contract fixtures and suites:
     - `docs/fixtures/urls/routes.json`: the `#/l/ABC.` row's why becomes
       "an old list link with a stray character draws the not-found page,
-      the address kept, never home"; add, after it, a row for
-      `#/l/~AAAA` ("a packed old list link: the not-found page, the address
-      kept") and a row for the literal `qty-and-price` player payload ("an
-      old list link that opened a list before 2026-10-26: the not-found
-      page, the address kept"), each with the `resolves` shape of the
-      `#/l/ABC.` row.
-    - `tests/contracts.js`: delete the list-encoding half (the `b64url`,
-      `stampOf`, `N_REC`/`N_SEP` helpers, the "list encoding" block) and
-      the check that `llms.txt` and `CONTRACTS.md` name 2026-10-26; reword
-      the header comment (its first paragraph explains the second
-      implementation of the codec - now it covers the docs-name check, the
-      address names, `data.json` keys and `import-v1`). Remove the `zlib`
-      require only if nothing else uses it.
-    - `tests/derived.js`: delete the "legacy write cutoff" check (it guards
-      moving the date, which is past). Keep the `llms.txt` pin `'#/l/'`
-      (step 14 keeps the sentence).
-14. Specs and docs (each in the language and form of its file):
+      the address kept, never home"; after it, add a `#/l/~AAAA` row ("a
+      packed old list link: the not-found page, the address kept") and a
+      row for the literal `qty-and-price` player payload ("an old list link
+      that opened a list before 2026-10-26: the not-found page, the address
+      kept"), each with the `resolves` shape of the `#/l/ABC.` row.
+    - `tests/contracts.js`: delete the list-encoding half (`b64url`,
+      `stampOf`, `N_REC`/`N_SEP`, the "list encoding" block) and the check
+      that `llms.txt` and `CONTRACTS.md` name 2026-10-26; reword the header
+      comment. Remove the `zlib` require only if nothing else uses it.
+    - `tests/derived.js`: delete the "legacy write cutoff" check. Keep the
+      `llms.txt` pin `'#/l/'` (step 14 keeps one sentence); the message "the
+      fragment of a list link" becomes "the fragment of a link".
+14. Specs and docs (each in the language and form of its file; the step-1
+    grep is the checklist):
     - `CONTRACTS.md`: the fixtures paragraph names `docs/fixtures/urls/
-      routes.json` and `docs/fixtures/import/` only; section 1's bullet
-      lists `#/lists/<listId>` and says `#/l/<payload>` is a retired
-      address that draws the not-found page, the address kept; section 3
-      becomes its heading "3. List link encoding (retired)" and one
-      paragraph: "`#/l/` links stopped opening on 2026-10-26 and R10
-      removed their format; an old `#/l/` address draws the not-found
-      page (section 1). The format is in `git show <base>:docs/specs/
-      CONTRACTS.md`, section 3." where `<base>` is the commit R10 starts
-      from (handoff, "Base / starting commit"). Sections 4 and 5 keep their
-      numbers.
+      routes.json` and `docs/fixtures/import/`; section 1's bullet says
+      `#/l/<payload>` is a retired address that draws the not-found page,
+      the address kept; section 3 becomes "3. List link encoding
+      (retired)" and one paragraph: "`#/l/` links stopped opening on
+      2026-10-26, and R10 removed their format; an old `#/l/` address draws
+      the not-found page (section 1). The format is in `git show
+      0b73fd5c:docs/specs/CONTRACTS.md`, section 3." Sections 4 and 5 keep
+      their numbers. Section 4, "Formatted text": the row `dhloot.lists.v2`,
+      `#/l/` payload loses `#/l/ payload` (`B10.3` takes the rest).
     - `ROUTES.md`: the two `#/l/` rows become one row "`#/l/...` - an old
-      list link, retired on 2026-10-26: the not-found page, the address
-      kept, the payload never read"; delete the paragraph on the stray
-      character after `l/` (the row says it); the print paragraph says
-      "the `*<n>` spelling the retired list link used" without citing
-      section 3; the `#/lists/<listId>` row drops its `#/l/` rewrite clause.
-    - `llms.txt`: rule 4's last sentence becomes "Do not build `#/l/`
-      links: that format stopped opening on 2026-10-26."; delete the
-      `#/l/<payload>` address entry.
-    - `FEATURES.md`: in "Lists", delete the shared `#/l/` page bullet and
-      its sub-bullets (the save, the 26 October line, the bad and packed
-      links), the link buttons and the address-bar rewrite; in "Account
-      and browser lists", every `#/l/` sentence becomes the not-found
-      page or goes (the read-only bullet: "A `#/l/` address draws the
-      not-found page"; "An account list's page keeps its address" keeps
-      its sentence without the `#/l/` aside); in "Homebrew", "a `#/l/`
-      link and a lists file never carry an own key" names the lists file
-      only. `META.md`'s homebrew paragraph ("never in a `#/l/` link or a
-      lists file") the same.
-    - `STATE.md`: the URL hash row holds "route, table, anchor, filters, a
-      share link's token, what to print"; `dhloot.auth.return`: the action
-      saves "the open share link's list (`#/s/`)", and the bound sentence
-      says "a print address with counts passes 2048"; the memory table
-      drops `openList`, `urlPayload`, `shared {ids, meta}` stays (a `#/s/`
-      page's), and the `urlPayload` paragraph is deleted.
-    - `META.md` section 3: delete the two bullets on `#/l/` (cannot be
-      revoked, as long as its contents) and replace the lead sentence "An
-      old shared list is still its address..." with "An old `#/l/` link
+      list link, retired on 2026-10-26: the not-found page in every build,
+      the address kept, the payload never read"; delete the `#/l/`
+      sentences after the `#/s/` grammar and the paragraph on the stray
+      character after `l/`; the print paragraph drops "the list link's
+      `id*qty` spelling stays in `CONTRACTS.md` section 3"; the
+      `#/lists/<listId>` row drops its `#/l/` clause.
+    - `llms.txt`: rule 4's sentence becomes "Do not build `#/l/` links: that
+      format stopped opening on 2026-10-26."; delete the `#/l/<payload>`
+      address entry; the `?v=` sentence names an item or a share link.
+    - `FEATURES.md`: in "Lists", delete the shared `#/l/` page bullets (the
+      page, the save, the 26 October line, the bad and packed links, the
+      `#/l/` filter in page memory), the link buttons and the address-bar
+      rewrite; "held to 99, the most a list link carries" becomes "held to
+      99"; every other `#/l/` sentence (the formatted text on `#/l/`, the
+      selection bar "as on a `#/l/` page", the own `#/l/` follow, the
+      read-only bullet, "a `#/l/` link and a lists file never carry an own
+      key", the retired page) goes or says the not-found page.
+    - `STATE.md`: the hash row holds "route, table, anchor, filters, a share
+      link's token, what to print"; `dhloot.auth.return` saves "the open
+      share link's list (`#/s/`)", and its bound sentence says "`#/l/`
+      links with notes passed 2048 before R10"; the memory table drops
+      `openList` and `urlPayload`, and the `urlPayload` paragraph goes.
+    - `META.md` section 3: the two `#/l/` bullets become "An old `#/l/` link
       stopped opening on 2026-10-26 and draws the not-found page."; the
-      "**Your own link** doubles as its backup" bullet loses that clause.
-    - `COVERAGE.md`: the rows for `listLink.test.ts`, the codec half of
-      `contracts`, the `#/l/` goldens and states 8 and 38, `compress`; add
-      the "an old list link" block of `app/contracts` and the two kept
-      goldens.
-    - `README.md`, `README.ru.md`: "Two notes" - the table says what each
-      note reaches now (the copied text and the players' share link; the
-      GM's share link), and the paragraph on two link buttons becomes one
-      on «Поделиться» (players' and GM's link, `#/s/<token>`); "The link
-      format" is replaced by a short "Share links" subsection (an opaque
-      token, made by the owner, revoked by «Удалить ссылку»); "Where lists
-      live" loses its **Your own link** sentence (its storage text is
-      `B10.3`'s). Keep each README's order and language.
-    - `.claude/README.md` line 181: the clause names `docs/fixtures/urls/
-      routes.json` and `docs/fixtures/import/` as the contract fixtures.
-15. Run the gates (below), then commit: the first batch of the task, so a
-    new commit `feat(persist): retire the old list links` with the
-    Conventional Commits body (why: the cutoff passed; effect: an old link
-    draws the not-found page). No AI trailer.
+      homebrew sentence names the lists file only; the PWA line on "a list
+      link carries a list" names a share link.
+    - `COVERAGE.md`: the rows of `listLink.test.ts`, the codec half of
+      `contracts`, the `#/l/` goldens, states 8 and 38, `compress`; the
+      `listPage.test.ts` and `sharedListPage.test.ts` rows name `#/s/`;
+      add the "an old list link" block of `app/contracts`, the two kept
+      goldens, and `test/seed.ts`.
+    - `README.md`, `README.ru.md`: the example `#/l/` address becomes a
+      `#/s/` example; "Two notes" says what each note reaches now; the two
+      link buttons become «Поделиться»; "The link format" becomes a short
+      "Share links" subsection (an opaque token, made by the owner, revoked
+      by «Удалить ссылку»); "the list link format" in the contracts
+      sentence goes; the fetcher sentence names a share link. Keep each
+      README's order and language.
+    - `.claude/README.md`, "Hooks", the `edit-followup.mjs` row:
+      "`CONTRACTS.md` enumerates only `docs/fixtures/urls/routes.json` and
+      `docs/fixtures/import/`". The 2026-09-30 measurement that names
+      `#/l/ ~ every entry gone` stays (a dated measurement).
+15. Gates (below), then one commit `feat(persist): retire the old list
+    links` (body: the cutoff passed; an old link draws the not-found page;
+    the shared page's tests run on share links). No AI trailer. `git fetch
+    origin`, `git merge origin/main`, then `git push -u origin
+    claude/persist-10-legacy-removal`.
 
 **Acceptance criteria.**
 
-- `git grep -n -E "listLink|decodeList|encodeList|PACK_MARK|sharedListHash|compress\.(pack|unpack)|CompressPort|expandFailed|syncListUrl|urlPayload" -- app/src tests` prints nothing.
+- `git grep -n -E "listLink|decodeList|encodeList|PACK_MARK|sharedListHash|compress\.(pack|unpack)|CompressPort|expandFailed|syncListUrl|urlPayload|openList\b" -- app/src tests` prints nothing.
 - `docs/fixtures/lists/` does not exist; `tests/contracts.js` and
   `tests/app/contracts.js` pass without it.
-- `parseHash` answers `{ kind: 'retired' }` for `#/l/x`, `#/l/~x`, `#/l/`
-  and `#/l/ABC.`; the built app keeps each address and draws «Предмет не
-  найден» (`app/contracts`, the two goldens).
+- `parseHash` answers `{ kind: 'listRetired' }` for `#/l/x`, `#/l/~x`,
+  `#/l/` and `#/l/ABC.`; the built app keeps each address and draws
+  «Предмет не найден» (`app/contracts`, the two goldens).
 - A browser list's page and card draw no link button, and its address stays
   `#/lists/<id>` (goldens, `listPage.test.ts`).
-- After R10 the only share labels left are «Ссылка для игроков» / «Ссылка
-  для мастера» ("Players' link" / "GM's link", `shareLinkPlayers` and
-  `shareLinkGm` in `SharePanel`): the keys `sharePlayers` («Ссылка
-  игрокам») and `shareGm` («Ссылка себе», "Your own link") are gone from
-  `dict.ts` in both languages, and `git grep -n -E "Ссылка себе|Ссылка
-  игрокам|Your own link" -- app/src docs/specs` finds nothing outside
-  `B10.3`'s browser-list sentences, which that batch removes (audit #13 of
-  `issues/persist-7e-list-quick-item/consistency-audit.md`; owner,
-  2026-10-01).
+- The keys `sharePlayers` and `shareGm` are gone from `dict.ts` in both
+  languages; `git grep -n -E "Ссылка себе|Ссылка игрокам|Your own link" -- app/src docs/specs`
+  finds only `localOnly` and help paragraph 2, which `B10.3` removes.
+- Every shared-page behaviour case of `sharedListPage.test.ts` runs on a
+  `#/s/` token; the handoff lists the deleted cases and each merge.
+  `npm run check:fast`'s coverage of `SharedListPage.svelte` does not
+  drop below its threshold.
+- States case 77 passes on `#/s/player-token-1`; the sweep draws
+  `#/s/player-token-1` and `#/s/gm-token-1`.
+- `pageRecordFor` on an account list's page answers that list's linked
+  record (the new `app.test.ts` case fails on the old code).
+- A `saveList` pending action that returns to a `#/l/` address makes no
+  list (`app.test.ts`).
 - `#/s/` behaviour is unchanged: states 43-46, 52, 55, 56 and the `#/s/`
   goldens pass without an update.
 - `CONTRACTS.md` section 3 is the one history paragraph; `ROUTES.md` has
   one `#/l/` row; `llms.txt` names `#/l/` once, as not to be built.
-- Every spec line that described the `#/l/` page, buttons or rewrite is
-  gone or describes the not-found page (`git grep -n "#/l/" -- docs/specs
-  README.md README.ru.md llms.txt` shows only the retired-address lines,
-  the history line, the "not-found page" sentences, and the browser-list
-  sentences `B10.3` rewrites).
-- The golden compare reports only states that draw a browser list (link
-  buttons gone, title plain) or a deleted `#/l/` state; the update then
-  writes them; the stale sweep finds no orphan.
+- `git grep -n "#/l/" -- docs/specs README.md README.ru.md llms.txt` shows
+  only the retired-address lines, the history line, the not-found
+  sentences, and browser-list sentences that `B10.3` rewrites.
+- The golden update moves only states that draw a browser list (link
+  buttons gone, title plain) or a `#/l/` state; the stale sweep finds no
+  orphan.
 
-**Verification commands** (in this order; Bash tool unless noted):
+**Verification commands** (in this order; Bash tool, timeout 600000 where
+a run can pass 120 s):
 
 ```text
-rtk npm run check                                    # Bash timeout 600000
-node tests/run-all.js contracts,dataint
 npm run build:test
 node tests/run-all.js app/contracts,app/states
-node tests/app/golden.js --shard=1/4                 # compare, then 2/4, 3/4, 4/4
 node tests/app/golden.js --update --shard=1/4        # then 2/4, 3/4, 4/4
-node tests/app/sweep.js 360
-npm run check:built
-rtk npm run check                                    # after any fix, before the commit
+git status -- tests/app/snapshots                    # what moved: browser-list and #/l/ states only
+node tests/run-all.js contracts,dataint
+rtk npm run check:fast                               # the last green run arms the commit gate
 ```
+
+CI's run of the pushed tip is the full gate (the orchestrator's
+`ci-credit.mjs`).
 
 **Risks and do-nots.**
 
 - Do not delete `dhloot.*` keys, `ListStore`, `LegacyMove` or the
   notices: `B10.3`'s.
-- Do not reuse the old `notFound` copy for a new "link retired" text: the
-  owner chose the existing not-found page.
-- The `retired` kind must never become `unknown`: `routes.json` and
-  `app/contracts` would send the reader home.
-- A golden diff outside browser-list and `#/l/` states is a defect, not a
+- Do not add a "link retired" text: the owner chose the existing
+  not-found page.
+- `listRetired` never becomes `unknown`: `routes.json` and `app/contracts`
+  would send the reader home.
+- A golden move outside browser-list and `#/l/` states is a defect, not a
   re-seed: stop and report it.
 - `.claude/hooks/selftest.mjs` keeps its synthetic `docs/fixtures/lists/
   x.json` path (a hook edit fires its own review).
@@ -607,249 +718,301 @@ rtk npm run check                                    # after any fix, before the
 
 ## 10. Batch B10.2 - port the list fixtures to account lists (outline)
 
-Objective: every test whose subject is list page, lists index, add-to-list
-or record behaviour, and that uses a browser list only as its fixture,
-runs on an account list of the fake cloud. No production file changes.
+Objective: every test whose subject is list page, lists index, add-to-list,
+record, table or print behaviour, and that uses a browser list only as its
+fixture, runs on an account list of the fake cloud. No production file
+changes.
 
-- Unit: add `app/src/test/seed.ts` with `seedWith(lists: { gm1?: SeedList[];
-  gm2?: SeedList[] })`, returning `SEED` with those lists appended to the
-  user's own (its second real use is in this batch:
-  `listPage.test.ts`, `listsPage.test.ts`, `components/lists.test.ts`,
-  `a11y.test.ts`, `state/app.test.ts`). Port each `describe`/`it` that
-  seeds `dhloot.lists.v2` for list behaviour to `fakeCloud(seedWith(...),
-  'gm1')` and `#/lists/<uuid>`; leave in place (for `B10.3` to delete) the
-  cases whose subject is the browser store, the merge, the backup, the
-  move, the notices, read-only after the date or the unconfigured build.
-- Layer 2 (`tests/app/states.js`): add `accountList(d, { name, ids, meta,
-  money, note, hnote })`, which writes one `create` op through
-  `d.fake('lists.apply', [...])` (ids from `uuid(7000+n)`, entries in
-  order), then `d.shownAgain()`, and answers `#/lists/<id>`. Port cases
-  13, 17 (its note sub-case and its storage reads become
-  `d.fake('lists.list')`), 18, 22, 26, 27 (50 lists: 47 creates, under
-  the 50-list limit with the seed's 3), 30, 32, 33 (the removal "from
-  another tab" becomes `lists.apply` with `remove_entries` plus
-  `d.fake('play', id, {})`; if `play` cannot announce an entry removal,
-  add `playRemove(listId, entryId)` to `FakeCloud` with a
-  `fake-cloud.test.ts` case) and 62 (twelve account lists through
-  `accountList`, not the move). Cases 7, 20, 25, 34, 47, 48, 51 stay as
-  they are for `B10.3`.
-- Acceptance: the ported cases pass on the current build; `git grep -n
-  "dhloot.lists.v2" -- tests/app/states.js app/src` lists only cases and
-  tests that `B10.3` deletes (each named in the handoff).
-- Gates: section 8. Review: required (harness), judged against
-  `COVERAGE.md`.
+- Unit: `seedWith` (from `B10.1`) is the fixture; `fakeCloud(seedWith(...),
+  'gm1')` and `#/lists/<uuid>`. Port each `describe`/`it` that seeds
+  `dhloot.lists.v2` for list behaviour in `listPage.test.ts`,
+  `listsPage.test.ts`, `components/lists.test.ts`, `a11y.test.ts`,
+  `record.test.ts`, `tables.test.ts`, `shell.test.ts`, `app.test.ts`, and
+  `state/cloudLists.test.ts` (its case on both stores keeps the account
+  store only). Leave for `B10.3` the cases whose subject is the browser
+  store, the merge, the backup, the move, the notices, read-only after the
+  date or the unconfigured build.
+- Layer 2: add `accountList(d, { name, ids, meta, money, note, hnote })` to
+  `tests/app/states.js` (one `create` op through `d.fake('lists.apply',
+  [...])`, ids from `uuid(8000 + n)`, then `d.shownAgain()`; answers
+  `#/lists/<id>`). Port cases 13, 17, 18, 22, 26, 27 (50 lists: 47 creates
+  beside the seed's 3), 30, 32, 33 (the removal "from another tab" becomes
+  `lists.apply` with `remove_entries` and a `playRemove(listId, entryId)`
+  fake verb, with a `fake-cloud.test.ts` case, if `play` cannot announce
+  it), 62 (twelve account lists, not the move), 64, 76. Cases 7, 20, 25,
+  34, 47, 48, 51 stay for `B10.3`.
+- `tests/app/print.js`: the D20 toast check opens SHOP as `gm1`; the
+  signed-out browser-list print check stays for `B10.3`. `tests/app/
+  typo.js` and `tests/app/sweep.js`: `#/lists` and `#/lists/a` open as
+  `gm1` on SHOP, `#/lists/b` on TROPHIES; `STORAGE` goes when no route reads
+  it.
+- Standing checks: not applicable - no production change; the reviewer
+  compares the deleted and the ported case lists against `COVERAGE.md`.
+- Acceptance: the ported cases pass on the current build; `git grep -n "dhloot.lists.v2" -- tests/app app/src`
+  lists only cases that `B10.3` deletes, each named in the handoff.
 
 ## 11. Batch B10.3 - remove browser lists and the move (outline)
 
-Objective: settled items 3-9; the app holds account lists only.
+Objective: settled items 3-9; the app holds account lists only; P36.
 
-- Delete: `state/lists.svelte.ts` (+ `state/lists.test.ts`),
-  `state/legacyMove.svelte.ts` (+ test), `lib/legacy.ts` (+ test),
-  `components/MoveNotice.svelte`, `MoveStatus.svelte`,
-  `StorageNotice.svelte` (+ `moveNotice.test.ts`, `moveStatus.test.ts`);
-  `tests/db` stays (`B10.4`).
+- Delete: `state/lists.svelte.ts` (+ test), `state/legacyMove.svelte.ts` (+
+  test), `lib/legacy.ts` (+ test), `components/MoveNotice.svelte`,
+  `MoveStatus.svelte`, `StorageNotice.svelte` (+ `moveNotice.test.ts`,
+  `moveStatus.test.ts`).
 - `lib/lists.ts`: delete `keepLists`, `liftNotes`, `LegacyList`,
   `mergeLists`.
 - `AppState`: delete `lists`, `legacyMove`, `legacyWritable`,
   `localWritable`, `moveDue`, `followMoved`, the list watch, the move step
-  of `#listsReady` and `retryLists`, the move retry in `#pollLists`, the
-  move wait in `#runPending`, `storeFor`, `storageWorks`, `warnHidden`,
-  `hideWarn`, `WARN_KEY`; `newListTarget` answers `'cloud' | 'prompt' |
-  'wait'` and the list surfaces are not drawn with no cloud.
-- Ports: `StoragePort.works` and `dhloot.probe`; `ListRepository.move`
-  (`types.ts`, `supabase.ts`, `fake-cloud.ts`, their tests); `ListRow`,
-  the `supabase.ts` select string and every fake row lose
-  `legacy_fingerprint` - a precondition of `B10.4`'s column drop (Q1 B):
-  after `B10.3` no client file names the column;
-  `cloud.contract.ts` loses `moveCases` (case I is retired, its letter not
+  of `#listsReady` and `retryLists`, the move retry, the move wait in
+  `#runPending`, `storeFor`, `storageWorks`, `warnHidden`, `hideWarn`,
+  `WARN_KEY` (and from `SETTINGS_KEYS`); `newListTarget` answers `'cloud' |
+  'prompt' | 'wait'`.
+- `lib/dict.ts`: `sectionLabel(s, t)` - `lists` reads `menuLists` in every
+  build; `i18n.test.ts` follows; `AccountPage.svelte` and `Shell.svelte`
+  drop the argument; `SECTION_LABEL`'s `lists` key goes if no reader is
+  left.
+- Ports: `StoragePort.works` and `dhloot.probe`; `ListRepository.move`,
+  `MoveWrite` (`types.ts`, `supabase.ts`, `fake-cloud.ts`, their tests);
+  `ListRow`, the select string and every fake row lose
+  `legacy_fingerprint` (after `B10.3`, no client file names it);
+  `cloud.contract.ts` loses `moveCases` (case I retired, its letter not
   reused) and the signed-out move assert; `tests/e2e/flows.mjs` loses F9
-  (header renumbered in prose only: "F9 retired at R10") and its
-  `settled` reads `data-lists`; `tests/e2e/admin.mjs`'s select loses the
-  column. `ports/clock.ts`: `queryClock` keeps `?toasts=held` only;
-  `TEST_NOW`'s comment names its readers (export names, relative times).
-- Components: `ListPage` (always an account list: no `readOnly`, no
-  `isCloud` arms, no local delete or undo, no moved-id redirect),
-  `ListsPage` (the account group only; filter and fold over account
-  lists), `AddToList` (account lists only), `SharedListPage` (no move
-  disable), `Shell` (no `MoveNotice`, `data-lists`), `TabBar` (no `lists`
-  prop), `App.svelte` (`lists` and `storedList` only with `app.cloudLists`;
-  otherwise the not-found branch). Add-to-list mount points
-  (`git grep -n "<AddToList"`) draw nothing with no cloud.
+  ("F9 retired at R10" in the header) and its `settled` reads `data-lists`;
+  `tests/e2e/admin.mjs`'s select loses the column. `ports/clock.ts`:
+  `queryClock` keeps `?toasts=held`; `TEST_NOW`'s comment names its
+  readers.
+- Components: `ListPage` (an account list only: no `readOnly` and no
+  `isCloud` arms, no local delete or undo, no moved-id redirect, no print
+  `prompt` state), `ListsPage` (the account group only), `AddToList`
+  (account lists only), `SharedListPage` (no move disable), `Shell` (no
+  `MoveNotice`; `data-lists`), `TabBar` (no `lists` prop), `App.svelte`
+  (`lists` and `storedList` only with `app.cloudLists`; else the not-found
+  branch). The `<AddToList` mount points draw nothing with no cloud.
 - `dict.ts`: delete the move, banner, storage and browser-group keys
-  (`noStorage*`, `badStorage*`, `localOnly*`, `readMore` if unused,
-  `localReadOnly*`, `moved*`, `moving`, `moveFailed`, `moveAttention*`,
-  `moveHeldWhy`, `moveBanner*`, `groupBrowser`, `noLists` if unused).
+  (`noStorage*`, `badStorage*`, `localOnly*`, `localReadOnly*`, `moved*`,
+  `moving`, `moveFailed`, `moveAttention*`, `moveHeldWhy`, `moveBanner*`,
+  `groupBrowser`, and `readMore`, `noLists` when unread).
 - `help.ts` `LISTS` paragraph 2 becomes, verbatim: «Войдите - и списки
   будут храниться в аккаунте: они сохраняются сами и открываются на любом
   устройстве.» / "Sign in and your lists are kept in your account: they
   save themselves and open on any device."
-- Harness: `driver.js` (`today` option gone, `moveSettled` renamed
-  `settled`, reads `data-lists`), `golden.js` (`# today:` gone),
-  `golden.test.mjs` (the dated-states block gone); `states.js` deletes
-  cases 7, 20, 25, 34, 47, 48, 51 and every left-over browser-list step;
+- Harness: `driver.js` (`today` goes, `moveSettled` becomes `settled` and
+  reads `data-lists`; every caller in `golden.js`, `sweep.js`,
+  `contracts.js`, `states.js`), `golden.js` (`# today:` goes),
+  `golden.test.mjs` (the dated-states block goes); `states.js` deletes
+  cases 7, 20, 25, 34, 47, 48, 51 and every browser-list step left;
   `inventory.js` deletes every state that seeds `dhloot.lists.v2` or
-  `dhloot.migrated.v1` or sets `today`, except where `B10.2`'s rule says
-  the state shows list page behaviour that no `as gm1` state holds - then
-  it is ported to `SHOP` as `gm1` with the same `enter`; record and table
-  states drop their `two`/`twelve`/`seven` storage.
+  `dhloot.migrated.v1` or sets `today`, or ports it to SHOP as `gm1` with
+  the same `enter` when no `as gm1` state shows that list page behaviour;
+  record and table states drop their `two`/`twelve`/`seven` storage;
+  `print.js`'s signed-out browser-list print check, the golden `#/lists/a ~
+  print signed out` and the sweep row «печать без входа: список» go.
 - `routes.json`: the `#/lists` row's `tab` is `null`.
 - Specs: section 7's row. `STATE.md`'s keys table keeps the live keys and
-  adds one paragraph "Left in the browser" naming `dhloot.lists.v1`,
-  `dhloot.lists.v2`, `dhloot.lists.v2.bad`, `dhloot.migrated.v1`,
-  `dhloot.warn.v1`: the app reads, writes and deletes none of them since
-  R10; "Two tabs" keeps only the account paragraph; "The list migration"
-  section goes; "Storage that throws ... runs without lists" becomes "...
-  runs on its defaults". `FEATURES.md` "Chrome": nine tabs, one bullet.
-- `DEBT.md`: delete D24 and D63; edit D64 - **Where** names
-  `AccountMenu.svelte` only, **Why deferred** gains "R10 removed
-  `MoveNotice` with its two buttons; the «Выйти» half is `debt-cleanup`'s
-  (owner, 2026-10-01)", **How to verify** drops the `MoveNotice` clause.
-  If D62 is the last entry of "Legacy removal", the section stays for
-  `B10.4`.
-- One decision file (section 3, item 10), `node tools/decisions.js`.
+  adds one paragraph "Left in the browser" (the five keys; the app reads,
+  writes and deletes none of them since R10); "Two tabs" keeps only the
+  account paragraph; "The list migration" goes; "Storage that throws ...
+  runs without lists" becomes "... runs on its defaults". `FEATURES.md`
+  "Chrome": nine tabs. `FEATURES.md`, "Consistency rules", rule 4 ("One
+  name"): the departure "until 2026-10-26" for «Списки» goes, because the
+  tab goes and every other place already says «Мои списки». `CONTRACTS.md`
+  section 4, "Formatted text": the `dhloot.lists.v2` row goes.
+- `DEBT.md`: delete D24, D63 and D64. The section stays for `B10.4` and
+  `B10.5`.
+- P36 (carry, context.md): its own acceptance line - `git grep -n -E "(app\.js|style\.css)[: ]+[0-9]" -- app/src`
+  prints nothing, or only lines that are not citations, each named in the
+  handoff. Each citation becomes `git show 23c00a6^:app.js` (or
+  `style.css`) with the function or selector name, or the comment goes when
+  the code says it. No behaviour change, no golden move from P36.
+- One decision file (settled items 3, 4, 6, 9; "Superseded in part by"
+  lines on `2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md`
+  and `2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md`),
+  `node tools/decisions.js`.
+- Standing checks at its refresh: the States table covers `#/lists` and a
+  list page signed in, signed out and unconfigured, at 360 and 1180; the
+  error scenarios cover a stale tab of the previous bundle (its browser
+  lists are left in storage, unread) and a revert (the previous bundle
+  reads the keys again, writable before the date only).
 - Acceptance: the section 6 grep prints only `tests/db/legacy-move.test.mjs`,
-  the applied migrations and reversals, `usage.mjs`'s comment and
-  `.claude/README.md` rows (all `B10.4`'s, the applied files locked);
-  `git grep -n legacy_fingerprint -- app/src tests/e2e tests/app tools`
+  `tests/db/delete-account.test.mjs`, the applied migrations and
+  reversals, `usage.mjs`'s comment and `.claude/README.md` rows (all
+  `B10.5`'s, the applied files locked); `git grep -n legacy_fingerprint -- app/src tests/e2e tests/app tools`
   prints nothing; nine tabs in every golden; no golden or states case sets
-  `today` or seeds a `dhloot.*` list key; `npm run e2e` passes without F9
-  and case I; `check:built` reports the unconfigured and configured sizes
-  (recorded in the handoff).
+  `today` or seeds a `dhloot.*` list key; CI's `e2e` passes without F9 and
+  case I; CI's `check:built` budget passes for both builds.
 
-## 12. Batch B10.4 - the migration (outline; Q1 B)
+## 12. Batch B10.4 - the first read takes heads (outline; P6, D115)
+
+Objective: a signed-in page load reads each list's head and its entries'
+identities, not their details; a list's details load when a caller needs
+them (section 4, "P6"). Carry P6 is its own acceptance line.
+
+- Ports: `ListRepository.list(known)` reads `LIST_HEAD_SELECT`; add
+  `rows(ids)` (chunks of `CHANGED_ROWS_MAX`, a failed chunk fails the
+  read); `ListRow` splits into a head row and a full row. `fake-cloud.ts`
+  mirrors both; `cloud.contract.ts` gets cases for the head shape (no
+  `quantity`, `price_coins`, notes or `gm_only` in it) and for `rows`
+  (order, chunks, a deleted list answers nothing).
+- State: `CloudLists` keeps a per-list detail state (`absent`, `loading`,
+  `ready`, `error`) and `detail(ids): Promise<boolean>`; a re-read by
+  revision re-reads the heads and the rows of each detailed list that
+  changed; a write that copies an entry's meta (restore after a remove,
+  relink, the add-to-list menu's remove-with-undo) runs only on a detailed
+  list.
+- Consumers: `ListPage` draws «Загружаем...» until its list is detailed and
+  after a failed detail read a load line with «Повторить» in the wording
+  of rule 2 ("Failures", `FEATURES.md`, "Consistency rules");
+  `SharePanel`, `RequestsPanel`, the copy text and the print of a list
+  read the open list; `exportLists` and `exportData` await `detail` of
+  every named list, and a failed read toasts `accountFailed`.
+- `tests/db/`: a case on the 3x seed of `delete-account.test.mjs` (with
+  `analyze`) that times the head select's SQL and bounds its JSON size;
+  `check:db` runs it. The browser bar (a signed-in `#/lists` draws its
+  cards under 4000 ms at 3x) is measured once on the local stack and
+  recorded in the handoff and in `FEATURES.md`.
+- Specs: `FEATURES.md` ("Account and browser lists": the first read, the
+  list page's wait), `COVERAGE.md`, the decision file
+  `docs/decisions/<date>-the-first-account-read-takes-list-heads.md` from
+  section 4, "P6" (with "Amends" the 2026-10-22 requests decision and the
+  2026-10-02 re-read decision), `node tools/decisions.js`.
+- `DEBT.md`: rewrite D115's "How to verify" (section 4, the deviation)
+  only if the batch cannot close it; on a pass, delete D115.
+- Standing checks at its refresh: a States table for the list page's new
+  wait (empty, one, many, 3x lists; 360 and 1180); error scenarios for a
+  failed detail read, offline, a list deleted while its details load, a
+  stale tab, a revert (the previous bundle reads full rows again; nothing
+  stored changes).
+- Acceptance: carry P6 closed (D115 deleted); the first read carries no
+  entry note, quantity, price or GM-only flag (contract case); the 3x bar
+  met and recorded; every consumer of `meta` reads a detailed list
+  (`git grep -n -E "\.meta\b|itemMeta\(" -- app/src` reviewed in the
+  handoff).
+
+## 13. Batch B10.5 - the migration (outline; Q1 B)
 
 Objective: no database function inserts past a count limit, nothing of the
-move is left that a client could call, and the move's fingerprint column is
-gone.
+move is left that a client can call, and the fingerprint column is gone.
 
-**Order (the precondition of the column drop).** A client that selects
-`legacy_fingerprint` fails every account list read once the column is
-gone. So:
+**Order (the precondition of the column drop).**
 
-1. `B10.3` lands first: after it, `git grep -n legacy_fingerprint --
-   app/src tests/app tests/e2e tools` prints nothing (`B10.3`'s
-   acceptance). `B10.4` starts only on that tree; its first step re-runs
-   the grep and stops if anything is printed.
-2. The test project: `B10.4`'s `db:push --project test` runs after the
-   review approves, with `B10.3`'s client in the same tree, so the `npm
-   run e2e` that follows exercises the R10 client against the dropped
-   column. An e2e run of an older commit against the test project fails
-   from then on; that is expected and is not re-run.
-3. Production: R10 ships as one commit and one push (`CLAUDE.md`, "one
-   commit per task"), so the bundle `deploy` publishes is the R10 build,
-   which never reads the column. CI runs `migrate-prod` before `deploy`
-   in the same workflow run; between the two, and in every tab still on
-   the R9 build until it reloads, account list reads fail. The owner
-   accepted this (Q1 B). A cloud release pushes branch commits only to its
-   branch; nothing reaches production before the squash-merge onto `main`.
-4. Never push `B10.4`'s migration to production without `B10.3`'s client
-   in the same deploy: a split push of the release is refused here.
+1. `B10.3` landed on the branch: `git grep -n legacy_fingerprint --
+   app/src tests/app tests/e2e tools` prints nothing. `B10.5`'s first step
+   re-runs the grep and stops if anything is printed.
+2. The test project: after the batch review approves, the push runs CI's
+   `migrate-test` (it applies the branch's new file) and `e2e` with the R10
+   client. From then until R10 lands on `main`, the test project has no
+   column and no function while `main`'s client still selects the column
+   and contract case I calls the function, so a `main` run or another
+   branch's run of `e2e` in that window fails. So: the orchestrator pushes
+   `B10.5` only when no other branch waits to land on `main`, and runs the
+   closeout right after `B10.5`'s CI credit (the window is about one CI run
+   and the squash). Another branch's `e2e` is green again once it merges
+   `origin/main` after R10 lands.
+3. Production: the squash onto `main` holds the R10 client and the
+   migration; CI runs `migrate-prod` before `deploy` in one run. Between the
+   two, and in every tab still on a pre-R10 build until it reloads, account
+   list reads fail. The owner accepted this (Q1 B).
+4. Rejected: two squashes (the client first, the migration later) - one
+   task lands as one commit (`CLAUDE.md`, "Source and commit conventions").
 
 **Steps.**
 
 - `supabase/migrations/<ts>_drop_legacy_move.sql` (a timestamp after every
-  applied one):
-  `drop function public.move_legacy_list(uuid, text);`;
+  applied one): `drop function public.move_legacy_list(uuid, text);`;
   `create or replace function public.lists_limit()` with the body of
-  `20260925130400_legacy_move.sql` less the `dhloot.move` guard, and
+  `20260925130400_legacy_move.sql` less the `dhloot.move` guard;
   `create or replace function public.list_entries_limit()` with the body
   of `20260930121000_list_entries_statement_triggers.sql` less the guard
   (the triggers stay; the `revoke execute ... from public, anon,
   authenticated` lines repeated); `drop index
   public.lists_legacy_fingerprint;`; `alter table public.lists drop column
-  legacy_fingerprint;` (drops its check with it). A two-line header
-  comment cites `docs/decisions/` (the Q1 decision file).
-- `supabase/reversals/<same name>`: in reverse order - `alter table
-  public.lists add column legacy_fingerprint text check
-  (legacy_fingerprint ~ '^[0-9a-f]{64}$');`, the unique partial index
-  `lists_legacy_fingerprint on public.lists (owner_id, legacy_fingerprint)
-  where legacy_fingerprint is not null`, the two limit functions with the
-  guard, and the function as `20260925130500_legacy_move_conflict.sql`
-  made it (body, `revoke` from `public, anon`, `grant` to
-  `authenticated`). Copy each text from the applied files, never retype
-  it. The values are not restored (the reversal brings back the shape;
-  the reversibility gate compares `pg_dump --schema-only`).
+  legacy_fingerprint;`. A two-line header comment cites the decision file.
+- `supabase/reversals/<same name>`: in reverse order - the column with its
+  check (`legacy_fingerprint text check (legacy_fingerprint ~
+  '^[0-9a-f]{64}$')`), the unique partial index on `(owner_id,
+  legacy_fingerprint) where legacy_fingerprint is not null`, the two limit
+  functions with the guard, and the function as
+  `20260925130500_legacy_move_conflict.sql` made it (body, `revoke` from
+  `public, anon`, `grant` to `authenticated`). Copy each text from the
+  applied files. The values are not restored (the walk compares the schema
+  only).
 - `tests/db/legacy-move.test.mjs` is replaced by
-  `tests/db/legacy-move-dropped.test.mjs` (`node:test`, the roles helper
-  the other files use): a signed-in call of `move_legacy_list` is refused
-  as an unknown function (`42883`); `public.lists` has no column
-  `legacy_fingerprint` (`pg_attribute`) and no index
-  `lists_legacy_fingerprint` (`pg_class`); with `set_config('dhloot.move',
-  'on', true)` in the transaction, a list past `lists_per_owner` and an
-  entry past `entries_per_list` are still refused (`P0001`, `limit:
-  lists_per_owner`, `limit: entries_per_list`). `tests/db/harness.test.mjs`
-  and any other file that pins EXECUTE grants or the `lists` columns lose
-  the function and the column (`git grep -n -E
+  `tests/db/legacy-move-dropped.test.mjs`: a signed-in call of
+  `move_legacy_list` is refused as an unknown function (`42883`);
+  `public.lists` has no column `legacy_fingerprint` (`pg_attribute`) and no
+  index `lists_legacy_fingerprint` (`pg_class`); with
+  `set_config('dhloot.move', 'on', true)` in the transaction, a list past
+  `lists_per_owner` and an entry past `entries_per_list` are still refused
+  (`P0001`). `tests/db/delete-account.test.mjs` and every other file that
+  names the function or the column lose it (`git grep -n -E
   "move_legacy_list|legacy_fingerprint" -- tests/db`).
-- `tools/supabase/usage.mjs` line 115 comment (no function passes a limit
-  since R10; lists above 100 % are those moved before it).
-- `.claude/README.md`: "Expected Security Advisor warnings" - the
-  `move_legacy_list` row goes, and the paragraph's counts are re-counted
-  from the table that remains (expected after R10's `migrate-prod`: 0
-  errors, 8 warnings); the owner reads them back (section 14);
-  "Usage monitoring" - the "above 100 %, which `move_legacy_list` allows"
-  clause becomes "above 100 %, for lists moved in before R10".
+- `tools/supabase/usage.mjs` (the comment near "move_legacy_list can pass
+  a"): no function passes a limit since R10; lists above 100 % are those
+  moved before it.
+- `.claude/README.md`: "Expected Security Advisor warnings" loses the
+  `move_legacy_list` row, and its counts are re-counted from the rows that
+  remain; "Usage monitoring": "above 100 %, which `move_legacy_list`
+  allows" becomes "above 100 %, for lists moved in before R10".
 - `COVERAGE.md`: the layer 3 row of `legacy-move.test.mjs` becomes the new
-  file's; layer 4's contract and flow rows already lost case I and F9 in
-  `B10.3`.
-- `DEBT.md`: delete D62, and the "Legacy removal" section with it when it
-  is empty (D61 belongs to `debt-cleanup`; if it is still there, name it to
-  the owner and leave it).
-- The Q1 decision file (section 4, "Decision for `B10.4` to write"); add
-  "Superseded in part by" that file to
-  `docs/decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`;
-  `node tools/decisions.js`.
+  file's.
+- `DEBT.md`: delete D62, and the "Legacy removal" section when it is empty.
+- The Q1 decision file
+  `docs/decisions/<date>-r10-drops-the-move-function-and-the-fingerprint-column.md`
+  (task, decision, rejected A and C, closes D62, "Supersedes in part"
+  `2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`,
+  which gets the matching line); `node tools/decisions.js`.
+- Standing checks at its refresh: no screen changes; the error scenarios
+  are the order above (a stale tab, the test project window, the revert:
+  the reversal restores the shape, never the values).
 
 **Acceptance.**
 
 - `git grep -n -E "move_legacy_list|legacy_fingerprint|dhloot\.move" -- app/src tests tools .claude/README.md docs/specs`
   prints only the new migration, its reversal, the new test file, and the
-  applied migrations and reversals (locked history).
-- `npm run check:db` passes, including the reversibility walk (all up, all
-  down in reverse, all up, schema dumps equal).
-- After the approve: `db:push --project test` applies the file and `npm
-  run e2e` passes (contract cases without I, flows without F9).
-- `DEBT.md` holds no D62.
+  applied migrations and reversals.
+- `npm run check:db` passes, the reversibility walk included.
+- After the approve and the push: CI's `migrate-test` applies the file and
+  `e2e` passes (contract cases without I, flows without F9).
+- `DEBT.md` holds no D62 and no "Legacy removal" section.
 
 **Flow.** `orchestrate.prompt.md`, "Schema batches": the implementer stops
-after `rtk npm run check`, `npm run check:db` (PowerShell tool) and the
-amend; after the review approves, `node --env-file=.env.test.local
-tools/supabase/db-push.mjs --project test --yes`, `npm run e2e`, the
-handoff amend.
+after `rtk npm run check:fast`, `npm run check:db` (PowerShell tool) and
+the commit, unpushed; after the approve, the push and the CI credit. The
+outage path only: `node --env-file=.env.test.local
+tools/supabase/db-push.mjs --project test --yes` and a local `npm run
+e2e`, after one `gh run list --workflow ci.yml --status in_progress` check.
 
-## 13. Risks, assumptions, deferred
+## 14. Risks, assumptions, deferred
 
-- Risk: an earlier release moves code this plan names (section 6). The
-  dispatch refresh is mandatory, not optional.
-- Risk (accepted by the owner, Q1 B): a tab of the R9 build open across
+- Risk (accepted by the owner, Q1 B): a tab of a pre-R10 build open across
   R10's `migrate-prod` fails its account list reads («Не получилось
-  загрузить списки аккаунта.» and «Повторить») until it reloads, and its move fails
-  too; no row is lost. The window for a fresh page load is the time from
-  `migrate-prod` to `deploy` in one CI run. Mitigation: section 12, "Order".
-- Risk: the fingerprint values are lost for good (a column drop). Nothing
-  reads them after the move; the nightly backups of the last 30 days keep
-  them (`.claude/README.md`, "Backups and restore").
-- Risk: `B10.2`'s port loses coverage silently. The per-file coverage
-  thresholds of `npm run check` catch a file that drops below its line;
-  the reviewer compares the deleted and ported case lists.
-- Risk: golden churn hides a real change. `B10.1` and `B10.3` compare
-  before they update, and the handoff lists the changed states by group.
-- Assumption: no reader needs a browser list after 2026-10-26 that the
-  move did not carry; the owner accepted this (decision 2026-09-27).
-- Assumption: `debt-cleanup` runs before R10 and takes D61, D64's «Выйти»
-  half, D65-D73 as they stand then.
+  загрузить списки аккаунта.» and «Повторить») until it reloads; no row is
+  lost.
+- Risk: the test project window (section 13, "Order", item 2). Mitigation:
+  `B10.5` is the last batch, pushed only when no other branch waits to land.
+- Risk: the fingerprint values are lost for good. Nothing reads them after
+  the move; the nightly backups of the last 30 days keep them.
+- Risk: a port loses coverage silently (`B10.1`, `B10.2`). The per-file
+  thresholds of `check:fast` and CI catch a file that drops below its line;
+  the reviewer compares the deleted and the ported case lists.
+- Risk: golden churn hides a real change. `B10.1` and `B10.3` read
+  `git status -- tests/app/snapshots` after the update, and the handoff
+  lists the changed states by group.
+- Risk: P6's identity rows miss the 4000 ms bar at 3x. Fallback in
+  section 4, "P6".
+- Assumption: no reader needs a browser list after 2026-10-26 that the move
+  did not carry (owner decision 2026-09-27).
 - Deferred, named to the owner at closeout, not built: a clean-up of
-  `StoragePort`'s keyed `onExternalChange` signal, which only
-  `debt-cleanup`'s D61 fix may use.
+  `StoragePort`'s keyed `onExternalChange` signal once nothing reads it.
 
-## 14. Owner steps at R10's closeout
+## 15. Owner steps at R10's closeout
 
-1. Before the push: the Q1 decision file is in the commit, and the release
-   commit holds `B10.3` and `B10.4` together (section 12, "Order").
-2. After `migrate-prod` and `deploy`: reload every open tab of the site
-   (an R9 tab fails its list reads until then); open an old `#/l/` link on
-   a phone and a desktop - the not-found page, the address kept; the tab
-   bar has nine sections; a signed-in account's lists, share links and
-   requests work.
+1. Before the landing: the decision files of `B10.3`, `B10.4` and `B10.5`
+   are in the branch, and no other branch waits to land (section 13,
+   "Order").
+2. After `migrate-prod` and `deploy`: reload every open tab of the site;
+   open an old `#/l/` link on a phone and a desktop (the not-found page,
+   the address kept); the tab bar has nine sections; a signed-in account's
+   lists, share links and requests work.
 3. Re-run the Security Advisor on both projects and confirm the warning
-   count `B10.4` wrote into `.claude/README.md`.
+   count `B10.5` wrote into `.claude/README.md`.
