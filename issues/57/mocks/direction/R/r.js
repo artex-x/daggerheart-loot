@@ -27,7 +27,8 @@
   for (const [k, l] of SUPS) KEY[l] = k;
 
   function modeRow(cur, open) {
-    const chip = (k, label) => `<a href="#" class="chip" ${k === cur ? 'aria-current="page"' : ''}>${label}</a>`;
+    const chip = (k, label) =>
+      `<a href="#" class="chip" ${k === cur ? 'aria-current="page"' : ''}>${label}</a>`;
     if (ALT) {
       return `<nav class="modes ralt" aria-label="${t('modes')}">${chip('std', t('std'))}${chip('alt', t('alt'))}<span class="msep" aria-hidden="true"></span><span class="mlbl">${t('sup')}</span>${SUPS.map(([k, l]) => chip(k, l)).join('')}</nav>`;
     }
@@ -50,11 +51,26 @@
   const rheader = (opts) => fixModes(header(opts), opts.supOpen);
 
   function roller(o = {}) {
-    const dice = [['1d12', 'common'], ['2d12', 'cu'], ['3d12', 'ur'], ['4d12', 'rl'], ['5d12', 'leg']]
-      .map(([d, k], i) => `<button class="die ${i === 0 ? 'on' : ''}"><span class="d">${ic('die')}${d}</span><span class="r">${t(k)}</span></button>`).join('');
+    const dice = [
+      ['1d12', 'common'],
+      ['2d12', 'cu'],
+      ['3d12', 'ur'],
+      ['4d12', 'rl'],
+      ['5d12', 'leg']
+    ]
+      .map(
+        ([d, k], i) =>
+          `<button class="die ${i === 0 ? 'on' : ''}"><span class="d">${ic('die')}${d}</span><span class="r">${t(k)}</span></button>`
+      )
+      .join('');
     const allChip = `<button class="chip all" aria-pressed="true">${ic('check')}${t('all')}</button>`;
     const chip = (l) => `<button class="chip" aria-pressed="false">${l}</button>`;
-    const hand = ['ci1', 'cc1', 'hi1', 'hc1'].map((id) => `<div class="dealt">${scard(R[id])}<div class="cardacts"><button class="btn sm">${ic('plus')}${t('addList')}</button><button class="btn sm">${ic('share')}${t('share')}</button><button class="btn sm" aria-label="${t('more')}">${ic('more')}</button></div></div>`).join('');
+    const hand = ['ci1', 'cc1', 'hi1', 'hc1']
+      .map(
+        (id) =>
+          `<div class="dealt">${scard(R[id])}<div class="cardacts"><button class="btn sm">${ic('plus')}${t('addList')}</button><button class="btn sm">${ic('share')}${t('share')}</button><button class="btn sm" aria-label="${t('more')}">${ic('more')}</button></div></div>`
+      )
+      .join('');
     const main = `<main class="wrap">${pageHead(t('std'))}<div class="two">
       <section class="panel ctrl"><span class="lbl">${t('rollBtn')}</span><div class="dice">${dice}</div>
         <span class="lbl">${t('orEnter')}</span><div class="own"><div class="num" role="group" aria-label="${t('sumField')}"><button>−</button><output>1</output><button>+</button></div><span class="cap2">${t('sumField')},<br>1-60</span></div>
@@ -67,7 +83,8 @@
 
   function headerSurface() {
     const cap = (ru, en) => `<div class="cap">${LANG === 'en' ? en : ru}</div>`;
-    const f = (opts, extra = '', h = '') => `<div class="frame" ${h ? `style="min-height:${h}px"` : ''}>${rheader({ static: true, ...opts })}${extra}</div>`;
+    const f = (opts, extra = '', h = '') =>
+      `<div class="frame" ${h ? `style="min-height:${h}px"` : ''}>${rheader({ static: true, ...opts })}${extra}</div>`;
     if (ALT) {
       return `${cap('вариант: одна прокручиваемая строка · не вошли · Обычные правила', 'alternative: one scrolling row · signed out · Standard rules')}${f({ job: 'roll', mode: 'std' }, `<main class="wrap" style="padding:18px 0 10px">${pageHead(t('std'))}</main>`)}
         ${cap('вариант · вошли · Vault of Ages: строка прокручена к текущему', 'alternative · signed in · Vault of Ages: the row scrolls to the current mode')}${f({ job: 'roll', mode: 'voa', signedIn: true })}`;
@@ -94,7 +111,8 @@
   addEventListener('DOMContentLoaded', () => {
     for (const nav of document.querySelectorAll('.modes.ralt')) {
       const on = nav.querySelector('[aria-current="page"]');
-      if (on && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, on.offsetLeft - 16);
+      if (on && nav.scrollWidth > nav.clientWidth)
+        nav.scrollLeft = Math.max(0, on.offsetLeft - 16);
     }
   });
 })();

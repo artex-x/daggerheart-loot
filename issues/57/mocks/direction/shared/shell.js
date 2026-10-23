@@ -18,7 +18,8 @@
   }
 
   function account(signedIn, open, here) {
-    if (!signedIn) return `<button class="acct">${ic('user')}<span>${t('signIn')}</span></button>`;
+    if (!signedIn)
+      return `<button class="acct">${ic('user')}<span>${t('signIn')}</span></button>`;
     const menu = open
       ? `<div class="menu" role="menu">
           <div class="who">${t('signedAs')}<b>gm1@example.test</b></div>
@@ -32,7 +33,10 @@
 
   /* opts: current tab key, signedIn, menuOpen, quietLang */
   function header(opts = {}) {
-    const tabs = TABS.map(([k, label, sep]) => `<a href="#" class="${k === opts.current ? 'on' : ''} ${sep || ''}" ${k === opts.current ? 'aria-current="page"' : ''}>${t(label)}</a>`).join('');
+    const tabs = TABS.map(
+      ([k, label, sep]) =>
+        `<a href="#" class="${k === opts.current ? 'on' : ''} ${sep || ''}" ${k === opts.current ? 'aria-current="page"' : ''}>${t(label)}</a>`
+    ).join('');
     return `<header class="top ${opts.static ? 'static' : ''}">
       <div class="wrap bar"><a class="brand" href="#">${star()}<span><b>${t('brand')}</b><small>${t('brandSub')}</small></span></a>
         ${lang(opts.quietLang)}${account(opts.signedIn, opts.menuOpen, opts.here)}</div>
@@ -45,8 +49,14 @@
 
   /* The page head: title plus labelled pin and help buttons (no bare icons). */
   function pageHead(title, opts = {}) {
-    const pin = opts.pin === false ? '' : `<button class="btn sm ${opts.pinned ? 'on' : ''}" aria-pressed="${!!opts.pinned}">${ic('home')}${opts.pinned ? t('homeOn') : t('home')}</button>`;
-    const help = opts.help === false ? '' : `<button class="btn sm ghost" aria-expanded="false">${ic('help')}${t('help')}</button>`;
+    const pin =
+      opts.pin === false
+        ? ''
+        : `<button class="btn sm ${opts.pinned ? 'on' : ''}" aria-pressed="${!!opts.pinned}">${ic('home')}${opts.pinned ? t('homeOn') : t('home')}</button>`;
+    const help =
+      opts.help === false
+        ? ''
+        : `<button class="btn sm ghost" aria-expanded="false">${ic('help')}${t('help')}</button>`;
     return `<div class="ph"><h1>${title}</h1>${pin}${help}</div>`;
   }
 
@@ -55,7 +65,8 @@
   addEventListener('DOMContentLoaded', () => {
     for (const nav of document.querySelectorAll('.tabs, .modes')) {
       const on = nav.querySelector('.on, [aria-current="page"]');
-      if (on && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2);
+      if (on && nav.scrollWidth > nav.clientWidth)
+        nav.scrollLeft = Math.max(0, on.offsetLeft - (nav.clientWidth - on.offsetWidth) / 2);
     }
   });
 

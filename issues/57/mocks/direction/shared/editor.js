@@ -10,10 +10,13 @@
   const ERR = new URLSearchParams(location.search).get('state') === 'errors';
   const AXE = { id: 'q17', kind: 'weapon' };
 
-  const seg = (opts, on, cls = '') => `<div class="seg quiet ${cls}" role="group">${opts.map((o, i) => `<button aria-pressed="${i === on}">${o}</button>`).join('')}</div>`;
+  const seg = (opts, on, cls = '') =>
+    `<div class="seg quiet ${cls}" role="group">${opts.map((o, i) => `<button aria-pressed="${i === on}">${o}</button>`).join('')}</div>`;
   const opt = (s) => `<span class="opt">${E('необязательно', 'optional')}</span>`;
-  const err = (id, msg) => (ERR && msg ? `<p class="ferr" id="${id}-e">${ic('x')}${msg}</p>` : '');
-  const fld = (id, label, body, o = {}) => `<div class="ef ${o.wide ? 'wide' : ''} ${ERR && o.err ? 'bad' : ''}" id="${id}"><div class="el"><span>${label}</span>${o.optional ? opt() : ''}</div>${body}${err(id, o.err)}</div>`;
+  const err = (id, msg) =>
+    ERR && msg ? `<p class="ferr" id="${id}-e">${ic('x')}${msg}</p>` : '';
+  const fld = (id, label, body, o = {}) =>
+    `<div class="ef ${o.wide ? 'wide' : ''} ${ERR && o.err ? 'bad' : ''}" id="${id}"><div class="el"><span>${label}</span>${o.optional ? opt() : ''}</div>${body}${err(id, o.err)}</div>`;
 
   function form(variant) {
     const dense = variant !== 'A';
@@ -58,14 +61,16 @@
 
   window.EDITOR = function (variant) {
     const head = `<a class="back" href="#">← ${t('myItems')}</a><div class="ph"><h1>${E('Топор Тлеющих Углей', 'Emberaxe')}</h1><span class="badge">${E('Хоумбрю', 'Homebrew')}</span></div>`;
-    const layout = variant === 'C'
-      ? `<div class="ed edC">${preview(variant)}<div class="panel eform">${form(variant)}${bar()}</div></div>`
-      : `<div class="ed">${`<div class="panel eform">${form(variant)}${bar()}</div>`}${preview(variant)}</div>`;
-    const sheet = innerWidth <= 760 && !ERR
-      ? `<div class="cap">${E('нажат «Предпросмотр»: лист поверх формы', 'Preview pressed: a sheet over the form')}</div>
+    const layout =
+      variant === 'C'
+        ? `<div class="ed edC">${preview(variant)}<div class="panel eform">${form(variant)}${bar()}</div></div>`
+        : `<div class="ed">${`<div class="panel eform">${form(variant)}${bar()}</div>`}${preview(variant)}</div>`;
+    const sheet =
+      innerWidth <= 760 && !ERR
+        ? `<div class="cap">${E('нажат «Предпросмотр»: лист поверх формы', 'Preview pressed: a sheet over the form')}</div>
         <section class="psheet" role="dialog" aria-label="${E('Предпросмотр', 'Preview')}"><div class="grab"></div><div class="sh"><b>${E('Предпросмотр', 'Preview')}</b><button class="btn sm ghost">${ic('x')}${t('close')}</button></div>
         <div class="pt">${seg([E('Экран', 'Screen'), E('Печать', 'Print')], 1)}${seg([E('Цвет', 'Colour'), E('Ч/б', 'B&W')], 1)}${seg(['63×88', '44×63'], 1)}</div><img class="pcard" src="../shared/preview-emberaxe-bw.png" alt=""></section>`
-      : '';
+        : '';
     return `<main class="wrap">${head}${layout}${sheet}</main>`;
   };
   window.EDITOR_ERR = ERR;

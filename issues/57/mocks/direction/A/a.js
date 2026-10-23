@@ -8,9 +8,12 @@
   const surface = document.body.dataset.surface;
   const qs = (on) => (A2 ? '' : 'quiet');
 
-  const allChip = (pressed) => `<button class="chip ${A2 ? '' : 'all'}" aria-pressed="${pressed}">${pressed && !A2 ? ic('check') : ''}${t('all')}</button>`;
-  const chip = (label, pressed) => `<button class="chip" aria-pressed="${!!pressed}">${label}</button>`;
-  const viewSeg = () => `<div class="seg ${qs()}" role="group"><button aria-pressed="true">${t('viewList')}</button><button aria-pressed="false">${t('viewGrid')}</button></div>`;
+  const allChip = (pressed) =>
+    `<button class="chip ${A2 ? '' : 'all'}" aria-pressed="${pressed}">${pressed && !A2 ? ic('check') : ''}${t('all')}</button>`;
+  const chip = (label, pressed) =>
+    `<button class="chip" aria-pressed="${!!pressed}">${label}</button>`;
+  const viewSeg = () =>
+    `<div class="seg ${qs()}" role="group"><button aria-pressed="true">${t('viewList')}</button><button aria-pressed="false">${t('viewGrid')}</button></div>`;
 
   function row(r) {
     const src = r.src !== 'Core' ? `<span class="badge">${srcName(r)}</span>` : '';
@@ -21,13 +24,25 @@
   }
 
   function filterPanel() {
-    const rowF = (lbl, opts, anyPressed = true) => `<div class="frow2"><span class="lbl">${lbl}</span><div class="opts">${allChip(anyPressed)}${opts}</div></div>`;
+    const rowF = (lbl, opts, anyPressed = true) =>
+      `<div class="frow2"><span class="lbl">${lbl}</span><div class="opts">${allChip(anyPressed)}${opts}</div></div>`;
     return `<div class="panel fpanel" id="fp">
       ${rowF(t('tier'), ['1', '2', '3', '4'].map((n, i) => chip(n, i === 0)).join('') + chip(t('artifacts')), false)}
       ${rowF(t('source'), ['Core', 'Hope & Fear', 'Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages', "The Dragon's Vault", "Arazo's Artifacts", 'Many Worlds Tavern'].map((s) => chip(s)).join(''))}
       ${rowF(t('cls'), chip(t('phy')) + chip(t('mag')))}
       ${rowF(t('trait'), ['agility', 'strength', 'finesse', 'instinct', 'presence', 'knowledge'].map((k) => chip(L({ agility: ['Проворность', 'Agility'], strength: ['Сила', 'Strength'], finesse: ['Искусность', 'Finesse'], instinct: ['Инстинкт', 'Instinct'], presence: ['Влияние', 'Presence'], knowledge: ['Знание', 'Knowledge'] }[k]))).join(''))}
-      ${rowF(t('range'), [['Вплотную', 'Melee'], ['Близко', 'Very close'], ['Средне', 'Close'], ['Далеко', 'Far'], ['Очень далеко', 'Very far']].map((p) => chip(L(p))).join(''))}
+      ${rowF(
+        t('range'),
+        [
+          ['Вплотную', 'Melee'],
+          ['Близко', 'Very close'],
+          ['Средне', 'Close'],
+          ['Далеко', 'Far'],
+          ['Очень далеко', 'Very far']
+        ]
+          .map((p) => chip(L(p)))
+          .join('')
+      )}
       ${rowF(t('burden'), chip(t('oneH')) + chip(t('twoH')))}
       ${rowF(t('upg'), chip(t('upgOk')) + chip(t('uniques')))}
     </div>`;
@@ -35,8 +50,14 @@
 
   function catalog() {
     const groups = [['gCore'], ['gHnf'], ['gAlt'], ['gSup'], ['gEq'], ['gOther']]
-      .map(([k, n]) => `<a href="#" class="chip" ${k === 'gEq' ? 'aria-current="page"' : ''}>${t(k)}</a>`).join('');
-    const rows = ['q1', 'q2', 'q4', 'q10', 'q16', 'q20', 'q23', 'q26'].map((id) => row(R[id])).join('');
+      .map(
+        ([k, n]) =>
+          `<a href="#" class="chip" ${k === 'gEq' ? 'aria-current="page"' : ''}>${t(k)}</a>`
+      )
+      .join('');
+    const rows = ['q1', 'q2', 'q4', 'q10', 'q16', 'q20', 'q23', 'q26']
+      .map((id) => row(R[id]))
+      .join('');
     return `${header({ current: 'tables', quietLang: !A2 })}
       <main class="wrap">${pageHead(t('tables'))}
         <nav class="groups" aria-label="${t('tables')}">${groups}</nav>
@@ -85,15 +106,27 @@
   }
 
   function resultCard(r) {
-    const up = r.up ? `<div class="up">${LANG === 'en' ? 'Upgrades to' : 'Улучшается до'}: <a href="#">${L(r.up)}</a></div>` : '';
+    const up = r.up
+      ? `<div class="up">${LANG === 'en' ? 'Upgrades to' : 'Улучшается до'}: <a href="#">${L(r.up)}</a></div>`
+      : '';
     return `<article class="panel res">${art(r)}<div class="txt"><div class="head"><div class="tags"><span class="badge rno">${t('no')} ${r.no}</span>${badge(r)}<span class="badge">${r.src}</span></div>
       <b class="nm">${nm(r)}</b></div><div class="bodyx"><p>${desc(r)}</p>${up}
       <div class="acts"><button class="btn sm">${ic('plus')}${t('addList')}</button><button class="btn sm">${ic('share')}${t('share')}</button><button class="btn sm">${ic('more')}${t('more')}</button></div></div></div></article>`;
   }
 
   function roller() {
-    const dice = [['1d12', 'common'], ['2d12', 'cu'], ['3d12', 'ur'], ['4d12', 'rl'], ['5d12', 'leg']]
-      .map(([d, k], i) => `<button class="die ${i === 0 ? (A2 ? 'primary' : 'on') : ''}" ${i === 0 && !A2 ? 'aria-describedby="last"' : ''}><span class="d">${ic('die')}${d}</span><span class="r">${t(k)}</span></button>`).join('');
+    const dice = [
+      ['1d12', 'common'],
+      ['2d12', 'cu'],
+      ['3d12', 'ur'],
+      ['4d12', 'rl'],
+      ['5d12', 'leg']
+    ]
+      .map(
+        ([d, k], i) =>
+          `<button class="die ${i === 0 ? (A2 ? 'primary' : 'on') : ''}" ${i === 0 && !A2 ? 'aria-describedby="last"' : ''}><span class="d">${ic('die')}${d}</span><span class="r">${t(k)}</span></button>`
+      )
+      .join('');
     return `${header({ current: 'std', quietLang: !A2 })}
       <main class="wrap">${pageHead(t('std'))}
         <section class="panel rollpanel"><div class="dice" role="group" aria-label="${t('rollBtn')}">${dice}</div>
@@ -111,7 +144,8 @@
     const src = `<span class="badge">${srcName(r)}</span>`;
     const st = statLine(r, { tier: r.kind === 'weapon' || r.kind === 'armor' });
     const f = feat(r);
-    const d = r.kind === 'item' || r.kind === 'cons' || r.d ? `<div class="stat">${desc(r)}</div>` : '';
+    const d =
+      r.kind === 'item' || r.kind === 'cons' || r.d ? `<div class="stat">${desc(r)}</div>` : '';
     const note = o.open
       ? `<div class="rnote"><div class="seg quiet" role="group"><button aria-pressed="true">${ic('globe')} ${t('forPlayers')}</button><button aria-pressed="false">${ic('lock')} ${t('gmOnly')}</button></div><div class="ta">${LANG === 'en' ? 'The last one in stock.' : 'Последний в наличии.'}</div></div>`
       : '';
@@ -145,7 +179,11 @@
       <div class="frame">${header({ current: null, static: true, signedIn: true, here: true, quietLang: !A2 })}</div>`;
   }
 
-  const editor = () => header({ current: null, signedIn: true, quietLang: !A2 }) + window.EDITOR('A');
+  const editor = () =>
+    header({ current: null, signedIn: true, quietLang: !A2 }) + window.EDITOR('A');
   const S = { header: headerSurface, catalog, item, roller, list, editor };
-  document.body.insertAdjacentHTML('afterbegin', S[surface]() + (surface === 'header' ? '' : footer()));
+  document.body.insertAdjacentHTML(
+    'afterbegin',
+    S[surface]() + (surface === 'header' ? '' : footer())
+  );
 })();

@@ -10,18 +10,135 @@
 
   /* records beyond kit.js, from data.js */
   Object.assign(R, {
-    hi3: { kind: 'item', src: 'Hope & Fear', no: 3, ru: 'Металлические Шарики', en: 'Ball Bearings', rud: 'В этом мешочке лежат идеально гладкие металлические шарики.', ende: 'This pouch contains perfectly smooth metal spheres.' },
-    cc2: { kind: 'cons', src: 'Core', no: 2, ru: 'Зелье Усиления', en: 'Bolster Potion', rud: 'Вы получаете бонус +1 к следующему Броску Силы.', ende: 'You gain a +1 bonus to your next Strength Roll.', up: ['Большое Зелье Усиления', 'Major Bolster Potion'] },
-    hc3: { kind: 'cons', src: 'Hope & Fear', no: 3, ru: 'Семя Вергласа', en: 'Verglasian Seed', rud: 'Этим осколком льда можно мгновенно заморозить участок воды в пределах Средней дистанции.', ende: 'You can use this ice shard to instantly freeze an area of water up to Close range.' },
-    ci2: { kind: 'item', src: 'Core', no: 2, ru: 'Пронзительная Свирель', en: 'Piper Whistle', rud: 'Эта свирель ручной работы имеет характерный звук. Её пронзительный звук слышен в радиусе 1 километра.', ende: 'This handcrafted whistle has a distinctive sound. Its piercing tone can be heard within a 1-mile radius.' },
-    w1: { kind: 'cons', src: 'Wondrous Environments', no: 1, ru: 'Смола Бездны', en: 'Abyssal Sap', rud: 'Вы можете бросить флакон этой смолы в цель в пределах Далекой дистанции, воспроизводя эффект заклинания «Неистовое опутывание».', ende: 'You can throw a vial of this sap at a target within Far range to have the effect of the Vicious Entangle spell.' },
-    dv3: { kind: 'item', src: "The Dragon's Vault", no: 3, ru: 'Агатовый Паук', en: 'Agate Spider', rud: 'Вы можете приказать украшению в виде паука прыгнуть на существо в пределах Средней дистанции.', ende: 'You can command this spider ornament to leap onto a creature within Close range.' },
-    mw9: { kind: 'item', src: 'Many Worlds Tavern', no: 9, ru: 'Мицелиевый Плащ', en: 'Mycelial Cloak', rud: 'Пока вы носите этот плащ, вы получаете преимущество на Бросок Инстинкта для использования свойства Родословной «Сеть фангрилов».', ende: 'While wearing this, gain advantage on your Instinct Roll to use your "Fungril Network" ancestry feature.' },
-    hbA: { kind: 'weapon', src: ['Мастерская Ольхи', "Olkha's workshop"], hb: true, img: 'q17', uniq: true, ru: 'Топор Тлеющих Углей', en: 'Emberaxe', d: ['Лезвие тлеет и не гаснет под дождём.', 'The blade smoulders and does not go out in the rain.'], tr: 'knowledge', rg: 'melee', dmg: 'd10+2', dt: 'mag', bu: 2, tier: 2 },
-    hbR: { kind: 'item', src: ['Хоумбрю', 'Homebrew'], hb: true, noimg: true, ru: 'Кольцо с гравировкой', en: 'Engraved ring', d: ['Надпись на неизвестном языке. Тёплое на ощупь.', 'An inscription in an unknown tongue. Warm to the touch.'] },
-    hbB: { kind: 'cons', src: ['Хоумбрю', 'Homebrew'], hb: true, noimg: true, ru: 'Настой кузнеца', en: "Smith's brew", d: ['Выпейте перед работой у горна: до конца сцены вы не отмечаете Стресс от жара.', 'Drink it before work at the forge: until the end of the scene you mark no Stress from heat.'] },
-    hbC: { kind: 'item', src: ['Хоумбрю', 'Homebrew'], hb: true, noimg: true, enOnly: true, ru: 'Whispering Cap', en: 'Whispering Cap', d: ['Once per rest, hear one sentence spoken within Far range.', 'Once per rest, hear one sentence spoken within Far range.'] },
-    hbS: { kind: 'item', src: ['Хоумбрю', 'Homebrew'], hb: true, img: 'cc1', ru: 'Скатка следопыта', en: "Ranger's bedroll", d: ['Свёрнутая постель для ночёвки в пути.', 'A rolled bed for nights on the road.'] }
+    hi3: {
+      kind: 'item',
+      src: 'Hope & Fear',
+      no: 3,
+      ru: 'Металлические Шарики',
+      en: 'Ball Bearings',
+      rud: 'В этом мешочке лежат идеально гладкие металлические шарики.',
+      ende: 'This pouch contains perfectly smooth metal spheres.'
+    },
+    cc2: {
+      kind: 'cons',
+      src: 'Core',
+      no: 2,
+      ru: 'Зелье Усиления',
+      en: 'Bolster Potion',
+      rud: 'Вы получаете бонус +1 к следующему Броску Силы.',
+      ende: 'You gain a +1 bonus to your next Strength Roll.',
+      up: ['Большое Зелье Усиления', 'Major Bolster Potion']
+    },
+    hc3: {
+      kind: 'cons',
+      src: 'Hope & Fear',
+      no: 3,
+      ru: 'Семя Вергласа',
+      en: 'Verglasian Seed',
+      rud: 'Этим осколком льда можно мгновенно заморозить участок воды в пределах Средней дистанции.',
+      ende: 'You can use this ice shard to instantly freeze an area of water up to Close range.'
+    },
+    ci2: {
+      kind: 'item',
+      src: 'Core',
+      no: 2,
+      ru: 'Пронзительная Свирель',
+      en: 'Piper Whistle',
+      rud: 'Эта свирель ручной работы имеет характерный звук. Её пронзительный звук слышен в радиусе 1 километра.',
+      ende: 'This handcrafted whistle has a distinctive sound. Its piercing tone can be heard within a 1-mile radius.'
+    },
+    w1: {
+      kind: 'cons',
+      src: 'Wondrous Environments',
+      no: 1,
+      ru: 'Смола Бездны',
+      en: 'Abyssal Sap',
+      rud: 'Вы можете бросить флакон этой смолы в цель в пределах Далекой дистанции, воспроизводя эффект заклинания «Неистовое опутывание».',
+      ende: 'You can throw a vial of this sap at a target within Far range to have the effect of the Vicious Entangle spell.'
+    },
+    dv3: {
+      kind: 'item',
+      src: "The Dragon's Vault",
+      no: 3,
+      ru: 'Агатовый Паук',
+      en: 'Agate Spider',
+      rud: 'Вы можете приказать украшению в виде паука прыгнуть на существо в пределах Средней дистанции.',
+      ende: 'You can command this spider ornament to leap onto a creature within Close range.'
+    },
+    mw9: {
+      kind: 'item',
+      src: 'Many Worlds Tavern',
+      no: 9,
+      ru: 'Мицелиевый Плащ',
+      en: 'Mycelial Cloak',
+      rud: 'Пока вы носите этот плащ, вы получаете преимущество на Бросок Инстинкта для использования свойства Родословной «Сеть фангрилов».',
+      ende: 'While wearing this, gain advantage on your Instinct Roll to use your "Fungril Network" ancestry feature.'
+    },
+    hbA: {
+      kind: 'weapon',
+      src: ['Мастерская Ольхи', "Olkha's workshop"],
+      hb: true,
+      img: 'q17',
+      uniq: true,
+      ru: 'Топор Тлеющих Углей',
+      en: 'Emberaxe',
+      d: [
+        'Лезвие тлеет и не гаснет под дождём.',
+        'The blade smoulders and does not go out in the rain.'
+      ],
+      tr: 'knowledge',
+      rg: 'melee',
+      dmg: 'd10+2',
+      dt: 'mag',
+      bu: 2,
+      tier: 2
+    },
+    hbR: {
+      kind: 'item',
+      src: ['Хоумбрю', 'Homebrew'],
+      hb: true,
+      noimg: true,
+      ru: 'Кольцо с гравировкой',
+      en: 'Engraved ring',
+      d: [
+        'Надпись на неизвестном языке. Тёплое на ощупь.',
+        'An inscription in an unknown tongue. Warm to the touch.'
+      ]
+    },
+    hbB: {
+      kind: 'cons',
+      src: ['Хоумбрю', 'Homebrew'],
+      hb: true,
+      noimg: true,
+      ru: 'Настой кузнеца',
+      en: "Smith's brew",
+      d: [
+        'Выпейте перед работой у горна: до конца сцены вы не отмечаете Стресс от жара.',
+        'Drink it before work at the forge: until the end of the scene you mark no Stress from heat.'
+      ]
+    },
+    hbC: {
+      kind: 'item',
+      src: ['Хоумбрю', 'Homebrew'],
+      hb: true,
+      noimg: true,
+      enOnly: true,
+      ru: 'Whispering Cap',
+      en: 'Whispering Cap',
+      d: [
+        'Once per rest, hear one sentence spoken within Far range.',
+        'Once per rest, hear one sentence spoken within Far range.'
+      ]
+    },
+    hbS: {
+      kind: 'item',
+      src: ['Хоумбрю', 'Homebrew'],
+      hb: true,
+      img: 'cc1',
+      ru: 'Скатка следопыта',
+      en: "Ranger's bedroll",
+      d: ['Свёрнутая постель для ночёвки в пути.', 'A rolled bed for nights on the road.']
+    }
   });
   for (const [id, r] of Object.entries(R)) r.id = id;
 
@@ -30,15 +147,26 @@
   const roller = (...a) => window.RX.roller(...a);
   const scard = window.CX.scard;
   const cap = (ru, en) => `<div class="cap">${E(ru, en)}</div>`;
-  const allChip = (p = true) => `<button class="chip all" aria-pressed="${p}">${p ? ic('check') : ''}${t('all')}</button>`;
+  const allChip = (p = true) =>
+    `<button class="chip all" aria-pressed="${p}">${p ? ic('check') : ''}${t('all')}</button>`;
   const chip = (l, p) => `<button class="chip" aria-pressed="${!!p}">${l}</button>`;
-  const btn = (label, o = {}) => `<button class="btn ${o.sm ? 'sm' : ''} ${o.cls || ''}" ${o.attr || ''}>${o.i ? ic(o.i) : ''}${label}${o.chev ? ic('chev') : ''}</button>`;
-  const seg = (opts, on, quiet = true) => `<div class="seg ${quiet ? 'quiet' : ''}" role="group">${opts.map((o, i) => `<button aria-pressed="${i === on}">${o}</button>`).join('')}</div>`;
-  const ck = (on) => `<span class="ck2 ${on ? 'on' : ''}" role="checkbox" aria-checked="${!!on}">${on ? ic('check') : ''}</span>`;
-  const none = (size) => `<div class="art" style="width:${size}px"><img src="${window.M.IMG}_none.webp" alt=""></div>`;
+  const btn = (label, o = {}) =>
+    `<button class="btn ${o.sm ? 'sm' : ''} ${o.cls || ''}" ${o.attr || ''}>${o.i ? ic(o.i) : ''}${label}${o.chev ? ic('chev') : ''}</button>`;
+  const seg = (opts, on, quiet = true) =>
+    `<div class="seg ${quiet ? 'quiet' : ''}" role="group">${opts.map((o, i) => `<button aria-pressed="${i === on}">${o}</button>`).join('')}</div>`;
+  const ck = (on) =>
+    `<span class="ck2 ${on ? 'on' : ''}" role="checkbox" aria-checked="${!!on}">${on ? ic('check') : ''}</span>`;
+  const none = (size) =>
+    `<div class="art" style="width:${size}px"><img src="${window.M.IMG}_none.webp" alt=""></div>`;
   const hl = (s, q) => (q ? s.replace(new RegExp(`(${q})`, 'i'), '<mark>$1</mark>') : s);
-  const srcLabel = (r) => (r.hb ? `<span class="badge hb">${E('Хоумбрю', 'Homebrew')}</span>` : `<span class="src">${srcName(r)}</span>`);
-  const sub = (r) => (r.kind === 'weapon' || r.kind === 'armor' ? `<div class="stat">${statLine(r, r.hb ? { tier: true } : {})}</div>${feat(r) ? `<div class="d2 feat">${feat(r)}</div>` : r.d ? `<div class="d2">${L(r.d)}</div>` : ''}` : `<div class="d2">${desc(r)}</div>`);
+  const srcLabel = (r) =>
+    r.hb
+      ? `<span class="badge hb">${E('Хоумбрю', 'Homebrew')}</span>`
+      : `<span class="src">${srcName(r)}</span>`;
+  const sub = (r) =>
+    r.kind === 'weapon' || r.kind === 'armor'
+      ? `<div class="stat">${statLine(r, r.hb ? { tier: true } : {})}</div>${feat(r) ? `<div class="d2 feat">${feat(r)}</div>` : r.d ? `<div class="d2">${L(r.d)}</div>` : ''}`
+      : `<div class="d2">${desc(r)}</div>`;
 
   /* One record row: catalog, search, homebrew, list and shared pages share it. */
   function row(r, o = {}) {
@@ -46,39 +174,98 @@
     return `<div class="rl ${o.ck === undefined ? 'nock' : ''} ${o.ck ? 'sel' : ''}">${o.ck === undefined ? '' : ck(o.ck)}${art(r, 48)}
       <div><b>${hl(nm(r), o.q)}</b><div class="tg">${tags}</div>${sub(r)}${o.note || ''}</div>${o.side ? `<div class="side">${o.side}</div>` : ''}</div>`;
   }
-  const empty = (title, p, action, ex = '') => `<div class="empty" role="status">${none(N ? 64 : 96)}<div><b>${title}</b><p>${p}</p>${ex}${action}</div></div>`;
-  const errPage = (title, p, acts) => `<div class="errp"><div class="eg">${ic('link')}</div><h1>${title}</h1><p>${p}</p><div class="acts">${acts}</div></div>`;
+  const empty = (title, p, action, ex = '') =>
+    `<div class="empty" role="status">${none(N ? 64 : 96)}<div><b>${title}</b><p>${p}</p>${ex}${action}</div></div>`;
+  const errPage = (title, p, acts) =>
+    `<div class="errp"><div class="eg">${ic('link')}</div><h1>${title}</h1><p>${p}</p><div class="acts">${acts}</div></div>`;
 
   /* ---------- catalog ---------- */
-  const TR = { agility: ['Проворность', 'Agility'], strength: ['Сила', 'Strength'], finesse: ['Искусность', 'Finesse'], instinct: ['Инстинкт', 'Instinct'], presence: ['Влияние', 'Presence'], knowledge: ['Знание', 'Knowledge'] };
-  const RG = { melee: ['Вплотную', 'Melee'], veryclose: ['Близко', 'Very close'], close: ['Средне', 'Close'], far: ['Далеко', 'Far'], veryfar: ['Очень далеко', 'Very far'] };
+  const TR = {
+    agility: ['Проворность', 'Agility'],
+    strength: ['Сила', 'Strength'],
+    finesse: ['Искусность', 'Finesse'],
+    instinct: ['Инстинкт', 'Instinct'],
+    presence: ['Влияние', 'Presence'],
+    knowledge: ['Знание', 'Knowledge']
+  };
+  const RG = {
+    melee: ['Вплотную', 'Melee'],
+    veryclose: ['Близко', 'Very close'],
+    close: ['Средне', 'Close'],
+    far: ['Далеко', 'Far'],
+    veryfar: ['Очень далеко', 'Very far']
+  };
   function filterGroups(o = {}) {
-    const g = (lbl, opts, any = true) => `<div class="fgrp"><span class="lbl">${lbl}</span><div class="opts">${allChip(any)}${opts}</div></div>`;
+    const g = (lbl, opts, any = true) =>
+      `<div class="fgrp"><span class="lbl">${lbl}</span><div class="opts">${allChip(any)}${opts}</div></div>`;
     return `${g(t('tier'), ['1', '2', '3', '4'].map((n, i) => chip(n, i === 0)).join('') + chip(t('artifacts')), false)}
       ${g(t('source'), ['Core', 'Hope & Fear', 'Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages', "The Dragon's Vault", "Arazo's Artifacts", 'Many Worlds Tavern'].map((s) => chip(s)).join(''))}
       ${g(t('cls'), chip(t('phy')) + chip(t('mag')))}
-      ${g(t('trait'), Object.values(TR).map((p) => chip(L(p))).join(''))}
-      ${g(t('range'), Object.values(RG).map((p, i) => chip(L(p), o.melee && i === 0)).join(''), !o.melee)}
+      ${g(
+        t('trait'),
+        Object.values(TR)
+          .map((p) => chip(L(p)))
+          .join('')
+      )}
+      ${g(
+        t('range'),
+        Object.values(RG)
+          .map((p, i) => chip(L(p), o.melee && i === 0))
+          .join(''),
+        !o.melee
+      )}
       ${g(t('burden'), chip(t('oneH')) + chip(t('twoH')))}
       ${g(E('Улучшения и уникальные', 'Upgrades and uniques'), chip(t('upgOk')) + chip(t('uniques')))}`;
   }
   function catalog(o = {}) {
-    const ids = o.nothing ? [] : o.filtered ? ['q1', 'q4', 'q10', 'q26'] : ['q1', 'q2', 'q4', 'q10', 'q16', 'q20', 'q23', 'q26'];
-    const groups = ['gCore', 'gHnf', 'gAlt', 'gSup', 'gEq', 'gOther'].map((k) => `<a href="#" class="chip" ${k === 'gEq' ? 'aria-current="page"' : ''}>${t(k)}</a>`).join('');
+    const ids = o.nothing
+      ? []
+      : o.filtered
+        ? ['q1', 'q4', 'q10', 'q26']
+        : ['q1', 'q2', 'q4', 'q10', 'q16', 'q20', 'q23', 'q26'];
+    const groups = ['gCore', 'gHnf', 'gAlt', 'gSup', 'gEq', 'gOther']
+      .map(
+        (k) =>
+          `<a href="#" class="chip" ${k === 'gEq' ? 'aria-current="page"' : ''}>${t(k)}</a>`
+      )
+      .join('');
     const nf = o.filtered ? 2 : 1;
-    const shown = o.nothing ? E('Показано 0 из 458', '0 of 458 shown') : o.filtered ? E('Показано 23 из 458', '23 of 458 shown') : t('shown');
+    const shown = o.nothing
+      ? E('Показано 0 из 458', '0 of 458 shown')
+      : o.filtered
+        ? E('Показано 23 из 458', '23 of 458 shown')
+        : t('shown');
     const pills = `<span class="pill">${t('tier1')}${ic('x')}</span>${o.filtered || o.nothing ? `<span class="pill">${E('Вплотную', 'Melee')}${ic('x')}</span>` : ''}${o.filtered || o.nothing ? btn(t('reset'), { sm: true, cls: 'ghost' }) : ''}`;
-    const tr = ids.map((id, i) => {
-      const r = R[id];
-      const f = feat(r);
-      return `<tr class="${o.sel && i === 1 ? 'selr' : ''}">${o.sel ? `<td style="width:34px">${ck(i === 1)}</td>` : ''}<td><div class="nm">${art(r, 48)}<div><b>${nm(r)}</b>${r.src !== 'Core' ? `<span class="src"> ${r.src}</span>` : ''}${f ? `<div class="feat">${f}</div>` : ''}</div></div></td>
+    const tr = ids
+      .map((id, i) => {
+        const r = R[id];
+        const f = feat(r);
+        return `<tr class="${o.sel && i === 1 ? 'selr' : ''}">${o.sel ? `<td style="width:34px">${ck(i === 1)}</td>` : ''}<td><div class="nm">${art(r, 48)}<div><b>${nm(r)}</b>${r.src !== 'Core' ? `<span class="src"> ${r.src}</span>` : ''}${f ? `<div class="feat">${f}</div>` : ''}</div></div></td>
         <td class="n">${L(TR[r.tr])}</td><td class="n">${L(RG[r.rg])}</td><td class="d">${r.dmg} ${E(r.dt === 'mag' ? 'маг' : 'физ', r.dt === 'mag' ? 'mag' : 'phy')}</td><td class="n">${r.bu === 2 ? t('twoH') : t('oneH')}</td></tr>`;
-    }).join('');
-    const rows = ids.slice(0, 6).map((id, i) => row(R[id], { noSrc: R[id].src === 'Core', ck: o.sel ? i === 1 : undefined })).join('');
-    const grid = ids.map((id) => `<div class="gcard">${art(R[id])}<div class="gt"><b>${nm(R[id])}</b><div class="stat">${statLine(R[id])}</div></div></div>`).join('');
+      })
+      .join('');
+    const rows = ids
+      .slice(0, 6)
+      .map((id, i) =>
+        row(R[id], { noSrc: R[id].src === 'Core', ck: o.sel ? i === 1 : undefined })
+      )
+      .join('');
+    const grid = ids
+      .map(
+        (id) =>
+          `<div class="gcard">${art(R[id])}<div class="gt"><b>${nm(R[id])}</b><div class="stat">${statLine(R[id])}</div></div></div>`
+      )
+      .join('');
     let body;
     if (o.nothing) {
-      body = empty(E('Ничего не найдено', 'Nothing found'), E('Нет оружия с «кракен» в названии или описании среди фильтров: Ранг 1, Вплотную.', 'No weapon has "kraken" in its name or text with these filters: Tier 1, Melee.'), btn(E('Сбросить фильтры', 'Reset the filters'), { cls: 'primary' }));
+      body = empty(
+        E('Ничего не найдено', 'Nothing found'),
+        E(
+          'Нет оружия с «кракен» в названии или описании среди фильтров: Ранг 1, Вплотную.',
+          'No weapon has "kraken" in its name or text with these filters: Tier 1, Melee.'
+        ),
+        btn(E('Сбросить фильтры', 'Reset the filters'), { cls: 'primary' })
+      );
     } else if (o.grid) {
       body = `<div class="ggrid">${grid}</div>`;
     } else {
@@ -86,7 +273,9 @@
         <table class="ct"><thead><tr>${o.sel ? '<th></th>' : ''}<th>${t('name')}</th><th>${t('trait')}</th><th>${t('range')}</th><th>${t('dmg')}</th><th>${t('burden')}</th></tr></thead><tbody>${tr}</tbody></table>
         <div class="rows360">${rows}</div>`;
     }
-    const selbar = o.sel ? `<div class="selbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><b>${E('Выбрано: 1', '1 selected')}</b>${btn(t('addList'), { sm: true, i: 'plus' })}${btn(E('Скопировать текст', 'Copy text'), { sm: true, i: 'copy' })}${btn(E('Готово', 'Done'), { sm: true, cls: 'ghost' })}</div>` : '';
+    const selbar = o.sel
+      ? `<div class="selbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><b>${E('Выбрано: 1', '1 selected')}</b>${btn(t('addList'), { sm: true, i: 'plus' })}${btn(E('Скопировать текст', 'Copy text'), { sm: true, i: 'copy' })}${btn(E('Готово', 'Done'), { sm: true, cls: 'ghost' })}</div>`
+      : '';
     const main = `<main class="wrap">${pageHead(t('tables'))}
       <nav class="groups">${groups}</nav>
       <nav class="sub"><a href="#" class="on" aria-current="page">${t('tWeapon')}</a><a href="#">${t('tSecondary')}</a><a href="#">${t('tArmor')}</a></nav>
@@ -105,16 +294,21 @@
   }
 
   /* ---------- item ---------- */
-  const meta = (r) => `<div class="meta">${badge(r)}<span>${srcName(r)} · ${t('no')} ${r.no}</span><a href="#">${t('showInTable')}</a></div>`;
+  const meta = (r) =>
+    `<div class="meta">${badge(r)}<span>${srcName(r)} · ${t('no')} ${r.no}</span><a href="#">${t('showInTable')}</a></div>`;
   const listMenu = `<div class="pop" style="top:calc(100% + 6px);left:0"><div class="mh">${t('lists')}</div>
       <button class="mi">${ic('check').replace('class="i', 'class="i ckm')}${t('listName')}<span class="n">10</span></button>
       <button class="mi"><span class="sp"></span>${E('Трофеи', 'Trophies')}<span class="n">2</span></button>
       <button class="mi"><span class="sp"></span>${E('Пустой список', 'Empty list')}<span class="n">0</span></button><hr>
       <button class="mi">${ic('plus')}${E('Новый список', 'New list')}</button></div>`;
   function itemBody(r, o = {}) {
-    const add = o.listOpen ? `<span class="anchor">${btn(t('addList'), { cls: 'primary', i: 'plus', chev: true, attr: 'aria-expanded="true"' })}${listMenu}</span>` : btn(t('addList'), { cls: 'primary', i: 'plus', chev: true });
-    const moreMenu = o.moreOpen ? `<div class="pop" style="top:calc(100% + 6px);right:0">${['copyText', 'copyName', 'copyImg', 'copyLink'].map((k) => `<button class="mi">${ic(k === 'copyImg' ? 'image' : k === 'copyLink' ? 'link' : 'copy')}${t(k)}</button>`).join('')}<hr>
-      <button class="mi hl">${ic('user')}${E('Войти и сохранить копию', 'Sign in to save a copy')}</button><div class="note2">${E('Копия попадёт в «Мои предметы».', 'The copy goes to "My items".')}</div></div>` : '';
+    const add = o.listOpen
+      ? `<span class="anchor">${btn(t('addList'), { cls: 'primary', i: 'plus', chev: true, attr: 'aria-expanded="true"' })}${listMenu}</span>`
+      : btn(t('addList'), { cls: 'primary', i: 'plus', chev: true });
+    const moreMenu = o.moreOpen
+      ? `<div class="pop" style="top:calc(100% + 6px);right:0">${['copyText', 'copyName', 'copyImg', 'copyLink'].map((k) => `<button class="mi">${ic(k === 'copyImg' ? 'image' : k === 'copyLink' ? 'link' : 'copy')}${t(k)}</button>`).join('')}<hr>
+      <button class="mi hl">${ic('user')}${E('Войти и сохранить копию', 'Sign in to save a copy')}</button><div class="note2">${E('Копия попадёт в «Мои предметы».', 'The copy goes to "My items".')}</div></div>`
+      : '';
     const more = `<span class="anchor">${btn(t('more'), { i: 'more', chev: true, attr: `aria-expanded="${!!o.moreOpen}"` })}${moreMenu}</span>`;
     return { add, more };
   }
@@ -129,7 +323,10 @@
     return sheet(r, add, more, o);
   }
   function sheet(r, add, more, o = {}) {
-    const behind = rpage({ job: 'tables', signedIn: !o.signedOut }, `<main class="wrap">${pageHead(t('tables'))}</main>`);
+    const behind = rpage(
+      { job: 'tables', signedIn: !o.signedOut },
+      `<main class="wrap">${pageHead(t('tables'))}</main>`
+    );
     return `<div class="ov">${behind}<div class="scrim"></div><section class="sheet" role="dialog" aria-label="${nm(r)}"><div class="grab"></div>
       <div class="sh">${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>
       <div class="scroll">${art(r)}<h2>${nm(r)}</h2>${meta(r)}<p class="lead" style="font-size:16px">${desc(r)}</p></div>
@@ -147,11 +344,27 @@
 
   /* ---------- roller ---------- */
   function rollAlt() {
-    const rar = [E('Обычная', 'Common'), E('Необычная', 'Uncommon'), E('Редкая', 'Rare'), E('Очень редкая', 'Very rare'), E('Легендарная', 'Legendary')];
-    const res = [['ci1', 'h'], ['hi3', 'f'], ['cc2', 'h'], ['hc3', 'f']].map(([id, d]) => {
-      const card = scard(R[id]).replace('<div class="kind">', `<div class="kind"><span class="badge ${d === 'h' ? 'hope' : 'fear'}">${d === 'h' ? E('Надежда', 'Hope') : E('Страх', 'Fear')}</span>`);
-      return `<div class="dealt">${card}<div class="cardacts">${btn(t('addList'), { sm: true, i: 'plus' })}${btn(t('share'), { sm: true, i: 'share' })}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}</div></div>`;
-    }).join('');
+    const rar = [
+      E('Обычная', 'Common'),
+      E('Необычная', 'Uncommon'),
+      E('Редкая', 'Rare'),
+      E('Очень редкая', 'Very rare'),
+      E('Легендарная', 'Legendary')
+    ];
+    const res = [
+      ['ci1', 'h'],
+      ['hi3', 'f'],
+      ['cc2', 'h'],
+      ['hc3', 'f']
+    ]
+      .map(([id, d]) => {
+        const card = scard(R[id]).replace(
+          '<div class="kind">',
+          `<div class="kind"><span class="badge ${d === 'h' ? 'hope' : 'fear'}">${d === 'h' ? E('Надежда', 'Hope') : E('Страх', 'Fear')}</span>`
+        );
+        return `<div class="dealt">${card}<div class="cardacts">${btn(t('addList'), { sm: true, i: 'plus' })}${btn(t('share'), { sm: true, i: 'share' })}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}</div></div>`;
+      })
+      .join('');
     const main = `<main class="wrap">${pageHead(E('Альтернативные таблицы', 'Alternate tables'))}<div class="two">
       <section class="panel ctrl"><span class="lbl">${t('rarity')}</span><div class="rar">${seg(rar, 0, true).replace('class="seg quiet"', 'class="seg full"')}<span class="cap2">${E('Обычная: ранг 1-2', 'Common: tier 1-2')}</span></div>
         ${btn(E('Бросить Кости Дуальности', 'Roll the Duality Dice'), { cls: 'primary', i: 'die' })}
@@ -165,7 +378,10 @@
     return rpage({ job: 'roll', mode: 'alt' }, main);
   }
   function rollMwt() {
-    const realms = LANG === 'en' ? ['Sporopolis', 'Wagerwood', "Warrin' Warrens", 'Godsvale', 'Hornet Hold', 'The Drome'] : ['Спорополис', 'Лес Пари', 'Воющие Норы', 'Долина Богов', 'Оплот Шершней', 'Дром'];
+    const realms =
+      LANG === 'en'
+        ? ['Sporopolis', 'Wagerwood', "Warrin' Warrens", 'Godsvale', 'Hornet Hold', 'The Drome']
+        : ['Спорополис', 'Лес Пари', 'Воющие Норы', 'Долина Богов', 'Оплот Шершней', 'Дром'];
     const r = R.mw9;
     const main = `<main class="wrap">${pageHead('Many Worlds Tavern')}<div class="two">
       <section class="panel ctrl"><span class="lbl">${E('Мир', 'Realm')}</span><div class="realm">${realms.map((x, i) => chip(x, i === 0)).join('')}</div>
@@ -182,9 +398,24 @@
     const types = `<div class="fl" style="margin:10px 0 14px">${allChip()}${chip(t('items'))}${chip(t('cons'))}${chip(E('Оружие', 'Weapons'))}${chip(E('Броня', 'Armor'))}</div>`;
     let body = '';
     if (o.state === 'empty') {
-      body = empty(E('Что ищем?', 'What are you looking for?'), E('Ищет по названиям и описаниям всех книг и ваших предметов, по-русски и по-английски.', 'Searches the names and text of every book and your items, in Russian and English.'), '', `<div class="ex">${[E('зелье', 'potion'), E('меч', 'sword'), E('кольцо', 'ring'), '№ 12'].map((x) => `<button class="chip">${x}</button>`).join('')}</div>`);
+      body = empty(
+        E('Что ищем?', 'What are you looking for?'),
+        E(
+          'Ищет по названиям и описаниям всех книг и ваших предметов, по-русски и по-английски.',
+          'Searches the names and text of every book and your items, in Russian and English.'
+        ),
+        '',
+        `<div class="ex">${[E('зелье', 'potion'), E('меч', 'sword'), E('кольцо', 'ring'), '№ 12'].map((x) => `<button class="chip">${x}</button>`).join('')}</div>`
+      );
     } else if (o.state === 'nothing') {
-      body = empty(E(`Ничего не найдено по «${q}»`, `Nothing found for "${q}"`), E('Проверьте написание или поищите по-английски: названия есть на обоих языках.', 'Check the spelling or search in Russian: every name exists in both languages.'), btn(E('Очистить поиск', 'Clear the search'), { cls: 'primary' }));
+      body = empty(
+        E(`Ничего не найдено по «${q}»`, `Nothing found for "${q}"`),
+        E(
+          'Проверьте написание или поищите по-английски: названия есть на обоих языках.',
+          'Check the spelling or search in Russian: every name exists in both languages.'
+        ),
+        btn(E('Очистить поиск', 'Clear the search'), { cls: 'primary' })
+      );
     } else {
       const hits = ['cc1', 'cc2', 'w1'];
       body = `<div class="count2" style="margin-bottom:4px">${E('Найдено: 3', '3 found')}</div>${hits.map((id) => row(R[id], { q: E('зелье', 'potion').slice(0, 5), no: true })).join('')}`;
@@ -196,8 +427,10 @@
 
   /* ---------- lists ---------- */
   function listsIndex() {
-    const thumbs = (ids) => `<div class="thumbs">${ids.map((id) => art(R[id], 36)).join('')}</div>`;
-    const card = (name, m, ids, sel) => `<article class="panel lcard ${sel ? 'sel' : ''}">${ck(sel)}<h3>${name}</h3><div class="m">${m}</div>${ids.length ? thumbs(ids) : `<div class="m">${E('Пусто', 'Empty')}</div>`}<div class="foot3">${btn('', { sm: true, cls: 'ghost', i: 'more', attr: `aria-label="${t('more')}"` })}</div></article>`;
+    const thumbs = (ids) =>
+      `<div class="thumbs">${ids.map((id) => art(R[id], 36)).join('')}</div>`;
+    const card = (name, m, ids, sel) =>
+      `<article class="panel lcard ${sel ? 'sel' : ''}">${ck(sel)}<h3>${name}</h3><div class="m">${m}</div>${ids.length ? thumbs(ids) : `<div class="m">${E('Пусто', 'Empty')}</div>`}<div class="foot3">${btn('', { sm: true, cls: 'ghost', i: 'more', attr: `aria-label="${t('more')}"` })}</div></article>`;
     const main = `<main class="wrap">${pageHead(t('menuLists'))}
       <section class="panel newl"><span class="lbl">${E('Новый список', 'New list')}</span><div class="rowf"><label class="field"><input placeholder="${E('Клад дракона', "Dragon's hoard")}"></label>${btn(E('Создать', 'Create'), { cls: 'primary' })}</div>
         <div>${btn(E('Импорт из файла', 'Import from a file'), { sm: true, i: 'plus' })}</div></section>
@@ -207,20 +440,39 @@
     return rpage({ job: null, signedIn: true }, main);
   }
   function listPage(o = {}) {
-    const ents = [[R.ci1, 2, 150], [R.q1, 1, 0, 'pl'], [R.q313, 1], [R.cc1, 5, 20], [R.voa, 1, 0, 'gm'], [R.hbA, 1, 800]];
-    const noteFor = (k) => (k === 'pl' ? `<div class="rnote"><div class="nbox pl"><div class="nh">${ic('globe')}${t('forPlayers')}</div><p>${E('Последний в наличии.', 'The last one in stock.')}</p></div></div>` : k === 'gm' ? `<div class="rnote"><div class="nbox gm"><div class="nh">${ic('lock')}${t('gmOnly')}<span class="hint">${t('gmOnlyHint')}</span></div><p>${E('Проклят.', 'Cursed.')}</p></div></div>` : '');
-    const editor = (k) => (k === 'pl' && o.editNote ? `<div class="rnote"><div class="seg quiet" style="margin-bottom:6px"><button aria-pressed="true">${ic('globe')} ${t('forPlayers')}</button><button aria-pressed="false">${ic('lock')} ${t('gmOnly')}</button></div><div class="ta" style="width:100%;border:1px solid var(--muted2);border-radius:var(--r-sm);background:var(--bg2);padding:9px 11px;min-height:60px">${E('Последний в наличии.', 'The last one in stock.')}</div></div>` : noteFor(k));
-    const rows = ents.map(([r, q, p, n], i) => {
-      const side = o.shared
-        ? `${q > 1 ? `<span class="px">×${q}</span>` : ''}${p ? `<span class="px">${p} ${t('gp')}</span>` : ''}`
-        : `<span class="box2">${q}</span><span class="box2 ${p ? '' : 'e'}">${p || '-'}</span>${btn(t('note'), { sm: true, i: 'note', cls: n === 'pl' && o.editNote ? 'on' : '', attr: `aria-pressed="${n === 'pl' && !!o.editNote}"` })}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}`;
-      const note = o.shared && n === 'gm' && !o.gm ? '' : o.shared ? noteFor(n) : editor(n);
-      return row(r, { side, note, noSrc: false });
-    }).join('');
-    const share = o.sharePanel ? `<section class="panel ibox"><h2>${t('share')}</h2>
+    const ents = [
+      [R.ci1, 2, 150],
+      [R.q1, 1, 0, 'pl'],
+      [R.q313, 1],
+      [R.cc1, 5, 20],
+      [R.voa, 1, 0, 'gm'],
+      [R.hbA, 1, 800]
+    ];
+    const noteFor = (k) =>
+      k === 'pl'
+        ? `<div class="rnote"><div class="nbox pl"><div class="nh">${ic('globe')}${t('forPlayers')}</div><p>${E('Последний в наличии.', 'The last one in stock.')}</p></div></div>`
+        : k === 'gm'
+          ? `<div class="rnote"><div class="nbox gm"><div class="nh">${ic('lock')}${t('gmOnly')}<span class="hint">${t('gmOnlyHint')}</span></div><p>${E('Проклят.', 'Cursed.')}</p></div></div>`
+          : '';
+    const editor = (k) =>
+      k === 'pl' && o.editNote
+        ? `<div class="rnote"><div class="seg quiet" style="margin-bottom:6px"><button aria-pressed="true">${ic('globe')} ${t('forPlayers')}</button><button aria-pressed="false">${ic('lock')} ${t('gmOnly')}</button></div><div class="ta" style="width:100%;border:1px solid var(--muted2);border-radius:var(--r-sm);background:var(--bg2);padding:9px 11px;min-height:60px">${E('Последний в наличии.', 'The last one in stock.')}</div></div>`
+        : noteFor(k);
+    const rows = ents
+      .map(([r, q, p, n], i) => {
+        const side = o.shared
+          ? `${q > 1 ? `<span class="px">×${q}</span>` : ''}${p ? `<span class="px">${p} ${t('gp')}</span>` : ''}`
+          : `<span class="box2">${q}</span><span class="box2 ${p ? '' : 'e'}">${p || '-'}</span>${btn(t('note'), { sm: true, i: 'note', cls: n === 'pl' && o.editNote ? 'on' : '', attr: `aria-pressed="${n === 'pl' && !!o.editNote}"` })}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}`;
+        const note = o.shared && n === 'gm' && !o.gm ? '' : o.shared ? noteFor(n) : editor(n);
+        return row(r, { side, note, noSrc: false });
+      })
+      .join('');
+    const share = o.sharePanel
+      ? `<section class="panel ibox"><h2>${t('share')}</h2>
         <div class="kv"><div class="k"><b>${E('Ссылка для игроков', 'Player link')}</b><span>${E('Без заметок мастера', 'Without GM notes')}</span></div><div class="wb"><code class="lnk" style="font:600 13px var(--mono)">loot.example/#/s/k3p9…</code>${btn(E('Скопировать', 'Copy'), { sm: true, i: 'copy' })}</div></div>
         <div class="kv"><div class="k"><b>${E('Ссылка для мастера', 'GM link')}</b><span>${E('С заметками «Только для мастера»', 'With the "GM only" notes')}</span></div><div class="wb"><code class="lnk" style="font:600 13px var(--mono)">loot.example/#/s/m7q2…</code>${btn(E('Скопировать', 'Copy'), { sm: true, i: 'copy' })}</div></div>
-        <div>${btn(E('Закрыть доступ по ссылкам', 'Turn off both links'), { sm: true, cls: 'danger' })}</div></section>` : '';
+        <div>${btn(E('Закрыть доступ по ссылкам', 'Turn off both links'), { sm: true, cls: 'danger' })}</div></section>`
+      : '';
     const head = o.shared
       ? `<h1>${t('listName')}</h1><div class="lead2" style="margin:4px 0 12px">${E('Список мастера · 6 позиций · обновлён 3 дня назад', "The GM's list · 6 entries · updated 3 days ago")}</div>
         <div class="acts2">${btn(E('Копия в мои списки', 'Copy to my lists'), { cls: 'primary', i: 'plus' })}${btn(t('print'), { i: 'print' })}${btn(t('select'), { i: 'check' })}<span class="count2">${E('6 из 6', '6 of 6')}</span></div>
@@ -240,8 +492,21 @@
   }
   /* Prices: stored in coins; «Как в книге» draws them in the book's units
      (handful 10, bag 100, chest 1000). */
-  const plural = (n, f) => (LANG === 'en' ? (n === 1 ? f[0] : f[1]) : n % 10 === 1 && n % 100 !== 11 ? f[0] : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? f[1] : f[2]);
-  const UNITS = [[1000, E(['сундук', 'сундука', 'сундуков'], ['chest', 'chests'])], [100, E(['мешок', 'мешка', 'мешков'], ['bag', 'bags'])], [10, E(['горсть', 'горсти', 'горстей'], ['handful', 'handfuls'])]];
+  const plural = (n, f) =>
+    LANG === 'en'
+      ? n === 1
+        ? f[0]
+        : f[1]
+      : n % 10 === 1 && n % 100 !== 11
+        ? f[0]
+        : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)
+          ? f[1]
+          : f[2];
+  const UNITS = [
+    [1000, E(['сундук', 'сундука', 'сундуков'], ['chest', 'chests'])],
+    [100, E(['мешок', 'мешка', 'мешков'], ['bag', 'bags'])],
+    [10, E(['горсть', 'горсти', 'горстей'], ['handful', 'handfuls'])]
+  ];
   function money(n, mode) {
     if (!n) return '-';
     if (mode !== 'book') return `${n} ${t('gp')}`;
@@ -257,25 +522,53 @@
   function shop(o = {}) {
     const mode = o.mode || 'coins';
     const noPrices = o.noPrices;
-    const ents = [[R.ci1, 2, 150], [R.ci2, o.soldQty || 2, 750], [R.q1, 1, 0], [R.q313, 1, 0], [R.cc1, 5, 20], [R.voa, 1, 0], [R.hbA, 1, 800]].map(([r, q, p]) => [r, q, noPrices ? 0 : p]);
+    const ents = [
+      [R.ci1, 2, 150],
+      [R.ci2, o.soldQty || 2, 750],
+      [R.q1, 1, 0],
+      [R.q313, 1, 0],
+      [R.cc1, 5, 20],
+      [R.voa, 1, 0],
+      [R.hbA, 1, 800]
+    ].map(([r, q, p]) => [r, q, noPrices ? 0 : p]);
     const sel = o.sel || [];
     const selMode = sel.length > 0 || o.selMode;
-    const rows = ents.map(([r, q, p], i) => {
-      const on = sel.includes(i);
-      const priceCell = mode === 'book' ? `<span class="box2 wide ${p ? '' : 'e'}">${money(p, 'book')}</span>` : `<span class="box2 ${p ? '' : 'e'}">${p || '-'}</span>`;
-      const side = `<span class="box2" aria-label="${t('qty')}">${q}</span>${priceCell}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}`;
-      const take = o.take && o.take[0] === i ? `<div class="take">${E('Взять', 'Take')} <span class="box2 sm">${o.take[1]}</span> ${E('из', 'of')} ${q} = <b>${money(p * o.take[1], mode)}</b></div>` : '';
-      const hit = o.rolled === i ? `<div class="rnote"><div class="nbox pl"><div class="nh">${ic('globe')}${t('forPlayers')}</div><p>${E('Звенит на всю округу.', 'It rings across the valley.')}</p></div></div>` : '';
-      return row(r, { ck: selMode ? on : undefined, side, note: take + hit, noSrc: false });
-    }).join('');
-    const totalCoins = o.take ? ents[o.take[0]][2] * o.take[1] : sel.reduce((s, i) => s + ents[i][1] * ents[i][2], 0);
-    const pieces = sel.reduce((s, i) => s + (o.take && o.take[0] === i ? o.take[1] : ents[i][1]), 0);
-    const selLabel = E(sel.length === 1 ? 'Выбрана 1 позиция' : `Выбрано ${sel.length} позиции`, sel.length === 1 ? '1 entry selected' : `${sel.length} entries selected`);
+    const rows = ents
+      .map(([r, q, p], i) => {
+        const on = sel.includes(i);
+        const priceCell =
+          mode === 'book'
+            ? `<span class="box2 wide ${p ? '' : 'e'}">${money(p, 'book')}</span>`
+            : `<span class="box2 ${p ? '' : 'e'}">${p || '-'}</span>`;
+        const side = `<span class="box2" aria-label="${t('qty')}">${q}</span>${priceCell}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}`;
+        const take =
+          o.take && o.take[0] === i
+            ? `<div class="take">${E('Взять', 'Take')} <span class="box2 sm">${o.take[1]}</span> ${E('из', 'of')} ${q} = <b>${money(p * o.take[1], mode)}</b></div>`
+            : '';
+        const hit =
+          o.rolled === i
+            ? `<div class="rnote"><div class="nbox pl"><div class="nh">${ic('globe')}${t('forPlayers')}</div><p>${E('Звенит на всю округу.', 'It rings across the valley.')}</p></div></div>`
+            : '';
+        return row(r, { ck: selMode ? on : undefined, side, note: take + hit, noSrc: false });
+      })
+      .join('');
+    const totalCoins = o.take
+      ? ents[o.take[0]][2] * o.take[1]
+      : sel.reduce((s, i) => s + ents[i][1] * ents[i][2], 0);
+    const pieces = sel.reduce(
+      (s, i) => s + (o.take && o.take[0] === i ? o.take[1] : ents[i][1]),
+      0
+    );
+    const selLabel = E(
+      sel.length === 1 ? 'Выбрана 1 позиция' : `Выбрано ${sel.length} позиции`,
+      sel.length === 1 ? '1 entry selected' : `${sel.length} entries selected`
+    );
     const bar = sel.length
       ? `<div class="selbar lbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><b>${selLabel}${pieces !== sel.length ? ` · ${pieces} ${E('шт.', 'pcs')}` : ''}${totalCoins ? ` · ${E('Итого', 'Total')}: ${money(totalCoins, mode)}` : ''}</b>
         ${btn(E('Цены', 'Prices'), { sm: true, chev: true, cls: o.panel ? 'on' : '', attr: `aria-expanded="${!!o.panel}"` })}${btn(E('Скопировать текст', 'Copy text'), { sm: true, i: 'copy' })}${btn(`${E('Удалить', 'Delete')} (${sel.length})`, { sm: true, cls: 'danger' })}${btn(E('Готово', 'Done'), { sm: true, cls: 'ghost' })}</div>`
       : '';
-    const guess = (r, band, sug) => `<div class="kv"><div class="k"><b>${nm(r)}</b><span>${band}</span></div><div class="wb"><span class="box2 wide">${money(sug, mode)}</span></div></div>`;
+    const guess = (r, band, sug) =>
+      `<div class="kv"><div class="k"><b>${nm(r)}</b><span>${band}</span></div><div class="wb"><span class="box2 wide">${money(sug, mode)}</span></div></div>`;
     const panel = o.panel
       ? `<section class="panel ibox ppanel"><h2>${E('Цены выбранных', 'Prices of the selected')}</h2>
         ${o.panel === 'none' ? `<p class="hint3">${E('У выбранной позиции ещё нет цены. Ниже - цена по редкости из книги; её можно поправить до того, как проставить.', 'The selected entry has no price yet. Below is the price for its rarity from the book; you can change it before you set it.')}</p>` : `<div class="kv"><div class="k"><b>${E('Скидка или наценка', 'Discount or markup')}</b><span>${E('Меняет цену выбранных в процентах', 'Changes the selected prices by a percentage')}</span></div><div class="wb"><span class="box2">-20</span><span>%</span>${btn(`${E('Применить', 'Apply')}: ${money(1200, mode)}`, { sm: true })}</div></div>`}
@@ -286,22 +579,58 @@
       ? `<section class="panel ibox"><h2>${t('rollList')}</h2><div class="wb">${btn(E('Бросить d7', 'Roll d7'), { cls: 'primary', i: 'die', sm: true })}<span class="count2">${E('или введите номер позиции', 'or enter an entry number')}</span><div class="num" style="height:38px"><button>−</button><output>2</output><button>+</button></div>${btn(t('reset'), { sm: true, cls: 'ghost' })}</div>
         <div class="rollres">${scard(R.ci2).replace(/<span class="badge rno">[^<]*<\/span>/, `<span class="badge rno">${E('Позиция', 'Entry')} 2</span>`)}<div class="rr"><b>${E('Выпало: 2 - Пронзительная Свирель, 2 шт.', 'Rolled: 2 - Piper Whistle, 2 pcs')}, ${money(750, mode)} ${E('за штуку', 'each')}</b><div class="nbox pl"><div class="nh">${ic('globe')}${t('forPlayers')}</div><p>${E('Звенит на всю округу.', 'It rings across the valley.')}</p></div><div class="nbox gm"><div class="nh">${ic('lock')}${t('gmOnly')}<span class="hint">${t('gmOnlyHint')}</span></div><p>${E('Свистит и под водой.', 'It whistles under water too.')}</p></div>${btn(E('Показать в списке', 'Show in the list'), { sm: true })}</div></div></section>`
       : '';
-    const req = (head, lines, total) => `<div class="req"><div class="count2">${head}</div><table class="rqt"><thead><tr><th>${E('Позиция', 'Entry')}</th><th>${E('Было', 'Was')}</th><th>${E('Возьмут', 'Taken')}</th><th>${E('Станет', 'Becomes')}</th><th>${t('price')}</th></tr></thead><tbody>${lines.map(([r, was, take, p, warn]) => `<tr><td>${nm(r)}${warn ? `<div class="warn2">${warn}</div>` : ''}</td><td data-l="${E('Было', 'Was')}">${was}</td><td data-l="${E('Возьмут', 'Taken')}">${take}</td><td data-l="${E('Станет', 'Becomes')}">${Math.max(0, was - take)}</td><td data-l="${t('price')}">${p ? money(p, mode) : E('без цены', 'no price')}</td></tr>`).join('')}</tbody></table>
+    const req = (
+      head,
+      lines,
+      total
+    ) => `<div class="req"><div class="count2">${head}</div><table class="rqt"><thead><tr><th>${E('Позиция', 'Entry')}</th><th>${E('Было', 'Was')}</th><th>${E('Возьмут', 'Taken')}</th><th>${E('Станет', 'Becomes')}</th><th>${t('price')}</th></tr></thead><tbody>${lines.map(([r, was, take, p, warn]) => `<tr><td>${nm(r)}${warn ? `<div class="warn2">${warn}</div>` : ''}</td><td data-l="${E('Было', 'Was')}">${was}</td><td data-l="${E('Возьмут', 'Taken')}">${take}</td><td data-l="${E('Станет', 'Becomes')}">${Math.max(0, was - take)}</td><td data-l="${t('price')}">${p ? money(p, mode) : E('без цены', 'no price')}</td></tr>`).join('')}</tbody></table>
       <div class="wb"><b>${total}</b><span style="margin-left:auto"></span>${btn(E('Принять', 'Accept'), { sm: true, cls: 'primary' })}${btn(E('Отклонить', 'Decline'), { sm: true })}</div></div>`;
     const requests = o.requests
       ? `<section class="panel ibox"><h2>${E('Новое в списке: 2 запроса', 'New on the list: 2 requests')}</h2>
-        ${req(E('По ссылке для мастера · только что · истечёт через 60 минут', 'From the GM link · just now · expires in 60 minutes'), [[R.cc1, 5, 5, 180, E('Просили 9, в списке 5: возьмут 5', 'Asked for 9, the list has 5: 5 are taken')], [R.q1, 1, 1, 0]], E('Итого: 180 зол. · 1 позиция без цены', 'Total: 180 gp · 1 entry without a price'))}
-        ${req(E('По ссылке для игроков · только что · истечёт через 60 минут', 'From the player link · just now · expires in 60 minutes'), [[R.ci1, 2, 1, 150], [R.cc1, 5, 3, 60]], E('Итого: 210 зол.', 'Total: 210 gp'))}</section>`
+        ${req(
+          E(
+            'По ссылке для мастера · только что · истечёт через 60 минут',
+            'From the GM link · just now · expires in 60 minutes'
+          ),
+          [
+            [
+              R.cc1,
+              5,
+              5,
+              180,
+              E('Просили 9, в списке 5: возьмут 5', 'Asked for 9, the list has 5: 5 are taken')
+            ],
+            [R.q1, 1, 1, 0]
+          ],
+          E('Итого: 180 зол. · 1 позиция без цены', 'Total: 180 gp · 1 entry without a price')
+        )}
+        ${req(
+          E(
+            'По ссылке для игроков · только что · истечёт через 60 минут',
+            'From the player link · just now · expires in 60 minutes'
+          ),
+          [
+            [R.ci1, 2, 1, 150],
+            [R.cc1, 5, 3, 60]
+          ],
+          E('Итого: 210 зол.', 'Total: 210 gp')
+        )}</section>`
       : '';
-    const toast = o.toast ? `<div class="toast2" role="status">${o.toast}${btn(E('Вернуть', 'Undo'), { sm: true })}</div>` : '';
+    const toast = o.toast
+      ? `<div class="toast2" role="status">${o.toast}${btn(E('Вернуть', 'Undo'), { sm: true })}</div>`
+      : '';
     const aside = `<aside class="panel laside"><h1>${t('listName')}</h1><div class="meta2">${E('7 позиций из 100 · сохранено', '7 entries of 100 · saved')}</div>
         <div class="stack">${btn(t('share'), { i: 'share' })}${btn(t('print'), { i: 'print' })}${btn(t('rollList'), { i: 'die', cls: o.roll ? 'on' : '', attr: `aria-expanded="${!!o.roll}"` })}${btn(t('more'), { i: 'more' })}</div>
         <div class="seglbl">${E('Цены:', 'Prices:')}${seg([t('asBook'), t('inCoins')], mode === 'book' ? 0 : 1)}</div>
         <div class="pex">${E('Например', 'For example')}: ${money(750, mode)}</div></aside>`;
-    const tools = selMode ? '' : `<div class="acts2">${btn(t('select'), { sm: true, i: 'check' })}</div>`;
+    const tools = selMode
+      ? ''
+      : `<div class="acts2">${btn(t('select'), { sm: true, i: 'check' })}</div>`;
     const main = `<main class="wrap"><div class="lgrid">${aside}<section class="lmain">${requests}${roll}${tools}${bar}${panel}<div class="lhead2"><span class="lbl">${E('Кол-во · Цена', 'Qty · Price')}</span></div>${rows}${btn(t('addOwn'), { i: 'plus', attr: 'style="margin-top:12px"' })}</section></div></main>`;
     const pg = rpage({ job: null, signedIn: true }, main);
-    return toast ? `<div class="ov" style="height:${N ? 1400 : 900}px">${pg}${toast}</div>` : pg;
+    return toast
+      ? `<div class="ov" style="height:${N ? 1400 : 900}px">${pg}${toast}</div>`
+      : pg;
   }
 
   function listsImport() {
@@ -318,12 +647,18 @@
 
   /* ---------- homebrew ---------- */
   function hbShell(tab, body, o = {}) {
-    const tabs = [['items', E('Предметы', 'Items'), 4], ['sources', E('Источники', 'Sources'), 2], ['sets', E('Комплекты', 'Sets'), 1], ['rules', E('Карты правил', 'Rule cards'), 1]];
+    const tabs = [
+      ['items', E('Предметы', 'Items'), 4],
+      ['sources', E('Источники', 'Sources'), 2],
+      ['sets', E('Комплекты', 'Sets'), 1],
+      ['rules', E('Карты правил', 'Rule cards'), 1]
+    ];
     const nav = `<nav class="tabs2" aria-label="${t('myItems')}">${tabs.map(([k, l, n]) => `<a href="#" class="${k === tab ? 'on' : ''}" ${k === tab ? 'aria-current="page"' : ''}>${l}<span class="n">${n}</span></a>`).join('')}</nav>`;
     const main = `<main class="wrap">${pageHead(t('myItems'))}${o.importPanel || ''}${nav}${body}</main>`;
     return rpage({ job: null, signedIn: true }, main);
   }
-  const hbActs = (newLabel, count) => `<div class="acts2">${btn(newLabel, { cls: 'primary', i: 'plus' })}${btn(E('Импорт из файла', 'Import from a file'))}${btn(t('select'), { i: 'check' })}<span class="count2">${count}</span></div>`;
+  const hbActs = (newLabel, count) =>
+    `<div class="acts2">${btn(newLabel, { cls: 'primary', i: 'plus' })}${btn(E('Импорт из файла', 'Import from a file'))}${btn(t('select'), { i: 'check' })}<span class="count2">${count}</span></div>`;
   function hbItems(o = {}) {
     const body = `${hbActs(E('Новый предмет', 'New item'), E('4 предмета из 100', '4 items of 100'))}
       <div class="grp2">${E('Мастерская Ольхи · Холодное оружие', "Olkha's workshop · Melee weapons")}<span class="n">1</span></div>${row(R.hbA, { noSrc: true })}
@@ -352,7 +687,7 @@
     const panel = `<section class="panel ibox"><h2>${E('Импорт предметов из файла', 'Import items from a file')}</h2>
       <div class="wb">${btn(E('Выбрать файл', 'Choose a file'), { sm: true })}<span class="count2">example-edited.json</span><a class="lnk" href="#" style="margin-left:auto">${E('Формат файла', 'File format')}</a></div>
       <div class="sum"><b>${E('В файле: 5 предметов, 1 источник, 2 раздела, 2 карты.', 'In the file: 5 items, 1 source, 2 sections, 2 cards.')}</b></div>
-      <div class="kv"><div class="k"><b>${E('Мастерская Ольхи, второе издание', "Olkha's workshop, second edition")}</b><span>${E('4 предмета · совпадает с вашим источником', '4 items · matches your source')}</span></div><label class="field sel"><span>${E('В «Мастерская Ольхи»', "Into \"Olkha's workshop\"")}</span>${ic('chev')}</label></div>
+      <div class="kv"><div class="k"><b>${E('Мастерская Ольхи, второе издание', "Olkha's workshop, second edition")}</b><span>${E('4 предмета · совпадает с вашим источником', '4 items · matches your source')}</span></div><label class="field sel"><span>${E('В «Мастерская Ольхи»', 'Into "Olkha\'s workshop"')}</span>${ic('chev')}</label></div>
       <div class="kv"><div class="k"><b>${E('Без источника', 'No source')}</b><span>${E('1 предмет', '1 item')}</span></div><label class="field sel"><span>${E('В «Хоумбрю»', 'Into "Homebrew"')}</span>${ic('chev')}</label></div>
       <div class="kv"><div class="k"><b>${E('Если уже есть:', 'If it already exists:')}</b><span>${E('1 источник и 2 предмета совпали', '1 source and 2 items match')}</span></div>${seg([E('Пропустить', 'Skip'), E('Обновить', 'Update')], 0)}</div>
       <div class="wb">${btn(E('Импортировать 5 предметов', 'Import 5 items'), { cls: 'primary' })}${btn(E('Отмена', 'Cancel'))}</div></section>`;
@@ -361,8 +696,16 @@
   function editorState(kind) {
     let ed = window.EDITOR('B');
     if (kind === 'conflict') {
-      ed = ed.replace('<section class="es">', `<div class="alertc" role="alert"><b>${E('Предмет изменили на другом устройстве', 'The item changed on another device')}</b><p>${E('Ваши правки не сохранены. Посмотрите новую версию, прежде чем сохранять.', 'Your edits are not saved. Look at the new version before you save.')}</p>
-        <div class="wb">${btn(E('Показать новую версию', 'Show the new version'), { sm: true, cls: 'primary' })}${btn(E('Заменить её моей', 'Replace it with mine'), { sm: true, cls: 'danger' })}</div></div><section class="es">`).replace('<button class="btn primary">', '<button class="btn" disabled style="opacity:.55">');
+      ed = ed
+        .replace(
+          '<section class="es">',
+          `<div class="alertc" role="alert"><b>${E('Предмет изменили на другом устройстве', 'The item changed on another device')}</b><p>${E('Ваши правки не сохранены. Посмотрите новую версию, прежде чем сохранять.', 'Your edits are not saved. Look at the new version before you save.')}</p>
+        <div class="wb">${btn(E('Показать новую версию', 'Show the new version'), { sm: true, cls: 'primary' })}${btn(E('Заменить её моей', 'Replace it with mine'), { sm: true, cls: 'danger' })}</div></div><section class="es">`
+        )
+        .replace(
+          '<button class="btn primary">',
+          '<button class="btn" disabled style="opacity:.55">'
+        );
       return rpage({ job: null, signedIn: true }, ed);
     }
     const dlg = `<section class="dlg sm" role="dialog" aria-label="${E('Обрезать картинку', 'Crop the picture')}"><h2>${E('Обрезать картинку', 'Crop the picture')}</h2>
@@ -383,7 +726,8 @@
 
   /* ---------- account ---------- */
   function account(o = {}) {
-    const sel = (v) => `<label class="field sel" style="min-width:200px"><span>${v}</span>${ic('chev')}</label>`;
+    const sel = (v) =>
+      `<label class="field sel" style="min-width:200px"><span>${v}</span>${ic('chev')}</label>`;
     const cb = (on, l) => `<span class="cb"><i>${on ? ic('check') : ''}</i>${l}</span>`;
     const disp = `<section class="panel setp"><h2>${E('Отображение', 'Display')}</h2>
       <div class="setr"><span>${E('Язык', 'Language')}</span>${seg(['RU', 'EN'], LANG === 'en' ? 1 : 0)}</div>
@@ -426,19 +770,57 @@
   }
   function errorFor(which) {
     const P = {
-      item: [E('Предмета по этому адресу нет', 'No item at this address'), E('Адрес <code>#/i/nope</code> не ведёт ни к одному предмету. Ссылка могла устареть или быть набрана с ошибкой.', 'The address <code>#/i/nope</code> leads to no item. The link may be old or mistyped.'), btn(E('Найти предмет', 'Find the item'), { cls: 'primary', i: 'search' }) + btn(E('Открыть таблицы', 'Open the tables'))],
-      list: [E('Список не открывается', 'This list does not open'), E('Его удалили, или он сохранён в другом аккаунте. Войдите в тот аккаунт, где вы его создали.', 'It was deleted, or it is in another account. Sign in to the account where you made it.'), btn(t('signIn'), { cls: 'primary', i: 'user' }) + btn(E('Открыть таблицы', 'Open the tables'))],
-      print: [E('Набор для печати не найден', 'No print set at this address'), E('Ссылка на набор неполная: в ней нет ни одной карточки.', 'The set link is incomplete: it holds no card.'), btn(E('Открыть таблицы', 'Open the tables'), { cls: 'primary' })]
+      item: [
+        E('Предмета по этому адресу нет', 'No item at this address'),
+        E(
+          'Адрес <code>#/i/nope</code> не ведёт ни к одному предмету. Ссылка могла устареть или быть набрана с ошибкой.',
+          'The address <code>#/i/nope</code> leads to no item. The link may be old or mistyped.'
+        ),
+        btn(E('Найти предмет', 'Find the item'), { cls: 'primary', i: 'search' }) +
+          btn(E('Открыть таблицы', 'Open the tables'))
+      ],
+      list: [
+        E('Список не открывается', 'This list does not open'),
+        E(
+          'Его удалили, или он сохранён в другом аккаунте. Войдите в тот аккаунт, где вы его создали.',
+          'It was deleted, or it is in another account. Sign in to the account where you made it.'
+        ),
+        btn(t('signIn'), { cls: 'primary', i: 'user' }) +
+          btn(E('Открыть таблицы', 'Open the tables'))
+      ],
+      print: [
+        E('Набор для печати не найден', 'No print set at this address'),
+        E(
+          'Ссылка на набор неполная: в ней нет ни одной карточки.',
+          'The set link is incomplete: it holds no card.'
+        ),
+        btn(E('Открыть таблицы', 'Open the tables'), { cls: 'primary' })
+      ]
     }[which];
-    return rpage({ job: null, signedIn: which !== 'list' }, `<main class="wrap">${errPage(...P)}</main>`);
+    return rpage(
+      { job: null, signedIn: which !== 'list' },
+      `<main class="wrap">${errPage(...P)}</main>`
+    );
   }
   function shell(o = {}) {
     return `${cap(o.ru, o.en)}<div class="frame" style="min-height:${o.h || 0}px">${window.RX.rheader({ static: true, ...o.opts })}${o.body || ''}</div>`;
   }
 
   const STATES = {
-    'shell-account-menu': () => shell({ ru: 'вошли · Таблицы · меню аккаунта открыто', en: 'signed in · Tables · account menu open', opts: { job: 'tables', signedIn: true, menuOpen: true }, h: 360 }),
-    'shell-signed-out': () => shell({ ru: 'не вошли · Бросок · Обычные правила', en: 'signed out · Roll · Standard rules', opts: { job: 'roll', mode: 'std' }, body: `<main class="wrap" style="padding:18px 0 10px">${pageHead(t('std'))}</main>` }),
+    'shell-account-menu': () =>
+      shell({
+        ru: 'вошли · Таблицы · меню аккаунта открыто',
+        en: 'signed in · Tables · account menu open',
+        opts: { job: 'tables', signedIn: true, menuOpen: true },
+        h: 360
+      }),
+    'shell-signed-out': () =>
+      shell({
+        ru: 'не вошли · Бросок · Обычные правила',
+        en: 'signed out · Roll · Standard rules',
+        opts: { job: 'roll', mode: 'std' },
+        body: `<main class="wrap" style="padding:18px 0 10px">${pageHead(t('std'))}</main>`
+      }),
     'catalog-filters': () => catalog({ sheet: true }),
     'catalog-filtered': () => catalog({ filtered: true }),
     'catalog-selection': () => catalog({ sel: true }),
@@ -461,7 +843,14 @@
     'list-prices-panel': () => shop({ sel: [1], panel: 'set' }),
     'list-prices-none': () => shop({ sel: [0], panel: 'none', noPrices: true }),
     'list-picked': () => shop({ sel: [1], take: [1, 1], mode: 'book' }),
-    'list-sold': () => shop({ soldQty: 1, toast: E('Продано и убрано: Пронзительная Свирель, 1 шт.', 'Sold and removed: Piper Whistle, 1 pc') }),
+    'list-sold': () =>
+      shop({
+        soldQty: 1,
+        toast: E(
+          'Продано и убрано: Пронзительная Свирель, 1 шт.',
+          'Sold and removed: Piper Whistle, 1 pc'
+        )
+      }),
     'list-roll': () => shop({ roll: true, rolled: 1 }),
     'list-selected': () => shop({ sel: [0, 4] }),
     'list-requests': () => shop({ requests: true }),
