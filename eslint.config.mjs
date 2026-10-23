@@ -23,6 +23,8 @@ export default ts.config(
       'i/**',
       /* Untracked artwork scratch, gitignored for the same reason (.gitignore). */
       'work/**',
+      /* A task's throwaway mock pages; the task's closeout deletes them. */
+      'issues/*/mocks/**',
       /* wrangler's local state of the preview host. */
       'preview/.wrangler/**',
       /* Everything under .claude/ except the hooks themselves: agent

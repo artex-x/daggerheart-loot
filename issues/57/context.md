@@ -82,7 +82,20 @@
   - Manual review (owner, 2026-10-23): R has a mock for every screen and
     state (`mocks/direction/index.html`, R by surface); the owner reviews
     them all before batch 1.
-- Open questions: none. The owner's manual review of the R states is next.
+  - Review round answers (owner, 2026-10-23, `mocks/direction/questions.html`):
+    - At 360 a mode chip may show its label on two lines; the chip text
+      matches the page heading. Home: batch 7.
+    - The «Дополнения ▾» menu replaces the supplement chip panel on
+      supplement pages (C48). Home: batch 7, `FEATURES.md` "Chrome".
+    - ESLint ignores `issues/*/mocks/**` (task mock pages are scratch that a
+      closeout deletes). Home: `eslint.config.mjs`.
+    - Order: a plan review of R runs now. Implementation (batch 1 onward)
+      starts only after R10 and `cloudflare-pages` have shipped; the
+      dispatch refresh of batch 1 re-reads both landings (the `/en/` URL
+      and the language switch reach batch 7). The owner sends review notes
+      on the R states before batch 1; each note becomes an acceptance line
+      in the batch that owns the screen.
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
