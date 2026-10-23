@@ -209,7 +209,7 @@ panel or feature needs the owner's yes.
 | D8 | account delete confirm | 360 | Field holds «удалить» under an EN prompt: the capture typed it in RU, then switched. Artefact; check live which word EN accepts after a language switch | verify |
 | D9 | account menu | 360 | Pressing EN closed the menu: EN labels not checked | Check in batch |
 | D10 | tab strip | 360 | EN nearly fits, so no cut and no scroll cue, but Tables, Lists, Search stay off-screen | C6 |
-| D11 | wordmark «Лут» in EN | all | `DESIGN.md`: never translated; an EN reader cannot read it | Owner decision |
+| D11 | wordmark «Лут» in EN | all | `DESIGN.md`: never translated; an EN reader cannot read it | Owner: EN shows «Loot» |
 | D14 | editor preview chrome | 360 | Preview badges, stat labels and the draft title follow the text language, not the UI language: RU chrome in an EN UI. May be by design (the card as printed); confirm | verify |
 | D15 | editor messages | 360 | EN damage message is 3 lines; «физ/маг» and "phy/mag" are abbreviations in both | Shorter message; full words |
 | D16 | import label | 360 | EN "already hold" is a literal of «уже есть» | "already have" |
@@ -248,5 +248,6 @@ panel or feature needs the owner's yes.
 
 ## Owner triage
 
-Pending: which themes go to phase 2, which rows are leftovers for phase 3
-batches, which are rejected.
+Owner, 2026-10-23 (`context.md`, "Decisions already settled"): all eight
+themes go to phase 2; help panels are decided per batch mock; every other
+row is phase 3 input; D11 resolved: EN shows «Loot». No row rejected yet.

@@ -75,7 +75,8 @@ issues/57/audit.md (the triaged systemic themes), DESIGN.md, PRODUCT.md.
 2. The planner makes mocks in issues/57/mocks/direction/: two directions at
    most, each as static HTML built from tokens.css values, plus PNG
    renders at 360 and 1180 in RU (EN for the screens where text length
-   differs). Cover the header and navigation, the catalog table and cards,
+   differs). Build every mock with the real item images from img/: the
+   art is fixed, so the design fits around it. Cover the header and navigation, the catalog table and cards,
    the item detail, the roller, and a list page. Each mock passes the
    clarity rule: no help text needed.
 3. The planner writes issues/57/plan.md: the direction, the token changes,

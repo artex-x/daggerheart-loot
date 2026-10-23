@@ -31,7 +31,18 @@
   - Use Impeccable wherever it applies: `critique`/`audit` in phase 1,
     `shape` and mocks in phase 2, `polish`/`harden` per batch, `document`
     for the `DESIGN.md` lock.
-- Open questions: see `sessions.md`, "Owner questions".
+  - Phase 1 triage (owner, 2026-10-23), over `audit.md`:
+    - Phase 2 takes all eight systemic themes, the missing-art placeholder
+      (theme 7) included.
+    - Help panels (`#/tables`, `#/roll/std`, `#/homebrew`): decided per
+      batch mock, not at plan level. Each mock that touches a panel asks.
+    - Every finding outside a theme is phase 3 input, grouped by surface;
+      a `verify` row is checked in a live browser first; a row may still be
+      rejected at its batch mock.
+    - The EN header shows «Loot» as the wordmark; RU keeps «Лут». This
+      changes the `DESIGN.md` rule "the wordmark is never translated"
+      (home: `DESIGN.md`, written by the batch that ships it).
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -81,6 +92,12 @@
   be understood, or when its label does not say what it does. The fix
   changes the UI so the text can go. Removing a help panel or any visible
   feature needs the owner's yes first.
+- Item art is a fixed asset (owner, 2026-10-23): the images in `img/` stay
+  as they are - square, mostly dark grounds, some cut-outs on black. Design
+  every surface around those exact images on screen; never propose to
+  redraw, regenerate, recolour or replace them. Framing, size, crop window
+  and the placeholder for a record with no image are design choices; the
+  image bytes are not. Mocks use the real files from `img/`.
 - Audit and design only the post-R10 shape: skip the surfaces R10 deletes.
   R10 does not have to ship first. A batch that touches the header, the tab
   bar, the notices or the list pages waits for R10 `B10.3` (same files,
