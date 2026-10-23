@@ -1,0 +1,12 @@
+/* R: the C card, brought under A1's type rules - the name in title case at
+   the title step, no drawn tier banner (the tier is a badge). */
+.scard .nm { text-transform: none; font-weight: 700; font-size: var(--t-title); letter-spacing: -0.005em; line-height: 1.2; }
+.scard .tier { display: none; }
+.scard .body { margin-top: -30px; }
+.hand2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.dealt .scard .art { aspect-ratio: 4 / 3; }
+.cardacts .btn { flex: 0 1 auto; }
+.cardacts .btn:first-child { flex: 1; }
+@media (max-width: 760px) {
+  .hand2 { grid-template-columns: 1fr; }
+}

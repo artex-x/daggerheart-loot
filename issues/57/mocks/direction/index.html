@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task 57 directions</title>
+<link rel="stylesheet" href="shared/base.css">
+<style>
+  body { font-size: 15px; }
+  main { width: min(1500px, 100% - 32px); margin: 0 auto; padding: 24px 0 60px; }
+  header.ix { display: grid; gap: 6px; margin-bottom: 18px; }
+  header.ix p { margin: 0; color: var(--muted); max-width: 90ch; }
+  nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 22px; }
+  section.set { margin: 0 0 34px; padding: 18px; }
+  section.set h2 { margin: 0 0 4px; font-size: 20px; }
+  section.set .cap1 { margin: 0 0 14px; color: var(--muted); max-width: 100ch; }
+  section.set.rec { border-color: var(--gold); }
+  .grid { display: grid; grid-template-columns: 110px 200px 1fr 200px; gap: 10px 14px; align-items: start; }
+  .grid .h { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2); }
+  .grid .s { font-weight: 700; padding-top: 4px; }
+  .grid a { display: block; border: 1px solid var(--line2); border-radius: 8px; overflow: hidden; background: var(--bg); max-height: 520px; }
+  .grid a:hover { border-color: var(--gold); }
+  .grid img { display: block; width: 100%; height: auto; }
+  .grid .none { color: var(--muted2); font-size: 13px; padding-top: 4px; }
+  .opts { display: grid; gap: 18px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .opt h3 { margin: 0 0 2px; font-size: 16px; }
+  .opt p { margin: 0 0 10px; color: var(--muted); }
+  .ogrid { display: grid; grid-template-columns: 110px 200px 1fr; gap: 10px 14px; }
+  @media (max-width: 900px) { .grid, .ogrid { grid-template-columns: 1fr 1fr; } .grid .s, .grid .h:first-child { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<main>
+  <header class="ix">
+    <h1>Task 57 - design directions</h1>
+    <p>Recommendation R comes first. Then directions A, B and C, each with its full set of six surfaces, and its options, which show only the surfaces they change. Every image opens at full size. The comparison and the reasons are in <code>issues/57/plan.md</code>, sections 1 and 2.</p>
+    <p>Fonts load from <code>C:\Users\Ignat\.dhloot\notes\57\fonts\</code>; on another machine the HTML falls back to the system font and the PNGs are the record.</p>
+  </header>
+  <nav class="jump"><a class="chip" href="#R">R - recommended</a><a class="chip" href="#A">A - polish in place</a><a class="chip" href="#B">B - two-level index</a><a class="chip" href="#C">C - card table</a><a class="chip" href="#F">Font specimen</a></nav>
+  <div id="sets"></div>
+</main>
+<script>
+  const SURF = [['header', 'Header and navigation'], ['catalog', 'Catalog rows and filters'], ['item', 'Item: page at 1180, dialog at 360'], ['roller', 'Roller #/roll/std'], ['list', 'Account list'], ['editor', 'Homebrew editor']];
+  const SETS = [
+    ['R', 'R - recommended: B1 + A1 + one C graft', "B1's three-job navigation and work areas, A1's strict gold budget, Source Sans 3, and C's card face on roll results only (title case, no drawn tier banner). The batch outline follows this set.", true, []],
+    ['A', 'A - polish in place', 'The Vault Index stays as it is: five tabs, the same rows, cards and panels. The audit rules are enforced, the type floor rises, labels stay the same at every width, and the font is Source Sans 3. Lowest cost; the tab strip still hides two tabs at 360.', false,
+      [['A2', 'A2 - lenient gold', 'Defaults and segments stay gold as today, and 1d12 is a gold primary. Compare with A1 (the A set), where only a narrowing choice, the current place and one primary action are gold.', ['catalog', 'roller']]]],
+    ['B', 'B - two-level index', 'Same world, new structure: three jobs (Roll, Tables, Search) with the nine roll sections as one row of modes; a filter column beside a column table; a two-pane roller; a dossier item page; list controls in a side column.', false,
+      [['B2', 'B2 - left rail', 'A rail with all nine modes on wide screens, and a bottom bar of the three jobs on phones.', ['header', 'roller']]]],
+    ['C', 'C - card table', 'A register change: a record on screen is the card it prints as. Roll results are a dealt hand, the item page shows the card, the catalog grid and the list are cards. Strongest fantasy register and art fit; lowest density.', false,
+      [['C2', 'C2 - paper card', 'The item page shows the real printed card (white paper, cropped from the S1 capture) instead of a screen card.', ['item']]]]
+  ];
+  const img = (d, f) => `<a href="${d}/${f}" target="_blank"><img loading="lazy" src="${d}/${f}" alt="${d} ${f}"></a>`;
+  const html = SETS.map(([d, title, cap, rec, opts]) => {
+    const rows = SURF.map(([s, label]) => `<div class="s">${label}</div>${img(d, `${s}__360__ru.png`)}${img(d, `${s}__1180__ru.png`)}${['header', 'item', 'editor'].includes(s) ? img(d, `${s}__360__en.png`) : '<div class="none">-</div>'}${s === 'editor' ? `<div></div>${img(d, 'editor-errors__360__ru.png')}<div class="none">360 RU: a failed save (A7, A8)</div><div></div>` : ''}`).join('');
+    const o = opts.map(([id, h, p, ss]) => `<div class="opt"><h3>${h}</h3><p>${p}</p><div class="ogrid">${ss.map((s) => `<div class="s">${SURF.find((x) => x[0] === s)[1]}</div>${img(d, `${s}__${id}__360.png`)}${img(d, `${s}__${id}__1180.png`)}`).join('')}</div></div>`).join('');
+    return `<section class="panel set ${rec ? 'rec' : ''}" id="${d}"><h2>${title}</h2><p class="cap1">${cap}</p>
+      <div class="grid"><div class="h">Surface</div><div class="h">360 RU</div><div class="h">1180 RU</div><div class="h">360 EN</div>${rows}</div>${opts.length ? `<div class="opts">${o}</div>` : ''}</section>`;
+  }).join('') + `<section class="panel set" id="F"><h2>Font specimen</h2><p class="cap1">Source Sans 3 (chosen), PT Sans (the Cyrillic-first alternative) and Segoe UI (what Windows shows today). Same text at the proposed steps: 23, 18, 16, 13, 12.</p>
+      <div class="ogrid"><div class="s">Specimen</div>${img('shared', 'fonts__360.png')}${img('shared', 'fonts__1180.png')}</div></section>`;
+  document.getElementById('sets').innerHTML = html;
+</script>
+</body>
+</html>

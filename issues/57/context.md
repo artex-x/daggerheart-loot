@@ -42,7 +42,25 @@
     - The EN header shows «Loot» as the wordmark; RU keeps «Лут». This
       changes the `DESIGN.md` rule "the wordmark is never translated"
       (home: `DESIGN.md`, written by the batch that ships it).
-- Open questions: none.
+  - Detector exceptions (owner, 2026-10-23; home: `DESIGN.md` "Notes" and
+    `.impeccable/config.json`): `ignoreValues` is empty at closeout. The
+    list-notes batch (A5, A22) removes the `side-tab` entry for
+    `ListPage.svelte`; the font batch removes `overused-font: inter`. A kept
+    exception needs a reason in `DESIGN.md` "Notes", named to the owner.
+    The closeout regenerates `.impeccable/design.json`.
+  - UI font (owner, 2026-10-23): re-evaluate Inter; a full redesign is
+    accepted. Requirements: full Cyrillic, tabular figures for stat lines,
+    legible at 12 px, a licence that allows self-hosting, no third-party
+    font CDN. Print card layouts stay (product law); a print font change
+    needs the owner's yes and its own batch with the print checks.
+  - Directions (owner, 2026-10-23): up to three directions (A, B, C) with
+    up to about nine options in total; one folder per direction, an
+    `index.html` overview; `plan.md` compares them in one table and
+    recommends one direction and one option. The recommendation may combine
+    parts (set R, shown first); the batch outline follows it. Six surfaces:
+    header, catalog, item, roller, account list, homebrew editor (the
+    editor added by the owner, 2026-10-23).
+- Open questions: the direction and option choice (`plan.md`, section 2).
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -84,7 +102,19 @@
 - This Windows host for timings; CI for the full gate.
 
 ## Reasons already disproved
--
+- "About a third of the Core items and most of VoA have no art" (C55, C11,
+  grid tiles): a capture artefact. Every one of the 1459 records names an
+  `img/` file that exists (checked 2026-10-23); rows below about 2200 px
+  had not loaded their `loading="lazy"` image in the full-page capture.
+  Only homebrew without a picture shows `img/_none.webp` (the "?" pedestal).
+
+## Font facts (checked 2026-10-23)
+- No `@font-face` and no font service. `--ui` starts with the local name
+  'Inter', so a machine without Inter renders Segoe UI, SF or Roboto.
+- `PrintCard.svelte` sets its text in `var(--ui)`: a `--ui` change reaches
+  the print cards unless the card keeps its own token.
+- The detector flags Inter, Lato, Open Sans and Roboto as overused; it does
+  not flag Source Sans, PT Sans, IBM Plex Sans, Golos Text or Onest.
 
 ## Constraints
 - The clarity rule, as a check: a finding is raised when a control, state or
