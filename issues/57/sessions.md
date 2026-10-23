@@ -45,7 +45,8 @@ issues/57/context.md and issues/57/sessions.md. Do not re-fetch the issue.
    no untracked file blocks the CI credit.
 2. Run Impeccable critique and audit over the set. Dispatch at most two
    helpers in parallel, split by route family; each loads the impeccable
-   skill, reads PRODUCT.md and DESIGN.md first, and returns findings only.3. Apply the clarity rule from context.md to every surface: list each help
+   skill, reads PRODUCT.md and DESIGN.md first, and returns findings only.
+3. Apply the clarity rule from context.md to every surface: list each help
    text, tooltip, legend and instruction sentence, and each label that does
    not say what it does.
 4. Write issues/57/audit.md: P0/P1/P2 tables, one row per finding - id,
