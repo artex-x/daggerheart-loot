@@ -7,9 +7,11 @@
      one lazy chunk on the first open. The rows are built once per file and mapping, so a
      retry after a lost answer sends the same ids and keys (docs/specs/FEATURES.md,
      "Homebrew"). */
+  import { tick } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Field from './Field.svelte';
   import ImportFile from './ImportFile.svelte';
   import ImportLines from './ImportLines.svelte';
@@ -45,6 +47,7 @@
     FILE_ITEMS_MAX,
     heldOf,
     homebrewText,
+    newItemCount,
     newName,
     parseHomebrew,
     planOf,
@@ -60,7 +63,8 @@
     type PlanRow,
     type Target
   } from '../lib/homebrewFile.js';
-  import { plural } from '../lib/plural.js';
+  import { ROW_FOLD_AT } from '../lib/folds.js';
+  import { countOf, plural } from '../lib/plural.js';
   import type { ReportLine as Line } from '../lib/types.js';
   import type { FileRead, FileRefusal } from '../lib/zip.js';
   import type { AppState } from '../state/app.svelte.js';
@@ -129,7 +133,6 @@
   /* By a derived key of the preview's file, the chosen file's key it came from. */
   let from: ReadonlyMap<string, string> = new Map();
 
-  const ROWS_SHOWN = 20;
   const NAMES_SHOWN = 10;
   const REFUSALS: Record<FileRefusal, Refusal> = {
     tooBig: 'importTooBig',
@@ -405,6 +408,11 @@
     });
   });
   const plan = $derived(view.kind === 'preview' ? planOf(view.rows, targets, store) : []);
+  const created = $derived(view.kind === 'preview' ? newItemCount(view.file, store) : 0);
+  /* The item limit is read: the preview says before the press that the import does not fit. */
+  const overLimit = $derived(
+    store.itemLimit !== null && created > 0 && store.items.length + created > store.itemLimit
+  );
   const fileNames = (file: HomebrewFile): Record<FileArray, FileName[]> => ({
     books: file.books.map((b) => ({ ...b })),
     cards: file.cards.map((c) => ({ ...c })),
@@ -565,9 +573,24 @@
   async function send(): Promise<void> {
     if (view.kind !== 'preview' || sending) return;
     const { file, rows } = view;
+    if (overLimit) return;
     const problems = rows.map((_r, i) => customProblem(i));
     customErr = problems;
-    if (problems.some((p) => p !== null) || plan.some((p) => p.full)) return;
+    /* The first row that blocks the press: unfolded and focused, so the press is never a
+       silent no-op. */
+    const bad = problems.findIndex((p) => p !== null);
+    const full = plan.findIndex((p) => p.full);
+    const at = bad !== -1 ? bad : full;
+    if (at !== -1) {
+      if (at >= ROW_FOLD_AT) allRows = true;
+      await tick();
+      document
+        .getElementById(
+          bad !== -1 ? 'hb-import-' + String(at) + '-name' : 'hb-import-' + String(at)
+        )
+        ?.focus();
+      return;
+    }
     if (update && heldN) {
       const dropped = bookItemsDropped(file, store);
       const warn = dropped
@@ -621,18 +644,14 @@
   <p class="preview names">
     {lead}
     {shown.map(named).join(', ') +
-      (names.length > NAMES_SHOWN ? ' ' : '')}{#if names.length > NAMES_SHOWN}<Button
-        variant="bare"
-        size="sm"
-        caret
-        expanded={open}
-        onclick={() => {
+      (names.length > NAMES_SHOWN ? ' ' : '')}{#if names.length > NAMES_SHOWN}<FoldButton
+        {open}
+        more={t.andMore.replace('%n', String(names.length - NAMES_SHOWN))}
+        {t}
+        ontoggle={() => {
           toggleNames(id);
         }}
-        >{open
-          ? t.relLess
-          : t.andMore.replace('%n', String(names.length - NAMES_SHOWN))}</Button
-      >{/if}.
+      />{/if}.
   </p>
 {/snippet}
 
@@ -688,7 +707,7 @@
     {/if}
     <div class="where">
       <span class="lbl">{t.hbImportWhere}</span>
-      {#each allRows ? rows : rows.slice(0, ROWS_SHOWN) as row, i (row.book?.key ?? '')}
+      {#each allRows ? rows : rows.slice(0, ROW_FOLD_AT) as row, i (row.book?.key ?? '')}
         {@const p = plan[i]}
         {@const rowId = 'hb-import-' + String(i)}
         <div class="srcrow">
@@ -736,20 +755,16 @@
           {/if}
         </div>
       {/each}
-      {#if rows.length > ROWS_SHOWN}
+      {#if rows.length > ROW_FOLD_AT}
         <div>
-          <Button
-            size="sm"
-            variant="bare"
-            caret
-            expanded={allRows}
-            onclick={() => {
+          <FoldButton
+            open={allRows}
+            more={plural(rows.length - ROW_FOLD_AT, t.hbImportMoreRows, lang)}
+            {t}
+            ontoggle={() => {
               allRows = !allRows;
             }}
-            >{allRows
-              ? t.relLess
-              : plural(rows.length - ROWS_SHOWN, t.hbImportMoreRows, lang)}</Button
-          >
+          />
         </div>
       {/if}
     </div>
@@ -788,8 +803,22 @@
         <ImportLines lines={noteLines} more={(n) => t.andMore.replace('%n', String(n))} />
       </div>
     {/if}
+    {#if overLimit}
+      <p class="err over" id="hb-import-over">
+        {t.hbImportOverLimit.replace(/%[ck]/g, (m) =>
+          m === '%c'
+            ? countOf(store.items.length, store.itemLimit, t.hbItemsN, lang, t.ofLimit)
+            : plural(created, t.hbItemsN, lang)
+        )}
+      </p>
+    {/if}
     <Actions style="margin-top:12px">
-      <Button size="sm" variant="primary" disabled={sending} onclick={() => void send()}
+      <Button
+        size="sm"
+        variant="primary"
+        disabled={sending || overLimit}
+        describedby={overLimit ? 'hb-import-over' : undefined}
+        onclick={() => void send()}
         >{`${t.importGo} (${String(view.file.items.length + view.file.cards.length)})`}</Button
       >
       {@render cancel()}
@@ -900,31 +929,36 @@
     color: var(--gold-soft);
   }
 
-  /* A refused file: the lists import's warning box. */
+  /* A refusal: the error look of docs/specs/FEATURES.md, rule 19 - the danger border and
+     text, no fill. */
   .errs {
     margin: 12px 0 0;
     padding: 10px 12px;
     border-radius: var(--r-sm);
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    color: var(--warn-text);
+    background: none;
+    border: 1px solid var(--danger);
+    color: var(--danger-text);
     font-size: 13px;
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
   .errs b {
-    color: var(--warn-strong);
+    color: var(--danger-text);
     font-weight: 650;
     display: block;
   }
 
   .errs :global(code) {
-    color: var(--warn-strong);
+    color: var(--danger-text);
   }
 
   .more {
     margin: 4px 0 0;
+  }
+
+  .over {
+    margin: 12px 0 0;
   }
 
   .hint {

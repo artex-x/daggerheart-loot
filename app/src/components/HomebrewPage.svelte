@@ -149,9 +149,9 @@
   const count = $derived(
     countOf(store.items.length, store.itemLimit, t.hbItemsN, app.lang, t.ofLimit)
   );
-  /* A bulk delete in flight: one request per item, so 300 items take about a minute. The
-     visible line counts; the region says the start once, and the toast says the end. */
-  let deleting = $state<{ done: number; of: number } | null>(null);
+  /* The count of a bulk delete in flight, one request for all; the region says the start
+     once, and the toast says the end. */
+  let deleting = $state<number | null>(null);
   let deletingSaid = $state('');
 
   /* «Импорт из файла»: the toggle, and the panel's component once its chunk loaded. */
@@ -247,23 +247,28 @@
   }
 
   async function deletePicked(): Promise<void> {
-    if (deleting) return;
+    if (deleting !== null) return;
     const rows = store.items.filter((r) => ticked.includes(r.key));
     if (!rows.length) return;
     const lead = t.hbDeleteMany.replace('%n', String(rows.length));
     if (!app.env.dialog.confirm(deleteItemAsk(lead, true, t))) return;
     const n = rows.length;
-    deleting = { done: 0, of: n };
-    deletingSaid = t.hbDeletingN.replace('%n', '0').replace('%m', String(n));
+    deleting = n;
+    deletingSaid = t.hbDeletingN.replace('%n', String(n));
     /* «Удалить (N)» is disabled while it runs, so focus waits on «Выбрать все». */
     allBox?.focus();
     try {
-      const r = await store.removeItems(rows, (done) => {
-        deleting = { done, of: n };
-      });
-      app.clearSel();
-      if (r.ok) app.say((t) => t.hbDeletedN.replace('%n', String(n)));
-      else app.say((t) => t.hbDeleteFailed, { error: true });
+      const { result, deleted } = await store.removeItems(rows);
+      /* Each request is all or none: after a failure the rows not yet deleted keep their
+         ticks, so a second press deletes the rest. */
+      if (result.ok) {
+        app.clearSel();
+        app.say((t) => t.hbDeletedN.replace('%n', String(n)));
+      } else if (deleted) {
+        app.say((t) => `${t.hbDeletedN.replace('%n', String(deleted))}. ${t.hbDeleteFailed}`, {
+          error: true
+        });
+      } else app.say((t) => t.hbDeleteFailed, { error: true });
     } finally {
       deleting = null;
       deletingSaid = '';
@@ -455,12 +460,8 @@
                 {/if}
               {/snippet}
             </BatchBar>
-            {#if deleting}
-              <p class="note progress">
-                {t.hbDeletingN
-                  .replace('%n', String(deleting.done))
-                  .replace('%m', String(deleting.of))}
-              </p>
+            {#if deleting !== null}
+              <p class="note progress">{t.hbDeletingN.replace('%n', String(deleting))}</p>
             {/if}
             {#each groups as g (g.id)}
               <h2 class="hbgroup">{g.label} <span class="n">{g.items.length}</span></h2>
@@ -551,6 +552,7 @@
     margin: 22px 0 10px;
     font-size: 16px;
     font-weight: 650;
+    overflow-wrap: anywhere;
   }
 
   .hbgroup .n {

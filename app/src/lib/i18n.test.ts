@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildIndex, equipOfKind, otherTableRows, type Loot } from './data.js';
-import { dict } from './dict.js';
+import { dict, SECTION_LABEL, sectionLabel } from './dict.js';
 import { EQ_TABLE, decodeFilter, groupsFor } from './filters.js';
 import { TABLE_SLUG } from './hash.js';
 import { whereFrom } from './label.js';
@@ -38,7 +38,7 @@ import {
 } from './i18n.js';
 import { FRAME_ORDER, frameName } from './frames.js';
 import { REALM_ORDER, realmName } from './realms.js';
-import { TABLE_IDS, type Lang, type Record_, type TableId } from './types.js';
+import { TABLE_IDS, type Lang, type Record_, type Section, type TableId } from './types.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
 const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
@@ -149,6 +149,36 @@ describe('the vocabulary', () => {
   it('says nothing for a key it does not know, rather than printing the key', () => {
     expect(eqWord(EQ_TRAIT, 'nonsense', 'ru')).toBe('');
     expect(eqWord(EQ_TRAIT, undefined, 'ru')).toBe('');
+  });
+});
+
+describe('the interface words', () => {
+  it('says the same facts in English as in Russian', () => {
+    const en = dict('en');
+    expect(en.printTooMany).toMatch(/Split the set into parts\.$/);
+    expect(en.printTooMany).not.toContain('in two');
+    expect(en.providers).toBe('Sign-in methods');
+    expect(dict('ru').providers).toBe('Способы входа');
+  });
+
+  it('names each section by its label, and the lists «Мои списки» from the cutoff', () => {
+    for (const lang of ['ru', 'en'] as const) {
+      const t = dict(lang);
+      for (const [s, key] of Object.entries(SECTION_LABEL) as [Section, keyof typeof t][]) {
+        expect(sectionLabel(s, t, true)).toBe(t[key]);
+        expect(sectionLabel(s, t, false)).toBe(s === 'lists' ? t.menuLists : t[key]);
+      }
+    }
+    expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
+    expect(sectionLabel('lists', dict('ru'), false)).toBe('Мои списки');
+    expect(sectionLabel('lists', dict('en'), true)).toBe('Lists');
+  });
+
+  it('holds no ellipsis character in either language', () => {
+    for (const lang of ['ru', 'en'] as const) {
+      const hits = Object.entries(dict(lang)).filter(([, v]) => v.includes('\u2026'));
+      expect(hits.map(([k]) => k)).toEqual([]);
+    }
   });
 });
 

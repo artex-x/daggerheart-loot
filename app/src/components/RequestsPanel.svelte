@@ -10,11 +10,15 @@
      at three times the limits. Then the notices, newest first, three and a fold: an author
      changed an item («Открыть» its page) or deleted it; each has «Скрыть», and from two
      notices «Скрыть изменения» hides the notices drawn (docs/specs/FEATURES.md, "Account and
-     browser lists"). */
+     browser lists"). While the first read, or the lines of the opened list, run, the panel's
+     place holds «Загружаем...», and a failed one «Не получилось загрузить запросы.» with
+     «Повторить». An answer that removes the pressed button hands focus on by rule 20. */
   import { onDestroy, tick } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import FoldButton from './FoldButton.svelte';
+  import LoadState from './LoadState.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import { linkedOf } from '../lib/cloudLists.js';
   import { itemHash } from '../lib/hash.js';
@@ -45,6 +49,7 @@
 
   let open = $state(false);
   let head = $state<HTMLHeadingElement | undefined>(undefined);
+  let panel = $state<HTMLElement | undefined>(undefined);
   /* The requests whose every line is drawn, and whether every request is. */
   const linesOpen = new SvelteSet<string>();
   let allOpen = $state(false);
@@ -81,6 +86,30 @@
     await tick();
     if (head?.isConnected) head.focus();
     else document.getElementById('main')?.focus({ preventScroll: true });
+  }
+
+  /* Rule 20 (docs/specs/FEATURES.md): an answer removed the pressed button, so focus goes to
+     the control that now holds its place, else the one before it, else the panel head, else
+     `#main`. Focus that moved elsewhere stays. */
+  async function answered(at: number): Promise<void> {
+    await tick();
+    const now = document.activeElement;
+    if (now && now !== document.body && now.isConnected) return;
+    const reqs = panel?.isConnected ? [...panel.querySelectorAll<HTMLElement>('.req')] : [];
+    const first = (el: HTMLElement | undefined): HTMLElement | null | undefined =>
+      el?.querySelector<HTMLElement>('button:not(:disabled)');
+    (
+      first(reqs[at]) ??
+      first(reqs[at - 1]) ??
+      (head?.isConnected ? head : null) ??
+      document.getElementById('main')
+    )?.focus();
+  }
+
+  async function answer(id: string, run: () => Promise<void>): Promise<void> {
+    const at = shown.findIndex((x) => x.id === id);
+    await run();
+    await answered(at);
   }
 
   async function hide(): Promise<void> {
@@ -131,8 +160,19 @@
   });
 </script>
 
+{#if owner && (owner.status === 'loading' || owner.status === 'error')}
+  <div class="reqstate">
+    <LoadState
+      {t}
+      failed={owner.status === 'error'}
+      text={t.requestsLoadFailed}
+      onretry={() => void owner.read()}
+      after={() => head}
+    />
+  </div>
+{/if}
 {#if owner && (pending.length || decided.length || notices.length)}
-  <section class="reqpanel" aria-labelledby="reqpanel-h">
+  <section class="reqpanel" aria-labelledby="reqpanel-h" bind:this={panel}>
     <h2 id="reqpanel-h" tabindex="-1" bind:this={head}>
       {t.inboxHead.replace('%n', String(pending.length + notices.length))}
     </h2>
@@ -163,16 +203,15 @@
         </table>
         {#if rest > 0}
           <div class="more">
-            <Button
-              size="sm"
-              variant="bare"
-              caret
-              expanded={all}
-              onclick={() => {
+            <FoldButton
+              open={all}
+              more={plural(rest, t.requestLinesMoreN, app.lang)}
+              {t}
+              ontoggle={() => {
                 if (all) linesOpen.delete(r.id);
                 else linesOpen.add(r.id);
-              }}>{all ? t.relLess : plural(rest, t.requestLinesMoreN, app.lang)}</Button
-            >
+              }}
+            />
           </div>
         {/if}
         {#if total}
@@ -189,38 +228,37 @@
               size="sm"
               variant="primary"
               disabled={owner.busy !== null}
-              onclick={() => void owner.apply(r.id, false)}>{t.requestApply}</Button
+              onclick={() => void answer(r.id, () => owner.apply(r.id, false))}
+              >{t.requestApply}</Button
             >
           {:else if r.lines.some((l) => (stockOf(l.item) ?? 0) > 0)}
             <Button
               size="sm"
               variant="primary"
               disabled={owner.busy !== null}
-              onclick={() => void owner.apply(r.id, true)}>{t.requestApplyAvailable}</Button
+              onclick={() => void answer(r.id, () => owner.apply(r.id, true))}
+              >{t.requestApplyAvailable}</Button
             >
           {/if}
           <Button
             size="sm"
             disabled={owner.busy !== null}
-            onclick={() => void owner.decline(r.id)}>{t.requestDecline}</Button
+            onclick={() => void answer(r.id, () => owner.decline(r.id))}
+            >{t.requestDecline}</Button
           >
         </Actions>
       </div>
     {/each}
     {#if pending.length > REQUESTS_SHOWN}
       <div class="more">
-        <Button
-          size="sm"
-          variant="bare"
-          caret
-          expanded={allOpen}
-          onclick={() => {
+        <FoldButton
+          open={allOpen}
+          more={plural(pending.length - REQUESTS_SHOWN, t.requestsMoreN, app.lang)}
+          {t}
+          ontoggle={() => {
             allOpen = !allOpen;
           }}
-          >{allOpen
-            ? t.relLess
-            : plural(pending.length - REQUESTS_SHOWN, t.requestsMoreN, app.lang)}</Button
-        >
+        />
       </div>
     {/if}
     {#if notices.length}
@@ -253,18 +291,14 @@
       {#if notices.length > 1}
         <div class="more nfold">
           {#if notices.length > NOTICES_SHOWN}
-            <Button
-              size="sm"
-              variant="bare"
-              caret
-              expanded={noticesOpen}
-              onclick={() => {
+            <FoldButton
+              open={noticesOpen}
+              more={plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}
+              {t}
+              ontoggle={() => {
                 noticesOpen = !noticesOpen;
               }}
-              >{noticesOpen
-                ? t.relLess
-                : plural(notices.length - NOTICES_SHOWN, t.noticesMoreN, app.lang)}</Button
-            >
+            />
           {/if}
           <span class="hide"
             ><Button
@@ -336,6 +370,11 @@
 {/if}
 
 <style>
+  /* The panel's own bottom margin; LoadState's line keeps its 14px inside it. */
+  .reqstate {
+    margin: 0 0 18px;
+  }
+
   .reqpanel {
     margin: 0 0 18px;
     border: 1px solid rgb(var(--gold-rgb) / 45%);

@@ -37,7 +37,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
     link "Предметы сообществ" [url=#/tables/community_items]
     link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
-    searchbox "Поиск по названию или описанию…" [value=zzzqqqxx123 focused=true]
+    searchbox "Поиск по названию или описанию..." [value=zzzqqqxx123 focused=true]
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
@@ -133,7 +133,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/wondrous_environ
     link "Arazo's Artifacts" [url=#/tables/arazos_artifacts]
     link "Community items" [url=#/tables/community_items]
     link "Many Worlds Tavern" [url=#/tables/many_worlds_tavern]
-    searchbox "Search by name or description…" [value=zzzqqqxx123 focused=true]
+    searchbox "Search by name or description..." [value=zzzqqqxx123 focused=true]
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]

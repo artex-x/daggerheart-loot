@@ -25,7 +25,7 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/gm-token-1/f_kind
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе"
     ... StaticText x21 of 25 same-shape siblings elided
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Фильтры (1)" [expanded=true]
     button "Оружие" [description=Убрать из фильтра]
     button "Сбросить всё"
@@ -140,7 +140,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/gm-token-1/f_kind-weapon]
     StaticText "Updated 3 days ago"
     button "Save to my lists"
     ... StaticText x21 of 25 same-shape siblings elided
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Filters (1)" [expanded=true]
     button "Weapons" [description=Remove from the filter]
     button "Reset all"

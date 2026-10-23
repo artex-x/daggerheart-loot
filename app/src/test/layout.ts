@@ -33,13 +33,16 @@ export function emptyRanges(): void {
    zero. Faked exactly enough to walk every branch: `.pc-text`'s scrollHeight comes
    from the case, everything else measures 100 tall, and a Range reads as the case
    sets, one line wide, by the text it holds. `scrollWidth` stays jsdom's 0, so no
-   card is cut off across. Returns the function that restores the real ones. */
+   card is cut off across. The print page's `.pfit` reads `sheetWidth`, so a case
+   can draw the sheet scaled. Returns the function that restores the real ones. */
 export const fakeLayout = (
   textScroll: (text: HTMLElement) => number,
   rangeWidth: number | ((text: string) => number),
   /* A value's line rects by its inline `whiteSpace` and `fontSize`; null
      falls back to one line of `rangeWidth`. */
-  lineRects?: (value: HTMLElement) => { width: number; top: number }[] | null
+  lineRects?: (value: HTMLElement) => { width: number; top: number }[] | null,
+  /* The print page's `.pfit` width (0: the sheet is not scaled). */
+  sheetWidth = 0
 ): (() => void) => {
   const widthDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth');
   const heightDesc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight');
@@ -61,7 +64,7 @@ export const fakeLayout = (
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
     configurable: true,
     get(this: HTMLElement) {
-      return 238;
+      return this.classList.contains('pfit') ? sheetWidth : 238;
     }
   });
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', {

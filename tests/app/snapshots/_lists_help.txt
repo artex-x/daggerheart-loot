@@ -78,7 +78,7 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=true]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
-    StaticText "Build a list: tick what you need in Tables or Search and press “..." [namelen=206 namehash=ada718aa]
+    StaticText "Build a list: tick what you need in Tables or Search and press "..." [namelen=206 namehash=3e1b74bd]
     ... StaticText x14 of 18 same-shape siblings elided
     StaticText "Tick account lists to download them as a JSON file or delete the..." [namelen=230 namehash=4a251e4b]
     heading "NEW LIST" [level=2]

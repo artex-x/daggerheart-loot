@@ -26,7 +26,7 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
     button "Сохранить себе" [expanded=true]
     ... StaticText x5 of 9 same-shape siblings elided
     button "Войти"
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
@@ -112,7 +112,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     button "Save to my lists" [expanded=true]
     ... StaticText x5 of 9 same-shape siblings elided
     button "Sign in"
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=false]

@@ -58,9 +58,9 @@ Frozen as written in `ROUTES.md`. In particular:
   with the item's id as `hid` beside the entry's `snapshot`, and its own
   picture's stored name as `img` when it has one (`p/<32 hex>.<ext>` or a
   catalog basename, never inside `snapshot`); its overload
-  `get_shared_list(text, bigint, jsonb)` adds `rev`, the database's opaque
-  hash of each linked record, and leaves out a `snapshot` that its `p_have`
-  map names by that `rev`; a players'
+  `get_shared_list(text, bigint, jsonb)`, for a `p_have` that is not null,
+  adds `rev`, an opaque name of the linked record's version, and leaves out a
+  `snapshot` that its `p_have` map names by that `rev`; a players'
   link's projection holds no entry marked GM only (`list_entries.gm_only`),
   and a GM's link writes `gm_only` on each entry; the token is optionally
   followed by a filter, `#/s/<token>/f_<filter>`, in the grammar and with the
@@ -305,9 +305,10 @@ All of them except the five `schema/` files are generated from `data.js` by
   the same file imported again finds its keys held, and the lists file
   import (`import-v2`) takes the same keys
   (`docs/decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md`).
-  «Сохранить себе» gives its item a new key at each press, and the set and
-  rule cards it copies keep their derived keys
-  (`docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md`).
+  «Сохранить себе» gives its item a new key at each press, and the rule
+  cards it copies keep their derived keys; it copies no set
+  (`docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md`,
+  `docs/decisions/2026-10-22-a-save-to-my-items-copy-leaves-out-its.md`).
   The file format does not change. `llms.txt` and this section carry the
   rule; the frozen schemas' descriptions keep their published wording
   (`import-v2.json` and `import-v3.json`, entry `source`: "An account that

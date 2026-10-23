@@ -222,12 +222,21 @@
       ? lineMembers(app.index, draft.line).filter((r) => r.id !== selfKey)
       : []
   );
+  /* The draft less its description: typing the description rebuilds no index, since no
+     relation line draws it and the card reads `card`, not the index (FEATURES.md, "The
+     editor"). */
+  const relDraft = $derived(JSON.stringify({ ...preview, ende: '', rud: '' }));
   /* The catalog, the own records with the draft in place of the stored row, and the own
      cards. */
   const previewIndex = $derived.by(() => {
-    if (!app.catalog) return app.index;
-    const own = store.records.filter((r) => r.id !== selfKey);
-    return withRecords(app.catalog, [...own, preview], [], store.cardRefs);
+    void relDraft;
+    const catalog = app.catalog;
+    const records = store.records;
+    const cards = store.cardRefs;
+    const self = selfKey;
+    if (!catalog) return app.index;
+    const draft = untrack(() => preview);
+    return withRecords(catalog, [...records.filter((r) => r.id !== self), draft], [], cards);
   });
   const relCount = $derived(
     (draft.kind === 'equip' &&
@@ -613,7 +622,11 @@
           : uses
             ? t.hbDeleteItemRel.replace('%s', name).replace('%r', items)
             : t.hbDeleteItem.replace('%s', name);
-    if (!app.env.dialog.confirm(deleteItemAsk(lead, false, t))) return;
+    /* The lists are not read: the count is unknown, so the question says the lists
+       clause (rule 3). */
+    const unread = app.cloudLists?.status !== 'ready';
+    const ask = deleteItemAsk(unread ? lead + ' ' + t.hbDeleteListsUnread : lead, false, t);
+    if (!app.env.dialog.confirm(ask)) return;
     refused = null;
     deleting = true;
     busy = true;
@@ -1420,6 +1433,7 @@
 <style>
   .hbedit {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     align-items: start;
   }
@@ -1449,6 +1463,7 @@
 
   .hbform {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 
@@ -1591,19 +1606,20 @@
     gap: var(--gap-sm);
   }
 
-  /* The summary box: ImportPanel.svelte's refused-file box, in the warn tokens. */
+  /* A refusal: the error look of docs/specs/FEATURES.md, rule 19 - the danger border and
+     text, no fill. */
   .errs {
     padding: 10px 12px;
     border-radius: var(--r-sm);
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    color: var(--warn-text);
+    background: none;
+    border: 1px solid var(--danger);
+    color: var(--danger-text);
     font-size: 13px;
     line-height: 1.5;
   }
 
   .errs b {
-    color: var(--warn-strong);
+    color: var(--danger-text);
     font-weight: 650;
     display: block;
   }

@@ -1,0 +1,166 @@
+# #/homebrew/sources ~ section fold as gm1
+# route: #/homebrew/sources
+# why: «Мастерская Ольхи» with 27 sections: the first 20, «и ещё 7», «Без раздела» and «Новый раздел» (rule 12)
+# as: gm1
+
+## ru :: tree
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sources]
+  link "К содержимому" [url=index.html?as=gm1&items=66&sections=25#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1&items=66&sections=25#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Разделы"
+      link "Обычные правила" [url=index.html?as=gm1&items=66&sections=25#/roll/std]
+      link "Альт. таблицы" [url=index.html?as=gm1&items=66&sections=25#/roll/alt]
+      link "Дополнения" [url=index.html?as=gm1&items=66&sections=25#/roll/wondrous_environments]
+      link "Таблицы" [url=index.html?as=gm1&items=66&sections=25#/tables]
+      link "Списки" [url=index.html?as=gm1&items=66&sections=25#/lists]
+      link "Поиск" [url=index.html?as=gm1&items=66&sections=25#/search]
+  main ""
+    heading "Мои предметы" [level=1]
+    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Как это работает" [expanded=false]
+    StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
+    button "Импорт из файла" [expanded=false]
+    navigation "Мои предметы"
+      link "Предметы" [url=index.html?as=gm1&items=66&sections=25#/homebrew]
+      link "Источники" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sources]
+      link "Комплекты" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sets]
+      link "Карты правил" [url=index.html?as=gm1&items=66&sections=25#/homebrew/rules]
+    button "Новый источник"
+    StaticText "1 источник из 20"
+    link "Мастерская Ольхи" [url=index.html?as=gm1&items=66&sections=25#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    ... StaticText x43 of 47 same-shape siblings elided
+    button "Разделы" [expanded=true]
+    button "Переименовать"
+    ... button x42 of 46 same-shape siblings elided
+    button "и ещё 7" [expanded=false]
+    StaticText "21 предмет"
+    button "Новый раздел"
+    link "Хоумбрю" [url=index.html?as=gm1&items=66&sections=25#/tables/homebrew/f_src-hb]
+    StaticText "23 предмета"
+    button "Скачать JSON"
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=pages/install.html]
+      link "Конфиденциальность" [url=pages/privacy.html]
+      link "Условия использования" [url=pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+EN
+RU
+daggerheart.com
+Аккаунт: gm1@example.test
+Альт. таблицы
+Дополнения
+Импорт из файла
+Источники
+К содержимому
+Как это работает
+Карты правил
+Комплекты
+Конфиденциальность
+ЛутDaggerheart
+Мастерская Ольхи
+Новый источник
+Новый раздел
+Обычные правила
+Открывать этот раздел при запуске
+Переименовать
+Поиск
+Предметы
+Разделы
+Скачать JSON
+Списки
+Таблицы
+Удалить
+Условия использования
+Установить как приложение
+Хоумбрю
+и ещё 7
+
+## en :: tree
+RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sources]
+  link "Skip to content" [url=index.html?as=gm1&items=66&sections=25#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=index.html?as=gm1&items=66&sections=25#/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    button "Account: gm1@example.test" [expanded=false haspopup=menu]
+    navigation "Sections"
+      link "Standard rules" [url=index.html?as=gm1&items=66&sections=25#/roll/std]
+      link "Alt. tables" [url=index.html?as=gm1&items=66&sections=25#/roll/alt]
+      link "Supplements" [url=index.html?as=gm1&items=66&sections=25#/roll/wondrous_environments]
+      link "Tables" [url=index.html?as=gm1&items=66&sections=25#/tables]
+      link "Lists" [url=index.html?as=gm1&items=66&sections=25#/lists]
+      link "Search" [url=index.html?as=gm1&items=66&sections=25#/search]
+  main ""
+    heading "My items" [level=1]
+    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "How this works" [expanded=false]
+    StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
+    button "Import from file" [expanded=false]
+    navigation "My items"
+      link "Items" [url=index.html?as=gm1&items=66&sections=25#/homebrew]
+      link "Sources" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sources]
+      link "Sets" [url=index.html?as=gm1&items=66&sections=25#/homebrew/sets]
+      link "Rule cards" [url=index.html?as=gm1&items=66&sections=25#/homebrew/rules]
+    button "New source"
+    StaticText "1 source of 20"
+    link "Alder Workshop" [url=index.html?as=gm1&items=66&sections=25#/tables/homebrew/f_src-hb_alderworkshopaaa]
+    ... StaticText x43 of 47 same-shape siblings elided
+    button "Sections" [expanded=true]
+    button "Rename"
+    ... button x42 of 46 same-shape siblings elided
+    button "and 7 more" [expanded=false]
+    StaticText "21 items"
+    button "New section"
+    link "Homebrew" [url=index.html?as=gm1&items=66&sections=25#/tables/homebrew/f_src-hb]
+    StaticText "23 items"
+    button "Download JSON"
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=pages/en/install.html]
+      link "Privacy" [url=pages/en/privacy.html]
+      link "Terms of use" [url=pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+
+## en :: controls
+Account: gm1@example.test
+Alder Workshop
+Alt. tables
+Delete
+Download JSON
+EN
+Homebrew
+How this works
+Import from file
+Install as an app
+Items
+Lists
+New section
+New source
+Open this section on start
+Privacy
+RU
+Rename
+Rule cards
+Search
+Sections
+Sets
+Skip to content
+Sources
+Standard rules
+Supplements
+Tables
+Terms of use
+and 7 more
+daggerheart.com
+ЛутDaggerheart

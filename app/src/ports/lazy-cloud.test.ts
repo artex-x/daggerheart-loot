@@ -153,18 +153,17 @@ describe('lazyCloud', () => {
     ]);
   });
 
-  it('forwards the held homebrew revisions and the held request ids', async () => {
+  it('forwards the held homebrew revisions and the request ids a lines read names', async () => {
     const real = fakeCloud(SEED, 'gm1');
     const load = vi.spyOn(real.homebrew, 'load');
-    const list = vi.spyOn(real.requests, 'list');
+    const lines = vi.spyOn(real.requests, 'lines');
     const { homebrew, requests } = lazyCloud(() => Promise.resolve(real));
     const known = { books: {}, items: { [uuid(511)]: 1 }, cards: {} };
     await homebrew.load();
     await homebrew.load(known);
     expect(load.mock.calls).toEqual([[], [known]]);
-    await requests.list();
-    await requests.list(['r1']);
-    expect(list.mock.calls).toEqual([[], [['r1']]]);
+    await requests.lines(['r1']);
+    expect(lines.mock.calls).toEqual([[['r1']]]);
   });
 
   it('forwards every share call to the loaded port', async () => {
@@ -188,6 +187,8 @@ describe('lazyCloud', () => {
     });
     const read = await requests.list();
     expect(read.ok && read.requests.map((r) => r.id)).toEqual([id]);
+    const lines = await requests.lines([id]);
+    expect(lines.ok && lines.requests.map((r) => [r.id, r.lines.length])).toEqual([[id, 1]]);
     expect(await requests.apply(id, false)).toEqual({ ok: true, taken: 1 });
     expect(await requests.decline(id)).toEqual({ ok: false, error: 'decided' });
     expect(await requests.markRead(uuid(101))).toEqual({ ok: true });
@@ -229,6 +230,7 @@ describe('lazyCloud', () => {
       await homebrew.updateItem(uuid(7011), { content: item.content, book_id: null }, 1)
     ).toEqual({ ok: true, revision: 2 });
     expect(await homebrew.removeItem(uuid(7011))).toEqual({ ok: true });
+    expect(await homebrew.removeItems([uuid(511)])).toEqual({ ok: true });
     const card = {
       id: uuid(7012),
       key: 'hb_carddddddddddddd',
@@ -299,6 +301,7 @@ describe('lazyCloud', () => {
     expect(await shares.clone('t', 'x')).toEqual(unsent);
     expect(await shares.ownerOf('t')).toBeNull();
     expect(await requests.list()).toEqual({ ok: false });
+    expect(await requests.lines(['x'])).toEqual({ ok: false });
     expect(await requests.send('x', 't', [{ item: 'ci1', qty: 1 }])).toEqual(unsent);
     expect(await requests.apply('x', false)).toEqual(unsent);
     expect(await requests.decline('x')).toEqual(unsent);
@@ -318,6 +321,7 @@ describe('lazyCloud', () => {
     ).toEqual(unsent);
     expect(await homebrew.updateItem('x', { content, book_id: null }, 1)).toEqual(unsent);
     expect(await homebrew.removeItem('x')).toEqual(unsent);
+    expect(await homebrew.removeItems(['x'])).toEqual(unsent);
     const card = { id: 'x', key: 'hb_carddddddddddddd', kind: 'ref' as const };
     expect(await homebrew.createCard({ ...card, book_id: null, content: { en: 'a' } })).toEqual(
       unsent

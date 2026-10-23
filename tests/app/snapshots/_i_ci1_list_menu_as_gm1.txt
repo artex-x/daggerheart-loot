@@ -37,8 +37,8 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "✓ Лавка кузнеца" [pressed=true]
-    button "✓ Трофеи" [pressed=true]
+    button "Лавка кузнеца" [pressed=true]
+    button "Трофеи" [pressed=true]
     button "Лавка в порту" [pressed=false]
     button "Клад дракона" [pressed=false]
     button "Пустой список" [pressed=false]
@@ -66,6 +66,7 @@ daggerheart.com
 Клад дракона
 Конфиденциальность
 Лавка в порту
+Лавка кузнеца
 ЛутDaggerheart
 Обычные правила
 Отправить
@@ -81,11 +82,10 @@ daggerheart.com
 Списки
 Страница
 Таблицы
+Трофеи
 Условия использования
 Установить как приложение
 показать в таблице
-✓ Лавка кузнеца
-✓ Трофеи
 
 ## en :: tree
 RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/ci1]

@@ -17,7 +17,7 @@
   import StatusRegion from './StatusRegion.svelte';
   import { printSetHash, sectionHash } from '../lib/hash.js';
   import { withRecords } from '../lib/homebrew.js';
-  import { COMPACT_PER_SHEET, pages, setLineOf } from '../lib/print.js';
+  import { COMPACT_PER_SHEET, pages, setLineOf, sheetScale } from '../lib/print.js';
   import { PRINT_SET_ID, type PrintSetRow } from '../lib/printSet.js';
   import type { AppState } from '../state/app.svelte.js';
 
@@ -85,6 +85,11 @@
    *  item binding of its own. */
   const blankKeys = $derived(Array.from({ length: sheet.blanks }, (_, k) => k));
 
+  let column = $state(0);
+  /* The sheet's screen scale: the column's width over A4, 1 when the sheet fits
+     (FEATURES.md, "Print"). */
+  const fit = $derived(sheetScale(column));
+
   /* Whether each card still cuts off text after its fit, by the card's key; written only
      on a change, so a report cannot re-render the bar in a loop (FEATURES.md, "Print"). */
   const clippedBy = new SvelteMap<string, boolean>();
@@ -116,12 +121,14 @@
 </script>
 
 {#if !app.index}
+  <PageTitle title={t.printTitle} />
   <NoData>{t.noData}</NoData>
 {:else if !valid}
   <PageTitle title={t.printTitle} sub={t.printSetGone} />
   <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
 {:else if app.user === undefined}
-  <!-- The session is not known yet: nothing, so no state flashes. -->
+  <!-- The session is not known yet: the heading alone, so no other state flashes (rule 7). -->
+  <PageTitle title={t.printTitle} />
 {:else if app.user === null}
   <PageTitle title={t.printTitle} sub={t.signInToPrint} />
   <Button
@@ -172,40 +179,53 @@
     {/if}
     <p class="printnote">{t.printNote}</p>
   </div>
-  <!-- A size change remounts every card, so `fit()` measures it at the size
-       it prints - PrintCard's effect does not track the sheet's size. -->
-  {#key per}
-    {#each sheet.pages as page, i (i)}
-      <div
-        class="psheet"
-        class:bw={app.shownPrintBW}
-        class:compact={app.shownPrintCompact}
-        data-next={i ? '1' : undefined}
-      >
-        {#each page as c (c.key)}
-          <PrintCard
-            it={c.it}
-            lang={app.lang}
-            bw={app.shownPrintBW}
-            qty={c.q}
-            setLine={index ? setLineOf(index, c.it, app.lang) : undefined}
-            artBroken={app.artBroken(c.it.id)}
-            onartfail={(bad: string) => {
-              app.markArtBroken(bad);
-            }}
-            onfit={(cut: boolean) => {
-              if (clippedBy.get(c.key) !== cut) clippedBy.set(c.key, cut);
-            }}
-          />
+  <!-- Below about 840 px the screen draws the sheets scaled to the column; print
+       media draws them at full size, and each card divides the scale out of its fit. -->
+  <div
+    class="pfit"
+    class:scaled={fit < 1}
+    style:--pfit={fit < 1 ? fit : undefined}
+    style:--pfit-n={fit < 1 ? sheet.pages.length : undefined}
+    bind:clientWidth={column}
+  >
+    <div class="pfit-in">
+      <!-- A size change remounts every card, so `fit()` measures it at the size
+           it prints - PrintCard's effect does not track the sheet's size. -->
+      {#key per}
+        {#each sheet.pages as page, i (i)}
+          <div
+            class="psheet"
+            class:bw={app.shownPrintBW}
+            class:compact={app.shownPrintCompact}
+            data-next={i ? '1' : undefined}
+          >
+            {#each page as c (c.key)}
+              <PrintCard
+                it={c.it}
+                lang={app.lang}
+                bw={app.shownPrintBW}
+                qty={c.q}
+                setLine={index ? setLineOf(index, c.it, app.lang) : undefined}
+                screenScale={fit}
+                artBroken={app.artBroken(c.it.id)}
+                onartfail={(bad: string) => {
+                  app.markArtBroken(bad);
+                }}
+                onfit={(cut: boolean) => {
+                  if (clippedBy.get(c.key) !== cut) clippedBy.set(c.key, cut);
+                }}
+              />
+            {/each}
+            {#if i === sheet.pages.length - 1}
+              {#each blankKeys as k (k)}
+                <div class="pcard blank"></div>
+              {/each}
+            {/if}
+          </div>
         {/each}
-        {#if i === sheet.pages.length - 1}
-          {#each blankKeys as k (k)}
-            <div class="pcard blank"></div>
-          {/each}
-        {/if}
-      </div>
-    {/each}
-  {/key}
+      {/key}
+    </div>
+  </div>
 {/if}
 
 <style>
@@ -269,6 +289,21 @@
     box-sizing: border-box;
     background: #fff;
     border: 0;
+  }
+
+  /* The screen only: a transform moves no layout box, so the fit and the printed sheet
+     stay the paper ones; the box takes the scaled height (FEATURES.md, "Print"). */
+  @media screen {
+    .pfit.scaled {
+      height: calc(var(--pfit-n) * (297mm + 18px) * var(--pfit));
+    }
+
+    .pfit.scaled > .pfit-in {
+      display: flow-root;
+      width: 210mm;
+      transform: scale(var(--pfit));
+      transform-origin: 0 0;
+    }
   }
 
   @media print {

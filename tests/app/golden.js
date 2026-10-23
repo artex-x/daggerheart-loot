@@ -248,7 +248,8 @@ function serializeTree(n, depth, out) {
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
  *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines, and
- *  `# today:` on a state that sets the test build's day.
+ *  `# today:` on a state that sets the test build's day, and `# hold:` on a state
+ *  that holds a read of the fake.
  *  `sectionsOf` only ever collects lines after a `## ` heading, so without
  *  this the header is never compared and an `inventory.js` route/why edit
  *  made without `--update` leaves a golden whose header silently disagrees
@@ -401,6 +402,7 @@ if (require.main === module) {
       '# why: ' + state.why,
       ...(state.as ? ['# as: ' + state.as] : []),
       ...(state.today ? ['# today: ' + state.today] : []),
+      ...(state.hold ? ['# hold: ' + state.hold] : []),
       '',
       '## ru :: tree',
       ...ru.tree,
@@ -436,7 +438,9 @@ if (require.main === module) {
           as: state.as,
           today: state.today,
           items: state.items,
-          sections: state.sections
+          sections: state.sections,
+          sources: state.sources,
+          hold: state.hold
         });
         if (state.enter) await state.enter(d);
         /* Every capture waits for the move of browser lists to settle; a
@@ -467,7 +471,9 @@ if (require.main === module) {
           today: state.today,
           holdToasts: true,
           items: state.items,
-          sections: state.sections
+          sections: state.sections,
+          sources: state.sources,
+          hold: state.hold
         });
         if (state.enter) await state.enter(d);
         await d.moveSettled(state.id);

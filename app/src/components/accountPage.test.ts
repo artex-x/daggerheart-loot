@@ -8,6 +8,7 @@ import App from '../App.svelte';
 import AccountPage from './AccountPage.svelte';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
+import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import { fakeEnv, fakeImage, fixedClock, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { AuthResult, CloudPort } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
@@ -706,5 +707,58 @@ describe('the Display section', () => {
       const read = await cloud.prefs.load();
       expect(read.ok && read.prefs?.notifyGm).toBe('never');
     });
+  });
+});
+
+describe('the account delete while it runs', () => {
+  it('reads «Удаляем...» and is disabled until the answer, then the label returns', async () => {
+    for (const [lang, open1, word, final, busy] of [
+      ['ru', 'Удалить аккаунт...', 'удалить', 'Удалить навсегда', 'Удаляем...'],
+      ['en', 'Delete account...', 'delete', 'Delete for good', 'Deleting...']
+    ] as const) {
+      /* gm2 keeps no stored language, so the page draws the one of this browser. */
+      const cloud = as('gm2');
+      let answer: (r: AuthResult) => void = () => undefined;
+      cloud.auth.deleteAccount = () =>
+        new Promise((r) => {
+          answer = r;
+        });
+      open(cloud, lang === 'en' ? 'en' : undefined);
+      await press(open1);
+      await userEvent.type(screen.getByRole('textbox'), word);
+      await press(final);
+      const running = screen.getByRole('button', { name: busy });
+      expect(running).toBeDisabled();
+      answer({ ok: false, error: 'failed' });
+      expect(await screen.findByRole('button', { name: final })).toBeEnabled();
+      expect(screen.getByRole('textbox')).toHaveValue(word);
+      cleanup();
+    }
+  });
+});
+
+describe('the start-section option of the lists', () => {
+  const optionOf = async (at: number, lang?: 'en'): Promise<string> => {
+    render(App, {
+      env: fakeEnv({
+        cloud: as('gm1'),
+        router: memoryRouter('#/account'),
+        clock: fixedClock(at),
+        ...(lang ? { storage: memoryStorage({ 'dhloot.lang.v1': lang }) } : {})
+      })
+    });
+    const select = await screen.findByLabelText<HTMLSelectElement>(
+      lang ? 'Section on start' : 'Раздел при запуске'
+    );
+    const text = select.querySelector('option[value="#/lists"]')?.textContent ?? '';
+    cleanup();
+    return text;
+  };
+
+  it('reads «Мои списки» from the cutoff and «Списки» the moment before', async () => {
+    expect(await optionOf(LEGACY_WRITE_UNTIL)).toBe('Мои списки');
+    expect(await optionOf(LEGACY_WRITE_UNTIL - 1)).toBe('Списки');
+    expect(await optionOf(LEGACY_WRITE_UNTIL, 'en')).toBe('My lists');
+    expect(await optionOf(LEGACY_WRITE_UNTIL - 1, 'en')).toBe('Lists');
   });
 });

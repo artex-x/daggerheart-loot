@@ -113,7 +113,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     StaticText "Лезвие тлеет и не гаснет под дождём."
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "✓ Лавка кузнеца" [pressed=true]
+    button "Лавка кузнеца" [pressed=true]
     button "Пустой список" [pressed=false]
     button "Трофеи" [pressed=false]
     button "+ Новый список" [pressed=false]
@@ -158,6 +158,7 @@ daggerheart.com
 Конфиденциальность
 Костьd4d6d8d10d12d20
 Курсив
+Лавка кузнеца
 ЛутDaggerheart
 Любая
 Магическое
@@ -208,7 +209,6 @@ daggerheart.com
 маг
 физ
 физ/маг
-✓ Лавка кузнеца
 
 ## en :: tree
 RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/hb_emberaxeaaaaaaaa]

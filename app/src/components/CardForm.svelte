@@ -327,7 +327,11 @@
     </FormField>
   {/if}
   {#if withBook}
-    <FormField label={t.hbSource} for={id + '-book'}>
+    <FormField
+      label={t.hbSource}
+      for={id + '-book'}
+      help={{ id: id + '-book-help', text: t.hbCardSourceHelp, lang }}
+    >
       <select
         id={id + '-book'}
         value={draft.bookId ?? ''}
@@ -362,6 +366,7 @@
 <style>
   .cardform {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
     padding: 14px;
     border-radius: var(--r-sm);

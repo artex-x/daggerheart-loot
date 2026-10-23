@@ -6,7 +6,8 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
 - A remote MCP endpoint for AI assistants: the follow-up of the task
   `ai-integration`, which shipped the static surface (`catalog-index.csv`,
   the `llms.txt` reading route, the `Content-Signal` line). Plan it after
-  `cloudflare-pages`, on the final host.
+  `cloudflare-pages`, which follows R10 (owner, 2026-10-22), on the final
+  host.
 - The choice and the options not chosen: `docs/decisions/`, "AI assistants
   read a compact index and the record pages". The inputs below come from
   the `ai-integration` plan and context (owner, interactive, 2026-10-15).

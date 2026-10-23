@@ -34,7 +34,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "Скрыть" [description=Скрыть]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=true]
-    StaticText "РЕЗУЛЬТАТ БРОСКА (1–7)"
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1-7)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [multiline=false readonly=false required=false]
     ... StaticText x14 of 18 same-shape siblings elided
@@ -171,7 +171,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=#/l/0JrQ
     button "Dismiss" [description=Dismiss]
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=true]
-    StaticText "ROLL RESULT (1–7)"
+    StaticText "ROLL RESULT (1-7)"
     button "One lower" [disabled=true]
     textbox "Roll result" [multiline=false readonly=false required=false]
     ... StaticText x14 of 18 same-shape siblings elided

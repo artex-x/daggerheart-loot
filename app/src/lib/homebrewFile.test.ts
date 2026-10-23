@@ -45,6 +45,7 @@ import {
   homebrewFileName,
   homebrewText,
   ITEM_KEYS,
+  newItemCount,
   newName,
   parseHomebrew,
   planOf,
@@ -1282,6 +1283,16 @@ describe('the import plan', () => {
     expect(bookItemsDropped(withItems(['q1', 'ci1']), heldCard('set', ['q1']))).toBe(0);
     const unnamed: HomebrewFile = { ...v2, cards: v2.cards.filter((c) => c.key !== set) };
     expect(bookItemsDropped(unnamed, heldCard('set', ['q1']))).toBe(0);
+  });
+
+  it('counts the items an import creates: the keys the account does not hold', () => {
+    const file = fileOf('example.json');
+    const keys = file.items.map((i) => i.key);
+    expect(keys.length).toBeGreaterThan(1);
+    const holding = (held: readonly string[]) => ({ has: (k: string) => held.includes(k) });
+    expect(newItemCount(file, holding([]))).toBe(keys.length);
+    expect(newItemCount(file, holding(keys.slice(1)))).toBe(1);
+    expect(newItemCount(file, holding(keys))).toBe(0);
   });
 
   it('writes a held source with the sections it lacks, and its names only for its own key', () => {

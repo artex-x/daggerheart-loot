@@ -1,11 +1,12 @@
 name: backup
 
-# Nightly backup of production: the schema and the `auth` and `public` data,
-# each file encrypted to the owner's `age` public key before it leaves this
-# job. Nothing unencrypted is uploaded - a public repository's artifacts are
-# readable by anyone. The job fails closed: no recipient, a failed dump or no
-# file to upload each turn it red. Sunday's run, or a dispatch with
-# `art: true`, also copies the public picture bucket as art.tar.age.
+# Nightly backup of production: the schema and the `auth` and `public` data
+# without the Auth sessions, each file encrypted to the owner's `age` public
+# key before it leaves this job. Nothing unencrypted is uploaded - a public
+# repository's artifacts are readable by anyone. The job fails closed: no
+# recipient, a failed dump or no file to upload each turn it red. Sunday's
+# run, or a dispatch with `art: true`, also copies the public picture bucket
+# as art.tar.age.
 # Restore procedure: .claude/README.md, "Backups and restore".
 
 on:
@@ -37,17 +38,16 @@ jobs:
     # lives in an Environment limited to `main`").
     environment: production
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version-file: .nvmrc
           cache: npm
 
-      # The pinned Supabase CLI; the dump drives no browser.
-      - run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      # The pinned Supabase CLI (its binary is a package) and no dependency's
+      # install script beside the production secret.
+      - run: npm ci --ignore-scripts
 
       - name: The recipient is set - the job fails closed without it
         run: |
@@ -63,7 +63,11 @@ jobs:
 
       # Without `--schema`, `db dump --data-only` leaves out `auth`; the
       # schema dump leaves out roles (those need `--role-only`). Each plain
-      # file is removed as soon as its encrypted copy exists.
+      # file is removed as soon as its encrypted copy exists. The session
+      # tables and the token sequence stay out, so an artifact and the key
+      # resume no sign-in; `DUMP_EXCLUDES` in tools/supabase/lib.mjs holds the
+      # same list (docs/decisions/, 2026-10-22, "The nightly backup leaves out
+      # the Auth sessions").
       - name: Dump and encrypt
         id: dump
         run: |
@@ -73,6 +77,7 @@ jobs:
           cli=node_modules/supabase/dist/supabase.js
           node "$cli" db dump --db-url "$SUPABASE_DB_URL" -f "$out/schema.sql"
           node "$cli" db dump --db-url "$SUPABASE_DB_URL" --data-only --schema auth,public \
+            --exclude auth.flow_state,auth.mfa_amr_claims,auth.refresh_tokens,auth.refresh_tokens_id_seq,auth.saml_relay_states,auth.sessions \
             -f "$out/data.sql"
           for f in schema data; do
             age -r "$RECIPIENT" -o "$out/$f.sql.age" "$out/$f.sql"
@@ -110,7 +115,7 @@ jobs:
 
       # The night's dump uploads even when the picture step failed; the job
       # stays red through that step.
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         if: ${{ !cancelled() && steps.dump.outcome == 'success' }}
         with:
           name: backup-${{ steps.dump.outputs.date }}

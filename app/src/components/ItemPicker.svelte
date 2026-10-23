@@ -58,6 +58,9 @@
   let active = $state(0);
   let input = $state<HTMLInputElement | undefined>(undefined);
   let rows = $state<HTMLUListElement | undefined>(undefined);
+  let dropEl = $state<HTMLDivElement | undefined>(undefined);
+  let up = $state(false);
+  let room = $state<number | null>(null);
 
   const q = $derived(foldQuery(query.trim()));
   const found = $derived(q ? find(q) : []);
@@ -74,6 +77,45 @@
           : t.hbPickNone
   );
   const isFull = $derived(chosen.length >= max);
+
+  /* The list opens where the visual viewport has room, under the sticky top bar of
+     Shell.svelte (`.topbar`; none in the record modal, so the top is 0): on a phone the
+     on-screen keyboard takes the bottom of the window (FEATURES.md, "Relations"), and a
+     panned visual viewport (`offsetTop`) hides the top of it.
+     Measured from the downward side, as AddToList does. */
+  function place(): void {
+    if (!input || !dropEl) return;
+    const vv = window.visualViewport;
+    const bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+    const top = Math.max(
+      document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 0,
+      vv ? vv.offsetTop : 0
+    );
+    const r = input.getBoundingClientRect();
+    const below = bottom - r.bottom - 8;
+    const above = r.top - top - 8;
+    const need = Math.min(320, window.innerHeight / 2, dropEl.scrollHeight);
+    up = below < need && above > below;
+    room = Math.max(0, Math.floor(up ? above : below));
+  }
+
+  $effect(() => {
+    if (!drawn && message === '') return;
+    void options.length;
+    void message;
+    up = false;
+    room = null;
+    void tick().then(place);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', place);
+    vv?.addEventListener('scroll', place);
+    window.addEventListener('scroll', place, { passive: true });
+    return () => {
+      vv?.removeEventListener('resize', place);
+      vv?.removeEventListener('scroll', place);
+      window.removeEventListener('scroll', place);
+    };
+  });
 
   async function pick(option: PickOption): Promise<void> {
     onpick(option.id);
@@ -179,6 +221,9 @@
         <div
           class="drop"
           class:on={drawn || message !== ''}
+          class:up
+          style:max-height={room === null ? undefined : `min(320px, 50vh, ${String(room)}px)`}
+          bind:this={dropEl}
           onmousedown={(e) => {
             e.preventDefault();
           }}
@@ -301,6 +346,11 @@
     z-index: 20;
     max-height: min(320px, 50vh);
     overflow-y: auto;
+  }
+
+  .drop.up {
+    top: auto;
+    bottom: calc(100% + 4px);
   }
 
   .drop.on {

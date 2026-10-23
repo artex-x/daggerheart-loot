@@ -29,6 +29,7 @@ import {
   type CloudPort
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
+import { DELETE_CHUNK } from '../state/homebrew.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { page, t, tab } from '../test/homebrewPage.js';
 
@@ -386,15 +387,20 @@ describe('#/homebrew', () => {
     expect(await screen.findByText('Источник «Мастерская Ольхи» удалён')).toBeInTheDocument();
   });
 
-  it('shows the progress of a bulk delete, holds the button and ignores a second press', async () => {
+  it('sends one request for a bulk delete, shows one line, holds the button and ignores a second press', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    const removeMany = cloud.homebrew.removeItems.bind(cloud.homebrew);
     const gates: (() => void)[] = [];
-    let sent = 0;
-    cloud.homebrew.removeItem = async (id) => {
-      sent++;
+    const sent: (readonly string[])[] = [];
+    let single = 0;
+    cloud.homebrew.removeItem = () => {
+      single++;
+      return Promise.resolve({ ok: true });
+    };
+    cloud.homebrew.removeItems = async (ids) => {
+      sent.push(ids);
       await new Promise<void>((go) => gates.push(go));
-      return remove(id);
+      return removeMany(ids);
     };
     const { dialog, container } = page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
@@ -402,51 +408,76 @@ describe('#/homebrew', () => {
     await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
     const del = screen.getByRole('button', { name: 'Удалить (2)' });
     await userEvent.click(del);
-    /* The visible line; the status region says its first words once. */
+    /* The visible line; the status region says it once. */
     const line = (): Element | null => container.querySelector('.note.progress');
     await waitFor(() => {
-      expect(line()).toHaveTextContent('Удаляем предметы: 0 из 2');
+      expect(line()).toHaveTextContent('Удаляем предметы (2)...');
     });
     expect(del).toBeDisabled();
     await expectNoA11yViolations(container);
-    gates.shift()?.();
-    await waitFor(() => {
-      expect(line()).toHaveTextContent('Удаляем предметы: 1 из 2');
-    });
     del.click();
     expect(dialog.asked).toHaveLength(1);
-    await vi.waitFor(() => {
-      expect(gates).toHaveLength(1);
-    });
     gates.shift()?.();
     expect(await screen.findByText('Удалено предметов: 2')).toBeInTheDocument();
-    expect(sent).toBe(2);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]).toHaveLength(2);
+    expect(single).toBe(0);
     expect(line()).toBeNull();
+    expect(screen.getByText('2 предмета из 100')).toBeInTheDocument();
   });
 
-  it('stops a bulk delete at the first failure, keeps the rest and frees the button', async () => {
+  it('keeps every row and every tick after a failed bulk delete and frees the button', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    const removeMany = cloud.homebrew.removeItems.bind(cloud.homebrew);
     let sent = 0;
-    cloud.homebrew.removeItem = (id) => {
+    cloud.homebrew.removeItems = (ids) => {
       sent++;
-      if (sent === 2) cloud.setOffline(true);
-      return remove(id);
+      if (sent === 1) cloud.setOffline(true);
+      return removeMany(ids);
     };
     page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
-    for (const name of ['Кольцо с гравировкой', 'Настой кузнеца', 'Топор Тлеющих Углей']) {
+    const names = ['Кольцо с гравировкой', 'Настой кузнеца', 'Топор Тлеющих Углей'];
+    for (const name of names) {
       await userEvent.click(screen.getByRole('checkbox', { name }));
     }
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
     expect(await screen.findByText(t.hbDeleteFailed)).toBeInTheDocument();
-    expect(sent).toBe(2);
+    expect(sent).toBe(1);
     expect(screen.queryByText(/^Удаляем предметы/)).toBeNull();
-    expect(screen.getByText('3 предмета из 100')).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: 'Топор Тлеющих Углей' })).toBeNull();
+    expect(screen.getByText('4 предмета из 100')).toBeInTheDocument();
+    for (const name of names) {
+      expect(screen.getByRole('checkbox', { name })).toBeChecked();
+    }
     cloud.setOffline(false);
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
-    expect(screen.getByRole('button', { name: 'Удалить (1)' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
+    expect(await screen.findByText('Удалено предметов: 3')).toBeInTheDocument();
+    expect(sent).toBe(2);
+    expect(screen.getByText('1 предмет из 100')).toBeInTheDocument();
+  });
+
+  it('deletes 120 rows in ceil(120 / 50) requests, and after a failed request keeps the rest ticked for a second press', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { fillItems: 120 });
+    const removeMany = cloud.homebrew.removeItems.bind(cloud.homebrew);
+    const sent: number[] = [];
+    cloud.homebrew.removeItems = (ids) => {
+      sent.push(ids.length);
+      return sent.length === 2
+        ? Promise.resolve({ ok: false, error: 'network' })
+        : removeMany(ids);
+    };
+    page('gm1', { cloud });
+    await screen.findByText('120 предметов из 120');
+    await userEvent.click(screen.getByRole('checkbox', { name: t.pickAll }));
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (120)' }));
+    expect(
+      await screen.findByText(`Удалено предметов: ${String(DELETE_CHUNK)}. ${t.hbDeleteFailed}`)
+    ).toBeInTheDocument();
+    expect(sent).toEqual([DELETE_CHUNK, DELETE_CHUNK]);
+    expect(screen.getByText('70 предметов из 120')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Удалить (70)' }));
+    expect(await screen.findByText('Удалено предметов: 70')).toBeInTheDocument();
+    expect(sent).toEqual([DELETE_CHUNK, DELETE_CHUNK, DELETE_CHUNK, 20]);
   });
 
   it('draws the empty page', async () => {
@@ -1213,6 +1244,25 @@ describe('book items in a set or rule card', () => {
       expect(within(panel).queryByRole('link', { name: 'Длинный палаш' })).toBeNull();
     });
     expect((await cardOf(cloud, uuid(521)))?.content).not.toHaveProperty('items');
+  });
+
+  it('puts a book member back on the card with «Вернуть» after its «Убрать»', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withCard(cloud, uuid(521), { items: ['q2'] });
+    page('gm1', { cloud, env });
+    const panel = await openSet();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Убрать: Длинный палаш' }));
+    expect(await screen.findByText('Сохранено: «Длинный палаш»')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(panel).queryByRole('link', { name: 'Длинный палаш' })).toBeNull();
+    });
+    expect((await cardOf(cloud, uuid(521)))?.content).not.toHaveProperty('items');
+    await userEvent.click(screen.getByRole('button', { name: t.undo }));
+    expect(await within(panel).findByRole('link', { name: 'Длинный палаш' })).toHaveAttribute(
+      'href',
+      '#/i/q2'
+    );
+    expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
   });
 
   it('lists own and book members by name, a gone id by its own words, and counts both', async () => {
@@ -2005,13 +2055,13 @@ describe('the Items tab filter', () => {
 });
 
 describe('the bulk delete status and the focus after a press removes itself', () => {
-  it('says the start once, counts on screen, and ends with the toast', async () => {
+  it('says the start once, shows the count on screen, and ends with the toast', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
-    const remove = cloud.homebrew.removeItem.bind(cloud.homebrew);
+    const removeMany = cloud.homebrew.removeItems.bind(cloud.homebrew);
     const gates: (() => void)[] = [];
-    cloud.homebrew.removeItem = async (id) => {
+    cloud.homebrew.removeItems = async (ids) => {
       await new Promise<void>((go) => gates.push(go));
-      return remove(id);
+      return removeMany(ids);
     };
     const { container } = page('gm1', { cloud });
     await screen.findByText('4 предмета из 100');
@@ -2026,22 +2076,15 @@ describe('the bulk delete status and the focus after a press removes itself', ()
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (3)' }));
     const line = (): Element | null => container.querySelector('.note.progress');
     await waitFor(() => {
-      expect(line()).toHaveTextContent('Удаляем предметы: 0 из 3');
+      expect(line()).toHaveTextContent('Удаляем предметы (3)...');
     });
     expect(line()).not.toHaveAttribute('role');
-    expect(region()).toBe('Удаляем предметы: 0 из 3');
+    expect(region()).toBe('Удаляем предметы (3)...');
     expect(screen.getByRole('checkbox', { name: t.pickAll })).toHaveFocus();
-    gates.shift()?.();
-    await waitFor(() => {
-      expect(line()).toHaveTextContent('Удаляем предметы: 1 из 3');
+    await vi.waitFor(() => {
+      expect(gates).toHaveLength(1);
     });
-    expect(region()).toBe('Удаляем предметы: 0 из 3');
-    for (let i = 0; i < 2; i++) {
-      await vi.waitFor(() => {
-        expect(gates).toHaveLength(1);
-      });
-      gates.shift()?.();
-    }
+    gates.shift()?.();
     expect(await screen.findByText('Удалено предметов: 3')).toBeInTheDocument();
     expect(region()).toBe('');
     /* A row is left: focus is back on «Выбрать все». */
@@ -2129,5 +2172,347 @@ describe('the page head', () => {
       'Импорт из файла.'
     ]);
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('the focus, the undo, the search and the folds on the homebrew tabs', () => {
+  /* gm2's cloud with `n` named sources «Источник 01» ... in creation order. */
+  async function withSources(n: number): Promise<ReturnType<typeof fakeCloud>> {
+    const cloud = fakeCloud(SEED, 'gm2');
+    for (let i = 0; i < n; i++) {
+      await cloud.homebrew.createBook({
+        id: uuid(7800 + i),
+        key: 'hb_src' + BASE32.charAt(i) + 'aaaaaaaaaaaa',
+        content: { ru: 'Источник ' + String(i + 1).padStart(2, '0') }
+      });
+    }
+    return cloud;
+  }
+  const delsOf = (panel: HTMLElement): HTMLElement[] =>
+    within(panel).getAllByRole('button', { name: t.del });
+
+  it("hands focus after a source's delete to the next row's «Удалить», then to «Новый источник»", async () => {
+    page('gm2', { cloud: await withSources(2) });
+    const panel = await sources();
+    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await waitFor(() => {
+      expect(within(panel).queryByText('Источник 01')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(delsOf(panel)[0]).toHaveFocus();
+    });
+    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.hbNewSource })).toHaveFocus();
+    });
+  });
+
+  it("hands focus after a section's delete to the next section's «Удалить», then to «Новый раздел»", async () => {
+    page();
+    const panel = await sources();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
+    const list = (): HTMLElement => document.getElementById('hb-sections-' + ALDER)!;
+    await userEvent.click(within(list()).getAllByRole('button', { name: t.del })[0]!);
+    await waitFor(() => {
+      expect(within(panel).queryByText('Пистоли')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(within(list()).getAllByRole('button', { name: t.del })[0]).toHaveFocus();
+    });
+    await userEvent.click(within(list()).getAllByRole('button', { name: t.del })[0]!);
+    await waitFor(() => {
+      expect(within(list()).getByRole('button', { name: t.hbNewSection })).toHaveFocus();
+    });
+  });
+
+  it('returns the focus to the button that opened a name field, sent or cancelled', async () => {
+    page();
+    const panel = await sources();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSource }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.hbNewSource })).toHaveFocus();
+    });
+    const book = (): HTMLElement => document.getElementById('hb-book-' + ALDER)!;
+    const renameOf = (): HTMLElement =>
+      within(book().querySelector<HTMLElement>(':scope > .head')!).getByRole('button', {
+        name: t.hbRename
+      });
+    await userEvent.click(renameOf());
+    await typeInto(t.hbRename, 'Мастерская Ивы');
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => {
+      expect(renameOf()).toHaveFocus();
+    });
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSection }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.hbNewSection })).toHaveFocus();
+    });
+    const sect = document.querySelector<HTMLElement>('[id^="hb-sect-' + ALDER + '-"]')!;
+    await userEvent.click(within(sect).getByRole('button', { name: t.hbRename }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(
+        within(document.getElementById(sect.id)!).getByRole('button', { name: t.hbRename })
+      ).toHaveFocus();
+    });
+  });
+
+  it("hands focus after a card's delete to the next card's «Удалить», then to the create button", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.homebrew.createCard({
+      id: uuid(7900),
+      key: 'hb_zzzsetaaaaaaaaaa',
+      kind: 'set',
+      book_id: null,
+      content: { ru: 'Яблочный', rud: 'Бонус.' }
+    });
+    page('gm1', { cloud });
+    const panel = await sets();
+    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await waitFor(() => {
+      expect(within(panel).queryByText('Комплект Ольхи')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(delsOf(panel)[0]).toHaveFocus();
+    });
+    await userEvent.click(delsOf(panel)[0] as HTMLElement);
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.hbNewSet })).toHaveFocus();
+    });
+  });
+
+  it("hands focus after a card's delete to the next drawn «Удалить» while another card's form is open", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    for (const [i, ru] of ['Бузинный', 'Вишнёвый', 'Грушевый'].entries()) {
+      await cloud.homebrew.createCard({
+        id: uuid(7910 + i),
+        key: 'hb_set' + BASE32.charAt(i) + 'aaaaaaaaaaaa',
+        kind: 'set',
+        book_id: null,
+        content: { ru, rud: 'Бонус.' }
+      });
+    }
+    page('gm1', { cloud });
+    const panel = await sets();
+    const rows = [...panel.querySelectorAll<HTMLElement>('.cards > li')].map((li) => li.id);
+    expect(rows).toHaveLength(4);
+    const row = (n: number): HTMLElement => document.getElementById(rows[n]!)!;
+    await userEvent.click(within(row(0)).getByRole('button', { name: t.edit }));
+    await userEvent.click(within(row(1)).getByRole('button', { name: t.del }));
+    await waitFor(() => {
+      expect(document.getElementById(rows[1]!)).toBeNull();
+    });
+    await waitFor(() => {
+      expect(within(row(2)).getByRole('button', { name: t.del })).toHaveFocus();
+    });
+  });
+
+  it("hands focus after a source's delete to the next drawn «Удалить» while another rename field is open", async () => {
+    page('gm2', { cloud: await withSources(4) });
+    const panel = await sources();
+    const books = [...panel.querySelectorAll<HTMLElement>('ul.books > li.book')].map(
+      (li) => li.id
+    );
+    const book = (n: number): HTMLElement => document.getElementById(books[n]!)!;
+    const headOf = (li: HTMLElement): HTMLElement => li.querySelector<HTMLElement>('.head')!;
+    await userEvent.click(within(headOf(book(0))).getByRole('button', { name: t.hbRename }));
+    await userEvent.click(within(headOf(book(1))).getByRole('button', { name: t.del }));
+    await waitFor(() => {
+      expect(document.getElementById(books[1]!)).toBeNull();
+    });
+    await waitFor(() => {
+      expect(within(headOf(book(2))).getByRole('button', { name: t.del })).toHaveFocus();
+    });
+  });
+
+  it("hands focus after a section's delete to the next drawn «Удалить» while another rename field is open", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const sections = ['Альфа', 'Бета', 'Гамма', 'Дельта'].map((ru, i) => ({
+      key: 'hb_sect' + BASE32.charAt(i) + 'aaaaaaaaaaa',
+      ru
+    }));
+    await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская Ольхи', sections }, null);
+    page('gm1', { cloud });
+    const panel = await sources();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
+    const sect = (n: number): HTMLElement =>
+      document.getElementById('hb-sect-' + ALDER + '-' + sections[n]!.key)!;
+    await userEvent.click(within(sect(0)).getByRole('button', { name: t.hbRename }));
+    await userEvent.click(within(sect(1)).getByRole('button', { name: t.del }));
+    await waitFor(() => {
+      expect(within(panel).queryByText('Бета')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(within(sect(2)).getByRole('button', { name: t.del })).toHaveFocus();
+    });
+  });
+
+  it('returns the focus to «Изменить» or the create button when a card form closes', async () => {
+    page();
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: t.edit }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.edit })).toHaveFocus();
+    });
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSet }));
+    await userEvent.click(within(panel).getByRole('button', { name: t.cancel }));
+    await waitFor(() => {
+      expect(within(panel).getByRole('button', { name: t.hbNewSet })).toHaveFocus();
+    });
+  });
+
+  it('draws the «?» of «Источник» on both card forms with the hint for a card', async () => {
+    const { container } = page();
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbNewSet }));
+    const help = within(panel).getByRole('button', {
+      name: t.fieldHelp.replace('%s', t.hbSource)
+    });
+    await userEvent.click(help);
+    expect(within(panel).getByText(t.hbCardSourceHelp)).toBeVisible();
+    await expectNoA11yViolations(container);
+    const ref = await rules();
+    await userEvent.click(within(ref).getByRole('button', { name: t.edit }));
+    expect(
+      within(ref).getByRole('button', { name: t.fieldHelp.replace('%s', t.hbSource) })
+    ).toBeInTheDocument();
+  });
+
+  it("toasts «Вернуть» after a member's «Убрать», adds it back, and moves the focus on", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    for (const id of [uuid(514), uuid(511)]) {
+      const row = held.ok ? held.items.find((i) => i.id === id) : undefined;
+      if (!row) throw new Error('The seed has no item ' + id + '. Restore the seed.');
+      await cloud.homebrew.updateItem(
+        id,
+        { content: { ...row.content, set: SET }, book_id: row.book_id },
+        null
+      );
+    }
+    const { container } = page('gm1', { cloud });
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Комплект Ольхи' }));
+    const body = (): HTMLElement => document.getElementById('hb-card-body-' + uuid(521))!;
+    const removes = (): HTMLElement[] =>
+      within(body()).queryAllByRole('button', { name: /^Убрать: / });
+    expect(removes()).toHaveLength(2);
+    const first = (removes()[0]!.getAttribute('aria-label') ?? '').replace('Убрать: ', '');
+    await userEvent.click(removes()[0]!);
+    expect(await screen.findByText('Сохранено: «' + first + '»')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(removes()).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(removes()[0]).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: t.undo }));
+    await waitFor(() => {
+      expect(removes()).toHaveLength(2);
+    });
+    await userEvent.click(removes()[1]!);
+    await waitFor(() => {
+      expect(removes()).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(removes()[0]).toHaveFocus();
+    });
+    await userEvent.click(removes()[0]!);
+    await waitFor(() => {
+      expect(within(body()).getByRole('combobox', { name: t.hbAddMember })).toHaveFocus();
+    });
+  });
+
+  it('draws no source search at seven named sources and the box at eight', async () => {
+    page('gm2', { cloud: await withSources(7) });
+    expect(within(await sources()).queryByRole('searchbox')).toBeNull();
+    cleanup();
+    page('gm2', { cloud: await withSources(8) });
+    const panel = await sources();
+    expect(within(panel).getByRole('searchbox')).toHaveAttribute(
+      'placeholder',
+      'Найти источник'
+    );
+  });
+
+  it('filters the sources by either language, keeps «Хоумбрю» by its name and an open field, and says «Ничего не найдено»', async () => {
+    const cloud = await withSources(15);
+    await cloud.homebrew.updateBook(uuid(7800), { ru: 'Источник 01', en: 'Alder Shop' }, null);
+    const { container } = page('gm2', { cloud });
+    const panel = await sources();
+    const box = within(panel).getByRole('searchbox');
+    const names = (): string[] =>
+      [...panel.querySelectorAll('ul.books > li.book > .head .name')].map((e) => e.textContent);
+    await userEvent.type(box, '07');
+    expect(names()).toEqual(['Источник 07']);
+    expect(within(panel).getByText('15 источников из 20')).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.clear(box);
+    await userEvent.type(box, 'alder');
+    expect(names()).toEqual(['Источник 01']);
+    await userEvent.clear(box);
+    await userEvent.type(box, 'хоум');
+    expect(names()).toEqual(['Хоумбрю']);
+    await userEvent.clear(box);
+    await userEvent.type(box, 'кузня');
+    expect(within(panel).getByText(t.nothing)).toBeInTheDocument();
+    expect(within(panel).getByText('15 источников из 20')).toBeInTheDocument();
+    await userEvent.clear(box);
+    const book = document.getElementById('hb-book-' + uuid(7802))!;
+    await userEvent.click(within(book).getByRole('button', { name: t.hbRename }));
+    await userEvent.type(box, 'кузня');
+    expect(document.getElementById('hb-book-' + uuid(7802))).not.toBeNull();
+    expect(within(panel).queryByText(t.nothing)).toBeNull();
+  });
+
+  it('folds the sections past 20 with «и ещё N» and «свернуть»', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const sections = Array.from({ length: 21 }, (_, i) => ({
+      key: 'hb_sect' + BASE32.charAt(i) + 'aaaaaaaaaaa',
+      ru: 'Раздел ' + String(i + 1).padStart(2, '0')
+    }));
+    await cloud.homebrew.updateBook(ALDER, { ru: 'Мастерская Ольхи', sections }, null);
+    const { container } = page('gm1', { cloud });
+    const panel = await sources();
+    await userEvent.click(within(panel).getByRole('button', { name: t.hbSectionsBtn }));
+    const list = (): HTMLElement => document.getElementById('hb-sections-' + ALDER)!;
+    const drawn = (): number => list().querySelectorAll('[id^="hb-sect-"]').length;
+    expect(drawn()).toBe(20);
+    const fold = within(list()).getByRole('button', { name: 'и ещё 1' });
+    expect(within(list()).getByText(t.hbNoSection)).toBeInTheDocument();
+    await expectNoA11yViolations(container);
+    await userEvent.click(fold);
+    expect(drawn()).toBe(21);
+    expect(fold).toHaveTextContent('свернуть');
+    expect(fold).toHaveFocus();
+  });
+
+  it('folds the members past 20 with «и ещё N»', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const held = await cloud.homebrew.load();
+    const card = held.ok ? held.cards.find((c) => c.id === uuid(521)) : undefined;
+    if (!card) throw new Error('The seed has no set card. Restore the seed.');
+    const ids = Array.from({ length: 21 }, (_, i) => 'gone' + String(i + 1).padStart(2, '0'));
+    await cloud.homebrew.updateCard(
+      card.id,
+      { content: { ...card.content, items: ids }, book_id: card.book_id },
+      null
+    );
+    const { container } = page('gm1', { cloud });
+    const panel = await sets();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Комплект Ольхи' }));
+    const body = (): HTMLElement => document.getElementById('hb-card-body-' + uuid(521))!;
+    const drawn = (): number => body().querySelectorAll('.members > li').length;
+    expect(drawn()).toBe(20);
+    const fold = within(body()).getByRole('button', { name: 'и ещё 1' });
+    await expectNoA11yViolations(container);
+    await userEvent.click(fold);
+    expect(drawn()).toBe(21);
+    expect(fold).toHaveTextContent('свернуть');
   });
 });

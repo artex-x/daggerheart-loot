@@ -36,7 +36,8 @@ import {
   readRequestHeads,
   readRequests,
   requestRefusal,
-  type NoticeRow
+  type NoticeRow,
+  type OwnerRequest
 } from '../lib/requests.js';
 import { callbackUrl, saveReturn, type Redirect, type RedirectWindow } from './redirect.js';
 import type {
@@ -63,7 +64,6 @@ import type {
   RequestDeclined,
   RequestRepository,
   RequestSent,
-  RequestsRead,
   Session,
   ShareMade,
   ShareRepository
@@ -378,9 +378,11 @@ export const READ_PAGE = 1000;
  *  20 000 in all (an account at three times the limits holds 4500 pending). */
 export const ACCOUNT_DELETE_CALLS_MAX = 100;
 
-/* The owner's pending requests with their lines; row level security keeps them to the
-   owner of each request's list. A re-read pages the heads alone: a pending request's lines
-   change only in the apply that decides it. */
+/* The owner's pending requests; row level security keeps them to the owner of each
+   request's list. A read pages the heads of every pending request; the lines are read by
+   id for the open list only, and a pending request's lines change only in the apply that
+   decides it (docs/decisions/, 2026-10-22, "The owner's requests read takes every head and
+   the open list's lines"). */
 const REQUEST_HEAD = 'id,list_id,audience,created_at,expires_at,read_at';
 const REQUEST_SELECT =
   REQUEST_HEAD + ',purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
@@ -680,6 +682,10 @@ export function createCloud(
       return undefined;
     }
   };
+  /* A limit read of this repository failed: the next read reads the limits again. A
+     re-read reads none (docs/specs/FEATURES.md, "Consistency rules", the counter rule). */
+  let listLimitsDue = false;
+  let homebrewLimitsDue = false;
 
   /* A fresh builder per read: postgrest-js builders keep the filters of an earlier call. */
   const listsQuery = (columns: string) =>
@@ -699,8 +705,12 @@ export function createCloud(
   const lists: ListRepository = {
     newId: () => crypto.randomUUID(),
     async list(known) {
-      try {
-        const limits = Promise.all([limitOf('lists_per_owner'), limitOf('entries_per_list')]);
+      const whole = !known || !Object.keys(known).length;
+      const reading = whole || listLimitsDue;
+      const read = async (): Promise<ListsRead> => {
+        const limits = reading
+          ? Promise.all([limitOf('lists_per_owner'), limitOf('entries_per_list')])
+          : Promise.resolve([undefined, undefined] as const);
         const full = async (): Promise<ListsRead> => {
           const [{ data, error }, [listLimit, entryLimit]] = await Promise.all([
             listsQuery(LIST_SELECT),
@@ -709,19 +719,26 @@ export function createCloud(
           const rows = error ? null : listRows(data);
           return rows ? { ok: true, lists: rows, listLimit, entryLimit } : { ok: false };
         };
-        if (!known || !Object.keys(known).length) return await full();
+        if (!known || whole) return await full();
         const head = await listsQuery('id,revision');
         if (head.error || !Array.isArray(head.data)) return { ok: false };
         const held = head.data as unknown as { id: string; revision: number }[];
         const changed = held.filter((l) => known[l.id] !== l.revision).map((l) => l.id);
         if (changed.length > CHANGED_ROWS_MAX) return await full();
         const kept = held.filter((l) => known[l.id] === l.revision).map((l) => l.id);
-        const [read, [listLimit, entryLimit]] = await Promise.all([
+        const [rowsRead, [listLimit, entryLimit]] = await Promise.all([
           changed.length ? listsQuery(LIST_SELECT).in('id', changed) : null,
           limits
         ]);
-        const rows = !read ? [] : read.error ? null : listRows(read.data);
+        const rows = !rowsRead ? [] : rowsRead.error ? null : listRows(rowsRead.data);
         return rows ? { ok: true, lists: rows, kept, listLimit, entryLimit } : { ok: false };
+      };
+      try {
+        const answer = await read();
+        if (answer.ok && reading) {
+          listLimitsDue = answer.listLimit === undefined || answer.entryLimit === undefined;
+        }
+        return answer;
       } catch {
         return { ok: false };
       }
@@ -819,6 +836,9 @@ export function createCloud(
      included (tests/db/list-shares.test.mjs); a change goes through the
      functions, which check the owner again. */
   let sharedHaveGone = false;
+  /* The tokens whose overload answered `57014` on this page: each reads through the call of
+     before from then on. */
+  const sharedSlow = new Set<string>();
   const shares: ShareRepository = {
     async list(listId) {
       try {
@@ -850,8 +870,8 @@ export function createCloud(
        `rev`; `{ unchanged: true }` answers a known revision. After a `PGRST202` (its
        reversal pushed) this port takes the calls of before: `{ p_token }` names
        `get_shared_list(text)`, `{ p_token, p_since }` the `(text, bigint)` overload. On a
-       `57014` (the `anon` statement timeout) this one read takes them too, and the next read
-       tries the overload again (docs/specs/DEBT.md, D111). */
+       `57014` (the `anon` statement timeout) this read takes them too, and every later read
+       of that token takes them too (the hosted `anon` statement timeout is 3 s). */
     async read(token, since, held) {
       /* Captured before the call: the fill reads nothing the store changes meanwhile. */
       const have: SharedHeld = new Map(held ?? []);
@@ -861,7 +881,7 @@ export function createCloud(
           s === undefined ? { p_token: token } : { p_token: token, p_since: s }
         );
       const ask = (s: number | undefined, h: SharedHeld) =>
-        sharedHaveGone
+        sharedHaveGone || sharedSlow.has(token)
           ? before(s)
           : client.rest.rpc('get_shared_list', {
               p_token: token,
@@ -869,13 +889,14 @@ export function createCloud(
               p_have: Object.fromEntries([...h].map(([hid, x]) => [hid, x.rev]))
             });
       try {
+        let whole = sharedHaveGone || sharedSlow.has(token);
         let answer = await ask(since, have);
-        let whole = sharedHaveGone;
         if (answer.error?.code === 'PGRST202' && !sharedHaveGone) {
           sharedHaveGone = true;
           whole = true;
           answer = await ask(since, have);
-        } else if (answer.error?.code === '57014' && !sharedHaveGone) {
+        } else if (answer.error?.code === '57014' && !whole) {
+          sharedSlow.add(token);
           whole = true;
           answer = await before(since);
         }
@@ -954,53 +975,54 @@ export function createCloud(
      functions, which check the token or the owner again. */
   const requests: RequestRepository = {
     /* Keyset pages by id past PostgREST's row cap: an offset page would skip a row when a
-       request is deleted between two pages. With `held`, the pages carry no lines and the
-       new requests are read in one more call by id (at most `CHANGED_ROWS_MAX`, so one
-       `in.(...)` holds them); a failed page or read fails the whole read. */
-    async list(held) {
-      const pages = async (columns: string): Promise<unknown[] | null> => {
-        const rows: unknown[] = [];
-        let last: string | null = null;
+       request is deleted between two pages. A failed page fails the whole read. */
+    async list() {
+      const rows: unknown[] = [];
+      let last: string | null = null;
+      try {
         for (;;) {
           const q = client.rest
             .from('purchase_requests')
-            .select(columns)
+            .select(REQUEST_HEAD)
             .eq('status', 'pending');
           const page = await (last === null ? q : q.gt('id', last))
             .order('id')
             .limit(READ_PAGE);
-          if (page.error || !Array.isArray(page.data)) return null;
+          if (page.error || !Array.isArray(page.data)) return { ok: false };
           const got = page.data as unknown[];
           rows.push(...got);
           const end = got.at(-1) as { id?: unknown } | undefined;
-          if (got.length < READ_PAGE || typeof end?.id !== 'string') return rows;
+          if (got.length < READ_PAGE || typeof end?.id !== 'string') break;
           last = end.id;
         }
-      };
-      const whole = async (): Promise<RequestsRead> => {
-        const read = readRequests(await pages(REQUEST_SELECT));
-        return read ? { ok: true, requests: read } : { ok: false };
-      };
-      try {
-        if (!held?.length) return await whole();
-        const heads = readRequestHeads(await pages(REQUEST_HEAD));
-        if (!heads) return { ok: false };
-        const holds = new Set(held);
-        const kept = heads.filter((h) => holds.has(h.id));
-        const fresh = heads.filter((h) => !holds.has(h.id)).map((h) => h.id);
-        if (fresh.length > CHANGED_ROWS_MAX) return await whole();
-        if (!fresh.length) return { ok: true, requests: [], kept };
-        const added = await client.rest
-          .from('purchase_requests')
-          .select(REQUEST_SELECT)
-          .eq('status', 'pending')
-          .in('id', fresh)
-          .order('id');
-        const read = added.error ? null : readRequests(added.data);
-        return read ? { ok: true, requests: read, kept } : { ok: false };
       } catch {
         return { ok: false };
       }
+      const heads = readRequestHeads(rows);
+      return heads ? { ok: true, requests: heads } : { ok: false };
+    },
+    /* The ids go in chunks of `CHANGED_ROWS_MAX`, in order; a failed chunk fails the read.
+       An expired row stays pending until the clean-up, so a list can name more than its
+       pending limit. */
+    async lines(ids) {
+      const read: OwnerRequest[] = [];
+      try {
+        for (let i = 0; i < ids.length; i += CHANGED_ROWS_MAX) {
+          const chunk = ids.slice(i, i + CHANGED_ROWS_MAX);
+          const answer = await client.rest
+            .from('purchase_requests')
+            .select(REQUEST_SELECT)
+            .eq('status', 'pending')
+            .in('id', chunk)
+            .order('id');
+          const got = answer.error ? null : readRequests(answer.data);
+          if (!got) return { ok: false };
+          read.push(...got);
+        }
+      } catch {
+        return { ok: false };
+      }
+      return { ok: true, requests: read };
     },
     async send(id, token, lines) {
       try {
@@ -1197,16 +1219,22 @@ export function createCloud(
         return read.error || !Array.isArray(read.data) ? null : { rows: read.data, kept };
       };
       const none: Readonly<Record<string, number>> = {};
+      const reading = whole || homebrewLimitsDue;
+      const limit = (key: string) => (reading ? limitOf(key) : undefined);
       try {
         const [books, items, cards, itemLimit, bookLimit, cardLimit] = await Promise.all([
           table('homebrew_books', BOOK_SELECT, known?.books ?? none),
           table('homebrew_items', ITEM_SELECT, known?.items ?? none),
           table('homebrew_cards', CARD_SELECT, known?.cards ?? none),
-          limitOf('homebrew_items_per_owner'),
-          limitOf('homebrew_books_per_owner'),
-          limitOf('homebrew_cards_per_owner')
+          limit('homebrew_items_per_owner'),
+          limit('homebrew_books_per_owner'),
+          limit('homebrew_cards_per_owner')
         ]);
         if (!books || !items || !cards) return { ok: false };
+        if (reading) {
+          homebrewLimitsDue =
+            itemLimit === undefined || bookLimit === undefined || cardLimit === undefined;
+        }
         return {
           ok: true,
           books: books.rows as BookRow[],
@@ -1295,6 +1323,12 @@ export function createCloud(
       }
     },
     removeItem: (id) => homebrewRemove('homebrew_items', id),
+    removeItems: (ids) =>
+      written(() =>
+        timed((signal) =>
+          client.rest.rpc('delete_homebrew_items', { p_ids: [...ids] }).abortSignal(signal)
+        )
+      ),
     createCard: (row) => homebrewCreate('homebrew_cards', row),
     updateCard: (id, patch, revision) =>
       homebrewUpdate(

@@ -23,6 +23,8 @@
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import StorageNotice from './StorageNotice.svelte';
+  import SyncSaid from './SyncSaid.svelte';
+  import SyncStatus from './SyncStatus.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
   import { linkedOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
@@ -198,6 +200,7 @@
       nameInput?.focus();
       return;
     }
+    if (signedIn && app.listsFull()) return;
     const store = signedIn && cloud ? cloud : app.lists;
     const l = store.create(draft);
     draft = '';
@@ -309,6 +312,7 @@
   {/if}
   <div bind:this={groups}>
     {#if signedIn && cloud}
+      <SyncSaid {app} />
       <div class="group">
         <Field label={t.groupAccount} heading>
           {#if cloud.status !== 'ready'}
@@ -317,11 +321,19 @@
               failed={cloud.status === 'error'}
               text={t.cloudLoadFailed}
               onretry={() => void app.retryLists()}
+              after={() => nameInput}
             />
           {:else}
-            {#if cloud.listLimit !== null || account.length}
+            {#if cloud.listLimit !== null || account.length || cloud.sync === 'failed'}
+              <!-- The status shows only while a write fails; the list page keeps it always. -->
               <p class="grouptext count">
-                {countOf(account.length, cloud.listLimit, t.listsN, app.lang, t.ofLimit)}
+                {countOf(
+                  account.length,
+                  cloud.listLimit,
+                  t.listsN,
+                  app.lang,
+                  t.ofLimit
+                )}{#if cloud.sync === 'failed'}&#32;· <SyncStatus {app} />{/if}
               </p>
             {/if}
             {#if !account.length}

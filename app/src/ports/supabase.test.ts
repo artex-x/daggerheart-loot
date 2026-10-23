@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ImportRow, ListOp } from '../lib/cloudLists.js';
+import { SharedView } from '../state/sharedView.svelte.js';
 import { RETURN_KEY, type Redirect } from './redirect.js';
 import {
   createCloud,
@@ -849,7 +850,6 @@ describe('the lists', () => {
       .mockImplementationOnce(() => Promise.resolve({ data: 7, error: null, status: 200 }));
 
   it('re-reads with nothing changed by the head read alone, every list kept', async () => {
-    limits();
     const [head] = answers({
       data: [
         { id: 'l1', revision: 3 },
@@ -865,13 +865,13 @@ describe('the lists', () => {
       ok: true,
       lists: [],
       kept: ['l1', 'l2'],
-      listLimit: 7,
-      entryLimit: 7
+      listLimit: undefined,
+      entryLimit: undefined
     });
+    expect(client.rpc).not.toHaveBeenCalled();
   });
 
   it('re-reads one changed list by its id, the others kept, and a list it does not hold', async () => {
-    limits();
     const [, changed] = answers(
       {
         data: [
@@ -891,7 +891,6 @@ describe('the lists', () => {
   });
 
   it('reads every list in full when more than 50 changed', async () => {
-    limits();
     const known = Object.fromEntries(
       Array.from({ length: 51 }, (_, i) => [`l${String(i)}`, 1])
     );
@@ -909,7 +908,6 @@ describe('the lists', () => {
   });
 
   it('answers not ok to a failed head read or a failed changed read', async () => {
-    limits();
     answers(
       { data: null, error: { code: '42501' }, status: 401 },
       { data: [{ id: 'l1', revision: 4 }], error: null, status: 200 },
@@ -918,6 +916,57 @@ describe('the lists', () => {
     const { lists } = make();
     expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
     expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
+  });
+
+  describe('the limit reads', () => {
+    const limitCalls = () => client.rpc.mock.calls.filter(([fn]) => fn === 'my_limit').length;
+    const head = { data: [{ id: 'l1', revision: 3 }], error: null, status: 200 };
+
+    it('reads both limits with a read that holds no revision, none on a re-read', async () => {
+      limits();
+      answers({ data: [], error: null, status: 200 }, head);
+      const { lists } = make();
+      expect(await lists.list()).toMatchObject({ ok: true, listLimit: 7, entryLimit: 7 });
+      expect(limitCalls()).toBe(2);
+      expect(await lists.list({ l1: 3 })).toMatchObject({
+        ok: true,
+        listLimit: undefined,
+        entryLimit: undefined
+      });
+      expect(limitCalls()).toBe(2);
+    });
+
+    it('reads both again on the re-read after a failed limit read, and none after that', async () => {
+      client.rpc
+        .mockImplementationOnce(() => Promise.resolve({ data: 7, error: null, status: 200 }))
+        .mockImplementationOnce(() => Promise.reject(new Error('offline')));
+      answers({ data: [], error: null, status: 200 }, head, head);
+      const { lists } = make();
+      expect(await lists.list()).toMatchObject({ ok: true, entryLimit: undefined });
+      limits();
+      expect(await lists.list({ l1: 3 })).toMatchObject({ listLimit: 7, entryLimit: 7 });
+      expect(limitCalls()).toBe(4);
+      expect(await lists.list({ l1: 3 })).toMatchObject({ ok: true, entryLimit: undefined });
+      expect(limitCalls()).toBe(4);
+    });
+
+    it('a failed rows read keeps the due flag', async () => {
+      client.rpc
+        .mockImplementationOnce(() => Promise.resolve({ data: 7, error: null, status: 200 }))
+        .mockImplementationOnce(() => Promise.reject(new Error('offline')));
+      answers(
+        { data: [], error: null, status: 200 },
+        { data: null, error: { code: '42501' }, status: 401 },
+        head
+      );
+      const { lists } = make();
+      await lists.list();
+      limits();
+      expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
+      limits();
+      expect(await lists.list({ l1: 3 })).toMatchObject({ listLimit: 7, entryLimit: 7 });
+      expect(limitCalls()).toBe(6);
+    });
   });
 
   it('answers not ok to an error, a thrown read and no rows', async () => {
@@ -1770,16 +1819,17 @@ describe('the share links', () => {
       expect(client.rpc).toHaveBeenLastCalledWith('get_shared_list', { p_token: 't1' });
     });
 
-    /* The hosted `anon` statement timeout (DEBT.md D111). */
+    /* The hosted `anon` statement timeout. */
     const timedOut = {
       data: null,
       error: { code: '57014', message: 'canceling statement due to statement timeout' },
       status: 500
     };
 
-    it('reads a first read whole with the call of before on 57014, and names the overload next', async () => {
+    it('reads a first read whole with the call of before on 57014, and reads that token through the call of before from then on', async () => {
       client.rpc
         .mockResolvedValueOnce(timedOut)
+        .mockResolvedValueOnce(ok(whole))
         .mockResolvedValueOnce(ok(whole))
         .mockResolvedValueOnce(ok(stripped));
       const { shares } = make();
@@ -1790,14 +1840,43 @@ describe('the share links', () => {
         p_have: {}
       });
       expect(client.rpc).toHaveBeenNthCalledWith(2, 'get_shared_list', { p_token: 't1' });
-      /* The flag stays unset: the next read names the overload again. */
       expect(await shares.read('t1', 8, held)).toEqual({ ok: true, shared: whole });
       expect(client.rpc).toHaveBeenNthCalledWith(3, 'get_shared_list', {
         p_token: 't1',
+        p_since: 8
+      });
+      /* Another token still names the overload. */
+      expect(await shares.read('t2', 8, held)).toEqual({ ok: true, shared: whole });
+      expect(client.rpc).toHaveBeenNthCalledWith(4, 'get_shared_list', {
+        p_token: 't2',
         p_since: 8,
         p_have: { [HID]: 'r1' }
       });
-      expect(client.rpc).toHaveBeenCalledTimes(3);
+      expect(client.rpc).toHaveBeenCalledTimes(4);
+    });
+
+    it("drives a shared page's fallback and two re-reads through the call of before", async () => {
+      const changed = { ...whole, revision: 10, updated_at: 'y' };
+      client.rpc
+        .mockResolvedValueOnce(timedOut)
+        .mockResolvedValueOnce(ok(whole))
+        .mockResolvedValueOnce(ok(changed))
+        .mockResolvedValueOnce(ok({ unchanged: true }));
+      const view = new SharedView(make().shares);
+      await view.open('t1', null);
+      expect(view.shared).toEqual(whole);
+      await view.refresh();
+      expect(client.rpc).toHaveBeenNthCalledWith(3, 'get_shared_list', {
+        p_token: 't1',
+        p_since: 9
+      });
+      expect(view.shared).toEqual(changed);
+      await view.refresh();
+      expect(client.rpc).toHaveBeenNthCalledWith(4, 'get_shared_list', {
+        p_token: 't1',
+        p_since: 10
+      });
+      expect(view.shared).toEqual(changed);
     });
 
     it('passes an unchanged answer of the call of before through on a re-read', async () => {
@@ -1961,8 +2040,23 @@ describe('the purchase requests', () => {
     ]
   };
 
-  it("reads the owner's pending requests with their lines in one select", async () => {
-    const calls = query({ data: [ROW], error: null, status: 200 });
+  const HEAD = 'id,list_id,audience,created_at,expires_at,read_at';
+  const LINES = ',purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
+  const head = (id: string, read_at: string | null = null) => ({
+    id,
+    list_id: LIST,
+    audience: 'player',
+    created_at: ROW.created_at,
+    expires_at: ROW.expires_at,
+    read_at
+  });
+
+  it("reads the heads of the owner's pending requests with no lines", async () => {
+    const calls = query({
+      data: [head('r1', '2026-09-27T10:30:00+00:00')],
+      error: null,
+      status: 200
+    });
     expect(await make().requests.list()).toEqual({
       ok: true,
       requests: [
@@ -1972,41 +2066,30 @@ describe('the purchase requests', () => {
           audience: 'player',
           createdAt: ROW.created_at,
           expiresAt: ROW.expires_at,
-          readAt: null,
-          lines: [
-            { item: 'ci1', qty: 2, price: 150, applied: null },
-            { item: 'q1', qty: 1, price: null, applied: null }
-          ]
+          readAt: '2026-09-27T10:30:00+00:00'
         }
       ]
     });
     expect(client.from).toHaveBeenCalledWith('purchase_requests');
     expect(calls).toEqual([
-      [
-        'select',
-        [
-          'id,list_id,audience,created_at,expires_at,read_at,' +
-            'purchase_request_lines(item_key,quantity,price_coins,applied_quantity)'
-        ]
-      ],
+      ['select', [HEAD]],
       ['eq', ['status', 'pending']],
       ['order', ['id']],
       ['limit', [READ_PAGE]]
     ]);
   });
 
-  it('reads every request past the row cap in keyset pages by id, a fresh query per page', async () => {
-    const page = Array.from({ length: READ_PAGE }, (_, i) => ({
-      ...ROW,
-      id: 'r' + String(i).padStart(4, '0')
-    }));
+  it('reads every head past the row cap in keyset pages by id, a fresh query per page', async () => {
+    const page = Array.from({ length: READ_PAGE }, (_, i) =>
+      head('r' + String(i).padStart(4, '0'))
+    );
     const first = query({ data: page, error: null, status: 200 });
-    const second = query({ data: [{ ...ROW, id: 'r9999' }], error: null, status: 200 });
+    const second = query({ data: [head('r9999')], error: null, status: 200 });
     const read = await make().requests.list();
     expect(client.from).toHaveBeenCalledTimes(2);
     expect(first).not.toContainEqual(['gt', expect.anything()]);
     expect(second).toEqual([
-      ['select', [expect.any(String)]],
+      ['select', [HEAD]],
       ['eq', ['status', 'pending']],
       ['gt', ['id', 'r0999']],
       ['order', ['id']],
@@ -2017,7 +2100,7 @@ describe('the purchase requests', () => {
 
   it('answers not ok when a later page fails', async () => {
     query({
-      data: Array.from({ length: READ_PAGE }, (_, i) => ({ ...ROW, id: 'r' + String(i) })),
+      data: Array.from({ length: READ_PAGE }, (_, i) => head('r' + String(i))),
       error: null,
       status: 200
     });
@@ -2025,74 +2108,61 @@ describe('the purchase requests', () => {
     expect(await make().requests.list()).toEqual({ ok: false });
   });
 
-  describe('a re-read that names the held requests', () => {
-    const HEAD = 'id,list_id,audience,created_at,expires_at,read_at';
-    const LINES = ',purchase_request_lines(item_key,quantity,price_coins,applied_quantity)';
-    const head = (id: string, read_at: string | null = null) => ({
-      id,
-      list_id: LIST,
-      audience: 'player',
-      created_at: ROW.created_at,
-      expires_at: ROW.expires_at,
-      read_at
+  describe('the lines read by id', () => {
+    it('makes no call for no id', async () => {
+      expect(await make().requests.lines([])).toEqual({ ok: true, requests: [] });
+      expect(client.from).not.toHaveBeenCalled();
     });
 
-    it('pages the heads with no lines and reads only the new request whole', async () => {
-      const heads = query({
-        data: [head('r1', '2026-09-27T10:30:00+00:00'), head('r2')],
-        error: null,
-        status: 200
+    it('reads the named pending requests with their lines, each line by item', async () => {
+      const calls = query({ data: [ROW], error: null, status: 200 });
+      expect(await make().requests.lines(['r1'])).toEqual({
+        ok: true,
+        requests: [
+          {
+            id: 'r1',
+            listId: LIST,
+            audience: 'player',
+            createdAt: ROW.created_at,
+            expiresAt: ROW.expires_at,
+            readAt: null,
+            lines: [
+              { item: 'ci1', qty: 2, price: 150, applied: null },
+              { item: 'q1', qty: 1, price: null, applied: null }
+            ]
+          }
+        ]
       });
-      const fresh = query({ data: [{ ...ROW, id: 'r2' }], error: null, status: 200 });
-      const read = await make().requests.list(['r1', 'gone']);
-      expect(heads).toEqual([
-        ['select', [HEAD]],
-        ['eq', ['status', 'pending']],
-        ['order', ['id']],
-        ['limit', [READ_PAGE]]
-      ]);
-      expect(fresh).toEqual([
+      expect(calls).toEqual([
         ['select', [HEAD + LINES]],
         ['eq', ['status', 'pending']],
-        ['in', ['id', ['r2']]],
+        ['in', ['id', ['r1']]],
         ['order', ['id']]
       ]);
-      expect(read.ok && read.requests.map((r) => [r.id, r.lines.length])).toEqual([['r2', 2]]);
-      expect(read.ok && read.kept).toEqual([
-        { id: 'r1', readAt: '2026-09-27T10:30:00+00:00', expiresAt: ROW.expires_at }
-      ]);
     });
 
-    it('reads nothing more when every request is held', async () => {
-      query({ data: [head('r1')], error: null, status: 200 });
-      expect(await make().requests.list(['r1'])).toEqual({
-        ok: true,
-        requests: [],
-        kept: [{ id: 'r1', readAt: null, expiresAt: ROW.expires_at }]
-      });
-      expect(client.from).toHaveBeenCalledTimes(1);
-    });
-
-    it('reads everything whole past 50 new requests, with no kept', async () => {
+    it('reads 51 ids in two chunks of 50 and 1, in order', async () => {
       const ids = Array.from({ length: 51 }, (_, i) => 'n' + String(i).padStart(2, '0'));
-      query({ data: [head('r1'), ...ids.map((id) => head(id))], error: null, status: 200 });
-      const whole = query({ data: [ROW], error: null, status: 200 });
-      const read = await make().requests.list(['r1']);
-      expect(whole).toEqual([
+      const first = query({ data: [ROW], error: null, status: 200 });
+      const second = query({ data: [{ ...ROW, id: 'r2' }], error: null, status: 200 });
+      const read = await make().requests.lines(ids);
+      expect(first).toContainEqual(['in', ['id', ids.slice(0, 50)]]);
+      expect(second).toEqual([
         ['select', [HEAD + LINES]],
         ['eq', ['status', 'pending']],
-        ['order', ['id']],
-        ['limit', [READ_PAGE]]
+        ['in', ['id', ids.slice(50)]],
+        ['order', ['id']]
       ]);
-      expect(read.ok && 'kept' in read).toBe(false);
+      expect(read.ok && read.requests.map((r) => r.id)).toEqual(['r1', 'r2']);
     });
 
-    it('answers not ok when the head page or the read of the new ones fails', async () => {
+    it('answers not ok when a later chunk fails or a read throws', async () => {
+      const ids = Array.from({ length: 51 }, (_, i) => 'n' + String(i));
+      query({ data: [ROW], error: null, status: 200 });
       query({ data: null, error: { code: '57014' }, status: 500 });
-      expect(await make().requests.list(['r1'])).toEqual({ ok: false });
-      query({ data: [head('r1'), head('r2')], error: null, status: 200 });
-      query({ data: null, error: { code: '57014' }, status: 500 });
-      expect(await make().requests.list(['r1'])).toEqual({ ok: false });
+      expect(await make().requests.lines(ids)).toEqual({ ok: false });
+      query(new Error('offline'));
+      expect(await make().requests.lines(['r1'])).toEqual({ ok: false });
     });
   });
 
@@ -2390,26 +2460,25 @@ describe('the homebrew rows', () => {
       for (let i = 0; i < 3; i++) client.rpc.mockResolvedValueOnce(answer(100));
     };
 
-    it('reads the three heads and the limits alone when nothing changed', async () => {
+    it('reads the three heads alone when nothing changed', async () => {
       const heads = [
         query(answer([{ id: 'b1', revision: 1 }])),
         query(answer([{ id: 'i1', revision: 3 }])),
         query(answer([{ id: 'c1', revision: 2 }]))
       ];
-      limits();
       expect(await make().homebrew.load(KNOWN)).toEqual({
         ok: true,
         books: [],
         items: [],
         cards: [],
         kept: { books: ['b1'], items: ['i1'], cards: ['c1'] },
-        itemLimit: 100,
-        bookLimit: 100,
-        cardLimit: 100
+        itemLimit: undefined,
+        bookLimit: undefined,
+        cardLimit: undefined
       });
       for (const calls of heads) expect(calls).toEqual([['select', ['id,revision']]]);
       expect(client.from).toHaveBeenCalledTimes(3);
-      expect(client.rpc).toHaveBeenCalledTimes(3);
+      expect(client.rpc).not.toHaveBeenCalled();
     });
 
     it('fetches a changed or new item alone by its id, the others kept', async () => {
@@ -2427,7 +2496,6 @@ describe('the homebrew rows', () => {
           { ...ITEM, id: 'i2' }
         ])
       );
-      limits();
       const read = await make().homebrew.load(KNOWN);
       expect(changed).toEqual([
         ['select', [SELECTS.items]],
@@ -2443,7 +2511,6 @@ describe('the homebrew rows', () => {
       query(answer(many));
       query(answer([{ id: 'c1', revision: 2 }]));
       const whole = query(answer(many.map((r) => ({ ...ITEM, id: r.id }))));
-      limits();
       const read = await make().homebrew.load(KNOWN);
       expect(whole).toEqual([['select', [SELECTS.items]]]);
       expect(read.ok && read.items).toHaveLength(51);
@@ -2454,13 +2521,11 @@ describe('the homebrew rows', () => {
       query(failed('57014', 500));
       query(answer([{ id: 'i1', revision: 3 }]));
       query(answer([{ id: 'c1', revision: 2 }]));
-      limits();
       expect(await make().homebrew.load(KNOWN)).toEqual({ ok: false });
       query(answer([{ id: 'b1', revision: 1 }]));
       query(answer([{ id: 'i1', revision: 9 }]));
       query(answer([{ id: 'c1', revision: 2 }]));
       query(failed('57014', 500));
-      limits();
       expect(await make().homebrew.load(KNOWN)).toEqual({ ok: false });
     });
 
@@ -2472,6 +2537,55 @@ describe('the homebrew rows', () => {
       const read = await make().homebrew.load({ books: {}, items: {}, cards: {} });
       expect(books).toEqual([['select', [SELECTS.books]]]);
       expect(read.ok && 'kept' in read).toBe(false);
+    });
+
+    const heads = (): void => {
+      query(answer([{ id: 'b1', revision: 1 }]));
+      query(answer([{ id: 'i1', revision: 3 }]));
+      query(answer([{ id: 'c1', revision: 2 }]));
+    };
+    const whole = (): void => {
+      query(answer([BOOK]));
+      query(answer([ITEM]));
+      query(answer([CARD]));
+    };
+    const limitCalls = () => client.rpc.mock.calls.filter(([fn]) => fn === 'my_limit').length;
+
+    it('reads the three limits again on the re-read after a failed limit read, and none after that', async () => {
+      whole();
+      client.rpc
+        .mockResolvedValueOnce(answer(100))
+        .mockResolvedValueOnce(failed('PGRST202', 404))
+        .mockResolvedValueOnce(answer(100));
+      const { homebrew } = make();
+      expect(await homebrew.load()).toMatchObject({ ok: true, bookLimit: undefined });
+      expect(limitCalls()).toBe(3);
+      heads();
+      limits();
+      expect(await homebrew.load(KNOWN)).toMatchObject({ itemLimit: 100, bookLimit: 100 });
+      expect(limitCalls()).toBe(6);
+      heads();
+      expect(await homebrew.load(KNOWN)).toMatchObject({ ok: true, bookLimit: undefined });
+      expect(limitCalls()).toBe(6);
+    });
+
+    it('a failed rows read keeps the due flag', async () => {
+      whole();
+      client.rpc
+        .mockResolvedValueOnce(answer(100))
+        .mockResolvedValueOnce(failed('PGRST202', 404))
+        .mockResolvedValueOnce(answer(100));
+      const { homebrew } = make();
+      await homebrew.load();
+      query(failed('57014', 500));
+      query(answer([{ id: 'i1', revision: 3 }]));
+      query(answer([{ id: 'c1', revision: 2 }]));
+      limits();
+      expect(await homebrew.load(KNOWN)).toEqual({ ok: false });
+      heads();
+      limits();
+      expect(await homebrew.load(KNOWN)).toMatchObject({ bookLimit: 100 });
+      expect(limitCalls()).toBe(9);
     });
   });
 
@@ -2801,6 +2915,37 @@ describe('the homebrew rows', () => {
     ]);
   });
 
+  it('removes many items in one delete_homebrew_items call', async () => {
+    client.rpc.mockResolvedValueOnce({ data: 2, error: null, status: 200 });
+    expect(await make().homebrew.removeItems(['i1', 'i2'])).toEqual({ ok: true });
+    expect(client.rpc).toHaveBeenCalledOnce();
+    expect(client.rpc).toHaveBeenCalledWith('delete_homebrew_items', { p_ids: ['i1', 'i2'] });
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [
+      '400 22023',
+      { error: { code: '22023', message: 'delete_homebrew_items: not a list' }, status: 400 },
+      { ok: false, error: 'refused' }
+    ],
+    [
+      'the statement timeout',
+      { error: { code: '57014', message: 'canceling statement' }, status: 500 },
+      { ok: false, error: 'network' }
+    ],
+    [
+      'no such function, after a reversal',
+      { error: { code: 'PGRST202', message: 'Could not find the function' }, status: 404 },
+      { ok: false, error: 'refused' }
+    ],
+    ['thrown', new Error('offline'), { ok: false, error: 'network' }]
+  ])('reads a bulk delete answered %s', async (_name, answer, want) => {
+    if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
+    else client.rpc.mockResolvedValueOnce({ data: null, ...answer });
+    expect(await make().homebrew.removeItems(['i1'])).toEqual(want);
+  });
+
   it('creates, updates and removes a card on homebrew_cards', async () => {
     const cloud = make();
     const row = {
@@ -2896,6 +3041,20 @@ describe('the homebrew rows', () => {
       void call(make()).then((a) => {
         got = a;
       });
+      await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
+      expect(got).toBe('pending');
+      await vi.advanceTimersByTimeAsync(1);
+      expect(got).toEqual({ ok: false, error: 'network' });
+    });
+
+    it('answers network for a bulk delete with no answer after WRITE_TIMEOUT_MS', async () => {
+      client.rpc.mockImplementationOnce(() => new Promise<never>(() => undefined));
+      let got: unknown = 'pending';
+      void make()
+        .homebrew.removeItems(['i'])
+        .then((a) => {
+          got = a;
+        });
       await vi.advanceTimersByTimeAsync(WRITE_TIMEOUT_MS - 1);
       expect(got).toBe('pending');
       await vi.advanceTimersByTimeAsync(1);

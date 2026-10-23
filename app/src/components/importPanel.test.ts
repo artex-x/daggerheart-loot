@@ -42,19 +42,24 @@ describe('the import field', () => {
     const { container } = await opened();
     expect(screen.getByText('Импорт из файла JSON')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
-    const schema = screen.getByRole('link', { name: 'схеме import-v1' });
-    expect(schema).toHaveAttribute('href', 'schema/import-v1.json');
+    const schema = screen.getByRole('link', { name: 'схеме import-v3' });
+    expect(schema).toHaveAttribute('href', 'schema/import-v3.json');
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
     const llms = screen.getByRole('link', { name: 'описание для ИИ-помощников' });
     expect(llms).toHaveAttribute('href', 'llms.txt');
     expect(llms).toHaveAttribute('target', '_blank');
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
-      'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по схеме import-v1 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.'
+      'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по схеме import-v3 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.'
     );
     const input = container.querySelector('input[type="file"]');
     expect(input).toHaveAttribute('accept', '.json,.zip,application/json,application/zip');
     await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(await screen.findByRole('link', { name: 'import-v3 schema' })).toHaveAttribute(
+      'href',
+      'schema/import-v3.json'
+    );
   });
 
   it('opens the picker from «Выбрать файл...»', async () => {
@@ -444,7 +449,9 @@ describe('own items in a lists file', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
     choose(container, fixture('example-v2.json'));
     expect(
-      await screen.findByText('Ваши предметы ещё загружаются - повторите через секунду.')
+      await screen.findByText(
+        'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.'
+      )
     ).toHaveAttribute('role', 'status');
     expect(screen.queryByRole('button', { name: /Импортировать/ })).toBeNull();
     await expectNoA11yViolations(container);
@@ -746,7 +753,9 @@ describe('own items without a snapshot in a lists file', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
     choose(container, oneList([{ id: 'ci1' }, { id: AXE, source: 'homebrew' }]));
     expect(
-      await screen.findByText('Ваши предметы ещё загружаются - повторите через секунду.')
+      await screen.findByText(
+        'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.'
+      )
     ).toHaveAttribute('role', 'status');
     expect(screen.queryByRole('button', { name: /Импортировать/ })).toBeNull();
     open();

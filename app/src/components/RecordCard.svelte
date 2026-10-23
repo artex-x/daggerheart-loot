@@ -15,7 +15,7 @@
      card follows the site's card". */
   import Actions from './Actions.svelte';
   import Badge from './Badge.svelte';
-  import Button from './Button.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
   import Markup from './Markup.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
@@ -205,15 +205,14 @@
 <!-- The fold of a relation line or the ladder: «и ещё N» closed, «свернуть» open; the same
      button both ways, so the focus stays on it. -->
 {#snippet moreButton(line: Line, more: number)}
-  <Button
-    variant="bare"
-    size="sm"
-    caret
-    expanded={isOpen(line)}
-    onclick={() => {
+  <FoldButton
+    open={isOpen(line)}
+    more={t.andMore.replace('%n', String(more))}
+    {t}
+    ontoggle={() => {
       toggle(line);
-    }}>{isOpen(line) ? t.relLess : t.andMore.replace('%n', String(more))}</Button
-  >
+    }}
+  />
 {/snippet}
 
 <!-- eslint-disable @typescript-eslint/no-confusing-void-expression, svelte/no-useless-mustaches --
@@ -658,6 +657,7 @@
     color: #cfc8e0;
     font-size: 13.5px;
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
   /* The body's 8px gap less 2px: the line belongs to the text under it. */
@@ -686,6 +686,7 @@
     align-items: baseline;
     gap: 2px 5px;
     margin: 0;
+    overflow-wrap: anywhere;
     font-size: 12.5px;
     line-height: 1.45;
     min-width: 0;

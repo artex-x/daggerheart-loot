@@ -2662,6 +2662,23 @@ describe("the account's write buffer", () => {
     expect(app.cloudLists?.lists.map((l) => l.name)).not.toContain('Сто одна');
     app.stop();
   });
+
+  it('makes no copy at the list limit: it says the limit and stays on the link', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', { limits: { lists: 1 } });
+    const shared = encodeList({ name: 'Копия', ids: ['ci1'] }, true);
+    const { app } = started(cloud, sharedListHash(shared));
+    await flush();
+    expect(app.cloudLists?.full()).toBe(true);
+    const before = app.hash;
+    app.saveCopyOf({ name: 'Копия', ids: ['ci1'], dropped: 0 });
+    expect(app.toast).toMatchObject({
+      msg: 'Достигнут предел списков в аккаунте: 1. Нужно больше - напишите на daggerheart.loot@gmail.com.',
+      mode: 'err'
+    });
+    expect(app.cloudLists?.lists.map((l) => l.name)).not.toContain('Копия');
+    expect(app.hash).toBe(before);
+    app.stop();
+  });
 });
 
 describe('the move of browser lists and the cutoff', () => {
@@ -4194,7 +4211,7 @@ describe('the item page and «Сохранить себе»', () => {
     app.stop();
   });
 
-  it('writes each copy under a new key and its set card once under the derived key, which the second copy names', async () => {
+  it('writes each copy under a new key with no set and copies no set card', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const { app } = started(cloud, '#/h/' + ROLL_B);
     await flush();
@@ -4206,19 +4223,19 @@ describe('the item page and «Сохранить себе»', () => {
     const GM2 = SEED.users.gm2.id;
     const read = await cloud.homebrew.load();
     if (!read.ok) throw new Error('no read');
-    const SET = derivedKey(GM2, 'hb_starsleepsetaaaa');
+    expect(record.set).toBe('hb_starsleepsetaaaa');
     expect(read.items).toHaveLength(2);
     for (const item of read.items) {
       expect(item.key).toMatch(HOMEBREW_KEY);
       expect(item.key).not.toBe(derivedKey(GM2, 'hb_rangerrollaaaaaa'));
-      expect(item.content.set).toBe(SET);
+      expect(item.content.set).toBeUndefined();
     }
     expect(read.items.map((i) => i.content.ru)).toEqual([
       'Скатка следопыта',
       'Скатка следопыта (2)'
     ]);
     expect(read.items.map((i) => i.content.en)).toEqual(["Ranger's Roll", "Ranger's Roll (2)"]);
-    expect(read.cards.map((c) => c.key)).toEqual([SET]);
+    expect(read.cards.filter((c) => c.kind === 'set')).toEqual([]);
     app.stop();
   });
 
@@ -4879,7 +4896,20 @@ describe('printing', () => {
     expect(app.printing).toBe(false);
     expect(app.hash).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
     expect(await entriesOf(cloud, app.hash)).toEqual([{ k: 'ci1', q: 3 }, { k: 'q1' }]);
-    expect(app.toast).toBeNull();
+    expect(app.toast?.msg).toBe(ru.printSkipped.replace('%n', '1'));
+    app.stop();
+  });
+
+  it('makes the set from the known entries and names how many it left out', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    expect(app.homebrew?.status).toBe('ready');
+    await app.print(['ci1', 'hb_unknownitemaaaa']);
+    expect(await entriesOf(cloud, app.hash)).toEqual([{ k: 'ci1' }]);
+    expect(app.toast?.msg).toBe('Не напечатано предметов: 1 - они не загружены.');
+    await app.print([...many(181), 'hb_unknownitemaaaa', 'zzz']);
+    expect(app.toast?.msg).toBe(tooMany(1) + ' ' + ru.printSkipped.replace('%n', '2'));
     app.stop();
   });
 

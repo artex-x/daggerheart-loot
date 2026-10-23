@@ -16,24 +16,21 @@ export interface RequestLine {
   applied: number | null;
 }
 
-/** A pending request as its list's owner reads it. `readAt` is null until the owner's
- *  page first draws it; from then it expires within the hour. */
-export interface OwnerRequest {
+/** A pending request as the heads read names it, with no lines. `readAt` is null until
+ *  the owner's page first draws it; from then it expires within the hour. While it is
+ *  pending only its read mark and its expiry change. */
+export interface RequestHead {
   id: string;
   listId: string;
   audience: ShareAudience;
   createdAt: string;
   expiresAt: string;
   readAt: string | null;
-  lines: RequestLine[];
 }
 
-/** A pending request as a re-read's head names it: while it is pending only its read
- *  mark and its expiry change. */
-export interface RequestHead {
-  id: string;
-  readAt: string | null;
-  expiresAt: string;
+/** A pending request as its list's owner reads it, with its lines. */
+export interface OwnerRequest extends RequestHead {
+  lines: RequestLine[];
 }
 
 /** A line an apply could not fill: the count asked for and the stock. */
@@ -63,24 +60,32 @@ function lineOf(v: unknown): RequestLine | null {
   return { item, qty, price, applied };
 }
 
-function requestOf(v: unknown): OwnerRequest | null {
+function headOf(v: unknown): RequestHead | null {
   if (!isRecord(v)) return null;
   const { id, list_id, audience, created_at, expires_at, read_at } = v;
-  const rows = v['purchase_request_lines'];
   if (typeof id !== 'string' || typeof list_id !== 'string' || !isCloudId(list_id)) return null;
   if (audience !== 'player' && audience !== 'gm') return null;
   if (typeof created_at !== 'string' || typeof expires_at !== 'string') return null;
   if (read_at !== null && read_at !== undefined && typeof read_at !== 'string') return null;
-  if (!Array.isArray(rows)) return null;
-  const lines = rows.map(lineOf);
-  if (lines.some((l) => l === null)) return null;
   return {
     id,
     listId: list_id,
     audience,
     createdAt: created_at,
     expiresAt: expires_at,
-    readAt: typeof read_at === 'string' ? read_at : null,
+    readAt: typeof read_at === 'string' ? read_at : null
+  };
+}
+
+function requestOf(v: unknown): OwnerRequest | null {
+  const head = headOf(v);
+  if (!head) return null;
+  const rows = (v as Record<string, unknown>)['purchase_request_lines'];
+  if (!Array.isArray(rows)) return null;
+  const lines = rows.map(lineOf);
+  if (lines.some((l) => l === null)) return null;
+  return {
+    ...head,
     lines: (lines as RequestLine[]).sort((a, b) => (a.item < b.item ? -1 : 1))
   };
 }
@@ -97,19 +102,7 @@ export function readRequests(data: unknown): OwnerRequest[] | null {
  *  is skipped. Null when `data` is not an array. */
 export function readRequestHeads(data: unknown): RequestHead[] | null {
   if (!Array.isArray(data)) return null;
-  const heads: RequestHead[] = [];
-  for (const v of data as unknown[]) {
-    if (!isRecord(v)) continue;
-    const { id, expires_at, read_at } = v;
-    if (typeof id !== 'string' || typeof expires_at !== 'string') continue;
-    if (read_at !== null && read_at !== undefined && typeof read_at !== 'string') continue;
-    heads.push({
-      id,
-      expiresAt: expires_at,
-      readAt: typeof read_at === 'string' ? read_at : null
-    });
-  }
-  return heads;
+  return data.map(headOf).filter((h): h is RequestHead => h !== null);
 }
 
 /** A `list_notices` row as the owner's read returns it: one item of one list that its

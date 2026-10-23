@@ -284,6 +284,28 @@ describe('reading the account', () => {
     expect((await serverList(cloud.lists, SHOP))?.name).toBe('Новое');
   });
 
+  it('a read dropped for an edit still applies its limits', async () => {
+    const { cloud, store } = await loaded();
+    const real = cloud.lists.list.bind(cloud.lists);
+    vi.spyOn(cloud.lists, 'list')
+      .mockImplementationOnce(async (known) => {
+        const r = await real(known);
+        return r.ok ? { ...r, listLimit: 7, entryLimit: 9 } : r;
+      })
+      .mockImplementation(async (known) => {
+        /* As the real port's re-read: no limit read. */
+        const r = await real(known);
+        return r.ok ? { ...r, listLimit: undefined, entryLimit: undefined } : r;
+      });
+    const pending = store.refresh();
+    store.rename(SHOP, 'Новое');
+    await pending;
+    expect([store.listLimit, store.entryLimit]).toEqual([7, 9]);
+    await quiet();
+    expect(store.get(SHOP)?.name).toBe('Новое');
+    expect([store.listLimit, store.entryLimit]).toEqual([7, 9]);
+  });
+
   it('keeps a list made while the first read was in flight', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const store = new CloudLists(cloud.lists, say, t);
@@ -336,6 +358,19 @@ describe('reading the account', () => {
 });
 
 describe('the writers', () => {
+  it('is full at the list limit, a list not yet sent counted, and never with no limit known', async () => {
+    const none = new CloudLists(fakeCloud(SEED, 'gm1').lists, say, t);
+    expect(none.listLimit).toBeNull();
+    expect(none.full()).toBe(false);
+    const below = await loaded({ limits: { lists: 4 } });
+    expect(below.store.lists).toHaveLength(3);
+    expect(below.store.full()).toBe(false);
+    below.store.create('Четвёртый');
+    expect(below.store.full()).toBe(true);
+    const at = await loaded({ limits: { lists: 3 } });
+    expect(at.store.full()).toBe(true);
+  });
+
   it("change a list the way the local store's writers change it", async () => {
     const { cloud, store } = await loaded();
     const local = new ListStore(fakeEnv({ storage: memoryStorage() }), say, t);

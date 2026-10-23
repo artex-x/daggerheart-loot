@@ -102,10 +102,11 @@ check arms the commit gate by its own exit, not a host-wide lock";
 While nothing is running, a `npm run check` of your own, in the background,
 is worth the minutes: it is a status, so it is yours to take, it arms the
 commit gate for that exact tree by its exit, and it hands the resumed worker
-its next action instead of a shrug. It found eleven typecheck errors on a
-stalled batch this way, 2026-09-10.
+its next action instead of a shrug.
 
-**CI is the full gate.** After a writer pushes, run one background call,
+**CI is the full gate.** Every branch merges the latest `origin/main`
+before each push, never a rebase (owner, 2026-10-22). After a writer pushes,
+run one background call,
 `node <worktree>/.claude/hooks/ci-credit.mjs <sha>`, with the script's path
 in the batch's worktree (it judges the checkout that holds it); the harness
 notifies you at its exit. No loop, no sleep, no second call while it runs.
@@ -246,12 +247,11 @@ its full report to `issues/<id>/reviews/<batch>.md` (a plan review:
 path. You keep the register `issues/<id>/reviews.md`, one row per finding:
 the id `<batch>-<n>`, the severity, `local` or `deferred-scope`, and the
 status (`open`, `fixed <batch>`, `fixed plan` for a finding applied to the
-plan, `deferred`, `DEBT D<n>` or `named`). When
-the report file is missing after a review (the reviewer could not write),
-write the returned text there word for word before anything else. A finding
-that lives only in your context dies with the session - 2026-09-17: four
-reviews' worth of nits, risks and evidence were one context away from being
-lost. Add the rows as the review lands, not when somebody actions them; at
+plan, `deferred`, `DEBT D<n>` or `named`). A text that a worker returns
+because a guard refused its write (`CLAUDE.md`), a missing report included,
+you write to its path word for word first. A finding that lives only in your
+context dies with the session (2026-09-17: four reviews' findings were nearly
+lost). Add the rows as the review lands, not when somebody actions them; at
 closeout the register's open rows go to `docs/specs/DEBT.md` or are named to
 the human and dropped.
 
@@ -542,7 +542,7 @@ Before reporting a batch or task complete:
 5. Remove only disposable, task-scoped scratch artifacts created during this task and clearly safe to delete. Preserve source attachments, approved mocks, screenshots or logs cited as evidence, and anything user-owned or ambiguous. The `Stop` hook names this session's own untracked writes (excluding `docs/` and the task-document set) as a candidate set, not a verdict - it states what is there, never what to do with it. The session that watched the files appear is the one that can tell scratch from evidence; a hook cannot. Record what was removed or deliberately retained in `handoff.md`.
 6. Retire the task directory per `.claude/skills/handoff/SKILL.md`, "Finishing a task": audit, move, check owner rules, repair every citation `git grep -n "issues/<id>" -- ':!issues/'` finds (unslashed and scoped outside all of `issues/` - the same boundary `bash-guard.mjs` rule 2i checks, so a bare-name citation with no trailing slash is not missed; a sibling id that merely starts with this one is not a real hit), `git rm -r issues/<id>` in a closeout commit on the task branch - `bash-guard.mjs` rule 2i denies the deletion while a citation stands, so the order is not optional. A citation repair that touches a non-exempt file puts the commit behind `rtk npm run check:fast`. A directory whose task is planned but not started stays until that task closes.
 7. A retired task leaves nothing behind but its commit on `main` and what it wrote to permanent homes. Closeout is not finished until the closeout summary names the pushed sha and every place something was moved to.
-8. Land the branch: if `main` moved, merge `origin/main` into the task branch (a merge commit, never a rebase); push; wait with the background CI credit for its tip. Then in the main checkout: `git pull`, `git merge --squash <branch>`, `node E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>` (the squash put this copy in the main checkout, which it judges), commit, push `main` (rule 2x checks the key), and watch the `main` run deploy with one background `gh run watch <id> --exit-status`; a cancelled `e2e` there is `gh run rerun <id> --failed`. If the credit refuses for a differing path, the owner removes the file and the credit runs again (with no new migration, this session may run `npm run check` in the background); then commit. After `main`'s run is green, delete the remote task branch (`git push origin --delete <branch>`) and the task worktree's `.env.test.local` copy (never the main checkout's).
+8. Land the branch: merge the latest `origin/main` ("CI is the full gate"); push; wait with the background CI credit for its tip. Then in the main checkout: `git pull`, `git merge --squash <branch>`, `node E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>` (the squash put this copy in the main checkout, which it judges), commit, push `main` (rule 2x checks the key), and watch the `main` run deploy with one background `gh run watch <id> --exit-status`; a cancelled `e2e` there is `gh run rerun <id> --failed`. If the credit refuses for a differing path, the owner removes the file and the credit runs again (with no new migration, this session may run `npm run check` in the background); then commit. After `main`'s run is green, delete the remote task branch (`git push origin --delete <branch>`) and the task worktree's `.env.test.local` copy (never the main checkout's).
 9. Finish with a concise summary: outcome, commit (pushed sha), checks, cleanup, retained artifacts, deferred work, and whether human action is required.
 
 ## Rules

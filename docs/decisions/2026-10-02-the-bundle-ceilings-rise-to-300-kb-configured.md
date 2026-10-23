@@ -1,6 +1,7 @@
 # 2026-10-02 - The bundle ceilings rise to 300 kB configured and 250 unconfigured
 
 - Amended by "The configured bundle ceiling rises to 350 kB" (2026-10-14): the configured ceiling is 350 kB.
+- Amended by "The unconfigured bundle ceiling rises to 270 kB" (2026-10-22): the unconfigured ceiling is 270 kB.
 - Task: `persist-7f-consistency` (owner's answer O-1, 2026-10-02).
 - Decision: the per-batch step of `tools/bundle-budget.mjs` stays (a batch
   whose build passes a budget raises it to its measured size plus about

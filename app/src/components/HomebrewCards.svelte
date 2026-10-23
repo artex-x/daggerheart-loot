@@ -8,19 +8,23 @@
      «Убрать». An own member's change writes that item's `set` or `refs`; a book item's
      writes the card, whose picker offers nothing and whose «Убрать» buttons wait while it is
      in flight. One card form is open at a time; «Изменить» opens it in place of the row. A
-     delete asks with the count of members; the own items keep its key
-     (docs/specs/FEATURES.md, "Homebrew", "Cards"). */
+     delete asks with the count of members; the own items keep its key. Past 20 members the
+     card draws the first 20 and a fold; a member's «Убрать» toasts «Вернуть»; a removal
+     or a closed form hands the focus on (docs/specs/FEATURES.md, "Homebrew", "Cards",
+     rules 10, 12 and 20). */
   import { tick, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import CardForm from './CardForm.svelte';
   import Empty from './Empty.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
   import ItemPicker from './ItemPicker.svelte';
   import Markup from './Markup.svelte';
   import SearchBox from './SearchBox.svelte';
   import { limitText } from '../lib/cloudLists.js';
   import { refsOf } from '../lib/data.js';
+  import { ROW_FOLD_AT, foldRows } from '../lib/folds.js';
   import { recordHref } from '../lib/hash.js';
   import {
     CARD_ITEMS_MAX,
@@ -66,7 +70,11 @@
   const open = new SvelteSet<string>();
   const pending = new SvelteSet<string>();
   const pendingCards = new SvelteSet<string>();
+  /* The cards whose member fold is open: page memory. */
+  const membersOpen = new SvelteSet<string>();
   let findQ = $state('');
+  let root = $state<HTMLDivElement | undefined>(undefined);
+  let newButton = $state<HTMLButtonElement | undefined>(undefined);
   const statLine = $derived(statLineFor(lang, t));
   const hay = $derived(hayFor(statLine));
 
@@ -159,6 +167,12 @@
     else open.add(id);
   }
 
+  /* Rule 20: the first of the given controls still in the page, else `#main`. */
+  function focusOr(...els: (HTMLElement | null | undefined)[]): void {
+    const next = els.find((e) => e?.isConnected) ?? document.getElementById('main');
+    next?.focus();
+  }
+
   async function remove(c: CardRow): Promise<void> {
     const name = named(c.content);
     const uses = cardMembers(store.items, c.kind, c.key).length + cardItemIds(c).length;
@@ -169,21 +183,37 @@
           .replace('%r', plural(uses, t.hbItemsIn, lang))
       : (set ? t.hbDeleteSet : t.hbDeleteRef).replace('%s', name);
     if (!app.env.dialog.confirm(ask)) return;
+    const dels = (): HTMLElement[] => [
+      ...(root?.querySelectorAll<HTMLElement>('.cards > li .head .btn.danger') ?? [])
+    ];
+    /* Counted among the drawn buttons: a row with its form open draws none. */
+    const at = dels().findIndex((b) => b.closest('li')?.id === 'hb-card-' + c.id);
     const r = await store.removeCard(c);
-    if (r.ok) app.say((t) => (set ? t.hbSetDeleted : t.hbCardDeleted).replace('%s', name));
-    else app.say((t) => t.hbDeleteFailed, { error: true });
+    if (!r.ok) {
+      app.say((t) => t.hbDeleteFailed, { error: true });
+      return;
+    }
+    app.say((t) => (set ? t.hbSetDeleted : t.hbCardDeleted).replace('%s', name));
+    await tick();
+    const after = dels();
+    focusOr(after[at], after[at - 1], newButton);
   }
 
   /* One item write from the row the store holds at the press; a conflict or a gone row
-     reads the account again, and the next press writes from that read. */
-  async function write(row: ItemRow, content: HomebrewContent): Promise<void> {
+     reads the account again, and the next press writes from that read. `undo` puts
+     «Вернуть» on the saved toast. Answers whether it saved. */
+  async function write(
+    row: ItemRow,
+    content: HomebrewContent,
+    undo?: () => void
+  ): Promise<boolean> {
     const r0 = records.get(row.key);
     const name = r0 ? nameOf(r0, lang) : row.key;
     pending.add(row.key);
     try {
       const r = await store.updateItem(row, { content, book_id: row.book_id }, row.revision);
       if (r.ok) {
-        app.say((t) => t.hbSaved.replace('%s', name));
+        app.say((t) => t.hbSaved.replace('%s', name), undoAction(undo));
       } else if (r.error === 'conflict') {
         await store.read();
         app.say((t) => t.hbItemChanged, { error: true });
@@ -195,17 +225,25 @@
       } else {
         app.say((t) => t.hbWriteFailed, { error: true });
       }
+      return r.ok;
     } finally {
       pending.delete(row.key);
     }
   }
+
+  /* The toast options of a saved member write: «Вернуть» when it can be undone (rule 10). */
+  const undoAction = (
+    undo: (() => void) | undefined
+  ): { action?: { label: (t: typeof app.t) => string; run: () => void } } =>
+    undo ? { action: { label: (t) => t.undo, run: undo } } : {};
 
   /* One card write from the row the store holds at the press; the store reads the account
      again on a conflict or a gone row. Answers whether it saved. */
   async function writeCard(
     cardId: string,
     change: (content: CardContent) => CardContent,
-    itemName: string
+    itemName: string,
+    undo?: () => void
   ): Promise<boolean> {
     const row = store.cards.find((x) => x.id === cardId);
     if (!row) return false;
@@ -216,7 +254,7 @@
         { content: change(row.content), book_id: row.book_id },
         row.revision
       );
-      if (r.ok) app.say((t) => t.hbSaved.replace('%s', () => itemName));
+      if (r.ok) app.say((t) => t.hbSaved.replace('%s', () => itemName), undoAction(undo));
       else if (r.error === 'conflict') app.say((t) => t.hbCardChanged, { error: true });
       else if (r.error === 'gone') app.say((t) => t.hbCardGone, { error: true });
       else if (r.error === 'limit')
@@ -325,14 +363,32 @@
     void write(row, { ...row.content, refs: [...refs, c.key] });
   }
 
-  function drop(c: CardRow, key: string): void {
+  /* A member leaves the card. «Вернуть» adds it back from the card as the store holds it at
+     that press, so an item another device moved meanwhile asks the move question; then the
+     focus goes to the member «Убрать» now at `at`, the one before, or the card's picker. */
+  async function drop(c: CardRow, key: string, at: number): Promise<void> {
+    const undo = (): void => {
+      const now = store.cards.find((x) => x.id === c.id);
+      if (now) add(now, key);
+    };
+    let ok: boolean;
     if (!isHomebrewKey(key)) {
       const r0 = app.catalog?.byId.get(key);
-      void writeCard(c.id, withoutItem(key), r0 ? nameOf(r0, lang) : t.hbGoneItem);
-      return;
+      ok = await writeCard(c.id, withoutItem(key), r0 ? nameOf(r0, lang) : t.hbGoneItem, undo);
+    } else {
+      const row = store.item(key);
+      if (!row) return;
+      ok = await write(row, dropped(c, row), undo);
     }
-    const row = store.item(key);
-    if (!row) return;
+    if (!ok) return;
+    await tick();
+    const card = document.getElementById('hb-card-' + c.id);
+    const xs = [...(card?.querySelectorAll<HTMLElement>('.members li .btn') ?? [])];
+    focusOr(xs[at], xs[at - 1], document.getElementById('hb-add-' + c.id));
+  }
+
+  /* An own member's content without this card. */
+  function dropped(c: CardRow, row: ItemRow): HomebrewContent {
     const content: HomebrewContent = { ...row.content };
     if (kind === 'set') {
       delete content.set;
@@ -341,15 +397,24 @@
       if (refs.length) content.refs = refs;
       else delete content.refs;
     }
-    void write(row, content);
+    return content;
   }
 
+  /* A card form closes, sent or cancelled: the focus goes back to what opened it. */
   const close = (): void => {
+    const was = editing;
     editing = null;
+    void tick().then(() => {
+      focusOr(
+        was === 'new'
+          ? newButton
+          : document.querySelector<HTMLElement>('#hb-card-' + String(was) + ' .acts .btn')
+      );
+    });
   };
 </script>
 
-<div class="hbtab">
+<div class="hbtab" bind:this={root}>
   <div class="add">
     {#if editing === 'new'}
       <CardForm
@@ -367,6 +432,7 @@
     {:else}
       <Button
         variant="primary"
+        bind:el={newButton}
         onclick={() => {
           editing = 'new';
         }}><Icon name="plus" />{kind === 'set' ? t.hbNewSet : t.hbNewCard}</Button
@@ -479,8 +545,14 @@
                   onremove={() => {}}
                 />
                 {#if members.length}
+                  {@const memberFold = foldRows(
+                    members,
+                    membersOpen.has(c.id),
+                    ROW_FOLD_AT,
+                    ROW_FOLD_AT
+                  )}
                   <ul class="members">
-                    {#each members as m (m.id)}
+                    {#each memberFold.rows as m, mi (m.id)}
                       <li>
                         {#if m.record}<a href={recordHref(m.record)}>{m.name}</a
                           >{#if m.book}<span class="src">{srcLabel(m.record, lang)}</span
@@ -490,13 +562,24 @@
                           variant="ghost"
                           label={t.hbRemove.replace('%s', () => m.name)}
                           disabled={pending.has(m.id) || pendingCards.has(c.id)}
-                          onclick={() => {
-                            drop(c, m.id);
-                          }}>{t.hbRemoveMember}</Button
+                          onclick={() => void drop(c, m.id, mi)}>{t.hbRemoveMember}</Button
                         >
                       </li>
                     {/each}
                   </ul>
+                  {#if members.length > ROW_FOLD_AT}
+                    <div>
+                      <FoldButton
+                        open={membersOpen.has(c.id)}
+                        more={t.andMore.replace('%n', String(memberFold.more))}
+                        {t}
+                        ontoggle={() => {
+                          if (membersOpen.has(c.id)) membersOpen.delete(c.id);
+                          else membersOpen.add(c.id);
+                        }}
+                      />
+                    </div>
+                  {/if}
                 {/if}
               </div>
             {/if}
@@ -528,6 +611,7 @@
     margin: 0;
     padding: 0;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* The address key scrolls its card under the sticky top bar: the row anchor's margins
@@ -573,8 +657,10 @@
 
   .count,
   .src {
+    min-width: 0;
     font-size: 13px;
     color: var(--muted2);
+    overflow-wrap: anywhere;
   }
 
   .acts {

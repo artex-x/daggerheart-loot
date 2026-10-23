@@ -51,6 +51,10 @@ export interface NewIds {
 }
 
 const NETWORK: ListWrite = { ok: false, error: 'network' };
+/** The most ids one `delete_homebrew_items` call names. One call of 300 items linked from
+ *  45000 entries of another owner's lists reached the 4 s bound of the hosted timeout's half
+ *  (docs/decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md). */
+export const DELETE_CHUNK = 50;
 
 type Row = { id: string; revision: number; updated_at: string; created_at: string };
 
@@ -152,11 +156,10 @@ export class Homebrew {
   /* The rows this store wrote since its last applied read: their times are the client's, so
      the next read fetches them whole and brings the database's. */
   #written: Record<string, true> = {};
-  /* Each read's number, taken when it is sent, and the newest one applied: an older answer
-     is dropped, so it can neither remove a row a newer read brought nor bring back one it
-     deleted. */
-  #readSeq = 0;
-  #appliedSeq = 0;
+  /* The read in flight, and whether a call asked for another while it ran: reads never
+     overlap, so an older answer cannot land over a newer one. */
+  #running: Promise<boolean> | null = null;
+  #again = false;
   /* Rows whose create got no answer: it may have landed. */
   #unsure: Record<string, true> = {};
   #timer: ReturnType<typeof setTimeout> | null = null;
@@ -190,32 +193,65 @@ export class Homebrew {
   }
 
   /** Reads again; answers true when the read answered. A failed read keeps what is shown;
-   *  after a failed first read it reads as `load` does, with no «Загружаем...». */
-  async read(): Promise<boolean> {
-    const epoch = this.#epoch;
+   *  after a failed first read it reads as `load` does, with no «Загружаем...». A read
+   *  asked for while one runs is made once more when it ends; both callers get its answer. */
+  read(): Promise<boolean> {
+    if (this.#running) {
+      this.#again = true;
+      return this.#running;
+    }
+    const run = this.#passes(this.#epoch);
+    this.#running = run;
+    return run;
+  }
+
+  async #passes(epoch: number): Promise<boolean> {
+    try {
+      let answered: boolean;
+      do {
+        this.#again = false;
+        answered = await this.#readOnce(epoch);
+      } while (this.#askedAgain() && epoch === this.#epoch);
+      return answered;
+    } finally {
+      /* In the same step as the last check of the flag: a call after it starts a new read
+         instead of joining one that already ended. After `clear()` (a new epoch) the field
+         may hold a newer read, which this one leaves alone. */
+      if (epoch === this.#epoch) this.#running = null;
+    }
+  }
+
+  /* A call to `read()` sets the flag during the pass; a read through a method keeps the
+     type checker from narrowing it to the `false` set before the pass. */
+  #askedAgain(): boolean {
+    return this.#again;
+  }
+
+  async #readOnce(epoch: number): Promise<boolean> {
     for (;;) {
       while (this.#inFlight.length) await Promise.allSettled(this.#inFlight);
       if (epoch !== this.#epoch) return false;
       const edits = this.#edits;
       const known = this.status === 'ready' ? this.#known() : undefined;
-      const seq = ++this.#readSeq;
       const r = await (known ? this.#repo.load(known) : this.#repo.load());
       if (epoch !== this.#epoch) return false;
+      /* A limit is not row data: a read dropped for an edit still applies it, since the
+         port reads the limits again only after a failed limit read. A limit read that
+         failed or was not made (undefined) keeps the limit known. */
+      if (r.ok) {
+        if (r.itemLimit !== undefined) this.itemLimit = r.itemLimit;
+        if (r.bookLimit !== undefined) this.bookLimit = r.bookLimit;
+        if (r.cardLimit !== undefined) this.cardLimit = r.cardLimit;
+      }
       if (edits !== this.#edits || this.#inFlight.length) continue;
-      if (seq < this.#appliedSeq) return true;
       if (!r.ok) {
         if (this.status === 'loading') this.status = 'error';
         return false;
       }
-      this.#appliedSeq = seq;
       this.#written = {};
       this.books = merged(this.books, r.books, r.kept?.books);
       this.items = merged(this.items, r.items, r.kept?.items);
       this.cards = merged(this.cards, r.cards, r.kept?.cards);
-      /* A limit read that failed (undefined) keeps the limit known. */
-      if (r.itemLimit !== undefined) this.itemLimit = r.itemLimit;
-      if (r.bookLimit !== undefined) this.bookLimit = r.bookLimit;
-      if (r.cardLimit !== undefined) this.cardLimit = r.cardLimit;
       this.status = 'ready';
       return true;
     }
@@ -245,6 +281,8 @@ export class Homebrew {
   /** Signed out, or another user: nothing of the account's homebrew stays. */
   clear(): void {
     this.#epoch++;
+    this.#running = null;
+    this.#again = false;
     this.#unsure = {};
     this.#written = {};
     if (this.#timer !== null) clearTimeout(this.#timer);
@@ -408,32 +446,32 @@ export class Homebrew {
   }
 
   /** Deletes the item; the database removes its references from the lists. */
-  removeItem(row: ItemRow): Promise<ListWrite> {
-    return this.removeItems([row]);
+  async removeItem(row: ItemRow): Promise<ListWrite> {
+    const r = await this.#send(() => this.#repo.removeItem(row.id));
+    if (r.ok) await this.#drop([row.id]);
+    return r;
   }
 
-  /** Deletes the items one by one and stops at the first failure; the ones deleted leave
-   *  the store either way. `onstep` hears the count deleted after each delete. */
-  async removeItems(
-    rows: readonly ItemRow[],
-    onstep?: (done: number) => void
-  ): Promise<ListWrite> {
-    let answer: ListWrite = { ok: true };
-    const gone: string[] = [];
-    for (const row of rows) {
-      const r = await this.#send(() => this.#repo.removeItem(row.id));
-      if (!r.ok) {
-        answer = r;
-        break;
-      }
-      gone.push(row.id);
-      onstep?.(gone.length);
+  /** Deletes the items in requests of `DELETE_CHUNK` ids, in order, each all or none; the
+   *  first failure stops, and the rows of the earlier requests stay deleted. Answers the last
+   *  request's result and how many rows were deleted. */
+  async removeItems(rows: readonly ItemRow[]): Promise<{ result: ListWrite; deleted: number }> {
+    const ids = rows.map((row) => row.id);
+    let deleted = 0;
+    let result: ListWrite = { ok: true };
+    for (let i = 0; i < ids.length; i += DELETE_CHUNK) {
+      const chunk = ids.slice(i, i + DELETE_CHUNK);
+      result = await this.#send(() => this.#repo.removeItems(chunk));
+      if (!result.ok) break;
+      deleted += chunk.length;
     }
-    if (gone.length) {
-      this.items = this.items.filter((x) => !gone.includes(x.id));
-      await this.#hooks.refreshLists();
-    }
-    return answer;
+    if (deleted) await this.#drop(ids.slice(0, deleted));
+    return { result, deleted };
+  }
+
+  async #drop(ids: readonly string[]): Promise<void> {
+    this.items = this.items.filter((x) => !ids.includes(x.id));
+    await this.#hooks.refreshLists();
   }
 
   /** Makes a set or rule card in the source `bookId` (null: the default source). */

@@ -1,5 +1,6 @@
 # 2026-10-14 - The configured bundle ceiling rises to 350 kB
 
+- Amended by "The unconfigured bundle ceiling rises to 270 kB" (2026-10-22): a passed budget rises to the measured total rounded up to the next whole kB, not plus about 5 kB.
 - Task: `print-snapshots` (the owner's decision, 2026-10-14).
 - Decision: the configured ceiling of `tools/bundle-budget.mjs` rises from 300 kB to
   350 kB; the unconfigured ceiling stays 250 kB, and the rule is unchanged: a batch

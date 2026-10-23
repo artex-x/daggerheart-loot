@@ -23,6 +23,7 @@ function sender(answers: RequestSent[] = [], notify: NotifyGm = 'ask') {
   );
   const repo: RequestRepository = {
     list: () => Promise.resolve({ ok: false }),
+    lines: () => Promise.resolve({ ok: false }),
     send,
     apply: () => Promise.resolve({ ok: false, error: 'network' }),
     decline: () => Promise.resolve({ ok: false, error: 'network' }),
@@ -135,6 +136,7 @@ describe('RequestSender.send', () => {
     const s2 = new RequestSender(
       {
         list: () => Promise.resolve({ ok: false }),
+        lines: () => Promise.resolve({ ok: false }),
         send: () => Promise.resolve(refusal),
         apply: () => Promise.resolve({ ok: false, error: 'network' }),
         decline: () => Promise.resolve({ ok: false, error: 'network' }),

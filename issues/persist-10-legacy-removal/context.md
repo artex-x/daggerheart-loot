@@ -130,6 +130,55 @@ Figures from `.claude/README.md`, "Batch size and the fixed cost of a run"
     `docs/fixtures/lists/x.json` is a synthetic path that still exercises
     the `docs/fixtures/` prefix).
 
+## Carries
+
+Two items of the persistence review that the owner deferred to "persistent-cleanup", which
+means R10 itself (owner, 2026-10-22). Each is its own acceptance line in the batch that the
+planner gives it.
+
+- P6 - every signed-in page load reads every entry of every list (`docs/specs/DEBT.md`,
+  "Legacy removal", D115; the batch that fixes it deletes the entry).
+  - Where: `app/src/ports/supabase.ts`, `lists.list` with `LIST_SELECT` (and
+    `CHANGED_ROWS_MAX` = 50); `app/src/state/cloudLists.svelte.ts`, `#pull`; the fake's mirror
+    in `app/src/ports/fake-cloud.ts`; the type `CloudList` in `app/src/lib/cloudLists.ts`.
+  - Cause: a page load starts with an empty `#read`, so `#pull` calls `list()` with no
+    `known`, and the select embeds `list_entries(...)` with both notes for every list. A
+    re-read with more than 50 changed lists reads everything again. R7g made the re-read go by
+    revision; the first read of each load did not change.
+  - Measured 2026-10-22 on this Windows host, local stack seeded at three times the defaults
+    (150 lists of 300 entries, a tenth of the entries with both notes at 4000 characters): the
+    full read with entries 888 ms in SQL, 5019 ms and 81.7 MB over PostgREST, 8-9 s in the
+    browser; every signed-in page state measured (15 states) made 37-60 requests, read
+    82-217 MB and settled in 23-73 s; the heap reached 177 MB at 360 px. With short notes the
+    same 45 000 entries are est. 11 MB. At the defaults (50 lists of 100 entries) the read is
+    est. under 1 s.
+  - What the reader sees at 3x: every page that waits for the account (`#/lists`, a list page,
+    `#/homebrew`, search with own items) shows «Загружаем...» for 8 s or more on a fast local
+    link, longer on a phone. The list page draws only after `cloud.status === 'ready'`.
+  - The fix idea: the index reads list heads (id, revision, name, entry count, the first keys
+    for the thumbs, the pending request count); a list's entries load when it opens or when a
+    caller needs them (export, «Добавить в список», print). An `account_heads()` RPC that
+    returns those heads is the likely base; the planner decides between it (a migration, a
+    plan review) and a PostgREST select of heads with counts.
+  - First step of the design: list every consumer of `CloudList.ids` and `CloudList.meta`.
+    Candidate files: `git grep -l -E "\.ids\b|\.meta\b" -- app/src ":!*.test.ts"` (30 files on
+    2026-10-22; R10 deletes the browser-list files among them).
+  - Triggers: a sync protocol change (the first read and the re-read), possibly a migration
+    with its reversal, the fake and the contract suite (`app/src/ports/cloud.contract.ts`).
+  - Verify: the 3x seed in `tests/db/delete-account.test.mjs` ("delete_account() at three
+    times every default limit"; 34-44 s through the triggers, `analyze` after it); the first
+    read at 3x settles under the 4000 ms bar in the browser.
+- P36 - comments cite line numbers of the deleted `app.js` and `style.css` (a cleanup, not a
+  defect; `CLAUDE.md`, "Comments").
+  - Scope: all 147 lines in 47 files that
+    `git grep -c -E "(app\.js|style\.css)[: ]+[0-9]" -- app/src` finds (2026-10-22; some hits
+    may not be line citations). The 53 lines in the 11 persistence components
+    (`ListPage.svelte` 32, `PrintPage.svelte` 5, `PageTitle.svelte` 4, `SelBar.svelte` 3,
+    others 1-2) are a subset.
+  - The fix: replace each with `git show 23c00a6^:app.js` (or `style.css`) and the function or
+    selector name, or delete the comment when the code says it. No behaviour changes; no
+    golden moves.
+
 ## Do not re-fetch unless
 - Human provides new info
 - context.md is missing a fact you need

@@ -1042,6 +1042,41 @@ describe('installFakeCloud', () => {
     const again = await installFakeCloud('?as=gm1').prefs.load();
     expect(again.ok && again.prefs?.lang).toBe('ru');
   });
+
+  it('holds the lines or the linked items read with ?hold=, and holds nothing without it', async () => {
+    const AXE_ID = uuid(511);
+    /* A port of its own world with one pending request; its id. */
+    const withRequest = async (search: string) => {
+      const port = installFakeCloud(search);
+      port.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+      const heads = await port.requests.list();
+      return { port, ids: heads.ok ? heads.requests.map((r) => r.id) : [] };
+    };
+    const plain = await withRequest('?as=gm1');
+    expect(plain.ids).toHaveLength(1);
+    expect((await plain.port.requests.lines(plain.ids)).ok).toBe(true);
+    expect((await plain.port.lists.items([AXE_ID])).ok).toBe(true);
+    const failed = await withRequest('?as=gm1&hold=lines:fail,items:fail');
+    expect(failed.ids).toHaveLength(1);
+    expect(await failed.port.requests.lines(failed.ids)).toEqual({ ok: false });
+    expect(await failed.port.lists.items([AXE_ID])).toEqual({ ok: false });
+    const stalled = await withRequest('?as=gm1&hold=lines:stall,items:stall,bad:fail,lines:x');
+    const never = Symbol('never');
+    const race = (p: Promise<unknown>) =>
+      Promise.race([
+        p,
+        new Promise((r) => {
+          setTimeout(() => {
+            r(never);
+          }, 20);
+        })
+      ]);
+    expect(await race(stalled.port.requests.lines(stalled.ids))).toBe(never);
+    expect(await race(stalled.port.lists.items([AXE_ID]))).toBe(never);
+    const one = await withRequest('?as=gm1&hold=items:fail');
+    expect((await one.port.requests.lines(one.ids)).ok).toBe(true);
+    expect(await one.port.lists.items([AXE_ID])).toEqual({ ok: false });
+  });
 });
 
 describe('fillItems', () => {
@@ -1068,6 +1103,34 @@ describe('fillItems', () => {
     expect(
       made.filter((i) => /[0-9]/.test(i.content.ru ?? '') && /9/.test(i.content.ru ?? ''))
     ).toHaveLength(54);
+  });
+
+  it('makes fillSources named sources after the own one, each holding a generated item', async () => {
+    const read = await fakeCloud(SEED, 'gm1', {
+      fillItems: 66,
+      fillSources: 14
+    }).homebrew.load();
+    if (!read.ok) throw new Error('The fake refused the read.');
+    expect(read.books).toHaveLength(15);
+    const byAge = [...read.books].sort((a, b) => a.created_at.localeCompare(b.created_at));
+    expect(byAge[0]?.id).toBe(uuid(501));
+    const made = byAge.slice(1);
+    expect(made.map((b) => b.content.ru)).toEqual(
+      Array.from({ length: 14 }, (_, i) => 'Источник ' + String(i + 1).padStart(2, '0'))
+    );
+    expect(made.every((b) => HOMEBREW_KEY.test(b.key))).toBe(true);
+    for (const b of made) {
+      expect(read.items.some((i) => i.book_id === b.id)).toBe(true);
+    }
+  });
+
+  it('makes no source with fillSources alone', async () => {
+    const read = await fakeCloud(SEED, 'gm1', { fillSources: 14 }).homebrew.load();
+    expect(read.ok && read.books).toHaveLength(1);
+    const url = await installFakeCloud('?as=gm1&sources=14').homebrew.load();
+    expect(url.ok && url.books).toHaveLength(1);
+    const filled = await installFakeCloud('?as=gm1&items=66&sources=14').homebrew.load();
+    expect(filled.ok && filled.books).toHaveLength(15);
   });
 
   it('puts every generated item in the default source for a user with no source', async () => {
@@ -1434,40 +1497,42 @@ describe("the fake's purchase requests", () => {
     return read.ok ? read.requests.map((r) => r.id) : null;
   };
 
-  it('answers a held request in kept with no lines, and only a new one whole', async () => {
+  it('reads every pending head with no lines', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const first = cloud.request('player-token-1', ONE);
+    if (!first) throw new Error('the seed refused a request');
+    const read = await cloud.requests.list();
+    expect(read).toEqual({
+      ok: true,
+      requests: [
+        {
+          id: first,
+          listId: SHOP,
+          audience: 'player',
+          createdAt: '2026-09-25T12:00:00.000Z',
+          expiresAt: expect.any(String) as unknown,
+          readAt: null
+        }
+      ]
+    });
+  });
+
+  it('answers the lines of the named pending requests only', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const first = cloud.request('player-token-1', ONE);
     const second = cloud.request('player-token-1', [{ item: 'q1', qty: 2 }]);
     if (!first || !second) throw new Error('the seed refused a request');
-    const read = await cloud.requests.list([first, uuid(9999)]);
-    expect(read.ok && read.requests.map((r) => r.id)).toEqual([second]);
-    expect(read.ok && read.kept?.map((k) => k.id)).toEqual([first]);
-    expect(read.ok && read.kept?.[0]).toEqual({
-      id: first,
-      readAt: null,
-      expiresAt: expect.any(String) as unknown
-    });
+    const read = await cloud.requests.lines([second, first, uuid(9999)]);
+    expect(read.ok && read.requests.map((r) => [r.id, r.lines])).toEqual([
+      [first, [{ item: 'ci1', qty: 1, price: 150, applied: null }]],
+      [second, [expect.objectContaining({ item: 'q1', qty: 2 })]]
+    ]);
     cloud.decide(first, 'declined');
-    const after = await cloud.requests.list([first, second]);
-    expect(after).toEqual({
-      ok: true,
-      requests: [],
-      kept: [expect.objectContaining({ id: second })]
-    });
-  });
-
-  it('reads every request whole past 50 new ones, with no kept', async () => {
-    const cloud = fakeCloud(SEED, 'gm1', { limits: { pending: 100 } });
-    const ids: string[] = [];
-    for (let i = 0; i < 52; i++) {
-      vi.setSystemTime(Date.now() + 61_000);
-      const id = cloud.request('player-token-1', ONE);
-      if (id) ids.push(id);
-    }
-    expect(ids.length).toBe(52);
-    const read = await cloud.requests.list([ids[0] as string]);
-    expect(read.ok && read.requests).toHaveLength(52);
-    expect(read.ok && 'kept' in read).toBe(false);
+    const after = await cloud.requests.lines([first, second]);
+    expect(after.ok && after.requests.map((r) => r.id)).toEqual([second]);
+    expect(await cloud.as('gm2').requests.lines([second])).toEqual({ ok: true, requests: [] });
+    cloud.setOffline(true);
+    expect(await cloud.requests.lines([second])).toEqual({ ok: false });
   });
 
   it('counts five sends a minute per link, and one more once the minute has passed', async () => {
@@ -1613,7 +1678,7 @@ describe("the fake's purchase requests", () => {
       { item: 'q1', qty: 1 },
       { item: 'cc1', qty: 3 }
     ]);
-    expect(await cloud.requests.list()).toEqual({
+    expect(await cloud.requests.lines([uuid(6100)])).toEqual({
       ok: true,
       requests: [
         {
@@ -2200,6 +2265,26 @@ describe("the fake's homebrew", () => {
     expect((await read(fakeCloud(SEED, 'gm1'))).items).toHaveLength(4);
   });
 
+  it('removes several own items in one call, with every entry that links them, and leaves the rest', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await withEntries(cloud);
+    const was = await revisions(cloud);
+    expect(await cloud.as('gm2').homebrew.removeItems([uuid(513), uuid(511)])).toEqual(OK);
+    expect((await read(cloud)).items).toHaveLength(4);
+    expect(await cloud.homebrew.removeItems([uuid(511), POTION_ID, uuid(9)])).toEqual(OK);
+    const r = await cloud.as('gm1').lists.list();
+    const list = r.ok ? r.lists.find((l) => l.id === EMPTY) : undefined;
+    expect(list?.list_entries).toEqual([]);
+    expect(list?.revision).toBe((was[EMPTY] ?? 0) + 1);
+    expect((await read(cloud.as('gm1'))).items.map((i) => i.key)).toEqual([
+      'hb_whispercapaaaaaa',
+      'hb_engravedringaaaa'
+    ]);
+    expect(await cloud.as('gm1').homebrew.removeItems([uuid(511), POTION_ID])).toEqual(OK);
+    const many = Array.from({ length: 1001 }, (_, i) => uuid(9000 + i));
+    expect(await cloud.homebrew.removeItems(many)).toEqual(REFUSED);
+  });
+
   it("takes a deleted user's items out of every list that links them", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     expect(await cloud.auth.deleteAccount()).toEqual({ ok: true });
@@ -2415,6 +2500,7 @@ describe("the fake's homebrew", () => {
       )
     ).toEqual(NETWORK);
     expect(await off.homebrew.removeItem(uuid(511))).toEqual(NETWORK);
+    expect(await off.homebrew.removeItems([uuid(511), POTION_ID])).toEqual(NETWORK);
     off.setOffline(false);
     expect((await read(off)).items).toHaveLength(4);
     const out = fakeCloud(SEED);

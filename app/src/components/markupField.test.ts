@@ -284,3 +284,54 @@ describe('a read-only box and the passed props', () => {
     expect(seen).toEqual([box]);
   });
 });
+
+describe('an edit past the cap', () => {
+  const CAPPED = 'Достигнут предел в 1500 знаков: правка не поместилась.';
+
+  it('leaves the text and says so under the box until the text changes', async () => {
+    const value = 'а'.repeat(1500);
+    const { container, box, bar } = field({ value, maxlength: 1500 });
+    expect(screen.queryByRole('alert')).toBeNull();
+    select(box, 0, 3);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Жирный' }));
+    expect(box).toHaveValue(value);
+    expect(screen.getByRole('alert')).toHaveTextContent(CAPPED);
+    await expectNoA11yViolations(container);
+    await userEvent.type(box, '{Backspace}');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says it after Ctrl+B too', async () => {
+    const value = 'а'.repeat(1500);
+    const { box } = field({ value, maxlength: 1500 });
+    select(box, 0, 3);
+    await userEvent.keyboard('{Control>}b{/Control}');
+    expect(box).toHaveValue(value);
+    expect(screen.getByRole('alert')).toHaveTextContent(CAPPED);
+  });
+
+  it('draws no alert for an edit under the cap', async () => {
+    const { box, bar } = field({ value: 'abc', maxlength: 1500 });
+    select(box, 0, 3);
+    await userEvent.click(within(bar).getByRole('button', { name: 'Жирный' }));
+    expect(box).toHaveValue('**abc**');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('says it in English', async () => {
+    render(MarkupField, {
+      id: 'f',
+      label: 'Description',
+      t: dict('en'),
+      tools: ALL,
+      value: 'a'.repeat(1500),
+      maxlength: 1500
+    });
+    const box = document.querySelector('textarea') as HTMLTextAreaElement;
+    select(box, 0, 3);
+    await userEvent.click(screen.getByRole('button', { name: 'Bold' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The field is at its limit of 1500 characters: the edit did not fit.'
+    );
+  });
+});

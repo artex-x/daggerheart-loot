@@ -8,7 +8,9 @@ import {
   previewScale,
   PRINTED_PX,
   printTrait,
-  setLineOf
+  setLineOf,
+  SHEET_PX,
+  sheetScale
 } from './print.js';
 import { buildIndex } from './data.js';
 import { withRecords, type HomebrewRecord } from './homebrew.js';
@@ -64,6 +66,32 @@ describe("the editor preview's scale", () => {
   it('is 1 before the column has a width', () => {
     expect(previewScale(0, false)).toBe(1);
     expect(previewScale(Number.NaN, true)).toBe(1);
+  });
+});
+
+describe("the print sheet's screen scale", () => {
+  it('holds the A4 width in CSS px', () => {
+    expect(SHEET_PX).toBeCloseTo(793.7, 1);
+  });
+
+  it('is 1 before the column has a width, and when the column holds the sheet', () => {
+    expect(sheetScale(0)).toBe(1);
+    expect(sheetScale(Number.NaN)).toBe(1);
+    expect(sheetScale(-5)).toBe(1);
+    expect(sheetScale(SHEET_PX)).toBe(1);
+    expect(sheetScale(900)).toBe(1);
+  });
+
+  it('draws the sheet at the column width, cut to three decimals', () => {
+    expect(sheetScale(313)).toBe(0.394);
+    expect(sheetScale(397)).toBe(0.5);
+    expect(sheetScale(1)).toBe(0.001);
+  });
+
+  it('never passes the column', () => {
+    for (const w of [1, 313, 360, 397, 500, 736, 793]) {
+      expect(sheetScale(w) * SHEET_PX).toBeLessThanOrEqual(w);
+    }
   });
 });
 

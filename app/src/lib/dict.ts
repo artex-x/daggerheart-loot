@@ -246,7 +246,7 @@ const ru = {
     'Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, на русском и на английском.',
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
-  searchPh: 'Поиск по названию или описанию…',
+  searchPh: 'Поиск по названию или описанию...',
   tableLink: 'Ссылка на таблицу',
   tableLinkCopied: 'Ссылка на таблицу скопирована',
   view: 'Вид',
@@ -331,6 +331,7 @@ const ru = {
   back: 'Назад',
   printTooMany:
     'Карточек за один раз: не больше %n. Не попали на лист: %d. Разделите набор на части.',
+  printSkipped: 'Не напечатано предметов: %n - они не загружены.',
   printClipped:
     'Текст не помещается на карточки при печати: %d. Конец текста на них не напечатается.',
   homeSet: 'Приложение будет открываться на этом разделе',
@@ -374,6 +375,7 @@ const ru = {
   listCopied: 'Список скопирован',
   listEmptyHint:
     'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» - или сделайте это прямо с карточки предмета.',
+  itemNotLoaded: 'Предмет не загружен',
   listNotFound: 'Список не найден',
   listNotFoundSub: 'Возможно, он удалён или открыт в другом браузере.',
   rollBy: 'Бросок по списку',
@@ -492,6 +494,7 @@ const ru = {
   deleteTypeWord: 'Чтобы подтвердить, введите слово',
   deleteWord: 'удалить',
   deleteFinal: 'Удалить навсегда',
+  deleting: 'Удаляем...',
   signedOut: 'Вы вышли из аккаунта.',
   accountDeleted: 'Аккаунт удалён.',
   accountFailed: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
@@ -565,7 +568,7 @@ const ru = {
   hbLoadFailed: 'Не получилось загрузить ваши предметы.',
   edit: 'Изменить',
   hbNotAdded: 'Свой предмет нельзя добавить в этот список.',
-  hbNotReady: 'Ваши предметы ещё загружаются - повторите через секунду.',
+  hbNotReady: 'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.',
   quickOwn: 'Свой предмет',
   quickRowHint: 'название и описание, остальное потом в редакторе',
   quickHead: 'Свой предмет в этот список',
@@ -598,6 +601,7 @@ const ru = {
   mdPreview: 'Просмотр',
   mdPreviewOf: 'Просмотр: %s',
   mdPreviewEmpty: 'Текста пока нет.',
+  mdCapped: 'Достигнут предел в %n знаков: правка не поместилась.',
   mdHelp:
     'Жирный - **текст**, курсив - *текст*; в каталоге свойство пишется ***Название:***, плата по выбору - **потратьте Надежду**, состояние - *Уязвим*.\n' +
     'Строка с «- » - пункт списка, с «1. » - пункт нумерованного списка; таблица - строки вида «| a | б |», под первой строкой «|---|---|»; \\* пишет звёздочку как есть.\n' +
@@ -637,7 +641,7 @@ const ru = {
   hbErrAlt: 'Заполните все четыре поля второго набора или нажмите «Очистить второй набор».',
   hbNotSaved: 'Не сохранено.',
   hbSaveNetwork:
-    'Не получилось сохранить: нет связи. Правки остались в форме - нажмите «Сохранить» ещё раз.',
+    'Не получилось сохранить. Проверьте соединение и попробуйте ещё раз. Правки остались в форме.',
   hbConflict:
     'Этот предмет изменили на другом устройстве, пока форма была открыта. Ваши правки не сохранены.',
   hbSaveMine: 'Сохранить мою версию',
@@ -652,7 +656,7 @@ const ru = {
   hbCreated: 'Предмет «%s» создан',
   hbDeleted: 'Предмет «%s» удалён',
   hbDeletedN: 'Удалено предметов: %n',
-  hbDeletingN: 'Удаляем предметы: %n из %m',
+  hbDeletingN: 'Удаляем предметы (%n)...',
   hbSourceCreated: 'Источник «%s» создан',
   hbSectionCreated: 'Раздел «%s» создан',
   hbSourceDeleted: 'Источник «%s» удалён',
@@ -660,6 +664,7 @@ const ru = {
   hbDeleteFailed: 'Не получилось удалить. Проверьте соединение и попробуйте ещё раз.',
   hbDeleteItem: 'Удалить предмет «%s»?',
   hbDeleteItemInLists: 'Предмет «%s» есть в %l. Удалить его и убрать из списков?',
+  hbDeleteListsUnread: 'Если предмет есть в ваших списках, он пропадёт и из них.',
   hbListsIn: '%n списке|%n списках|%n списках',
   hbDeleteMany: 'Удалить предметы (%n)? Они пропадут и из ваших списков.',
   hbDeleteSource: 'Удалить источник «%s»?',
@@ -709,7 +714,7 @@ const ru = {
   hbArtSqueeze: 'Не получилось сжать картинку до 200 КБ - выберите другую.',
   hbArtUploading: 'Загружаем картинку...',
   hbArtUploadFailed:
-    'Не получилось загрузить картинку: нет связи. Правки остались в форме - нажмите «Сохранить» ещё раз.',
+    'Не получилось загрузить картинку. Проверьте соединение и попробуйте ещё раз. Правки остались в форме.',
   hbArtGone: 'Картинка не сохранилась: файла уже нет. Выберите картинку заново.',
   limitHbArt:
     'Достигнут предел картинок: %n. Нужно больше - напишите на daggerheart.loot@gmail.com.',
@@ -757,6 +762,8 @@ const ru = {
   hbCardText: 'Текст карты',
   hbCardUrl: 'Ссылка',
   hbCardUrlHint: 'Необязательно: страница с полным текстом правила.',
+  hbCardSourceHelp:
+    'Источник карты - ваша книга или сборник: карта скачивается вместе с ним кнопкой «Скачать JSON», а её строка на вкладке называет источник. Карта без источника лежит в «Хоумбрю».',
   hbCreateSet: 'Создать комплект',
   hbCreateCard: 'Создать карту',
   hbSetInlineHint:
@@ -791,6 +798,7 @@ const ru = {
   hbFindOwn: 'Найти предмет',
   hbFindSets: 'Найти комплект',
   hbFindRules: 'Найти карту правил',
+  hbFindSources: 'Найти источник',
   hbAddMember: 'Добавить предмет',
   hbRemoveMember: 'Убрать',
   hbMemberMoves: 'Предмет «%i» уйдёт из комплекта «%s». Перенести его?',
@@ -837,6 +845,8 @@ const ru = {
   hbImportNoteAdd: 'В источник добавятся разделы: %n.',
   hbImportNoteHome: 'В «Хоумбрю» нет разделов: предметы лягут без раздела.',
   hbImportFull: 'В «%s» будет больше 30 разделов - выберите другой источник.',
+  hbImportOverLimit:
+    'Импорт не поместится: в аккаунте %c, файл добавит %k. Удалите свои предметы или разделите файл.',
   hbImportMoreRows: 'и ещё %n источник|и ещё %n источника|и ещё %n источников',
   hbImportHeldLabel: 'Предметы, карты и источники, которые уже есть',
   hbImportSkip: 'Пропустить',
@@ -931,7 +941,7 @@ const ru = {
   importHead: 'Импорт из файла JSON',
   importPick: 'Выбрать файл...',
   importHintBefore: 'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по ',
-  importSchema: 'схеме import-v1',
+  importSchema: 'схеме import-v3',
   importHintMid: ' (',
   importLlms: 'описание для ИИ-помощников',
   importHintAfter:
@@ -994,10 +1004,13 @@ const ru = {
   shareCopy: 'Скопировать',
   shareCreate: 'Создать ссылку',
   shareDelete: 'Удалить ссылку',
+  shareDeleteConfirm:
+    'Удалить ссылку? Те, у кого она есть, больше не откроют список. Отменить удаление нельзя.',
   shareStopped: 'Ссылка удалена',
   shareHint:
     '«Удалить ссылку» закрывает доступ: по удалённой ссылке список больше не откроется. «Создать ссылку» даёт новую. Ссылка для игроков скрывает заметки и позиции «Только для мастера», ссылка для мастера показывает их - давайте её только мастерам.',
   shareLoadFailed: 'Не получилось загрузить ссылки.',
+  requestsLoadFailed: 'Не получилось загрузить запросы.',
   shareCreated: 'Ссылка создана.',
   shareDeleted: 'Ссылка удалена: по ней список больше не откроется.',
   shareFailed: 'Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё раз.',
@@ -1305,7 +1318,7 @@ const en: Dict = {
     'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
-  searchPh: 'Search by name or description…',
+  searchPh: 'Search by name or description...',
   tableLink: 'Link to this table',
   tableLinkCopied: 'Table link copied',
   view: 'View',
@@ -1377,7 +1390,8 @@ const en: Dict = {
   printEmpty: 'Nothing to print: no card is left in the set.',
   back: 'Back',
   printTooMany:
-    'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set in two.',
+    'One run prints %n cards; the remaining %d did not make it onto a sheet. Split the set into parts.',
+  printSkipped: 'Items not printed: %n - they are not loaded.',
   printClipped:
     'The text does not fit some cards in print: %d. The end of the text does not print on them.',
   homeSet: 'The app will open on this section',
@@ -1413,6 +1427,7 @@ const en: Dict = {
   listCopied: 'List copied',
   listEmptyHint:
     'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
+  itemNotLoaded: 'Item not loaded',
   listNotFound: 'List not found',
   listNotFoundSub: 'It may have been deleted, or it lives in another browser.',
   rollBy: 'Roll on this list',
@@ -1506,7 +1521,7 @@ const en: Dict = {
   consentAfter: '.',
   signedInAs: 'Signed in as',
   via: 'with %s',
-  providers: 'Connected providers',
+  providers: 'Sign-in methods',
   notConnected: 'not connected',
   connect: 'Connect %s',
   redirecting: 'Redirecting to %s...',
@@ -1525,6 +1540,7 @@ const en: Dict = {
   deleteTypeWord: 'To confirm, type the word',
   deleteWord: 'delete',
   deleteFinal: 'Delete for good',
+  deleting: 'Deleting...',
   signedOut: 'You are signed out.',
   accountDeleted: 'The account is deleted.',
   accountFailed: 'That did not work. Check the connection and try again.',
@@ -1592,7 +1608,7 @@ const en: Dict = {
   hbLoadFailed: 'Could not load your items.',
   edit: 'Edit',
   hbNotAdded: 'Your own item cannot go into this list.',
-  hbNotReady: 'Your items are still loading - try again in a second.',
+  hbNotReady: 'Your items are still loading - this can take a minute. Try again shortly.',
   quickOwn: 'Own item',
   quickRowHint: 'a name and a description, the rest later in the editor',
   quickHead: 'An own item for this list',
@@ -1625,6 +1641,7 @@ const en: Dict = {
   mdPreview: 'Preview',
   mdPreviewOf: 'Preview: %s',
   mdPreviewEmpty: 'No text yet.',
+  mdCapped: 'The field is at its limit of %n characters: the edit did not fit.',
   mdHelp:
     'Bold is **text**, italic is *text*; the catalog writes ***Name:*** for a feature, **spend a Hope** for a cost by choice and *Vulnerable* for a condition.\n' +
     'A line that starts with "- " is a list item, with "1. " a numbered item; a table is lines like "| a | b |" with "|---|---|" under the first line; \\* writes a star as is.\n' +
@@ -1663,7 +1680,7 @@ const en: Dict = {
   hbErrAlt: 'Fill in all four fields of the second set, or press "Clear the second set".',
   hbNotSaved: 'Not saved.',
   hbSaveNetwork:
-    'Could not save: no connection. Your edits are still in the form - press "Save" again.',
+    'Could not save. Check the connection and try again. Your edits are still in the form.',
   hbConflict:
     'This item was changed on another device while the form was open. Your edits are not saved.',
   hbSaveMine: 'Save my version',
@@ -1678,7 +1695,7 @@ const en: Dict = {
   hbCreated: 'Item "%s" created',
   hbDeleted: 'Item "%s" deleted',
   hbDeletedN: 'Items deleted: %n',
-  hbDeletingN: 'Deleting items: %n of %m',
+  hbDeletingN: 'Deleting items (%n)...',
   hbSourceCreated: 'Source "%s" created',
   hbSectionCreated: 'Section "%s" created',
   hbSourceDeleted: 'Source "%s" deleted',
@@ -1686,6 +1703,7 @@ const en: Dict = {
   hbDeleteFailed: 'Could not delete. Check the connection and try again.',
   hbDeleteItem: 'Delete the item "%s"?',
   hbDeleteItemInLists: 'The item "%s" is in %l. Delete it and remove it from the lists?',
+  hbDeleteListsUnread: 'If the item is in your lists, it leaves them too.',
   hbListsIn: '%n list|%n lists',
   hbDeleteMany: 'Delete the items (%n)? They also leave your lists.',
   hbDeleteSource: 'Delete the source "%s"?',
@@ -1732,7 +1750,7 @@ const en: Dict = {
   hbArtSqueeze: 'Could not make the picture 200 KB or smaller - choose another one.',
   hbArtUploading: 'Uploading the picture...',
   hbArtUploadFailed:
-    'Could not upload the picture: no connection. Your edits are still in the form - press "Save" again.',
+    'Could not upload the picture. Check the connection and try again. Your edits are still in the form.',
   hbArtGone: 'The picture was not saved: its file is gone. Choose the picture again.',
   limitHbArt:
     'You have reached the limit of %n pictures. Need more? Write to daggerheart.loot@gmail.com.',
@@ -1779,6 +1797,8 @@ const en: Dict = {
   hbCardText: 'Card text',
   hbCardUrl: 'Link',
   hbCardUrlHint: 'Optional: a page with the full text of the rule.',
+  hbCardSourceHelp:
+    'The card\'s source is your own book or collection: "Download JSON" on the source takes the card along, and the card\'s row names its source. A card with no source is kept under "Homebrew".',
   hbCreateSet: 'Create set',
   hbCreateCard: 'Create card',
   hbSetInlineHint:
@@ -1813,6 +1833,7 @@ const en: Dict = {
   hbFindOwn: 'Find an item',
   hbFindSets: 'Find a set',
   hbFindRules: 'Find a rule card',
+  hbFindSources: 'Find a source',
   hbAddMember: 'Add an item',
   hbRemoveMember: 'Remove',
   hbMemberMoves: 'The item "%i" leaves the set "%s". Move it?',
@@ -1857,6 +1878,8 @@ const en: Dict = {
   hbImportNoteAdd: 'Sections added to the source: %n.',
   hbImportNoteHome: '"Homebrew" has no sections: the items go in with no section.',
   hbImportFull: '"%s" would hold more than 30 sections - choose another source.',
+  hbImportOverLimit:
+    'The import does not fit: your account holds %c and the file adds %k. Delete some of your items or split the file.',
   hbImportMoreRows: 'and %n more source|and %n more sources',
   hbImportHeldLabel: 'Items, cards and sources you already hold',
   hbImportSkip: 'Skip',
@@ -1948,7 +1971,7 @@ const en: Dict = {
   importHead: 'Import from a JSON file',
   importPick: 'Choose a file...',
   importHintBefore: 'A JSON file saved with "Download JSON" or written to the ',
-  importSchema: 'import-v1 schema',
+  importSchema: 'import-v3 schema',
   importHintMid: ' (',
   importLlms: 'a description for AI assistants',
   importHintAfter:
@@ -2012,10 +2035,13 @@ const en: Dict = {
   shareCopy: 'Copy',
   shareCreate: 'Create link',
   shareDelete: 'Delete link',
+  shareDeleteConfirm:
+    'Delete the link? Anyone who has it can no longer open the list. This cannot be undone.',
   shareStopped: 'Link deleted',
   shareHint:
     '"Delete link" ends access: a deleted link no longer opens the list. "Create link" makes a new one. The players\' link hides the "GM only" notes and items; the GM\'s link shows them - give it to GMs only.',
   shareLoadFailed: 'Could not load the links.',
+  requestsLoadFailed: 'Could not load the requests.',
   shareCreated: 'Link created.',
   shareDeleted: 'Link deleted: it no longer opens the list.',
   shareFailed: 'Could not change the link. Check the connection and try again.',
@@ -2169,3 +2195,10 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   lists: 'lists',
   search: 'search'
 };
+
+/** Returns a section's label for the tab title, the start-section select and the buttons
+ *  to the section. */
+export function sectionLabel(s: Section, t: Dict, legacyWritable: boolean): string {
+  // From the legacy write cutoff the page is headed «Мои списки» (docs/specs/FEATURES.md, rule 4).
+  return s === 'lists' && !legacyWritable ? t.menuLists : t[SECTION_LABEL[s]];
+}

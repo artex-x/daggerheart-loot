@@ -34,7 +34,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=inde
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew]
     link "Мастерская Ольхи" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
     link "Хоумбрю" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Списком" [pressed=false]
     button "Сеткой" [pressed=true]
     button "Фильтры (1)" [expanded=true]
@@ -119,7 +119,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=index.html?as=gm1#/tables
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew]
     link "Alder Workshop" [url=index.html?as=gm1#/tables/homebrew/f_src-hb_alderworkshopaaa]
     link "Homebrew" [url=index.html?as=gm1#/tables/homebrew/f_src-hb]
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     button "Filters (1)" [expanded=true]

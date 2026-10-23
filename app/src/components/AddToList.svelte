@@ -233,6 +233,7 @@
       newInput?.focus();
       return;
     }
+    if (target === 'cloud' && app.listsFull()) return;
     const store = target === 'cloud' && app.cloudLists ? app.cloudLists : app.lists;
     const l = store.create(draft);
     const fresh = store.add(l.id, ids, knows, carried);
@@ -392,7 +393,7 @@
         {#if shown.length}
           {#each shown as l (l.id)}
             <Chip
-              label={(inList(l) ? '✓ ' : '') + l.name}
+              label={l.name}
               on={inList(l)}
               onclick={() => {
                 pick(l);

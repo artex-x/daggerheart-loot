@@ -24,8 +24,9 @@
   const { it, index, lang, bw, compact, artBroken, onartfail, onclipped }: Props = $props();
 
   /* The first draw takes the draft and its index at once; a later change waits for the
-     pause. The index moves with the item: the editor rebuilds it on every input, and a set
-     member's set line read from the live index would re-fit the card per key. */
+     pause. The index moves with the item: the editor rebuilds it on every input but the
+     description's, and a set member's set line read from the live index would re-fit the
+     card per key. */
   let shown = $state.raw<{ it: Record_; index: Index | null }>(untrack(() => ({ it, index })));
   $effect(() => {
     const next = { it, index };
@@ -66,8 +67,9 @@
 <style>
   /* One cell of the sheet's grid: 63x88 mm, or 44x63 mm on the compact sheet
      (docs/specs/FEATURES.md, "Print"), times the preview's scale. No transform, zoom or
-     scale here or on an ancestor: `fit()` compares layout sizes with rendered ones, and a
-     transform moves only the second; the card multiplies its own mm and pt values. */
+     scale here or on an ancestor (the print sheet's screen scale is the one transform the
+     fit divides out: `screenScale`): `fit()` compares layout sizes with rendered ones, and
+     a transform moves only the second; the card multiplies its own mm and pt values. */
   .pframe {
     display: grid;
     grid-template-columns: calc(63mm * var(--pv-scale, 1));

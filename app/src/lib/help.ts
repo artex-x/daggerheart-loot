@@ -705,7 +705,7 @@ const LISTS: Record<Lang, Help> = {
   en: {
     paragraphs: [
       p(
-        'Build a list: tick what you need in Tables or Search and press “Add to list”. The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
+        'Build a list: tick what you need in Tables or Search and press "Add to list". The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
       ),
       p(
         'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in move to your account by themselves when you sign in; after 26 October 2026 the app stops showing them.'
@@ -714,7 +714,7 @@ const LISTS: Record<Lang, Help> = {
         parts: [
           'A list and every entry in it carry two notes. ',
           { b: 'For players' },
-          ' travels with the copied text and with the players’ link. ',
+          " travels with the copied text and with the players' link. ",
           { b: 'GM only' },
           ' stays with you: it reaches neither.'
         ]

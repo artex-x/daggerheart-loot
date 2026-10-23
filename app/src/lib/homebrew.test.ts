@@ -990,13 +990,13 @@ describe('copyRows', () => {
   });
   const ITEM = derive('hb_rangerrollaaaaaa');
 
-  it('takes the given key, drops the source and the author keys, keeps catalog ids, and copies every embedded card under its derived key', () => {
+  it('takes the given key, drops the source, the author keys and the set, keeps catalog ids, and copies every embedded rule card under its derived key', () => {
     const rows = copyRows(record, ITEM, account());
     expect(rows.books).toEqual([]);
     expect(rows.update).toBe(false);
     expect(rows.items).toEqual([
       {
-        id: 'id5',
+        id: 'id4',
         key: ITEM,
         book: null,
         content: {
@@ -1006,17 +1006,15 @@ describe('copyRows', () => {
           ende: '',
           rud: '',
           craft: ['ci1'],
-          set: derive(SET),
           refs: REFS.map(derive),
           eq: { t: 'armor', tier: 2, as: 3, th: [5, 9] }
         }
       }
     ]);
     expect(rows.cards.map((c) => [c.id, c.key, c.kind, c.book])).toEqual([
-      ['id1', derive(SET), 'set', null],
-      ['id2', derive(REFS[0] as string), 'ref', null],
-      ['id3', derive(REFS[1] as string), 'ref', null],
-      ['id4', derive(REFS[2] as string), 'ref', null]
+      ['id1', derive(REFS[0] as string), 'ref', null],
+      ['id2', derive(REFS[1] as string), 'ref', null],
+      ['id3', derive(REFS[2] as string), 'ref', null]
     ]);
     expect(contentProblems(rows.items[0]?.content, ITEM)).toEqual([]);
     for (const c of rows.cards) expect(cardProblems(c.kind, c.content)).toEqual([]);
@@ -1026,17 +1024,18 @@ describe('copyRows', () => {
     const bare = { ...record, cards: { refs: { [REFS[0] as string]: ref('R0') } } };
     const rows = copyRows(bare, ITEM, account([SET]));
     expect(rows.cards.map((c) => c.key)).toEqual([derive(REFS[0] as string)]);
-    expect(rows.items[0]?.content.set).toBe(SET);
+    expect(rows.items[0]?.content.set).toBeUndefined();
     expect(rows.items[0]?.content.refs).toEqual([derive(REFS[0] as string)]);
   });
 
   it('names a held derived card key instead of copying the card again', () => {
-    const rows = copyRows(record, ITEM, account([derive(SET)]));
-    expect(rows.items[0]?.content.set).toBe(derive(SET));
-    expect(rows.cards.map((c) => c.key)).toEqual(REFS.map(derive));
+    const rows = copyRows(record, ITEM, account([derive(REFS[0] as string)]));
+    expect(rows.items[0]?.content.set).toBeUndefined();
+    expect(rows.items[0]?.content.refs).toEqual(REFS.map(derive));
+    expect(rows.cards.map((c) => c.key)).toEqual(REFS.slice(1).map(derive));
   });
 
-  it('copies an item with no relations and no cards as it is', () => {
+  it('copies an item with no relations and no cards as it is, less its set', () => {
     const plain = recordOf(
       'hb_plainaaaaaaaaaaa',
       { kind: 'item', ru: 'Простое', set: 'saints-ensemble' },
@@ -1049,8 +1048,7 @@ describe('copyRows', () => {
       ru: 'Простое',
       en: 'Простое',
       ende: '',
-      rud: '',
-      set: 'saints-ensemble'
+      rud: ''
     });
   });
 
@@ -1074,14 +1072,15 @@ describe('copyRows', () => {
     expect([content?.ru, content?.en]).toEqual(['Меч (2)', 'Sword']);
   });
 
-  it('copies a catalog record as one item in the default source under the given key, with its catalog set and rule cards named', () => {
+  it('copies a catalog record as one item in the default source under the given key, with its rule cards named and no set', () => {
     const loot = buildIndex(CATALOG);
     const voa = loot.byId.get('voa4_t3d') as Record_;
     const rows = copyRows(voa, ITEM, account());
     expect(rows.cards).toEqual([]);
     expect(rows.items).toHaveLength(1);
     expect(rows.items[0]).toMatchObject({ key: ITEM, book: null });
-    expect(rows.items[0]?.content.set).toBe(voa.set);
+    expect(voa.set).toBeTruthy();
+    expect(rows.items[0]?.content.set).toBeUndefined();
     const sap = loot.byId.get('w1') as Record_;
     expect(copyRows(sap, ITEM, account()).items[0]?.content.refs).toEqual(sap.refs);
   });
@@ -1150,9 +1149,10 @@ describe('copyContentOf', () => {
     for (const k of ['id', 'src', 'roll', 'img', 'frame']) expect(k in of('f23')).toBe(false);
   });
 
-  it('keeps alt, set, refs, craft and the given craft_from', () => {
+  it('keeps alt, refs, craft and the given craft_from, and leaves out set', () => {
     expect(of('f23').eq?.alt).toEqual(loot.byId.get('f23')?.eq?.alt);
-    expect(of('voa4_t3d').set).toBe(loot.byId.get('voa4_t3d')?.set);
+    expect(loot.byId.get('voa4_t3d')?.set).toBeTruthy();
+    expect(of('voa4_t3d').set).toBeUndefined();
     expect(of('w1').refs).toEqual(loot.byId.get('w1')?.refs);
     expect(of('ci18').craft).toEqual(loot.byId.get('ci18')?.craft);
     const [into, from] = [...loot.craftedFrom][0] ?? [];

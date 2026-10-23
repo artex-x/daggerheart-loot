@@ -9,6 +9,7 @@
   import { untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Field from './Field.svelte';
   import ImportFile from './ImportFile.svelte';
   import ImportLines from './ImportLines.svelte';
@@ -449,18 +450,14 @@
         {/each}
         {#if report.length > LISTS_SHOWN}
           <div>
-            <Button
-              size="sm"
-              variant="bare"
-              caret
-              expanded={allLists}
-              onclick={() => {
+            <FoldButton
+              open={allLists}
+              more={plural(report.length - LISTS_SHOWN, t.importMoreLists, app.lang)}
+              {t}
+              ontoggle={() => {
                 allLists = !allLists;
               }}
-              >{allLists
-                ? t.relLess
-                : plural(report.length - LISTS_SHOWN, t.importMoreLists, app.lang)}</Button
-            >
+            />
           </div>
         {/if}
       </div>
@@ -478,7 +475,7 @@
   {/if}
 
   <p class="hint">
-    {t.importHintBefore}<a href="schema/import-v1.json" target="_blank" rel="noopener"
+    {t.importHintBefore}<a href="schema/import-v3.json" target="_blank" rel="noopener"
       >{t.importSchema}</a
     >{t.importHintMid}<a href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
     >{t.importHintAfter}
@@ -505,9 +502,8 @@
   }
 
   .rep-list.bad {
-    background: var(--warn-bg);
-    border-color: var(--warn-line);
-    color: var(--warn-text);
+    border-color: var(--danger);
+    color: var(--danger-text);
   }
 
   .rep-list > b {
@@ -517,7 +513,7 @@
   }
 
   .rep-list.bad > b {
-    color: var(--warn-strong);
+    color: var(--danger-text);
   }
 
   .rep-list small {
@@ -530,7 +526,7 @@
   }
 
   .rep-list.bad :global(code) {
-    color: var(--warn-strong);
+    color: var(--danger-text);
   }
 
   .rep-list :global(.skip) {
@@ -541,7 +537,7 @@
   .rep-more {
     margin: 4px 0 0;
     font-size: 13px;
-    color: var(--warn-text);
+    color: var(--danger-text);
   }
 
   .preview {
@@ -550,27 +546,28 @@
     line-height: 1.55;
   }
 
-  /* A refused file: the warning box of StorageNotice.svelte, in the warn tokens. */
+  /* A refused file: the error look of docs/specs/FEATURES.md, rule 19 - the danger border
+     and text, no fill. */
   .errs {
     margin: 12px 0 0;
     padding: 10px 12px;
     border-radius: var(--r-sm);
-    background: var(--warn-bg);
-    border: 1px solid var(--warn-line);
-    color: var(--warn-text);
+    background: none;
+    border: 1px solid var(--danger);
+    color: var(--danger-text);
     font-size: 13px;
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
   .errs b {
-    color: var(--warn-strong);
+    color: var(--danger-text);
     font-weight: 650;
     display: block;
   }
 
   .errs :global(code) {
-    color: var(--warn-strong);
+    color: var(--danger-text);
   }
 
   .hint {

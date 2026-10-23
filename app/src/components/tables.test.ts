@@ -310,7 +310,7 @@ describe('search', () => {
   it('narrows the table to what matches', async () => {
     render(App, { env: at() });
     await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      screen.getByPlaceholderText('Поиск по названию или описанию...'),
       'тишины'
     );
     expect(rows()).toHaveLength(1);
@@ -320,7 +320,7 @@ describe('search', () => {
   it('shows the empty state with no reset button of its own', async () => {
     render(App, { env: at() });
     await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      screen.getByPlaceholderText('Поиск по названию или описанию...'),
       'нет такого'
     );
     expect(screen.getByText('Ничего не найдено')).toBeInTheDocument();
@@ -849,7 +849,7 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      screen.getByPlaceholderText('Поиск по названию или описанию...'),
       'нет такого'
     );
     const empty = screen.getByText('Ничего не найдено').closest('.empty');
@@ -1251,7 +1251,7 @@ describe('the equipment tables', () => {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
     await userEvent.type(
-      screen.getByPlaceholderText('Поиск по названию или описанию…'),
+      screen.getByPlaceholderText('Поиск по названию или описанию...'),
       'основное'
     );
     expect(screen.getByText('Меч Рассвета')).toBeInTheDocument();
@@ -1616,7 +1616,7 @@ describe('the row and section anchor', () => {
     await waitFor(() => {
       expect(scroll).toHaveBeenCalledTimes(1);
     });
-    await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), 'а');
+    await userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию...'), 'а');
     expect(scroll).toHaveBeenCalledTimes(1);
   });
 

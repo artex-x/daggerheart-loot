@@ -34,8 +34,9 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
     alert ""
       StaticText "В файле ошибки - ничего не импортировано. Исправьте их и выберит..." [namelen=77 namehash=19ee0ad5]
     ... button x2 of 6 same-shape siblings elided
-    link "схеме import-v1" [url=schema/import-v1.json]
+    link "схеме import-v3" [url=schema/import-v3.json]
     link "описание для ИИ-помощников" [url=llms.txt]
+    status ""
     heading "ВАШ АККАУНТ" [level=2]
     StaticText "3 списка из 50"
     checkbox "Выбрать все" [checked=false]
@@ -95,7 +96,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 описание для ИИ-помощников
-схеме import-v1
+схеме import-v3
 
 ## en :: tree
 RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
@@ -128,8 +129,9 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
     alert ""
       StaticText "The file has errors - nothing was imported. Fix them and choose ..." [namelen=79 namehash=2aab81ca]
     ... button x2 of 6 same-shape siblings elided
-    link "import-v1 schema" [url=schema/import-v1.json]
+    link "import-v3 schema" [url=schema/import-v3.json]
     link "a description for AI assistants" [url=llms.txt]
+    status ""
     heading "YOUR ACCOUNT" [level=2]
     StaticText "3 lists of 50"
     checkbox "Select all" [checked=false]
@@ -185,7 +187,7 @@ Tables
 Terms of use
 a description for AI assistants
 daggerheart.com
-import-v1 schema
+import-v3 schema
 Лавка кузнеца, 10 items, edited 3 days ago
 ЛутDaggerheart
 Пустой список, 0 items, edited 1 hour ago

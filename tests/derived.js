@@ -1584,6 +1584,28 @@ ok(
   'ci.yml: applied-check.mjs is gone; the database is the applied record'
 );
 
+/** The jobs of a workflow text, one `{ name, body }` per job under `jobs:`. */
+function jobsOf(code) {
+  const jobsAt = code.search(/^jobs:\s*$/m);
+  if (jobsAt < 0) return [];
+  const jobRe =
+    /^ {2}([A-Za-z0-9_-]+):\s*(?:#.*)?\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/gm;
+  const jobs = code.slice(jobsAt);
+  const out = [];
+  let m;
+  while ((m = jobRe.exec(jobs))) out.push({ name: m[1], body: m[2] });
+  return out;
+}
+
+/** True when a job body declares the `production` Environment, in the short
+ * form (quoted or not) or the long form, with `name:` on any line of the
+ * block; either form gets the Environment's secrets. */
+function isProductionJob(body) {
+  if (/^ {4}environment:\s*(['"]?)production\1\s*$/m.test(body)) return true;
+  const block = /^ {4}environment:\s*\r?\n((?: {6}.*(?:\r?\n|$))*)/m.exec(body);
+  return !!block && /^ {6}name:\s*(['"]?)production\1\s*$/m.test(block[1]);
+}
+
 /** The names of the jobs in `text` that read the secret named `secret`
  * without declaring `environment: production`. */
 function prodSecretOutsideEnvironment(text, secret) {
@@ -1592,16 +1614,9 @@ function prodSecretOutsideEnvironment(text, secret) {
   const jobsAt = code.search(/^jobs:\s*$/m);
   if (jobsAt < 0) return code.indexOf(secret) >= 0 ? ['(no jobs)'] : [];
   if (code.slice(0, jobsAt).indexOf(secret) >= 0) return ['(workflow level)'];
-  const jobs = code.slice(jobsAt);
-  const bad = [];
-  const jobRe =
-    /^ {2}([A-Za-z0-9_-]+):\s*(?:#.*)?\r?\n([\s\S]*?)(?=^ {2}[A-Za-z0-9_-]+:\s*(?:#.*)?$|(?![\s\S]))/gm;
-  let m;
-  while ((m = jobRe.exec(jobs))) {
-    if (m[2].indexOf(secret) < 0) continue;
-    if (!/^ {4}environment:\s*production\s*$/m.test(m[2])) bad.push(m[1]);
-  }
-  return bad;
+  return jobsOf(code)
+    .filter((job) => job.body.indexOf(secret) >= 0 && !isProductionJob(job.body))
+    .map((job) => job.name);
 }
 
 /* The nightly backup: every property that keeps a production dump private
@@ -1614,6 +1629,10 @@ ok(backup, 'backup.yml: the nightly production backup is missing');
   ['workflow_dispatch', 'the manual run'],
   ['BACKUP_AGE_RECIPIENT', 'the encryption recipient'],
   ['--schema auth,public', 'the auth rows in the data dump'],
+  [
+    '--exclude auth.flow_state,auth.mfa_amr_claims,auth.refresh_tokens,auth.refresh_tokens_id_seq,auth.saml_relay_states,auth.sessions',
+    'the Auth sessions left out of the data dump'
+  ],
   ['if-no-files-found: error', 'the fail-closed upload'],
   ['node tools/supabase/backup-art.mjs', 'the weekly picture copy'],
   [
@@ -1679,14 +1698,98 @@ ok(
   'usage.yml: no permission may be write or write-all'
 );
 
+/** The `uses:` values of a job body: `{ action, ref, comment }`, the
+ * comment without its `#`. */
+function usesOf(body) {
+  const out = [];
+  const re = /^\s*(?:-\s+)?uses:\s*([^\s#]+)\s*(?:#\s*(.*?))?\s*$/gm;
+  let m;
+  while ((m = re.exec(body))) {
+    const at = m[1].lastIndexOf('@');
+    out.push({
+      uses: m[1],
+      action: at < 0 ? m[1] : m[1].slice(0, at),
+      ref: at < 0 ? '' : m[1].slice(at + 1),
+      comment: m[2] || ''
+    });
+  }
+  return out;
+}
+
+/* The major tag each action carries in ci.yml's unpinned jobs: a pin's
+   `# v<major>` comment moves with it. */
+const ciTags = new Map();
+jobsOf(workflow)
+  .filter((job) => !isProductionJob(job.body))
+  .forEach(function (job) {
+    usesOf(job.body)
+      .filter((u) => /^v\d+$/.test(u.ref))
+      .forEach(function (u) {
+        if (!ciTags.has(u.action)) ciTags.set(u.action, new Set());
+        ciTags.get(u.action).add(u.ref);
+      });
+  });
+
+/* ci.yml's `db` job installs as the production jobs do: its run on every
+   push is the Linux proof that the CLI needs no install script. */
+const dbJob = jobOf('db');
+ok(
+  dbJob && /^ {6}- run:\s*npm ci --ignore-scripts\s*$/m.test(dbJob[1]),
+  "ci.yml db: the install must run no script, the Linux proof of the production jobs' install"
+);
+
 /* Both production secrets, in every workflow file: only a job that
-   declares environment: production reads them. */
+   declares environment: production reads them. A production job runs no
+   install script and pins each action by its full commit sha
+   (docs/decisions/, 2026-10-22, "A job with a production secret runs no
+   install script and pins its actions"). */
 const workflowsDir = path.join(ROOT, '.github', 'workflows');
 fs.readdirSync(workflowsDir)
   .filter((name) => /\.ya?ml$/.test(name))
   .sort()
   .forEach(function (name) {
     const text = fs.readFileSync(path.join(workflowsDir, name), 'utf8');
+    jobsOf(text)
+      .filter((job) => isProductionJob(job.body))
+      .forEach(function (job) {
+        const where = name + ' ' + job.name + ': ';
+        usesOf(job.body).forEach(function (u) {
+          ok(
+            /^[0-9a-f]{40}$/.test(u.ref),
+            where +
+              u.uses +
+              ' is not pinned by a full commit sha; the job holds a production secret'
+          );
+          const tags = ciTags.get(u.action);
+          const want = tags ? [...tags].sort().join(', ') : 'a # v<major> comment';
+          ok(
+            /^v\d+$/.test(u.comment) && (!tags || tags.has(u.comment)),
+            where +
+              'the pin of ' +
+              u.action +
+              ' says ' +
+              (u.comment || '(no comment)') +
+              ', the other jobs use ' +
+              want +
+              '; move the pin with them'
+          );
+        });
+        job.body
+          .replace(/(^|\s)#.*$/gm, '$1')
+          .split(/\r?\n/)
+          .filter((line) => /\bnpm\b.*\b(ci|install|i)\b|\bnpx\b/.test(line))
+          .forEach(function (line) {
+            if (/\bnpx\b/.test(line)) {
+              ok(false, where + "npx runs a package's scripts beside a production secret");
+              return;
+            }
+            ok(
+              /--ignore-scripts\b/.test(line),
+              where +
+                'npm installs run install scripts beside a production secret; add --ignore-scripts'
+            );
+          });
+      });
     ['SUPABASE_DB_URL_PROD', 'SUPABASE_USAGE_TOKEN_PROD'].forEach(function (secret) {
       const bad = prodSecretOutsideEnvironment(text, secret);
       ok(

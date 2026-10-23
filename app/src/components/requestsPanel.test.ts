@@ -4,7 +4,7 @@
  * and a live arrival.
  * docs/specs/FEATURES.md, "Account and browser lists". */
 
-import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
@@ -733,6 +733,14 @@ describe('the change log in the panel', () => {
     await waitFor(() => {
       expect(noticeRows(p)).toHaveLength(2);
     });
+    /* The drawn panel marks both notices read and reads again; that read lands before the
+       author's change, so the panel holds the two notices alone when «Скрыть изменения» is
+       pressed. */
+    await waitFor(async () => {
+      const read = await cloud.requests.notices(GM2_LIST);
+      expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);
+    });
+    await new Promise((done) => setTimeout(done, 20));
     const cap = SEED.homebrew.gm1.items.find((i) => i.id === CAP_ID);
     await world.homebrew.updateItem(
       CAP_ID,
@@ -786,5 +794,139 @@ describe('the read mark after a failure', () => {
     await waitFor(() => {
       expect(mark).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe('the panel slot while the requests load', () => {
+  it('draws «Загружаем...» in the panel slot while the first read is out', async () => {
+    const { container } = openShop((cloud) => {
+      TWO(cloud);
+      vi.spyOn(cloud.requests, 'lines').mockReturnValue(new Promise(() => undefined));
+    });
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    const slot = await waitFor(() => {
+      const el = container.querySelector('.reqstate');
+      expect(el).not.toBeNull();
+      return el as HTMLElement;
+    });
+    expect(within(slot).getByRole('status')).toHaveTextContent('Загружаем...');
+    expect(screen.queryByRole('heading', { name: /^Новое в списке/ })).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('draws the failure line and «Повторить» after a failed read; the retry moves focus to the panel head', async () => {
+    let lines: { mockRestore: () => void } | undefined;
+    const { container } = openShop((cloud) => {
+      TWO(cloud);
+      lines = vi.spyOn(cloud.requests, 'lines').mockResolvedValue({ ok: false });
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Не получилось загрузить запросы.'
+    );
+    await expectNoA11yViolations(container);
+    /* In one step, so no read of the page lands between the restore and the press. */
+    const retry = screen.getByRole('button', { name: 'Повторить' });
+    lines?.mockRestore();
+    retry.focus();
+    await fireEvent.click(retry);
+    const p = await panel();
+    await waitFor(() => {
+      expect(document.activeElement).toBe(within(p).getByRole('heading', { level: 2 }));
+    });
+    expect(container.querySelector('.reqstate')).toBeNull();
+  });
+
+  it('moves focus to #main after a retry that leaves no panel', async () => {
+    let list: { mockRestore: () => void } | undefined;
+    openShop((cloud) => {
+      list = vi.spyOn(cloud.requests, 'list').mockResolvedValue({ ok: false });
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Не получилось загрузить запросы.'
+    );
+    const retry = screen.getByRole('button', { name: 'Повторить' });
+    list?.mockRestore();
+    retry.focus();
+    await fireEvent.click(retry);
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(document.getElementById('main'));
+    });
+  });
+
+  it('draws in English', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    TWO(cloud);
+    await cloud.prefs.save({ lang: 'en' });
+    vi.spyOn(cloud.requests, 'lines').mockResolvedValue({ ok: false });
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/lists/' + SHOP), data: fakeData(LOOT), cloud })
+    });
+    expect(await screen.findByText('Could not load the requests.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+});
+
+describe('the focus after an answer (rule 20)', () => {
+  const TWO_FULL = (cloud: ReturnType<typeof fakeCloud>): void => {
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    vi.setSystemTime(T0 + 60_000);
+    cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+  };
+
+  it("goes to the next request's first button after «Принять»", async () => {
+    openShop(TWO_FULL);
+    const p = await panel();
+    const [first, second] = requestsOf(p) as [HTMLElement, HTMLElement];
+    const next = within(second).getByRole('button', { name: 'Принять' });
+    await userEvent.click(within(first).getByRole('button', { name: 'Принять' }));
+    await waitFor(() => {
+      expect(requestsOf(p)).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(next);
+    });
+  });
+
+  it("goes to the previous request's first button after the last one is answered", async () => {
+    openShop(TWO_FULL);
+    const p = await panel();
+    const [first, second] = requestsOf(p) as [HTMLElement, HTMLElement];
+    const before = within(first).getByRole('button', { name: 'Принять' });
+    await userEvent.click(within(second).getByRole('button', { name: 'Отклонить' }));
+    await waitFor(() => {
+      expect(requestsOf(p)).toHaveLength(1);
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(before);
+    });
+  });
+
+  it("goes to the same request's «Принять доступное» after a refused apply", async () => {
+    openShop(TWO);
+    const p = await panel();
+    const gm = requestsOf(p)[0] as HTMLElement;
+    await userEvent.click(within(gm).getByRole('button', { name: 'Принять' }));
+    const avail = await within(gm).findByRole('button', { name: 'Принять доступное' });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(avail);
+    });
+  });
+
+  it('goes to the panel head when the last pending request leaves with a decided fold', async () => {
+    const { container } = openShop((cloud) => {
+      cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    });
+    const p = await panel();
+    await userEvent.click(within(p).getByRole('button', { name: 'Принять' }));
+    await waitFor(() => {
+      expect(p.querySelector('.req')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(within(p).getByRole('heading', { level: 2 }));
+    });
+    await expectNoA11yViolations(container);
   });
 });

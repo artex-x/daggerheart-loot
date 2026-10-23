@@ -217,6 +217,12 @@ export class CloudLists implements ListModel {
     return this.sync !== 'failed';
   }
 
+  /** Whether the account holds as many lists as its limit allows, a list made and not yet
+   *  sent counted; false while the limit is unknown. */
+  full(): boolean {
+    return this.listLimit !== null && this.lists.length >= this.listLimit;
+  }
+
   get(id: string): CloudList | undefined {
     return this.lists.find((l) => l.id === id);
   }
@@ -303,16 +309,21 @@ export class CloudLists implements ListModel {
     const known = Object.fromEntries(Object.entries(this.#read).map(([id, r]) => [id, r.rev]));
     const seq = ++this.#readSeq;
     const read = await (Object.keys(known).length ? this.#repo.list(known) : this.#repo.list());
-    if (epoch !== this.#epoch || seq < this.#appliedSeq) return;
+    if (epoch !== this.#epoch) return;
+    /* A limit is not row data: a read dropped below still applies it, since the port reads
+       the limits again only after a failed limit read. A limit read that failed or was not
+       made (undefined) keeps the limit known. */
+    if (read.ok) {
+      if (read.listLimit !== undefined) this.listLimit = read.listLimit;
+      if (read.entryLimit !== undefined) this.entryLimit = read.entryLimit;
+    }
+    if (seq < this.#appliedSeq) return;
     if (edits !== this.#edits || this.#queue.length || this.#flushing) {
       this.#reread = true;
       this.#rereadWhenIdle();
       return;
     }
     if (read.ok) {
-      /* A limit read that failed (undefined) keeps the limit known. */
-      if (read.listLimit !== undefined) this.listLimit = read.listLimit;
-      if (read.entryLimit !== undefined) this.entryLimit = read.entryLimit;
       if (!this.#apply(read.lists, read.kept ?? [])) {
         /* A kept list this store no longer holds (an overlapping read replaced it): read
            again with the revisions held now, and draw nothing from this read. */

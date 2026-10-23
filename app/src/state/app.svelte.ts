@@ -1400,14 +1400,16 @@ export class AppState {
       this.say((t) => t.hbNotReady, { error: true });
       return;
     }
+    const skipped = ids.filter((id) => !this.pageRecordFor(id)).length;
     const { entries, cut } = this.printEntriesOf(ids, qty);
     if (!entries.length) return;
-    await this.#makePrint(entries, cut);
+    await this.#makePrint(entries, cut, skipped);
   }
 
   /* The make of a press and of a pending print. An answer that arrives after a navigation
-     is dropped: the set may exist, and the same sheet pressed again returns it. */
-  async #makePrint(entries: readonly PrintSetEntry[], cut: number): Promise<void> {
+     is dropped: the set may exist, and the same sheet pressed again returns it. `skipped`
+     counts the ids of the press with no record, which the set leaves out. */
+  async #makePrint(entries: readonly PrintSetEntry[], cut: number, skipped = 0): Promise<void> {
     const cloud = this.env.cloud;
     if (!cloud || this.printing) return;
     const at = this.navigations;
@@ -1421,9 +1423,16 @@ export class AppState {
     if (this.navigations !== at) return;
     if (made.ok) {
       this.go(printSetHash(made.id));
-      if (cut > 0) {
+      if (cut > 0 || skipped > 0) {
         this.say((t) =>
-          t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(cut))
+          [
+            cut > 0
+              ? t.printTooMany.replace('%n', String(PRINT_MAX)).replace('%d', String(cut))
+              : '',
+            skipped > 0 ? t.printSkipped.replace('%n', String(skipped)) : ''
+          ]
+            .filter(Boolean)
+            .join(' ')
         );
       }
       return;
@@ -1558,10 +1567,21 @@ export class AppState {
     if (d) this.saveCopyOf(d);
   }
 
+  /** Says the list limit and answers true when the account is at it: an optimistic create
+   *  would be refused about 2 s later and dropped. */
+  listsFull(): boolean {
+    const lists = this.cloudLists;
+    if (!lists?.full()) return false;
+    const limit = lists.listLimit;
+    this.say((t) => limitText('lists_per_owner', limit, t), { error: true });
+    return true;
+  }
+
   /** Saves a shared list into the account and opens it. */
   saveCopyOf(d: DecodedList): void {
     const lists = this.cloudLists;
     if (!lists) return;
+    if (this.listsFull()) return;
     const l = lists.create(d.name, copyInit(d));
     const name = l.name;
     this.say((t) => t.listCreated.replace('%s', name));

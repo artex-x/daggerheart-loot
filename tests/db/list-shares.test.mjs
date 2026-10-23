@@ -22,6 +22,19 @@ const E1 = id(1101);
 const E2 = id(1102);
 const COPY = id(2002);
 const TOKEN_RE = /^[A-Za-z0-9_-]{43}$/;
+/* md5 of the two definitions that build a shared record; see the case that pins them. */
+const RECORD_DEFINITIONS = '785401d6446dff1de53c51a7789457ff';
+/* The longest record the validators allow: about 81 KB with its source and four cards. */
+const maximal = () =>
+  JSON.parse(
+    readFileSync(
+      path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '../../docs/fixtures/homebrew/snapshots.json'
+      ),
+      'utf8'
+    )
+  ).valid.find((c) => c.key === 'hb_maximalcardsaaaa');
 
 let sql;
 before(() => {
@@ -123,10 +136,10 @@ describe('list_shares grants', () => {
     assert.deepEqual(Object.fromEntries(rows.map(({ fn, ...r }) => [fn, r])), {
       'clone_shared_list(text,uuid)': pinned(false),
       'create_list_share(uuid,text)': pinned(false),
-      'get_shared_list(text)': pinned(true),
-      /* Security invoker: the projection is still built by get_shared_list(text). */
+      /* Security invoker: the projection is built by get_shared_list(text, bigint, jsonb). */
+      'get_shared_list(text)': { ...pinned(true), prosecdef: false },
       'get_shared_list(text,bigint)': { ...pinned(true), prosecdef: false },
-      'get_shared_list(text,bigint,jsonb)': { ...pinned(true), prosecdef: false },
+      'get_shared_list(text,bigint,jsonb)': pinned(true),
       'revoke_list_share(uuid)': pinned(false)
     });
   });
@@ -582,18 +595,12 @@ describe('get_shared_list(text, bigint, jsonb)', () => {
       ${held === null ? null : tx.json(held)}::jsonb) as v`;
     return r.v;
   };
-  const hashOf = async (tx, snapshot) => {
-    const [r] = await tx`select md5(${tx.json(snapshot)}::jsonb::text) as h`;
-    return r.h;
-  };
-
   for (const audience of ['player', 'gm']) {
     it(`names a ${audience} link's homebrew record by rev and leaves out a held one`, async () => {
       const out = await asAnon(linked(audience), async (tx) => {
         const token = tokens[audience];
         const whole = await have(tx, token, null, {});
-        const entry = whole.entries.find((e) => e.hid === H);
-        const rev = await hashOf(tx, entry.snapshot);
+        const { rev } = whole.entries.find((e) => e.hid === H);
         return {
           whole,
           rev,
@@ -603,7 +610,7 @@ describe('get_shared_list(text, bigint, jsonb)', () => {
         };
       });
       const hb = (v) => v.entries.find((e) => e.hid === H);
-      assert.equal(hb(out.whole).rev, out.rev);
+      assert.match(out.rev, /^[0-9a-f]{32}$/);
       assert.equal(hb(out.whole).snapshot.en, 'Held');
       for (const e of out.whole.entries.filter((x) => x.source === 'official')) {
         assert.equal('rev' in e, false);
@@ -647,7 +654,6 @@ describe('get_shared_list(text, bigint, jsonb)', () => {
         answers: [
           await have(tx, tokens.player, null, []),
           await have(tx, tokens.player, null, 'text'),
-          await have(tx, tokens.player, null, null),
           await have(tx, tokens.player, null, { [H]: rev, pad: 'x'.repeat(70000) })
         ]
       };
@@ -655,78 +661,194 @@ describe('get_shared_list(text, bigint, jsonb)', () => {
     for (const v of out.answers) assert.deepEqual(v, out.whole);
   });
 
+  it('answers what get_shared_list(text) answers for a null p_have: every record, no rev', async () => {
+    const out = await asAnon(linked('gm'), async (tx) => ({
+      plain: await shared(tx, tokens.gm),
+      none: await have(tx, tokens.gm, null, null)
+    }));
+    assert.deepEqual(out.none, out.plain);
+    assert.equal(out.none.entries.find((e) => e.hid === H).snapshot.en, 'Held');
+    assert.equal(JSON.stringify(out.none).includes('"rev"'), false);
+  });
+
+  /* rev is made from revisions, not from the record: it changes with every write that changes
+     the record and stays for a write that does not. The record is the longest fixture's
+     (docs/fixtures/homebrew/snapshots.json, hb_maximalcardsaaaa), whose item names a set card
+     and three ref cards; the third ref card is added and deleted on the way. */
+  it('changes rev after each write to the item, its source or its named cards, and only then', async () => {
+    const MAX = maximal();
+    const BK = id(3301);
+    const OTHER = id(3302);
+    const [setCard, ref1, ref2, ref3] = MAX.cards;
+    const card = (tx, { key, kind, ...content }) =>
+      tx`insert into public.homebrew_cards (id, owner_id, key, kind, book_id, content)
+        values (gen_random_uuid(), ${A}, ${key}, ${kind}, ${BK}, ${tx.json(content)})`;
+    const setup = async (tx) => {
+      await withShare('player')(tx);
+      const { key: bookKey, ...book } = MAX.book;
+      await tx`insert into public.homebrew_books (id, owner_id, key, content)
+        values (${BK}, ${A}, ${bookKey}, ${tx.json(book)})`;
+      for (const c of [setCard, ref1, ref2]) await card(tx, c);
+      await card(tx, { key: 'hb_padcardaaaaaaaaa', kind: 'set', ru: 'Чужой комплект' });
+      await tx`insert into public.homebrew_items (id, owner_id, key, book_id, content) values
+        (${H}, ${A}, ${KEY_H}, ${BK}, ${tx.json(MAX.content)}),
+        (${OTHER}, ${A}, 'hb_otheritemaaaaaaa', null, ${tx.json({ kind: 'item', en: 'Other' })})`;
+      await tx`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
+        values (${id(1301)}, ${LA}, ${KEY_H}, 'homebrew', ${H}, 2)`;
+    };
+    const steps = await asA(setup, async (tx) => {
+      const revs = [];
+      const read = async (label) => {
+        const v = await have(tx, tokens.player, null, {});
+        revs.push([label, v.entries.find((e) => e.hid === H).rev]);
+      };
+      await read('first');
+      await read('again');
+      await tx`update public.homebrew_cards set content = content || '{"ru": "Другой"}'
+        where key = 'hb_padcardaaaaaaaaa'`;
+      await read('an edit of a card the item does not name');
+      await tx`update public.homebrew_items set content = content || '{"en": "Other 2"}'
+        where id = ${OTHER}`;
+      await read('an edit of another item');
+      await tx`update public.homebrew_items set content = content || '{"en": "Changed"}'
+        where id = ${H}`;
+      await read('an item content edit');
+      await tx`update public.homebrew_items set art = 'ci1.webp' where id = ${H}`;
+      await read('an art change');
+      await tx`update public.homebrew_books set content = content || '{"en": "Changed"}'
+        where id = ${BK}`;
+      await read("its source's content edit");
+      await tx`update public.homebrew_cards set content = content || '{"en": "Changed"}'
+        where key = ${setCard.key}`;
+      await read("its set card's edit");
+      await card(tx, ref3);
+      await read('a ref card added with a key the item names');
+      await tx`delete from public.homebrew_cards where key = ${ref3.key}`;
+      await read('that card deleted');
+      await tx`delete from public.homebrew_books where id = ${BK}`;
+      await read("its source's delete");
+      return revs;
+    });
+    for (const [, rev] of steps) assert.match(rev, /^[0-9a-f]{32}$/);
+    const [first, ...rest] = steps;
+    for (const [label, rev] of rest.slice(0, 3)) assert.equal(rev, first[1], label);
+    for (let i = 4; i < steps.length; i++) {
+      assert.notEqual(steps[i][1], steps[i - 1][1], steps[i][0]);
+    }
+  });
+
+  /* homebrew_item_rev() follows the record through revisions only, so a migration that
+     changes what homebrew_item_record() or homebrew_snapshot_of() builds must raise
+     homebrew_item_rev()'s format number, or a reader keeps the old record
+     (docs/decisions/2026-10-22-a-shared-records-rev-is-made-from-its-revisions.md). */
+  it('pins the definitions of homebrew_item_record() and homebrew_snapshot_of()', async () => {
+    const [r] = await sql`select md5(
+      pg_get_functiondef('public.homebrew_item_record(uuid)'::regprocedure)
+      || pg_get_functiondef('public.homebrew_snapshot_of(text,jsonb,jsonb,jsonb)'::regprocedure)) as h`;
+    assert.equal(
+      r.h,
+      RECORD_DEFINITIONS,
+      'the shared record changed: raise the format number of homebrew_item_rev, then re-pin'
+    );
+  });
+
   /* One list of 300 entries at three times the limits, each linked to its own item with the
-     longest record the validators allow (docs/fixtures/homebrew/snapshots.json,
-     hb_maximalcardsaaaa: about 81 KB with its source and four cards). Half the hosted anon
-     statement timeout of 3 s (read 2026-10-16 on the test project) bounds the median; the
-     figure is this host's (docs/specs/COVERAGE.md, the row of this file). A todo until
-     docs/specs/DEBT.md, "D111", is paid. */
-  it(
-    'answers 300 linked records of the longest size within half the hosted anon timeout',
-    { todo: 'the three-argument median took 2305-3237 ms (2026-10-16)' },
-    async () => {
-      const MAX = JSON.parse(
-        readFileSync(
-          path.resolve(
-            path.dirname(fileURLToPath(import.meta.url)),
-            '../../docs/fixtures/homebrew/snapshots.json'
-          ),
-          'utf8'
-        )
-      ).valid.find((c) => c.key === 'hb_maximalcardsaaaa');
-      const LH = id(5001);
-      let token = null;
-      const seed = async (tx) => {
-        await world(tx);
-        await tx`insert into public.user_limit_overrides (user_id, key, value)
+     longest record the validators allow, and 296 more cards that no item names, so the owner
+     holds 300 cards: homebrew_item_rev() and homebrew_item_record() scan the owner's cards
+     per entry. Each bound is server time including the conversion to text (explain analyze
+     of ...::text): PostgREST converts the answer to text inside the same statement, so the
+     hosted statement timeout bounds the build and the conversion, not the transfer. The
+     first read stays within half the hosted anon timeout of 3 s (read 2026-10-16 on the test
+     project); the figures are this host's (docs/specs/COVERAGE.md, the row of this file,
+     with the hosted figure). */
+  it('answers 300 linked records of the longest size within half the hosted anon timeout, and a re-read of held records at a fraction of it', async () => {
+    const MAX = maximal();
+    const LH = id(5001);
+    let token = null;
+    const seed = async (tx) => {
+      await world(tx);
+      await tx`insert into public.user_limit_overrides (user_id, key, value)
         select ${A}, d.key, d.value * 3 from public.limit_defaults d where d.value is not null`;
-        const { key: bookKey, ...book } = MAX.book;
-        const [b] = await tx`insert into public.homebrew_books (id, owner_id, key, content)
+      const { key: bookKey, ...book } = MAX.book;
+      const [b] = await tx`insert into public.homebrew_books (id, owner_id, key, content)
         values (gen_random_uuid(), ${A}, ${bookKey}, ${tx.json(book)}) returning id`;
-        for (const { key, kind, ...content } of MAX.cards) {
-          await tx`insert into public.homebrew_cards (id, owner_id, key, kind, book_id, content)
+      for (const { key, kind, ...content } of MAX.cards) {
+        await tx`insert into public.homebrew_cards (id, owner_id, key, kind, book_id, content)
           values (gen_random_uuid(), ${A}, ${key}, ${kind}, ${b.id}, ${tx.json(content)})`;
-        }
-        await tx`insert into public.homebrew_items (id, owner_id, key, book_id, content)
+      }
+      await tx`insert into public.homebrew_cards (id, owner_id, key, kind, content)
+        select gen_random_uuid(), ${A},
+          'hb_pad' || lpad(translate(g::text, '0123456789', 'abcdefghij'), 13, 'a'), 'set',
+          jsonb_build_object('ru', 'Комплект ' || g)
+        from generate_series(1, 296) g`;
+      await tx`insert into public.homebrew_items (id, owner_id, key, book_id, content)
         select gen_random_uuid(), ${A},
           'hb_' || lpad(translate(g::text, '0123456789', 'abcdefghij'), 16, 'a'),
           ${b.id}, ${tx.json(MAX.content)}
         from generate_series(1, 300) g`;
-        await tx`insert into public.lists (id, owner_id, name) values (${LH}, ${A}, 'Heavy')`;
-        await tx`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
+      await tx`insert into public.lists (id, owner_id, name) values (${LH}, ${A}, 'Heavy')`;
+      await tx`insert into public.list_entries (id, list_id, item_key, source, hb_item, position)
         select gen_random_uuid(), ${LH}, i.key, 'homebrew', i.id,
           row_number() over (order by i.key) - 1
         from public.homebrew_items i where i.owner_id = ${A}`;
-        const [s] = await tx`insert into public.list_shares (list_id, audience)
+      const [s] = await tx`insert into public.list_shares (list_id, audience)
         values (${LH}, 'player') returning token`;
-        token = s.token;
-        await tx`analyze public.homebrew_books, public.homebrew_cards, public.homebrew_items,
+      token = s.token;
+      await tx`analyze public.homebrew_books, public.homebrew_cards, public.homebrew_items,
         public.lists, public.list_entries, public.list_shares`;
-      };
-      const median = (xs) => [...xs].sort((a, b) => a - b)[1];
-      const out = await asAnon(seed, async (tx) => {
-        const times = { two: [], three: [] };
-        let size = 0;
-        for (let run = 0; run < 3; run++) {
-          let t0 = performance.now();
-          const [two] = await tx`select public.get_shared_list(${token}, null::bigint) as v`;
-          times.two.push(performance.now() - t0);
-          t0 = performance.now();
-          await tx`select public.get_shared_list(${token}, null::bigint, '{}'::jsonb) as v`;
-          times.three.push(performance.now() - t0);
-          size = two.v.entries.length;
-        }
-        return { times, size };
-      });
-      const two = Math.round(median(out.times.two));
-      const three = Math.round(median(out.times.three));
-      console.log(
-        `list-shares: 300 linked records, median (text, bigint) ${two} ms, (text, bigint, jsonb) ${three} ms`
+    };
+    const median = (xs) => [...xs].sort((a, b) => a - b)[1];
+    /* A literal, not a parameter: the token is base64url and the held object is JSON. */
+    const literal = (v) => `'${String(v).replaceAll("'", "''")}'`;
+    const serverTime = async (tx, args) => {
+      const [r] = await tx.unsafe(
+        `explain (analyze, format json) select public.get_shared_list(${args})::text`
       );
-      assert.equal(out.size, 300);
-      assert.ok(three < 1500, `the three-argument median took ${three} ms`);
-    }
-  );
+      const plan = r['QUERY PLAN'];
+      return (typeof plan === 'string' ? JSON.parse(plan) : plan)[0]['Execution Time'];
+    };
+    const out = await asAnon(seed, async (tx) => {
+      const [first] =
+        await tx`select public.get_shared_list(${token}, null::bigint, '{}'::jsonb) as v`;
+      const held = Object.fromEntries(first.v.entries.map((e) => [e.hid, e.rev]));
+      const [again] = await tx`select public.get_shared_list(${token}, null::bigint,
+        ${tx.json(held)}::jsonb) as v`;
+      const t = literal(token);
+      const calls = {
+        first: `${t}, null::bigint, '{}'::jsonb`,
+        held: `${t}, null::bigint, ${literal(JSON.stringify(held))}::jsonb`,
+        two: `${t}, ${first.v.revision}::bigint`,
+        three: `${t}, ${first.v.revision}::bigint, '{}'::jsonb`
+      };
+      const times = { first: [], held: [], two: [], three: [] };
+      for (let run = 0; run < 3; run++) {
+        for (const [name, args] of Object.entries(calls)) {
+          times[name].push(await serverTime(tx, args));
+        }
+      }
+      return {
+        times,
+        size: first.v.entries.length,
+        records: first.v.entries.filter((e) => e.snapshot).length,
+        heldRecords: again.v.entries.filter((e) => 'snapshot' in e).length,
+        heldSize: again.v.entries.length
+      };
+    });
+    const m = Object.fromEntries(
+      Object.entries(out.times).map(([name, xs]) => [name, Math.round(median(xs))])
+    );
+    console.log(
+      `list-shares: 300 linked records, 300 cards, median server time with the text conversion: p_have {} ${m.first} ms, every rev held ${m.held} ms, (text, bigint) unchanged ${m.two} ms, (text, bigint, jsonb) unchanged ${m.three} ms`
+    );
+    assert.equal(out.size, 300);
+    assert.equal(out.records, 300);
+    assert.equal(out.heldSize, 300);
+    assert.equal(out.heldRecords, 0);
+    assert.ok(m.first < 1500, `the first read's median took ${m.first} ms`);
+    assert.ok(m.held < 300, `the re-read with every rev held took ${m.held} ms`);
+    assert.ok(m.two < 50, `the (text, bigint) unchanged answer took ${m.two} ms`);
+    assert.ok(m.three < 50, `the (text, bigint, jsonb) unchanged answer took ${m.three} ms`);
+  });
 
   it('leaves get_shared_list(text) and (text, bigint) answering with no rev', async () => {
     const out = await asAnon(linked('player'), async (tx) => ({

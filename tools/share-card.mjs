@@ -455,8 +455,9 @@ export function card(lang, ctx) {
     (set.length ? ' ' + set.join('. ') : '');
   const desc = ctx.caps ? fit(joined, ctx.caps.meta) : joined;
   const docTitle = name === t.site ? t.site : `${esc(name)} — ${t.site}`;
-  const script =
-    (ctx.seed ? SEED_EN : '') + 'location.replace(' + JSON.stringify(ctx.app) + ');';
+  // An address that holds `</script>` or `<!--` cannot end the script.
+  const target = JSON.stringify(ctx.app).replace(/</g, '\\u003c');
+  const script = (ctx.seed ? SEED_EN : '') + 'location.replace(' + target + ');';
   const size = ctx.large
     ? `<meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">`

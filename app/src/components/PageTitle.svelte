@@ -17,9 +17,12 @@
     title: string | Snippet;
     /** None where a load line under the heading says it all. */
     sub?: string | Snippet;
+    /** The id of the element that names the heading, where its content would name it
+     *  twice. */
+    labelledby?: string | undefined;
   }
 
-  const { title, sub }: Props = $props();
+  const { title, sub, labelledby }: Props = $props();
 </script>
 
 <!-- Each branch is a whole element, not a conditional inside one: Svelte's
@@ -29,9 +32,9 @@
      into two - `sharedListPage.test.ts` caught it. Branching outside the
      element keeps the anchor a sibling instead. -->
 {#if typeof title === 'string'}
-  <h1 class="page-h">{title}</h1>
+  <h1 class="page-h" aria-labelledby={labelledby}>{title}</h1>
 {:else}
-  <h1 class="page-h">{@render title()}</h1>
+  <h1 class="page-h" aria-labelledby={labelledby}>{@render title()}</h1>
 {/if}
 {#if typeof sub === 'string'}
   <p class="page-sub">{sub}</p>
@@ -59,5 +62,6 @@
     color: var(--muted);
     font-size: 14px;
     max-width: 70ch;
+    overflow-wrap: anywhere;
   }
 </style>

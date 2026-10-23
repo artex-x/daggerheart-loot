@@ -771,7 +771,8 @@ export function copyName(name: string, taken: ReadonlySet<string>): string {
 
 /** Returns the content of a catalog record's copy: the fields an own item stores, with
  *  `craftFrom` as its `craft_from`; a record with a stat block copies as equipment, and the
- *  table and card-set placement (`roll`, `recall`, `frame`, `realm` and the like) is left out. */
+ *  table and card-set placement (`roll`, `recall`, `frame`, `realm` and the like) and the
+ *  set are left out. */
 export function copyContentOf(r: Record_, craftFrom: readonly string[]): HomebrewContent {
   const out: HomebrewContent = { kind: r.eq ? 'equip' : r.kind };
   for (const k of ['en', 'ru', 'ende', 'rud'] as const) if (r[k]) out[k] = r[k];
@@ -793,7 +794,6 @@ export function copyContentOf(r: Record_, craftFrom: readonly string[]): Homebre
   }
   if (r.craft?.length) out.craft = r.craft.slice(0, CRAFT_MAX);
   if (craftFrom.length) out.craft_from = craftFrom.slice(0, CRAFT_MAX);
-  if (r.set) out.set = r.set;
   if (r.refs?.length) out.refs = r.refs.slice(0, REFS_MAX);
   return out;
 }
@@ -802,10 +802,11 @@ export function copyContentOf(r: Record_, craftFrom: readonly string[]): Homebre
  *  default source under `key`, from what the reader sees of another account's item or from a
  *  catalog record (`copyContentOf`), each name numbered against the own names of its
  *  language (`copyName`). The `hb_` ids of `craft`, `craft_from` and `eq.line` are dropped
- *  (the author's other items stay theirs); catalog ids stay. A set or rule card the record
- *  embeds takes `cardKeyFor` of its key and is copied under it, unless the account holds
- *  that key (`hasCard`), which the copy then names; an `hb_` card key with no card is dropped
- *  (docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md). */
+ *  (the author's other items stay theirs); catalog ids stay. A rule card the record embeds
+ *  takes `cardKeyFor` of its key and is copied under it, unless the account holds that key
+ *  (`hasCard`), which the copy then names; an `hb_` card key with no card is dropped; its
+ *  set is left out (docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md,
+ *  docs/decisions/2026-10-22-a-save-to-my-items-copy-leaves-out-its.md). */
 export function copyRows(
   r: Record_,
   key: string,
@@ -833,24 +834,28 @@ export function copyRows(
     delete eq.line;
     content.eq = eq;
   }
-  /* A card key the record embeds: copied, or named when the account holds it. */
-  const cardKey = (kind: CardKind, of: string): string | null => {
+  /* A rule card key the record embeds: copied, or named when the account holds it. */
+  const refKey = (of: string): string | null => {
     if (!isHomebrewKey(of)) return of;
     const own = account.cardKeyFor(of);
     if (account.hasCard(own)) return own;
-    const card = kind === 'set' ? embedded?.sets?.[of] : embedded?.refs?.[of];
+    const card = embedded?.refs?.[of];
     if (!card) return null;
-    cards.push({ id: account.newId(), key: own, kind, book: null, content: { ...card } });
+    cards.push({
+      id: account.newId(),
+      key: own,
+      kind: 'ref',
+      book: null,
+      content: { ...card }
+    });
     return own;
   };
-  if (content.set !== undefined) {
-    const set = cardKey('set', content.set);
-    if (set === null) delete content.set;
-    else content.set = set;
-  }
+  /* A copy leaves its original's set line
+     (docs/decisions/2026-10-22-a-save-to-my-items-copy-leaves-out-its.md). */
+  delete content.set;
   if (content.refs !== undefined) {
     const refs = content.refs.flatMap((ref) => {
-      const k = cardKey('ref', ref);
+      const k = refKey(ref);
       return k === null ? [] : [k];
     });
     if (refs.length) content.refs = refs;

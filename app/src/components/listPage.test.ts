@@ -959,7 +959,7 @@ describe('a row', () => {
 
     expect(screen.getByText('7 мешков 5 горстей')).toBeInTheDocument();
 
-    const golds = screen.getAllByPlaceholderText('—');
+    const golds = screen.getAllByPlaceholderText('-');
     const goldForCc1 = golds[1] as HTMLElement; // ci1, cc1, q1 in that order
     await userEvent.clear(goldForCc1);
     await userEvent.type(goldForCc1, '231');
@@ -1621,7 +1621,7 @@ describe('an account list', () => {
   it('counts its entries against the entry limit, and bare when the limit read failed', async () => {
     const { container } = openAs(fakeCloud(SEED, 'gm1', { limits: { entries: 4 } }));
     await screen.findByRole('textbox', { name: 'Название списка' });
-    expect(sub(container)).toBe('4 позиции из 4 · Сохранено');
+    expect(sub(container)).toBe('10 позиций из 4 · Сохранено');
     cleanup();
     const cloud = fakeCloud(SEED, 'gm1');
     const read = cloud.lists.list.bind(cloud.lists);
@@ -1631,7 +1631,7 @@ describe('an account list', () => {
     };
     const bare = openAs(cloud);
     await screen.findByRole('textbox', { name: 'Название списка' });
-    expect(sub(bare.container)).toBe('4 позиции · Сохранено');
+    expect(sub(bare.container)).toBe('10 позиций · Сохранено');
   });
 
   const STANDINS = withStandins(LOOT);
@@ -1668,7 +1668,7 @@ describe('an account list', () => {
     expect(acts).toEqual(['Заметка', 'Только для мастера: Спальный мешок', 'Убрать из списка']);
     expect(eye).toHaveAttribute('aria-pressed', 'false');
     expect(eye).toHaveAttribute('title', 'Только для мастера');
-    expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+    expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     const row = eye.closest('.lrow');
     expect(row).not.toHaveClass('gm-only');
     const icon = eye.innerHTML;
@@ -1680,14 +1680,14 @@ describe('an account list', () => {
     expect(row?.querySelector('.row-main')?.textContent).toContain(
       'Спальный мешок, Только для мастера'
     );
-    expect(sub(container)).toMatch(/^4 позиции из 100 · только для мастера: 1 · /);
+    expect(sub(container)).toMatch(/^10 позиций из 100 · только для мастера: 1 · /);
     expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
       expect(await gmOnlyOf(cloud, 'ci1')).toBe(true);
     });
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · только для мастера: 1 · Сохранено');
+      expect(sub(container)).toBe('10 позиций из 100 · только для мастера: 1 · Сохранено');
     });
     await expectNoA11yViolations(container);
 
@@ -1701,7 +1701,7 @@ describe('an account list', () => {
       expect(await gmOnlyOf(cloud, 'ci1')).toBe(false);
     });
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+      expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     });
     expect(screen.queryByRole('button', { name: 'Вернуть' })).not.toBeInTheDocument();
   });
@@ -1768,7 +1768,7 @@ describe('an account list', () => {
     });
     expect(await gmOnlyOf(cloud, 'cc1')).toBe(false);
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+      expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     });
     await expectNoA11yViolations(container);
   });
@@ -1796,7 +1796,7 @@ describe('an account list', () => {
     const { container, router } = openAs(fakeCloud(SEED, 'gm1'));
     const input = await screen.findByRole('textbox', { name: 'Название списка' });
     expect(input).toHaveValue('Лавка кузнеца');
-    expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+    expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ссылка себе' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
@@ -1896,7 +1896,7 @@ describe('an account list', () => {
     const { container, page } = openAs(cloud);
     const saving = () => container.querySelector('.sync')?.hasAttribute('data-saving');
     await userEvent.type(await screen.findByRole('textbox', { name: 'Название списка' }), '!');
-    expect(sub(container)).toBe('4 позиции из 100 · Сохраняем...');
+    expect(sub(container)).toBe('10 позиций из 100 · Сохраняем...');
     expect(saving()).toBe(true);
     expect(sent).not.toHaveBeenCalled();
     page.fireHidden();
@@ -1906,7 +1906,7 @@ describe('an account list', () => {
     expect(saving()).toBe(true);
     answer({ ok: true, results: [{ ok: true }] });
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+      expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     });
     expect(saving()).toBe(false);
     await expectNoA11yViolations(container);
@@ -1920,7 +1920,7 @@ describe('an account list', () => {
     await userEvent.type(input, '!');
     page.fireHidden();
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · Не сохраненоПовторить');
+      expect(sub(container)).toBe('10 позиций из 100 · Не сохраненоПовторить');
     });
     expect(input).toHaveValue('Лавка кузнеца!');
     const status = [...container.querySelectorAll('.said')].map((s) => s.textContent.trim());
@@ -1929,7 +1929,7 @@ describe('an account list', () => {
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
     await waitFor(() => {
-      expect(sub(container)).toBe('4 позиции из 100 · Сохранено');
+      expect(sub(container)).toBe('10 позиций из 100 · Сохранено');
     });
     const said = () =>
       [...container.querySelectorAll('.said')].map((s) => s.textContent.trim());
@@ -2147,7 +2147,7 @@ describe('a browser list after the cutoff, and while the move is due', () => {
           'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.'
         )
       ).toBeInTheDocument();
-      const links = screen.getAllByRole('link', { name: 'Списки' });
+      const links = screen.getAllByRole('link', { name: 'Мои списки' });
       expect(links.some((l) => l.className.includes('btn'))).toBe(true);
       expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
@@ -2365,7 +2365,7 @@ describe('homebrew entries', () => {
     await userEvent.click(screen.getByRole('button', { name: /^Топор Тлеющих Углей/ }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: '✓ Список второго ГМа' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Список второго ГМа' }));
     /* The record left the page with its row, so its modal closes; the undo stays. */
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull();
@@ -2440,5 +2440,101 @@ describe('homebrew entries', () => {
     render(App, { env: withA('#/lists/a', { cloud: fakeCloud(SEED, 'gm1') }) });
     await screen.findByRole('textbox', { name: 'Название списка' });
     expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
+  });
+});
+
+describe('every stored entry of an account list', () => {
+  Element.prototype.scrollIntoView = vi.fn();
+  const GM2_ID = uuid(201);
+  const AXE = 'hb_emberaxeaaaaaaaa';
+  const open = (cloud: CloudPort, id: string) =>
+    render(App, { env: at('#/lists/' + id, { router: memoryRouter('#/lists/' + id), cloud }) });
+  /* gm2's list links gm1's axe; with the linked read failed, the page knows neither it
+     nor `q23`, which this file's data lacks. */
+  const unread = () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    vi.spyOn(cloud.lists, 'items').mockResolvedValue({ ok: false });
+    return cloud;
+  };
+  const unknownRow = (key: string): HTMLElement =>
+    screen.getByText(key, { selector: '.unk b' }).closest('.lrow') as HTMLElement;
+
+  it('draws a row for an entry whose record the page has not read', async () => {
+    const { container } = open(unread(), GM2_ID);
+    await screen.findByText(AXE);
+    const row = unknownRow(AXE);
+    expect(within(row).getByText('Предмет не загружен')).toBeInTheDocument();
+    expect(within(row).getByRole('checkbox', { name: AXE })).toBeInTheDocument();
+    expect(container.querySelectorAll('.lrow')).toHaveLength(2);
+    expect(sub(container)).toBe('2 позиции из 100 · Сохранено');
+    expect(within(row).getByRole('spinbutton', { name: 'Позиция в списке' })).toHaveAttribute(
+      'max',
+      '2'
+    );
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(row).getByRole('button', { name: 'Убрать из списка' }));
+    await waitFor(() => {
+      expect(container.querySelectorAll('.lrow')).toHaveLength(1);
+    });
+    expect(sub(container)).toMatch(/^1 позиция из 100 · /);
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    expect(await screen.findByText(AXE)).toBeInTheDocument();
+  });
+
+  it('rolls over every stored entry', async () => {
+    open(unread(), GM2_ID);
+    await screen.findByText(AXE);
+    await userEvent.click(screen.getByText('Бросок по списку'));
+    expect(screen.getByText('Результат броска (1-2)')).toBeInTheDocument();
+    const up = screen.getByRole('button', { name: 'На единицу больше' });
+    await userEvent.click(up);
+    await userEvent.click(up);
+    expect(screen.getByRole('textbox', { name: 'Результат броска' })).toHaveValue('2');
+    expect(up).toBeDisabled();
+  });
+
+  it('prints the known rows, and the toast names the rest', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const create = vi.spyOn(cloud.prints, 'create');
+    open(cloud, uuid(101));
+    await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
+    await userEvent.click(screen.getByRole('button', { name: 'Печать' }));
+    expect(
+      await screen.findByText('Не напечатано предметов: 6 - они не загружены.')
+    ).toBeInTheDocument();
+    expect(create.mock.calls[0]?.[0]).toHaveLength(4);
+  });
+
+  it('draws «Загружаем...» on an account address once the session is known, and nothing before', async () => {
+    const held = fakeCloud(SEED, 'gm1');
+    vi.spyOn(held.lists, 'list').mockReturnValue(new Promise(() => undefined));
+    open(held, uuid(101));
+    expect(await screen.findByText('Загружаем...')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+    cleanup();
+    const unknown = fakeCloud(SEED, 'gm1');
+    vi.spyOn(unknown.auth, 'session').mockReturnValue(new Promise(() => undefined));
+    open(unknown, uuid(101));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByText('Загружаем...')).toBeNull();
+    expect(screen.queryByText('Список не найден')).toBeNull();
+  });
+
+  it("holds the list's name as text in its h1, the input keeping its label", async () => {
+    open(fakeCloud(SEED, 'gm1'), uuid(101));
+    const input = await screen.findByRole('textbox', { name: 'Название списка' });
+    const h1 = screen.getByRole('heading', { level: 1 });
+    expect(h1).toHaveTextContent('Лавка кузнеца');
+    expect(h1).toContainElement(input);
+  });
+
+  it('names its h1 by the hidden name alone, so the input value does not name it twice', async () => {
+    open(fakeCloud(SEED, 'gm1'), uuid(101));
+    await screen.findByRole('textbox', { name: 'Название списка' });
+    const h1 = screen.getByRole('heading', { level: 1 });
+    const id = h1.getAttribute('aria-labelledby') ?? '';
+    expect(id).toBe('list-name');
+    expect(document.getElementById(id)?.textContent).toBe('Лавка кузнеца');
+    expect(h1).toHaveAccessibleName('Лавка кузнеца');
   });
 });

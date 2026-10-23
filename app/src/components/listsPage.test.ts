@@ -761,6 +761,66 @@ describe('with sign-in configured', () => {
     expect(await screen.findByText('Лавка кузнеца')).toBeInTheDocument();
   });
 
+  it('moves focus to the «Новый список» field when the group retry loads', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
+    withCloud(cloud);
+    await screen.findByText('Не получилось загрузить списки аккаунта.');
+    const retry = screen.getByRole('button', { name: 'Повторить' });
+    cloud.setOffline(false);
+    retry.focus();
+    await fireEvent.click(retry);
+    expect(await screen.findByText('Лавка кузнеца')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Новый список' })).toHaveFocus();
+    });
+  });
+
+  it('shows «Не сохранено» and «Повторить» on the index after a create that cannot be sent, and «Повторить» sends it', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    const page = fakePage();
+    const { container } = withCloud(cloud, { page });
+    await screen.findByText('Список второго ГМа');
+    const count = (): string =>
+      (container.querySelector('.count')?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    expect(count()).toBe('1 список из 50');
+    cloud.setOffline(true);
+    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    page.fireHidden();
+    await waitFor(() => {
+      expect(count()).toBe('2 списка из 50 · Не сохраненоПовторить');
+    });
+    expect(cardNames(container)).toEqual(['Тайник', 'Список второго ГМа']);
+    const said = (): string[] =>
+      [...container.querySelectorAll('.said[role="status"]')].map((r) => r.textContent.trim());
+    expect(said()).toContain('Не сохранено');
+    await expectNoA11yViolations(container);
+    cloud.setOffline(false);
+    await userEvent.click(screen.getByRole('button', { name: 'Повторить' }));
+    await waitFor(() => {
+      expect(count()).toBe('2 списка из 50');
+    });
+    expect(said()).toContain('Сохранено');
+    const read = await cloud.lists.list();
+    expect(read.ok && read.lists.map((l) => l.name)).toContain('Тайник');
+  });
+
+  it('refuses a create at the limit with the limit text, makes no card and keeps the draft', async () => {
+    const { container } = withCloud(fakeCloud(SEED, 'gm1', { limits: { lists: 3 } }));
+    expect(await screen.findByText('3 списка из 3')).toBeInTheDocument();
+    const field = screen.getByPlaceholderText('Например: клад дракона');
+    await userEvent.type(field, 'Четвёртый');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(
+      screen.getByText(
+        'Достигнут предел списков в аккаунте: 3. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+      )
+    ).toBeInTheDocument();
+    expect(cardNames(container)).not.toContain('Четвёртый');
+    expect(field).toHaveValue('Четвёртый');
+    expect(screen.getByText('3 списка из 3')).toBeInTheDocument();
+  });
+
   it('says loading while the first read is in flight, and none when the account is empty', async () => {
     const slow = fakeCloud(SEED, 'gm1');
     slow.lists.list = () => new Promise(() => undefined);

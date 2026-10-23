@@ -48,6 +48,10 @@
      *  value of the stylesheet is multiplied by it, and the rest is in `cqw`
      *  (docs/specs/FEATURES.md, "Homebrew"). 1 on the print sheet. */
     scale?: number;
+    /** The screen-only scale of the sheet around the card (`PrintPage` below about 840
+     *  px). `fit()` divides it out of the rendered sizes it reads, so the fit is the one
+     *  a full-size sheet gets. */
+    screenScale?: number;
   }
 
   const {
@@ -59,7 +63,8 @@
     qty,
     setLine,
     onfit,
-    scale = 1
+    scale = 1,
+    screenScale = 1
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -156,8 +161,18 @@
    * `inline-size`, say, or dropping it while moving the `cqw` units
    * elsewhere) turns the same unchanged loop quadratic in card count -
    * unmeasured damage on a 180-card print sheet.
+   *
+   * Rendered sizes (Range rects and box heights) are divided by `screenScale`, the
+   * sheet's screen-only transform; layout sizes need no division (FEATURES.md, "Print").
    */
   function fit(el: HTMLElement): void {
+    /* Untracked: a resize moves no layout box, so it must not fit 180 cards again. The
+       first fit runs before `PrintPage` reads the column, so `k` is 1 on an unscaled
+       sheet; `cardFit` (tests/app/print.js) fails if the binding ever answers first. */
+    const k = untrack(() => screenScale);
+    /* A rendered size back in layout px under the sheet's screen scale, snapped to the
+       1/64 px layout unit so the division's float error moves no comparison. */
+    const px = (v: number): number => (k === 1 ? v : Math.round((v / k) * 64) / 64);
     const text = el.querySelector<HTMLElement>('.pc-text');
     const art = el.querySelector<HTMLElement>('.pc-art');
     const box = el.querySelector<HTMLElement>('.pc-content');
@@ -181,8 +196,9 @@
       let wide = 0;
       for (const r of rng.getClientRects()) {
         if (r.width <= 0) continue;
-        wide = Math.max(wide, r.width);
-        if (!tops.some((t) => Math.abs(t - r.top) < 1)) tops.push(r.top);
+        wide = Math.max(wide, px(r.width));
+        const top = px(r.top);
+        if (!tops.some((t) => Math.abs(t - top) < 1)) tops.push(top);
       }
       return { wide, tops: tops.length };
     };
@@ -215,7 +231,7 @@
       if (lab) {
         shrink(lab, () => {
           rng.selectNodeContents(lab);
-          return rng.getBoundingClientRect().width > lab.clientWidth;
+          return px(rng.getBoundingClientRect().width) > lab.clientWidth;
         });
       }
       /* `.pc-cells` is the ribbon's inner band, 56% of the strip's height. */
@@ -223,7 +239,7 @@
       const band = strip.querySelector<HTMLElement>('.pc-cells');
       let tall = 0;
       for (const b of strip.querySelectorAll<HTMLElement>('.pc-box, .pc-bonus')) {
-        tall = Math.max(tall, b.getBoundingClientRect().height);
+        tall = Math.max(tall, px(b.getBoundingClientRect().height));
       }
       if (band && tall > band.clientHeight) {
         strip.style.height = (Math.ceil(cq(tall / 0.56) * 10) / 10).toFixed(1) + 'cqw';

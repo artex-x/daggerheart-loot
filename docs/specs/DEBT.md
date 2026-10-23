@@ -10,38 +10,6 @@ user-visible defect does not belong here. Why this file is the home:
 `docs/DECISIONS.md`, "Kept defects live in `docs/specs/DEBT.md`, grouped by
 the task that owes them".
 
-## Shared page build cost (no task filed yet; the owner names the release)
-
-Owns: the cost of building every linked record of a shared page on each
-read, at up to three times the default limits.
-
-### D111 - a shared page of 300 of the longest linked records nears the anon timeout
-
-- **Where**: `get_shared_list(text, bigint)` and its `(text, bigint, jsonb)`
-  overload (`supabase/migrations/20261015120000_shared_list_have.sql`), which
-  build every linked entry's record with `homebrew_item_record`; the todo case
-  in `tests/db/list-shares.test.mjs`.
-- **What**: one list of 300 entries at three times the limits, each linked to
-  its own item with the longest record the validators allow (about 81 KB with
-  its source and four cards), read as `anon`: the median of three calls, measured
-  2026-10-16 on this host in three runs, 1550-2120 ms for the two-argument form
-  and 2305-3237 ms for the overload with `p_have = {}`; the overload reached
-  3774 ms once in the 2026-10-21 `check:db` under host load. The hosted `anon`
-  statement timeout is 3 s (read on the test project), so the first read of
-  such a page may stop there; a re-read that names every held record sends no
-  snapshot but still builds each record to hash it. Real records are about
-  2 KB, and at the default limits a list holds 100 entries.
-- **Why deferred**: the fix (a cached record text or hash per item, or a bound
-  on the bytes a page builds) changes the projection's path, a design of its
-  own. Since `debt-cleanup` the port answers a `57014` from the overload
-  with one read through the two-argument form (`shares.read` in
-  `app/src/ports/supabase.ts`), which restores the cost of before the overload;
-  the entry stays for the live build of every linked record. `debt-cleanup`
-  closed on 2026-10-21 without this fix, which needs a release of its own.
-- **How to verify the fix**: the todo case passes (drop its `todo`), with
-  both medians in its log line under 1500 ms, and `explain (analyze)` of each
-  call on the hosted test project gives the server-side time under 1500 ms.
-
 ## Legacy removal (`persist-10-legacy-removal`)
 
 Owns: the removal, after the cutoff, of the `#/l/` codec, the browser list
@@ -49,7 +17,30 @@ store and all move support (`LegacyMove`, `MoveNotice`, `MoveStatus`,
 `StorageNotice`, the move's RPC path), and a planned decision on whether a
 migration drops `move_legacy_list` and `lists.legacy_fingerprint`
 (`docs/DECISIONS.md`, "R10 removes browser lists and the move; an old
-`#/l/` link is not found").
+`#/l/` link is not found"); also the cost of the account's first read at up
+to three times the default limits (owner, 2026-10-22).
+
+### D115 - every signed-in page load reads every entry of every list
+
+- **Where**: `lists.list` and `LIST_SELECT` in `app/src/ports/supabase.ts`,
+  `#pull` in `app/src/state/cloudLists.svelte.ts`, and the fake's mirror in
+  `app/src/ports/fake-cloud.ts`.
+- **What**: a page load starts with an empty `#read`, so the first read embeds
+  `list_entries(...)` with both notes for every list; a re-read with more than
+  `CHANGED_ROWS_MAX` (50) changed lists reads everything again. At three times
+  the limits (150 lists of 300 entries, a tenth of them with both notes at 4000
+  characters), measured 2026-10-22 on this host on the local stack: 888 ms in
+  SQL, 5019 ms and 81.7 MB over PostgREST, 8-9 s in the browser, so every page
+  that waits for the account shows «Загружаем...» for 8 s or more. At the
+  default limits the read is est. under 1 s.
+- **Why deferred**: the fix reads list heads first and loads a list's entries
+  when a caller needs them, which changes the sync protocol and every consumer
+  of `CloudList.ids` and `meta`: a design of its own (size L), possibly with a
+  heads RPC and its migration. The owner gave it to R10 (2026-10-22), whose
+  removals take the browser-list consumers out of that design.
+- **How to verify the fix**: on the 3x seed of `tests/db/delete-account.test.mjs`
+  (with `analyze`), a signed-in load of `#/lists` in the configured build draws
+  its cards under 4000 ms, and the first read does not embed `list_entries`.
 
 ### D64 - focus falls to `body` when a `MoveNotice` button hides its banner
 
@@ -165,11 +156,12 @@ GitHub Pages: a robots file at a host root and an `X-Robots-Tag` header.
   `curl -I https://daggerheart-loot.pages.dev/llms.txt` shows
   `X-Robots-Tag: noindex`.
 
-## Many Worlds Tavern follow-ups (no task filed yet; the owner names the release)
+## Catalog filter links (`catalog-filter-links`, after R10)
 
 Owns: three small defects left by the Many Worlds Tavern sources: a missing
 landmark, a strip over its cap at mid widths, and a rule text with two Russian
-bodies. No release plan owns them; the owner decides which one takes them.
+bodies. The task after R10 that puts the Items-tab filter in the address takes
+them (owner, 2026-10-22).
 
 ### D112 - the tables page chip panel has no navigation landmark
 

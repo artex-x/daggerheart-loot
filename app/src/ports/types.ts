@@ -503,20 +503,20 @@ export type RequestApplied =
 /** A decline, or why not; the errors read as an apply's. */
 export type RequestDeclined =
   { ok: true } | { ok: false; error: 'decided' | 'expired' | 'gone' | 'network' | 'refused' };
-/** `{ ok: false }` is signed out or a read that failed, never an empty account. With
- *  `kept`, `requests` holds only the requests the caller did not name, and `kept` the
- *  named ones still pending; a named id in neither is gone. */
-export type RequestsRead =
-  { ok: true; requests: OwnerRequest[]; kept?: RequestHead[] } | { ok: false };
+/** `{ ok: false }` is signed out or a read that failed, never an empty account. */
+export type RequestsRead = { ok: true; requests: RequestHead[] } | { ok: false };
+/** `{ ok: false }` is signed out or a read that failed. */
+export type RequestLinesRead = { ok: true; requests: OwnerRequest[] } | { ok: false };
 
 /** Purchase requests from a share link to its list's owner (docs/specs/FEATURES.md,
  *  "Account and browser lists"). Any link holder sends; the owner reads and decides. */
 export interface RequestRepository {
-  /** The signed-in owner's pending requests over all lists, lines included; expired rows
-   *  too (the caller hides them by `expiresAt`). With `held`, the ids the caller holds, a
-   *  held request answers in `kept` with no lines, and only the others come whole; more
-   *  than 50 new ones read everything, with no `kept`. All or nothing. */
-  list(held?: readonly string[]): Promise<RequestsRead>;
+  /** The signed-in owner's pending requests over all lists, heads only (no lines); expired
+   *  rows too (the caller hides them by `expiresAt`). All or nothing. */
+  list(): Promise<RequestsRead>;
+  /** The pending requests among `ids`, each with its lines; an id that is not pending or
+   *  not the caller's is absent. All or nothing. */
+  lines(ids: readonly string[]): Promise<RequestLinesRead>;
   /** `id` is made by the caller; the same id again is a replay that inserts nothing and
    *  answers ok. */
   send(id: string, token: string, lines: { item: string; qty: number }[]): Promise<RequestSent>;
@@ -605,6 +605,9 @@ export interface HomebrewRepository {
    *  caller's, for «Сохранить себе»; any failure is `ok: false`. */
   copyArt(img: string): Promise<{ ok: true; name: string } | { ok: false }>;
   removeItem(id: string): Promise<ListWrite>;
+  /** Deletes the caller's own items of `ids` (at most 1000) in one request, all or none
+   *  (`delete_homebrew_items`); an id of another account or an unknown id is left. */
+  removeItems(ids: readonly string[]): Promise<ListWrite>;
   /** A set card or a rule card; its kind never changes after the create. */
   createCard(row: NewCardRow): Promise<ListWrite>;
   updateCard(

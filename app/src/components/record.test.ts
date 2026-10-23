@@ -914,7 +914,7 @@ describe('the undo toast while the record dialog is open', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: '✓ Клад' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Клад' }));
     return dialog;
   };
   const stored = (env: Env): string[] =>

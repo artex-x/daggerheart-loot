@@ -186,10 +186,14 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      # The database layer drives no browser.
-      - run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      # No install script runs, as in the three production jobs: this job
+      # proves on every push that the shim those jobs call and the pinned CLI
+      # binary behind it start, and that the binary resets and dumps the stack,
+      # without one.
+      - run: npm ci --ignore-scripts
+
+      - name: The CLI shim the production jobs call starts
+        run: node node_modules/supabase/dist/supabase.js --version
 
       - name: 'The database layer: RLS, functions, migration reversals'
         run: npm run check:db
@@ -279,8 +283,9 @@ jobs:
       # Pinned to a commit rather than the `v2` tag: this action runs with
       # secrets-adjacent trust (it reads full history looking for leaked
       # credentials) and a mutable tag can be repointed. `actions/*` stay on
-      # their major tags below and elsewhere in this file - GitHub's own
-      # actions, not pinned as a deliberate line.
+      # their major tags in the jobs without a production secret;
+      # `migrate-prod` pins them (docs/decisions/, 2026-10-22, "A job with a
+      # production secret runs no install script and pins its actions").
       - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -309,17 +314,16 @@ jobs:
       contents: read
     environment: production
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version-file: .nvmrc
           cache: npm
 
-      # The pinned CLI and the `postgres` client; nothing here drives a browser.
-      - run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      # The pinned CLI and the `postgres` client; nothing here drives a
+      # browser; no install script runs.
+      - run: npm ci --ignore-scripts
 
       # A `skip_e2e` dispatch skipped `migrate-test`, so nothing proved the
       # branch's migrations on the test project: it may ship none that

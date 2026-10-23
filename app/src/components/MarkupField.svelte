@@ -6,7 +6,8 @@
      «Просмотр» and draws no format buttons.
 
      A toolbar edit goes through `execCommand('insertText')`, so the browser's own undo
-     takes it back; where that is missing, `setRangeText` and one `input` event. */
+     takes it back; where that is missing, `setRangeText` and one `input` event. An edit
+     past the cap does nothing and says so under the box until the text changes. */
   import { tick } from 'svelte';
   import Icon from './Icon.svelte';
   import Markup from './Markup.svelte';
@@ -85,6 +86,12 @@
   /* The selection and the box's height when «Просмотр» was pressed. */
   let held: [number, number] = [0, 0];
   let paneHeight = $state(0);
+  /* The last toolbar edit did not fit under the cap; the next change of the text clears it. */
+  let capped = $state(false);
+  $effect(() => {
+    void value;
+    capped = false;
+  });
 
   const shown: readonly MarkupTool[] = $derived(readonly ? [] : tools);
   const count = $derived(shown.length + (preview ? 1 : 0));
@@ -109,7 +116,11 @@
     const box = el;
     if (!box || previewing || readonly) return;
     const edit = editOf(tool, box);
-    if (!edit || (maxlength !== undefined && !fits(value, edit, maxlength))) return;
+    if (!edit) return;
+    if (maxlength !== undefined && !fits(value, edit, maxlength)) {
+      capped = true;
+      return;
+    }
     box.focus();
     box.setSelectionRange(edit.from, edit.to);
     /* eslint-disable @typescript-eslint/no-deprecated -- `execCommand` is deprecated, but it
@@ -224,6 +235,9 @@
       onkeydown={onboxkey}
     />
   </div>
+  {#if capped && maxlength !== undefined}
+    <p class="capped" role="alert">{t.mdCapped.replace('%n', String(maxlength))}</p>
+  {/if}
   {#if previewing}
     <div
       class="pane mdtext"
@@ -293,6 +307,13 @@
 
   .box[hidden] {
     display: none;
+  }
+
+  /* A refusal: the danger text of rule 19. */
+  .capped {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--danger-text);
   }
 
   /* The card's description look (RecordCard.svelte, `.card-desc`); the list and table

@@ -10,17 +10,19 @@
 
      It owns two things of its own: the focus after a pill or «Сбросить всё»
      removes itself (docs/specs/FEATURES.md, rule 20), and the fold of a row of
-     more than `FOLD_AT` values, page memory closed when the strip mounts
-     ("Tables and search"). */
+     more than `CHIP_FOLD_AT` (`lib/folds.ts`) values, page memory closed when the strip
+     mounts ("Tables and search"). */
   import { tick } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Button from './Button.svelte';
   import Chip from './Chip.svelte';
   import ChipRow from './ChipRow.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
   import type { Dict } from '../lib/dict.js';
   import type { FacetRow } from '../lib/facets.js';
   import { groupIsAny, type FilterState } from '../lib/filters.js';
+  import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
 
   interface Props {
     rows: FacetRow[];
@@ -53,9 +55,6 @@
     toggleEl = $bindable()
   }: Props = $props();
 
-  /* A row of more than FOLD_AT values draws FOLD_SHOWN of them, then every picked one. */
-  const FOLD_AT = 12;
-  const FOLD_SHOWN = 10;
   const unfolded = new SvelteSet<string>();
 
   let bar = $state<HTMLDivElement | undefined>(undefined);
@@ -79,16 +78,6 @@
     onreset();
     await tick();
     focusAfter(-1);
-  }
-
-  /** The values a row draws: all of them, or the first FOLD_SHOWN and every picked one. */
-  function drawnValues(row: FacetRow): { values: FacetRow['values']; more: number } {
-    if (row.values.length <= FOLD_AT || unfolded.has(row.group)) {
-      return { values: row.values, more: 0 };
-    }
-    const on = picked[row.group] ?? [];
-    const values = row.values.filter((v, i) => i < FOLD_SHOWN || on.includes(v.value));
-    return { values, more: row.values.length - values.length };
   }
 
   /* Everything picked, in the order the rows are drawn - `fChosen` in app.js.
@@ -172,7 +161,13 @@
          `TablesPage`'s `.tablenav` is. -->
     <div class="panel ffilter">
       {#each rows as row (row.group)}
-        {@const fold = drawnValues(row)}
+        {@const fold = foldRows(
+          row.values,
+          unfolded.has(row.group),
+          CHIP_FOLD_AT,
+          CHIP_FOLD_SHOWN,
+          (v) => !!picked[row.group]?.includes(v.value)
+        )}
         <div class="field">
           <!-- Whitespace below is content - see docs/specs/COVERAGE.md,
                "Whitespace text nodes are content". -->
@@ -182,7 +177,7 @@
               >{:else}{row.label}{/if}</span
           >
           <ChipRow>
-            {#each fold.values as v (v.value)}
+            {#each fold.rows as v (v.value)}
               <Chip
                 label={v.label}
                 on={!!picked[row.group]?.includes(v.value)}
@@ -191,21 +186,16 @@
                 }}
               />
             {/each}
-            {#if row.values.length > FOLD_AT}
-              <!-- Rule 12: «и ещё N» closed, «свернуть» open; one button, so focus stays. -->
-              <Button
-                variant="bare"
-                size="sm"
-                caret
-                expanded={unfolded.has(row.group)}
-                onclick={() => {
+            {#if row.values.length > CHIP_FOLD_AT}
+              <FoldButton
+                open={unfolded.has(row.group)}
+                more={t.andMore.replace('%n', String(fold.more))}
+                {t}
+                ontoggle={() => {
                   if (unfolded.has(row.group)) unfolded.delete(row.group);
                   else unfolded.add(row.group);
                 }}
-                >{unfolded.has(row.group)
-                  ? t.relLess
-                  : t.andMore.replace('%n', String(fold.more))}</Button
-              >
+              />
             {/if}
           </ChipRow>
         </div>

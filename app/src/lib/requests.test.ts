@@ -102,22 +102,41 @@ describe('readRequests', () => {
 });
 
 describe('readRequestHeads', () => {
-  it('reads the id, the read mark and the expiry, and skips a row of another shape', () => {
-    const head = { id: 'r1', expires_at: '2026-09-27T12:50:00+00:00', read_at: null };
+  it('reads the six head fields, and skips a row of another shape', () => {
+    const LIST = '00000000-0000-4000-8000-000000000101';
+    const head = {
+      id: 'r1',
+      list_id: LIST,
+      audience: 'player',
+      created_at: '2026-09-27T11:00:00+00:00',
+      expires_at: '2026-09-27T12:50:00+00:00',
+      read_at: null
+    };
+    const want = {
+      id: 'r1',
+      listId: LIST,
+      audience: 'player',
+      createdAt: head.created_at,
+      expiresAt: head.expires_at,
+      readAt: null
+    };
     expect(
       readRequestHeads([
         head,
-        { ...head, id: 'r2', read_at: '2026-09-27T11:50:00+00:00' },
+        { ...head, id: 'r2', audience: 'gm', read_at: '2026-09-27T11:50:00+00:00' },
         { ...head, id: 'r3', read_at: undefined },
         { ...head, id: 7 },
+        { ...head, list_id: 'not-a-list' },
+        { ...head, audience: 'owner' },
+        { ...head, created_at: 5 },
         { ...head, expires_at: null },
         { ...head, read_at: 5 },
         null
       ])
     ).toEqual([
-      { id: 'r1', readAt: null, expiresAt: head.expires_at },
-      { id: 'r2', readAt: '2026-09-27T11:50:00+00:00', expiresAt: head.expires_at },
-      { id: 'r3', readAt: null, expiresAt: head.expires_at }
+      want,
+      { ...want, id: 'r2', audience: 'gm', readAt: '2026-09-27T11:50:00+00:00' },
+      { ...want, id: 'r3' }
     ]);
     expect(readRequestHeads({})).toBeNull();
   });

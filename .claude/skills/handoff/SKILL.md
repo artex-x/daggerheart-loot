@@ -55,7 +55,7 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
 6. Push the branch, credit its tip, then squash it onto `main` and push
    `main` (`orchestrate.prompt.md`, "Task closeout and cleanup", step 8).
    Record the sha in the closeout summary.
-   A conflict on `docs/DECISIONS.md` at a rebase: `node tools/decisions.js`,
+   A conflict on `docs/DECISIONS.md` at a merge: `node tools/decisions.js`,
    `git add docs/DECISIONS.md`, continue. A branch that still carries inline
    `## <date> - <title>` entries: `node tools/decisions.js --split
    docs/DECISIONS.md`; read the files it names (`git diff --

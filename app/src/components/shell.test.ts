@@ -26,7 +26,7 @@ import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import type { StoredList } from '../lib/lists.js';
 import { AppState } from '../state/app.svelte.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 
 afterEach(cleanup);
 
@@ -76,6 +76,21 @@ describe('the tab title', () => {
        URL sync runs, 150ms after mount. */
     await waitFor(() => {
       expect(document.title).toBe('Тайник - Генератор лута Daggerheart');
+    });
+  });
+
+  it('titles an account list with its name, and a rename retitles the tab', async () => {
+    render(App, {
+      env: at('#/lists/' + uuid(101), { data: fakeData(LOOT), cloud: fakeCloud(SEED, 'gm1') })
+    });
+    await waitFor(() => {
+      expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
+    });
+    const name = screen.getByRole('textbox', { name: 'Название списка' });
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Кузня');
+    await waitFor(() => {
+      expect(document.title).toBe('Кузня - Генератор лута Daggerheart');
     });
   });
 
@@ -921,6 +936,22 @@ describe('the Lists tab and the cutoff', () => {
   it('keeps six tabs after the cutoff in a build with no sign-in', () => {
     render(App, { env: at('#/roll/std', { clock: fixedClock(LEGACY_WRITE_UNTIL) }) });
     expect(tabLinks()).toHaveLength(6);
+  });
+
+  it('titles #/lists «Мои списки» from the cutoff and «Списки» the moment before', async () => {
+    render(App, {
+      env: at('#/lists', { cloud: fakeCloud(SEED), clock: fixedClock(LEGACY_WRITE_UNTIL) })
+    });
+    expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(document.title).toBe('My lists - Daggerheart Loot Generator');
+    cleanup();
+    render(App, {
+      env: at('#/lists', { cloud: fakeCloud(SEED), clock: fixedClock(LEGACY_WRITE_UNTIL - 1) })
+    });
+    expect(document.title).toBe('Списки - Генератор лута Daggerheart');
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    expect(document.title).toBe('Lists - Daggerheart Loot Generator');
   });
 });
 

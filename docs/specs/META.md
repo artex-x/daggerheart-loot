@@ -99,7 +99,8 @@ new list there, and a signed-out one is asked to sign in first
 (`FEATURES.md`, "Account and browser lists"). An account list is shared through `#/s/`
 links, a players' one and a GM's one, which its owner can delete and make
 again; a link opens the list as it is now, read-only. A nightly job backs the database up,
-encrypted to the owner's key, and each copy is kept 30 days
+encrypted to the owner's key, and each copy is kept 30 days; a copy holds no sign-in
+session, so a restore signs each restored reader out once
 (`.claude/README.md`, "Backups and restore"). A nightly job reports the
 free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). A signed-in reader's browser
 lists move into the account by themselves; browser lists stay editable
@@ -122,6 +123,8 @@ database; the backend is still Supabase alone, and no client sends on a
 channel. "Allow public access" is off on both projects, a dashboard setting
 the owner reads back each release (`docs/DECISIONS.md`, 2026-09-26,
 "Realtime public access is off; the owner sets it in the dashboard").
+On 2026-10-22 the dashboard read it as on for both projects; it was
+switched off on both that day (the save disconnects every client).
 
 A share link's holder, signed in or not, can send the list's owner a
 purchase request (`FEATURES.md`, "Account and browser lists"). It is the
@@ -134,16 +137,22 @@ link - and stores no name, account or address of the sender. A request
 expires 1 hour after the list's owner first reads it, applies or declines it,
 or 30 days after it was sent while nobody reads it (`docs/decisions/`,
 2026-10-07, "A list's change log shares the requests' view and the
-database's clean-up"). `anon` executes seven functions,
-`get_shared_list(text)`, its revision overload `get_shared_list(text,bigint)`
-(security invoker: it answers `unchanged` for a revision the list has not
-passed, else what `get_shared_list(text)` answers), its held-records overload
-`get_shared_list(text,bigint,jsonb)` (security invoker: the two-argument
-answer with each linked record named by `rev` and left out when the caller
-holds it), that one, `get_homebrew_item(uuid)`, `get_item_preview(uuid,text)`
+database's clean-up"). `anon` executes seven functions: the held-records
+overload `get_shared_list(text,bigint,jsonb)`, the security definer that
+builds the projection, checks the share and the list's revision before any
+build (`unchanged` for a revision the list has not passed), names each
+linked record by `rev` and builds only the records the caller does not hold;
+`get_shared_list(text)` and its revision overload
+`get_shared_list(text,bigint)`, security invoker forms of it that answer no
+`rev` and every record; that one, `get_homebrew_item(uuid)`, `get_item_preview(uuid,text)`
 and `get_shared_list_preview(text)`, and reads no table (`tests/db/harness.test.mjs`;
 `docs/DECISIONS.md`, 2026-09-26, "Purchase requests are written only by a
-bounded function any link holder calls").
+bounded function any link holder calls"). Only the request function has a
+rate limit: a caller who holds a share link or an item id can repeat these
+reads and spend the free plan's 5 GB of uncached egress and the `anon`
+role's database time. The owner accepts it and reads the usage dashboard
+monthly (owner, 2026-10-22; `docs/decisions/`, 2026-10-22, "Anonymous reads
+have no rate limit; the owner watches the usage").
 
 Data with a lifecycle is deleted by the backend on a schedule, never by a
 client: `public.lifecycle_cleanup()`, which `pg_cron` runs hourly at minute
@@ -192,7 +201,11 @@ content moves it too (`docs/decisions/`,
 2026-10-07, "An item is read by its id by anyone; a list holds a live
 link"), and a change of a card's book items alone moves the time of every
 item that names the card (`docs/decisions/`, 2026-10-08, "An own set or rule
-card holds book items; only its account sees them"). The preview Worker
+card holds book items; only its account sees them"). The client makes each
+item id, and a delete frees it, so a deleted item's address may later open
+another account's item, in a `#/h/` link and in its author's print sets
+(owner, 2026-10-22; `docs/decisions/`, 2026-10-22, "A deleted item's id may
+be taken again by another account"). The preview Worker
 draws a link card for every item `get_homebrew_item` returns, to the same
 audience as `#/h/` and with no opt-in: the holder of the link chose to
 share it.

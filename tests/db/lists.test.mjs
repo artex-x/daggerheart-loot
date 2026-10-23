@@ -86,13 +86,24 @@ describe('lists grants', () => {
     });
   }
 
-  it('lets only authenticated execute reorder_list()', async () => {
+  it('lets only authenticated execute reorder_list(), as security invoker with the search path', async () => {
     const [r] = await sql`
       select
-        has_function_privilege('anon', 'public.reorder_list(uuid, uuid[])', 'EXECUTE') as anon,
-        has_function_privilege('authenticated', 'public.reorder_list(uuid, uuid[])', 'EXECUTE') as authed,
-        has_function_privilege('service_role', 'public.reorder_list(uuid, uuid[])', 'EXECUTE') as service`;
-    assert.deepEqual(r, { anon: false, authed: true, service: false });
+        has_function_privilege('anon', p.oid, 'EXECUTE') as anon,
+        has_function_privilege('authenticated', p.oid, 'EXECUTE') as authed,
+        has_function_privilege('service_role', p.oid, 'EXECUTE') as service,
+        p.prosecdef, p.proconfig
+      from pg_proc p where p.oid = 'public.reorder_list(uuid, uuid[])'::regprocedure`;
+    assert.deepEqual(
+      { ...r },
+      {
+        anon: false,
+        authed: true,
+        service: false,
+        prosecdef: false,
+        proconfig: ['search_path=public, pg_temp']
+      }
+    );
   });
 
   it('lets no caller execute a trigger function', async () => {

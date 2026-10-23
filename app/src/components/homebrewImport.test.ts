@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { derivedKey } from '../lib/homebrew.js';
 import { zipStored } from '../lib/zip.js';
-import { fakeCloud } from '../ports/fake-cloud.js';
+import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
@@ -679,13 +679,25 @@ describe('the refusals', () => {
 
 describe('the press', () => {
   it('says the item limit and keeps the preview, the account unchanged', async () => {
-    const { container, cloud } = await opened('gm2');
+    const { cloud } = await openedWith('gm2', {}, (c) => {
+      /* No limit is read: the preview draws no limit line and the server refuses. */
+      const load = c.homebrew.load.bind(c.homebrew);
+      vi.spyOn(c.homebrew, 'load').mockImplementation(async () => {
+        const r = await load();
+        return r.ok ? { ...r, itemLimit: undefined } : r;
+      });
+    });
+    const container = document.body;
     choose(container, fixture('over-limit.json'));
+    await importButton(101);
+    expect(container.querySelector('#hb-import-over')).toBeNull();
     await userEvent.click(await importButton(101));
     expect(await alertText()).toBe(
       'Достигнут предел своих предметов: 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
     );
-    expect(await importButton(101)).toBeEnabled();
+    /* The refusal read the limit: the preview now says it before the next press. */
+    expect(await importButton(101)).toBeDisabled();
+    expect(container.querySelector('#hb-import-over')).not.toBeNull();
     const read = await cloud.homebrew.load();
     expect(read.ok ? read.items : null).toHaveLength(0);
   });
@@ -758,6 +770,156 @@ describe('the press', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(toggle);
     expect(screen.queryByText('example.json')).toBeNull();
+  });
+});
+
+/* `opened` with a hook on the fake cloud before the app reads it. */
+async function openedWith(
+  as: 'gm1' | 'gm2',
+  opts: FakeCloudOptions,
+  hook: (cloud: FakeCloud) => void = () => undefined
+): Promise<{ cloud: FakeCloud }> {
+  const cloud = fakeCloud(SEED, as, opts);
+  hook(cloud);
+  render(App, {
+    env: fakeEnv({
+      router: memoryRouter('#/homebrew'),
+      data: fakeData(LOOT),
+      dialog: fakeDialog(true),
+      storage: memoryStorage(),
+      cloud
+    })
+  });
+  await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+  await screen.findByText('Импорт предметов из файла JSON', {}, { timeout: 10_000 });
+  return { cloud };
+}
+
+describe('the item limit before the press', () => {
+  const OVER =
+    'Импорт не поместится: в аккаунте 4 предмета из 4, файл добавит 3 предмета. Удалите свои предметы или разделите файл.';
+
+  it('says the import does not fit, disables the press and sends nothing', async () => {
+    const { cloud } = await openedWith('gm1', { fillItems: 4 });
+    const imp = vi.spyOn(cloud.homebrew, 'import');
+    choose(document.body, fixture('example.json'));
+    const press = await importButton(5);
+    const line = document.getElementById('hb-import-over');
+    expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe(OVER);
+    expect(press).toBeDisabled();
+    expect(press).toHaveAttribute('aria-describedby', 'hb-import-over');
+    await userEvent.click(press);
+    expect(imp).not.toHaveBeenCalled();
+    await expectNoA11yViolations(document.body);
+  });
+
+  it('draws no line for a file of held keys only', async () => {
+    const { cloud } = await openedWith('gm1', { fillItems: 4 });
+    const read = await cloud.homebrew.load();
+    const held = read.ok ? read.items.slice(0, 2) : [];
+    choose(
+      document.body,
+      doc({ items: held.map((i) => ({ key: i.key, kind: 'item', ru: 'Предмет' })) })
+    );
+    expect(await importButton(2)).toBeEnabled();
+    expect(document.getElementById('hb-import-over')).toBeNull();
+  });
+
+  it('says it in English', async () => {
+    await opened('gm1', { fillItems: 4 });
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    await screen.findByText('Import items from a JSON file');
+    choose(document.body, fixture('example.json'));
+    await screen.findByRole('button', { name: 'Import (5)' });
+    expect(
+      document.getElementById('hb-import-over')?.textContent.replace(/\s+/g, ' ').trim()
+    ).toBe(
+      'The import does not fit: your account holds 4 items of 4 and the file adds 3 items. Delete some of your items or split the file.'
+    );
+  });
+});
+
+describe('a press with a row that blocks it', () => {
+  it('opens the fold and focuses the select of the first row that would pass 30 sections', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const read = await cloud.homebrew.load();
+    const alder = read.ok ? read.books.find((b) => b.id === ALDER) : undefined;
+    const sections = [
+      ...(alder?.content.sections ?? []),
+      ...Array.from({ length: 28 }, (_, i) => ({
+        key: keyN(2000 + i),
+        ru: 'Раздел ' + String(i)
+      }))
+    ];
+    await cloud.homebrew.updateBook(ALDER, { ...alder!.content, sections }, alder!.revision);
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/homebrew'),
+        data: fakeData(LOOT),
+        dialog: fakeDialog(true),
+        storage: memoryStorage(),
+        cloud
+      })
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Импорт из файла' }));
+    await screen.findByText('Импорт предметов из файла JSON', {}, { timeout: 10_000 });
+    const imp = vi.spyOn(cloud.homebrew, 'import');
+    const books = Array.from({ length: 25 }, (_, i) =>
+      i === 21
+        ? {
+            key: ALDER_KEY,
+            ru: 'Мастерская Ольхи',
+            sections: [{ key: keyN(3000), ru: 'Новый' }]
+          }
+        : { key: keyN(5000 + i), ru: 'Книга ' + String(i + 1) }
+    );
+    choose(
+      document.body,
+      doc({
+        books,
+        items: books.map((b, i) => ({
+          key: keyN(6000 + i),
+          book: b.key,
+          ...(i === 21 ? { section: keyN(3000) } : {}),
+          kind: 'item',
+          ru: 'Предмет ' + String(i + 1)
+        }))
+      })
+    );
+    await userEvent.click(await importButton(25));
+    expect(imp).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'свернуть' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    );
+    const select = document.getElementById('hb-import-21');
+    expect(select).toHaveFocus();
+    expect(select).toHaveAccessibleDescription(
+      expect.stringContaining('будет больше 30 разделов')
+    );
+  });
+
+  it('focuses the empty name field of a custom source', async () => {
+    const { container } = await opened('gm2');
+    choose(
+      container,
+      doc({
+        books: [1, 2, 3].map((n) => ({ key: keyN(7000 + n), ru: 'Книга ' + String(n) })),
+        items: [1, 2, 3].map((n) => ({
+          key: keyN(7100 + n),
+          book: keyN(7000 + n),
+          kind: 'item',
+          ru: 'Предмет ' + String(n)
+        }))
+      })
+    );
+    await importButton(3);
+    await userEvent.selectOptions(
+      rowsOf(container)[2]!.querySelector('select')!,
+      '+ Новый источник...'
+    );
+    await userEvent.click(await importButton(3));
+    expect(document.getElementById('hb-import-2-name')).toHaveFocus();
   });
 });
 

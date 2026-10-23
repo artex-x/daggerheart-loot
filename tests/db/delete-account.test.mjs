@@ -212,13 +212,14 @@ describe('delete_account_requests()', () => {
   });
 });
 
-describe('delete_account() at three times every default limit', () => {
+describe('the account at three times every default limit', () => {
   const BIG = '00000000-0000-4000-8000-0000000003aa';
   /* 60 sources, 300 items, 300 cards, 150 lists of 300 entries, 30 pending requests of 300
      lines per list and 3000 print sets, seeded through their triggers (34-44 s on this
-     host); at the defaults the request lines are 1/27 and the entries 1/9 of it. The case
-     measures each call of the delete under half the hosted `authenticated` timeout of 8 s
-     (docs/decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md). */
+     host); at the defaults the request lines are 1/27 and the entries 1/9 of it. The first
+     case measures each call of the delete under half the hosted `authenticated` timeout of
+     8 s (docs/decisions/2026-10-16-an-account-delete-removes-its-purchase-requests.md); the
+     second times the owner's reads the app makes on a signed-in load under the same bound. */
   const seed = async (tx) => {
     await tx`insert into auth.users (id) values (${BIG})`;
     await tx`insert into public.user_limit_overrides (user_id, key, value)
@@ -342,5 +343,92 @@ describe('delete_account() at three times every default limit', () => {
       );
     }
     assert.equal(left, 0);
+  });
+
+  /* The reads as PostgREST builds them, each one statement with its conversion to text:
+     every pending head (the upper bound of the keyset pages), one list's 30 requests with
+     their lines, and every list with its entries, a tenth of them with both notes at 4000
+     characters (docs/decisions/2026-10-22-the-owners-requests-read-takes-every-head-and-the-open-lists-lines.md). */
+  it("reads the owner's request heads, one list's request lines and every list whole, each within 4 s", async () => {
+    const median = (xs) => [...xs].sort((a, b) => a - b)[1];
+    const serverTime = async (tx, query) => {
+      const [r] = await tx.unsafe(`explain (analyze, format json) select (${query})::text`);
+      const plan = r['QUERY PLAN'];
+      return (typeof plan === 'string' ? JSON.parse(plan) : plan)[0]['Execution Time'];
+    };
+    let out;
+    try {
+      out = await asRole(
+        sql,
+        {
+          role: 'authenticated',
+          sub: BIG,
+          setup: async (tx) => {
+            await seed(tx);
+            await tx`update public.list_entries e
+              set player_note = repeat('n', 4000), gm_note = repeat('g', 4000)
+              from public.lists l
+              where l.id = e.list_id and l.owner_id = ${BIG} and e.position % 10 = 0`;
+            await tx.unsafe(`analyze ${SEEDED.join(', ')}`);
+          }
+        },
+        async (tx) => {
+          const [one] = await tx`select l.id from public.lists l order by l.id limit 1`;
+          const ids = (
+            await tx`select id from public.purchase_requests
+              where list_id = ${one.id} and status = 'pending' order by id`
+          ).map((r) => `'${r.id}'`);
+          const reads = {
+            heads: `select coalesce(json_agg(t), '[]') from (select id, list_id, audience,
+              created_at, expires_at, read_at from public.purchase_requests
+              where status = 'pending' order by id) t`,
+            lines: `select coalesce(json_agg(t), '[]') from (select r.id, r.list_id, r.audience,
+              r.created_at, r.expires_at, r.read_at,
+              (select coalesce(json_agg(x), '[]') from (select item_key, quantity, price_coins,
+                applied_quantity from public.purchase_request_lines
+                where request_id = r.id) x) as purchase_request_lines
+              from public.purchase_requests r
+              where r.status = 'pending' and r.id = any(array[${ids.join(', ')}]::uuid[])
+              order by r.id) t`,
+            lists: `select coalesce(json_agg(t), '[]') from (select l.id, l.name, l.money_mode,
+              l.player_note, l.gm_note, l.created_at, l.updated_at, l.revision,
+              l.legacy_fingerprint,
+              (select coalesce(json_agg(x), '[]') from (select id, item_key, source, hb_item,
+                position, quantity, price_coins, player_note, gm_note, gm_only
+                from public.list_entries where list_id = l.id) x) as list_entries
+              from public.lists l order by l.updated_at desc, l.id) t`
+          };
+          const [counts] = await tx`select
+            (select count(*) from public.purchase_requests where status = 'pending')::int
+              as heads,
+            (select count(*) from public.purchase_request_lines p
+              join public.purchase_requests r on r.id = p.request_id
+              where r.list_id = ${one.id})::int as lines,
+            (select count(*) from public.lists)::int as lists`;
+          const times = { heads: [], lines: [], lists: [] };
+          for (let run = 0; run < 3; run++) {
+            for (const [name, query] of Object.entries(reads)) {
+              times[name].push(await serverTime(tx, query));
+            }
+          }
+          return { counts, requests: ids.length, times };
+        }
+      );
+    } finally {
+      await sql.unsafe(`analyze ${SEEDED.join(', ')}`);
+    }
+    const m = Object.fromEntries(
+      Object.entries(out.times).map(([name, xs]) => [name, Math.round(median(xs))])
+    );
+    console.log(
+      `owner-reads: 3x heads ${m.heads} ms, one list's lines ${m.lines} ms, every list ${m.lists} ms`
+    );
+    assert.equal(out.counts.heads, 4500);
+    assert.equal(out.requests, 30);
+    assert.equal(out.counts.lines, 30 * 300);
+    assert.equal(out.counts.lists, 150);
+    assert.ok(m.heads < 4000, `the heads read's median took ${m.heads} ms`);
+    assert.ok(m.lines < 4000, `one list's lines read's median took ${m.lines} ms`);
+    assert.ok(m.lists < 4000, `every list's read's median took ${m.lists} ms`);
   });
 });

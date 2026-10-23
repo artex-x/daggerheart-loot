@@ -54,7 +54,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Снять выделение" [description=Снять выделение]
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "✓ Лавка кузнеца" [pressed=true]
+    button "Лавка кузнеца" [pressed=true]
     button "Пустой список" [pressed=false]
     button "Трофеи" [pressed=false]
     button "+ Новый список" [pressed=false]
@@ -88,6 +88,7 @@ daggerheart.com
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
 Комплекты
 Конфиденциальность
+Лавка кузнеца
 ЛутDaggerheart
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
@@ -110,7 +111,6 @@ daggerheart.com
 Удалить (1)
 Условия использования
 Установить как приложение
-✓ Лавка кузнеца
 
 ## en :: tree
 RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]

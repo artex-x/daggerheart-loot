@@ -199,3 +199,92 @@ describe('the item picker', () => {
     expect(seen).toEqual([false, true]);
   });
 });
+
+/* jsdom lays nothing out: the field's box and the list's height are stubbed, the window
+   is jsdom's 768 px and no visual viewport exists, so the window's bottom is the bound. */
+function placeAt(container: Element, top: number): void {
+  const drop = container.querySelector<HTMLElement>('.drop');
+  if (!drop) throw new Error('The list has no .drop box. Restore it in ItemPicker.svelte.');
+  Object.defineProperty(drop, 'scrollHeight', { configurable: true, value: 240 });
+  const box = { top, bottom: top + 38, left: 0, right: 300, width: 300, height: 38 };
+  vi.spyOn(field(), 'getBoundingClientRect').mockReturnValue({
+    ...box,
+    x: 0,
+    y: top,
+    toJSON: () => box
+  });
+}
+
+describe('the item picker near the window bottom', () => {
+  it('opens the list above the field when the room under it is too small', async () => {
+    const { container } = picker();
+    await userEvent.click(field());
+    placeAt(container, window.innerHeight - 48);
+    await userEvent.type(field(), 'мешок');
+    await vi.waitFor(() => {
+      expect(container.querySelector('.drop.up')).not.toBeNull();
+    });
+    const drop = container.querySelector<HTMLElement>('.drop');
+    expect(drop?.style.maxHeight).toMatch(/^min\(320px, 50vh, \d+px\)$/);
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the list under the field when the field is at the top', async () => {
+    const { container } = picker();
+    await userEvent.click(field());
+    placeAt(container, 20);
+    await userEvent.type(field(), 'мешок');
+    await vi.waitFor(() => {
+      expect(container.querySelector<HTMLElement>('.drop')?.style.maxHeight).not.toBe('');
+    });
+    expect(container.querySelector('.drop.up')).toBeNull();
+    await expectNoA11yViolations(container);
+  });
+});
+
+/* A visual viewport stub: jsdom has none. iOS pans it (`offsetTop`) when the keyboard
+   opens over a low field, so the visible top is no longer the window's top. */
+describe('the item picker in a resized or scrolled view', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(window, 'visualViewport');
+  });
+
+  it('places the open list again under a panned visual viewport on its resize', async () => {
+    const vv = Object.assign(new EventTarget(), { height: 768, offsetTop: 0 });
+    Object.defineProperty(window, 'visualViewport', { configurable: true, value: vv });
+    const { container } = picker();
+    await userEvent.click(field());
+    placeAt(container, 400);
+    await userEvent.type(field(), 'мешок');
+    const drop = (): HTMLElement | null => container.querySelector<HTMLElement>('.drop');
+    await vi.waitFor(() => {
+      expect(drop()?.style.maxHeight).toBe('min(320px, 50vh, 322px)');
+    });
+    expect(container.querySelector('.drop.up')).toBeNull();
+    vv.height = 300;
+    vv.offsetTop = 200;
+    vv.dispatchEvent(new Event('resize'));
+    await vi.waitFor(() => {
+      expect(drop()?.style.maxHeight).toBe('min(320px, 50vh, 192px)');
+    });
+    expect(container.querySelector('.drop.up')).not.toBeNull();
+    await expectNoA11yViolations(container);
+  });
+
+  it('places the open list again when the page scrolls', async () => {
+    const { container } = picker();
+    await userEvent.click(field());
+    placeAt(container, 20);
+    await userEvent.type(field(), 'мешок');
+    await vi.waitFor(() => {
+      expect(container.querySelector<HTMLElement>('.drop')?.style.maxHeight).not.toBe('');
+    });
+    expect(container.querySelector('.drop.up')).toBeNull();
+    placeAt(container, window.innerHeight - 48);
+    window.dispatchEvent(new Event('scroll'));
+    await vi.waitFor(() => {
+      expect(container.querySelector('.drop.up')).not.toBeNull();
+    });
+    await expectNoA11yViolations(container);
+  });
+});

@@ -1,6 +1,6 @@
 # #/homebrew/hb_emberaxeaaaaaaaa ~ not saved as gm1
 # route: #/homebrew/hb_emberaxeaaaaaaaa
-# why: the network lost, then «Сохранить»: «Не получилось сохранить: нет связи. Правки остались в форме...» under the buttons, the form kept
+# why: the network lost, then «Сохранить»: «Не получилось сохранить. Проверьте соединение...» under the buttons, the form kept
 # as: gm1
 
 ## ru :: tree
@@ -104,7 +104,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       link "К моим предметам" [url=index.html?as=gm1#/homebrew]
       button "Удалить"
       alert ""
-        StaticText "Не получилось сохранить: нет связи. Правки остались в форме - на..." [namelen=90 namehash=6a2f3f32]
+        StaticText "Не получилось сохранить. Проверьте соединение и попробуйте ещё р..." [namelen=92 namehash=269103e4]
       StaticText "Предмет есть в 1 списке: изменения появятся в нём сразу, в том ч..." [namelen=89 namehash=99b77b9e]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
@@ -305,7 +305,7 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/hom
       link "To my items" [url=index.html?as=gm1#/homebrew]
       button "Delete"
       alert ""
-        StaticText "Could not save: no connection. Your edits are still in the form ..." [namelen=85 namehash=35380c0c]
+        StaticText "Could not save. Check the connection and try again. Your edits a..." [namelen=85 namehash=93e4d027]
       StaticText "The item is in 1 list: changes appear there at once, for players..." [namelen=81 namehash=cd6f853a]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]

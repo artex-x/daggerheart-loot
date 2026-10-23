@@ -28,6 +28,7 @@
   import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
   import FilterBar from './FilterBar.svelte';
+  import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
   import KeepNote from './KeepNote.svelte';
   import LoadState from './LoadState.svelte';
@@ -58,6 +59,7 @@
     passes,
     type FilterState
   } from '../lib/filters.js';
+  import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { REALM_ORDER, realmName } from '../lib/realms.js';
   import { homebrewItemHash, tablesHash } from '../lib/hash.js';
@@ -165,6 +167,8 @@
         )
       : null
   );
+  /* The source chips' fold: page memory, closed when the page mounts (rule 12). */
+  let srcOpen = $state(false);
 
   /** Returns the segment the panel compares: the encoded filter, without `src` on `homebrew`. */
   function segOf(filter: FilterState, tbl: TableId): string {
@@ -604,8 +608,15 @@
         {/each}
       </ChipRow>
       {#if table === 'homebrew' && hbSources.length > 1}
+        {@const chips = foldRows(
+          hbSources,
+          srcOpen,
+          CHIP_FOLD_AT,
+          CHIP_FOLD_SHOWN,
+          (s) => s.key === hbSource
+        )}
         <ChipRow sub>
-          {#each hbSources as s (s.key)}
+          {#each chips.rows as s (s.key)}
             <Chip
               size="sm"
               label={s.label}
@@ -618,6 +629,16 @@
               })}
             />
           {/each}
+          {#if hbSources.length > CHIP_FOLD_AT}
+            <FoldButton
+              open={srcOpen}
+              more={t.andMore.replace('%n', String(chips.more))}
+              {t}
+              ontoggle={() => {
+                srcOpen = !srcOpen;
+              }}
+            />
+          {/if}
         </ChipRow>
       {:else if group.subs.length > 1}
         <ChipRow sub>

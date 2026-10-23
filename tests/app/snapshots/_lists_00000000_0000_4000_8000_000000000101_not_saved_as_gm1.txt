@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Лавка кузнеца - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -21,16 +21,16 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/li
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Лавка кузнеца"
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "10 позиций из 100 · "
-    StaticText "Не сохранено"
+    ... StaticText x33 of 37 same-shape siblings elided
     button "Повторить"
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
     ... button x10 of 14 same-shape siblings elided
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     status ""
-    ... StaticText x32 of 36 same-shape siblings elided
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -211,7 +211,7 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -228,16 +228,16 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Лавка кузнеца"
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "10 items of 100 · "
-    StaticText "Not saved"
+    ... StaticText x33 of 37 same-shape siblings elided
     button "Retry"
     button "Share" [expanded=false]
     button "Copy text"
     ... button x10 of 14 same-shape siblings elided
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     status ""
-    ... StaticText x32 of 36 same-shape siblings elided
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]

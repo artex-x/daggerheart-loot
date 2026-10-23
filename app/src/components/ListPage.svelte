@@ -39,11 +39,13 @@
   import SharedListPage from './SharedListPage.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
+  import SyncSaid from './SyncSaid.svelte';
+  import SyncStatus from './SyncStatus.svelte';
   import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
-  import type { Dict } from '../lib/dict.js';
+  import { sectionLabel, type Dict } from '../lib/dict.js';
   import type { MarkupTool } from '../lib/markupEdit.js';
   import { moneyHelpFor } from '../lib/help.js';
   import { sectionHash, sharedListHash } from '../lib/hash.js';
@@ -140,40 +142,30 @@
   const cloudAddress = $derived(
     route.kind === 'storedList' && isCloudId(route.listId) && cloud !== null
   );
-  const syncFailed = $derived(isCloud && cloud?.sync === 'failed');
-  /* The status region's text: a failure, then the save that ends it. The
-     next ordinary save empties it, so it never talks over the reader. */
-  let syncSaid = $state('');
-  let syncWasFailed = false;
-  $effect(() => {
-    const sync = isCloud ? cloud?.sync : undefined;
-    if (sync === 'failed') {
-      syncSaid = t.notSaved;
-      syncWasFailed = true;
-    } else if (sync === 'saved' && syncWasFailed) {
-      syncSaid = t.savedState;
-      syncWasFailed = false;
-    } else if (sync === 'saving' && !syncWasFailed) {
-      syncSaid = '';
-    }
-  });
-
   const byId = (id: string): Record_ | undefined => index?.byId.get(id);
   const items = $derived(
     own ? own.ids.map(byId).filter((it): it is Record_ => it != null) : []
   );
-  const qtyById = $derived(Object.fromEntries(items.map((x) => [x.id, metaOf(x.id).qty ?? 0])));
+  /** The rows the page draws. A row with no record draws as the key and «Предмет не
+   *  загружен»; the count, the roll and the position box count every stored entry
+   *  (docs/specs/FEATURES.md, "Own items in lists"). A browser list draws its known items. */
+  const rows = $derived.by((): { id: string; it: Record_ | null }[] => {
+    if (!own) return [];
+    if (!isCloud) return items.map((it) => ({ id: it.id, it }));
+    return own.ids.map((id) => ({ id, it: byId(id) ?? null }));
+  });
+  const entryCount = $derived(isCloud && own ? own.ids.length : items.length);
+  const qtyById = $derived(
+    Object.fromEntries((own?.ids ?? []).map((id) => [id, metaOf(id).qty ?? 0]))
+  );
   /* Signed out, «Печать» opens the sign-in prompt under the toolbar. */
   let printAsking = $state(false);
 
   function pressPrint(): void {
     const target = app.printTarget;
     if (target === 'prompt') printAsking = !printAsking;
-    else if (target === 'cloud') {
-      void app.print(
-        items.map((x) => x.id),
-        qtyById
-      );
+    else if (target === 'cloud' && own) {
+      void app.print([...own.ids], qtyById);
     }
   }
 
@@ -339,8 +331,8 @@
     dragMark === null ? -1 : dragMark.where === 'before' ? dragMark.over : dragMark.over + 1
   );
 
-  const hit = $derived(roll >= 1 && roll <= items.length ? (items[roll - 1] ?? null) : null);
-  const rollLabel = $derived(rollLabelFor(items.length, t));
+  const hit = $derived(roll >= 1 && roll <= rows.length ? (rows[roll - 1]?.it ?? null) : null);
+  const rollLabel = $derived(rollLabelFor(rows.length, t));
 
   const mode = $derived(moneyMode(own));
   const priced = $derived.by((): boolean => {
@@ -354,14 +346,7 @@
   const takenOf = (id: string): number => takenQty(metaOf(id), picked.get(id));
   const taken = $derived(takenTotal(ticked, metaOf, takenOf));
   const total = $derived(totalParts(taken, mode, app.lang, t));
-  const gmN = $derived(
-    isCloud
-      ? gmOnlyCount(
-          items.map((x) => x.id),
-          metaOf
-        )
-      : 0
-  );
+  const gmN = $derived(isCloud ? gmOnlyCount(own?.ids ?? [], metaOf) : 0);
   const tickedShown = $derived(ticked.length - gmOnlyCount(ticked, metaOf));
 
   /** The live `hidden` default (no note → hidden), with a person's own
@@ -535,20 +520,20 @@
 
   /** The live `data-remove` handler (app.js 3944-3969): remember everything
    *  needed to put the entry back exactly where it was, then offer to. */
-  function removeEntry(it: Record_, i: number): void {
+  function removeEntry(id: string, it: Record_ | null, i: number): void {
     const l = own;
     if (!l) return;
-    const meta = { ...itemMeta(l, it.id) };
+    const meta = { ...itemMeta(l, id) };
     const listId = l.id;
     /* The toast's undo may run after the page moved to a list of the other
        kind; it acts on the store that held this list. */
     const into = store;
-    into.removeEntry(listId, it.id);
-    app.say((t, lang) => t.removedItem.replace('%s', nameOf(it, lang)), {
+    into.removeEntry(listId, id);
+    app.say((t, lang) => t.removedItem.replace('%s', it ? nameOf(it, lang) : id), {
       action: {
         label: (t) => t.undo,
         run: () => {
-          into.restoreEntry(listId, it.id, i, meta);
+          into.restoreEntry(listId, id, i, meta);
         }
       }
     });
@@ -558,7 +543,7 @@
    *  out-of-range or non-numeric value is rejected by putting the field's own
    *  position back - there is nothing to re-render to, since the value is
    *  already right. */
-  function setPos(it: Record_, i: number, e: Event): void {
+  function setPos(id: string, i: number, e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
     const l = own;
     if (!l) return;
@@ -567,7 +552,7 @@
       el.value = String(i + 1);
       return;
     }
-    if (store.move(l.id, it.id, n - 1)) announceMove(it.id, n - 1);
+    if (store.move(l.id, id, n - 1)) announceMove(id, n - 1);
   }
 
   /** Fills the live region with the record's new position, after a move that
@@ -577,9 +562,9 @@
   function announceMove(id: string, to: number): void {
     const l = own;
     const it = byId(id);
-    if (!l || !it) return;
+    if (!l) return;
     said = t.movedItem
-      .replace('%s', nameOf(it, app.lang))
+      .replace('%s', it ? nameOf(it, app.lang) : id)
       .replace('%n', String(to + 1))
       .replace('%m', String(l.ids.length));
   }
@@ -600,7 +585,7 @@
   }
 
   function rollNow(): void {
-    roll = pick(items.length, app.env.random);
+    roll = pick(rows.length, app.env.random);
   }
   function setRoll(n: number): void {
     roll = n;
@@ -1005,7 +990,9 @@
       <!-- After the cutoff every `#/l/` address, own or not, plain or packed,
            draws this: the payload is never decoded, the address is kept. -->
       <PageTitle title={t.linkRetired} sub={t.linkRetiredSub} />
-      <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+      <Button variant="primary" href={sectionHash('lists')} sameTab
+        >{sectionLabel('lists', t, app.legacyWritable)}</Button
+      >
     {:else if !index}
       <NoData>{t.noData}</NoData>
     {:else if route.kind === 'storedList' && !own}
@@ -1027,13 +1014,24 @@
           text={t.cloudLoadFailed}
           onretry={() => void app.retryLists()}
         />
-      {:else if cloudAddress && (app.user === undefined || cloud?.status !== 'ready' || app.legacyMove?.status === 'moving')}
+      {:else if cloudAddress && app.user === undefined}
+        <!-- The session is not known yet: nothing, so neither the sign-in line
+             nor "not found" flashes. -->
+      {:else if cloudAddress && (cloud?.status !== 'ready' || app.legacyMove?.status === 'moving')}
         <!-- The account is still answering, or a moved list's page waits for
-             the account to be read again: nothing yet, so neither the sign-in
-             line nor "not found" flashes. -->
+             the account to be read again. The list's name is the heading, so
+             none is drawn, as on `#/s/`. -->
+        <LoadState
+          {t}
+          failed={false}
+          text={t.cloudLoadFailed}
+          onretry={() => void app.retryLists()}
+        />
       {:else}
         <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-        <Button variant="primary" href={sectionHash('lists')} sameTab>{t.lists}</Button>
+        <Button variant="primary" href={sectionHash('lists')} sameTab
+          >{sectionLabel('lists', t, app.legacyWritable)}</Button
+        >
       {/if}
     {:else if !own}
       {#if route.kind === 'sharedList' && route.packed}
@@ -1063,10 +1061,10 @@
         <SharedListPage {app} {index} payload={route.payload} />
       {/if}
     {:else}
-      <!-- The live app's own shape: the heading carries no text of its own, only
-       the rename input - `renderOneList` writes no separate title. -->
+      <!-- The heading shows only the rename input; an account list's heading holds
+       the name as visually hidden text too, so the outline names it (rule 16). -->
       {#snippet renameTitle()}
-        <input
+        {#if isCloud}<span class="vh" id="list-name">{own.name}</span>{/if}<input
           type="text"
           class="titleinput"
           class:ro={readOnly}
@@ -1078,23 +1076,14 @@
         />
       {/snippet}
       {#snippet cloudSub()}
-        {countOf(items.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
-        {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<span
-          class="sync"
-          class:bad={syncFailed}
-          data-saving={cloud?.sync === 'saving' || undefined}
-          >{syncFailed ? t.notSaved : cloud?.sync === 'saving' ? t.saving : t.savedState}</span
-        >{#if syncFailed}<button
-            type="button"
-            class="linkbtn"
-            onclick={() => {
-              cloud?.retry();
-            }}>{t.retry}</button
-          >{/if}
+        {countOf(entryCount, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
+        {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<SyncStatus {app} />
       {/snippet}
+      <!-- The input's value would name the heading a second time. -->
       <PageTitle
         title={renameTitle}
-        sub={isCloud ? cloudSub : plural(items.length, t.itemsN, app.lang)}
+        sub={isCloud ? cloudSub : plural(entryCount, t.itemsN, app.lang)}
+        labelledby={isCloud ? 'list-name' : undefined}
       />
       <Actions style="margin-bottom:16px">
         {#if isCloud}
@@ -1204,18 +1193,18 @@
         {@render notePair(own, 'list')}
       </details>
 
-      {#if items.length > 1}
+      {#if rows.length > 1}
         <!-- `<details class="panel lroll">` is a `Panel.svelte` variant: a
          `<details>`, and `.lroll{padding:0}` plus its own `summary`/`[open]`
          rules are this component's own - kept inline. -->
         <details class="panel lroll">
           <summary><Icon name="die" /><span>{t.rollBy}</span></summary>
-          <Field label="{t.rollResult} (1–{items.length})" after={hit ? 14 : 0}>
+          <Field label="{t.rollResult} (1-{rows.length})" after={hit ? 14 : 0}>
             <NumRow>
               <NumberField
                 value={roll}
                 min={1}
-                max={items.length}
+                max={rows.length}
                 empty
                 label={t.rollResult}
                 stepDownLabel={t.stepDown}
@@ -1223,7 +1212,7 @@
                 onchange={setRoll}
               />
               <Button variant="primary" onclick={rollNow}
-                ><Die faces={items.length} />{rollLabel}</Button
+                ><Die faces={rows.length} />{rollLabel}</Button
               >
               {#if hit}<Button variant="ghost" onclick={clearRoll}>{t.clear}</Button>{/if}
             </NumRow>
@@ -1266,7 +1255,7 @@
         </details>
       {/if}
 
-      {#if items.length}
+      {#if rows.length}
         <BatchBar
           total={own.ids.length}
           picked={ticked.length}
@@ -1335,7 +1324,7 @@
                       <div class="guess-row">
                         <span>{nameOf(it, app.lang)}</span>
                         <span class="guess-band">{guessWhy(it, index.rarityOf, t)}</span>
-                        <b>{v ? priceText(v, mode, app.lang) : '—'}</b>
+                        <b>{v ? priceText(v, mode, app.lang) : '-'}</b>
                       </div>
                     {/if}
                   {/each}
@@ -1355,16 +1344,19 @@
           {/snippet}
         </BatchBar>
         <div class="rows lrows" bind:this={rowsEl}>
-          {#each items as it, i (it.id)}
-            {@const m = metaOf(it.id)}
+          {#each rows as row, i (row.id)}
+            {@const it = row.it}
+            {@const id = row.id}
+            {@const label = it ? nameOf(it, app.lang) : id}
+            {@const m = metaOf(id)}
             {@const hasNote = !!(m.note || m.hnote)}
             {@const goldHint = goldText(m.gold ?? 0)}
             <div
               class="row lrow"
-              class:sel={lsel.has(it.id)}
+              class:sel={lsel.has(id)}
               class:has-note={hasNote}
               class:gm-only={!!m.gmOnly}
-              class:dragging={dragId === it.id}
+              class:dragging={dragId === id}
               class:drop-before={dropGap === i}
               class:drop-after={dropGap === i + 1}
               data-index={i}
@@ -1373,7 +1365,7 @@
                 <span
                   class="lrow-grip"
                   draggable="true"
-                  data-drag="{own.id}:{it.id}"
+                  data-drag="{own.id}:{id}"
                   title={t.dragHint}
                   aria-hidden="true"><Icon name="grip" /></span
                 >
@@ -1381,10 +1373,10 @@
               <label class="lrow-pick"
                 ><input
                   type="checkbox"
-                  checked={lsel.has(it.id)}
-                  aria-label={nameOf(it, app.lang)}
+                  checked={lsel.has(id)}
+                  aria-label={label}
                   onchange={(e) => {
-                    pickRow(it.id, e.currentTarget.checked);
+                    pickRow(id, e.currentTarget.checked);
                   }}
                 /></label
               >
@@ -1400,20 +1392,24 @@
                 onchange={readOnly
                   ? undefined
                   : (e) => {
-                      setPos(it, i, e);
+                      setPos(id, i, e);
                     }}
               />
-              <RowMain
-                {it}
-                {index}
-                lang={app.lang}
-                artBroken={(id: string) => app.artBroken(id)}
-                onartfail={(bad: string) => {
-                  app.markArtBroken(bad);
-                }}
-                onopen={openRecord}
-                gmOnly={m.gmOnly}
-              />
+              {#if it}
+                <RowMain
+                  {it}
+                  {index}
+                  lang={app.lang}
+                  artBroken={(id: string) => app.artBroken(id)}
+                  onartfail={(bad: string) => {
+                    app.markArtBroken(bad);
+                  }}
+                  onopen={openRecord}
+                  gmOnly={m.gmOnly}
+                />
+              {:else}
+                <div class="unk"><b>{id}</b><span>{t.itemNotLoaded}</span></div>
+              {/if}
               <div class="lrow-meta">
                 <label
                   ><span>{t.qty}</span><input
@@ -1428,7 +1424,7 @@
                     oninput={readOnly
                       ? undefined
                       : (e) => {
-                          setQty(it.id, e);
+                          setQty(id, e);
                         }}
                   /></label
                 >
@@ -1438,31 +1434,31 @@
                      field by `aria-labelledby`. -->
                 <div class="gfield">
                   <span
-                    ><span id="gcap-{it.id}">{t.price}</span>{#if goldHint}<HelpButton
+                    ><span id="gcap-{id}">{t.price}</span>{#if goldHint}<HelpButton
                         lang={app.lang}
                         size="sm"
-                        open={priceHelp.has(it.id)}
+                        open={priceHelp.has(id)}
                         label={t.fieldHelp.replace('%s', t.price)}
-                        controls="ghint-{it.id}"
+                        controls="ghint-{id}"
                         onclick={() => {
-                          if (priceHelp.has(it.id)) priceHelp.delete(it.id);
-                          else priceHelp.add(it.id);
+                          if (priceHelp.has(id)) priceHelp.delete(id);
+                          else priceHelp.add(id);
                         }}
                       />{/if}</span
                   ><input
-                    aria-labelledby="gcap-{it.id}"
+                    aria-labelledby="gcap-{id}"
                     type="number"
                     min="0"
                     max="99999"
                     inputmode="numeric"
                     data-gold
                     value={m.gold || ''}
-                    placeholder="—"
+                    placeholder="-"
                     readonly={readOnly}
                     oninput={readOnly
                       ? undefined
                       : (e) => {
-                          setGold(it.id, e);
+                          setGold(id, e);
                         }}
                   />
                 </div>
@@ -1475,7 +1471,7 @@
                   title={t.note}
                   aria-label={t.note}
                   onclick={(e) => {
-                    toggleNote(it.id, e);
+                    toggleNote(id, e);
                   }}><Icon name="note" /></button
                 >
                 {#if isCloud}
@@ -1484,9 +1480,9 @@
                     class="lrow-gm"
                     aria-pressed={!!m.gmOnly}
                     title={t.noteHid}
-                    aria-label={t.gmOnlyOf.replace('%s', nameOf(it, app.lang))}
+                    aria-label={t.gmOnlyOf.replace('%s', label)}
                     onclick={() => {
-                      cloud?.setGmOnly(own.id, it.id, !m.gmOnly);
+                      cloud?.setGmOnly(own.id, id, !m.gmOnly);
                     }}><Icon name={m.gmOnly ? 'eyeOff' : 'eye'} /></button
                   >
                 {/if}
@@ -1497,18 +1493,18 @@
                     title={t.removeItem}
                     aria-label={t.removeItem}
                     onclick={() => {
-                      removeEntry(it, i);
+                      removeEntry(id, it, i);
                     }}>&times;</button
                   >
                 {/if}
               </div>
               {#if goldHint}
-                <p class="ghint" id="ghint-{it.id}" hidden={!priceHelp.has(it.id)}>
+                <p class="ghint" id="ghint-{id}" hidden={!priceHelp.has(id)}>
                   {goldHint}
                 </p>
               {/if}
-              {#if lsel.has(it.id) && (m.qty ?? 0) > 1}
-                {@const n = takenOf(it.id)}
+              {#if lsel.has(id) && (m.qty ?? 0) > 1}
+                {@const n = takenOf(id)}
                 <div class="lrow-take">
                   <PickQty
                     value={n}
@@ -1516,20 +1512,20 @@
                     label={t.pickQty}
                     ofText={t.pickOf.replace('%n', String(m.qty ?? 1))}
                     sum={priceText((m.gold ?? 0) * n, mode, app.lang)}
-                    name={t.pickQtyOf.replace('%s', nameOf(it, app.lang))}
+                    name={t.pickQtyOf.replace('%s', label)}
                     minText={t.pickMin}
                     maxText={t.pickMax}
-                    minName={t.pickMinOf.replace('%s', nameOf(it, app.lang))}
-                    maxName={t.pickMaxOf.replace('%s', nameOf(it, app.lang))}
+                    minName={t.pickMinOf.replace('%s', label)}
+                    maxName={t.pickMaxOf.replace('%s', label)}
                     onchange={(n: number) => {
-                      picked.set(it.id, n);
+                      picked.set(id, n);
                     }}
                   />
                 </div>
               {/if}
-              {#if !boxHidden(it.id, m)}
+              {#if !boxHidden(id, m)}
                 <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
-                <div class="rnote">{@render notePair(m, it.id)}</div>
+                <div class="rnote">{@render notePair(m, id)}</div>
               {/if}
             </div>
           {/each}
@@ -1575,7 +1571,7 @@
       {/if}
       <StatusRegion text={said} />
       {#if isCloud}
-        <StatusRegion text={syncSaid} live={app.cloudLists?.live} />
+        <SyncSaid {app} live={app.cloudLists?.live} />
       {/if}
     {/if}
   {/snippet}
@@ -2148,21 +2144,33 @@
     border-top-right-radius: 0;
   }
 
-  /* The save status of an account list, in the sub line. */
-  .sync.bad {
-    color: var(--danger-text);
-    font-weight: 600;
+  /* The list's name in the heading, for the page's outline: the rename input shows it
+     (docs/specs/FEATURES.md, rule 16). The same rule as `StatusRegion`. */
+  .vh {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
-  .linkbtn {
-    background: none;
-    border: 0;
-    padding: 0 2px;
-    margin-left: 4px;
-    color: var(--gold-soft);
-    text-decoration: underline;
-    font: inherit;
-    cursor: pointer;
+  /* A stored entry whose record the page has not read: the key and «Предмет не загружен»
+     in `RowMain`'s box. */
+  .unk {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 8px;
+    overflow-wrap: anywhere;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  .unk b {
+    color: var(--txt);
+    font-weight: 600;
   }
 
   /* the `.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`,
@@ -2445,7 +2453,8 @@
       flex-wrap: wrap;
     }
 
-    .lrow > :global(.row-main) {
+    .lrow > :global(.row-main),
+    .lrow > .unk {
       flex: 1 1 auto;
     }
 

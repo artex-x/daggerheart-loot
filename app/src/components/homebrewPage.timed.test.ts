@@ -1,8 +1,9 @@
 /* A set of 300 own members (three times the item limit) and 100 book items (the card's
-   limit) on the Sets tab: its open fold draws 400 member links within the bound of the
-   1000-list case. It runs in the `timed` vitest
-   project, one file at a time after the parallel files (vite.config.mts), so another
-   worker's load does not decide it. docs/specs/FEATURES.md, "Homebrew". */
+   limit) on the Sets tab: its open fold draws the first 20 members and «и ещё 380», and
+   the open member fold draws 400 member links within the bound of the 1000-list case. It
+   runs in the `timed` vitest project, one file at a time after the parallel files
+   (vite.config.mts), so another worker's load does not decide it.
+   docs/specs/FEATURES.md, "Homebrew". */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, waitFor, within } from '@testing-library/svelte';
@@ -38,7 +39,7 @@ const BOOK_ITEMS = Object.values(loot.items)
   .map((r) => r.id);
 
 describe('a set of 300 own members and 100 book items', () => {
-  it('draws the add field first and its 400 member links within 3000 ms', async () => {
+  it('draws the add field first, 20 members folded, and all 400 member links within 3000 ms', async () => {
     const cloud = fakeCloud(SEED, 'gm2', { limits: { items: 300 } });
     await cloud.homebrew.import({
       books: [],
@@ -64,6 +65,10 @@ describe('a set of 300 own members and 100 book items', () => {
     const fold = within(panel).getByRole('button', { name: 'Большой комплект' });
     const start = performance.now();
     await userEvent.click(fold);
+    await waitFor(() => {
+      expect(panel.querySelectorAll('.members a')).toHaveLength(20);
+    });
+    await userEvent.click(within(panel).getByRole('button', { name: 'и ещё 380' }));
     await waitFor(() => {
       expect(panel.querySelectorAll('.members a')).toHaveLength(400);
     });

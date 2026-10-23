@@ -26,7 +26,7 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/s/
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе"
     ... StaticText x10 of 14 same-shape siblings elided
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=true]
@@ -136,7 +136,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/s/player-token-
     StaticText "Updated 3 days ago"
     button "Save to my lists"
     ... StaticText x10 of 14 same-shape siblings elided
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=true]

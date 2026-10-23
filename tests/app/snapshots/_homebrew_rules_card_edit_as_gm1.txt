@@ -50,6 +50,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     textbox "Ссылка" [value=https://example.test/alder-brand description=Необязательно: страница с полным текстом правила. multiline=false readonly=false required=false]
     StaticText "Необязательно: страница с полным текстом правила."
     StaticText "Источник"
+    button "Подсказка: Источник" [expanded=false]
     combobox "Источник" [value=Хоумбрю expanded=false haspopup=menu]
       option "Хоумбрю" [selected=true]
       option "Мастерская Ольхи" [selected=false]
@@ -84,6 +85,7 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Отмена
+Подсказка: Источник
 Подсказка: Текст карты
 Поиск
 Предметы
@@ -144,6 +146,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
     textbox "Link" [value=https://example.test/alder-brand description=Optional: a page with the full text of the rule. multiline=false readonly=false required=false]
     StaticText "Optional: a page with the full text of the rule."
     StaticText "Source"
+    button "Help: Source" [expanded=false]
     combobox "Source" [value=Homebrew expanded=false haspopup=menu]
       option "Homebrew" [selected=true]
       option "Alder Workshop" [selected=false]
@@ -164,6 +167,7 @@ Bulleted list
 Cancel
 EN
 Help: Card text
+Help: Source
 HomebrewAlder Workshop
 How this works
 Import from file

@@ -976,6 +976,15 @@ export function bookItemsDropped(file: HomebrewFile, held: HeldRows): number {
   }).length;
 }
 
+/** Returns how many of the file's items the import creates: the ones whose key the account
+ *  does not hold. */
+export function newItemCount(
+  file: HomebrewFile,
+  account: { has(key: string): boolean }
+): number {
+  return file.items.filter((i) => !account.has(i.key)).length;
+}
+
 const namesOf = (v: { en?: string; ru?: string }): { en?: string; ru?: string } => ({
   ...(v.en !== undefined ? { en: v.en } : {}),
   ...(v.ru !== undefined ? { ru: v.ru } : {})

@@ -1101,6 +1101,20 @@ export function sequenceGuard(sequences) {
   return { before, after };
 }
 
+/** The relations every backup leaves out of its data dump: the Auth session
+ * and sign-in flow tables and the token sequence, so that a backup holds no
+ * sign-in to resume, and a restore signs each restored reader out once
+ * (`docs/decisions/`, 2026-10-22, "The nightly backup leaves out the Auth
+ * sessions"). `.github/workflows/backup.yml` passes the same list. */
+export const DUMP_EXCLUDES = Object.freeze([
+  'auth.flow_state',
+  'auth.mfa_amr_claims',
+  'auth.refresh_tokens',
+  'auth.refresh_tokens_id_seq',
+  'auth.saml_relay_states',
+  'auth.sessions'
+]);
+
 /** Returns a `pg_dump --data-only` output in the shape of the CLI's data
  * dump: `SET session_replication_role = replica;` first, the `\restrict`
  * and `\unrestrict` lines as `--` comments, `RESET ALL;` last. */

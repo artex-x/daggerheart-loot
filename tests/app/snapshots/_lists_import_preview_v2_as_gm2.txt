@@ -33,8 +33,9 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
     button "Выбрать файл..."
     button "Импортировать (1)"
     button "Отмена"
-    link "схеме import-v1" [url=schema/import-v1.json]
+    link "схеме import-v3" [url=schema/import-v3.json]
     link "описание для ИИ-помощников" [url=llms.txt]
+    status ""
     heading "ВАШ АККАУНТ" [level=2]
     StaticText "1 список из 50"
     checkbox "Выбрать все" [checked=false]
@@ -82,7 +83,7 @@ daggerheart.com
 Условия использования
 Установить как приложение
 описание для ИИ-помощников
-схеме import-v1
+схеме import-v3
 
 ## en :: tree
 RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm2#/lists]
@@ -114,8 +115,9 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm2#/lists]
     button "Choose a file..."
     button "Import (1)"
     button "Cancel"
-    link "import-v1 schema" [url=schema/import-v1.json]
+    link "import-v3 schema" [url=schema/import-v3.json]
     link "a description for AI assistants" [url=llms.txt]
+    status ""
     heading "YOUR ACCOUNT" [level=2]
     StaticText "1 list of 50"
     checkbox "Select all" [checked=false]
@@ -161,6 +163,6 @@ Tables
 Terms of use
 a description for AI assistants
 daggerheart.com
-import-v1 schema
+import-v3 schema
 ЛутDaggerheart
 Список второго ГМа, 2 items, edited 2 days ago, 2 changes

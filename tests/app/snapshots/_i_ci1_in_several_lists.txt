@@ -38,9 +38,9 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
     searchbox "Найти список"
-    button "✓ Сессия 3" [pressed=true]
-    button "✓ Порт Ветров" [pressed=true]
-    button "✓ Клад дракона" [pressed=true]
+    button "Сессия 3" [pressed=true]
+    button "Порт Ветров" [pressed=true]
+    button "Клад дракона" [pressed=true]
     button "Ёлочная ярмарка" [pressed=false]
     button "Сундук мага" [pressed=false]
     ... button x6 of 10 same-shape siblings elided
@@ -68,6 +68,7 @@ daggerheart.com
 Добавить в список
 Дополнения
 К содержимому
+Клад дракона
 Конфиденциальность
 Кузнец
 Лавка в порту
@@ -78,7 +79,9 @@ daggerheart.com
 Отправить
 Печать
 Поиск
+Порт Ветров
 Рынок
+Сессия 3
 Сессия 4
 Скопировать изображение
 Скопировать название
@@ -95,9 +98,6 @@ daggerheart.com
 Установить как приложение
 Храм Солнца
 показать в таблице
-✓ Клад дракона
-✓ Порт Ветров
-✓ Сессия 3
 
 ## en :: tree
 RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=#/i/ci1]

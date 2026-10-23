@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+RootWebArea "Трофеи - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -21,15 +21,15 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/li
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Трофеи"
     textbox "Название списка" [value=Трофеи multiline=false readonly=false required=false]
     StaticText "2 позиции из 100 · "
-    StaticText "Сохранено"
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Поделиться" [expanded=true]
     button "Скопировать текст"
     button "Скачать JSON"
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     ... button x5 of 9 same-shape siblings elided
-    ... StaticText x6 of 10 same-shape siblings elided
     link "#/s/share-token-1" [url=index.html?as=gm1#/s/share-token-1]
     link "#/s/share-token-2" [url=index.html?as=gm1#/s/share-token-2]
     status ""
@@ -116,7 +116,7 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+RootWebArea "Трофеи - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -133,15 +133,15 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Трофеи"
     textbox "List name" [value=Трофеи multiline=false readonly=false required=false]
     StaticText "2 items of 100 · "
-    StaticText "Saved"
+    ... StaticText x7 of 11 same-shape siblings elided
     button "Share" [expanded=true]
     button "Copy text"
     button "Download JSON"
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     ... button x5 of 9 same-shape siblings elided
-    ... StaticText x6 of 10 same-shape siblings elided
     link "#/s/share-token-1" [url=index.html?as=gm1#/s/share-token-1]
     link "#/s/share-token-2" [url=index.html?as=gm1#/s/share-token-2]
     status ""

@@ -545,6 +545,24 @@ describe('the guard', () => {
     expect(await stored(cloud, RING)).toBeUndefined();
   });
 
+  it('says the lists clause while the lists are not read, and the short question once they are', async () => {
+    const { app, dialog } = await editor(RING, { answer: false });
+    const lists = app.cloudLists;
+    if (!lists) throw new Error('The editor needs the lists store. Pass a cloud port.');
+    expect(lists.status).toBe('ready');
+    for (const status of ['loading', 'error'] as const) {
+      lists.status = status;
+      await userEvent.click(screen.getByRole('button', { name: t.del }));
+      expect(dialog.asked.at(-1)).toBe(
+        'Удалить предмет «Кольцо с гравировкой»? Если предмет есть в ваших списках, он пропадёт и из них. ' +
+          OTHERS
+      );
+    }
+    lists.status = 'ready';
+    await userEvent.click(screen.getByRole('button', { name: t.del }));
+    expect(dialog.asked.at(-1)).toBe('Удалить предмет «Кольцо с гравировкой»? ' + OTHERS);
+  });
+
   it('asks the list form of the delete confirm, and says a failed delete', async () => {
     const { app, cloud, dialog } = await editor(RING, { answer: true });
     app.listsHolding = () => 1;

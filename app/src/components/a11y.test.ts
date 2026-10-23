@@ -328,7 +328,7 @@ const STATES: {
     route: '#/search',
     enter: async () => {
       await userEvent.type(
-        screen.getByPlaceholderText('Поиск по названию или описанию…'),
+        screen.getByPlaceholderText('Поиск по названию или описанию...'),
         'вещь'
       );
       await press('Снаряжение');
@@ -605,6 +605,8 @@ const COVERED: Record<string, string> = {
   'DiceBar.svelte': 'the Core rules panel - std.test.ts and the state below',
   'FilterBar.svelte':
     'tables.test.ts, filterBar.test.ts with the fold closed and open, and the filter panel state below',
+  'FoldButton.svelte':
+    'filterBar.test.ts with the fold closed and open, and the source chip fold closed and open in homebrewCatalog.test.ts',
   'HelpBox.svelte': "PageHead's help panel states above",
   'HomebrewEditor.svelte':
     'homebrewEditor.test.ts in every kind, the problems and the banners; the failed save above',
@@ -725,6 +727,10 @@ const COVERED: Record<string, string> = {
     'supplementNav.test.ts on each supplement section, and Vault of Ages and communities (sections.test.ts)',
   'Switch.svelte':
     'switch.test.ts on and off, and «Свои предметы» on search and the equipment tables (homebrewCatalog.test.ts)',
+  'SyncSaid.svelte':
+    "listPage.test.ts's save status cases and listsPage.test.ts's «Не сохранено» on the index, each with axe",
+  'SyncStatus.svelte':
+    "listPage.test.ts's account list sub line and listsPage.test.ts's failed count line, each with axe",
   'TabBar.svelte': 'the frame, on every state',
   'TextInput.svelte':
     'the lists index above, and the delete confirmation open above (accountPage.test.ts)',

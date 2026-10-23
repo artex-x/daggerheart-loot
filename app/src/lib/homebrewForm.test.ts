@@ -27,6 +27,7 @@ import {
   lineOption,
   langOptions,
   matchRecords,
+  namesMatch,
   previewOf,
   problemLang,
   problemText,
@@ -428,6 +429,15 @@ describe('the picker options', () => {
     expect(cardMatches(card, foldQuery('медл'))).toBe(true);
     expect(cardMatches(card, foldQuery('adversary'))).toBe(true);
     expect(cardMatches(card, foldQuery('огонь'))).toBe(false);
+  });
+
+  it('finds a name in either language, in any case, as search folds it', () => {
+    const name = { ru: 'Мастерская Ольхи', en: 'Alder Workshop' };
+    expect(namesMatch(name, foldQuery('ОЛЬХ'))).toBe(true);
+    expect(namesMatch(name, foldQuery('workshop'))).toBe(true);
+    expect(namesMatch({ ru: 'Ёлка' }, foldQuery('елк'))).toBe(true);
+    expect(namesMatch(name, foldQuery('кузня'))).toBe(false);
+    expect(namesMatch({}, foldQuery('a'))).toBe(false);
   });
 });
 

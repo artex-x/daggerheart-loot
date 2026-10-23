@@ -53,7 +53,10 @@ function owner(flushed = true) {
     order.push('apply');
     return real(id, clamp);
   });
+  const realList = cloud.requests.list.bind(cloud.requests);
+  const realLines = cloud.requests.lines.bind(cloud.requests);
   const list = vi.spyOn(cloud.requests, 'list');
+  const lines = vi.spyOn(cloud.requests, 'lines');
   const o = new OwnerRequests(cloud.requests, hooks);
   /* The owner topic's messages reach the store as the owner feed passes them on. */
   cloud.events.subscribe('owner:' + SEED.users.gm1.id, {
@@ -62,7 +65,24 @@ function owner(flushed = true) {
     },
     status: () => undefined
   });
-  return { cloud, o, hooks, said, order, apply, list, real };
+  return { cloud, o, hooks, said, order, apply, list, lines, real, realList, realLines };
+}
+
+/* The list page's panel focuses its list, which reads its requests' lines. */
+const open = async (o: OwnerRequests, listId = SHOP): Promise<void> => {
+  o.focus(listId);
+  await settle();
+};
+
+/* A promise that answers when `release` is called. */
+function held<T>(answer: () => Promise<T>): { promise: Promise<T>; release: () => void } {
+  let release: () => void = () => undefined;
+  const promise = new Promise<T>((resolve) => {
+    release = () => {
+      void answer().then(resolve);
+    };
+  });
+  return { promise, release };
 }
 
 const TWO = [
@@ -76,7 +96,7 @@ describe('OwnerRequests reads', () => {
     const a = cloud.request('player-token-1', TWO);
     await later(60_000);
     const b = cloud.request('gm-token-1', [{ item: 'q1', qty: 1 }]);
-    await o.read();
+    await open(o);
     expect(o.forList(SHOP, Date.now()).map((r) => r.id)).toEqual([b, a]);
     expect(o.pendingCount(SHOP, Date.now())).toBe(2);
     expect(o.pendingCount(TROPHIES, Date.now())).toBe(0);
@@ -98,7 +118,7 @@ describe('OwnerRequests reads', () => {
     await o.markRead(SHOP);
     expect(mark).not.toHaveBeenCalled();
     cloud.request('player-token-1', TWO);
-    await o.read();
+    await open(o);
     list.mockClear();
     mark.mockResolvedValueOnce({ ok: false, error: 'network' });
     await o.markRead(SHOP);
@@ -117,7 +137,7 @@ describe('OwnerRequests reads', () => {
   it('drops a read mark that answers after clear', async () => {
     const { cloud, o, list } = owner();
     cloud.request('player-token-1', TWO);
-    await o.read();
+    await open(o);
     list.mockClear();
     const marking = o.markRead(SHOP);
     o.clear();
@@ -172,7 +192,7 @@ describe('OwnerRequests reads', () => {
   it('removes a request another device decided, without a reload', async () => {
     const { cloud, o } = owner();
     const id = cloud.request('player-token-1', TWO);
-    await o.read();
+    await open(o);
     expect(id && cloud.decide(id, 'declined')).toBe(true);
     await later(COALESCE_MS);
     expect(o.forList(SHOP, Date.now())).toEqual([]);
@@ -197,7 +217,7 @@ describe('OwnerRequests apply and decline', () => {
   it('sends the write buffer first, applies, re-reads the lists and folds the decision', async () => {
     const { cloud, o, order, said } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     await o.apply(id, false);
     expect(order).toEqual(['flush', 'apply', 'lists']);
     expect(said).toEqual([['Запрос принят', undefined]]);
@@ -211,7 +231,7 @@ describe('OwnerRequests apply and decline', () => {
   it('sends nothing when the write buffer cannot be sent', async () => {
     const { cloud, o, apply, said } = owner(false);
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     await o.apply(id, false);
     expect(apply).not.toHaveBeenCalled();
     expect(said).toEqual([
@@ -227,7 +247,7 @@ describe('OwnerRequests apply and decline', () => {
         { item: 'cc1', qty: 9 },
         { item: 'q1', qty: 1 }
       ]) ?? '';
-    await o.read();
+    await open(o);
     await o.apply(id, false);
     expect(o.short).toEqual({ [id]: [{ item: 'cc1', want: 9, have: 5 }] });
     expect(said).toEqual([]);
@@ -240,7 +260,7 @@ describe('OwnerRequests apply and decline', () => {
   it('drops the short lines of a request that left the pending list', async () => {
     const { cloud, o } = owner();
     const id = cloud.request('gm-token-1', [{ item: 'cc1', qty: 9 }]) ?? '';
-    await o.read();
+    await open(o);
     await o.apply(id, false);
     cloud.decide(id, 'declined');
     await later(COALESCE_MS);
@@ -251,7 +271,7 @@ describe('OwnerRequests apply and decline', () => {
     const { cloud, o, said } = owner();
     const a = cloud.request('player-token-1', TWO) ?? '';
     const b = cloud.request('gm-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     await o.decline(a);
     await o.apply(b, false);
     expect(said).toEqual([
@@ -271,7 +291,8 @@ describe('OwnerRequests apply and decline', () => {
     const token = made.ok ? made.token : '';
     const a = cloud.request('player-token-1', TWO) ?? '';
     const b = cloud.request(token, [{ item: 'q1', qty: 1 }]) ?? '';
-    await o.read();
+    await open(o);
+    await open(o, TROPHIES);
     await o.decline(a);
     await o.decline(b);
     o.forget(SHOP);
@@ -282,7 +303,7 @@ describe('OwnerRequests apply and decline', () => {
   it('reads quietly when a decision this tab sent with no answer comes back decided', async () => {
     const { cloud, o, apply, real, said, hooks } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     apply.mockImplementationOnce(async (x, clamp) => {
       await real(x, clamp);
       return { ok: false, error: 'network' };
@@ -302,7 +323,7 @@ describe('OwnerRequests apply and decline', () => {
   it('says another device decided a request, and reads again', async () => {
     const { cloud, o, said } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     cloud.decide(id, 'applied');
     await o.decline(id);
     expect(said).toEqual([['Этот запрос уже решён на другом устройстве.', true]]);
@@ -313,7 +334,7 @@ describe('OwnerRequests apply and decline', () => {
     const { cloud, o, said, hooks } = owner();
     const a = cloud.request('player-token-1', TWO) ?? '';
     const b = cloud.request('gm-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     await cloud.lists.apply([{ op: 'remove', id: SHOP }]);
     await o.apply(a, false);
     await o.decline(b);
@@ -325,7 +346,7 @@ describe('OwnerRequests apply and decline', () => {
   it('says an expired request, and a refused decision', async () => {
     const { cloud, o, said } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     const decline = vi
       .spyOn(cloud.requests, 'decline')
       .mockResolvedValueOnce({ ok: false, error: 'refused' });
@@ -346,7 +367,7 @@ describe('OwnerRequests apply and decline', () => {
   it('decides one request at a time', async () => {
     const { cloud, o, apply } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     const first = o.apply(id, false);
     expect(o.busy).toBe(id);
     await o.apply(id, false);
@@ -358,7 +379,7 @@ describe('OwnerRequests apply and decline', () => {
   it('drops an answer that arrives after clear', async () => {
     const { cloud, o, said } = owner();
     const id = cloud.request('player-token-1', TWO) ?? '';
-    await o.read();
+    await open(o);
     const applying = o.apply(id, false);
     o.clear();
     await applying;
@@ -401,30 +422,22 @@ describe("the owner's change log", () => {
     expect(o.noticesRead).toBe(false);
   });
 
-  it("keeps a newer read's notices when its requests fail and an older read answers after", async () => {
+  it("applies the notices of a joined read's last pass when its requests fail", async () => {
     const { o, port } = gm2();
     await o.read();
     const stale = await port.requests.notices();
     const list = port.requests.list.bind(port.requests);
     vi.spyOn(port.requests, 'list')
-      .mockImplementationOnce((held) => list(held))
+      .mockImplementationOnce(() => list())
       .mockResolvedValueOnce({ ok: false });
-    let release: () => void = () => undefined;
+    const first = held(() => Promise.resolve(stale));
     vi.spyOn(port.requests, 'notices')
-      .mockImplementationOnce(
-        () =>
-          new Promise((resolve) => {
-            release = () => {
-              resolve(stale);
-            };
-          })
-      )
+      .mockImplementationOnce(() => first.promise)
       .mockResolvedValueOnce({ ok: true, notices: stale.ok ? stale.notices.slice(1) : [] });
     const older = o.read();
-    await o.read();
-    expect(o.noticesFor(GM2_LIST)).toHaveLength(1);
-    release();
-    await older;
+    const newer = o.read();
+    first.release();
+    await Promise.all([older, newer]);
     expect(o.noticesFor(GM2_LIST)).toHaveLength(1);
   });
 
@@ -542,105 +555,104 @@ describe("the owner's change log", () => {
   });
 });
 
-describe('the re-read that names the held requests', () => {
-  it('reads only a new request with its lines and keeps a held object while it is unchanged', async () => {
-    const { cloud, o, list } = owner();
-    const a = cloud.request('player-token-1', TWO);
+describe("the heads read and the focused list's lines", () => {
+  it('reads no lines with no list focused, and counts every list from the heads', async () => {
+    const { cloud, o, lines } = owner();
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    cloud.request('player-token-1', TWO);
+    cloud.request(made.ok ? made.token : '', [{ item: 'q1', qty: 1 }]);
     await o.read();
-    const held = o.requests[0];
+    expect(lines).not.toHaveBeenCalled();
+    expect(o.heads).toHaveLength(2);
+    expect(o.requests).toEqual([]);
+    expect(o.pendingCount(SHOP, Date.now())).toBe(1);
+    expect(o.pendingCount(TROPHIES, Date.now())).toBe(1);
+  });
+
+  it("reads only the focused list's lines", async () => {
+    const { cloud, o, lines } = owner();
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    const a = cloud.request('player-token-1', TWO);
+    cloud.request(made.ok ? made.token : '', [{ item: 'q1', qty: 1 }]);
+    await open(o);
+    expect(lines.mock.calls).toEqual([[[a]]]);
+    expect(o.requests.map((r) => r.id)).toEqual([a]);
+    expect(o.forList(SHOP, Date.now())[0]?.lines).toHaveLength(2);
+  });
+
+  it('reads a new request of the focused list alone by id, and keeps a held object while it is unchanged', async () => {
+    const { cloud, o, lines } = owner();
+    const a = cloud.request('player-token-1', TWO);
+    await open(o);
+    const shown = o.requests[0];
     await later(60_000);
     const before = o.arrived;
     const b = cloud.request('player-token-1', [{ item: 'q1', qty: 1 }]);
     await o.read();
-    expect(list).toHaveBeenLastCalledWith([a]);
-    expect(o.requests[0]).toBe(held);
-    expect(o.requests.map((r) => r.id).sort()).toEqual([a, b].sort());
+    expect(lines).toHaveBeenLastCalledWith([b]);
+    expect(o.requests.find((r) => r.id === a)).toBe(shown);
     expect(o.requests.find((r) => r.id === b)?.lines).toEqual([
       { item: 'q1', qty: 1, price: null, applied: null }
     ]);
     expect(o.arrived).toBe(before + 1);
+    lines.mockClear();
     await o.read();
+    expect(lines).not.toHaveBeenCalled();
     expect(o.arrived).toBe(before + 1);
   });
 
   it('takes a new read mark and expiry onto a held request', async () => {
     const { cloud, o } = owner();
     cloud.request('player-token-1', TWO);
-    await o.read();
-    const held = o.requests[0];
+    await open(o);
+    const shown = o.requests[0];
     await o.markRead(SHOP);
     const now = o.requests[0];
-    expect(now).not.toBe(held);
+    expect(now).not.toBe(shown);
     expect(now?.readAt).not.toBeNull();
-    expect(now?.lines).toEqual(held?.lines);
+    expect(now?.lines).toEqual(shown?.lines);
   });
 
-  it('drops a request decided elsewhere', async () => {
+  it('drops a request decided elsewhere from the heads and the requests', async () => {
     const { cloud, o } = owner();
     const a = cloud.request('player-token-1', TWO);
-    await o.read();
+    await open(o);
     if (!a) throw new Error('the seed refused the request');
     cloud.decide(a, 'declined');
     await o.read();
+    expect(o.heads).toEqual([]);
     expect(o.requests).toEqual([]);
   });
 
-  it('keeps a request decided here gone when a read that held it answers after', async () => {
-    const { cloud, o, list } = owner();
+  it('keeps a request decided here gone when a read that started before answers after', async () => {
+    const { cloud, o, list, realList } = owner();
     const a = cloud.request('player-token-1', TWO);
-    await o.read();
+    await open(o);
     if (!a) throw new Error('the seed refused the request');
-    const answer = await cloud.requests.list([a]);
-    let release: () => void = () => undefined;
-    list.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          release = () => {
-            resolve(answer);
-          };
-        })
-    );
-    /* The decline's own read fails, so only the kept-id rule can keep it gone. */
+    const answer = await realList();
+    const late = held(() => Promise.resolve(answer));
+    list.mockImplementationOnce(() => late.promise);
+    /* The decline's own read fails, so only the decided ids can keep it gone. */
     list.mockResolvedValueOnce({ ok: false });
     const reading = o.read();
-    await o.decline(a);
-    release();
-    await reading;
+    const declining = o.decline(a);
+    await settle();
+    late.release();
+    await Promise.all([reading, declining]);
+    expect(o.heads.some((h) => h.id === a)).toBe(false);
     expect(o.requests.some((r) => r.id === a)).toBe(false);
   });
 
-  it('keeps the shown requests when the re-read fails', async () => {
+  it('keeps the shown heads and requests when a heads read fails', async () => {
     const { cloud, o, list } = owner();
     cloud.request('player-token-1', TWO);
-    await o.read();
-    const shown = o.requests;
+    await open(o);
+    const shown = [o.heads, o.requests];
     list.mockResolvedValueOnce({ ok: false });
     await o.read();
-    expect(o.requests).toBe(shown);
-  });
-
-  it('drops an older read that answers after a newer one', async () => {
-    const { cloud, o, list } = owner();
-    const a = cloud.request('player-token-1', TWO);
-    await o.read();
-    if (!a) throw new Error('the seed refused the request');
-    const stale = await cloud.requests.list();
-    let release: () => void = () => undefined;
-    list.mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          release = () => {
-            resolve(stale);
-          };
-        })
-    );
-    const older = o.read();
-    cloud.decide(a, 'declined');
-    await o.read();
-    expect(o.requests).toEqual([]);
-    release();
-    await older;
-    expect(o.requests).toEqual([]);
+    expect([o.heads, o.requests]).toEqual(shown);
+    expect(o.heads).toBe(shown[0]);
+    expect(o.requests).toBe(shown[1]);
   });
 
   it('counts the unexpired requests of every list in one pass', async () => {
@@ -651,7 +663,204 @@ describe('the re-read that names the held requests', () => {
     await o.read();
     const counts = o.pendingCounts(Date.now());
     expect(counts.get(SHOP)).toBe(o.pendingCount(SHOP, Date.now()));
+    expect(counts.get(SHOP)).toBe(2);
     expect(counts.has(TROPHIES)).toBe(false);
     expect(o.pendingCounts(Date.now() + 31 * 24 * 3_600_000).size).toBe(0);
+  });
+
+  it('names no expired head in a lines read and sets no loading for one', async () => {
+    const { cloud, o, lines } = owner();
+    cloud.request('player-token-1', TWO);
+    vi.setSystemTime(NOW + 31 * 24 * 3_600_000);
+    await o.read();
+    expect(o.heads).toHaveLength(1);
+    o.focus(SHOP);
+    expect(o.status).toBe('ready');
+    await settle();
+    expect(lines).not.toHaveBeenCalled();
+  });
+
+  it('counts no arrival on the first read after clear', async () => {
+    const { cloud, o } = owner();
+    await o.read();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    expect(o.arrived).toBe(1);
+    o.clear();
+    cloud.request('gm-token-1', TWO);
+    await o.read();
+    expect(o.arrived).toBe(0);
+  });
+
+  it('marks nothing while a request of the list has no lines', async () => {
+    const { cloud, o, lines } = owner();
+    const mark = vi.spyOn(cloud.requests, 'markRead');
+    const notice = {
+      id: uuid(9681),
+      list_id: SHOP,
+      item_key: 'hb_x',
+      hid: null,
+      kind: 'deleted' as const,
+      name: { en: 'X' },
+      created_at: new Date(NOW - 1000).toISOString(),
+      read_at: null
+    };
+    vi.spyOn(cloud.requests, 'notices').mockResolvedValue({ ok: true, notices: [notice] });
+    cloud.request('player-token-1', TWO);
+    lines.mockResolvedValueOnce({ ok: false });
+    await open(o);
+    expect(o.unreadNotices(SHOP)).toBe(1);
+    expect(o.forList(SHOP, Date.now())).toEqual([]);
+    await o.markRead(SHOP);
+    expect(mark).not.toHaveBeenCalled();
+    await o.read();
+    expect(o.forList(SHOP, Date.now())).toHaveLength(1);
+    await o.markRead(SHOP);
+    expect(mark).toHaveBeenCalledOnce();
+  });
+
+  it('marks nothing before the first heads read answers', async () => {
+    const { cloud, o, list } = owner();
+    const mark = vi.spyOn(cloud.requests, 'markRead');
+    const notice = {
+      id: uuid(9682),
+      list_id: SHOP,
+      item_key: 'hb_x',
+      hid: null,
+      kind: 'deleted' as const,
+      name: { en: 'X' },
+      created_at: new Date(NOW - 1000).toISOString(),
+      read_at: null
+    };
+    vi.spyOn(cloud.requests, 'notices').mockResolvedValue({ ok: true, notices: [notice] });
+    cloud.request('player-token-1', TWO);
+    list.mockResolvedValueOnce({ ok: false });
+    await open(o);
+    expect(o.unreadNotices(SHOP)).toBe(1);
+    await o.markRead(SHOP);
+    expect(mark).not.toHaveBeenCalled();
+    await o.read();
+    expect(o.forList(SHOP, Date.now())).toHaveLength(1);
+    await o.markRead(SHOP);
+    expect(mark).toHaveBeenCalledOnce();
+  });
+});
+
+describe('OwnerRequests status', () => {
+  it('is idle, then loading during the first read, then ready', async () => {
+    const { o } = owner();
+    expect(o.status).toBe('idle');
+    const reading = o.read();
+    expect(o.status).toBe('loading');
+    await reading;
+    expect(o.status).toBe('ready');
+  });
+
+  it('is error after a failed first read and ready after the retry, and keeps ready after a later failure', async () => {
+    const { o, list } = owner();
+    list.mockResolvedValueOnce({ ok: false });
+    await o.read();
+    expect(o.status).toBe('error');
+    await o.read();
+    expect(o.status).toBe('ready');
+    list.mockResolvedValueOnce({ ok: false });
+    await o.read();
+    expect(o.status).toBe('ready');
+  });
+
+  it('is loading at the focus of a list whose lines are not held, error when that read fails, and ready after the next read', async () => {
+    const { cloud, o, lines } = owner();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    expect(o.status).toBe('ready');
+    lines.mockResolvedValueOnce({ ok: false });
+    o.focus(SHOP);
+    expect(o.status).toBe('loading');
+    await settle();
+    expect(o.status).toBe('error');
+    await o.read();
+    expect(o.status).toBe('ready');
+    expect(o.forList(SHOP, Date.now())).toHaveLength(1);
+  });
+
+  it("keeps loading through a focus change until the new list's lines land, and an earlier list's failed lines read sets no error", async () => {
+    const { cloud, o, lines, realLines } = owner();
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    cloud.request('player-token-1', TWO);
+    cloud.request(made.ok ? made.token : '', [{ item: 'q1', qty: 1 }]);
+    await o.read();
+    const shop = held<Awaited<ReturnType<typeof realLines>>>(() =>
+      Promise.resolve({ ok: false })
+    );
+    let trophies: () => void = () => undefined;
+    lines
+      .mockImplementationOnce(() => shop.promise)
+      .mockImplementationOnce(
+        (ids) =>
+          new Promise((resolve) => {
+            trophies = () => {
+              void realLines(ids).then(resolve);
+            };
+          })
+      );
+    o.focus(SHOP);
+    await settle();
+    o.focus(TROPHIES);
+    expect(o.status).toBe('loading');
+    shop.release();
+    await settle();
+    expect(o.status).toBe('loading');
+    trophies();
+    await settle();
+    expect(o.status).toBe('ready');
+    expect(o.forList(TROPHIES, Date.now())).toHaveLength(1);
+  });
+
+  it('is idle after clear during a read, and the stale read leaves a newer read running', async () => {
+    const { o, list, realList } = owner();
+    const reading = o.read();
+    o.clear();
+    expect(o.status).toBe('idle');
+    const late = held(() => realList());
+    list.mockImplementationOnce(() => late.promise);
+    const fresh = o.read();
+    await reading;
+    expect(o.status).toBe('loading');
+    expect(o.read()).toBe(fresh);
+    late.release();
+    await fresh;
+    expect(o.status).toBe('ready');
+  });
+});
+
+describe('OwnerRequests joined reads', () => {
+  it('makes a read asked for in any step as the running read ends, never joining one that ended', async () => {
+    /* The panel's read mark asks for a read a few steps after the pass that drew the request;
+       a call in the gap between the pass's last check and the end of the read was dropped. */
+    for (let steps = 0; steps < 40; steps++) {
+      const { o, list } = owner();
+      await o.read();
+      list.mockClear();
+      const first = o.read();
+      let wait: Promise<void> = Promise.resolve();
+      for (let i = 0; i < steps; i++) wait = wait.then(() => undefined);
+      const second = wait.then(() => o.read());
+      await Promise.all([first, second]);
+      await settle();
+      expect(list.mock.calls.length, `a read asked for after ${String(steps)} steps`).toBe(2);
+    }
+  });
+
+  it('makes one more read for any calls while one runs, and resolves them after it', async () => {
+    const { o, list } = owner();
+    const first = o.read();
+    let seen = -1;
+    const second = o.read().then(() => {
+      seen = list.mock.calls.length;
+    });
+    const third = o.read();
+    await Promise.all([first, second, third]);
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(seen).toBe(2);
   });
 });

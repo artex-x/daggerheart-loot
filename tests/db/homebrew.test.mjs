@@ -201,9 +201,9 @@ describe('homebrew grants and functions', () => {
       'clone_shared_list(text,uuid)': pin(true, false, true),
       'get_homebrew_item(uuid)': pin(true, true, true),
       'get_homebrew_items(uuid[])': pin(true, false, true),
-      'get_shared_list(text)': pin(true, true, true),
+      'get_shared_list(text)': pin(false, true, true),
       'get_shared_list(text,bigint)': pin(false, true, true),
-      'get_shared_list(text,bigint,jsonb)': pin(false, true, true),
+      'get_shared_list(text,bigint,jsonb)': pin(true, true, true),
       /* The picture policy's two checks (20261014120000_homebrew_art.sql). */
       'homebrew_art_name_ok(text)': validator,
       'homebrew_art_room()': pin(true, false, true),
@@ -219,6 +219,7 @@ describe('homebrew grants and functions', () => {
       'homebrew_content_valid(jsonb)': validator,
       'homebrew_ids_ok(jsonb,text,integer)': validator,
       'homebrew_item_record(uuid)': pin(false, false, false),
+      'homebrew_item_rev(uuid)': pin(false, false, false),
       'homebrew_items_art_owned()': pin(true, false, false),
       'homebrew_items_art_release()': pin(true, false, false),
       'homebrew_items_before_delete()': pin(true, false, false),
@@ -746,5 +747,183 @@ describe('the homebrew messages', () => {
     } finally {
       await sql`delete from auth.users where id = ${a}`;
     }
+  });
+});
+
+/* docs/decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md. */
+describe('delete_homebrew_items()', () => {
+  const UNKNOWN = id(8199);
+  const counts = (tx) =>
+    unbound(tx, async (u) => {
+      const [c] = await u`select
+        (select count(*)::int from public.homebrew_items where owner_id = ${A}) as own,
+        (select count(*)::int from public.homebrew_items where owner_id = ${B}) as other,
+        (select count(*)::int from public.list_entries) as entries`;
+      return { ...c };
+    });
+
+  it('may be run by authenticated only, as security invoker with the search path', async () => {
+    const [r] = await sql`
+      select has_function_privilege('anon', p.oid, 'EXECUTE') as anon,
+        has_function_privilege('authenticated', p.oid, 'EXECUTE') as authed,
+        has_function_privilege('service_role', p.oid, 'EXECUTE') as service,
+        p.prosecdef, p.proconfig
+      from pg_proc p where p.oid = 'public.delete_homebrew_items(uuid[])'::regprocedure`;
+    assert.deepEqual(
+      { ...r },
+      {
+        anon: false,
+        authed: true,
+        service: false,
+        prosecdef: false,
+        proconfig: ['search_path=public, pg_temp']
+      }
+    );
+  });
+
+  it("deletes the caller's named items with their list entries and answers the count", async () => {
+    const out = await asA(world, async (tx) => {
+      const was = await counts(tx);
+      const [first] =
+        await tx`select public.delete_homebrew_items(${[IA, IP, IB, UNKNOWN]}::uuid[]) as n`;
+      const now = await counts(tx);
+      const [again] =
+        await tx`select public.delete_homebrew_items(${[IA, IP, IB, UNKNOWN]}::uuid[]) as n`;
+      return { was, first: first.n, now, again: again.n };
+    });
+    assert.deepEqual(out.was, { own: 2, other: 1, entries: 4 });
+    assert.equal(out.first, 2);
+    assert.deepEqual(out.now, { own: 0, other: 1, entries: 0 });
+    assert.equal(out.again, 0);
+  });
+
+  it('refuses null and 1001 ids and deletes nothing', async () => {
+    const many = Array.from({ length: 1001 }, (_, i) => (i === 0 ? IA : id(9000 + i)));
+    const out = await asA(world, async (tx) => ({
+      none: await refused(tx, (sp) => sp`select public.delete_homebrew_items(${null}::uuid[])`),
+      many: await refused(tx, (sp) => sp`select public.delete_homebrew_items(${many}::uuid[])`),
+      left: await counts(tx)
+    }));
+    byCode('22023', /not a list of at most 1000 ids/)(out.none);
+    byCode('22023', /not a list of at most 1000 ids/)(out.many);
+    assert.deepEqual(out.left, { own: 2, other: 1, entries: 4 });
+  });
+
+  it('refuses anon', async () => {
+    await assert.rejects(
+      asRole(
+        sql,
+        { role: 'anon', setup: world },
+        (tx) => tx`select public.delete_homebrew_items(${[IA]}::uuid[])`
+      ),
+      /permission denied/
+    );
+  });
+
+  /* 300 items, each linked from every one of 150 lists of 300 entries (45000 entries) that a
+     second account owns, seeded as delete-account.test.mjs seeds its account at three times
+     every default limit. The owner deletes all 300 in calls of 50 ids, as the store sends
+     them (`DELETE_CHUNK` in app/src/state/homebrew.svelte.ts), under row level security as
+     calls from the port, each within half the hosted `authenticated` statement timeout of 8 s.
+     The cost it times is the deleted notice written to each linking list of another owner
+     (homebrew_links_touch, 45000 rows), then the cascade of the entries; one call of all 300
+     took 2.5-4 s and once reached the bound
+     (docs/decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md). */
+  it("deletes 300 items linked from 45000 entries of another owner's lists in calls of 50 ids, each within a 4 s statement timeout", async () => {
+    const CHUNK = 50;
+    const BIG = '00000000-0000-4000-8000-0000000004aa';
+    const OTHER = '00000000-0000-4000-8000-0000000004ab';
+    const SEEDED = [
+      'auth.users',
+      'public.homebrew_items',
+      'public.lists',
+      'public.list_entries',
+      'public.list_notices'
+    ];
+    const reltuples = async () => {
+      const rows = await sql`select relname, reltuples::bigint as n from pg_class
+        where relname in ('homebrew_items', 'list_entries') and relkind = 'r'
+        order by relname`;
+      return rows.map((r) => `${r.relname} ${r.n}`).join(', ');
+    };
+    let seeded = 0;
+    const took = [];
+    let out;
+    try {
+      out = await asRole(
+        sql,
+        {
+          role: 'authenticated',
+          sub: BIG,
+          setup: async (tx) => {
+            const t0 = performance.now();
+            await tx`insert into auth.users (id) values (${BIG}), (${OTHER})`;
+            await tx`insert into public.user_limit_overrides (user_id, key, value)
+              select u.id, d.key, d.value * 3
+              from public.limit_defaults d, (values (${BIG}::uuid), (${OTHER}::uuid)) u (id)`;
+            await tx`insert into public.homebrew_items (id, owner_id, key, content)
+              select gen_random_uuid(), ${BIG},
+                'hb_' || lpad(translate(g::text, '0123456789', 'abcdefghij'), 16, 'a'),
+                jsonb_build_object('kind', 'item', 'ru', 'Предмет ' || g)
+              from generate_series(1, 300) g`;
+            await tx`insert into public.lists (id, owner_id, name)
+              select gen_random_uuid(), ${OTHER}, 'Список ' || g from generate_series(1, 150) g`;
+            await tx`insert into public.list_entries
+                (id, list_id, item_key, source, hb_item, position)
+              select gen_random_uuid(), l.id, i.key, 'homebrew', i.id,
+                row_number() over (partition by l.id order by i.key) - 1
+              from public.lists l, public.homebrew_items i
+              where l.owner_id = ${OTHER} and i.owner_id = ${BIG}`;
+            seeded = Math.round(performance.now() - t0);
+            /* A hosted database keeps statistics; a fresh seed has none. */
+            await tx.unsafe(`analyze ${SEEDED.join(', ')}`);
+          }
+        },
+        async (tx) => {
+          const [{ ids }] = await tx`select array_agg(id) as ids
+            from public.homebrew_items where owner_id = ${BIG}`;
+          await tx.unsafe(`set local statement_timeout = '4s'`);
+          try {
+            let n = 0;
+            for (let i = 0; i < ids.length; i += CHUNK) {
+              const chunk = ids.slice(i, i + CHUNK);
+              const t0 = performance.now();
+              const [r] = await tx`select public.delete_homebrew_items(${chunk}::uuid[]) as n`;
+              took.push(Math.round(performance.now() - t0));
+              n += r.n;
+            }
+            await tx.unsafe('reset role');
+            const [left] = await tx`select
+              (select count(*)::int from public.homebrew_items where owner_id = ${BIG}) as items,
+              (select count(*)::int from public.list_entries e
+                join public.lists l on l.id = e.list_id where l.owner_id = ${OTHER}) as entries,
+              (select count(*)::int from public.list_notices n
+                join public.lists l on l.id = n.list_id where l.owner_id = ${OTHER}) as notices,
+              (select count(*)::int from public.list_notices n
+                join public.lists l on l.id = n.list_id
+                where l.owner_id = ${OTHER} and n.kind = 'deleted' and n.hid is null) as deleted`;
+            return { n, ids: ids.length, left: { ...left } };
+          } finally {
+            const sorted = [...took].sort((a, b) => a - b);
+            console.log(
+              `homebrew: 3x bulk delete seed ${seeded} ms, ${took.length} calls of ${CHUNK}, median ${sorted[Math.floor(sorted.length / 2)] ?? 0} ms, worst ${Math.max(0, ...took)} ms`
+            );
+          }
+        }
+      );
+    } finally {
+      /* delete-account.test.mjs, the 3x case: the first analyze may leave pg_class.reltuples
+         with the seeded rows counted after the rollback; a second analyze outside the
+         transaction leaves the next case the real row counts. */
+      const before = await reltuples();
+      await sql.unsafe(`analyze ${SEEDED.join(', ')}`);
+      console.log(
+        `homebrew: reltuples after the rollback ${before}; after analyze ${await reltuples()}`
+      );
+    }
+    assert.equal(out.ids, 300);
+    assert.equal(out.n, 300);
+    assert.equal(took.length, 6);
+    assert.deepEqual(out.left, { items: 0, entries: 0, notices: 45000, deleted: 45000 });
   });
 });

@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Seventy-eight cases in
- * seventy-seven runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Eighty cases in
+ * seventy-nine runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -17,6 +17,7 @@ const path = require('path');
 const { PNG } = require('pngjs');
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
+const { HB_FILE, hbImportOpen } = require('./inventory.js');
 /** The shared page's «Лавка»: three rows with a quantity and a price. */
 const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
 
@@ -559,12 +560,12 @@ async function brokenArtPath() {
 async function focusSurvivesKeystroke() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables');
-  await d.type('Поиск по названию или описанию…', 'к');
+  await d.type('Поиск по названию или описанию...', 'к');
   const stillFocused = await page.evaluate(
     (ph) =>
       document.activeElement instanceof HTMLInputElement &&
       document.activeElement.placeholder === ph,
-    'Поиск по названию или описанию…'
+    'Поиск по названию или описанию...'
   );
   ok(stillFocused, '12 (focus survives input): focus left the search box after the redraw');
   await ctx.close();
@@ -5306,6 +5307,158 @@ async function catalogCopyPerPress() {
   }
 }
 
+/** 79: on a 360x480 window (an 800 px phone less a 320 px keyboard) each `ItemPicker`
+ *  list - «Связи» in the editor, the picture picker and the Sets tab's member picker -
+ *  draws inside the window under the sticky top bar, with the field at the window's
+ *  bottom and in its middle; at 1180x900 with the field in the upper half the list opens
+ *  downward (docs/specs/FEATURES.md, "Relations"). */
+async function pickerAboveKeyboard() {
+  const at = '79 (a picker list stays above the on-screen keyboard): ';
+  /* Scrolls the field to the window's bottom (8 px margin) or its middle, focuses it with
+     no scroll, types «а» and answers the list's box against the top bar and the window. */
+  const listAt = async (page, sel, where) => {
+    await page.evaluate(
+      (s, w) => {
+        const el = document.querySelector(s);
+        el.scrollIntoView({ block: 'center' });
+        const r = el.getBoundingClientRect();
+        const want = w === 'bottom' ? innerHeight - 8 - r.height : (innerHeight - r.height) / 2;
+        window.scrollBy(0, r.top - want);
+        el.value = '';
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.focus({ preventScroll: true });
+      },
+      sel,
+      where
+    );
+    await page.keyboard.type('а');
+    await waitIn(
+      page,
+      () =>
+        !!document.querySelector('.drop li[role="option"]') &&
+        document.querySelector('.drop')?.style.maxHeight !== ''
+    );
+    await new Promise((r) => setTimeout(r, 150));
+    return page.evaluate((s) => {
+      const drop = document.querySelector('.drop');
+      const d = drop?.getBoundingClientRect();
+      const f = document.querySelector(s)?.getBoundingClientRect();
+      const bar = document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 0;
+      return {
+        options: drop ? drop.querySelectorAll('li[role="option"]').length : 0,
+        top: d ? d.top : null,
+        bottom: d ? d.bottom : null,
+        up: !!drop?.classList.contains('up'),
+        field: f ? [f.top, f.bottom] : null,
+        bar,
+        h: innerHeight
+      };
+    }, sel);
+  };
+  const inside = (m) =>
+    m.options > 0 && m.top !== null && m.top >= m.bar - 1 && m.bottom <= m.h + 1;
+  const open = {
+    craft: async (d, page) => {
+      await d.open('#/homebrew/new', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('details.rel'));
+      await page.evaluate(() => {
+        document.querySelector('details.rel').open = true;
+      });
+      await waitIn(page, () => !!document.getElementById('hb-craft'));
+      return '#hb-craft';
+    },
+    art: async (d, page) => {
+      await d.open('#/homebrew/new', { as: 'gm1' });
+      await d.press('Выбрать из предметов');
+      await waitIn(page, () => !!document.getElementById('hb-art-pick'));
+      return '#hb-art-pick';
+    },
+    member: async (d, page) => {
+      await d.open('#/homebrew/sets/hb_aldersetaaaaaaaa', { as: 'gm1' });
+      await waitIn(page, () => !!document.querySelector('input[id^="hb-add-"]'));
+      return 'input[id^="hb-add-"]';
+    }
+  };
+  for (const [name, go] of Object.entries(open)) {
+    for (const where of ['bottom', 'middle']) {
+      const { ctx, page, d } = await fresh({ width: 360, height: 480 });
+      try {
+        const sel = await go(d, page);
+        const m = await listAt(page, sel, where);
+        ok(
+          inside(m),
+          at + name + ' at the ' + where + ': the list leaves the window - ' + JSON.stringify(m)
+        );
+      } finally {
+        await ctx.close();
+      }
+    }
+  }
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  try {
+    const sel = await open.craft(d, page);
+    await page.evaluate((s) => {
+      const el = document.querySelector(s);
+      window.scrollBy(0, el.getBoundingClientRect().top - 300);
+      el.focus({ preventScroll: true });
+    }, sel);
+    await page.keyboard.type('а');
+    await waitIn(page, () => !!document.querySelector('.drop li[role="option"]'));
+    await new Promise((r) => setTimeout(r, 150));
+    ok(
+      !(await page.evaluate(() => !!document.querySelector('.drop.up'))),
+      at + 'the list opens upward at 1180x900 with the field in the upper half'
+    );
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** 80: the editor's summary after a refused «Сохранить» and the homebrew import's
+ *  refused-file box take the error look of docs/specs/FEATURES.md, rule 19: no fill and
+ *  the danger border. */
+async function homebrewRefusalLook() {
+  const at = '80 (the homebrew refusals take the error look): ';
+  const look = (page) =>
+    page.evaluate(() => {
+      const box = document.querySelector('.errs');
+      if (!box) return null;
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--danger)';
+      document.body.append(probe);
+      const danger = getComputedStyle(probe).color;
+      probe.remove();
+      const cs = getComputedStyle(box);
+      return { bg: cs.backgroundColor, border: cs.borderTopColor, danger };
+    });
+  const errorLook = (m) => !!m && m.bg === 'rgba(0, 0, 0, 0)' && m.border === m.danger;
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    try {
+      await d.open('#/homebrew/new', { as: 'gm1' });
+      await d.press('Сохранить');
+      await waitIn(page, () => !!document.querySelector('.errs'));
+      const m = await look(page);
+      ok(errorLook(m), at + 'the editor summary - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+  {
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    try {
+      await d.open('#/homebrew', { as: 'gm1' });
+      await hbImportOpen(d);
+      await d.upload(HB_FILE('errors.json'));
+      await waitIn(page, () => !!document.querySelector('.errs'));
+      const m = await look(page);
+      ok(errorLook(m), at + 'the import refused-file box - ' + JSON.stringify(m));
+    } finally {
+      await ctx.close();
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5386,7 +5539,9 @@ const CASES = [
   ['75 (the browser undoes a toolbar edit)', undoesAToolbarEditWithTheBrowsersUndo],
   ['76 (list notes draw as formatted text)', drawsListNotesAsFormattedText],
   ["77 (the shared row's tick column)", sharedRowTickColumn],
-  ['78 (a copy per press of a catalog record)', catalogCopyPerPress]
+  ['78 (a copy per press of a catalog record)', catalogCopyPerPress],
+  ['79 (a picker list stays above the on-screen keyboard)', pickerAboveKeyboard],
+  ['80 (the homebrew refusals take the error look)', homebrewRefusalLook]
 ];
 
 (async () => {

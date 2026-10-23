@@ -4,7 +4,7 @@
 # today: 2026-10-26
 
 ## ru :: tree
-RootWebArea "Списки - Генератор лута Daggerheart" [url=index.html?today=2026-10-26#/lists]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=index.html?today=2026-10-26#/lists]
   link "К содержимому" [url=index.html?today=2026-10-26#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
@@ -67,7 +67,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/lists]
   link "Skip to content" [url=index.html?today=2026-10-26#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]

@@ -655,6 +655,7 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     const replay = await requests.send(r1, share.token, ONE);
     assert(replay.ok, 'requests: a replay answered ' + JSON.stringify(replay));
 
+    /* The heads read carries no lines; `lines` reads them by id. */
     const read = await requests.list();
     const mine = read.ok ? read.requests.filter((r) => r.listId === id) : [];
     const first = mine[0];
@@ -662,9 +663,17 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
       mine.length === 1 &&
         first?.id === r1 &&
         first.audience === 'player' &&
-        JSON.stringify(first.lines) ===
+        !('lines' in first),
+      'requests: the owner does not read the one head: ' + JSON.stringify(mine)
+    );
+    const firstLines = await requests.lines([r1]);
+    assert(
+      firstLines.ok &&
+        firstLines.requests.length === 1 &&
+        firstLines.requests[0]?.id === r1 &&
+        JSON.stringify(firstLines.requests[0].lines) ===
           JSON.stringify([{ item: 'ci1', qty: 1, price: 150, applied: null }]),
-      'requests: the owner does not read the one request: ' + JSON.stringify(mine)
+      'requests: the lines read of the one request answered ' + JSON.stringify(firstLines)
     );
     const month = first ? Date.parse(first.expiresAt) - Date.parse(first.createdAt) : 0;
     assert(
@@ -690,16 +699,21 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
       { item: 'cc1', qty: 2 }
     ];
     assert((await requests.send(r2, share.token, two)).ok, 'requests: the second send failed');
-    /* A re-read names the requests held: a held one answers in `kept` with its read mark and
-       no lines; only the new one comes with its lines. */
-    const held = await requests.list([r1]);
-    const keptOne = held.ok ? held.kept?.find((k) => k.id === r1) : undefined;
+    const both = await requests.list();
+    const heads = both.ok ? both.requests.filter((r) => r.listId === id) : [];
     assert(
-      held.ok &&
-        keptOne?.readAt === opened?.readAt &&
-        !held.requests.some((r) => r.id === r1) &&
-        held.requests.some((r) => r.id === r2 && r.lines.length === 2),
-      'requests: a re-read that holds the first request answered ' + JSON.stringify(held)
+      heads.length === 2 &&
+        heads.some((r) => r.id === r1 && r.readAt === opened?.readAt) &&
+        heads.some((r) => r.id === r2),
+      'requests: the heads read after the second send answered ' + JSON.stringify(heads)
+    );
+    const bothLines = await requests.lines([r1, r2]);
+    assert(
+      bothLines.ok &&
+        bothLines.requests.length === 2 &&
+        bothLines.requests.some((r) => r.id === r1 && r.lines.length === 1) &&
+        bothLines.requests.some((r) => r.id === r2 && r.lines.length === 2),
+      'requests: the lines read of both requests answered ' + JSON.stringify(bothLines)
     );
     const short = await requests.apply(r2, false);
     assert(
@@ -741,12 +755,10 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
       left.ok && !left.requests.some((r) => r.listId === id),
       'requests: a decided request is still pending'
     );
-    const decided = await requests.list([r1, r2]);
+    const decided = await requests.lines([r1, r2]);
     assert(
-      decided.ok &&
-        !decided.kept?.some((k) => k.id === r1 || k.id === r2) &&
-        !decided.requests.some((r) => r.listId === id),
-      'requests: a re-read keeps a decided request: ' + JSON.stringify(decided)
+      decided.ok && decided.requests.length === 0,
+      'requests: a lines read answers a decided request: ' + JSON.stringify(decided)
     );
 
     const stale = await requests.send(lists.newId(), share.token, [{ item: 'zz1', qty: 1 }]);
@@ -1906,6 +1918,68 @@ async function linkCases(
   );
 }
 
+/* The bulk delete: one call deletes the owner's named items with every entry that links
+   them, all or none; another account's item is left to its owner, and a repeat answers ok
+   (docs/decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md). */
+async function bulkDeleteCases(
+  owner: CloudPort,
+  other: CloudPort,
+  assert: Assert
+): Promise<void> {
+  const content: HomebrewContent = { kind: 'item', ru: 'Свиток' };
+  const make = async (port: CloudPort): Promise<{ id: string; key: string }> => {
+    const id = port.homebrew.newId();
+    const key = port.homebrew.newKey();
+    assert(
+      (await port.homebrew.createItem({ id, key, book_id: null, content })).ok,
+      'bulk delete: an item was refused'
+    );
+    return { id, key };
+  };
+  const rows = [await make(owner), await make(owner)];
+  const mine = rows.map((r) => r.id);
+  const theirs = (await make(other)).id;
+  const listId = owner.lists.newId();
+  const made = await owner.lists.apply([
+    {
+      op: 'create',
+      list: { id: listId, name: 'Удаление', money_mode: 'bag', player_note: '', gm_note: '' },
+      entries: rows.map((r, i) =>
+        entryOf(owner.lists.newId(), r.key, i, { source: 'homebrew', hb_item: r.id })
+      )
+    }
+  ]);
+  assert(answered(made) === 'ok', 'bulk delete: the list was refused: ' + answered(made));
+  assert(
+    (await owner.homebrew.removeItems([...mine, theirs])).ok,
+    'bulk delete: the call was refused'
+  );
+  const held = async (port: CloudPort): Promise<string[]> => {
+    const r = await port.homebrew.load();
+    assert(r.ok, 'bulk delete: load() failed');
+    return r.ok ? r.items.map((i) => i.id) : [];
+  };
+  assert(
+    !(await held(owner)).some((id) => mine.includes(id)),
+    "bulk delete: the owner's items are still there"
+  );
+  const list = await theList(owner, listId, assert, 'after the bulk delete');
+  assert(list?.list_entries.length === 0, 'bulk delete: an entry of a deleted item is left');
+  assert(
+    (await held(other)).includes(theirs),
+    "bulk delete: another account's item was deleted"
+  );
+  assert((await owner.homebrew.removeItems(mine)).ok, 'bulk delete: a repeat was refused');
+  assert(
+    answered(await owner.lists.apply([{ op: 'remove', id: listId }])) === 'ok',
+    'bulk delete: the list removal was refused'
+  );
+  assert(
+    (await other.homebrew.removeItem(theirs)).ok,
+    "bulk delete: the other's removal was refused"
+  );
+}
+
 /** How case Q reads a picture file's public address: its HTTP status. */
 export interface ArtProbe {
   status(name: string): Promise<number>;
@@ -2280,6 +2354,10 @@ export async function runCloudContract(
     await makeShared(),
     assert
   );
+
+  /* T. the bulk delete of own items, by the doomed user, with the member's item named too;
+     the case removes what it makes. */
+  await bulkDeleteCases(await makeShared(users.doomed), await makeShared(member.as), assert);
 
   /* S. print sets: the doomed user makes them, so its account deletion takes them and the
      member, kept across runs, gains no row toward its limit; the member reads them from the

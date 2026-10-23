@@ -25,7 +25,7 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
     StaticText "Обновлено 3 дня назад"
     button "Сохранить себе"
     ... StaticText x2 of 6 same-shape siblings elided
-    searchbox "Поиск по названию или описанию…" [value=кинжал focused=true]
+    searchbox "Поиск по названию или описанию..." [value=кинжал focused=true]
     button "Фильтры" [expanded=false]
     StaticText "10"
     checkbox "Выбрать все (1)" [checked=false]
@@ -86,7 +86,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     StaticText "Updated 3 days ago"
     button "Save to my lists"
     ... StaticText x2 of 6 same-shape siblings elided
-    searchbox "Search by name or description…" [value=кинжал focused=true]
+    searchbox "Search by name or description..." [value=кинжал focused=true]
     button "Filters" [expanded=false]
     StaticText "10"
     checkbox "Select all (1)" [checked=false]

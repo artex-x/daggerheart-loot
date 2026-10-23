@@ -37,7 +37,7 @@ import { isArtName, isOwnArt, newArtName, thumbOf } from '../lib/art.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { Lang } from '../lib/types.js';
 import { PRINT_SET_DAYS, PRINT_SET_ID, printEntriesValid } from '../lib/printSet.js';
-import type { NoticeRow, RequestLine, ShortLine } from '../lib/requests.js';
+import type { NoticeRow, RequestHead, RequestLine, ShortLine } from '../lib/requests.js';
 import {
   SEED,
   uuid,
@@ -107,10 +107,28 @@ export interface FakeCloudOptions {
    *  generated items of its first section take its sections round robin - the test
    *  build's `?sections=<n>`, a long section row. */
   fillSections?: number;
+  /** With `fillItems`: this many generated named sources (1-20) made after the user's own,
+   *  and the generated items with no source take them round robin - the test build's
+   *  `?sources=<n>`, a long source row. */
+  fillSources?: number;
   /** The signed-in user's stored preferences take this language, so a language run of
    *  the browser suites draws that language (the test build's `?lang=`). A user with no
    *  stored preferences keeps none. */
   lang?: Lang;
+  /** A read of this repository never answers (`stall`), or answers `{ ok: false }`
+   *  (`fail`): the requests' lines and the linked homebrew items. The test build's
+   *  `?hold=lines:fail`, a loading or failed state that a golden can capture. */
+  hold?: { lines?: HoldMode; items?: HoldMode };
+}
+
+/** How `FakeCloudOptions.hold` holds a read. */
+type HoldMode = 'stall' | 'fail';
+
+/* The answer of a held read, or null for a read that is not held. */
+function heldAnswer(mode: HoldMode | undefined): Promise<{ ok: false }> | null {
+  if (mode === 'stall') return new Promise(() => undefined);
+  if (mode === 'fail') return Promise.resolve({ ok: false });
+  return null;
 }
 
 /** The fake, plus the test build's switches and counters, which are not part of
@@ -251,9 +269,35 @@ const FILL_ART = ['ci1.webp', 'ci2.webp', 'w1.webp'];
    every third in its first source with no section, every third in that source's first
    section, the rest in «Хоумбрю». With `sections`, the first source gains «Раздел NN»
    after its own, and the items of its first section take the first section and the new
-   ones round robin. The texts hold no digit, so a digit query matches names only. */
-function fillHomebrew(h: HeldHomebrew, to: number, boot: number, sections = 0): void {
+   ones round robin. With `sources`, «Источник NN» are made after the user's own, and the
+   items that would go to «Хоумбрю» take them round robin. The texts hold no digit, so a
+   digit query matches names only. */
+function fillHomebrew(
+  h: HeldHomebrew,
+  to: number,
+  boot: number,
+  sections = 0,
+  sources = 0
+): void {
   const first = [...h.books].sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+  const madeSources = sources >= 1 && sources <= 20 ? sources : 0;
+  const newBooks = Array.from({ length: madeSources }, (_, i) => {
+    let tail = '';
+    for (let v = i, k = 0; k < 12; k++, v = Math.floor(v / 32))
+      tail = BASE32.charAt(v % 32) + tail;
+    const num = String(i + 1).padStart(2, '0');
+    const at = iso(boot - (madeSources - i) * 60_000);
+    return {
+      id: uuid(25000 + i),
+      key: 'hb_srcs' + tail,
+      content: { ru: 'Источник ' + num, en: 'Source ' + num },
+      revision: 1,
+      created_at: at,
+      updated_at: at
+    };
+  });
+  h.books.push(...newBooks);
+  let sourceTurn = 0;
   const made = first && sections >= 1 && sections <= 30 ? sections : 0;
   const added = Array.from({ length: made }, (_, i) => {
     let tail = '';
@@ -282,7 +326,12 @@ function fillHomebrew(h: HeldHomebrew, to: number, boot: number, sections = 0): 
     h.items.push({
       id: uuid(20000 + i),
       key: 'hb_fill' + tail,
-      book_id: place < 2 && first ? first.id : null,
+      book_id:
+        place < 2 && first
+          ? first.id
+          : newBooks.length
+            ? (newBooks[sourceTurn++ % newBooks.length]?.id ?? null)
+            : null,
       content: {
         kind: 'item',
         ru: 'Предмет ' + num,
@@ -522,7 +571,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
   );
   const filled = as === undefined ? undefined : homebrewHeld.get(as);
   if (options.fillItems !== undefined && filled) {
-    fillHomebrew(filled, options.fillItems, boot, options.fillSections);
+    fillHomebrew(filled, options.fillItems, boot, options.fillSections, options.fillSources);
   }
   /* A seeded homebrew entry with no item id links its owner's item of the key. */
   for (const [k, all] of lists) {
@@ -1168,6 +1217,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
        id that has an item once, in order. */
     items(ids) {
       if (offline || current === null) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.items);
+      if (held) return held;
       const items: LinkedRow[] = [];
       for (const hid of new Set(ids)) {
         const item = recordById(hid);
@@ -1467,39 +1518,41 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (now >= r.expiresAt) return { ok: false, error: 'expired' };
     return { r, h };
   };
+  const pendingMine = (): HeldRequest[] | null => {
+    const mine = offline ? null : own();
+    if (!mine) return null;
+    const ids = new Set(mine.map((h) => h.row.id));
+    return purchases.filter((r) => r.status === 'pending' && ids.has(r.listId));
+  };
+  const headOfHeld = (r: HeldRequest): RequestHead => ({
+    id: r.id,
+    listId: r.listId,
+    audience: r.audience,
+    createdAt: iso(r.createdAt),
+    expiresAt: iso(r.expiresAt),
+    readAt: r.readAt === null ? null : iso(r.readAt)
+  });
   const requestRepo: RequestRepository = {
-    /* With `held`, a held request answers in `kept` with no lines and the others come
-       whole; past 50 new ones every request comes whole, as the real port reads. */
-    list(held) {
-      const mine = offline ? null : own();
-      if (!mine) return Promise.resolve({ ok: false });
-      const ids = new Set(mine.map((h) => h.row.id));
-      const pending = purchases.filter((r) => r.status === 'pending' && ids.has(r.listId));
-      const whole = (rows: HeldRequest[]) =>
-        rows.map((r) => ({
-          id: r.id,
-          listId: r.listId,
-          audience: r.audience,
-          createdAt: iso(r.createdAt),
-          expiresAt: iso(r.expiresAt),
-          readAt: r.readAt === null ? null : iso(r.readAt),
-          lines: r.lines.map((l) => ({ ...l }))
-        }));
-      const holds = new Set(held);
-      const fresh = pending.filter((r) => !holds.has(r.id));
-      if (!holds.size || fresh.length > CHANGED_ROWS_MAX) {
-        return Promise.resolve({ ok: true, requests: whole(pending) });
-      }
+    /* Every pending head of the caller's lists, with no lines, as the real port reads. */
+    list() {
+      const pending = pendingMine();
+      if (!pending) return Promise.resolve({ ok: false });
+      return Promise.resolve({ ok: true, requests: pending.map(headOfHeld) });
+    },
+    /* The named pending requests of the caller's lists with copies of their lines, in id
+       order, as the real read orders them. */
+    lines(ids) {
+      const pending = pendingMine();
+      if (!pending) return Promise.resolve({ ok: false });
+      const held = heldAnswer(options.hold?.lines);
+      if (held) return held;
+      const named = new Set(ids);
       return Promise.resolve({
         ok: true,
-        requests: whole(fresh),
-        kept: pending
-          .filter((r) => holds.has(r.id))
-          .map((r) => ({
-            id: r.id,
-            expiresAt: iso(r.expiresAt),
-            readAt: r.readAt === null ? null : iso(r.readAt)
-          }))
+        requests: pending
+          .filter((r) => named.has(r.id))
+          .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+          .map((r) => ({ ...headOfHeld(r), lines: r.lines.map((l) => ({ ...l })) }))
       });
     },
     send(id, token, lines) {
@@ -1642,6 +1695,23 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         touch(h);
       }
     }
+  };
+  /* `delete_homebrew_items` and the table delete: the current user's items of `ids` go at
+     once, with the cascade and its notices; another account's id or an unknown id is left. */
+  const removeOwnItems = (ids: readonly string[]): Promise<ListWrite> => {
+    const mine = ownHomebrew();
+    if (!mine) return Promise.resolve(NETWORK);
+    const gone = mine.items.filter((x) => ids.includes(x.id));
+    if (!gone.length) return Promise.resolve(OK);
+    const goneIds = gone.map((i) => i.id);
+    noticeLinks(goneIds, 'deleted');
+    const was = before();
+    unlink(goneIds);
+    announce(was, TAB);
+    for (const i of gone) mine.items.splice(mine.items.indexOf(i), 1);
+    releaseArt(gone.map((i) => i.art));
+    homebrewSaid();
+    return Promise.resolve(OK);
   };
   const anyHolds = (pick: (h: HeldHomebrew) => { id: string }[], id: string): boolean =>
     [...homebrewHeld.values()].some((h) => pick(h).some((r) => r.id === id));
@@ -1808,21 +1878,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       homebrewSaid();
       return Promise.resolve({ ok: true, revision: i.revision });
     },
-    removeItem(id) {
-      const mine = ownHomebrew();
-      if (!mine) return Promise.resolve(NETWORK);
-      const at = mine.items.findIndex((x) => x.id === id);
-      const i = mine.items[at];
-      if (!i) return Promise.resolve(OK);
-      noticeLinks([i.id], 'deleted');
-      const was = before();
-      unlink([i.id]);
-      announce(was, TAB);
-      mine.items.splice(at, 1);
-      releaseArt([i.art]);
-      homebrewSaid();
-      return Promise.resolve(OK);
-    },
+    removeItem: (id) => removeOwnItems([id]),
+    removeItems: (ids) => (ids.length > 1000 ? Promise.resolve(REFUSED) : removeOwnItems(ids)),
     setArt(id, art, onlyIfNone): Promise<HomebrewSaved> {
       const mine = ownHomebrew();
       if (!mine) return Promise.resolve(NETWORK);
@@ -2294,8 +2351,10 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
 }
 
 /** Builds the port from `?as=<user>` (signed out without it), `?items=<n>` (1-1000,
- *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only) and
- *  `?lang=<ru|en>` (`lang`) and exposes it
+ *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only),
+ *  `?sources=<n>` (1-20, `fillSources`, with `items` only),
+ *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines` or `items`,
+ *  `stall` or `fail`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
@@ -2303,14 +2362,26 @@ export function installFakeCloud(search: string = window.location.search): FakeC
   const as = query.get('as') ?? undefined;
   const items = Number(query.get('items'));
   const sections = Number(query.get('sections'));
+  const sources = Number(query.get('sources'));
   const lang = query.get('lang');
+  const hold: NonNullable<FakeCloudOptions['hold']> = {};
+  for (const pair of (query.get('hold') ?? '').split(',')) {
+    const [name, mode] = pair.split(':');
+    if ((name === 'lines' || name === 'items') && (mode === 'stall' || mode === 'fail')) {
+      hold[name] = mode;
+    }
+  }
   const filling = Number.isInteger(items) && items >= 1 && items <= 1000;
   const port = fakeCloud(SEED, as, {
     ...(filling ? { fillItems: items } : {}),
     ...(filling && Number.isInteger(sections) && sections >= 1 && sections <= 30
       ? { fillSections: sections }
       : {}),
-    ...(lang === 'ru' || lang === 'en' ? { lang } : {})
+    ...(filling && Number.isInteger(sources) && sources >= 1 && sources <= 20
+      ? { fillSources: sources }
+      : {}),
+    ...(lang === 'ru' || lang === 'en' ? { lang } : {}),
+    ...(hold.lines || hold.items ? { hold } : {})
   });
   window.__dhlootFake = { marker: MARKER, ...port };
   return port;

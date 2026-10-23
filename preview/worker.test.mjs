@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { esc, fit } from '../tools/share-card.mjs';
+import { card, esc, fit } from '../tools/share-card.mjs';
 
 /* Required before the worker imports it: Node imports a .ts file of this typeless
    package with a MODULE_TYPELESS_PACKAGE_JSON warning and requires it silently
@@ -875,6 +875,26 @@ describe('fit', () => {
   it('cuts at a word boundary in the last 40 characters', () => {
     assert.equal(fit('alpha beta gamma delta', 18), 'alpha beta...');
     assert.equal(fit('short', 480), 'short');
+  });
+});
+
+describe('card', () => {
+  const ctx = (app) => ({
+    title: 'Name',
+    url: 'https://example.invalid/i/x.html',
+    app,
+    img: 'https://example.invalid/og/x.jpg',
+    desc: 'Text',
+    body: 'Text'
+  });
+  it('keeps the inline script closed when the address holds </script>', () => {
+    const html = card('en', ctx('../#/i/</script><b>x'));
+    assert.equal(html.split('</script>').length - 1, 1);
+    assert.ok(html.includes('location.replace("../#/i/\\u003c/script>\\u003cb>x");'));
+  });
+  it('writes an address with no < as before', () => {
+    const app = '../#/i/w1';
+    assert.ok(card('en', ctx(app)).includes('location.replace(' + JSON.stringify(app) + ');'));
   });
 });
 

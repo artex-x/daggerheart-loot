@@ -97,7 +97,9 @@
     if (r.refused) void load();
   }
 
+  /* A deleted link cannot be made again, so the delete asks first (rule 10). */
   function remove(audience: ShareAudience, id: string): void {
+    if (!app.env.dialog.confirm(app.t.shareDeleteConfirm)) return;
     void change(
       audience,
       async (repo) => {

@@ -9,8 +9,12 @@
   line and leaves the verdict PASS; the safety backup undoes it; a wrong
   ref, a missing or stale receipt and a failing load write nothing. main
   refuses without a terminal before it reads the key, and no error holds
-  the connection string. .claude/README.md, "Restore production (owner)".
+  the connection string. The nightly dump's flags and the safety backup
+  leave out the Auth session tables (DUMP_EXCLUDES): a restore of such a
+  backup signs the restored reader out and keeps a later reader's
+  sessions. .claude/README.md, "Restore production (owner)".
 */
+import { spawnSync } from 'node:child_process';
 import { after, before, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -20,12 +24,14 @@ import { fileURLToPath } from 'node:url';
 import { generateX25519Identity, identityToRecipient } from 'age-encryption';
 import { connect, rowCounts } from '../../tools/supabase/db.mjs';
 import {
+  DUMP_EXCLUDES,
   decryptAge,
   dumpRowCounts,
   localProjectId,
   pgEnvFromUrl,
   prodReport,
-  receiptFor
+  receiptFor,
+  supabaseCli
 } from '../../tools/supabase/lib.mjs';
 import {
   LIFECYCLE_JOB,
@@ -49,7 +55,10 @@ const MIGRATIONS_DIR = path.join(ROOT, 'supabase', 'migrations');
 const REF = 'fakeprodref';
 const HOST = 'restore-test-host';
 const TABLES = [
+  'auth.flow_state',
+  'auth.mfa_amr_claims',
   'auth.refresh_tokens',
+  'auth.sessions',
   'auth.users',
   'public.limit_defaults',
   'public.list_entries',
@@ -134,11 +143,14 @@ const jobActive = () =>
 
 const seed = () => withSql((sql) => sql.unsafe(read(FIXTURES, 'current.sql')));
 
-/* Row counts, emails, token ids, C's lists and the sequence. */
+/* Row counts, emails, session and token ids, C's lists and the sequence. */
 const snapshot = () =>
   withSql(async (sql) => ({
     counts: Object.fromEntries(await rowCounts(sql, TABLES)),
     emails: (await sql`select email from auth.users order by email`).map((r) => r.email),
+    sessions: (await sql`select id::text as id from auth.sessions order by id`).map(
+      (r) => r.id
+    ),
     tokens: (await sql`select id::int as id from auth.refresh_tokens order by id`).map(
       (r) => r.id
     ),
@@ -180,6 +192,60 @@ after(() => {
   if (!clean) assert.equal(resetLocal(), true, 'supabase db reset --local failed');
 });
 
+const SESSION_TABLES = DUMP_EXCLUDES.filter((n) => TABLES.includes(n));
+
+describe('the nightly data dump', () => {
+  it('leaves the Auth session tables and the token sequence out with the workflow flags', () => {
+    const workflow = readFileSync(
+      path.join(ROOT, '.github', 'workflows', 'backup.yml'),
+      'utf8'
+    );
+    const flags = [...workflow.matchAll(/--exclude (\S+)/g)];
+    assert.equal(flags.length, 1, 'backup.yml has one --exclude value');
+    const value = flags[0][1];
+    assert.equal(value, DUMP_EXCLUDES.join(','));
+    const r = spawnSync(
+      supabaseCli(),
+      ['db', 'dump', '--local', '--data-only', '--schema', 'auth,public', '--exclude', value],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 120000,
+        maxBuffer: 256 << 20
+      }
+    );
+    assert.equal(r.status, 0, `supabase db dump exited ${r.status}`);
+    const counts = dumpRowCounts(r.stdout);
+    assert.equal(counts.get('auth.users'), 2);
+    for (const name of DUMP_EXCLUDES) assert.equal(counts.has(name), false, name);
+    assert.equal(
+      r.stdout.includes('refresh_tokens_id_seq'),
+      false,
+      'the dump holds the sequence'
+    );
+  });
+
+  // The dump loads with session_replication_role = replica, so no foreign key
+  // refuses a kept row that names an excluded one: the list must be closed.
+  it('has no foreign key from a kept auth or public relation to an excluded one', async () => {
+    const rows = await withSql(
+      (sql) => sql`
+        select fn.nspname || '.' || f.relname as "from", tn.nspname || '.' || t.relname as "to"
+        from pg_constraint c
+        join pg_class f on f.oid = c.conrelid
+        join pg_namespace fn on fn.oid = f.relnamespace
+        join pg_class t on t.oid = c.confrelid
+        join pg_namespace tn on tn.oid = t.relnamespace
+        where c.contype = 'f' and fn.nspname in ('auth', 'public')`
+    );
+    const edges = rows
+      .filter((r) => !DUMP_EXCLUDES.includes(r.from) && DUMP_EXCLUDES.includes(r.to))
+      .map((r) => `${r.from} -> ${r.to}`);
+    assert.deepEqual(edges, [], `kept relations reference excluded ones: ${edges.join(', ')}`);
+  });
+});
+
 describe('restoreToTarget', () => {
   const backup = source('run 1', read(FIXTURES, 'data.sql'));
   let firstSafety;
@@ -196,8 +262,11 @@ describe('restoreToTarget', () => {
     const safety = await decryptDir(firstSafety);
     const safetyCounts = dumpRowCounts(safety.data);
     for (const name of TABLES) {
-      assert.equal(safetyCounts.get(name) ?? 0, seeded.counts[name], `safety ${name}`);
+      const want = SESSION_TABLES.includes(name) ? 0 : seeded.counts[name];
+      assert.equal(safetyCounts.get(name) ?? 0, want, `safety ${name}`);
     }
+    for (const name of SESSION_TABLES) assert.ok(seeded.counts[name] > 0, `seeded ${name}`);
+    assert.equal(safety.data.includes('refresh_tokens_id_seq'), false, 'safety sequence');
 
     const now = await snapshot();
     const dump = dumpRowCounts(backup.dataText);
@@ -226,6 +295,7 @@ describe('restoreToTarget', () => {
     assert.equal(now.listsOfC, 2);
     assert.deepEqual(now.emails, ['now-a@example.invalid', 'now-c@example.invalid']);
     assert.ok(now.seq >= 80, `refresh_tokens_id_seq is ${now.seq}`);
+    assert.deepEqual(now.sessions, []);
   });
 
   it('aborts on a wrong ref, writes nothing and keeps the safety backup', async () => {
@@ -367,6 +437,22 @@ SELECT pg_catalog.setval`
           where name in ('dhloot_api_url', 'dhloot_storage_key')`
       );
     }
+  });
+
+  it('restores a backup without the session tables: signs A out, keeps C signed in', async () => {
+    assert.equal(resetLocal(), true, 'supabase db reset --local failed');
+    await seed();
+    const noSessions = source('run 6', read(FIXTURES, 'data-no-sessions.sql'));
+    const { report } = await restore(noSessions, { receipts: [receiptOf(noSessions)] });
+    assert.equal(report.verdict, 'PASS', report.lines.join('\n'));
+    const now = await snapshot();
+    assert.deepEqual(now.emails, ['backup-a@example.invalid', 'now-c@example.invalid']);
+    assert.deepEqual(now.sessions, ['c3000000-0000-4000-8000-00000000000c']);
+    assert.deepEqual(now.tokens, [50]);
+    assert.equal(now.counts['auth.mfa_amr_claims'], 0);
+    assert.equal(now.counts['auth.flow_state'], 1);
+    assert.equal(now.seq, 80);
+    noFixtureValue(report.lines);
   });
 
   it('leaves no fixture row after the reset', async () => {

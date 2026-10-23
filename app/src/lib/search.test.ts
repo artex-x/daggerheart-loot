@@ -200,7 +200,7 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
        have to return exactly the same hits, or the cache would be a second,
        silently different search engine. These six queries are exactly the
        ones tests/app/inventory.js seeds into the search box across its
-       golden states (grep 'Поиск по названию или описанию…' there) - that
+       golden states (grep 'Поиск по названию или описанию...' there) - that
        provenance is load-bearing, not arbitrary: it is what pins this test's
        query list to the queries a real golden run actually exercises,
        instead of a set invented here and never checked against one.

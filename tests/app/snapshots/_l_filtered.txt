@@ -24,7 +24,7 @@ RootWebArea "Генератор лута Daggerheart" [url=#/l/0KHQutC70LDQtAo4L
     StaticText "Список от другого игрока · 8 позиций"
     button "Сохранить себе"
     StaticText "Ссылки вида #/l/ перестанут открываться 26 октября 2026 года. Со..." [namelen=107 namehash=f619a7e9]
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Фильтры (1)" [expanded=true]
     button "Оружие" [description=Убрать из фильтра]
     button "Сбросить всё"
@@ -128,7 +128,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLG
     StaticText "A list from another player · 8 items"
     button "Save to my lists"
     StaticText "Links like this one (#/l/) stop opening on 26 October 2026. Save..." [namelen=99 namehash=211a3cb8]
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Filters (1)" [expanded=true]
     button "Weapons" [description=Remove from the filter]
     button "Reset all"

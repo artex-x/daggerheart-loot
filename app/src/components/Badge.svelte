@@ -38,6 +38,8 @@
     background: var(--badge-bg);
     border: 1px solid var(--line2);
     color: var(--muted);
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   .badge.item {

@@ -30,18 +30,17 @@ const code = walk(DIST).filter(
 );
 
 /* Two limits by what was built: the configured build (`deploy`'s, and the
-   one `npm run e2e` leaves) adds the account client (auth-js, postgrest-js,
-   realtime-js and storage-js) as a chunk loaded after first paint - 306.0
-   kB in all, under 308 - while the unconfigured one `check:built`
-   measures, 248.1 kB, must stay under 250 (measured 2026-10-21, the first
-   on the six-tab header, the second with the homebrew-v2 export too; the
-   configured limit rose by the rule below, and the owner set the
-   unconfigured one at its ceiling on 2026-10-21, 1.9 kB of headroom). A batch raises a
-   passed budget to its size plus about 5 kB, never past 350 and 250 (decisions
-   "The bundle ceilings rise to 300 kB configured and 250 unconfigured" and
-   "The configured bundle ceiling rises to 350 kB"). */
+   one `npm run e2e` leaves) adds the account client (auth-js,
+   postgrest-js, realtime-js and storage-js) as a chunk loaded after first
+   paint - 310.6 kB in all, under 311 - while the unconfigured one
+   `check:built` measures, 252.6 kB, must stay under 253 (measured
+   2026-10-22: the homebrew pages' folds, focus and long names). A batch
+   whose total passes a budget raises it to its measured total rounded up
+   to the next whole kB, never past 350 configured and 270 unconfigured
+   (owner, 2026-10-22; decisions "The configured bundle ceiling rises to
+   350 kB" and "The unconfigured bundle ceiling rises to 270 kB"). */
 const withAccount = code.some((f) => /[\\/]assets[\\/]supabase-[^\\/]*\.js$/.test(f));
-const BUDGET_KB = withAccount ? 308 : 250; // gzip, code only
+const BUDGET_KB = withAccount ? 311 : 253; // gzip, code only
 const WHICH = withAccount ? 'with the account client chunk' : 'no account client chunk';
 
 let total = 0;

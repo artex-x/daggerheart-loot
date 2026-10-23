@@ -24,7 +24,7 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-3/f_
     StaticText "Список от другого игрока · 8 позиций"
     StaticText "Обновлено позавчера"
     button "Сохранить себе"
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Фильтры (1)" [expanded=true]
     button "Мастерская старого оружейника из долины туманов за перевалом у С..." [description=Убрать из фильтра namelen=80 namehash=9bd5cf26]
     button "Сбросить всё"
@@ -118,7 +118,7 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longso
     StaticText "A list from another player · 8 items"
     StaticText "Updated 2 days ago"
     button "Save to my lists"
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Filters (1)" [expanded=true]
     button "Workshop of the old armourer from the valley of mists past the N..." [description=Remove from the filter namelen=80 namehash=a1da31ad]
     button "Reset all"

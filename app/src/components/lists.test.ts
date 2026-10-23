@@ -103,7 +103,7 @@ describe('the row under a full card', () => {
     await openMenu();
 
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
-    expect(screen.getByRole('button', { name: '✓ Клад дракона' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
       'aria-expanded',
       'true'
@@ -127,7 +127,7 @@ describe('the row under a full card', () => {
     render(App, { env: at({ storage }) });
     await openMenu();
 
-    await userEvent.click(screen.getByRole('button', { name: '✓ Клад дракона' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
     expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
     expect(screen.getByText('Убрано из «Клад дракона»')).toBeInTheDocument();
     expect(readLists(storage)[0]?.ids).toEqual(['w1']);
@@ -262,7 +262,7 @@ describe('the row under a full card', () => {
       'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено'
     );
     // added for the session even though nothing persisted
-    expect(screen.getByRole('button', { name: '✓ Клад дракона' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
   });
 
   it('draws the same row inside the modal a table row opens', async () => {
@@ -312,8 +312,8 @@ describe('many lists in the menu', () => {
     });
     await openMenu();
     expect(chipNames(container)).toEqual([
-      '✓ Порт Ветров',
-      '✓ Сундук мага',
+      'Порт Ветров',
+      'Сундук мага',
       'Лавка в порту',
       'Храм Солнца',
       'Логово',
@@ -329,14 +329,14 @@ describe('many lists in the menu', () => {
     });
     await openMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Кузнец' }));
-    await userEvent.click(screen.getByRole('button', { name: '✓ Порт Ветров' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Порт Ветров' }));
     expect(chipNames(container)).toEqual([
       'Порт Ветров',
-      '✓ Сундук мага',
+      'Сундук мага',
       'Лавка в порту',
       'Храм Солнца',
       'Логово',
-      '✓ Кузнец',
+      'Кузнец',
       'Трофеи ёжа',
       'Рынок'
     ]);
@@ -344,8 +344,8 @@ describe('many lists in the menu', () => {
     await openMenu();
     await openMenu();
     expect(chipNames(container).slice(0, 3)).toEqual([
-      '✓ Кузнец',
-      '✓ Сундук мага',
+      'Кузнец',
+      'Сундук мага',
       'Лавка в порту'
     ]);
   });
@@ -388,7 +388,7 @@ describe('many lists in the menu', () => {
     expect(screen.getByRole('searchbox', { name: 'Найти список' })).toHaveValue('');
     expect(readLists(storage)[0]).toMatchObject({ name: 'Сундук', ids: ['ci1'] });
     // a list created while the menu is open joins the lists holding the record
-    expect(chipNames(container)[0]).toBe('✓ Сундук');
+    expect(chipNames(container)[0]).toBe('Сундук');
   });
 });
 
@@ -475,7 +475,7 @@ describe('with sign-in configured', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
-    expect(screen.getByRole('button', { name: '✓ Клад дракона' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
   });
 
   it('draws no new-list chip while the session is unknown', async () => {
@@ -496,11 +496,11 @@ describe('with sign-in configured', () => {
     await waitFor(() => {
       expect(router.hash()).toBe('#/i/ci1');
     });
-    await screen.findByRole('button', { name: '✓ Лавка кузнеца' });
+    await screen.findByRole('button', { name: 'Лавка кузнеца' });
     /* The browser lists moved into the account before the menu reopened. */
     expect(chipNames(container)).toEqual([
-      '✓ Лавка кузнеца',
-      '✓ Трофеи',
+      'Лавка кузнеца',
+      'Трофеи',
       'Лавка в порту',
       'Клад дракона',
       'Пустой список'
@@ -519,7 +519,7 @@ describe('with sign-in configured', () => {
     await waitFor(() => {
       expect(router.hash()).toBe('#/tables');
     });
-    expect(await screen.findByRole('button', { name: '✓ Трофеи' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Трофеи' })).toBeInTheDocument();
     const ticked = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     expect(ticked[0]).toBeChecked();
   });
@@ -537,7 +537,7 @@ describe('with sign-in configured', () => {
     await waitFor(() => {
       expect(router.hash()).toBe('#/i/ci1');
     });
-    expect(await screen.findByRole('button', { name: '✓ Трофеи' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Трофеи' })).toBeInTheDocument();
   });
 
   it('keeps the name typed in the search through the sign-in', async () => {
@@ -618,7 +618,7 @@ describe('with sign-in configured', () => {
     for (const [answer, text] of [
       [
         new Promise(() => undefined),
-        'Ваши предметы ещё загружаются - повторите через секунду.'
+        'Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.'
       ],
       [Promise.resolve({ ok: false }), 'Не получилось загрузить ваши предметы.']
     ] as const) {
@@ -697,11 +697,11 @@ describe('with sign-in configured', () => {
     await signedInAs('gm2');
     await openMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
-    await userEvent.click(screen.getByRole('button', { name: '✓ Список второго ГМа' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
     expect(screen.getByText('Убрано из «Список второго ГМа»')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     await openMenu();
-    expect(screen.getByRole('button', { name: '✓ Список второго ГМа' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Список второго ГМа' })).toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
@@ -712,5 +712,23 @@ describe('with sign-in configured', () => {
         'ci1'
       ]);
     });
+  });
+
+  it('says the limit for a new list at the limit and keeps the form', async () => {
+    const cloud = fakeCloud(SEED, 'gm2', { limits: { lists: 1 } });
+    const { container } = withCloud(cloud);
+    await signedInAs('gm2');
+    await openMenu();
+    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
+    const input = screen.getByPlaceholderText('Например: клад дракона');
+    await userEvent.type(input, 'Второй');
+    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
+    expect(
+      screen.getByText(
+        'Достигнут предел списков в аккаунте: 1. Нужно больше - напишите на daggerheart.loot@gmail.com.'
+      )
+    ).toBeInTheDocument();
+    expect(input).toHaveValue('Второй');
+    expect(chipNames(container)).not.toContain('Второй');
   });
 });

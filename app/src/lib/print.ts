@@ -43,6 +43,19 @@ export function previewScale(width: number, compact: boolean): number {
   return Math.floor((Math.min(width, PREVIEW_MAX_PX) / printed) * 100) / 100;
 }
 
+/** The A4 sheet's width in CSS px (210 mm at 96 px per inch). */
+export const SHEET_PX = (210 * 96) / 25.4;
+
+/**
+ * The screen scale of the print sheet: the column's width over the A4 width, cut to
+ * three decimals so the sheet never passes the column. 1 when the column holds the
+ * sheet, and before the column has a width.
+ */
+export function sheetScale(width: number): number {
+  if (!(width > 0) || width >= SHEET_PX) return 1;
+  return Math.floor((width / SHEET_PX) * 1000) / 1000;
+}
+
 /**
  * A vector's file name, off `cardArt` (app.js 3282-3291), for the pairs whose two files
  * differ in shape (`shield`, `burden-1`, `burden-2`): they stay two files drawn by `<img>`.

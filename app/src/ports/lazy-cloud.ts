@@ -127,11 +127,8 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     }
   };
   const requests: RequestRepository = {
-    list: async (held) => {
-      const p = await port();
-      if (!p) return UNREQUESTED;
-      return held === undefined ? p.requests.list() : p.requests.list(held);
-    },
+    list: async () => (await port())?.requests.list() ?? UNREQUESTED,
+    lines: async (ids) => (await port())?.requests.lines(ids) ?? NO_ITEMS,
     send: async (id, token, lines) => (await port())?.requests.send(id, token, lines) ?? UNSENT,
     apply: async (id, clamp) => (await port())?.requests.apply(id, clamp) ?? UNSENT,
     decline: async (id) => (await port())?.requests.decline(id) ?? UNSENT,
@@ -165,6 +162,7 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
     uploadArt: async (name, blob) => (await port())?.homebrew.uploadArt(name, blob) ?? UNSENT,
     copyArt: async (img) => (await port())?.homebrew.copyArt(img) ?? { ok: false },
     removeItem: async (id) => (await port())?.homebrew.removeItem(id) ?? UNSENT,
+    removeItems: async (ids) => (await port())?.homebrew.removeItems(ids) ?? UNSENT,
     createCard: async (row) => (await port())?.homebrew.createCard(row) ?? UNSENT,
     updateCard: async (id, patch, revision) =>
       (await port())?.homebrew.updateCard(id, patch, revision) ?? UNSENT,

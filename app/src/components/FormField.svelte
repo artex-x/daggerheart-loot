@@ -75,8 +75,10 @@
 </div>
 
 <style>
+  /* minmax(0, 1fr): a select's long option never widens the field (rule 16). */
   .fld {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--gap-sm);
     min-width: 0;
   }

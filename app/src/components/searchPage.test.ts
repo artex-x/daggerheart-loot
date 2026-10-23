@@ -99,7 +99,7 @@ const at = (over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter('#/search'), data: fakeData(LOOT), ...over });
 
 const type = (text: string): Promise<void> =>
-  userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию…'), text);
+  userEvent.type(screen.getByPlaceholderText('Поиск по названию или описанию...'), text);
 
 /** Every row's own tick checkbox, in document order - P2 named each one
  *  after its own record instead of the generic "Выбрано", so the group is
@@ -116,7 +116,7 @@ describe('arrival', () => {
     expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Открывать этот раздел/ })).toBeInTheDocument();
 
-    const box = screen.getByPlaceholderText('Поиск по названию или описанию…');
+    const box = screen.getByPlaceholderText('Поиск по названию или описанию...');
     expect(box).toHaveFocus();
 
     expect(
@@ -229,7 +229,7 @@ describe('the cap', () => {
       env: fakeEnv({ router: memoryRouter('#/search'), data: fakeData(many) })
     });
     /* One input event avoids re-rendering 305 rows once per character. */
-    const box = screen.getByPlaceholderText('Поиск по названию или описанию…');
+    const box = screen.getByPlaceholderText('Поиск по названию или описанию...');
     await fireEvent.input(box, { target: { value: 'Много' } });
     await tick();
     const shown = container.querySelectorAll<HTMLElement>('[data-row]');
@@ -335,7 +335,7 @@ describe('no data', () => {
     render(App, { env: fakeEnv({ router: memoryRouter('#/search'), data: noData() }) });
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
     expect(
-      screen.queryByPlaceholderText('Поиск по названию или описанию…')
+      screen.queryByPlaceholderText('Поиск по названию или описанию...')
     ).not.toBeInTheDocument();
   });
 });
@@ -346,7 +346,7 @@ describe('English', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
     expect(screen.getByText(/Search all 1459 entries at once/)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Search by name or description…')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search by name or description...')).toBeInTheDocument();
     expect(
       screen.getByText(
         'Start typing. Several words match in any order; "a phrase in quotes" matches exactly.'
@@ -355,10 +355,16 @@ describe('English', () => {
     for (const label of ['Items', 'Consumables', 'Equipment']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
-    await userEvent.type(screen.getByPlaceholderText('Search by name or description…'), 'Wind');
+    await userEvent.type(
+      screen.getByPlaceholderText('Search by name or description...'),
+      'Wind'
+    );
     expect(screen.getByRole('checkbox', { name: 'Select all (2)' })).toBeInTheDocument();
-    await userEvent.clear(screen.getByPlaceholderText('Search by name or description…'));
-    await userEvent.type(screen.getByPlaceholderText('Search by name or description…'), 'zzz');
+    await userEvent.clear(screen.getByPlaceholderText('Search by name or description...'));
+    await userEvent.type(
+      screen.getByPlaceholderText('Search by name or description...'),
+      'zzz'
+    );
     expect(screen.getByText('Nothing found')).toBeInTheDocument();
   });
 });

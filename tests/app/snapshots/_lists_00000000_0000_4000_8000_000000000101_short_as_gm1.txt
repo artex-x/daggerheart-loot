@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Лавка кузнеца - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -21,9 +21,10 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/li
       link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Лавка кузнеца"
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "10 позиций из 100 · "
-    StaticText "Сохранено"
+    ... StaticText x33 of 37 same-shape siblings elided
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
     button "Скачать JSON"
@@ -36,7 +37,7 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/li
       ... StaticText x15 of 19 same-shape siblings elided
       alert ""
         StaticText "Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не сп..." [namelen=70 namehash=bd763527]
-      button "Принять доступное"
+      button "Принять доступное" [focused=true]
       button "Отклонить"
       StaticText "Итого: "
       StaticText "210 зол."
@@ -44,7 +45,6 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm1#/li
       button "Отклонить"
     status ""
       StaticText "Новый запрос"
-    ... StaticText x32 of 36 same-shape siblings elided
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -226,7 +226,7 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
+RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -243,9 +243,10 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
+    StaticText "Лавка кузнеца"
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
     StaticText "10 items of 100 · "
-    StaticText "Saved"
+    ... StaticText x33 of 37 same-shape siblings elided
     button "Share" [expanded=false]
     button "Copy text"
     button "Download JSON"
@@ -258,7 +259,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       ... StaticText x15 of 19 same-shape siblings elided
       alert ""
         StaticText "Not enough: Stride Potion - asked 9, have 5. Nothing was taken."
-      button "Apply what is there"
+      button "Apply what is there" [focused=true]
       button "Decline"
       StaticText "Total: "
       StaticText "210 gp"
@@ -266,7 +267,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm1#/lists/00000000-
       button "Decline"
     status ""
       StaticText "New request"
-    ... StaticText x32 of 36 same-shape siblings elided
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]

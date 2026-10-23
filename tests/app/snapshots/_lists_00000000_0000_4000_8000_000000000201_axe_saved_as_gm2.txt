@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+RootWebArea "Список второго ГМа - Генератор лута Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
   link "К содержимому" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -21,9 +21,10 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/li
       link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
+    StaticText "Список второго ГМа"
     textbox "Название списка" [value=Список второго ГМа multiline=false readonly=false required=false]
     StaticText "2 позиции из 100 · "
-    StaticText "Сохранено"
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Поделиться" [expanded=false]
     button "Скопировать текст"
     button "Скачать JSON"
@@ -43,7 +44,6 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/li
     DisclosureTriangle "ЗАМЕТКИ" [expanded=false]
     DisclosureTriangle "БРОСОК ПО СПИСКУ" [expanded=false]
     checkbox "Выбрать все" [checked=false]
-    ... StaticText x3 of 7 same-shape siblings elided
     generic ""
     checkbox "Скипетр" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
@@ -128,7 +128,7 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
   link "Skip to content" [url=index.html?as=gm2#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
@@ -145,9 +145,10 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
       link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
   main ""
+    StaticText "Список второго ГМа"
     textbox "List name" [value=Список второго ГМа multiline=false readonly=false required=false]
     StaticText "2 items of 100 · "
-    StaticText "Saved"
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Share" [expanded=false]
     button "Copy text"
     button "Download JSON"
@@ -167,7 +168,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-
     DisclosureTriangle "NOTES" [expanded=false]
     DisclosureTriangle "ROLL ON THIS LIST" [expanded=false]
     checkbox "Select all" [checked=false]
-    ... StaticText x3 of 7 same-shape siblings elided
     generic ""
     checkbox "Scepter" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]

@@ -32,7 +32,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     link "Прочее" [url=#/tables/other_starting]
     link "Стартовые" [url=#/tables/other_starting]
     link "Сеттинги" [url=#/tables/other_frames]
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
@@ -169,7 +169,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/other_starting]
     link "Other" [url=#/tables/other_starting]
     link "Starting" [url=#/tables/other_starting]
     link "Frames" [url=#/tables/other_frames]
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]

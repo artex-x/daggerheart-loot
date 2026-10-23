@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { connect, ownedSequences, publicTables, rowCounts, setCronJobActive } from './db.mjs';
 import {
   DOCKER_PS_TIMEOUT_MS,
+  DUMP_EXCLUDES,
   LOCAL_STACK_EXCLUDES,
   cliShapedDataDump,
   dumpPublicTables,
@@ -404,7 +405,8 @@ export function scrubbed(text) {
 
 /** Dumps the database that `pgEnv` names with `pg_dump` inside `container`
  * into memory: `{ schemaText, dataText }`, the `public` schema and the
- * `auth` and `public` rows in the CLI's data dump shape, so a safety backup
+ * `auth` rows without `DUMP_EXCLUDES` and the `public` rows in the CLI's
+ * data dump shape, so a safety backup
  * restores through the same path as a nightly one. Throws with the first
  * line of pg_dump's error output, any connection string removed. */
 export function dumpDatabase({ container, pgEnv }) {
@@ -432,7 +434,8 @@ export function dumpDatabase({ container, pgEnv }) {
     '--schema',
     'public',
     '--exclude-table',
-    'auth.schema_migrations'
+    'auth.schema_migrations',
+    ...DUMP_EXCLUDES.flatMap((name) => ['--exclude-table', name])
   ]);
   const schemaText = run([
     '--schema-only',

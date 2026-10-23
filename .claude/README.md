@@ -617,9 +617,9 @@ whose command sets either.
   the test project. Before a local one, run `gh run list --workflow ci.yml
   --status in_progress --json databaseId,headBranch` once; for a listed run,
   wait with one background `gh run watch <id> --exit-status`.
-- Closeout: merge `origin/main` into the task branch if `main` moved (never
-  a rebase of pushed commits), push, credit; then in the main checkout `git
-  pull`, `git merge --squash <branch>`, `node
+- Every branch merges the latest `origin/main` before each push, never a
+  rebase (owner, 2026-10-22). Closeout: push, credit; then in the main
+  checkout `git pull`, `git merge --squash <branch>`, `node
   E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>` (the
   squash put the script in the main checkout's working tree), commit, push
   `main` (rule 2x checks the key), and delete the remote task branch after
@@ -777,12 +777,12 @@ untyped ESLint half use their own caches.
 - No second canonical form circulates: exactly one check-invocation string
   is quoted everywhere in this repository's own guidance, and a `git grep`
   over `.claude CLAUDE.md docs` is the standing enforcement.
-- A hex `.check-cache.json` tree-key literal is never quoted in a task
-  document as itself - abstract it to a placeholder (`<key-A>`..); `.gitleaks
-  .toml`'s allowlist stays untouched. The owner's standing answer after
-  `secrets` flagged `generic-api-key` on a quoted key: a cache key is data
-  that looks like a secret to a scanner, so it is written as a placeholder,
-  not exempted.
+- A secret-shaped literal never sits under a key-like name or in a task
+  document as itself: a `.check-cache.json` tree key there becomes a
+  placeholder (`<key-A>`..), and a test names a base32 alphabet `BASE32`, never `KEYS`.
+  `secrets` (`generic-api-key`; gitleaks 8.24.3 scans the commit diff, a
+  local 8.30.1 file scan missed the second, 2026-10-23) flagged both; the
+  owner's standing answer: a placeholder, never a `.gitleaks.toml` entry.
 - Do not cap `maxForks` or set `isolate: false` to survive a loaded host:
   capping doubles the check's cost on every healthy run, and `isolate: false`
   trades away the jsdom isolation the component suite rests on.
@@ -1921,6 +1921,11 @@ CLI facts (2.117.0, measured 2026-09-24):
   (`@supabase/cli-windows-x64`, `@supabase/cli-linux-x64`); the tools run
   `node node_modules/supabase/dist/supabase.js`, the pinned version, with no
   shell and no `npx` lookup.
+- 2.117.0's `db dump` takes `--exclude`/`-x` (schema.name, for a data-only
+  dump; a comma list or a repeated flag), and `--dry-run` shows one
+  `pg_dump --exclude-table` per name (2026-10-22). The package has no
+  install script: its binary is the optional package
+  `@supabase/cli-<platform>-<arch>`.
 - `db dump --data-only` leaves out the platform schemas, `auth` included,
   unless `--schema auth,public` is passed; with it the CLI runs `pg_dump
   --data-only --schema "auth|public"` without `auth.schema_migrations`, and
@@ -1954,15 +1959,15 @@ CLI facts (2.117.0, measured 2026-09-24):
 - `supabase start -x` with every service but the database and `gotrue`
   (so without `kong`) brings Auth up healthy, and `db reset --local`
   restarts it (2026-09-26).
-- `supabase status -o json` names `ANON_KEY`, `PUBLISHABLE_KEY`,
-  `JWT_SECRET` (HS256, a fixed local value), `SECRET_KEY` and
-  `SERVICE_ROLE_KEY` only while Auth runs; with `gotrue` excluded it names
-  `API_URL` and `DB_URL` alone (2026-09-27). The second answer applies to
-  a stack started without Auth, for example by a checkout older than the
-  current `LOCAL_STACK_EXCLUDES` after a run with it. The Realtime suite
-  needs the anon key and the secret, so the `check:db` stack and the
-  drill's stack are the same: the database, Auth, Realtime, Storage (since
-  R8) and Kong (`LOCAL_STACK_EXCLUDES`).
+- `supabase status -o json` names `ANON_KEY`, `PUBLISHABLE_KEY`, `JWT_SECRET`
+  (HS256, a fixed local value), `SECRET_KEY` and `SERVICE_ROLE_KEY` only while
+  Auth runs, else `API_URL` and `DB_URL` alone (2026-09-27); with Storage up
+  it prints the local S3 key pair too (2026-10-22): read keys in a script.
+  The `check:db` and drill stacks (Realtime needs the anon key and secret):
+  the database, Auth, Realtime, Storage and Kong; a configured build against
+  it also needs `postgrest`, which `LOCAL_STACK_EXCLUDES` leaves out. After a
+  Rancher restart `supabase start` hung past 180 s with every container
+  healthy (2026-10-22); stopping the CLI by hand kept the stack up.
 - With Realtime running, `db reset --local` applies a migration that makes
   a policy on `realtime.messages`, and restarts the realtime container
   itself; Realtime makes the day partitions of `realtime.messages` when it
@@ -2112,20 +2117,19 @@ The history rows that `migrate-test` writes hold a version and a name and
 no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
-**Expected Security Advisor warnings.** Measured 2026-10-21 on both projects
-(production and test), the Security Advisor reports 0 errors, 26 warnings
-and 5 info; `supabase/migrations/` at `eb899604` derives the same counts. A
+**Expected Security Advisor warnings.** Derived from `supabase/migrations/`
+at the commit that adds `20261022120000_shared_list_rev_and_bulk_delete.sql`:
+the Security Advisor reports 0 errors, 25 warnings and 5 info. A
 SECURITY DEFINER function whose latest grant gives `execute` to
 `authenticated` is one warning, and `anon` is a second warning on the same
-function. 20 functions are such definers (20 warnings), and 5 of them are
+function. 19 functions are such definers (19 warnings), and 5 of them are
 also executable by `anon` (5 more); the reasons below:
 
 | Function | `anon` | Reason |
 |---|---|---|
 | `delete_account()`, `delete_account_requests()` | no | Delete the caller's `auth.users` row, and before it the purchase requests on the caller's lists 200 a call; the user is always `auth.uid()`. |
-| `reorder_list` | no | Rewrites every position of the caller's list in one statement; it checks the owner itself. |
 | `create_list_share`, `revoke_list_share` | no | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
-| `get_shared_list(text)` | yes | Returns the projection to whoever holds the token, never the table; `anon` reads the shared page. |
+| `get_shared_list(text, bigint, jsonb)` | yes | Builds the projection for whoever holds the token, never the table, and reads `list_shares` and `lists`, which `anon` cannot; `anon` reads the shared page. |
 | `clone_shared_list` | no | Copies a list that the caller reaches only through the token. |
 | `move_legacy_list` | no | Moves a browser list whole, past the count limits (`docs/specs/DEBT.md` D62). |
 | `create_purchase_request` | yes | A share link's holder sends a request signed out; `purchase_requests` has no insert grant. |
@@ -2133,7 +2137,7 @@ also executable by `anon` (5 more); the reasons below:
 | `my_limit` | no | Shows the account its own effective limit; the limit tables have no Data API grant. |
 | `mark_list_read` | no | Sets read times with the database clock and caps a request's expiry; `list_notices` and `purchase_requests` are read-only to the user. |
 | `get_homebrew_item` | yes | Returns one item to whoever holds its random id, without the owner or another uuid, never the table. |
-| `get_homebrew_items` | no | Reads the linked items of the caller's lists, which belong to other owners. |
+| `get_homebrew_items` | no | Reads up to 1000 items of any owner by id for a signed-in caller, as `get_homebrew_item` reads one; row level security shows the caller only its own items. |
 | `homebrew_art_room` | no | Counts the caller's files in `storage.objects`, which the user cannot read. |
 | `create_print_set`, `get_print_set` | no | `print_sets` has no Data API grant; the functions store and read a sheet and move `opened_at`. |
 | `get_item_preview`, `get_shared_list_preview` | yes | The link-card Worker reads the card of an item or share link by its id or token, signed out, and never the table. |
@@ -2142,7 +2146,8 @@ A definer that is a trigger function,
 or that is revoked from `public`, `anon` and `authenticated`, adds no
 warning (the count and limit triggers, the broadcast triggers,
 `effective_limit`, `homebrew_links_touch`), and every `security invoker`
-function adds none. The 26th warning is
+function adds none (`reorder_list`, the two older `get_shared_list` forms and
+`delete_homebrew_items` among them). The 25th warning is
 leaked password protection, which is off because there is no password
 sign-in (Google and Discord only). The five info are "RLS enabled, no
 policy" for `homebrew_art_released`, `limit_defaults`, `print_sets`,
@@ -2200,7 +2205,13 @@ string lives in an Environment limited to `main`"), read only by the jobs
 that declare it - `ci.yml`'s `migrate-prod`, `backup.yml`'s `dump` and
 `usage.yml`'s `report`. `SUPABASE_USAGE_TOKEN_PROD` is a secret of the same
 Environment, read only by `usage.yml`'s `report` ("Usage monitoring").
-`tests/derived.js` pins both secrets over every workflow file. A workflow
+`tests/derived.js` pins both secrets over every workflow file. The three
+jobs that read the `production` Environment install with `npm ci
+--ignore-scripts` and pin each action by its full commit sha, the major tag
+as a comment (`# v5`); `tests/derived.js` holds both rules for every job
+that declares `environment: production`. Move the pins in the commit that
+moves the other jobs' major tags: `gh api repos/<owner>/<repo>/commits/<tag>
+--jq .sha`. A workflow
 edited on another branch cannot read them. To create the Environment, or to rotate the string, the owner
 follows the four steps below, in order.
 
@@ -2252,11 +2263,14 @@ the database's part. `docs/DECISIONS.md`, 2026-09-30, "The list_entries
 touch and limit triggers run once per statement".
 
 **The configured bundle budget.** `tools/bundle-budget.mjs` has two limits:
-250 kB for the unconfigured build and 308 kB for the configured one, which
-carries the account client chunk. The owner set the unconfigured budget at its
-250 kB ceiling on 2026-10-21 (248.1 kB measured, 1.9 kB of headroom), not at the
-measured size plus 5 kB. `npm run check:built` builds `dist/`
-unconfigured and so measures only the 250 kB limit. The 308 kB limit runs in
+253 kB for the unconfigured build and 311 kB for the configured one, which
+carries the account client chunk. A batch whose total passes a budget raises
+it to the measured total rounded up to the next whole kB (a printed 250.3
+gives 251; the tool compares the unrounded total, so a printed whole number
+such as 251.0 can pass 251: add 1 kB), never past 350 kB configured and 270 kB
+unconfigured (owner, 2026-10-22: "we can increase it up to 270
+defensively"). `npm run check:built` builds `dist/`
+unconfigured and so measures only the 253 kB limit. The 311 kB limit runs in
 CI's `e2e` job, after `npm run e2e` leaves the configured build in `dist/`,
 and in `deploy`. The lists release passed `check:built` locally and failed
 this step in CI (run 36228323330). A batch that adds code to the app or to
@@ -2268,8 +2282,15 @@ drops every `E2E_*` name, the secret key included, before the build:
 node --env-file=.env.test.local --input-type=module -e "import { buildEnv } from './tests/e2e/lib.mjs'; import { spawnSync } from 'node:child_process'; process.exit(spawnSync('npm run build && npm run budget', { shell: true, stdio: 'inherit', env: buildEnv(process.env) }).status ?? 1);"
 ```
 
-Expected: `within the 308 kB budget (with the account client chunk)`; 306.0 kB
-on 2026-10-21 at `debt-cleanup` (the folded print vectors, the Items tab's
+Expected: `within the 311 kB budget (with the account client chunk)`; 310.6 kB
+on 2026-10-22 at `persist-review` (the homebrew pages' folds, focus and long
+names, five new strings and four changed in two languages), 252.6 kB
+unconfigured, from 308.5 and 250.7 before it; 308.5 kB the same day (the print
+sheet's screen scale and two print headings), 250.7 kB unconfigured; 308.1 kB the same day (the requests
+panel's load line, the
+unknown list row, the index's save status, five strings in two languages),
+250.3 kB unconfigured, from 307.0 and 249.0 before it; 306.0 kB on 2026-10-21
+at `debt-cleanup` (the folded print vectors, the Items tab's
 filter, the status regions, the page help, the six-tab header), 248.0 kB
 unconfigured; 296.8 kB on 2026-10-16 at `debt-cleanup` (the account client from
 four packages, 4.0 kB under 300.8 kB before it), 239.1 kB unconfigured; 299.4 kB
@@ -2298,14 +2319,13 @@ homebrew in the catalog pages, 165.9 kB unconfigured; 220.8 kB on 2026-09-30
 with the homebrew pages, 203.0 kB before them, after the import and export and
 the requests polish; 184.5 kB on 2026-09-27 with the Realtime client, 178.2 kB
 on 2026-09-26). `dist/` stays configured until `npm run build` or `check:built`
-rebuilds it. During R7-R7d a batch whose build passes a limit raises it to the
-measured size plus about 5 kB in the same commit, never past 350 kB configured
-(owner, 2026-10-14) and 250 kB unconfigured, and past a ceiling it stops and
-asks the owner. Decisions: "The configured bundle budget is 210 kB; the
-unconfigured stays 150 kB", amended by "The bundle budget steps up per batch to
-250 kB configured and 190 unconfigured", amended by "The bundle ceilings rise to
-300 kB configured and 250 unconfigured", amended by "The configured bundle
-ceiling rises to 350 kB".
+rebuilds it. A batch raises a passed budget in the same commit by the rule
+above, and past a ceiling it stops and asks the owner. Decisions: "The
+configured bundle budget is 210 kB; the unconfigured stays 150 kB", amended by
+"The bundle budget steps up per batch to 250 kB configured and 190
+unconfigured", amended by "The bundle ceilings rise to 300 kB configured and
+250 unconfigured", amended by "The configured bundle ceiling rises to 350 kB",
+amended by "The unconfigured bundle ceiling rises to 270 kB".
 
 Branch migrations on the test project: `migrate-test` runs on every
 branch's `e2e`, so a migration that a branch pushed is in the test project
@@ -2423,8 +2443,9 @@ The local probe (2026-10-14, CLI 2.117.0):
 ### Backups and restore
 
 `.github/workflows/backup.yml` dumps production every night at 03:17 UTC
-and on dispatch: `schema.sql` and `data.sql` (the `auth` and `public` rows),
-each encrypted to the owner's `age` public key (the Actions variable
+and on dispatch: `schema.sql` and `data.sql` (the `auth` and `public` rows
+without the Auth session tables and the token sequence: `DUMP_EXCLUDES` in
+`tools/supabase/lib.mjs`), each encrypted to the owner's `age` public key (the Actions variable
 `BACKUP_AGE_RECIPIENT`) and kept as the artifact `backup-<date>` for 30
 days. The private key lives in the git-ignored `.env.restore.local` at the
 main checkout's root, as `BACKUP_AGE_IDENTITY`, so that an agent can run the
@@ -2471,6 +2492,25 @@ Expected: the restored items draw their pictures. A restored file has no
 naming it, but no other item can newly name it. A new project needs the
 two Vault secrets of "Supabase configuration" before its first picture
 write.
+
+**A restore signs readers out.** The nightly dump and the safety backup of
+`restore:prod` leave out `auth.sessions`, `auth.refresh_tokens`,
+`auth.mfa_amr_claims`, `auth.flow_state`, `auth.saml_relay_states` and the
+sequence `auth.refresh_tokens_id_seq` (`docs/decisions/`, 2026-10-22, "The
+nightly backup leaves out the Auth sessions"). The restore deletes each user
+the backup holds by key, whose sessions, refresh tokens and MFA claims go by
+cascade, and loads none back, so each restored reader signs in again once on
+each device. A restore of a backup that holds the session tables also signs
+out nearly every reader active since the night: with rotation on and a
+3600 s `jwt_expiry`, a device that refreshed once after the backup holds a
+token that the restore deletes. A reader created after the backup keeps its
+sessions. An app open during the
+restore keeps its access token up to 3600 s, and it reads and writes the
+restored rows until its next refresh. The undo signs out every reader that
+production held at the restore. An artifact made before `backup.yml` took
+`--exclude` holds the tables until it expires (30 days) and restores as
+before; its rows line shows 0 now for the session tables, because the safety
+backup leaves them out.
 
 **Remove a reported picture.** In the SQL editor, `update
 public.homebrew_items set art = null where art = '<the p/ name>'`.
@@ -2531,7 +2571,9 @@ agent included: `npm run restore:drill` ("Run the agent drill" below).
    public.limit_defaults` (it cascades to `user_limit_overrides`), because
    the dump's `limit_defaults` rows collide with the test project's; then
    the same `psql` command with the `SUPABASE_DB_URL_TEST` connection
-   string (the session pooler, port 5432). Expected: exit 0.
+   string (the session pooler, port 5432). Expected: exit 0. A backup made
+   with `--exclude` puts no production session in the test project; an older
+   one does until it expires.
 5. Clean the test project: `delete from auth.users where id in (...)` with
    the user ids the dump holds; their `user_prefs` rows cascade. The E2E's
    member is not in a production dump. Expected: the E2E runs green again.
@@ -2548,9 +2590,11 @@ agent included: `npm run restore:drill` ("Run the agent drill" below).
    '"auth"."refresh_tokens_id_seq"'::text AS seq, last_value FROM
    "auth"."refresh_tokens_id_seq";`; `TRUNCATE TABLE` of every `public`
    table `CASCADE`; `DELETE FROM "auth"."<t>" WHERE "id" IN (...)` with
-   the ids the dump holds, children first - `flow_state`, `identities`,
-   `mfa_amr_claims`, `refresh_tokens`, `sessions`, `users`; the file
-   `data.sql`; then `SELECT pg_catalog.setval('"auth"."refresh_tokens_id_seq"',
+   the ids the dump holds, children first - `identities`, `users` for a
+   backup without the session tables; `flow_state`, `identities`,
+   `mfa_amr_claims`, `refresh_tokens`, `sessions`, `users` for an older one;
+   the file `data.sql`; then, when the dump holds `refresh_tokens`, `SELECT
+   pg_catalog.setval('"auth"."refresh_tokens_id_seq"',
    GREATEST(COALESCE((SELECT max("id") FROM "auth"."refresh_tokens"), 1),
    (SELECT last_value FROM pg_temp.restore_seq_before)), true);`. A user
    created after the backup keeps the `auth` rows and loses the `public`
@@ -3107,7 +3151,7 @@ Owner setup, in order, after R11 is on `main`:
    production project. Expected: the dispatch day is not visibly above the
    days around it. If it is more than 1 GB above them, delete the secret
    `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
-8. Re-run the Security Advisor on production. Expected: 0 errors, 26
+8. Re-run the Security Advisor on production. Expected: 0 errors, 25
    warnings, 5 info ("Expected Security Advisor warnings").
 9. After seven nights, open the latest summary. Expected: a forecast on the
    Database row.
@@ -3290,9 +3334,9 @@ the branch's last CI run is green; (b) `git checkout main && git pull`;
 (c) `git merge --squash claude/<name>`, then `git commit -F <the closeout
 commit message>` - the author comes from `.claude/settings.json`, and a
 tooling commit the branch carries rides in the squash; the release is one
-commit, never a merge commit, and a rebase is the fallback if the squash
-refuses; (d) push `main`, which runs `deploy`, and
-watch that run; (e) delete the task branch.
+commit, never a merge commit; if the squash refuses, merge the latest
+`origin/main` into the branch (never a rebase), push it, and restart at
+(a); (d) push `main`, which runs `deploy`, and watch it; (e) delete the branch.
 
 ## Artwork tooling
 

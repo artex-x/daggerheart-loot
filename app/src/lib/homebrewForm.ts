@@ -507,11 +507,18 @@ export function cardOption(
   };
 }
 
+/** Returns whether either language of the name holds the folded query `q`, as search folds
+ *  it. */
+export function namesMatch(
+  v: { en?: string | undefined; ru?: string | undefined },
+  q: string
+): boolean {
+  return [v.en, v.ru].some((s) => !!s && foldQuery(s).includes(q));
+}
+
 /** Returns whether a card's name or subtitle, in either language, holds `q` (folded). */
 export function cardMatches(card: CardContent, q: string): boolean {
-  return [card.en, card.ru, card.ensub, card.rusub].some(
-    (v) => !!v && foldQuery(v).includes(q)
-  );
+  return namesMatch(card, q) || namesMatch({ en: card.ensub, ru: card.rusub }, q);
 }
 
 /* Here, not in homebrew.ts: homebrew.ts stays clear of search.ts, whose stemmers the

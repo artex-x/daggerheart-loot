@@ -7,7 +7,7 @@ import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import type { HomebrewRead, HomebrewRepository, HomebrewSaved } from '../ports/index.js';
-import { Homebrew } from './homebrew.svelte.js';
+import { DELETE_CHUNK, Homebrew } from './homebrew.svelte.js';
 
 const ALDER = uuid(501);
 const AXE = 'hb_emberaxeaaaaaaaa';
@@ -436,23 +436,89 @@ describe('items', () => {
     expect(refreshLists).toHaveBeenCalledOnce();
   });
 
-  it('removes several items and stops at the first failure', async () => {
-    const { store, refreshLists } = await loaded();
+  it('removes several items in one request, and none after a failure', async () => {
+    const calls: (readonly string[])[] = [];
+    const { store, refreshLists } = make('gm1', (cloud) => ({
+      ...cloud.homebrew,
+      removeItems: (ids) => {
+        calls.push(ids);
+        return cloud.homebrew.removeItems(ids);
+      }
+    }));
+    await store.load();
     const rows = [store.item(RING)!, store.item(AXE)!];
-    expect(await store.removeItems(rows)).toEqual({ ok: true });
+    expect(await store.removeItems(rows)).toEqual({ result: { ok: true }, deleted: 2 });
+    expect(calls).toEqual([rows.map((r) => r.id)]);
     expect(store.items).toHaveLength(2);
     expect(refreshLists).toHaveBeenCalledOnce();
     const failed = make('gm1', (cloud) => ({
       ...cloud.homebrew,
-      removeItem: () => Promise.resolve({ ok: false, error: 'network' })
+      removeItems: () => Promise.resolve({ ok: false, error: 'network' })
     }));
     await failed.store.load();
-    expect(await failed.store.removeItems([failed.store.item(RING)!])).toEqual({
-      ok: false,
-      error: 'network'
+    const both = [failed.store.item(RING)!, failed.store.item(AXE)!];
+    expect(await failed.store.removeItems(both)).toEqual({
+      result: { ok: false, error: 'network' },
+      deleted: 0
     });
     expect(failed.store.has(RING)).toBe(true);
+    expect(failed.store.has(AXE)).toBe(true);
+    expect(failed.store.items).toHaveLength(4);
     expect(failed.refreshLists).not.toHaveBeenCalled();
+  });
+
+  it('removes 120 items in ceil(120 / 50) requests of at most 50 ids, in order', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { fillItems: 120 });
+    const calls: (readonly string[])[] = [];
+    const refreshLists = vi.fn(() => Promise.resolve());
+    const store = new Homebrew(
+      {
+        ...cloud.homebrew,
+        removeItems: (ids) => {
+          calls.push(ids);
+          return cloud.homebrew.removeItems(ids);
+        }
+      },
+      { tab: () => cloud.events.tab, refreshLists }
+    );
+    await store.load();
+    const rows = [...store.items];
+    expect(rows).toHaveLength(120);
+    expect(await store.removeItems(rows)).toEqual({ result: { ok: true }, deleted: 120 });
+    expect(calls.map((c) => c.length)).toEqual([DELETE_CHUNK, DELETE_CHUNK, 20]);
+    expect(calls.flat()).toEqual(rows.map((r) => r.id));
+    expect(store.items).toEqual([]);
+    expect(refreshLists).toHaveBeenCalledOnce();
+  });
+
+  it('stops at a failed request: the earlier requests stay deleted, the rest stay', async () => {
+    const cloud = fakeCloud(SEED, 'gm1', { fillItems: 120 });
+    let call = 0;
+    const store = new Homebrew(
+      {
+        ...cloud.homebrew,
+        removeItems: (ids) =>
+          ++call === 2
+            ? Promise.resolve({ ok: false, error: 'network' })
+            : cloud.homebrew.removeItems(ids)
+      },
+      { tab: () => cloud.events.tab, refreshLists: () => Promise.resolve() }
+    );
+    await store.load();
+    const rows = [...store.items];
+    expect(await store.removeItems(rows)).toEqual({
+      result: { ok: false, error: 'network' },
+      deleted: DELETE_CHUNK
+    });
+    expect(call).toBe(2);
+    expect(store.items.map((r) => r.id)).toEqual(rows.slice(DELETE_CHUNK).map((r) => r.id));
+    const db = await cloud.homebrew.load();
+    expect(db.ok && db.items).toHaveLength(120 - DELETE_CHUNK);
+    expect(await store.removeItems(store.items)).toEqual({
+      result: { ok: true },
+      deleted: 120 - DELETE_CHUNK
+    });
+    expect(store.items).toEqual([]);
   });
 
   it('a create whose answer was lost and that is sent again makes one row', async () => {
@@ -900,14 +966,15 @@ describe('the re-read by revision', () => {
     expect(store.item(AXE)).toBe(held);
   });
 
-  it('drops an older read that answers after a newer one', async () => {
+  it('reads once more for a read asked for during a read, and draws the last answer', async () => {
     const { cloud, store } = await loaded();
     const stale = await cloud.homebrew.load();
     const ring = store.item(RING);
     if (!stale.ok || !ring) throw new Error('the seed read failed');
     let release: (() => void) | null = null;
     const real = cloud.homebrew.load.bind(cloud.homebrew);
-    vi.spyOn(cloud.homebrew, 'load')
+    const load = vi
+      .spyOn(cloud.homebrew, 'load')
       .mockImplementationOnce(
         () =>
           new Promise((resolve) => {
@@ -919,11 +986,95 @@ describe('the re-read by revision', () => {
       .mockImplementation(real);
     const older = store.read();
     expect((await cloud.as('gm1').homebrew.removeItem(ring.id)).ok).toBe(true);
-    await store.read();
-    expect(store.has(RING)).toBe(false);
+    const newer = store.read();
     (release as (() => void) | null)?.();
-    expect(await older).toBe(true);
+    expect(await Promise.all([older, newer])).toEqual([true, true]);
+    expect(load).toHaveBeenCalledTimes(2);
     expect(store.has(RING)).toBe(false);
+  });
+
+  it('makes a read asked for in any step as the running read ends, never joining one that ended', async () => {
+    for (let steps = 0; steps < 40; steps++) {
+      const { cloud, store } = await loaded();
+      const load = vi.spyOn(cloud.homebrew, 'load');
+      const first = store.read();
+      let wait: Promise<void> = Promise.resolve();
+      for (let i = 0; i < steps; i++) wait = wait.then(() => undefined);
+      const second = wait.then(() => store.read());
+      expect(await Promise.all([first, second])).toEqual([true, true]);
+      expect(load.mock.calls.length, `a read asked for after ${String(steps)} steps`).toBe(2);
+    }
+  });
+
+  it('makes two loads, not three, for two reads asked for during the first load', async () => {
+    const { cloud, store } = make();
+    const load = vi.spyOn(cloud.homebrew, 'load');
+    const first = store.load();
+    const second = store.read();
+    const third = store.read();
+    expect(await Promise.all([first, second, third])).toEqual([undefined, true, true]);
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(store.status).toBe('ready');
+  });
+
+  it('a read after a clear runs on its own, and the stale read leaves it running', async () => {
+    const { cloud, store } = make();
+    let release: (() => void) | null = null;
+    const real = cloud.homebrew.load.bind(cloud.homebrew);
+    const load = vi
+      .spyOn(cloud.homebrew, 'load')
+      .mockImplementationOnce(real)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            release = () => {
+              void real().then(resolve);
+            };
+          })
+      )
+      .mockImplementation(real);
+    const stale = store.read();
+    store.clear();
+    const fresh = store.read();
+    expect(await stale).toBe(false);
+    expect(store.read()).toBe(fresh);
+    (release as (() => void) | null)?.();
+    expect(await fresh).toBe(true);
+    expect(load).toHaveBeenCalledTimes(3);
+  });
+
+  it('a read dropped for an edit still applies its limits', async () => {
+    let hold: ((r: HomebrewRead) => void) | null = null;
+    const { store } = make('gm1', (cloud) => ({
+      ...cloud.homebrew,
+      load: async (known) => {
+        if (hold === null) {
+          return new Promise<HomebrewRead>((resolve) => {
+            hold = resolve;
+          });
+        }
+        /* As the real port's re-read: no limit read. */
+        const r = await cloud.homebrew.load(known);
+        return r.ok
+          ? { ...r, itemLimit: undefined, bookLimit: undefined, cardLimit: undefined }
+          : r;
+      }
+    }));
+    const reading = store.load();
+    const made = await store.createItem(store.newIds(), null, { kind: 'item', ru: 'Новое' });
+    expect(made).toEqual({ ok: true });
+    (hold as unknown as (r: HomebrewRead) => void)({
+      ok: true,
+      books: [],
+      items: [],
+      cards: [],
+      itemLimit: 7,
+      bookLimit: 8,
+      cardLimit: 9
+    });
+    await reading;
+    expect(store.items).toHaveLength(5);
+    expect([store.itemLimit, store.bookLimit, store.cardLimit]).toEqual([7, 8, 9]);
   });
 
   it("reads a row written here whole at the next read, with the database's times", async () => {

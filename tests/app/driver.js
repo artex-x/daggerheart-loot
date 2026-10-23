@@ -189,10 +189,15 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * pinned before the cutoff (`ports/clock.ts`). `holdToasts` opens with
      * `?toasts=held`: a toast stays until the next one replaces it. `items`
      * opens with `?items=<n>`: the fake fills the signed-in user's homebrew to
-     * n items and sets the item limit to n (`fillItems`). `lang` opens with
-     * `?lang=<ru|en>`: a signed-in user's stored preferences take that language.
+     * n items and sets the item limit to n (`fillItems`); `sections` and
+     * `sources` open with `?sections=<n>` and `?sources=<n>` (with `items`
+     * only): a long section row and n more named sources (`fillSections`,
+     * `fillSources`). `lang` opens with `?lang=<ru|en>`: a signed-in user's
+     * stored preferences take that language. `hold` opens with
+     * `?hold=<name>:<mode>`: the fake's lines or linked items read never
+     * answers (`stall`) or fails (`fail`), so a loading or failed state holds.
      */
-    async open(route, { as, today, holdToasts, items, sections, lang } = {}) {
+    async open(route, { as, today, holdToasts, items, sections, sources, lang, hold } = {}) {
       const query = new URLSearchParams();
       if (as) query.set('as', as);
       if (lang) query.set('lang', lang);
@@ -200,6 +205,8 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       if (holdToasts) query.set('toasts', 'held');
       if (items) query.set('items', String(items));
       if (sections) query.set('sections', String(sections));
+      if (sources) query.set('sources', String(sources));
+      if (hold) query.set('hold', hold);
       const qs = query.toString();
       const search = qs ? '?' + qs : '';
       try {

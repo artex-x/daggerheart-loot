@@ -1238,6 +1238,59 @@ describe('the fit is wired', () => {
     }
   });
 
+  it('writes the same sizes when the sheet is drawn at half size', async () => {
+    /* The half-size run reads every Range rect at half its layout size, as a browser
+       does under the sheet's screen transform; the fit divides the scale out. A value
+       300 px wide passes the 238 px cell at full size and fits it at half size. Both
+       runs fit again after a layout switch, once the scale is known. */
+    const run = async (k: number): Promise<string[]> => {
+      const restore = fakeLayout(
+        () => 50,
+        0,
+        (v) => {
+          const one = v.style.whiteSpace === 'nowrap';
+          const size = parseFloat(v.style.fontSize || '3');
+          const rects =
+            v.textContent === 'Вплотную'
+              ? [{ width: one && size > 2.8 ? 300 : 100, top: 0 }]
+              : v.textContent === 'Сила'
+                ? one
+                  ? [{ width: 300, top: 0 }]
+                  : [
+                      { width: 100, top: 0 },
+                      { width: 100, top: 20 }
+                    ]
+                : null;
+          return rects?.map((r) => ({ width: r.width * k, top: r.top * k })) ?? null;
+        },
+        k === 1 ? 0 : 397
+      );
+      try {
+        const { unmount } = render(App, { env: await atSet('q8b3') });
+        await opened();
+        if (k !== 1) {
+          await waitFor(() => {
+            expect(document.querySelector('.pfit')).toHaveClass('scaled');
+          });
+        }
+        await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
+        await userEvent.click(screen.getByRole('button', { name: 'Цветная' }));
+        const card = document.querySelector('.pcard[data-pid="q8b3"]');
+        const styles = [card, ...(card?.querySelectorAll('*') ?? [])].map(
+          (e) => e?.getAttribute('style') ?? ''
+        );
+        unmount();
+        return styles;
+      } finally {
+        restore();
+      }
+    };
+    const full = await run(1);
+    const half = await run(0.5);
+    expect(half).toEqual(full);
+    expect(full.some((s) => s.includes('font-size'))).toBe(true);
+  });
+
   it('steps back below the first size that spills', async () => {
     /* Tight above 4.04cqw: 4.0 measures 100, 4.1 measures 102. */
     const restore = fakeLayout(
@@ -1413,11 +1466,12 @@ describe('the clip warning', () => {
 });
 
 describe('no data', () => {
-  it('says the data did not load, and nothing else', async () => {
+  it('says the data did not load under the heading, and nothing else', async () => {
     render(App, { env: await atSet('ci1', { data: noData() }) });
     expect(
       await screen.findByText('Данные не загрузились. Обновите страницу.')
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Печать карточек');
     expect(document.querySelector('.psheet')).toBeNull();
     expect(document.querySelector('.printbar')).toBeNull();
   });
@@ -1488,6 +1542,20 @@ describe('the states of #/p/', () => {
       expect(read).not.toHaveBeenCalled();
       unmount();
     }
+  });
+
+  it('draws the heading alone while the session is unknown', async () => {
+    const cloud = fakeCloud(SEED, 'gm2');
+    cloud.auth.session = () => new Promise(() => undefined);
+    render(App, { env: at('#/p/set-twocards', { cloud }) });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Печать карточек' })
+    ).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(document.querySelector('main .page-sub')).toBeNull();
+    expect(document.querySelector('.printbar')).toBeNull();
+    expect(screen.queryByText(ru.cloudLoading)).toBeNull();
+    expect(document.querySelector('.psheet')).toBeNull();
   });
 
   it('asks a signed-out reader to sign in, and «Войти» opens the account page', async () => {
@@ -1625,6 +1693,82 @@ describe('axe', () => {
 
     const retired = render(App, { env: at('#/print/ci1-q1') });
     await expectNoA11yViolations(retired.container);
+    retired.unmount();
+
+    const cloud = fakeCloud(SEED, 'gm2');
+    cloud.auth.session = () => new Promise(() => undefined);
+    const unknown = render(App, { env: at('#/p/set-twocards', { cloud }) });
+    await screen.findByRole('heading', { level: 1, name: 'Печать карточек' });
+    await expectNoA11yViolations(unknown.container);
+    unknown.unmount();
+
+    const none = render(App, { env: await atSet('ci1', { data: noData() }) });
+    await screen.findByText(ru.noData);
+    await expectNoA11yViolations(none.container);
+  });
+});
+
+describe('the sheet on a narrow screen', () => {
+  const sheetOf = (): HTMLElement | null => document.querySelector<HTMLElement>('.pfit');
+
+  it('scales the sheet to a column narrower than A4, by the count of sheets', async () => {
+    const restore = fakeLayout(() => 0, 0, undefined, 397);
+    try {
+      render(App, { env: await atSet('ci1-q1') });
+      await opened();
+      await waitFor(() => {
+        expect(sheetOf()).toHaveClass('scaled');
+      });
+      expect(sheetOf()?.style.getPropertyValue('--pfit')).toBe('0.5');
+      expect(sheetOf()?.style.getPropertyValue('--pfit-n')).toBe('1');
+      expect(sheetOf()?.querySelector(':scope > .pfit-in > .psheet')).not.toBeNull();
+    } finally {
+      restore();
+    }
+  });
+
+  it('counts two sheets for eighteen places', async () => {
+    const TEN: Loot = {
+      items: {
+        core_item: Array.from({ length: 10 }, (_, i) =>
+          row({
+            id: `m${String(i + 1)}`,
+            en: `Multi ${String(i + 1)}`,
+            ru: `Штука ${String(i + 1)}`
+          })
+        )
+      },
+      eq: [],
+      refs: {}
+    };
+    const ids = Array.from({ length: 10 }, (_, i) => `m${String(i + 1)}`).join('-');
+    const restore = fakeLayout(() => 0, 0, undefined, 397);
+    try {
+      render(App, { env: await atSet(ids, { data: fakeData(TEN) }) });
+      await opened();
+      await waitFor(() => {
+        expect(sheetOf()?.style.getPropertyValue('--pfit-n')).toBe('2');
+      });
+    } finally {
+      restore();
+    }
+  });
+
+  it('draws the sheet at its size when the column holds it, or has no width yet', async () => {
+    for (const width of [0, 800]) {
+      const restore = fakeLayout(() => 0, 0, undefined, width);
+      try {
+        const { unmount } = render(App, { env: await atSet('ci1-q1') });
+        await opened();
+        await tick();
+        expect(sheetOf(), String(width)).not.toHaveClass('scaled');
+        expect(sheetOf()?.style.getPropertyValue('--pfit'), String(width)).toBe('');
+        expect(sheetOf()?.style.getPropertyValue('--pfit-n'), String(width)).toBe('');
+        unmount();
+      } finally {
+        restore();
+      }
+    }
   });
 });
 

@@ -67,6 +67,18 @@ async function either(d, how, ru, en) {
  *  it by its text, as a screen reader does. */
 const pressPrint = (d) => either(d, 'click', 'Печать', 'Print');
 
+/** Makes gm4's set named by one unbroken 80-character word in its 80-character source, in
+ *  the page's language, and waits for its toast. */
+async function longSet(d) {
+  const ru = (await d.text()).includes('Новый комплект');
+  await d.click(ru ? 'Новый комплект' : 'New set');
+  await d.type(ru ? 'Название комплекта*' : 'Set name*', 'Ж'.repeat(80));
+  await d.type(ru ? 'Бонус комплекта*' : 'Set bonus*', 'Бонус.');
+  await d.choose('#hb-card-new-set-book', '00000000-0000-4000-8000-000000000451');
+  await d.click(ru ? 'Создать комплект' : 'Create set');
+  for (let i = 0; i < 40 && !/Комплект «Ж|Set "Ж/.test(await d.text()); i++) await d.settle();
+}
+
 /** Waits until a `#/p/` page has left its loading line: its sheet, or its sub. */
 async function printed(d) {
   for (let i = 0; i < 200; i++) {
@@ -140,13 +152,17 @@ const PAGES = [
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
     ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
   ])
-  /* The print page's states and the three print prompts, signed out at every width. */
+  /* The print page's states, three drawn sheets and the three print prompts, at every
+     width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */
   .concat([
     ['#/p/set-twocards', 'печать: вход', undefined, printed],
     ['#/p/bad', 'печать: ошибка в адресе', undefined, printed],
     ['#/print/ci1-q1', 'печать: старая ссылка'],
     ['#/p/set-expired1', 'печать: набор не найден', 'gm2', printed],
     ['#/p/set-allgone1', 'печать: предметы удалены', 'gm2', printed],
+    ['#/p/set-twocards', 'печать: два предмета', 'gm2', printed],
+    ['#/p/set-missing1', 'печать: удалённый предмет', 'gm2', printed],
+    ['#/p/set-clipped1', 'печать: текст не помещается', 'gm2', printed],
     ['#/i/ci1', 'печать без входа: карточка', undefined, pressPrint],
     [
       '#/tables/core_item',
@@ -276,6 +292,16 @@ const PAGES = [
       'gm1',
       (d) => either(d, 'click', 'Как это работает', 'How this works')
     ],
+    /* Rule 16 at 360 on the homebrew pages: an 80-character source and an unbroken set
+       name. */
+    ['#/homebrew/hb_longsrcaaaaaaaaa', 'редактор: длинное название источника', 'gm4'],
+    ['#/homebrew', 'мои предметы: длинное название источника', 'gm4'],
+    [
+      '#/h/00000000-0000-4000-8000-000000000461',
+      'чужой предмет в источнике с длинным названием'
+    ],
+    ['#/homebrew/sets', 'комплект с длинным названием', 'gm4', longSet],
+    ['#/tables/homebrew', 'источники свёрнуты', 'gm1', undefined, { items: 66, sources: 14 }],
     ['#/i/ci1', 'карточка со своими улучшениями', 'gm3'],
     ['#/i/q1', 'лестница рангов со своими ступенями', 'gm3'],
     ['#/i/voa4_t3d', 'комплект со своими предметами', 'gm3'],
@@ -285,16 +311,6 @@ const PAGES = [
     ['#/h/00000000-0000-4000-8000-000000000615', 'чужой предмет с длинным названием', 'gm2'],
     ['#/lists/00000000-0000-4000-8000-000000000201', 'список с изменениями', 'gm2']
   ]);
-
-/* An A4 sheet legitimately scrolls sideways in a 360px window - the overflow
- * check would be reading the medium, not a defect - so a drawn sheet is checked
- * at 1180 only. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`)
- * read as gm2. */
-const PRINT_ONLY_1180 = [
-  ['#/p/set-twocards', 'печать: два предмета', 'gm2', printed],
-  ['#/p/set-missing1', 'печать: удалённый предмет', 'gm2', printed],
-  ['#/p/set-clipped1', 'печать: текст не помещается', 'gm2', printed]
-];
 
 /* The list seed both audit2 and this sweep have always used, plus a second
  * list so #/lists/b is a real page rather than a repeat of #/lists/nope. */
@@ -495,7 +511,7 @@ async function landedUnderHeader(page, id) {
         if (m.type() === 'error') errs.push('console: ' + m.text());
       });
 
-      const pages = width === 1180 ? PAGES.concat(PRINT_ONLY_1180) : PAGES;
+      const pages = PAGES;
       for (const [hash, label, as, enter, seed] of pages) {
         const asked = hash.replace('%%SHARED%%', shared);
         const where = label + ' @' + width + ' ' + lang;

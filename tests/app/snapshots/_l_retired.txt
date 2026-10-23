@@ -22,7 +22,7 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?today=2026
   main ""
     heading "Ссылки такого вида перестали открываться 26 октября 2026 года." [level=1]
     StaticText "Попросите у отправителя новую ссылку или войдите, чтобы собрать ..." [namelen=71 namehash=fba757b3]
-    link "Списки" [url=index.html?today=2026-10-26#/lists]
+    link "Мои списки" [url=index.html?today=2026-10-26#/lists]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -40,9 +40,9 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
+Мои списки
 Обычные правила
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -66,7 +66,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/l/0Jv
   main ""
     heading "Links of this kind stopped opening on 26 October 2026." [level=1]
     StaticText "Ask the sender for a new link, or sign in to build a list."
-    link "Lists" [url=index.html?today=2026-10-26#/lists]
+    link "My lists" [url=index.html?today=2026-10-26#/lists]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -78,7 +78,7 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/l/0Jv
 Alt. tables
 EN
 Install as an app
-Lists
+My lists
 Privacy
 RU
 Search

@@ -106,10 +106,10 @@ const PRINT_CARD_STATES = [
 ];
 
 /* style.css's own breakpoints, the same three widths `tests/parity/specs.js`
- * swept every state at - not because the print card's own size depends on
- * the viewport (it does not: 63x88 mm is absolute), but because its
- * container query makes its size the one thing worth re-checking at every
- * width regardless (`tests/app/driver.js`, `eachAt`'s own doc comment). */
+ * swept every state at. The card's layout size never depends on the viewport
+ * (63x88 mm is absolute); its screen size does below about 840 px, where the
+ * sheet is drawn at its screen scale (FEATURES.md, "Print"), and `cardFit`
+ * checks that the fit it writes does not. */
 const WIDTHS = [
   { w: 1100, h: 900 },
   { w: 768, h: 900 },
@@ -1708,6 +1708,103 @@ const { ok } = rep;
     );
   }
 
+  /* ---------- the sheet fits a phone window ----------
+     Below about 840 px the screen draws each sheet scaled to the column by a
+     transform, so nothing scrolls sideways; at 1180 the sheet is the paper
+     size with no transform (FEATURES.md, "Print"). */
+  console.log('the sheet fits a phone window');
+  const PHONE_STATES = [
+    { route: TEN, label: 'TEN', sheets: 2 },
+    { route: TEN, compact: true, label: 'TEN ~ compact', sheets: 1 }
+  ];
+  try {
+    for (const [w, h] of [
+      [360, 800],
+      [768, 900]
+    ]) {
+      await d.viewport(w, h);
+      for (const s of PHONE_STATES) {
+        await openAs(d, s.route, false, s.compact, bw, compact);
+        const tag = s.label + ' @ ' + w + ': ';
+        const m = await page.evaluate((mm) => {
+          const main = document.querySelector('main');
+          const cs = getComputedStyle(main);
+          const fit = document.querySelector('.pfit');
+          const inner = document.querySelector('.pfit-in');
+          const sheet = document.querySelector('.psheet').getBoundingClientRect();
+          const footer = document.querySelector('footer');
+          /* A missing wrapper reads as a failed check below, not a thrown error. */
+          const k = fit ? parseFloat(fit.style.getPropertyValue('--pfit')) : NaN;
+          return {
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+            scaled: !!fit && fit.classList.contains('scaled'),
+            column: main.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight),
+            sheetW: sheet.width,
+            sheetH: sheet.height,
+            transform: inner ? getComputedStyle(inner).transform : null,
+            k,
+            fitH: fit ? fit.getBoundingClientRect().height : 0,
+            n: document.querySelectorAll('.psheet').length,
+            gap:
+              footer && fit
+                ? footer.getBoundingClientRect().top - fit.getBoundingClientRect().bottom
+                : null,
+            unit: (297 * mm + 18) * k
+          };
+        }, MM);
+        /* The sweep's measure: the stable scrollbar gutter reads below 0. */
+        ok(m.scroll <= 0, tag + 'the page scrolls sideways by ' + m.scroll + ' px');
+        ok(m.scaled, tag + 'the sheet is not scaled');
+        ok(
+          m.sheetW <= m.column + 0.01 && m.column - m.sheetW < 1,
+          tag + 'the sheet is ' + m.sheetW.toFixed(2) + ' px in a ' + m.column + ' px column'
+        );
+        ok(
+          Math.abs(m.sheetH / m.sheetW - 297 / 210) < 0.002,
+          tag + 'the sheet lost the A4 ratio: ' + (m.sheetH / m.sheetW).toFixed(4)
+        );
+        ok(
+          m.transform === 'matrix(' + m.k + ', 0, 0, ' + m.k + ', 0, 0)',
+          tag + 'the transform is not the scale ' + m.k + ': ' + m.transform
+        );
+        ok(m.n === s.sheets, tag + 'sheets are not ' + s.sheets + ': ' + m.n);
+        ok(
+          Math.abs(m.fitH - m.n * m.unit) < 1,
+          tag +
+            'the wrapper is ' +
+            m.fitH.toFixed(1) +
+            ' px tall, not ' +
+            (m.n * m.unit).toFixed(1)
+        );
+        ok(
+          m.gap !== null && m.gap >= 0 && m.gap < 80,
+          tag + 'the footer does not follow the sheets: ' + m.gap
+        );
+      }
+    }
+    await d.viewport(1180, 950);
+    await openAs(d, TEN, false, false, bw, compact);
+    const wide = await page.evaluate(() => {
+      const r = document.querySelector('.psheet').getBoundingClientRect();
+      return {
+        scaled: !!document.querySelector('.pfit.scaled'),
+        transform: document.querySelector('.pfit-in')
+          ? getComputedStyle(document.querySelector('.pfit-in')).transform
+          : null,
+        w: r.width,
+        h: r.height
+      };
+    });
+    ok(!wide.scaled, 'TEN @ 1180: the sheet is scaled');
+    ok(wide.transform === 'none', 'TEN @ 1180: the sheet has a transform: ' + wide.transform);
+    ok(
+      Math.abs(wide.w - 210 * MM) < 0.5 && Math.abs(wide.h - 297 * MM) < 0.5,
+      'TEN @ 1180: the sheet is not 210x297 mm: ' + wide.w + 'x' + wide.h
+    );
+  } finally {
+    await d.viewport(1180, 950);
+  }
+
   /* ---------- small fields readable on paper ----------
      Every view, both languages, on the routes with the longest strip values
      and the artifact weapon. The floors and the named shortfalls are in
@@ -2073,10 +2170,9 @@ const { ok } = rep;
 
   /* ---------- the fit, as the numbers it wrote (`cardFit`) ----------
      What `fitPrintCards` actually wrote onto each card - the only instrument
-     that reads the *decision*, not its pixel consequence. Per width, unlike
-     the legacy suite's single 1180: the card's own container query makes its
-     size worth re-checking at every width even though the card is a fixed
-     63 mm regardless of the viewport around it. `.pc-art` renders only in
+     that reads the *decision*, not its pixel consequence. The fit's written
+     numbers are the same at every width, under the sheet's screen scale too:
+     each state's values at 768 and 375 must equal its values at 1100. `.pc-art` renders only in
      colour (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
      black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
      than both landing on `printed`.
@@ -2088,7 +2184,17 @@ const { ok } = rep;
      counts and the print-media rules are arithmetic and CSS, neither of
      which depends on text length in either language. */
   console.log('card fit, in numbers');
+  /* Every inline value the fit writes, by selector. */
+  const FIT_READS = [
+    ['.pcard:not(.blank) .pc-text', ['font-size']],
+    ['.pcard:not(.blank) .pc-content', ['--pcpad']],
+    ['.pc-art', ['height', '--artw', 'display']],
+    ['.pc-strip .pc-box b', ['font-size', 'line-height', 'white-space']],
+    ['.pc-strip', ['height']],
+    ['.pc-strip .pc-c1.wbonus .pc-box small', ['font-size']]
+  ];
   async function cardFit(d2, bwFn, colourFn, compactFn, langTag) {
+    const first = new Map();
     for (const width of WIDTHS) {
       await d2.viewport(width.w, width.h);
       for (const s of PRINT_CARD_STATES) {
@@ -2163,6 +2269,34 @@ const { ok } = rep;
           );
         } else {
           ok(head.length === 0, tag + 'colour mode grew a pc-head: ' + head.length);
+        }
+
+        const written = [];
+        for (const [sel, keys] of FIT_READS) {
+          const vals = (await d2.eachAt(sel, keys)).map((e) =>
+            keys.map((k) => e.style[k]).join('|')
+          );
+          written.push({ sel, vals });
+        }
+        if (width === WIDTHS[0]) {
+          first.set(s.label, written);
+        } else {
+          for (const [i, { sel, vals }] of written.entries()) {
+            const base = first.get(s.label)?.[i]?.vals ?? [];
+            const at = vals.findIndex((v, j) => v !== base[j]);
+            const diff = vals.length !== base.length ? Math.min(vals.length, base.length) : at;
+            ok(
+              diff === -1,
+              tag +
+                sel +
+                ' differs from 1100 at index ' +
+                diff +
+                ': ' +
+                vals[diff] +
+                ' against ' +
+                base[diff]
+            );
+          }
         }
       }
     }
@@ -2376,6 +2510,86 @@ const { ok } = rep;
     } finally {
       await d.media(undefined);
     }
+  }
+
+  /* The printed sheet does not depend on the window: under print media the
+     sheets of a phone window and of a wide one have the same layout, the same
+     written fit and the same PDF page count (FEATURES.md, "Print"). */
+  console.log('the sheet under print media draws the same sheet at 360 as at 1180');
+  const printedSheet = async () => {
+    const layout = await page.evaluate(() => {
+      const sheets = [...document.querySelectorAll('.psheet')];
+      const o = sheets[0].getBoundingClientRect();
+      const r2 = (n) => Math.round(n * 100) / 100;
+      return sheets.flatMap((sh) =>
+        [sh, ...sh.querySelectorAll('*')].map((e) => {
+          const r = e.getBoundingClientRect();
+          return [
+            e.tagName,
+            e.getAttribute('class') ?? '',
+            r2(r.x - o.x),
+            r2(r.y - o.y),
+            r2(r.width),
+            r2(r.height),
+            e.getAttribute('style') ?? ''
+          ].join(' ');
+        })
+      );
+    });
+    const pdf = Buffer.from(await page.pdf({ format: 'A4', printBackground: true }));
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page(?![s\w])/g) || []).length;
+    return { layout, pages };
+  };
+  const SAME_SHEET = [
+    { route: LONG, label: 'LONG', pages: 1 },
+    { route: LONG, bw: true, compact: true, label: 'LONG ~ compact bw', pages: 1 },
+    { route: TEN, label: 'TEN', pages: 2 }
+  ];
+  try {
+    for (const s of SAME_SHEET) {
+      const at = {};
+      for (const [w, h] of [
+        [1180, 950],
+        [360, 800]
+      ]) {
+        await d.viewport(w, h);
+        await openAs(d, s.route, s.bw, s.compact, bw, compact);
+        await d.media('print');
+        try {
+          at[w] = await printedSheet();
+        } finally {
+          await d.media(undefined);
+        }
+      }
+      ok(
+        at[1180].pages === s.pages && at[360].pages === s.pages,
+        s.label +
+          ': PDF pages are not ' +
+          s.pages +
+          ': ' +
+          at[1180].pages +
+          ', ' +
+          at[360].pages
+      );
+      const first = at[1180].layout.findIndex((v, i) => v !== at[360].layout[i]);
+      ok(
+        at[1180].layout.length === at[360].layout.length && first === -1,
+        s.label +
+          ': the printed sheet at 360 differs from 1180 (' +
+          at[360].layout.length +
+          ' against ' +
+          at[1180].layout.length +
+          ' elements) at ' +
+          first +
+          ': ' +
+          at[360].layout[first] +
+          ' against ' +
+          at[1180].layout[first]
+      );
+    }
+  } finally {
+    await d.media(undefined);
+    await d.viewport(1180, 950);
   }
 
   /* ---------- an open dialog and an action toast, under print media (D20) ----------

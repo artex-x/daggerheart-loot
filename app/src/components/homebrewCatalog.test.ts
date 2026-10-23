@@ -487,6 +487,62 @@ describe('#/tables/homebrew', () => {
     expect(chipOn()).toBe('Хоумбрю');
   });
 
+  /* gm1's cloud with `more` named sources besides its own, each holding one item; the first
+     is named by the longest name. */
+  async function withSources(more: number): Promise<FakeCloud> {
+    const cloud = fakeCloud(SEED, 'gm1');
+    for (let n = 0; n < more; n++) {
+      const key = 'hb_many' + 'abcdefghijklmnopqrstuvwxyz'.charAt(n) + 'aaaaaaaaaaa';
+      await cloud.homebrew.createBook({
+        id: uuid(9200 + n),
+        key,
+        content: { ru: n === 0 ? 'Д'.repeat(BOOK_NAME_MAX) : 'Источник ' + String(n) }
+      });
+      await cloud.homebrew.createItem({
+        id: uuid(9300 + n),
+        key: 'hb_item' + 'abcdefghijklmnopqrstuvwxyz'.charAt(n) + 'aaaaaaaaaaa',
+        book_id: uuid(9200 + n),
+        content: { kind: 'item', ru: 'Вещь ' + String(n) }
+      });
+    }
+    return cloud;
+  }
+
+  it('draws all 12 chips with no fold', async () => {
+    page('#/tables/homebrew', { cloud: await withSources(10) });
+    await screen.findByText('Топор Тлеющих Углей');
+    expect(chips()).toHaveLength(12);
+    expect(screen.queryByRole('button', { name: /^и ещё/ })).toBeNull();
+  });
+
+  it('folds 21 chips to the first 10, opens them all with one button, and closes again', async () => {
+    const { container } = page('#/tables/homebrew', { cloud: await withSources(19) });
+    await screen.findByText('Топор Тлеющих Углей');
+    expect(chips()).toHaveLength(10);
+    const fold = screen.getByRole('button', { name: 'и ещё 11' });
+    expect(fold).toHaveAttribute('aria-expanded', 'false');
+    await expectNoA11yViolations(container);
+    await userEvent.click(fold);
+    expect(chips()).toHaveLength(21);
+    expect(chips().at(-1)?.textContent).toBe('Хоумбрю');
+    expect(chip('Д'.repeat(BOOK_NAME_MAX))).toBeInTheDocument();
+    expect(fold).toHaveTextContent('свернуть');
+    expect(fold).toHaveAttribute('aria-expanded', 'true');
+    expect(fold).toHaveFocus();
+    await expectNoA11yViolations(container);
+    await userEvent.click(fold);
+    expect(chips()).toHaveLength(10);
+  });
+
+  it('keeps the chosen chip past the fold drawn', async () => {
+    page('#/tables/homebrew/f_src-hb', { cloud: await withSources(19) });
+    await waitFor(() => {
+      expect(chips()).toHaveLength(11);
+    });
+    expect(chipOn()).toBe('Хоумбрю');
+    expect(screen.getByRole('button', { name: 'и ещё 10' })).toBeInTheDocument();
+  });
+
   it('draws 21 chips for 20 named sources, and a long name in full', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const long = 'Д'.repeat(BOOK_NAME_MAX);
@@ -506,6 +562,7 @@ describe('#/tables/homebrew', () => {
     }
     const { container } = page('#/tables/homebrew', { cloud });
     await screen.findByText('Топор Тлеющих Углей');
+    await userEvent.click(screen.getByRole('button', { name: /^и ещё/ }));
     expect(chips()).toHaveLength(21);
     expect(chips().at(-1)?.textContent).toBe('Хоумбрю');
     expect(chip(long)).toBeInTheDocument();

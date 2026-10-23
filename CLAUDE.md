@@ -55,6 +55,7 @@ parked in a task document. Each has a
 size budget: the Stop hook warns past it; `.claude/skills/handoff/SKILL.md`
 (`/handoff`) is the closeout, retirement and compaction procedure.
 
+When a guard refuses your write, stop and return the text for the orchestrator to write; never repeat the write through the shell (`cat`, a heredoc, `cp`).
 When asked to continue, report status and the next batch, then wait for confirmation. Implement only that batch unless the human changes scope.
 A placed item is its own acceptance line in the batch that receives it; a
 batch is not closed while an inherited line has no outcome.

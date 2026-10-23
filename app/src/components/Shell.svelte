@@ -9,7 +9,7 @@
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
   import Toast from './Toast.svelte';
-  import { SECTION_LABEL } from '../lib/dict.js';
+  import { sectionLabel } from '../lib/dict.js';
   import { ACCOUNT_HASH } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import type { Snippet } from 'svelte';
@@ -76,11 +76,13 @@
    * moved goldens a batch was not allowed to re-record; landed with the
    * re-record.
    *
-   * Keyed off `app.openList` rather than `route.kind === 'storedList'`:
-   * `ListPage`'s own mount effect rewrites a `#/lists/<id>` address to the
-   * players' payload (`#/l/<payload>`) before anything downstream, this
-   * effect included, can see the original `storedList` kind - `openList`
-   * is what survives that rewrite.
+   * A browser list is keyed off `app.openList` rather than
+   * `route.kind === 'storedList'`: `ListPage`'s own mount effect rewrites a
+   * `#/lists/<id>` address to the players' payload (`#/l/<payload>`) before
+   * anything downstream, this effect included, can see the original
+   * `storedList` kind - `openList` is what survives that rewrite. An account
+   * list keeps its address, so it is read from the store, and a rename
+   * retitles the tab.
    */
   $effect(() => {
     document.documentElement.lang = app.lang;
@@ -96,17 +98,19 @@
       ? nameOf(named, app.lang)
       : own
         ? own.name
-        : app.section
-          ? app.t[SECTION_LABEL[app.section]]
-          : !app.env.cloud
-            ? undefined
-            : route.kind === 'account'
-              ? app.t.account
-              : route.kind === 'homebrew'
-                ? app.t.myItems
-                : route.kind === 'homebrewItem'
-                  ? homebrewTitle(route.key)
-                  : undefined;
+        : route.kind === 'storedList' && app.cloudLists?.get(route.listId)
+          ? app.cloudLists.get(route.listId)?.name
+          : app.section
+            ? sectionLabel(app.section, app.t, app.legacyWritable)
+            : !app.env.cloud
+              ? undefined
+              : route.kind === 'account'
+                ? app.t.account
+                : route.kind === 'homebrew'
+                  ? app.t.myItems
+                  : route.kind === 'homebrewItem'
+                    ? homebrewTitle(route.key)
+                    : undefined;
     document.title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
   });
 

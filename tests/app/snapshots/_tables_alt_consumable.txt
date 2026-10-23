@@ -32,7 +32,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     link "Прочее" [url=#/tables/other_starting]
     link "Предметы" [url=#/tables/alt_item]
     link "Расходники" [url=#/tables/alt_consumable]
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
@@ -366,7 +366,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/alt_consumable]
     link "Other" [url=#/tables/other_starting]
     link "Items" [url=#/tables/alt_item]
     link "Consumables" [url=#/tables/alt_consumable]
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]

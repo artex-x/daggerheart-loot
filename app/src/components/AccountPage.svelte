@@ -13,7 +13,7 @@
   import Panel from './Panel.svelte';
   import Seg from './Seg.svelte';
   import TextInput from './TextInput.svelte';
-  import { SECTION_LABEL } from '../lib/dict.js';
+  import { sectionLabel } from '../lib/dict.js';
   import { HOMEBREW_HASH, parseHash, sectionHash, tablesHash } from '../lib/hash.js';
   import type { NotifyGm } from '../lib/prefs.js';
   import { BARE_TABLE, SECTIONS, type Lang, type Section } from '../lib/types.js';
@@ -44,6 +44,8 @@
   /* Bumped after a change the session does not announce by a new user id. */
   let reread = $state(0);
   let busy = $state(false);
+  /* The account delete runs: its button reads «Удаляем...». */
+  let deleting = $state(false);
   let going = $state<Provider | null>(null);
   let confirming = $state(false);
   let typed = $state('');
@@ -176,13 +178,17 @@
   }
 
   function deleteAccount(): void {
+    if (busy) return;
+    deleting = true;
     void act(
       () => cloud?.auth.deleteAccount() ?? Promise.resolve({ ok: false, error: 'failed' }),
       (r) => {
         if (r.ok) closeConfirm();
         app.say(r.ok ? (t) => t.accountDeleted : (t) => t.accountFailed, { error: !r.ok });
       }
-    );
+    ).finally(() => {
+      deleting = false;
+    });
   }
 
   async function toggleConfirm(): Promise<void> {
@@ -282,7 +288,7 @@
             <label class="setname" for="display-home">{t.displayHome}</label>
             <select id="display-home" value={homeValue} onchange={setHome}>
               {#each SECTIONS as s (s)}
-                <option value={optionOf(s)}>{t[SECTION_LABEL[s]]}</option>
+                <option value={optionOf(s)}>{sectionLabel(s, t, app.legacyWritable)}</option>
               {/each}
               <option value={HOMEBREW_HASH}>{t.myItems}</option>
             </select>
@@ -475,7 +481,7 @@
                   />
                 </div>
                 <Button variant="danger" disabled={busy || !typedOk} onclick={deleteAccount}
-                  >{t.deleteFinal}</Button
+                  >{deleting ? t.deleting : t.deleteFinal}</Button
                 >
                 <Button variant="ghost" onclick={closeConfirm}>{t.cancel}</Button>
               </NumRow>

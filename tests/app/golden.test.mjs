@@ -230,6 +230,25 @@ describe('dated states - the `today` field and the golden header agree', () => {
   });
 });
 
+describe('held states - the `hold` field and the golden header agree', () => {
+  it('writes `# hold:` exactly for a state with `hold`, pairs of a read and a mode', () => {
+    for (const s of STATES) {
+      const text = readFileSync(path.join(HERE, 'snapshots', slugOf(s.id) + '.txt'), 'utf8');
+      const header = headerOf(text);
+      if (s.hold) {
+        assert.match(
+          s.hold,
+          /^(lines|items):(stall|fail)(,(lines|items):(stall|fail))*$/,
+          `"${s.id}": hold is not <lines|items>:<stall|fail>`
+        );
+        assert.ok(header.includes('# hold: ' + s.hold), `"${s.id}": no # hold: line`);
+      } else {
+        assert.ok(!header.some((l) => l.startsWith('# hold:')), `"${s.id}": a # hold: line`);
+      }
+    }
+  });
+});
+
 describe('capName - rule B, the 64-code-point boundary', () => {
   it('does not cap a 63-code-point name', () => {
     const name = 'a'.repeat(63);

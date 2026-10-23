@@ -338,6 +338,15 @@ async function twoRequests(d) {
   ]);
 }
 
+/** Two purchase requests that arrive while the index is open, read there as heads, then
+ *  «Лавка кузнеца» opened again. */
+async function requestsOnIndex(d) {
+  await d.go('#/lists');
+  await twoRequests(d);
+  for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
+  await d.go(SHOP);
+}
+
 /** Four purchase requests on «Лавка кузнеца», the newest of seven lines: the panel
  *  draws three and folds the rest. */
 async function manyRequests(d) {
@@ -877,7 +886,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Фильтры');
       await d.click('Предметы');
-      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+      await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
   },
   {
@@ -904,7 +913,7 @@ const STATES = [
     route: '#/tables',
     why: 'a query that narrows the table',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'кольцо');
+      await d.type('Поиск по названию или описанию...', 'кольцо');
     }
   },
   {
@@ -912,7 +921,7 @@ const STATES = [
     route: '#/tables',
     why: 'the empty state, which no route draws',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+      await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
   },
   {
@@ -1046,7 +1055,7 @@ const STATES = [
     route: '#/tables/eq_secondary',
     why: 'the type word is part of the searched stat line',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'вторичное');
+      await d.type('Поиск по названию или описанию...', 'вторичное');
     }
   },
   {
@@ -1056,7 +1065,7 @@ const STATES = [
     enter: async (d) => {
       await d.click('Фильтры');
       await d.click('Уникальные');
-      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+      await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
   },
   {
@@ -1216,7 +1225,7 @@ const STATES = [
     id: '#/i/dve19 ~ saved twice as gm1',
     route: '#/i/dve19',
     as: 'gm1',
-    why: '«Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»',
+    why: '«Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»; the set line «Уголёк, Искра» names no copy',
     enter: async (d) => {
       await d.click('Сохранить себе');
       for (let i = 0; i < 40 && !(await d.text()).includes('«Уголёк» сохранён'); i++)
@@ -1363,6 +1372,44 @@ const STATES = [
     why: 'the new account list first in «Ваш аккаунт», «0 позиций · изменён только что», the field cleared, the toast',
     enter: async (d) => {
       await d.type('Например: клад дракона', 'Тайник');
+      await d.click('Создать');
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/lists ~ not saved as gm2',
+    route: '#/lists',
+    as: 'gm2',
+    why: 'a create with no network: the new card first in «Ваш аккаунт», and the account count line ends «· Не сохранено» in the danger colour and «Повторить»',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.text()).includes('1 список из 50'); i++)
+        await d.settle();
+      await d.fake('setOffline', true);
+      await d.type('Например: клад дракона', 'Тайник');
+      await d.click('Создать');
+      /* A hidden tab sends the buffer at once, and it fails; the index draws no
+         `[data-saving]` for `writesSettled()` to wait on. */
+      await d.hidden();
+      for (let i = 0; i < 40 && !(await d.text()).includes('Не сохранено'); i++)
+        await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/lists ~ list limit as gm2',
+    route: '#/lists',
+    as: 'gm2',
+    why: 'one create past the 50-list limit: the toast «Достигнут предел списков в аккаунте: 50...», no 51st card, the count «50 списков из 50», the draft kept in the field',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.text()).includes('1 список из 50'); i++)
+        await d.settle();
+      for (let n = 2; n <= 50; n++) {
+        await d.type('Например: клад дракона', 'Список ' + String(n));
+        await d.click('Создать');
+      }
+      await d.type('Например: клад дракона', 'Пятьдесят первый');
       await d.click('Создать');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
@@ -1563,6 +1610,13 @@ const STATES = [
     why: "gm2's list: «2 позиции», the panel «Новое в списке (2)» with gm1's two notices, each «новое»: «Автор изменил «Топор Тлеющих Углей».» with «Открыть», and the 120-code-point deleted name wrapped, each with «Скрыть», then «Скрыть изменения»; the Scepter, then a link to gm1's axe tagged «Мастерская Ольхи (HB)», drawn as any row; no «Свой предмет» among the actions, the row «Свой предмет» after the entries"
   },
   {
+    id: GM2_LIST + ' ~ unknown records as gm2',
+    route: GM2_LIST,
+    as: 'gm2',
+    hold: 'items:fail',
+    why: "gm2's list with the linked records unread: the axe's row draws the key «hb_emberaxeaaaaaaaa» in bold and «Предмет не загружен» under it, with its tick, position, quantity, price, note, eye and cross; the sub still counts «2 позиции»"
+  },
+  {
     id: GM2_LIST + ' ~ one notice as gm2',
     route: GM2_LIST,
     as: 'gm2',
@@ -1682,6 +1736,36 @@ const STATES = [
       await twoRequests(d);
       /* A drawn request is read at once in a visible tab; wait for that read. */
       for (let i = 0; i < 40 && !(await d.text()).includes('истечёт через'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: SHOP + ' ~ requests loading as gm1',
+    route: SHOP,
+    as: 'gm1',
+    hold: 'lines:stall',
+    why: 'the requests read whose lines never answer: the small «Загружаем...» line in the panel slot after the action row, no panel; the page otherwise as «~ requests as gm1»',
+    enter: async (d) => {
+      /* A request that arrives on an open list page draws with no loading line: they arrive
+         on the index, and the list page opened then reads their lines. */
+      await requestsOnIndex(d);
+      for (let i = 0; i < 40 && !(await d.text()).includes('Загружаем...'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: SHOP + ' ~ requests failed as gm1',
+    route: SHOP,
+    as: 'gm1',
+    hold: 'lines:fail',
+    why: 'the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel',
+    enter: async (d) => {
+      await requestsOnIndex(d);
+      for (
+        let i = 0;
+        i < 40 && !(await d.text()).includes('Не получилось загрузить запросы.');
+        i++
+      )
         await d.settle();
     }
   },
@@ -2235,7 +2319,7 @@ const STATES = [
     route: '#/s/player-token-1',
     why: '«кинжал» typed: one row, the strip «10», the address unchanged',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'кинжал');
+      await d.type('Поиск по названию или описанию...', 'кинжал');
     }
   },
   {
@@ -2326,7 +2410,7 @@ const STATES = [
     route: '#/search',
     why: '121 rows of loot and gear together, ranked: the names with «меч» at a word start first, then the rest; "Выбрать все (121)"',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'меч');
+      await d.type('Поиск по названию или описанию...', 'меч');
     }
   },
   {
@@ -2334,7 +2418,7 @@ const STATES = [
     route: '#/search',
     why: '43 rows, no equipment badge left, the chip off',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'меч');
+      await d.type('Поиск по названию или описанию...', 'меч');
       await d.click('Снаряжение');
     }
   },
@@ -2344,7 +2428,7 @@ const STATES = [
     why: 'a phrase in quotes: rows found by the assembled stat line alone - the exact word is on no record as text',
     enter: async (d) => {
       /* A phrase: the bare word also reaches «двуручный» in descriptions by its stem */
-      await d.type('Поиск по названию или описанию…', '"двуручное"');
+      await d.type('Поиск по названию или описанию...', '"двуручное"');
     }
   },
   {
@@ -2352,7 +2436,7 @@ const STATES = [
     route: '#/search',
     why: 'the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'а');
+      await d.type('Поиск по названию или описанию...', 'а');
     }
   },
   {
@@ -2360,7 +2444,7 @@ const STATES = [
     route: '#/search',
     why: 'two words in another order and form: the healing potions, which a contiguous match misses',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'лечения зелья');
+      await d.type('Поиск по названию или описанию...', 'лечения зелья');
     }
   },
   {
@@ -2368,7 +2452,7 @@ const STATES = [
     route: '#/search',
     why: '"Ничего не найдено", and no reset button - unlike the tables',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'zzzqqqxx123');
+      await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
   },
   {
@@ -2376,7 +2460,7 @@ const STATES = [
     route: '#/search',
     why: 'the bar over search',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'меч');
+      await d.type('Поиск по названию или описанию...', 'меч');
       /* The first ranked hit for "меч" - computed against `data.json` through
          `buildIndex`, `parseQuery` and `rankHits`. */
       await d.tick('Меч Хрустального Духа');
@@ -2908,6 +2992,98 @@ const STATES = [
     }
   },
   {
+    id: '#/homebrew/hb_longsrcaaaaaaaaa as gm4',
+    route: '#/homebrew/hb_longsrcaaaaaaaaa',
+    as: 'gm4',
+    why: "the editor of gm4's item in the source whose name is 80 code points: the path line under the heading and the «Источник» select wrap inside the form at 360 px (rule 16)"
+  },
+  {
+    id: '#/homebrew/sets ~ long name as gm4',
+    route: '#/homebrew/sets',
+    as: 'gm4',
+    why: 'a set named by one unbroken 80-character word in the 80-character source: the fold name and its count line wrap at 360 px (rule 16), the toast «Комплект «Ж...» создан»',
+    enter: async (d) => {
+      await d.click('Новый комплект');
+      await d.type('Название комплекта*', 'Ж'.repeat(80));
+      await d.type('Бонус комплекта*', 'Бонус.');
+      await d.choose('#hb-card-new-set-book', '00000000-0000-4000-8000-000000000451');
+      await d.click('Создать комплект');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Комплект «Ж'); i++)
+        await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/tables/homebrew ~ source fold as gm1',
+    route: '#/tables/homebrew',
+    as: 'gm1',
+    items: 66,
+    sources: 14,
+    why: '16 source chips: the first 10, then «и ещё 6» collapsed (rule 12)'
+  },
+  {
+    id: '#/homebrew/sources ~ search as gm1',
+    route: '#/homebrew/sources',
+    as: 'gm1',
+    items: 66,
+    sources: 14,
+    why: '15 named sources: the search box «Найти источник» under «Новый источник», «Источник 07» alone under the kept count «15 источников из 20»',
+    enter: async (d) => {
+      await d.type('Найти источник', '07');
+    }
+  },
+  {
+    id: '#/homebrew/sources ~ section fold as gm1',
+    route: '#/homebrew/sources',
+    as: 'gm1',
+    items: 66,
+    sections: 25,
+    why: '«Мастерская Ольхи» with 27 sections: the first 20, «и ещё 7», «Без раздела» and «Новый раздел» (rule 12)',
+    enter: async (d) => {
+      await d.click('Разделы');
+    }
+  },
+  {
+    id: '#/homebrew ~ import over the limit as gm1',
+    route: '#/homebrew',
+    as: 'gm1',
+    items: 4,
+    why: 'an account at its limit of 4 items and a file of 3 new ones: «Импорт не поместится: ...» over «Импортировать (5)» disabled',
+    enter: async (d) => {
+      await hbImportOpen(d);
+      await d.upload(HB_FILE('example.json'));
+      for (let i = 0; i < 40 && !(await d.text()).includes('Импортировать (5)'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/hb_longtextaaaaaaaa ~ edit past the cap as gm4',
+    route: '#/homebrew/hb_longtextaaaaaaaa',
+    as: 'gm4',
+    why: "gm4's item at 3000 characters: «Жирный» pressed, the toolbar edit does not fit, the alert «Достигнут предел в 3000 знаков: правка не поместилась.» under the box (rule 18)",
+    enter: async (d) => {
+      await d.press('Жирный');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Достигнут предел'); i++)
+        await d.settle();
+    }
+  },
+  {
+    id: '#/homebrew/sets/hb_starsleepsetaaaa ~ member removed as gm3',
+    route: '#/homebrew/sets/hb_starsleepsetaaaa',
+    as: 'gm3',
+    why: 'the member write: «Убрать» of «Подушка из мха», the toast «Сохранено: «Подушка из мха»» with «Вернуть», the focus on the next «Убрать» (rules 10, 20)',
+    enter: async (d) => {
+      for (let i = 0; i < 40 && !(await d.count('[id^="hb-card-body-"]')); i++)
+        await d.settle();
+      await d.click('Убрать: Подушка из мха');
+      for (let i = 0; i < 40 && !(await d.text()).includes('Сохранено: «Подушка из мха»'); i++)
+        await d.settle();
+    },
+    /* a 7000ms action toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
     id: '#/homebrew/sources as gm1',
     route: '#/homebrew/sources',
     as: 'gm1',
@@ -3179,7 +3355,7 @@ const STATES = [
     id: '#/homebrew/' + HB_AXE + ' ~ not saved as gm1',
     route: '#/homebrew/' + HB_AXE,
     as: 'gm1',
-    why: 'the network lost, then «Сохранить»: «Не получилось сохранить: нет связи. Правки остались в форме...» under the buttons, the form kept',
+    why: 'the network lost, then «Сохранить»: «Не получилось сохранить. Проверьте соединение...» under the buttons, the form kept',
     enter: async (d) => {
       await d.fake('setOffline', true);
       await d.press('Сохранить');
@@ -3347,7 +3523,7 @@ const STATES = [
     as: 'gm1',
     why: '«топор» typed: the axe ranked with the 13 catalog matches; the intro ends «И 4 ваших предмета.»; the three kinds in the kind row and the switch «Свои предметы» on under it',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'топор');
+      await d.type('Поиск по названию или описанию...', 'топор');
     }
   },
   {
@@ -3356,7 +3532,7 @@ const STATES = [
     as: 'gm1',
     why: 'the same, then the switch «Свои предметы» turned off: the 13 catalog matches alone, the intro sentence kept',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'топор');
+      await d.type('Поиск по названию или описанию...', 'топор');
       await d.tick('Свои предметы');
     }
   },
@@ -3405,7 +3581,7 @@ const STATES = [
     as: 'gm3',
     why: "«спальный мешок» typed: the catalog matches and the own bedrolls ranked together; ci1's row «Улучшается до: Мешок спокойных снов (HB) и ещё 14»; each own row «Получается из: Первоклассный Спальный Мешок»",
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'спальный мешок');
+      await d.type('Поиск по названию или описанию...', 'спальный мешок');
     }
   },
   {
@@ -3486,7 +3662,7 @@ const STATES = [
     as: 'gm4',
     why: '«узоролист» typed: the one own row, its description one clamped run with «Раз за отдых:» bold, «• » list lines, «1. » lines and the table rows «Бросок | Ответ»',
     enter: async (d) => {
-      await d.type('Поиск по названию или описанию…', 'узоролист');
+      await d.type('Поиск по названию или описанию...', 'узоролист');
     }
   },
   {

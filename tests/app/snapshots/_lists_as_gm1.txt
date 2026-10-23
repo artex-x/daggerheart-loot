@@ -32,6 +32,7 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
     textbox "Новый список" [multiline=false readonly=false required=false]
     button "Создать"
     button "Импорт из файла" [expanded=false]
+    status ""
     heading "ВАШ АККАУНТ" [level=2]
     StaticText "5 списков из 50"
     checkbox "Выбрать все" [checked=false]
@@ -134,6 +135,7 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
     textbox "New list" [multiline=false readonly=false required=false]
     button "Create"
     button "Import from file" [expanded=false]
+    status ""
     heading "YOUR ACCOUNT" [level=2]
     StaticText "5 lists of 50"
     checkbox "Select all" [checked=false]

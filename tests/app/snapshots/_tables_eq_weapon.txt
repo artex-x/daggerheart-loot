@@ -33,7 +33,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     link "Оружие" [url=#/tables/eq_weapon]
     link "Вторичное" [url=#/tables/eq_secondary]
     link "Броня" [url=#/tables/eq_armor]
-    searchbox "Поиск по названию или описанию…"
+    searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
     button "Сеткой" [pressed=false]
@@ -1041,7 +1041,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_weapon]
     link "Weapons" [url=#/tables/eq_weapon]
     link "Secondary" [url=#/tables/eq_secondary]
     link "Armor" [url=#/tables/eq_armor]
-    searchbox "Search by name or description…"
+    searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]

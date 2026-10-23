@@ -11,7 +11,7 @@ import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { cardVersion } from '../lib/hash.js';
 import { encodeList } from '../lib/listLink.js';
-import { fakeClipboard, fakeData, fakeEnv, memoryRouter } from '../ports/index.js';
+import { fakeClipboard, fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -292,6 +292,34 @@ describe('the share panel', () => {
     cloud.setOffline(false);
     await userEvent.click(screen.getByRole('button', { name: ru.retry }));
     expect(await row(ru.shareLinkPlayers)).toBeInTheDocument();
+  });
+
+  it('asks before it deletes a link: «Отмена» keeps the link and calls no revoke', async () => {
+    const no = fakeDialog(false);
+    const cloud = fakeCloud(SEED, 'gm1');
+    const revoke = vi.spyOn(cloud.shares, 'revoke');
+    openShare(SHOP, cloud, { dialog: no });
+    await pressShare();
+    const players = await row(ru.shareLinkPlayers);
+    await userEvent.click(within(players).getByRole('button', { name: 'Удалить ссылку' }));
+    expect(no.asked).toEqual([
+      'Удалить ссылку? Те, у кого она есть, больше не откроют список. Отменить удаление нельзя.'
+    ]);
+    expect(revoke).not.toHaveBeenCalled();
+    expect(within(players).getByRole('button', { name: ru.shareCopy })).toBeInTheDocument();
+    cleanup();
+    const yes = fakeDialog(true);
+    openShare(SHOP, fakeCloud(SEED, 'gm1'), { dialog: yes });
+    await pressShare();
+    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
+    const en = await row("Players' link");
+    await userEvent.click(within(en).getByRole('button', { name: 'Delete link' }));
+    expect(yes.asked).toEqual([
+      'Delete the link? Anyone who has it can no longer open the list. This cannot be undone.'
+    ]);
+    expect(
+      await screen.findByText('Link deleted: it no longer opens the list.')
+    ).toBeInTheDocument();
   });
 });
 

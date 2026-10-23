@@ -14,13 +14,26 @@ deleted.
 
 ## Index
 
+- 2026-10-22 - [A bulk delete of own items goes in chunks of 50](decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md)
+- 2026-10-22 - [A bulk delete of own items is one invoker call](decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md) - superseded in part
+- 2026-10-22 - [A deleted item's id may be taken again by another account](decisions/2026-10-22-a-deleted-items-id-may-be-taken-again.md)
+- 2026-10-22 - [A job with a production secret runs no install script and pins its actions](decisions/2026-10-22-a-job-with-a-production-secret-runs-no-install-script.md)
+- 2026-10-22 - [A picker's list opens above its field when the visible window has more room](decisions/2026-10-22-a-pickers-list-opens-above-its-field-when-the.md)
 - 2026-10-22 - [A push is judged per file like a script write, and only as one plain command](decisions/2026-10-22-a-push-is-judged-per-file-like-a.md)
+- 2026-10-22 - [A Save to my items copy leaves out its original's set](decisions/2026-10-22-a-save-to-my-items-copy-leaves-out-its.md)
+- 2026-10-22 - [A shared record's rev is made from the revisions of its item, source and cards](decisions/2026-10-22-a-shared-records-rev-is-made-from-its-revisions.md)
+- 2026-10-22 - [A task branch takes main by a merge, never a rebase](decisions/2026-10-22-a-task-branch-takes-main-by-a-merge.md)
+- 2026-10-22 - [Anonymous reads have no rate limit; the owner watches the usage](decisions/2026-10-22-anonymous-reads-have-no-rate-limit-the-owner.md)
+- 2026-10-22 - [The nightly backup leaves out the Auth sessions](decisions/2026-10-22-the-nightly-backup-leaves-out-the-auth-sessions.md)
+- 2026-10-22 - [The owner's requests read takes every head and the open list's lines](decisions/2026-10-22-the-owners-requests-read-takes-every-head-and-the-open-lists-lines.md)
+- 2026-10-22 - [The print sheet scales to a phone screen by a transform the fit divides out](decisions/2026-10-22-the-print-sheet-scales-to-a-phone-screen-by-a.md)
+- 2026-10-22 - [The unconfigured bundle ceiling rises to 270 kB](decisions/2026-10-22-the-unconfigured-bundle-ceiling-rises-to-270-kb.md)
 - 2026-10-21 - [A script write to the test project is judged per file, like a push](decisions/2026-10-21-a-script-write-to-the-test-project-is-judged-per-file.md)
 - 2026-10-21 - [A task branch pushes every batch; a green CI run of the same tree gates main](decisions/2026-10-21-a-task-branch-pushes-every-batch-a-green-ci-run-gates-main.md)
 - 2026-10-21 - [A value list of a frozen file schema widens in place](decisions/2026-10-21-a-value-list-of-a-frozen-file-schema-widens-in-place.md)
 - 2026-10-21 - [A weapon may take the trait any, in the catalog and in homebrew](decisions/2026-10-21-a-weapon-may-take-the-trait-any-in-the-catalog-and-in-homebrew.md)
 - 2026-10-21 - [A worktree gets the test env file at creation; db:push uses the pooler](decisions/2026-10-21-a-worktree-gets-the-test-env-file-and-db-push-uses-the-pooler.md)
-- 2026-10-21 - [Each Save to my items press makes a new copy, also of a catalog record](decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md)
+- 2026-10-21 - [Each Save to my items press makes a new copy, also of a catalog record](decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md) - superseded in part
 - 2026-10-21 - [Focus moves to the control that takes the place of a removed one](decisions/2026-10-21-focus-moves-to-the-control-that-takes-the.md)
 - 2026-10-21 - [On «Обновить» a homebrew-v2 file states each card's book items](decisions/2026-10-21-on-a-homebrew-v2-file-states-each-cards.md)
 - 2026-10-21 - [Scarab Shield is a secondary weapon](decisions/2026-10-21-scarab-shield-is-a-secondary-weapon.md)

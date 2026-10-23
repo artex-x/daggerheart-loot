@@ -71,7 +71,7 @@ Session rules:
 For the current batch:
 1. Confirm objective, scope, acceptance criteria, mock/visual constraints
 2. Implement the complete batch, including necessary local fixes in touched code per `CLAUDE.md`
-3. Add or update focused tests
+3. Add or update focused tests. Prove a fix's test fails before the fix in a detached worktree at the base sha (`git worktree add --detach`, the new tests copied in), never by a mutation or a `git checkout --` of a tracked file in the task tree (since a guard's refusal was worked around through a script, 2026-10-22)
 4. Run focused checks during development. Before the gate, run `rtk npm run check:fast`
    (one call, Bash timeout 600000): prettier, svelte-check and the snapshot test on the
    tree, vitest with coverage on the tests of the changed files, and the bundle budget
@@ -98,6 +98,6 @@ For the current batch:
 9. Update `<TASK_DIR>/plan.md`
 10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; record the pre-batch sha (`git rev-parse HEAD` before the commit) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
 11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - each batch is a new commit on the task branch, never an amend of a pushed one; commit the coherent batch, not unrelated foreign changes. The message body names the task id (a `Task: <id>` line, or the id stated in a sentence) - this is what `git log --grep=<id>` and a `docs/decisions/` file's provenance pointer resolve through; a commit that never names it leaves that pointer dead.
-12. Push the task branch (`git push -u origin <branch>`) unless the dispatch says not to, or the batch is a schema batch before its approve; the orchestrator then waits on CI with the CI credit (`CLAUDE.md`, "Source and commit conventions"; `.claude/README.md`, "CI credit").
+12. Before the push, `git fetch origin` and merge the latest `origin/main` (a merge commit, never a rebase; owner, 2026-10-22); on a conflict outside `docs/DECISIONS.md` (`.claude/README.md` has its procedure), stop and report. Push the task branch (`git push -u origin <branch>`) unless the dispatch says not to, or the batch is a schema batch before its approve; the orchestrator then waits on CI with the CI credit (`CLAUDE.md`, "Source and commit conventions"; `.claude/README.md`, "CI credit").
 
 Finish with a concise summary of the batch, verification, commit (sha, previous sha, pushed or not), and next batch.

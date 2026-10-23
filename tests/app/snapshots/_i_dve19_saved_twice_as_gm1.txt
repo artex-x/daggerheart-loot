@@ -1,6 +1,6 @@
 # #/i/dve19 ~ saved twice as gm1
 # route: #/i/dve19
-# why: «Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»
+# why: «Сохранить себе» on a catalog record pressed twice: the button «Сохранить себе» with its note «Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с оригиналом.», the toast «Предмет «Уголёк (2)» сохранён в «Мои предметы»» with «Изменить»; the set line «Уголёк, Искра» names no copy
 # as: gm1
 
 ## ru :: tree
@@ -26,12 +26,10 @@ RootWebArea "Уголёк - Генератор лута Daggerheart" [url=index.
     link "показать в таблице" [url=index.html?as=gm1#/tables/dragons_vault/dve19]
     button "Страница"
     StaticText "96"
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     link "Искра" [url=index.html?as=gm1#/i/dve20]
-    link "Уголёк (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000005001]
-    link "Уголёк (2) (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000005003]
     StaticText ", она должна отметить 1 Рану во время своей активации."
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -75,8 +73,6 @@ daggerheart.com
 Списки
 Страница
 Таблицы
-Уголёк (2) (HB)
-Уголёк (HB)
 Условия использования
 Установить как приложение
 показать в таблице
@@ -104,12 +100,10 @@ RootWebArea "Ember - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/dve19
     link "show in the table" [url=index.html?as=gm1#/tables/dragons_vault/dve19]
     button "Page"
     StaticText "96"
-    ... StaticText x23 of 27 same-shape siblings elided
+    ... StaticText x21 of 25 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     link "Spark" [url=index.html?as=gm1#/i/dve20]
-    link "Ember (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000005001]
-    link "Ember (2) (HB)" [url=index.html?as=gm1#/h/00000000-0000-4000-8000-000000005003]
     StaticText ", they must mark 1 HP when spotlighted."
     button "Share"
     button "Copy image" [description=Copy image]
@@ -138,8 +132,6 @@ Copy name
 Copy text
 EN
 Edit
-Ember (2) (HB)
-Ember (HB)
 Install as an app
 Lists
 Page
