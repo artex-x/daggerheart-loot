@@ -4,11 +4,9 @@
 ## Status
 - Task status: blocked (planned and refreshed; dispatchable from 2026-10-26, 00:00 UTC)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: yes, Q2 only (plan.md section 4): accept
-  D115's changed verify criterion (A, recommended) or keep the original
-  line and take the RPC (B). It blocks `B10.4` alone; `B10.1`-`B10.3` can
-  run. Q1 answered by the owner 2026-10-01 (B); the P6 fork settled by the
-  planner 2026-10-23.
+- NEEDS_HUMAN_CONFIRMATION: no (Q1 answered by the owner 2026-10-01, B;
+  Q2 answered by the owner 2026-10-23, A - D115's check becomes the three
+  conditions and the PostgREST read stays; plan.md section 4)
 - Branch: `claude/persist-10-legacy-removal` (worktree
   `.claude/worktrees/persist-10-legacy-removal`)
 - Base / starting commit: `0b73fd5c` (`origin/main`, 2026-10-23)
@@ -85,7 +83,6 @@
   `LEGACY_WRITE_UNTIL`).
 - Plan review before `B10.1` (`agent-guard.mjs` denies the implementer
   dispatch until it approves or its fix-then-continue is applied).
-- Q2 (owner) before `B10.4` (plan.md section 4).
 - Order for `B10.5`: it starts only on a tree where `git grep -n
   legacy_fingerprint -- app/src tests/app tests/e2e tools` prints nothing;
   it is pushed only when `gh run list --workflow ci.yml --status

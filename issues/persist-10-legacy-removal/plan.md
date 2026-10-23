@@ -10,10 +10,10 @@
   release the pass-1 order put first has shipped (section 6).
 - Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4`, `B10.5`
   (outlines). None started.
-- NEEDS_HUMAN_CONFIRMATION: yes, Q2 only (section 4): D115's changed
-  verify criterion. It blocks `B10.4` alone; `B10.1`-`B10.3` do not depend
-  on it. Q1 answered by the owner 2026-10-01 (B, section 4). The P6 fork is
-  settled in this pass (section 4, "P6").
+- NEEDS_HUMAN_CONFIRMATION: no. Q1 answered by the owner 2026-10-01 (B);
+  Q2 answered by the owner 2026-10-23 (A: D115's check becomes the three
+  conditions, the PostgREST read stays; section 4). The P6 fork is settled
+  in this pass (section 4, "P6").
 - Plan review: required before B10.1 (trigger: a public contract change - the `#/l/` route, `docs/fixtures/lists/`, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` in `B10.1`, `routes.json` in `B10.3`; a migration in `B10.5` that drops a SECURITY DEFINER function and a column with its stored values; a new sync protocol in `B10.4`)
 - `B10.4` (the first read, a sync protocol change) gets its own
   `- Plan review: required before B10.4` line at its refresh, when its brief
@@ -232,24 +232,24 @@ each entry's identity; an entry's details load per list.
   the line "the first read does not embed `list_entries`" (2026-10-22), so
   the change is Q2.
 
-**Q2 - open, for the owner; it blocks `B10.4` only.** D115's "How to
-verify" says "the first read does not embed `list_entries`". The P6 design
+**Q2 - answered 2026-10-23 (owner): A.** Verbatim: "Q2: A. Change D115's
+check to the three conditions and keep the PostgREST read." D115's "How to
+verify" said "the first read does not embed `list_entries`". The P6 design
 above never meets that line.
 
-- A (recommended): change the criterion to "the first read carries no
+- A (chosen): change the criterion to "the first read carries no
   entry note, quantity, price or GM-only flag; the head JSON at 3x is at
   most 6 MB (`check:db`); and the 4000 ms bar of section 12 passes on
   `#/lists` and on the largest list's page". `B10.4` deletes D115 when all
-  three pass, and its decision file records the changed criterion as a
-  deviation from the carry. Why: the add-to-list menu, `listsHolding` and
+  three pass, and its decision file records the changed criterion as the
+  owner's choice (2026-10-23). Why: the add-to-list menu, `listsHolding` and
   `relinkTargets` need every key at once, and the identity rows are the
   smallest PostgREST read that gives them. Trade-off accepted: the first
   read keeps one small row per entry (est. 4-5 MB at 3x).
-- B: keep the original line. Then the head read is an invoker RPC that
-  answers each list's keys and entry ids as arrays (the fallback above):
+- B (rejected by the owner): keep the original line. Then the head read is
+  an invoker RPC that answers each list's keys and entry ids as arrays:
   `B10.4` becomes a schema batch with a migration, a reversal, `tests/db/`
   cases and a new plan review, for an est. 2x smaller first read.
-- Owner AFK: take A and log it as the default (memory rule).
 
 No other question is open. Settled items 3 and 4 follow from the owner's
 "the app never reads, draws or moves them".
@@ -974,18 +974,16 @@ them (section 4, "P6"). Carry P6 is its own acceptance line.
   `docs/decisions/<date>-the-first-account-read-takes-list-heads.md` from
   section 4, "P6" (with "Amends" the 2026-10-22 requests decision and the
   2026-10-02 re-read decision), `node tools/decisions.js`.
-- `DEBT.md` (after the owner's Q2, section 4): with A, D115 is deleted
-  when the changed criterion and the defined bar pass, and the decision
-  file records the changed criterion as a deviation from the carry, which
-  the closeout names to the owner; with B, the batch follows the RPC
-  fallback and the original line. If the batch cannot pass, D115 stays
-  with its measured numbers updated.
+- `DEBT.md` (the owner's Q2 answer A, section 4): D115 is deleted when the
+  three conditions of the changed criterion pass, and the decision file
+  records the changed criterion as the owner's choice (2026-10-23). If the
+  batch cannot pass, D115 stays with its measured numbers updated.
 - Standing checks at its refresh: a States table for the list page's new
   wait (empty, one, many, 3x lists; 360 and 1180); error scenarios for a
   failed detail read, offline, a list deleted while its details load, a
   stale tab, a revert (the previous bundle reads full rows again; nothing
   stored changes).
-- Acceptance: carry P6 closed (D115 deleted, after Q2); the first read
+- Acceptance: carry P6 closed (D115 deleted, Q2 A); the first read
   carries no entry note, quantity, price or GM-only flag (contract case);
   the head JSON at 3x is at most 6 MB (`check:db`); the defined bar met on
   `#/lists` and on the largest list's page, with the requests and bytes

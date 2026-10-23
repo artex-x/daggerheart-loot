@@ -41,8 +41,12 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
   - `print-snapshots` (2026-10-08 decision, shipped 2026-10-14): every
     `#/print/...` address draws the retired print page (`printRetired`);
     nothing of R10 keeps a print spelling.
-- Open questions: Q2 (owner; blocks `B10.4` only) - accept D115's
-  changed verify criterion (plan.md section 4).
+  - Owner, 2026-10-23, Q2 A: "Change D115's check to the three conditions
+    and keep the PostgREST read." The three conditions: no entry note,
+    quantity, price or GM-only flag in the first read; the head JSON at 3x
+    at most 6 MB; the 4000 ms bar on `#/lists` and the largest list's page
+    (plan.md section 4).
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None. R10 adds no UI: it removes controls and draws the existing
