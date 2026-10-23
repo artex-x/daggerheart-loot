@@ -4,8 +4,11 @@
 ## Status
 - Task status: blocked (planned and refreshed; dispatchable from 2026-10-26, 00:00 UTC)
 - Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: no (Q1 answered by the owner 2026-10-01, B;
-  the P6 fork settled by the planner 2026-10-23, plan.md section 4)
+- NEEDS_HUMAN_CONFIRMATION: yes, Q2 only (plan.md section 4): accept
+  D115's changed verify criterion (A, recommended) or keep the original
+  line and take the RPC (B). It blocks `B10.4` alone; `B10.1`-`B10.3` can
+  run. Q1 answered by the owner 2026-10-01 (B); the P6 fork settled by the
+  planner 2026-10-23.
 - Branch: `claude/persist-10-legacy-removal` (worktree
   `.claude/worktrees/persist-10-legacy-removal`)
 - Base / starting commit: `0b73fd5c` (`origin/main`, 2026-10-23)
@@ -38,7 +41,9 @@
 - Review: plan review required before B10.1 (trigger: public contract
   change; a migration that drops a SECURITY DEFINER function and a column;
   a new sync protocol), report
-  `issues/persist-10-legacy-removal/reviews/plan-B10.1.md`
+  `issues/persist-10-legacy-removal/reviews/plan-B10.1.md`: fix-then-continue,
+  every finding applied (plan.md Status, "Plan review findings applied");
+  R7 became the owner question Q2.
 
 ## Verification
 - Commands run (exact): read-only `git grep` and `git log` over `app/src`,
@@ -66,6 +71,7 @@
   node tests/run-all.js app/contracts,app/states
   node tests/app/golden.js --update --shard=1/4        # then 2/4, 3/4, 4/4
   git status -- tests/app/snapshots
+  node tests/app/sweep.js 360
   node tests/run-all.js contracts,dataint
   rtk npm run check:fast                               # Bash timeout 600000
   git push -u origin claude/persist-10-legacy-removal  # after git fetch origin and git merge origin/main
@@ -79,10 +85,14 @@
   `LEGACY_WRITE_UNTIL`).
 - Plan review before `B10.1` (`agent-guard.mjs` denies the implementer
   dispatch until it approves or its fix-then-continue is applied).
+- Q2 (owner) before `B10.4` (plan.md section 4).
 - Order for `B10.5`: it starts only on a tree where `git grep -n
-  legacy_fingerprint -- app/src tests/app tests/e2e tools` prints nothing,
-  and it is pushed only when no other branch waits to land on `main`; the
-  closeout follows its CI credit (plan.md section 13, "Order").
+  legacy_fingerprint -- app/src tests/app tests/e2e tools` prints nothing;
+  it is pushed only when `gh run list --workflow ci.yml --status
+  in_progress` and `--status queued` show no run of another branch, and no
+  other session pushes until `main`'s run after the squash is green; the
+  closeout follows its CI credit; a stalled window is closed by the stall
+  rule (plan.md section 13, "Order").
 
 ## Deferred
 - A clean-up of `StoragePort`'s keyed `onExternalChange` signal: named to

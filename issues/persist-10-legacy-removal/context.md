@@ -41,7 +41,8 @@ Orchestrator (or first worker) maintains this file so later steps do not re-fetc
   - `print-snapshots` (2026-10-08 decision, shipped 2026-10-14): every
     `#/print/...` address draws the retired print page (`printRetired`);
     nothing of R10 keeps a print spelling.
-- Open questions: none.
+- Open questions: Q2 (owner; blocks `B10.4` only) - accept D115's
+  changed verify criterion (plan.md section 4).
 
 ## Screenshot / attachment findings
 - None. R10 adds no UI: it removes controls and draws the existing

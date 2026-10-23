@@ -10,12 +10,30 @@
   release the pass-1 order put first has shipped (section 6).
 - Batches: `B10.1` (implement-ready), `B10.2`, `B10.3`, `B10.4`, `B10.5`
   (outlines). None started.
-- NEEDS_HUMAN_CONFIRMATION: no. Q1 answered by the owner 2026-10-01 (B,
-  section 4). The P6 fork is settled in this pass (section 4, "P6").
+- NEEDS_HUMAN_CONFIRMATION: yes, Q2 only (section 4): D115's changed
+  verify criterion. It blocks `B10.4` alone; `B10.1`-`B10.3` do not depend
+  on it. Q1 answered by the owner 2026-10-01 (B, section 4). The P6 fork is
+  settled in this pass (section 4, "P6").
 - Plan review: required before B10.1 (trigger: a public contract change - the `#/l/` route, `docs/fixtures/lists/`, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` in `B10.1`, `routes.json` in `B10.3`; a migration in `B10.5` that drops a SECURITY DEFINER function and a column with its stored values; a new sync protocol in `B10.4`)
 - `B10.4` (the first read, a sync protocol change) gets its own
   `- Plan review: required before B10.4` line at its refresh, when its brief
   becomes implement-ready.
+- Plan review findings applied: reviews/plan-B10.1.md
+  - B1: sections 4 ("P6") and 12 ("State") - relink is out of the writes that need details; `relinkAs` runs on heads only; the writes that need details are `restoreEntry`'s callers.
+  - B2: sections 13 ("Steps", "Standing checks", "Acceptance") and 14 - the app-only revert, the restore of an older backup and the null values are named; a `.claude/README.md` paragraph "To undo `<ts>_drop_legacy_move`" is a `B10.5` step.
+  - R1: sections 4 and 12 - `SharedListPage`'s `hiddenN` reads details first; a unit case is an acceptance line.
+  - R2: section 12 - five guards of the detail read, each an acceptance line with a fake and a contract case.
+  - R3: section 12 - the add-to-list remove-with-undo gets a busy state as its own acceptance line, or the refresh names why it needs none.
+  - R4: sections 4 and 12 - the bar is defined (build, stack, seed, host, width, start and end, median of three), the head JSON bound is 6 MB in `check:db`, the list page is measured, and requests and bytes per state are recorded before and after.
+  - R5: sections 13 ("Order"), 14, 15 and handoff "Blockers" - the push check covers every branch's queued and running runs, a stall rule, and the open branches named at closeout.
+  - R6: section 13 - both limit functions are copied whole with their SECURITY DEFINER header; a layer 3 assertion after the up and after the reversal.
+  - R7: sections 4 ("Q2") and 12 - D115's changed criterion is an owner question (Q2, NEEDS_HUMAN_CONFIRMATION); the two sections no longer contradict each other.
+  - N1: section 9, step 11 - the two filter-threshold cases join the port list.
+  - N2: section 9, step 1 and "Files edited" - `git grep -n "#/l/" -- app/src` and `FilterBar.svelte`'s comment; `tools/check/lib.test.mjs` stays (risks).
+  - N3: section 9, step 11 - `seedWith`'s argument type needs no new export.
+  - N4: section 9, step 8 - the fixture of the `pageRecordFor` case is pinned.
+  - N5: sections 8 and 9 and handoff - `node tests/app/sweep.js 360` joins `B10.1`'s gates; costs and the total follow.
+  - N6: section 8 - `B10.2`'s criterion cell names the `B10.1` boundary; `B10.1`+`B10.2` joins the rejected merges.
 
 ## 1. Objective and current state
 
@@ -179,8 +197,14 @@ each entry's identity; an entry's details load per list.
 - `CloudLists` holds every list's `ids`, `entryIds` and `links` from the
   head read, and a list's `meta` only once its details are read. The list
   page, the share panel, the requests panel, the copy text, the print of a
-  list, the export (`exportLists`, `exportData`) and the add-to-list
-  menu's remove-with-undo read details first.
+  list, the export (`exportLists`, `exportData`), the add-to-list menu's
+  remove-with-undo and `SharedListPage`'s `hiddenN` (the owner's own
+  players' link counts its GM-only entries) read details first.
+- `relinkAs` runs on a list with heads only: the server keeps the row's
+  meta (the `relink` op, `ListOp` in `lib/cloudLists.ts`), and the local
+  `meta` moves only when it is present. The writes that need details are
+  `restoreEntry`'s callers only: the list page's row remove and sell undo,
+  and the add-to-list menu's remove-with-undo.
 - Why: the add-to-list menu, `listsHolding` and `relinkTargets` need every
   list's keys at
   once, so heads without keys would move the whole read to the first menu
@@ -199,13 +223,33 @@ each entry's identity; an entry's details load per list.
 - Accepted trade-off: the first read still carries one small row per entry
   (est. 4-5 MB at 3x, est. 0.5 MB at the defaults; `B10.4` measures it),
   and a list page waits one more round trip for its details.
-- Fallback, only if `B10.4`'s measurement at 3x misses the 4000 ms bar: the
-  head read moves to an invoker RPC that answers each list's keys and entry
+- Fallback, only if `B10.4`'s measurement at 3x misses the 4000 ms bar
+  (defined in section 12) after the extra reads per state are explained:
+  the head read moves to an invoker RPC that answers each list's keys and entry
   ids as arrays; `B10.4` then carries a migration and a new plan review.
 - Deviation from D115's "How to verify": the first read still embeds
-  `list_entries`, with identity columns only. `B10.4` rewrites that line to
-  "the first read carries no entry note, quantity, price or GM-only flag"
-  with the 4000 ms bar unchanged.
+  `list_entries`, with identity columns only. The owner gave the carry with
+  the line "the first read does not embed `list_entries`" (2026-10-22), so
+  the change is Q2.
+
+**Q2 - open, for the owner; it blocks `B10.4` only.** D115's "How to
+verify" says "the first read does not embed `list_entries`". The P6 design
+above never meets that line.
+
+- A (recommended): change the criterion to "the first read carries no
+  entry note, quantity, price or GM-only flag; the head JSON at 3x is at
+  most 6 MB (`check:db`); and the 4000 ms bar of section 12 passes on
+  `#/lists` and on the largest list's page". `B10.4` deletes D115 when all
+  three pass, and its decision file records the changed criterion as a
+  deviation from the carry. Why: the add-to-list menu, `listsHolding` and
+  `relinkTargets` need every key at once, and the identity rows are the
+  smallest PostgREST read that gives them. Trade-off accepted: the first
+  read keeps one small row per entry (est. 4-5 MB at 3x).
+- B: keep the original line. Then the head read is an invoker RPC that
+  answers each list's keys and entry ids as arrays (the fallback above):
+  `B10.4` becomes a schema batch with a migration, a reversal, `tests/db/`
+  cases and a new plan review, for an est. 2x smaller first read.
+- Owner AFK: take A and log it as the default (memory rule).
 
 No other question is open. Settled items 3 and 4 follow from the owner's
 "the app never reads, draws or moves them".
@@ -274,7 +318,7 @@ Results of the pass-1 checklist, at `0b73fd5c`:
 | `B10.2` | none | `COVERAGE.md` (the ported cases) |
 | `B10.3` | `routes.json` `#/lists` `tab: null` | `STATE.md`, `FEATURES.md`, `ROUTES.md`, `META.md` section 3, `COVERAGE.md`, `I18N.md` (the cutoff bullet), `DEBT.md` (D24, D63, D64), `README.md`, `README.ru.md`, `help.ts`, one decision file |
 | `B10.4` | none | `FEATURES.md` ("Account and browser lists": the first read), `COVERAGE.md`, `DEBT.md` (D115), one decision file |
-| `B10.5` | none | `DEBT.md` (D62, the section), `COVERAGE.md` (layer 3), `.claude/README.md` ("Expected Security Advisor warnings", "Usage monitoring"), one decision file |
+| `B10.5` | none | `DEBT.md` (D62, the section), `COVERAGE.md` (layer 3), `.claude/README.md` ("Expected Security Advisor warnings", "Usage monitoring", "Undo a deploy that carried a migration"), one decision file |
 
 ## 8. Batches
 
@@ -299,21 +343,26 @@ pooled; `sweep.js 360` about 8 min; a CI run about 11 min (remote).
 
 | Batch | Goal | Gates (cost) | Review | Split criterion from the previous batch |
 |---|---|---|---|---|
-| `B10.1` | Retire `#/l/`: the codec, the compress port, the `#/l/` pages, buttons and rewriting, the contract fixtures and suites, the specs; port the shared page's `#/l/` coverage to `#/s/` | `check:fast` (10), `build:test` (1), `app/contracts,app/states` (10), goldens (13), `contracts,dataint` (1), CI (11) - about 46 min | required: public contract | - (first batch) |
-| `B10.2` | Port every test that uses a browser list only as a fixture onto an account list of the fake cloud; no production change | `check:fast` (10), `build:test` (1), the filter group (5), `sweep.js 360` (8), CI (11) - about 35 min | required: harness that later batches rely on, judged against `COVERAGE.md` | a commit boundary the harness cannot reach: `B10.3` deletes browser lists, so the account-list fixtures (`seedWith`'s second use, `accountList`) land first and a later red bisects |
+| `B10.1` | Retire `#/l/`: the codec, the compress port, the `#/l/` pages, buttons and rewriting, the contract fixtures and suites, the specs; port the shared page's `#/l/` coverage to `#/s/` | `check:fast` (10), `build:test` (1), `app/contracts,app/states` (10), goldens (13), `sweep.js 360` (8), `contracts,dataint` (1), CI (11) - about 54 min | required: public contract | - (first batch) |
+| `B10.2` | Port every test that uses a browser list only as a fixture onto an account list of the fake cloud; no production change | `check:fast` (10), `build:test` (1), the filter group (5), `sweep.js 360` (8), CI (11) - about 35 min | required: harness that later batches rely on, judged against `COVERAGE.md` | a public-contract change: `B10.1` changes `CONTRACTS.md`, `docs/fixtures/`, `tests/contracts.js` and `llms.txt` and needs its own commit and its own review; `B10.2` changes no contract (and `B10.2` lands before `B10.3` because the harness cannot reach `B10.3` without its account-list fixtures) |
 | `B10.3` | Remove browser lists and the move on the client: `ListStore`, `LegacyMove`, the three notices, `legacy.ts`, the date gates, `?today=`, the Lists tab, the move's client path, the unconfigured build's lists; P36 | `check:fast` (10), `build:test` (1), the filter group (5), goldens (13), `sweep.js 360` (8), CI with `e2e` (11) - about 48 min | required: UI changes on every page, a public contract fixture (`routes.json`) | a different route and filter set from `B10.1` (`#/lists*` and the header on every route, against `#/l/*` and the contract suites), and a review that cannot be held in one pass with `B10.1` |
 | `B10.4` | P6: the first read takes heads with entry identities; details load per list (D115) | `check:fast` (10), `check:db` (15), `build:test` (1), `app/states` (5), goldens (13), CI (11) - about 55 min | required: a sync protocol change (and a plan review at its refresh) | a review that cannot be held in one pass with `B10.3` (a protocol of `CloudLists`, the ports, the fake and the contract suite, against a removal of about 90 paths), and it needs `B10.3`'s tree (no `ListModel`, no browser consumer of `CloudList`) |
 | `B10.5` | The migration (Q1 B): drop `move_legacy_list`, the `dhloot.move` guard, `lists.legacy_fingerprint` and its index; its reversal, `tests/db/`, D62 | `check:fast` (4), `check:db` (15); after the approve, the push and CI with `migrate-test` and `e2e` (11) - about 30 min | required: a migration that drops a SECURITY DEFINER function and a column | a commit boundary the harness cannot reach (contract case I and e2e F9 call the function, and the client selects the column, until `B10.3`); the schema batch rule; and the last batch, so the test project's window (section 13, "Order") is as short as one CI run before the landing |
 
-Total gate cost: about 214 minutes for one green pass of the five batches
-(about 159 min local, 55 min of CI), plus the closeout (merge `origin/main`,
+Total gate cost: about 222 minutes for one green pass of the five batches
+(about 167 min local, 55 min of CI), plus the closeout (merge `origin/main`,
 push, CI of the tip, the squash and `main`'s run: about 22 min) - about
 4 h, before reviews and remediation. Every local run fits one foreground
 call (one shard or one width per call; `check:db` past 600 s arms by its
 own exit).
 
-Merges considered and rejected: `B10.1`+`B10.3` (one review over about 120
-paths and two contract surfaces); `B10.2`+`B10.3` (the port and the
+Merges considered and rejected: `B10.1`+`B10.2` (they share `seed.ts`,
+five unit files and `app/states`, and the merge would save one
+`check:fast`, one `build:test` and one CI run, about 22 min; rejected
+because a public-contract change takes its own commit and its own review,
+and the merged diff would put a contract review and a harness review
+against `COVERAGE.md` in one pass); `B10.1`+`B10.3` (one review over about
+120 paths and two contract surfaces); `B10.2`+`B10.3` (the port and the
 deletions in one diff hide which red belongs to which); `B10.3`+`B10.4`
 (the review of a removal and of a new read protocol in one pass);
 `B10.4`+`B10.5` (they share `check:db`, but the schema review and its
@@ -353,7 +402,8 @@ fix; every file below.
 `help.ts`; `app/src/ports/types.ts`, `index.ts`, `redirect.ts` (comment);
 `app/src/App.svelte`; `app/src/components/ListPage.svelte`,
 `SharedListPage.svelte`, `ListsPage.svelte`, `Shell.svelte`,
-`AddToList.svelte`, `SelBar.svelte` (import paths); `app/src/state/
+`AddToList.svelte`, `SelBar.svelte` (import paths), `FilterBar.svelte`
+(the prop comment that names `#/l/`); `app/src/state/
 app.svelte.ts`, `cloudLists.svelte.ts` (import path), `lists.svelte.ts`
 (import path).
 
@@ -429,8 +479,8 @@ row of "Hooks" only).
 1. `git fetch origin`, `git merge origin/main` (a merge, never a rebase).
    Confirm `date -u` is 2026-10-26 or later and `LEGACY_WRITE_UNTIL` still
    reads `Date.UTC(2026, 9, 26)`; otherwise stop. Run the inventory grep
-   (section 6, item 2) and `git grep -n -E "#/l/|list link|docs/fixtures/lists" -- docs/specs llms.txt README.md README.ru.md .claude/README.md docs/fixtures/urls/routes.json tests/contracts.js tests/derived.js`;
-   the two outputs are the checklist for steps 2-14.
+   (section 6, item 2), `git grep -n "#/l/" -- app/src` and `git grep -n -E "#/l/|list link|docs/fixtures/lists" -- docs/specs llms.txt README.md README.ru.md .claude/README.md docs/fixtures/urls/routes.json tests/contracts.js tests/derived.js`;
+   the three outputs are the checklist for steps 2-14.
 2. `lib/lists.ts`: add `ListEntryMeta`, `ListShape` and `QTY_MAX` (moved
    verbatim from `listLink.ts`, with their comments); import `MoneyMode`
    from `./money.js`; delete `findListByPayload` and `copyInit`.
@@ -486,9 +536,13 @@ row of "Hooks" only).
    `$state<SharedList | null>`. `pageRecordFor`: the account-list branch
    reads the route, `else if (r.kind === 'storedList') { const linked =
    this.cloudLists?.get(r.listId)?.linked?.[id]; ... }`, with a unit case
-   in `app.test.ts` that fails on the old code (a print press on an
-   account list's page resolves that list's linked record of a clashing
-   homebrew key). `Shell.svelte`: the title's `own` arm goes (it read
+   in `app.test.ts` that fails on the old code. Its fixture: two account
+   lists link two other accounts' items of one homebrew key (an own item
+   never reaches `linked`, because `#withLinked` leaves out the keys the
+   account holds); the other list comes first in `cloudLists.lists`; on the
+   second list's page, a print press resolves the second list's record
+   (the old code answers the other list's record through `recordFor`).
+   `Shell.svelte`: the title's `own` arm goes (it read
    `openList`); reword its comment. `ListsPage.svelte`: the card `href` is
    `storedListHash(l.id)`; delete `share()`, its button and the codec
    imports. `dict.ts`: delete, in both languages, `legacyLinks`,
@@ -504,8 +558,9 @@ row of "Hooks" only).
     reason becomes "`#/l/` links with notes passed 2048 before R10").
 11. Unit tests (settled item 11):
     - Create `app/src/test/seed.ts`: `seedWith(lists, shares = [])` returns
-      `SEED` with `lists` (a partial record of `SeedUserId` to `SeedList[]`)
-      appended to each named user's own lists and `shares` appended to
+      `SEED` with `lists` (typed `Partial<Record<keyof Seed['lists'],
+      SeedList[]>>`, so `fake-cloud-seed.ts` needs no new export) appended
+      to each named user's own lists and `shares` appended to
       `SEED.shares`. One-sentence method comment, third-person verb.
     - `sharedListPage.test.ts`: replace the three payload fixtures with
       `SeedList` literals of the same content (name, entries with
@@ -515,8 +570,12 @@ row of "Hooks" only).
       topic keys from `uuid(911)` up). Each behaviour case (heading and
       sub, ticked, a dropped entry, every entry gone, untitled, the notes,
       the tails, selection, adding to a list, the taken count, a row
-      opened, English, accessibility) opens the matching `#/s/` token with
-      `fakeCloud(seedWith(...))` and waits for the heading. Delete the
+      opened, English, accessibility, and the filter threshold's "draws no
+      search box below 8 entries, and the box and the strip at 8" and
+      "starts unfiltered, folded and without the box on another list" on
+      `seedWith` lists of 7 and 8 entries with players' shares) opens the
+      matching `#/s/` token with `fakeCloud(seedWith(...))` and waits for
+      the heading. Delete the
       cases whose subject is the codec or `#/l/`: "the bad link", "the
       legacy announcement", "saving the whole list" (browser save), "draws
       no region on a #/l/ page", "nor on a #/l/ page" (keep its
@@ -695,6 +754,7 @@ npm run build:test
 node tests/run-all.js app/contracts,app/states
 node tests/app/golden.js --update --shard=1/4        # then 2/4, 3/4, 4/4
 git status -- tests/app/snapshots                    # what moved: browser-list and #/l/ states only
+node tests/app/sweep.js 360                          # the two new #/s/ rows and the #/l/zzzz label
 node tests/run-all.js contracts,dataint
 rtk npm run check:fast                               # the last green run arms the commit gate
 ```
@@ -713,7 +773,8 @@ CI's run of the pushed tip is the full gate (the orchestrator's
 - A golden move outside browser-list and `#/l/` states is a defect, not a
   re-seed: stop and report it.
 - `.claude/hooks/selftest.mjs` keeps its synthetic `docs/fixtures/lists/
-  x.json` path (a hook edit fires its own review).
+  x.json` path (a hook edit fires its own review), and
+  `tools/check/lib.test.mjs` keeps its synthetic `docs/fixtures/lists` path.
 - `MSYS_NO_PATHCONV=1` before any `golden.js --only="#/..."` on this host.
 
 ## 10. Batch B10.2 - port the list fixtures to account lists (outline)
@@ -856,35 +917,82 @@ them (section 4, "P6"). Carry P6 is its own acceptance line.
 - State: `CloudLists` keeps a per-list detail state (`absent`, `loading`,
   `ready`, `error`) and `detail(ids): Promise<boolean>`; a re-read by
   revision re-reads the heads and the rows of each detailed list that
-  changed; a write that copies an entry's meta (restore after a remove,
-  relink, the add-to-list menu's remove-with-undo) runs only on a detailed
-  list.
+  changed; a write that copies an entry's meta (`restoreEntry`'s callers:
+  the list page's row remove and sell undo, the add-to-list menu's
+  remove-with-undo) runs only on a detailed list. `relinkAs` runs on a list
+  with heads only: the server keeps the row's meta, and the local `meta`
+  moves only when it is present («Сохранить себе» never waits for a detail
+  read; `docs/decisions/2026-10-21-each-save-to-my-items-press-makes-a-new-copy.md`).
+- The guards of the detail read (R2 of the plan review), each its own
+  acceptance line with a `fake-cloud` case, and a `cloud.contract.ts` case
+  where the real adapter takes part:
+  - a detail answer that overlaps a local edit or a buffered write is
+    dropped and read again when idle (as `#pull` does with `#edits` and the
+    queue), or the store flushes first; an add from the menu followed by
+    «Открыть» inside the 2 s quiet window keeps the added row;
+  - a list this tab makes (`create`, the menu's new list) is detailed at
+    birth, and its detail read never runs before its `create` has flushed;
+  - a re-read of a detailed list applies the new head together with its
+    rows, or not at all; when the rows read fails, the store keeps the last
+    detailed list and sets the detail state to `error`, never a head without
+    `meta`;
+  - the detail state, not the presence of `meta`, decides "detailed";
+    `add()` on a list with heads only writes `meta` for the added keys only
+    (`withIds`);
+  - an answer whose revision is older than the held one is dropped, as in
+    `#apply` (with the epoch and `#readSeq` checks of `#pull`).
 - Consumers: `ListPage` draws «Загружаем...» until its list is detailed and
   after a failed detail read a load line with «Повторить» in the wording
   of rule 2 ("Failures", `FEATURES.md`, "Consistency rules");
   `SharePanel`, `RequestsPanel`, the copy text and the print of a list
   read the open list; `exportLists` and `exportData` await `detail` of
-  every named list, and a failed read toasts `accountFailed`.
+  every named list, and a failed read toasts `accountFailed`;
+  `SharedListPage`'s `hiddenN` calls `detail([mine])` on the owner's own
+  players' link, with a unit case: the owner's players' link of a list with
+  heads only and one GM-only entry counts it.
+- The add-to-list menu's remove-with-undo (`AddToList.pick` is synchronous
+  today) is its own acceptance line: the chip reports busy (`aria-busy`,
+  disabled) while the detail read runs, a failed read toasts
+  `cloudLoadFailed` and removes nothing, and the busy state has axe
+  coverage. Or the refresh names why the remove can wait with no state.
+  Section 2's "No new UI" allows this one state.
 - `tests/db/`: a case on the 3x seed of `delete-account.test.mjs` (with
-  `analyze`) that times the head select's SQL and bounds its JSON size;
-  `check:db` runs it. The browser bar (a signed-in `#/lists` draws its
-  cards under 4000 ms at 3x) is measured once on the local stack and
-  recorded in the handoff and in `FEATURES.md`.
+  `analyze`) that times the head select's SQL and bounds its JSON at 6 MB
+  (the est. 4-5 MB plus a margin); `check:db` runs it. This bound is the
+  gate that does not depend on the host.
+- The browser bar: the configured build, the local stack, the 3x seed with
+  `analyze`, an idle host, 1180 px; from navigation start to the moment
+  `cloud.status` is `ready` and the cards draw; the median of three runs
+  under 4000 ms. The same bar for `#/lists/<the largest list>` drawing its
+  rows (one more round trip after P6). Record the request count and the
+  bytes of each signed-in page state at 3x before and after the batch;
+  explain the extra reads per state (D115 measured 82-217 MB, up to 2.6
+  full reads) before a miss sends the batch to the RPC fallback. The
+  results go to the handoff and to `FEATURES.md`.
 - Specs: `FEATURES.md` ("Account and browser lists": the first read, the
   list page's wait), `COVERAGE.md`, the decision file
   `docs/decisions/<date>-the-first-account-read-takes-list-heads.md` from
   section 4, "P6" (with "Amends" the 2026-10-22 requests decision and the
   2026-10-02 re-read decision), `node tools/decisions.js`.
-- `DEBT.md`: rewrite D115's "How to verify" (section 4, the deviation)
-  only if the batch cannot close it; on a pass, delete D115.
+- `DEBT.md` (after the owner's Q2, section 4): with A, D115 is deleted
+  when the changed criterion and the defined bar pass, and the decision
+  file records the changed criterion as a deviation from the carry, which
+  the closeout names to the owner; with B, the batch follows the RPC
+  fallback and the original line. If the batch cannot pass, D115 stays
+  with its measured numbers updated.
 - Standing checks at its refresh: a States table for the list page's new
   wait (empty, one, many, 3x lists; 360 and 1180); error scenarios for a
   failed detail read, offline, a list deleted while its details load, a
   stale tab, a revert (the previous bundle reads full rows again; nothing
   stored changes).
-- Acceptance: carry P6 closed (D115 deleted); the first read carries no
-  entry note, quantity, price or GM-only flag (contract case); the 3x bar
-  met and recorded; every consumer of `meta` reads a detailed list
+- Acceptance: carry P6 closed (D115 deleted, after Q2); the first read
+  carries no entry note, quantity, price or GM-only flag (contract case);
+  the head JSON at 3x is at most 6 MB (`check:db`); the defined bar met on
+  `#/lists` and on the largest list's page, with the requests and bytes
+  per state recorded; each guard of the detail read passes its cases; the
+  `hiddenN` case and the add-to-list busy state pass; «Сохранить себе»
+  relinks a list with heads only (a case); every consumer of `meta` reads a
+  detailed list
   (`git grep -n -E "\.meta\b|itemMeta\(" -- app/src` reviewed in the
   handoff).
 
@@ -903,11 +1011,23 @@ move is left that a client can call, and the fingerprint column is gone.
    client. From then until R10 lands on `main`, the test project has no
    column and no function while `main`'s client still selects the column
    and contract case I calls the function, so a `main` run or another
-   branch's run of `e2e` in that window fails. So: the orchestrator pushes
-   `B10.5` only when no other branch waits to land on `main`, and runs the
-   closeout right after `B10.5`'s CI credit (the window is about one CI run
-   and the squash). Another branch's `e2e` is green again once it merges
-   `origin/main` after R10 lands.
+   branch's run of `e2e` in that window fails (every push of a task branch
+   runs `e2e`). So, before the push, `gh run list --workflow ci.yml --status
+   in_progress` and `gh run list --workflow ci.yml --status queued` show no
+   run of another branch, and no other session pushes until `main`'s run
+   after the squash is green; the closeout runs right after `B10.5`'s CI
+   credit (the window is about one CI run and the squash). A
+   computed-column shim for `legacy_fingerprint` is rejected: it keeps the
+   reads but not case I and F9, and it works against Q1 B.
+   - The stall rule: if a red after `B10.5`'s push needs a remediation and
+     keeps the window open, the owner applies `B10.5`'s reversal to the test
+     project by the orphan procedure of `.claude/README.md`, "Branch
+     migrations on the test project" (the reversal with `psql`, then the
+     version's row deleted from `supabase_migrations.schema_migrations`);
+     the next push of R10 applies the migration again.
+   - Another branch's `e2e` is green again once it merges `origin/main`
+     after R10 lands; the closeout names each open `claude/*` branch that
+     must do so before its next push (section 15).
 3. Production: the squash onto `main` holds the R10 client and the
    migration; CI runs `migrate-prod` before `deploy` in one run. Between the
    two, and in every tab still on a pre-R10 build until it reloads, account
@@ -919,19 +1039,24 @@ move is left that a client can call, and the fingerprint column is gone.
 
 - `supabase/migrations/<ts>_drop_legacy_move.sql` (a timestamp after every
   applied one): `drop function public.move_legacy_list(uuid, text);`;
-  `create or replace function public.lists_limit()` with the body of
-  `20260925130400_legacy_move.sql` less the `dhloot.move` guard;
-  `create or replace function public.list_entries_limit()` with the body
-  of `20260930121000_list_entries_statement_triggers.sql` less the guard
-  (the triggers stay; the `revoke execute ... from public, anon,
-  authenticated` lines repeated); `drop index
+  `create or replace function public.lists_limit()` copied whole from
+  `20260925130400_legacy_move.sql`, header included (`returns trigger`,
+  `language`, `security definer`, `set search_path = public, pg_temp`),
+  less the `dhloot.move` guard; `create or replace function
+  public.list_entries_limit()` copied whole the same way from
+  `20260930121000_list_entries_statement_triggers.sql`, less the guard
+  (`create or replace` takes its attributes from the new statement, so a
+  missing header makes the function invoker with no fixed `search_path`,
+  and the up-down-up walk cannot see it); the triggers stay; the `revoke
+  execute ... from public, anon, authenticated` lines repeated; `drop index
   public.lists_legacy_fingerprint;`; `alter table public.lists drop column
   legacy_fingerprint;`. A two-line header comment cites the decision file.
 - `supabase/reversals/<same name>`: in reverse order - the column with its
   check (`legacy_fingerprint text check (legacy_fingerprint ~
   '^[0-9a-f]{64}$')`), the unique partial index on `(owner_id,
   legacy_fingerprint) where legacy_fingerprint is not null`, the two limit
-  functions with the guard, and the function as
+  functions with the guard (each copied whole, header included), and the
+  function as
   `20260925130500_legacy_move_conflict.sql` made it (body, `revoke` from
   `public, anon`, `grant` to `authenticated`). Copy each text from the
   applied files. The values are not restored (the walk compares the schema
@@ -943,7 +1068,10 @@ move is left that a client can call, and the fingerprint column is gone.
   index `lists_legacy_fingerprint` (`pg_class`); with
   `set_config('dhloot.move', 'on', true)` in the transaction, a list past
   `lists_per_owner` and an entry past `entries_per_list` are still refused
-  (`P0001`). `tests/db/delete-account.test.mjs` and every other file that
+  (`P0001`); after the migration and after the reversal, `lists_limit` and
+  `list_entries_limit` have `prosecdef` true and `proconfig`
+  `{search_path=public, pg_temp}`, and `public`, `anon` and
+  `authenticated` have no EXECUTE on them. `tests/db/delete-account.test.mjs` and every other file that
   names the function or the column lose it (`git grep -n -E
   "move_legacy_list|legacy_fingerprint" -- tests/db`).
 - `tools/supabase/usage.mjs` (the comment near "move_legacy_list can pass
@@ -952,7 +1080,19 @@ move is left that a client can call, and the fingerprint column is gone.
 - `.claude/README.md`: "Expected Security Advisor warnings" loses the
   `move_legacy_list` row, and its counts are re-counted from the rows that
   remain; "Usage monitoring": "above 100 %, which `move_legacy_list`
-  allows" becomes "above 100 %, for lists moved in before R10".
+  allows" becomes "above 100 %, for lists moved in before R10"; "Undo a
+  deploy that carried a migration" gains a paragraph "To undo
+  `<ts>_drop_legacy_move`", in the form of the
+  `20261010120000_drop_list_entry_snapshot` paragraph, with three facts:
+  (a) the app alone cannot be reverted: every frontend before R10 selects
+  `legacy_fingerprint`, so every account list read fails; push the
+  reversal in the same push as the app revert (`migrate-prod` runs before
+  `deploy`); (b) for 30 days `restore:prod` and `restore:drill` of a
+  nightly backup made before the migration fail until the reversal is
+  pushed, because the dump's `lists` inserts name the column; a drill of a
+  backup made after the push needs nothing; (c) the reversal brings the
+  column back with nulls; the values come back only from a restore of a
+  backup made before R10, after the reversal.
 - `COVERAGE.md`: the layer 3 row of `legacy-move.test.mjs` becomes the new
   file's.
 - `DEBT.md`: delete D62, and the "Legacy removal" section when it is empty.
@@ -962,15 +1102,25 @@ move is left that a client can call, and the fingerprint column is gone.
   `2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md`,
   which gets the matching line); `node tools/decisions.js`.
 - Standing checks at its refresh: no screen changes; the error scenarios
-  are the order above (a stale tab, the test project window, the revert:
-  the reversal restores the shape, never the values).
+  are the order above (a stale tab, the test project window and its stall
+  rule) and the revert: (a) no app-only revert after R10 - the reversal
+  goes in the same push as the app revert; (b) a restore or a drill of a
+  backup made before the migration fails until the reversal is pushed;
+  (c) the reversal restores the shape with null values; the values come
+  back only from a restore of a pre-R10 backup after the reversal.
 
 **Acceptance.**
 
 - `git grep -n -E "move_legacy_list|legacy_fingerprint|dhloot\.move" -- app/src tests tools .claude/README.md docs/specs`
   prints only the new migration, its reversal, the new test file, and the
   applied migrations and reversals.
-- `npm run check:db` passes, the reversibility walk included.
+- `npm run check:db` passes, the reversibility walk and the
+  `prosecdef`/`proconfig`/EXECUTE assertions after the up and after the
+  reversal included.
+- `.claude/README.md` holds the paragraph "To undo
+  `<ts>_drop_legacy_move`" with facts (a), (b) and (c).
+- Right before the push, the two `gh run list` checks of "Order", item 2,
+  show no run of another branch.
 - After the approve and the push: CI's `migrate-test` applies the file and
   `e2e` passes (contract cases without I, flows without F9).
 - `DEBT.md` holds no D62 and no "Legacy removal" section.
@@ -989,9 +1139,18 @@ e2e`, after one `gh run list --workflow ci.yml --status in_progress` check.
   загрузить списки аккаунта.» and «Повторить») until it reloads; no row is
   lost.
 - Risk: the test project window (section 13, "Order", item 2). Mitigation:
-  `B10.5` is the last batch, pushed only when no other branch waits to land.
-- Risk: the fingerprint values are lost for good. Nothing reads them after
-  the move; the nightly backups of the last 30 days keep them.
+  `B10.5` is the last batch, pushed only when the `gh run list` checks show
+  no run of another branch, with no other push until `main`'s run after
+  the squash is green; the stall rule reverses the migration on the test
+  project if a remediation keeps the window open.
+- Risk: the fingerprint values leave the live database. Nothing reads them
+  after the move. The reversal brings the column back with nulls only; the
+  values come back only from a restore of a backup made before R10 (the
+  nightly backups of the last 30 days), after the reversal. Until the
+  reversal is pushed, `restore:prod` and `restore:drill` of such a backup
+  fail, because its `lists` inserts name the column. No app-only revert
+  exists after R10: the reversal goes in the same push as the app revert
+  (section 13, the `.claude/README.md` paragraph).
 - Risk: a port loses coverage silently (`B10.1`, `B10.2`). The per-file
   thresholds of `check:fast` and CI catch a file that drops below its line;
   the reviewer compares the deleted and the ported case lists.
@@ -1008,8 +1167,11 @@ e2e`, after one `gh run list --workflow ci.yml --status in_progress` check.
 ## 15. Owner steps at R10's closeout
 
 1. Before the landing: the decision files of `B10.3`, `B10.4` and `B10.5`
-   are in the branch, and no other branch waits to land (section 13,
-   "Order").
+   are in the branch, and no other branch has a queued or running CI run
+   (section 13, "Order"). The closeout report names each open `claude/*`
+   branch (by `git branch -r --list "origin/claude/*"`) that must merge
+   `origin/main` before its next push; without the merge its `e2e` fails,
+   and the failure looks like its own bug.
 2. After `migrate-prod` and `deploy`: reload every open tab of the site;
    open an old `#/l/` link on a phone and a desktop (the not-found page,
    the address kept); the tab bar has nine sections; a signed-in account's
