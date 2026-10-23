@@ -2,73 +2,95 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: blocked (phase 2 done; the owner chooses a direction)
-- Last agent: planner
-- NEEDS_HUMAN_CONFIRMATION: yes
+- Task status: waiting for the owner's manual review of the R states; then
+  batch 1 is implement-ready
+- Last agent: planner (S2 refresh after the owner chose R)
+- NEEDS_HUMAN_CONFIRMATION: no (no plan question is open; the review is the
+  owner's next step)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `0b73fd5c`
-- Pushed: no (the S2 files are not committed; the orchestrator commits them)
+- Pushed: no (this refresh is not committed; the orchestrator commits it)
 
 ## Completed
-- S1 - critique (phase 1): `audit.md` (P0/P1/P2, clarity inventory, RU/EN
-  parity, eight themes, owner triage); triage in `context.md`. Pushed at
-  `33c13c5`; the triage commit follows it.
-- Batch name/id: S2 - direction and mocks (phase 2)
-- What shipped: `plan.md` (recommendation R, the direction comparison, the
-  eight theme decisions, the font study, token and DESIGN.md changes, the
-  11-batch outline, batch 1 implement-ready); mocks for R, A, B, C and the
-  options A2, B2, C2 in `issues/57/mocks/direction/` with `index.html`;
-  `context.md` decisions (detector exceptions, font, directions), the
-  disproved C55 cause and the font facts.
+- S1 - critique (phase 1): `audit.md`, triage in `context.md`.
+- S2 - direction and mocks (phase 2), `b0a80ca`: directions A, B, C,
+  options A2, B2, C2, recommendation R, `plan.md` with batch 1
+  implement-ready.
+- Batch name/id: S2 refresh - the owner's choice and the review round
+- What shipped:
+  - The owner chose R; `plan.md` section 1 is the chosen direction (parts,
+    sources, reasons, trade-offs), section 2 keeps the comparison as
+    history with R's row marked.
+  - The mode row fix in R: two rule-set chips and one «Дополнения ▾» chip
+    with a menu; the chip shows the active supplement. Alternative rendered
+    as `R/header__alt__{360,1180}.png`.
+  - 45 R review states, each at 360 and 1180 RU, EN 360 for six of them:
+    `R/state.html?s=<state>` from one script (`R/states.js`) and one
+    stylesheet (`R/r.css`); `index.html` groups R by surface first.
+  - The print sheet crop `shared/print-sheet-twocards.png` from the S1
+    capture of `#/p/<id>`.
+  - Section 7 maps every batch to its R states; batch 7 takes the mode row,
+    the job icons and the rule 4 departure as acceptance lines; batch 1
+    adds the kind glyphs and the check mark to `icons.ts` (the set had
+    none).
+  - Owner review fixes: icon-and-label centring in `R/r.css` (one 16 px
+    box, one gap, no wrap beside an icon); eight list price, pick, sold,
+    roll, selection and request states (`R/list-*`); batch 9 acceptance
+    lines for the centring, A2, A3, A42 and the two list clarity rows.
+  - `context.md` decisions: R, the mode row, the job icons, the font
+    dependency, the review round.
 - Files changed: `issues/57/plan.md`, `handoff.md`, `context.md`,
-  `issues/57/mocks/direction/**` (HTML, CSS, JS, PNG).
-- Previous sha (batch diff base): `7bc3f4f`
+  `issues/57/mocks/direction/index.html`, `R/r.js`, `R/r.css`,
+  `R/state.html`, `R/states.js`, `R/*.png` (header, roller, list, 45 states),
+  `shared/print-sheet-twocards.png`.
+- Previous sha (batch diff base): `b0a80ca`
 - Deviations and rationale:
-  - Three directions and a combination R, not two (owner, 2026-10-23, via the
-    orchestrator); a sixth surface, the homebrew editor (owner).
-  - The Impeccable discovery interview did not run: no question tool in this
-    session; the owner's recorded decisions stood in for it.
-  - Fonts load from `C:\Users\Ignat\.dhloot\notes\57\fonts\` (OFL files
-    copied from the local Office font cache), outside the checkout; no
-    download. The PNGs are the record on another machine.
-  - Print-card and editor-preview pictures in the mocks are crops of the S1
-    captures (`shared/printcard-*.png`, `shared/preview-emberaxe-bw*.png`),
-    not redrawn vectors.
-  - PNGs over 300 KB were re-encoded as 256-colour palette PNGs (10 files).
+  - The orchestrator first asked for an A1 refresh, then withdrew it for R
+    (owner, 2026-10-23). The plan was never rewritten for A1;
+    `compare-a.*` stays as history.
+  - A 360 measurement for the withdrawn A1 strip with icons (scratch only):
+    RU showed one full tab instead of two before the cut; R's three-column
+    job grid has no such cost.
 - Review: not required (no trigger fired; no code)
 
 ## Verification
-- Commands run (exact): `node <scratchpad>/render.js all` (puppeteer from
-  `E:/dev/daggerheart-loot/node_modules`); `impeccable detect --json
-  issues/57/mocks/direction`; a scratch parser over the candidate font files.
-- Results: 82 PNGs (74 renders, 8 shared crops and specimens), each at most 300 KB, 13 MB in all; the detector finds no
-  anti-pattern in the mocks, only DESIGN.md frontmatter gaps (plan section 2).
+- Commands run (exact): `node <scratchpad>/render-r.js surfaces`, `node
+  <scratchpad>/render-r.js states` (puppeteer from
+  `E:/dev/daggerheart-loot/node_modules`; a PNG over 300 KB re-encoded by
+  `quant.js`); an image-load check of `index.html`; `node
+  <scratchpad>/placement.cjs` (audit ids against plan section 7).
+- Results: 103 new or re-rendered PNGs, each at most 300 KB, no page error;
+  no icon more than 1 px off its label centre in any R mock at 360 or 1180
+  (`align-check.cjs`); no horizontal overflow in the list states at 360;
+  `index.html` loads every image; all 110 audit rows are placed, and the
+  16 ids that have no row of their own go with their parent row.
 - Gates: none (docs and mocks only).
 
 ## Next batch (implement-ready)
-- Name: owner chooses a direction, then batch 1 - Foundation
-- Objective: the owner approves R or names a direction and option
-  (`plan.md`, section 11); then batch 1 ships the font, the ten-step ramp,
-  the tokens, the neutral pressed state and the art-well glyph.
+- Name: owner manual review of R, then batch 1 - Foundation
+- Objective: the owner reviews every R state (`mocks/direction/index.html`,
+  R by surface); each finding goes to the batch that owns the screen as an
+  acceptance line. Then batch 1 ships the font, the ten-step ramp, the
+  tokens, the neutral pressed state, the kind glyphs and the art well.
 - In scope: `plan.md`, section 8.
 - Out of scope: layouts, navigation, labels, help panels, print layouts.
 - Files expected: `plan.md`, section 8, "Files expected".
-- Steps: record the owner's answer in `context.md`; if R or a direction other
-  than the plan's changes the outline, refresh section 7 (the note "Under the
-  other directions" names the batches that change); then `plan.md`, section
-  8, steps 1-9.
+- Steps: record the review findings in `plan.md` section 7 (the owning
+  batch) and in batch 1 only when one touches the font, the ramp, the
+  tokens, the pressed default or the glyph; then `plan.md`, section 8,
+  steps 1-9.
 - Acceptance criteria: `plan.md`, section 8.
 - Verification commands: `rtk npm run check:fast`; `node tests/run-all.js
   app/print,app/typo,app/hues,stub`; `npm run check:built`; push and CI
   credit.
 - Risks / do-nots: print output must not change (`--print-ui`); the art is
-  fixed; a help panel is not removed without the owner's yes.
+  fixed; a help panel is not removed without the owner's yes;
+  `package-lock.json` is written by `npm install`, never by hand.
 - Fallback (optional): woff2 files under `app/public/fonts/` if the
-  fontsource dependency is refused.
+  fontsource package lacks the Cyrillic italic.
 
 ## Blockers
-- The owner's choice of direction (`plan.md`, section 11, question 1) and the
-  font dependency (question 2).
+- The owner's manual review of the R states (not a plan question).
 - Batches 7, 9 and 10 wait for R10 `B10.3`.
 
 ## Deferred
@@ -80,15 +102,15 @@
   batch 11 regenerates it.
 
 ## Notes
-- Mocks path: `issues/57/mocks/direction/index.html` (R first; sets R, A, B,
-  C; options A2, B2, C2; font specimen in `shared/`).
+- Mocks path: `issues/57/mocks/direction/index.html` (R first, by surface;
+  then A, B, C and the font specimen). A state opens live at
+  `R/state.html?s=<state>&lang=en`.
 - Screenshot findings: C55 and C11 are a capture artefact - every record has
-  an image file; lazy images below about 2200 px had not loaded
-  (`context.md`, "Reasons already disproved").
-- Cleanup performed / retained artifacts: the render, crop, quantise and font
-  scripts stay in the S2 scratchpad; the copied fonts stay in
-  `C:\Users\Ignat\.dhloot\notes\57\fonts\`.
+  an image file (`context.md`, "Reasons already disproved").
+- Cleanup performed / retained artifacts: `render-r.js`, `placement.cjs`,
+  `quant.js` and `crop.js` stay in this session's scratchpad; the copied
+  fonts stay in `C:\Users\Ignat\.dhloot\notes\57\fonts\`.
 - Session end partial progress (if any): none.
 - Durable items written to their homes this batch (file, section): none; the
-  DESIGN.md rules are written by the batches that ship them (`plan.md`,
-  section 5).
+  DESIGN.md and FEATURES.md rules are written by the batches that ship them
+  (`plan.md`, sections 5 and 7).

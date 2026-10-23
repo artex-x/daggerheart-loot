@@ -7,30 +7,41 @@ decisions are in `context.md`.
 ## Status
 
 - Phase 1 (S1): done, triaged (`context.md`).
-- Phase 2 (S2): done - three directions, three options, a recommended
-  combination R, mocks and this plan. Waiting for the owner's choice.
-- Phase 3: batch 1 is implement-ready (section 8); batches 2-11 are outlines.
+- Phase 2 (S2): done. The owner chose R (2026-10-23) and fixed its roll
+  mode row (section 1). R now has a mock for every screen and state of the
+  manual review round (`mocks/direction/index.html`, R first, by surface).
+- Phase 3: batch 1 is implement-ready (section 8); batches 2-11 are
+  outlines. The owner's manual review of the R states comes first; a
+  finding from it changes the batch that owns the screen, not batch 1,
+  unless it touches the font, the ramp, the gold primitives or the glyph.
 - Plan review: not required (no trigger fired). No migration, no SECURITY
   DEFINER function, no public contract change (routes, ids, links, asset
-  paths stay; font files are new paths, not changed ones), no stored data or
-  `localStorage` key at risk, no new write or sync protocol.
-- NEEDS_HUMAN_CONFIRMATION: yes - the owner approves R (section 1) or names
-  another direction or option (section 11).
+  paths stay; the mode menu links to the same section addresses; font files
+  are new paths, not changed ones), no stored data or `localStorage` key at
+  risk (the last roll section is memory only), no new write or sync protocol.
+- NEEDS_HUMAN_CONFIRMATION: no. The direction, the font, the dependency and
+  the mode row are settled (`context.md`). The owner's manual review of the
+  R states is the next step; it is a review, not an open plan question.
 
-Mocks: `issues/57/mocks/direction/index.html` (R first). Shared code and the
-font specimen: `mocks/direction/shared/`. Discovery came from the phase 1
-triage; this session had no question tool, so the Impeccable interview was
-replaced by the owner's recorded decisions (`context.md`).
+Mocks: `issues/57/mocks/direction/index.html` (R first, grouped by surface;
+A, B and C follow as history; `compare-a.html` is the A1/A2 comparison).
+R's states: `mocks/direction/R/state.html?s=<state>`, composed from
+`R/states.js` and `R/r.css`. Shared code and the font specimen:
+`mocks/direction/shared/`. Discovery came from the phase 1 triage; this
+session had no question tool, so the Impeccable interview was replaced by
+the owner's recorded decisions (`context.md`).
 
-## 1. Recommendation (R)
+## 1. Chosen direction (R)
 
-R is direction B, option B1, with A1's gold budget, the Source Sans 3 font,
-and one part of C. Set: `mocks/direction/R/` (six surfaces, 360 and 1180 RU,
-EN 360 for the header, the item and the editor, and the editor's failed save).
+The owner chose R (2026-10-23): direction B, option B1, with A1's gold
+budget, the Source Sans 3 font, and one part of C. Set: `mocks/direction/R/`
+(six surfaces and 45 review states, 360 and 1180 RU, EN 360 where the text
+is long).
 
 | Part | Source | Reason |
 |---|---|---|
-| Three jobs (Бросок, Таблицы, Поиск) and one row of nine roll modes | B1 | Every top-level place is visible at 360 in both languages, so no tab hides behind a scroll (C6, P9, D10). |
+| Three jobs (Бросок, Таблицы, Поиск), each with an icon before its label | B1; the icons from R's header mock | Every top-level place is visible at 360 in both languages, so no tab hides behind a scroll (C6, P9, D10). The icon helps a scan; the label stays at every width (theme 3). |
+| Roll mode row: «Обычные правила», «Альт. таблицы» and one «Дополнения ▾» chip that opens a menu of the seven supplements | owner critique of B1's row (2026-10-23) | B1's row held two chips, a label and seven chips, and wrapped to two lines at 1180. Three controls hold one line at every width; the chip shows the active supplement in the current-place gold («Vault of Ages ▾»). |
 | Filter column beside a column table at desktop width; a filter sheet at 360 | B1 | The GM compares weapons by column, and the panel no longer pushes the rows 570 px down (C3, C54). |
 | Two-pane roller: controls on the left, results on the right | B1 | The result is the focus during play and the controls stay in reach (C39, C25). |
 | Dossier item page, bottom-sheet dialog with a fixed action bar at 360 | B1 (A's sheet) | It uses the desktop width (C17) and keeps the actions reachable on a phone (C44). |
@@ -39,9 +50,34 @@ EN 360 for the header, the item and the editor, and the editor's failed save).
 | Source Sans 3, self-hosted | font study (section 4) | It meets every hard requirement, and it is the only OFL candidate whose tabular figures and Cyrillic I could check on this host. |
 | Roll results drawn as the card face (art fading into the plate, kind tag, stat ribbon) | C1 | It gives the one moment that matters at the table the register of the printed card, and it uses the fixed art at full width. |
 
-Trade-off accepted: the navigation changes shape, so a returning GM learns
-one new click ("Бросок" then the mode), and the plan pays two more batches
-than A (11 against 9).
+Trade-offs accepted:
+
+- The navigation changes shape, so a returning GM learns one new click
+  ("Бросок" then the mode), and the plan pays two more batches than A (11
+  against 9).
+- A switch from one supplement to another takes one more tap (open the
+  menu, then pick). The two rule sets stay one tap away.
+- At 360 the three mode controls share the width, so a label can take two
+  lines inside its control («Обычные / правила», «Vault of / Ages»). The row
+  itself stays one line.
+- The mode chip keeps today's tab label «Альт. таблицы» while the H1 reads
+  «Альтернативные таблицы», as today; the full name does not fit three
+  controls at 360. FEATURES.md rule 4 departure, named in batch 7.
+
+Mode row alternative (shown, not taken): one row of all nine modes that
+scrolls sideways with an edge fade (`R/header__alt__360.png`,
+`R/header__alt__1180.png`). It keeps every supplement one tap away, but it
+hides modes behind a scroll at every width, which is the defect C6 names
+for the tabs.
+
+Tab icons: the app's own set (`app/src/lib/icons.ts`) supplies them, not the
+mock's outline paths (`shared/kit.js`, drawn for the mocks, no external
+source), so that the header uses one icon family. Бросок `die` (in the set,
+from the shipped `app.js`), Таблицы `table` (in the set, Material Icons
+`grid_on`, Apache 2.0), Поиск `search` (new: Material Icons `search`, Apache
+2.0, the same family as `copy` and `table`). Width at 360: the three jobs
+are a three-column grid, so the icons hide nothing (`R/header__360__ru.png`,
+`R/header__360__en.png`).
 
 Conflicts and how R resolves them:
 
@@ -54,8 +90,10 @@ Conflicts and how R resolves them:
   Rule allows for one component and its own measured problem.
 - B's mode row and job tab are two "current place" marks on a roll page. R
   keeps both: the tab is a gold underline, the mode is the one gold fill.
+  On a supplement page the gold fill is the «Дополнения ▾» chip, which then
+  carries the supplement's name.
 
-Considerations weighed:
+Considerations weighed before the choice (history):
 
 - Density: B keeps the table density and adds columns; C loses about half of
   it in the grid and the list; A keeps today's density.
@@ -75,16 +113,14 @@ Considerations weighed:
   card.
 - Gate cost: A 9 batches, R/B 11, C 12 (section 7).
 
-What would make me choose differently: if the owner wants no navigation
-change before `cloudflare-pages` moves `/en/` into the URL, take A1 with the
-C card face on roll results (batches 2-7 stay, batch 8 shrinks to A's tab
-polish).
+## 2. Directions compared (history; R chosen)
 
-## 2. Directions compared
+The table records the comparison the owner chose from; R's row is the
+chosen one.
 
-| | A - polish in place | B - two-level index | C - card table | R - recommended |
+| | A - polish in place | B - two-level index | C - card table | R - chosen (owner, 2026-10-23) |
 |---|---|---|---|---|
-| What changes | Rules enforced, font, type floor, labels, placeholder; layout and navigation stay | Navigation regrouped; filter column and column table; two-pane roller; dossier; list side column | A record is shown as its card: roll hand, card item page, card grid and card list | B1 + A1 gold + C card face on roll results |
+| What changes | Rules enforced, font, type floor, labels, placeholder; layout and navigation stay | Navigation regrouped; filter column and column table; two-pane roller; dossier; list side column | A record is shown as its card: roll hand, card item page, card grid and card list | B1 + A1 gold + C card face on roll results; mode row of three controls (owner fix) |
 | Options | A1 strict gold (in the set); A2 lenient gold (`catalog`, `roller`) | B1 three jobs in the header (in the set); B2 left rail and phone bottom bar (`header`, `roller`) | C1 screen card (in the set); C2 printed paper card on the item page (`item`) | - |
 | Batches | 9 | 11 | 12 (the card face needs the exported vectors on screen) | 11 |
 | Risk | Low; the 360 tab strip stays a scroller | Medium; navigation spec and goldens change; a container query | High; density drops, print vectors on screen, long RU names in narrow cards | Medium, as B |
@@ -119,7 +155,7 @@ Directions not taken, one reason each:
 | 1 | Gold spent on things nobody chose | Polish in place. Gold fill: one primary action per panel, a choice that narrows the view, the current place. A pressed default (`«Все»`), a mode toggle (view, language, prices) and a selection are neutral: a lit border and a check. Roll buttons are plain; the one that made the shown result keeps a gold border. Unique tag neutral dashed; footer links muted; roll number in the UI face. | A2 lenient budget: gold on defaults is C13. A second accent: two accents halve the signal. | C9, C13, C18, C25, C28, C45, C49, A4, A16, A26 |
 | 2 | Help text repairs controls | Polish in place: each control says what it does (captions, option text, counts), so a panel holds nothing new. The three panels stay behind a labelled «Справка» button until the owner decides per batch mock (owner, 2026-10-23). | Remove the panels now: the owner keeps that decision per batch. Tooltips: they are help text in another place. | C1, C38, A27 (panel), clarity inventory |
 | 3 | Labels change with the width | Polish in place: one action vocabulary, the same labels at every width, and one «Ещё» / "More" overflow for the rare actions. Vocabulary: «В список», «Поделиться», «Печать», «Ещё» (Скопировать текст, Скопировать название, Скопировать картинку, Скопировать ссылку, Копия в мои предметы). | Icon-only at 360 (today): fails the clarity rule. An action sheet per card: one more tap for the primary action. | C5, C18, C27, C40, A23, A36 |
-| 4 | Navigation at 360 and after R10 | Redesign: three jobs and a row of nine roll modes (B1). «Бросок» opens the last roll section of this tab, else `#/roll/std`. The account control is «Войти» signed out and an initial with a chevron signed in, lit on `#/account`; the menu is the only path to «Мои списки». | A1 scroller with a fade: two tabs stay hidden. B2 rail: costs 236 px and a bottom bar. Shorter tab names: the names change between the menu, the tab and the heading. | C6, C7, C27, C48, A28, A35, A37 |
+| 4 | Navigation at 360 and after R10 | Redesign: three jobs with an icon before each label (B1) and a mode row of three controls: «Обычные правила», «Альт. таблицы», «Дополнения ▾» (a menu of the seven supplements; the chip shows the active one). «Бросок» opens the last roll section of this tab, else `#/roll/std`. The account control is «Войти» signed out and an initial with a chevron signed in, lit on `#/account`; the menu is the only path to «Мои списки». | A1 scroller with a fade: two tabs stay hidden. B2 rail: costs 236 px and a bottom bar. Shorter tab names: the names change between the menu, the tab and the heading. B1's row of nine chips: it wraps to two lines at 1180 (owner). One scrolling row of nine: modes hide behind a scroll at every width. | C6, C7, C27, C48, A28, A35, A37 |
 | 5 | Type floor and caps | Polish in place with a new font: ten steps (23, 20, 18, 16, 15, 14, 13, 12, 11.5, numeral 19); data text 13 px at the least; capitals only for section labels and badges. | Keep Inter at 12 px: it is a local name most machines lack, and the detector flags it. Mono for stat lines: Cyrillic words in mono at 11 px are C33. | C2, C33, A5, A39 |
 | 6 | Density on phones, space on desktop | Redesign for the catalog, roller, item and list (B1); polish for the rest. Rows: name with its tags after it, one stat line, one feature line, tags that repeat the active filter hidden, no tier in the stat line under a tier heading; a selection mode («Выбрать») replaces the always-on checkbox column. | C card grid: half the density. Keep the 520 px card: C17. | C3, C10, C17, C39, C54, C56, A1, A40 |
 | 7 | Missing art | Polish in place. Every record has its image (C55 and C11 were a lazy-load capture artefact, `context.md`). A record with no picture (homebrew) and an image still loading show the kind glyph on the art well; the "?" pedestal moves to empty states. | Keep the pedestal on rows: it reads "unknown item", not "no picture". Generated art: the art is fixed. | C11, C55, A10, A38 |
@@ -189,9 +225,12 @@ DESIGN.md rules changed (each written by the batch that ships it):
   default (batch 1).
 - Capitals only for section labels and badges (batch 1).
 - The kind glyph on the art well is the no-picture state (batch 1).
-- Navigation: three jobs and the mode row replace the six-tab text; the
-  wordmark is «Лут» in RU and «Loot» in EN, which replaces "never
-  translated" (batch 7).
+- Navigation: three jobs with icons and the three-control mode row replace
+  the six-tab text; the wordmark is «Лут» in RU and «Loot» in EN, which
+  replaces "never translated" (batch 7).
+- Empty state and error page: one pattern each (`R/pattern-empty__*`,
+  `R/pattern-error__*`), written by the first batch that ships it (batch 2
+  for the empty state, batch 3 for the error page).
 - Book names stay Latin in RU (P13) (batch 2).
 - The clarity rule, as a check, in "Notes"; the detector exceptions list,
   empty (batch 11).
@@ -213,22 +252,26 @@ DESIGN.md rules changed (each written by the batch that ships it):
 
 ## 7. Phase 3 batch outline
 
-Each batch: the owner approves its mock first (`issues/57/mocks/<N>/`, from
-R), a help panel it touches is shown with its replacement and asked about,
-and its `verify` rows are checked in a live browser first.
+Before batch 1: the owner reviews every R state (`mocks/direction/index.html`,
+R by surface). Each batch then builds to the R states named below; a
+finding from the review edits that batch's mock first (in the batch's mock
+step, under `issues/57/mocks/<N>/`), a help panel it touches is shown with
+its replacement and asked about, and its `verify` rows are checked in a live
+browser first. Every surface now has an R mock, so no batch starts from a
+blank mock.
 
-| # | Batch | Audit ids | Mock to approve | After R10 B10.3 | Split criterion |
+| # | Batch | Audit ids | R states to build to | After R10 B10.3 | Split criterion |
 |---|---|---|---|---|---|
-| 1 | Foundation: font, ten-step ramp, tokens, gold primitives, art well | C2 (type), C9, C28, C33, A39, C55, C11, A10, A26, P7 | `R/*` (all surfaces show the font) | no | a review that cannot be held in one pass: it moves every route's text metrics; layout work on top would hide its regressions |
-| 2 | Catalog tables and filters | C1 (panel, ask), C3, C4, C5, C7, C8, C10, C12 (verify), C53, C54, C56, C57, C58, C59, A25, A40 (tables), P1, P13, P14, P15 | `R/catalog` | no | a different route and filter set (`#/tables/*`) |
-| 3 | Record card, actions, item page, dialog, `#/h` | C17, C18, C19, C20, C21, C22, C34 (verify), C40, C44 (verify), C45, C46, C47, A23, A24, P4, P5, P6 | `R/item` | no | a different component group and route (`#/i/`, `#/h/`, the dialog) |
-| 4 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C37, C38 (panel, ask), C39, C41, C43, C49, P10, P11 | `R/roller` | no | a different route and filter set (`#/roll/*`) |
-| 5 | Homebrew editor | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A30, D14 (verify), D15, editor clarity rows | `R/editor` | no | a different route (`#/homebrew/<id>`) |
-| 6 | Homebrew pages and imports | A13, A27 (panel, ask), A28, A29, A38, A40 (homebrew), D5, D16 | new mock | no | a different route and filter set (`#/homebrew` tabs) |
-| 7 | Shell: header, jobs, mode row, account control, wordmark | C6, C27, C48, C52, A35, A36, A37, P9, D9, D10, D11 | `R/header` | yes | a public spec change (`ROUTES.md`, `FEATURES.md` Chrome) and R10's files |
-| 8 | Search, account, print preview, empty and error states | C13, C14, C15, C16, C29, C30, C31, C32, C60, A15 (verify), A31, A32, A33, A34, D7, D8 (verify) | new mock | no | different routes (`#/search`, `#/account`, `#/p/`, error pages) |
-| 9 | Account list page, list cards, add-to-list menu, lists import | A1, A2, A3, A4, A5, A14, A16, A18, A22 (owner editor), A41, A42, C35, C61, C62, D6, D20 | `R/list` | yes | R10's files (`ListPage`, `AddToList`) and a different route |
-| 10 | Shared list page `#/s/<token>` | A19, A20, A21, A22 (GM view), A40 (`#/s`), D2 | new mock | yes | a different route and filter set |
+| 1 | Foundation: font, ten-step ramp, tokens, gold primitives, art well | C2 (type), C9, C28, C33, A39, C55, C11, A10, A26, P7 | all of `R/*` (every state shows the font, the ramp and the neutral pressed default) | no | a review that cannot be held in one pass: it moves every route's text metrics; layout work on top would hide its regressions |
+| 2 | Catalog tables and filters | C1 (panel, ask), C3, C4, C5, C7, C8, C10, C12 (verify), C53, C54, C56, C57, C58, C59, A25, A40 (tables), P1, P13, P14, P15 | `R/catalog`, `R/catalog-*`, `R/pattern-empty` | no | a different route and filter set (`#/tables/*`) |
+| 3 | Record card, actions, item page, dialog, `#/h` | C17, C18, C19, C20, C21, C22, C34 (verify), C40, C44 (verify), C45, C46, C47, A23, A24, P4, P5, P6 | `R/item`, `R/item-*`, `R/h-item`, `R/pattern-error` | no | a different component group and route (`#/i/`, `#/h/`, the dialog) |
+| 4 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C37, C38 (panel, ask), C39, C41, C43, C49, P10, P11 | `R/roller`, `R/roller-alt-crit`, `R/roller-mwt` | no | a different route and filter set (`#/roll/*`) |
+| 5 | Homebrew editor | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A30, D14 (verify), D15, editor clarity rows | `R/editor`, `R/editor-errors`, `R/editor-crop`, `R/editor-conflict` | no | a different route (`#/homebrew/<id>`) |
+| 6 | Homebrew pages and imports | A13, A27 (panel, ask), A28, A29, A38, A40 (homebrew), D5, D16 | `R/homebrew-*` | no | a different route and filter set (`#/homebrew` tabs) |
+| 7 | Shell: header, jobs with icons, three-control mode row and supplements menu, account control, wordmark | C6, C27, C48, C52, A35, A36, A37, P9, D9, D10, D11 | `R/header`, `R/shell-*`, `R/roller-supmenu` | yes | a public spec change (`ROUTES.md`, `FEATURES.md` Chrome) and R10's files |
+| 8 | Search, account, print preview, empty and error states | C13, C14, C15, C16, C29, C30, C31, C32, C60, A15 (verify), A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/print-preview`, `R/pattern-*` | no | different routes (`#/search`, `#/account`, `#/p/`, error pages) |
+| 9 | Account list page, list cards, add-to-list menu, lists import, prices, picks, list roll, requests | A1, A2, A3, A4, A5, A14, A16, A18, A22 (owner editor), A41, A42, C35, C61, C62, D6, D20, list clarity rows (price toggle, requests) | `R/list`, `R/lists-*`, `R/list-*` (prices, picked, sold, roll, selected, requests), `R/item-listmenu` | yes | R10's files (`ListPage`, `AddToList`) and a different route |
+| 10 | Shared list page `#/s/<token>` | A19, A20, A21, A22 (GM view), A40 (`#/s`), D2 | `R/shared-*` | yes | a different route and filter set |
 | 11 | Lock: DESIGN.md, detector clean, re-audit, closeout | C63 (artefact, close), all rows re-checked | none | after 10 | docs and closeout only |
 
 Every row of `audit.md` is placed above. Theme rows are decided in section 3
@@ -248,17 +291,59 @@ Inherited acceptance lines (each is its own line in its batch):
 - Batch 11: `ignoreValues` holds only exceptions that DESIGN.md "Notes"
   records (target: none), and `.impeccable/design.json` is regenerated.
 - Batch 7: DESIGN.md records the EN wordmark «Loot».
+- Batch 7: the mode row has three controls at every width; «Дополнения ▾»
+  opens a menu of the seven supplements, each a link to its section
+  address, and on a supplement page the chip shows that supplement's name in
+  the current-place gold (owner, 2026-10-23). The `SupplementNav` chip panel
+  on supplement pages goes (C48), because the menu replaces it.
+- Batch 7: each job shows its icon before its label at every width, from
+  `app/src/lib/icons.ts` (`die`, `table`, and a new `search` from Material
+  Icons, Apache 2.0); the sweep at 360 shows all three jobs in both
+  languages.
+- Batch 7: FEATURES.md "Consistency rules" rule 4 departure recorded: the
+  mode chip «Альт. таблицы» and the H1 «Альтернативные таблицы».
+- Batch 9: icon-and-label controls share one vertical centre in every
+  segment and button, at 360 and 1180: one 16 px icon box, one gap,
+  `inline-flex` with `align-items: center`; a label beside an icon does
+  not wrap under it (owner review, 2026-10-23; the note switch «Для
+  игроков» / «Только для мастера» was off). Proof: a browser check that
+  compares each icon's centre with its label's first line box, 1 px at
+  most (the R mocks pass it at both widths).
+- Batch 9 (A2): row actions are 24 px targets at the least; one note area
+  with a «Для игроков» / «Только для мастера» switch replaces the two
+  editors per row (`R/list-note`).
+- Batch 9 (A3): the list controls sit in the side column; «Удалить» moves
+  to «Ещё»; the share panel is two labelled link rows (`R/list-share`).
+- Batch 9 (A42): «Бросить по списку» is a real button that opens the roll
+  panel; the result shows as the card face with both notes (`R/list-roll`).
+- Batch 9 (clarity, price toggle): the switch reads «Цены:» «Как в книге» /
+  «Монетами», shows an example under it, and every price on the page
+  follows it, rows, totals and the roll result included (`R/list-prices`,
+  `R/list-picked`).
+- Batch 9 (clarity, requests): «Новое в списке» shows was, taken and
+  becomes per entry and names a short stock in words («Просили 9, в списке
+  5»), with no «×9 из 5» or «(без цен: 1)» (`R/list-requests`).
+- Batch 9: the price, pick, sold, roll, selected and requests states of
+  `tests/app/inventory.js` (`#/lists/a ~ prices*`, `~ picked`, `~ sold
+  part`, `~ roll panel`, `~ rolled`, `~ a row ticked`, `~ batch deleted`)
+  are browser-list states today. Each has an account-list state after this
+  batch, with its golden: the batch adds the ones R10 `B10.3` did not
+  move.
 - Batch 2 and batch 4, batch 6: the owner's answer on each help panel.
+- Each of batches 2-10: the owner's manual-review findings on its R states
+  are applied or named as rejected by the owner.
 
 Gate cost per batch (`.claude/README.md`, "Batch size and the fixed cost of a
-run"): `npm run check:fast` 4-12 min, one CI run 10.5-11.5 min, one review fix
-cycle (a second `check:fast` and CI run), and golden re-seeds by CI's text
-where a11y text moves. About 35-45 min of gates per batch; 11 batches, about
-7-8 hours of gates in total. Batch 1 also runs `node tests/run-all.js
-app/print,app/typo,app/hues,stub` locally (about 5 min), because the print
-token moves.
+run"): `npm run check:fast` 4-12 min (215-710 s), one CI run 10.5-11.5 min,
+one review fix cycle (a second `check:fast` and CI run), and golden re-seeds
+by CI's text where a11y text moves. About 35-45 min of gates per batch.
+Batch 1 also runs `node tests/run-all.js app/print,app/typo,app/hues,stub`
+locally (about 5 min), because the print token moves; batch 11 has no code
+and pays one `check:fast` and one docs-only CI run (no `e2e`), about 20 min.
+Total: 10 code batches at 35-45 min plus batch 11 at about 20 min, so about
+6.5-8 hours of gates.
 
-Under the other directions:
+Under the other directions (history, before the owner chose R):
 
 - A: batch 7 becomes tab polish (fade, the account control, the wordmark);
   batches 2, 3, 4 and 9 lose their layout changes (no column table, no
@@ -285,9 +370,11 @@ Out of scope: navigation, layouts, labels, help panels, print layouts.
 Files expected:
 
 - `package.json`, `package-lock.json`: devDependency
-  `@fontsource-variable/source-sans-3` (exact version). Fallback: woff2 files
-  from the Adobe release under `app/public/fonts/` with an `@font-face` in
-  `tokens.css`. The dependency add needs the owner's yes at the batch mock.
+  `@fontsource-variable/source-sans-3` (exact version; the owner said yes on
+  2026-10-23). `package-lock.json` is hook-guarded: write it with `npm
+  install --save-dev --save-exact`, never by hand. Fallback, only if the
+  package lacks the Cyrillic italic subset: woff2 files from the Adobe
+  release under `app/public/fonts/` with an `@font-face` in `tokens.css`.
 - `app/src/main.ts`: import the upright and italic CSS of the package before
   `tokens.css`.
 - `app/index.html`: one `<link rel="preload" as="font" type="font/woff2"
@@ -308,10 +395,18 @@ Files expected:
 - `app/src/components/Badge.svelte`: unique neutral dashed; roll number in the
   UI face.
 - `app/src/components/Shell.svelte`: footer links `--muted`, underlined.
+- `app/src/lib/icons.ts`: the set has no glyph for a kind and no check mark
+  today. Add five paths from Material Symbols (Apache 2.0, the family of
+  `copy` and the toolbar icons; filled style, 24 px grid), with the source in
+  the comment as for the toolbar entries: `kindWeapon` (`swords`),
+  `kindArmor` (`shield`), `kindConsumable` (`science`), `kindItem`
+  (`diamond`), and `check` (`check`) for the neutral pressed default. Each
+  name gets its first reader in this batch.
 - `app/src/components/RecordCard.svelte`, `RowMain.svelte`,
-  `TableRows.svelte`, `HomebrewCards.svelte`: the art well draws the kind
-  glyph (sword, shield, flask, gem; the icon set in `Icon.svelte`) under the
-  image; a record without a picture shows the glyph and no `_none.webp`.
+  `TableRows.svelte`, `HomebrewCards.svelte`: the art well (`--art-well`)
+  draws the kind glyph through `Icon.svelte` under the image, at 42% of the
+  well, in `--line2`; a record without a picture shows the glyph and no
+  `_none.webp`.
 - `app/public/sw.js`: `ASSET_CAP` raised to hold the font files; `META.md`
   section 9 says so; `tests/sw.test.mjs` if it asserts the cap.
 - `tests/app/typo.js`: `UI`, `SCALE`.
@@ -322,10 +417,14 @@ Files expected:
 - `.impeccable/config.json`: remove the `overused-font: inter` entry.
 - `tests/app/inventory.js` and goldens: no new state; re-seed only what moves.
 
-Behaviour and UI constraints: the mocks in `mocks/direction/R/` for the font,
-sizes and the neutral pressed chip; no layout or label change in this batch;
+Behaviour and UI constraints: the R states in `mocks/direction/R/` for the
+font, sizes, the neutral pressed chip (a check and a lit border, no gold:
+`R/catalog__1180__ru.png`, the «Все» chips) and the glyph on the art well
+(`R/homebrew-items__1180__ru.png`); no layout or label change in this batch;
 print output byte-identical in layout (the print suite and `check:built`
-prove it).
+prove it). A finding from the owner's manual review applies to this batch
+only when it touches the font, the ramp, the tokens, the pressed default or
+the glyph; the orchestrator names any such finding in the dispatch.
 
 Steps:
 
@@ -336,10 +435,11 @@ Steps:
    suite (`node tests/run-all.js app/print`).
 3. Map every component size to the ramp; update `typo.js`; run `node
    tests/run-all.js app/typo`.
-4. Add the neutral pressed variant to `Chip` and `Seg`; use it for the
-   language and view switches; badges; footer links.
+4. Add the five icon paths to `icons.ts`. Add the neutral pressed variant
+   (the `check` icon and a lit `--muted2` border, no gold) to `Chip` and
+   `Seg`; use it for the language and view switches; badges; footer links.
 5. Add the art-well glyph; remove `_none.webp` from row and card rendering
-   (keep the file: empty states use it in batch 8).
+   (keep the file: the empty-state pattern uses it from batch 2).
 6. P7 spelling in `dict.ts` (both language tables stay in step).
 7. Service worker cap, `META.md` section 9.
 8. DESIGN.md rules and frontmatter; remove the Inter ignore; run the
@@ -358,6 +458,12 @@ Acceptance criteria:
   pedestal.
 - The language and view switches show the neutral pressed state; gold is not
   used on them.
+- `icons.ts` holds `kindWeapon`, `kindArmor`, `kindConsumable`, `kindItem`
+  and `check`, each with its Material Symbols source in the comment and a
+  reader in this batch.
+- `package.json` pins `@fontsource-variable/source-sans-3` to an exact
+  version, and the parser check confirms Cyrillic in the upright and the
+  italic files it ships.
 - RU and EN strings change together (P7).
 
 Verification: `rtk npm run check:fast` (Bash timeout 600000); `node
@@ -405,28 +511,40 @@ Standing checks for batch 1:
    failed write, offline, conflict, deleted record, stale tab and revert for
    its screen.
 3. Consistency: rule 4 (one name) drives the job tab, the mode chip and the H1
-   («Обычные правила» in all three); rule 9 (the primary action first) drives
-   the item and editor bars; rule 11 drives «Закрыть» on sheets. A departure
-   is named in its batch.
-4. RU/EN parity: every mock exists in both languages for the header, the item
-   and the editor; every new string has both languages and the same facts; P5,
-   P6, P7, D11, D15 and D16 close named gaps.
+   («Обычные правила» in all three; «Альт. таблицы» against the H1
+   «Альтернативные таблицы» is the one departure, as today, named in batch
+   7); rule 9 (the primary action first) drives the item and editor bars;
+   rule 11 drives «Закрыть» on sheets. The empty-state and error-page
+   patterns (`R/pattern-*`) give every load, empty and error state one
+   shape: the cause, then one next step. A departure is named in its batch.
+4. RU/EN parity: the R states exist in EN at 360 for the header, the item,
+   the editor, the signed-out shell and save, both imports and the delete
+   confirmation; every new string has both languages and the same facts;
+   P5, P6, P7, D11, D15 and D16 close named gaps.
 
 ## 10. Risks, assumptions, deferred
 
 - Assumption: Source Sans 3 italic carries Cyrillic in the version the batch
   installs; batch 1 checks it with the same parser before it ships.
 - Risk: the navigation change confuses returning users; the mode row keeps
-  every section one click away and every address works.
+  both rule sets one click away and each supplement two, and every address
+  works.
+- Risk: the owner's manual review of 45 R states finds changes that move a
+  batch's scope. A change stays in the batch that owns the screen; only a
+  public-contract change or a new route and filter set adds a batch.
 - Risk: R10 slips; batches 1-6 and 8 do not wait for it.
 - Deferred: a print font change (optional, owner's yes, own batch); the
   link-preview card images keep Inter; a Golos Text trial if the owner wants a
   Cyrillic-first face.
 
-## 11. Owner questions
+## 11. Owner decisions and the review round
 
-1. Approve R: B1 navigation and work areas, A1 gold budget, Source Sans 3,
-   and C's card face on roll results only. Recommended. Or name a direction
-   and option (A1, A2, B1, B2, C1, C2).
-2. Batch 1 adds the dependency `@fontsource-variable/source-sans-3` (OFL,
-   self-hosted). Recommended; the fallback is committed woff2 files.
+Settled on 2026-10-23 (`context.md`, "Decisions already settled"): R, the
+three-control mode row, the job icons, Source Sans 3 with the fontsource
+dependency. No plan question is open.
+
+Next: the owner's manual review of every R state
+(`mocks/direction/index.html`). Each finding goes to the batch that owns
+the screen (section 7) as its own acceptance line; a finding that touches
+the font, the ramp, the tokens, the pressed default or the glyph goes to
+batch 1.

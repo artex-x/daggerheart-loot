@@ -13,11 +13,13 @@
   nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 22px; }
   section.set { margin: 0 0 34px; padding: 18px; }
   section.set h2 { margin: 0 0 4px; font-size: 20px; }
+  section.set h3.sf { margin: 22px 0 8px; font-size: 17px; padding-top: 12px; border-top: 1px solid var(--line); }
   section.set .cap1 { margin: 0 0 14px; color: var(--muted); max-width: 100ch; }
   section.set.rec { border-color: var(--gold); }
-  .grid { display: grid; grid-template-columns: 110px 200px 1fr 200px; gap: 10px 14px; align-items: start; }
+  .grid { display: grid; grid-template-columns: 170px 200px 1fr 200px; gap: 10px 14px; align-items: start; }
   .grid .h { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted2); }
   .grid .s { font-weight: 700; padding-top: 4px; }
+  .grid .s small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
   .grid a { display: block; border: 1px solid var(--line2); border-radius: 8px; overflow: hidden; background: var(--bg); max-height: 520px; }
   .grid a:hover { border-color: var(--gold); }
   .grid img { display: block; width: 100%; height: auto; }
@@ -25,7 +27,7 @@
   .opts { display: grid; gap: 18px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
   .opt h3 { margin: 0 0 2px; font-size: 16px; }
   .opt p { margin: 0 0 10px; color: var(--muted); }
-  .ogrid { display: grid; grid-template-columns: 110px 200px 1fr; gap: 10px 14px; }
+  .ogrid { display: grid; grid-template-columns: 170px 200px 1fr; gap: 10px 14px; }
   @media (max-width: 900px) { .grid, .ogrid { grid-template-columns: 1fr 1fr; } .grid .s, .grid .h:first-child { grid-column: 1 / -1; } }
 </style>
 </head>
@@ -33,32 +35,111 @@
 <main>
   <header class="ix">
     <h1>Task 57 - design directions</h1>
-    <p>Recommendation R comes first. Then directions A, B and C, each with its full set of six surfaces, and its options, which show only the surfaces they change. Every image opens at full size. The comparison and the reasons are in <code>issues/57/plan.md</code>, sections 1 and 2.</p>
-    <p>Fonts load from <code>C:\Users\Ignat\.dhloot\notes\57\fonts\</code>; on another machine the HTML falls back to the system font and the PNGs are the record.</p>
+    <p>The owner chose R (2026-10-23). R comes first, grouped by surface, for a full manual review of every screen: each row is one state at 360 RU, 1180 RU and, where the text is long, 360 EN. Directions A, B and C follow as history. The reasons and the batch outline are in <code>issues/57/plan.md</code>. The A1/A2 comparison page is <a href="compare-a.html">compare-a.html</a>.</p>
+    <p>Fonts load from <code>C:\Users\Ignat\.dhloot\notes\57\fonts\</code>; on another machine the HTML falls back to the system font and the PNGs are the record. Open a state live: <code>R/state.html?s=&lt;state&gt;&amp;lang=en</code>.</p>
   </header>
-  <nav class="jump"><a class="chip" href="#R">R - recommended</a><a class="chip" href="#A">A - polish in place</a><a class="chip" href="#B">B - two-level index</a><a class="chip" href="#C">C - card table</a><a class="chip" href="#F">Font specimen</a></nav>
+  <nav class="jump" id="jump"></nav>
   <div id="sets"></div>
 </main>
 <script>
-  const SURF = [['header', 'Header and navigation'], ['catalog', 'Catalog rows and filters'], ['item', 'Item: page at 1180, dialog at 360'], ['roller', 'Roller #/roll/std'], ['list', 'Account list'], ['editor', 'Homebrew editor']];
-  const SETS = [
-    ['R', 'R - recommended: B1 + A1 + one C graft', "B1's three-job navigation and work areas, A1's strict gold budget, Source Sans 3, and C's card face on roll results only (title case, no drawn tier banner). The batch outline follows this set.", true, []],
-    ['A', 'A - polish in place', 'The Vault Index stays as it is: five tabs, the same rows, cards and panels. The audit rules are enforced, the type floor rises, labels stay the same at every width, and the font is Source Sans 3. Lowest cost; the tab strip still hides two tabs at 360.', false,
-      [['A2', 'A2 - lenient gold', 'Defaults and segments stay gold as today, and 1d12 is a gold primary. Compare with A1 (the A set), where only a narrowing choice, the current place and one primary action are gold.', ['catalog', 'roller']]]],
-    ['B', 'B - two-level index', 'Same world, new structure: three jobs (Roll, Tables, Search) with the nine roll sections as one row of modes; a filter column beside a column table; a two-pane roller; a dossier item page; list controls in a side column.', false,
-      [['B2', 'B2 - left rail', 'A rail with all nine modes on wide screens, and a bottom bar of the three jobs on phones.', ['header', 'roller']]]],
-    ['C', 'C - card table', 'A register change: a record on screen is the card it prints as. Roll results are a dealt hand, the item page shows the card, the catalog grid and the list are cards. Strongest fantasy register and art fit; lowest density.', false,
-      [['C2', 'C2 - paper card', 'The item page shows the real printed card (white paper, cropped from the S1 capture) instead of a screen card.', ['item']]]]
+  /* R, by surface: [file stem, label, note, has EN 360] */
+  const RSURF = [
+    ['Shell', [
+      ['header', 'Header and roll modes', 'three mode controls; «Дополнения ▾» shows the active supplement', true],
+      ['header-alt', 'Alternative mode row', 'one row that scrolls sideways, with an edge fade', false],
+      ['shell-account-menu', 'Account menu open', 'signed in', false],
+      ['shell-signed-out', 'Signed out', '«Войти» with a label', true]]],
+    ['Catalog', [
+      ['catalog', 'Table and filter column', '', false],
+      ['catalog-filters', 'Filters', 'the sheet at 360, the column at 1180', false],
+      ['catalog-filtered', 'Filtered, with pills', '', false],
+      ['catalog-selection', 'Selection mode, one row ticked', 'the bar names its actions', false],
+      ['catalog-nothing', 'Nothing found', 'the empty-state pattern', false],
+      ['catalog-grid', 'Grid view', '', false]]],
+    ['Item', [
+      ['item', 'Item page and dialog', '', true],
+      ['item-dialog', 'Item dialog', 'bottom sheet with a fixed bar at 360', false],
+      ['item-listmenu', 'Add-to-list menu open', 'check marks, heading «Списки»', false],
+      ['item-save-signedout', 'Save a copy, signed out', '«Ещё» menu open', true],
+      ['item-nope', '#/i/nope', 'the error-page pattern', false],
+      ['h-item', '#/h/<uuid>', 'a shared homebrew item', false]]],
+    ['Roller', [
+      ['roller', '#/roll/std', 'the card face on results', false],
+      ['roller-alt-crit', '#/roll/alt, critical result', '', false],
+      ['roller-mwt', 'Many Worlds Tavern', 'realm choice', false],
+      ['roller-supmenu', '«Дополнения ▾» menu open', '', false]]],
+    ['Search', [
+      ['search-empty', 'Empty', 'example queries', false],
+      ['search-results', 'With results', 'the match is marked', false],
+      ['search-nothing', 'Nothing found', '', false]]],
+    ['Lists (post-R10)', [
+      ['lists-index', '#/lists, selection on', '', false],
+      ['list', 'List page', '', false],
+      ['list-note', 'List page, a note opened', '', false],
+      ['list-share', 'List page, share panel', '', false],
+      ['list-prices', 'Prices as in the book', 'the switch shows its effect on every row', false],
+      ['list-prices-panel', 'Prices panel open', 'discount, the price for the rarity, set or remove', true],
+      ['list-prices-none', 'No entry has a price', '', false],
+      ['list-picked', 'Picked, with a total', 'take 1 of 2', false],
+      ['list-sold', 'Part of a quantity sold', 'the undo toast', false],
+      ['list-roll', 'Roll by list, rolled', 'the result as the card face', false],
+      ['list-selected', 'Rows ticked, the batch bar', '', false],
+      ['list-requests', '«Новое в списке» requests', 'was, taken, becomes', false],
+      ['lists-import', 'Lists import preview', '', true],
+      ['lists-nope', '#/lists/nope', 'the error-page pattern', false]]],
+    ['Shared list', [
+      ['shared-player', '#/s/<token>, player', '', false],
+      ['shared-gm', '#/s/<token>, GM', 'GM-only notes dashed', false]]],
+    ['Homebrew', [
+      ['homebrew-items', 'Предметы', 'with and without pictures', false],
+      ['homebrew-sources', 'Источники', '', false],
+      ['homebrew-sets', 'Комплекты', '', false],
+      ['homebrew-rules', 'Карты правил', '', false],
+      ['homebrew-import', 'Import preview', '', true],
+      ['editor', 'Editor', '', true],
+      ['editor-errors', 'Editor, failed save', '', false],
+      ['editor-crop', 'Crop dialog', 'handles and a grid', false],
+      ['editor-conflict', 'Edit conflict', 'the primary does not overwrite', false]]],
+    ['Account', [
+      ['account-settings', 'Settings', '', false],
+      ['account-delete', 'Delete confirmation', 'what is deleted', true]]],
+    ['Print preview', [
+      ['print-preview', '#/p/<id>', 'the sheet is a crop of the S1 capture', false]]],
+    ['Patterns', [
+      ['pattern-empty', 'Empty state', 'one pattern, three places', false],
+      ['pattern-error', 'Error page', 'one pattern for every bad address', false]]]
   ];
   const img = (d, f) => `<a href="${d}/${f}" target="_blank"><img loading="lazy" src="${d}/${f}" alt="${d} ${f}"></a>`;
-  const html = SETS.map(([d, title, cap, rec, opts]) => {
-    const rows = SURF.map(([s, label]) => `<div class="s">${label}</div>${img(d, `${s}__360__ru.png`)}${img(d, `${s}__1180__ru.png`)}${['header', 'item', 'editor'].includes(s) ? img(d, `${s}__360__en.png`) : '<div class="none">-</div>'}${s === 'editor' ? `<div></div>${img(d, 'editor-errors__360__ru.png')}<div class="none">360 RU: a failed save (A7, A8)</div><div></div>` : ''}`).join('');
+  const none = '<div class="none">-</div>';
+  function rFiles(stem) {
+    if (stem === 'header-alt') return ['header__alt__360.png', 'header__alt__1180.png', null];
+    if (stem === 'editor-errors') return ['editor-errors__360__ru.png', null, null];
+    return [`${stem}__360__ru.png`, `${stem}__1180__ru.png`, `${stem}__360__en.png`];
+  }
+  const rHtml = `<section class="panel set rec" id="R"><h2>R - chosen: B1 + A1 + C's card face on roll results</h2>
+    <p class="cap1">B1's three-job navigation and work areas, A1's strict gold budget, Source Sans 3, icons before the job labels, and C's card face on roll results only. The mode row holds three controls: the two rule sets and «Дополнения ▾».</p>
+    ${RSURF.map(([surf, rows]) => `<h3 class="sf" id="R-${surf.split(' ')[0]}">${surf}</h3><div class="grid"><div class="h">State</div><div class="h">360 RU</div><div class="h">1180 RU</div><div class="h">360 EN</div>
+      ${rows.map(([stem, label, note, en]) => { const [a, b, c] = rFiles(stem); return `<div class="s">${label}${note ? `<small>${note}</small>` : ''}</div>${a ? img('R', a) : none}${b ? img('R', b) : none}${en && c ? img('R', c) : none}`; }).join('')}</div>`).join('')}</section>`;
+
+  /* history: the three directions and their options as compared before the choice */
+  const SURF = [['header', 'Header and navigation'], ['catalog', 'Catalog rows and filters'], ['item', 'Item: page at 1180, dialog at 360'], ['roller', 'Roller #/roll/std'], ['list', 'Account list'], ['editor', 'Homebrew editor']];
+  const SETS = [
+    ['A', 'A - polish in place (not taken)', 'The Vault Index stays as it is: five tabs, the same rows, cards and panels. The audit rules are enforced, the type floor rises, labels stay the same at every width, and the font is Source Sans 3. The tab strip still hides two tabs at 360.',
+      [['A2', 'A2 - lenient gold', 'Defaults and segments stay gold as today, and 1d12 is a gold primary.', ['catalog', 'roller']]]],
+    ['B', 'B - two-level index (R takes B1)', 'Three jobs (Roll, Tables, Search) with the nine roll sections as one row of modes; a filter column beside a column table; a two-pane roller; a dossier item page; list controls in a side column.',
+      [['B2', 'B2 - left rail', 'A rail with all nine modes on wide screens, and a bottom bar of the three jobs on phones.', ['header', 'roller']]]],
+    ['C', 'C - card table (R takes the card face on roll results)', 'A record on screen is the card it prints as. Strongest fantasy register and art fit; lowest density.',
+      [['C2', 'C2 - paper card', 'The item page shows the real printed card instead of a screen card.', ['item']]]]
+  ];
+  const hist = SETS.map(([d, title, cap, opts]) => {
+    const rows = SURF.map(([s, label]) => `<div class="s">${label}</div>${img(d, `${s}__360__ru.png`)}${img(d, `${s}__1180__ru.png`)}${['header', 'item', 'editor'].includes(s) ? img(d, `${s}__360__en.png`) : none}`).join('');
     const o = opts.map(([id, h, p, ss]) => `<div class="opt"><h3>${h}</h3><p>${p}</p><div class="ogrid">${ss.map((s) => `<div class="s">${SURF.find((x) => x[0] === s)[1]}</div>${img(d, `${s}__${id}__360.png`)}${img(d, `${s}__${id}__1180.png`)}`).join('')}</div></div>`).join('');
-    return `<section class="panel set ${rec ? 'rec' : ''}" id="${d}"><h2>${title}</h2><p class="cap1">${cap}</p>
-      <div class="grid"><div class="h">Surface</div><div class="h">360 RU</div><div class="h">1180 RU</div><div class="h">360 EN</div>${rows}</div>${opts.length ? `<div class="opts">${o}</div>` : ''}</section>`;
-  }).join('') + `<section class="panel set" id="F"><h2>Font specimen</h2><p class="cap1">Source Sans 3 (chosen), PT Sans (the Cyrillic-first alternative) and Segoe UI (what Windows shows today). Same text at the proposed steps: 23, 18, 16, 13, 12.</p>
-      <div class="ogrid"><div class="s">Specimen</div>${img('shared', 'fonts__360.png')}${img('shared', 'fonts__1180.png')}</div></section>`;
-  document.getElementById('sets').innerHTML = html;
+    return `<section class="panel set" id="${d}"><h2>${title}</h2><p class="cap1">${cap}</p><div class="grid"><div class="h">Surface</div><div class="h">360 RU</div><div class="h">1180 RU</div><div class="h">360 EN</div>${rows}</div><div class="opts">${o}</div></section>`;
+  }).join('');
+  const font = `<section class="panel set" id="F"><h2>Font specimen</h2><p class="cap1">Source Sans 3 (chosen), PT Sans and Segoe UI (what Windows shows today), at the steps 23, 18, 16, 13, 12.</p>
+    <div class="ogrid"><div class="s">Specimen</div>${img('shared', 'fonts__360.png')}${img('shared', 'fonts__1180.png')}</div></section>`;
+  document.getElementById('jump').innerHTML = RSURF.map(([s]) => `<a class="chip" href="#R-${s.split(' ')[0]}">R · ${s}</a>`).join('') + '<a class="chip" href="#A">A</a><a class="chip" href="#B">B</a><a class="chip" href="#C">C</a><a class="chip" href="#F">Font</a>';
+  document.getElementById('sets').innerHTML = rHtml + hist + font;
 </script>
 </body>
 </html>

@@ -60,7 +60,29 @@
     parts (set R, shown first); the batch outline follows it. Six surfaces:
     header, catalog, item, roller, account list, homebrew editor (the
     editor added by the owner, 2026-10-23).
-- Open questions: the direction and option choice (`plan.md`, section 2).
+  - Direction chosen (owner, 2026-10-23): R as recommended - B1's three
+    jobs and work areas, A1's strict gold budget, Source Sans 3, and C's
+    card face on roll results only. A brief A1 choice the same day was
+    withdrawn; `mocks/direction/compare-a.*` stays as history.
+  - Mode row (owner critique of R, 2026-10-23): B1's row of two chips, a
+    label and seven supplement chips wrapped at 1180. Fix: «Обычные
+    правила», «Альт. таблицы» and one «Дополнения ▾» chip that opens a
+    menu of the seven; on a supplement page the chip shows its name in the
+    current-place gold («Vault of Ages ▾»). Three controls, one line at
+    every width. Accepted trade-off: a switch between supplements takes one
+    more tap. Not taken: one row of nine that scrolls with an edge fade.
+    Home: `FEATURES.md` "Chrome" and DESIGN.md, written by batch 7.
+  - Job icons (owner, 2026-10-23): an icon before each job label, as in R's
+    header mock; a label never gives way to an icon at any width (theme 3).
+    Source: `app/src/lib/icons.ts` (`die`, `table`; `search` added from
+    Material Icons, Apache 2.0). Home: batch 7.
+  - Font dependency (owner, 2026-10-23): batch 1 adds
+    `@fontsource-variable/source-sans-3`; print cards keep their font
+    through `--print-ui`.
+  - Manual review (owner, 2026-10-23): R has a mock for every screen and
+    state (`mocks/direction/index.html`, R by surface); the owner reviews
+    them all before batch 1.
+- Open questions: none. The owner's manual review of the R states is next.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -76,7 +98,9 @@
   languages - no pixels).
 - Width sweep: `tests/app/sweep.js` (widths 360, 390, 768, 1180; RU and EN).
 - One theme only: `tokens.css` has no dark scheme.
-- Mocks: `issues/57/mocks/` (phase 2 and each batch).
+- Mocks: `issues/57/mocks/` (phase 2 and each batch). R's states:
+  `mocks/direction/R/state.html?s=<state>&lang=en`, from `R/states.js` and
+  `R/r.css`; PNGs `R/<surface>-<state>__<width>__<lang>.png`.
 
 ## Persistence clean-up (R10) and other tasks that move the UI
 - R10 (`issues/persist-10-legacy-removal/`, on `main`) is dispatchable from
