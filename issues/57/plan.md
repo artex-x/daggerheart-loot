@@ -41,8 +41,8 @@ decisions are in `context.md`.
   - N6, `handoff.md` Status: pushed at `69f2178`.
   - N7, section 7 row 11: a re-audit defect goes to `DEBT.md`, or batch 11 takes the code and pays the full gate.
   - N8, section 7 inherited lines: batch 2's C57 decision covers the `#/p` compact note (C31); batch 8 applies it.
-- NEEDS_HUMAN_CONFIRMATION: yes - one question, Q1 (section 11, the bundle
-  budget), due before the batch 1 dispatch. The direction, the font, the
+- NEEDS_HUMAN_CONFIRMATION: no. Q1 (section 11, the bundle budget) is
+  answered: raise it (owner, 2026-10-23). The direction, the font, the
   dependency and the mode row are settled (`context.md`).
 
 Mocks: `issues/57/mocks/direction/index.html` (R first, grouped by surface;
@@ -839,7 +839,10 @@ Settled on 2026-10-23 (`context.md`, "Decisions already settled"): R, the
 three-control mode row, the job icons, Source Sans 3 with the fontsource
 dependency, the order (after R10 and `cloudflare-pages`).
 
-Open question for the owner, due before the batch 1 dispatch:
+Owner answer (2026-10-23): Q1 takes the recommended option. If the font
+CSS passes the budget, batch 1 raises it to the measured total rounded up
+to the next whole kB, with the reason in the same commit, under the 270
+and 350 kB ceilings.
 
 - Q1, the bundle budget. Today: the budget is 253 kB unconfigured and 311
   kB configured, with 0.4 kB of headroom in each (2026-10-22); the font's

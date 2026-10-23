@@ -6,9 +6,8 @@
   waiting for R10 and `cloudflare-pages` to ship, then the batch 1 dispatch
   refresh
 - Last agent: planner (plan-review fix cycle)
-- NEEDS_HUMAN_CONFIRMATION: yes - Q1, the bundle budget (`plan.md` section
-  11), due before the batch 1 dispatch; with no answer, batch 1 takes the
-  recommended option
+- NEEDS_HUMAN_CONFIRMATION: no (Q1, the bundle budget, answered: raise it;
+  `plan.md` section 11)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `0b73fd5c`
 - Pushed: yes, at `69f2178` (the S2 refresh); this fix cycle is not
@@ -86,7 +85,7 @@
 - R10 and `cloudflare-pages` have not shipped; no batch starts before both
   (owner, 2026-10-23).
 - The owner's screen notes on the R states arrive before batch 1.
-- Q1 (bundle budget) waits for the owner; it has a recorded default.
+- None from Q1: the owner answered it (raise the budget, 2026-10-23).
 
 ## Deferred
 - `verify` rows (C12, C34, C44, A9, A15, D8, D14): a live check in the batch

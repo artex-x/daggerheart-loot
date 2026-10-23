@@ -95,8 +95,12 @@
       and the language switch reach batch 7). The owner sends review notes
       on the R states before batch 1; each note becomes an acceptance line
       in the batch that owns the screen.
-- Open questions: Q1, the bundle budget if the font CSS passes it
-  (`plan.md` section 11; due before the batch 1 dispatch).
+  - Bundle budget (owner, 2026-10-23, `plan.md` Q1): if the font CSS
+    passes the budget, batch 1 raises it to the measured total rounded up
+    to the next whole kB, with the reason in the same commit, under the 270
+    and 350 kB ceilings. Home: `tools/bundle-budget.mjs` and its decision
+    file, written by batch 1.
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
