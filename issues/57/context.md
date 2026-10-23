@@ -95,7 +95,8 @@
       and the language switch reach batch 7). The owner sends review notes
       on the R states before batch 1; each note becomes an acceptance line
       in the batch that owns the screen.
-- Open questions: none.
+- Open questions: Q1, the bundle budget if the font CSS passes it
+  (`plan.md` section 11; due before the batch 1 dispatch).
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -122,8 +123,12 @@
   the `#/l/` pages and the signed-out print prompt of a browser list, and
   re-seeds goldens (`B10.1`, `B10.3`). Its plan section 5 is the post-R10
   shape.
-- `cloudflare-pages` (after R10) puts `/en/` in the URL; the language
-  switch can become a link. Repo layout changes, no visual redesign.
+- `cloudflare-pages` (after R10) puts `/en/` in the URL: Vite `base: '/'`,
+  absolute paths in `app/index.html`, every `href` through `app.href()`,
+  `pathRouter`, `/sw.js` at scope `/`. The language switch rewrites the
+  `/en` prefix with `replaceState` and stays a control, not a link (its B1,
+  read by the plan review on 2026-10-23). Repo layout changes, no visual
+  redesign.
 - `catalog-filter-links` (after R10, not ordered) touches filter UI.
 
 ## Command costs
@@ -148,6 +153,12 @@
 ## Font facts (checked 2026-10-23)
 - No `@font-face` and no font service. `--ui` starts with the local name
   'Inter', so a machine without Inter renders Segoe UI, SF or Roboto.
+- `@fontsource-variable/*` packages declare the family `'<Name> Variable'`
+  (expected `'Source Sans 3 Variable'`); the package is not installed yet,
+  so batch 1 reads the name from its CSS.
+- Bundle budget (`tools/bundle-budget.mjs`, measured 2026-10-22): 252.6 kB
+  against 253 unconfigured, 310.6 against 311 configured; `.css` counts;
+  decision 2026-10-22 allows a raise to the measured total under 270 / 350.
 - `PrintCard.svelte` sets its text in `var(--ui)`: a `--ui` change reaches
   the print cards unless the card keeps its own token.
 - The detector flags Inter, Lato, Open Sans and Roboto as overused; it does
@@ -166,9 +177,9 @@
   and the placeholder for a record with no image are design choices; the
   image bytes are not. Mocks use the real files from `img/`.
 - Audit and design only the post-R10 shape: skip the surfaces R10 deletes.
-  R10 does not have to ship first. A batch that touches the header, the tab
-  bar, the notices or the list pages waits for R10 `B10.3` (same files,
-  same goldens); other batches may run before it (owner, 2026-10-23).
+  Order (owner, 2026-10-23): every batch, batch 1 included, starts only
+  after R10 and `cloudflare-pages` have shipped; the batch 1 dispatch
+  refresh re-reads both landings.
 - Contracts: routes, ids, links, asset paths stay. Print layouts (63x88 mm
   nine per sheet, 44x63 mm sixteen, colour and black-and-white, Figma
   nodes) are product law: a redesign does not touch them.
