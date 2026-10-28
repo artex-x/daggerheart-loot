@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/p/set-twocards]
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Печать карточек" [level=1]
@@ -42,7 +41,6 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -62,7 +60,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/p/set-twocards]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Printing cards" [level=1]
@@ -79,7 +76,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/p/set-twocards]
 Alt. tables
 EN
 Install as an app
-Lists
 Privacy
 RU
 Search

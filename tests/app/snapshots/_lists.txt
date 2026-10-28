@@ -1,9 +1,9 @@
 # #/lists
 # route: #/lists
-# why: signed out, no lists: the panel is the sign-in prompt, no browser group, no notice
+# why: signed out: the panel is the sign-in prompt, and no group
 
 ## ru :: tree
-RootWebArea "Списки - Генератор лута Daggerheart" [url=#/lists]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=#/lists]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -17,7 +17,6 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=#/list
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Мои списки" [level=1]
@@ -48,13 +47,12 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=#/lists]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -68,7 +66,6 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "My lists" [level=1]
@@ -90,7 +87,6 @@ Alt. tables
 EN
 How this works
 Install as an app
-Lists
 Open this section on start
 Privacy
 RU

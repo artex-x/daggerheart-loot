@@ -1,6 +1,6 @@
 <script lang="ts">
   /* One "for players" / "GM only" note, off `ListPage.svelte`'s own `hitnote`
-     snippet (app.js's `notePairHTML`, 3109-3128, drawn one label at a time).
+     snippet (`notePairHTML` in `git show 23c00a6^:app.js`, drawn one label at a time).
      Extracted on its second real use - the list page's rolled entry
      and the shared page, which draws two above the rows and two more
      inside every entry's row. Renders nothing when `text` is empty. The note is formatted
@@ -30,7 +30,7 @@
 {/if}
 
 <style>
-  /* off `.hitnote` and its four (style.css:626-633) */
+  /* off `.hitnote` and its four (`git show 23c00a6^:style.css`) */
   .hitnote {
     display: flex;
     gap: 8px;

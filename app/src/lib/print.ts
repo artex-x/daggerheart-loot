@@ -1,4 +1,4 @@
-/* The print sheet's own small helpers, off app.js 3235-3266, 3282-3331,
+/* The print sheet's own small helpers, off `git show 23c00a6^:app.js`,
  * 3520-3522.
  *
  * Everything a card draws that is not text is a vector exported into `card/`
@@ -57,7 +57,7 @@ export function sheetScale(width: number): number {
 }
 
 /**
- * A vector's file name, off `cardArt` (app.js 3282-3291), for the pairs whose two files
+ * A vector's file name, off `cardArt` (`git show 23c00a6^:app.js`), for the pairs whose two files
  * differ in shape (`shield`, `burden-1`, `burden-2`): they stay two files drawn by `<img>`.
  * The folded vectors are drawn inline by `CardVector.svelte`.
  */
@@ -65,8 +65,8 @@ export function cardArt(name: string, bw: boolean): string {
   return CARD_DIR + name + (bw ? '-bw' : '') + '.svg';
 }
 
-/** A damage string split into its die and its bonus - off `dmgStripHTML`
- *  (app.js 3299) and `dieHTML` (3321). No match leaves the whole string as
+/** A damage string split into its die and its bonus - off `dmgStripHTML` and `dieHTML`
+ *  (`git show 23c00a6^:app.js`). No match leaves the whole string as
  *  the "die" rather than inventing one. */
 export function dmgParts(dmg: string | undefined): { die: string; bonus: string } {
   const m = /^(d\d+)(.*)$/.exec(dmg ?? '');
@@ -75,7 +75,7 @@ export function dmgParts(dmg: string | undefined): { die: string; bonus: string 
 
 /**
  * The deck cut into sheets of `per` cards, blanks counted for the last one -
- * off `renderPrint` (app.js 3514-3522). Empty input makes no sheets at all:
+ * off `renderPrint` (`git show 23c00a6^:app.js`). Empty input makes no sheets at all:
  * there is nothing to pad a page that does not exist.
  */
 export function pages<T>(items: readonly T[], per = 9): { pages: T[][]; blanks: number } {

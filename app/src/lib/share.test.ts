@@ -17,7 +17,7 @@ import { esc } from './desc.js';
 import { markupHtml, markupText } from './markup.js';
 import { dict } from './dict.js';
 import { withRecords, type HomebrewRecord } from './homebrew.js';
-import type { ListShape } from './listLink.js';
+import type { ListShape } from './lists.js';
 import {
   entryNoteBlock,
   qtySuffix,
@@ -498,7 +498,7 @@ describe('a list selection, with its taken counts and total', () => {
   });
 });
 
-describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
+describe('entryNoteBlock, the one contextNote block (`git show 23c00a6^:app.js`)', () => {
   it('is a single block off the players’ note, never the GM one', () => {
     const t = dict('ru');
     expect(entryNoteBlock({ note: 'Светится в темноте', hnote: 'Проклят' }, t)).toEqual([
@@ -533,7 +533,7 @@ describe('qtySuffix, the count after a name in copied text and on a print card',
   });
 });
 
-describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
+describe('shareList, off listAsText/listAsHtml of the live app', () => {
   const list = (): ListShape => ({
     name: 'Клад дракона',
     ids: ['ci1', 'ci2'],

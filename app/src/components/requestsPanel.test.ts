@@ -89,6 +89,14 @@ const panel = async (): Promise<HTMLElement> =>
 const requestsOf = (p: HTMLElement): HTMLElement[] => [
   ...p.querySelectorAll<HTMLElement>('.req')
 ];
+/* The list page waits for its entries, so the panel can draw the notices before its
+   own lines read lands: the requests come with that read. */
+const requestsDrawn = (p: HTMLElement): Promise<HTMLElement[]> =>
+  waitFor(() => {
+    const got = requestsOf(p);
+    expect(got.length).toBeGreaterThan(0);
+    return got;
+  });
 const cells = (req: HTMLElement): string[] =>
   [...req.querySelectorAll('td')].map((td) => td.textContent.trim());
 
@@ -404,7 +412,7 @@ describe('homebrew lines', () => {
       env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
     });
     const p = await panel();
-    const [req] = requestsOf(p);
+    const [req] = await requestsDrawn(p);
     expect(cells(req as HTMLElement)[0]).toBe('Топор Тлеющих Углей');
     await userEvent.click(
       within(req as HTMLElement).getByRole('button', { name: 'Отклонить' })
@@ -436,7 +444,7 @@ describe('homebrew lines', () => {
       env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
     });
     const p = await panel();
-    const req = requestsOf(p)[0] as HTMLElement;
+    const req = (await requestsDrawn(p))[0] as HTMLElement;
     expect(cells(req)).toEqual([AXE, 'нет в списке', '-']);
     expect(req.querySelector('.short')).toHaveTextContent('нет в списке');
     await expectNoA11yViolations(container);
@@ -627,9 +635,11 @@ describe('the change log in the panel', () => {
       if (made.ok) w.request(made.token, [{ item: 'q23', qty: 1 }]);
     });
     const p = await inbox();
-    expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Новое в списке (3)'
-    );
+    await waitFor(() => {
+      expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
+        'Новое в списке (3)'
+      );
+    });
     const rows = noticeRows(p);
     expect(rows.map((r) => textOf(r.querySelector('.ntext') as Element))).toEqual([
       'новое Автор изменил «Топор Тлеющих Углей». Открыть',
@@ -740,8 +750,16 @@ describe('the change log in the panel', () => {
       const read = await cloud.requests.notices(GM2_LIST);
       expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);
     });
-    await new Promise((done) => setTimeout(done, 20));
+    /* The read after the mark lands before the change: wait until no notices read starts
+       for 150 ms (the list page's own entries read moves when it ends). */
+    const reads = vi.spyOn(cloud.requests, 'notices');
+    for (let seen = -1; seen !== reads.mock.calls.length;) {
+      seen = reads.mock.calls.length;
+      await new Promise((done) => setTimeout(done, 150));
+    }
+    reads.mockRestore();
     const cap = SEED.homebrew.gm1.items.find((i) => i.id === CAP_ID);
+    const hide = within(p).getByRole('button', { name: 'Скрыть изменения' });
     await world.homebrew.updateItem(
       CAP_ID,
       {
@@ -750,7 +768,10 @@ describe('the change log in the panel', () => {
       },
       null
     );
-    await userEvent.click(within(p).getByRole('button', { name: 'Скрыть изменения' }));
+    /* The change's `notice` message re-reads the panel after COALESCE_MS (250 ms); a press
+       that a loaded host delays past it hides the new notice as drawn, which is correct, so
+       the press goes in the same turn, before that re-read. */
+    void fireEvent.click(hide);
     const left = await cloud.requests.notices(GM2_LIST);
     expect(left.ok && left.notices.map((n) => n.item_key)).toEqual(['hb_whispercapaaaaaa']);
     expect(

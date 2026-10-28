@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The `.row-main` button: a table row's clickable body, off `rowHTML` in
-     app.js (2785-2803). Extracted out of `TableRows.svelte` on its second
+     `git show 23c00a6^:app.js`. Extracted out of `TableRows.svelte` on its second
      real use - the list page's own row draws the same body without
      `num` (`rnum` - only the alternate tables' columns override the roll
      number) or `tail` (`rtail` - the shared page's decoration, threaded
@@ -233,7 +233,7 @@
     align-items: center;
   }
 
-  /* off the `.rtail` rule, style.css:785 - the shared page's decoration. */
+  /* off the `.rtail` rule (`git show 23c00a6^:style.css`) - the shared page's decoration. */
   .rtail {
     font-style: normal;
     font-weight: 600;

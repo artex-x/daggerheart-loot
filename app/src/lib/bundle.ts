@@ -29,7 +29,7 @@ import {
   type HomebrewRecord
 } from './homebrew.js';
 import type { HomebrewImportRows, ImportCardRow, ImportItemRow } from './homebrewFile.js';
-import { QTY_MAX, type ListEntryMeta } from './listLink.js';
+import { QTY_MAX, type ListEntryMeta } from './lists.js';
 import { MONEY_DEFAULT, MONEY_MODES, type MoneyMode } from './money.js';
 
 export const BUNDLE_FORMAT = 'daggerheart-loot/lists';

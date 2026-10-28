@@ -18,7 +18,6 @@ RootWebArea "Свиток долгой ночи - Генератор лута Da
       link "Альт. таблицы" [url=index.html?as=gm4#/roll/alt]
       link "Дополнения" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm4#/tables]
-      link "Списки" [url=index.html?as=gm4#/lists]
       link "Поиск" [url=index.html?as=gm4#/search]
   main ""
     heading "Свиток долгой ночи" [level=1]
@@ -119,7 +118,6 @@ daggerheart.com
 Расходник
 Снаряжение
 Сохранить
-Списки
 Список
 Страница
 Таблица
@@ -145,7 +143,6 @@ RootWebArea "Scroll of the Long Night - Daggerheart Loot Generator" [url=index.h
       link "Alt. tables" [url=index.html?as=gm4#/roll/alt]
       link "Supplements" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm4#/tables]
-      link "Lists" [url=index.html?as=gm4#/lists]
       link "Search" [url=index.html?as=gm4#/search]
   main ""
     heading "Scroll of the Long Night" [level=1]
@@ -233,7 +230,6 @@ In print
 Install as an app
 Italic
 Item
-Lists
 Made from
 New rule card
 No tier

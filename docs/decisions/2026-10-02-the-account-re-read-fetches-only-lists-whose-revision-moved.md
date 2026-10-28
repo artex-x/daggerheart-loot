@@ -1,6 +1,7 @@
 # 2026-10-02 - The account re-read fetches only the lists whose revision moved
 
 - Amended by "The owner's requests read takes every head and the open list's lines" (2026-10-22): the requests panel's lines load for the open list only, and a re-read reads no limit.
+- Amended by "The account's first read takes list heads; a list's details load when needed" (2026-10-28): a page load reads heads, and a changed list is read whole only when the tab holds its entries.
 - Task: `persist-7g-read-scale` (planner, 2026-10-01; the owner's target of 3x the defaults).
 - Decision: `ListRepository.list(known)` takes the revision the caller holds per list. With
   `known`, the port reads `id,revision` of every list, then the full rows of the changed lists by
@@ -13,5 +14,4 @@
   add menu and the frozen copies need every list at once); a `get_lists(p_known)` RPC (a migration
   for what two PostgREST reads do); `.range()` paging of the embedded read (it still sends every
   entry); offset pages for the requests (a row deleted between pages skips another).
-- Accepted trade-off: the first read of each page load still carries every entry, about 1.8 MB
-  catalog-only at the defaults and 11-16 MB at three times them (estimates).
+- Accepted trade-off: the first read of each page load still carries every entry, about 1.8 MB catalog-only at the defaults and 11-16 MB at three times them (estimates).

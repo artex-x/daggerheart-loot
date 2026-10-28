@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -158,7 +157,6 @@ daggerheart.com
 Сила
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Средне
 Ссылка на таблицу
@@ -198,7 +196,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_secondary/f_c
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -319,7 +316,6 @@ Legendary Rune Shield
 Legendary Rune ShieldTier 4 · Magic · Knowledge · Melee · d4+6 m... [namelen=135 namehash=0d39a21e]
 Link to this table
 List
-Lists
 Magic
 Magic×
 Many Worlds Tavern

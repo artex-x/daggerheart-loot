@@ -6,7 +6,6 @@
 
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserClock, fixedClock, TEST_NOW } from './clock.js';
-import { browserCompress, plainCompress } from './compress.js';
 import { browserData, fakeData } from './data.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
@@ -23,7 +22,6 @@ import type { Env } from './types.js';
 export * from './types.js';
 export { browserClipboard, fakeClipboard } from './clipboard.js';
 export { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
-export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { browserImage, fakeImage } from './image.js';
@@ -52,7 +50,6 @@ export function browserEnv(): Env {
     clipboard: browserClipboard(),
     share: browserShare(),
     router: hashRouter(),
-    compress: browserCompress(),
     drag: nativeDrag(),
     dialog: browserDialog(),
     pwa: browserPwa(),
@@ -78,7 +75,6 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     clipboard: fakeClipboard(),
     share: fakeShare(),
     router: memoryRouter(),
-    compress: plainCompress(),
     drag: noDrag(),
     dialog: fakeDialog(),
     pwa: fakePwa(),

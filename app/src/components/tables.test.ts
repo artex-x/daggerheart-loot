@@ -25,11 +25,14 @@ import {
   memoryStorage,
   noData
 } from '../ports/index.js';
+import { fakePage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type SeedList } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { DAY, listOf, seedWith, TWO_LISTS } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -443,16 +446,21 @@ describe('selection', () => {
   });
 });
 
-const TWO_LISTS = JSON.stringify([
-  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-]);
+/** Renders the tables as gm4, who holds `lists`, and waits for the account. */
+async function openBar(lists: SeedList[] = TWO_LISTS) {
+  Element.prototype.scrollIntoView = vi.fn();
+  const cloud = fakeCloud(seedWith({ gm4: lists }), 'gm4');
+  const page = fakePage();
+  const view = render(App, { env: at({ cloud, page }) });
+  await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+  return { ...view, cloud, page };
+}
 
-/** Typed, so a read-back assertion is not an unsafe member access on `any`. */
-const readLists = (storage: {
-  get: (k: string) => string | null;
-}): { id: string; ids: string[] }[] =>
-  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string; ids: string[] }[];
+/** Presses «Добавить в список» and waits for the menu's newest chip. */
+async function openBarMenu(first = 'Лавка в порту'): Promise<void> {
+  await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+  await screen.findByRole('button', { name: first });
+}
 
 describe('the selection bar', () => {
   it('draws nothing until something is ticked', () => {
@@ -545,52 +553,47 @@ describe('the selection bar', () => {
   });
 
   it('the menu names a single ticked record "лежит в списках"', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
   });
 
   it('the menu names two or more ticked records "Добавить в"', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     expect(screen.getByText('Добавить в')).toBeInTheDocument();
   });
 
   it('keeps the menu newest first for two ticked records, even where a list holds one of them', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const holding = JSON.stringify([
-      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 },
-      { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-    ]);
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': holding }) }) });
+    const holding = listOf(811, 'Клад дракона', [{ key: 'ci1' }], {
+      createdAgoMs: 2 * DAY,
+      editedAgoMs: 2 * DAY
+    });
+    await openBar([holding, TWO_LISTS[1] as SeedList]);
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     const chips = screen.getAllByRole('button', { name: /Клад дракона|Лавка в порту/ });
     expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
   });
 
   it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const storage = memoryStorage({ 'dhloot.lists.v2': TWO_LISTS });
-    render(App, { env: at({ storage }) });
+    const { cloud, page } = await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
 
     expect(screen.getByText('Добавлено в «Клад дракона»: 2')).toBeInTheDocument();
     expect(boxes[0]).toBeChecked();
     expect(boxes[1]).toBeChecked();
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'ci2']);
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['ci1', 'ci2']);
   });
 
   it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
@@ -631,12 +634,9 @@ describe('the selection bar', () => {
   });
 
   it('has no axe violations with the bar up and its menu open', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) })
-    });
+    const { container } = await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     await expectNoA11yViolations(container);
   });
 });

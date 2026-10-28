@@ -18,7 +18,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Альт. таблицы" [url=index.html?as=gm1&items=66&sections=25#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1&items=66&sections=25#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1&items=66&sections=25#/tables]
-      link "Списки" [url=index.html?as=gm1&items=66&sections=25#/lists]
       link "Поиск" [url=index.html?as=gm1&items=66&sections=25#/search]
   main ""
     heading "Мои предметы" [level=1]
@@ -76,7 +75,6 @@ daggerheart.com
 Предметы
 Разделы
 Скачать JSON
-Списки
 Таблицы
 Удалить
 Условия использования
@@ -99,7 +97,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1&items
       link "Alt. tables" [url=index.html?as=gm1&items=66&sections=25#/roll/alt]
       link "Supplements" [url=index.html?as=gm1&items=66&sections=25#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1&items=66&sections=25#/tables]
-      link "Lists" [url=index.html?as=gm1&items=66&sections=25#/lists]
       link "Search" [url=index.html?as=gm1&items=66&sections=25#/search]
   main ""
     heading "My items" [level=1]
@@ -144,7 +141,6 @@ How this works
 Import from file
 Install as an app
 Items
-Lists
 New section
 New source
 Open this section on start

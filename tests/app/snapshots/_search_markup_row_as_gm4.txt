@@ -18,7 +18,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=index.ht
       link "Альт. таблицы" [url=index.html?as=gm4#/roll/alt]
       link "Дополнения" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm4#/tables]
-      link "Списки" [url=index.html?as=gm4#/lists]
       link "Поиск" [url=index.html?as=gm4#/search]
   main ""
     heading "Поиск" [level=1]
@@ -60,7 +59,6 @@ daggerheart.com
 Свиток Узоролиста
 Свиток УзоролистаРаз за отдых: разверните свиток, и узор ответит... [namelen=192 namehash=d7a67899]
 Снаряжение
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -80,7 +78,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=index.html?as=gm4#/search
       link "Alt. tables" [url=index.html?as=gm4#/roll/alt]
       link "Supplements" [url=index.html?as=gm4#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm4#/tables]
-      link "Lists" [url=index.html?as=gm4#/lists]
       link "Search" [url=index.html?as=gm4#/search]
   main ""
     heading "Search" [level=1]
@@ -112,7 +109,6 @@ EN
 Equipment
 Install as an app
 Items
-Lists
 Open this section on start
 Patternleaf Scroll
 Patternleaf ScrollOnce per rest: unroll the scroll, and the patt... [namelen=218 namehash=257bc437]

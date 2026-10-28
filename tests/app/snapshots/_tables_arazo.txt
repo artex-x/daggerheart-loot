@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -219,7 +218,6 @@ daggerheart.com
 Прочее
 Сеткой
 Снаряжение
-Списки
 Списком
 Ссылка на таблицу
 Сфера Предвидения
@@ -265,7 +263,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/arazos_artifacts
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -458,7 +455,6 @@ Legendary Wyrmscale Hauberk
 Legendary Wyverntail Whip
 Link to this table
 List
-Lists
 Many Worlds Tavern
 Ogre-teeth Club
 Open this section on start

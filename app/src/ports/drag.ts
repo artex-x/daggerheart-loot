@@ -1,4 +1,4 @@
-/* Reordering by dragging, off the live event model (app.js 4443-4530).
+/* Reordering by dragging, off the live event model (`git show 23c00a6^:app.js`).
  *
  * The grip is what a person grabs; the whole row is what moves - dragging a
  * small handle and dropping on a big target is easier than the other way
@@ -35,14 +35,14 @@ const indexOf = (el: Element | null): number => {
   return Number.isNaN(n) ? -1 : n;
 };
 
-/* app.js 4467-4468: a band 120px deep either edge, speed growing linearly to
+/* The live `edgeScroll` (`git show 23c00a6^:app.js`): a band 120px deep either edge, speed growing linearly to
    22px a frame at the band's own inner edge. */
 const EDGE = 120;
 const EDGE_MAX = 22;
 
 /**
  * The edge-scroll speed for a pointer at `y` in a window `innerHeight` tall -
- * the live `edgeScroll`'s arithmetic (app.js 4470-4474), pulled out pure so a
+ * the live `edgeScroll`'s arithmetic (`git show 23c00a6^:app.js`), pulled out pure so a
  * test can hit three depths without a real scroll.
  */
 export function edgeSpeed(y: number, innerHeight: number): number {
@@ -63,7 +63,7 @@ export function nativeDrag(): DragPort {
       let gone = false;
 
       /* Runs off the frame rather than off the mouse, so it keeps going while
-         the hand is still (app.js 4467-4469). */
+         the hand is still (`git show 23c00a6^:app.js`). */
       const step = (): void => {
         frame = 0;
         if (from < 0 || !speed) return;
@@ -83,7 +83,7 @@ export function nativeDrag(): DragPort {
          most of a drag over the gaps between rows, where a row-level
          `dragover` would return early - both the edge-scroll and the gap
          resolution below have to be driven from every `dragover`, not only
-         the ones that land on a row (app.js 4483-4485, and
+         the ones that land on a row (`git show 23c00a6^:app.js`, and
          docs/specs/FEATURES.md, "Lists"). Bound to `dragenter` too: a drop is
          accepted only while `preventDefault()` runs on both events, and a
          row's own children - thumbnail, inputs, note - are what the pointer
@@ -170,7 +170,7 @@ export function nativeDrag(): DragPort {
         reset();
       };
 
-      /* app.js 4452-4454: only a grip starts a drag. A row also holds a
+      /* As live (`git show 23c00a6^:app.js`): only a grip starts a drag. A row also holds a
          thumbnail, a note textarea and number inputs, every one of them
          natively draggable content - without this guard, dragging a thumbnail
          or a run of selected text out of the note starts a row reorder
@@ -201,7 +201,7 @@ export function nativeDrag(): DragPort {
           } catch {
             /* Nothing more to do when even that throws. */
           }
-          /* app.js 4459: guarded there because `setDragImage` is missing on
+          /* Guarded in the live app (`git show 23c00a6^:app.js`) because `setDragImage` is missing on
              some real browsers even though lib.dom types it as always
              present. */
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition

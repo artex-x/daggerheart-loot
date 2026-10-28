@@ -17,7 +17,6 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "The Dragon's Vault" [level=1]
@@ -91,7 +90,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–145
-Списки
 Страница
 Таблицы
 Условия использования
@@ -112,7 +110,6 @@ RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=#/roll/dragon
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "The Dragon's Vault" [level=1]
@@ -168,7 +165,6 @@ Dread GM Toolbox
 EN
 How this works
 Install as an app
-Lists
 Many Worlds Tavern
 One higher
 One lower

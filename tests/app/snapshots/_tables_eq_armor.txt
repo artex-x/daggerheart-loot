@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -267,7 +266,6 @@ daggerheart.com
 Скопировать ссылку на этот раздел
 Славная Кираса
 Снаряжение
-Списки
 Списком
 Среброшелковая Броня
 Среброшелковая БроняРанг 1 · Пороги 5/11 · Броня 3Защищающее: Вы... [namelen=225 namehash=d309c969]
@@ -336,7 +334,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_armor]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -573,7 +570,6 @@ Legendary Silverweave ArmorTier 4 · Thresholds 11/32 · Armor 6Wa... [namelen=1
 Legendary Wyrmscale Hauberk
 Link to this table
 List
-Lists
 Mage Robes
 Mage RobesTier 1 · Thresholds 4/10 · Armor 2Enchanted: Gain a bo... [namelen=140 namehash=66dcf68d]
 Monett's Cloak

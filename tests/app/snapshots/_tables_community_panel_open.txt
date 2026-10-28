@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -266,7 +265,6 @@ daggerheart.com
 Скопировать ссылку на этот раздел
 Снаряжение
 Совиный Амулет Каравана
-Списки
 Списком
 Ссылка на таблицу
 Стрелы и Болты с Метеоритными Наконечниками
@@ -310,7 +308,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/community_items]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -516,7 +513,6 @@ Lantern of the Depths
 Leaf of the Giant Tree
 Link to this table
 List
-Lists
 Little Forest Spirit
 Living Puppets
 Loaded Cards and Dice

@@ -17,7 +17,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Мои предметы" [level=1]
@@ -47,7 +46,6 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -67,7 +65,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=#/homebrew]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "My items" [level=1]
@@ -88,7 +85,6 @@ Alt. tables
 EN
 How this works
 Install as an app
-Lists
 Open this section on start
 Privacy
 RU

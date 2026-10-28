@@ -11,6 +11,8 @@
  * is dropped with no toast; a request the database keeps failing is halved.
  * Signed in, the store watches the owner's Realtime topic: another tab's or
  * device's change re-reads the account once the buffer is empty.
+ * The first read takes each list's head; `detail` reads a list's entries whole when a page
+ * needs them, and a re-read reads a changed list whole only when the tab holds its details.
  * docs/DECISIONS.md, 2026-09-26: "Account list writes are buffered and sent
  * two seconds after the last edit", "The write buffer goes to the server as
  * one invoker RPC with a result per write", "A request the database fails
@@ -28,12 +30,14 @@ import {
   OFFICIAL,
   priceOf,
   quantityOf,
+  toCloudHead,
   toCloudList,
   type CloudList,
   type EntryPatch,
   type EntryRow,
   type EntrySource,
   type ImportRow,
+  type ListHead,
   type ListOp,
   type ListRow,
   type NewListRow
@@ -41,7 +45,6 @@ import {
 import type { Dict, Msg } from '../lib/dict.js';
 import { canonJson, isHomebrewKey, type HomebrewRecord } from '../lib/homebrew.js';
 import { COALESCE_MS, readOwnerMessage } from '../lib/live.js';
-import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
 import {
   freshIds,
   movedIds,
@@ -50,12 +53,12 @@ import {
   withMeta,
   withMoney,
   withNote,
+  type ListEntryMeta,
   type StoredList
 } from '../lib/lists.js';
-import { MONEY_DEFAULT } from '../lib/money.js';
+import { MONEY_DEFAULT, type MoneyMode } from '../lib/money.js';
 import type { Random } from '../lib/roll.js';
 import type { EventsPort, ListOpResult, ListRepository, ListWrite } from '../ports/index.js';
-import type { ListModel } from './lists.svelte.js';
 import { LiveFeed } from './liveFeed.svelte.js';
 
 /** How long a write that found no network waits before it is sent again. */
@@ -64,6 +67,11 @@ export const RETRY_MS = 15_000;
 export const QUIET_MS = 2_000;
 /** How many counted faults in a row split a request, or drop a lone write. */
 export const FAULT_LIMIT = 3;
+/** How many reads `detail` makes of one list before it says the read failed. */
+export const DETAIL_READS = 3;
+
+/** Whether the store holds a list's entries' details: `absent` holds heads only. */
+export type ListDetail = 'absent' | 'loading' | 'ready' | 'error';
 
 const DROPPED: ListOpResult = { ok: false, error: 'refused' };
 const NETWORK_WRITE: ListWrite = { ok: false, error: 'network' };
@@ -83,12 +91,11 @@ interface Op {
 const byUpdated = (a: CloudList, b: CloudList): number =>
   b.updated - a.updated || (a.id < b.id ? -1 : 1);
 
-export class CloudLists implements ListModel {
+export class CloudLists {
   /** `idle` signed out; `loading` until the first read answers; `error` when it failed. */
   status = $state<'idle' | 'loading' | 'ready' | 'error'>('idle');
-  /* Raw, as `ListStore.lists` is: a writer replaces the array and the list it
-     changes, never mutates, so an edit redraws that list alone. Newest edit
-     first. */
+  /* Raw: a writer replaces the array and the list it changes, never mutates, so an
+     edit redraws that list alone. Newest edit first. */
   lists = $state.raw<CloudList[]>([]);
   /** Whether every write is in: `failed` while one waits for the network. */
   sync = $state<'saved' | 'saving' | 'failed'>('saved');
@@ -98,9 +105,17 @@ export class CloudLists implements ListModel {
   listLimit = $state<number | null>(null);
   entryLimit = $state<number | null>(null);
 
+  /* The detail state of each list that is not `absent`, by id; replaced on every change. */
+  #details = $state.raw<Record<string, Exclude<ListDetail, 'absent'>>>({});
+
   readonly #repo: ListRepository;
   readonly #say: (msg: Msg, error?: boolean) => void;
   readonly #dict: () => Dict;
+  /* Each list's local edits, by id: a detail read that overlapped an edit of one of its
+     lists is made again; an edit of another list cannot make its rows stale. */
+  #editsOf: Record<string, number> = {};
+  /* The detail read running for each list: a second call joins it. */
+  #detailRuns: Record<string, Promise<void>> = {};
 
   #queue: Op[] = [];
   #flushing = false;
@@ -227,6 +242,129 @@ export class CloudLists implements ListModel {
     return this.lists.find((l) => l.id === id);
   }
 
+  /** Whether the store holds the list's entries' details. */
+  detailOf(id: string): ListDetail {
+    return this.#details[id] ?? 'absent';
+  }
+
+  #setDetail(ids: readonly string[], state: ListDetail): void {
+    const next = { ...this.#details };
+    for (const id of ids) {
+      if (state === 'absent') Reflect.deleteProperty(next, id);
+      else next[id] = state;
+    }
+    this.#details = next;
+  }
+
+  /**
+   * Reads the entries of the named lists that the store holds and has not read whole; a
+   * list whose read runs is joined, never read twice. The buffer goes first, so the answer
+   * holds every local edit. Answers whether every named list the store still holds is
+   * `ready`; false at once unless the account is read.
+   */
+  async detail(ids: readonly string[]): Promise<boolean> {
+    if (this.status !== 'ready') return false;
+    const epoch = this.#epoch;
+    const runs: Promise<void>[] = [];
+    const group: string[] = [];
+    for (const id of ids) {
+      if (!this.get(id) || this.detailOf(id) === 'ready' || group.includes(id)) continue;
+      const running = this.#detailRuns[id];
+      if (running) {
+        if (!runs.includes(running)) runs.push(running);
+      } else group.push(id);
+    }
+    if (group.length) {
+      const run = this.#readRows(group).finally(() => {
+        for (const id of group) {
+          if (this.#detailRuns[id] === run) Reflect.deleteProperty(this.#detailRuns, id);
+        }
+      });
+      for (const id of group) this.#detailRuns[id] = run;
+      runs.push(run);
+    }
+    await Promise.all(runs);
+    return (
+      epoch === this.#epoch &&
+      this.#readNow() &&
+      ids.every((id) => !this.get(id) || this.detailOf(id) === 'ready')
+    );
+  }
+
+  /* One detail read of `group`: the buffer first, then `rows`, again after an overlapping
+     edit of one of its lists or an answer older than the held head, at most `DETAIL_READS`
+     reads. */
+  async #readRows(group: readonly string[]): Promise<void> {
+    const epoch = this.#epoch;
+    this.#setDetail(group, 'loading');
+    let waiting = [...group];
+    for (let n = 0; n < DETAIL_READS && waiting.length; n++) {
+      const sent = await this.flushNow();
+      if (epoch !== this.#epoch) return;
+      /* Only a write that found no network fails the read: an edit made during the flush
+         waits for its own quiet window, and the check after the read covers the group's. */
+      if (!sent && this.#unsent()) {
+        this.#setDetail(waiting, 'error');
+        return;
+      }
+      const edits = waiting.map((id) => this.#editsOf[id] ?? 0);
+      const read = await this.#repo.rows(waiting);
+      if (epoch !== this.#epoch) return;
+      if (!read.ok) {
+        this.#setDetail(waiting, 'error');
+        return;
+      }
+      const from = waiting;
+      if (
+        from.some((id, i) => (this.#editsOf[id] ?? 0) !== edits[i]) ||
+        this.#queue.some((q) => from.includes(q.list))
+      ) {
+        continue;
+      }
+      const rows: Record<string, ListRow> = Object.fromEntries(
+        read.lists.map((r) => [r.id, r])
+      );
+      const again: string[] = [];
+      const ready: string[] = [];
+      const gone: string[] = [];
+      let lists = this.lists;
+      for (const id of from) {
+        if (!this.get(id)) continue;
+        const row = rows[id];
+        if (!row) {
+          gone.push(id);
+          continue;
+        }
+        const had = this.#read[id];
+        if (had && row.revision < had.rev) {
+          again.push(id);
+          continue;
+        }
+        const list = this.#withLinked(toCloudList(row));
+        this.#read[id] = { at: row.updated_at, rev: row.revision, list };
+        lists = lists.map((l) => (l.id === id ? list : l));
+        ready.push(id);
+      }
+      if (gone.length) {
+        /* Deleted elsewhere: the list leaves as a re-read drops it, and a re-read follows,
+           so a read sent before the delete cannot leave it on the index. */
+        lists = lists.filter((l) => !gone.includes(l.id));
+        for (const id of gone) Reflect.deleteProperty(this.#read, id);
+        this.#setDetail(gone, 'absent');
+      }
+      if (ready.length || gone.length) this.lists = [...lists].sort(byUpdated);
+      this.#setDetail(ready, 'ready');
+      if (gone.length) {
+        this.#reread = true;
+        this.#rereadWhenIdle();
+      }
+      this.#readNewLinks();
+      waiting = again;
+    }
+    const failed = waiting.filter((id) => this.get(id));
+    if (failed.length) this.#setDetail(failed, 'error');
+  }
+
   /** Reads the account's lists; resolves once the read has settled. */
   async load(): Promise<void> {
     this.status = 'loading';
@@ -295,11 +433,32 @@ export class CloudLists implements ListModel {
     this.#read = {};
     this.#removed = {};
     this.#linked = {};
+    this.#editsOf = {};
+    this.#detailRuns = {};
+    this.#details = {};
     this.lists = [];
     this.listLimit = null;
     this.entryLimit = null;
     this.status = 'idle';
     this.sync = 'saved';
+  }
+
+  /* Whether a write waits for the network; a method, so a check after an await is not
+     narrowed by one before it. */
+  #unsent(): boolean {
+    return this.sync === 'failed';
+  }
+
+  /* Whether the account is read; a method, so a check after an await is not narrowed by one
+     before it. */
+  #readNow(): boolean {
+    return this.status === 'ready';
+  }
+
+  /* Whether a local edit, a waiting write or a flush overlapped a read that started at
+     `edits`. */
+  #overlapped(edits: number): boolean {
+    return edits !== this.#edits || this.#queue.length > 0 || this.#flushing;
   }
 
   async #pull(): Promise<void> {
@@ -318,13 +477,38 @@ export class CloudLists implements ListModel {
       if (read.entryLimit !== undefined) this.entryLimit = read.entryLimit;
     }
     if (seq < this.#appliedSeq) return;
-    if (edits !== this.#edits || this.#queue.length || this.#flushing) {
+    if (this.#overlapped(edits)) {
       this.#reread = true;
       this.#rereadWhenIdle();
       return;
     }
+    /* A changed list this tab holds whole is read whole too: its head alone would drop the
+       details a page draws. */
+    const whole = read.ok
+      ? read.lists
+          .filter((h) => {
+            const had = this.#read[h.id];
+            return this.detailOf(h.id) === 'ready' && (!had || h.revision > had.rev);
+          })
+          .map((h) => h.id)
+      : [];
+    let rows: readonly ListRow[] = [];
+    if (whole.length) {
+      const got = await this.#repo.rows(whole);
+      if (epoch !== this.#epoch || seq < this.#appliedSeq) return;
+      if (this.#overlapped(edits)) {
+        this.#reread = true;
+        this.#rereadWhenIdle();
+        return;
+      }
+      if (!got.ok) {
+        if (this.status === 'loading') this.status = 'error';
+        return;
+      }
+      rows = got.lists;
+    }
     if (read.ok) {
-      if (!this.#apply(read.lists, read.kept ?? [])) {
+      if (!this.#apply(read.lists, read.kept ?? [], rows)) {
         /* A kept list this store no longer holds (an overlapping read replaced it): read
            again with the revisions held now, and draw nothing from this read. */
         this.#reread = true;
@@ -332,6 +516,7 @@ export class CloudLists implements ListModel {
         return;
       }
       this.#appliedSeq = seq;
+      this.#rereadWhenIdle();
       /* The first draw waits for the linked records, so a card never counts an item short. */
       await this.#fetchLinked();
       if (epoch === this.#epoch) this.status = 'ready';
@@ -407,8 +592,14 @@ export class CloudLists implements ListModel {
       void this.#fetchLinked();
   }
 
-  /* Answers false, changing nothing, when a kept id is not held. */
-  #apply(rows: readonly ListRow[], kept: readonly string[]): boolean {
+  /* Answers false, changing nothing, when a kept id is not held. A list held whole takes its
+     row from `rows`, never its head alone; with no row as new as the head it stays as held
+     and a later re-read reads it whole. */
+  #apply(
+    heads: readonly ListHead[],
+    kept: readonly string[],
+    rows: readonly ListRow[] = []
+  ): boolean {
     const read: Record<string, { at: string; rev: number; list: CloudList }> = {};
     const keptLists: CloudList[] = [];
     for (const id of kept) {
@@ -417,18 +608,39 @@ export class CloudLists implements ListModel {
       read[id] = had;
       keptLists.push(had.list);
     }
-    const next = rows.map((row) => {
-      const had = this.#read[row.id];
+    const whole: Record<string, ListRow> = Object.fromEntries(rows.map((r) => [r.id, r]));
+    const next = heads.flatMap((head): CloudList[] => {
+      const had = this.#read[head.id];
       /* A row older than the one held is an overlapping read's: the held list stays. */
-      if (had && row.revision < had.rev) {
-        read[row.id] = had;
-        return had.list;
+      if (had && head.revision < had.rev) {
+        read[head.id] = had;
+        return [had.list];
       }
-      const list = had?.at === row.updated_at ? had.list : this.#withLinked(toCloudList(row));
-      read[row.id] = { at: row.updated_at, rev: row.revision, list };
-      return list;
+      if (had?.at === head.updated_at) {
+        read[head.id] = { at: head.updated_at, rev: head.revision, list: had.list };
+        return [had.list];
+      }
+      if (this.detailOf(head.id) === 'ready') {
+        const row = whole[head.id];
+        if (row && row.revision >= head.revision) {
+          const list = this.#withLinked(toCloudList(row));
+          read[row.id] = { at: row.updated_at, rev: row.revision, list };
+          return [list];
+        }
+        this.#reread = true;
+        const held = had?.list ?? this.get(head.id);
+        if (had) read[head.id] = had;
+        return held ? [held] : [];
+      }
+      const list = this.#withLinked(toCloudHead(head));
+      read[head.id] = { at: head.updated_at, rev: head.revision, list };
+      return [list];
     });
     next.push(...keptLists);
+    const dropped = Object.keys(this.#details).filter((id) => !Object.hasOwn(read, id));
+    /* A list held whole whose row did not answer stays drawn with its state. */
+    const gone = dropped.filter((id) => !next.some((l) => l.id === id));
+    if (gone.length) this.#setDetail(gone, 'absent');
     this.#read = read;
     next.sort(byUpdated);
     if (next.length !== this.lists.length || next.some((l, i) => l !== this.lists[i])) {
@@ -466,6 +678,7 @@ export class CloudLists implements ListModel {
 
   #enqueue(op: Omit<Op, 'seq'>): void {
     this.#edits++;
+    this.#editsOf[op.list] = (this.#editsOf[op.list] ?? 0) + 1;
     if (op.key) {
       const at = this.#queue.findIndex((q, i) => i >= this.#inFlight && q.key === op.key);
       if (at >= 0) this.#queue.splice(at, 1);
@@ -629,7 +842,7 @@ export class CloudLists implements ListModel {
     });
   }
 
-  /** The `ListStore.create` signature: the new list first, its name trimmed or untitled. */
+  /** Makes a list and answers it first in `lists`, its name trimmed or untitled. */
   create(
     name: string,
     init: Partial<Omit<StoredList, 'id' | 'name' | 'created'>> = {}
@@ -662,6 +875,8 @@ export class CloudLists implements ListModel {
     };
     const made = this.#withLinked(l);
     this.lists = [made, ...this.lists];
+    /* It holds every detail, so no read is needed. */
+    this.#setDetail([id], 'ready');
     this.#enqueue({ list: id, create: true, write: { op: 'create', list: row, entries } });
     this.#readNewLinks();
     return made;
@@ -689,6 +904,7 @@ export class CloudLists implements ListModel {
   remove(id: string): void {
     this.lists = this.lists.filter((l) => l.id !== id);
     Reflect.deleteProperty(this.#read, id);
+    this.#setDetail([id], 'absent');
     this.#enqueue({ list: id, write: { op: 'remove', id } });
   }
 
@@ -800,10 +1016,11 @@ export class CloudLists implements ListModel {
     if (next && at < next.ids.length) this.#reorder(next);
   }
 
-  /** Writes back what `removeEntry` removed: the same source and linked item. */
+  /** Writes back what `removeEntry` removed: the same source and linked item. Only on a list
+   *  held whole: a caller that read no details would write empty ones. */
   restoreEntry(id: string, entryId: string, at: number, meta: ListEntryMeta): void {
     const l = this.get(id);
-    if (!l || l.ids.includes(entryId)) return;
+    if (!l || l.ids.includes(entryId) || this.detailOf(id) !== 'ready') return;
     const k = removedKey(id, entryId);
     const src = this.#removed[k] ?? this.#sourceOf(entryId);
     if (!src) return;

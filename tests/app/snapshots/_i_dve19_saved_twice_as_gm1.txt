@@ -18,7 +18,6 @@ RootWebArea "Уголёк - Генератор лута Daggerheart" [url=index.
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Уголёк" [level=1]
@@ -70,7 +69,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -92,7 +90,6 @@ RootWebArea "Ember - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/dve19
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Ember" [level=1]
@@ -133,7 +130,6 @@ Copy text
 EN
 Edit
 Install as an app
-Lists
 Page
 Print
 Privacy

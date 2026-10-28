@@ -124,40 +124,29 @@ A list, and every entry in it, carries two notes:
 
 | | Goes into |
 |---|---|
-| **For players** | the copied text, **Players' link**, **Your own link** |
-| **GM only** | **Your own link** |
+| **For players** | the copied text, the players' link |
+| **GM only** | the GM's link |
 
-Hence two share buttons. **Players' link** is what you drop in the party chat.
-**Your own link** is a full snapshot including the GM notes, and doubles as a backup
-from which the list can be restored on another device. The address in the browser
-bar is always the Players' link.
+An account list is shared with **Share**, which holds both links.
 
-### The link format
+### Share links
 
-A list needs no server - the whole thing is encoded in the address:
+A share link opens an account list as it is now, read-only:
 
 ```
-https://artex-x.github.io/daggerheart-loot/#/l/0JrQu9Cw0LQg...
+https://artex-x.github.io/daggerheart-loot/#/s/<token>
 ```
 
-Only the name, the entry ids, any hand-typed quantity and price, and the two
-notes are stored; text and images come from `data.js` at render time, so fixing
-the data fixes every list and link that points at it. The payload starts with the
-entry count and four characters of hash (`3.k7f2~q1,cc21*5*50,q337`), which turns
-a link truncated by a messenger into a "broken link" page rather than a shorter
-list that looks complete. The format is frozen in `docs/specs/CONTRACTS.md`
-section 3 and is backward compatible.
+The token is opaque: only the list's owner makes one, one per audience, and
+**Delete link** ends access through it. Text and images come from `data.js` at
+render time, so fixing the data fixes every list that points at it. An old
+`#/l/` link stopped opening on 26 October 2026 and draws the not-found page.
 
 ### Where lists live
 
-**In this browser's `localStorage`, and nowhere else.** There is no server and no
-sync. Clearing site data, a private window or a different browser means no lists.
-To keep one, press **Your own link** and save the address: it restores the list whole,
-both notes included.
-
-Two open tabs do not overwrite each other: a save re-reads storage and merges by
-`id`, a list deleted in one tab is tombstoned for the session, and the `storage`
-event redraws the other tab.
+**In the account.** Sign in, and every list is kept in the account: it saves itself
+and opens on any device. Signed out, the app asks you to sign in where a list would
+be made.
 
 ## Printing
 
@@ -240,11 +229,11 @@ they follow the reader to every device.
 
 | Key | Holds |
 |---|---|
-| `dhloot.lists.v2` | lists with their contents and notes |
 | `dhloot.lang.v1` | interface language |
 | `dhloot.home.v1` | starting section |
 | `dhloot.prefs.v1` | table view (list or grid) and print layout (colour or black and white, standard or compact) |
-| `dhloot.warn.v1` | that the storage warning has been dismissed |
+
+The app no longer reads the list keys an older build left in the browser.
 
 The line is drawn where the interface draws it: **how** a page looks is
 remembered, **what** was asked on it is not. Filters, rarity, community, the
@@ -294,8 +283,8 @@ project: run `npm run build` before serving `dist/` again.
 
 ```
 app/src/lib/         pure logic: roll modes, filters, hash grammar, i18n
-app/src/ports/        browser adapters: storage, clipboard, compression, drag
-app/src/state/        app-wide state (AppState, ListStore)
+app/src/ports/        browser adapters: storage, clipboard, drag, the account cloud
+app/src/state/        app-wide state (AppState, CloudLists)
 app/src/components/   Svelte components
 app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
@@ -332,7 +321,7 @@ docs/fixtures/        golden fixtures the contract suite replays
 ```
 
 `docs/specs/CONTRACTS.md` is the one to read before changing anything public -
-the hash grammar, the list link format, record ids and the generated artefacts
+the hash grammar, record ids and the generated artefacts
 are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 `CLAUDE.md` is the entry point for AI-assisted maintenance.
 
@@ -389,7 +378,7 @@ chosen language leaks between suites.
 
 ### Machine readability and search
 
-A fetcher sees an empty page and a list link looks like nonsense, so the data
+A fetcher sees an empty page and a share link carries no list, so the data
 lives separately: `catalog-index.csv` for selection in one fetch, the record
 pages `i/<id>.html` for one record's text, `catalog.csv` for the full table,
 `data.json` for full parsing, `llms.txt` for the URL grammar, the lists

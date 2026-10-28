@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -210,7 +209,6 @@ daggerheart.com
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Средне
 Ссылка на таблицу
@@ -245,7 +243,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_weapon/f_tier
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -381,7 +378,6 @@ KatanaTier 1 · Physical · Agility · Melee · d10+3 phy · Two-Hand... [namele
 Knowledge
 Link to this table
 List
-Lists
 Longbow
 LongbowTier 1 · Physical · Agility · Very Far · d8+3 phy · Two-H... [namelen=112 namehash=b76b8588]
 Longsword

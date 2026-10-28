@@ -37,9 +37,9 @@ export function hashRouter(win: RouterWin = window): RouterPort {
          the address is swapped in place, and where replaceState is
          unavailable the assignment is the fallback. WebKit also
          throws past 100 `replaceState` calls in a 30s window (R4/PF3) - the
-         debounced list-URL sync is the caller most likely to hit that limit -
-         so a throw here falls back the same way a missing method does, rather
-         than losing the navigation outright. */
+         filter segment's rewrites can reach that limit - so a throw here
+         falls back the same way a missing method does, rather than losing the
+         navigation outright. */
       if (win.history.replaceState) {
         try {
           win.history.replaceState(

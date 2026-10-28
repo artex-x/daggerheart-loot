@@ -5,8 +5,8 @@ implementation detail. A fifth holds one short-lived record.
 
 | Where | Holds | Survives a reload |
 |---|---|---|
-| URL hash | anything shareable: route, table, anchor, filters, the whole contents of a shared list, a print set's id | yes, and travels to other people |
-| `localStorage` | preferences and the person's browser lists | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
+| URL hash | anything shareable: route, table, anchor, filters, a share link's token, what to print | yes, and travels to other people |
+| `localStorage` | preferences, and the session of the signed-in account | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
 | The account (signed in only) | the language, starting section, tables view and print layout (`user_prefs`); the account lists with their entries (`lists`, `list_entries`) | yes, on every device signed in to the account |
 | `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to, and the action a sign-in prompt started | this tab only, honoured for 10 minutes and removed when read |
 | Memory (`S`) | everything else | no |
@@ -27,31 +27,31 @@ is for.
 
 | Key | Holds |
 |---|---|
-| `dhloot.lists.v2` | lists, with contents, per-entry meta and both notes |
-| `dhloot.lists.v1` | the pre-split shape. Read once and migrated into v2, then **left untouched** so a rollback loses nothing. Never delete it. |
 | `dhloot.lang.v1` | `ru` or `en`. Also written, as `en` and only when absent, by an English redirect page (`i/en/<id>.html`, `en/index.html`) before it opens the app (`docs/specs/I18N.md`) |
 | `dhloot.home.v1` | the pinned starting section, as a full hash - a section, a named table (`#/tables/<table>`), or `#/homebrew` («Мои предметы», one pin for its four tabs; a build with no sign-in draws the not-found page for it, as for `#/tables/homebrew`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form. A stored `#/tables/frames` (the legacy alias, `hash.ts` `TABLE_ALIASES`) normalises to `#/tables/other_frames` on read only, with no write-back; the home control compares the active route against the canonical path, and the next explicit save writes the canonical id (`app.svelte.ts` `pinOf`). A stored old id of a renamed section or table (`#/roll/dread`, `#/tables/dv/...`; `ROUTES.md`, "URL ids and old ids") reads as its URL id, with the rest of the hash kept (`hash.ts` `canonicalHash`); signed in, `#applyPrefs` writes that URL id to `dhloot.home.v1`, and the next account save writes it to `user_prefs.home`. The pin button compares and stores the URL id, so it reads pressed on an old address of the pinned page. The legacy `#/roll/core`, `#/roll/hnf` and `#/roll/all` stay as written. |
 | `dhloot.prefs.v1` | the defaults `{ view: 'list' \| 'grid', printBw: boolean, printCompact: boolean }`, written whole by the Display section and the account's answer, never by a page switch; read at boot for every reader; live's old `{ view }` still reads (a missing field is `list`/`false`) |
-| `dhloot.warn.v1` | `'1'` once the storage warning has been dismissed |
-| `dhloot.probe` | written and removed to test whether storage works at all |
 | `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (auth-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by auth-js 2.117.1 under the key that `ports/supabase.ts` names by supabase-js's rule (`sb-<first host label>-auth-token`); never by the app's own code |
-| `dhloot.lists.v2.bad` | a `dhloot.lists.v2` value that would not parse, copied here once before this tab's own next write would otherwise silently overwrite it - what a newer build, a browser extension, or another page on the shared origin left behind, kept rather than lost (R1). The move into the account reads it (the notice names it) and never writes or deletes it |
-| `dhloot.migrated.v1` | the move of browser lists into the account (`FEATURES.md`, "Account and browser lists"): `{ owner, lists, notice?, bad?, held? }` - `owner` the first account whose page loaded with browser lists (only it moves them), `lists` the tombstones (local id to account id: a tombstoned list is never drawn again and leaves `dhloot.lists.v2` on the next removal), `notice` the names the one-time notice still shows, `bad` the damaged-backup sentence (`true` to show, `false` shown and dismissed), `held` the local ids whose account copy did not match (never sent again; a delete prunes the id). Read fresh on every read of the lists; every writer reads it fresh and merges - `owner` kept once set, `lists` and `held` unions, a name appended only with a new tombstone - so two tabs never undo each other's write or a «Скрыть». The tombstones are written before the lists they remove. A value that does not parse reads as absent. Kept after the legacy write cutoff, 2026-10-26 |
+
+Left in the browser: the five list keys an older build wrote - `dhloot.lists.v1`,
+`dhloot.lists.v2`, `dhloot.lists.v2.bad`, `dhloot.migrated.v1` and `dhloot.warn.v1` - stay
+where the last build wrote them. Since R10 the app reads, writes and deletes none of them,
+and `dhloot.probe` is not written.
 
 `dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider,
 action? }`, written just before sign-in or Connect leaves for the provider
 (`app/src/ports/redirect.ts`). `hash` is the page the reader left, or - when
 a sign-in prompt's «Войти» led to `#/account` - the prompt's page, and
 `action` the action it started (`app/src/lib/pending.ts`: reopen the
-add-to-list menu with its rows, taken counts and typed name, save the open
-shared list, `#/l/` or `#/s/`, save a copy of a homebrew item or a catalog
+add-to-list menu with its rows and taken counts - the `name` key an older build
+wrote is read past, as any unknown key - save the open
+share link's list (`#/s/`), save a copy of a homebrew item or a catalog
 record (`saveItem`, the item's uuid as `hid` or the record's id as `id`), or make a print set of the entries the press built
 (`print`, with the count cut past 180, so the sign-in ends with the same
 cut toast a signed-in press shows)). The print set reads each item live at
 its open, so an item edited meanwhile prints as it is now and one deleted
 meanwhile is counted missing. The page that comes back reads and removes it before mount and
 returns to `hash` only when every field is one the app could have written - a
-`#/` route under 16384 characters (a `#/l/` link with notes passes 2048),
+`#/` route under 16384 characters (`#/l/` links with notes passed 2048 before R10),
 `at` within 10 minutes, a known `kind` and provider; otherwise it opens
 `#/account`. An `action` that fails its own check is dropped and the rest is
 kept.
@@ -59,44 +59,9 @@ kept.
 Every read is defensive: a value that does not parse, or does not pass its own
 validity check, is replaced by the default and the rest is kept. Broken JSON is
 ignored whole. Storage that throws (private mode, disabled) must not break the
-app - it shows a warning and runs without lists.
+app - it runs on its defaults.
 
 ## Two tabs
-
-A write must not stamp this tab's array over the key. `saveLists()` re-reads
-storage and merges by `id`:
-
-- lists this tab knows about win, in this tab's order
-- lists only the other tab has are appended
-- a list deleted in this tab is recorded in `S.deleted` for the session, so the
-  merge cannot resurrect it from the other tab's copy
-
-The `storage` event redraws the other tab. Before this existed, two open tabs
-destroyed each other's lists silently, with no server and no export to recover
-from, so the merge is not an optimisation.
-
-The `storage` event alone only covers a tab that is in the foreground the
-whole time - a backgrounded tab is not guaranteed a `storage` event at all in
-most browsers, so a phone put away mid-edit and brought back could otherwise
-overwrite whatever a desktop tab wrote while it was away, or resurrect a list
-the desktop tab had since deleted (R2). `browserStorage` also reloads on
-`visibilitychange` (becoming visible again) and `pageshow` (a back-forward-
-cache restore), neither of which names a key, so both are treated the same
-as a `storage` event with none - `localStorage.clear()`'s own shape, also
-now redrawn rather than silently ignored.
-
-A signal that finds in storage the very string the tab's lists were drawn
-from redraws nothing, and a save does not parse the string it last read or
-wrote again (`docs/DECISIONS.md`, 2026-09-23, "The list store is raw
-state...", for the measured cost). A signal for `dhloot.migrated.v1` redraws
-even then: a new tombstone hides a list whose stored text did not change,
-and the page of a list that moved follows it to its account address.
-
-After the legacy write cutoff, 2026-10-26, a build with sign-in configured
-writes a browser list only through the move's removal and a delete, and
-neither merges: each reads storage fresh, removes by id, and makes this
-tab's memory the stored array. The merge above stays for the weeks before
-the date (and in a build with no sign-in configured).
 
 Account lists do not ride the `storage` event: every tab and device reads the
 account again on a message of the owner's Realtime topic from another tab or
@@ -113,8 +78,9 @@ whose `updated_at` has not moved as the same object, so a read that finds
 nothing new redraws nothing, and an edit replaces only the list it changes.
 
 Signed out, a tab follows another tab's settings: on a `storage` event for
-`dhloot.lang.v1`, `dhloot.home.v1`, `dhloot.warn.v1` or `dhloot.prefs.v1`, and
-when it is shown again, it reads the four keys as the boot reads them (a bad
+`dhloot.lang.v1`, `dhloot.home.v1` or `dhloot.prefs.v1`, and when it is shown
+again (`visibilitychange` to visible and `pageshow`, a signal that names no key,
+as `localStorage.clear()` does), it reads the three keys as the boot reads them (a bad
 value reads as the boot's fallback) and applies a changed value at once,
 with no reload and no write back. Signed in, the account row decides.
 
@@ -173,14 +139,6 @@ setting, and so do the pin and the starting-section select.
 - **Sign-out clears nothing local**; signing in as another user pulls that
   user's row. Deleting the account deletes the row with it.
 
-## The list migration
-
-`dhloot.lists.v1` had one note per object plus a `noteShow` flag meaning "copy
-this along with the item". That is exactly the note meant for players, so the
-split is read off the data rather than guessed: flagged becomes `note`,
-unflagged becomes `hnote`, and `noteShow` is dropped. Applied to the list and to
-every entry's meta.
-
 ## The in-memory state object
 
 `S` in the live app (`app.js`, deleted at R0c - read it at `git show
@@ -192,23 +150,20 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), `pendingListName` (a name typed before a sign-in, taken once by the menu that reopens; the pending action and this name are forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the uuid of the item or the id of the catalog record «Сохранить себе» copies now), `saveItemFor` (the uuid of the item or the id of the catalog record a sign-in left to copy, until its pick row makes the copy; forgotten with the pending action), and the key of a «Сохранить себе» press whose answer was lost, per user and source, in memory only and never stored (the purchase request's pattern; FEATURES.md, "Records") |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), the pending action (forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the uuid of the item or the id of the catalog record «Сохранить себе» copies now), `saveItemFor` (the uuid of the item or the id of the catalog record a sign-in left to copy, until its pick row makes the copy; forgotten with the pending action), and the key of a «Сохранить себе» press whose answer was lost, per user and source, in memory only and never stored (the purchase request's pattern; FEATURES.md, "Records") |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `arazo {n}`, `comm {c, n}`, `mwt {r, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
-| Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg`, `homebrewShown` (the «Свои предметы» switch on search and the equipment tables: memory only, on by default, kept across pages, on again at each sign-in, never in the address or storage); on the shared list page, the query, the fold of the panel, whether the search box and the strip are drawn, and on `#/l/` the picked values (page memory, reset when another list opens; on `#/s/` the picked values are the address); the open folds of the filter rows of more than 12 values (page memory of the strip, closed when it mounts); the source chips' fold of `#/tables/homebrew` (page memory, closed when the page mounts) |
-| Lists | `lists`, `cloudLists` (the account lists, their read status, the write buffer and its save status, each list's linked items of other accounts as the last `items()` read answered them, and what each removed entry was written as, for its undo, forgotten on sign-out), `sharedView` (the open share link's list, its read status and whether the reader owns it), `itemView` (the open `#/h/` item, its related items, its read status and whether the reader is its author: page memory, forgotten when the page goes), `openList`, `urlPayload`, `deleted`, `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session); the index's ticked account lists (page memory, pruned to the drawn cards, empty on every visit) and the import field's file, preview and rows (page memory, forgotten when the field folds); the request sender's sent lines (memory, until the ticks change or clear); the owner's hidden decided requests (page load); the owner's change-log notices (memory, read with the requests; the list page's panel reads its own list's notices whole) and the «новое» marks of the notices that were unread when the page first held them (page memory) |
+| Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg`, `homebrewShown` (the «Свои предметы» switch on search and the equipment tables: memory only, on by default, kept across pages, on again at each sign-in, never in the address or storage); on the shared list page, the query, the fold of the panel, whether the search box and the strip are drawn (the picked values are the address); the open folds of the filter rows of more than 12 values (page memory of the strip, closed when it mounts); the source chips' fold of `#/tables/homebrew` (page memory, closed when the page mounts) |
+| Lists | `cloudLists` (the account lists: each list's head, and its entries' details with a read state per list once a page needed them; their read status, the write buffer and its save status, each list's linked items of other accounts as the last `items()` read answered them, and what each removed entry was written as, for its undo, forgotten on sign-out), `sharedView` (the open share link's list, its read status and whether the reader owns it), `itemView` (the open `#/h/` item, its related items, its read status and whether the reader is its author: page memory, forgotten when the page goes), `lsel`, `picked` (the own list's taken counts), `listDraft`, `listRoll`, `newListFor`, `newListDraft`, `pickQ`, `shared {ids, meta}`, `listsShown` (how many cards the index draws, kept for the session); the index's ticked account lists (page memory, pruned to the drawn cards, empty on every visit) and the import field's file, preview and rows (page memory, forgotten when the field folds); the request sender's sent lines (memory, until the ticks change or clear); the owner's hidden decided requests (page load); the owner's change-log notices (memory, read with the requests; the list page's panel reads its own list's notices whole) and the «новое» marks of the notices that were unread when the page first held them (page memory) |
 | Homebrew | `homebrew` (the signed-in author's items, sources and cards, their read status and item limit: memory only, read on sign-in and cleared on sign-out; another tab's or device's write arrives as the owner topic's `homebrew` event and reads them again), the editor's draft, the draft it loaded, its revision and its problems (page memory: a remount starts from the store), the one leave check and the one unload check a dirty editor or a changed card form on the Sets or Rules tab registers (`AppState`, `PagePort`); the import panel's file, its preview, its «Куда» choices, skip or update, the open name lines and the ids of its rows, kept across a tab switch of «Мои предметы», and the move panel's chosen source and section (page memory: a remount starts empty); the Items, Sources, Sets and Rules queries, the open card folds and the open folds of a source's sections and a card's members (page memory: each query starts empty when its tab opens; a tab's address key opens its card's fold once); the Items tab's filter - its picked values and whether its panel is open (page memory, empty each time the tab opens, never in the address) |
 | Prices | `rp`, `guess`, `moneyHelp` |
 | Print | the print set's read (`PrintPage`), the print layout a page switch picked for this visit (`AppState`) |
-| UI | `sel` (cleared on every navigation, except one between two `homebrew` routes, the «Мои предметы» tabs, and one between two `#/tables/homebrew` addresses, a source chip press; on a shared page, pruned to the drawn list; on the Items tab, pruned to the rows the search and the filter draw), `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change), `hidden` (the move banner's «Скрыть», in `MoveNotice`, which `Shell` never remounts: hidden until the next page load) |
+| UI | `sel` (cleared on every navigation, except one between two `homebrew` routes, the «Мои предметы» tabs, and one between two `#/tables/homebrew` addresses, a source chip press; on a shared page, pruned to the drawn list; on the Items tab, pruned to the rows the search and the filter draw), `picked` (the shared page's taken counts, cleared with `sel`), `modal`, `menuFor`, `help`, `keepOpen`, `menuOpen` (the header's account menu, in `Shell`, closed on a navigation and a user change) |
 
 `fSeg` is the filter segment already read back from the address. Reading the
 address on every render froze the filter at whatever the link said: the panel
 could not be folded and a chip clicked itself straight back. Whatever replaces
 this has the same problem to solve.
-
-`urlPayload` is the payload this tab wrote itself, so an edit can refresh the
-address rather than orphaning the page.
 
 Nothing of homebrew goes to `localStorage` or `sessionStorage`: the items live
 in the account, and the editor's draft lives as long as its page. So does

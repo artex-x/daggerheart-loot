@@ -254,7 +254,7 @@ export async function runRealContract(env, admin, member) {
     (await reader.shares.clone(playerShare.token, playerCopy)).ok,
     'the player copy was refused'
   );
-  const readerLists = await reader.lists.list();
+  const readerLists = await reader.lists.rows([gmCopy, playerCopy]);
   const copyOf = (id) =>
     readerLists.ok ? readerLists.lists.find((l) => l.id === id) : undefined;
   check(

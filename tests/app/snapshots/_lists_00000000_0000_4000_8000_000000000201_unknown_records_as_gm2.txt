@@ -19,7 +19,6 @@ RootWebArea "Список второго ГМа - Генератор лута Da
       link "Альт. таблицы" [url=index.html?as=gm2&hold=items%3Afail#/roll/alt]
       link "Дополнения" [url=index.html?as=gm2&hold=items%3Afail#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2&hold=items%3Afail#/tables]
-      link "Списки" [url=index.html?as=gm2&hold=items%3Afail#/lists]
       link "Поиск" [url=index.html?as=gm2&hold=items%3Afail#/search]
   main ""
     StaticText "Список второго ГМа"
@@ -111,7 +110,6 @@ hb_emberaxeaaaaaaaa
 Скрыть изменение «Топор Тлеющих Углей»
 Скрыть изменения
 Случайно 1–2
-Списки
 Список
 Таблицы
 Только для мастера: hb_emberaxeaaaaaaaa
@@ -137,7 +135,6 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
       link "Alt. tables" [url=index.html?as=gm2&hold=items%3Afail#/roll/alt]
       link "Supplements" [url=index.html?as=gm2&hold=items%3Afail#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2&hold=items%3Afail#/tables]
-      link "Lists" [url=index.html?as=gm2&hold=items%3Afail#/lists]
       link "Search" [url=index.html?as=gm2&hold=items%3Afail#/search]
   main ""
     StaticText "Список второго ГМа"
@@ -210,7 +207,6 @@ Hide the change to "Ember Axe"
 Install as an app
 Italic
 List name
-Lists
 Note
 Numbered list
 One higher

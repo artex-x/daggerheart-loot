@@ -18,7 +18,6 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=inde
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Аккаунт" [level=1]
@@ -77,14 +76,13 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Обычные правила
-Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=179 namehash=fd2ce01b]
+Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=183 namehash=b3f24d5b]
 Отключить Discord
 Отключить Google
 Отмена
 Поиск
 Сеткой
 Скачать мои данные (ZIP)
-Списки
 Списком
 СпрашиватьСообщать владельцуНе сообщать
 Таблицы
@@ -110,7 +108,6 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=index.html?as=gm1#/accou
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Account" [level=1]
@@ -173,7 +170,6 @@ EN
 Grid
 Install as an app
 List
-Lists
 Privacy
 RU
 Search
@@ -181,7 +177,7 @@ Sign out
 Sign out everywhere
 Skip to content
 Standard rules
-Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=168 namehash=63dd1856]
+Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=171 namehash=01cdfeab]
 Supplements
 Tables
 Terms of use

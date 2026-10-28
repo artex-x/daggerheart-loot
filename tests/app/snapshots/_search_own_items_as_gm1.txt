@@ -18,7 +18,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=index.ht
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Поиск" [level=1]
@@ -87,7 +86,6 @@ daggerheart.com
 Священный Топор
 Священный ТопорРанг 1 · Магическое · Сила · Вплотную · d8+1 маг ... [namelen=95 namehash=7f7c9d94]
 Снаряжение
-Списки
 Стопорный Ключ
 Таблицы
 Топор Лабрис
@@ -121,7 +119,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=index.html?as=gm1#/search
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Search" [level=1]
@@ -191,7 +188,6 @@ Labrys AxeTier 3 · Physical · Strength · Melee · d10+7 phy · Two... [namele
 Legendary Axe of the Dawn
 Legendary Hallowed Axe
 Legendary Hallowed AxeTier 4 · Magic · Strength · Melee · d8+10 ... [namelen=98 namehash=82afb9d3]
-Lists
 Open this section on start
 Privacy
 RU

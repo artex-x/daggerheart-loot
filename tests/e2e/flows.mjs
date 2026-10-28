@@ -3,8 +3,8 @@
  * sign-out, F4 sign-out everywhere, F5 delete account, F6 a preference read
  * back on a fresh session, F7 an account list made, filled, renamed, read
  * back from the server and deleted, F8 its share links made, read, deleted,
- * made again and copied, F9 a browser list moved into the account at
- * sign-in, once, and not for another account, F10 two edits kept by a page
+ * made again and copied (F9, the move of a browser list, retired at R10), F10 two
+ * edits kept by a page
  * closed inside the write buffer's quiet window, F11 an edit drawn live on an
  * open share page and on the owner's second page, F12 a purchase request sent
  * signed out, drawn on the owner's page and applied, F13 a lists file imported
@@ -505,107 +505,6 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await deleteListsOf(admin, member.id);
   }
   console.log('e2e: F8 ok');
-
-  /* F9: a browser list moves into the account at sign-in through the real
-     `move_legacy_list`: once, found again by its fingerprint from a second
-     browser, and never for an account that is not the browser's first. */
-  await deleteListsOf(admin, member.id);
-  try {
-    const seed = {
-      'dhloot.lists.v2': JSON.stringify([
-        {
-          id: 'e2e1',
-          name: 'E2E перенос',
-          ids: ['ci1'],
-          meta: { ci1: { qty: 2, gold: 150, note: 'e2e f9' } },
-          created: 1
-        }
-      ])
-    };
-    const mine = () => listsOf(admin, member.id);
-    const settled = (page, flow) =>
-      waitFor(page, 'e2e ' + flow + ': the move did not settle', () =>
-        ['done', 'failed'].includes(document.querySelector('main')?.dataset.move ?? '')
-      );
-    const storedOf = (page) =>
-      page.evaluate(() => ({
-        lists: localStorage.getItem('dhloot.lists.v2'),
-        migrated: JSON.parse(localStorage.getItem('dhloot.migrated.v1') ?? 'null')
-      }));
-    let moved = '';
-    await withPage(
-      ctx,
-      await mint(env, admin, member.email),
-      async (page, d) => {
-        await d.open('#/lists');
-        await waitText(page, 'F9', 'Ваш аккаунт');
-        await settled(page, 'F9');
-        await waitText(page, 'F9', 'перенесены в ваш аккаунт: «E2E перенос».');
-        const rows = await mine();
-        const row = rows[0];
-        if (
-          rows.length !== 1 ||
-          !/^[0-9a-f]{64}$/.test(row.legacy_fingerprint ?? '') ||
-          row.list_entries.length !== 1 ||
-          row.list_entries[0].item_key !== 'ci1' ||
-          row.list_entries[0].quantity !== 2 ||
-          row.list_entries[0].price_coins !== 150
-        ) {
-          throw new Error('e2e F9: the account does not hold the moved list once');
-        }
-        moved = row.id;
-        const stored = await storedOf(page);
-        if (
-          stored.lists !== '[]' ||
-          stored.migrated?.owner !== member.id ||
-          stored.migrated?.lists?.e2e1 !== moved
-        ) {
-          throw new Error('e2e F9: the browser does not hold the tombstone of the move');
-        }
-        await waitFor(page, 'e2e F9: the moved list is not in «Ваш аккаунт»', () =>
-          [...document.querySelectorAll('.listcard b')].some(
-            (b) => b.textContent === 'E2E перенос'
-          )
-        );
-      },
-      seed
-    );
-    /* A second browser with the same list: the same row, no second one. */
-    await withPage(
-      ctx,
-      await mint(env, admin, member.email),
-      async (page, d) => {
-        await d.open('#/lists');
-        await settled(page, 'F9');
-        const rows = await mine();
-        if (rows.length !== 1 || rows[0].id !== moved) {
-          throw new Error('e2e F9: a second browser made a second row');
-        }
-        if ((await storedOf(page)).lists !== '[]') {
-          throw new Error('e2e F9: the second browser kept its copy');
-        }
-      },
-      seed
-    );
-    /* A browser whose lists are the member's: another account moves nothing. */
-    const other = await createThrowaway(admin, member.email);
-    await withPage(
-      ctx,
-      await mint(env, admin, other.email),
-      async (page, d) => {
-        await d.open('#/lists');
-        await settled(page, 'F9');
-        await waitText(page, 'F9', 'E2E перенос');
-        if ((await listsOf(admin, other.id)).length !== 0) {
-          throw new Error("e2e F9: another account's sign-in moved the member's list");
-        }
-      },
-      { ...seed, 'dhloot.migrated.v1': JSON.stringify({ owner: member.id, lists: {} }) }
-    );
-  } finally {
-    await deleteListsOf(admin, member.id);
-  }
-  console.log('e2e: F9 ok');
 
   /* F10: two edits, then the page is closed less than 500 ms after the last
      key - inside the buffer's 2 s window - and both reach the account (the
@@ -1306,7 +1205,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
     const share = await port.shares.create(listId, 'player');
     if (!share.ok) throw new Error('e2e F19: no players link made');
     const markOf = async () => {
-      const read = await port.lists.list();
+      const read = await port.lists.rows([listId]);
       const list = read.ok ? read.lists.find((l) => l.id === listId) : undefined;
       return list?.list_entries.find((e) => e.item_key === 'q1')?.gm_only;
     };

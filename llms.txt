@@ -32,8 +32,7 @@ Four things trip agents up here, in order of how often:
    entry.
 4. **A list for a GM is a file.** Build a JSON file as "Lists as a file
    (import-v1)" describes; the GM imports it into their account. Do not
-   build `#/l/` links: that format is retired and stops opening on
-   2026-10-26.
+   build `#/l/` links: that format stopped opening on 2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
 `catalog.csv` but the two texts and the page link, under 200 KB. It holds 1459
@@ -256,10 +255,6 @@ of two or three usually plays better than assigning one each.
   says so; do not build one.
 - `#/i/<id>` — one record
 - `#/search` — search
-- `#/l/<payload>` - an old list link, retired: it stops opening on
-  2026-10-26. Do not build one. If someone hands you one, ask them to open it
-  on the site and save the list to their account ("Сохранить себе"), then
-  send you an export.
 - `#/s/<token>` — a list shared from an account; the token is opaque and made
   only by the list's owner, so you cannot build one, and fetching it tells you
   nothing (the fragment never leaves the browser). A link a person gave you
@@ -297,7 +292,7 @@ keep working. The same path with `/en` after the origin is the English card:
 - `https://daggerheart-loot.pages.dev/tables/<table>` - a catalog table, the
   app's `#/tables/<table>`, optionally with a block or a filter after it
 
-A `?v=...` on an item or a list link is a version for the messenger's cache;
+A `?v=...` on an item or a share link is a version for the messenger's cache;
 ignore it. You cannot build the id, the token or the print id, so read these
 links the way you read their `#/` addresses.
 

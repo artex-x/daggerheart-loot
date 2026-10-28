@@ -17,7 +17,6 @@ RootWebArea "Arazo's Artifacts - Генератор лута Daggerheart" [url=#
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
@@ -98,7 +97,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–78
-Списки
 Страница
 Таблицы
 Улучшенное Нестареющее Око Зверя
@@ -120,7 +118,6 @@ RootWebArea "Arazo's Artifacts - Daggerheart Loot Generator" [url=#/roll/arazos_
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "The Guide to Arazo's Artifacts" [level=1]
@@ -182,7 +179,6 @@ How this works
 Improved Ageless Eye of the Beast
 Install as an app
 Legendary Ageless Eye of the Beast
-Lists
 Many Worlds Tavern
 One higher
 One lower

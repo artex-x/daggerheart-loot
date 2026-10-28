@@ -1,6 +1,6 @@
 /* The print sheet, `#/p/<id>` - off `renderPrint`, `printCardHTML` and
- * its helpers, `fitPrintCards` (app.js 3235-3558) and the four handlers
- * (`doPrint`/`printBack`/`printArt`/`printLink`, app.js 4236-4245).
+ * its helpers, `fitPrintCards` (`git show 23c00a6^:app.js`) and the four handlers
+ * (`doPrint`/`printBack`/`printArt`/`printLink`, `git show 23c00a6^:app.js`).
  *
  * Held against a small fixture rather than the real catalogue, the same way
  * tables.test.ts and searchPage.test.ts are - what matters here is the

@@ -17,7 +17,6 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Wondrous Environments" [level=1]
@@ -88,7 +87,6 @@ daggerheart.com
 Скопировать текст
 Случайно 1–119
 Смола Бездны
-Списки
 Страница
 Таблицы
 Условия использования
@@ -109,7 +107,6 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/won
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Wondrous Environments" [level=1]
@@ -162,7 +159,6 @@ Dread GM Toolbox
 EN
 How this works
 Install as an app
-Lists
 Many Worlds Tavern
 One higher
 One lower

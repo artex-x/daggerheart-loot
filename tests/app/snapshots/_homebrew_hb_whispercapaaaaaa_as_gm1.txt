@@ -18,7 +18,6 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=inde
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Whispering Cap" [level=1]
@@ -119,7 +118,6 @@ daggerheart.com
 Расходник
 Снаряжение
 Сохранить
-Списки
 Список
 Таблица
 Таблицы
@@ -144,7 +142,6 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=index.html?as=gm1
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Whispering Cap" [level=1]
@@ -230,7 +227,6 @@ In print
 Install as an app
 Italic
 Item
-Lists
 Made from
 New rule card
 No tier

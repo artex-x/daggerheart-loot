@@ -18,7 +18,6 @@ RootWebArea "Список второго ГМа - Генератор лута Da
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
       link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2#/tables]
-      link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     StaticText "Список второго ГМа"
@@ -102,7 +101,6 @@ daggerheart.com
 Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Случайно 1–2
-Списки
 Список
 Таблицы
 Только для мастера: Скипетр
@@ -130,7 +128,6 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
       link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2#/tables]
-      link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
   main ""
     StaticText "Список второго ГМа"
@@ -199,7 +196,6 @@ Hide the change to "Bedroll of the long road over the pass, thro... [namelen=141
 Install as an app
 Italic
 List name
-Lists
 Note
 Numbered list
 One higher

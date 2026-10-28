@@ -86,7 +86,7 @@ unread (owner, 2026-10-15: no root file for `artex-x.github.io`). The text files
 `catalog.csv`, `catalog-index.csv`, `names.json`, `schema/*.json`) carry no
 `noindex` until the host sends `X-Robots-Tag`. Both are `DEBT.md` D104.
 
-## 3. Lists live in the account, and in the browser until the cutoff
+## 3. Lists live in the account
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
 Supabase backend (Auth and Postgres, EU West) is the only server that
@@ -102,20 +102,10 @@ again; a link opens the list as it is now, read-only. A nightly job backs the da
 encrypted to the owner's key, and each copy is kept 30 days; a copy holds no sign-in
 session, so a restore signs each restored reader out once
 (`.claude/README.md`, "Backups and restore"). A nightly job reports the
-free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). A signed-in reader's browser
-lists move into the account by themselves; browser lists stay editable
-until the legacy write cutoff, 2026-10-26, and are read-only from then
-(`FEATURES.md`, "Account and browser lists"). An old shared list is still
-its address, with deliberate consequences:
-
-- a `#/l/` link cannot be revoked, and it stays readable until the legacy
-  write cutoff, 2026-10-26 (`LEGACY_WRITE_UNTIL`), when its decoder retires:
-  from then the app writes no `#/l/` address and draws the retired page for
-  one
-- a link is as long as its contents, hence the checksum and the short form
-- a browser list is in `localStorage` and can be lost; the app says so over
-  the browser lists, and **Your own link** (`shareGm`) doubles as its backup
-- a build with no sign-in configured keeps making browser lists
+free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). Browser lists, their
+move into the account and the `#/l/` link left the app at R10 (`FEATURES.md`, "Account and
+browser lists"): an old `#/l/` link draws the not-found page, and a build with no sign-in
+configured has no lists.
 
 Live updates reach an open shared page and the owner's other tabs and
 devices only through Supabase Realtime private channels, sent by the
@@ -186,8 +176,7 @@ now, and an item deleted since is left out and counted (`docs/decisions/`,
 open").
 
 Homebrew items, their sources and sections, and the author's set and rule
-cards live in the account only: never in the browser's storage, and never
-in a `#/l/` link. They leave it only as the reader's own file: a homebrew
+cards live in the account only: never in the browser's storage. They leave it only as the reader's own file: a homebrew
 file, the data zip's `homebrew.json`, or a lists file's version 2 entry with
 its snapshot (`FEATURES.md`, "Homebrew"). Any homebrew item opens for
 anyone who holds its id, through two definer functions,
@@ -600,5 +589,5 @@ every `pages/*.html` and `pages/en/*.html`.
 - iOS has no install prompt: a site goes to the home screen only through
   Safari's Share sheet, "Add to Home Screen". An iOS home-screen web app
   keeps its own storage, separate from Safari's tabs, so lists saved in
-  Safari do not show in the installed app; a list link carries a list
+  Safari do not show in the installed app; a share link opens a list
   across. These are platform facts, not measured here.

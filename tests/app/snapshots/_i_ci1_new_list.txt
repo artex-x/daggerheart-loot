@@ -1,6 +1,6 @@
 # #/i/ci1 ~ new list
 # route: #/i/ci1
-# why: signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons; the browser lists stay pickable
+# why: signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons
 
 ## ru :: tree
 RootWebArea "Первоклассный Спальный Мешок - Генератор лута Daggerheart" [url=#/i/ci1]
@@ -17,27 +17,20 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
-  complementary ""
-    StaticText "Ваши списки хранятся только в этом браузере. Войдите до 26 октяб..." [namelen=160 namehash=88a3e2d2]
-    button "Войти и перенести списки"
-    button "Скрыть напоминание"
   main ""
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
     link "показать в таблице" [url=#/tables/core_item/ci1]
     button "Страница"
     StaticText "1"
-    ... StaticText x5 of 9 same-shape siblings elided
+    ... StaticText x4 of 8 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=true]
-    button "Лавка в порту" [pressed=false]
-    button "Клад дракона" [pressed=false]
     StaticText "Войдите, чтобы создать список."
     button "Войти" [focused=true]
     button "Отмена"
@@ -57,13 +50,10 @@ RU
 daggerheart.com
 Альт. таблицы
 Войти
-Войти и перенести списки
 Добавить в список
 Дополнения
 К содержимому
-Клад дракона
 Конфиденциальность
-Лавка в порту
 ЛутDaggerheart
 Обычные правила
 Отмена
@@ -74,9 +64,7 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Скрыть напоминание
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -98,12 +86,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=#/i/ci1]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
-  complementary ""
-    StaticText "Your lists are stored only in this browser. Sign in before 26 Oc..." [namelen=149 namehash=072f0348]
-    button "Sign in and move the lists"
-    button "Dismiss the reminder"
   main ""
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
@@ -135,10 +118,8 @@ Copy image
 Copy link
 Copy name
 Copy text
-Dismiss the reminder
 EN
 Install as an app
-Lists
 Page
 Print
 Privacy
@@ -147,7 +128,6 @@ Save to my items
 Search
 Share
 Sign in
-Sign in and move the lists
 Skip to content
 Standard rules
 Supplements

@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -57,7 +56,6 @@ daggerheart.com
 Обычные правила
 Поиск
 Сохранить себе
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -78,7 +76,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -110,7 +107,6 @@ Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namele
 EN
 Filters
 Install as an app
-Lists
 Privacy
 RU
 Save to my lists

@@ -14,7 +14,7 @@ import type { Provider } from './types.js';
 export const RETURN_KEY = 'dhloot.auth.return';
 /** A record older than this is someone else's abandoned attempt. */
 export const RETURN_MS = 10 * 60 * 1000;
-/** The longest page address the record keeps: a `#/l/` link with notes passes 2048. */
+/** The longest page address the record keeps: `#/l/` links with notes passed 2048 before R10. */
 const HASH_MAX = 16384;
 
 const CALLBACK = 'auth-callback';

@@ -18,7 +18,6 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=index.ht
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Палаш" [level=1]
@@ -85,7 +84,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Улучшенный Палаш
@@ -124,7 +122,6 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=index.html?as=gm3#/i/
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Broadsword" [level=1]
@@ -182,7 +179,6 @@ EN
 Improved Broadsword
 Install as an app
 Legendary Broadsword
-Lists
 Page
 Practice Broadsword 1 (HB)
 Practice Broadsword 10 (HB)

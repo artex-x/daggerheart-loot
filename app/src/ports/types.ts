@@ -7,9 +7,8 @@
  *
  * - every one of these can fail in a way that is not a bug. Storage throws in a
  *   private window, the clipboard is refused outside a secure context, the
- *   share sheet is dismissed by the person using it, compression does not exist
- *   in an older browser. Each port says so in its type, so a caller cannot
- *   forget the case;
+ *   share sheet is dismissed by the person using it. Each port says so in its
+ *   type, so a caller cannot forget the case;
  * - none of them can be exercised in a unit test as a global. As an argument
  *   they can, which is the difference between testing the behaviour and testing
  *   that a browser exists.
@@ -32,6 +31,7 @@ import type {
   ImportRow,
   LinkedRow,
   ListOp,
+  ListHead,
   ListRow,
   ShareAudience,
   SharedHeld,
@@ -62,17 +62,14 @@ export interface StoragePort {
   get(key: string): string | null;
   set(key: string, value: string): boolean;
   remove(key: string): void;
-  /** Whether storage works at all - what the warning in the lists section asks. */
-  works(): boolean;
   /**
    * Another tab wrote to a key, or - `null` - this tab has reason to believe
-   * it might have missed one (R2). The whole two-tab merge hangs off this,
-   * so it is part of the port rather than something a component wires up
-   * itself. `null` covers `localStorage.clear()`, which fires a `storage`
-   * event with no key at all, and the two moments a backgrounded tab is
-   * given no `storage` event for anyway - becoming visible again, and a
-   * back-forward-cache restore - both of which a caller answers the same
-   * way it answers a named key: reload and merge.
+   * it might have missed one (R2). `AppState` listens: signed out it follows
+   * another tab's settings keys, and the `null` signal re-reads the account and
+   * the open share link (`STATE.md`, "Two tabs"). `null` covers
+   * `localStorage.clear()`, which fires a `storage` event with no key at all,
+   * and the two moments a backgrounded tab is given no `storage` event for
+   * anyway - becoming visible again, and a back-forward-cache restore.
    */
   onExternalChange(fn: (key: string | null) => void): () => void;
 }
@@ -148,23 +145,6 @@ export interface RouterPort {
   /** How many entries back there are, so a print page knows whether to offer one. */
   canGoBack(): boolean;
   back(): void;
-}
-
-/* ---------- short links ---------- */
-
-/**
- * Compressing a list payload.
- *
- * Optional in the strict sense: `CompressionStream` may be absent, and the
- * plain form has to keep working when it is. `pack` therefore returns whichever
- * came out shorter - for a list of three entries with no notes, compression
- * only adds length.
- */
-export interface CompressPort {
-  available(): boolean;
-  pack(raw: string): Promise<string>;
-  /** Accepts either form; the marker on the front says which it is. */
-  unpack(payload: string): Promise<string>;
 }
 
 /* ---------- confirming ---------- */
@@ -272,8 +252,8 @@ export interface PagePort {
 }
 
 /**
- * The time of day the app reads for the legacy write cutoff. A test build pins it
- * (`?today=`), so its states stay on one side of the date whatever day they run.
+ * The time the app reads for export names and relative times. A test build pins it, so
+ * its states read the same moment whatever day they run.
  */
 export interface ClockPort {
   now(): number;
@@ -374,12 +354,15 @@ export type ListWrite =
 export type ListsRead =
   | {
       ok: true;
-      lists: ListRow[];
+      lists: ListHead[];
       kept?: readonly string[];
       listLimit: number | null | undefined;
       entryLimit: number | null | undefined;
     }
   | { ok: false };
+
+/** The named lists whole; `{ ok: false }` is signed out or a read that failed. */
+export type ListRowsRead = { ok: true; lists: ListRow[] } | { ok: false };
 
 /** One write's answer inside an `apply` call: never `network`; `gone` when the row it
  *  edits was deleted or is not the caller's (`P0002`). */
@@ -398,33 +381,23 @@ export type ListWrites =
   /** The call was refused whole: every write in it is dropped. */
   | { ok: false; error: 'refused' };
 
-/** A browser list's move: the account row, and whether this call made it (false: the
- *  owner moved the same text before, and the answer is that first row). */
-export type MoveWrite =
-  | { ok: true; id: string; inserted: boolean }
-  /** No answer, a lapsed session or a row deleted during the move: the next load moves
-   *  it again. */
-  | { ok: false; error: 'network' }
-  /** The text is not a list the database takes. */
-  | { ok: false; error: 'refused' };
-
 /** The signed-in owner's lists (docs/specs/FEATURES.md, "Lists"). Every write is
  *  idempotent on the client-made ids, so a retry cannot duplicate a row. */
 export interface ListRepository {
   /** A fresh list or entry id. */
   newId(): string;
-  /** The owner's lists, each with its entries in list order; the real port orders them
-   *  newest first, the fake in its own order. `known` maps a list id to the revision the
-   *  caller holds: a list still at that revision answers in
-   *  `kept`, not in `lists`. */
+  /** The owner's lists, each with its entries' identities in list order (no note,
+   *  quantity, price or GM-only flag); the real port orders them newest first, the fake in
+   *  its own order. `known` maps a list id to the revision the caller holds: a list still
+   *  at that revision answers in `kept`, not in `lists`. */
   list(known?: Readonly<Record<string, number>>): Promise<ListsRead>;
+  /** The named lists whole, each with its entries in list order; an id the owner does not
+   *  hold answers nothing, and no ids make no request. `{ ok: false }` is signed out or a
+   *  read that failed. */
+  rows(ids: readonly string[]): Promise<ListRowsRead>;
   /** Applies the writes in order in one request (`apply_list_writes`), each on its own:
    *  a refused write rolls back alone. */
   apply(ops: ListOp[]): Promise<ListWrites>;
-  /** Moves one browser list, as its canonical text, into the account as the list `id`
-   *  (`move_legacy_list`); idempotent per owner on the text. Exempt from the count
-   *  limits (docs/specs/FEATURES.md, "Account and browser lists"). */
-  move(id: string, canonical: string): Promise<MoveWrite>;
   /** Inserts every list and entry in one transaction (`import_lists`), or nothing; a list
    *  id already the caller's is a retry and adds only its missing entries. */
   import(lists: ImportRow[]): Promise<ListWrite>;
@@ -712,7 +685,6 @@ export interface Env {
   clipboard: ClipboardPort;
   share: SharePort;
   router: RouterPort;
-  compress: CompressPort;
   drag: DragPort;
   dialog: DialogPort;
   pwa: PwaPort;

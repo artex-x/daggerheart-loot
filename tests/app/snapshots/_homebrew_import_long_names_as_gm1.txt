@@ -18,7 +18,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои предметы" [level=1]
@@ -95,7 +94,6 @@ daggerheart.com
 Отмена
 Поиск
 Предметы
-Списки
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
@@ -119,7 +117,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My items" [level=1]
@@ -179,7 +176,6 @@ Import from file
 Install as an app
 Into "Homebrew"Into "Alder Workshop"New source "МастерскаяМастер... [namelen=144 namehash=d4476e02]
 Items
-Lists
 New item
 Open this section on start
 Privacy

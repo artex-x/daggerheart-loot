@@ -345,11 +345,22 @@ describe('the account at three times every default limit', () => {
     assert.equal(left, 0);
   });
 
+  /* The account's first read of its lists: each list's columns and its entries' identities. */
+  const LIST_HEADS = `select coalesce(json_agg(t), '[]') from (select l.id, l.name, l.money_mode,
+    l.player_note, l.gm_note, l.created_at, l.updated_at, l.revision,
+    (select coalesce(json_agg(x), '[]') from (select id, item_key, source, hb_item, position
+      from public.list_entries where list_id = l.id) x) as list_entries
+    from public.lists l order by l.updated_at desc, l.id) t`;
+
   /* The reads as PostgREST builds them, each one statement with its conversion to text:
      every pending head (the upper bound of the keyset pages), one list's 30 requests with
-     their lines, and every list with its entries, a tenth of them with both notes at 4000
-     characters (docs/decisions/2026-10-22-the-owners-requests-read-takes-every-head-and-the-open-lists-lines.md). */
-  it("reads the owner's request heads, one list's request lines and every list whole, each within 4 s", async () => {
+     their lines, every list's head with its entries' identities, and fifty lists whole, a
+     tenth of the entries with both notes at 4000 characters
+     (docs/decisions/2026-10-22-the-owners-requests-read-takes-every-head-and-the-open-lists-lines.md,
+     docs/decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md). The seed's keys
+     are catalog-style (`'k' || g`), source `official`, `hb_item` null: the 6 000 000-byte bound
+     is not a worst case, and a homebrew-only account at 3x is est. 7 MB. */
+  it("reads the owner's request heads, one list's request lines, every list's head and fifty lists whole, each within 4 s; the heads at most 6 000 000 bytes", async () => {
     const median = (xs) => [...xs].sort((a, b) => a - b)[1];
     const serverTime = async (tx, query) => {
       const [r] = await tx.unsafe(`explain (analyze, format json) select (${query})::text`);
@@ -374,6 +385,9 @@ describe('the account at three times every default limit', () => {
         },
         async (tx) => {
           const [one] = await tx`select l.id from public.lists l order by l.id limit 1`;
+          const fifty = (
+            await tx`select l.id from public.lists l order by l.updated_at desc, l.id limit 50`
+          ).map((r) => `'${r.id}'`);
           const ids = (
             await tx`select id from public.purchase_requests
               where list_id = ${one.id} and status = 'pending' order by id`
@@ -390,14 +404,18 @@ describe('the account at three times every default limit', () => {
               from public.purchase_requests r
               where r.status = 'pending' and r.id = any(array[${ids.join(', ')}]::uuid[])
               order by r.id) t`,
-            lists: `select coalesce(json_agg(t), '[]') from (select l.id, l.name, l.money_mode,
+            listHeads: LIST_HEADS,
+            listRows: `select coalesce(json_agg(t), '[]') from (select l.id, l.name, l.money_mode,
               l.player_note, l.gm_note, l.created_at, l.updated_at, l.revision,
-              l.legacy_fingerprint,
               (select coalesce(json_agg(x), '[]') from (select id, item_key, source, hb_item,
                 position, quantity, price_coins, player_note, gm_note, gm_only
                 from public.list_entries where list_id = l.id) x) as list_entries
-              from public.lists l order by l.updated_at desc, l.id) t`
+              from public.lists l where l.id = any(array[${fifty.join(', ')}]::uuid[])
+              order by l.updated_at desc, l.id) t`
           };
+          const [{ bytes }] = await tx.unsafe(
+            `select octet_length((${LIST_HEADS})::text)::int as bytes`
+          );
           const [counts] = await tx`select
             (select count(*) from public.purchase_requests where status = 'pending')::int
               as heads,
@@ -405,13 +423,13 @@ describe('the account at three times every default limit', () => {
               join public.purchase_requests r on r.id = p.request_id
               where r.list_id = ${one.id})::int as lines,
             (select count(*) from public.lists)::int as lists`;
-          const times = { heads: [], lines: [], lists: [] };
+          const times = { heads: [], lines: [], listHeads: [], listRows: [] };
           for (let run = 0; run < 3; run++) {
             for (const [name, query] of Object.entries(reads)) {
               times[name].push(await serverTime(tx, query));
             }
           }
-          return { counts, requests: ids.length, times };
+          return { counts, requests: ids.length, whole: fifty.length, bytes, times };
         }
       );
     } finally {
@@ -421,7 +439,7 @@ describe('the account at three times every default limit', () => {
       Object.entries(out.times).map(([name, xs]) => [name, Math.round(median(xs))])
     );
     console.log(
-      `owner-reads: 3x heads ${m.heads} ms, one list's lines ${m.lines} ms, every list ${m.lists} ms`
+      `owner-reads: 3x heads ${m.heads} ms, one list's lines ${m.lines} ms, every list's head ${m.listHeads} ms (${out.bytes} bytes), fifty lists whole ${m.listRows} ms`
     );
     assert.equal(out.counts.heads, 4500);
     assert.equal(out.requests, 30);
@@ -429,6 +447,9 @@ describe('the account at three times every default limit', () => {
     assert.equal(out.counts.lists, 150);
     assert.ok(m.heads < 4000, `the heads read's median took ${m.heads} ms`);
     assert.ok(m.lines < 4000, `one list's lines read's median took ${m.lines} ms`);
-    assert.ok(m.lists < 4000, `every list's read's median took ${m.lists} ms`);
+    assert.equal(out.whole, 50);
+    assert.ok(m.listHeads < 4000, `every list's head read's median took ${m.listHeads} ms`);
+    assert.ok(m.listRows < 4000, `fifty lists whole read's median took ${m.listRows} ms`);
+    assert.ok(out.bytes <= 6_000_000, `every list's head is ${out.bytes} bytes`);
   });
 });

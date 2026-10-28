@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-3/f_
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Склад" [level=1]
@@ -83,7 +82,6 @@ daggerheart.com
 Расходники
 Сбросить всё
 Сохранить себе
-Списки
 Ссылка на фильтры
 Таблицы
 Улучшаемые
@@ -111,7 +109,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longso
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Склад" [level=1]
@@ -161,7 +158,6 @@ Finesse
 Homebrew
 Install as an app
 Items
-Lists
 Magic
 Melee
 Mist Flask

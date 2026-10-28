@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -90,7 +89,6 @@ daggerheart.com
 Сбросить всё
 Сеткой
 Снаряжение
-Списки
 Списком
 Ссылка на таблицу
 Ссылка на фильтры
@@ -118,7 +116,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_armor/f_line-
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -180,7 +177,6 @@ How this works
 Install as an app
 Link to this table
 List
-Lists
 Many Worlds Tavern
 Open this section on start
 Other

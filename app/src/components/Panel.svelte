@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The shared panel box - off `.panel` in style.css (145-149).
+  /* The shared panel box - off `.panel` in `git show 23c00a6^:style.css`.
    *
    * Extracted because `AltPanel`, `StdPanel`, `RollPanel`, `ListsPage` and
    * `SearchPage` each carried an identical copy of these five declarations.

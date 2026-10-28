@@ -1,28 +1,27 @@
 # #/l/ ~ retired
 # route: #/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg
-# why: after the cutoff a #/l/ link draws the retired page: the heading with the date, the sub, one «Списки» button; the address kept, nothing decoded
-# today: 2026-10-26
+# why: an old list link draws the not-found page: «Предмет не найден», its sub, «На главную»; the address kept, nothing decoded
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=index.html?today=2026-10-26#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
-  link "К содержимому" [url=index.html?today=2026-10-26#main]
+RootWebArea "Генератор лута Daggerheart" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
+  link "К содержимому" [url=#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
+    link "Лут DAGGERHEART" [url=#/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=index.html?today=2026-10-26#/account]
+    link "Войти" [url=#/account]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?today=2026-10-26#/roll/std]
-      link "Альт. таблицы" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Дополнения" [url=index.html?today=2026-10-26#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?today=2026-10-26#/tables]
-      link "Поиск" [url=index.html?today=2026-10-26#/search]
+      link "Обычные правила" [url=#/roll/std]
+      link "Альт. таблицы" [url=#/roll/alt]
+      link "Дополнения" [url=#/roll/wondrous_environments]
+      link "Таблицы" [url=#/tables]
+      link "Поиск" [url=#/search]
   main ""
-    heading "Ссылки такого вида перестали открываться 26 октября 2026 года." [level=1]
-    StaticText "Попросите у отправителя новую ссылку или войдите, чтобы собрать ..." [namelen=71 namehash=fba757b3]
-    link "Мои списки" [url=index.html?today=2026-10-26#/lists]
+    heading "Предмет не найден" [level=1]
+    StaticText "Возможно, ссылка устарела или данные были изменены."
+    link "На главную" [url=#/roll/std]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=pages/install.html]
@@ -40,7 +39,7 @@ daggerheart.com
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Мои списки
+На главную
 Обычные правила
 Поиск
 Таблицы
@@ -48,25 +47,25 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
-  link "Skip to content" [url=index.html?today=2026-10-26#main]
+RootWebArea "Daggerheart Loot Generator" [url=#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg]
+  link "Skip to content" [url=#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?today=2026-10-26#/roll/std]
+    link "Лут DAGGERHEART" [url=#/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=index.html?today=2026-10-26#/account]
+    link "Sign in" [url=#/account]
     navigation "Sections"
-      link "Standard rules" [url=index.html?today=2026-10-26#/roll/std]
-      link "Alt. tables" [url=index.html?today=2026-10-26#/roll/alt]
-      link "Supplements" [url=index.html?today=2026-10-26#/roll/wondrous_environments]
-      link "Tables" [url=index.html?today=2026-10-26#/tables]
-      link "Search" [url=index.html?today=2026-10-26#/search]
+      link "Standard rules" [url=#/roll/std]
+      link "Alt. tables" [url=#/roll/alt]
+      link "Supplements" [url=#/roll/wondrous_environments]
+      link "Tables" [url=#/tables]
+      link "Search" [url=#/search]
   main ""
-    heading "Links of this kind stopped opening on 26 October 2026." [level=1]
-    StaticText "Ask the sender for a new link, or sign in to build a list."
-    link "My lists" [url=index.html?today=2026-10-26#/lists]
+    heading "Item not found" [level=1]
+    StaticText "The link may be out of date, or the data has changed."
+    link "Home" [url=#/roll/std]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=pages/en/install.html]
@@ -77,8 +76,8 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?today=2026-10-26#/l/0Jv
 ## en :: controls
 Alt. tables
 EN
+Home
 Install as an app
-My lists
 Privacy
 RU
 Search

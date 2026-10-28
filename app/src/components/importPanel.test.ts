@@ -199,8 +199,10 @@ describe('the import field', () => {
     await waitFor(() => {
       expect(container.querySelector('.preview')).toBeNull();
     });
-    const read = await cloud.lists.list();
-    const made = read.ok ? read.lists.find((l) => l.name === 'Лавка у моста') : undefined;
+    const heads = await cloud.lists.list();
+    const id = heads.ok ? heads.lists.find((l) => l.name === 'Лавка у моста')?.id : undefined;
+    const read = await cloud.lists.rows(id ? [id] : []);
+    const made = read.ok ? read.lists[0] : undefined;
     expect(made?.list_entries.map((e) => [e.item_key, e.gm_only ?? false])).toEqual([
       ['ci1', false],
       ['q1', true],

@@ -1,6 +1,6 @@
 /* The add-to-list row on the card, driven through fake ports.
  *
- * `state/lists.test.ts` covers the store itself; this is what a person sees
+ * `state/cloudLists.test.ts` covers the store itself; this is what a person sees
  * and presses - the button, the menu, a chip's tick, the new-list form, and
  * the toast each of those raises. Off `listMenuHTML`/`addToListBtn` in
  * app.js and `listMemberFor(item)`'s own live behaviour. */
@@ -10,32 +10,21 @@ import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
-import {
-  brokenStorage,
-  fakeData,
-  fakeEnv,
-  fakePage,
-  fixedClock,
-  memoryRouter,
-  memoryStorage
-} from '../ports/index.js';
+import { fakeData, fakeEnv, fakePage, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { CloudPort, Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type SeedList } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { DAY, listOf, manyLists, seedWith, TWO_LISTS } from '../test/seed.js';
+import { toCloudList, type CloudList } from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
-import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
-import type { StoredList } from '../lib/lists.js';
 
 afterEach(cleanup);
 
 /* jsdom does not implement scrollIntoView - `placeMenu`'s port calls it
    unconditionally once the menu is open. */
 Element.prototype.scrollIntoView = vi.fn();
-
-/** Typed, so a read-back assertion is not an unsafe member access on `any`. */
-const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
-  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
 
 const LOOT: Loot = {
   items: {
@@ -56,27 +45,62 @@ const LOOT: Loot = {
   refs: {}
 };
 
-const TWO = JSON.stringify([
-  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-]);
-
 const at = (over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter('#/i/ci1'), data: fakeData(LOOT), ...over });
 
 const openMenu = (): Promise<void> =>
   userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
 
+/** Renders the card as gm4, who holds `lists`, and waits for the account. */
+async function openCard(lists: SeedList[]) {
+  const cloud = fakeCloud(seedWith({ gm4: lists }), 'gm4');
+  const page = fakePage();
+  const view = render(App, { env: at({ cloud, page }) });
+  await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+  return { ...view, cloud, page };
+}
+
+/** Opens the menu and waits for its first chip, the newest list. */
+async function openMenuOn(first: string): Promise<void> {
+  await openMenu();
+  await screen.findByRole('button', { name: first });
+}
+
+/** Sends the account's buffer and answers the stored list called `name`. */
+async function listNamed(
+  cloud: CloudPort,
+  page: { fireHidden(): void },
+  name: string
+): Promise<CloudList> {
+  page.fireHidden();
+  return waitFor(async () => {
+    const heads = await cloud.lists.list();
+    const id = heads.ok ? heads.lists.find((l) => l.name === name)?.id : undefined;
+    expect(id).toBeDefined();
+    const read = await cloud.lists.rows([id!]);
+    const row = read.ok ? read.lists[0] : undefined;
+    expect(row).toBeDefined();
+    return toCloudList(row!);
+  });
+}
+
 describe('the row under a full card', () => {
-  it('draws the button, folded, and no print control with no sign-in configured', async () => {
+  it('draws no add-to-list control and no print control with no sign-in configured', () => {
     render(App, { env: at() });
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Спальный мешок' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Добавить в список' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
+    expect(document.querySelector('.seldrop')).toBeNull();
+  });
+
+  it('draws the button folded, and the print control, with sign-in configured', async () => {
+    render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     expect(screen.getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByRole('button', { name: 'Печать' })).toBeNull();
-    cleanup();
-    render(App, { env: at({ cloud: fakeCloud(SEED) }) });
     const print = screen.getByRole('button', { name: 'Печать' });
     expect(print).toHaveAttribute('title', 'Собрать карточки для печати: девять на лист A4');
     await waitFor(() => {
@@ -85,8 +109,8 @@ describe('the row under a full card', () => {
   });
 
   it('opens the menu newest list first, naming a single record "лежит в списках"', async () => {
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
-    await openMenu();
+    await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
 
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
     const chips = screen.getAllByRole('button', { name: /Лавка в порту|Клад дракона/ });
@@ -98,9 +122,8 @@ describe('the row under a full card', () => {
   });
 
   it('adds on a chip press, ticks it, keeps the menu open, and toasts', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
-    render(App, { env: at({ storage }) });
-    await openMenu();
+    const { cloud, page } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
 
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
     expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
@@ -109,45 +132,37 @@ describe('the row under a full card', () => {
       'true'
     );
     expect(screen.getByText('Добавлено в «Клад дракона»')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1']);
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['ci1']);
   });
 
   it('removes on a second press, toasts the removal, and undoes back into place with its meta (P5)', async () => {
-    const inList = JSON.stringify([
-      {
-        id: 'a',
-        name: 'Клад дракона',
-        ids: ['w1', 'ci1'],
-        created: 1,
-        meta: { ci1: { qty: 3 } }
-      },
-      { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-    ]);
-    const storage = memoryStorage({ 'dhloot.lists.v2': inList });
-    render(App, { env: at({ storage }) });
-    await openMenu();
+    const inList = listOf(811, 'Клад дракона', [{ key: 'w1' }, { key: 'ci1', qty: 3 }], {
+      createdAgoMs: 2 * DAY,
+      editedAgoMs: 2 * DAY
+    });
+    const { cloud, page } = await openCard([inList, TWO_LISTS[1] as SeedList]);
+    await openMenuOn('Лавка в порту');
 
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
     expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
     expect(screen.getByText('Убрано из «Клад дракона»')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual(['w1']);
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1']);
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.ids).toEqual(['w1', 'ci1']);
-    expect(readLists(storage)[0]?.meta).toEqual({ ci1: { qty: 3 } });
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1', 'ci1']);
+    expect((await readList(cloud, page, uuid(811)))?.meta).toEqual({ ci1: { qty: 3 } });
   });
 
   it('grows a search box past eight lists, and narrows by typing', async () => {
-    const eight = JSON.stringify(
-      Array.from({ length: 8 }, (_, i) => ({
-        id: 'l' + String(i),
-        name: i === 3 ? 'Лавка у порта' : 'Список ' + String(i),
-        ids: [],
-        created: i
-      }))
+    await openCard(
+      manyLists(
+        821,
+        Array.from({ length: 8 }, (_, i) => ({
+          name: i === 3 ? 'Лавка у порта' : 'Список ' + String(i)
+        }))
+      )
     );
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': eight }) }) });
-    await openMenu();
+    await openMenuOn('Список 0');
 
     const search = screen.getByRole('searchbox', { name: 'Найти список' });
     await userEvent.type(search, 'порта');
@@ -160,15 +175,14 @@ describe('the row under a full card', () => {
   });
 
   it('draws no search box under eight lists', async () => {
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
-    await openMenu();
+    await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
   });
 
   it('opens the new-list form with focus, refuses a blank name, and creates a named one', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': TWO });
-    render(App, { env: at({ storage }) });
-    await openMenu();
+    const { cloud, page } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
 
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
     const input = screen.getByPlaceholderText('Например: клад дракона');
@@ -181,14 +195,12 @@ describe('the row under a full card', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
 
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
-    const saved = readLists(storage);
-    expect(saved[0]?.name).toBe('Новый клад');
-    expect(saved[0]?.ids).toEqual(['ci1']);
+    expect((await listNamed(cloud, page, 'Новый клад')).ids).toEqual(['ci1']);
   });
 
   it('folds the new-list form on cancel', async () => {
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
-    await openMenu();
+    await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
@@ -206,10 +218,8 @@ describe('the row under a full card', () => {
        by flushing from a bubble listener planted between the two: it runs
        after the app root's handler (a descendant, so bubbles first) and
        before `document`'s (bubbles last). */
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
-    });
-    await openMenu();
+    const { container } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
 
     const onBubble = (): void => {
       flushSync();
@@ -230,61 +240,18 @@ describe('the row under a full card', () => {
   });
 
   it('closes on a click outside the control', async () => {
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) }) });
-    await openMenu();
+    await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('heading', { level: 1 }));
     expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
   });
-
-  it('closes on a navigation', async () => {
-    const router = memoryRouter('#/i/ci1');
-    render(App, { env: fakeEnv({ router, data: fakeData(LOOT) }) });
-    await openMenu();
-    router.navigate('#/tables');
-    await waitFor(() => {
-      expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
-    });
-  });
-
-  it('keeps adding for the session and toasts saveFailed when storage refuses', async () => {
-    /* Broken storage reads back nothing, so there is no existing list to seed
-       - the only way to reach a list at all is to create one, which also
-       exercises the store's own refusal from inside `create()`. */
-    render(App, { env: at({ storage: brokenStorage() }) });
-    await openMenu();
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Клад дракона');
-    await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
-
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено'
-    );
-    // added for the session even though nothing persisted
-    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
-  });
-
-  it('draws the same row inside the modal a table row opens', async () => {
-    render(App, {
-      env: fakeEnv({
-        router: memoryRouter('#/tables'),
-        data: fakeData(LOOT),
-        cloud: fakeCloud(SEED)
-      })
-    });
-    await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
-    const dialog = screen.getByRole('dialog');
-    expect(
-      within(dialog).getByRole('button', { name: 'Добавить в список' })
-    ).toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Печать' })).toBeInTheDocument();
-  });
 });
 
-/** Eight lists, the menu's search threshold; `ci1` lies in «Сундук мага» (the
- *  oldest) and «Порт Ветров», never in the newest. */
-const EIGHT = JSON.stringify(
+/** The same eight as account lists, newest first, with `ci1` in the same two. */
+const EIGHT_LISTS: SeedList[] = manyLists(
+  821,
   [
     'Сундук мага',
     'Рынок',
@@ -294,12 +261,12 @@ const EIGHT = JSON.stringify(
     'Логово',
     'Храм Солнца',
     'Лавка в порту'
-  ].map((name, i) => ({
-    id: 'l' + String(i),
-    name,
-    ids: i === 0 || i === 2 ? ['ci1'] : [],
-    created: i + 1
-  }))
+  ]
+    .reverse()
+    .map((name) => ({
+      name,
+      keys: name === 'Сундук мага' || name === 'Порт Ветров' ? ['ci1'] : []
+    }))
 );
 
 const chipNames = (container: HTMLElement): string[] =>
@@ -307,10 +274,8 @@ const chipNames = (container: HTMLElement): string[] =>
 
 describe('many lists in the menu', () => {
   it('puts the lists holding the record first, newest first in each group', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
-    });
-    await openMenu();
+    const { container } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     expect(chipNames(container)).toEqual([
       'Порт Ветров',
       'Сундук мага',
@@ -324,10 +289,8 @@ describe('many lists in the menu', () => {
   });
 
   it('keeps a pressed chip in its place until the menu opens again', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
-    });
-    await openMenu();
+    const { container } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     await userEvent.click(screen.getByRole('button', { name: 'Кузнец' }));
     await userEvent.click(screen.getByRole('button', { name: 'Порт Ветров' }));
     expect(chipNames(container)).toEqual([
@@ -351,19 +314,15 @@ describe('many lists in the menu', () => {
   });
 
   it('finds a list with ё from a query typed with е', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
-    });
-    await openMenu();
+    const { container } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'ежа');
     expect(chipNames(container)).toEqual(['Трофеи ёжа']);
   });
 
   it('scrolls the chips only: the search and the new-list chip sit outside them', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
-    });
-    await openMenu();
+    const { container } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     const chips = container.querySelector('.pickchips');
     expect(chips).not.toBeNull();
     expect(chips?.contains(screen.getByRole('searchbox', { name: 'Найти список' }))).toBe(
@@ -374,9 +333,8 @@ describe('many lists in the menu', () => {
   });
 
   it('starts the new-list form with the query, and a create clears the query', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': EIGHT });
-    const { container } = render(App, { env: at({ storage }) });
-    await openMenu();
+    const { container, cloud, page } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'Сундук ');
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
 
@@ -386,7 +344,7 @@ describe('many lists in the menu', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
     expect(screen.getByRole('searchbox', { name: 'Найти список' })).toHaveValue('');
-    expect(readLists(storage)[0]).toMatchObject({ name: 'Сундук', ids: ['ci1'] });
+    expect(await listNamed(cloud, page, 'Сундук')).toMatchObject({ ids: ['ci1'] });
     // a list created while the menu is open joins the lists holding the record
     expect(chipNames(container)[0]).toBe('Сундук');
   });
@@ -394,61 +352,139 @@ describe('many lists in the menu', () => {
 
 describe('accessibility', () => {
   it('has no axe violations with the menu open', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
-    });
-    await openMenu();
+    const { container } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     await expectNoA11yViolations(container);
   });
 
   it('has no axe violations with a chip ticked and the toast showing', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
-    });
-    await openMenu();
+    const { container } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
     await expectNoA11yViolations(container);
   });
 
   it('has no axe violations with the new-list form open', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO }) })
-    });
-    await openMenu();
+    const { container } = await openCard(TWO_LISTS);
+    await openMenuOn('Лавка в порту');
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
     await expectNoA11yViolations(container);
   });
 
   it('has no axe violations with eight lists, the search drawn and a query typed', async () => {
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': EIGHT }) })
-    });
-    await openMenu();
+    const { container } = await openCard(EIGHT_LISTS);
+    await openMenuOn('Порт Ветров');
     await userEvent.type(screen.getByRole('searchbox', { name: 'Найти список' }), 'порт');
     await expectNoA11yViolations(container);
+  });
+});
+
+describe("a remove that waits for the list's entries", () => {
+  const HOLDING = listOf(
+    811,
+    'Клад дракона',
+    [{ key: 'w1' }, { key: 'ci1', qty: 3, note: 'Тёплый' }],
+    {
+      createdAgoMs: 2 * DAY,
+      editedAgoMs: 2 * DAY
+    }
+  );
+  /* Holds every `rows` call until `release()`; the fake answers them then. */
+  function holdRows(cloud: CloudPort) {
+    const real = cloud.lists.rows.bind(cloud.lists);
+    const calls: (readonly string[])[] = [];
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    cloud.lists.rows = async (ids) => {
+      calls.push(ids);
+      await gate;
+      return real(ids);
+    };
+    return { calls, release: open };
+  }
+
+  it('draws the pressed chip busy while the read runs, ignores a second press, then removes with an undo of the read details', async () => {
+    const { cloud, page, container } = await openCard([HOLDING, TWO_LISTS[1] as SeedList]);
+    const held = holdRows(cloud);
+    await openMenuOn('Лавка в порту');
+    const chip = screen.getByRole('button', { name: 'Клад дракона' });
+    await userEvent.click(chip);
+    expect(chip).toHaveAttribute('aria-busy', 'true');
+    expect(chip).toHaveAttribute('aria-disabled', 'true');
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+    expect(chip).toHaveFocus();
+    expect(screen.queryByText('Убрано из «Клад дракона»')).toBeNull();
+    await expectNoA11yViolations(container);
+    await userEvent.click(chip);
+    expect(held.calls).toHaveLength(1);
+    held.release();
+    expect(await screen.findByText('Убрано из «Клад дракона»')).toBeInTheDocument();
+    expect(chip).not.toHaveAttribute('aria-busy');
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1']);
+    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
+    const back = await readList(cloud, page, uuid(811));
+    expect(back?.ids).toEqual(['w1', 'ci1']);
+    expect(back?.meta).toEqual({ ci1: { qty: 3, note: 'Тёплый' } });
+  });
+
+  it('toasts a failed read, removes nothing, and leaves the chip pressed and not busy', async () => {
+    const { cloud, page } = await openCard([HOLDING, TWO_LISTS[1] as SeedList]);
+    const real = cloud.lists.rows.bind(cloud.lists);
+    let fail = true;
+    cloud.lists.rows = (ids) => (fail ? Promise.resolve({ ok: false }) : real(ids));
+    await openMenuOn('Лавка в порту');
+    const chip = screen.getByRole('button', { name: 'Клад дракона' });
+    await userEvent.click(chip);
+    expect(
+      await screen.findByText('Не получилось загрузить списки аккаунта.')
+    ).toBeInTheDocument();
+    expect(chip).toHaveAttribute('aria-pressed', 'true');
+    expect(chip).not.toHaveAttribute('aria-busy');
+    fail = false;
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1', 'ci1']);
+  });
+
+  it('still removes and toasts with «Вернуть» when the menu closes during the read', async () => {
+    const { cloud, page } = await openCard([HOLDING, TWO_LISTS[1] as SeedList]);
+    const held = holdRows(cloud);
+    await openMenuOn('Лавка в порту');
+    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.keyboard('{Escape}');
+    expect(screen.queryByRole('button', { name: 'Клад дракона' })).toBeNull();
+    held.release();
+    expect(await screen.findByText('Убрано из «Клад дракона»')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Вернуть' })).toBeInTheDocument();
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1']);
+  });
+
+  it("removes the record the press named on the bar's menu after the ticks change during the read", async () => {
+    const cloud = fakeCloud(seedWith({ gm4: [HOLDING] }), 'gm4');
+    const page = fakePage();
+    render(App, {
+      env: fakeEnv({ router: memoryRouter('#/tables'), data: fakeData(LOOT), cloud, page })
+    });
+    await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+    const held = holdRows(cloud);
+    const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
+    await userEvent.click(row as HTMLElement);
+    await openMenuOn('Клад дракона');
+    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(row as HTMLElement);
+    held.release();
+    expect(await screen.findByText('Убрано из «Клад дракона»')).toBeInTheDocument();
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['w1']);
   });
 });
 
 describe('with sign-in configured', () => {
   /* `page.fireHidden()` sends the account's write buffer at once, as a
      hidden tab does, so a test reads the fake without the 2 s wait. */
-  const withCloud = (
-    cloud: CloudPort,
-    hash = '#/i/ci1',
-    storage = TWO,
-    more: Record<string, string> = {}
-  ) => {
+  const withCloud = (cloud: CloudPort, hash = '#/i/ci1') => {
     const router = memoryRouter(hash);
     const page = fakePage();
-    const view = render(App, {
-      env: fakeEnv({
-        router,
-        data: fakeData(LOOT),
-        cloud,
-        page,
-        storage: memoryStorage({ 'dhloot.lists.v2': storage, ...more })
-      })
-    });
+    const view = render(App, { env: fakeEnv({ router, data: fakeData(LOOT), cloud, page }) });
     return { ...view, router, page };
   };
   /* The header names the account once the session is in; the lists follow
@@ -462,7 +498,7 @@ describe('with sign-in configured', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
   };
 
-  it('puts the prompt in the new-list slot signed out, and the chips stay pickable', async () => {
+  it('puts the prompt in the new-list slot signed out, with no chip', async () => {
     const { container } = withCloud(fakeCloud(SEED));
     await screen.findByRole('link', { name: 'Войти' });
     await openMenu();
@@ -472,18 +508,45 @@ describe('with sign-in configured', () => {
     expect(screen.queryByPlaceholderText('Например: клад дракона')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Войти через/ })).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
+    expect(chipNames(container)).toEqual([]);
     await userEvent.click(screen.getByRole('button', { name: 'Отмена' }));
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
-    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
+  });
+
+  it('opens on the create slot alone signed out: no label and no empty line, in both languages', async () => {
+    for (const lang of ['ru', 'en'] as const) {
+      const storage = memoryStorage({ 'dhloot.lang.v1': lang });
+      const router = memoryRouter('#/i/ci1');
+      const { container } = render(App, {
+        env: fakeEnv({ router, data: fakeData(LOOT), cloud: fakeCloud(SEED), storage })
+      });
+      const signIn = lang === 'ru' ? 'Войти' : 'Sign in';
+      await screen.findByRole('link', { name: signIn });
+      await userEvent.click(
+        screen.getByRole('button', {
+          name: lang === 'ru' ? 'Добавить в список' : 'Add to list'
+        })
+      );
+      const menu = container.querySelector('.dropmenu') as HTMLElement;
+      expect(menu.querySelector('.lbl')).toBeNull();
+      expect(menu.querySelector('.picker-none')).toBeNull();
+      expect(
+        within(menu)
+          .getAllByRole('button')
+          .map((b) => b.textContent)
+      ).toEqual([lang === 'ru' ? '+ Новый список' : '+ New list']);
+      await expectNoA11yViolations(container);
+      cleanup();
+    }
   });
 
   it('draws no new-list chip while the session is unknown', async () => {
     const cloud = fakeCloud(SEED);
     cloud.auth.session = () => new Promise(() => undefined);
-    withCloud(cloud);
+    const { container } = withCloud(cloud);
     await openMenu();
-    expect(screen.getByRole('button', { name: 'Клад дракона' })).toBeInTheDocument();
+    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(chipNames(container)).toEqual([]);
     expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
   });
 
@@ -497,14 +560,7 @@ describe('with sign-in configured', () => {
       expect(router.hash()).toBe('#/i/ci1');
     });
     await screen.findByRole('button', { name: 'Лавка кузнеца' });
-    /* The browser lists moved into the account before the menu reopened. */
-    expect(chipNames(container)).toEqual([
-      'Лавка кузнеца',
-      'Трофеи',
-      'Лавка в порту',
-      'Клад дракона',
-      'Пустой список'
-    ]);
+    expect(chipNames(container)).toEqual(['Лавка кузнеца', 'Трофеи', 'Пустой список']);
     expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
   });
 
@@ -540,34 +596,12 @@ describe('with sign-in configured', () => {
     expect(await screen.findByRole('button', { name: 'Трофеи' })).toBeInTheDocument();
   });
 
-  it('keeps the name typed in the search through the sign-in', async () => {
-    const { router } = withCloud(fakeCloud(SEED), '#/i/ci1', EIGHT);
-    await screen.findByRole('link', { name: 'Войти' });
-    await openMenu();
-    await userEvent.type(screen.getByPlaceholderText('Найти список'), 'Тайник');
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    await signInThroughAccount();
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/i/ci1');
-    });
-    const field = await screen.findByPlaceholderText('Например: клад дракона');
-    expect(field).toHaveValue('Тайник');
-    expect(field).toHaveFocus();
-  });
-
-  it('makes an account list signed in, and lists both kinds in one menu', async () => {
+  it('makes an account list signed in', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
-    /* Another account's browser lists stay in the browser, and writable. */
-    const { container, page } = withCloud(cloud, '#/i/ci1', TWO, {
-      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
-    });
+    const { container, page } = withCloud(cloud);
     await signedInAs('gm2');
     await openMenu();
-    expect(chipNames(container)).toEqual([
-      'Список второго ГМа',
-      'Лавка в порту',
-      'Клад дракона'
-    ]);
+    expect(chipNames(container)).toEqual(['Список второго ГМа']);
     await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
     await userEvent.type(screen.getByPlaceholderText('Например: клад дракона'), 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'Создать' }));
@@ -580,7 +614,7 @@ describe('with sign-in configured', () => {
     });
   });
 
-  it('adds an own item to an account list as a link, and never to a browser list', async () => {
+  it('adds an own item to an account list as a link', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     const HB = 'hb_ownitemaaaaaaaaa';
     await cloud.homebrew.createItem({
@@ -589,10 +623,7 @@ describe('with sign-in configured', () => {
       book_id: null,
       content: { kind: 'item', ru: 'Своя вещь' }
     });
-    /* Another account's browser lists stay in the browser, and writable. */
-    const { page } = withCloud(cloud, '#/i/' + HB, TWO, {
-      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
-    });
+    const { page } = withCloud(cloud, '#/i/' + HB);
     await signedInAs('gm2');
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Своя вещь' })
@@ -600,8 +631,6 @@ describe('with sign-in configured', () => {
     await openMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Список второго ГМа' }));
     expect(screen.getByText('Добавлено в «Список второго ГМа»')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Лавка в порту' }));
-    expect(screen.getByText('Свой предмет нельзя добавить в этот список.')).toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
@@ -649,40 +678,7 @@ describe('with sign-in configured', () => {
     }
   });
 
-  it('offers the account lists alone after the cutoff, and the prompt alone signed out', async () => {
-    const after = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
-    const foreign = { 'dhloot.migrated.v1': JSON.stringify({ owner: 'x', lists: {} }) };
-    const view = render(App, {
-      env: fakeEnv({
-        router: memoryRouter('#/i/ci1'),
-        data: fakeData(LOOT),
-        cloud: fakeCloud(SEED, 'gm2'),
-        storage: memoryStorage({ 'dhloot.lists.v2': TWO, ...foreign }),
-        ...after
-      })
-    });
-    await signedInAs('gm2');
-    await openMenu();
-    expect(chipNames(view.container)).toEqual(['Список второго ГМа']);
-    await expectNoA11yViolations(view.container);
-    cleanup();
-    const out = render(App, {
-      env: fakeEnv({
-        router: memoryRouter('#/i/ci1'),
-        data: fakeData(LOOT),
-        cloud: fakeCloud(SEED),
-        storage: memoryStorage({ 'dhloot.lists.v2': TWO }),
-        ...after
-      })
-    });
-    await screen.findByRole('link', { name: 'Войти' });
-    await openMenu();
-    expect(chipNames(out.container)).toEqual([]);
-    await userEvent.click(screen.getByRole('button', { name: '+ Новый список' }));
-    expect(screen.getByText('Войдите, чтобы создать список.')).toBeInTheDocument();
-  });
-
-  it('offers no browser list while the move is due', async () => {
+  it("offers no chip while the account's lists are read", async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     cloud.lists.list = () => new Promise(() => undefined);
     const { container } = withCloud(cloud);

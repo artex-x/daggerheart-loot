@@ -1,6 +1,6 @@
 # #/i/ci1 ~ new list as gm2
 # route: #/i/ci1
-# why: signed in: the inline form, focused, over the account lists; the seed's two browser lists moved into the account (the notice above names them) and are account chips now
+# why: signed in: the inline form, focused, over gm2's account lists
 # as: gm2
 
 ## ru :: tree
@@ -18,11 +18,7 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
       link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2#/tables]
-      link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
-  complementary ""
-    StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
-    button "Скрыть"
   main ""
     heading "Первоклассный Спальный Мешок" [level=1]
     StaticText "Core · Предметы · номер 1 "
@@ -37,8 +33,6 @@ RootWebArea "Первоклассный Спальный Мешок - Генер
     button "Скопировать текст" [description=Скопировать текст]
     button "Добавить в список" [expanded=true]
     StaticText "ЛЕЖИТ В СПИСКАХ"
-    button "Лавка в порту" [pressed=false]
-    button "Клад дракона" [pressed=false]
     button "Список второго ГМа" [pressed=false]
     textbox "Новый список" [focused=true multiline=false readonly=false required=false]
     button "Создать"
@@ -62,9 +56,7 @@ daggerheart.com
 Добавить в список
 Дополнения
 К содержимому
-Клад дракона
 Конфиденциальность
-Лавка в порту
 ЛутDaggerheart
 Новый список
 Обычные правила
@@ -76,10 +68,8 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Скрыть
 Создать
 Сохранить себе
-Списки
 Список второго ГМа
 Страница
 Таблицы
@@ -102,11 +92,7 @@ RootWebArea "Premium Bedroll - Daggerheart Loot Generator" [url=index.html?as=gm
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
       link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2#/tables]
-      link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
-  complementary ""
-    StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
-    button "Dismiss"
   main ""
     heading "Premium Bedroll" [level=1]
     StaticText "Core · Items · roll 1 "
@@ -139,10 +125,8 @@ Copy image
 Copy link
 Copy name
 Copy text
-Dismiss
 EN
 Install as an app
-Lists
 Page
 Print
 Privacy

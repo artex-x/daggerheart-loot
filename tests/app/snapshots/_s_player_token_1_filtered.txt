@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1/f_
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -85,7 +84,6 @@ daggerheart.com
 Снять выделение
 Сообщить владельцу
 Сохранить себе
-Списки
 Ссылка на фильтры
 Таблицы
 Условия использования
@@ -107,7 +105,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1/f_kind-weapon.t
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -161,7 +158,6 @@ EN
 Filter link
 Filters (2)
 Install as an app
-Lists
 Notify the owner
 Print
 Privacy

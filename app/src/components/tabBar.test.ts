@@ -66,24 +66,18 @@ describe('keeping the lit tab in view', () => {
   });
 });
 
-describe('the Lists tab', () => {
-  it('draws five links without #/lists when lists is false, and Tables keeps its separator', () => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: null,
-      label: 'Разделы',
-      lists: false
-    });
+describe('the five tabs', () => {
+  it('draws five links without #/lists, and Tables keeps its separator', () => {
+    const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
     const links = [...container.querySelectorAll('nav.tabs a')];
     expect(links).toHaveLength(5);
     expect(links.map((a) => a.getAttribute('href'))).not.toContain('#/lists');
     expect(container.querySelector('a[href="#/tables"]')).toHaveClass('sep');
   });
 
-  it('draws all six by default', () => {
-    const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
-    expect(container.querySelectorAll('nav.tabs a')).toHaveLength(6);
-    expect(container.querySelector('a[href="#/lists"]')).not.toBeNull();
+  it('lights no tab on #/lists', () => {
+    const { container } = render(TabBar, { t: dict('ru'), current: 'lists', label: 'Разделы' });
+    expect(container.querySelector('nav.tabs a[aria-current="page"]')).toBeNull();
   });
 });
 
@@ -100,7 +94,6 @@ describe('the supplements tab', () => {
       'Alt. tables',
       'Supplements',
       'Tables',
-      'Lists',
       'Search'
     ]);
   });

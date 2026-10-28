@@ -1,6 +1,6 @@
 # #/l/~AAAA
 # route: #/l/~AAAA
-# why: a packed link that cannot be unpacked: the same bad-link page as #/l/zzzz, address kept
+# why: a packed old list link: the same not-found page, the address kept
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=#/l/~AAAA]
@@ -17,11 +17,10 @@ RootWebArea "Генератор лута Daggerheart" [url=#/l/~AAAA]
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Предмет не найден" [level=1]
-    StaticText "Ссылка повреждена или собрана в другой версии данных."
+    StaticText "Возможно, ссылка устарела или данные были изменены."
     link "На главную" [url=#/roll/std]
   contentinfo ""
     navigation "Страницы сайта"
@@ -43,7 +42,6 @@ daggerheart.com
 На главную
 Обычные правила
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -63,11 +61,10 @@ RootWebArea "Daggerheart Loot Generator" [url=#/l/~AAAA]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Item not found" [level=1]
-    StaticText "The link is damaged or was built from a different data version."
+    StaticText "The link may be out of date, or the data has changed."
     link "Home" [url=#/roll/std]
   contentinfo ""
     navigation "Site pages"
@@ -81,7 +78,6 @@ Alt. tables
 EN
 Home
 Install as an app
-Lists
 Privacy
 RU
 Search

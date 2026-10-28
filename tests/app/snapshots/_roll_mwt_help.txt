@@ -17,7 +17,6 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Many Worlds Tavern" [level=1]
@@ -114,7 +113,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Спорополис
 Страница
 Таблицы
@@ -136,7 +134,6 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_w
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Many Worlds Tavern" [level=1]
@@ -206,7 +203,6 @@ Godsvale
 Hornet Hold
 How this works
 Install as an app
-Lists
 Many Worlds Tavern
 One higher
 One lower

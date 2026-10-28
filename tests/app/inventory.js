@@ -1,9 +1,8 @@
 /* "Everything a person can reach" - the states tests/app/golden.js
  * captures a structural snapshot of on both languages. Originated (issue 47)
  * as an independent copy of tests/parity/specs.js's STATES array plus the
- * module-level constants it read: the print routes, PACKED, the button-name
- * dictionary NAME (used inside several `enter` closures), the fixture
- * requires, and the storage seeds. specs.js and the parity harness around it
+ * module-level constants it read: the print routes and the button-name
+ * dictionary NAME (used inside several `enter` closures). specs.js and the parity harness around it
  * were later deleted; this file is now the only copy.
  *
  * tests/app/golden.js is the only reader; tests/app/lib.js's `fresh()` and
@@ -36,11 +35,6 @@
 
 const path = require('path');
 
-/** Both notes on the list and both on one entry - the shared page's own
- *  noted state, and the payload `PACKED` below decompresses to. */
-const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
-/** Quantity and price on the shared page's rows - all three tail shapes. */
-const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
 /** A real 640 px square picture for the editor's «Картинка». */
 const ART_FILE = path.join(__dirname, '../../img/ci1.webp');
 
@@ -111,22 +105,6 @@ async function sheet(d) {
 }
 
 /**
- * The packed form of `NOTES_BOTH_KINDS.gm.raw`, pasted rather than computed at
- * run time - computing it here would let a regression in the pack path pass
- * unnoticed, and the live app's own `sharedListLink` output must not stand in
- * for it either, for the same reason. Computed once, by hand:
- *
- *   node -e "const z=require('zlib');const f=require('./docs/fixtures/lists/notes-both-kinds.json');console.log('~'+z.deflateRawSync(Buffer.from(f.gm.raw,'utf8')).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''))"
- *
- * Verified in planning: `inflateRawSync` of it re-encodes to exactly
- * `NOTES_BOTH_KINDS.gm.payload`. Node's deflate bytes differ from Chrome's
- * `CompressionStream` output, but both are raw deflate, which
- * `DecompressionStream('deflate-raw')` reads either of.
- */
-const PACKED =
-  '~JY2hDsIwFAD9PqKrH5AUwwfVMIXCLqNIBAkWQUKCL6xkpdB-w70_IgN5d-K44nmRiaRquVhttuvOtmZmralU09Wc8TxIeM2IJ0kvB3ETBoqWvTjp8aqruVEY5Ugk67kmUcj_yh1PJhBlJ041tjU1JyKBTNFEBukp04WP-tULhUDgyXvSXw';
-
-/**
  * The names a spec grips, in each language.
  *
  * A spec is handed the language it is running in and looks its buttons up
@@ -159,8 +137,6 @@ const NAME = {
     removeItem: 'Убрать из списка',
     undo: 'Вернуть',
     noteClear: 'Очистить заметку',
-    sharePlayers: 'Ссылка игрокам',
-    shareGm: 'Ссылка себе',
     rollBy: 'Бросок по списку',
     moneyCoin: 'Монетами',
     rename: 'Название списка',
@@ -206,8 +182,6 @@ const NAME = {
     noteClear: 'Clear the note',
     /* A plain apostrophe, the way the live app prints it (dict.ts's ASCII
        string, straightened) - not a curly one. */
-    sharePlayers: "Players' link",
-    shareGm: 'Your own link',
     rollBy: 'Roll on this list',
     moneyCoin: 'In coins',
     rename: 'List name',
@@ -359,37 +333,27 @@ async function manyRequests(d) {
   );
 }
 
-/* Storage seeds for the list states below. A state that needs a list to
-   exist cannot be entered - every state opens a fresh page whose `prepare()`
-   clears storage - so it is seeded instead. */
-const LISTS = [
-  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
+/* Account list specs for the list states below (`driver.js`, `accountLists`: list `n` is
+   `uuid(8000 + n)`). A state that needs a list makes it in `enter` on gm4, who owns none,
+   with `onAccount`. */
+const KLAD = { n: 1, name: 'Клад дракона', ids: [] };
+const LAVKA = { n: 2, name: 'Лавка в порту', ids: [] };
+const TWO_SPECS = [KLAD, LAVKA];
+const RING_SPECS = [{ ...KLAD, ids: ['ci28'] }, LAVKA];
+const EIGHT_SPECS = [
+  ...TWO_SPECS,
+  ...Array.from({ length: 6 }, (_, i) => ({
+    n: 3 + i,
+    name: 'Лавка №' + String(i + 1),
+    ids: []
+  }))
 ];
-const two = { 'dhloot.lists.v2': JSON.stringify(LISTS) };
-const inList = {
-  'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci1'] }, LISTS[1]])
-};
-const ringInList = {
-  'dhloot.lists.v2': JSON.stringify([{ ...LISTS[0], ids: ['ci28'] }, LISTS[1]])
-};
-const eight = {
-  'dhloot.lists.v2': JSON.stringify([
-    ...LISTS,
-    ...Array.from({ length: 6 }, (_, i) => ({
-      id: 'x' + String(i),
-      name: 'Лавка №' + String(i + 1),
-      ids: [],
-      created: 10 + i
-    }))
-  ])
-};
 
 /* Twelve lists, past the search threshold of both the menu and the index:
-   `ci1` lies in «Клад дракона», «Порт Ветров» and «Сундук мага». */
-const TWELVE = [
-  { ...LISTS[0], ids: ['ci1'] },
-  LISTS[1],
+   `ci1` lies in «Клад дракона», «Порт Ветров» and «Сессия 3». */
+const TWELVE_SPECS = [
+  { ...KLAD, ids: ['ci1'] },
+  LAVKA,
   ...[
     'Храм Солнца',
     'Рынок',
@@ -401,80 +365,62 @@ const TWELVE = [
     'Сессия 4',
     'Сундук мага',
     'Ёлочная ярмарка'
-  ].map((name, i) => ({
-    id: 'y' + String(i),
-    name,
-    ids: i === 2 || i === 6 ? ['ci1'] : [],
-    created: 20 + i
+  ].map((name, i) => ({ n: 3 + i, name, ids: i === 2 || i === 6 ? ['ci1'] : [] }))
+];
+/* Thirty lists: the index draws 24 and folds 6 under «Показать ещё (6)». */
+const THIRTY_SPECS = [
+  ...TWELVE_SPECS,
+  ...Array.from({ length: 18 }, (_, i) => ({
+    n: 13 + i,
+    name: 'Сессия ' + String(5 + i),
+    ids: []
   }))
 ];
-const twelve = { 'dhloot.lists.v2': JSON.stringify(TWELVE) };
-/* Thirty lists: in store order the index draws `a`, `b`, `y0`..`y9` and
-   `z0`..`z11`, and folds `z12`..`z17` under «Показать ещё (6)». */
-const thirty = {
-  'dhloot.lists.v2': JSON.stringify([
-    ...TWELVE,
-    ...Array.from({ length: 18 }, (_, i) => ({
-      id: 'z' + String(i),
-      name: 'Сессия ' + String(5 + i),
-      ids: [],
-      created: 40 + i
-    }))
-  ])
-};
 
-/* The lists index's own seed: one card with six thumbnails and «7 позиций»,
-   one empty card. */
-const seven = {
-  'dhloot.lists.v2': JSON.stringify([
-    { ...LISTS[0], ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'] },
-    LISTS[1]
-  ])
-};
-
-/* The list page's own seed: a priced, counted, noted entry, and a list note
-   both public and hidden. */
-const noted = {
-  'dhloot.lists.v2': JSON.stringify([
-    {
-      ...LISTS[0],
-      ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'],
-      meta: {
-        ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' }
-      },
-      note: 'Лавка закрыта до утра'
-    },
-    LISTS[1]
-  ])
-};
-
-/* `noted` with formatted notes: italics and a list in the list note, bold and a
+const SEVEN_IDS = ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'];
+/* The list page's own lists: seven entries, and an empty list beside them. */
+const SEVEN_SPECS = [{ ...KLAD, ids: SEVEN_IDS }, LAVKA];
+/* A priced, counted, noted entry, and a list note both public and hidden. */
+const NOTED_SPECS = [
+  {
+    ...KLAD,
+    ids: SEVEN_IDS,
+    meta: { ci2: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' } },
+    note: 'Лавка закрыта до утра'
+  },
+  LAVKA
+];
+/* `NOTED_SPECS` with formatted notes: italics and a list in the list note, bold and a
    numbered list in row 2's (docs/specs/FEATURES.md, "Lists"). */
-const formatted = {
-  'dhloot.lists.v2': JSON.stringify([
-    {
-      ...LISTS[0],
-      ids: ['ci1', 'ci2', 'ci3', 'ci4', 'ci5', 'ci6', 'ci7'],
-      meta: {
-        ci2: {
-          qty: 2,
-          gold: 750,
-          note: '**Светится** в темноте\n1. днём тускло\n2. ночью ярко',
-          hnote: 'Проклят'
-        }
-      },
-      note: 'Лавка *закрыта* до утра\n- вход со двора'
+const FORMATTED_SPECS = [
+  {
+    ...KLAD,
+    ids: SEVEN_IDS,
+    meta: {
+      ci2: {
+        qty: 2,
+        gold: 750,
+        note: '**Светится** в темноте\n1. днём тускло\n2. ночью ярко',
+        hnote: 'Проклят'
+      }
     },
-    LISTS[1]
-  ])
+    note: 'Лавка *закрыта* до утра\n- вход со двора'
+  },
+  LAVKA
+];
+
+/** Makes the account lists `specs` on the signed-in page and opens the first (`go`) or stays. */
+const onAccount = async (d, specs, go = true) => {
+  await d.settled();
+  const made = await d.accountLists(specs);
+  if (go) await d.go(made[0].hash);
 };
 
-/* The empty list, on its own - `#/lists/b`. */
-const oneEmpty = { 'dhloot.lists.v2': JSON.stringify([LISTS[1]]) };
+/* The ported list page states: gm4's list `uuid(8001)`, made in `enter`. */
+const LIST_A = '#/lists/00000000-0000-4000-8000-000000008001';
 
-/** A list row's checkbox is now named after its own record rather than
- *  the generic "Выбрать позицию", so a spec ticking `seven`/`noted`'s row 1
- *  or row 2 has to click the record's own Russian name (ci1, ci2). */
+/** A list row's checkbox is named after its own record, so a spec ticking row 1 or row 2
+ *  of `SEVEN_SPECS`/`NOTED_SPECS` clicks the record's own Russian name (ci1, ci2). */
 const ROW1_CI1 = 'Первоклассный Спальный Мешок';
 const ROW2_CI2 = 'Пронзительная Свирель';
 
@@ -579,33 +525,15 @@ const STATES = [
     timed: true
   },
 
-  /* The add-to-list menu, off `listMenuHTML` in app.js. Each seeds its own
-     storage - a list state cannot be entered, only seeded, since every
-     state opens a fresh page whose `prepare()` clears it. */
+  /* The add-to-list menu, off `listMenuHTML` (`git show 23c00a6^:app.js`). A state that
+     needs lists makes them on gm4's account in `enter`. */
   {
-    id: '#/i/ci1 ~ list menu',
+    id: '#/i/ci1 ~ many lists as gm4',
     route: '#/i/ci1',
-    why: 'the menu open under the card, newest list first',
-    storage: two,
-    enter: async (d) => {
-      await d.click('Добавить в список');
-    }
-  },
-  {
-    id: '#/i/ci1 ~ in a list',
-    route: '#/i/ci1',
-    why: 'the chip lit for a list the record is already in',
-    storage: inList,
-    enter: async (d) => {
-      await d.click('Добавить в список');
-    }
-  },
-  {
-    id: '#/i/ci1 ~ many lists',
-    route: '#/i/ci1',
+    as: 'gm4',
     why: 'the search box, once there are more lists than fit without one',
-    storage: eight,
     enter: async (d) => {
+      await onAccount(d, EIGHT_SPECS, false);
       await d.click('Добавить в список');
       await d.type('Найти список', 'порту');
     }
@@ -613,8 +541,7 @@ const STATES = [
   {
     id: '#/i/ci1 ~ new list',
     route: '#/i/ci1',
-    why: 'signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons; the browser lists stay pickable',
-    storage: two,
+    why: 'signed out: the sign-in prompt in the new-list slot - one line, «Войти» and «Отмена», no provider buttons',
     enter: async (d) => {
       await d.click('Добавить в список');
       await d.click('+ Новый список');
@@ -624,10 +551,9 @@ const STATES = [
     id: '#/i/ci1 ~ new list as gm2',
     route: '#/i/ci1',
     as: 'gm2',
-    why: "signed in: the inline form, focused, over the account lists; the seed's two browser lists moved into the account (the notice above names them) and are account chips now",
-    storage: two,
+    why: "signed in: the inline form, focused, over gm2's account lists",
     enter: async (d) => {
-      await d.moveSettled();
+      await d.settled();
       await d.click('Добавить в список');
       await d.click('+ Новый список');
     }
@@ -636,19 +562,19 @@ const STATES = [
     id: '#/i/ci1 ~ list menu as gm1',
     route: '#/i/ci1',
     as: 'gm1',
-    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest; the seed's two browser lists moved into the account first, so every chip is an account list and the notice above names the two",
-    storage: two,
+    why: "one plain menu: gm1's lists holding the record first and lit («Лавка кузнеца», «Трофеи»), then the rest",
     enter: async (d) => {
-      await d.moveSettled();
+      await d.settled();
       await d.click('Добавить в список');
     }
   },
   {
-    id: '#/i/ci1 ~ in several lists',
+    id: '#/i/ci1 ~ in several lists as gm4',
     route: '#/i/ci1',
+    as: 'gm4',
     why: 'the three lists holding the record first, lit; the label, search and new-list chip pinned over the scrolling chips',
-    storage: twelve,
     enter: async (d) => {
+      await onAccount(d, TWELVE_SPECS, false);
       await d.click('Добавить в список');
     }
   },
@@ -656,10 +582,9 @@ const STATES = [
     id: '#/i/ci1 ~ new list from a search as gm2',
     route: '#/i/ci1',
     as: 'gm2',
-    why: "the new-list form started with the query nothing matched; the seed's twelve browser lists moved into the account first (the notice above names them)",
-    storage: twelve,
+    why: 'the new-list form started with the query nothing matched, over twelve account lists',
     enter: async (d) => {
-      await d.moveSettled();
+      await onAccount(d, TWELVE_SPECS, false);
       await d.click('Добавить в список');
       await d.type('Найти список', 'Шкатулка');
       await d.click('+ Новый список');
@@ -933,11 +858,12 @@ const STATES = [
     }
   },
   {
-    id: '#/tables ~ a row opened, list menu',
+    id: '#/tables ~ a row opened, list menu as gm4',
     route: '#/tables',
+    as: 'gm4',
     why: 'the add-to-list menu inside the modal, and which side of the button it opens on',
-    storage: two,
     enter: async (d) => {
+      await onAccount(d, TWO_SPECS, false);
       await d.click('Кольцо Тишины');
       await d.click('Добавить в список');
     }
@@ -945,8 +871,8 @@ const STATES = [
   {
     id: '#/tables ~ a row opened, new list',
     route: '#/tables',
-    // No `storage`: with the `two` seed every card opens up and the
-    // divergence is never reached. With no lists seeded, Самоцвет Чутья
+    // No lists: with two lists every card opens up and the divergence is
+    // never reached. With none, Самоцвет Чутья
     // sits inside the 17px band at 1100 where the rewrite re-measures the
     // menu from its already-flipped side and sends it under the card's edge.
     why: "signed out: the sign-in prompt in the new-list slot of the modal's menu, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge",
@@ -957,17 +883,31 @@ const STATES = [
     }
   },
   {
-    id: '#/tables ~ a row opened, removed from a list',
+    id: '#/tables ~ a row opened, removed from a list as gm4',
     route: '#/tables',
+    as: 'gm4',
     why: 'the undo toast drawn inside the record modal after its card leaves a list, «Вернуть» focused',
-    storage: ringInList,
     enter: async (d) => {
+      await onAccount(d, RING_SPECS, false);
       await d.click('Кольцо Тишины');
       await d.click('Добавить в список');
       await d.click('Клад дракона');
     },
     /* a 7000ms toast; arrived at afresh per language - this file's header */
     timed: true
+  },
+  {
+    id: '#/tables ~ a row opened, removing from a list as gm4',
+    route: '#/tables',
+    as: 'gm4',
+    hold: 'rows:stall',
+    why: 'the menu inside the modal after a press on «Клад дракона», which holds the ring and whose entries are not read yet: the chip pressed, busy and dimmed, no toast',
+    enter: async (d) => {
+      await onAccount(d, RING_SPECS, false);
+      await d.click('Кольцо Тишины');
+      await d.click('Добавить в список');
+      await d.click('Клад дракона');
+    }
   },
   {
     id: '#/tables ~ a row ticked',
@@ -978,11 +918,12 @@ const STATES = [
     }
   },
   {
-    id: '#/tables ~ bar menu',
+    id: '#/tables ~ bar menu as gm4',
     route: '#/tables',
+    as: 'gm4',
     why: "the bar's own add-to-list menu, above it, right-aligned",
-    storage: two,
     enter: async (d) => {
+      await onAccount(d, TWO_SPECS, false);
       await d.tick(ROW1_CI1);
       await d.tick(ROW2_CI2);
       await d.click('Добавить в список');
@@ -1276,52 +1217,20 @@ const STATES = [
     }
   },
 
-  /* The lists index, off `renderLists`/`storageWarning` in app.js. */
+  /* The lists index, off `renderLists` (`git show 23c00a6^:app.js`). */
   {
     id: '#/lists',
     route: '#/lists',
-    why: 'signed out, no lists: the panel is the sign-in prompt, no browser group, no notice'
+    why: 'signed out: the panel is the sign-in prompt, and no group'
   },
   {
     id: '#/lists as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: "the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with «5 списков из 50», the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group",
-    storage: two,
+    why: "«Импорт из файла» under the name row; «Ваш аккаунт» with «3 списка из 50», the idle strip «Выбрать все», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no notice",
     enter: async (d) => {
-      await d.moveSettled();
+      await d.settled();
     }
-  },
-  {
-    id: '#/lists ~ move notice dismissed as gm1',
-    route: '#/lists',
-    as: 'gm1',
-    why: 'the move notice dismissed with «Скрыть»: no notice, the two moved lists stay in «Ваш аккаунт»',
-    storage: two,
-    enter: async (d) => {
-      await d.moveSettled();
-      await d.click('Скрыть');
-    }
-  },
-  {
-    id: '#/lists ~ another account as gm2',
-    route: '#/lists',
-    as: 'gm2',
-    why: "the browser's lists belong to another account's move (dhloot.migrated.v1 names gm1): nothing moves, no notice above; «Этот браузер» keeps today's notice, without the move sentences, and both cards",
-    storage: {
-      ...two,
-      'dhloot.migrated.v1': JSON.stringify({
-        owner: '00000000-0000-4000-8000-000000000001',
-        lists: {}
-      })
-    }
-  },
-  {
-    id: '#/lists ~ read-only',
-    route: '#/lists',
-    today: '2026-10-26',
-    why: 'after the legacy write cutoff, signed out: the read-only notice with its title and sentence, not dismissable; the cards have no «Поделиться» and link #/lists/<id>; «Удалить» stays',
-    storage: seven
   },
   {
     id: '#/lists ~ load failed',
@@ -1334,33 +1243,9 @@ const STATES = [
     }
   },
   {
-    id: '#/lists ~ two lists',
-    route: '#/lists',
-    why: 'signed out: the prompt panel, then a card with six thumbs and «7 позиций» and an empty card with «0 позиций» under the notice',
-    storage: seven
-  },
-  {
-    id: '#/lists ~ notice unfolded',
-    route: '#/lists',
-    why: 'the disclosure open, the hint hidden, the page taller',
-    storage: seven,
-    enter: async (d) => {
-      await d.click('подробнее');
-    }
-  },
-  {
-    id: '#/lists ~ notice dismissed',
-    route: '#/lists',
-    why: 'no notice at all - the panel sits directly under the page-sub',
-    storage: seven,
-    enter: async (d) => {
-      await d.click('Скрыть');
-    }
-  },
-  {
     id: '#/lists ~ help',
     route: '#/lists',
-    why: 'the six paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening, the sixth what ticked account lists and «Импорт из файла» do',
+    why: 'the five paragraphs, the third with two bold runs and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth what ticked account lists and «Импорт из файла» do',
     enter: async (d) => {
       await d.click('Как это работает');
     }
@@ -1416,44 +1301,41 @@ const STATES = [
     timed: true
   },
   {
-    id: '#/lists ~ unreadable storage',
+    id: '#/lists ~ many lists as gm4',
     route: '#/lists',
-    why:
-      'a corrupt dhloot.lists.v2 value draws the unreadable-storage notice in place of ' +
-      'the folded "lists live only here" disclosure - no lists on screen, the value backed up ' +
-      'under its own key rather than lost',
-    storage: { 'dhloot.lists.v2': '{' }
-  },
-  {
-    id: '#/lists ~ many lists',
-    route: '#/lists',
+    as: 'gm4',
     why: 'the name filter, 24 cards and «Показать ещё (6)»',
-    storage: thirty
+    enter: async (d) => {
+      await onAccount(d, THIRTY_SPECS, false);
+    }
   },
   {
-    id: '#/lists ~ shown more',
+    id: '#/lists ~ shown more as gm4',
     route: '#/lists',
+    as: 'gm4',
     why: 'all 30 cards after one press, and no button',
-    storage: thirty,
     enter: async (d) => {
+      await onAccount(d, THIRTY_SPECS, false);
       await d.click('Показать ещё (6)');
     }
   },
   {
-    id: '#/lists ~ filtered',
+    id: '#/lists ~ filtered as gm4',
     route: '#/lists',
+    as: 'gm4',
     why: 'the two cards whose name holds «порт», and no button',
-    storage: thirty,
     enter: async (d) => {
+      await onAccount(d, THIRTY_SPECS, false);
       await d.type('Найти список', 'порт');
     }
   },
   {
-    id: '#/lists ~ nothing found',
+    id: '#/lists ~ nothing found as gm4',
     route: '#/lists',
+    as: 'gm4',
     why: '«Ничего не найдено» in place of the grid',
-    storage: thirty,
     enter: async (d) => {
+      await onAccount(d, THIRTY_SPECS, false);
       await d.type('Найти список', 'zzz');
     }
   },
@@ -1770,6 +1652,21 @@ const STATES = [
     }
   },
   {
+    id: SHOP + ' ~ details failed as gm1',
+    route: SHOP,
+    as: 'gm1',
+    hold: 'rows:fail',
+    why: "the list's entries read fails after the account read: the heading «Список не загрузился», «Не получилось загрузить списки аккаунта.» and a primary «Повторить»; no sub, no actions, no rows",
+    enter: async (d) => {
+      for (
+        let i = 0;
+        i < 40 && !(await d.text()).includes('Не получилось загрузить списки аккаунта.');
+        i++
+      )
+        await d.settle();
+    }
+  },
+  {
     id: SHOP + ' ~ many requests as gm1',
     route: SHOP,
     as: 'gm1',
@@ -1875,149 +1772,161 @@ const STATES = [
     why: 'signed out on an account address: «Список не найден», the line asking to sign in, one «Войти»'
   },
 
-  /* The list page, off `renderOneList` and everything it draws in the
-     legacy app.js. */
+  /* The list page, off `renderOneList` and everything it draws
+     (`git show 23c00a6^:app.js`), on gm4's list `LIST_A` made in `enter`. */
   {
-    id: '#/lists/a',
-    route: '#/lists/a',
-    storage: seven,
-    why: 'the page: the title input, "7 позиций", five actions, the notice, no money picker, folded note and roll panel, "Выбрать все", seven plain rows'
+    id: LIST_A + ' as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'the account list page: the title input, «7 позиций из 100» with the save status, «Поделиться», «Скопировать текст», «Скачать JSON», «Печать» and «Удалить», no money picker, folded note and roll panel, «Выбрать все», seven plain rows with their GM-only eyes, and «Свой предмет» after them',
+    enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
+    }
   },
   {
-    id: '#/lists/a ~ noted',
-    route: '#/lists/a',
-    storage: noted,
-    why: 'the money picker, the list note open with two texts, row 2 priced and noted, its note box open, has-note'
+    id: LIST_A + ' ~ noted as gm4',
+    route: '#/lists',
+    as: 'gm4',
+    why: 'the money picker, the list note open with two texts, row 2 priced and noted, its note box open, has-note',
+    enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
+    }
   },
   {
-    id: '#/lists/a ~ read-only',
-    route: '#/lists/a',
-    today: '2026-10-26',
-    storage: noted,
-    why: 'after the cutoff, signed out: the title read-only, no link buttons, the read-only notice, the chips disabled, the notes read-only with no clear cross, no grip, positions, quantity and price read-only, no remove cross; copy, print, «Удалить» and the roll panel stay; the address stays #/lists/a'
-  },
-  {
-    id: '#/lists/a ~ money help',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ money help as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'the help box under the chips, "?" pressed',
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.click(NAME.ru.whatIsThis);
     }
   },
   {
-    id: '#/lists/a ~ price help',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ price help as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: "the priced row's «Цена» «?» pressed: the conversion in book units on a line under the row's fields",
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.click('Подсказка: Цена');
     }
   },
   {
-    id: '#/lists/a ~ roll panel',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ roll panel as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'the panel open: empty numbox, "Случайно 1-7", the hint',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.rollBy);
     }
   },
   {
-    id: '#/lists/a ~ rolled',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ rolled as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'result 2: the compact card badged 2, both hitnotes, "Сбросить"',
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.click(NAME.ru.rollBy);
       await d.click(NAME.ru.stepUp);
       await d.click(NAME.ru.stepUp);
     }
   },
   {
-    id: '#/lists/a ~ rolled, formatted',
-    route: '#/lists/a',
-    storage: formatted,
+    id: LIST_A + ' ~ rolled, formatted as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: "result 2: the rolled entry's players' note draws bold and a numbered list, no markers",
     enter: async (d) => {
+      await onAccount(d, FORMATTED_SPECS);
       await d.click(NAME.ru.rollBy);
       await d.click(NAME.ru.stepUp);
       await d.click(NAME.ru.stepUp);
     }
   },
   {
-    id: '#/lists/a ~ note preview',
-    route: '#/lists/a',
-    storage: formatted,
+    id: LIST_A + ' ~ note preview as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: "the list's players' note with «Просмотр» pressed: the pane draws the italics and the list in place of the box; the format buttons disabled",
     enter: async (d) => {
+      await onAccount(d, FORMATTED_SPECS);
       await d.click('Просмотр');
     }
   },
   {
-    id: '#/lists/a ~ note help',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ note help as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: "the list's players' note with its «?» pressed: the three lines of the formatting hint under the label row",
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.click('Подсказка: Для игроков');
     }
   },
   {
-    id: '#/lists/a ~ removed',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ removed as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'six rows, the undo toast',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.removeItem);
     },
     /* a 7000ms toast; arrived at afresh per language - this file's header */
     timed: true
   },
   {
-    id: '#/lists/a ~ note opened',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ note opened as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: "row 1's empty note box open, focus in the first textarea",
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.click(NAME.ru.note);
     }
   },
   {
-    id: '#/lists/a ~ a row ticked',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ a row ticked as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'the bar on, the select-all box mixed and named "Выбрать все", "Выбрана 1 позиция", row 1 in the selected gold style, Цены with its caret, Скопировать, Удалить (1) - at 375 the 640px override drops the three to their own full-width block, Удалить (1) wrapping under the other two; no total, row 1 has no price',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.tick(ROW1_CI1);
     }
   },
   {
-    id: '#/lists/a ~ prices',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ prices as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'row 2 (750, bags) ticked: the take line inside the row, "Взять [2] из 2 = 1 сундук 5 мешков", "Выбрана 1 позиция · 2 шт." and "Итого: 1 сундук 5 мешков", Скопировать, the percentage row at -20 with "Сделать скидку" and the hint, the note, one guess row with its band, "Проставить эти цены", "Убрать цену (1)"',
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.tick(ROW2_CI2);
       await d.click(NAME.ru.prices);
     }
   },
   {
-    id: '#/lists/a ~ prices, none priced',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ prices, none priced as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'row 1 ticked: no percentage row, no clear button - the two `priced` branches off',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
     }
   },
   {
-    id: '#/lists/a ~ prices set',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ prices set as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'the panel folded, row 1 priced and still ticked, so its total beside "Выбрана 1 позиция", the money picker now drawn (first price on the list), the toast "Цены проставлены (1)"',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.tick(ROW1_CI1);
       await d.click(NAME.ru.prices);
       await d.click(NAME.ru.applyPrices);
@@ -2026,21 +1935,23 @@ const STATES = [
     timed: true
   },
   {
-    id: '#/lists/a ~ picked',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ picked as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'row 2 (x2, 750) ticked and taken at 1: the take line "Взять [1] из 2 = 7 мешков 5 горстей", "Выбрана 1 позиция" (pieces equal entries) and "Итого: 7 мешков 5 горстей", Цены, Скопировать, Удалить (1)',
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.tick(ROW2_CI2);
       await d.type('Взять: ' + ROW2_CI2, '1');
     }
   },
   {
-    id: '#/lists/a ~ sold part',
-    route: '#/lists/a',
-    storage: noted,
+    id: LIST_A + ' ~ sold part as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'row 2 taken at 1 of 2 on its take line and deleted: seven rows, row 2 with an empty Кол-во and 750, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
     enter: async (d) => {
+      await onAccount(d, NOTED_SPECS);
       await d.tick(ROW2_CI2);
       await d.type('Взять: ' + ROW2_CI2, '1');
       await d.click(NAME.ru.delOne);
@@ -2049,149 +1960,34 @@ const STATES = [
     timed: true
   },
   {
-    id: '#/lists/a ~ batch deleted',
-    route: '#/lists/a',
-    storage: seven,
+    id: LIST_A + ' ~ batch deleted as gm4',
+    route: '#/lists',
+    as: 'gm4',
     why: 'six rows, the bar off, the toast "Убрано из списка (1)" with "Вернуть"',
     enter: async (d) => {
+      await onAccount(d, SEVEN_SPECS);
       await d.tick(ROW1_CI1);
       await d.click(NAME.ru.delOne);
     },
     /* a 7000ms toast; arrived at afresh per language - see this file's header */
     timed: true
-  },
-  {
-    id: '#/lists/b',
-    route: '#/lists/b',
-    storage: oneEmpty,
-    why: 'the empty page: no print link, no money, the note folded, no roll panel, no bar, the hint'
   },
   {
     id: '#/lists/nope',
     route: '#/lists/nope',
-    why: '"Список не найден", the sub, the "Списки" button; the address not rewritten'
+    why: '"Список не найден", the sub, the «Мои списки» button; the address not rewritten'
   },
   {
-    /* `encodeList({ name: 'Клад дракона', ids: [ci1..ci7] }, true)` - the
-       payload `seven`'s list `a` rewrites its own address to. Computed once,
-       by hand, off the frozen format (docs/specs/CONTRACTS.md section 3) -
-       verified byte-identical to `encodeList`'s own output. */
-    id: '#/l/ ~ own list',
-    route: '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw',
-    storage: seven,
-    why: 'own-list recognition: the same page as #/lists/a'
-  },
-  {
-    id: '#/l/ ~ own list, retired',
-    route: '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKNy50cm0zfmNpMSxjaTIsY2kzLGNpNCxjaTUsY2k2LGNpNw',
-    today: '2026-10-26',
-    storage: seven,
-    why: "after the cutoff this browser's own payload draws the retired page too, never the list; the address kept"
-  },
-  {
+    /* The players' payload of the old `qty-and-price` fixture, as a link written before
+       2026-10-26 carries it (`git show 0b73fd5c:docs/fixtures/lists/qty-and-price.json`). */
     id: '#/l/ ~ retired',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    today: '2026-10-26',
-    why: 'after the cutoff a #/l/ link draws the retired page: the heading with the date, the sub, one «Списки» button; the address kept, nothing decoded'
-  },
-
-  {
-    id: '#/l/ ~ shared',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    storage: two,
-    why:
-      'a list from another player: heading "Лавка", the sub, the save button, the line saying ' +
-      '#/l/ links stop opening on 26 October 2026, three rows with their tails (×2; ×5 · price; ' +
-      'price), no notes, no bar. Seeded with two lists, which this page does not draw'
+    route: '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg',
+    why: 'an old list link draws the not-found page: «Предмет не найден», its sub, «На главную»; the address kept, nothing decoded'
   },
   {
-    id: '#/l/ ~ shared, a row ticked',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    storage: two,
-    why:
-      'issue 58: the save button above and the 26 October line, row 1 ticked with its take line ' +
-      '"Взять [2] из 2" inside the row, the bar with "Выбрана 1 позиция · 2 шт." and the only ' +
-      '"Добавить в список"; no total, row 1 has no price',
-    enter: async (d) => {
-      await d.tick(ROW1_CI1);
-    }
-  },
-  {
-    id: '#/l/ ~ shared, picked',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    storage: two,
-    why:
-      'all three rows ticked, row 2 taken at 2 of 5: two take lines inside their rows (2 of 2; ' +
-      '2 of 5 = 1 мешок), the bar with "Выбрано 3 позиции · 5 шт." and "Итого: 1 мешок 1 ' +
-      'горсть (без цены: 1)", the print link with the taken counts, the 26 October line',
-    enter: async (d) => {
-      await d.tick(ROW1_CI1);
-      await d.tick('Доспешный Сшиватель');
-      await d.tick('Туника из Паучьего Шелка');
-      await d.type('Взять: Доспешный Сшиватель', '2');
-    }
-  },
-  {
-    id: '#/l/ ~ shared, saved',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    why:
-      'signed out, after "Сохранить себе": the button pressed and the sign-in prompt under it, ' +
-      'the 26 October line under the prompt; no browser list is made',
-    enter: async (d) => {
-      await d.click('Сохранить себе');
-    }
-  },
-  {
-    id: '#/l/ ~ shared, saved as gm2',
-    route: '#/l/' + QTY_AND_PRICE.player.payload,
-    as: 'gm2',
-    why:
-      'signed in, after "Сохранить себе": the new account list "Лавка" at #/lists/<uuid(5000)>, ' +
-      '«Сохраняем...» in the sub while the create waits in the write buffer, «Поделиться», ' +
-      'the toast "Список «Лавка» создан"',
-    enter: async (d) => {
-      await d.click('Сохранить себе');
-    },
-    /* a 1600ms toast; arrived at afresh per language - see this file's header */
-    timed: true
-  },
-  {
-    id: '#/l/ ~ shared, noted',
-    route: '#/l/' + NOTES_BOTH_KINDS.gm.payload,
-    why: '"Тайник": the 26 October line, both list hitnotes above two rows, ci1 with both entry hitnotes under it, no tails'
-  },
-  {
-    id: '#/l/ ~ packed',
-    route: '#/l/' + PACKED,
-    enter: (d) => d.expanded(),
-    why:
-      'the packed form, expanded and rewritten to the plain form - pixels identical to ' +
-      '"~ shared, noted", the 26 October line included; listAddress proves the rewrite'
-  },
-  {
-    /* Buffer.from('Пропавшее\nzzz1,zzz2').toString('base64url'): a legacy
-       unstamped payload, so it needs no checksum. */
-    id: '#/l/ ~ every entry gone',
-    route: '#/l/0J_RgNC-0L_QsNCy0YjQtdC1Cnp6ejEsenp6Mg',
-    why:
-      'a shared link whose every entry left the data: heading "Пропавшее", the sub "0 позиций", ' +
-      'the save button, the 26 October line, no rows, the dropped-entries toast (not the ' +
-      'bad-link page)',
-    timed: true
-  },
-  {
-    id: '#/l/zzzz',
-    route: '#/l/zzzz',
-    why: 'the bad-link page: "Предмет не найден", the badShare line, the "На главную" button'
-  },
-  {
-    /* Valid base64url, invalid deflate: a failed
-       expansion now keeps the address exactly where it was rather than
-       replacing it with #/l/zzzz, and draws the same bad-link page in place. */
     id: '#/l/~AAAA',
     route: '#/l/~AAAA',
-    enter: (d) => d.expandFailed(),
-    why: 'a packed link that cannot be unpacked: the same bad-link page as #/l/zzzz, address kept'
+    why: 'a packed old list link: the same not-found page, the address kept'
   },
 
   /* An account list's share link, `#/s/<token>`: read-only for everyone, the
@@ -2343,18 +2139,6 @@ const STATES = [
       await d.click(
         'Мастерская старого оружейника из долины туманов за перевалом у Северной реки, II'
       );
-    }
-  },
-  {
-    /* `encodeList({ name: 'Склад', ids: [ci1, cc1, q1, q313, q23, w51, q35, di11] }, true)`,
-       computed once off the frozen format (docs/specs/CONTRACTS.md section 3);
-       sharedListPage.test.ts pins it byte-identical to `encodeList`. */
-    id: '#/l/ ~ filtered',
-    route: '#/l/0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE',
-    why: 'a #/l/ list of 8 entries with «Оружие» picked: the 26 October line, the strip with one pill and «Сбросить всё», no copy-link button, «4 из 8»; the address as it opened',
-    enter: async (d) => {
-      await d.click('Фильтры');
-      await d.click('Оружие');
     }
   },
   {
@@ -2716,15 +2500,6 @@ const STATES = [
     why: "the selection bar's «Печать» pressed signed out: the compact sign-in prompt and «Отмена» in place of the bar's action row",
     enter: async (d) => {
       await d.tick(ROW1_CI1);
-      await d.click(PRINT);
-    }
-  },
-  {
-    id: '#/lists/a ~ print signed out',
-    route: '#/lists/a',
-    storage: seven,
-    why: "the list toolbar's «Печать» pressed signed out: the boxed sign-in prompt under the toolbar",
-    enter: async (d) => {
       await d.click(PRINT);
     }
   },

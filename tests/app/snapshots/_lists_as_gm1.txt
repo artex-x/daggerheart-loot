@@ -1,10 +1,10 @@
 # #/lists as gm1
 # route: #/lists
-# why: the seed's two browser lists moved on sign-in: the notice under the header names both; «Импорт из файла» under the name row; «Ваш аккаунт» with «5 списков из 50», the idle strip «Выбрать все», then the moved lists first (uuid(5000), uuid(5001)) with «0 позиций · изменён только что», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no browser group
+# why: «Импорт из файла» under the name row; «Ваш аккаунт» with «3 списка из 50», the idle strip «Выбрать все», then gm1's three lists with «N позиций · изменён N назад», a pick box and one «Удалить» each; no notice
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -18,11 +18,7 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
-  complementary ""
-    StaticText "Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона..." [namelen=83 namehash=f2bd8dcc]
-    button "Скрыть"
   main ""
     heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -34,26 +30,16 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
     button "Импорт из файла" [expanded=false]
     status ""
     heading "ВАШ АККАУНТ" [level=2]
-    StaticText "5 списков из 50"
+    StaticText "3 списка из 50"
     checkbox "Выбрать все" [checked=false]
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
-    checkbox "Выбрать: Лавка в порту" [checked=false]
-    link "Лавка в порту, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
-      StaticText "Лавка в порту"
-      StaticText "0 позиций · изменён только что"
-      StaticText "Список пуст"
-    button "Удалить"
-    ... checkbox x2 of 6 same-shape siblings elided
-    link "Клад дракона, 0 позиций, изменён только что" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
-      StaticText "Клад дракона"
-      StaticText "0 позиций · изменён только что"
-      StaticText "Список пуст"
-    ... button x2 of 6 same-shape siblings elided
+    checkbox "Выбрать: Пустой список" [checked=false]
     link "Пустой список, 0 позиций, изменён 1 час назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
+    button "Удалить"
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 10 позиций, изменён 3 дня назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
@@ -78,8 +64,6 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Выбрать все
-Выбрать: Клад дракона
-Выбрать: Лавка в порту
 Выбрать: Лавка кузнеца
 Выбрать: Пустой список
 Выбрать: Трофеи
@@ -87,9 +71,7 @@ daggerheart.com
 Импорт из файла
 К содержимому
 Как это работает
-Клад дракона, 0 позиций, изменён только что
 Конфиденциальность
-Лавка в порту, 0 позиций, изменён только что
 Лавка кузнеца, 10 позиций, изменён 3 дня назад
 ЛутDaggerheart
 Новый список
@@ -97,9 +79,7 @@ daggerheart.com
 Открывать этот раздел при запуске
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
-Скрыть
 Создать
-Списки
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
 Удалить
@@ -107,7 +87,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -121,11 +101,7 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
-  complementary ""
-    StaticText "Lists from this browser were moved to your account: "Клад дракон..." [namelen=84 namehash=5748a9e2]
-    button "Dismiss"
   main ""
     heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -137,26 +113,16 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
     button "Import from file" [expanded=false]
     status ""
     heading "YOUR ACCOUNT" [level=2]
-    StaticText "5 lists of 50"
+    StaticText "3 lists of 50"
     checkbox "Select all" [checked=false]
     StaticText "SELECT ALL"
     generic ""
-    checkbox "Select: Лавка в порту" [checked=false]
-    link "Лавка в порту, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005001]
-      StaticText "Лавка в порту"
-      StaticText "0 items · edited just now"
-      StaticText "The list is empty"
-    button "Delete"
-    ... checkbox x2 of 6 same-shape siblings elided
-    link "Клад дракона, 0 items, edited just now" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000005000]
-      StaticText "Клад дракона"
-      StaticText "0 items · edited just now"
-      StaticText "The list is empty"
-    ... button x2 of 6 same-shape siblings elided
+    checkbox "Select: Пустой список" [checked=false]
     link "Пустой список, 0 items, edited 1 hour ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
+    button "Delete"
     checkbox "Select: Лавка кузнеца" [checked=false]
     link "Лавка кузнеца, 10 items, edited 3 days ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101]
       StaticText "Лавка кузнеца"
@@ -179,20 +145,16 @@ Account: gm1@example.test
 Alt. tables
 Create
 Delete
-Dismiss
 EN
 How this works
 Import from file
 Install as an app
-Lists
 New list
 Open this section on start
 Privacy
 RU
 Search
 Select all
-Select: Клад дракона
-Select: Лавка в порту
 Select: Лавка кузнеца
 Select: Пустой список
 Select: Трофеи
@@ -202,8 +164,6 @@ Supplements
 Tables
 Terms of use
 daggerheart.com
-Клад дракона, 0 items, edited just now
-Лавка в порту, 0 items, edited just now
 Лавка кузнеца, 10 items, edited 3 days ago
 ЛутDaggerheart
 Пустой список, 0 items, edited 1 hour ago

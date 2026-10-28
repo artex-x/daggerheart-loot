@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -309,7 +308,6 @@ daggerheart.com
 Сок Солнечного Древа
 Соль Истребителя
 Сосуд Потерянных Голосов
-Списки
 Списком
 Ссылка на таблицу
 Сфера Лунного Света
@@ -351,7 +349,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/alt_consumable]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -590,7 +587,6 @@ Knowledge Stone
 Link to this table
 Lionheart Tonic
 List
-Lists
 Lyrebird Lozenge
 Magic-User's Malison
 Major Arcane Shard

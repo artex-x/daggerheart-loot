@@ -15,6 +15,7 @@ import { StorageClient } from '@supabase/storage-js';
 import {
   entryOrder,
   type LinkedRow,
+  type ListHead,
   type ListRow,
   type SharedHeld,
   type SharedRow,
@@ -57,7 +58,6 @@ import type {
   ListsRead,
   ListWrite,
   ListWrites,
-  MoveWrite,
   PreferencesPort,
   PrintSetRepository,
   Provider,
@@ -158,7 +158,6 @@ const FAULT: ListWrites = { ok: false, error: 'fault' };
 const TIMED_OUT: ListWrites = { ok: false, error: 'fault', timeout: true };
 const UNSENT: ListWrites = { ok: false, error: 'network' };
 const REFUSED: ListWrites = { ok: false, error: 'refused' };
-const MOVE_REFUSED: MoveWrite = { ok: false, error: 'refused' };
 /* An import the database stopped at its statement timeout: sent again, it would stop
    again, so it is not `network`. */
 const TOO_SLOW: ListWrite = { ok: false, error: 'refused', reason: 'tooSlow' };
@@ -358,10 +357,14 @@ async function made(call: () => PromiseLike<MadeAnswer>): Promise<ShareMade> {
   }
 }
 
-/* One read of the owner's lists with their entries; row level security keeps
-   it to the owner (tests/db/lists.test.mjs). */
+/* The owner's lists with their entries' identities: the first read and a re-read's changed
+   lists. Row level security keeps it to the owner (tests/db/lists.test.mjs). */
+const LIST_HEAD_SELECT =
+  'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,' +
+  'list_entries(id,item_key,source,hb_item,position)';
+/* The named lists whole (`rows`). */
 const LIST_SELECT =
-  'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
+  'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,' +
   'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note,gm_only)';
 
 /** The most ids one `get_homebrew_items` call takes; more go in several calls. */
@@ -694,9 +697,10 @@ export function createCloud(
       .select(columns)
       .order('updated_at', { ascending: false })
       .order('id');
-  const listRows = (data: unknown): ListRow[] | null =>
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- the caller names the select's row type
+  const listRows = <T extends ListHead>(data: unknown): T[] | null =>
     Array.isArray(data)
-      ? (data as ListRow[]).map((l) => ({
+      ? (data as T[]).map((l): T => ({
           ...l,
           list_entries: [...l.list_entries].sort(entryOrder)
         }))
@@ -713,10 +717,10 @@ export function createCloud(
           : Promise.resolve([undefined, undefined] as const);
         const full = async (): Promise<ListsRead> => {
           const [{ data, error }, [listLimit, entryLimit]] = await Promise.all([
-            listsQuery(LIST_SELECT),
+            listsQuery(LIST_HEAD_SELECT),
             limits
           ]);
-          const rows = error ? null : listRows(data);
+          const rows = error ? null : listRows<ListHead>(data);
           return rows ? { ok: true, lists: rows, listLimit, entryLimit } : { ok: false };
         };
         if (!known || whole) return await full();
@@ -727,10 +731,10 @@ export function createCloud(
         if (changed.length > CHANGED_ROWS_MAX) return await full();
         const kept = held.filter((l) => known[l.id] === l.revision).map((l) => l.id);
         const [rowsRead, [listLimit, entryLimit]] = await Promise.all([
-          changed.length ? listsQuery(LIST_SELECT).in('id', changed) : null,
+          changed.length ? listsQuery(LIST_HEAD_SELECT).in('id', changed) : null,
           limits
         ]);
-        const rows = !rowsRead ? [] : rowsRead.error ? null : listRows(rowsRead.data);
+        const rows = !rowsRead ? [] : rowsRead.error ? null : listRows<ListHead>(rowsRead.data);
         return rows ? { ok: true, lists: rows, kept, listLimit, entryLimit } : { ok: false };
       };
       try {
@@ -742,6 +746,23 @@ export function createCloud(
       } catch {
         return { ok: false };
       }
+    },
+    /* The ids go in chunks of `CHANGED_ROWS_MAX`, in order, one at a time; a failed chunk
+       fails the read. No limit read: the head read carries the limits. */
+    async rows(ids) {
+      const read: ListRow[] = [];
+      try {
+        for (let i = 0; i < ids.length; i += CHANGED_ROWS_MAX) {
+          const chunk = ids.slice(i, i + CHANGED_ROWS_MAX);
+          const answer = await listsQuery(LIST_SELECT).in('id', chunk);
+          const got = answer.error ? null : listRows<ListRow>(answer.data);
+          if (!got) return { ok: false };
+          read.push(...got);
+        }
+      } catch {
+        return { ok: false };
+      }
+      return { ok: true, lists: read };
     },
     async apply(ops) {
       if (!ops.length) return { ok: true, results: [] };
@@ -755,29 +776,6 @@ export function createCloud(
         return { ok: true, results: data.map(resultOf) };
       } catch {
         return UNSENT;
-      }
-    },
-    /* `writeOf` reads the answer: a lapsed session (`28000`) and the row deleted
-       during the move (`40001`, HTTP 500) are `network`, so the next load moves
-       the list again. */
-    async move(id, canonical) {
-      try {
-        const answer = await timed((signal) =>
-          client.rest
-            .rpc('move_legacy_list', { p_id: id, p_canonical: canonical })
-            .abortSignal(signal)
-        );
-        const failed = writeOf(answer);
-        if (!failed.ok) return failed.error === 'network' ? failed : MOVE_REFUSED;
-        const data: unknown = answer.data;
-        const row = Array.isArray(data) ? (data[0] as unknown) : null;
-        if (!row || typeof row !== 'object') return MOVE_REFUSED;
-        const { id: moved, inserted } = row as { id?: unknown; inserted?: unknown };
-        return typeof moved === 'string' && typeof inserted === 'boolean'
-          ? { ok: true, id: moved, inserted }
-          : MOVE_REFUSED;
-      } catch {
-        return { ok: false, error: 'network' };
       }
     },
     async import(rows) {

@@ -261,7 +261,7 @@ across.
   strip or in the empty state, moves it to «Фильтры» (rule 20).
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed; on a
-  share link too; on `#/l/` it is page memory.
+  share link too.
 - A grid tile shows that record's own roll number. The live app passed the
   array index as the number (`list.map(tileHTML)`), so every tile past the
   first in a plain table showed its position instead of its roll - a live
@@ -316,13 +316,22 @@ across.
   edge nor drags the card's own scroll position along with it. Escape closes
   it and returns focus to the toggle, the same as any other disclosure on
   the page.
-- The index, from the eighth list in all (account and browser lists
-  together), draws a name filter («Найти список») under the create panel: it
-  matches the list name in both groups, folded as search folds, keeps each
+- In a one-record menu a press on a pressed chip removes the record with «Убрано из
+  «%s»» / "Removed from «%s»" and «Вернуть» / "Undo". A list whose entries this tab
+  has not read draws its chip busy (dimmed, announced busy, a second press does
+  nothing, the focus stays) until they are read, so the undo writes back the
+  quantity, price and notes the read held; a failed read toasts «Не получилось
+  загрузить списки аккаунта.» / "Could not load the lists in your account." and
+  removes nothing. A menu closed during the read
+  still removes and toasts.
+- Signed out (sign-in configured, no session) the reader holds no list: the menu
+  draws «+ Новый список» / "+ New list" alone, with no label and no empty line, and the chip opens
+  the sign-in prompt in its place.
+- The index, from the eighth account list, draws a name filter («Найти список») under
+  the create panel: it matches the list name, folded as search folds, keeps the
   group's order, lives in memory only and starts empty on every visit; a
-  create clears it; no match in either group draws «Ничего не найдено». The
-  index draws the first 24 cards (`LIST_PAGE`) of what the filter leaves,
-  the account lists first, then the browser lists, as one sequence, then
+  create clears it; no match draws «Ничего не найдено». The
+  index draws the first 24 cards (`LIST_PAGE`) of what the filter leaves, then
   «Показать ещё (N)» / "Show more (N)", N still hidden; each press draws 24
   more and moves focus to the first card it revealed, and the button goes
   when none remain. Any edit to the query folds the result back to 24. The
@@ -481,125 +490,66 @@ across.
   or search selection has no taken count and no total, and its bar reads
   "Выбрано N". The bar is a region named «Выбранные записи» / "Selected
   records": it sits after the footer, outside every other landmark.
-- A typed quantity is held to 99, the most a list link carries, and a
-  negative one to none; the field then shows the held value.
+- A typed quantity is held to 99, and a negative one to none; the field then shows the held value.
 - A list has its own roll button, folded by default and opened on its
   summary; the row numbers match it. An empty roll field means no roll has
   been made yet, not zero. The panel, a row's own note box and the list note
   each keep the person's own fold/unfold across a language switch - the live
   `data-keep` opt-ins - rather than resetting to the data's own default the
   way every other re-render does.
-- Two notes per list and per entry - see `CONTRACTS.md` for how they encode and
-  which link carries which. Each note is formatted text ("Records", "Formatted
+- Two notes per list and per entry: «Для игроков» goes into the copied text
+  and the players' share link, «Только для мастера» only into the GM's link.
+  Each note is formatted text ("Records", "Formatted
   text") in a box of rule 18 (bold, italic, both lists, «Просмотр», the «?»),
   named by its label and described by its line, at most 4000 characters with
   no counter. A stored list or entry note is read the same way, with no
   migration.
-  The rolled entry, `#/s/`, `#/l/` and the clipboard draw it formatted, the
-  link card plain. A read-only list keeps «Просмотр» only. On `#/s/` and
-  `#/l/` the list's notes draw above the rows, and an entry's notes inside
+  The rolled entry, `#/s/` and the clipboard draw it formatted, the
+  link card plain. On `#/s/`
+  the list's notes draw above the rows, and an entry's notes inside
   its row's border, under its main line and above its take line, as the
   owner's list page draws them. On the shared page only, the tick column and
   its divider run the full height of the row, through the notes and the take
   line, and a press anywhere in the column ticks the row; the checkbox stays
   level with the main line.
-- The address bar always holds the player link and is refreshed on every edit
-  - opening the page, and after every writer on it. A read-only browser list
-  (after the cutoff, or while the move is due) keeps the address it opened at.
-- Every other address the app copies - a list's players link, a table, a
-  filter, a section anchor, a print sheet - is `<site>#/...` in Russian and
-  `<site>en/#/...` in English, so a messenger builds its preview in that
-  language (`CONTRACTS.md` section 3).
-- A shared link (`#/l/<payload>`) that is nobody's own list draws the shared
-  page: the name, the shared-list line with the count as one text node, one
-  "Сохранить себе" / "Save to my lists" button, drawn whatever the selection,
-  that saves the whole list as a new list of one's own - entries, quantity,
-  price, every note the link carries and the money mode - and opens it, the
-  list's own notes, and the rows; taking some rows, or all of them after
-  "select all", into a new or an existing list is the selection bar's
-  add-to-list control, which carries the taken count as the quantity (none
-  for a count of 1), the price and a row's public note but never the GM's
-  note. The bar shows the selection summary and the total, its
-  "Скопировать" carries each taken count and unit price and ends with the
-  total line, and its "Печать" writes each taken count into the print
-  address. An entry the data no longer knows is dropped and counted in one
-  toast ("Пропущено позиций, которых больше нет в данных: 2") on this page. A
-  link whose every entry has left the data opens as that list with no entries
-  and the same toast, never as a damaged link; saving it creates the empty
-  copy and opens it. Under the actions (and under the sign-in prompt when it
-  is open) a line in the muted colour says «Ссылки вида #/l/ перестанут
-  открываться 26 октября 2026 года. Сохраните список себе, чтобы не потерять
-  его.» (`LEGACY_WRITE_UNTIL`); the bad-link page and a browser list's own
-  page do not draw it. From 8 entries the page draws the share link's search
-  box and filter ("The shared page `#/s/<token>`" below) as page memory: the
-  address stays as it opened, no copy-link button is drawn, and a reload or
-  another list starts unfiltered. A link
-  written before the checksum that names no entry is still damaged; an
-  empty list's own link opens it. A payload that cannot be
-  decoded draws "Предмет не найден", the bad-link line and a "На главную"
-  button to `#/roll/std`. A **packed** link (`#/l/~<payload>`) that cannot be expanded
-  draws the same bad-link page without replacing the address - the live
-  shape sent the reader to `#/l/zzzz` instead, which cost a slow unpack
-  resolving after the reader had already moved on the shared list they had
-  since left for.
-- Two open tabs merge rather than overwrite (`STATE.md`); after the cutoff a
-  browser list is written only by the move and by a delete.
-- A storage notice at the head of the index's browser group and at the top
-  of a browser list's page (never on an account list's page): when storage
-  refuses, a plain warning that cannot be dismissed; otherwise a folded "lists
-  live in this browser only" disclosure whose cross is remembered in
-  `dhloot.warn.v1`; unfolding is not remembered - the notice comes back folded
-  after a language switch, as the live re-render left it; on the index it
-  survives a create and a delete, where the live whole-page re-render
-  re-folded it - the rewrite's deliberate deviation, invisible to the old
-  parity harness because every one of its states started folded (deleted at
-  R0c, issue 47). The dismiss cross is a sibling control positioned over the
-  disclosure's corner; its 44x44 target yields to the summary where the two
-  overlap, so a tap on the summary's row unfolds the notice rather than
-  dismissing it. It is not nested inside the `<summary>` that opens and
-  closes it - the two presses no longer have to fight over the same click.
-  In a build with sign-in configured, while no account owns this browser's
-  lists, the unfolded notice adds «Войдите до 26 октября 2026 года - и они
-  перенесутся в аккаунт. После этой даты приложение перестанет их
-  показывать.», the words of the move banner ("Account and browser lists").
-  After the cutoff the notice is «Списки в этом браузере только для чтения
-  с 26 октября 2026 года.», not dismissable and drawn even after a dismissal,
-  with «Войдите - они перенесутся в аккаунт, и их снова можно будет
-  править. Скопировать текст можно и так.» while no account owns
-  the lists.
-
+- A list page keeps the address it opened at, `#/lists/<id>`: no edit
+  rewrites it.
+- Every other address the app copies - a table, a filter, a section anchor,
+  a print sheet - is `<site>#/...` in Russian and `<site>en/#/...` in
+  English, so a messenger builds its preview in that language (`CONTRACTS.md`
+  section 1).
 ### Account and browser lists
 
 A build with sign-in configured keeps a signed-in reader's lists in the
-account (`docs/specs/META.md` section 3). A signed-in reader's browser lists
-move into the account by themselves, with no press (below). From 2026-10-26
-(`LEGACY_WRITE_UNTIL`, 00:00 UTC) browser lists are read-only and `#/l/` links
-stop opening. A build with no sign-in configured moves nothing and keeps its
-browser lists writable after the date.
+account (`docs/specs/META.md` section 3). Browser lists, their move into the
+account and the `#/l/` link left the app at R10; the browser keeps what an older
+build stored, unread (`STATE.md`, "localStorage keys"). In every build a `#/l/`
+address, plain or packed, draws the not-found page («Предмет не найден», its sub,
+«На главную»), the address kept and the payload never read. A build with no sign-in
+configured has no lists: `#/lists` and `#/lists/<id>` draw the not-found page, the
+address kept, and no add-to-list control is drawn.
 
 - **Where a list is made**: signed in, every list made on the index, in the
   add-to-list menu or by "Сохранить себе" on a shared page is an account list.
   Signed out, each of those places draws the sign-in prompt instead: one line
   and one «Войти», never a provider button. On the index the create panel is
   the prompt («Войдите, чтобы создавать списки: ...»); in the menu the
-  new-list slot is (the chips stay pickable; «Отмена» folds it back to
+  new-list slot is (no list chip is drawn; «Отмена» folds it back to
   «+ Новый список»; «Войти» takes the focus); on a shared page «Сохранить
   себе» reads pressed and opens the prompt under it, and a second press folds
   it. While the session is still unknown none of them is drawn, so a
-  signed-in reader never sees a prompt flash. A build with no sign-in
-  configured makes browser lists as before.
+  signed-in reader never sees a prompt flash.
 - **The return after sign-in**: «Войти» opens `#/account` and remembers the
   page and the started action; the account page's sign-in carries both
   through the provider redirect (`STATE.md`, `dhloot.auth.return`). Back on
   the page, once the account's lists are read, the action finishes by itself:
   the add-to-list menu reopens (the selection bar's with the same rows ticked
   and their taken counts; a menu started in the record dialog reopens on the
-  record's page `#/i/<id>`), with the new list's name in its form when one was
-  typed; a shared list is saved into the account and opened. Leaving
+  record's page `#/i/<id>`); a shared list is saved into the account and opened. Leaving
   `#/account` any other way forgets it, and so does a navigation or a
   sign-out before the action finishes.
 - **The index**: the heading «Мои списки» / "My lists" (the menu item's
-  name; the tab bar keeps «Списки» until the cutoff). Signed in, the create
+  name; the tab bar has no Lists tab). Signed in, the create
   panel, then the group «Ваш аккаунт» / "Your account" - the count «3 списка
   из 50» / "3 lists of 50" (the limit from `my_limit()`, an override's own
   number; «3 списка» when the limit read failed; with a known limit «0
@@ -614,21 +564,20 @@ browser lists writable after the date.
   аккаунте пока нет списков - создайте первый выше.» under the count when
   there are none. A create at the account's list limit writes nothing and
   toasts the limit text («Достигнут предел списков в аккаунте: 50. ...»), the
-  draft kept: in the index, in the add-to-list menu's new list and in a
-  `#/l/` copy. Then «Этот
-  браузер» / "This browser" with the storage notice at its head and today's
-  cards. Signed out, the browser group has no heading and is drawn only when
-  there are browser lists or storage is broken or unreadable; with no sign-in
-  configured it is always drawn.
-- **An account list's page** counts every stored entry under the title
+  draft kept: in the index and in the add-to-list menu's new list. Signed out,
+  the create panel is the prompt and no group is drawn.
+- **An account list's page**, after the account's first read, draws «Загружаем...»
+  (small, no heading) until its entries are read, and «Список не загрузился» / "The
+  list did not load", «Не получилось загрузить списки аккаунта.» / "Could not load
+  the lists in your account." and a primary «Повторить» / "Retry" when that read
+  fails; «Повторить» reads them again. It
+  counts every stored entry under the title
   against the entry limit, also one whose record it has not read, «10 позиций
   из 100 · Сохранено» («10 позиций · Сохранено»
   when the limit read failed); the name stops at 200 characters and each
   note at 4000 (`maxlength`, no counter). It keeps its address
-  `#/lists/<uuid>` (no `#/l/`
-  rewrite), draws «Поделиться» / "Share" first in its actions in place of
-  "Ссылка игрокам"/"Ссылка себе", «Скачать JSON» / "Download JSON" after
-  «Скопировать текст», no storage notice, and says its save status
+  `#/lists/<uuid>`, draws «Поделиться» / "Share" first in its actions, «Скачать JSON» / "Download JSON" after
+  «Скопировать текст», and says its save status
   after the count: «Сохраняем...», «Сохранено», or
   «Не сохранено» in the danger colour and «Повторить». Only the failure and
   the save that ends it («Сохранено») are announced (a permanently mounted,
@@ -639,7 +588,7 @@ browser lists writable after the date.
   once); making and deleting a list go through the same buffer. The buffer
   is sent at once when the tab is hidden or closed, on sign-out (which
   waits for it 5 s at most), before «Поделиться» reads the links, before
-  «Сохранить себе» on a shared page makes its copy, and before the move. «Сохраняем...»
+  «Сохранить себе» on a shared page makes its copy. «Сохраняем...»
   shows from the first buffered edit until the send lands. A write with no
   network, or with a lapsed session, stays in the buffer and is sent again
   every 15 s, when the tab is shown again, after the next edit's quiet
@@ -665,8 +614,7 @@ browser lists writable after the date.
   (the stopped statement changed nothing); a single edit stopped so keeps
   the three counted failures. A lost network, a
   server that does not answer or a database that is restarting is waited
-  out, never split. An old `#/l/` link saved over the entry limit makes no
-  list, and the toast names the limit.
+  out, never split.
 - **Own items in lists** (`docs/decisions/2026-10-07-an-item-is-read-by-its-id-by-anyone-a-list-holds-a-live-link.md`):
   an account list holds catalog records and homebrew items, all drawn as any
   row. A catalog record is written as before. A homebrew entry is a live link
@@ -723,7 +671,7 @@ browser lists writable after the date.
   list would refuse; with no limit known the press writes as before. A press
   sent again after a lost answer makes no second item. Escape and «Отмена»
   close the panel, drop the typed text and focus the row. An empty account list draws the row under its hint, which adds «Свой
-  предмет можно создать здесь же, кнопкой ниже.». A browser list has no row.
+  предмет можно создать здесь же, кнопкой ниже.».
 - **Share links**: «Поделиться» reads pressed and expanded and opens a panel
   under the actions with two rows, «Ссылка для игроков» and «Ссылка для
   мастера», both ready on open: the panel reads the list's links (stopped
@@ -752,8 +700,7 @@ browser lists writable after the date.
   toasts «Не получилось изменить ссылку. Проверьте соединение и попробуйте ещё
   раз.», keeps
   the row, and reloads the panel when it was refused. A row's buttons are
-  disabled while its change runs. An empty list can be shared. No account
-  list's page or panel writes or copies a `#/l/` address.
+  disabled while its change runs. An empty list can be shared.
 - **The list card** of a share link's preview link: the list name (or «Без
   названия» / "Untitled"), «N позиций» / "N items" of the entries that the
   link's audience sees - a players' link counts the entries without «Только
@@ -785,14 +732,21 @@ browser lists writable after the date.
   текст» is the players' text: it leaves GM-only entries out as it leaves out
   the GM notes, and a shown entry still names a GM-only record it upgrades
   into. The selection's «Скопировать», «Печать», the list roll, its numbers
-  and the counts keep every entry. A browser list has no eye and no bar
-  action.
+  and the counts keep every entry.
 - **The shared page `#/s/<token>`** draws the list as the link's audience sees
   it, read-only for everyone, the owner included: the name, today's
   «Список от другого игрока · N позиций», «Обновлено N назад» / "Updated N
   ago" under them (`I18N.md`), «Сохранить себе», the notes the link shows (a
   GM link adds the «Только для мастера» notes) and the rows, with the
-  selection bar as on a `#/l/` page. A ticked entry the list no longer holds
+  selection bar: taking some rows, or all of them after «Выбрать все», into a
+  new or an existing list is the bar's add-to-list control, which carries the
+  taken count as the quantity (none for a count of 1), the price and a row's
+  players' note, never the GM's note; the bar shows the selection summary and
+  the total, its «Скопировать» carries each taken count and unit price and
+  ends with the total line, and its «Печать» stores each taken count. An
+  entry the data no longer knows is dropped and counted in one toast
+  («Пропущено позиций, которых больше нет в данных: 2»); a list whose every
+  entry has left the data opens with no rows and the same toast. A ticked entry the list no longer holds
   leaves the selection when the page draws the list again. While the share's Realtime topic is
   joined it draws an owner's edit within about a second; it also reads the
   list again when the tab is shown again, every 45 s while Realtime is not
@@ -805,7 +759,8 @@ browser lists writable after the date.
   для правки» to `#/lists/<uuid>` above the title; on a players' link, while
   the list holds GM-only entries, the line adds «Только для мастера: N - по
   этой ссылке их не видно.» / "GM only: N - this link does not show them."
-  between the two, once the account's lists are read. «Сохранить себе» saves a
+  between the two, once that list's entries are read (the page reads them; after a
+  failed read the line draws without the count). «Сохранить себе» saves a
   copy into the account with only the notes the link shows (a player link's
   copy has no GM note) and opens it; signed out it opens the sign-in prompt
   under it, and after the sign-in the copy is made by itself; a refusal
@@ -868,11 +823,12 @@ browser lists writable after the date.
 - **Not found**: an account address signed out draws «Список не найден», «Если
   это список из вашего аккаунта, войдите, чтобы открыть его.» and one
   «Войти», which returns to that address; nothing while the session is
-  unknown; «Загружаем...» while the session's account read or the move runs;
+  unknown; «Загружаем...» while the session's account read runs;
   the heading «Список не загрузился», «Не получилось
   загрузить списки аккаунта.» and a primary «Повторить» when the read failed
   (never «Список не найден», which would call a list missing that may exist);
-  today's not-found page for an id the account does not hold.
+  today's not-found page («Список не найден» and «Мои списки») for an id the
+  account does not hold, a local id an older build made among them.
 - **Delete** asks through the browser's confirm «Удалить список «%s»? Ссылки
   для игроков и мастера перестанут работать. Отменить удаление нельзя.»; the
   toast has no «Вернуть». On the list page it returns to `#/lists`.
@@ -886,8 +842,13 @@ browser lists writable after the date.
   minutes while the owner's topic is joined; the index and an account list's
   page read it every 45 s while Realtime is not joined. Each read waits until
   no write is buffered or in flight. A re-read asks for each list's revision
-  and fetches the lists whose revision moved (every list when more than 50
-  did); a page load reads every list. The owner's homebrew re-read does the
+  and fetches the heads of the lists whose revision moved (every list's head when
+  more than 50 did). A page load reads each list's head with its entries' record
+  ids, row ids, links and positions, and no note, quantity, price or GM-only flag;
+  a list's entries are read whole when the tab first needs them (its page, the
+  add-to-list menu's remove, the owner's players' link count, a download), fifty
+  lists a request; a re-read reads a changed list whole only when the tab holds its
+  entries, one request after its head. The owner's homebrew re-read does the
   same per table (sources, items, cards), and also fetches every row this
   tab wrote since its last read, so the row gets the database's times; every
   read of the pending purchase requests fetches each request's head with no
@@ -1043,7 +1004,10 @@ browser lists writable after the date.
   the account's whole homebrew file ("Homebrew"), always `homebrew-v2`. A download that writes own
   items waits for them: while they load, or after their read failed, it toasts
   «Ваши предметы ещё загружаются - это может занять минуту. Повторите чуть позже.» and downloads
-  nothing. An export has no toast of its own, and a failed download toasts «Не
+  nothing. A download first reads the entries of the lists this tab has not
+  read; the index's «Скачать JSON (N)» is disabled while it runs, and a failed
+  read toasts «Не получилось. Проверьте соединение и попробуйте ещё раз.» and
+  downloads nothing. An export has no toast of its own, and a failed download toasts «Не
   получилось. Проверьте соединение и попробуйте ещё раз.». A file past the
   import's bounds - more than 1000 lists, or more than 5000 entries in one list
   - still downloads whole, and one toast says «Этот файл нельзя импортировать
@@ -1057,9 +1021,9 @@ browser lists writable after the date.
   an account delete. A homebrew entry whose item neither the account nor the
   last read of linked items holds (deleted on another device before the lists
   were read again) is left out, and the toast counts it, «%n свой предмет не попал в файл: его больше нет
-  в аккаунте.» alone, or after the bounds text. A list moved from this browser
-  with more than a hundred entries imports only into an account whose entry
-  limit holds it: the account's limit refuses it, not the file.
+  в аккаунте.» alone, or after the bounds text. A list with more than a hundred
+  entries imports only into an account whose entry limit holds it: the account's
+  limit refuses it, not the file.
 - **Import**: «Импорт из файла» ("Lists") adds the file's lists to the
   account as new lists, every list and entry with a new id, all or nothing in
   one call: a refused call leaves the account as it was. The write buffer is
@@ -1096,78 +1060,6 @@ browser lists writable after the date.
   `homebrew_books_per_owner`; "Homebrew"). Every surface is designed for up to 3x every default in this bullet and
   nothing past that (`docs/decisions/`, 2026-10-01, "Scale is designed for
   three times the default limits; nothing past that").
-- **The move**: when a signed-in reader's page has read the account and this
-  browser holds lists, each list moves into the account as it is - entries,
-  quantities, prices, both notes, the list notes and the money mode, every
-  entry id kept, whether or not the catalog knows it - through one request
-  per list, exempt from the count limits (the limits bind again from the next
-  ordinary write). The account is then read back, and a list leaves the
-  browser only when its account copy matches what was sent and its stored
-  text did not change meanwhile. The move waits for the catalog: a page whose
-  `data.js` did not load moves nothing. Two guards, for a shared computer:
-  the move runs only for the first account whose page loaded with browser
-  lists (another account sees them untouched, and no notice), and a one-time
-  notice between the header and the page, on every page, names the moved
-  lists: «Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона»,
-  «Лавка в порту».», until «Скрыть»; it is drawn only for the account that
-  owns them. When a damaged copy of the lists (`dhloot.lists.v2.bad`) is
-  present, the notice adds «В этом браузере осталась повреждённая копия
-  списков: её не получилось прочитать и перенести. Если в ней было что-то
-  важное, напишите на daggerheart.loot@gmail.com.»; the copy itself is never
-  moved or deleted. The open page of a moved list, at its `#/lists/<id>` or
-  its own `#/l/` address, follows it to the account list's address, and a
-  bookmark of `#/lists/<id>` opens the account list. A second move of the
-  same list, from a second device, a copy brought back from storage or an
-  answer that was lost, answers the account row the first move made: no
-  second row, and the copy leaves the browser. A move whose row is deleted
-  meanwhile fails, and the next load moves the list again.
-- **The banner**: signed out, before the cutoff, while this browser holds
-  lists that no account owns (`dhloot.migrated.v1` names no owner), every
-  page but `#/account` draws a slim banner in the moved-lists notice's place
-  between the header and the page: «Ваши списки хранятся только в этом
-  браузере. Войдите до 26 октября 2026 года - и они перенесутся в аккаунт.
-  После этой даты приложение перестанет их показывать.» / "Your lists are
-  stored only in this browser. Sign in before 26 October 2026 and they
-  move to your account. After that date the app stops showing them.", the
-  date from `LEGACY_WRITE_UNTIL`, then «Войти» (named «Войти и перенести
-  списки» / "Sign in and move the lists"), which opens `#/account` and
-  returns to the page after the sign-in, where the move runs, and «Скрыть»
-  (named «Скрыть напоминание» / "Dismiss the reminder"), which hides it
-  until the next page load. Nothing is drawn while the session is unknown,
-  signed in, after the cutoff, or in a build with no sign-in.
-- **The move's status** stands in the storage notice's slot on `#/lists` and
-  on a browser list's page: «Переносим списки в аккаунт...» while it runs;
-  «Не все списки перенесены: нет связи. Попробуем при следующем открытии.»
-  when the network stopped it (what moved has left the browser, the rest
-  waits); «Не перенесён: «Клад дракона». Сервер не принял список. Напишите на
-  daggerheart.loot@gmail.com.» for a list the server refused, tried again on
-  the next page load; «Не перенесён: «Клад дракона». Копия в аккаунте не
-  совпала со списком. Напишите на daggerheart.loot@gmail.com.» for a held
-  list, whose account copy did not match - it stays in the browser for good
-  and is not sent again; «Удалить» takes it away. A move stopped by the
-  network runs again when the tab is shown again, on the 45 s clock on any
-  page, and on «Повторить», with no reload.
-- **Read-only**: after the cutoff, in a build with sign-in configured, a
-  browser list's page has a read-only title, no link buttons and no address
-  rewrite; the money chips are disabled; the list and entry notes, the
-  positions, quantities and prices are read-only, with no clear cross, no
-  drag grip and no remove cross; the selection bar keeps the tick and its
-  «Скопировать», not «Цены» or «Удалить (N)»; copy text, print and the roll
-  panel work. «Удалить» stays, with the confirm and no «Вернуть». On
-  `#/lists` a browser card links `#/lists/<id>` and has «Удалить» alone; the
-  add-to-list menu offers the account lists alone, and signed out only the
-  prompt. A `#/l/` address, plain, packed or this browser's own, draws «Ссылки
-  такого вида перестали открываться 26 октября 2026 года.», «Попросите у
-  отправителя новую ссылку или войдите, чтобы собрать список.» and «Мои
-  списки» to `#/lists`, the address kept and the payload never decoded; a
-  waiting
-  «Сохранить себе» of an old link is dropped. An account list and the `#/s/`
-  page do not change. While the lists move, and while the move waits for the
-  network, a signed-in reader's browser lists are read-only and cannot be
-  deleted; they are editable again once the move has ended. A list that
-  changed while it moved stays in the browser, named in the status, and is
-  not sent again. «Сохранить себе» on a `#/s/` page is disabled while the move
-  runs, and a remembered one runs after it.
 
 ## Records
 
@@ -1314,7 +1206,7 @@ browser lists writable after the date.
   sub line and a "На главную" button to `#/roll/std` (the live
   `renderItemPage` shape) and keeps the plain tab title, the same as any
   other route with nothing of its own to name. A record that is found, a
-  section, and an owned list each title the tab with their own name ahead of
+  section, and an account list each title the tab with their own name ahead of
   the app's - `<name> - <docTitle>` (the live app wrote the name and then
   overwrote it with the plain title on the very same render, on both
   `#/i/<id>` and every other route that could have named itself). When
@@ -1952,9 +1844,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   how many account lists hold the item.
 - **Where an item is used**: an own item goes into the account's lists as a
   link and draws live there, on their share links too; «Свой предмет»
-  on a list page makes one in one press ("Lists"). A browser list never holds
-  one: «Добавить в список» into it says «Свой предмет нельзя добавить в этот
-  список.», and a `#/l/` link and a lists file never carry an own key. A
+  on a list page makes one in one press ("Lists"). A lists file never carries an
+  own key. A
   list another user saved from a share link, or added the item to from one,
   links the item too and draws it live, with its source and the author's set
   and rule cards it names. Search ranks own items with the catalog's, and the tables
@@ -2105,8 +1996,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - Every print needs an account (owner, 2026-10-08). Three controls print, each
   «Печать» with the print icon and the same hint: the pick row (the record
   page, the record modal and `#/h/`, for its author and for a reader), the
-  selection bar (tables, search, «Мои предметы», `#/s/` and `#/l/` with the
-  taken counts) and the list toolbar (with the list's counts). Signed in, a
+  selection bar (tables, search, «Мои предметы», `#/s/` with the taken
+  counts) and the list toolbar (with the list's counts). Signed in, a
   press stores the cards and their counts as a print set in the reader's
   account and opens its address `#/p/<id>`; the control is disabled while the
   set is made and while the session is unknown, and a build with no sign-in
@@ -2150,7 +2041,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   - draws «Такие ссылки на печать больше не открываются.» with «Попросите у
   отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.»
   and «На главную», the address kept and nothing read from it: the layout of
-  `#/l/`'s retired page, without a date
+  the not-found page
   (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 - Nine cards to an A4 page at 63x88 mm, or sixteen at 44x63 mm on the opt-in
   compact sheet; up to 180 cards either way. The cap is a render bound, not
@@ -2445,8 +2336,8 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   nothing for the money chips and `aria-current="true"` for the menu chips.
 - Help panels under a `?` per section, folded by default, fold state remembered
   for the session only.
-- A removal the app can write back (an entry, its notes, a reprice, a
-  browser list) toasts with an undo, «Вернуть»; a server delete that cannot be undone (an
+- A removal the app can write back (an entry, its notes, a reprice) toasts with
+  an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's
   confirm first and its toast offers none. A toast that offers an
   undo moves focus to its button, so the keyboard reaches it within the
@@ -2513,15 +2404,13 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the menu and the control, focus moving elsewhere, a navigation or a
   change of user close it. A second press on the control closes it. An
   item is 44px tall at 600px and below.
-- The tab bar draws six tabs: «Обычные правила», «Альт. таблицы»,
-  «Дополнения», then «Таблицы», «Списки», «Поиск» ("Standard rules", "Alt.
-  tables", "Supplements", "Tables", "Lists", "Search"). «Дополнения» links to
+- The tab bar draws five tabs in every build: «Обычные правила», «Альт. таблицы»,
+  «Дополнения», then «Таблицы», «Поиск» ("Standard rules", "Alt.
+  tables", "Supplements", "Tables", "Search"). «Дополнения» links to
   `#/roll/wondrous_environments` and is lit, with `aria-current="page"`, on each of the seven
-  supplement sections. From the legacy write cutoff (2026-10-26,
-  `legacyWritable`) a build with sign-in draws five, without «Списки»:
-  `#/lists` is then reached from the account menu (`ROUTES.md`, "Sections").
-  A build with no sign-in keeps six. At 768 and 1180 px the tabs hold one row
-  in both languages, measured: 607 px in Russian, 510 in English, and the
+  supplement sections. `#/lists` is reached from the account menu (`ROUTES.md`,
+  "Sections"). At 768 and 1180 px the tabs hold one row in both languages
+  (measured with six tabs, before R10: 607 px in Russian, 510 in English), and the
   header is 106 px. Under 640 px the row scrolls sideways and the header is
   112 px.
 - No tab is lit on a record, a list page, a print sheet or the account page -
@@ -2581,10 +2470,8 @@ Each rule keeps its number: a review cites it by number.
   the account delete asks for the typed word instead of the browser's
   confirm; its hint says «будут удалены навсегда» (owner, 2026-10-22).
 - **4. One name**: the menu item, the page heading and the tab name a page
-  the same way. Departure until 2026-10-26: the tab bar, the pin label, the
-  tab title, the start-section option and the buttons to `#/lists` say
-  «Списки» / "Lists" for the page headed «Мои списки» / "My lists"; from
-  the cutoff the tab title, the option and the buttons say «Мои списки».
+  the same way: `#/lists` is «Мои списки» / "My lists" in the menu, the heading,
+  the tab title, the start-section option and the buttons to it.
   Departure: the «Дополнения» / "Supplements" tab
   names the seven supplement pages as one group; each page's own word is on its
   chip in the supplements panel ("Rolling").
@@ -2605,8 +2492,8 @@ Each rule keeps its number: a review cites it by number.
   "Retry": primary where the failure replaces the page and its title says so
   («Список не загрузился» / "The list did not load"), small everywhere else:
   the requests panel's slot on an account list's page, and an account list's
-  address while the account is read (no heading: the list's name is the
-  heading, as on `#/s/`).
+  address while the account or the list's entries are read (no heading: the
+  list's name is the heading, as on `#/s/`).
 - **7. Headings**: a page with a fixed heading draws it in every state,
   loading and failed included.
 - **8. Create**: a button that opens a create form reads «Новый <noun>» /
@@ -2702,8 +2589,7 @@ Each rule keeps its number: a review cites it by number.
   record keeps its `i/<id>.html` stub. Excluded, each with its reason: a
   homebrew copy with no id (nothing to link); `#/tables/homebrew`, which draws
   no table, filter or section link (each reader sees only their own items); the
-  Items tab's filter (page memory); a browser list's `#/l/` links (they hide from
-  `LEGACY_WRITE_UNTIL`, and a payload can be kilobytes in a path).
+  Items tab's filter (page memory).
   Departure: the share panel shows `#/s/<token>` and copies the preview link.
   This rule binds every page, not only the signed-in pages of the lead.
 - **18. Formatted text boxes**: every box of formatted text ("Records",
@@ -2724,12 +2610,12 @@ Each rule keeps its number: a review cites it by number.
   the field (owner, 2026-10-14): the card forms, «Свой предмет» and the list
   notes; the item form's card is its preview.
 - **19. Warnings**: a line that tells about a risk and blocks nothing is a
-  warning: the warning box (`NoticeBox` with `warn`), a fact and an option in
+  warning: the warning box (`NoticeBox`), a fact and an option in
   its words, never «Ошибка». The box is no live region: a box that appears
   while the page is open (the editor's clip warning, conflict and gone
-  banners, the print bar's clip count, the move's status) is said once by the
+  banners, the print bar's clip count) is said once by the
   page's status region (`StatusRegion`), mounted before it; a box drawn with
-  the page (`MoveNotice`) needs none. The error look (`--danger`,
+  the page needs none. The error look (`--danger`,
   `role="alert"`) is for a refusal (owner, 2026-10-14): the editor's summary
   «Не сохранено: ...» and both imports' refused-file boxes take it, the danger
   border and text with no fill. Departure: the print

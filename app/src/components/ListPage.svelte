@@ -1,14 +1,10 @@
 <script lang="ts">
-  /* The list page - `#/lists/<id>` and `#/l/<own payload>` - off `renderOneList`
-   * (app.js 2960-2995), `moneyPickerHTML` (2933-2958), `listRollPanel`
-   * (2997-3029), `rolledNoteHTML` (3031-3037), `listRowHTML` (3040-3092),
-   * `listNoteHTML` (3094-3101), `notePairHTML` (3109-3128), the address
-   * (1537-1607), the handlers (3944-3969, 4086-4150, 4251-4256, 4346-4434,
-   * 4532-4571), the copy (1609-1647), `contextNote`/`onListPage` (568-578),
-   * the live drag event model (4443-4530), the bar's actions (`batchBarHTML`,
-   * 724-745) and the money panel (`moneyPanelHTML`, 750-782, `guessWhy`
-   * 831-842). */
-  import { onDestroy, tick, untrack } from 'svelte';
+  /* The list page - `#/lists/<id>` - off `renderOneList`, `moneyPickerHTML`, `listRollPanel`,
+   * `rolledNoteHTML`, `listRowHTML`, `listNoteHTML`, `notePairHTML`, the list handlers, the
+   * copy, `contextNote`/`onListPage`, the live drag event model, the bar's actions
+   * (`batchBarHTML`) and the money panel (`moneyPanelHTML`, `guessWhy`), all in
+   * `git show 23c00a6^:app.js`. */
+  import { tick, untrack } from 'svelte';
   import { SvelteMap, SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
   import BatchBar from './BatchBar.svelte';
@@ -35,32 +31,26 @@
   import RowMain from './RowMain.svelte';
   import RequestsPanel from './RequestsPanel.svelte';
   import SharePanel from './SharePanel.svelte';
-  import MoveStatus from './MoveStatus.svelte';
-  import SharedListPage from './SharedListPage.svelte';
-  import SignInPrompt from './SignInPrompt.svelte';
   import StatusRegion from './StatusRegion.svelte';
   import SyncSaid from './SyncSaid.svelte';
   import SyncStatus from './SyncStatus.svelte';
-  import StorageNotice from './StorageNotice.svelte';
   import QuickItem from './QuickItem.svelte';
   import { linkedOf, isCloudId, NAME_MAX, NOTE_MAX } from '../lib/cloudLists.js';
   import { withRecords } from '../lib/homebrew.js';
   import { sectionLabel, type Dict } from '../lib/dict.js';
   import type { MarkupTool } from '../lib/markupEdit.js';
   import { moneyHelpFor } from '../lib/help.js';
-  import { sectionHash, sharedListHash } from '../lib/hash.js';
+  import { sectionHash } from '../lib/hash.js';
   import { nameOf, selCountText } from '../lib/i18n.js';
-  import { printAction } from '../lib/pending.js';
-  import { countOf, plural } from '../lib/plural.js';
-  import { encodeListRaw, QTY_MAX } from '../lib/listLink.js';
-  import type { ListEntryMeta, MoneyMode } from '../lib/listLink.js';
+  import { countOf } from '../lib/plural.js';
   import {
-    findListByPayload,
     gmOnlyCount,
     itemMeta,
+    QTY_MAX,
     stockLeft,
     takenQty,
     takenTotal,
+    type ListEntryMeta,
     type StoredList
   } from '../lib/lists.js';
   import {
@@ -70,13 +60,13 @@
     moneyMode,
     priceText,
     reprice,
-    totalParts
+    totalParts,
+    type MoneyMode
   } from '../lib/money.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import { entryNoteBlock, shareList, shareSelection } from '../lib/share.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
-  import type { ListModel } from '../state/lists.svelte.js';
 
   interface Props {
     app: AppState;
@@ -89,55 +79,27 @@
   const route = $derived(app.route);
   const cloud = $derived(app.cloudLists);
 
-  /** Which id the data still knows, for `findListByPayload`'s own comparison
-   *  and for dropping an unknown entry silently, as the live app does. A browser
-   *  list holds no homebrew key, so the app's index is enough. */
-  const knows = (id: string): boolean => app.index?.byId.has(id) ?? false;
-
-  /**
-   * The list this address shows, or `null` for an id nobody has, a shared
-   * payload matching no list of ours (drawn by `SharedListPage`), or a
-   * packed payload (drawn while `AppState` expands it, see below).
-   */
-  const own = $derived.by((): StoredList | null => {
+  /** The route's list as the store holds it, its entries read or not. */
+  const held = $derived.by((): StoredList | null => {
     const r = route;
-    if (r.kind === 'storedList') {
-      /* A moved list's old address opens the account list it moved into. */
-      const moved = app.lists.migrated.lists[r.listId];
-      return (
-        app.lists.get(r.listId) ??
-        cloud?.get(r.listId) ??
-        (moved === undefined ? undefined : cloud?.get(moved)) ??
-        null
-      );
-    }
-    /* After the cutoff a `#/l/` address draws the retired page, even for a
-       list of this browser's own. */
-    if (r.kind === 'sharedList' && !app.legacyWritable) return null;
-    if (r.kind === 'sharedList' && !r.packed) {
-      if (r.payload === app.urlPayload) {
-        const mine = app.lists.get(app.openList);
-        if (mine) return mine;
-      }
-      return findListByPayload(app.lists.lists, r.payload, knows);
-    }
-    return null;
+    if (r.kind !== 'storedList') return null;
+    return cloud?.get(r.listId) ?? null;
+  });
+  /** Whether the store holds the list's entries' details. */
+  const detail = $derived(held && cloud ? cloud.detailOf(held.id) : 'absent');
+  /** The list this address shows once its entries are read, or `null`. */
+  const own = $derived(held && detail === 'ready' ? held : null);
+  /* The page reads the list's entries once; after a failure only «Повторить» reads again. */
+  $effect(() => {
+    if (held && cloud && detail === 'absent') void cloud.detail([held.id]);
   });
 
-  /* An account list keeps its `#/lists/<uuid>` address: no `#/l/` rewrite,
-     no link buttons, no storage notice, and a save status in the sub. */
-  const isCloud = $derived(own !== null && cloud?.get(own.id) === own);
-  const store: ListModel = $derived(isCloud && cloud ? cloud : app.lists);
   /* The records of the items the list links from other accounts join this page's index:
      the store's edits keep the object, so a note or a quantity typed keeps the index too. */
-  const linkedMap = $derived(own && isCloud ? linkedOf(own) : null);
+  const linkedMap = $derived(own ? linkedOf(own) : null);
   const index = $derived(
     app.index && linkedMap ? withRecords(app.index, [], Object.values(linkedMap)) : app.index
   );
-  /* A browser list after the cutoff, or while the move is due: every control
-     that writes is gone or read-only (docs/specs/FEATURES.md, "Account and
-     browser lists"). */
-  const readOnly = $derived(!isCloud && !app.localWritable);
   /* A `#/lists/<uuid>` the account store does not hold (yet). */
   const cloudAddress = $derived(
     route.kind === 'storedList' && isCloudId(route.listId) && cloud !== null
@@ -148,140 +110,17 @@
   );
   /** The rows the page draws. A row with no record draws as the key and «Предмет не
    *  загружен»; the count, the roll and the position box count every stored entry
-   *  (docs/specs/FEATURES.md, "Own items in lists"). A browser list draws its known items. */
-  const rows = $derived.by((): { id: string; it: Record_ | null }[] => {
-    if (!own) return [];
-    if (!isCloud) return items.map((it) => ({ id: it.id, it }));
-    return own.ids.map((id) => ({ id, it: byId(id) ?? null }));
-  });
-  const entryCount = $derived(isCloud && own ? own.ids.length : items.length);
+   *  (docs/specs/FEATURES.md, "Own items in lists"). */
+  const rows = $derived.by((): { id: string; it: Record_ | null }[] =>
+    own ? own.ids.map((id) => ({ id, it: byId(id) ?? null })) : []
+  );
   const qtyById = $derived(
     Object.fromEntries((own?.ids ?? []).map((id) => [id, metaOf(id).qty ?? 0]))
   );
-  /* Signed out, «Печать» opens the sign-in prompt under the toolbar. */
-  let printAsking = $state(false);
-
+  /* The page draws only signed in (an account list), so «Печать» always stores a set. */
   function pressPrint(): void {
-    const target = app.printTarget;
-    if (target === 'prompt') printAsking = !printAsking;
-    else if (target === 'cloud' && own) {
-      void app.print([...own.ids], qtyById);
-    }
+    if (own) void app.print([...own.ids], qtyById);
   }
-
-  /**
-   * Reading `own`'s fields (through `encodeList`, inside `syncListUrl`)
-   * subscribes this effect to every edit - the live `freshenListUrl` after
-   * each writer, collapsed into one place. After `replace`, the route's
-   * payload equals `urlPayload` already, so there is no loop back into this
-   * effect.
-   *
-   * Deliberately not an `$effect` cleanup for the "clear on every other
-   * route" half: a cleanup runs before *every* re-run of this effect, not
-   * only on unmount, so clearing `openList`/`urlPayload` there raced the very
-   * next line that was about to set them again - `own`'s own short-circuit
-   * (`r.payload === app.urlPayload`) could see them blanked mid-edit, fall
-   * through to the content-based `findListByPayload`, and reject the list
-   * against a payload snapshot one keystroke stale, leaving `own` stuck null
-   * with nothing left to re-trigger a fix. Measured: clearing a list note's
-   * text this way could permanently swap the page to the "not ours" branch -
-   * the shared page `SharedListPage` draws - after a single keystroke.
-   * `onDestroy` fires exactly once, when
-   * `App.svelte` remounts a different page component - the live app's own
-   * "every other route" moment.
-   *
-   * This used to call `app.syncListUrl(l)` straight away, so one
-   * `history.replaceState` landed per keystroke in a note - WebKit throws
-   * past 100 of those in 30s. `scheduleUrlSync` below debounces the actual
-   * call 150ms trailing (`router.ts`'s own try/catch is the other
-   * half - the fallback for whichever browser is hit anyway); the read that
-   * subscribes this effect to every edit still happens synchronously, right
-   * here, so no edit is ever missed even though the write it causes lands
-   * later. `own`'s own short-circuit above still resolves the list by id
-   * while the address lags behind an edit not yet flushed, because neither
-   * `route.payload` nor `app.urlPayload` change until the debounced call
-   * actually runs - they stay equal, stale together, the whole time.
-   */
-  let syncTimer: ReturnType<typeof setTimeout> | null = null;
-
-  /** Cancels a pending sync outright, with no flush - `del()`'s own case:
-   *  the list a timer is still waiting to write into the address is the
-   *  same one that just stopped existing, and `own` reading stale during
-   *  teardown (see `flushUrlSync` below) means a flush there would put a
-   *  deleted list's payload back in the bar right after `go('#/lists')`
-   *  left it. Nothing else needs this - a plain navigation away from a
-   *  list that still exists is exactly the case `flushUrlSync` is for. */
-  function cancelUrlSync(): void {
-    if (syncTimer === null) return;
-    clearTimeout(syncTimer);
-    syncTimer = null;
-  }
-
-  function scheduleUrlSync(l: StoredList): void {
-    if (syncTimer !== null) clearTimeout(syncTimer);
-    syncTimer = setTimeout(() => {
-      syncTimer = null;
-      /* The session may have answered meanwhile, and made the move due. */
-      if (app.localWritable) app.syncListUrl(l);
-    }, 150);
-  }
-
-  /**
-   * Runs a pending sync immediately instead of losing it - on unmount, and
-   * on `pagehide`, since a timer already running does not survive the page
-   * actually going away.
-   *
-   * Reads `own` fresh rather than the list `scheduleUrlSync` last captured:
-   * Svelte does not re-run a dying component's own `$derived`s on the way
-   * out, so during teardown `own` can still read as whatever it was before
-   * whatever triggered the teardown - correct for an ordinary navigation
-   * away from a list that still exists, which is what this path is for.
-   * `del()` cancels outright instead of reaching this at all, for the one
-   * case where that staleness would be wrong.
-   */
-  function flushUrlSync(): void {
-    if (syncTimer === null) return;
-    clearTimeout(syncTimer);
-    syncTimer = null;
-    const l = own;
-    if (l && !isCloud && app.localWritable) app.syncListUrl(l);
-  }
-
-  /* A read-only browser list keeps the address it opened at: no `#/l/` is
-     written after the cutoff, nor while the move is due. */
-  $effect(() => {
-    const l = own;
-    if (l && !isCloud && app.localWritable) {
-      scheduleUrlSync(l);
-      return;
-    }
-    /* A list that moved into the account, or turned read-only, must not
-       have its old address written back after the page followed it. */
-    cancelUrlSync();
-  });
-
-  $effect(() => {
-    /* `pagehide` alone missed the mobile-Safari case where a
-       hidden tab is discarded with no `pagehide` at all - `visibilitychange`
-       is the more reliable last callback there. Both can fire for the same
-       teardown (a tab hidden, then actually unloaded); `flushUrlSync`'s own
-       `syncTimer === null` guard is what keeps that from double-writing - the
-       second call is a no-op because the first already cleared the timer. */
-    const onHidden = (): void => {
-      if (document.visibilityState === 'hidden') flushUrlSync();
-    };
-    window.addEventListener('pagehide', flushUrlSync);
-    document.addEventListener('visibilitychange', onHidden);
-    return () => {
-      window.removeEventListener('pagehide', flushUrlSync);
-      document.removeEventListener('visibilitychange', onHidden);
-    };
-  });
-
-  onDestroy(() => {
-    flushUrlSync();
-    app.clearOpenList();
-  });
 
   /* Local state. `roll` is the live `S.listRoll.n` for this list, but kept in
      the component rather than in app memory - a recorded difference (a roll
@@ -346,7 +185,7 @@
   const takenOf = (id: string): number => takenQty(metaOf(id), picked.get(id));
   const taken = $derived(takenTotal(ticked, metaOf, takenOf));
   const total = $derived(totalParts(taken, mode, app.lang, t));
-  const gmN = $derived(isCloud ? gmOnlyCount(own?.ids ?? [], metaOf) : 0);
+  const gmN = $derived(gmOnlyCount(own?.ids ?? [], metaOf));
   const tickedShown = $derived(ticked.length - gmOnlyCount(ticked, metaOf));
 
   /** The live `hidden` default (no note → hidden), with a person's own
@@ -369,27 +208,7 @@
 
   function rename(e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
-    if (own) store.rename(own.id, el.value);
-  }
-
-  async function shareLink(forPlayers: boolean): Promise<void> {
-    const l = own;
-    if (!l) return;
-    if (!l.ids.length) {
-      app.say((t) => t.listEmpty);
-      return;
-    }
-    const payload = await app.env.compress.pack(encodeListRaw(l, forPlayers));
-    await app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
-      forPlayers ? (t) => t.playersLinkCopied : (t) => t.gmLinkCopied
-    );
-  }
-  async function sharePlayers(): Promise<void> {
-    await shareLink(true);
-  }
-  async function shareGm(): Promise<void> {
-    await shareLink(false);
+    if (own) cloud?.rename(own.id, el.value);
   }
 
   async function copyList(): Promise<void> {
@@ -406,50 +225,22 @@
     const l = own;
     if (!l) return;
     const name = l.name;
-    if (isCloud) {
-      /* For good: the confirm names the share links, and there is no undo. */
-      if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
-      cloud?.remove(l.id);
-      app.go('#/lists');
-      app.say((t) => t.listDeleted.replace('%s', name));
-      return;
-    }
-    if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
-    /* Before removing it: a pending debounced sync still names
-       this list, and must not flush into the address bar after it is gone -
-       see `cancelUrlSync`. */
-    cancelUrlSync();
-    /* After the cutoff the only browser writes are removals: no undo. */
-    if (!app.legacyWritable) {
-      const gone = app.lists.removeMany([l.id]);
-      app.go('#/lists');
-      if (gone) app.say((t) => t.listDeleted.replace('%s', name));
-      return;
-    }
-    const removed = app.lists.remove(l.id);
+    /* For good: the confirm names the share links, and there is no undo. */
+    if (!app.env.dialog.confirm(t.deleteCloudConfirm.replace('%s', l.name))) return;
+    cloud?.remove(l.id);
     app.go('#/lists');
-    /* Delete gets an undo, like every other destructive action here. */
-    if (removed) {
-      app.say((t) => t.listDeleted.replace('%s', name), {
-        action: {
-          label: (t) => t.undo,
-          run: () => {
-            app.lists.restoreList(removed.list, removed.index);
-          }
-        }
-      });
-    }
+    app.say((t) => t.listDeleted.replace('%s', name));
   }
 
   function pickMoney(mode2: MoneyMode): void {
-    if (own) store.setMoney(own.id, mode2);
+    if (own) cloud?.setMoney(own.id, mode2);
   }
 
   function toggleMoneyHelp(): void {
     moneyHelp = !moneyHelp;
   }
 
-  /* Auto-size: the module-level rule (app.js 1100-1110) - skip a hand-resized
+  /* Auto-size: the module-level rule (`git show 23c00a6^:app.js`) - skip a hand-resized
      or hidden box, otherwise grow to content up to the ceiling. */
   function autoSize(ta: HTMLTextAreaElement | null | undefined): void {
     if (!ta || ta.dataset['manual']) return;
@@ -468,11 +259,11 @@
     autoSize(el);
     const l = own;
     if (!l) return;
-    if (key === 'list') store.setNote(l.id, kind, el.value);
-    else store.setMeta(l.id, key, kind, el.value.trim());
+    if (key === 'list') cloud?.setNote(l.id, kind, el.value);
+    else cloud?.setMeta(l.id, key, kind, el.value.trim());
   }
 
-  /** The live `data-note-clear` handler (app.js 4096-4111): empty the sibling
+  /** The live `data-note-clear` handler (`git show 23c00a6^:app.js`): empty the sibling
    *  textarea through a synthetic `input` event, so the same handler above
    *  updates the model, the storage and the address - no second copy of that
    *  logic here. The undo writes through the store instead: clearing a row's
@@ -485,7 +276,8 @@
     if (!ta || !l) return;
     const was = ta.value;
     if (!was) return;
-    const at = store;
+    const at = cloud;
+    if (!at) return;
     const listId = l.id;
     ta.value = '';
     ta.dispatchEvent(new Event('input', { bubbles: true }));
@@ -504,7 +296,7 @@
     });
   }
 
-  /** The live `data-note-toggle` handler (app.js 4113-4123): flip the box,
+  /** The live `data-note-toggle` handler (`git show 23c00a6^:app.js`): flip the box,
    *  remember the person's own choice, and - only on the way open - focus its
    *  first textarea once Svelte has mounted it (the box sizes itself). */
   function toggleNote(id: string, e: MouseEvent): void {
@@ -518,16 +310,15 @@
     }
   }
 
-  /** The live `data-remove` handler (app.js 3944-3969): remember everything
+  /** The live `data-remove` handler (`git show 23c00a6^:app.js`): remember everything
    *  needed to put the entry back exactly where it was, then offer to. */
   function removeEntry(id: string, it: Record_ | null, i: number): void {
     const l = own;
     if (!l) return;
     const meta = { ...itemMeta(l, id) };
     const listId = l.id;
-    /* The toast's undo may run after the page moved to a list of the other
-       kind; it acts on the store that held this list. */
-    const into = store;
+    const into = cloud;
+    if (!into) return;
     into.removeEntry(listId, id);
     app.say((t, lang) => t.removedItem.replace('%s', it ? nameOf(it, lang) : id), {
       action: {
@@ -539,7 +330,7 @@
     });
   }
 
-  /** The live `change` handler on the position field (app.js 4545-4549): an
+  /** The live `change` handler on the position field (`git show 23c00a6^:app.js`): an
    *  out-of-range or non-numeric value is rejected by putting the field's own
    *  position back - there is nothing to re-render to, since the value is
    *  already right. */
@@ -552,7 +343,7 @@
       el.value = String(i + 1);
       return;
     }
-    if (store.move(l.id, id, n - 1)) announceMove(id, n - 1);
+    if (cloud?.move(l.id, id, n - 1)) announceMove(id, n - 1);
   }
 
   /** Fills the live region with the record's new position, after a move that
@@ -569,19 +360,19 @@
       .replace('%m', String(l.ids.length));
   }
 
-  /* Held to 0..QTY_MAX, the most a list link carries, so the stored stock and
-     the address never disagree. The field is written back because a clamp
+  /* Held to 0..QTY_MAX, the most an entry stores, so the stored stock and the field
+     never disagree. The field is written back because a clamp
      that stores an unchanged value draws nothing new ("99" then "0"). */
   function setQty(id: string, e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
     const typed = parseInt(el.value, 10) || 0;
     const qty = Math.max(0, Math.min(typed, QTY_MAX));
     if (qty !== typed) el.value = qty ? String(qty) : '';
-    if (own) store.setMeta(own.id, id, 'qty', qty);
+    if (own) cloud?.setMeta(own.id, id, 'qty', qty);
   }
   function setGold(id: string, e: Event): void {
     const el = e.currentTarget as HTMLInputElement;
-    if (own) store.setMeta(own.id, id, 'gold', parseInt(el.value, 10) || 0);
+    if (own) cloud?.setMeta(own.id, id, 'gold', parseInt(el.value, 10) || 0);
   }
 
   function rollNow(): void {
@@ -620,7 +411,7 @@
     );
   }
 
-  /* ---------- the actions under a ticked selection (app.js 3986-4083) ---------- */
+  /* ---------- the actions under a ticked selection (`git show 23c00a6^:app.js`) ---------- */
 
   function toggleGuess(): void {
     guess = !guess;
@@ -641,7 +432,8 @@
   ): number {
     const l = own;
     if (!l) return 0;
-    const into = store;
+    const into = cloud;
+    if (!into) return 0;
     const before: Record<string, number> = {};
     let n = 0;
     for (const id of ticked) {
@@ -665,7 +457,7 @@
     return n;
   }
 
-  /** The live `data-guess-apply` handler (3989-4010): every ticked row a band
+  /** The live `data-guess-apply` handler: every ticked row a band
    *  can be guessed for gets its gold set to the guessed price. */
   function applyGuess(): void {
     if (!index) return;
@@ -681,7 +473,7 @@
     if (n) guess = false;
   }
 
-  /** The live `data-reprice` handler (4012-4040): every ticked, priced row
+  /** The live `data-reprice` handler: every ticked, priced row
    *  shifts by `rp` percent. */
   function repriceTicked(): void {
     if (!rp) return;
@@ -695,7 +487,7 @@
     );
   }
 
-  /** The live `data-batch-clearprice` handler (4042-4059): every ticked,
+  /** The live `data-batch-clearprice` handler: every ticked,
    *  priced row loses its price. */
   function clearPrices(): void {
     goldEdit(
@@ -707,7 +499,7 @@
     );
   }
 
-  /** The live `data-batch-del` handler (4061-4083), by the taken count: a
+  /** The live `data-batch-del` handler, by the taken count: a
    *  row taken whole leaves the list, a row taken in part keeps the rest of
    *  its stock. Remembers every ticked row's own position and meta, so the
    *  one undo puts a removed row back exactly where it was and gives a
@@ -722,7 +514,8 @@
       gone.push({ id, at: i, meta, left: stockLeft(meta, takenOf(id)) });
     });
     if (!gone.length) return;
-    const into = store;
+    const into = cloud;
+    if (!into) return;
     for (const g of gone) {
       if (g.left > 0) into.setMeta(l.id, g.id, 'qty', g.left > 1 ? g.left : 0);
       else into.removeEntry(l.id, g.id);
@@ -748,7 +541,7 @@
    *  the ticks; the undo puts back only the entries the press changed. */
   function gmOnlyTicked(): void {
     const l = own;
-    if (!l || !isCloud || !cloud) return;
+    if (!l || !cloud) return;
     const into = cloud;
     const listId = l.id;
     const on = tickedShown > 0;
@@ -766,7 +559,7 @@
     });
   }
 
-  /* Drag through the `nativeDrag` port's live event model (app.js 4443-4530):
+  /* Drag through the `nativeDrag` port's live event model (`git show 23c00a6^:app.js`):
      the port owns every listener and the edge-scroll loop, and reports back
      which row is being dragged and where it would land so the template can
      drive the three classes below off state rather than off a class the port
@@ -806,7 +599,7 @@
     return app.env.drag.bind(el, {
       onDrop: (_from, to) => {
         const id = dragId;
-        if (id !== null && store.move(listId, id, to)) announceMove(id, to);
+        if (id !== null && cloud?.move(listId, id, to)) announceMove(id, to);
       },
       onDrag: (from) => {
         dragId = items[from]?.id ?? null;
@@ -821,7 +614,7 @@
     });
   });
 
-  /* The live `pointerdown`/`pointerup` pair (app.js 4562-4571): a box whose
+  /* The live `pointerdown`/`pointerup` pair (`git show 23c00a6^:app.js`): a box whose
      height actually changed between the two is the person's own resize, and
      auto-sizing must not undo it on the next keystroke. */
   $effect(() => {
@@ -918,31 +711,29 @@
     <span class="nlbl"
       ><Icon name={kind === 'note' ? 'eye' : 'eyeOff'} /><label for={id}>{caption}</label><i
         id="{id}-hint">{kind === 'note' ? t.notePubHint : t.noteHidHint}</i
-      >{#if !readOnly}<HelpButton
-          lang={app.lang}
-          size="sm"
-          open={noteHelp.has(id)}
-          label={t.fieldHelp.replace('%s', caption)}
-          controls="{id}-help"
-          onclick={() => {
-            if (noteHelp.has(id)) noteHelp.delete(id);
-            else noteHelp.add(id);
-          }}
-        /><button
-          type="button"
-          class="note-x"
-          title={t.noteClear}
-          aria-label={t.noteClear}
-          onclick={(e) => {
-            clearNote(key, kind, e);
-          }}>&times;</button
-        >{/if}</span
+      ><HelpButton
+        lang={app.lang}
+        size="sm"
+        open={noteHelp.has(id)}
+        label={t.fieldHelp.replace('%s', caption)}
+        controls="{id}-help"
+        onclick={() => {
+          if (noteHelp.has(id)) noteHelp.delete(id);
+          else noteHelp.add(id);
+        }}
+      /><button
+        type="button"
+        class="note-x"
+        title={t.noteClear}
+        aria-label={t.noteClear}
+        onclick={(e) => {
+          clearNote(key, kind, e);
+        }}>&times;</button
+      ></span
     >
-    {#if !readOnly}
-      <p class="nhelp" id="{id}-help" hidden={!noteHelp.has(id)}>
-        {t.mdHelp.replace('%n', String(NOTE_MAX))}
-      </p>
-    {/if}
+    <p class="nhelp" id="{id}-help" hidden={!noteHelp.has(id)}>
+      {t.mdHelp.replace('%n', String(NOTE_MAX))}
+    </p>
     <MarkupField
       bind:value={
         () => drafts.get(id) ?? stored,
@@ -960,17 +751,14 @@
         : key === 'list'
           ? t.listNotePhHid
           : t.notePhHid}
-      readonly={readOnly}
       describedby="{id}-hint"
       label={caption}
       tools={NOTE_TOOLS}
       preview
       {t}
-      oninput={readOnly
-        ? undefined
-        : (e: Event) => {
-            noteInput(key, kind, e);
-          }}
+      oninput={(e: Event) => {
+        noteInput(key, kind, e);
+      }}
     />
   </div>
 {/snippet}
@@ -986,16 +774,9 @@
 
 <RecordHost {app} {index} extra={(it: Record_) => entryNoteBlock(metaOf(it.id), t)}>
   {#snippet children(openRecord)}
-    {#if route.kind === 'sharedList' && !app.legacyWritable}
-      <!-- After the cutoff every `#/l/` address, own or not, plain or packed,
-           draws this: the payload is never decoded, the address is kept. -->
-      <PageTitle title={t.linkRetired} sub={t.linkRetiredSub} />
-      <Button variant="primary" href={sectionHash('lists')} sameTab
-        >{sectionLabel('lists', t, app.legacyWritable)}</Button
-      >
-    {:else if !index}
+    {#if !index}
       <NoData>{t.noData}</NoData>
-    {:else if route.kind === 'storedList' && !own}
+    {:else if !own}
       {#if cloudAddress && app.user === null}
         <!-- One «Войти», not the prompt: the sub already carries its line. -->
         <PageTitle title={t.listNotFound} sub={t.signInToOpen} />
@@ -1014,13 +795,29 @@
           text={t.cloudLoadFailed}
           onretry={() => void app.retryLists()}
         />
+      {:else if held && detail === 'error'}
+        <PageTitle title={t.sharedFailed} />
+        <LoadState
+          {t}
+          failed
+          page
+          text={t.cloudLoadFailed}
+          onretry={() => void cloud?.detail([held.id])}
+        />
+      {:else if held}
+        <!-- The page waits for the list's entries; the name is the heading, so none is drawn. -->
+        <LoadState
+          {t}
+          failed={false}
+          text={t.cloudLoadFailed}
+          onretry={() => void cloud?.detail([held.id])}
+        />
       {:else if cloudAddress && app.user === undefined}
         <!-- The session is not known yet: nothing, so neither the sign-in line
              nor "not found" flashes. -->
-      {:else if cloudAddress && (cloud?.status !== 'ready' || app.legacyMove?.status === 'moving')}
-        <!-- The account is still answering, or a moved list's page waits for
-             the account to be read again. The list's name is the heading, so
-             none is drawn, as on `#/s/`. -->
+      {:else if cloudAddress && cloud?.status !== 'ready'}
+        <!-- The account is still answering. The list's name is the heading, so none is
+             drawn, as on `#/s/`. -->
         <LoadState
           {t}
           failed={false}
@@ -1030,132 +827,53 @@
       {:else}
         <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
         <Button variant="primary" href={sectionHash('lists')} sameTab
-          >{sectionLabel('lists', t, app.legacyWritable)}</Button
+          >{sectionLabel('lists', t)}</Button
         >
-      {/if}
-    {:else if !own}
-      {#if route.kind === 'sharedList' && route.packed}
-        {#if app.expandFailed === route.payload}
-          <!-- The expansion failed and the address is left
-           exactly as it was - the same bad-link page a plain payload that
-           will not decode draws, without replacing what is on the bar. -->
-          <PageTitle title={t.notFound} sub={t.badShare} />
-          <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
-        {:else}
-          <!-- A packed link still expanding: `AppState` is unpacking it and will
-           rewrite the address to the plain form, or draw the block above in
-           its place if it cannot - the live app draws nothing until then
-           either, app.js 4636. -->
-        {/if}
-      {:else if route.kind === 'sharedList'}
-        <!-- This mounts its own `<RecordHost>` inside this file's
-             (above), so `#/l/<payload>` carries two `open` states and two
-             navigation effects at once. Harmless only because nothing wires
-             this file's own `openRecord` into `SharedListPage` - every card
-             it draws opens through its own host instead - so the outer one
-             can never be set here regardless. Keep it that way: passing
-             `openRecord` down would put a card's modal behind the wrong
-             host's `extra`, and this file's own `extra` above assumes `own`
-             (the list this tab owns), which `SharedListPage`'s payload never
-             is. -->
-        <SharedListPage {app} {index} payload={route.payload} />
       {/if}
     {:else}
       <!-- The heading shows only the rename input; an account list's heading holds
        the name as visually hidden text too, so the outline names it (rule 16). -->
       {#snippet renameTitle()}
-        {#if isCloud}<span class="vh" id="list-name">{own.name}</span>{/if}<input
+        <span class="vh" id="list-name">{own.name}</span><input
           type="text"
           class="titleinput"
-          class:ro={readOnly}
           value={own.name}
           maxlength={NAME_MAX}
           aria-label={t.rename}
-          readonly={readOnly}
-          oninput={readOnly ? undefined : rename}
+          oninput={rename}
         />
       {/snippet}
       {#snippet cloudSub()}
-        {countOf(entryCount, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
+        {countOf(own.ids.length, cloud?.entryLimit ?? null, t.itemsN, app.lang, t.ofLimit)} ·
         {#if gmN > 0}{`${t.gmOnlyN.replace('%n', String(gmN))} · `}{/if}<SyncStatus {app} />
       {/snippet}
       <!-- The input's value would name the heading a second time. -->
-      <PageTitle
-        title={renameTitle}
-        sub={isCloud ? cloudSub : plural(entryCount, t.itemsN, app.lang)}
-        labelledby={isCloud ? 'list-name' : undefined}
-      />
+      <PageTitle title={renameTitle} sub={cloudSub} labelledby="list-name" />
       <Actions style="margin-bottom:16px">
-        {#if isCloud}
-          <Button
-            size="sm"
-            caret
-            on={sharing}
-            expanded={sharing}
-            onclick={() => {
-              sharing = !sharing;
-            }}><Icon name="link" />{t.share}</Button
-          >
-        {:else if !readOnly}
-          <Button size="sm" onclick={() => void sharePlayers()}
-            ><Icon name="link" />{t.sharePlayers}</Button
-          >
-          <Button size="sm" onclick={() => void shareGm()}
-            ><Icon name="link" />{t.shareGm}</Button
-          >
-        {/if}
+        <Button
+          size="sm"
+          caret
+          on={sharing}
+          expanded={sharing}
+          onclick={() => {
+            sharing = !sharing;
+          }}><Icon name="link" />{t.share}</Button
+        >
         <Button size="sm" onclick={() => void copyList()}
           ><Icon name="copy" />{t.copyText}</Button
         >
-        {#if isCloud}
-          <Button size="sm" onclick={() => void app.exportLists([own.id])}
-            >{t.exportJson}</Button
+        <Button size="sm" onclick={() => void app.exportLists([own.id])}>{t.exportJson}</Button>
+        {#if items.length}
+          <Button size="sm" title={t.printHint} disabled={app.printing} onclick={pressPrint}
+            ><Icon name="print" />{t.print}</Button
           >
         {/if}
-        {#if items.length && app.printTarget !== 'none'}
-          <Button
-            size="sm"
-            title={t.printHint}
-            disabled={app.printing || app.printTarget === 'wait'}
-            expanded={app.printTarget === 'prompt' ? printAsking : undefined}
-            onclick={pressPrint}><Icon name="print" />{t.print}</Button
-          >
-        {/if}
-        <!-- A delete during the move would race its removal. -->
-        {#if isCloud || !app.moveDue}
-          <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
-        {/if}
+        <Button size="sm" variant="danger" onclick={del}>{t.del}</Button>
       </Actions>
-      {#if printAsking && items.length && app.printTarget === 'prompt'}
-        <SignInPrompt
-          {app}
-          lead={t.signInToPrint}
-          after={{
-            hash: app.hash,
-            action: printAction(
-              app.printEntriesOf(
-                items.map((x) => x.id),
-                qtyById
-              )
-            )
-          }}
-          boxed
-        />
-      {/if}
-      {#if isCloud && sharing}
+      {#if sharing}
         <SharePanel {app} listId={own.id} />
       {/if}
-      {#if isCloud}
-        <RequestsPanel {app} list={own} />
-      {/if}
-
-      {#if !isCloud}
-        {#if app.user && app.legacyMove && !app.legacyMove.foreign}
-          <MoveStatus {app} />
-        {:else}
-          <StorageNotice {app} />
-        {/if}
-      {/if}
+      <RequestsPanel {app} list={own} />
 
       {#if priced}
         <div class="money">
@@ -1164,7 +882,6 @@
             <Chip
               label={t[`money_${m}`]}
               on={m === mode}
-              disabled={readOnly}
               onclick={() => {
                 pickMoney(m);
               }}
@@ -1269,30 +986,24 @@
                   <span class="np">{total.unpriced}</span>{/if}</span
               >{/if}{/snippet}
           {#snippet actions()}
-            {#if !readOnly}
-              <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
-                >{t.batchMoney}</Button
-              >
-            {/if}
+            <Button size="sm" on={guess} caret expanded={guess} onclick={toggleGuess}
+              >{t.batchMoney}</Button
+            >
             <Button size="sm" onclick={() => void copyTicked()}
               ><Icon name="copy" />{t.copySel}</Button
             >
-            {#if !readOnly}
-              {#if isCloud}
-                <Button size="sm" onclick={gmOnlyTicked}
-                  >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
-                    '%n',
-                    String(ticked.length)
-                  )}</Button
-                >
-              {/if}
-              <Button size="sm" variant="danger" onclick={batchDelete}
-                >{t.del} ({String(ticked.length)})</Button
-              >
-            {/if}
+            <Button size="sm" onclick={gmOnlyTicked}
+              >{(tickedShown > 0 ? t.gmOnlyHide : t.gmOnlyShow).replace(
+                '%n',
+                String(ticked.length)
+              )}</Button
+            >
+            <Button size="sm" variant="danger" onclick={batchDelete}
+              >{t.del} ({String(ticked.length)})</Button
+            >
           {/snippet}
           {#snippet below()}
-            {#if ticked.length && guess && !readOnly}
+            {#if ticked.length && guess}
               <div class="guess">
                 {#if pricedCount}
                   <div class="money-act">
@@ -1361,15 +1072,13 @@
               class:drop-after={dropGap === i + 1}
               data-index={i}
             >
-              {#if !readOnly}
-                <span
-                  class="lrow-grip"
-                  draggable="true"
-                  data-drag="{own.id}:{id}"
-                  title={t.dragHint}
-                  aria-hidden="true"><Icon name="grip" /></span
-                >
-              {/if}
+              <span
+                class="lrow-grip"
+                draggable="true"
+                data-drag="{own.id}:{id}"
+                title={t.dragHint}
+                aria-hidden="true"><Icon name="grip" /></span
+              >
               <label class="lrow-pick"
                 ><input
                   type="checkbox"
@@ -1388,12 +1097,9 @@
                 inputmode="numeric"
                 value={i + 1}
                 aria-label={t.position}
-                readonly={readOnly}
-                onchange={readOnly
-                  ? undefined
-                  : (e) => {
-                      setPos(id, i, e);
-                    }}
+                onchange={(e) => {
+                  setPos(id, i, e);
+                }}
               />
               {#if it}
                 <RowMain
@@ -1420,12 +1126,9 @@
                     data-qty
                     value={m.qty || ''}
                     placeholder="1"
-                    readonly={readOnly}
-                    oninput={readOnly
-                      ? undefined
-                      : (e) => {
-                          setQty(id, e);
-                        }}
+                    oninput={(e) => {
+                      setQty(id, e);
+                    }}
                   /></label
                 >
                 <!-- No `<label>`: a button inside one would be a second control of the label
@@ -1454,12 +1157,9 @@
                     data-gold
                     value={m.gold || ''}
                     placeholder="-"
-                    readonly={readOnly}
-                    oninput={readOnly
-                      ? undefined
-                      : (e) => {
-                          setGold(id, e);
-                        }}
+                    oninput={(e) => {
+                      setGold(id, e);
+                    }}
                   />
                 </div>
               </div>
@@ -1474,29 +1174,25 @@
                     toggleNote(id, e);
                   }}><Icon name="note" /></button
                 >
-                {#if isCloud}
-                  <button
-                    type="button"
-                    class="lrow-gm"
-                    aria-pressed={!!m.gmOnly}
-                    title={t.noteHid}
-                    aria-label={t.gmOnlyOf.replace('%s', label)}
-                    onclick={() => {
-                      cloud?.setGmOnly(own.id, id, !m.gmOnly);
-                    }}><Icon name={m.gmOnly ? 'eyeOff' : 'eye'} /></button
-                  >
-                {/if}
-                {#if !readOnly}
-                  <button
-                    type="button"
-                    class="row-x"
-                    title={t.removeItem}
-                    aria-label={t.removeItem}
-                    onclick={() => {
-                      removeEntry(id, it, i);
-                    }}>&times;</button
-                  >
-                {/if}
+                <button
+                  type="button"
+                  class="lrow-gm"
+                  aria-pressed={!!m.gmOnly}
+                  title={t.noteHid}
+                  aria-label={t.gmOnlyOf.replace('%s', label)}
+                  onclick={() => {
+                    cloud?.setGmOnly(own.id, id, !m.gmOnly);
+                  }}><Icon name={m.gmOnly ? 'eyeOff' : 'eye'} /></button
+                >
+                <button
+                  type="button"
+                  class="row-x"
+                  title={t.removeItem}
+                  aria-label={t.removeItem}
+                  onclick={() => {
+                    removeEntry(id, it, i);
+                  }}>&times;</button
+                >
               </div>
               {#if goldHint}
                 <p class="ghint" id="ghint-{id}" hidden={!priceHelp.has(id)}>
@@ -1532,10 +1228,10 @@
         </div>
       {:else}
         <Empty
-          >{t.listEmptyHint}{#if isCloud && app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
+          >{t.listEmptyHint}{#if app.homebrew}{' ' + t.listEmptyHintOwn}{/if}</Empty
         >
       {/if}
-      {#if isCloud && app.homebrew}
+      {#if app.homebrew}
         <!-- After the last entry, so a new item's entry lands right above it. -->
         <div class="addwrap">
           <!-- `aria-label` repeats the computed name: the browser suites' driver names a
@@ -1570,9 +1266,7 @@
         </div>
       {/if}
       <StatusRegion text={said} />
-      {#if isCloud}
-        <SyncSaid {app} live={app.cloudLists?.live} />
-      {/if}
+      <SyncSaid {app} live={app.cloudLists?.live} />
     {/if}
   {/snippet}
 </RecordHost>
@@ -1582,8 +1276,8 @@
      `NoData.svelte` (though this component's own copy read `--muted2`
      where `NoData`'s reads `--muted` - never photographed either way).
 
-     off the global `input[type=text]` rule (style.css:254-258), scoped as
-     `ListsPage.svelte` already does, then `.titleinput` (848-853) - the
+     off the global `input[type=text]` rule (`git show 23c00a6^:style.css`), scoped as
+     `ListsPage.svelte` already does, then `.titleinput` - the
      cascade, not the intent: the attribute selector's higher specificity
      beats the class on every property but `max-width` and `letter-spacing`
      (never part of the `font` shorthand this rule resets), and the numbers
@@ -1627,11 +1321,6 @@
 
   .titleinput:hover {
     border-bottom-color: var(--muted2);
-  }
-
-  .titleinput.ro {
-    border-bottom-color: transparent;
-    cursor: default;
   }
 
   /* The «Свой предмет» row after the entries: a list row's box; the dashed
@@ -1717,7 +1406,7 @@
   /* `.card-acts` moved to `Actions.svelte` - `margin-bottom:16px` is
      the live inline style on this specific block, now passed as `style`. */
 
-  /* off `.money`, `.money-l`, `.money-br`, `.money-help` (style.css:694-702).
+  /* off `.money`, `.money-l`, `.money-br`, `.money-help` (`git show 23c00a6^:style.css`).
      `.money-help` reaches into `HelpBox`'s own root, hence `:global()`. */
   .money {
     display: flex;
@@ -1744,7 +1433,7 @@
     margin: 2px 0 0;
   }
 
-  /* off `.lnote` and its family (style.css:636-644) */
+  /* off `.lnote` and its family (`git show 23c00a6^:style.css`) */
   .lnote {
     border: 1px solid var(--line2);
     border-radius: 12px;
@@ -1786,7 +1475,7 @@
   }
 
   /* off `.lnote textarea,.rnote textarea` and the `:focus` pair
-     (style.css:646-657) */
+     (`git show 23c00a6^:style.css`) */
   .lnote :global(textarea),
   .rnote :global(textarea) {
     display: block;
@@ -1815,8 +1504,8 @@
     box-shadow: 0 0 0 3px rgb(216 171 94 / 14%);
   }
 
-  /* off `.npair`, `.nfield`, `.nlbl` (both declarations, style.css:663 and
-     1088), `.nlbl i`, `.n-hid textarea`, the 640px override (659-670) */
+  /* off `.npair`, `.nfield`, `.nlbl` (both declarations), `.nlbl i`, `.n-hid textarea` and
+     the 640px override in `git show 23c00a6^:style.css` */
   .npair {
     display: grid;
     gap: 12px;
@@ -1878,7 +1567,7 @@
   }
 
   /* off `.note-x`, `:hover`, `.nfield:has(textarea:placeholder-shown)
-     .note-x` (style.css:1089-1096) */
+     .note-x` (`git show 23c00a6^:style.css`) */
   .note-x {
     margin-left: auto;
     width: 20px;
@@ -1918,7 +1607,7 @@
     display: none;
   }
 
-  /* off `.panel` (style.css:145-149) - kept here for the `<details
+  /* off `.panel` (`git show 23c00a6^:style.css`) - kept here for the `<details
      class="panel lroll">` variant above; see `Panel.svelte` for the plain
      rule this one duplicates on purpose. */
   .panel {
@@ -1929,7 +1618,7 @@
     box-shadow: var(--shadow);
   }
 
-  /* off `.lroll` and its family (style.css:679-687) */
+  /* off `.lroll` and its family (`git show 23c00a6^:style.css`) */
   .lroll {
     padding: 0;
   }
@@ -1978,7 +1667,7 @@
     margin-bottom: 13px;
   }
 
-  /* off `.rollhint` (style.css:690) */
+  /* off `.rollhint` (`git show 23c00a6^:style.css`) */
   .rollhint {
     margin: 10px 0 0;
     font-size: 12.5px;
@@ -1994,7 +1683,7 @@
   }
 
   /* off `.guess`, `.guess-note`, `.guess-rows`, `.guess-row` and its three
-     (style.css:709-720) */
+     (`git show 23c00a6^:style.css`) */
   .guess {
     flex: 0 0 100%;
     margin-top: 10px;
@@ -2047,7 +1736,7 @@
   }
 
   /* off `.money-act`, `:last-child`, `.numbox`, `.numbox button`,
-     `.numbox input[type=text]` (style.css:1069-1073) - reaching into
+     `.numbox input[type=text]` (`git show 23c00a6^:style.css`) - reaching into
      `NumberField`'s own root, hence `:global()` on the inner selector only,
      the way `.money > :global(.money-help)` above already does. */
   .money-act {
@@ -2080,7 +1769,7 @@
     padding: 0;
   }
 
-  /* off `.money-hint` (style.css:1074) */
+  /* off `.money-hint` (`git show 23c00a6^:style.css`) */
   .money-hint {
     font-size: 11.5px;
     line-height: 1.45;
@@ -2089,12 +1778,12 @@
     min-width: 0;
   }
 
-  /* off `.money-act .btn` (style.css:1077) */
+  /* off `.money-act .btn` (`git show 23c00a6^:style.css`) */
   .money-act :global(.btn) {
     font-weight: 650;
   }
 
-  /* off `.batch-lbl` (style.css:1077) */
+  /* off `.batch-lbl` (`git show 23c00a6^:style.css`) */
   .batch-lbl {
     font: 650 10.5px/1 var(--mono);
     letter-spacing: 0.06em;
@@ -2102,7 +1791,7 @@
     color: var(--muted2);
   }
 
-  /* off `.rows`, `.row`, the `(hover:hover)` `.row:hover` (style.css:547-553)
+  /* off `.rows`, `.row`, the `(hover:hover)` `.row:hover` (`git show 23c00a6^:style.css`)
      - the third copy of three short rules. This copy's transition list
      diverges from `TableRows.svelte`'s: only a list row carries the drop-gap
      mark, so `box-shadow` is left out here and the mark paints at once. */
@@ -2174,7 +1863,7 @@
   }
 
   /* the `.lrow` family: `.lrow`, `.rnote`, `.lrow.has-note`,
-     `.lrow-acts .lrow-note`, `.on`, `svg` (style.css:618-623) */
+     `.lrow-acts .lrow-note`, `.on`, `svg` (`git show 23c00a6^:style.css`) */
   .lrow {
     align-items: stretch;
     flex-wrap: wrap;
@@ -2245,7 +1934,7 @@
   }
 
   /* off `.lrow-grip`, `:hover`, `:active`, `.lrow-n` and its three
-     (style.css:732-746) */
+     (`git show 23c00a6^:style.css`) */
   .lrow-grip {
     flex: none;
     display: flex;
@@ -2307,7 +1996,7 @@
     box-shadow: inset 0 0 0 1px var(--gold);
   }
 
-  /* off `.lrow.dragging`, `.drop-before`, `.drop-after` (style.css:747-749) */
+  /* off `.lrow.dragging`, `.drop-before`, `.drop-after` (`git show 23c00a6^:style.css`) */
   .lrow.dragging {
     opacity: 0.45;
   }
@@ -2328,7 +2017,7 @@
     box-shadow: inset 0 -3px 0 0 var(--gold);
   }
 
-  /* off `.lrow-meta` and its labels (style.css:750-776); the price field's caption holds
+  /* off `.lrow-meta` and its labels (`git show 23c00a6^:style.css`); the price field's caption holds
      its «?», so the field is a `.gfield`, not a `<label>`. The «?» makes that caption
      taller, so the fields align at the end and the two inputs stay on one line. */
   .lrow-meta {
@@ -2392,15 +2081,7 @@
     border-color: var(--gold);
   }
 
-  /* A read-only browser list: the same boxes, muted, with no frame to type
-     into. */
-  .lrow-meta input[readonly] {
-    color: var(--muted);
-    border-color: transparent;
-    background: transparent;
-  }
-
-  /* off `.lrow-acts` and its four (style.css:777-784) */
+  /* off `.lrow-acts` and its four (`git show 23c00a6^:style.css`) */
   .lrow-acts {
     flex: none;
     display: flex;
@@ -2434,7 +2115,7 @@
     font-size: 18px;
   }
 
-  /* off `.lrow-pick` (style.css:1083) */
+  /* off `.lrow-pick` (`git show 23c00a6^:style.css`) */
   .lrow-pick {
     display: flex;
     align-items: center;
@@ -2447,7 +2128,7 @@
      control, at the one radius the owner chose. */
 
   /* off the 600px block for `.lrow`, `.lrow .row-main`, `.lrow-meta`,
-     `.lrow-acts`, its `button`, `.row-x` (style.css:890-895) */
+     `.lrow-acts`, its `button`, `.row-x` (`git show 23c00a6^:style.css`) */
   @media (max-width: 600px) {
     .lrow {
       flex-wrap: wrap;

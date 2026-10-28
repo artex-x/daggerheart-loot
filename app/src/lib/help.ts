@@ -658,7 +658,7 @@ const TABLES: Record<Lang, Help> = {
 };
 
 /**
- * The lists index's help. Paragraphs 3 and 5 each carry two bold words and
+ * The lists index's help. Paragraph 3 carries two bold words and
  * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
  * running prose, not at the paragraph's head, so each is a run of parts like
  * `TABLES`'s "Линейка" one.
@@ -670,7 +670,7 @@ const LISTS: Record<Lang, Help> = {
         'Соберите список: отметьте нужное галочками в «Таблицах» или «Поиске» и нажмите «Добавить в список». То же самое можно сделать прямо с карточки предмета - меню остаётся открытым, поэтому один предмет легко положить сразу в несколько списков.'
       ),
       p(
-        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве. Списки, созданные до входа, при входе переносятся в аккаунт сами; после 26 октября 2026 года приложение перестанет их показывать.'
+        'Войдите - и списки будут храниться в аккаунте: они сохраняются сами и открываются на любом устройстве.'
       ),
       {
         parts: [
@@ -688,15 +688,6 @@ const LISTS: Record<Lang, Help> = {
           ': в ней ссылка для игроков и ссылка для мастера, в которой видны и заметки «Только для мастера». По ссылке всегда открывается список таким, какой он сейчас. «Удалить ссылку» закрывает доступ по ней, «Создать ссылку» даёт новую.'
         ]
       },
-      {
-        parts: [
-          'У списка в этом браузере вместо неё две кнопки. ',
-          { b: 'Ссылка игрокам' },
-          ' - для чата партии, ',
-          { b: 'Ссылка себе' },
-          ' - снимок со всеми заметками. Такая ссылка хранит список в себе и перестанет открываться 26 октября 2026 года: откройте её, нажмите «Сохранить себе», и список останется в аккаунте.'
-        ]
-      },
       p(
         'Списки аккаунта можно отметить и скачать файлом JSON или удалить разом, а «Импорт из файла» добавляет списки из такого файла - например, чтобы перенести их в другой аккаунт. Формат файла описан для ИИ-помощников в llms.txt.'
       )
@@ -708,7 +699,7 @@ const LISTS: Record<Lang, Help> = {
         'Build a list: tick what you need in Tables or Search and press "Add to list". The same works straight from an item card - the menu stays open, so one item goes into several lists without reopening anything.'
       ),
       p(
-        'Sign in and your lists are kept in your account: they save themselves and open on any device. Lists made before signing in move to your account by themselves when you sign in; after 26 October 2026 the app stops showing them.'
+        'Sign in and your lists are kept in your account: they save themselves and open on any device.'
       ),
       {
         parts: [
@@ -724,15 +715,6 @@ const LISTS: Record<Lang, Help> = {
           'Share a list from your account with ',
           { b: 'Share' },
           ': it holds a players\' link and a GM\'s link, which also shows the "GM only" notes. A link always opens the list as it is now. "Delete link" ends access through it, "Create link" makes a new one.'
-        ]
-      },
-      {
-        parts: [
-          'A list in this browser has two buttons instead. ',
-          { b: "Players' link" },
-          ' is for the party chat, ',
-          { b: 'Your own link' },
-          ' is a snapshot with every note. Such a link carries the list inside it and stops opening on 26 October 2026: open it, press "Save to my lists", and the list stays in your account.'
         ]
       },
       p(

@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -224,7 +223,6 @@ daggerheart.com
 СкалкаРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Одно... [namelen=105 namehash=5920ae62]
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Среброшелковая Броня
 Среброшелковая БроняРанг 1 · Пороги 5/11 · Броня 3Защищающее: Вы... [namelen=225 namehash=d309c969]
@@ -296,7 +294,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/other_frames/dar
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -500,7 +497,6 @@ Legendary Wooden Stake
 Legendary Wooden StakeTier 4 · Physical · Strength · Melee · d8+... [namelen=220 namehash=064d9af7]
 Link to this table
 List
-Lists
 Network tether
 Network tetherEach PC adds a Network tether to their inventory a... [namelen=237 namehash=d0055d59]
 Open this section on start

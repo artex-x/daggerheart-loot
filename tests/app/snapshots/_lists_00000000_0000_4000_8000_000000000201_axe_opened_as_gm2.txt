@@ -66,7 +66,6 @@ daggerheart.com
 Скрыть изменения
 Случайно 1–2
 Сохранить себе
-Списки
 Список
 Страница
 Таблицы
@@ -125,7 +124,6 @@ Hide the change to "Ember Axe"
 Install as an app
 Italic
 List name
-Lists
 Note
 Numbered list
 One higher

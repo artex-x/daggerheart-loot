@@ -18,7 +18,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Мои предметы" [level=1]
@@ -79,7 +78,6 @@ daggerheart.com
 Скатка следопытаСвёрнутая постель для ночёвки в пути.Получается ... [namelen=135 namehash=aa613df0]
 Скатка стража
 Скатка стражаСвёрнутая постель для ночёвки в пути.Получается из:... [namelen=100 namehash=30ac9f69]
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -99,7 +97,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm3#/home
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "My items" [level=1]
@@ -141,7 +138,6 @@ How this works
 Import from file
 Install as an app
 Items
-Lists
 New item
 Open this section on start
 Privacy

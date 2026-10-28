@@ -17,7 +17,6 @@ RootWebArea "Фроствирд (Пробуждённый) - Генератор 
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Фроствирд (Пробуждённый)" [level=1]
@@ -65,7 +64,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -89,7 +87,6 @@ RootWebArea "Frostwyrd (Awakened) - Daggerheart Loot Generator" [url=#/i/dve25]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Frostwyrd (Awakened)" [level=1]
@@ -128,7 +125,6 @@ EN
 Frostwyrd (Dormant)
 Frostwyrd (Exalted)
 Install as an app
-Lists
 Page
 Print
 Privacy

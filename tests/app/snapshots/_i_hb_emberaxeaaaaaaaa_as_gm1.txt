@@ -18,7 +18,6 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Топор Тлеющих Углей" [level=1]
@@ -64,7 +63,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Страница
 Таблицы
 Условия использования
@@ -86,7 +84,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=index.html?as=gm1#/i/h
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Ember Axe" [level=1]
@@ -123,7 +120,6 @@ Copy text
 EN
 Edit
 Install as an app
-Lists
 Page
 Print
 Privacy

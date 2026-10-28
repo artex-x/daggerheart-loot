@@ -288,7 +288,7 @@
             <label class="setname" for="display-home">{t.displayHome}</label>
             <select id="display-home" value={homeValue} onchange={setHome}>
               {#each SECTIONS as s (s)}
-                <option value={optionOf(s)}>{sectionLabel(s, t, app.legacyWritable)}</option>
+                <option value={optionOf(s)}>{sectionLabel(s, t)}</option>
               {/each}
               <option value={HOMEBREW_HASH}>{t.myItems}</option>
             </select>

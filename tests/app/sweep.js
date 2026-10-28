@@ -22,7 +22,6 @@ const {
   heldNamesFile,
   longNamesFile
 } = require('./inventory.js');
-const NOTES_BOTH_KINDS = require('../../docs/fixtures/lists/notes-both-kinds.json');
 
 const argv = process.argv.slice(2);
 const ONLY = argv.map(Number).filter(Boolean);
@@ -89,7 +88,7 @@ async function printed(d) {
 }
 
 /* audit2's own 41 addresses, plus the routes only tests/app/states.js
- * reaches (`#/tables` bare, `#/lists/b`, `#/i/ci1`) so the sweep's net does
+ * reaches (`#/tables` bare, `#/i/ci1`) so the sweep's net does
  * not stop short of what the real-input layer opens. */
 const PAGES = [
   ['#/roll/std', 'бросок d12'],
@@ -101,22 +100,23 @@ const PAGES = [
   ['#/roll/arazos_artifacts', "arazo's artifacts"],
   ['#/roll/community_items', 'предметы сообществ'],
   ['#/roll/many_worlds_tavern', 'many worlds tavern'],
-  ['#/lists', 'списки'],
-  ['#/lists/a', 'список'],
-  ['#/lists/b', 'вторая сумка'],
-  ['#/lists/empty', 'пустой список'],
+  ['#/lists', 'списки без входа'],
+  ['#/lists/00000000-0000-4000-8000-000000000103', 'вторая сумка', 'gm1'],
   ['#/lists/nope', 'списка нет'],
-  ['#/l/%%SHARED%%', 'чужой список'],
-  ['#/l/zzzz', 'битая ссылка'],
+  ['#/s/player-token-1', 'чужой список'],
+  ['#/l/zzzz', 'старая ссылка на список'],
   /* Both notes inside the rows of a shared page, and the price «?»'s conversion line
      open (FEATURES.md, "Lists"). */
-  ['#/l/' + NOTES_BOTH_KINDS.gm.payload, 'чужой список: заметки в строках'],
   ['#/s/gm-token-1', 'общий список: заметки в строках'],
+  /* gm1's shop is in coin mode, which has no conversion line: switch it to bag mode first. */
   [
-    '#/lists/a',
+    '#/lists/00000000-0000-4000-8000-000000000101',
     'цена: подсказка открыта',
-    undefined,
-    (d) => either(d, 'click', 'Подсказка: Цена', 'Help: Price')
+    'gm1',
+    async (d) => {
+      await either(d, 'click', 'Как в книге', 'As in the book');
+      await either(d, 'click', 'Подсказка: Цена', 'Help: Price');
+    }
   ],
   ['#/i/ci1', 'карточка Кольцо Тишины'],
   ['#/i/w1', 'карточка'],
@@ -152,7 +152,7 @@ const PAGES = [
     ['#/tables/community_items/Seaborne', 'якорь сообщества'],
     ['#/tables/many_worlds_tavern/warrens', 'якорь мира']
   ])
-  /* The print page's states, three drawn sheets and the three print prompts, at every
+  /* The print page's states, three drawn sheets and the two print prompts, at every
      width. The sheets are seeded print sets (`tests/app/lib.js`, `PRINT_SETS`). */
   .concat([
     ['#/p/set-twocards', 'печать: вход', undefined, printed],
@@ -172,11 +172,9 @@ const PAGES = [
         await either(d, 'tick', 'Первоклассный Спальный Мешок', 'Premium Bedroll');
         await pressPrint(d);
       }
-    ],
-    ['#/lists/a', 'печать без входа: список', undefined, pressPrint]
+    ]
   ])
-  /* An optional third element signs that seed user in. The storage seed's browser lists
-   * then move into the account, and the move notice may draw: expected, not a finding. */
+  /* An optional third element signs that seed user in. */
   .concat([
     ['#/tables/homebrew', 'таблица своих предметов', 'gm1'],
     ['#/tables/eq_weapon', 'таблица снаряжения со своими предметами', 'gm1'],
@@ -312,24 +310,6 @@ const PAGES = [
     ['#/lists/00000000-0000-4000-8000-000000000201', 'список с изменениями', 'gm2']
   ]);
 
-/* The list seed both audit2 and this sweep have always used, plus a second
- * list so #/lists/b is a real page rather than a repeat of #/lists/nope. */
-const STORAGE = {
-  'dhloot.lists.v2': JSON.stringify([
-    {
-      id: 'a',
-      name: 'Клад дракона',
-      ids: ['ci1', 'cc1', 'w1', 'q1', 'q313', 'cm1'],
-      created: 1,
-      note: 'Заметка про весь список',
-      noteShow: true,
-      meta: { ci1: { qty: 2, gold: 30, note: 'Под прилавком', noteShow: true } }
-    },
-    { id: 'b', name: 'Вторая сумка', ids: ['ci1'], created: 3 },
-    { id: 'empty', name: 'Пусто', ids: [], created: 2 }
-  ])
-};
-
 /* Six addresses, RU only, at 1180 alone - a round trip a stop, so this
  * alone would cost minutes if it ran everywhere. `filterOpen` presses the
  * one control that needs a click before the walk starts. */
@@ -340,8 +320,8 @@ const FOCUS_WALK = [
     label: 'таблица с открытой панелью фильтров',
     filterOpen: true
   },
-  { hash: '#/lists', label: 'списки' },
-  { hash: '#/lists/a', label: 'список' },
+  { hash: '#/lists', label: 'списки', as: 'gm1' },
+  { hash: '#/lists/00000000-0000-4000-8000-000000000101', label: 'список', as: 'gm1' },
   { hash: '#/i/ci1', label: 'карточка' },
   { hash: '#/search', label: 'поиск' }
 ];
@@ -492,19 +472,9 @@ async function landedUnderHeader(page, id) {
 }
 
 (async () => {
-  /* a payload for the "someone else's list" page, built the same way
-   * audit2's own boot page does it. */
-  const boot = await fresh({ width: 1180, height: 900 });
-  await boot.d.open('#/roll/std');
-  const shared = await boot.page.evaluate(() => {
-    const b = btoa(unescape(encodeURIComponent('Чужой клад\nci1*2*30,w1,q1')));
-    return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  });
-  await boot.ctx.close();
-
   for (const width of WIDTHS) {
     for (const lang of LANGS) {
-      const { ctx, page, d } = await fresh({ width, height: 900, lang, storage: STORAGE });
+      const { ctx, page, d } = await fresh({ width, height: 900, lang });
       const errs = [];
       page.on('pageerror', (e) => errs.push(e.message));
       page.on('console', (m) => {
@@ -513,13 +483,12 @@ async function landedUnderHeader(page, id) {
 
       const pages = PAGES;
       for (const [hash, label, as, enter, seed] of pages) {
-        const asked = hash.replace('%%SHARED%%', shared);
         const where = label + ' @' + width + ' ' + lang;
         try {
           /* A signed-in seed user's stored language would replace the run's (gm1 holds
              `ru`), so the run's language goes into the address too. */
-          await d.open(asked, as ? { as, lang, ...seed } : {});
-          if (as) await d.moveSettled(where);
+          await d.open(hash, as ? { as, lang, ...seed } : {});
+          if (as) await d.settled(where);
           if (enter) await enter(d);
         } catch (e) {
           ok(false, where + ': the page did not render - ' + e.message);
@@ -624,14 +593,10 @@ async function landedUnderHeader(page, id) {
         }, width);
 
         const landed = await page.evaluate(() => location.hash);
-        if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(asked))
+        if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(hash))
           ok(
-            landed === asked,
-            where +
-              ': address changed on its own — asked for ' +
-              asked +
-              ', landed on ' +
-              landed
+            landed === hash,
+            where + ': address changed on its own — asked for ' + hash + ', landed on ' + landed
           );
 
         ok(!errs.length, where + ': console error — ' + errs.slice(0, 2).join(' | '));
@@ -757,15 +722,11 @@ async function landedUnderHeader(page, id) {
      * not page loads, and a stray tabindex does not appear or vanish with
      * the viewport. */
     if (width === 1180 && LANGS.includes('ru')) {
-      const { ctx, page, d } = await fresh({
-        width,
-        height: 900,
-        lang: 'ru',
-        storage: STORAGE
-      });
-      for (const { hash, label, filterOpen } of FOCUS_WALK) {
+      const { ctx, page, d } = await fresh({ width, height: 900, lang: 'ru' });
+      for (const { hash, label, filterOpen, as } of FOCUS_WALK) {
         const where = label + ' @' + width + ' ru, focus';
-        await d.open(hash);
+        await d.open(hash, as ? { as, lang: 'ru' } : {});
+        if (as) await d.settled(where);
         if (filterOpen) await d.click('Фильтры');
         await focusWalk(page, where);
       }

@@ -18,7 +18,6 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Мои предметы" [level=1]
@@ -139,7 +138,6 @@ daggerheart.com
 Спальный мешок тишиныСпальный мешок для долгой дороги.Получается... [namelen=111 namehash=9afc0ae6]
 Спальный мешок у костра
 Спальный мешок у костраСпальный мешок для долгой дороги.Получает... [namelen=113 namehash=0064dbea]
-Списки
 Таблицы
 Тёплый спальный мешок
 Тёплый спальный мешокСпальный мешок для долгой дороги.Получается... [namelen=111 namehash=06f16e2b]
@@ -195,7 +193,6 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm3#/home
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "My items" [level=1]
@@ -272,7 +269,6 @@ Import from file
 Install as an app
 Into "Homebrew"+ New source...
 Items
-Lists
 Moss Pillow
 Moss PillowA rolled bed for a night on the road.ItemHomebrew
 New item

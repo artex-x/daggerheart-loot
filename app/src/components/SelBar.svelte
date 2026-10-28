@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The selection bar - ticking any row on a table raises it at the bottom of
      the window: a count, on a list page a total, a cross that clears
-     everything, and three actions on the right. Reproduced from `renderSelBar` (app.js 3706-3721)
+     everything, and three actions on the right. Reproduced from `renderSelBar` (`git show 23c00a6^:app.js`)
      and `#selBar` in index.html, right after `</footer>` and before the
      modal - `Shell.svelte` keeps that order.
 
@@ -16,7 +16,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import type { ListEntryMeta } from '../lib/listLink.js';
+  import type { ListEntryMeta } from '../lib/lists.js';
   import { selCountText } from '../lib/i18n.js';
   import { takenQty, takenTotal } from '../lib/lists.js';
   import { moneyMode, totalParts } from '../lib/money.js';
@@ -241,7 +241,7 @@
     white-space: nowrap;
   }
 
-  /* off `.selbar` plus `.wrap` (style.css 52-53) - the rewrite has no global
+  /* off `.selbar` plus `.wrap` (`git show 23c00a6^:style.css`) - the rewrite has no global
      `.wrap` class; every frame element composes the same four properties off
      `--wrap` instead, as `Shell.svelte`'s `.foot` and `TabBar` already do. */
   .selbar {
@@ -308,7 +308,7 @@
   }
 
   /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+     `.homebtn::after` shape. */
   .selx::after {
     content: '';
     position: absolute;
@@ -403,7 +403,7 @@
     }
   }
 
-  /* off `#selBar` in the live `@media print` block (style.css:1409) */
+  /* off `#selBar` in the live `@media print` block (`git show 23c00a6^:style.css`) */
   @media print {
     .selbarwrap {
       display: none;

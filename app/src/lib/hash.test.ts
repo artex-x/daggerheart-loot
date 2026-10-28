@@ -22,7 +22,6 @@ import {
   recordHash,
   recordHref,
   sectionHash,
-  sharedListHash,
   shareHash,
   storedListHash,
   recordUrl,
@@ -429,17 +428,16 @@ describe('the homebrew pages', () => {
   });
 });
 
-describe('a shared-list payload with a stray trailing character (R5)', () => {
-  it('still routes to the shared-list page rather than falling to unknown', () => {
-    /* A chat client swallowing a trailing full stop is the reachable case:
-       the old character-class regex rejected the whole address and sent it
-       home; the payload is read as written and decoding it is decodeList's
-       job, not the router's. */
-    expect(parseHash('#/l/ABC.')).toEqual({
-      kind: 'sharedList',
-      payload: 'ABC.',
-      packed: false
-    });
+describe('an old list link', () => {
+  it('reads every #/l/ address as retired, plain, packed, empty or with a stray character', () => {
+    for (const h of ['#/l/x', '#/l/~x', '#/l/', '#/l/ABC.']) {
+      expect(parseHash(h), h).toEqual({ kind: 'listRetired' });
+    }
+  });
+
+  it('leaves an address that only starts like one unknown', () => {
+    expect(parseHash('#/lx')).toEqual({ kind: 'unknown' });
+    expect(parseHash('#/list')).toEqual({ kind: 'unknown' });
   });
 });
 
@@ -685,21 +683,9 @@ describe('writing an address', () => {
     }
   });
 
-  it('round-trips a record, a stored list and a shared list', () => {
+  it('round-trips a record and a stored list', () => {
     expect(parseHash(recordHash('w12'))).toEqual({ kind: 'record', id: 'w12' });
     expect(parseHash(storedListHash('abc'))).toEqual({ kind: 'storedList', listId: 'abc' });
-    /* The writer only ever produces the plain form; `packed` is set by the `~`
-       prefix, which the compressor adds. */
-    expect(parseHash(sharedListHash('eyJhIjoxfQ'))).toEqual({
-      kind: 'sharedList',
-      payload: 'eyJhIjoxfQ',
-      packed: false
-    });
-    expect(parseHash(sharedListHash('~abc'))).toEqual({
-      kind: 'sharedList',
-      payload: '~abc',
-      packed: true
-    });
   });
 
   it('writes a table with a filter that reads back as the same filter', () => {

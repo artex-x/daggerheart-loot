@@ -18,7 +18,6 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Новый предмет" [level=1]
@@ -115,7 +114,6 @@ daggerheart.com
 Расходник
 Снаряжение
 Сохранить
-Списки
 Список
 Страница
 Таблица
@@ -140,7 +138,6 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "New item" [level=1]
@@ -222,7 +219,6 @@ In print
 Install as an app
 Italic
 Item
-Lists
 Made from
 New rule card
 No tier

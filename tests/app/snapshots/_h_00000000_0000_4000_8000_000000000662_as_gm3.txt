@@ -18,7 +18,6 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Скатка следопыта" [level=1]
@@ -75,7 +74,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сон под звёздами
-Списки
 Страница
 Таблицы
 Условия использования
@@ -97,7 +95,6 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=index.html?as=gm3#
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Ranger's Roll" [level=1]
@@ -141,7 +138,6 @@ Copy text
 EN
 Edit
 Install as an app
-Lists
 Moss Pillow (HB)
 Page
 Print

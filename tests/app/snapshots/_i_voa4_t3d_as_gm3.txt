@@ -18,7 +18,6 @@ RootWebArea "Святой Щит - Генератор лута Daggerheart" [url
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Святой Щит" [level=1]
@@ -75,7 +74,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -98,7 +96,6 @@ RootWebArea "Saintly Guard - Daggerheart Loot Generator" [url=index.html?as=gm3#
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Saintly Guard" [level=1]
@@ -140,7 +137,6 @@ Copy name
 Copy text
 EN
 Install as an app
-Lists
 Page
 Print
 Privacy

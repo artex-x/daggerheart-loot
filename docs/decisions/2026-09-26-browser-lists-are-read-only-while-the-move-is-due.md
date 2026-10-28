@@ -1,5 +1,6 @@
 # 2026-09-26 - Browser lists are read-only while the move is due
 
+- Superseded by "R10 deletes the date gates; a build with no sign-in has no lists" (2026-10-28).
 - Task: `persist-5-migration` (owner, 2026-09-26, answering how an edit made during the move is kept; planner).
 - Decision: in a configured build, from sign-in until the move has ended (`LegacyMove.status`
   is not `done`), a signed-in reader's browser lists draw as they will after the cutoff - no

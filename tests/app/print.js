@@ -1633,19 +1633,6 @@ const { ok } = rep;
     'the list does not print its entries with their counts: ' + counted.join(', ')
   );
 
-  /* Signed out, a browser list's «Печать» asks for a sign-in in its slot. */
-  await d.seed({
-    'dhloot.lists.v2': JSON.stringify([
-      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }
-    ])
-  });
-  await d.open('#/lists/p');
-  await d.click(PRINT);
-  ok(
-    (await d.text()).includes('Войдите, чтобы печатать карточки.'),
-    'a signed-out list print does not ask for a sign-in'
-  );
-
   /* Garbage must not drop the page - only say there is nothing to print. */
   await openPrint(d, 'nosuchid');
   ok(!(await page.$('.psheet')), 'a set of a made-up id assembled a sheet');
@@ -2611,17 +2598,7 @@ const { ok } = rep;
     await d.media(undefined);
   }
 
-  /* `seed()` registers an `evaluateOnNewDocument` handler that survives every
-     later `d.open()` on this page, not only the next one - there is no
-     unseed. Harmless here because everything below reads a print route,
-     which shows no lists; a case appended later that opens a list-bearing
-     route on this same `d` would silently inherit list `a`. If that
-     ever matters, open a fresh driver for the later case rather than fight
-     this one's residual seed. */
-  await d.seed({
-    'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
-  });
-  await d.open('#/lists/a');
+  await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
   await d.click('Убрать из списка');
   await d.media('print');
   try {

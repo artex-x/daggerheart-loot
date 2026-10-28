@@ -23,7 +23,6 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Обычные правила" [level=1]
@@ -125,7 +124,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Страница
 Таблицы
 Условия использования
@@ -147,7 +145,6 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=index.html?as=gm1
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "Standard rules" [level=1]
@@ -229,7 +226,6 @@ Hope & Fear
 How this works
 Install as an app
 Items
-Lists
 Major Stride Potion
 One higher
 One lower

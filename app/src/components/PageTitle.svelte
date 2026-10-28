@@ -1,12 +1,12 @@
 <script lang="ts">
   /* The heading pair every non-`PageHead` page draws - off `.page-h`
-   * (style.css:105) and `.page-sub` (style.css:140).
+   * (`git show 23c00a6^:style.css`) and `.page-sub` (`git show 23c00a6^:style.css`).
    *
    * Extracted from eight identical pairs across `ListPage`,
    * `PrintPage`, `RecordPage` and `SharedListPage` (two each). `PageHead`
    * keeps its own copy: its `h1` sits inside a flex row with the home and
    * help buttons between it and the sub, under the live app's own
-   * `.page-head .page-h{margin:0}` (style.css:104) - hosting that here would
+   * `.page-head .page-h{margin:0}` (`git show 23c00a6^:style.css`) - hosting that here would
    * need a wrapper prop no other caller uses. Both props take a plain
    * string or a snippet: `ListPage`'s
    * title is the rename input, `RecordPage`'s sub is today's whole `<p>`
@@ -43,7 +43,7 @@
 {/if}
 
 <style>
-  /* off `.page-h` (style.css:105), the tokens every caller already used */
+  /* off `.page-h` (`git show 23c00a6^:style.css`), the tokens every caller already used */
   .page-h {
     margin: 0 0 4px;
     font-size: var(--h-page-size);
@@ -56,7 +56,7 @@
     overflow-wrap: anywhere;
   }
 
-  /* off `.page-sub` (style.css:140) */
+  /* off `.page-sub` (`git show 23c00a6^:style.css`) */
   .page-sub {
     margin: 0 0 18px;
     color: var(--muted);

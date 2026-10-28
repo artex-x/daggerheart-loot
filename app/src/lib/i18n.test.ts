@@ -161,17 +161,16 @@ describe('the interface words', () => {
     expect(dict('ru').providers).toBe('Способы входа');
   });
 
-  it('names each section by its label, and the lists «Мои списки» from the cutoff', () => {
+  it('names each section by its label, and the lists «Мои списки»', () => {
     for (const lang of ['ru', 'en'] as const) {
       const t = dict(lang);
       for (const [s, key] of Object.entries(SECTION_LABEL) as [Section, keyof typeof t][]) {
-        expect(sectionLabel(s, t, true)).toBe(t[key]);
-        expect(sectionLabel(s, t, false)).toBe(s === 'lists' ? t.menuLists : t[key]);
+        expect(sectionLabel(s, t)).toBe(t[key]);
       }
     }
     expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
-    expect(sectionLabel('lists', dict('ru'), false)).toBe('Мои списки');
-    expect(sectionLabel('lists', dict('en'), true)).toBe('Lists');
+    expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
+    expect(sectionLabel('lists', dict('en'))).toBe('My lists');
   });
 
   it('holds no ellipsis character in either language', () => {

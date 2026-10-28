@@ -18,7 +18,6 @@ RootWebArea "Генератор лута Daggerheart" [url=index.html?as=gm2#/p/
       link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
       link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm2#/tables]
-      link "Списки" [url=index.html?as=gm2#/lists]
       link "Поиск" [url=index.html?as=gm2#/search]
   main ""
     heading "Печать карточек" [level=1]
@@ -68,7 +67,6 @@ daggerheart.com
 Обычные правила
 Отправить на печать
 Поиск
-Списки
 Ссылка на набор
 Таблицы
 Условия использования
@@ -91,7 +89,6 @@ RootWebArea "Daggerheart Loot Generator" [url=index.html?as=gm2#/p/set-longtext]
       link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
       link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm2#/tables]
-      link "Lists" [url=index.html?as=gm2#/lists]
       link "Search" [url=index.html?as=gm2#/search]
   main ""
     heading "Printing cards" [level=1]
@@ -135,7 +132,6 @@ Compact
 EN
 Install as an app
 Link to this set
-Lists
 Privacy
 RU
 Search

@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1/f_
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -90,7 +89,6 @@ daggerheart.com
 Сбросить всё
 Сила
 Сохранить себе
-Списки
 Средне
 Ссылка на фильтры
 Таблицы
@@ -116,7 +114,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1/f_kind-armor.ti
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Лавка кузнеца" [level=1]
@@ -172,7 +169,6 @@ Install as an app
 Instinct
 Items
 Knowledge
-Lists
 Magic
 Melee
 One-Handed

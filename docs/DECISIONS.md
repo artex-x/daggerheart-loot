@@ -14,6 +14,9 @@ deleted.
 
 ## Index
 
+- 2026-10-28 - [R10 deletes the date gates; a build with no sign-in has no lists](decisions/2026-10-28-r10-deletes-the-date-gates-a-build-with-no-sign-in-has-no-lists.md)
+- 2026-10-28 - [R10 drops the move function and the fingerprint column](decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md)
+- 2026-10-28 - [The account's first read takes list heads; a list's details load when needed](decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md)
 - 2026-10-22 - [A bulk delete of own items goes in chunks of 50](decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md)
 - 2026-10-22 - [A bulk delete of own items is one invoker call](decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md) - superseded in part
 - 2026-10-22 - [A deleted item's id may be taken again by another account](decisions/2026-10-22-a-deleted-items-id-may-be-taken-again.md)
@@ -139,7 +142,7 @@ deleted.
 - 2026-09-27 - [The Read and Grep tools are denied `.env` files by a hook, not only by settings](decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)
 - 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
 - 2026-09-27 - [The Supabase scripts take the local stack lock themselves](decisions/2026-09-27-the-supabase-scripts-take-the-local-stack-lock.md)
-- 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md)
+- 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md) - superseded in part
 - 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md) - superseded in part
 - 2026-09-26 - [A request the database fails three times is halved; a lone write is dropped](decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md)
 - 2026-09-26 - [A requester reads the status by a key kept in the tab's sessionStorage](decisions/2026-09-26-a-requester-reads-the-status-by-a-key.md) - superseded
@@ -148,7 +151,7 @@ deleted.
 - 2026-09-26 - [After the cutoff a browser list is written only by the move and a delete](decisions/2026-09-26-after-the-cutoff-a-browser-list-is-written-only-by-the-move.md) - superseded in part
 - 2026-09-26 - [An import is one `import_lists()` transaction: every list or none](decisions/2026-09-26-an-import-is-one-import-lists-transaction.md)
 - 2026-09-26 - [An over-stock request is refused whole; Apply available clamps; zero removes](decisions/2026-09-26-an-over-stock-request-is-refused-whole-apply.md)
-- 2026-09-26 - [Browser lists are read-only while the move is due](decisions/2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md)
+- 2026-09-26 - [Browser lists are read-only while the move is due](decisions/2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md) - superseded
 - 2026-09-26 - [Homebrew is reached from the account menu, not from a tab](decisions/2026-09-26-homebrew-is-reached-from-the-account-menu.md)
 - 2026-09-26 - [Import validation is the client's; the count limits are the database's](decisions/2026-09-26-import-validation-is-the-clients-count-limits-the-databases.md) - superseded in part
 - 2026-09-26 - [Production restore is an owner-run command gated by a same-backup drill](decisions/2026-09-26-production-restore-is-an-owner-run-command-gated.md)
@@ -162,7 +165,7 @@ deleted.
 - 2026-09-26 - [The list file `import-v1` is a strict JSON Schema; import makes new ids](decisions/2026-09-26-the-list-file-import-v1-is-a-strict-json-schema.md)
 - 2026-09-26 - [The owner's devices subscribe to a private owner topic](decisions/2026-09-26-the-owners-devices-subscribe-to-a-private-owner-topic.md)
 - 2026-09-26 - [The restore drill loads the newest backup into the local stack only](decisions/2026-09-26-the-restore-drill-loads-the-newest-backup-into.md)
-- 2026-09-26 - [The test build's clock is pinned before the cutoff, and `?today=` moves it](decisions/2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md)
+- 2026-09-26 - [The test build's clock is pinned before the cutoff, and `?today=` moves it](decisions/2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md) - superseded in part
 - 2026-09-26 - [The write buffer goes to the server as one invoker RPC with a result per write](decisions/2026-09-26-the-write-buffer-goes-to-the-server-as.md)
 - 2026-09-26 - [While Realtime is live, a safety re-read runs every 5 minutes](decisions/2026-09-26-while-realtime-is-live-a-safety-re-read-runs-every.md)
 - 2026-09-25 - [A blocker fix pass also carries the batch's local nits](decisions/2026-09-25-a-blocker-fix-pass-also-carries-the-batchs.md)

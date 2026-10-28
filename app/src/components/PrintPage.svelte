@@ -1,7 +1,7 @@
 <script lang="ts">
   /* `#/p/<id>` - a stored print set (docs/specs/FEATURES.md, "Print"); the sheet itself is
-   * off `renderPrint` (app.js 3510-3558) and the print handlers
-   * (`printBack`/`doPrint`/`printArt`/`printLink`, app.js 4236-4245). No `PageHead`: the
+   * off `renderPrint` (`git show 23c00a6^:app.js`) and the print handlers
+   * (`printBack`/`doPrint`/`printArt`/`printLink`, `git show 23c00a6^:app.js`). No `PageHead`: the
    * live markup writes a bare `h1`+`p`, no pin, no help. */
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
@@ -174,7 +174,7 @@
     />
     {#if clippedCount}
       <div class="clipwarn">
-        <NoticeBox warn>{t.printClipped.replace('%d', String(clippedCount))}</NoticeBox>
+        <NoticeBox>{t.printClipped.replace('%d', String(clippedCount))}</NoticeBox>
       </div>
     {/if}
     <p class="printnote">{t.printNote}</p>
@@ -234,7 +234,7 @@
      component's own `.miss` read `--muted2` where `NoData`'s reads
      `--muted` - never photographed either way).
 
-     off `.printbar`, `.printnote`, `.printnote.warnnote` (style.css:1112-1116) */
+     off `.printbar`, `.printnote`, `.printnote.warnnote` (`git show 23c00a6^:style.css`) */
   .printbar {
     margin-bottom: 18px;
   }
@@ -257,7 +257,7 @@
     max-width: 62ch;
   }
 
-  /* off `.psheet` (style.css:1118-1126) */
+  /* off `.psheet` (`git show 23c00a6^:style.css`) */
   .psheet {
     box-sizing: border-box;
     width: 210mm;
@@ -283,7 +283,7 @@
     grid-template-rows: repeat(4, 63mm);
   }
 
-  /* off `.pcard.blank` (style.css:1139) - this component's own element, so
+  /* off `.pcard.blank` (`git show 23c00a6^:style.css`) - this component's own element, so
      `PrintCard`'s `.pcard` rules cannot reach it; the grid sizes the box. */
   .pcard.blank {
     box-sizing: border-box;

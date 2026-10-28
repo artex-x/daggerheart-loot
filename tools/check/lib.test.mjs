@@ -657,7 +657,7 @@ describe('G1: vitest reads only paths VITEST selects', () => {
       'llms.txt',
       'schema/import-v1.json',
       'supabase/config.toml',
-      'docs/fixtures/lists',
+      'docs/fixtures/homebrew',
       'docs/fixtures/homebrew-file/export.json',
       'tools/build-share-pages.js',
       'tools/share-card.mjs',

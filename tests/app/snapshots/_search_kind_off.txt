@@ -17,7 +17,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Поиск" [level=1]
@@ -148,7 +147,6 @@ daggerheart.com
 Расходники
 Ртутный Фамильяр
 Снаряжение
-Списки
 Стекло Разбитой Судьбы
 Стенающая Костяная Флейта
 Сфера Безумия
@@ -178,7 +176,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Search" [level=1]
@@ -289,7 +286,6 @@ Install as an app
 Items
 Keening Bone Flute
 Leaf of the Giant Tree
-Lists
 Little Forest Spirit
 Mercurial Familiar
 Open this section on start

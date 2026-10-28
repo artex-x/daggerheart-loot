@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
   link "К содержимому" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -18,7 +18,6 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=index.
       link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
       link "Поиск" [url=index.html?as=gm1#/search]
   main ""
     heading "Мои списки" [level=1]
@@ -89,7 +88,6 @@ daggerheart.com
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
 Создать
-Списки
 Таблицы
 Трофеи, 2 позиции, изменён в прошлом месяце
 Удалить
@@ -99,7 +97,7 @@ daggerheart.com
 схеме import-v3
 
 ## en :: tree
-RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
   link "Skip to content" [url=index.html?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
@@ -113,7 +111,6 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
       link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
       link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
       link "Search" [url=index.html?as=gm1#/search]
   main ""
     heading "My lists" [level=1]
@@ -170,7 +167,6 @@ EN
 How this works
 Import from file
 Install as an app
-Lists
 New list
 Open this section on start
 Privacy

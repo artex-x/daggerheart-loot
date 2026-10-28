@@ -9,7 +9,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     button "Страница"
     StaticText "56"
     StaticText "ПРЕДМЕТ"
-    ... StaticText x5 of 9 same-shape siblings elided
+    ... StaticText x3 of 7 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     button "Отправить"
@@ -169,7 +169,6 @@ daggerheart.com
 Скопировать текст
 Снаряжение
 Сохранить себе
-Списки
 Списком
 Ссылка на таблицу
 Страница
@@ -318,7 +317,6 @@ Items
 Lakestrider Boots
 Link to this table
 List
-Lists
 Lorekeeper
 Manacles
 Minor Health Potion Recipe

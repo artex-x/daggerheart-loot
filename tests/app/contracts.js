@@ -1,9 +1,8 @@
 /* Public contracts against the golden fixtures, re-pointed at dist-test/ - the
- * browser half of tests/contracts.js. The pure half (the second
- * implementation of the codec) and the llms.txt/CONTRACTS.md/ROUTES.md name
- * greps need no browser and stay there for now. Nothing here edits a
- * fixture: a divergence is root-caused and reported, per CLAUDE.md,
- * "Public contracts default to no change". */
+ * browser half of tests/contracts.js. The llms.txt/CONTRACTS.md/ROUTES.md name
+ * greps need no browser and stay there. Nothing here edits a fixture: a
+ * divergence is root-caused and reported, per CLAUDE.md, "Public contracts
+ * default to no change". */
 const fs = require('fs');
 const path = require('path');
 const { fresh, reporter, closeBrowser } = require('./lib.js');
@@ -12,138 +11,27 @@ const FIX = path.join(__dirname, '..', '..', 'docs', 'fixtures');
 const rep = reporter();
 const { ok } = rep;
 
-const b64url = (s) =>
-  Buffer.from(s, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-function stampOf(parts) {
-  const body = parts.join(',');
-  let h = 2166136261;
-  for (let i = 0; i < body.length; i++) {
-    h ^= body.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
-}
-
 (async () => {
-  const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter((f) => f.endsWith('.json'));
-  const lists = listFiles.map((f) =>
-    JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8'))
-  );
-
-  console.log('the link the app writes');
-  for (const fx of lists) {
-    const { ctx, page, d } = await fresh({
-      width: 1280,
-      height: 900,
-      storage: { 'dhloot.lists.v2': JSON.stringify([fx.list]) }
-    });
-    await d.open('#/lists/' + fx.list.id);
-    /* The owned-list address is debounce-written (ListPage.svelte),
-       so reading location.hash right after open() rests on ready()'s own
-       wait happening to already exceed the 150ms debounce, not on anything
-       here asserting settlement - addressSettled() makes that explicit. */
-    await d.addressSettled();
-    const inBar = (await page.evaluate(() => location.hash)).replace('#/l/', '');
-    ok(
-      inBar === fx.player.payload,
-      fx.id + ': the address bar does not hold the link from the fixture'
-    );
-    await ctx.close();
-  }
-
-  console.log('the link the app reads');
-  for (const fx of lists) {
-    const notes = [fx.list.note, fx.list.hnote]
-      .concat(
-        Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].note),
-        Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].hnote)
-      )
-      .filter(Boolean);
-    const forPlayers = [fx.list.note]
-      .concat(Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].note))
-      .filter(Boolean);
-    const gmOnly = notes.filter((n) => forPlayers.indexOf(n) < 0);
-
-    const a = await fresh({ width: 1280, height: 900 });
-    await a.d.open('#/l/' + fx.player.payload);
-    const seenPlayer = await a.page.evaluate(() => document.body.innerText);
-    ok(seenPlayer.indexOf(fx.list.name) >= 0, fx.id + ': the player link did not open');
-    forPlayers.forEach((n) =>
-      ok(seenPlayer.indexOf(n) >= 0, fx.id + ': a player note is missing from the player link')
-    );
-    gmOnly.forEach((n) =>
-      ok(seenPlayer.indexOf(n) < 0, fx.id + ': a GM note is visible through the player link')
-    );
-    await a.ctx.close();
-
-    const b = await fresh({ width: 1280, height: 900 });
-    await b.d.open('#/l/' + fx.gm.payload);
-    const seenGm = await b.page.evaluate(() => document.body.innerText);
-    notes.forEach((n) =>
-      ok(seenGm.indexOf(n) >= 0, fx.id + ': a note is missing from the GM link')
-    );
-    await b.ctx.close();
-  }
-
-  console.log('a truncated link');
-  const big = lists.filter((f) => f.list.ids.length > 1)[0];
-  const cutRaw = big.gm.raw.slice(0, big.gm.raw.lastIndexOf(','));
-  const c = await fresh({ width: 1280, height: 900 });
-  await c.d.open('#/l/' + b64url(cutRaw));
-  const seenCut = await c.page.evaluate(() => document.body.innerText);
-  ok(
-    /повреждена|damaged/i.test(seenCut),
-    'a truncated link opened as a list instead of a broken-link page'
-  );
-  await c.ctx.close();
-
-  /* ---------- a link assembled purely from the documented format ----------
-   * Moved here from tests/lists2.js: the format is frozen until the codec is
-   * removed (docs/specs/CONTRACTS.md section 3; llms.txt no longer teaches it),
-   * and that promise is only as good as this - a link built by a second
-   * implementation, not by the app's own encoder, opening correctly. */
-  console.log("a link assembled from CONTRACTS.md's description");
+  /* An old list link stopped opening on 2026-10-26 (docs/specs/ROUTES.md): a plain one that
+     opened a list before, a packed one, and one with a stray character all draw the
+     not-found page with the address kept. */
+  console.log('an old list link');
   {
-    const parts = ['q26*1*30', 'q313*2', 'ci1'];
-    const raw =
-      'Лавка кузнеца\n' +
-      stampOf(parts) +
-      parts.join(',') +
-      '\n\x1e+~\x1fТовар лежит навалом.' +
-      '\x1e~\x1fКузнец сбывает краденое.' +
-      '\x1e+q26\x1fНа клинке зазубрина.';
-    const payload = b64url(raw);
     const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
-    await d.open('#/l/' + payload);
-    const text = await page.evaluate(() => document.body.innerText);
-    ok(/Лавка кузнеца/.test(text), 'the assembled link did not open as a list');
-    ok(
-      /Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
-      'the assembled list is missing entries: ' + text.slice(0, 120)
-    );
-    ok(
-      /3 горсти/.test(text),
-      'the price from the assembled link is not shown: ' + text.slice(0, 160)
-    );
-    ok(/×2|x2/.test(text), 'the quantity from the assembled link is not shown');
-    ok(
-      /Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
-      'the notes from the assembled link are not shown'
-    );
-    ok(/На клинке зазубрина/.test(text), "an entry's note is not shown");
+    for (const hash of [
+      '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg',
+      '#/l/~AAAA',
+      '#/l/ABC.'
+    ]) {
+      await d.open(hash);
+      const seen = await page.evaluate(() => ({
+        h1: document.querySelector('main h1')?.textContent?.trim() ?? null,
+        hash: location.hash
+      }));
+      ok(seen.h1 === 'Предмет не найден', hash + ': the heading is ' + JSON.stringify(seen.h1));
+      ok(seen.hash === hash, hash + ': the address became ' + seen.hash);
+    }
     await ctx.close();
-
-    const brokenRaw = raw.replace(stampOf(parts), stampOf(parts.slice(0, 2)));
-    const broken = b64url(brokenRaw);
-    const { ctx: c2, page: p2, d: d2 } = await fresh({ width: 1280, height: 900 });
-    await d2.open('#/l/' + broken);
-    const seenBroken = await p2.evaluate(() => document.body.innerText);
-    ok(!/Катана/.test(seenBroken), 'a link with a wrong checksum opened anyway');
-    await c2.close();
   }
 
   console.log('the address grammar');
@@ -426,7 +314,7 @@ function stampOf(parts) {
   const { ctx: oCtx, page: oPage, d: oD } = await fresh({ width: 1280, height: 900 });
   const ownRowsAt = async (hash) => {
     await oD.open(hash, { as: 'gm1' });
-    await oD.moveSettled();
+    await oD.settled();
     return oPage.evaluate(() => document.querySelectorAll('[data-row]').length);
   };
   const CHIP_PROBE = [

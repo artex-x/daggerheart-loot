@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -285,7 +284,6 @@ daggerheart.com
 Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Ссылка на таблицу
 Сфера Мёбиуса
@@ -378,7 +376,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_secondary]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -638,7 +635,6 @@ Legendary Wooden Stake
 Legendary Wooden StakeTier 4 · Physical · Strength · Melee · d8+... [namelen=220 namehash=064d9af7]
 Link to this table
 List
-Lists
 Manacle Bolas
 Möbius Orb
 Möbius OrbTier 4 · Magic · Knowledge · Melee · d8+6 mag · One-Ha... [namelen=267 namehash=6e4115af]

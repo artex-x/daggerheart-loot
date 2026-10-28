@@ -46,17 +46,14 @@ old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
 An old id still opens the same page, with its anchor or filter tail; the
 address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
 
-The tab bar draws six tabs over them: Core rules, the alternate tables, one
-«Дополнения» / "Supplements" tab for the seven supplement sections
+The tab bar draws five tabs over them in every build: Core rules, the alternate
+tables, one «Дополнения» / "Supplements" tab for the seven supplement sections
 (`roll/wondrous_environments` to `roll/many_worlds_tavern`, `app/src/lib/nav.ts`),
-Tables, Lists and Search. The supplements tab links to
+Tables and Search. The supplements tab links to
 `#/roll/wondrous_environments`; every supplement address stays its
-own section (`FEATURES.md`, "Chrome").
-
-From the legacy write cutoff (2026-10-26) a build with sign-in draws five
-tabs, without `#/lists`; `#/lists` stays a section route,
-reached from the account menu's «Мои списки», a bookmark or a pin
-(`FEATURES.md`, "Chrome").
+own section (`FEATURES.md`, "Chrome"). `#/lists` has no tab: it stays a section
+route, reached from the account menu's «Мои списки», a bookmark or a pin. A build
+with no sign-in configured draws the not-found page for it, the address kept.
 
 ## Legacy section names
 
@@ -186,11 +183,10 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | `#/i/<id>` | one record |
 | `#/p/<id>` | a stored print set, for a signed-in reader; the id is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept), and only a 12-character run is read; a malformed id (any other length) draws the "set not found" print page, signed in or out, with no read; a 12-character id signed out draws the print page's sign-in state; an unknown or expired id draws the "set not found" print page; a build with no sign-in configured draws the not-found page; the address is kept in every case, never home. `#/p` with no slash is an unreadable address |
 | `#/print/<anything>` | retired on 2026-10-08 (owner): the retired print page, in every build, the address kept, nothing read from it; `#/print` with no slash is an unreadable address |
-| `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (an account list's address is never rewritten to `#/l/`; a browser list's is not either after 2026-10-26, nor while the move into the account is due); the local id of a list that moved into the account opens that account list |
+| `#/lists/<listId>` | an account list, by its UUID; its address is never rewritten; any other id, a local id an older build made among them, draws the list page's not-found state; a build with no sign-in configured draws the not-found page, the address kept |
 | `#/h/<uuid>` | one homebrew item by its id, for everyone, signed out too, with the author's relation lines; the id is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character after it is dropped, the address kept); only a uuid is read; a malformed or unknown id, or a build with no sign-in configured, draws the record page's not-found page, never home |
 | `#/s/<token>` | an account list shared by its owner, read-only, with an optional filter (below); the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
-| `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`), until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then, in a build with sign-in configured, the retired page, the address kept and the payload never decoded |
-| `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open, until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then the retired page, never unpacked |
+| `#/l/...` | an old list link, retired on 2026-10-26: the not-found page in every build, the address kept, the payload never read |
 
 ```
 #/s/<token>
@@ -202,22 +198,11 @@ link's groups, read and written as on a table: a pick rewrites the address in
 place, and a filter link opens the panel. When `/f_` does not follow the token,
 anything after it is dropped and the address kept; a stray character after the
 segment is dropped the same way. A build before the filter reads the token and
-ignores the segment, so a filter link opens the whole list there. `#/l/` carries
-no segment: its payload is read as written, so a segment would become part of
-the payload and every earlier bundle would draw the bad-link page; its filter
-is page memory.
-
-The payload after `l/` is read as written, whatever it contains - R5. A stray
-character a chat client left behind (a truncated link's trailing full stop is
-the reachable case) used to fail a stricter character class and fall to
-`unknown`, sending the reader home; now it still reaches the shared-list page,
-which draws its own "not found" state for a payload that will not decode
-rather than silently leaving for a different page.
+ignores the segment, so a filter link opens the whole list there.
 
 A print set is stored in its maker's account, so the address does not grow with
 its cards: `<site>#/p/` and 12 characters. The cards and their counts live in
-the set (`FEATURES.md`, "Print"); the list link's `id*qty` spelling stays in
-`CONTRACTS.md` section 3. The long print addresses `#/print/<ids>` were retired
+the set (`FEATURES.md`, "Print"). The long print addresses `#/print/<ids>` were retired
 on 2026-10-08 (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 
 The preview host's path grammar is `CONTRACTS.md` section 5: its paths

@@ -26,11 +26,17 @@ import { runCloudContract } from './cloud.contract.js';
 import { fakeCloud, installFakeCloud } from './fake-cloud.js';
 import { SEED, uuid } from './fake-cloud-seed.js';
 import { browserEnv, fakeEnv } from './index.js';
-import type { CloudPort, ListWrite, Session } from './types.js';
+import type { CloudPort, ListRowsRead, ListWrite, Session } from './types.js';
 
 afterEach(() => {
   delete window.__dhlootFake;
 });
+
+/* The owner's lists whole (`rows`), in the fake's order; `{ ok: false }` when a read failed. */
+async function wholeLists(port: CloudPort): Promise<ListRowsRead> {
+  const heads = await port.lists.list();
+  return heads.ok ? port.lists.rows(heads.lists.map((l) => l.id)) : { ok: false };
+}
 
 describe('the fake cloud', () => {
   it('meets the cloud contract', async () => {
@@ -336,10 +342,13 @@ describe("the fake's lists", () => {
   const OK1 = { ok: true, results: [OK] };
   const GONE = { ok: false, error: 'gone' };
   const REFUSED = { ok: false, error: 'refused' };
+  /* Every list whole, in the order of the head read. */
   const rowsOf = async (port: CloudPort) => {
-    const read = await port.lists.list();
-    if (!read.ok) throw new Error('the read failed');
-    return read.lists;
+    const heads = await port.lists.list();
+    if (!heads.ok) throw new Error('the read failed');
+    const read = await port.lists.rows(heads.lists.map((l) => l.id));
+    if (!read.ok) throw new Error('the rows read failed');
+    return heads.lists.flatMap((h) => read.lists.filter((l) => l.id === h.id));
   };
 
   beforeEach(() => {
@@ -385,6 +394,44 @@ describe("the fake's lists", () => {
   it("answers gm2's one list, and nothing signed out", async () => {
     expect((await rowsOf(fakeCloud(SEED, 'gm2'))).map((l) => l.id)).toEqual([uuid(201)]);
     expect(await fakeCloud(SEED).lists.list()).toEqual({ ok: false });
+  });
+
+  it('answers each entry of the first read with its five identity keys only', async () => {
+    const read = await fakeCloud(SEED, 'gm1').lists.list();
+    const keys = new Set(
+      (read.ok ? read.lists : []).flatMap((l) =>
+        l.list_entries.map((e) => Object.keys(e).sort().join(','))
+      )
+    );
+    expect([...keys]).toEqual(['hb_item,id,item_key,position,source']);
+  });
+
+  it("answers the named lists whole with rows(), nothing for an unknown or another user's id", async () => {
+    const port = fakeCloud(SEED, 'gm1');
+    const read = await port.lists.rows([uuid(101), uuid(9999), uuid(201)]);
+    expect(read.ok && read.lists.map((l) => l.id)).toEqual([uuid(101)]);
+    expect(read.ok && read.lists[0]?.list_entries[0]).toMatchObject({
+      item_key: 'ci1',
+      quantity: 2,
+      price_coins: 150
+    });
+    expect(await port.lists.rows([])).toEqual({ ok: true, lists: [] });
+    expect(await fakeCloud(SEED).lists.rows([uuid(101)])).toEqual({ ok: false });
+    port.setOffline(true);
+    expect(await port.lists.rows([uuid(101)])).toEqual({ ok: false });
+  });
+
+  it('holds rows() with ?hold=rows: stall never answers, fail answers { ok: false }', async () => {
+    const failed = installFakeCloud('?as=gm1&hold=rows:fail');
+    expect(await failed.lists.rows([uuid(101)])).toEqual({ ok: false });
+    expect((await failed.lists.list()).ok).toBe(true);
+    const stalled = installFakeCloud('?as=gm1&hold=rows:stall');
+    let answered = false;
+    void stalled.lists.rows([uuid(101)]).then(() => {
+      answered = true;
+    });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(answered).toBe(false);
   });
 
   it('counts new ids from uuid(5000)', () => {
@@ -656,107 +703,6 @@ describe("the fake's lists", () => {
   });
 });
 
-describe("the fake's move of a browser list", () => {
-  const TEXT =
-    '{"ids":["ci1","q1"],"meta":{"ci1":{"gold":150,"note":"n","qty":2}},"money":"coin","name":"Клад","note":"p"}';
-
-  it('inserts once per text, then answers the first row, with a stable fingerprint', async () => {
-    const port = fakeCloud(SEED, 'gm2');
-    const id = port.lists.newId();
-    expect(await port.lists.move(id, TEXT)).toEqual({ ok: true, id, inserted: true });
-    expect(await port.lists.move(port.lists.newId(), TEXT)).toEqual({
-      ok: true,
-      id,
-      inserted: false
-    });
-    const read = await port.lists.list();
-    const row = read.ok ? read.lists.find((l) => l.id === id) : undefined;
-    expect(row?.legacy_fingerprint).toMatch(/^[0-9a-f]{64}$/);
-    expect(row?.money_mode).toBe('coin');
-    expect(row?.player_note).toBe('p');
-    expect(
-      row?.list_entries.map((e) => [e.item_key, e.quantity, e.price_coins, e.player_note])
-    ).toEqual([
-      ['ci1', 2, 150, 'n'],
-      ['q1', 1, null, '']
-    ]);
-    const other = read.ok ? read.lists.find((l) => l.id !== id) : undefined;
-    expect(other?.legacy_fingerprint).toBeNull();
-  });
-
-  it('keeps the list ids at uuid(5000) and uuid(5001) whatever the entry counts', async () => {
-    const port = fakeCloud(SEED, 'gm1');
-    const many = JSON.stringify({ ids: ['ci1', 'ci2', 'ci3'], name: 'А' });
-    expect(await port.lists.move(port.lists.newId(), many)).toMatchObject({ id: uuid(5000) });
-    expect(await port.lists.move(port.lists.newId(), '{"ids":[],"name":"Б"}')).toMatchObject({
-      id: uuid(5001)
-    });
-    const read = await port.lists.list();
-    const first = read.ok ? read.lists.find((l) => l.id === uuid(5000)) : undefined;
-    expect(first?.list_entries.map((e) => e.id)).toEqual([uuid(7000), uuid(7001), uuid(7002)]);
-  });
-
-  it('moves again as a new row once the first row is deleted', async () => {
-    const port = fakeCloud(SEED, 'gm2');
-    const id = port.lists.newId();
-    await port.lists.move(id, TEXT);
-    await port.lists.apply([{ op: 'remove', id }]);
-    const again = port.lists.newId();
-    expect(await port.lists.move(again, TEXT)).toEqual({ ok: true, id: again, inserted: true });
-  });
-
-  it('skips the count limits, as the RPC does', async () => {
-    const port = fakeCloud(SEED, 'gm2', { limits: { lists: 1, entries: 1 } });
-    const big = JSON.stringify({ ids: ['ci1', 'ci2', 'ci3'], name: 'Много' });
-    expect(await port.lists.move(port.lists.newId(), big)).toMatchObject({ inserted: true });
-  });
-
-  it.each([
-    ['not JSON', 'nope'],
-    ['not an object', '[]'],
-    ['an unknown key', '{"ids":[],"x":1}'],
-    ['no ids', '{"name":"a"}'],
-    ['an id of another form', '{"ids":["a b"]}'],
-    ['a repeated id', '{"ids":["ci1","ci1"]}'],
-    ['a name too long', JSON.stringify({ ids: [], name: 'я'.repeat(201) })],
-    ['an odd money mode', '{"ids":[],"money":"gems"}'],
-    ['a note that is not text', '{"ids":[],"note":5}'],
-    ['a GM note too long', JSON.stringify({ ids: [], hnote: 'x'.repeat(4001) })],
-    ['meta that is not an object', '{"ids":["ci1"],"meta":[]}'],
-    ['meta of an id not in ids', '{"ids":["ci1"],"meta":{"q1":{"qty":2}}}'],
-    ['an entry that is not an object', '{"ids":["ci1"],"meta":{"ci1":1}}'],
-    ['an unknown meta key', '{"ids":["ci1"],"meta":{"ci1":{"x":1}}}'],
-    ['a qty of 0', '{"ids":["ci1"],"meta":{"ci1":{"qty":0}}}'],
-    ['a qty of 1.5', '{"ids":["ci1"],"meta":{"ci1":{"qty":1.5}}}'],
-    ['a gold of 100000', '{"ids":["ci1"],"meta":{"ci1":{"gold":100000}}}'],
-    ['an entry note that is not text', '{"ids":["ci1"],"meta":{"ci1":{"note":1}}}'],
-    [
-      'an entry GM note too long',
-      JSON.stringify({ ids: ['ci1'], meta: { ci1: { hnote: 'x'.repeat(4001) } } })
-    ]
-  ])('refuses a text with %s', async (_what, text) => {
-    const port = fakeCloud(SEED, 'gm2');
-    expect(await port.lists.move(port.lists.newId(), text)).toEqual({
-      ok: false,
-      error: 'refused'
-    });
-  });
-
-  it('refuses an id another list holds, and answers network offline and signed out', async () => {
-    const port = fakeCloud(SEED, 'gm2');
-    expect(await port.lists.move(uuid(101), TEXT)).toEqual({ ok: false, error: 'refused' });
-    port.setOffline(true);
-    expect(await port.lists.move(port.lists.newId(), TEXT)).toEqual({
-      ok: false,
-      error: 'network'
-    });
-    expect(await fakeCloud(SEED).lists.move(uuid(9000), TEXT)).toEqual({
-      ok: false,
-      error: 'network'
-    });
-  });
-});
-
 describe("the fake's share links", () => {
   const DAY = 24 * 3_600_000;
   const keysOf = (o: unknown): string[] =>
@@ -852,7 +798,7 @@ describe("the fake's share links", () => {
     const port = fakeCloud(SEED, 'gm2', { limits: { lists: 2 } });
     const id = port.lists.newId();
     expect(await port.shares.clone('gm-token-1', id)).toEqual({ ok: true });
-    const read = await port.lists.list();
+    const read = await wholeLists(port);
     const copy = read.ok ? read.lists.find((l) => l.id === id) : undefined;
     expect(copy?.gm_note).toBe('Кузнец торгуется, если назвать имя его брата.');
     expect(copy?.list_entries[4]?.gm_note).toBe('Проклят.');
@@ -956,7 +902,7 @@ describe("the fake's share links", () => {
       const [fromPlayers, fromGm] = [port.lists.newId(), port.lists.newId()];
       expect(await port.shares.clone('player-token-1', fromPlayers)).toEqual({ ok: true });
       expect(await port.shares.clone('gm-token-1', fromGm)).toEqual({ ok: true });
-      const read = await port.lists.list();
+      const read = await wholeLists(port);
       const marks = (id: string) =>
         read.ok
           ? read.lists
@@ -1193,14 +1139,13 @@ describe("the fake's import", () => {
   it('adds every list with its entries, in the call order, after the lists there', async () => {
     const cloud = fakeCloud(SEED, 'gm2');
     expect(await cloud.lists.import(TWO)).toEqual({ ok: true });
-    const read = await cloud.lists.list();
+    const read = await wholeLists(cloud);
     const lists = read.ok ? read.lists : [];
     expect(lists.map((l) => l.name)).toEqual(['Список второго ГМа', 'Импорт', 'Пустой']);
     expect(lists[1]).toMatchObject({
       money_mode: 'coin',
       player_note: 'p',
-      gm_note: 'g',
-      legacy_fingerprint: null
+      gm_note: 'g'
     });
     expect(lists[1]?.list_entries).toEqual(TWO[0]?.entries);
     expect(lists[2]?.list_entries).toEqual([]);
@@ -1289,7 +1234,7 @@ describe("the fake's import", () => {
   /* The fixture is the fake's export of gm1: the store's order (newest edit first), the
      Russian names, a fixed date. Here, not in lib/bundle.test.ts: src/lib imports no port. */
   it("is what docs/fixtures/import/export.json holds for gm1's lists", async () => {
-    const read = await fakeCloud(SEED, 'gm1').lists.list();
+    const read = await wholeLists(fakeCloud(SEED, 'gm1'));
     const lists = (read.ok ? read.lists : [])
       .map(toCloudList)
       .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));
@@ -1466,6 +1411,20 @@ describe('the fake live topics', () => {
     const gm = await cloud.shares.read('gm-token-1');
     const row = gm.ok ? gm.shared?.entries.find((e) => e.item_key === 'di11') : undefined;
     expect(row?.gm_only).toBe(true);
+  });
+
+  it("removes one entry of any user's list as another device, and says false for an unknown list or key", async () => {
+    const cloud = fakeCloud(SEED);
+    const share = listen(cloud, 'share:' + uuid(112));
+    await tick();
+    expect(cloud.playRemove(SHOP, 'di11')).toBe(true);
+    expect(cloud.playRemove(uuid(999), 'di11')).toBe(false);
+    expect(cloud.playRemove(SHOP, 'nope')).toBe(false);
+    await tick();
+    expect(share.seen).toEqual(['live', ['revision', { revision: 2, id: '2' }]]);
+    const gm = await cloud.shares.read('gm-token-1');
+    expect(gm.ok && gm.shared?.entries).toHaveLength(9);
+    expect(gm.ok && gm.shared?.entries.some((e) => e.item_key === 'di11')).toBe(false);
   });
 
   it('delivers nothing after the leave', async () => {
@@ -1714,7 +1673,7 @@ describe("the fake's purchase requests", () => {
       short: [{ item: 'cc1', want: 9, have: 5 }]
     });
     expect(await cloud.requests.apply(uuid(6100), true)).toEqual({ ok: true, taken: 7 });
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([SHOP]);
     const shop = read.ok ? read.lists.find((l) => l.id === SHOP) : undefined;
     expect(shop?.list_entries.map((e) => `${e.item_key}@${String(e.position)}`)).toEqual([
       'q1@0',
@@ -1746,7 +1705,7 @@ describe("the fake's purchase requests", () => {
       short: [{ item: 'q1', want: 2, have: 0 }]
     });
     expect(await cloud.requests.apply(uuid(6101), false)).toEqual({ ok: true, taken: 2 });
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([SHOP]);
     const shop = read.ok ? read.lists.find((l) => l.id === SHOP) : undefined;
     expect(shop?.list_entries.find((e) => e.item_key === 'cc1')?.quantity).toBe(3);
   });
@@ -2360,7 +2319,7 @@ describe("the fake's homebrew", () => {
       ok: true,
       results: [OK, { ok: false, error: 'gone' }, REFUSED, REFUSED]
     });
-    const r = await cloud.lists.list();
+    const r = await cloud.lists.rows([EMPTY]);
     const e = r.ok ? r.lists.find((l) => l.id === EMPTY)?.list_entries[1] : undefined;
     expect(e).toMatchObject({
       id: uuid(7102),
@@ -2961,7 +2920,7 @@ describe("the fake's homebrew import and move", () => {
   /* The lists export as the account page writes it, from the fake's lists and items. */
   const listsExport = async (cloud: ReturnType<typeof fakeCloud>): Promise<string> => {
     const r = await loaded(cloud);
-    const read = await cloud.lists.list();
+    const read = await wholeLists(cloud);
     const lists = (read.ok ? read.lists : [])
       .map(toCloudList)
       .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));

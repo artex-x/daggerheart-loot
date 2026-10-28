@@ -17,7 +17,6 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Альтернативные таблицы" [level=1]
@@ -121,7 +120,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Страница
 Таблицы
 Условия использования
@@ -142,7 +140,6 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Alternate tables" [level=1]
@@ -229,7 +226,6 @@ How this works
 Install as an app
 Items
 LegendaryTier 3–4
-Lists
 Major Stride Potion
 Open this section on start
 Page

@@ -18,7 +18,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=inde
       link "Альт. таблицы" [url=index.html?as=gm1&items=66&sources=14#/roll/alt]
       link "Дополнения" [url=index.html?as=gm1&items=66&sources=14#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm1&items=66&sources=14#/tables]
-      link "Списки" [url=index.html?as=gm1&items=66&sources=14#/lists]
       link "Поиск" [url=index.html?as=gm1&items=66&sources=14#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -182,7 +181,6 @@ daggerheart.com
 Ранг 2Топор Тлеющих УглейEmber Axe
 Сеткой
 Снаряжение
-Списки
 Списком
 Таблицы
 Топор Тлеющих Углей
@@ -207,7 +205,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=index.html?as=gm1&items=6
       link "Alt. tables" [url=index.html?as=gm1&items=66&sources=14#/roll/alt]
       link "Supplements" [url=index.html?as=gm1&items=66&sources=14#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm1&items=66&sources=14#/tables]
-      link "Lists" [url=index.html?as=gm1&items=66&sources=14#/lists]
       link "Search" [url=index.html?as=gm1&items=66&sources=14#/search]
   main ""
     heading "Tables" [level=1]
@@ -356,7 +353,6 @@ Item 061Предмет 061
 Item 062
 Item 062Предмет 062
 List
-Lists
 Open this section on start
 Other
 Privacy

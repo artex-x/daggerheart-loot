@@ -123,7 +123,7 @@ export function srcName(key: string, lang: Lang): string {
 }
 
 /**
- * The source line on a print card, off app.js:954.
+ * The source line on a print card, off `git show 23c00a6^:app.js`.
  *
  * A table row's badge names the community, because other communities sit
  * beside it and the book is obvious. A card leaves the table and goes to the

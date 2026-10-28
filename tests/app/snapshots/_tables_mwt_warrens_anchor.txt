@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -288,7 +287,6 @@ daggerheart.com
 Снакс
 Снаряжение
 Солнечная Корона
-Списки
 Списком
 Ссылка на таблицу
 Стив
@@ -335,7 +333,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/many_worlds_tave
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -557,7 +554,6 @@ Install as an app
 Lent Leg
 Link to this table
 List
-Lists
 Longhorn
 Lucky Limb
 Lumus

@@ -17,7 +17,6 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=#/ac
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Аккаунт" [level=1]
@@ -51,7 +50,6 @@ daggerheart.com
 ЛутDaggerheart
 Обычные правила
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -73,7 +71,6 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=#/account]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Account" [level=1]
@@ -97,7 +94,6 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=#/account]
 Alt. tables
 EN
 Install as an app
-Lists
 Privacy
 RU
 Search

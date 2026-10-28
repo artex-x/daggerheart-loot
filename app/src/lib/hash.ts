@@ -17,9 +17,6 @@ import {
 import { canonJson, fnv1a128 } from './homebrew.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
 
-/** A packed link is marked with "~": base64url has no tilde and never can. */
-export const PACK_MARK = '~';
-
 /** More than this and the browser stalls. Twenty sheets of nine. */
 export const PRINT_MAX = 180;
 
@@ -44,7 +41,9 @@ export type Route =
   /** Any address under `#/print/`: the retired print page, nothing read from it. */
   | { kind: 'printRetired' }
   | { kind: 'storedList'; listId: string }
-  | { kind: 'sharedList'; payload: string; packed: boolean }
+  /** An old list link (`#/l/...`): the not-found page, the address kept
+   *  (docs/specs/ROUTES.md). */
+  | { kind: 'listRetired' }
   /** An account list's share link; `token` is the leading run of `[A-Za-z0-9_-]`,
    *  empty for a bare `#/s/`, and `filter` the optional `/f_` segment after it
    *  (docs/specs/ROUTES.md). */
@@ -140,9 +139,7 @@ export function legacySource(hash: string): { core: boolean; hnf: boolean } | nu
 export function parseHash(hash: string): Route {
   const h = stripHash(hash);
 
-  if (h.startsWith('l/' + PACK_MARK)) {
-    return { kind: 'sharedList', payload: h.slice(2), packed: true };
-  }
+  if (/^l\//.test(h)) return { kind: 'listRetired' };
   if (/^i\/[\w-]+$/.test(h)) return { kind: 'record', id: h.slice(2) };
   if (/^print\//.test(h)) return { kind: 'printRetired' };
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
@@ -173,16 +170,6 @@ export function parseHash(hash: string): Route {
   }
   const hb = /^homebrew\/(new|hb_[a-z2-7]{16})$/.exec(h);
   if (hb) return { kind: 'homebrewItem', key: hb[1] === 'new' ? null : (hb[1] ?? null) };
-  /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
-     client swallowing a trailing full stop is the reachable case (R5) - used
-     to fail the character class and fall through to `unknown`, which sent the
-     whole address home instead of to the shared-list page's own "not found"
-     screen. The payload itself is read as written, valid or not; decoding it
-     is `decodeList`'s job, not the router's. */
-  if (/^l\//.test(h)) {
-    return { kind: 'sharedList', payload: h.slice(2), packed: false };
-  }
-
   /* Old names lead to the same section; the source is read by legacySource() */
   if (LEGACY[h]) return { kind: 'section', section: 'roll/std' };
 
@@ -263,10 +250,6 @@ export function homebrewItemHash(key: string | null): string {
 /** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and `rules`. */
 export function homebrewTabHash(tab: HomebrewTab, key: string | null = null): string {
   return tab === 'items' ? HOMEBREW_HASH : HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
-}
-
-export function sharedListHash(payload: string): string {
-  return '#/l/' + payload;
 }
 
 export function storedListHash(listId: string): string {

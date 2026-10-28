@@ -72,7 +72,7 @@ export function browserImage(): ImagePort {
       }),
 
     /* D14: the download fallback for a clipboard that will not take the
-       picture - the live `downloadImage` (app.js 1717-1726), a hidden
+       picture - the live `downloadImage` (`git show 23c00a6^:app.js`), a hidden
        `<a download>` clicked once and discarded. The object URL is revoked
        on a delay rather than immediately after `click()`: revoking it before
        the browser has read the blob for the download would leave the saved

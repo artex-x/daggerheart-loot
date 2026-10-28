@@ -17,7 +17,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Поиск" [level=1]
@@ -610,7 +609,6 @@ daggerheart.com
 Согревающие Пирожки
 Сок Солнечного Древа
 Сосуд Западного Ветра
-Списки
 Стальная Алебарда
 Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
 Сфера Лунного Света
@@ -683,7 +681,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Search" [level=1]
@@ -1210,7 +1207,6 @@ Leviathan Harpoon
 Life Force Beacon
 Lightning Scarab
 Lionheart Tonic
-Lists
 Lorekeeper
 Lyrebird Lozenge
 Magic-User's Malison

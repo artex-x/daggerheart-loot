@@ -7,7 +7,6 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
@@ -988,7 +987,11 @@ describe('image review', () => {
     });
 
     describe('the transpiled label code', () => {
-      const dir = mkdtempSync(join(tmpdir(), 'review-lib-'));
+      /* Inside the repository so a bare package import in the transpiled
+         closure (`@orama/stemmers`) resolves from the root node_modules. */
+      const cache = join(ROOT, 'node_modules', '.cache');
+      mkdirSync(cache, { recursive: true });
+      const dir = mkdtempSync(join(cache, 'review-lib-'));
       after(() => rmSync(dir, { recursive: true, force: true }));
 
       it('loads and gives the values of the site', async () => {

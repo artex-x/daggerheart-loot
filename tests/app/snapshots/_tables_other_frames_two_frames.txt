@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -183,7 +182,6 @@ daggerheart.com
 СкалкаРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Одно... [namelen=105 namehash=5920ae62]
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Ссылка на таблицу
 Ссылка на фильтры
@@ -233,7 +231,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/other_frames/f_f
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -380,7 +377,6 @@ Legendary Small Revolver
 Legendary Small RevolverTier 4 · Physical · Finesse · Far · d6+9... [namelen=190 namehash=9011273c]
 Link to this table
 List
-Lists
 Motherboard
 Open this section on start
 Other

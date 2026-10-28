@@ -1,6 +1,6 @@
 <script lang="ts">
-  /* Six tabs, five from the cutoff: `#/lists` is then reached from the account
-   * menu (docs/specs/ROUTES.md, "Sections"). The six supplement roll sections
+  /* Five tabs: `#/lists` is reached from the account menu (docs/specs/ROUTES.md,
+   * "Sections"). The six supplement roll sections
    * share one tab, which lights on each of them and links to the first; their
    * page draws a chip panel for the rest (`SupplementNav.svelte`).
    *
@@ -16,22 +16,18 @@
     t: Dict;
     current: Section | null;
     label: string;
-    /** False drops the Lists tab. */
-    lists?: boolean;
   }
 
-  const { t, current, label, lists = true }: Props = $props();
+  const { t, current, label }: Props = $props();
 
   const TABS: [Section, keyof Dict][] = [
     ['roll/std', 'std'],
     ['roll/alt', 'alt'],
     ['roll/wondrous', 'grpSupplements'],
     ['tables', 'tables'],
-    ['lists', 'lists'],
     ['search', 'search']
   ];
 
-  const tabs = $derived(lists ? TABS : TABS.filter(([s]) => s !== 'lists'));
   const lit = $derived(tabOf(current));
 
   let nav = $state<HTMLElement | undefined>(undefined);
@@ -57,7 +53,7 @@
 </script>
 
 <nav class="tabs" aria-label={label} bind:this={nav}>
-  {#each tabs as [section, key] (section)}
+  {#each TABS as [section, key] (section)}
     <a
       href={sectionHash(section)}
       class:on={section === lit}
@@ -80,8 +76,8 @@
     margin-inline: auto;
   }
 
-  /* Narrow scrolls, wide wraps. Six tabs hold one row from 640 px in both
-     languages (607 px in Russian); the wrap is a guard, not a layout. */
+  /* Narrow scrolls, wide wraps. Five tabs hold one row from 640 px in both
+     languages; the wrap is a guard, not a layout. */
   @media (max-width: 640px) {
     .tabs {
       flex-wrap: nowrap;
@@ -122,7 +118,7 @@
     margin-left: auto;
   }
 
-  /* This component's share of style.css's `@media print` block (1403), which
+  /* This component's share of the `@media print` block of `git show 23c00a6^:style.css`, which
      names `.tabs` alongside `.topbar`. Redundant while the nav sits inside
      `Shell.svelte`'s header - measured under print media, the header is
      already `display: none` and the nav has no client rect - but the live

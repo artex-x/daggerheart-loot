@@ -1,9 +1,9 @@
 # #/lists ~ help
 # route: #/lists
-# why: the six paragraphs, the third and fifth with two bold runs each and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth when #/l/ links stop opening, the sixth what ticked account lists and «Импорт из файла» do
+# why: the five paragraphs, the third with two bold runs and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth what ticked account lists and «Импорт из файла» do
 
 ## ru :: tree
-RootWebArea "Списки - Генератор лута Daggerheart" [url=#/lists]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=#/lists]
   link "К содержимому" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -17,7 +17,6 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=#/list
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Мои списки" [level=1]
@@ -25,7 +24,7 @@ RootWebArea "Списки - Генератор лута Daggerheart" [url=#/list
     button "Как это работает" [expanded=true]
     StaticText "Соберите добычу в список и отправьте игрокам одной ссылкой."
     StaticText "Соберите список: отметьте нужное галочками в «Таблицах» или «Пои..." [namelen=240 namehash=abd374d0]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     StaticText "Списки аккаунта можно отметить и скачать файлом JSON или удалить..." [namelen=223 namehash=f9d62407]
     heading "НОВЫЙ СПИСОК" [level=2]
     StaticText "Войдите, чтобы создавать списки: они хранятся в аккаунте и откры..." [namelen=91 namehash=6acb7841]
@@ -51,13 +50,12 @@ daggerheart.com
 Обычные правила
 Открывать этот раздел при запуске
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=#/lists]
   link "Skip to content" [url=#main]
   banner ""
     link "Лут DAGGERHEART" [url=#/roll/std]
@@ -71,7 +69,6 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "My lists" [level=1]
@@ -79,7 +76,7 @@ RootWebArea "Lists - Daggerheart Loot Generator" [url=#/lists]
     button "How this works" [expanded=true]
     StaticText "Collect loot into a list and send it to your players as a single..." [namelen=70 namehash=7a94568a]
     StaticText "Build a list: tick what you need in Tables or Search and press "..." [namelen=206 namehash=3e1b74bd]
-    ... StaticText x14 of 18 same-shape siblings elided
+    ... StaticText x9 of 13 same-shape siblings elided
     StaticText "Tick account lists to download them as a JSON file or delete the..." [namelen=230 namehash=4a251e4b]
     heading "NEW LIST" [level=2]
     StaticText "Sign in to create lists: they are kept in your account and open ..." [namelen=78 namehash=3401c3a9]
@@ -96,7 +93,6 @@ Alt. tables
 EN
 How this works
 Install as an app
-Lists
 Open this section on start
 Privacy
 RU

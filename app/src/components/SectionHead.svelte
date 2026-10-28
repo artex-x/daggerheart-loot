@@ -45,7 +45,7 @@
 </div>
 
 <style>
-  /* off `.tsec-head` and `.tsec-link` in style.css:527-534 */
+  /* off `.tsec-head` and `.tsec-link` in `git show 23c00a6^:style.css` */
   .tsec-head {
     display: flex;
     align-items: center;

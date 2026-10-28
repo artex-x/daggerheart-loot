@@ -919,7 +919,7 @@
                 : ''}
         />
         {#if banner === 'conflict'}
-          <NoticeBox warn>
+          <NoticeBox>
             {t.hbConflict}
             {#snippet actions()}
               <Button
@@ -933,7 +933,7 @@
             {/snippet}
           </NoticeBox>
         {:else if banner === 'gone'}
-          <NoticeBox warn>
+          <NoticeBox>
             {t.hbGone}
             {#snippet actions()}
               <Button
@@ -1104,7 +1104,7 @@
             <span class="counter">{descLength} / {DESC_MAX}</span>
           {/if}
           {#if view === 'print' && clipped}
-            <NoticeBox warn>{t.hbPrintClipped}</NoticeBox>
+            <NoticeBox>{t.hbPrintClipped}</NoticeBox>
           {/if}
         </FormField>
         <ArtField

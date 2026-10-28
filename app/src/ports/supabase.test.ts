@@ -830,8 +830,12 @@ describe('the lists', () => {
     expect(read.ok && read.entryLimit).toBeNull();
   });
 
+  /* The whole read and a re-read's changed lists take heads; `rows` takes every column. */
   const SELECT =
-    'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,legacy_fingerprint,' +
+    'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,' +
+    'list_entries(id,item_key,source,hb_item,position)';
+  const WHOLE =
+    'id,name,money_mode,player_note,gm_note,created_at,updated_at,revision,' +
     'list_entries(id,item_key,source,hb_item,position,quantity,price_coins,player_note,gm_note,gm_only)';
   const ORDERED = [
     ['order', ['updated_at', { ascending: false }]],
@@ -916,6 +920,46 @@ describe('the lists', () => {
     const { lists } = make();
     expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
     expect(await lists.list({ l1: 3 })).toEqual({ ok: false });
+  });
+
+  it('reads no rows for no ids', async () => {
+    expect(await make().lists.rows([])).toEqual({ ok: true, lists: [] });
+    expect(client.from).not.toHaveBeenCalled();
+  });
+
+  it('reads 51 lists whole in two calls of 50 and 1, in order, with no limit read', async () => {
+    const ids = Array.from({ length: 51 }, (_, i) => `l${String(i)}`);
+    const [first, second] = answers(
+      { data: [row('l0', 1)], error: null, status: 200 },
+      {
+        data: [
+          {
+            ...row('l50', 1),
+            list_entries: [entry('b', 'q2', 1), entry('c', 'q3', 0), entry('a', 'q1', 1)]
+          }
+        ],
+        error: null,
+        status: 200
+      }
+    );
+    const read = await make().lists.rows(ids);
+    expect(first).toEqual([['select', [WHOLE]], ...ORDERED, ['in', ['id', ids.slice(0, 50)]]]);
+    expect(second).toEqual([['select', [WHOLE]], ...ORDERED, ['in', ['id', ['l50']]]]);
+    expect(read.ok && read.lists.map((l) => l.id)).toEqual(['l0', 'l50']);
+    expect(read.ok && read.lists[1]?.list_entries.map((e) => e.id)).toEqual(['c', 'a', 'b']);
+    expect(client.rpc).not.toHaveBeenCalled();
+  });
+
+  it('answers not ok to a failed second chunk of rows, and to a thrown read', async () => {
+    const ids = Array.from({ length: 51 }, (_, i) => `l${String(i)}`);
+    answers(
+      { data: [], error: null, status: 200 },
+      { data: null, error: { code: '57014' }, status: 500 },
+      new Error('offline')
+    );
+    const { lists } = make();
+    expect(await lists.rows(ids)).toEqual({ ok: false });
+    expect(await lists.rows(['l1'])).toEqual({ ok: false });
   });
 
   describe('the limit reads', () => {
@@ -1101,66 +1145,6 @@ describe('the lists', () => {
     expect(await make().lists.apply(OPS)).toEqual({ ok: false, error: 'fault', timeout: true });
   });
 
-  it('moves a browser list through move_legacy_list and reads the row it answers', async () => {
-    client.rpc
-      .mockResolvedValueOnce({ data: [{ id: 'l9', inserted: true }], error: null, status: 200 })
-      .mockResolvedValueOnce({
-        data: [{ id: 'l9', inserted: false }],
-        error: null,
-        status: 200
-      });
-    const { lists } = make();
-    expect(await lists.move('l1', '{"ids":[],"name":"К"}')).toEqual({
-      ok: true,
-      id: 'l9',
-      inserted: true
-    });
-    expect(client.rpc).toHaveBeenCalledWith('move_legacy_list', {
-      p_id: 'l1',
-      p_canonical: '{"ids":[],"name":"К"}'
-    });
-    expect(await lists.move('l2', '{"ids":[],"name":"К"}')).toEqual({
-      ok: true,
-      id: 'l9',
-      inserted: false
-    });
-  });
-
-  it('refuses a move answer with no row or a row of the wrong shape', async () => {
-    client.rpc
-      .mockResolvedValueOnce({ data: [], error: null, status: 200 })
-      .mockResolvedValueOnce({ data: null, error: null, status: 200 })
-      .mockResolvedValueOnce({ data: [{ id: 5, inserted: true }], error: null, status: 200 });
-    const { lists } = make();
-    for (let i = 0; i < 3; i++) {
-      expect(await lists.move('l1', '{}')).toEqual({ ok: false, error: 'refused' });
-    }
-  });
-
-  /* `move` is read by `writeOf`, not by `apply`'s fault rule: a lapsed session and
-     a row deleted during the move are retried on the next load. */
-  const MOVE: [string, unknown, string][] = [
-    ['400 22023', { error: { code: '22023', message: 'not a list' }, status: 400 }, 'refused'],
-    ['404 PGRST202', { error: { code: 'PGRST202', message: 'x' }, status: 404 }, 'refused'],
-    ['401', { error: { code: '', message: 'JWT expired' }, status: 401 }, 'network'],
-    ['PGRST303', { error: { code: 'PGRST303', message: 'x' }, status: 401 }, 'network'],
-    [
-      '403 28000',
-      { error: { code: '28000', message: 'not signed in' }, status: 403 },
-      'network'
-    ],
-    ['500 40001', { error: { code: '40001', message: 'deleted' }, status: 500 }, 'network'],
-    ['500 40P01', { error: { code: '40P01', message: 'x' }, status: 500 }, 'network'],
-    ['500 57014', { error: { code: '57014', message: 'x' }, status: 500 }, 'network'],
-    ['thrown', new Error('offline'), 'network']
-  ];
-
-  it.each(MOVE)('reads a move answered %s', async (_name, answer, error) => {
-    if (answer instanceof Error) client.rpc.mockRejectedValueOnce(answer);
-    else client.rpc.mockResolvedValueOnce({ data: null, ...(answer as object) });
-    expect(await make().lists.move('l1', '{}')).toEqual({ ok: false, error });
-  });
-
   it('makes a fresh v4 id', () => {
     const { lists } = make();
     const id = lists.newId();
@@ -1252,10 +1236,9 @@ describe('the import', () => {
 
   it('reads a statement timeout as tooSlow for an import only: another write sends it again', async () => {
     const timeout = { data: null, error: { code: '57014', message: 'x' }, status: 500 };
-    client.rpc.mockResolvedValueOnce(timeout).mockResolvedValueOnce(timeout);
-    const { lists, shares } = make();
+    client.rpc.mockResolvedValueOnce(timeout);
+    const { shares } = make();
     expect(await shares.revoke('s1')).toEqual({ ok: false, error: 'network' });
-    expect(await lists.move('l1', '{}')).toEqual({ ok: false, error: 'network' });
   });
 
   describe('with no answer', () => {
@@ -1549,11 +1532,6 @@ describe('a write with no answer', () => {
     [
       'apply',
       (c: ReturnType<typeof make>) => c.lists.apply([{ op: 'remove', id: 'l1' }]),
-      { ok: false, error: 'network' }
-    ],
-    [
-      'move',
-      (c: ReturnType<typeof make>) => c.lists.move('l1', '{}'),
       { ok: false, error: 'network' }
     ],
     [

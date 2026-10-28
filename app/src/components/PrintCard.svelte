@@ -1,7 +1,6 @@
 <script lang="ts">
-  /* One print card, both layouts - off `printCardHTML` (app.js 3364-3425),
-   * `dmgStripHTML` (3298-3320), `dieHTML` (3323-3331), `thStripHTML`
-   * (3333-3356) and `fitPrintCards` (3438-3508). The colour and the
+  /* One print card, both layouts - off `printCardHTML`, `dmgStripHTML`, `dieHTML`,
+   * `thStripHTML` and `fitPrintCards` (`git show 23c00a6^:app.js`). The colour and the
    * black-and-white layout are drawn from the same markup below, branching
    * exactly where the live code does - `class:bw` and the `{#if bw}`
    * branches, not two components: they share every helper and the fit.
@@ -449,7 +448,7 @@
   ></article
 >
 
-<!-- This block is style.css 1128-1395, ported verbatim in order - including
+<!-- This block is the print card block of `git show 23c00a6^:style.css`, ported verbatim in order - including
      `.pc-text p` and `.pc-text em`, which this component never draws (the
      text's paragraphs are joined with `<br>`, and the markup draws `<i>`, not
      `<em>`). A full copy is easier to audit against style.css than a pruned
@@ -1128,7 +1127,7 @@
     padding-left: 4cqw;
   }
 
-  /* The global `.dlist li` rule (style.css:725) still applies to a live list
+  /* The global `.dlist li` rule (`git show 23c00a6^:style.css`) still applies to a live list
      item; ported here since the card's list is this component's own markup
      and no global `.dlist` rule exists in `app/`. */
   .pc-text li {

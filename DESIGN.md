@@ -348,8 +348,8 @@ full-width element does not invent its own container or its own gutter.
 
 **The Two Breakpoints Rule.** The system has two. At 640px the tab strip stops
 wrapping and becomes a horizontal scroller that keeps the current tab centred.
-Above it the six tabs hold one row at 768px and 1180px in both languages (607px
-in Russian, measured), so the header stays 106px.
+Above it the five tabs hold one row at 768px and 1180px in both languages (six tabs
+measured 607px in Russian before R10), so the header stays 106px.
 At 600px touch targets grow: segment padding to 8px 14px, the section copy-link
 button from about 20px to a 36px hit area, row actions onto their own line.
 Every other media query in the code belongs to one component and its own

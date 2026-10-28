@@ -437,7 +437,7 @@
     "why": "lists index",
     "resolves": {
       "hash": "#/lists",
-      "tab": "#/lists",
+      "tab": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -549,9 +549,31 @@
   },
   {
     "hash": "#/l/ABC.",
-    "why": "a shared-list payload with a stray trailing character opens the shared-list page instead of falling back home (R5)",
+    "why": "an old list link with a stray character draws the not-found page, the address kept, never home",
     "resolves": {
       "hash": "#/l/ABC.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/l/~AAAA",
+    "why": "a packed old list link: the not-found page, the address kept",
+    "resolves": {
+      "hash": "#/l/~AAAA",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg",
+    "why": "an old list link that opened a list before 2026-10-26: the not-found page, the address kept",
+    "resolves": {
+      "hash": "#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg",
       "tab": null,
       "rows": 0,
       "printCards": 0,

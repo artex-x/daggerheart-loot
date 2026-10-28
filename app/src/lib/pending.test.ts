@@ -27,7 +27,12 @@ describe('readPending', () => {
       ids: ['ci1', 'q1'],
       picked: { ci1: 2 }
     });
-    expect(readPending(add({ name: 'Клад' }))).toMatchObject({ name: 'Клад' });
+    /* An older tab wrote a typed list name; it reads back without it and still reopens the menu. */
+    expect(readPending(add({ name: 'Клад' }))).toEqual({
+      do: 'addToList',
+      key: 'sel',
+      ids: ['ci1', 'q1']
+    });
     expect(readPending(add({ picked: {} }))).toEqual({
       do: 'addToList',
       key: 'sel',
@@ -56,9 +61,6 @@ describe('readPending', () => {
       add({ picked: { w1: 2 } }),
       add({ picked: [2] }),
       add({ picked: null }),
-      add({ name: '' }),
-      add({ name: 7 }),
-      add({ name: 'x'.repeat(201) }),
       { do: 'saveItem' },
       { do: 'saveItem', hid: 'hb_emberaxeaaaaaaaa' },
       { do: 'saveItem', hid: HID + '0' },

@@ -23,8 +23,8 @@ const TARGETS = {
   }
 };
 
-/* ListPage.svelte's scheduleUrlSync debounces the address write this long.
-   tests/app/golden.test.mjs asserts the two still agree. */
+/* The quiet window of `addressSettled()`. ListPage.svelte's 150 ms address
+   write went in R10, so no app write needs it now (docs/specs/COVERAGE.md). */
 const URL_DEBOUNCE_MS = 150;
 
 /** Waits until the app has drawn something. */
@@ -95,7 +95,7 @@ async function ready(page) {
  * the CSS rule cannot reach, and for whenever the emulation is scoped down.
  * What it does NOT do any more is stand in for anything a press defers past
  * 80ms - a debounce, a timer. Those need their own assertion, the way
- * `addressSettled()` below is one for `ListPage`'s URL sync.
+ * `addressSettled()` below is one for an address write.
  */
 async function settle(page) {
   await page.evaluate(async () => {
@@ -184,9 +184,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * does not have stops the boot with `#boot-error` (main.ts), which
      * fails here at once rather than as a page that never draws.
      *
-     * `today` (`YYYY-MM-DD`) is the test build's clock: `?today=` sets the
-     * day the app reads for the legacy write cutoff. Without it the build is
-     * pinned before the cutoff (`ports/clock.ts`). `holdToasts` opens with
+     * The test build's clock is fixed (`TEST_NOW` in `ports/clock.ts`). `holdToasts` opens with
      * `?toasts=held`: a toast stays until the next one replaces it. `items`
      * opens with `?items=<n>`: the fake fills the signed-in user's homebrew to
      * n items and sets the item limit to n (`fillItems`); `sections` and
@@ -194,14 +192,13 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * only): a long section row and n more named sources (`fillSections`,
      * `fillSources`). `lang` opens with `?lang=<ru|en>`: a signed-in user's
      * stored preferences take that language. `hold` opens with
-     * `?hold=<name>:<mode>`: the fake's lines or linked items read never
+     * `?hold=<name>:<mode>`: the fake's lines, linked items or lists' rows read never
      * answers (`stall`) or fails (`fail`), so a loading or failed state holds.
      */
-    async open(route, { as, today, holdToasts, items, sections, sources, lang, hold } = {}) {
+    async open(route, { as, holdToasts, items, sections, sources, lang, hold } = {}) {
       const query = new URLSearchParams();
       if (as) query.set('as', as);
       if (lang) query.set('lang', lang);
-      if (today) query.set('today', today);
       if (holdToasts) query.set('toasts', 'held');
       if (items) query.set('items', String(items));
       if (sections) query.set('sections', String(sections));
@@ -543,24 +540,95 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
     },
 
     /**
-     * Waits up to 6 s until the move of browser lists into the account has
-     * settled: `<main>` has no `data-move` (signed out, or no cloud), or it
-     * reads `done` or `failed`. `pending` (the session is unknown), `idle`
-     * and `moving` hold the wait, and so does `data-homebrew` reading `idle` or
-     * `loading` (the author's items not read yet). A page still waiting at 6 s throws with
+     * Makes account lists in the page's fake cloud, as the signed-in user, then
+     * fires the shown-again signal so the page reads them. `specs` is
+     * `{ n, name, ids, meta = {}, money = 'bag', note = '', hnote = '' }[]`:
+     * list `uuid(8000 + n)`, entry `i` `uuid(80000 + n * 100 + i)`, the quantity,
+     * price and notes of an entry from `meta[id]` (`qty`, `gold`, `note`, `hnote`).
+     * Answers `{ id, hash }[]`. A fake that refuses a write throws. Call it after
+     * `open({ as })`: a new `open` resets the fake.
+     */
+    async accountLists(specs) {
+      const uuid = (n) => '00000000-0000-4000-8000-' + String(n).padStart(12, '0');
+      const ops = specs.map(
+        ({ n, name, ids, meta = {}, money = 'bag', note = '', hnote = '' }) => ({
+          op: 'create',
+          list: {
+            id: uuid(8000 + n),
+            name,
+            money_mode: money,
+            player_note: note,
+            gm_note: hnote
+          },
+          entries: ids.map((id, i) => ({
+            id: uuid(80000 + n * 100 + i),
+            item_key: id,
+            source: 'official',
+            hb_item: null,
+            position: i,
+            quantity: meta[id]?.qty ?? 1,
+            price_coins: meta[id]?.gold ?? null,
+            player_note: meta[id]?.note ?? '',
+            gm_note: meta[id]?.hnote ?? ''
+          }))
+        })
+      );
+      const r = await d.fake('lists.apply', ops);
+      if (!r?.ok) throw new Error(`${target}: the fake refused the account lists`);
+      await d.shownAgain();
+      return specs.map(({ n }) => {
+        const id = uuid(8000 + n);
+        return { id, hash: '#/lists/' + id };
+      });
+    },
+
+    /**
+     * Answers the item keys of the account list `id` in the fake cloud, in
+     * position order, joined by `,`. With `until` (an empty string counts) it
+     * repeats every 100 ms until the answer equals `until` or `ms` pass, because the
+     * account buffer sends 2 s after the last edit; a list the fake does not hold
+     * answers `''`.
+     */
+    async listKeys(id, { until, ms = 6000 } = {}) {
+      const read = async () => {
+        const r = await d.fake('lists.list');
+        const list = r?.ok ? r.lists.find((l) => l.id === id) : undefined;
+        return (list?.list_entries ?? [])
+          .slice()
+          .sort((a, b) => a.position - b.position)
+          .map((e) => e.item_key)
+          .join(',');
+      };
+      let keys = await read();
+      if (until === undefined) return keys;
+      const end = Date.now() + ms;
+      while (keys !== until && Date.now() < end) {
+        await new Promise((r) => setTimeout(r, 100));
+        keys = await read();
+      }
+      return keys;
+    },
+
+    /**
+     * Waits up to 6 s until the account lists have settled: `<main>` has no
+     * `data-lists` (signed out, or no cloud), or it reads `ready` or `error`; on an
+     * account list's page that is the read of the list's entries.
+     * `pending` (the session is unknown), `idle` and `loading` hold the wait, and
+     * so does `data-homebrew` reading `idle` or `loading` (the author's items not
+     * read yet). A page still waiting at 6 s throws with
      * `name` (the state; the address when none is given) and the value: a
      * capture never waits the timeout out silently (docs/specs/COVERAGE.md,
      * "Test layers").
      */
-    async moveSettled(name) {
+    async settled(name) {
       try {
         await page.waitForFunction(
           () => {
             const main = document.querySelector('main');
-            const v = main?.getAttribute('data-move');
+            const v = main?.getAttribute('data-lists');
             const hb = main?.getAttribute('data-homebrew');
             return (
-              (v === null || v === undefined || v === 'done' || v === 'failed') &&
+              (v === null || v === undefined || v === 'ready' || v === 'error') &&
               hb !== 'idle' &&
               hb !== 'loading'
             );
@@ -570,14 +638,14 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       } catch {
         const state = await page.evaluate(() => [
           location.hash,
-          document.querySelector('main')?.getAttribute('data-move') ?? 'no main',
+          document.querySelector('main')?.getAttribute('data-lists') ?? 'no main',
           document.querySelector('main')?.getAttribute('data-homebrew') ?? 'none'
         ]);
         throw new Error(
           target +
             ': ' +
             (name ?? state[0]) +
-            ': the move did not settle in 6 s (data-move="' +
+            ': the lists did not settle in 6 s (data-lists="' +
             state[1] +
             '", data-homebrew="' +
             state[2] +
@@ -605,9 +673,9 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
     },
 
     /**
-     * Waits for the address bar to stop changing - specifically for
-     * `ListPage.svelte`'s 150ms-debounced URL sync (`URL_DEBOUNCE_MS` above)
-     * to land, which `settle()` no longer waits long enough to catch (see its
+     * Waits for the address bar to stop changing - for any debounced address
+     * write (`URL_DEBOUNCE_MS` above) to land, which `settle()` no longer waits
+     * long enough to catch (see its
      * own doc comment). Polls `location.hash` every 40ms (the same cadence
      * `golden.js`'s `waitForToast` uses) and returns once it has been
      * unchanged for `quiet` ms.
@@ -642,34 +710,6 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
           lastChange = Date.now();
         }
       }
-    },
-
-    /**
-     * Waits for a packed shared-list address to finish expanding.
-     *
-     * `ready()` alone is not enough here: on the live app nothing renders
-     * before `expandHash()` replaces the hash (the legacy app.js: `if
-     * (!expandHash()) render()`), so its own wait for `#view`/`#app` to have
-     * children already implies the expansion landed. The rewrite's `Shell`
-     * mounts at once and the replace lands a few milliseconds later, so
-     * without this the packed cell would race the expansion on one side only.
-     */
-    async expanded() {
-      await page.waitForFunction(() => !location.hash.startsWith('#/l/~'));
-      await settle(page);
-    },
-
-    /**
-     * Waits for a packed address that will never finish expanding:
-     * the hash itself does not change any more once expansion fails, so
-     * `expanded()`'s own wait would spin until its timeout. The bad-link
-     * page's own heading is the first thing `ListPage` draws while the route
-     * stays packed, so waiting for any heading to exist is the general
-     * signal that the async unpack has settled one way or the other.
-     */
-    async expandFailed() {
-      await page.waitForFunction(() => !!document.querySelector('main h1'));
-      await settle(page);
     },
 
     /**
@@ -841,7 +881,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
     /**
      * Calls the fake cloud's function at the dotted `path` in the page and
      * returns its awaited answer - `fake('setOffline', true)`,
-     * `fake('auth.signOut')`, `fake('lists.list')`. The test build only
+     * `fake('auth.signOut')`, `fake('lists.rows', [id])`. The test build only
      * (`window.__dhlootFake`); a path that names no function throws.
      */
     fake(path, ...args) {

@@ -3,7 +3,7 @@
    * `LangSwitch.svelte` and `TablesPage.svelte`'s view switch each carried
    * the whole rule set; this is that pair collapsed into one component, with
    * an honest `aria-pressed` on every use - the live language segment writes
-   * it (app.js:3664), the live view and print segments do not, and the fix
+   * it (`git show 23c00a6^:app.js`), the live view and print segments do not, and the fix
    * is to add it everywhere rather than lose it from the pair that had it. */
   interface Option<T> {
     value: T;
@@ -65,7 +65,7 @@
 </div>
 
 <style>
-  /* off `.seg` in style.css (72-81, 880-881) */
+  /* off `.seg` in `git show 23c00a6^:style.css` */
   .seg {
     display: flex;
     background: var(--surface);

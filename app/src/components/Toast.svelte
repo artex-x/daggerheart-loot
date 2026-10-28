@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The one notice the app raises, off `showToast`/`toast`/`toastAction` in
-     app.js (969-1006) and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
+     `git show 23c00a6^:app.js` and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
      `toastIn` in style.css. An action is an undo button, which takes focus, or a
      link opened in a new tab, which never does; an action toast pauses while
      hovered or while the person has moved focus into it (docs/specs/FEATURES.md,
@@ -222,7 +222,7 @@
     }
   }
 
-  /* off `#toast` in the live `@media print` block (style.css:1409): without
+  /* off `#toast` in the live `@media print` block (`git show 23c00a6^:style.css`): without
      `!important`, `.toast{display:none}` (0,1,0) lost under print to
      `.toast.act{display:inline-flex}` (0,2,0) above, so an action toast (an
      undo prompt, mid-copy) printed over the page. */

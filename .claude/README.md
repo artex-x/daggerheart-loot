@@ -268,7 +268,7 @@ arm or break the gate; `tree-key.mjs`), a backgrounded `npm run check` in a suba
 | `PreToolUse` | `Agent\|Task\|SubagentDispatch` | `agent-guard.mjs` | Judges an `implementer` dispatch whose prompt names `TASK: <id>` against `issues/<id>/plan.md` Status: denies when it has no `- Plan review:` line or a malformed one ("declare it"), and for each `required before <batch>` line, the newest `issues/<id>/reviews/plan-<batch>.md` or `plan-<batch>-<n>.md` with a `Verdict:` line (numeric order; `lib.mjs`, `parseReviewHead`) decides: `approve` allows; `fix-then-continue` allows when a Status line `- Plan review findings applied: reviews/<that file>` names it; `replan` denies ("a replan needs a second look"); no such report denies ("dispatch the reviewer"); the deny names the file, each report seen with its verdict, and the dispatch tool (`docs/decisions/`, 2026-09-27, "A plan that changes schema, contracts, stored data or sync is reviewed first"; 2026-10-01, "A plan review's fix-then-continue is applied once, with no second look"). Silent for another agent type, no `TASK:` line, a `TASK: <id>` placeholder, no `plan.md`, and any throw; a resume (`SendMessage`) is not a dispatch. This host's dispatch tool is `Agent`; `Task` and `SubagentDispatch` are other builds' names. | **block** |
 | `PreToolUse` | `Read\|Grep` | `read-guard.mjs` | Denies the Read tool's `file_path`, and the Grep tool's `path` or `glob`, whose last path segment starts with `.env` (case folded, `\` read as `/`), from any checkout, because a `./` pattern in `permissions.deny` binds the session's working directory and an absolute path from a worktree passed it (`docs/decisions/`, 2026-09-27, "The Read and Grep tools are denied `.env` files by a hook, not only by settings"). A Grep by pattern over a directory is not judged ("Known limitations"). A worktree agent is guarded by its worktree's tree, cut from `origin/main`, so a change reaches it only after the push ("Known limitations"). No git and no file read; any throw allows. | **block** |
 | `PostToolUse` | `Bash\|PowerShell` | `check-observer.mjs` | `npm run check:db` from either tool: reads the output from `tool_response.stdout`, else `.output`, else a string response, plus `stderr`; a `check:db: BUSY` line (the local stack lock is held; tested before the FAIL markers, because npm prints its own error lines for exit 3) says BUSY and writes nothing, a `check:db: PASS` line writes `.check-db-cache.json` and says "Commit gate armed for supabase/ and tests/db/", a `check:db: FAIL` line or a failure marker says FAIL, neither says it cannot attribute the run. When a run cannot be attributed (`check:db` without its PASS line, `check` without its coverage summary) but the cache already holds the current tree key, the check's own exit armed the gate (`gate-credit.mjs`), and the line says `PASS - armed by the check's own exit.` An attributed pass does not rewrite a cache that already holds the current key, so a `by: "exit"` record stays. `npm run check` arms from Bash only, as follows. Records a passing `npm run check` against the current tree fingerprint, so the commit gate has something to check against. Accepts a leading `cd <dir> &&` or `cd <dir>;` (PowerShell 5.1 has no `&&`), `set -o pipefail;`, and `rtk `. States the verdict in one line - `PASS` and armed, or passed-but-unattributable - so the result needs no second run to establish. On this host a failed call never reaches it (see "Run a long check"), and no exit-code field reaches it at all. | warn (one line per passing check; silent otherwise) |
-| `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/lists/*.json` and `docs/fixtures/urls/routes.json`) - the reminder firing there is not evidence a contract moved. | warn |
+| `PostToolUse` | `Edit\|MultiEdit\|Write\|NotebookEdit` | `edit-followup.mjs` | Records the write for the `Stop` hook. Reminds once per session per group about `data.js` -> `node tools/build.js`, public-contract fixtures, and a write under `docs/decisions/` -> `node tools/decisions.js` (`remind:decisions`). Known false-positive, kept as a nag rather than fixed: it tests `p.startsWith('docs/fixtures/')`, so it fires its public-contract reminder on any write under `docs/fixtures/share/`, which is not itself a contract surface (`CONTRACTS.md` enumerates only `docs/fixtures/urls/routes.json` and `docs/fixtures/import/`) - the reminder firing there is not evidence a contract moved. | warn |
 | `Stop` | - | `session-stop.mjs` | Warns when this session's own writes are still uncommitted, or the active task's `handoff.md` looks stale next to what this session wrote. Separately names this session's own writes that are still untracked (excluding `docs/` and the task-document set - `context.md`/`plan.md`/`handoff.md`/`mocks/` - in any `issues/<id>/`, where the review register `reviews.md` and the reports under `reviews/` count as task documents too), as candidates for either a commit or deletion; never both sentences for the same path. Warns when a task document of the active task is past its size budget (150 KB; past 300 KB it names the collapse action per file), only for the session that wrote into that task directory. | warn, never block |
 
 Three modules under `.claude/hooks/` are not registered hooks: `gate-credit.mjs`
@@ -650,8 +650,10 @@ commit gate; ...` or `check:fast: FAIL at <step>`. A change to a module that
 most files import (`lib/dict.ts`, `state/app.svelte.ts`) makes the related
 run close to the whole vitest stage. Measured 215-310 s (2026-10-07).
 
-**Stage cache.** Between `begin` and `arm`, the chain runs `node --test
-tools/check/lib.test.mjs` and then `node tools/check/run.mjs`, which runs
+**Stage cache.** Between `begin` and `arm`, the `npm run check` chain runs
+`node --test tools/check/lib.test.mjs` (`check:fast` does not, so the guards
+G1-G3 below run only in `npm run check` and in CI) and then
+`node tools/check/run.mjs`, which runs
 the stages one at a time in the order of `STAGES` in `tools/check/lib.mjs`
 (`docs/decisions/`, 2026-10-07, "A local check skips a stage whose inputs
 match its last local pass"). Four stages are cached: `lint:typed` and
@@ -2118,11 +2120,11 @@ no `statements` (`tools/supabase/db.mjs`), so `supabase migration fetch`
 against the test project writes empty files; never fetch migrations from it.
 
 **Expected Security Advisor warnings.** Derived from `supabase/migrations/`
-at the commit that adds `20261022120000_shared_list_rev_and_bulk_delete.sql`:
-the Security Advisor reports 0 errors, 25 warnings and 5 info. A
+at the commit that adds `20261028120000_drop_legacy_move.sql`:
+the Security Advisor reports 0 errors, 24 warnings and 5 info. A
 SECURITY DEFINER function whose latest grant gives `execute` to
 `authenticated` is one warning, and `anon` is a second warning on the same
-function. 19 functions are such definers (19 warnings), and 5 of them are
+function. 18 functions are such definers (18 warnings), and 5 of them are
 also executable by `anon` (5 more); the reasons below:
 
 | Function | `anon` | Reason |
@@ -2131,7 +2133,6 @@ also executable by `anon` (5 more); the reasons below:
 | `create_list_share`, `revoke_list_share` | no | `list_shares` has no insert or update grant; a share changes only through them, and they check the owner. |
 | `get_shared_list(text, bigint, jsonb)` | yes | Builds the projection for whoever holds the token, never the table, and reads `list_shares` and `lists`, which `anon` cannot; `anon` reads the shared page. |
 | `clone_shared_list` | no | Copies a list that the caller reaches only through the token. |
-| `move_legacy_list` | no | Moves a browser list whole, past the count limits (`docs/specs/DEBT.md` D62). |
 | `create_purchase_request` | yes | A share link's holder sends a request signed out; `purchase_requests` has no insert grant. |
 | `apply_purchase_request`, `decline_purchase_request` | no | The owner decides a request: they write the owner's list and a request row that no Data API role may write. |
 | `my_limit` | no | Shows the account its own effective limit; the limit tables have no Data API grant. |
@@ -2147,7 +2148,7 @@ or that is revoked from `public`, `anon` and `authenticated`, adds no
 warning (the count and limit triggers, the broadcast triggers,
 `effective_limit`, `homebrew_links_touch`), and every `security invoker`
 function adds none (`reorder_list`, the two older `get_shared_list` forms and
-`delete_homebrew_items` among them). The 25th warning is
+`delete_homebrew_items` among them). The 24th warning is
 leaked password protection, which is off because there is no password
 sign-in (Google and Discord only). The five info are "RLS enabled, no
 policy" for `homebrew_art_released`, `limit_defaults`, `print_sets`,
@@ -2998,6 +2999,21 @@ A CHECK runs on every UPDATE: after the narrowing, such an item refuses
 every save, the delete of its source fails (`on delete set null` updates the
 item), and a backup restore into the narrowed database refuses those rows.
 
+To undo `20261028120000_drop_legacy_move`, the app alone cannot be
+reverted: every frontend before R10 selects `legacy_fingerprint`, so every
+account list read fails. Add a new migration whose body is the reversal
+file, keep `20261028120000_drop_legacy_move.sql` in the tree (R10 lands as
+one squash that holds the app and the migration, and a `git revert` of it
+deletes the migration file, which blocks `migrate-prod`), and push both in
+the same push as the app revert (`migrate-prod` runs before `deploy`). For
+30 days `restore:prod` and `restore:drill` of a nightly backup made before
+the migration fail until the reversal is pushed, because the dump's `lists`
+inserts name the column; a drill of a backup made after the push needs
+nothing. The reversal brings the column back with nulls. The values come
+back only from a restore of a backup made before R10, after the reversal; a
+restore replaces every row with the backup's, so it is no way to get the
+fingerprints back alone, and nothing reads them after R10.
+
 ### Usage monitoring
 
 `.github/workflows/usage.yml` reports production's free-plan usage every
@@ -3023,7 +3039,7 @@ call, not the dump".
 
 The summary also lists every `public` table by bytes with its exact row
 count, and the owners and lists at 80 % or more of a count limit (and above
-100 %, which `move_legacy_list` allows, `docs/specs/DEBT.md` D62): lists per
+100 %, for lists moved in before R10): lists per
 owner, entries per list and homebrew items per owner. It holds
 totals only: no email, id or list name, because the repository and its run
 summaries are public. The public API has no endpoint for billed egress,
@@ -3151,7 +3167,7 @@ Owner setup, in order, after R11 is on `main`:
    production project. Expected: the dispatch day is not visibly above the
    days around it. If it is more than 1 GB above them, delete the secret
    `SUPABASE_USAGE_TOKEN_PROD`; the report then shows `requests: no token`.
-8. Re-run the Security Advisor on production. Expected: 0 errors, 25
+8. Re-run the Security Advisor on production. Expected: 0 errors, 24
    warnings, 5 info ("Expected Security Advisor warnings").
 9. After seven nights, open the latest summary. Expected: a forecast on the
    Database row.

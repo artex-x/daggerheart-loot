@@ -17,7 +17,6 @@ RootWebArea "Губитель из Сухостоя - Генератор лут�
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Губитель из Сухостоя" [level=1]
@@ -64,7 +63,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -86,7 +84,6 @@ RootWebArea "Deadwood Slayer - Daggerheart Loot Generator" [url=#/i/voa4_t1b]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Deadwood Slayer" [level=1]
@@ -122,7 +119,6 @@ Copy name
 Copy text
 EN
 Install as an app
-Lists
 Page
 Print
 Privacy

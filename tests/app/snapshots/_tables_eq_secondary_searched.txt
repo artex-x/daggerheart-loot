@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -285,7 +284,6 @@ daggerheart.com
 Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
 Скопировать ссылку на этот раздел
 Снаряжение
-Списки
 Списком
 Ссылка на таблицу
 Сфера Мёбиуса
@@ -378,7 +376,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_secondary]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -443,7 +440,6 @@ Legendary Offhand Brass Knuckles
 Legendary Offhand Brass KnucklesTier 4 · Physical · Strength · M... [namelen=184 namehash=c2d0af43]
 Link to this table
 List
-Lists
 Offhand Brass Knuckles
 Offhand Brass KnucklesTier 1 · Physical · Strength · Melee · d8 ... [namelen=172 namehash=04f3e20d]
 Open this section on start

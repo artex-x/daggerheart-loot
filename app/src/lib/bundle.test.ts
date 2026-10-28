@@ -55,7 +55,7 @@ import {
   type HomebrewContent,
   type HomebrewRecord
 } from './homebrew.js';
-import { QTY_MAX } from './listLink.js';
+import { QTY_MAX } from './lists.js';
 import { MONEY_DEFAULT, MONEY_MODES } from './money.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
@@ -617,14 +617,7 @@ describe('the fixtures', () => {
   it('imports export.json clean, with no id, date or share key of a row', () => {
     const text = fixture('export.json');
     expect(okOf(parseBundle(text, knows)).skipped).toEqual([]);
-    for (const key of [
-      'created_at',
-      'updated_at',
-      'revision',
-      'legacy_fingerprint',
-      'token',
-      'item_key'
-    ]) {
+    for (const key of ['created_at', 'updated_at', 'revision', 'token', 'item_key']) {
       expect(text).not.toContain('"' + key + '"');
     }
     const lists = (JSON.parse(text) as { lists: Record<string, unknown>[] }).lists;

@@ -166,7 +166,6 @@ daggerheart.com
 Скопировать текст
 Снаряжение
 Сохранить себе
-Списки
 Списком
 Ссылка на таблицу
 Страница
@@ -315,7 +314,6 @@ Items
 Lakestrider Boots
 Link to this table
 List
-Lists
 Lorekeeper
 Manacles
 Minor Health Potion Recipe

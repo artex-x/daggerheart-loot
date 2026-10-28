@@ -6,8 +6,8 @@
  * and every legacy suite uses - because a handful of real defects only show
  * up on the far side of a browser's own microtask checkpoint (the
  * `isConnected` guard) or need a real network, a real clipboard stub, or a
- * real second tab to mean anything at all. Eighty cases in
- * seventy-nine runs (4 and 5 share one), no ancestor. Like every suite here it drives
+ * real second tab to mean anything at all. Seventy-one cases in
+ * seventy runs (4 and 5 share one), no ancestor. Like every suite here it drives
  * dist-test/, the test build (docs/specs/COVERAGE.md, "Test layers"): signed
  * out it draws the sign-in prompt where a list would be made, so the cases
  * that make one open as the seed's `gm2`. */
@@ -18,8 +18,6 @@ const { PNG } = require('pngjs');
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
 const { HB_FILE, hbImportOpen } = require('./inventory.js');
-/** The shared page's «Лавка»: three rows with a quantity and a price. */
-const QTY_AND_PRICE = require('../../docs/fixtures/lists/qty-and-price.json');
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
  *  the fake hands a new list, `uuid(5000)`. */
@@ -28,11 +26,16 @@ const FIRST_NEW = '#/lists/00000000-0000-4000-8000-000000005000';
 /** The fake seed's `gm1` list «Трофеи», `uuid(103)`, with no share link. */
 const TROPHIES = '#/lists/00000000-0000-4000-8000-000000000103';
 
-/** One browser list: signed out, the index draws the storage notice only
- *  over this browser's lists. */
-const ONE_LOCAL = {
-  'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: [], created: 1 }])
-};
+/** Opens `#/lists` signed in as `as`, makes the account list `spec` (`driver.js`,
+ *  `accountLists`) and goes to its page; answers the list's id. A new `d.open` resets the
+ *  fake cloud, so the list is made after it. */
+async function openAccountList(d, spec, name, as = 'gm4') {
+  await d.open('#/lists', { as });
+  await d.settled(name);
+  const [{ id, hash }] = await d.accountLists([spec]);
+  await d.go(hash);
+  return id;
+}
 
 /** Waits up to 5 s for `fn` to hold in the page; answers whether it did. */
 async function waitIn(page, fn, ...args) {
@@ -46,12 +49,6 @@ async function waitIn(page, fn, ...args) {
 
 const rep = reporter();
 const { ok } = rep;
-
-/** Case 7's two-stage wait budget. Set against tests/app/lib.js's own
- *  protocolTimeout (300_000) - this tree is shared with peer sessions and a
- *  loaded host makes CDP round trips slower, so the wait has to outlast
- *  ordinary contention without outlasting a genuine hang. */
-const STORAGE_WAIT_MS = 30_000;
 
 /** The new-list form's input, wherever the caller's markup put it -
  *  `.picker-new input[type=text]`, the only text input the add-to-list menu
@@ -293,147 +290,6 @@ async function dialogSemantics() {
   await ctx.close();
 }
 
-/** 7. Two pages sharing storage - two pages of one origin in one browser
- *  context share its storage. Both hold one browser list; page B stays on
- *  #/lists while page A deletes the list; B must redraw without it on the
- *  storage event, with no navigation of its own. A delete, not a create:
- *  signed out, the test build makes no browser list. */
-async function twoTabsShareStorage() {
-  const seed = {
-    'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Общий клад', ids: [], created: 1 }])
-  };
-  const b = await sharedPage({ width: 1180, height: 900, storage: seed });
-  /* The test's own listener, independent of app/src/ports/storage.ts's -
-   * it answers "did Chrome deliver the event at all" on its own, so a
-   * timeout below can say which half failed instead of one sentence
-   * covering both. */
-  await b.page.evaluateOnNewDocument(() => {
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'dhloot.lists.v2') window.__storageSeen = (window.__storageSeen || 0) + 1;
-    });
-  });
-  await b.d.open('#/lists');
-  ok(
-    (await b.page.evaluate(() => document.body.innerText)).includes('Общий клад'),
-    '7 (two windows): page B does not start with the list'
-  );
-
-  const a = await sharedPage({ width: 1180, height: 900, storage: seed });
-  await a.d.open('#/lists');
-  /* Page A's own arrival clears and re-seeds the shared storage, which B
-     hears too: the count starts here, and B shows the list again first. */
-  ok(
-    await waitIn(b.page, () => document.body.innerText.includes('Общий клад')),
-    '7 (two windows): page B lost the list when page A arrived'
-  );
-  await b.page.evaluate(() => {
-    window.__storageSeen = 0;
-  });
-  await a.d.press('Удалить');
-  ok(
-    await a.page.evaluate(() => !document.querySelector('.listcard')),
-    '7 (two windows): page A did not delete the list'
-  );
-
-  /* No navigation on B - the storage event alone must redraw it. Two
-   * stages, no swallow: stage one says whether Chrome delivered the event
-   * at all (environment), stage two says whether the page redrew once it
-   * had the event (app) - a loaded runner and a real regression must not
-   * print the same sentence. */
-  let storageDelivered = true;
-  try {
-    await b.page.waitForFunction(() => window.__storageSeen > 0, { timeout: STORAGE_WAIT_MS });
-  } catch (e) {
-    void e;
-    storageDelivered = false;
-  }
-  ok(
-    storageDelivered,
-    `7 (two windows): page B did not receive the storage event within ${STORAGE_WAIT_MS / 1000}s`
-  );
-
-  if (storageDelivered) {
-    let repainted = true;
-    try {
-      await b.page.waitForFunction(() => !document.querySelector('.listcard'), {
-        timeout: STORAGE_WAIT_MS
-      });
-    } catch (e) {
-      void e;
-      repainted = false;
-    }
-    ok(repainted, '7 (two windows): the storage event arrived, but page B did not redraw');
-  }
-
-  await a.page.close();
-  await b.page.close();
-}
-
-/** 8. The packed link - CompressionStream for real. */
-async function packedLink() {
-  /* Deflate's header costs more than it saves on a short list (compress.ts:
-   * "for three entries and no notes"), so the plain form wins there - a
-   * bigger list with a long note is what actually reaches the packed branch
-   * this case exists to exercise. */
-  const seedIds = [
-    'ci1',
-    'cc1',
-    'q1',
-    'q313',
-    'w1',
-    'cm1',
-    'ci28',
-    'ci56',
-    'q239',
-    'cc2',
-    'w2',
-    'q26'
-  ];
-  const bigNote =
-    'Очень длинная заметка про весь список, чтобы сжатый вариант точно перевесил издержки заголовка deflate. '.repeat(
-      4
-    );
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Пакуемый клад', ids: seedIds, created: 1, note: bigNote }
-      ])
-    }
-  });
-  await d.open('#/lists');
-  await d.click('Поделиться');
-  const clip = await d.clipboard();
-  const text = clip?.text || '';
-  const m = /#\/l\/(~[A-Za-z0-9_-]+)/.exec(text);
-  ok(!!m, '8 (packed link): the copied text does not contain #/l/~ - ' + text.slice(0, 120));
-  if (m) {
-    await d.open('#/l/' + m[1]);
-    await d.expanded();
-    /* Not the list's own name: the payload matches this browser's own
-     * stored list 'a' (the same page shared it from), so it opens as the
-     * owner's page - `.titleinput`'s value, not text content - the same
-     * way on both apps. What proves the packed round trip is the count and
-     * the long note, which are body text either way. */
-    const seen = await page.evaluate(() => document.body.innerText);
-    ok(
-      seen.includes('12 позиций'),
-      '8 (packed link): not every entry unpacked - ' + seen.slice(0, 200)
-    );
-    /* The note is a <textarea>'s value, not rendered text - innerText does
-     * not carry it. */
-    const noteValue = await page.evaluate(
-      () => document.querySelector('textarea')?.value || ''
-    );
-    ok(
-      noteValue.includes('перевесил издержки заголовка'),
-      '8 (packed link): the long note did not unpack - ' + noteValue.slice(0, 80)
-    );
-  }
-  await ctx.close();
-}
-
 /** 9. Copy text through the stubbed clipboard - both flavours. */
 async function copyTextThroughClipboard() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
@@ -574,12 +430,8 @@ async function focusSurvivesKeystroke() {
 /** 13. The note textarea's height - grows to fit, which jsdom cannot
  *  measure at all (no layout). */
 async function noteTextareaHeight() {
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: { 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) }
-  });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await openAccountList(d, { n: 1, name: 'Тайник', ids: ['ci1'] }, '13 (note height)');
   await d.press('Заметка');
   /* The exact textarea `d.type()` targets below, by the same placeholder -
    * `.rnote textarea, .lnote textarea` also matches the list's own note box,
@@ -774,14 +626,12 @@ async function selectionBarGeometry() {
 /** 17. A real HTML5 drag reorder, ported from the legacy `lists2.js`. */
 async function dragReorder() {
   const seedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: seedIds, created: 1 }])
-    }
-  });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const listId = await openAccountList(
+    d,
+    { n: 1, name: 'Тайник', ids: seedIds },
+    '17 (drag reorder)'
+  );
   /* Three round trips, not one: `app/src/ports/drag.ts`'s handlers write to
    * `$state`, and Svelte's own microtask-scheduled flush (CLAUDE.md, the
    * `queueMicrotask` note) has not necessarily run by the time a *single*
@@ -852,11 +702,7 @@ async function dragReorder() {
     );
   });
   await d.settle();
-  const order = await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
-    const list = stored.find((l) => l.id === 'a');
-    return list ? list.ids.join(',') : '';
-  });
+  const order = await d.listKeys(listId, { until: 'ci2,ci3,ci1,ci4' });
   ok(order === 'ci2,ci3,ci1,ci4', '17 (drag reorder): final order ' + order);
   const stillDragging = await d.count('.lrow.dragging');
   ok(stillDragging === 0, '17 (drag reorder): the row remained in the dragging state');
@@ -912,11 +758,7 @@ async function dragReorder() {
     );
   });
   await d.settle();
-  const gapOrder = await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
-    const list = stored.find((l) => l.id === 'a');
-    return list ? list.ids.join(',') : '';
-  });
+  const gapOrder = await d.listKeys(listId, { until: 'ci3,ci1,ci2,ci4' });
   ok(gapOrder === 'ci3,ci1,ci2,ci4', '17 (drag reorder): gap-drop final order ' + gapOrder);
 
   /* Leaving the drag with no `drop` - Escape, or a release outside the zone
@@ -953,11 +795,9 @@ async function dragReorder() {
   });
   await d.settle();
 
-  const cancelledOrder = await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
-    const list = stored.find((l) => l.id === 'a');
-    return list ? list.ids.join(',') : '';
-  });
+  /* A stray write waits 2 s in the account buffer: let it land before the read. */
+  await d.writesSettled();
+  const cancelledOrder = await d.listKeys(listId);
   ok(
     cancelledOrder === gapOrder,
     '17 (drag reorder): a cancelled drag changed the order - ' + cancelledOrder
@@ -1017,26 +857,17 @@ async function dragReorder() {
    * drag pixel probe's viewport trap"; the 400/600 pass value is measured
    * at docs/DECISIONS.md, "A drop indicator redraws...". */
   const notedIds = ['ci1', 'ci2', 'ci3', 'ci4'];
-  const {
-    ctx: noteCtx,
-    page: notePage,
-    d: noteD
-  } = await fresh({
-    width: 1180,
-    height: 1600,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        {
-          id: 'a',
-          name: 'Тайник',
-          ids: notedIds,
-          created: 1,
-          meta: Object.fromEntries(notedIds.map((id) => [id, { note: 'x' }]))
-        }
-      ])
-    }
-  });
-  await noteD.open('#/lists/a');
+  const { ctx: noteCtx, page: notePage, d: noteD } = await fresh({ width: 1180, height: 1600 });
+  await openAccountList(
+    noteD,
+    {
+      n: 1,
+      name: 'Тайник',
+      ids: notedIds,
+      meta: Object.fromEntries(notedIds.map((id) => [id, { note: 'x' }]))
+    },
+    '17 (drag reorder, notes)'
+  );
 
   /** Gold pixels (within 24/255 of `--gold`, `216,171,94`) in a 200x3 px
    *  strip at row `i`'s bottom edge - the same probe docs/DECISIONS.md,
@@ -1173,22 +1004,12 @@ async function dragReorder() {
 /** 18. A folded `<details>` surviving a select-all/money-mode re-render,
  *  ported from the legacy `lists2.js`. */
 async function foldedDetailsSurviveRerender() {
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        {
-          id: 'a',
-          name: 'Тайник',
-          ids: ['ci1', 'ci2', 'ci3'],
-          created: 1,
-          meta: { ci1: { gold: 70 } }
-        }
-      ])
-    }
-  });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await openAccountList(
+    d,
+    { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3'], meta: { ci1: { gold: 70 } } },
+    '18 (folded panels)'
+  );
   await page.$eval('.lnote', (e) => {
     e.open = false;
   });
@@ -1267,36 +1088,6 @@ async function tileGeometryNoArt() {
   await ctx.close();
 }
 
-/** 20. The storage notice folded on a phone, ported from the legacy `qa.js`. */
-async function storageNoticeAt320() {
-  const { ctx, page, d } = await fresh({
-    width: 320,
-    height: 700,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: ['ci1'], created: 1 }])
-    }
-  });
-  await d.open('#/lists/a');
-  const warn = await page.evaluate(() => {
-    const w = document.querySelector('.warn');
-    const x = document.querySelector('.warn-x');
-    if (!w || !x) return null;
-    return { h: w.getBoundingClientRect().height, xw: x.getBoundingClientRect().width };
-  });
-  ok(!!warn, '20 (warning at 320): .warn not found');
-  if (warn) {
-    ok(
-      warn.h < 140,
-      '20 (warning at 320): the folded warning takes up ' + Math.round(warn.h) + 'px'
-    );
-    ok(
-      warn.xw > 0,
-      '20 (warning at 320): the cross is not visible while the warning is folded'
-    );
-  }
-  await ctx.close();
-}
-
 /** 21. A button keeps focus across a re-render - not only an input (case
  *  12), ported from the legacy `qa.js`. */
 async function buttonFocusSurvivesRerender() {
@@ -1325,16 +1116,12 @@ async function buttonFocusSurvivesRerender() {
 /** 22. The money help box measured against its container, and the pressed
  *  add-to-list button's own colour, ported from the legacy `lists2.js`. */
 async function moneyHelpAndPressedPicker() {
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Клад', ids: ['ci1'], created: 1, meta: { ci1: { gold: 70 } } }
-      ])
-    }
-  });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await openAccountList(
+    d,
+    { n: 1, name: 'Клад', ids: ['ci1'], meta: { ci1: { gold: 70 } } },
+    '22 (help and list pick)'
+  );
   await d.press('Как это работает');
   const helpBox = await page.evaluate(() => {
     const h = document.querySelector('.money-help');
@@ -1422,44 +1209,6 @@ async function reducedMotionKillsEverything() {
   await ctx.close();
 }
 
-/** 25. The storage-notice dismiss button stays hit-testable while its
- *  `<details>` is folded - real-browser coverage of exactly the regression
- *  class the sibling-button fix could only be verified against by eye: jsdom does
- *  not implement `<details>`'s native closed-content suppression at all, so
- *  every vitest test for the dismiss button passed against the *old*,
- *  button-hidden structure the first time it was tried. `.warn-x` is a
- *  sibling of `<details>`, not a child (StorageNotice.svelte), so folding
- *  the disclosure must not hide or unhit-test it. */
-async function storageNoticeDismissWhileFolded() {
-  const { ctx, page, d } = await fresh({ width: 1280, height: 900, storage: ONE_LOCAL });
-  await d.open('#/lists');
-  const open = await page.evaluate(() => document.querySelector('.warn details')?.open ?? null);
-  ok(open === false, '25 (notice dismiss while folded): <details> is not closed on arrival');
-  const box = await page.evaluate(() => {
-    const x = document.querySelector('.warn-x');
-    if (!x) return null;
-    const r = x.getBoundingClientRect();
-    return { x: r.x, y: r.y, w: r.width, h: r.height };
-  });
-  ok(!!box, '25 (notice dismiss while folded): .warn-x not found');
-  if (box) {
-    ok(
-      box.w > 0 && box.h > 0,
-      '25 (notice dismiss while folded): .warn-x has zero size (' + box.w + 'x' + box.h + ')'
-    );
-    const hit = await page.evaluate(
-      (cx, cy) => !!document.elementFromPoint(cx, cy)?.closest('.warn-x'),
-      box.x + box.w / 2,
-      box.y + box.h / 2
-    );
-    ok(
-      hit,
-      '25 (notice dismiss while folded): the center of .warn-x is not hit-testable there'
-    );
-  }
-  await ctx.close();
-}
-
 /** 26. Two device-capability defects fixed together (git log --grep=dnd4):
  *  a completed reorder was announced nowhere, and the drag grip stayed drawn
  *  on a device that can never start an HTML5 drag from a touch. Both read
@@ -1469,15 +1218,11 @@ async function storageNoticeDismissWhileFolded() {
  *  `setViewport({ isMobile, hasTouch })` does - and a second, untouched
  *  viewport proves the grip is not hidden by width alone. */
 async function announceOnTouchAndHideInertGrip() {
-  const seed = {
-    'dhloot.lists.v2': JSON.stringify([
-      { id: 'a', name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'], created: 1 }
-    ])
-  };
+  const spec = { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'] };
 
-  const { ctx, page, d } = await fresh({ width: 390, height: 900, storage: seed });
+  const { ctx, page, d } = await fresh({ width: 390, height: 900 });
   await page.setViewport({ width: 390, height: 900, isMobile: true, hasTouch: true });
-  await d.open('#/lists/a');
+  await openAccountList(d, spec, '26 (touch device)');
 
   const grip = await page.evaluate(() => {
     const g = document.querySelector('.lrow-grip');
@@ -1520,12 +1265,8 @@ async function announceOnTouchAndHideInertGrip() {
   }
   await ctx.close();
 
-  const {
-    ctx: ctx2,
-    page: page2,
-    d: d2
-  } = await fresh({ width: 1180, height: 900, storage: seed });
-  await d2.open('#/lists/a');
+  const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
+  await openAccountList(d2, spec, '26 (no touch)');
   const gripHover = await page2.evaluate(() => {
     const g = document.querySelector('.lrow-grip');
     return g && getComputedStyle(g).display;
@@ -1541,23 +1282,21 @@ async function announceOnTouchAndHideInertGrip() {
  *  view and scrolls only its chips; the lists holding the record lead
  *  (docs/specs/FEATURES.md, "Lists"). */
 async function listMenuKeepsItsControlsInView() {
-  const seed = {
-    'dhloot.lists.v2': JSON.stringify(
-      Array.from({ length: 50 }, (_, i) => ({
-        id: 'm' + String(i),
-        name: 'Лавка ' + String(i + 1),
-        ids: i % 10 === 0 ? ['ci1'] : [],
-        created: i + 1
-      }))
-    )
-  };
+  /* gm2 holds one list of its own; 49 more make the fake's limit of 50. */
+  const specs = Array.from({ length: 49 }, (_, i) => ({
+    n: i + 1,
+    name: 'Лавка ' + String(i + 1),
+    ids: i % 10 === 0 ? ['ci1'] : []
+  }));
   for (const [width, height] of [
     [1100, 900],
     [360, 740]
   ]) {
     const at = '27 (' + String(width) + '): ';
-    const { ctx, page, d } = await fresh({ width, height, storage: seed });
+    const { ctx, page, d } = await fresh({ width, height });
     await d.open('#/i/ci1', { as: 'gm2' });
+    await d.settled(at);
+    await d.accountLists(specs);
     await d.press('Добавить в список');
     await d.settle();
 
@@ -1954,16 +1693,8 @@ async function guideBackLink() {
  *  toolbar button; the button's own centre hits the button. */
 async function noteClearTargetYieldsToTheToolbar() {
   const at = '30 (note clear target): ';
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Тайник', ids: ['ci1'], created: 1, note: 'текст' }
-      ])
-    }
-  });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await openAccountList(d, { n: 1, name: 'Тайник', ids: ['ci1'], note: 'текст' }, '30');
   /* A list with a note opens its note group already; a press would fold it. */
   if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
     await d.press('Заметки');
@@ -2097,20 +1828,14 @@ async function cardMediaRingVisible() {
  *  the dialog, and a toast still on offer then moves to the page's copy. */
 async function undoToastInRecordDialog() {
   const at = '32 (undo toast in the record dialog): ';
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Клад дракона', ids: ['ci28'], created: 1 }
-      ])
-    }
-  });
-  const stored = () =>
-    page.evaluate(() => {
-      const lists = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
-      return (lists.find((l) => l.id === 'a') || { ids: [] }).ids.join(',');
-    });
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  await d.open('#/tables', { as: 'gm4' });
+  await d.settled('32');
+  const [{ id: listId }] = await d.accountLists([
+    { n: 1, name: 'Клад дракона', ids: ['ci28'] }
+  ]);
+  /* The account buffer sends 2 s after the last edit: wait for the string `until`. */
+  const stored = (until) => d.listKeys(listId, { until });
   /* The menu stays open after a pick, so a second removal presses the chip only. */
   const remove = async () => {
     if (!(await page.evaluate(() => !!document.querySelector('dialog[open] .dropmenu')))) {
@@ -2119,10 +1844,9 @@ async function undoToastInRecordDialog() {
     await d.press('Клад дракона');
     await d.settle();
   };
-  await d.open('#/tables');
   await d.press('Кольцо Тишины');
   await remove();
-  ok((await stored()) === '', at + 'the chip did not remove ci28 from the list');
+  ok((await stored('')) === '', at + 'the chip did not remove ci28 from the list');
 
   const where = await page.evaluate(() => {
     const dialog = document.querySelector('dialog[open]');
@@ -2164,7 +1888,7 @@ async function undoToastInRecordDialog() {
     body: document.activeElement === document.body
   }));
   ok(afterUndo.open, at + 'the undo closed the dialog');
-  ok((await stored()) === 'ci28', at + 'the undo did not restore ci28');
+  ok((await stored('ci28')) === 'ci28', at + 'the undo did not restore ci28');
   ok(
     afterUndo.inside && !afterUndo.body,
     at + 'focus left the dialog after the undo - ' + JSON.stringify(afterUndo)
@@ -2196,7 +1920,10 @@ async function undoToastInRecordDialog() {
   ok(handed.focused, at + "after Escape «Вернуть» on the page's toast is not focused");
   await page.keyboard.press('Enter');
   await d.settle();
-  ok((await stored()) === 'ci28', at + 'Enter on the handed-over toast did not restore ci28');
+  ok(
+    (await stored('ci28')) === 'ci28',
+    at + 'Enter on the handed-over toast did not restore ci28'
+  );
   ok(
     await page.evaluate(() => document.activeElement !== document.body),
     at + 'focus fell to body after the handed-over undo'
@@ -2220,22 +1947,13 @@ async function undoToastInRecordDialog() {
  *  the list is void"). Synthetic `DragEvent`s, as case 17. */
 async function dragSourceRemovedMidDrag() {
   const at = '33 (drag source removed mid-drag): ';
-  const { ctx, page, d } = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'], created: 1 }
-      ])
-    }
-  });
-  const order = () =>
-    page.evaluate(() => {
-      const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2') || '[]');
-      const list = stored.find((l) => l.id === 'a');
-      return list ? list.ids.join(',') : '';
-    });
-  await d.open('#/lists/a');
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const listId = await openAccountList(
+    d,
+    { n: 1, name: 'Тайник', ids: ['ci1', 'ci2', 'ci3', 'ci4'] },
+    '33'
+  );
+  const order = () => d.listKeys(listId);
   if (!(await page.evaluate(() => document.querySelector('.lnote')?.open))) {
     await d.press('Заметки');
   }
@@ -2249,12 +1967,8 @@ async function dragSourceRemovedMidDrag() {
   });
   await d.settle();
 
-  await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem('dhloot.lists.v2'));
-    stored[0].ids = ['ci1', 'ci3', 'ci4'];
-    localStorage.setItem('dhloot.lists.v2', JSON.stringify(stored));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'dhloot.lists.v2' }));
-  });
+  await d.fake('playRemove', listId, 'ci2');
+  await waitIn(page, () => document.querySelectorAll('.lrow').length === 3);
   await d.settle();
   ok((await d.count('.lrow')) === 3, at + "the other tab's removal was not drawn");
 
@@ -2289,6 +2003,7 @@ async function dragSourceRemovedMidDrag() {
     );
   });
   await d.settle();
+  await d.writesSettled();
   const after = await order();
   ok(after === 'ci1,ci3,ci4', at + 'the void release moved an entry - ' + after);
 
@@ -2306,58 +2021,6 @@ async function dragSourceRemovedMidDrag() {
   });
   ok(accepted !== null, at + 'no list note textarea to drop text into');
   ok(accepted !== false, at + 'the note still refuses a text drop after the drag ended');
-  await ctx.close();
-}
-
-/** 34. The storage notice's summary wins the taps on its own row: its box
- *  ends at the painted cross, and the cross's 44x44 target yields to it
- *  where the two overlap, so a tap just left of the cross unfolds the notice
- *  rather than dismissing it. */
-async function noticeSummaryWinsItsTaps() {
-  const at = '34 (notice summary wins its taps): ';
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage: ONE_LOCAL });
-  await d.open('#/lists');
-  const m = await page.evaluate(() => {
-    const btn = document.querySelector('.warn-x');
-    const sum = document.querySelector('.warn summary');
-    if (!btn || !sum) return null;
-    const b = btn.getBoundingClientRect();
-    const s = sum.getBoundingClientRect();
-    const y = Math.min(Math.max(b.y + b.height / 2, s.y + 2), s.bottom - 2);
-    const inSummary = (x) => !!document.elementFromPoint(x, y)?.closest('summary');
-    const onCross = (x) => !!document.elementFromPoint(x, y)?.closest('.warn-x');
-    const after = getComputedStyle(btn, '::after');
-    return {
-      sRight: s.right,
-      bLeft: b.x,
-      y,
-      leftIsSummary: inSummary(b.x - 4),
-      paintIsCross: onCross(b.x + 3) && onCross(b.x + b.width / 2),
-      pastIsCross: onCross(b.right + 4),
-      target: after.width + ' x ' + after.height
-    };
-  });
-  ok(!!m, at + 'no storage notice on #/lists');
-  if (m) {
-    ok(
-      m.sRight <= m.bLeft + 0.5,
-      at + 'the summary covers the painted cross - ' + m.sRight + ' > ' + m.bLeft
-    );
-    ok(m.leftIsSummary, at + 'a point 4px left of the cross does not hit the summary');
-    ok(m.paintIsCross, at + 'the painted cross does not hit the cross');
-    ok(m.pastIsCross, at + 'the target no longer reaches past the painted cross');
-    ok(m.target === '44px x 44px', at + 'the target is not 44x44 - ' + m.target);
-    await page.mouse.click(m.bLeft - 4, m.y);
-    await d.settle();
-    const state = await page.evaluate(() => ({
-      open: document.querySelector('.warn details')?.open ?? null,
-      drawn: !!document.querySelector('.warn-x')
-    }));
-    ok(
-      state.open === true && state.drawn,
-      at + 'a tap left of the cross did not unfold the notice - ' + JSON.stringify(state)
-    );
-  }
   await ctx.close();
 }
 
@@ -2562,7 +2225,7 @@ async function signInFromTheBar() {
   await again.d.press('Добавить в список');
   await again.d.press('+ Новый список');
   await pressPromptSignIn(again.page);
-  await again.d.press('Списки');
+  await again.d.press('Поиск');
   await again.page.click('header a[href="#/account"]');
   await again.d.settle();
   await again.d.press('Войти через Google');
@@ -2610,42 +2273,6 @@ async function printAfterSignIn() {
     ),
     at + 'the sign-in did not open the set of the ticked record - ' + (await d.hash())
   );
-  await ctx.close();
-}
-
-/** 38. An old #/l/ link, signed out: «Сохранить себе» opens the prompt under
- *  it; the sign-in comes back and saves the list into the account by itself,
- *  and opens it. */
-async function saveOldLinkAfterSignIn() {
-  const at = '38 (old link saved after sign-in): ';
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
-  await d.open('#/l/' + QTY_AND_PRICE.player.payload);
-  await d.press('Сохранить себе');
-  ok(
-    (await page.evaluate(() => document.body.innerText)).includes(
-      'Войдите, и список сохранится в ваш аккаунт.'
-    ),
-    at + 'the prompt did not open under the button'
-  );
-  await pressPromptSignIn(page);
-  ok((await d.hash()) === '#/account', at + '«Войти» did not open #/account');
-  await d.press('Войти через Google');
-  ok(
-    await waitIn(
-      page,
-      (h) =>
-        location.hash === h && document.querySelector('input.titleinput')?.value === 'Лавка',
-      FIRST_NEW
-    ),
-    at + 'the sign-in did not open the saved «Лавка» - ' + (await d.hash())
-  );
-  await d.writesSettled();
-  const read = await d.fake('lists.list');
-  ok(
-    !!read?.ok && read.lists.some((l) => l.name === 'Лавка' && l.list_entries.length === 3),
-    at + 'the account does not hold «Лавка» with its three rows'
-  );
-  ok((await d.storage('dhloot.lists.v2')) === null, at + 'a browser list was made');
   await ctx.close();
 }
 
@@ -2922,7 +2549,7 @@ async function saveShareLinkAfterSignIn() {
     at + "the players' note is not on the page"
   );
   ok(!notes.includes('Кузнец торгуется'), at + 'the GM note reached the copy');
-  const read = await d.fake('lists.list');
+  const read = await d.fake('lists.rows', [FIRST_NEW.slice(8)]);
   const copy = read?.ok ? read.lists.find((l) => l.id === FIRST_NEW.slice(8)) : null;
   ok(
     !!copy &&
@@ -3209,7 +2836,7 @@ async function applyARequest() {
     await waitIn(page, (n) => document.querySelectorAll('.lrow').length === n, rows - 1),
     at + 'the entry taken whole is still a row'
   );
-  const read = await d.fake('lists.list');
+  const read = await d.fake('lists.rows', [SHOP_ID]);
   const shop = read?.ok ? read.lists.find((l) => l.id === SHOP_ID) : null;
   const qty = (key) => shop?.list_entries.find((e) => e.item_key === key)?.quantity;
   ok(qty('ci1') === 1 && qty('cc1') === undefined, at + 'the stock is ' + JSON.stringify(shop));
@@ -3262,7 +2889,7 @@ async function accountEditsWaitThenGoOnce() {
     () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
   );
   const shopRow = async () => {
-    const read = await d.fake('lists.list');
+    const read = await d.fake('lists.rows', ['00000000-0000-4000-8000-000000000101']);
     const shop = read?.ok
       ? read.lists.find((l) => l.id === '00000000-0000-4000-8000-000000000101')
       : null;
@@ -3331,211 +2958,6 @@ async function accountEditsWaitThenGoOnce() {
     if (!sent) await new Promise((r) => setTimeout(r, 50));
   }
   ok(sent, at + 'the hidden tab did not send the buffer within 1000 ms');
-  await ctx.close();
-}
-
-/** Two browser lists, one with two entries, a quantity and a price, for the
- *  move of case 47; `MOVE_A_GM` is the first one's own GM payload,
- *  `encodeList(<list a>, false)`, computed once by hand. */
-const MOVE_SEED = {
-  'dhloot.lists.v2': JSON.stringify([
-    {
-      id: 'a',
-      name: 'Клад дракона',
-      ids: ['ci1', 'ci2'],
-      meta: { ci1: { qty: 2, gold: 150 } },
-      created: 1
-    },
-    { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-  ])
-};
-const MOVE_A_GM = '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMi42eWoyfmNpMSoyKjE1MCxjaTI';
-/** The fake seed's `gm1` and the ids the fake hands the two moved lists. */
-const GM1_ID = '00000000-0000-4000-8000-000000000001';
-const MOVED_A = '00000000-0000-4000-8000-000000005000';
-const MOVED_B = '00000000-0000-4000-8000-000000005001';
-
-async function storedOf(page) {
-  return page.evaluate(() => ({
-    lists: localStorage.getItem('dhloot.lists.v2'),
-    migrated: JSON.parse(localStorage.getItem('dhloot.migrated.v1') ?? 'null')
-  }));
-}
-
-async function browserListsMovedOnSignIn() {
-  const at = '47 (browser lists moved on sign-in): ';
-  /* Tab B, signed out, holds the lists in memory while tab A signs in. */
-  const b = await sharedPage({ width: 1180, height: 900, storage: MOVE_SEED });
-  await b.d.open('#/lists');
-  ok(
-    (await b.page.evaluate(() => document.querySelectorAll('.listcard').length)) === 2,
-    at + 'tab B does not start with the two browser cards'
-  );
-  const a = await sharedPage({ width: 1180, height: 900, storage: MOVE_SEED });
-  await a.d.open('#/lists', { as: 'gm1' });
-  await a.d.moveSettled('47, tab A');
-  const stored = await storedOf(a.page);
-  ok(stored.lists === '[]', at + 'dhloot.lists.v2 does not read [] - ' + stored.lists);
-  const m = stored.migrated;
-  ok(
-    m?.owner === GM1_ID &&
-      m.lists?.a === MOVED_A &&
-      m.lists?.b === MOVED_B &&
-      JSON.stringify(m.notice) === JSON.stringify(['Клад дракона', 'Лавка в порту']),
-    at +
-      'dhloot.migrated.v1 does not hold the owner, both tombstones and both names - ' +
-      JSON.stringify(m)
-  );
-  const read = await a.d.fake('lists.list');
-  const rows = read?.ok ? read.lists.filter((l) => l.legacy_fingerprint !== null) : [];
-  const moved = rows.find((l) => l.id === MOVED_A);
-  ok(
-    rows.length === 2 &&
-      rows.every((l) => /^[0-9a-f]{64}$/.test(l.legacy_fingerprint)) &&
-      moved?.list_entries.map((e) => [e.item_key, e.quantity, e.price_coins]).join(';') ===
-        'ci1,2,150;ci2,1,',
-    at +
-      'the fake does not hold both rows with a fingerprint and the entries - ' +
-      JSON.stringify(rows.map((l) => [l.id, l.legacy_fingerprint, l.list_entries.length]))
-  );
-  const notice =
-    'Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона», «Лавка в порту».';
-  ok(
-    (await a.page.evaluate(() => document.body.innerText)).includes(notice),
-    at + 'the notice does not name the two lists'
-  );
-  await a.d.press('Скрыть');
-  const dismissed = await storedOf(a.page);
-  ok(
-    dismissed.migrated && !('notice' in dismissed.migrated),
-    at + '«Скрыть» left the names - ' + JSON.stringify(dismissed.migrated)
-  );
-  await b.d.shownAgain();
-  ok(
-    await waitIn(b.page, () => !document.querySelector('.listcard')),
-    at + 'tab B, shown again, still draws a browser card'
-  );
-  await a.page.close();
-  await b.page.close();
-
-  /* Another account on the same browser moves nothing. */
-  const other = await fresh({
-    width: 1180,
-    height: 900,
-    storage: {
-      ...MOVE_SEED,
-      'dhloot.migrated.v1': JSON.stringify({ owner: GM1_ID, lists: {} })
-    }
-  });
-  await other.d.open('#/lists', { as: 'gm2' });
-  await other.d.moveSettled('47, another account');
-  const theirs = await other.d.fake('lists.list');
-  ok(
-    theirs?.ok && theirs.lists.length === 1 && theirs.lists[0].name === 'Список второго ГМа',
-    at + "another account's move took a list - " + JSON.stringify(theirs)
-  );
-  ok(
-    (await other.page.evaluate(() => document.querySelectorAll('.listcard').length)) === 3,
-    at + "another account does not see its own list and the browser's two"
-  );
-  await other.ctx.close();
-
-  /* The OAuth return lands on the first list's own #/l/ page: it follows the
-     list to its account address. */
-  const back = await fresh({ width: 1180, height: 900, storage: MOVE_SEED });
-  await back.d.open(MOVE_A_GM, { as: 'gm1' });
-  await back.d.moveSettled('47, the own #/l/ page');
-  await back.d.addressSettled();
-  ok(
-    await waitIn(
-      back.page,
-      (want) =>
-        location.hash === want &&
-        document.querySelector('input.titleinput')?.value === 'Клад дракона' &&
-        (document.querySelector('.page-sub')?.textContent ?? '').includes('2 позиции'),
-      '#/lists/' + MOVED_A
-    ),
-    at +
-      'the own #/l/ page did not follow the list to its account address - ' +
-      (await back.page.evaluate(() => location.hash))
-  );
-  ok(
-    !(await back.page.evaluate(() =>
-      [...document.querySelectorAll('button')].some((x) =>
-        x.textContent.includes('Сохранить себе')
-      )
-    )),
-    at + 'the moved list draws «Сохранить себе»'
-  );
-  await back.ctx.close();
-}
-
-/** A browser list for case 48: two entries, the second counted and priced;
- *  `READ_ONLY_OWN` is its own players' payload, computed once by hand. */
-const READ_ONLY_SEED = {
-  'dhloot.lists.v2': JSON.stringify([
-    {
-      id: 'a',
-      name: 'Клад дракона',
-      ids: ['ci1', 'ci2'],
-      meta: { ci2: { qty: 2, gold: 750 } },
-      created: 1
-    }
-  ])
-};
-const READ_ONLY_OWN = '#/l/0JrQu9Cw0LQg0LTRgNCw0LrQvtC90LAKMi5rdTl3fmNpMSxjaTIqMio3NTA';
-
-async function readOnlyAfterTheCutoff() {
-  const at = '48 (read-only after the cutoff): ';
-  const today = '2026-10-26';
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage: READ_ONLY_SEED });
-  await d.open('#/lists/a', { today });
-  const before = (await storedOf(page)).lists;
-  await d.type('Название списка', 'Другое имя');
-  await d.type('1', '9');
-  await d.addressSettled();
-  ok(
-    (await storedOf(page)).lists === before,
-    at + 'a typed name or quantity changed dhloot.lists.v2'
-  );
-  ok(
-    (await page.evaluate(() => location.hash)) === '#/lists/a',
-    at + 'the address left #/lists/a - ' + (await page.evaluate(() => location.hash))
-  );
-  await d.open(READ_ONLY_OWN, { today });
-  ok(
-    (await page.evaluate(() => document.querySelector('h1')?.textContent ?? '')).includes(
-      'Ссылки такого вида перестали открываться 26 октября 2026 года.'
-    ),
-    at + 'the own #/l/ payload does not draw the retired page'
-  );
-  const tabBar = () =>
-    page.evaluate(() => {
-      const links = [...document.querySelectorAll('nav.tabs a')];
-      return {
-        n: links.length,
-        lists: links.some((a) => a.textContent.trim() === 'Списки'),
-        h1: document.querySelector('h1')?.textContent ?? ''
-      };
-    });
-  /* Compared with the bar before the cutoff, so a new section does not stale the count. */
-  await d.open('#/lists', { today: '2026-10-01' });
-  const open = await tabBar();
-  await d.open('#/lists', { today });
-  const bar = await tabBar();
-  ok(
-    open.lists && bar.n === open.n - 1 && !bar.lists && bar.h1 === 'Мои списки',
-    at +
-      'the bar is not the open bar without «Списки» over the lists index - ' +
-      JSON.stringify({ open, bar })
-  );
-  await d.press('Клад дракона');
-  ok(
-    await waitIn(page, () => location.hash === '#/lists/a'),
-    at +
-      'a click on the browser card did not land on #/lists/a - ' +
-      (await page.evaluate(() => location.hash))
-  );
   await ctx.close();
 }
 
@@ -3660,78 +3082,6 @@ async function accountMenu() {
       page360.select[0] >= 0 &&
       page360.select[1] <= page360.select[3],
     at + '360: #/account scrolls sideways or hides the select - ' + JSON.stringify(page360)
-  );
-  await narrow.ctx.close();
-}
-
-/** 51. The signed-out move banner: its text, «Скрыть» until the next page
- *  load, and «Войти» through the sign-in back to the page with the list
- *  moved; at 360 it stays inside the viewport (docs/specs/FEATURES.md,
- *  "Account and browser lists"). */
-async function moveBanner() {
-  const at = '51 (the move banner): ';
-  const TEXT =
-    'Ваши списки хранятся только в этом браузере. Войдите до 26 октября 2026 года - и они перенесутся в аккаунт. После этой даты приложение перестанет их показывать.';
-  const storage = {
-    'dhloot.lists.v2': JSON.stringify([
-      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 }
-    ])
-  };
-  const bannerText = (page) =>
-    page.evaluate(() => document.querySelector('.movenotice')?.textContent ?? null);
-
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage });
-  await d.open('#/tables');
-  ok(
-    (await bannerText(page))?.includes(TEXT) === true,
-    at + 'the banner does not read the full text - ' + JSON.stringify(await bannerText(page))
-  );
-  await d.press('Скрыть напоминание');
-  ok((await bannerText(page)) === null, at + '«Скрыть» did not hide the banner');
-  await d.go('#/roll/std');
-  ok((await bannerText(page)) === null, at + 'a navigation brought the banner back');
-  await d.open('#/roll/std');
-  ok((await bannerText(page)) !== null, at + 'a reload did not bring the banner back');
-  await d.press('Войти и перенести списки');
-  ok(
-    (await d.hash()) === '#/account' && (await bannerText(page)) === null,
-    at + '«Войти» did not open #/account without the banner - ' + (await d.hash())
-  );
-  await d.press('Войти через Google');
-  await d.moveSettled('51, after the sign-in');
-  ok(
-    await waitIn(
-      page,
-      () =>
-        location.hash === '#/roll/std' &&
-        (document.querySelector('.movenotice')?.textContent ?? '').includes(
-          'Списки из этого браузера перенесены в ваш аккаунт: «Клад дракона».'
-        )
-    ),
-    at +
-      'the sign-in did not come back to #/roll/std with the moved-lists notice - ' +
-      (await d.hash()) +
-      ' ' +
-      JSON.stringify(await bannerText(page))
-  );
-  await ctx.close();
-
-  const narrow = await fresh({ width: 360, height: 800, storage });
-  await narrow.d.open('#/roll/std');
-  const box = await narrow.page.evaluate(() => {
-    const rects = [
-      document.querySelector('.movenotice'),
-      ...document.querySelectorAll('.movenotice button')
-    ].map((e) => e?.getBoundingClientRect() ?? null);
-    return {
-      inside: rects.every((r) => !!r && r.width > 0 && r.left >= 0 && r.right <= innerWidth),
-      buttons: rects.length - 1,
-      overflow: document.documentElement.scrollWidth > innerWidth
-    };
-  });
-  ok(
-    box.inside && box.buttons === 2 && !box.overflow,
-    at + '360: the banner or a button leaves the viewport - ' + JSON.stringify(box)
   );
   await narrow.ctx.close();
 }
@@ -3946,7 +3296,7 @@ async function tickedListsDeletedTogether() {
 }
 
 /** 62. A search prunes the ticks and «Выбрать все» ticks the drawn cards
- *  only: twelve account lists; a tick the query hides is dropped for good,
+ *  only: gm1's three lists and nine made through the fake; a tick the query hides is dropped for good,
  *  and the checked boxes always equal the summary's number. */
 async function searchPrunesTicks() {
   const at = '62 (a search prunes the ticks and select-all ticks the drawn cards only): ';
@@ -3956,14 +3306,10 @@ async function searchPrunesTicks() {
     'Лавка в порту',
     ...Array.from({ length: 6 }, (_, i) => 'Сессия ' + String(i + 1))
   ];
-  const storage = {
-    'dhloot.lists.v2': JSON.stringify(
-      names.map((name, i) => ({ id: 'p' + String(i), name, ids: [], created: 100 - i }))
-    )
-  };
-  const { ctx, page, d } = await fresh({ width: 1180, height: 900, storage });
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/lists', { as: 'gm1' });
-  await d.moveSettled('62');
+  await d.settled('62');
+  await d.accountLists(names.map((name, n) => ({ n: n + 1, name, ids: [] })));
   ok(
     (await d.count('.listcard-pick')) === 12,
     at + 'twelve account cards are not drawn - ' + String(await d.count('.listcard-pick'))
@@ -4318,14 +3664,8 @@ async function ownItemRowAndNoteBox() {
     await ctx.close();
   }
   {
-    const { ctx, page, d } = await fresh({
-      width: 1180,
-      height: 900,
-      storage: {
-        'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
-      }
-    });
-    await d.open('#/lists/a');
+    const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+    await openAccountList(d, { n: 1, name: 'Тайник', ids: ['ci1'] }, '64');
     await d.press('Заметка');
     const marked = await page.evaluate(() => {
       const ta = document.querySelector('.rnote textarea');
@@ -5092,29 +4432,24 @@ async function undoesAToolbarEditWithTheBrowsersUndo() {
  *  a table no wider than its text (docs/specs/FEATURES.md, "Lists"). */
 async function drawsListNotesAsFormattedText() {
   const at = '76 (list notes draw as formatted text): ';
-  const { ctx, page, d } = await fresh({
-    width: 360,
-    height: 800,
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        {
-          id: 'a',
-          name: 'Тайник',
-          ids: ['ci1', 'ci2'],
-          created: 1,
-          note: 'Лавка *закрыта* до утра\n- вход со двора',
-          meta: {
-            ci2: {
-              note:
-                '**Светится** в темноте\n1. днём тускло\n2. ночью ярко\n' +
-                '| Время суток, когда свет заметнее всего | Свет |\n|---|---|\n| ночь | ярко |'
-            }
-          }
+  const { ctx, page, d } = await fresh({ width: 360, height: 800 });
+  await openAccountList(
+    d,
+    {
+      n: 1,
+      name: 'Тайник',
+      ids: ['ci1', 'ci2'],
+      note: 'Лавка *закрыта* до утра\n- вход со двора',
+      meta: {
+        ci2: {
+          note:
+            '**Светится** в темноте\n1. днём тускло\n2. ночью ярко\n' +
+            '| Время суток, когда свет заметнее всего | Свет |\n|---|---|\n| ночь | ярко |'
         }
-      ])
-    }
-  });
-  await d.open('#/lists/a');
+      }
+    },
+    '76'
+  );
   await d.press('Просмотр');
   ok(
     await waitIn(page, () => !!document.querySelector('.lnote .pane ul')),
@@ -5163,21 +4498,21 @@ async function drawsListNotesAsFormattedText() {
   await ctx.close();
 }
 
-/** A `#/l/` players' link, `encodeList` of ci1 (2 x 150, the players' note
- *  «Видно игрокам») and cc1 (x5): ticked, ci1 draws the main line, its note
- *  and its take line. No fake-cloud share holds a noted entry with a count. */
-const NOTED_AND_COUNTED =
-  'WAoyLjFpazh-Y2kxKjIqMTUwLGNjMSo1Ch4rY2kxH9CS0LjQtNC90L4g0LjQs9GA0L7QutCw0Lw';
-
 /** 77. A shared row's tick column runs through its note and its take line at
  *  360 and 1180: the select box ends at the row's inner bottom, the checkbox
  *  sits on the main line, and a press low in the column unticks the row
- *  (docs/specs/FEATURES.md, "Lists"). */
+ *  (docs/specs/FEATURES.md, "Lists"). The players' link of «Лавка кузнеца», whose ci1
+ *  counts 2, gets a players' note on ci1 as another device would write it. */
 async function sharedRowTickColumn() {
   for (const width of [360, 1180]) {
     const at = `77 (the shared row's tick column) at ${width}: `;
     const { ctx, page, d } = await fresh({ width, height: 900 });
-    await d.open('#/l/' + NOTED_AND_COUNTED);
+    await d.open('#/s/player-token-1');
+    await d.fake('playEntry', SHOP_ID, 'ci1', { player_note: 'Видно игрокам' });
+    ok(
+      await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .rnotes')),
+      at + 'the ci1 row never drew its note'
+    );
     await page.click('[data-row="ci1"] .selbox input');
     ok(
       await waitIn(page, () => !!document.querySelector('[data-row="ci1"] > .pickrow')),
@@ -5465,8 +4800,6 @@ const CASES = [
   ['3 (modal)', newListFromModal],
   ['4/5 (two frames)', twoFramesPicked],
   ['6 (dialog)', dialogSemantics],
-  ['7 (two windows)', twoTabsShareStorage],
-  ['8 (packed link)', packedLink],
   ['9 (copy text)', copyTextThroughClipboard],
   ['10 (copy image)', copyImage],
   ['11 (no picture)', brokenArtPath],
@@ -5478,12 +4811,10 @@ const CASES = [
   ['17 (drag reorder)', dragReorder],
   ['18 (folded panels)', foldedDetailsSurviveRerender],
   ['19 (tiles with no pictures)', tileGeometryNoArt],
-  ['20 (warning at 320)', storageNoticeAt320],
   ['21 (button focus)', buttonFocusSurvivesRerender],
   ['22 (help and list pick)', moneyHelpAndPressedPicker],
   ['23 (menu in the modal)', addToListMenuStaysInModal],
   ['24 (reduced motion)', reducedMotionKillsEverything],
-  ['25 (notice dismiss while folded)', storageNoticeDismissWhileFolded],
   ['26 (announce on touch, inert grip)', announceOnTouchAndHideInertGrip],
   ['27 (list menu at 50 lists)', listMenuKeepsItsControlsInView],
   ['28 (minimal worker)', minimalWorker],
@@ -5492,11 +4823,9 @@ const CASES = [
   ['31 (card image focus ring)', cardMediaRingVisible],
   ['32 (undo toast in the record dialog)', undoToastInRecordDialog],
   ['33 (drag source removed mid-drag)', dragSourceRemovedMidDrag],
-  ['34 (notice summary wins its taps)', noticeSummaryWinsItsTaps],
   ['35 (fake cloud signed state)', fakeCloudSignedState],
   ['36 (account preferences)', accountPreferences],
   ['37 (sign-in from the bar)', signInFromTheBar],
-  ['38 (old link saved after sign-in)', saveOldLinkAfterSignIn],
   ['39 (sign-out on an account list)', signOutOnAccountList],
   ['40 (not saved, then retried)', notSavedThenRetried],
   ['41 (delete an account list)', deleteAccountList],
@@ -5505,11 +4834,8 @@ const CASES = [
   ['44 (share link saved after sign-in)', saveShareLinkAfterSignIn],
   ['45 (shared page re-read)', sharedPageRereadWhenShownAgain],
   ['46 (shared page gone)', sharedPageGoneWhenShownAgain],
-  ['47 (browser lists moved on sign-in)', browserListsMovedOnSignIn],
-  ['48 (read-only after the cutoff)', readOnlyAfterTheCutoff],
   ['49 (account edits wait two seconds, then go once)', accountEditsWaitThenGoOnce],
   ['50 (the account menu)', accountMenu],
-  ['51 (the move banner)', moveBanner],
   ['52 (live share page)', liveSharePage],
   ['53 (live account list)', liveAccountList],
   ['54 (live requests)', liveRequests],

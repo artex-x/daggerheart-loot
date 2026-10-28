@@ -34,8 +34,8 @@
     ontoggle: () => void;
     onpick: (group: string, value: string) => void;
     onreset: () => void;
-    /** Absent where the address cannot carry the filter (`#/l/`, the homebrew table and the
-     *  Items tab): no link button. */
+    /** Absent where the address cannot carry the filter (the homebrew table and the Items
+     *  tab): no link button. */
     oncopylink?: (() => void) | undefined;
     /** The «Фильтры» toggle, for a caller's empty state whose «Сбросить всё» focuses it. */
     toggleEl?: HTMLButtonElement | undefined;
@@ -309,11 +309,10 @@
     white-space: nowrap;
   }
 
-  /* off `.panel` in style.css, the same base `.tablenav` in TablesPage.svelte
-     copies - `.ffilter` is a second use of that same base class, styled
-     locally the same way. `.ffilter`'s own margin-top is declared twice in
-     style.css (926 and 948); the second, 10px, is the one that wins at the
-     same specificity. */
+  /* off `.panel` in `git show 23c00a6^:style.css`, the same base `.tablenav` in
+     TablesPage.svelte copies - `.ffilter` is a second use of that same base class, styled
+     locally the same way. `.ffilter`'s own margin-top is declared twice in that file; the
+     second, 10px, is the one that wins at the same specificity. */
   .ffilter {
     background: linear-gradient(180deg, var(--surface2), var(--surface));
     border: 1px solid var(--line);
@@ -323,8 +322,8 @@
     margin-top: 10px;
   }
 
-  /* off `.field` in style.css. The base rule also carries a `:last-child`
-     reset to 0 (line 151), but it and `.ffilter .field` (927) tie in
+  /* off `.field` in `git show 23c00a6^:style.css`. The base rule also carries a `:last-child`
+     reset to 0, but it and `.ffilter .field` tie in
      specificity - two classes each, a pseudo-class counting as one - so the
      one written later in the file wins the cascade. `.ffilter .field` comes
      after, so the reset never actually applies here: every field in this

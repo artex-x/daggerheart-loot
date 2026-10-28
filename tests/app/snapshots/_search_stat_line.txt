@@ -17,7 +17,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Поиск" [level=1]
@@ -467,7 +466,6 @@ daggerheart.com
 Снаряжение
 Солдатская Пика
 Солдатская ПикаРанг 3 · Физическое · Проворность · Близко · d10+... [namelen=236 namehash=5b85f6a2]
-Списки
 Стальная Алебарда
 Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
 Стихийный Длинный Лук
@@ -578,7 +576,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Search" [level=1]
@@ -604,7 +601,6 @@ EN
 Equipment
 Install as an app
 Items
-Lists
 Open this section on start
 Privacy
 RU

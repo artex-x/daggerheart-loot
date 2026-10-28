@@ -17,7 +17,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Поиск" [level=1]
@@ -305,7 +304,6 @@ daggerheart.com
 Скопировать
 Снаряжение
 Снять выделение
-Списки
 Стекло Разбитой Судьбы
 Стенающая Костяная Флейта
 Стихийный Длинный Лук
@@ -371,7 +369,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Search" [level=1]
@@ -643,7 +640,6 @@ Legendary Whipsword
 Legendary WhipswordTier 4 · Physical · Finesse · Very Close · d8... [namelen=192 namehash=bdf7811e]
 Legendary Wyrmscale Hauberk
 Legendary Wyverntail Whip
-Lists
 Little Forest Spirit
 Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]

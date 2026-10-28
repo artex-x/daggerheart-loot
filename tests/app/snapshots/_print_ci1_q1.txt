@@ -17,7 +17,6 @@ RootWebArea "Генератор лута Daggerheart" [url=#/print/ci1-q1]
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Такие ссылки на печать больше не открываются." [level=1]
@@ -43,7 +42,6 @@ daggerheart.com
 На главную
 Обычные правила
 Поиск
-Списки
 Таблицы
 Условия использования
 Установить как приложение
@@ -63,7 +61,6 @@ RootWebArea "Daggerheart Loot Generator" [url=#/print/ci1-q1]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Print links of this kind no longer open." [level=1]
@@ -81,7 +78,6 @@ Alt. tables
 EN
 Home
 Install as an app
-Lists
 Privacy
 RU
 Search

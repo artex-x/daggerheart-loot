@@ -18,7 +18,6 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=index.ht
       link "Альт. таблицы" [url=index.html?as=gm3#/roll/alt]
       link "Дополнения" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Таблицы" [url=index.html?as=gm3#/tables]
-      link "Списки" [url=index.html?as=gm3#/lists]
       link "Поиск" [url=index.html?as=gm3#/search]
   main ""
     heading "Поиск" [level=1]
@@ -97,7 +96,6 @@ daggerheart.com
 Спальный мешок тишиныСпальный мешок для долгой дороги.Получается... [namelen=111 namehash=9afc0ae6]
 Спальный мешок у костра
 Спальный мешок у костраСпальный мешок для долгой дороги.Получает... [namelen=113 namehash=0064dbea]
-Списки
 Таблицы
 Тёплый спальный мешок
 Тёплый спальный мешокСпальный мешок для долгой дороги.Получается... [namelen=111 namehash=06f16e2b]
@@ -119,7 +117,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=index.html?as=gm3#/search
       link "Alt. tables" [url=index.html?as=gm3#/roll/alt]
       link "Supplements" [url=index.html?as=gm3#/roll/wondrous_environments]
       link "Tables" [url=index.html?as=gm3#/tables]
-      link "Lists" [url=index.html?as=gm3#/lists]
       link "Search" [url=index.html?as=gm3#/search]
   main ""
     heading "Search" [level=1]
@@ -175,7 +172,6 @@ Hermit's Bedroll
 Hermit's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=bdd52709]
 Install as an app
 Items
-Lists
 Nomad's Bedroll
 Nomad's BedrollA bedroll for a long road.Made from: Premium Bedr... [namelen=79 namehash=4876bc1f]
 Open this section on start

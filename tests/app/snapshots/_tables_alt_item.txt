@@ -17,7 +17,6 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Таблицы" [level=1]
@@ -317,7 +316,6 @@ daggerheart.com
 Скопировать ссылку на этот раздел
 Снаряжение
 Сосуд Западного Ветра
-Списки
 Списком
 Ссылка на таблицу
 Табакерка Драконьей Пыли
@@ -351,7 +349,6 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/alt_item]
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Tables" [level=1]
@@ -604,7 +601,6 @@ Knockback Bracelets
 Lakestrider Boots
 Link to this table
 List
-Lists
 Loaded Dice
 Lorekeeper
 Manacles

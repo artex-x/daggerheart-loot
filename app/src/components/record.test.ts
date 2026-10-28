@@ -31,8 +31,10 @@ import {
   memoryStorage,
   noData
 } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { listOf, seedWith } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
@@ -170,7 +172,7 @@ const LOOT: Loot = {
         }
       }
     ],
-    /* Vault of Ages carries the tier word `app.js:3237` prints but the
+    /* Vault of Ages carries the tier word the live print card (`git show 23c00a6^:app.js`) prints but the
        Svelte rewrite dropped - an artifact and a cursed object, the two
        shapes the word takes. */
     voa: [
@@ -827,12 +829,12 @@ describe('the tier ladder', () => {
     /* Without `app.menuFor = ''` on every close path, the card's add-to-list
        menu, left open when a modal closes, is still `open` the next time the
        same record's modal is shown - `aria-expanded="true"`, menu drawn. */
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
     );
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -843,16 +845,16 @@ describe('the tier ladder', () => {
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
   });
 
   it('folds the same menu when the modal closes through the backdrop', async () => {
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
     );
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('dialog'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -883,16 +885,16 @@ describe('the tier ladder', () => {
   });
 
   it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open', async () => {
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const toggle = within(screen.getByRole('dialog')).getByRole('button', {
       name: 'Добавить в список'
     });
     await userEvent.click(toggle);
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the
@@ -904,28 +906,29 @@ describe('the tier ladder', () => {
 describe('the undo toast while the record dialog is open', () => {
   /* A modal dialog makes everything outside it inert, so the toast an action
      inside it raises is drawn inside it (docs/DECISIONS.md, 2026-09-24). */
-  const inList = (): Env =>
-    at('q1', {
-      storage: memoryStorage({
-        'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: ['q2'], created: 1 }])
-      })
-    });
+  const inList = () => {
+    const cloud = fakeCloud(seedWith({ gm4: [listOf(851, 'Клад', [{ key: 'q2' }])] }), 'gm4');
+    const page = fakePage();
+    return { env: at('q1', { cloud, page }), cloud, page };
+  };
   const removeFromList = async (): Promise<HTMLElement> => {
+    await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Клад' }));
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Клад' }));
     return dialog;
   };
-  const stored = (env: Env): string[] =>
-    (JSON.parse(env.storage.get('dhloot.lists.v2') ?? '[]') as { ids: string[] }[])[0]?.ids ??
-    [];
+  const stored = async (x: {
+    cloud: CloudPort;
+    page: { fireHidden(): void };
+  }): Promise<string[]> => (await readList(x.cloud, x.page, uuid(851)))?.ids ?? [];
 
   it('draws the undo toast inside the open dialog, focused, and runs the undo', async () => {
-    const env = inList();
-    render(App, { env });
+    const held = inList();
+    render(App, { env: held.env });
     const dialog = await removeFromList();
-    expect(stored(env)).toEqual([]);
+    expect(await stored(held)).toEqual([]);
 
     const status = within(dialog).getByRole('status');
     const undo = within(status).getByRole('button', { name: 'Вернуть' });
@@ -934,12 +937,12 @@ describe('the undo toast while the record dialog is open', () => {
     await expectNoA11yViolations(dialog);
 
     await userEvent.click(undo);
-    expect(stored(env)).toEqual(['q2']);
+    expect(await stored(held)).toEqual(['q2']);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it("returns focus to the dialog's close button when the element it came from is gone", async () => {
-    render(App, { env: inList() });
+    render(App, { env: inList().env });
     const dialog = await removeFromList();
     const undo = within(dialog).getByRole('button', { name: 'Вернуть' });
     await vi.waitFor(() => {
@@ -955,7 +958,7 @@ describe('the undo toast while the record dialog is open', () => {
   });
 
   it("hands the toast to the page's own copy when the dialog closes", async () => {
-    render(App, { env: inList() });
+    render(App, { env: inList().env });
     const dialog = await removeFromList();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

@@ -10,7 +10,6 @@ import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { cardVersion } from '../lib/hash.js';
-import { encodeList } from '../lib/listLink.js';
 import { fakeClipboard, fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
@@ -336,14 +335,15 @@ describe('a list made a moment ago', () => {
       return real(ops);
     });
     cloud.lists.apply = apply;
-    const payload = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
-    const router = memoryRouter('#/l/' + payload);
+    const router = memoryRouter('#/lists');
     const { container } = render(App, {
       env: fakeEnv({ router, data: fakeData(LOOT), cloud })
     });
     await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Сохранить себе' }));
-    expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    await screen.findByText('Лавка кузнеца');
+    await userEvent.type(screen.getByPlaceholderText(ru.listNamePh), 'Лавка');
+    await userEvent.click(screen.getByRole('button', { name: ru.create }));
+    router.navigate('#/lists/' + uuid(5000));
     await pressShare();
     await waitFor(() => {
       expect(apply).toHaveBeenCalledOnce();

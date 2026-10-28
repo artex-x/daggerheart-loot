@@ -17,7 +17,6 @@ RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=#/rol
       link "Альт. таблицы" [url=#/roll/alt]
       link "Дополнения" [url=#/roll/wondrous_environments]
       link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
       link "Поиск" [url=#/search]
   main ""
     heading "Vault of Ages" [level=1]
@@ -100,7 +99,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Случайно 1–9
-Списки
 Страница
 Таблицы
 Узы Души
@@ -122,7 +120,6 @@ RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=#/roll/vault_of_ag
       link "Alt. tables" [url=#/roll/alt]
       link "Supplements" [url=#/roll/wondrous_environments]
       link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
       link "Search" [url=#/search]
   main ""
     heading "Vault of Ages" [level=1]
@@ -184,7 +181,6 @@ Dread GM Toolbox
 EN
 How this works
 Install as an app
-Lists
 Many Worlds Tavern
 One higher
 One lower
