@@ -466,6 +466,11 @@ exit ("Run a long check", "Gate credit"). The runner fails in seconds:
 | `check:db: FAIL - docker ps did not answer in 30 s. ...` | Docker hung (`runningContainer`, also in the restore drill) | `rdctl shutdown`, then `rdctl start` through PowerShell |
 | `check:db: FAIL - The Supabase CLI binary is not installed. ...` | no `@supabase/cli-<platform>` package in any parent `node_modules` | Run `npm ci` in the checkout the run is in |
 
+A timed case can miss its bound in the first run after `rdctl start`: on
+2026-10-28 `list-shares.test.mjs` failed with "the first read's median took
+2878 ms" (bound 1500 ms), and the next run passed at 1358 ms. Run check:db
+once more before you read such a miss as a regression.
+
 Its last stdout line is `check:db: PASS` or `check:db: FAIL`, and
 `check-observer.mjs` arms the `supabase/` and `tests/db/` commit rule from
 the PASS line. The observer matches the command at its start, so a run
@@ -902,7 +907,7 @@ documented; the parity rows below are replaced by the gates that survive.
 | gate | idle host | loaded host |
 |---|---|---|
 | a CI run (push to the last gate job) | 10.5-11.5 min, about 65 runner-minutes, no Actions cost (public repository; runs 39563712504 and 39599556984, 2026-10-21) | remote; the orchestrator waits with one background `ci-credit.mjs` call ("CI credit") |
-| `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21); 657-710 s when the changed files reach `app.test.ts` and the component suites (2026-10-22, catalog-copy, host idle); the local floor before every task-branch commit | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background and still arms by its exit |
+| `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21), 841 s for the merge of R10 and CF1 (2026-10-28); 657-710 s when the changed files reach `app.test.ts` and the component suites (2026-10-22, catalog-copy, host idle); the local floor before every task-branch commit | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background and still arms by its exit |
 | `npm run check` | 10-18 min with nothing cached (2026-10-07); the offline path only, in the main session with `run_in_background` or the owner's terminal | past the Bash tool's 600s foreground cap; it arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:built` | a few minutes | longer |
 | `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub` | ~260-290s pooled | longer; 723 s with WSL and Rancher up (2026-10-15) |
@@ -3359,8 +3364,12 @@ the branch's last CI run is green; (b) `git checkout main && git pull`;
 commit message>` - the author comes from `.claude/settings.json`, and a
 tooling commit the branch carries rides in the squash; the release is one
 commit, never a merge commit; if the squash refuses, merge the latest
-`origin/main` into the branch (never a rebase), push it, and restart at
-(a); (d) push `main`, which runs `deploy`, and watch it; (e) delete the branch.
+`origin/main` into the branch (never a rebase) - a modify/delete conflict
+on `data.json` or `catalog.csv` (a branch cut before the two files left
+git, `docs/decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md`)
+keeps the deletion: `git rm --cached --ignore-unmatch data.json
+catalog.csv`, then `node tools/build.js` - push it, and restart at (a);
+(d) push `main`, which runs `deploy`, and watch it; (e) delete the branch.
 
 ## Artwork tooling
 
@@ -3462,46 +3471,25 @@ Owner setup, facts of 2026-10-14:
 
 - The account subdomain is `daggerheart-loot`. The project was created with
   `npx wrangler pages project create daggerheart-loot --production-branch main`;
-  repeat that command for a new account. The deployments made before the
-  first CI deploy (the probe and the measurement) hold the test project's
-  secrets; the owner deletes them in the dashboard after the first CI deploy.
+  repeat that command for a new account. Every deployment listed on
+  2026-10-28 is a CI deploy of `main` (owner); none holds the test
+  project's secrets.
 - The token is "daggerheart-loot pages deploy": account scope Cloudflare
   Pages Edit, Workers Scripts Edit, Workers Tail Read, Account Settings
   Read; user scope User Details Read, Memberships Read; no IP filter, no TTL.
   The repository-level secrets `CLOUDFLARE_API_TOKEN` and
   `CLOUDFLARE_ACCOUNT_ID` on `artex-x/daggerheart-loot` (not an environment)
   hold it; the main checkout's `.env` holds local copies under the same
-  names, which `wrangler` reads.
-- The old Worker `share` on `workers.dev`, from the first setup, is never
-  handed out. The owner may delete it.
+  names, which `wrangler` reads. The owner keeps "Workers Scripts Edit"
+  (2026-10-28); task `ai-mcp` decides whether the token still needs it.
+- The account has no Worker `share` on `workers.dev` (owner, 2026-10-28).
 
-Owner steps left after the move to this host (task `cloudflare-pages`,
-landed 2026-10-28), in order:
-
-1. After the landing's `main` run is green: in Telegram Desktop, send a
-   record link copied from the site (`<site>i/<id>?v=<v>`), its English form
-   and one `/h/` link; each draws its card. Sign in with Google once on the
-   new host. Open the old root with a fragment once: it forwards with the
-   fragment. A failed sign-in starts the revert ("Quotas, recovery and
-   failure").
-2. Telegram (the retired refresher's account): Settings, Devices, terminate
-   the tool's session. GitHub: delete the repository secrets `TG_API_ID`,
-   `TG_API_HASH`, `TG_SESSION`. The main checkout's `.env`: delete the three
-   `TG_*` lines.
-3. Delete the old Worker `share` on `workers.dev` (above).
-4. Read-only first: `npx wrangler pages deployment list --project-name
-   daggerheart-loot --environment production` in the main checkout's
-   `preview/`, or the dashboard's Deployments list; delete each deployment
-   made before the first CI deploy (2026-10-14: the probe and the
-   measurement, which hold the test project's secrets and `/probe/*`). If
-   none is listed, the step is done.
-5. Optional, only just before a push to `main` whose run the owner watches:
-   remove the token scope "Workers Scripts Edit". If that deploy fails with a
-   403 at the Cloudflare step, add the scope back and rerun the failed
-   `deploy` job; the new host keeps its last deployment. Keep "Workers Tail
-   Read".
-6. Keep GitHub Pages on for good: it serves the old host's mirror.
-7. Optional: set the repository's "About" website to the new URL.
+The owner finished the steps after the move to this host (task
+`cloudflare-pages`, landed 2026-10-28) on 2026-10-28: the Telegram,
+sign-in and old-root checks, the retired refresher's session and its
+`TG_*` secrets, the Worker and deployment clean-up (nothing to delete),
+and the repository's "About" website. One standing rule is left: keep
+GitHub Pages on for good, because it serves the old host's mirror.
 
 ### Deploy the preview host by hand (owner)
 

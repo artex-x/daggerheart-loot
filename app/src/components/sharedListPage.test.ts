@@ -1,8 +1,6 @@
 /* The shared page, `#/s/<token>`: an account list's share link - off `renderSharedList`
  * (`git show 23c00a6^:app.js`). Through `App`, the way `listPage.test.ts` reaches the index. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
@@ -29,6 +27,7 @@ import { SEED, uuid, type SeedList, type SeedShare } from '../ports/fake-cloud-s
 import { expectNoA11yViolations } from '../test/a11y.js';
 import { readList } from '../test/accountList.js';
 import { listOf, seedWith, TWO_LISTS } from '../test/seed.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -1461,9 +1460,7 @@ describe('homebrew entries on a share link', () => {
    data, so the seeded share draws its 10 entries. */
 describe('the filter', () => {
   const ru = dict('ru');
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const SHOP = uuid(101);
   const real = (hash: string, over: Partial<Env> = {}): Env =>
     fakeEnv({ router: memoryRouter(hash), data: fakeData(REAL), ...over });

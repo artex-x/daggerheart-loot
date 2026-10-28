@@ -5,8 +5,6 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
@@ -40,6 +38,7 @@ import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import { tablesHash } from '../lib/hash.js';
 import type { Record_, TableId } from '../lib/types.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -1689,9 +1688,7 @@ describe('accessibility', () => {
 
 describe("a row with the author's own relations", () => {
   it("draws a row's catalog names, the first homebrew name with (HB) and «и ещё 14»", async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const names = Array.from(
       { length: 15 },
       (_, i) => `Зелье ${String.fromCharCode(1103 - i)}`
@@ -1751,9 +1748,7 @@ describe("a row with the author's own relations", () => {
   });
 
   it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const index = buildIndex(REAL);
     const it = index.byId.get('ci18');
     if (!it) throw new Error('The catalog lacks ci18');

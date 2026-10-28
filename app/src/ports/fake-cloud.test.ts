@@ -12,7 +12,7 @@ import {
   type ImportRow,
   type ListOp
 } from '../lib/cloudLists.js';
-import { buildIndex, type Loot } from '../lib/data.js';
+import { buildIndex } from '../lib/data.js';
 import {
   bookProblems,
   cardProblems,
@@ -27,6 +27,7 @@ import { fakeCloud, installFakeCloud } from './fake-cloud.js';
 import { SEED, uuid } from './fake-cloud-seed.js';
 import { browserEnv, fakeEnv } from './index.js';
 import type { CloudPort, ListRowsRead, ListWrite, Session } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(() => {
   delete window.__dhlootFake;
@@ -249,9 +250,7 @@ describe('the fake cloud', () => {
 
 /* The seed's lists and shares, pinned to the database's bounds. */
 describe('the seeded lists and shares', () => {
-  const loot = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const loot = readLoot();
   const index = buildIndex(loot);
   const lists = Object.values(SEED.lists).flat();
   const entries = lists.flatMap((l) => l.entries);
@@ -1238,11 +1237,7 @@ describe("the fake's import", () => {
     const lists = (read.ok ? read.lists : [])
       .map(toCloudList)
       .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));
-    const index = buildIndex(
-      JSON.parse(
-        readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-      ) as Loot
-    );
+    const index = buildIndex(readLoot());
     const text = bundleText(
       toBundle(
         lists,
@@ -1819,9 +1814,7 @@ describe('the seeded homebrew', () => {
   });
 
   it("gives gm3 thirty-four items with no source that relate to ci1, q1's line and saints-ensemble, and a chain of five", () => {
-    const loot = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const loot = readLoot();
     const index = buildIndex(loot);
     const { books, cards } = SEED.homebrew.gm3;
     const all = SEED.homebrew.gm3.items;
@@ -2924,11 +2917,7 @@ describe("the fake's homebrew import and move", () => {
     const lists = (read.ok ? read.lists : [])
       .map(toCloudList)
       .sort((a, b) => b.updated - a.updated || (a.id < b.id ? -1 : 1));
-    const index = buildIndex(
-      JSON.parse(
-        readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-      ) as Loot
-    );
+    const index = buildIndex(readLoot());
     const cards = r.cards.map((c) => ({ ...c.content, key: c.key, kind: c.kind }));
     const record = (key: string) => {
       const it = r.items.find((i) => i.key === key);

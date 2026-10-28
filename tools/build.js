@@ -2,7 +2,9 @@
   Regenerates everything that is derived from data.js:
 
     data.json     the same records, as plain JSON anything can parse
+                  (not committed: build output, like names.json)
     catalog.csv   one row per record, for reading rather than parsing
+                  (not committed: build output, like names.json)
     catalog-index.csv
                   the catalog without its text, for one fetch
                   (not committed: build output, like names.json)
@@ -17,11 +19,7 @@
   Run after every edit to data.js:   node tools/build.js
 
   npm run check runs this automatically before tests/derived.js compares, so
-  forgetting to run it by hand costs nothing inside that same check - the
-  comparison there is the generator against its own freshly written output,
-  not against a commit. A stale *commit* (edited data.js, never rebuilt, and
-  committed anyway) is what actually needs catching; that is a CI step after
-  npm run check, not this file or tests/derived.js.
+  forgetting to run it by hand costs nothing inside that same check.
 */
 const fs = require('fs');
 const path = require('path');

@@ -119,8 +119,9 @@ shared list. Never renumber a record that has shipped.
   `craft` is a list of one or more record ids, the records it upgrades into,
   in drawing order, never its own id; before R7c it was one id string.
   `catalog.csv`'s `crafts_into` joins the ids with `;`. Field meanings are in
-  `README.md`.
-- `catalog.csv` - one row per record, with the stat line.
+  `README.md`. Not committed, like `names.json`.
+- `catalog.csv` - one row per record, with the stat line. Not committed, like
+  `names.json`.
 - `catalog-index.csv` - the catalog without its text, for an agent's one
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
@@ -338,11 +339,12 @@ the record links' card versions (section 5), from `card-versions.json`, which
 never holds `LOOT_V`. An artwork refresh changes a version, so it changes the
 published `data.js`, and a reader downloads it again after such a deploy.
 
-`data.json` and `catalog.csv` stay tracked in git (a generated pair kept
-rather than gitignored). Three triggers would reopen that: the seven
-`app/src/lib/*.test.ts` suites stop reading `data.json` off disk; `data.json`
-stops being one line (what keeps its diff invisible); its packed history
-grows past a few MB (433 KB measured).
+`data.json` and `catalog.csv` are not committed, like `names.json`:
+`node tools/build.js` writes them from `data.js` and the deploy publishes
+them at the same URLs. Vitest reads the catalog from `data.js` through
+`app/src/test/loot.ts`, which calls the same `tools/derived.js` functions.
+A data change has no readable diff in git
+(`docs/decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md`).
 
 ## 5. Static asset paths
 

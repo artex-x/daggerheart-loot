@@ -43,7 +43,7 @@ import {
   type Parsed
 } from './bundle.js';
 import { NAME_MAX, NOTE_MAX, PRICE_MAX, type CloudList } from './cloudLists.js';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import {
   derivedKey,
   ownKeyFor,
@@ -57,12 +57,13 @@ import {
 } from './homebrew.js';
 import { QTY_MAX } from './lists.js';
 import { MONEY_DEFAULT, MONEY_MODES } from './money.js';
+import { readCatalogCsv, readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
 const read = (...path: string[]): string => readFileSync(join(ROOT, ...path), 'utf8');
 const fixture = (name: string): string => read('docs', 'fixtures', 'import', name);
 
-const index = buildIndex(JSON.parse(read('data.json')) as Loot);
+const index = buildIndex(readLoot());
 const knows = (id: string): boolean => index.byId.has(id);
 
 interface Prop {
@@ -628,7 +629,7 @@ describe('the fixtures', () => {
 /* The rows of catalog.csv by id: a CSV reader of its own, quoted fields with commas,
    quotes and line breaks included. */
 function catalog(): Map<string, Record<string, string>> {
-  const text = read('catalog.csv');
+  const text = readCatalogCsv();
   const rows: string[][] = [];
   let row: string[] = [];
   let cell = '';

@@ -1,8 +1,6 @@
-/* Run against the real data.json, not a handful of invented records.
+/* Run against the real catalog, not a handful of invented records.
    The counts asserted here are the ones the README and llms.txt publish, so a
    silent change to the dataset fails in three places at once rather than none. */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildIndex,
@@ -25,10 +23,9 @@ import {
 } from './data.js';
 import { recordOf, withRecords, type HomebrewRecord } from './homebrew.js';
 import { CHARACTER_TRAITS, type Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 
 const index = buildIndex(LOOT);
 

@@ -7,10 +7,8 @@
  * broken. The grammar itself is frozen - docs/specs/ROUTES.md - and the golden
  * side of it is replayed against the live app by tests/contracts.js. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { equipFacets, type Loot } from './data.js';
+import { equipFacets } from './data.js';
 import {
   chosenCount,
   decodeFilter,
@@ -23,10 +21,9 @@ import {
   passes
 } from './filters.js';
 import { CHARACTER_TRAITS, TABLE_IDS } from './types.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 
 describe('which groups a table offers', () => {
   it('gives equipment tables the groups their kind has', () => {

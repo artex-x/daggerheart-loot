@@ -303,9 +303,9 @@ en/index.html         the English entry document (the site's English preview car
 pages/src/*.html      the site pages (install guide, privacy, terms), authored, Russian; pages/src/en/ English
 pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
                       and pages/en/ English
-data.json             the same data as plain JSON, for outside readers
+data.json             the same data as plain JSON, for outside readers; generated, not committed
 names.json            catalog names for the preview host; generated, not committed
-catalog.csv           one row per record, with stat lines
+catalog.csv           one row per record, with stat lines; generated, not committed
 catalog-index.csv     catalog.csv without the text, for one fetch; generated, not committed
 llms.txt              what the site is, URL grammar, the lists import file
 schema/import-v1.json the JSON Schema of the lists import file
@@ -334,16 +334,14 @@ are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 change to the data, run `node tools/build.js`. `npm run check` runs that
 build itself, immediately before `tests/derived.js` compares the generator
 against its own output - so forgetting to run it by hand costs nothing
-inside that same check. What that check does not catch is a stale *commit*
-(data.js edited and committed without a rebuild): a CI step after
-`npm run check` is what catches that. Artwork and previews are outside that
+inside that same check. Artwork and previews are outside that
 script - they are made from the source files by hand, and `tests/dataint.js`
 checks that both files exist for every record that has a picture.
 
-`i/` itself is not in the repository - only `data.json` and `catalog.csv` are
-committed. On a fresh clone `node tests/run-all.js` runs `node tools/build.js`
-itself when `i/` is missing; running `node tests/derived.js` (or `dataint`,
-`craft`, `stub`) directly needs that build first.
+`i/`, `data.json` and `catalog.csv` are not in the repository. On a fresh
+clone `node tests/run-all.js` runs `node tools/build.js` itself when `i/`,
+`data.json` or `catalog.csv` is missing; running `node tests/derived.js` (or
+`contracts`, `dataint`, `craft`, `stub`) directly needs that build first.
 
 ### Tests
 

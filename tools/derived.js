@@ -1,5 +1,5 @@
 /*
-  Everything that is generated out of data.js and committed next to it.
+  Everything that is generated out of data.js; none of it is committed.
 
   These live here rather than inside the build script so that the test can
   regenerate them into memory and compare against what is on disk: a stale

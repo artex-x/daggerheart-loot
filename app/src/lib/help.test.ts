@@ -1,14 +1,12 @@
 /* What a roll page explains about itself. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { Loot } from './data.js';
 import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
 import { SECTION_LABEL, dict } from './dict.js';
 import { SUPPLEMENTS } from './nav.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
 const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
@@ -251,9 +249,7 @@ describe('the help for a section', () => {
 describe('the tables help against the data', () => {
   /* Every book whose equipment also rolls on its own table is named where the
      help says so; Vault of Ages was once left out of that list. */
-  const LOOT = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const LOOT = readLoot();
   const BOOK: Record<string, string> = {
     wondrous: 'Wondrous Environments',
     dread: 'Dread GM Toolbox',

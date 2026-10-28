@@ -79,18 +79,6 @@ jobs:
           CHECK_CACHE: 'off'
         run: npm run check
 
-      # `npm run check` (above) already ran `npm run data`, which regenerates
-      # data.json/catalog.csv from data.js in this checkout - so
-      # `tests/derived.js`, running inside that same `npm run check`, was
-      # comparing the freshly regenerated files against themselves and could
-      # never catch a data.js edit committed without its generated output.
-      # This is the actual gate: a diff here means someone edited data.js and
-      # forgot `node tools/build.js` before committing. README.md,
-      # README.ru.md and .claude/hooks/edit-followup.mjs describe this step
-      # too.
-      - name: Generated data actually matches what is committed
-        run: git diff --exit-code -- data.json catalog.csv
-
       - name: Build
         run: npm run build
 
@@ -465,16 +453,17 @@ jobs:
       # section 9). `dist/data.js` carries the record links' card versions
       # (window.LOOT_V), so it is never the source data.js.
       #
-      # `i/` (with `i/en/`), `en/`, `names.json` and `catalog-index.csv` are
-      # not in the repository - the Build step above regenerates them (npm
-      # run build -> npm run data -> tools/build.js) immediately before this
-      # step copies them, so Collect must never be reordered ahead of Build.
+      # `i/` (with `i/en/`), `en/`, `data.json`, `catalog.csv`, `names.json`
+      # and `catalog-index.csv` are not in the repository - the Build step
+      # above regenerates them (npm run build -> npm run data ->
+      # tools/build.js) immediately before this step copies them, so Collect
+      # must never be reordered ahead of Build.
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
                 dist/sw.js dist/icons _site/
-          cp -r data.json catalog.csv catalog-index.csv names.json llms.txt robots.txt .nojekyll LICENSE \
+          cp -r data.json catalog.csv catalog-index.csv names.json llms.txt robots.txt LICENSE \
                 404.html img og i en card schema _site/
           # Only the generated site pages, one copy per language: pages/src/
           # is their authored source, not site content (docs/specs/META.md
@@ -507,18 +496,6 @@ jobs:
                    schema/import-v3.json schema/homebrew-v1.json schema/homebrew-v2.json; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
-          # .nojekyll is empty by design - its presence here is the whole
-          # signal that the collect step above copied it. It does not,
-          # however, do anything on the actually published site: GitHub Pages
-          # is set to build_type: workflow, which never runs Jekyll
-          # regardless, and actions/upload-pages-artifact@v4 tars _old/ with
-          # `--exclude=".[^/]*"`, so a dotfile never reaches the artifact it
-          # uploads in the first place (confirmed: the live URL 404s for
-          # it). This check can only ever fail for a reason that does not
-          # matter to what gets served; it would matter only if Pages were
-          # ever switched back to the legacy branch-based build, where a
-          # missing .nojekyll lets Jekyll eat any file starting with `_`.
-          if [ ! -e "_site/.nojekyll" ]; then echo "::error::.nojekyll is missing"; exit 1; fi
           # assets/ holds hashed names only, so it is checked as a folder.
           for d in assets img og i i/en en card pages pages/en; do
             if [ ! -d "_site/$d" ] || [ -z "$(ls -A "_site/$d")" ]; then

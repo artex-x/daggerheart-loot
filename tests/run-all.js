@@ -161,20 +161,24 @@ if (shardArg) {
   const mine = new Set(bins[n - 1].items);
   queue = queue.filter((s) => mine.has(s));
 }
-/* derived/dataint/craft/stub read i/*.html, which is generated, not committed
-   (docs/specs/CONTRACTS.md section 5): a clean checkout has no i/, so build it
-   once here rather than lose all four suites to ENOENT. */
+/* The build's outputs are not committed (docs/specs/CONTRACTS.md sections 4
+   and 5): derived, contracts and the app/* suites (through tests/app/serve.js
+   and tests/app/print.js) read data.json or catalog.csv, and
+   derived/dataint/craft/stub read i/*.html. A clean checkout has none of
+   them, so build once here rather than lose the suites to ENOENT. */
 const NEEDS_I = ['derived', 'dataint', 'craft', 'stub'];
-if (
-  queue.some((s) => NEEDS_I.indexOf(s[0]) >= 0) &&
-  !fs.existsSync(path.join(HERE, '..', 'i'))
-) {
-  console.log('i/ is missing - running node tools/build.js first');
+const missing = queue.length
+  ? ['data.json', 'catalog.csv']
+      .concat(queue.some((s) => NEEDS_I.indexOf(s[0]) >= 0) ? ['i/'] : [])
+      .find((f) => !fs.existsSync(path.join(HERE, '..', f)))
+  : undefined;
+if (missing) {
+  console.log(missing + ' is missing - running node tools/build.js first');
   const built = spawnSync(process.execPath, [path.join(HERE, '..', 'tools', 'build.js')], {
     stdio: 'inherit'
   });
   if (built.status !== 0) {
-    console.log('node tools/build.js failed, so the suites that read i/ cannot run');
+    console.log('node tools/build.js failed, so the suites that read its output cannot run');
     process.exit(1);
   }
 }

@@ -12,7 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import { esc } from './desc.js';
 import { markupHtml, markupText } from './markup.js';
 import { dict } from './dict.js';
@@ -29,9 +29,10 @@ import {
   shareSelection
 } from './share.js';
 import type { Lang, Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 interface Captured {

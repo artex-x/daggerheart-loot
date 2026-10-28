@@ -1,5 +1,7 @@
 # 2026-09-18 - `data.json`/`catalog.csv` staying tracked was not solved by a pretest step
 
+- Superseded by "`data.json` and `catalog.csv` leave git; the build writes
+  both" (2026-10-28).
 - Task: `untrack-stubs` (retired; recorded here at retirement).
 - Decision: `data.json` and `catalog.csv` stay tracked in git (triggers to
   reopen this: `docs/specs/CONTRACTS.md` section 4).

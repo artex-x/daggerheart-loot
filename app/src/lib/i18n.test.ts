@@ -39,9 +39,10 @@ import {
 import { FRAME_ORDER, frameName } from './frames.js';
 import { REALM_ORDER, realmName } from './realms.js';
 import { TABLE_IDS, type Lang, type Record_, type Section, type TableId } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 const FIXTURE = JSON.parse(

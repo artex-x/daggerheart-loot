@@ -1,9 +1,8 @@
-/* data.json and catalog.csv are generated from data.js and live beside it.
-   Inside `npm run check` they are already rebuilt by `npm run data` right
-   before this check, so here the generator is compared against itself, not
-   against the committed copy. A rebuild skipped before commit is caught by a
-   separate CI step (`git diff --exit-code` after `npm run check`), not by
-   this file. The last section checks the decisions registry: the index
+/* data.json and catalog.csv are generated from data.js and live beside it,
+   not committed. Inside `npm run check` they are already rebuilt by
+   `npm run data` right before this check, so here the generator is compared
+   with its own fresh output; no file is committed, so no CI step compares a
+   commit. The last section checks the decisions registry: the index
    docs/DECISIONS.md against tools/decisions.js and every quoted citation. */
 const fs = require('fs');
 const path = require('path');
@@ -2563,9 +2562,21 @@ ok(
   REG.render([]).replace(/\s+/g, ' ').includes(RECORD_RULE),
   REG.INDEX + ': the header lacks the what-to-record rule'
 );
+const { execFileSync } = require('child_process');
+/* The build writes these; a tracked copy would go stale unseen
+   (docs/decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md). */
+const UNTRACKED = ['data.json', 'catalog.csv', '.nojekyll'];
+const tracked = execFileSync('git', ['ls-files', '--', ...UNTRACKED], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}).trim();
+ok(
+  tracked === '',
+  'data.json, catalog.csv and .nojekyll are not committed; run git rm --cached ' +
+    tracked.split('\n').join(' ')
+);
 /* A citation quotes a title prefix after the file name; a title never
    changes, so every quoted prefix must still name one. */
-const { execFileSync } = require('child_process');
 let citeLines = '';
 try {
   citeLines = execFileSync(

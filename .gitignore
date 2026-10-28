@@ -46,21 +46,23 @@ work/
 .impeccable/hook.pending.json
 .impeccable/config.local.json
 
-# The share stubs: 1272 files per language (i/ and i/en/) regenerated from
+# The share stubs: one file per record and language (i/ and i/en/) regenerated from
 # data.js by tools/build.js, which the deploy job runs (npm run build) before
 # it copies i/ into _site. en/ is the English entry document, generated and
 # published the same way.
 # Published, never committed, and never hand-edited (.claude/hooks/edit-guard.mjs).
-# data.json and catalog.csv stay tracked on purpose - seven vitest suites and
-# two tests/app suites read data.json off disk under `npm run test`, which
-# does not build first.
 i/
 /en/
+# data.json and catalog.csv are data.js as JSON and as a table, generated
+# and published the same way; vitest reads the catalog from data.js
+# (app/src/test/loot.ts).
+/data.json
+/catalog.csv
 # names.json is the preview host's name map, generated and published the same
 # way (docs/specs/CONTRACTS.md section 4); nothing reads it off disk before a build.
 /names.json
 # catalog-index.csv is catalog.csv without its text, generated and published
-# the same way; catalog.csv stays the committed table for diffs.
+# the same way.
 /catalog-index.csv
 # card-versions.json is each record's card version; the build appends it to the
 # published data.js as window.LOOT_V (tools/data-script.js). Never published.

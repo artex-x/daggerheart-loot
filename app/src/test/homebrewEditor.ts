@@ -2,13 +2,10 @@
    share: the editor over the fake cloud, its toast, and the fold «Связи». */
 import { render, screen, waitFor, within, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { expect } from 'vitest';
 import HomebrewEditor from '../components/HomebrewEditor.svelte';
 import { dict } from '../lib/dict.js';
 import type { HomebrewContent } from '../lib/homebrew.js';
-import type { Loot } from '../lib/data.js';
 import { COALESCE_MS } from '../lib/live.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -24,6 +21,7 @@ import {
   type FakeMedia
 } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
+import { readLoot } from './loot.js';
 
 const t = dict('ru');
 export const AXE = 'hb_emberaxeaaaaaaaa';
@@ -31,9 +29,7 @@ export const ALDER = uuid(501);
 
 export const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
-const REAL = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const REAL = readLoot();
 
 /** What `editor` returns: the render, and the state and fakes under it. */
 type EditorView = RenderResult<typeof HomebrewEditor> & {

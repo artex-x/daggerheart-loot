@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
+- 2026-10-28 - [`data.json` and `catalog.csv` leave git; the build writes both](decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md)
 - 2026-10-28 - [R10 deletes the date gates; a build with no sign-in has no lists](decisions/2026-10-28-r10-deletes-the-date-gates-a-build-with-no-sign-in-has-no-lists.md)
 - 2026-10-28 - [R10 drops the move function and the fingerprint column](decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md)
 - 2026-10-28 - [The account's first read takes list heads; a list's details load when needed](decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md)
@@ -276,7 +278,7 @@ deleted.
 - 2026-09-19 - [The drop-gap mark is made instant by narrowing `.row`'s transition, not by overriding the drop classes](decisions/2026-09-19-the-drop-gap-mark-is-made-instant-by.md)
 - 2026-09-19 - [The product link lives in the roll tab's help box](decisions/2026-09-19-the-product-link-lives-in-the-roll-tabs.md)
 - 2026-09-18 - [A batch whose whole scope is other reviews' findings runs with no reviewer](decisions/2026-09-18-a-batch-whose-whole-scope-is-other-reviews.md)
-- 2026-09-18 - [`data.json`/`catalog.csv` staying tracked was not solved by a pretest step](decisions/2026-09-18-data-json-catalog-csv-staying-tracked-was-not.md)
+- 2026-09-18 - [`data.json`/`catalog.csv` staying tracked was not solved by a pretest step](decisions/2026-09-18-data-json-catalog-csv-staying-tracked-was-not.md) - superseded
 - 2026-09-18 - [Decisions live in one `docs/DECISIONS.md`, not a `docs/decisions/` folder](decisions/2026-09-18-decisions-live-in-one-docs-decisions-md-not.md) - superseded
 - 2026-09-18 - [Durable knowledge is written to its home the batch that makes it, never parked](decisions/2026-09-18-durable-knowledge-is-written-to-its-home-the.md)
 - 2026-09-18 - [One commit per task, amend freely, push once - replaces the per-batch push rule](decisions/2026-09-18-one-commit-per-task-amend-freely-push-once.md) - superseded

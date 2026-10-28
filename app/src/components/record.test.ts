@@ -8,8 +8,6 @@
  * refusal is reported rather than swallowed, and that the markup is one a
  * screen reader can follow. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
@@ -38,6 +36,7 @@ import { listOf, seedWith } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -986,9 +985,7 @@ describe('the undo toast while the record dialog is open', () => {
 describe('a craft chain that runs through the record', () => {
   /* Frostwyrd (Awakened) from the real data: made from Dormant, upgrades to
      Exalted, and a named weapon rather than a rung of a tier ladder. */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const awakened = (): Env =>
     fakeEnv({ router: memoryRouter('#/i/dve25'), data: fakeData(REAL) });
 
@@ -1047,9 +1044,7 @@ describe('a craft chain that runs through the record', () => {
 describe('a feature an item grants an adversary', () => {
   /* Nightshroud from the real data: its text stops where the book's does, and
      Slow travels as a folded referenced card (I18N.md, "Rules"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const nightshroud = (): Env =>
     fakeEnv({ router: memoryRouter('#/i/dve66'), data: fakeData(REAL) });
 
@@ -1083,9 +1078,7 @@ describe('a consumable artifact', () => {
   /* Narvik Contract from the real data: the book prints it among the
      artifacts, so its section names it, with its roll inside that section. */
   it('names the Artifacts section and its roll in the path line', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/voa4_a2'), data: fakeData(REAL) })
     });
@@ -1149,9 +1142,7 @@ describe('the set line', () => {
   });
 
   it('draws the real Ember and Spark bonus on Ember', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/dve19'), data: fakeData(REAL) })
     });
@@ -1537,9 +1528,7 @@ describe('an own homebrew item', () => {
 describe("the author's own relations on a catalog card", () => {
   /* The real catalog with gm3's 34 seeded items: 15 made from ci1, 15 in q1's line and
      4 in saints-ensemble (docs/specs/FEATURES.md, "Records"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const catalog = buildIndex(REAL);
   const gm3 = SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null));
   const index = withRecords(catalog, gm3, []);
@@ -1774,9 +1763,7 @@ describe("the author's own relations on a catalog card", () => {
 describe("the account's own card on a book item", () => {
   /* The real catalog; gm1's seeded set card and rule card hold book items in `items`
      (docs/specs/FEATURES.md, "Homebrew", "Cards"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const catalog = buildIndex(REAL);
   const SET = 'hb_aldersetaaaaaaaa';
   const RULE = 'hb_alderrulecardaaa';

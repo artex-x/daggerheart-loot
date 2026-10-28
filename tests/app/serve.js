@@ -60,6 +60,13 @@ function assertBuilt(dir, label) {
     process.exit(1);
   }
   for (const f of BYTE_FILES) {
+    /* The root files are build output too (not committed), so a fresh
+       checkout lacks them until node tools/build.js runs. */
+    const source = f === 'data.js' ? 'card-versions.json' : f;
+    if (!fs.existsSync(path.join(ROOT, source))) {
+      console.log(label + ' is stale (' + source + ' is not built) - run ' + build + ' first');
+      process.exit(1);
+    }
     const copy = path.join(dir, f);
     if (!fs.existsSync(copy)) continue;
     if (!expectedBytes(f).equals(fs.readFileSync(copy))) {

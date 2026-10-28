@@ -109,7 +109,7 @@ Only perform this section when the human asks and a compatible local skill/cache
 
 1. Read the discovered skill's current instructions and cache builder before mutation.
 2. Back up or stage the existing cache if its update is not naturally atomic.
-3. Synchronize the repository's current `data.json` and complete `img/` set into the cache using paths discovered in this environment.
+3. Run `node tools/build.js` first (`data.json` is not committed), then synchronize the repository's current `data.json` and complete `img/` set into the cache using paths discovered in this environment.
 4. Run the skill's own index/contact-sheet rebuild command with the current repository commit plus an explicit note that artwork bytes may include uncommitted task changes.
 5. Query representative changed IDs and affected subtypes; verify image paths, index counts, and contact sheets.
 6. If the skill is unavailable on this machine, report the optional refresh as skipped; do not add absolute fallback paths to repository docs.
