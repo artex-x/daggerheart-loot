@@ -4,21 +4,21 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000615 namelen=149 namehash=e8db13c4]
-  link "К содержимому" [url=index.html?as=gm2#main]
+RootWebArea "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [url=/h/00000000-0000-4000-8000-000000000615?as=gm2&v=<v> namelen=149 namehash=e8db13c4]
+  link "К содержимому" [url=/h/00000000-0000-4000-8000-000000000615?as=gm2&v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm2@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm2#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm2#/tables]
-      link "Поиск" [url=index.html?as=gm2#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Спальный мешок долгой дороги через перевал, болота, пустоши и ст..." [level=1 namelen=120 namehash=084a20d9]
     StaticText "Предмет другого игрока · Хоумбрю"
@@ -28,7 +28,7 @@ RootWebArea "Спальный мешок долгой дороги через п
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
     StaticText "ПОЛУЧАЕТСЯ ИЗ"
-    link "Первоклассный Спальный Мешок" [url=index.html?as=gm2#/i/ci1]
+    link "Первоклассный Спальный Мешок" [url=/i/ci1]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
     button "Скопировать текст" [description=Скопировать текст]
@@ -39,9 +39,9 @@ RootWebArea "Спальный мешок долгой дороги через п
     status ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -71,21 +71,21 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Bedroll of the long road over the pass, through the marshes, the..." [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000615 namelen=149 namehash=1aad1bbf]
-  link "Skip to content" [url=index.html?as=gm2#main]
+RootWebArea "Bedroll of the long road over the pass, through the marshes, the..." [url=/en/h/00000000-0000-4000-8000-000000000615?as=gm2&v=<v> namelen=149 namehash=1aad1bbf]
+  link "Skip to content" [url=/en/h/00000000-0000-4000-8000-000000000615?as=gm2&v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm2@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm2#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
-      link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm2#/tables]
-      link "Search" [url=index.html?as=gm2#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Bedroll of the long road over the pass, through the marshes, the..." [level=1 namelen=120 namehash=bbb6ed09]
     StaticText "Another player's item · Homebrew"
@@ -95,7 +95,7 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
     StaticText "MADE FROM"
-    link "Premium Bedroll" [url=index.html?as=gm2#/i/ci1]
+    link "Premium Bedroll" [url=/i/en/ci1]
     button "Share"
     button "Copy image" [description=Copy image]
     button "Copy text" [description=Copy text]
@@ -106,9 +106,9 @@ RootWebArea "Bedroll of the long road over the pass, through the marshes, the...
     status ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

@@ -17,7 +17,7 @@ import type { Lang, Record_, Trait } from './types.js';
 
 /** Where the exported vectors live, junctioned into `dist/` alongside `img/`
  *  and `og/` - CONTRACTS.md section 5 freezes this as a public asset path. */
-export const CARD_DIR = 'card/';
+export const CARD_DIR = '/card/';
 
 /** Cards on the opt-in compact sheet: 4x4 of 44x63 mm - FEATURES.md, "Print". */
 export const COMPACT_PER_SHEET = 16;

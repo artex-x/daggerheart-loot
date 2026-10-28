@@ -3422,11 +3422,14 @@ re-litigates them:
 The Cloudflare Pages project `daggerheart-loot` at
 `https://daggerheart-loot.pages.dev/` is the site's host since the task
 `cloudflare-pages` (2026-10-28): Pages serves the site's files, and a worker
-gives a link card to the links that carry their record in the fragment: a
+gives a link card to the paths whose card needs a read: a
 homebrew item (`/h/<uuid>`), a shared list (`/s/<token>`), a print set
 (`/p/<id>`) and a catalog table (`/tables/<table>[/<tail>]`), each also
 under `/en/`. `preview/public/_routes.json` sends only these eight path
-families to the worker; every other path is a static file or `404.html`.
+families to the worker and excludes the bare `/tables` and `/en/tables`;
+every other path is a static file, a `_redirects` rewrite to the app
+document, or `404.html`. A record path `/i/<id>` is the static app document
+with the record's card (task `path-urls`).
 `preview/public/_headers` sends `X-Robots-Tag: noindex` on the text files.
 The worker runs in Pages Functions advanced mode: `preview/public/_worker.js` re-exports
 `preview/worker.mjs`, which draws the cards with `tools/share-card.mjs` and
@@ -3435,9 +3438,14 @@ the deploy's esbuild bundle reads TypeScript, and CI deploys on every push).
 Node 24.15 requires that `.ts` file silently from this typeless package and
 imports it with a MODULE_TYPELESS_PACKAGE_JSON warning (measured 2026-10-15),
 so the build tools `require()` it and `preview/worker.test.mjs` requires it
-before it imports the worker. It answers every client with the card and
-sends a person to `<site>#/...` by `meta refresh` and `location.replace`. It
-reads `names.json` from the same deployment through `env.ASSETS`. It
+before it imports the worker. It answers every client with the app document
+and the card in its head: it reads the site's `index.html` from the same
+deployment through `env.ASSETS` on every request (2 s, 65536 bytes, never
+cached, because an isolate can outlive a deployment) and replaces the lines
+between its card markers (`tools/share-card.mjs` `appDocument`). When that
+read fails, it answers the card page, which sends a person to `<site>#/...`
+by `meta refresh` and `location.replace`. It reads `names.json` from the
+same deployment through `env.ASSETS` too. It
 stores nothing (`docs/specs/META.md` section 3; `docs/decisions/`,
 2026-10-14, "Link previews come from a stateless worker"). GitHub Pages
 stays on as the old host, a mirror whose root forwards here
@@ -3456,9 +3464,11 @@ Rules:
 - Every deploy uses `--branch main`. Git integration stays off: direct
   upload has no automatic preview builds, and a direct-upload project
   cannot switch to Git integration later.
-- `preview/public/` holds only the three Pages control files (`_worker.js`,
-  `_routes.json`, `_headers`) in git; the deploy copies the site into it
-  first. Never commit a site copy there or in `_cf/`.
+- `preview/public/` holds only the four Pages control files (`_worker.js`,
+  `_routes.json`, `_headers`, `_redirects`) in git; the deploy copies the
+  site into it first. `_redirects` rewrites every non-card route path to the
+  app document (`docs/specs/CONTRACTS.md` section 1); `tests/app/serve.js`
+  reads it and `_routes.json` to stand in for the host. Never commit a site copy there or in `_cf/`.
 - Host facts, 2026-10-28 (Cloudflare Pages documentation, not re-measured):
   the free plan takes 20,000 files per deployment and 25 MiB per file; the
   site is about 6600 files and 81 MB, and the collect step prints the count
@@ -3466,6 +3476,25 @@ Rules:
   Static files carry `Cache-Control: public, max-age=0, must-revalidate`
   and an `ETag`. `_headers` applies to static files only, not to a worker
   answer. Unverified: a static request costs no Functions request.
+- Host facts, probed 2026-10-28 with `npx wrangler pages dev` (wrangler
+  4, the collected `_site/` in `preview/public/`, a stub RPC server; not a
+  deploy, and `wrangler pages dev` can differ from production):
+  `_redirects` 200 rewrites apply next to `_worker.js` on a path that
+  `_routes.json` leaves static: `/roll/std` and `/lists/x` answer 200 with the
+  app document and no `Location`; `/en/search` answers 200 with the English
+  card (`<html lang="en">`, `og:locale` `en_US`), no 308; `/en/` answers 200
+  and `/en` one 308 to `/en/`; a splat after a fixed prefix matches
+  (`/i/hb_<key>` 200, `/i/en/hb_<key>` 200 in English); `/en/i/w1` answers 301
+  `Location: /i/en/w1`; `/i/w1` answers 200 with `og:title` of `w1` and
+  `/i/w1.html` one 308 to `/i/w1`; `/i/zzzz` answers 404 with `404.html`;
+  `/llms.txt` carries `X-Robots-Tag: noindex`; `/tables/core_item` answers
+  200 from the worker with a count in `og:description`, and
+  `/h/00000000-0000-4000-8000-000000000000` 404 with the app document, no
+  `Referrer-Policy` and `no-store`. Pages also routes the bare `/tables`
+  to `/tables/*`: the worker answered it 302 home until `_routes.json`
+  excluded `/tables` and `/en/tables`; since then `/tables` answers 200 from
+  the rewrite, and `/tables/` with a slash answers `404.html`. Both
+  `check-site` lists printed `site published correctly` against the probe.
 
 Owner setup, facts of 2026-10-14:
 
@@ -3522,7 +3551,7 @@ and a paused project gives the 503 card).
    `curl -I https://<hash>.daggerheart-loot.pages.dev/h/x`. Expected: `301`
    with `Location: https://daggerheart-loot.pages.dev/h/x`.
 7. Delete the copy: `_site/` and every file in `preview/public/` except the
-   three control files.
+   four control files.
 
 The Worker keeps no persistent log, so no id is stored.
 `npx wrangler pages deployment tail --project-name daggerheart-loot`
@@ -3532,11 +3561,16 @@ deploy stays for an emergency and for a measurement; CI deploys every push.
 ### The CI deploy
 
 `ci.yml`'s `deploy` job (after `migrate-prod`) builds the app with
-`VITE_PREVIEW_BASE` set to the origin, collects `_site/`, runs the guard and
+`VITE_PREVIEW_BASE` set to the origin, collects `_site/` (the record and
+English-root app documents from `dist/i/` and `dist/en/`), runs the guard and
 `node tools/check-site.mjs --dir _site`, assembles the old host's mirror
 `_old/` (the site without `assets/`, `data.js` and the install guide, with
-`old-host/index.html` and `old-host/sw.js`) and checks it with
-`node tools/check-site.mjs --mirror --dir _old`. Then it runs `npm ci` in
+`old-host/index.html` and `old-host/sw.js`, and the repository root's
+redirect pages `i/` and `en/` in place of the app documents, counted against
+`catalog.csv`) and checks it with
+`node tools/check-site.mjs --mirror --dir _old`. The guard refuses a published
+`_redirects` and a file or folder named `roll`, `search`, `lists`, `account`,
+`homebrew`, `print` or `l`, which would shadow a rewrite. Then it runs `npm ci` in
 `preview/`, copies `_site/.` into `preview/public/`, runs `npx wrangler
 pages deploy public --project-name daggerheart-loot --branch main` with the
 secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, and checks the
@@ -3552,7 +3586,18 @@ forwards to it. `timeout-minutes` is 20: the first upload is about 81 MB.
   collation: the read answers null before it sorts. It also asserts the
   site's `robots.txt`, the `X-Robots-Tag` header on `llms.txt` and
   `catalog-index.csv`, `/mcp` 404, `i/w1?v=x` and a table card's count
-  (which proves the `names.json` read).
+  (which proves the `names.json` read). Every card answer must be the app
+  document, which proves the worker's read of `index.html`; the route paths
+  `roll/std`, `tables`, `lists/x`, `i/hb_<key>`, `en/search`, `en/tables` and
+  `i/en/hb_<key>` must answer the app document with no redirect, and
+  `en/i/w1` one 301 to `/i/en/w1`. The deploy's `check-site` run on `main`
+  is the first production proof of the rewrites; no branch run executes the
+  deploy steps.
+- After the landing of `path-urls` (owner step): paste three address-bar
+  addresses into Telegram Desktop - a record (`/i/<id>?v=<v>`), a homebrew
+  item (`/h/<uuid>?v=<v>`) and a share link (`/s/<token>?v=<v>`). Expected:
+  each draws its own card, not the site card. A stale card is Telegram's
+  cache: change `?v` by the rule of `docs/specs/META.md` section 8.
 - A Cloudflare failure stops the job before GitHub Pages, so the old host
   keeps its last content; rerun the job (wrangler uploads only missing
   files).
@@ -3569,13 +3614,32 @@ forwards to it. `timeout-minutes` is 20: the first upload is about 81 MB.
   Cloudflare answers error 1027.
 - A deliberate quota burn is possible: anyone can send 100,000 requests in
   one UTC day, and the free plan has no rate-limit rule for a Pages project.
-  Every card link then fails until 00:00 UTC. Recovery for a reader: open
-  `<site>`; `<site>#/h/`, `#/s/`, `#/p/` and `#/tables/` addresses keep working.
-  The routes file keeps the site's static paths out of Functions, so the burn
-  does not reach the site (unverified: a static request costs no Functions
-  request).
+  Every card path (`/h/`, `/s/`, `/p/`, `/tables/<table>` and their `/en/`
+  forms) then fails until 00:00 UTC. Recovery for a reader: open `<site>`;
+  `<site>#/h/`, `#/s/`, `#/p/` and `#/tables/` addresses keep working. The
+  routes file keeps the root, the record paths and every non-card route path
+  out of Functions, so the burn does not reach them (unverified: a static
+  request costs no Functions request).
+- A failed read of `index.html` by the worker (a 2 s timeout, a status other
+  than 200, more than 65536 bytes, no card markers) draws the card page with
+  its redirect to `<site>#/...` and `Referrer-Policy: no-referrer`; the next
+  request reads again. The live `--preview` check fails on it, because it
+  asks for the app document.
+- If the live check after the `path-urls` landing shows that Pages does not
+  apply `_redirects` next to `_worker.js`, the recovery commit is the
+  task's ready fallback: `_routes.json` sends the non-card route paths to the
+  worker, which answers them with the plain app document (a quota burn then
+  reaches them too). The patch, with its tests and doc hunks, is
+  `git show f7e73ce:issues/path-urls/fallback-routes.patch`; apply it with
+  `git apply --3way`, because this paragraph's own hunk no longer matches.
 - Revert of the move to Cloudflare Pages (a defect of the new host, or a
-  Cloudflare outage): two commits. The first reverts the landing commit,
+  Cloudflare outage): two commits. Since the task `path-urls` the app has
+  root-absolute URLs (`base: '/'`) and cannot run under GitHub Pages'
+  `/daggerheart-loot/`, so the first commit also reverts the `path-urls`
+  squash, or a commit before it reverts that squash alone; a non-card path
+  copied after that landing (`/roll/std`) then answers `404.html`, while a
+  card path and a record path keep opening. The first commit reverts the
+  landing commit,
   sets `if: false` on the Cloudflare steps of the restored `deploy` (three:
   the `npm ci` in `preview/`, the deploy and its check) and deletes the
   restored Telegram refresher workflow again (after the owner removed the
@@ -3656,15 +3720,17 @@ the app on GitHub Pages.
 | CORS, the host to Supabase | Non-issue: server to server; `names.json` comes from the deployment through `env.ASSETS`, no subrequest |
 | `og:image` on Storage public URLs | Non-issue: a crawler fetches it server side; absolute `https`, a public bucket |
 | `og:image` format | Measured 2026-10-14, Telegram Desktop: a WebP and a JPEG picture both drawn; own pictures stay WebP |
-| Card content type | Non-issue: the Worker answers `text/html; charset=utf-8` |
-| Redirects for crawlers | Non-issue: every card answer is 200 or 404 with the card; only the host guard answers 301; a frozen `.html` stub URL answers one 308 |
+| Card content type | Non-issue: the Worker answers `text/html; charset=utf-8`, the app document or the card page |
+| Redirects for crawlers | Non-issue: every card answer is 200, 404 or 503 with the card in the head and no redirect; only the host guard answers 301; a frozen `.html` record URL answers one 308; the card page of a failed shell read redirects a person only |
+| App-document headers | `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`, no `Referrer-Policy`: `no-referrer` empties `document.referrer`, which the static pages' back script reads. Costs: a `no-store` document is not kept in the back-forward cache, so Back to a card path (after the sign-in's `leave()`, for one) reloads the page and reads the card again |
+| Shell read | Costs: one `env.ASSETS` read of `index.html` per card request (not a subrequest), never cached, so the document always pairs with the same deployment's hashed assets; a failed read answers the card page |
 | User-Agent check | Rejected: an unknown crawler would get the redirect and the site card |
-| Supabase session | Costs: a card runs on the app's origin, whose `localStorage` holds the session (`sb-<ref>-auth-token`); the card's script and fields go through `share-card.mjs`'s escaping (`esc`, the `\u003c` rule on the script target), which now guards the session. No defect is known; a `Content-Security-Policy: sandbox allow-scripts` header on worker answers is deferred, gated on a browser check of the card's redirect |
-| The English language seed | One more hop: the English card redirects to `<site>en/#/...`, where `en/index.html` seeds the language |
+| Supabase session | Costs: a card answer is the app itself on the app's origin, whose `localStorage` holds the session (`sb-<ref>-auth-token`); the card fields go through `share-card.mjs`'s escaping (`esc`), and the fallback card page's script through the `\u003c` rule on its target, which now guard the session. No defect is known; a `Content-Security-Policy: sandbox` header cannot go on an app document |
+| The English language seed | No hop: an `/en/` or `/i/en/` address seeds English in the app when nothing is stored (`docs/specs/I18N.md`); the fallback card page and the mirror's English stubs store it before they redirect |
 | Cookies | Non-issue: the Worker sets none; the app keeps its session in `localStorage` |
 | CSP and mixed content | Non-issue for mixed content: every URL is `https`. The app has no CSP; see the session row for the card on the app's origin |
 | PWA scope | The app's scope is the host root, so a tapped card link is inside it; whether a messenger opens it in the installed app is the platform's choice, so a `/p/` reader may still have to sign in in the browser |
-| Telegram cache | The app writes `?v=<version>` on `/h/`, `/s/` and a record link `i/<id>`, so an edit is a new URL; an old message keeps its old card, also after a delete or a revoke |
+| Telegram cache | The app writes `?v=<version>` on `/h/`, `/s/` and a record link `i/<id>`, in the copy and in the address bar, so an edit is a new URL; an old message keeps its old card, also after a delete or a revoke. A bar address pasted before the `path-urls` landing was `<site>#/...` and keeps the site card |
 | Rate limits | Costs: 100,000 requests a day (above) |
 | Cold starts | Costs: a cold isolate parses `names.json` on its first `/h/` or `/tables/` request (about 97 KB); the CPU row has the readings |
 | Supabase pause after 7 idle days | Costs: the 503 card, which still redirects; a crawler keeps that card for its URL |

@@ -156,7 +156,9 @@
         <div class="who">
           <b>{audience === 'player' ? t.shareLinkPlayers : t.shareLinkGm}</b>
           {#if row}
-            <a class="sharelink" href={shareHash(row.token)}>{shareHash(row.token)}</a>
+            <a class="sharelink" href={app.href(shareHash(row.token))}
+              >{app.href(shareHash(row.token))}</a
+            >
           {:else}
             <span class="stopped">{t.shareStopped}</span>
           {/if}

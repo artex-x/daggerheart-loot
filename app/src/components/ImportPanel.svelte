@@ -475,9 +475,9 @@
   {/if}
 
   <p class="hint">
-    {t.importHintBefore}<a href="schema/import-v3.json" target="_blank" rel="noopener"
+    {t.importHintBefore}<a href="/schema/import-v3.json" target="_blank" rel="noopener"
       >{t.importSchema}</a
-    >{t.importHintMid}<a href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
+    >{t.importHintMid}<a href="/llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
     >{t.importHintAfter}
   </p>
 </Field>

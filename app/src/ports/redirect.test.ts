@@ -54,9 +54,14 @@ const record = (over: Record<string, unknown> = {}): string =>
   });
 
 describe('callbackUrl', () => {
-  it('is the page without index.html, its query or its hash, plus the flag', () => {
-    expect(callbackUrl(PAGE + 'index.html?as=x#/account')).toBe(PAGE + '?auth-callback=1');
-    expect(callbackUrl(PAGE + '#/roll/std')).toBe(PAGE + '?auth-callback=1');
+  it('is the app root plus the flag, whatever the page', () => {
+    /* The only form supabase/config.toml allows: the return record brings the reader
+       back to the page itself. */
+    const ROOT = 'https://example.test/?auth-callback=1';
+    expect(callbackUrl('https://example.test/account')).toBe(ROOT);
+    expect(callbackUrl('https://example.test/en/lists/x?as=gm1')).toBe(ROOT);
+    expect(callbackUrl('https://example.test/')).toBe(ROOT);
+    expect(callbackUrl(PAGE + 'index.html?as=x#/account')).toBe(ROOT);
   });
 });
 

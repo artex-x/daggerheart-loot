@@ -43,11 +43,11 @@ describe('the import field', () => {
     expect(screen.getByText('Импорт из файла JSON')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
     const schema = screen.getByRole('link', { name: 'схеме import-v3' });
-    expect(schema).toHaveAttribute('href', 'schema/import-v3.json');
+    expect(schema).toHaveAttribute('href', '/schema/import-v3.json');
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
     const llms = screen.getByRole('link', { name: 'описание для ИИ-помощников' });
-    expect(llms).toHaveAttribute('href', 'llms.txt');
+    expect(llms).toHaveAttribute('href', '/llms.txt');
     expect(llms).toHaveAttribute('target', '_blank');
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
       'Файл JSON, сохранённый кнопкой «Скачать JSON» или собранный по схеме import-v3 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Списки добавятся как новые; существующие не изменятся.'
@@ -58,7 +58,7 @@ describe('the import field', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(await screen.findByRole('link', { name: 'import-v3 schema' })).toHaveAttribute(
       'href',
-      'schema/import-v3.json'
+      '/schema/import-v3.json'
     );
   });
 

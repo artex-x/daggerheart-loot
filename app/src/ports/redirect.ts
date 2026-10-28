@@ -47,12 +47,11 @@ export interface Redirect {
   action: PendingAction | null;
 }
 
-/** The address a provider sends the reader back to: the page itself, without
- *  `index.html`, plus the callback flag - the form `supabase/config.toml`
- *  allows. */
+/** The address a provider sends the reader back to: the app root plus the callback
+ *  flag, whatever the page - the only form `supabase/config.toml` allows. The return
+ *  record brings the reader back to the page itself. */
 export function callbackUrl(href: string): string {
-  const u = new URL(href);
-  return u.origin + u.pathname.replace(/index\.html$/, '') + '?' + CALLBACK + '=1';
+  return new URL(href).origin + '/?' + CALLBACK + '=1';
 }
 
 /** Remembers where to come back to, for this tab only. A storage that refuses

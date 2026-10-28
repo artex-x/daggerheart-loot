@@ -75,8 +75,8 @@ across.
   that is switched on, at that rarity, plus a button that steps the rarity up
   one. There is no such button on legendary. With both kinds on the two links
   name their tables apart; with one on the label stays general. The table
-  links open the app at the site root in a new tab, in both languages: a way
-  into the tables, not an address to hand over.
+  links open the table in a new tab, in the path form of the language on
+  screen: a way into the tables, not an address to hand over.
 - Each card on the alternate tables says which die found it, and its number
   badge is the face that die showed rather than the row the record has in the
   book it was printed in.
@@ -512,12 +512,12 @@ across.
   its divider run the full height of the row, through the notes and the take
   line, and a press anywhere in the column ticks the row; the checkbox stays
   level with the main line.
-- A list page keeps the address it opened at, `#/lists/<id>`: no edit
+- A list page keeps the address it opened at, `/lists/<id>`: no edit
   rewrites it.
 - Every other address the app copies - a table, a filter, a section anchor,
-  a print sheet - is `<site>#/...` in Russian and `<site>en/#/...` in
-  English, so a messenger builds its preview in that language (`CONTRACTS.md`
-  section 1).
+  a print sheet - is `<site>...` in Russian and `<site>en/...` in English,
+  the path form the bar shows, so a messenger builds its preview in that
+  language (`CONTRACTS.md` section 1).
 ### Account and browser lists
 
 A build with sign-in configured keeps a signed-in reader's lists in the
@@ -1262,7 +1262,7 @@ address kept, and no add-to-list control is drawn.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used. Copy link and share carry a catalog
-  record's stub in the language on screen, extensionless and versioned -
+  record's link in the language on screen, extensionless and versioned -
   `<site>i/<id>?v=<v>` in Russian, `<site>i/en/<id>?v=<v>` in English, `<v>`
   the card version from the build's map, no `?v` when the map lacks the
   record (owner, 2026-10-28; `CONTRACTS.md` section 5) - and a homebrew
@@ -1387,6 +1387,9 @@ address kept, and no add-to-list control is drawn.
   app, whose card the keyboard never actually enters. The one visible
   consequence is that the modal's close button carries a focus ring the live
   app's does not.
+- The modal leaves the address bar as it is (owner, 2026-10-28): opening and
+  closing it writes nothing, and its copy button hands out the record's link
+  while the bar shows the page under it (rule 17 of "Consistency rules").
 - A real navigation to a different address closes an open modal; a filter
   pick or a list mutation, which rewrite the address in place rather than
   navigating to it, do not. The modal also closes when its record leaves the
@@ -2327,9 +2330,8 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   «Мои предметы» pins `#/homebrew` from any tab; never a record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
-  the address bar - the browser's own fragment jump would also route the
-  hash through the app's own parser, which reads `#main` as unknown and
-  would clear the person's selection navigating them home. While
+  the address bar - the browser's own fragment jump would add `#main` to the
+  address and a history entry. While
   focused it is a gold plate pinned over the page's top-left corner, matching
   the live app rather than a grey chip that pushed the header down while
   focused.
@@ -2589,11 +2591,15 @@ Each rule keeps its number: a review cites it by number.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
   that copies or sends a link hands out the preview host's link with its own
   card - an item, a shared list, a print set, a catalog table; a catalog
-  record keeps its stub, `i/<id>?v=<v>`. Excluded, each with its reason: a
+  record keeps its record path, `i/<id>?v=<v>`, whose app document carries the record's card. Excluded, each with its reason: a
   homebrew copy with no id (nothing to link); `#/tables/homebrew`, which draws
   no table, filter or section link (each reader sees only their own items); the
   Items tab's filter (page memory).
-  Departure: the share panel shows `#/s/<token>` and copies the preview link.
+  Departure: the share panel shows the path `/s/<token>` and copies the
+  preview link.
+  A page-level copy hands out the address bar, `?v` included (owner,
+  2026-10-28; `ROUTES.md`, "Path form"); a part of a page with its own copy
+  button and the record modal (the bar shows the page under it) may differ.
   This rule binds every page, not only the signed-in pages of the lead.
 - **18. Formatted text boxes**: every box of formatted text ("Records",
   "Formatted text") is one control: the toolbar «Оформление: <поле>» /

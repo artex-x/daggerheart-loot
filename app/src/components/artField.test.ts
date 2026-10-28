@@ -119,7 +119,7 @@ describe('the crop chunk', () => {
 describe('the states of m40', () => {
   it('draws no picture with «Выбрать файл» and «Выбрать из предметов»', async () => {
     const { container } = await field();
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     expect(button(t.hbArtChoose)).toBeInTheDocument();
     expect(button(t.hbArtFromItems)).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: t.hbArtRemove })).toBeNull();
@@ -129,7 +129,7 @@ describe('the states of m40', () => {
 
   it('draws a saved picture with «Заменить» and «Убрать картинку», and no «Обрезать заново»', async () => {
     const { container } = await field({ saved: 'ci1.webp' });
-    expect(thumb().src).toContain('img/thumb/ci1.webp');
+    expect(thumb().src).toContain('/img/thumb/ci1.webp');
     expect(button(t.hbArtReplace)).toBeInTheDocument();
     expect(button(t.hbArtRemove)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
@@ -155,7 +155,7 @@ describe('the states of m40', () => {
   it('removes a saved picture, and keeps none for a crop over no saved picture', async () => {
     await field({ saved: 'ci1.webp' });
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     await waitFor(() => {
       expect(button(t.hbArtChoose)).toHaveFocus();
     });
@@ -163,7 +163,7 @@ describe('the states of m40', () => {
     const { media } = await field();
     await crop();
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     expect(media.released).toContain('blob:fake-2');
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
   });
@@ -172,7 +172,7 @@ describe('the states of m40', () => {
     await field({ saved: 'ci1.webp' });
     thumb().dispatchEvent(new Event('error'));
     await waitFor(() => {
-      expect(thumb().src).toContain('img/thumb/_none.webp');
+      expect(thumb().src).toContain('/img/thumb/_none.webp');
     });
   });
 
@@ -228,7 +228,7 @@ describe('refusals', () => {
     await waitFor(() => {
       expect(button(t.hbArtReplace)).toHaveFocus();
     });
-    expect(thumb().src).toContain('img/thumb/ci1.webp');
+    expect(thumb().src).toContain('/img/thumb/ci1.webp');
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
   });
 });
@@ -284,7 +284,7 @@ describe('«Выбрать из предметов»', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     /* No saved picture: a removal goes back to none. */
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
   });
 
   it('closes on a second press', async () => {

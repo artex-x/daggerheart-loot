@@ -161,8 +161,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
     await waitFor(
       page,
       'e2e F1: the header link to #/account does not read «Войти»',
-      () =>
-        document.querySelector('header a[href="#/account"]')?.textContent?.trim() === 'Войти'
+      () => document.querySelector('header a[href="/account"]')?.textContent?.trim() === 'Войти'
     );
     console.log('e2e: F1 ok');
   });
@@ -348,8 +347,8 @@ export async function runFlows({ env, admin, member, browser, base }) {
       await expectInPage(
         page,
         'F7',
-        'the address left #/lists/<id>',
-        (id) => location.hash === '#/lists/' + id,
+        'the address left /lists/<id>',
+        (id) => location.pathname === '/lists/' + id,
         made.id
       );
 
@@ -489,7 +488,7 @@ export async function runFlows({ env, admin, member, browser, base }) {
         page,
         'e2e F8: «Сохранить себе» did not open the copy',
         () =>
-          location.hash.startsWith('#/lists/') &&
+          location.pathname.startsWith('/lists/') &&
           document.querySelector('input.titleinput')?.value === 'E2E ссылки'
       );
       await until('F8: the copy in the account holds a GM note', async () => {

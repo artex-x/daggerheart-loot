@@ -82,9 +82,9 @@ describe('the share panel', () => {
     const button = await pressShare();
     expect(button).toHaveAttribute('aria-expanded', 'true');
     const players = await row(ru.shareLinkPlayers);
-    expect(within(players).getByRole('link', { name: '#/s/player-token-1' })).toHaveAttribute(
+    expect(within(players).getByRole('link', { name: '/s/player-token-1' })).toHaveAttribute(
       'href',
-      '#/s/player-token-1'
+      '/s/player-token-1'
     );
     expect(
       within(players)
@@ -92,7 +92,7 @@ describe('the share panel', () => {
         .map((b) => b.textContent)
     ).toEqual([ru.shareCopy, ru.shareDelete]);
     const gm = await row(ru.shareLinkGm);
-    expect(within(gm).getByRole('link', { name: '#/s/gm-token-1' })).toBeInTheDocument();
+    expect(within(gm).getByRole('link', { name: '/s/gm-token-1' })).toBeInTheDocument();
     expect(screen.getByText(ru.shareHint)).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
     await expectNoA11yViolations(container);
@@ -105,10 +105,10 @@ describe('the share panel', () => {
     openShare(TROPHIES);
     await pressShare();
     expect(
-      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '#/s/share-token-1' })
+      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(
-      within(await row(ru.shareLinkGm)).getByRole('link', { name: '#/s/share-token-2' })
+      within(await row(ru.shareLinkGm)).getByRole('link', { name: '/s/share-token-2' })
     ).toBeInTheDocument();
   });
 
@@ -136,7 +136,7 @@ describe('the share panel', () => {
     await expectNoA11yViolations(container);
     await userEvent.click(within(gm).getByRole('button', { name: ru.shareCreate }));
     expect(
-      await within(gm).findByRole('link', { name: '#/s/share-token-1' })
+      await within(gm).findByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(screen.getByText(ru.shareCreated)).toBeInTheDocument();
     expect(create).toHaveBeenCalledWith(SHOP, 'gm');
@@ -170,7 +170,9 @@ describe('the share panel', () => {
     await userEvent.click(
       within(await row(ru.shareLinkPlayers)).getByRole('button', { name: ru.shareCopy })
     );
-    expect(clipboard.last.text).toBe('https://example.test/#/s/player-token-1');
+    expect(clipboard.last.text).toMatch(
+      /^https:\/\/example\.test\/s\/player-token-1\?v=[0-9a-z]+$/
+    );
     expect(
       screen.getByText(
         'Ссылка для игроков скопирована - заметок и позиций «Только для мастера» в ней нет'
@@ -179,7 +181,9 @@ describe('the share panel', () => {
     await userEvent.click(
       within(await row(ru.shareLinkGm)).getByRole('button', { name: ru.shareCopy })
     );
-    expect(clipboard.last.text).toBe('https://example.test/#/s/gm-token-1');
+    expect(clipboard.last.text).toMatch(
+      /^https:\/\/example\.test\/s\/gm-token-1\?v=[0-9a-z]+$/
+    );
     expect(
       screen.getByText(
         'Ссылка для мастера скопирована - в ней есть заметки и позиции «Только для мастера»'
@@ -227,9 +231,9 @@ describe('the share panel', () => {
     const { clipboard } = openShare(SHOP, fakeCloud(seed, 'gm1'), { preview: ORIGIN });
     await pressShare();
     const players = await row(ru.shareLinkPlayers);
-    expect(within(players).getByRole('link', { name: '#/s/player-token-1' })).toHaveAttribute(
+    expect(within(players).getByRole('link', { name: '/s/player-token-1' })).toHaveAttribute(
       'href',
-      '#/s/player-token-1'
+      '/s/player-token-1'
     );
     const v = (n: number) => cardVersion([shop.name, shop.note, n]);
     await userEvent.click(within(players).getByRole('button', { name: ru.shareCopy }));
@@ -254,7 +258,7 @@ describe('the share panel', () => {
     await userEvent.click(within(players).getByRole('button', { name: ru.shareDelete }));
     expect(await screen.findByText(ru.shareFailed)).toBeInTheDocument();
     expect(
-      within(players).getByRole('link', { name: '#/s/player-token-1' })
+      within(players).getByRole('link', { name: '/s/player-token-1' })
     ).toBeInTheDocument();
   });
 
@@ -351,10 +355,10 @@ describe('a list made a moment ago', () => {
     expect(apply.mock.calls[0]?.[0].map((o) => o.op)).toEqual(['create']);
     release();
     expect(
-      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '#/s/share-token-1' })
+      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(
-      within(await row(ru.shareLinkGm)).getByRole('link', { name: '#/s/share-token-2' })
+      within(await row(ru.shareLinkGm)).getByRole('link', { name: '/s/share-token-2' })
     ).toBeInTheDocument();
     expect(screen.queryByText('Не получилось загрузить ссылки.')).not.toBeInTheDocument();
     await expectNoA11yViolations(container);

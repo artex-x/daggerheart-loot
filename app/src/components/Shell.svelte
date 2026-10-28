@@ -121,12 +121,11 @@
   }
 
   /** The skip link's own activation, off `#skip` in the live stylesheet's
-   *  overlay shape - `href="#main"` stays for a client with no script,
-   *  but the SPA's own hash means a browser fragment jump would also route
-   *  the app itself: `parseHash('#main')` reads as `unknown` and the app
-   *  would replace it with the home section, clearing whatever the person
-   *  had selected. Handled here instead: move focus to `#main` directly
-   *  and never let the browser touch the address bar at all. */
+   *  overlay shape - `href="#main"` stays for a client with no script, but a
+   *  browser fragment jump would add `#main` to the address and a history
+   *  entry. Handled here instead: move focus to `#main` directly and never let
+   *  the browser touch the address bar at all; the router passes a click
+   *  already prevented. */
   function skip(e: MouseEvent): void {
     e.preventDefault();
     document.getElementById('main')?.focus();
@@ -137,7 +136,7 @@
 
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="#/roll/std">
+    <a class="brand" href={app.href('#/roll/std')}>
       <svg class="brand-ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z" />
       </svg>
@@ -193,7 +192,7 @@
             class="acct"
             class:on={onAccount}
             bind:this={signInLink}
-            href={ACCOUNT_HASH}
+            href={app.href(ACCOUNT_HASH)}
             aria-current={onAccount ? 'page' : undefined}
             ><Icon name="user" /><span class="t">{app.t.signIn}</span></a
           >
@@ -201,7 +200,7 @@
       {/if}
     </div>
   </div>
-  <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} />
+  <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} lang={app.lang} />
 </header>
 
 <!-- `data-lists` and `data-homebrew` are what the browser suites wait on before a

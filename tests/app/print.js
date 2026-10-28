@@ -2617,26 +2617,25 @@ const { ok } = rep;
   }
 
   /* ---------- the print link, copied (`copiedPrintLink`) ----------
-     The set-link button, copied - only the hash is compared, the way the
-     deleted parity harness's `copiedPrintLink` spec read it. Russian-only
-     above, English added below - the link text changes, the hash
-     it carries does not. */
+     The set-link button, copied - only the path is compared, the way the
+     deleted parity harness's `copiedPrintLink` spec read the hash. Russian-only
+     above, English added below - the link carries `/en` before the same path. */
   console.log('the set link, copied');
   const setId = await openPrint(d, 'ci1-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clip = await d.clipboard();
-  const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
-  ok(hash === '#/p/' + setId, "the copied set link is not the page's own: " + hash);
+  const hash = clip.text ? new URL(clip.text).pathname : null;
+  ok(hash === '/p/' + setId, "the copied set link is not the page's own: " + hash);
 
   console.log('the set link, copied with a count');
   const countedId = await openPrint(d, 'ci1*3-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clipQty = await d.clipboard();
-  const hashQty = clipQty.text ? clipQty.text.slice(clipQty.text.indexOf('#')) : null;
+  const hashQty = clipQty.text ? new URL(clipQty.text).pathname : null;
   ok(
-    hashQty === '#/p/' + countedId,
+    hashQty === '/p/' + countedId,
     'the copied set link of a counted set is wrong: ' + hashQty
   );
 
@@ -2645,12 +2644,8 @@ const { ok } = rep;
   await dEn.resetClipboard();
   await dEn.click('Link to this set');
   const clipEn = await dEn.clipboard();
-  const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
-  ok(hashEn === '#/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
-  ok(
-    !!clipEn.text && clipEn.text.includes('en/#/p/'),
-    'the English set link does not go through en/: ' + clipEn.text
-  );
+  const hashEn = clipEn.text ? new URL(clipEn.text).pathname : null;
+  ok(hashEn === '/en/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
 
   /* An own item's picture: the colour card draws it as a catalog picture, the
      black-and-white card draws none. The seed gives gm1's axe the catalog's
@@ -2670,7 +2665,7 @@ const { ok } = rep;
     }));
   });
   ok(
-    ownArt.every((a) => a.src === 'img/ci1.webp' && a.loaded),
+    ownArt.every((a) => a.src === '/img/ci1.webp' && a.loaded),
     "the own item's colour card does not draw its picture: " + JSON.stringify(ownArt)
   );
   await bw();
@@ -2830,7 +2825,7 @@ const { ok } = rep;
                 ? '-bw'
                 : '') +
             '.svg';
-          const text = await (await fetch('card/' + file)).text();
+          const text = await (await fetch('/card/' + file)).text();
           const tag = 'pvf' + String(n++) + '-';
           const own = text
             .replace(/id="([^"]+)"/g, 'id="' + tag + '$1"')

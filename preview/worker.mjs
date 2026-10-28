@@ -1,10 +1,13 @@
 /*
   The preview host (.claude/README.md, "Preview host"): one stateless Pages
-  Functions worker that answers a messenger's crawler with a link card and
-  sends a person on to the app. It stores nothing, sets no cookie and caches
-  nothing; it reads only what a signed-out reader reads. It answers only the
-  families that public/_routes.json routes to it; Pages serves the site's
-  files on every other path.
+  Functions worker that answers a card path with the app document and the
+  link card in its head, so a messenger's crawler reads the card and a
+  person's browser runs the app at the same URL. When the app document cannot
+  be read, it answers the card page, which sends a person on to the app. It
+  stores nothing, sets no cookie and caches nothing; it reads only what a
+  signed-out reader reads. It answers only the families that
+  public/_routes.json routes to it; Pages serves the site's files on every
+  other path.
 
   Routes, each also under /en/: /h/<uuid> (a homebrew item), /s/<token>
   (a shared list), /p/<id> (a print set), /tables/<table>[/<tail>] (a catalog
@@ -21,7 +24,9 @@ import {
   LABEL_GROUPS,
   TABLE_PATH,
   TABLE_SLUG,
+  appDocument,
   card,
+  cardHead,
   decodeFilter,
   descOf,
   fit,
@@ -48,6 +53,9 @@ const NAMES_MAX = 196608;
 const ITEM_MAX = 65536;
 const LIST_MAX = 8192;
 const TAIL_MAX = 2048;
+/* The app document: the built index.html is about 6 KB. */
+const SHELL_MS = 2000;
+const SHELL_MAX = 65536;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const OWN_ART = /^p\/[0-9a-f]{32}\.(webp|jpg)$/;
@@ -67,17 +75,26 @@ const BASE_HEADERS = {
   'Referrer-Policy': 'no-referrer'
 };
 
-function answer(method, status, body, extra = {}) {
-  const headers = { ...BASE_HEADERS, ...extra };
+/* The app document's: no Referrer-Policy, because no-referrer empties
+   document.referrer, which the static pages' back script reads. no-store keeps a
+   crawler from a stored old card; the cost is no back-forward cache
+   (.claude/README.md, "Cross-host limits"). */
+const APP_HEADERS = {
+  'Cache-Control': 'no-store',
+  'X-Robots-Tag': 'noindex, nofollow'
+};
+
+function answer(method, status, body, extra = {}, base = BASE_HEADERS) {
+  const headers = { ...base, ...extra };
   if (body !== null) headers['Content-Type'] = 'text/html; charset=utf-8';
   return new Response(method === 'HEAD' || body === null ? null : body, { status, headers });
 }
 
 /* ---------- reads ---------- */
 
-/** Returns the parsed JSON of a response whose body is at most `max` bytes, or
- *  `{ fail: 'big' | 'bad' }`. The stream is cancelled past the cap, before any decode. */
-async function readJson(res, max) {
+/** Returns `{ value }`, the text of a response whose body is at most `max` bytes, or
+ *  `{ fail: 'big' }`. The stream is cancelled past the cap, before any decode. */
+async function readText(res, max) {
   const length = Number(res.headers.get('Content-Length'));
   if (Number.isFinite(length) && length > max) {
     drop(res.body);
@@ -104,8 +121,16 @@ async function readJson(res, max) {
     bytes.set(c, at);
     at += c.byteLength;
   }
+  return { value: new TextDecoder().decode(bytes) };
+}
+
+/** Returns the parsed JSON of a response whose body is at most `max` bytes, or
+ *  `{ fail: 'big' | 'bad' }`. */
+async function readJson(res, max) {
+  const text = await readText(res, max);
+  if (text.fail) return text;
   try {
-    return { value: JSON.parse(new TextDecoder().decode(bytes)) };
+    return { value: JSON.parse(text.value) };
   } catch {
     return { fail: 'bad' };
   }
@@ -160,6 +185,38 @@ async function readNames(env) {
   }
 }
 
+/** Returns the app document (the site's index.html) from the deployment's own files, or
+ *  null when it cannot be read. Read on every request, never cached: an isolate can
+ *  outlive a deployment, and the document must pair with that deployment's assets. */
+async function readShell(env) {
+  try {
+    const res = await env.ASSETS.fetch(env.SITE, { signal: AbortSignal.timeout(SHELL_MS) });
+    if (res.status !== 200) {
+      drop(res.body);
+      return null;
+    }
+    const got = await readText(res, SHELL_MAX);
+    return got.fail ? null : got.value;
+  } catch {
+    return null;
+  }
+}
+
+/** Returns the answer for a card: the app document with the card in its head, or the
+ *  card page when the app document cannot be read or holds no card block. */
+async function respond(env, lang, method, status, ctx) {
+  const shell = await readShell(env);
+  if (shell !== null) {
+    try {
+      const doc = appDocument(shell, cardHead(lang, ctx), lang);
+      return answer(method, status, doc, {}, APP_HEADERS);
+    } catch {
+      /* no card block: the card page below */
+    }
+  }
+  return answer(method, status, card(lang, ctx));
+}
+
 /* ---------- shared card parts ---------- */
 
 function sitePicture(env, lang) {
@@ -167,8 +224,8 @@ function sitePicture(env, lang) {
 }
 
 /** Returns a card with the site's picture: a list, a print set, a table, or a 404 or 503. */
-function siteCard(env, lang, { title, desc, url, app }) {
-  return card(lang, {
+function siteCtx(env, lang, { title, desc, url, app }) {
+  return {
     title,
     desc,
     body: desc,
@@ -177,9 +234,11 @@ function siteCard(env, lang, { title, desc, url, app }) {
     img: sitePicture(env, lang),
     large: true,
     caps: CAPS
-  });
+  };
 }
 
+/* The card page's way into the app, in the #/ form: a path form would ask the worker
+   again, while <site>/ is static and the app converts #/ (docs/specs/ROUTES.md). */
 function appUrl(env, lang, fragment) {
   return env.SITE + (lang === 'ru' ? '' : 'en/') + (fragment ? '#/' + fragment : '');
 }
@@ -191,7 +250,7 @@ function hostUrl(env, lang, path) {
 /** The card for a read that failed: the site's words, the redirect kept. */
 function siteText(env, lang, url, app) {
   const t = TEXT[lang];
-  return siteCard(env, lang, { title: t.site, desc: t.open, url, app });
+  return siteCtx(env, lang, { title: t.site, desc: t.open, url, app });
 }
 
 /* ---------- /h/: a homebrew item ---------- */
@@ -290,13 +349,13 @@ function homebrewImage(env, img) {
 }
 
 /** Returns the card of a `get_item_preview` answer. */
-function homebrewCard(answer, lang, env, names, id) {
+function homebrewCtx(answer, lang, env, names, id) {
   const it = answer.item;
   const sub = homebrewSubtitle(it, lang);
   const raw = markupText(String(descOf(it, lang)));
   const lines = homebrewLines(answer, names, lang);
   const pic = homebrewImage(env, has(answer, 'img') ? answer.img : null);
-  return card(lang, {
+  return {
     title: nameOf(it, lang),
     desc: sub + '. ' + flat(raw),
     body: raw,
@@ -308,7 +367,7 @@ function homebrewCard(answer, lang, env, names, id) {
     app: appUrl(env, lang, 'h/' + id),
     subtitle: sub,
     caps: CAPS
-  });
+  };
 }
 
 async function itemRoute(rest, lang, env, method) {
@@ -316,10 +375,12 @@ async function itemRoute(rest, lang, env, method) {
   if (run.length > TAIL_MAX) run = '';
   const t = TEXT[lang];
   const notFound = () =>
-    answer(
+    respond(
+      env,
+      lang,
       method,
       404,
-      siteCard(env, lang, {
+      siteCtx(env, lang, {
         title: t.notFound,
         desc: t.notFoundSub,
         url: hostUrl(env, lang, '/h/' + run),
@@ -333,13 +394,14 @@ async function itemRoute(rest, lang, env, method) {
     rpc(env, 'get_item_preview', { p_id: run, p_lang: lang }, ITEM_MAX),
     readNames(env)
   ]);
-  if (read.fail === 'big') return answer(method, 200, siteText(env, lang, url, app));
-  if (read.fail) return answer(method, 503, siteText(env, lang, url, app));
+  if (read.fail === 'big')
+    return respond(env, lang, method, 200, siteText(env, lang, url, app));
+  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app));
   if (read.value === null) return notFound();
   const v = read.value;
   if (!isObject(v) || !isObject(v.item) || !isObject(v.lines))
-    return answer(method, 503, siteText(env, lang, url, app));
-  return answer(method, 200, homebrewCard(v, lang, env, names, run));
+    return respond(env, lang, method, 503, siteText(env, lang, url, app));
+  return respond(env, lang, method, 200, homebrewCtx(v, lang, env, names, run));
 }
 
 /* ---------- /s/: a shared list ---------- */
@@ -347,7 +409,7 @@ async function itemRoute(rest, lang, env, method) {
 /** Returns the card of a `get_shared_list_preview` answer: the name, the count that the
  *  link's audience sees and the players' note without its markup; the read holds no GM
  *  note. */
-function listCard(answer, lang, env, token, filter) {
+function listCtx(answer, lang, env, token, filter) {
   const t = TEXT[lang];
   const name = (typeof answer.name === 'string' && answer.name) || t.untitled;
   const note = typeof answer.note === 'string' ? answer.note.trim() : '';
@@ -355,7 +417,7 @@ function listCard(answer, lang, env, token, filter) {
     plural(answer.n, t.itemsN, lang) + (note ? '. ' + flat(markupText(note)) : ''),
     CAPS.meta
   );
-  return siteCard(env, lang, {
+  return siteCtx(env, lang, {
     title: answer.audience === 'gm' ? name + ' · ' + t.shareLinkGm : name,
     desc,
     url: hostUrl(env, lang, '/s/' + token),
@@ -369,10 +431,12 @@ async function listRoute(rest, lang, env, method) {
   const filter = m[2] && m[2].length <= TAIL_MAX ? m[2] : '';
   const t = TEXT[lang];
   const gone = (app) =>
-    answer(
+    respond(
+      env,
+      lang,
       method,
       404,
-      siteCard(env, lang, {
+      siteCtx(env, lang, {
         title: t.shareGone,
         desc: t.shareGoneSub,
         url: hostUrl(env, lang, '/s/' + run),
@@ -383,21 +447,22 @@ async function listRoute(rest, lang, env, method) {
   const url = hostUrl(env, lang, '/s/' + run);
   const app = appUrl(env, lang, 's/' + run + (filter ? '/' + filter : ''));
   const read = await rpc(env, 'get_shared_list_preview', { p_token: run }, LIST_MAX);
-  if (read.fail === 'big') return answer(method, 200, siteText(env, lang, url, app));
-  if (read.fail) return answer(method, 503, siteText(env, lang, url, app));
+  if (read.fail === 'big')
+    return respond(env, lang, method, 200, siteText(env, lang, url, app));
+  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app));
   if (read.value === null) return gone(app);
   const v = read.value;
   if (!isObject(v) || !Number.isInteger(v.n) || v.n < 0)
-    return answer(method, 503, siteText(env, lang, url, app));
-  return answer(method, 200, listCard(read.value, lang, env, run, filter));
+    return respond(env, lang, method, 503, siteText(env, lang, url, app));
+  return respond(env, lang, method, 200, listCtx(read.value, lang, env, run, filter));
 }
 
 /* ---------- /p/: a print set ---------- */
 
 /** Returns the generic print set card: `get_print_set` is for signed-in readers only. */
-function printCard(lang, env, id) {
+function printCtx(lang, env, id) {
   const t = TEXT[lang];
-  return siteCard(env, lang, {
+  return siteCtx(env, lang, {
     title: t.printTitle,
     desc: t.signInToPrint,
     url: hostUrl(env, lang, '/p/' + id),
@@ -405,15 +470,17 @@ function printCard(lang, env, id) {
   });
 }
 
-function printRoute(rest, lang, env, method) {
+async function printRoute(rest, lang, env, method) {
   let run = /^[A-Za-z0-9_-]*/.exec(rest)[0];
   if (run.length > TAIL_MAX) run = '';
-  if (run.length === 12) return answer(method, 200, printCard(lang, env, run));
+  if (run.length === 12) return respond(env, lang, method, 200, printCtx(lang, env, run));
   const t = TEXT[lang];
-  return answer(
+  return respond(
+    env,
+    lang,
     method,
     404,
-    siteCard(env, lang, {
+    siteCtx(env, lang, {
       title: t.printTitle,
       desc: t.printSetGone,
       url: hostUrl(env, lang, '/p/' + run),
@@ -444,7 +511,7 @@ function realmLabel(r, lang) {
 }
 
 /** Returns the card of the catalog table `table`, with the anchor or the filter `tail`. */
-function tableCard(table, tail, lang, names, env, run) {
+function tableCtx(table, tail, lang, names, env, run) {
   const t = TEXT[lang];
   const n = (o, k) => (has(o, k) && typeof o[k].n === 'number' ? o[k].n : null);
   let title = tablePath(table, lang);
@@ -481,7 +548,7 @@ function tableCard(table, tail, lang, names, env, run) {
     desc = t.realmF + ': ' + name + '. ' + plural(n(names.realms, tail) ?? 0, t.itemsN, lang);
   }
   const path = run + (tail ? '/' + tail : '');
-  return siteCard(env, lang, {
+  return siteCtx(env, lang, {
     title,
     desc,
     url: hostUrl(env, lang, '/tables/' + path),
@@ -498,14 +565,16 @@ async function tablesRoute(rest, lang, env, method) {
   const url = hostUrl(env, lang, '/tables/' + path);
   const app = appUrl(env, lang, 'tables/' + path);
   const table = has(TABLE_ALIASES, run) ? TABLE_ALIASES[run] : run;
-  if (table === 'homebrew') return answer(method, 200, siteText(env, lang, url, app));
+  if (table === 'homebrew')
+    return respond(env, lang, method, 200, siteText(env, lang, url, app));
   if (!has(TABLE_PATH, table)) {
     const home = appUrl(env, lang, 'tables/' + run);
-    return answer(method, 404, siteText(env, lang, hostUrl(env, lang, '/tables/' + run), home));
+    const at = hostUrl(env, lang, '/tables/' + run);
+    return respond(env, lang, method, 404, siteText(env, lang, at, home));
   }
   const names = await readNames(env);
-  if (!names) return answer(method, 200, siteText(env, lang, url, app));
-  return answer(method, 200, tableCard(table, tail, lang, names, env, run));
+  if (!names) return respond(env, lang, method, 200, siteText(env, lang, url, app));
+  return respond(env, lang, method, 200, tableCtx(table, tail, lang, names, env, run));
 }
 
 /* ---------- the entry ---------- */
@@ -552,7 +621,7 @@ function failed(request, env) {
   return answer(
     request.method,
     503,
-    siteText(env, lang, hostUrl(env, lang, '/'), appUrl(env, lang, ''))
+    card(lang, siteText(env, lang, hostUrl(env, lang, '/'), appUrl(env, lang, '')))
   );
 }
 

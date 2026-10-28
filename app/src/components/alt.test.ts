@@ -151,10 +151,7 @@ describe('a critical success', () => {
     render(App, { env: at() });
     await toCrit();
     const itemLink = screen.getByRole('link', { name: /Таблица предметов/ });
-    expect(itemLink).toHaveAttribute(
-      'href',
-      expect.stringContaining('#/tables/alt_item/common')
-    );
+    expect(itemLink).toHaveAttribute('href', '/tables/alt_item/common');
     expect(screen.getByRole('link', { name: /Таблица расходников/ })).toBeInTheDocument();
     /* `external` is the one icon carrying `opacity` (lib/icons.ts) - pins the
        inline style `Icon.svelte`'s `'opacity' in icon` branch produces, as a
@@ -168,7 +165,7 @@ describe('a critical success', () => {
     await toCrit();
     expect(screen.getByRole('link', { name: /Открыть таблицу/ })).toHaveAttribute(
       'href',
-      expect.stringContaining('#/tables/alt_item/common')
+      '/tables/alt_item/common'
     );
   });
 
@@ -239,16 +236,15 @@ describe('the other language', () => {
     expect(screen.getByRole('button', { name: 'Bump to Uncommon' })).toBeInTheDocument();
   });
 
-  it('opens the tables at the site root in English too, not through en/', async () => {
+  it('opens the tables at their English path in English', async () => {
     const { container } = render(App, { env: at() });
     await press('EN');
     await press('Fear Die: One lower');
-    const links = [...container.querySelectorAll('a[href*="#/tables/alt_"]')].map(
+    const links = [...container.querySelectorAll('a[href*="/tables/alt_"]')].map(
       (a) => a.getAttribute('href') ?? ''
     );
     expect(links.length).toBeGreaterThan(0);
-    for (const href of links)
-      expect(href.startsWith('https://example.test/#/'), href).toBe(true);
+    for (const href of links) expect(href.startsWith('/en/tables/alt_'), href).toBe(true);
     await expectNoA11yViolations(container);
   });
 });

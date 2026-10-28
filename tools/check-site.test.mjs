@@ -19,6 +19,7 @@ import {
   mirrorChecks,
   runChecks,
   dirReader,
+  entryOf,
   UNKNOWN_PATH,
   NOT_FOUND_MARKER,
   previewChecks,
@@ -49,17 +50,26 @@ const SITE_PAGE =
   '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
   '<main id="app-page"></main>';
 const CONTACT = '<a href="mailto:daggerheart.loot@gmail.com">mail</a>';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 const stub = (link) =>
   '<meta property="og:image" content="og/1.jpg">' +
-  `<meta property="og:url" content="https://daggerheart-loot.pages.dev/${link}">`;
+  `<meta property="og:url" content="${SITE}${link}">`;
+/* The app document the build writes; `card` is the head of one path. */
+const app = (lang = 'ru', card = '', body = '') =>
+  `<!doctype html>\n<html lang="${lang}">\n<meta name="robots" content="noindex, nofollow">` +
+  card +
+  '<div id="app"></div>' +
+  body +
+  '<script type="module" crossorigin src="/assets/index-a1B2.js"></script>';
+/* A record document's readable text (tools/share-card.mjs recordNoscript). */
+const TEXT = '<noscript>\n<article>\n<h1>Name</h1>\n<p>Text</p>\n</article>\n</noscript>';
+/* The mirror's redirect page of a record: the card, then the way into the site. */
+const redirect = (link) =>
+  stub(link) + `<script>location.replace(${JSON.stringify(SITE + link)});</script>`;
+const EN_TITLE = '<meta property="og:title" content="x">';
 
 const GOOD = {
-  'index.html': {
-    type: 'text/html',
-    body:
-      '<!doctype html><meta name="robots" content="noindex, nofollow">' +
-      '<div id="app"></div><script type="module" crossorigin src="./assets/index-a1B2.js"></script>'
-  },
+  'index.html': { type: 'text/html', body: app() },
   'assets/index-a1B2.js': { type: 'application/javascript', body: 'x'.repeat(30000) },
   'data.js': {
     type: 'application/javascript',
@@ -80,12 +90,9 @@ const GOOD = {
       { type: 'application/json', body: JSON.stringify({ $id: id }) }
     ])
   ),
-  'i/w1.html': { type: 'text/html', body: stub('i/w1') },
-  'i/en/w1.html': { type: 'text/html', body: stub('i/en/w1') },
-  'en/index.html': {
-    type: 'text/html',
-    body: '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">'
-  },
+  'i/w1.html': { type: 'text/html', body: app('ru', stub('i/w1'), TEXT) },
+  'i/en/w1.html': { type: 'text/html', body: app('en', stub('i/en/w1'), TEXT) },
+  'en/index.html': { type: 'text/html', body: app('en', EN_TITLE) },
   'img/_none.webp': { type: 'image/webp', body: 'x' },
   'img/thumb/_none.webp': { type: 'image/webp', body: 'x' },
   'og/_share.jpg': { type: 'image/jpeg', body: 'x' },
@@ -240,28 +247,54 @@ describe('checks() against broken sites', () => {
     ]);
   });
 
-  it('catches an English stub with no og:image', async () => {
+  it('catches an English record page with no og:image', async () => {
     const broken = {
       ...GOOD,
       'i/en/w1.html': { type: 'text/html', body: '<p>no preview here</p>' }
     };
     const bad = await runChecks(memoryReader(broken));
     assert.deepEqual(bad, [
-      'the stub i/en/w1.html has lost its preview image (og:image)',
-      'the stub i/en/w1.html has an og:url that does not end with i/en/w1'
+      'i/en/w1.html has lost its preview image (og:image)',
+      'i/en/w1.html has an og:url that does not end with i/en/w1',
+      'i/en/w1.html is not an html page with noindex ("text/html")',
+      'i/en/w1.html is not the app document: no <div id="app"> or not exactly one entry module',
+      'i/en/w1.html is not the English app document: no <html lang="en">',
+      "i/en/w1.html does not carry the record's text in a <noscript> block"
     ]);
   });
 
-  it('catches a stub that is the app shell, or whose og:url keeps .html', async () => {
+  it('catches a record document without its readable text', async () => {
     const broken = {
       ...GOOD,
-      'i/w1.html': { type: 'text/html', body: stub('i/w1') + '<div id="app"></div>' },
-      'i/en/w1.html': { type: 'text/html', body: stub('i/en/w1.html') }
+      'i/w1.html': { type: 'text/html', body: app('ru', stub('i/w1')) }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ["i/w1.html does not carry the record's text in a <noscript> block"]);
+  });
+
+  it('catches a record path that is the redirect stub, or whose og:url keeps .html', async () => {
+    const broken = {
+      ...GOOD,
+      'i/w1.html': { type: 'text/html', body: redirect('i/w1') },
+      'i/en/w1.html': { type: 'text/html', body: app('en', stub('i/en/w1.html'), TEXT) }
     };
     const bad = await runChecks(memoryReader(broken));
     assert.deepEqual(bad, [
-      "the stub i/w1.html is the app shell, not the record's own page",
-      'the stub i/en/w1.html has an og:url that does not end with i/en/w1'
+      'i/w1.html is not an html page with noindex ("text/html")',
+      'i/w1.html is not the app document: no <div id="app"> or not exactly one entry module',
+      "i/w1.html does not carry the record's text in a <noscript> block",
+      'i/en/w1.html has an og:url that does not end with i/en/w1'
+    ]);
+  });
+
+  it('catches an English record page in Russian', async () => {
+    const broken = {
+      ...GOOD,
+      'i/en/w1.html': { type: 'text/html', body: app('ru', stub('i/en/w1'), TEXT) }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, [
+      'i/en/w1.html is not the English app document: no <html lang="en">'
     ]);
   });
 
@@ -275,12 +308,32 @@ describe('checks() against broken sites', () => {
   });
 
   it('catches an English entry document that lost its og:title', async () => {
-    const broken = {
-      ...GOOD,
-      'en/index.html': { type: 'text/html', body: '<meta name="robots" content="noindex">' }
-    };
+    const broken = { ...GOOD, 'en/index.html': { type: 'text/html', body: app('en') } };
     const bad = await runChecks(memoryReader(broken));
     assert.deepEqual(bad, ['en/index.html lost its noindex or its og:title']);
+  });
+
+  it('catches an English entry document that is the redirect page, not the app', async () => {
+    const broken = {
+      ...GOOD,
+      'en/index.html': {
+        type: 'text/html',
+        body: '<meta name="robots" content="noindex">' + EN_TITLE + '<html lang="en">'
+      }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, [
+      'en/index.html is not the app document: no <div id="app"> or not exactly one entry module'
+    ]);
+  });
+
+  it('reads the entry module from /assets/ and from ./assets/', () => {
+    for (const src of ['/assets/index-a1B2.js', './assets/index-a1B2.js'])
+      assert.equal(
+        entryOf(`<script type="module" src="${src}"></script>`),
+        'assets/index-a1B2.js'
+      );
+    assert.equal(entryOf('<script type="module" src="assets/index-a1B2.js"></script>'), null);
   });
 
   it('catches a missing English site card and English site page', async () => {
@@ -356,8 +409,8 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 64);
-    assert.equal(list.length, appChecks().length + fileChecks().length);
+    assert.equal(list.length, 71);
+    assert.equal(list.length, appChecks().length + fileChecks({ documents: true }).length);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -423,6 +476,15 @@ describe('mirrorChecks() against the old host, from a directory', () => {
     Object.assign(files, {
       'index.html': { type: 'text/html', body: MOVED },
       'sw.js': { type: 'application/javascript', body: UNREGISTER },
+      'i/w1.html': { type: 'text/html', body: redirect('i/w1') },
+      'i/en/w1.html': { type: 'text/html', body: redirect('i/en/w1') },
+      'en/index.html': {
+        type: 'text/html',
+        body:
+          '<meta name="robots" content="noindex, nofollow">' +
+          EN_TITLE +
+          `<script>location.replace(${JSON.stringify(SITE + 'en/')} + location.hash);</script>`
+      },
       ...over
     });
     const dir = mkdtempSync(join(tmpdir(), 'check-site-mirror-'));
@@ -462,6 +524,20 @@ describe('mirrorChecks() against the old host, from a directory', () => {
     assert.deepEqual(bad, ['the mirror serves pages/install.html (200), not 404']);
   });
 
+  it('catches a mirror record page that is the app or does not redirect to the site', async () => {
+    const bad = await run({
+      'i/w1.html': { type: 'text/html', body: app('ru', stub('i/w1')) },
+      'i/en/w1.html': { type: 'text/html', body: stub('i/en/w1') },
+      'en/index.html': { type: 'text/html', body: app('en', EN_TITLE) }
+    });
+    assert.deepEqual(bad, [
+      "the stub i/w1.html is the app shell, not the record's own page",
+      'the stub i/w1.html does not redirect to ' + SITE + 'i/w1',
+      'the stub i/en/w1.html does not redirect to ' + SITE + 'i/en/w1',
+      "the mirror's en/index.html does not redirect to " + SITE + 'en/ with the fragment'
+    ]);
+  });
+
   it('requires catalog-index.csv, as the site does', async () => {
     const bad = await run({ 'catalog-index.csv': null });
     assert.ok(bad.includes('catalog-index.csv returned 404, not 200'));
@@ -477,6 +553,9 @@ describe('previewChecks() against the preview host', () => {
     '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">';
   const TOKEN = 's/' + 'A'.repeat(43);
   const ITEM = 'h/00000000-0000-4000-8000-000000000000';
+  /* The route paths that _redirects answers with the app document. */
+  const ROUTES = ['roll/std', 'tables', 'lists/x', 'i/hb_aaaaaaaaaaaaaaaa'];
+  const EN_ROUTES = ['en/search', 'en/tables', 'i/en/hb_aaaaaaaaaaaaaaaa'];
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -487,17 +566,24 @@ describe('previewChecks() against the preview host', () => {
       'llms.txt': { status: 200, robots: 'noindex', body: 'ok' },
       'catalog-index.csv': { status: 200, robots: 'noindex', body: 'id\n' },
       mcp: { status: 404, body: '<div id="app-404"></div>' },
-      'i/w1?v=x': { status: 200, body: stub('i/w1') },
+      'i/w1?v=x': { status: 200, body: app('ru', stub('i/w1')) },
       'manual:i/w1.html': { status: 308, location: '/i/w1', body: '' },
-      'h/not-a-uuid': { status: 404, body: CARD },
-      's/x': { status: 404, body: CARD },
-      'p/x': { status: 404, body: CARD },
-      [TOKEN]: { status: 404, body: CARD },
-      [ITEM]: { status: 404, body: CARD },
+      'h/not-a-uuid': { status: 404, body: app('ru', CARD) },
+      's/x': { status: 404, body: app('ru', CARD) },
+      'p/x': { status: 404, body: app('ru', CARD) },
+      [TOKEN]: { status: 404, body: app('ru', CARD) },
+      [ITEM]: { status: 404, body: app('ru', CARD) },
       'tables/core_item': {
         status: 200,
-        body: CARD + '<meta property="og:description" content="128 entries">'
+        body: app('ru', CARD + '<meta property="og:description" content="128 entries">')
       },
+      ...Object.fromEntries(
+        ROUTES.map((p) => ['manual:' + p, { status: 200, body: app('ru') }])
+      ),
+      ...Object.fromEntries(
+        EN_ROUTES.map((p) => ['manual:' + p, { status: 200, body: app('en') }])
+      ),
+      'manual:en/i/w1': { status: 301, location: '/i/en/w1', body: '' },
       ...over
     };
     return async (path, { manual = false } = {}) => {
@@ -518,7 +604,7 @@ describe('previewChecks() against the preview host', () => {
 
   it('names the card read and the secrets when the well-formed token answers 503', async () => {
     const bad = await runChecks(
-      host({ [TOKEN]: { status: 503, body: CARD } }),
+      host({ [TOKEN]: { status: 503, body: app('ru', CARD) } }),
       previewChecks()
     );
     assert.equal(bad.length, 1);
@@ -527,7 +613,10 @@ describe('previewChecks() against the preview host', () => {
   });
 
   it('names the item read and the secrets when the well-formed uuid answers 503', async () => {
-    const bad = await runChecks(host({ [ITEM]: { status: 503, body: CARD } }), previewChecks());
+    const bad = await runChecks(
+      host({ [ITEM]: { status: 503, body: app('ru', CARD) } }),
+      previewChecks()
+    );
     assert.equal(bad.length, 1);
     assert.match(bad[0], /returned 503, not 404 - the read get_item_preview failed/);
     assert.match(bad[0], /SUPABASE_URL and SUPABASE_KEY/);
@@ -568,7 +657,31 @@ describe('previewChecks() against the preview host', () => {
     ['s/x', { status: 404, body: '<p>no meta</p>' }, /s\/x has no noindex/],
     ['p/x', { status: 302, body: '' }, /p\/x returned 302/],
     ['tables/core_item', { status: 503, body: CARD }, /tables\/core_item returned 503/],
-    ['tables/core_item', { status: 200, body: '<p></p>' }, /lost its noindex or its og:title/]
+    ['tables/core_item', { status: 200, body: '<p></p>' }, /lost its noindex or its og:title/],
+    [
+      'tables/core_item',
+      { status: 200, body: CARD + '<meta property="og:description" content="128 entries">' },
+      /tables\/core_item is not the app document with its card/
+    ],
+    [ITEM, { status: 404, body: CARD }, /is not the app document - the worker could not read/],
+    ['i/w1?v=x', { status: 200, body: redirect('i/w1') }, /not the record's app document/],
+    ['manual:roll/std', { status: 404, body: '' }, /roll\/std returned 404, not 200/],
+    ['manual:tables', { status: 302, location: '/', body: '' }, /tables returned 302, not 200/],
+    [
+      'manual:lists/x',
+      { status: 200, body: '<meta name="robots" content="noindex">' },
+      /lists\/x is not the app document/
+    ],
+    [
+      'manual:en/search',
+      { status: 200, body: app('ru') },
+      /en\/search is not the English app document/
+    ],
+    [
+      'manual:en/i/w1',
+      { status: 308, location: '/i/en/w1', body: '' },
+      /en\/i\/w1 answered 308 to "\/i\/en\/w1", not one 301 to \/i\/en\/w1/
+    ]
   ]) {
     it(`fails on ${path} answering ${answer.status}`, async () => {
       const bad = await runChecks(host({ [path]: answer }), previewChecks());
@@ -581,20 +694,26 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 21);
-    assert.deepEqual([...new Set(list.map((c) => c.path))].sort(), [
-      'catalog-index.csv',
-      ITEM,
-      'h/not-a-uuid',
-      'i/w1.html',
-      'i/w1?v=x',
-      'llms.txt',
-      'mcp',
-      'p/x',
-      'robots.txt',
-      TOKEN,
-      's/x',
-      'tables/core_item'
-    ]);
+    assert.equal(list.length, 52);
+    assert.deepEqual(
+      [...new Set(list.map((c) => c.path))].sort(),
+      [
+        'catalog-index.csv',
+        ITEM,
+        'h/not-a-uuid',
+        'i/w1.html',
+        'i/w1?v=x',
+        'llms.txt',
+        'mcp',
+        'p/x',
+        'robots.txt',
+        TOKEN,
+        's/x',
+        'tables/core_item',
+        'en/i/w1',
+        ...ROUTES,
+        ...EN_ROUTES
+      ].sort()
+    );
   });
 });

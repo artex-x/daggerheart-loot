@@ -14,6 +14,8 @@
  * language split is what `run-all.js`'s two 1180 rows pass). No language
  * argument means both, the original shape. */
 const { fresh, axe, reporter, closeBrowser } = require('./lib.js');
+/* The app's own reading of an address, so a landed path compares as its route key. */
+const { addressOf } = require('../../app/src/lib/address.ts');
 const {
   HB_FILE,
   IMPORT,
@@ -131,7 +133,7 @@ const PAGES = [
   ['#/i/cc1', 'карточка сообщества'],
   ['#/i/f1', 'карточка фрейма'],
   ['#/i/mw47', 'карточка с любой характеристикой'],
-  ['#/i/nope', 'предмета нет'],
+  ['/#/i/nope', 'предмета нет'],
   /* The four craft-heavy worst cases the legacy craftmob.js swept - the
    * mobile craft block and the dice bar overflow checks below need a page that actually
    * draws `.craft`/`.rcraft`/`.dicebar`/`.numrow`. */
@@ -141,7 +143,9 @@ const PAGES = [
   ['#/i/w2', 'карточка с крафтом (худший случай 4)'],
   ['#/search', 'поиск'],
   ['#/roll/core', 'старая ссылка'],
-  ['#/nowhere', 'неизвестный адрес -> раздел по умолчанию'],
+  /* By its old fragment: the host answers the path `/nowhere` with 404.html, and the app
+     answers an unknown fragment with the default section. */
+  ['/#/nowhere', 'неизвестный адрес -> раздел по умолчанию'],
   ['#/tables', 'таблицы (без указания)'],
   ['#/account', 'аккаунт: вход']
 ]
@@ -492,6 +496,8 @@ async function landedUnderHeader(page, id) {
           if (enter) await enter(d);
         } catch (e) {
           ok(false, where + ': the page did not render - ' + e.message);
+          /* Its console errors are this page's, not the next page's. */
+          errs.length = 0;
           continue;
         }
         if (as) {
@@ -581,8 +587,14 @@ async function landedUnderHeader(page, id) {
               out.craftBad.push('craft link is only ' + Math.round(r.height) + 'px tall');
           });
 
-          document.querySelectorAll('a[href^="#/"]').forEach((a) => {
-            const h = a.getAttribute('href').slice(2);
+          /* An in-app link is a path; a site file or page beside the app is not a route. */
+          document.querySelectorAll('a[href^="/"]').forEach((a) => {
+            const href = a.getAttribute('href');
+            if (/^\/(pages|schema|img|og|card)\/|\.(txt|json|csv|html)$/.test(href)) return;
+            const h = href
+              .replace(/^\/i\/en\//, '/i/')
+              .replace(/^\/en\//, '/')
+              .slice(1);
             const known =
               /^(roll\/(std|alt|wondrous_environments|dread_gm_toolbox|vault_of_ages|dragons_vault|arazos_artifacts|community_items|many_worlds_tavern)|tables|lists|search|print\/|i\/|h\/|l\/|lists\/|account$|homebrew(\/|$))/.test(
                 h
@@ -592,7 +604,9 @@ async function landedUnderHeader(page, id) {
           return out;
         }, width);
 
-        const landed = await page.evaluate(() => location.hash);
+        const landed = addressOf(
+          ...(await page.evaluate(() => [location.pathname, location.hash]))
+        ).hash;
         if (/^#\/(roll\/|tables|lists$|search|l\/|i\/)/.test(hash))
           ok(
             landed === hash,

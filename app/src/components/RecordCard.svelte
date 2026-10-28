@@ -20,6 +20,7 @@
   import Markup from './Markup.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
+  import { pathOf } from '../lib/address.js';
   import { homebrewTabHash, recordHref } from '../lib/hash.js';
   import {
     FOLD_OWN,
@@ -250,7 +251,7 @@
     <h2 class="card-name">
       {#if variant === 'compact'}
         <!-- A link, because from a result the name is the way to the page. -->
-        <a href={recordHref(it)} title={t.openPage}>{name}</a>
+        <a href={pathOf(recordHref(it), lang)} title={t.openPage}>{name}</a>
       {:else}
         <span>{name}</span>
       {/if}
@@ -317,8 +318,8 @@
             <Icon name="craftFrom" />
             <span class="craft-l">{t.craftFrom}</span>
             <span
-              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
-                  >{relName(r, lang)}</a
+              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={pathOf(recordHref(r), lang)}>{relName(r, lang)}</a
                 >{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
@@ -331,8 +332,8 @@
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
             <span
-              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
-                  >{relName(r, lang)}</a
+              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={pathOf(recordHref(r), lang)}>{relName(r, lang)}</a
                 >{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
@@ -355,7 +356,7 @@
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
                     >{relName(member, lang)}</span
-                  >{:else}<a href={recordHref(member)}>{relName(member, lang)}</a
+                  >{:else}<a href={pathOf(recordHref(member), lang)}>{relName(member, lang)}</a
                   >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
@@ -373,7 +374,7 @@
           <div class="set-bonus mdtext" lang={bonus.lang}>
             <Markup blocks={bonus.blocks}>
               {#snippet lead()}<i
-                  >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
+                  >{#if ownSet && setKey}<a href={pathOf(homebrewTabHash('sets', setKey), lang)}
                       >{bonus.name}</a
                     >:{:else}{bonus.name}:{/if}</i
                 >{/snippet}
@@ -414,7 +415,7 @@
               <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
             {/if}
             {#if ownRef(key)}
-              <a href={homebrewTabHash('rules', key)}>{t.hbCardManage}</a>
+              <a href={pathOf(homebrewTabHash('rules', key), lang)}>{t.hbCardManage}</a>
             {/if}
           </details>
         {/each}

@@ -90,14 +90,14 @@ const KEEP_KEYS = [
 
 const collapse = (s) => (s || '').replace(/\s+/g, ' ');
 
-/** Cuts the test server's `http://127.0.0.1:<port>/` off a url, and a
- *  leading `index.html` with it, so a golden survives a new port: the app
- *  itself becomes its hash, a site page its relative path. Any other url -
- *  a real outbound link like daggerheart.com - is content worth seeing
- *  change, and is kept whole. */
+/** Cuts the test server's `http://127.0.0.1:<port>` off a url, so a golden
+ *  survives a new port: an app address or a site page becomes its path from
+ *  `/`, and its card version `?v=<value>` prints as `?v=<v>`, so a golden does
+ *  not follow `card-versions.json`. Any other url - a real outbound link like
+ *  daggerheart.com - is content worth seeing change, and is kept whole. */
 function normUrl(u) {
-  const m = /^http:\/\/127\.0\.0\.1:\d+\/(?:index\.html(?=#|$))?/.exec(u);
-  return m ? u.slice(m[0].length) : u;
+  const m = /^http:\/\/127\.0\.0\.1:\d+(?=\/)/.exec(u);
+  return m ? u.slice(m[0].length).replace(/([?&])v=[0-9a-z]+/, '$1v=<v>') : u;
 }
 
 /**

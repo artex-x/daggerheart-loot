@@ -3,25 +3,25 @@
 # why: a community record - the one table path whose leaf is the record's own community
 
 ## ru :: tree
-RootWebArea "Королевская Брошь - Генератор лута Daggerheart" [url=#/i/cm1]
-  link "К содержимому" [url=#main]
+RootWebArea "Королевская Брошь - Генератор лута Daggerheart" [url=/i/cm1?v=<v>]
+  link "К содержимому" [url=/i/cm1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Королевская Брошь" [level=1]
     StaticText "Предметы сообществ · Великородное · номер 1 "
-    link "показать в таблице" [url=#/tables/community_items/cm1]
+    link "показать в таблице" [url=/tables/community_items/cm1]
     button "Страница"
     StaticText "1"
     ... StaticText x3 of 7 same-shape siblings elided
@@ -37,9 +37,9 @@ RootWebArea "Королевская Брошь - Генератор лута Dag
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -69,25 +69,25 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=#/i/cm1]
-  link "Skip to content" [url=#main]
+RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=/i/en/cm1?v=<v>]
+  link "Skip to content" [url=/i/en/cm1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Royal Brooch" [level=1]
     StaticText "Community items · Highborne · roll 1 "
-    link "show in the table" [url=#/tables/community_items/cm1]
+    link "show in the table" [url=/en/tables/community_items/cm1]
     button "Page"
     StaticText "1"
     ... StaticText x3 of 7 same-shape siblings elided
@@ -103,9 +103,9 @@ RootWebArea "Royal Brooch - Daggerheart Loot Generator" [url=#/i/cm1]
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

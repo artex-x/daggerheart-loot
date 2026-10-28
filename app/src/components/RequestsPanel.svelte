@@ -273,7 +273,7 @@
               {#if n.kind === 'changed'}
                 {t.noticeChanged.replace('%s', name)}
                 {#if n.hid}
-                  <a href={itemHash(n.hid)}>{t.noticeOpen}</a>
+                  <a href={app.href(itemHash(n.hid))}>{t.noticeOpen}</a>
                 {/if}
               {:else}
                 {t.noticeDeleted.replace('%s', name)}

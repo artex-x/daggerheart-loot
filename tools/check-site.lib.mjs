@@ -31,7 +31,10 @@ export const NOT_FOUND_MARKER = 'id="app-404"';
 
 const NOINDEX = /<meta\s+name="robots"\s+content="noindex/i;
 
-const MODULE = /<script[^>]*type="module"[^>]*src="\.\/(assets\/[^"]+\.js)"/g;
+/* The build writes `/assets/` since `base: '/'` (docs/specs/META.md section 4); `./assets/`
+   is the form before it. */
+const MODULE = /<script[^>]*type="module"[^>]*src="\.?\/(assets\/[^"]+\.js)"/g;
+const SITE = 'https://daggerheart-loot.pages.dev/';
 
 /** The hashed entry module the page references, `assets/<name>.js`, or null
  *  unless there is exactly one. */
@@ -81,9 +84,36 @@ const status200 = (name) => ({
 });
 
 /** The whole site's checks: the app (`appChecks`) and the files both hosts serve
- *  (`fileChecks`). */
+ *  (`fileChecks`), the record and English-root paths as app documents. */
 export function checks() {
-  return [...appChecks(), ...fileChecks()];
+  return [...appChecks(), ...fileChecks({ documents: true })];
+}
+
+/** The checks that `path` answers the app document: 200, html, noindex, `<div id="app">`
+ *  and exactly one entry module; `<html lang="en">` when `en`. */
+function appDocumentChecks(path, en = false) {
+  return [
+    { path, ...status200(path) },
+    {
+      path,
+      test: (body, meta) => /html/i.test(meta.type) && NOINDEX.test(body),
+      message: (meta) => `${path} is not an html page with noindex ("${meta.type}")`
+    },
+    {
+      path,
+      test: (body) => /<div\s+id="app"/.test(body) && entryOf(body) !== null,
+      message: `${path} is not the app document: no <div id="app"> or not exactly one entry module`
+    },
+    ...(en
+      ? [
+          {
+            path,
+            test: (body) => body.includes('<html lang="en">'),
+            message: `${path} is not the English app document: no <html lang="en">`
+          }
+        ]
+      : [])
+  ];
 }
 
 /** The app itself: the root page, its entry module, `data.js`, the manifest and the
@@ -164,8 +194,10 @@ export function appChecks() {
 }
 
 /** The files the site's host and the old host's mirror both serve. `install` is false
- *  for the mirror, which drops the install guide (docs/specs/META.md section 9). */
-export function fileChecks({ install = true } = {}) {
+ *  for the mirror, which drops the install guide (docs/specs/META.md section 9).
+ *  `documents` is true for the site, whose record and English-root paths are app
+ *  documents; the mirror's are the redirect pages (docs/specs/CONTRACTS.md section 5). */
+export function fileChecks({ install = true, documents = false } = {}) {
   return [
     ...['data.json', 'catalog.csv', 'catalog-index.csv', 'llms.txt', 'robots.txt'].map((f) => ({
       path: f,
@@ -192,31 +224,49 @@ export function fileChecks({ install = true } = {}) {
       }
     ]),
 
-    /* The stub is what a messenger fetches for a link preview, one per
-     * language (docs/specs/I18N.md); its full text reads with no script, and
-     * its og:url is the extensionless record link (docs/specs/CONTRACTS.md
-     * section 5). */
+    /* The record's page is what a messenger fetches for a link preview, one per
+     * language (docs/specs/I18N.md); its og:url is the extensionless record link
+     * (docs/specs/CONTRACTS.md section 5). On the site it is the app document with
+     * the card in its head; on the mirror, the stub that redirects to the site. */
     ...[
-      ['i/w1.html', 'i/w1'],
-      ['i/en/w1.html', 'i/en/w1']
-    ].flatMap(([f, link]) => [
+      ['i/w1.html', 'i/w1', false],
+      ['i/en/w1.html', 'i/en/w1', true]
+    ].flatMap(([f, link, en]) => [
       { path: f, ...status200(f) },
       {
         path: f,
         test: (body) => body.includes('og:image'),
-        message: `the stub ${f} has lost its preview image (og:image)`
-      },
-      {
-        path: f,
-        test: (body) => !/<div\s+id="app"/.test(body),
-        message: `the stub ${f} is the app shell, not the record's own page`
+        message: `${f} has lost its preview image (og:image)`
       },
       {
         path: f,
         test: (body) =>
           new RegExp(`<meta property="og:url" content="[^"]*/${link}">`).test(body),
-        message: `the stub ${f} has an og:url that does not end with ${link}`
-      }
+        message: `${f} has an og:url that does not end with ${link}`
+      },
+      ...(documents
+        ? [
+            ...appDocumentChecks(f, en).slice(1),
+            /* The record's text for a reader without JavaScript (llms.txt, "Data"). */
+            {
+              path: f,
+              test: (body) => /<noscript>\s*<article[^>]*>\s*<h1>[^<]+<\/h1>/.test(body),
+              message: `${f} does not carry the record's text in a <noscript> block`
+            }
+          ]
+        : [
+            {
+              path: f,
+              test: (body) => !/<div\s+id="app"/.test(body),
+              message: `the stub ${f} is the app shell, not the record's own page`
+            },
+            {
+              path: f,
+              test: (body) =>
+                body.includes('location.replace(' + JSON.stringify(SITE + link) + ')'),
+              message: `the stub ${f} does not redirect to ${SITE + link}`
+            }
+          ])
     ]),
 
     /* The English entry document: the English card of every link the app
@@ -227,6 +277,18 @@ export function fileChecks({ install = true } = {}) {
       test: (body) => NOINDEX.test(body) && body.includes('og:title'),
       message: 'en/index.html lost its noindex or its og:title'
     },
+    ...(documents
+      ? appDocumentChecks('en/index.html', true).slice(2)
+      : [
+          {
+            path: 'en/index.html',
+            test: (body) =>
+              body.includes(
+                'location.replace(' + JSON.stringify(SITE + 'en/') + ' + location.hash)'
+              ),
+            message: `the mirror's en/index.html does not redirect to ${SITE}en/ with the fragment`
+          }
+        ]),
 
     /* One probe per symlinked folder: img/, og/ and card/ are links the
      * build makes, and a broken link is served as a 404 rather than as an
@@ -329,11 +391,13 @@ export function mirrorChecks() {
 
 /** The preview host's checks (docs/specs/CONTRACTS.md section 5), in the shape of
  *  `checks()`: the site's own robots.txt and the text files' X-Robots-Tag, the reserved
- *  `/mcp`, a stub at its versioned extensionless link, a 404 card for each malformed
- *  run, a 404 card for a well-formed uuid no item has and for a well-formed token no
- *  list holds - which prove the secrets and both card reads - and a table card that
- *  read names.json. */
+ *  `/mcp`, the record's app document at its versioned extensionless link, a 404 app
+ *  document for each malformed run, for a well-formed uuid no item has and for a
+ *  well-formed token no list holds - which prove the secrets, both card reads and the
+ *  worker's read of the app document - a table card that read names.json, and the
+ *  route paths that _redirects answers with the app document. */
 export function previewChecks() {
+  const isApp = (body) => /<div\s+id="app"/.test(body) && entryOf(body) !== null;
   const card404 = (path, why) => [
     {
       path,
@@ -345,6 +409,11 @@ export function previewChecks() {
       path,
       test: (body) => NOINDEX.test(body),
       message: `${path} has no noindex`
+    },
+    {
+      path,
+      test: isApp,
+      message: `${path} is not the app document - the worker could not read the site's index.html`
     }
   ];
   return [
@@ -384,8 +453,34 @@ export function previewChecks() {
     {
       path: 'i/w1?v=x',
       test: (body, meta) =>
-        meta.status === 200 && body.includes('og:image') && !/<div\s+id="app"/.test(body),
-      message: (meta) => `i/w1?v=x returned ${meta.status}, or not the record's stub`
+        meta.status === 200 &&
+        /og:image" content="[^"]*og\/[^"]+\.jpg"/.test(body) &&
+        isApp(body),
+      message: (meta) =>
+        `i/w1?v=x returned ${meta.status}, or not the record's app document with its og:image`
+    },
+    /* A path that _redirects rewrites to the app document (docs/specs/CONTRACTS.md
+     * section 1): a splat after a fixed prefix, an English one, and the bare /tables
+     * that _routes.json excludes from the worker's /tables/*. */
+    ...[
+      ['roll/std'],
+      ['tables'],
+      ['lists/x'],
+      ['i/hb_aaaaaaaaaaaaaaaa'],
+      ['en/search', true],
+      ['en/tables', true],
+      ['i/en/hb_aaaaaaaaaaaaaaaa', true]
+    ].flatMap(([path, en]) =>
+      /* Not following a redirect: a 302 home would read as the root's app document. */
+      appDocumentChecks(path, en).map((c) => ({ ...c, manual: true }))
+    ),
+    /* The app never writes /en/i/; one 301 sends it to the record's English path. */
+    {
+      path: 'en/i/w1',
+      manual: true,
+      test: (body, meta) => meta.status === 301 && /(^|\/)i\/en\/w1$/.test(meta.location ?? ''),
+      message: (meta) =>
+        `en/i/w1 answered ${meta.status} to "${meta.location ?? ''}", not one 301 to /i/en/w1`
     },
     ...card404('h/not-a-uuid', 'a malformed id sends no read'),
     ...card404('s/x', 'a malformed token sends no read'),
@@ -407,6 +502,11 @@ export function previewChecks() {
       path: 'tables/core_item',
       test: (body) => NOINDEX.test(body) && body.includes('og:title'),
       message: 'tables/core_item lost its noindex or its og:title'
+    },
+    {
+      path: 'tables/core_item',
+      test: isApp,
+      message: 'tables/core_item is not the app document with its card'
     },
     {
       path: 'tables/core_item',

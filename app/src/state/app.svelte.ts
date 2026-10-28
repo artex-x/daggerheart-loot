@@ -42,6 +42,7 @@ import {
 } from '../lib/cloudLists.js';
 import { isArtName, isOwnArt } from '../lib/art.js';
 import { buildIndex, type Index } from '../lib/data.js';
+import { pathOf } from '../lib/address.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
@@ -53,7 +54,6 @@ import {
   keepsTicks,
   legacySource,
   parseHash,
-  previewUrl,
   printSetHash,
   PRINT_MAX,
   recordUrl,
@@ -463,6 +463,7 @@ export class AppState {
    *  the next account action there. */
   alreadyLinked = $state<Provider | null>(null);
   #stopRouter: (() => void) | null = null;
+  #stopLinks: (() => void) | null = null;
   #stopAuth: (() => void) | null = null;
   #stopHidden: (() => void) | null = null;
   #stopSettings: (() => void) | null = null;
@@ -489,7 +490,13 @@ export class AppState {
     this.env = env;
     const loot = env.data.load();
     this.catalog = loot ? buildIndex(loot) : null;
-    this.lang = readLang(env);
+    /* A stored choice wins; an English address stores English only when nothing is
+       stored (docs/specs/I18N.md). */
+    const stored = env.storage.get(LANG_KEY);
+    if (stored !== 'ru' && stored !== 'en' && env.router.lang() === 'en') {
+      this.lang = 'en';
+      env.storage.set(LANG_KEY, 'en');
+    } else this.lang = readLang(env);
     this.#home = homeOf(env.storage.get(HOME_KEY));
     const local = readLocalPrefs(env);
     this.#tablesView = local.view;
@@ -561,14 +568,19 @@ export class AppState {
        a preference. Live's own boot check (`git show 23c00a6^:app.js`): an assignment,
        not a replaceState, so a non-default pin still pushes a history entry
        (Back leaves the bare address rather than returning to it); a default
-       pin - nothing to add - writes nothing and leaves the bar bare. An
-       unreadable address at boot is rule 2, below, same as on navigation. */
+       pin - nothing to add - leaves the bar at the bare root. An
+       unreadable address at boot is rule 2, below, same as on navigation. Either
+       way the bar is rewritten in the path form of the language on screen, which
+       also turns an old `#/` address into its path in the same entry. */
     const first = env.router.hash();
     if (first === '' || first === '#' || first === '#/') {
       this.hash = this.#home;
-      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash);
+      env.router.replace('#/', this.lang, null);
+      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash, this.lang);
     } else {
       this.hash = this.#fallback(first);
+      if (this.hash === first)
+        env.router.replace(first, this.lang, this.#barVersion(first) ?? null);
     }
     this.#applySource();
   }
@@ -584,8 +596,29 @@ export class AppState {
   #fallback(h: string): string {
     if (h === '' || h === '#' || h === '#/') return DEFAULT_HOME;
     if (parseHash(h).kind !== 'unknown') return h;
-    this.env.router.replace(this.#home);
+    this.env.router.replace(this.#home, this.lang, null);
     return this.#home;
+  }
+
+  /** The `?v` the bar carries for `hash`: a catalog record's card version, at once
+   *  (docs/specs/CONTRACTS.md section 5). An item and a share link set theirs through
+   *  `setBarVersion` once read; every other address carries none. */
+  #barVersion(hash: string): string | undefined {
+    const r = parseHash(hash);
+    if (r.kind !== 'record' || isHomebrewKey(r.id)) return undefined;
+    return this.env.data.cardVersion(r.id);
+  }
+
+  /** Writes `v` into the bar of `hash` once its page has read it; nothing when the
+   *  reader has left `hash` meanwhile. */
+  setBarVersion(hash: string, v: string | undefined): void {
+    if (hash !== this.hash) return;
+    this.env.router.replace(hash, this.lang, v ?? null);
+  }
+
+  /** The path form of `hash` in the language on screen: every rendered in-app link. */
+  href(hash: string): string {
+    return pathOf(hash, this.lang);
   }
 
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
@@ -602,17 +635,24 @@ export class AppState {
       }
       /* A refused leave puts the address back: the page with the edits stays. */
       if (h !== this.hash && !this.#mayLeave()) {
-        this.env.router.replace(this.hash);
+        this.env.router.replace(this.hash, this.lang, this.#barVersion(this.hash) ?? null);
         return;
       }
       const from = this.route;
       this.hash = this.#fallback(h);
+      /* A typed old `#/` address leaves the bar in its path form, in the same entry. */
+      if (this.hash === h) {
+        this.env.router.replace(h, this.lang, this.#barVersion(h) ?? null);
+      }
       this.#forgetSignIn();
       this.#forgetPending();
       this.navigations++;
       this.menuFor = '';
       this.#clearTicksOnLeave(from);
       this.#applySource();
+    });
+    this.#stopLinks = this.env.router.onLink((h) => {
+      this.go(h);
     });
     this.#stopSettings = this.env.storage.onExternalChange((key) => {
       if (key === null || SETTINGS_KEYS.includes(key)) this.#followSettings();
@@ -1532,6 +1572,7 @@ export class AppState {
   #applyPrefs(p: Prefs): void {
     if (p.lang) {
       this.lang = p.lang;
+      this.env.router.relang(this.lang);
       this.env.storage.set(LANG_KEY, p.lang);
     }
     const pin = p.home === undefined ? null : pinOf(p.home);
@@ -1600,6 +1641,7 @@ export class AppState {
       local.printCompact !== this.#printCompact;
     if (!moved) return;
     this.lang = lang;
+    this.env.router.relang(this.lang);
     this.#home = home;
     this.#tablesView = local.view;
     this.#printBW = local.printBw;
@@ -1625,6 +1667,8 @@ export class AppState {
   stop(): void {
     this.#stopRouter?.();
     this.#stopRouter = null;
+    this.#stopLinks?.();
+    this.#stopLinks = null;
     if (this.#listPoll !== null) clearInterval(this.#listPoll);
     this.#listPoll = null;
     this.#stopAuth?.();
@@ -1728,19 +1772,17 @@ export class AppState {
     if (legacy) this.source = legacy;
   }
 
-  /** Where this page is, as the link builders in lib/hash.ts want it. */
+  /** The app root, as the link builders in lib/hash.ts want it. */
   get site(): Site {
     return { base: this.env.router.base() };
   }
 
   /** An address to hand somebody else, in the language on screen, so a messenger
-   *  builds its preview in that language. A card family (an item, a share link, a
-   *  print set, a catalog table) goes through the preview host, so a messenger draws
-   *  its own card; `v` is that card's version. Any other address, and every address in
-   *  a build with no preview host, is the app's own. */
+   *  builds its preview in that language: the path form the bar shows, on the preview
+   *  host's origin when the build names one (`||`: an unset one is empty); `v` is the
+   *  card's version. */
   linkTo(hash: string, v?: string): string {
-    const card = this.env.preview ? previewUrl(this.env.preview, hash, this.lang, v) : null;
-    return card ?? appUrl(this.site, hash, this.lang);
+    return appUrl({ base: this.env.preview || this.site.base }, hash, this.lang, v);
   }
 
   /** A record's address to hand somebody else, in the language on screen: a homebrew item's
@@ -1775,7 +1817,7 @@ export class AppState {
    *  the footer and the account page's consent line link the copy of the
    *  language on screen. */
   get pagesDir(): string {
-    return this.lang === 'en' ? 'pages/en/' : 'pages/';
+    return this.lang === 'en' ? '/pages/en/' : '/pages/';
   }
 
   /** `$derived` rather than a getter: `Shell`, `App` and every page
@@ -1795,6 +1837,7 @@ export class AppState {
 
   setLang(lang: Lang): void {
     this.lang = lang;
+    this.env.router.relang(this.lang);
     this.env.storage.set(LANG_KEY, lang);
     this.#changed();
   }
@@ -1893,7 +1936,7 @@ export class AppState {
        Back/Forward landing on exactly that hash was then swallowed by the
        `h === this.#expectHash` guard above, instead of being processed. */
     if (hash !== this.env.router.hash()) this.#expectHash = hash;
-    this.env.router.navigate(hash);
+    this.env.router.navigate(hash, this.lang, this.#barVersion(hash));
     /* `go()`'s callers all build a hash from this file's own writers,
        so this is defence rather than a reachable bug - but the router's own
        `onChange` handler already resolves a bad hash through `#fallback`
@@ -1962,7 +2005,7 @@ export class AppState {
    * see `navigations` above.
    */
   replace(hash: string): void {
-    this.env.router.replace(hash);
+    this.env.router.replace(hash, this.lang, this.#barVersion(hash) ?? null);
     this.hash = hash;
     this.#applySource();
   }

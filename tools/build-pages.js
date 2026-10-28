@@ -7,9 +7,10 @@
   the output's depth), the style, the <main id="app-page"> shell, the back link at the
   top and the bottom (its script returns to the screen the reader left) and
   the link to the page in the other language right under the top back link.
-  The template owns these links because their depth differs between the two
-  outputs, so a fragment is content only and links an app route only as
-  %APP%#/<route>, which page() resolves to that output's own back link.
+  The template owns these links because their depth and language differ
+  between the two outputs, so a fragment is content only and links an app
+  route only as %APP%<route>, which page() resolves to the app root of the
+  page's language: ../ for a Russian page, ../../en/ for an English one.
 
   One more page is one PAGES entry below (its id, its two titles and its two
   descriptions), two fragments, and one footer link in Shell.svelte that
@@ -72,7 +73,8 @@ const TEXT = {
     site: 'Генератор лута Daggerheart',
     locale: 'ru_RU',
     back: 'Назад к генератору',
-    backHref: '../',
+    rootHref: '../',
+    appHref: '../',
     other: 'English',
     otherLang: 'en',
     otherHref: (id) => 'en/' + id + '.html'
@@ -81,7 +83,8 @@ const TEXT = {
     site: 'Daggerheart Loot Generator',
     locale: 'en_US',
     back: 'Back to the generator',
-    backHref: '../../',
+    rootHref: '../../',
+    appHref: '../../en/',
     other: 'Русский',
     otherLang: 'ru',
     otherHref: (id) => '../' + id + '.html'
@@ -96,10 +99,11 @@ const esc = (s) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-/* A fragment links an app route only through %APP%: the app root sits at
-   a different depth from each output, and only the template knows which. */
-function appLinks(body, backHref) {
-  return body.replaceAll('%APP%', backHref);
+/* A fragment links an app route only through %APP%: the app root of the
+   page's language sits at a different depth from each output, and only the
+   template knows which. */
+function appLinks(body, appHref) {
+  return body.replaceAll('%APP%', appHref);
 }
 
 /* Links inside a page are relative: unlike 404.html, a page here is always
@@ -108,7 +112,7 @@ function page({ id, lang, title, desc, body }) {
   const t = TEXT[lang];
   const other = TEXT[t.otherLang];
   const url = SITE + (lang === 'ru' ? 'pages/' : 'pages/en/') + id + '.html';
-  const backLink = '<a class="back" href="' + t.backHref + '" data-back>' + t.back + '</a>';
+  const backLink = '<a class="back" href="' + t.appHref + '" data-back>' + t.back + '</a>';
   return `<!doctype html>
 <html lang="${lang}">
 <head>
@@ -134,8 +138,8 @@ function page({ id, lang, title, desc, body }) {
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
 <!-- the app's manifest, so the browser installs the app from this page too;
      static, since a page is served over HTTP only - docs/specs/META.md section 9 -->
-<link rel="manifest" href="${t.backHref}manifest.webmanifest">
-<link rel="apple-touch-icon" href="${t.backHref}icons/apple-touch-icon.png">
+<link rel="manifest" href="${t.rootHref}manifest.webmanifest">
+<link rel="apple-touch-icon" href="${t.rootHref}icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="${esc(SHORT_NAME)}">
 <style>
   body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -156,21 +160,21 @@ function page({ id, lang, title, desc, body }) {
 <main id="app-page">
 ${backLink}
 <nav class="lang"><a href="${t.otherHref(id)}" lang="${t.otherLang}" hreflang="${t.otherLang}">${t.other}</a></nav>
-${appLinks(body, t.backHref)}${backLink}
+${appLinks(body, t.appHref)}${backLink}
 </main>
 <script>
-  /* A referrer carries no fragment; history.back() returns to the exact
-     hash route. The link's own href names the app root at either depth.
-     docs/specs/META.md section 9, "Static pages". */
+  /* Back to the screen the reader left, with its scroll, when they came from
+     the app: the same origin and not another static page. Its language is
+     the reader's stored choice, so the app root is not tested (an English
+     record is /i/en/<id>, outside /en/). docs/specs/META.md section 9,
+     "Static pages". */
   document.addEventListener('click', function (e) {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var a = e.target instanceof Element ? e.target.closest('a[data-back]') : null;
     if (!a || !document.referrer || history.length < 2) return;
     var app = new URL(a.getAttribute('href'), location.href);
     var from = new URL(document.referrer);
-    if (from.origin !== app.origin || from.pathname.indexOf(app.pathname) !== 0) return;
-    var rel = from.pathname.slice(app.pathname.length);
-    if (rel !== '' && rel !== 'index.html') return;
+    if (from.origin !== app.origin || from.pathname.indexOf('/pages/') === 0) return;
     e.preventDefault();
     history.back();
   });

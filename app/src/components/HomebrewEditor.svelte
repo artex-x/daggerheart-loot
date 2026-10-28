@@ -874,7 +874,7 @@
   <LoadState {t} failed={false} text={t.hbLoadFailed} onretry={() => void store.load()} />
 {:else if missing}
   <PageTitle title={t.notFound} sub={t.notFoundSub} />
-  <Button variant="primary" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
+  <Button variant="primary" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button>
 {:else}
   <PageTitle {title} {sub} />
   <div class="hbedit">
@@ -942,7 +942,7 @@
                 onclick={() => void run(ids.key, (c, a) => create(ids, c, a))}
                 >{t.hbSaveAsNew}</Button
               >
-              <Button size="sm" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
+              <Button size="sm" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button>
             {/snippet}
           </NoticeBox>
         {/if}
@@ -1366,7 +1366,8 @@
         <div class="buttons">
           <Button variant="primary" disabled={busy} onclick={() => void save()}>{t.save}</Button
           >
-          <Button variant="ghost" href={HOMEBREW_HASH} sameTab>{t.hbToMyItems}</Button>
+          <Button variant="ghost" href={app.href(HOMEBREW_HASH)} sameTab>{t.hbToMyItems}</Button
+          >
           {#if rowKey !== null && row}
             <Button variant="danger" onclick={() => void remove()}>{t.del}</Button>
           {/if}

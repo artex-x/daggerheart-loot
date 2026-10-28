@@ -178,7 +178,9 @@
       <!-- Every `#/print/...` address since 2026-10-08: nothing is read from it
            (docs/specs/ROUTES.md). -->
       <PageTitle title={app.t.printLinkRetired} sub={app.t.printLinkRetiredSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{app.t.toStart}</Button>
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{app.t.toStart}</Button
+      >
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
     {:else if app.route.kind === 'homebrew' && app.homebrew}
@@ -208,5 +210,7 @@
      (docs/specs/ROUTES.md). The address is kept. -->
 {#snippet notFound()}
   <PageTitle title={app.t.notFound} sub={app.t.notFoundSub} />
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{app.t.toStart}</Button>
+  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+    >{app.t.toStart}</Button
+  >
 {/snippet}

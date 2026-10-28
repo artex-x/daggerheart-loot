@@ -1,0 +1,24 @@
+# The app document at every route path the worker and the static i/ pages do not answer (docs/specs/CONTRACTS.md section 1).
+/en/i/* /i/en/:splat 301
+/roll/* / 200
+/tables / 200
+/search / 200
+/lists / 200
+/lists/* / 200
+/account / 200
+/homebrew / 200
+/homebrew/* / 200
+/print/* / 200
+/l/* / 200
+/i/hb_* / 200
+/i/en/hb_* /en/ 200
+/en/roll/* /en/ 200
+/en/tables /en/ 200
+/en/search /en/ 200
+/en/lists /en/ 200
+/en/lists/* /en/ 200
+/en/account /en/ 200
+/en/homebrew /en/ 200
+/en/homebrew/* /en/ 200
+/en/print/* /en/ 200
+/en/l/* /en/ 200

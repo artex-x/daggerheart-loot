@@ -4,7 +4,7 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Список второго ГМа - Генератор лута Daggerheart" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+RootWebArea "Список второго ГМа - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000201?as=gm2]
   dialog "Топор Тлеющих Углей" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -80,7 +80,7 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [url=index.html?as=gm2#/lists/00000000-0000-4000-8000-000000000201]
+RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000201?as=gm2]
   dialog "Ember Axe" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"

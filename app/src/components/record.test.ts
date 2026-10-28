@@ -372,7 +372,7 @@ describe('a record on its own page', () => {
     render(App, { env: at('ci1') });
     expect(screen.getByRole('link', { name: 'Зелье выносливости' })).toHaveAttribute(
       'href',
-      '#/i/cc1'
+      '/i/cc1'
     );
 
     cleanup();
@@ -380,7 +380,7 @@ describe('a record on its own page', () => {
     /* The reverse direction is derived, not stored - see buildIndex. */
     expect(screen.getByRole('link', { name: 'Спальный мешок' })).toHaveAttribute(
       'href',
-      '#/i/ci1'
+      '/i/ci1'
     );
   });
 
@@ -447,13 +447,13 @@ describe('a record on its own page', () => {
     render(App, { env: at('ci1') });
     expect(screen.getByRole('link', { name: /показать в таблице/ })).toHaveAttribute(
       'href',
-      '#/tables/core_item/ci1'
+      '/tables/core_item/ci1'
     );
   });
 
   it('shows the placeholder for a record with no art', () => {
     render(App, { env: at('ci2') });
-    expect(screen.getByRole('presentation')).toHaveAttribute('src', 'img/_none.webp');
+    expect(screen.getByRole('presentation')).toHaveAttribute('src', '/img/_none.webp');
   });
 
   it('falls back to the placeholder when the file fails to load', async () => {
@@ -461,11 +461,11 @@ describe('a record on its own page', () => {
        not shift, so the failure lands on the same placeholder. */
     const { container } = render(App, { env: at('ci1') });
     const img = container.querySelector('img');
-    expect(img).toHaveAttribute('src', 'img/ci1.webp');
+    expect(img).toHaveAttribute('src', '/img/ci1.webp');
 
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
   });
 
   it('offers no copy-image button for a record with no art at all', () => {
@@ -501,13 +501,13 @@ describe('a record on its own page', () => {
     const { container } = render(App, { env });
     container.querySelector('img')?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
 
-    env.router.navigate('#/i/cc1');
+    env.router.navigate('#/i/cc1', 'ru');
     await tick();
-    env.router.navigate('#/i/ci1');
+    env.router.navigate('#/i/ci1', 'ru');
     await tick();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
   });
 });
 
@@ -582,7 +582,7 @@ describe('a link that no longer resolves', () => {
     );
     expect(container.querySelector('.miss')).toBeNull();
     const link = screen.getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '#/roll/std');
+    expect(link).toHaveAttribute('href', '/roll/std');
     expect(link.className).toContain('btn');
     expect(link.className).toContain('primary');
     await expectNoA11yViolations(container);
@@ -1004,11 +1004,11 @@ describe('a craft chain that runs through the record', () => {
     expect(fromPath).not.toBe(intoPath);
     expect(within(into).getByRole('link', { name: 'Фроствирд (Возвышенный)' })).toHaveAttribute(
       'href',
-      '#/i/dve26'
+      '/i/dve26'
     );
     expect(within(from).getByRole('link', { name: 'Фроствирд (Дремлющий)' })).toHaveAttribute(
       'href',
-      '#/i/dve24'
+      '/i/dve24'
     );
     expect(screen.getByText('Уникальное')).toBeInTheDocument();
     expect(container.querySelector('.step')).toBeNull();
@@ -1035,7 +1035,7 @@ describe('a craft chain that runs through the record', () => {
       within(into)
         .getAllByRole('link')
         .map((a) => a.getAttribute('href'))
-    ).toEqual(['#/i/ci2', '#/i/cc1']);
+    ).toEqual(['/i/ci2', '/i/cc1']);
     expect(into).toHaveTextContent('Улучшается до Мел, Зелье выносливости');
     await expectNoA11yViolations(container);
   });
@@ -1100,7 +1100,7 @@ describe('the set line', () => {
     expect(own).toHaveAttribute('aria-current', 'true');
     expect(within(line).getByRole('link', { name: 'Второй клинок' })).toHaveAttribute(
       'href',
-      '#/i/s2'
+      '/i/s2'
     );
     /* Svelte's whitespace collapsing at a tag boundary can eat the space
        after the comma, so the test reads the whole line's text. */
@@ -1119,7 +1119,7 @@ describe('the set line', () => {
     expect(within(line).getByText('Второй клинок')).toHaveAttribute('aria-current', 'true');
     expect(within(line).getByRole('link', { name: 'Первый клинок' })).toHaveAttribute(
       'href',
-      '#/i/s1'
+      '/i/s1'
     );
   });
 
@@ -1200,11 +1200,11 @@ describe('an own homebrew item', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'показать в таблице' })).toHaveAttribute(
       'href',
-      '#/tables/homebrew/' + AXE
+      '/tables/homebrew/' + AXE
     );
     expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
       'href',
-      '#/homebrew/' + AXE
+      '/homebrew/' + AXE
     );
     expect(screen.getByRole('button', { name: 'Скопировать ссылку' })).toBeInTheDocument();
     /* The seeded axe carries the catalog picture ci1.webp. */
@@ -1242,7 +1242,7 @@ describe('an own homebrew item', () => {
       props: { ...props, artBroken: true, onartfail: failed }
     });
     expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
-      'img/_none.webp'
+      '/img/_none.webp'
     );
   });
 
@@ -1317,11 +1317,11 @@ describe('an own homebrew item', () => {
     const { container } = render(App, { env: own({ cloud }) });
     expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
       'href',
-      '#/homebrew/rules/hb_alderrulecardaaa'
+      '/homebrew/rules/hb_alderrulecardaaa'
     );
     await expectNoA11yViolations(container);
   });
@@ -1350,7 +1350,7 @@ describe('an own homebrew item', () => {
     const view = render(RecordModal, { app, index, it: ring, onclose: () => {} });
     expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     view.unmount();
     render(RecordModal, {
@@ -1364,17 +1364,19 @@ describe('an own homebrew item', () => {
   });
 
   it('sends its item address, and with no share sheet copies that address', async () => {
-    const ITEM_URL = 'https://example.test/#/h/00000000-0000-4000-8000-000000000511';
+    /* The item's path on the app's own origin, versioned by its card. */
+    const ITEM_URL =
+      /^https:\/\/example\.test\/h\/00000000-0000-4000-8000-000000000511\?v=[0-9a-z]+$/;
     const share = fakeShare();
     render(App, { env: own({ share }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(share.last.url).toBe(ITEM_URL);
+    expect(share.last.url).toMatch(ITEM_URL);
     expect(share.last.text).toContain('Топор Тлеющих Углей');
     cleanup();
     const clip = fakeClipboard();
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe(ITEM_URL);
+    expect(clip.last.text).toMatch(ITEM_URL);
   });
 
   it("hands out the preview link with the record's version from «Отправить» and the link button", async () => {
@@ -1468,7 +1470,7 @@ describe('an own homebrew item', () => {
     render(RecordModal, { app, index, it: axe, onclose: () => {} });
     expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
       'href',
-      '#/homebrew/' + AXE
+      '/homebrew/' + AXE
     );
     cleanup();
     const ci1 = index.byId.get('ci1');
@@ -1520,7 +1522,7 @@ describe('an own homebrew item', () => {
       within(plain)
         .getAllByRole('link')
         .map((a) => a.getAttribute('href'))
-    ).toEqual(['#/homebrew/rules/' + bare]);
+    ).toEqual(['/homebrew/rules/' + bare]);
     await expectNoA11yViolations(container);
   });
 });
@@ -1718,11 +1720,11 @@ describe("the author's own relations on a catalog card", () => {
     const { container } = draw(true);
     expect(screen.getByRole('link', { name: 'Свой комплект' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/hb_ownsetaaaaaaaaaa'
+      '/homebrew/sets/hb_ownsetaaaaaaaaaa'
     );
     const manageLinks = screen.getAllByRole('link', { name: 'Открыть в «Мои предметы»' });
     expect(manageLinks.map((a) => a.getAttribute('href'))).toEqual([
-      '#/homebrew/rules/hb_ownrulecardaaaaa'
+      '/homebrew/rules/hb_ownrulecardaaaaa'
     ]);
     await expectNoA11yViolations(container);
     cleanup();
@@ -1744,7 +1746,7 @@ describe("the author's own relations on a catalog card", () => {
       }
     });
     expect(screen.queryByRole('link', { name: 'Открыть в «Мои предметы»' })).toBeNull();
-    expect(document.querySelector('a[href^="#/homebrew/sets/"]')).toBeNull();
+    expect(document.querySelector('a[href^="/homebrew/sets/"]')).toBeNull();
   });
 
   it('draws no mark and no fold for a reader with no own items', async () => {
@@ -1810,14 +1812,14 @@ describe("the account's own card on a book item", () => {
     });
     expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     const line = setLine(container);
     expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe('Комплект Палаш, Длинный Меч');
     expect(screen.getByText('Клеймо Ольхи')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
       'href',
-      '#/homebrew/rules/' + RULE
+      '/homebrew/rules/' + RULE
     );
     await expectNoA11yViolations(container);
     cleanup();
@@ -1925,7 +1927,7 @@ describe("the account's own card on a book item", () => {
     const more = within(line).getByRole('button', { name: 'и ещё 96' });
     expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     await userEvent.click(more);
     expect(line.querySelectorAll('a')).toHaveLength(99);

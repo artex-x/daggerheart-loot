@@ -73,12 +73,17 @@
       <!-- A link to a record that is no longer in the data: an old share, or an id
            that was renumbered. Saying which is kinder than an empty page. -->
       <PageTitle title={t.notFound} sub={t.notFoundSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{t.toStart}</Button
+      >
     {:else}
       {#snippet sub()}
         {where}
         {#if table}
-          <TableLink href={tablesHash(table, { anchor: it.id })} label={t.showInTable} />
+          <TableLink
+            href={app.href(tablesHash(table, { anchor: it.id }))}
+            label={t.showInTable}
+          />
         {/if}
       {/snippet}
       <PageTitle title={nameOf(it, app.lang)} {sub} />

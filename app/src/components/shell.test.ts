@@ -141,7 +141,7 @@ describe('the footer nav', () => {
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const link = screen.getByRole('link', { name: INSTALL });
     expect(nav).toContainElement(link);
-    expect(link).toHaveAttribute('href', 'pages/install.html');
+    expect(link).toHaveAttribute('href', '/pages/install.html');
   });
 
   it('names the link in English and links the English page', async () => {
@@ -149,7 +149,7 @@ describe('the footer nav', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'Install as an app' })).toHaveAttribute(
       'href',
-      'pages/en/install.html'
+      '/pages/en/install.html'
     );
   });
 
@@ -157,7 +157,7 @@ describe('the footer nav', () => {
     render(App, { env: at('#/roll/std') });
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['pages/install.html', 'pages/privacy.html', 'pages/terms.html']);
+    expect(hrefs).toEqual(['/pages/install.html', '/pages/privacy.html', '/pages/terms.html']);
     expect(screen.getByRole('link', { name: 'Конфиденциальность' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Условия использования' })).toBeInTheDocument();
   });
@@ -167,11 +167,11 @@ describe('the footer nav', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
       'href',
-      'pages/en/privacy.html'
+      '/pages/en/privacy.html'
     );
     expect(screen.getByRole('link', { name: 'Terms of use' })).toHaveAttribute(
       'href',
-      'pages/en/terms.html'
+      '/pages/en/terms.html'
     );
   });
 
@@ -209,7 +209,7 @@ describe('the footer nav', () => {
     expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['pages/privacy.html', 'pages/terms.html']);
+    expect(hrefs).toEqual(['/pages/privacy.html', '/pages/terms.html']);
   });
 });
 
@@ -230,7 +230,7 @@ describe('the language', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'ЛутDaggerheart' })).toHaveAttribute(
       'href',
-      '#/roll/std'
+      '/en/roll/std'
     );
   });
 
@@ -617,7 +617,7 @@ describe('the toast component, directly', () => {
       action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
     });
     const link = await screen.findByRole('link', { name: 'Изменить' });
-    expect(link).toHaveAttribute('href', '#/homebrew/hb_flask');
+    expect(link).toHaveAttribute('href', '/homebrew/hb_flask');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener');
     expect(link).toHaveClass('toast-act');
@@ -752,7 +752,7 @@ describe('the account control', () => {
   it('is not drawn in a build with no sign-in configured', () => {
     render(App, { env: at('#/roll/std') });
     expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
-    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('a[href="/account"]')).toBeNull();
   });
 
   it('draws the not-found page on #/account there, and keeps the address', () => {
@@ -766,7 +766,7 @@ describe('the account control', () => {
   it('says «Войти» signed out and leads to #/account', async () => {
     const { container } = render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
     const link = await screen.findByRole('link', { name: 'Войти' });
-    expect(link).toHaveAttribute('href', '#/account');
+    expect(link).toHaveAttribute('href', '/account');
     expect(link).not.toHaveAttribute('aria-current');
     await expectNoA11yViolations(container);
   });
@@ -781,7 +781,7 @@ describe('the account control', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(button).not.toHaveAttribute('aria-controls');
     expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
-    expect(document.querySelector('header a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('header a[href="/account"]')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -807,7 +807,7 @@ describe('the account control', () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' })
     );
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    env.router.navigate('#/search');
+    env.router.navigate('#/search', 'ru');
     await tick();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
@@ -824,7 +824,7 @@ describe('the account control', () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.auth.session = () => new Promise(() => undefined);
     render(App, { env: at('#/roll/std', { cloud }) });
-    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('a[href="/account"]')).toBeNull();
     expect(document.querySelector('[aria-haspopup]')).toBeNull();
   });
 

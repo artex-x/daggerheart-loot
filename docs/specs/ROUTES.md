@@ -1,12 +1,41 @@
-# Routes and hash grammar
+# Routes and address grammar
 
-Everything after `#` is the route. The app never asks a server for it, so the
-grammar below is the whole router. Golden fixtures for these shapes are in
-`docs/fixtures/urls/routes.json`; `app/src/lib/hash.test.ts` (the parser)
-and `tests/app/contracts.js` (the built app) replay them.
+The address is a path: `/tables/eq_weapon` on the site's host. The grammar
+below names each route by its route key, the `#/...` string the app parses,
+builds and stores; "Path form" says how a key and a path convert. The host
+answers every route path with the app, so the grammar below is the whole
+router. Golden fixtures for these shapes are in
+`docs/fixtures/urls/routes.json` and `docs/fixtures/urls/paths.json`;
+`app/src/lib/hash.test.ts` and `app/src/lib/address.test.ts` (the parser and
+the conversion) and `tests/app/contracts.js` (the built app) replay them.
 
 The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
-`TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it.
+`TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it, and `pathOf()`
+and `addressOf()` in `app/src/lib/address.ts`.
+
+## Path form
+
+A route key `#/<rest>` is the path `/<rest>` in Russian and `/en/<rest>` in
+English, for example `/tables/eq_weapon` and `/en/tables/eq_weapon`, `/lists`,
+`/account` and `/homebrew`. A record keeps the English form of its card,
+`/i/en/<id>`; `/en/i/<id>` is not written and the host answers it with a 301
+to `/i/en/<id>`. The bare key is `/` or `/en/`; `/index.html` and
+`/en/index.html` read as the bare key. One trailing `/` is dropped where the
+path without it parses and the path with it does not (`/roll/std/` reads as
+`/roll/std`; `/s/` keeps its slash and its not-found page).
+
+The address bar and every in-app link show the path form, in the language on
+screen; the app's router writes it with `pushState` for a step and
+`replaceState` for a filter pick (`app/src/ports/router.ts`). A stored
+language wins over the address's (`I18N.md`). A record, an item (`/h/`) and a
+share link (`/s/`) carry the card version `?v=<v>` in the bar
+(`CONTRACTS.md` section 5); a navigation drops it.
+
+The old form `#/<rest>` after any path keeps working: a fragment that starts
+with `#/` wins over the path, its language comes from an English root path
+(`/en/#/...`, else none), and the app writes the path form in the same history
+entry at boot, and on a typed or pasted fragment (owner, 2026-10-28). A
+fragment that does not start with `#/` (`#main`) is not an address.
 
 ## Sections
 
@@ -272,16 +301,16 @@ so an agent cannot build one (`FEATURES.md`, "Homebrew").
 An address that matches nothing readable - at boot or on navigation - is
 replaced, via `replaceState`, so it does not accumulate in history, with the
 pinned starting section, or `#/roll/std` if none is pinned. An address that
-resolved to something is left alone, so a link someone shared still reads back
-as they wrote it.
+resolved to something keeps its route key, so a link someone shared still
+reads back as they wrote it, in its path form.
 
-A bare address (`''`, `#` or `#/`) is a third case, and boot and navigation
-answer it differently:
+A bare address (`/`, `/en/`, or an old `''`, `#` or `#/`) is a third case,
+and boot and navigation answer it differently:
 
-- At boot, it draws the pinned starting section and leaves the address bar as
-  it found it - unless a section other than the default is pinned, in which
-  case it navigates there instead (a real history entry, so Back leaves the
-  bare address behind rather than returning to it).
+- At boot, it draws the pinned starting section and writes the bare path of
+  the language on screen (`/` or `/en/`) - unless a section other than the
+  default is pinned, in which case it navigates there instead (a real history
+  entry, so Back leaves the bare address behind rather than returning to it).
 - Any subsequent navigation to a bare address - away and back, or a typed
   `#/` - draws `#/roll/std` - the default, never the pinned section - and
   writes nothing to the bar.

@@ -4,21 +4,21 @@
 # as: gm2
 
 ## ru :: tree
-RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
-  link "К содержимому" [url=index.html?as=gm2#main]
+RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=/h/00000000-0000-4000-8000-000000000662?as=gm2&v=<v>]
+  link "К содержимому" [url=/h/00000000-0000-4000-8000-000000000662?as=gm2&v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm2@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm2#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm2#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm2#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm2#/tables]
-      link "Поиск" [url=index.html?as=gm2#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Скатка следопыта" [level=1]
     StaticText "Предмет другого игрока · Хоумбрю"
@@ -27,10 +27,10 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
     ... StaticText x11 of 15 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    link "Скатка путника (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
-    link "Скатка стража (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000663]
-    link "Подушка из мха (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000664]
-    link "Походный плед (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000665]
+    link "Скатка путника (HB)" [url=/h/00000000-0000-4000-8000-000000000661]
+    link "Скатка стража (HB)" [url=/h/00000000-0000-4000-8000-000000000663]
+    link "Подушка из мха (HB)" [url=/h/00000000-0000-4000-8000-000000000664]
+    link "Походный плед (HB)" [url=/h/00000000-0000-4000-8000-000000000665]
     StaticText " Два предмета комплекта: вы просыпаетесь отдохнувшим даже на гол..." [namelen=73 namehash=d14a4e49]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -42,13 +42,13 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
     status ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
   status ""
     StaticText "Предмет «Скатка следопыта» сохранён в «Мои предметы»"
-    link "Изменить" [url=index.html?as=gm2#/homebrew/hb_newaaaaaaaaaaaaa]
+    link "Изменить" [url=/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## ru :: controls
 EN
@@ -81,21 +81,21 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000662]
-  link "Skip to content" [url=index.html?as=gm2#main]
+RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-000000000662?as=gm2&v=<v>]
+  link "Skip to content" [url=/en/h/00000000-0000-4000-8000-000000000662?as=gm2&v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm2#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm2@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm2#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm2#/roll/alt]
-      link "Supplements" [url=index.html?as=gm2#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm2#/tables]
-      link "Search" [url=index.html?as=gm2#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Ranger's Roll" [level=1]
     StaticText "Another player's item · Homebrew"
@@ -104,10 +104,10 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=index.html?as=gm2#
     ... StaticText x11 of 15 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    link "Traveller's Roll (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000661]
-    link "Sentry's Roll (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000663]
-    link "Camp Blanket (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000665]
-    link "Moss Pillow (HB)" [url=index.html?as=gm2#/h/00000000-0000-4000-8000-000000000664]
+    link "Traveller's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000661]
+    link "Sentry's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000663]
+    link "Camp Blanket (HB)" [url=/en/h/00000000-0000-4000-8000-000000000665]
+    link "Moss Pillow (HB)" [url=/en/h/00000000-0000-4000-8000-000000000664]
     StaticText " Two pieces of the set: you wake rested even on bare ground."
     button "Share"
     button "Copy image" [description=Copy image]
@@ -119,13 +119,13 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=index.html?as=gm2#
     status ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
   status ""
     StaticText "Item "Ranger's Roll" saved to My items"
-    link "Edit" [url=index.html?as=gm2#/homebrew/hb_newaaaaaaaaaaaaa]
+    link "Edit" [url=/en/homebrew/hb_newaaaaaaaaaaaaa]
 
 ## en :: controls
 Account: gm2@example.test

@@ -7,18 +7,20 @@
    * Real links, not buttons: middle-click, copy-link and open-in-new-tab all
    * work for free, and the address is the state. The separator before Tables
    * is where rolling ends and browsing begins. */
+  import { pathOf } from '../lib/address.js';
   import { sectionHash } from '../lib/hash.js';
   import { tabOf } from '../lib/nav.js';
   import type { Dict } from '../lib/dict.js';
-  import type { Section } from '../lib/types.js';
+  import type { Lang, Section } from '../lib/types.js';
 
   interface Props {
     t: Dict;
     current: Section | null;
     label: string;
+    lang: Lang;
   }
 
-  const { t, current, label }: Props = $props();
+  const { t, current, label, lang }: Props = $props();
 
   const TABS: [Section, keyof Dict][] = [
     ['roll/std', 'std'],
@@ -55,7 +57,7 @@
 <nav class="tabs" aria-label={label} bind:this={nav}>
   {#each TABS as [section, key] (section)}
     <a
-      href={sectionHash(section)}
+      href={pathOf(sectionHash(section), lang)}
       class:on={section === lit}
       class:sep={section === 'tables'}
       aria-current={section === lit ? 'page' : undefined}>{t[key]}</a

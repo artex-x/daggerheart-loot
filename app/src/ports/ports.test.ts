@@ -9,7 +9,7 @@ import { browserDialog, fakeDialog } from './dialog.js';
 import { edgeSpeed, nativeDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
 import { browserPage, fakePage } from './page.js';
-import { hashRouter, memoryRouter } from './router.js';
+import { memoryRouter, pathRouter } from './router.js';
 import { browserShare } from './share.js';
 import { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 import { browserData, fakeData, noData } from './data.js';
@@ -206,20 +206,25 @@ describe('the address', () => {
     expect(r.hash()).toBe('#/tables/f_kind-item');
   });
 
-  it('falls back to assigning the hash where replaceState is missing', () => {
-    const win = {
-      location: {
-        hash: '#/a',
-        pathname: '/x.html',
-        search: '',
-        href: 'https://e.test/x.html#/a'
-      },
-      history: { length: 1 },
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined
-    } satisfies NonNullable<Parameters<typeof hashRouter>[0]>;
-    hashRouter(win).replace('#/b');
-    expect(win.location.hash).toBe('#/b');
+  it('keeps the language and the v of each entry, and reads a link click', () => {
+    const r = memoryRouter('#/i/ci1', 'en');
+    expect(r.lang()).toBe('en');
+    r.replace('#/i/ci1', undefined, 'k3');
+    expect(r.bar()).toBe('/i/en/ci1?v=k3');
+    r.relang('ru');
+    expect(r.bar()).toBe('/i/ci1?v=k3');
+    r.replace('#/i/ci1', 'ru', null);
+    expect(r.bar()).toBe('/i/ci1');
+    r.navigate('#/i/ci1');
+    expect(r.stack, 'the address already showing is no step').toHaveLength(1);
+
+    expect(r.click('/lists'), 'nobody listens yet').toBe(false);
+    const seen: string[] = [];
+    const off = r.onLink((h) => seen.push(h));
+    expect(r.click('/en/lists')).toBe(true);
+    expect(r.click('/pages/install.html')).toBe(false);
+    off();
+    expect(seen).toEqual(['#/lists']);
   });
 });
 
@@ -889,28 +894,38 @@ describe('the whole outside world', () => {
 });
 
 describe('the address bar', () => {
-  /* `hashRouter` takes its window rather than reaching for the global, which is
-     the whole reason it can be checked here. It went untested anyway until the
-     per-file coverage bar pointed at it. */
+  /* `pathRouter` takes its window rather than reaching for the global, which is
+     the whole reason it can be checked here. */
   interface FakeHistory {
     length: number;
+    pushState?: (s: unknown, t: string, u: string) => void;
     replaceState?: (s: unknown, t: string, u: string) => void;
     back?: () => void;
   }
 
-  /** A window with only the parts hashRouter touches, and either of the two
-      optional pieces removable. */
-  function fakeWin(missing: { replaceState?: true; back?: true } = {}) {
+  /** A window with only the parts pathRouter touches; `calls` records each history
+      write as `push <url>` or `replace <url>`. */
+  function fakeWin(at = '/roll/std', missing: { replaceState?: true; back?: true } = {}) {
     const calls: string[] = [];
     const listeners = new Map<string, Set<() => void>>();
     const history: FakeHistory = { length: 1 };
+    const location = {
+      hash: '',
+      pathname: '/',
+      search: '',
+      href: '',
+      origin: 'https://e.test'
+    };
+    const go = (url: string): void => {
+      const u = new URL(url, location.origin + location.pathname);
+      location.pathname = u.pathname;
+      location.search = u.search;
+      location.hash = u.hash;
+      location.href = u.href;
+    };
+    go(at);
     const win = {
-      location: {
-        hash: '#/roll/std',
-        pathname: '/index.html',
-        search: '',
-        href: 'https://example.test/index.html#/roll/std'
-      },
+      location,
       history,
       addEventListener: (t: string, fn: () => void) => {
         const set = listeners.get(t) ?? new Set<() => void>();
@@ -919,12 +934,17 @@ describe('the address bar', () => {
       },
       removeEventListener: (t: string, fn: () => void) => {
         listeners.get(t)?.delete(fn);
-      }
+      },
+      document
+    };
+    history.pushState = (_s, _t, u) => {
+      calls.push('push ' + u);
+      go(u);
     };
     if (!missing.replaceState) {
       history.replaceState = (_s, _t, u) => {
-        calls.push(u);
-        win.location.hash = u.slice(u.indexOf('#'));
+        calls.push('replace ' + u);
+        go(u);
       };
     }
     if (!missing.back) {
@@ -935,77 +955,225 @@ describe('the address bar', () => {
     const fire = (t: string): void => {
       for (const fn of listeners.get(t) ?? []) fn();
     };
-    return { win, history, calls, fire, listeners };
+    return { win, history, calls, fire, listeners, go };
   }
 
-  it('reads and writes the hash', () => {
-    const { win } = fakeWin();
-    const r = hashRouter(win);
-    expect(r.hash()).toBe('#/roll/std');
-    r.navigate('#/lists');
-    expect(win.location.hash).toBe('#/lists');
+  it('reads the route and the language from the path', () => {
+    expect(pathRouter(fakeWin('/roll/std').win).hash()).toBe('#/roll/std');
+    expect(pathRouter(fakeWin('/en/tables/eq_weapon').win).lang()).toBe('en');
+    expect(pathRouter(fakeWin('/i/en/ci1').win).hash()).toBe('#/i/ci1');
+    expect(pathRouter(fakeWin('/roll/std/').win).hash(), 'a trailing slash').toBe('#/roll/std');
   });
 
-  it('replaces in place, keeping the path and the query', () => {
-    /* The filter segment is rewritten on every click; pushing each one would
-       bury the page the visitor arrived from. */
-    const { win, calls } = fakeWin();
-    win.location.search = '?x=1';
-    hashRouter(win).replace('#/tables/eq_weapon/f_tier-1');
-    expect(calls).toEqual(['/index.html?x=1#/tables/eq_weapon/f_tier-1']);
+  it('lets an old fragment win, and ignores one that is not an address', () => {
+    expect(pathRouter(fakeWin('/#/i/ci1').win).hash()).toBe('#/i/ci1');
+    expect(pathRouter(fakeWin('/en/#/lists').win).lang()).toBe('en');
+    expect(pathRouter(fakeWin('/roll/std#main').win).hash()).toBe('#/roll/std');
   });
 
-  it('falls back to assigning the hash where replaceState is missing', () => {
-    /* An older or stripped-down browser. */
-    const { win, calls } = fakeWin({ replaceState: true });
-    hashRouter(win).replace('#/lists');
-    expect(win.location.hash).toBe('#/lists');
+  it('pushes the path form and tells the listeners at once', () => {
+    const { win, calls } = fakeWin('/roll/std?as=gm1');
+    const r = pathRouter(win);
+    const seen: string[] = [];
+    r.onChange((h) => seen.push(h));
+    r.navigate('#/lists', 'en');
+    expect(calls).toEqual(['push /en/lists?as=gm1']);
+    expect(seen).toEqual(['#/lists']);
+  });
+
+  it('makes one history call for a step with a v, and drops the old v', () => {
+    const { win, calls } = fakeWin('/i/cc1?v=old');
+    pathRouter(win).navigate('#/i/ci1', 'ru', 'k3');
+    expect(calls).toEqual(['push /i/ci1?v=k3']);
+    pathRouter(win).navigate('#/lists', 'ru');
+    expect(calls[1]).toBe('push /lists');
+  });
+
+  it('makes no step and tells nobody for the address already showing', () => {
+    const { win, calls } = fakeWin('/roll/std?v=1');
+    const r = pathRouter(win);
+    const seen: string[] = [];
+    r.onChange((h) => seen.push(h));
+    r.navigate('#/roll/std', 'ru');
     expect(calls).toEqual([]);
+    expect(seen).toEqual([]);
   });
 
-  it('falls back to assigning the hash when replaceState throws', () => {
-    /* WebKit throws past 100 replaceState calls in a 30s window - the
-       filter segment's rewrites can reach it. */
+  it('still tells the listeners when pushState throws', () => {
+    /* WebKit throws past 100 history calls in a 30 s window. */
+    const { win, history } = fakeWin();
+    history.pushState = () => {
+      throw new DOMException('rate limited', 'SecurityError');
+    };
+    const r = pathRouter(win);
+    const seen: string[] = [];
+    r.onChange((h) => seen.push(h));
+    r.navigate('#/lists', 'ru');
+    expect(seen).toEqual(['#/lists']);
+    expect(win.location.pathname).toBe('/roll/std');
+  });
+
+  it('replaces in place, keeping, setting and dropping v, and the other parameters', () => {
+    const { win, calls } = fakeWin('/i/ci1?as=gm1&v=k3');
+    const r = pathRouter(win);
+    r.replace('#/i/ci1', 'ru');
+    r.replace('#/i/ci1', 'ru', 'z9');
+    r.replace('#/tables/eq_weapon/f_tier-1', 'ru', null);
+    expect(calls).toEqual([
+      'replace /i/ci1?as=gm1&v=k3',
+      'replace /i/ci1?as=gm1&v=z9',
+      'replace /tables/eq_weapon/f_tier-1?as=gm1'
+    ]);
+  });
+
+  it('drops an old fragment on the first replace', () => {
+    const { win, calls } = fakeWin('/#/s/player-token-1');
+    const r = pathRouter(win);
+    r.replace(r.hash(), 'ru');
+    expect(calls).toEqual(['replace /s/player-token-1']);
+    expect(win.location.hash).toBe('');
+  });
+
+  it('keeps the address where replaceState is missing or throws', () => {
+    const bare = fakeWin('/roll/std', { replaceState: true });
+    pathRouter(bare.win).replace('#/lists', 'ru');
+    expect(bare.win.location.pathname).toBe('/roll/std');
+
     const { win, history } = fakeWin();
     history.replaceState = () => {
       throw new DOMException('rate limited', 'SecurityError');
     };
-    hashRouter(win).replace('#/lists');
-    expect(win.location.hash).toBe('#/lists');
+    expect(() => {
+      pathRouter(win).replace('#/lists', 'ru');
+    }).not.toThrow();
+    expect(win.location.pathname).toBe('/roll/std');
   });
 
-  it('reports the new address on a hashchange, and stops when told', () => {
-    const { win, fire, listeners } = fakeWin();
-    const seen: string[] = [];
-    const off = hashRouter(win).onChange((h) => seen.push(h));
+  it('rewrites the address in place in another language, v kept', () => {
+    const { win, calls } = fakeWin('/i/ci1?v=k3');
+    pathRouter(win).relang('en');
+    expect(calls).toEqual(['replace /i/en/ci1?v=k3']);
+  });
 
-    win.location.hash = '#/lists';
-    fire('hashchange');
+  it('reports Back and a typed old address, once per step, and stops when told', () => {
+    const { win, fire, listeners, go } = fakeWin();
+    const seen: string[] = [];
+    const off = pathRouter(win).onChange((h) => seen.push(h));
+
+    go('/lists');
+    fire('popstate');
     expect(seen).toEqual(['#/lists']);
 
-    off();
-    win.location.hash = '#/search';
+    go('/lists#/i/ci1');
+    fire('popstate');
     fire('hashchange');
-    expect(seen, 'a removed listener must not keep reporting').toEqual(['#/lists']);
+    expect(seen, 'the hashchange after the popstate of one step').toEqual([
+      '#/lists',
+      '#/i/ci1'
+    ]);
+
+    go('/i/ci1#main');
+    fire('hashchange');
+    expect(seen, 'a fragment that is not an address').toHaveLength(2);
+
+    off();
+    go('/search');
+    fire('popstate');
+    expect(seen, 'a removed listener must not keep reporting').toHaveLength(2);
+    expect(listeners.get('popstate')?.size).toBe(0);
     expect(listeners.get('hashchange')?.size).toBe(0);
+  });
+
+  describe('a link click', () => {
+    function click(
+      r: ReturnType<typeof pathRouter>,
+      attrs: Readonly<Record<string, string>>,
+      init: MouseEventInit = {},
+      prevent = false
+    ): { seen: string[]; prevented: boolean } {
+      const seen: string[] = [];
+      const off = r.onLink((h) => seen.push(h));
+      const a = document.createElement('a');
+      for (const [k, v] of Object.entries(attrs)) a.setAttribute(k, v);
+      const span = document.createElement('span');
+      a.append(span);
+      document.body.append(a);
+      if (prevent) {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+        });
+      }
+      const e = new MouseEvent('click', { bubbles: true, cancelable: true, ...init });
+      span.dispatchEvent(e);
+      off();
+      a.remove();
+      return { seen, prevented: e.defaultPrevented };
+    }
+    /* jsdom resolves a link against its own document URL, so the router is told
+       that origin and path. */
+    const here = (): ReturnType<typeof pathRouter> => {
+      const { win } = fakeWin();
+      win.location.origin = window.location.origin;
+      win.location.pathname = window.location.pathname;
+      return pathRouter(win);
+    };
+
+    it('takes a plain click on a route link', () => {
+      expect(click(here(), { href: '/en/tables/eq_weapon' })).toEqual({
+        seen: ['#/tables/eq_weapon'],
+        prevented: true
+      });
+      expect(click(here(), { href: '/' }).seen).toEqual(['#/']);
+    });
+
+    it('passes everything else', () => {
+      const r = here();
+      const cases: [string, Record<string, string>, MouseEventInit, boolean][] = [
+        ['already prevented, the skip link', { href: '/roll/std' }, {}, true],
+        ['a fragment-only link', { href: '#main' }, {}, false],
+        ['a modifier', { href: '/lists' }, { ctrlKey: true }, false],
+        ['a middle click', { href: '/lists' }, { button: 1 }, false],
+        ['a target', { href: '/lists', target: '_blank' }, {}, false],
+        ['a download', { href: '/lists', download: '' }, {}, false],
+        ['a static page', { href: '/pages/install.html' }, {}, false],
+        ['another origin', { href: 'https://other.test/lists' }, {}, false]
+      ];
+      for (const [why, attrs, init, prevent] of cases) {
+        const got = click(r, attrs, init, prevent);
+        expect(got.seen, why).toEqual([]);
+        if (!prevent) expect(got.prevented, why).toBe(false);
+      }
+    });
+
+    it('listens to nothing without a document', () => {
+      const { win } = fakeWin();
+      const off = pathRouter({ ...win, document: undefined }).onLink(() => undefined);
+      expect(() => {
+        off();
+      }).not.toThrow();
+    });
   });
 
   it('knows whether there is anywhere to go back to', () => {
     const { win, history } = fakeWin();
-    expect(hashRouter(win).canGoBack()).toBe(false);
+    expect(pathRouter(win).canGoBack()).toBe(false);
     history.length = 3;
-    expect(hashRouter(win).canGoBack()).toBe(true);
+    expect(pathRouter(win).canGoBack()).toBe(true);
   });
 
   it('goes back, and does not throw where it cannot', () => {
     const { win, calls } = fakeWin();
-    hashRouter(win).back();
+    pathRouter(win).back();
     expect(calls).toEqual(['back']);
 
-    const bare = fakeWin({ back: true });
+    const bare = fakeWin('/roll/std', { back: true });
     expect(() => {
-      hashRouter(bare.win).back();
+      pathRouter(bare.win).back();
     }).not.toThrow();
+  });
+
+  it('names the app root as the base, whatever the page', () => {
+    expect(pathRouter(fakeWin('/en/i/ci1?v=k3#x').win).base()).toBe('https://e.test/');
   });
 });
 
@@ -1124,27 +1292,6 @@ describe("the record links' card versions", () => {
   });
 });
 
-describe('where the page is', () => {
-  const win = (href: string) => ({
-    location: { hash: '', pathname: '/', search: '', href },
-    history: { length: 1 },
-    addEventListener: () => undefined,
-    removeEventListener: () => undefined
-  });
-
-  it('drops the hash and the file name from the base', () => {
-    /* A server serves the directory, so naming index.html is noise - and the
-       hash of the page somebody happened to be on has no business in a link. */
-    const r = hashRouter(win('https://e.test/loot/index.html#/i/w1'));
-    expect(r.base()).toBe('https://e.test/loot/');
-  });
-
-  it('keeps a file name that is not index.html', () => {
-    const r = hashRouter(win('https://e.test/loot/other.html#/x'));
-    expect(r.base()).toBe('https://e.test/loot/other.html');
-  });
-});
-
 describe('the installable app', () => {
   const container = (register: (url: string) => Promise<unknown>) => ({
     register: vi.fn(register)
@@ -1154,10 +1301,10 @@ describe('the installable app', () => {
     expect(await registerWith(undefined)).toBe('unsupported');
   });
 
-  it('registers the relative worker', async () => {
+  it('registers the root worker with the scope /', async () => {
     const sw = container(() => Promise.resolve({}));
     expect(await registerWith(sw)).toBe('registered');
-    expect(sw.register).toHaveBeenCalledWith('./sw.js');
+    expect(sw.register).toHaveBeenCalledWith('/sw.js', { scope: '/' });
   });
 
   it('answers failed when the browser refuses the worker', async () => {

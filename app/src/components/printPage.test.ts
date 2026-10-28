@@ -373,8 +373,8 @@ describe('the loot card', () => {
     expect(card?.querySelector('.pc-tags')?.textContent).toBe('Предмет');
     const back = card?.querySelector('.pc-back');
     const img = card?.querySelector('.pc-img');
-    expect(back).toHaveAttribute('src', 'img/ci1.webp');
-    expect(img).toHaveAttribute('src', 'img/ci1.webp');
+    expect(back).toHaveAttribute('src', '/img/ci1.webp');
+    expect(img).toHaveAttribute('src', '/img/ci1.webp');
     expect(back).toHaveAttribute('aria-hidden', 'true');
     expect(card?.querySelector('.pc-tier')).toBeNull();
     expect(card?.querySelector('.pc-strip')).toBeNull();
@@ -390,7 +390,7 @@ describe('the loot card', () => {
 describe('no art', () => {
   /* The site's own picture for no picture, in place of Figma's outline (owner, 2026-10-15;
      FEATURES.md, "Print"). */
-  const NONE = 'img/_none.webp';
+  const NONE = '/img/_none.webp';
 
   it('draws the no-picture image for a record with no image, on both sheets', async () => {
     render(App, { env: await atSet('ni1-ci1') });
@@ -401,7 +401,7 @@ describe('no art', () => {
     expect(bare()?.querySelector('svg')).toBeNull();
     expect(document.querySelector('.pcard[data-pid="ci1"] .pc-img')).toHaveAttribute(
       'src',
-      'img/ci1.webp'
+      '/img/ci1.webp'
     );
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     await waitFor(() => {
@@ -421,7 +421,7 @@ describe('no art', () => {
     render(App, { env: await atSet('ci1') });
     await opened();
     const card = document.querySelector('.pcard[data-pid="ci1"]');
-    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', 'img/ci1.webp');
+    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', '/img/ci1.webp');
     /* Both `<img>`s carry their own `onerror` - either one reports the same
        id, so whichever the browser happens to fail first still catches it. */
     card?.querySelector('.pc-back')?.dispatchEvent(new Event('error'));
@@ -445,7 +445,7 @@ describe('the weapon card', () => {
     expect(tags?.[1]).toHaveClass('out');
     expect(tags?.[1]?.textContent).toBe('Физическое');
     expect(card?.querySelector('.pc-burden small')?.textContent).toBe('Хват');
-    expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-1.svg');
+    expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', '/card/burden-1.svg');
     const die = card?.querySelector('.pc-die.own[data-die="d8"]');
     expect(vec(die?.querySelector('svg'))).toBe('die-d8:colour');
     expect(die?.querySelector('img')).toBeNull();
@@ -472,7 +472,7 @@ describe('the versatile magic weapon', () => {
     expect(strips?.[1]?.querySelector('.pc-cells')?.textContent).toContain('Далеко');
     expect(card?.querySelectorAll('.pc-die.mag')).toHaveLength(2);
     expect(vec(card?.querySelector('.pc-ribbon'))).toBe('ribbon-mag:colour');
-    expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', 'card/burden-2.svg');
+    expect(card?.querySelector('.pc-burden img')).toHaveAttribute('src', '/card/burden-2.svg');
     expect(card?.querySelector('.pc-tag.out')?.textContent).toBe('Магическое');
   });
 });
@@ -559,7 +559,7 @@ describe('the armour card', () => {
     const shield = card?.querySelector('.pc-shield');
     expect(shield?.querySelector('b')?.textContent).toBe('3');
     expect(shield?.querySelector('i')?.textContent).toBe('Броня');
-    expect(shield?.querySelector('img')).toHaveAttribute('src', 'card/shield.svg');
+    expect(shield?.querySelector('img')).toHaveAttribute('src', '/card/shield.svg');
     expect(card?.querySelector('.pc-burden')).toBeNull();
     expect(card?.querySelector('.pc-die')).toBeNull();
 
@@ -570,7 +570,7 @@ describe('the armour card', () => {
       'Тяжёлый урон'
     ]);
     const dots = Array.from(labs ?? []).map((l) => l.querySelector('img')?.getAttribute('src'));
-    expect(dots).toEqual(['card/dots1.svg', 'card/dots2.svg', 'card/dots3.svg']);
+    expect(dots).toEqual(['/card/dots1.svg', '/card/dots2.svg', '/card/dots3.svg']);
     const boxes = card?.querySelectorAll('.pc-th-box');
     expect(Array.from(boxes ?? []).map((b) => b.querySelector('b')?.textContent)).toEqual([
       '5',
@@ -691,7 +691,7 @@ describe('black and white', () => {
     expect(vec(head?.querySelector('.pc-tier svg'))).toBe('banner:bw');
     expect(head?.querySelector('.pc-burden img')).toHaveAttribute(
       'src',
-      'card/burden-1-bw.svg'
+      '/card/burden-1-bw.svg'
     );
     expect(vec(weapon?.querySelector('.pc-die svg'))).toBe('die-d8:bw');
     expect(vec(weapon?.querySelector('.pc-ribbon'))).toBe('ribbon:bw');
@@ -699,10 +699,10 @@ describe('black and white', () => {
     const armour = document.querySelector('.pcard[data-pid="a1"]');
     expect(armour?.querySelector('.pc-shield img')).toHaveAttribute(
       'src',
-      'card/shield-bw.svg'
+      '/card/shield-bw.svg'
     );
     expect(vec(armour?.querySelector('.pc-th-box svg'))).toBe('thbox:bw');
-    expect(armour?.querySelector('.pc-th-lab img')).toHaveAttribute('src', 'card/dots1.svg');
+    expect(armour?.querySelector('.pc-th-lab img')).toHaveAttribute('src', '/card/dots1.svg');
 
     const loot = document.querySelector('.pcard[data-pid="ci1"]');
     expect(loot).toBeNull();
@@ -734,9 +734,9 @@ describe('black and white', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
 
-    env.router.navigate('#/roll/std');
+    env.router.navigate('#/roll/std', 'ru');
     await tick();
-    env.router.navigate(hash);
+    env.router.navigate(hash, 'ru');
     await opened();
     expect(document.querySelector('.psheet.bw')).toBeInTheDocument();
     expect(env.storage.get('dhloot.prefs.v1')).toBeNull();
@@ -777,7 +777,7 @@ describe('the note under the bar', () => {
     );
     expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
       'href',
-      '#/account'
+      '/account'
     );
     expect(document.querySelector('.printbar')).toContainElement(note() as HTMLElement);
     expect(note()).not.toHaveClass('printnote');
@@ -837,9 +837,9 @@ describe('compact', () => {
     await opened();
     const hash = env.router.hash();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
-    env.router.navigate('#/roll/std');
+    env.router.navigate('#/roll/std', 'ru');
     await tick();
-    env.router.navigate(hash);
+    env.router.navigate(hash, 'ru');
     await opened();
     expect(document.querySelector('.psheet.compact')).toBeInTheDocument();
     first.unmount();
@@ -979,7 +979,7 @@ describe('nothing to print', () => {
     expect(screen.getByRole('heading', { name: 'Печать карточек' })).toBeInTheDocument();
     const main = document.querySelector('main') as HTMLElement;
     const link = within(main).getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '#/roll/std');
+    expect(link).toHaveAttribute('href', '/roll/std');
     expect(link).toHaveClass('primary');
     expect(document.querySelector('.printbar')).toBeNull();
     expect(document.querySelector('.psheet')).toBeNull();
@@ -1022,8 +1022,8 @@ describe('the link', () => {
     render(App, { env });
     await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на набор' }));
-    expect(clip.last.text).toBe('https://example.test/' + env.router.hash());
-    expect(clip.last.text).toMatch(/^https:\/\/example\.test\/#\/p\/[A-Za-z0-9_-]{12}$/);
+    expect(clip.last.text).toBe('https://example.test' + env.router.hash().slice(1));
+    expect(clip.last.text).toMatch(/^https:\/\/example\.test\/p\/[A-Za-z0-9_-]{12}$/);
     expect(screen.getByText('Ссылка скопирована')).toBeInTheDocument();
   });
 
@@ -1036,7 +1036,7 @@ describe('the link', () => {
     const { container } = render(App, { env });
     await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Link to this set' }));
-    expect(clip.last.text).toBe('https://example.test/en/' + env.router.hash());
+    expect(clip.last.text).toBe('https://example.test/en' + env.router.hash().slice(1));
     await expectNoA11yViolations(container);
   });
 
@@ -1537,7 +1537,7 @@ describe('the states of #/p/', () => {
       const read = vi.spyOn(cloud.prints, 'read');
       const { unmount } = render(App, { env: at('#/p/short', { cloud }) });
       expect(await screen.findByText(ru.printSetGone)).toBeInTheDocument();
-      expect(home()).toHaveAttribute('href', '#/roll/std');
+      expect(home()).toHaveAttribute('href', '/roll/std');
       await new Promise((r) => setTimeout(r, 0));
       expect(read).not.toHaveBeenCalled();
       unmount();
@@ -1620,7 +1620,7 @@ describe('the states of #/p/', () => {
     expect(document.querySelector('p.printnote.warnnote')).toHaveTextContent(
       ru.printSetMissing.replace('%d', '2')
     );
-    expect(home()).toHaveAttribute('href', '#/roll/std');
+    expect(home()).toHaveAttribute('href', '/roll/std');
     await expectNoA11yViolations(container);
   });
 
@@ -1644,7 +1644,7 @@ describe('the states of #/p/', () => {
       const { unmount } = render(App, { env });
       expect(screen.getByRole('heading', { name: ru.printLinkRetired })).toBeInTheDocument();
       expect(screen.getByText(ru.printLinkRetiredSub)).toBeInTheDocument();
-      expect(home()).toHaveAttribute('href', '#/roll/std');
+      expect(home()).toHaveAttribute('href', '/roll/std');
       expect(env.router.hash()).toBe('#/print/ci1-q1');
       expect(document.querySelector('.psheet')).toBeNull();
       unmount();

@@ -82,12 +82,12 @@ describe('a card per list', () => {
 
     /* The link's name is its own `aria-label`: the list name, the count and the edit age. */
     const cardA = screen.getByRole('link', { name: /^Клад дракона, 1 позиция, изменён / });
-    expect(cardA).toHaveAttribute('href', '#/lists/' + uuid(831));
+    expect(cardA).toHaveAttribute('href', '/lists/' + uuid(831));
     expect(cardA.querySelectorAll('img')).toHaveLength(1);
-    expect(cardA.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
+    expect(cardA.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
 
     const cardB = screen.getByRole('link', { name: /^Лавка в порту, 0 позиций, изменён / });
-    expect(cardB).toHaveAttribute('href', '#/lists/' + uuid(832));
+    expect(cardB).toHaveAttribute('href', '/lists/' + uuid(832));
     expect(screen.queryByRole('button', { name: 'Поделиться' })).toBeNull();
     expect(cardB.querySelectorAll('img')).toHaveLength(0);
     expect(cardB).toHaveTextContent('Список пуст');
@@ -136,7 +136,7 @@ describe('opening a list', () => {
   it("opens an empty list from its card, through the card's own link", async () => {
     const { router } = await openIndex(TWO_LISTS.slice().reverse());
     const card = screen.getByRole('link', { name: /Лавка в порту/ });
-    router.navigate(card.getAttribute('href') ?? '');
+    router.click(card.getAttribute('href') ?? '');
     await waitFor(() => {
       expect(
         screen.getByRole('heading', { level: 1, name: 'Лавка в порту' })
@@ -237,7 +237,7 @@ describe('«Показать ещё»', () => {
     await userEvent.click(more(6));
     // the address the 26th card links to, as a press on it would open
     const card = container.querySelectorAll('.listcard-main')[25];
-    router.navigate(card?.getAttribute('href') ?? '');
+    router.click(card?.getAttribute('href') ?? '');
     await waitFor(() => {
       expect(container.querySelector('.listcard')).not.toBeInTheDocument();
     });
@@ -395,7 +395,7 @@ describe('with sign-in configured', () => {
     const shop = screen.getByRole('link', {
       name: 'Лавка кузнеца, 2 позиции, изменён 3 дня назад'
     });
-    expect(shop).toHaveAttribute('href', '#/lists/00000000-0000-4000-8000-000000000101');
+    expect(shop).toHaveAttribute('href', '/lists/00000000-0000-4000-8000-000000000101');
     /* An account card has one action: delete. */
     const acts = shop.parentElement?.querySelectorAll('.listcard-acts button');
     expect([...(acts ?? [])].map((b) => b.textContent)).toEqual(['Удалить']);
@@ -437,7 +437,7 @@ describe('with sign-in configured', () => {
     expect(screen.getByText('Список «Тайник» создан')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Тайник/ })).toHaveAttribute(
       'href',
-      '#/lists/00000000-0000-4000-8000-000000005000'
+      '/lists/00000000-0000-4000-8000-000000005000'
     );
     page.fireHidden();
     await waitFor(async () => {
@@ -876,12 +876,12 @@ describe('selecting account lists', () => {
     };
     const { container } = await signedIn(fakeCloud(SEED, 'gm1'), { data: fakeData(withArt) });
     const img = container.querySelector<HTMLImageElement>('.listcard-thumbs img');
-    expect(img).toHaveAttribute('src', 'img/thumb/ci1.webp');
+    expect(img).toHaveAttribute('src', '/img/thumb/ci1.webp');
     await fireEvent.error(img!);
     await waitFor(() => {
       expect(container.querySelector('.listcard-thumbs img')).toHaveAttribute(
         'src',
-        'img/thumb/_none.webp'
+        '/img/thumb/_none.webp'
       );
     });
   });

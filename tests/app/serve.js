@@ -34,8 +34,11 @@ const expectedBytes = (f) =>
 /* Mtime half: newest mtime under app/src/ - excluding every *.test.ts file
    and the whole app/src/test/ directory, neither of which is bundled -
    plus app/public/ (copied verbatim), app/index.html, vite.config.mts and
-   app/svelte.config.mjs, against the build's index.html, which every build
+   app/svelte.config.mjs and the card tools, against the build's index.html, which every build
    rewrites. Safe on CI: checkout sets source mtimes ahead of the build. */
+/* The card tools write the built i/ and en/ documents (vite.config.mts appDocuments). */
+const CARD_TOOLS = ['share-card.mjs', 'build-share-pages.js', 'app-documents.js'];
+
 function newestMtimeUnder(dir) {
   let newest = 0;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -80,7 +83,8 @@ function assertBuilt(dir, label) {
     newestMtimeUnder(path.join(ROOT, 'app', 'public')),
     fs.statSync(path.join(ROOT, 'app', 'index.html')).mtimeMs,
     fs.statSync(path.join(ROOT, 'vite.config.mts')).mtimeMs,
-    fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs
+    fs.statSync(path.join(ROOT, 'app', 'svelte.config.mjs')).mtimeMs,
+    ...CARD_TOOLS.map((f) => fs.statSync(path.join(ROOT, 'tools', f)).mtimeMs)
   );
   if (sourceNewest > fs.statSync(html).mtimeMs) {
     console.log(
@@ -104,17 +108,87 @@ const TYPES = {
   '.webp': 'image/webp'
 };
 
-/** A static server over `dir` on a free port of 127.0.0.1: files only, no
- *  listing, 404 for anything else. Port 0, never a fixed one: run-all.js runs
- *  the suites in parallel, and each process gets its own port, so its own
- *  origin and storage. */
+/* Which path answers the app document. This server stands in for the host, so it
+   reads the host's own sources rather than a list of its own: a rule of
+   preview/public/_redirects, a card family of preview/public/_routes.json (the
+   worker's paths), and the built record and English-root documents under `i/` and
+   `en/` (docs/specs/CONTRACTS.md sections 1 and 5). */
+const PUBLIC = path.join(ROOT, 'preview', 'public');
+
+/** Returns a matcher of one host pattern: an exact path, or a prefix before a final `*`. */
+function patternOf(from) {
+  if (!from.endsWith('*')) return (p) => (p === from ? '' : null);
+  const head = from.slice(0, -1);
+  return (p) => (p.startsWith(head) ? p.slice(head.length) : null);
+}
+
+/** The `_redirects` rules in file order: `{ match, to, status }`. */
+function readRedirects() {
+  return fs
+    .readFileSync(path.join(PUBLIC, '_redirects'), 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#'))
+    .map((l) => {
+      const [from = '', to = '', status = '302'] = l.split(/\s+/);
+      return { match: patternOf(from), to, status: Number(status) };
+    });
+}
+
+const CARD_ROUTES = JSON.parse(
+  fs.readFileSync(path.join(PUBLIC, '_routes.json'), 'utf8')
+).include.map(patternOf);
+
+/** How the host answers a path no file holds: `{ status, location }` for a redirect,
+ *  `{ status: 200, doc }` for the app document at `doc` (a path under the root), or
+ *  null for a miss. A card family stands in for the worker with the plain document. */
+function appAnswer(pathname) {
+  for (const rule of readRedirects()) {
+    const splat = rule.match(pathname);
+    if (splat === null) continue;
+    const to = rule.to.replace(':splat', splat);
+    return rule.status === 200
+      ? { status: 200, doc: to }
+      : { status: rule.status, location: to };
+  }
+  if (CARD_ROUTES.some((m) => m(pathname) !== null)) {
+    return { status: 200, doc: pathname.startsWith('/en/') ? '/en/' : '/' };
+  }
+  return null;
+}
+
+const isFile = (file) => fs.existsSync(file) && fs.statSync(file).isFile();
+
+/** A static server over `dir` on a free port of 127.0.0.1: files, `<path>.html` for an
+ *  extensionless path and a 308 to the slash form of a folder (as Pages answers), the
+ *  app document at the paths the host answers with it, no listing, 404 for anything
+ *  else. Port 0, never a fixed one: run-all.js runs the suites in parallel, and each
+ *  process gets its own port, so its own origin and storage. */
 function serveDist(dir) {
   const server = http.createServer((req, res) => {
-    let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const url = new URL(req.url, 'http://x');
+    const pathname = decodeURIComponent(url.pathname);
+    let rel = pathname;
     if (rel.endsWith('/')) rel += 'index.html';
-    const file = path.join(dir, rel);
+    let file = path.join(dir, rel);
+    const inside = file.startsWith(dir + path.sep);
+    if (inside && !isFile(file) && isFile(file + '.html')) file += '.html';
+    else if (inside && !rel.endsWith('/index.html') && isFile(path.join(file, 'index.html'))) {
+      res.writeHead(308, { location: pathname + '/' + url.search }).end();
+      return;
+    }
+    /* Before the extension check: a route path can carry a dot
+       (`/tables/eq_weapon/f_tier-2.cls-mag`). */
+    if (!isFile(file)) {
+      const app = appAnswer(pathname);
+      if (app && app.location) {
+        res.writeHead(app.status, { location: app.location }).end();
+        return;
+      }
+      if (app) file = path.join(dir, app.doc, 'index.html');
+    }
     const type = TYPES[path.extname(file)];
-    if (!file.startsWith(dir + path.sep) || !type || !fs.existsSync(file)) {
+    if (!file.startsWith(dir + path.sep) || !type || !isFile(file)) {
       res.writeHead(404).end();
       return;
     }

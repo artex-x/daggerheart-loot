@@ -67,10 +67,10 @@ describe('#/homebrew', () => {
     const nav = screen.getByRole('navigation', { name: t.myItems });
     const links = within(nav).getAllByRole('link');
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Предметы', '#/homebrew'],
-      ['Источники', '#/homebrew/sources'],
-      ['Комплекты', '#/homebrew/sets'],
-      ['Карты правил', '#/homebrew/rules']
+      ['Предметы', '/homebrew'],
+      ['Источники', '/homebrew/sources'],
+      ['Комплекты', '/homebrew/sets'],
+      ['Карты правил', '/homebrew/rules']
     ]);
     expect(links.map((a) => a.getAttribute('aria-current'))).toEqual([
       'page',
@@ -96,7 +96,7 @@ describe('#/homebrew', () => {
     expect(screen.queryByRole('searchbox')).toBeNull();
     expect(screen.getByRole('link', { name: /Новый предмет/ })).toHaveAttribute(
       'href',
-      '#/homebrew/new'
+      '/homebrew/new'
     );
     expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -122,8 +122,8 @@ describe('#/homebrew', () => {
     expect(order.slice(0, 3)).toEqual([t.hbNewSource, '1 источник из 20', 'Мастерская Ольхи']);
     const names = [...panel.querySelectorAll('.books > li > .head > .name')];
     expect(names.map((a) => [a.textContent.trim(), a.getAttribute('href')])).toEqual([
-      ['Мастерская Ольхи', '#/tables/homebrew/f_src-hb_alderworkshopaaa'],
-      ['Хоумбрю', '#/tables/homebrew/f_src-hb']
+      ['Мастерская Ольхи', '/tables/homebrew/f_src-hb_alderworkshopaaa'],
+      ['Хоумбрю', '/tables/homebrew/f_src-hb']
     ]);
     await expectNoA11yViolations(container);
   });
@@ -666,7 +666,7 @@ describe('the Sets and Rules tabs', () => {
     expect(body).toHaveTextContent('Два предмета комплекта: +1 к Уклонению.');
     const field = within(body!).getByRole('combobox', { name: t.hbAddMember });
     const link = within(body!).getByRole('link', { name: 'Кольцо с гравировкой' });
-    expect(link).toHaveAttribute('href', '#/h/' + uuid(514));
+    expect(link).toHaveAttribute('href', '/h/' + uuid(514));
     expect(field.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(
       within(body!).getByRole('button', { name: 'Убрать: Кольцо с гравировкой' })
@@ -1234,7 +1234,7 @@ describe('book items in a set or rule card', () => {
     expect(await screen.findByText('Сохранено: «Длинный палаш»')).toBeInTheDocument();
     expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
     const link = await within(panel).findByRole('link', { name: 'Длинный палаш' });
-    expect(link).toHaveAttribute('href', '#/i/q2');
+    expect(link).toHaveAttribute('href', '/i/q2');
     expect(link.nextElementSibling).toHaveTextContent('Core');
     expect(within(panel).getByText('1 предмет · Мастерская Ольхи')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -1260,7 +1260,7 @@ describe('book items in a set or rule card', () => {
     await userEvent.click(screen.getByRole('button', { name: t.undo }));
     expect(await within(panel).findByRole('link', { name: 'Длинный палаш' })).toHaveAttribute(
       'href',
-      '#/i/q2'
+      '/i/q2'
     );
     expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
   });

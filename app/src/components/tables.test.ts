@@ -368,10 +368,10 @@ describe('the view switch', () => {
   it('draws the thumbnail in a row and the full picture on a tile', async () => {
     const { container } = render(App, { env: at() });
     const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
-    expect(rowEl?.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
+    expect(rowEl?.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
-    expect(tile?.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(tile?.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
     await expectNoA11yViolations(container);
   });
 
@@ -393,7 +393,7 @@ describe('the view switch', () => {
     );
     expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
       'href',
-      '#/account'
+      '/account'
     );
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Списком' }));
@@ -436,9 +436,9 @@ describe('selection', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
-    env.router.navigate('#/tables/hnf_item');
+    env.router.navigate('#/tables/hnf_item', 'ru');
     await tick();
-    env.router.navigate('#/tables');
+    env.router.navigate('#/tables', 'ru');
     await tick();
     const again = rowCheckboxes()[0] as HTMLElement;
     expect(again).not.toBeChecked();
@@ -654,7 +654,7 @@ describe('the table link', () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));
-    expect(clip.last.text).toBe('https://example.test/#/tables/core_item');
+    expect(clip.last.text).toBe('https://example.test/tables/core_item');
     expect(screen.getByText('Ссылка на таблицу скопирована')).toBeInTheDocument();
   });
 
@@ -664,7 +664,7 @@ describe('the table link', () => {
       env: at({ clipboard: clip, storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Link to this table' }));
-    expect(clip.last.text).toBe('https://example.test/en/#/tables/core_item');
+    expect(clip.last.text).toBe('https://example.test/en/tables/core_item');
     await expectNoA11yViolations(container);
   });
 
@@ -883,7 +883,7 @@ describe('the filter', () => {
       data: fakeData(LOOT)
     });
     render(App, { env });
-    env.router.navigate('#/tables/dread');
+    env.router.navigate('#/tables/dread', 'ru');
     await tick();
     expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
       'aria-expanded',
@@ -904,7 +904,7 @@ describe('the filter', () => {
     expect(rowCheckboxes()[0]).toBeChecked();
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
-    env.router.navigate('#/tables/wondrous');
+    env.router.navigate('#/tables/wondrous', 'ru');
     await tick();
     expect(rowCheckboxes()[0]).not.toBeChecked();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
@@ -919,7 +919,7 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-    env.router.navigate('#/tables/wondrous');
+    env.router.navigate('#/tables/dread', 'ru');
     await tick();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
@@ -937,7 +937,7 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
     expect(clip.last.text).toBe(
-      'https://example.test/#/tables/wondrous_environments/f_kind-item'
+      'https://example.test/tables/wondrous_environments/f_kind-item'
     );
     expect(screen.getByText('Ссылка на фильтры скопирована')).toBeInTheDocument();
   });
@@ -1323,7 +1323,7 @@ describe('the chip nav', () => {
       const tablenav = document.querySelector('.tablenav') as HTMLElement;
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
-      expect(group).toHaveAttribute('href', '#/tables/wondrous_environments');
+      expect(group).toHaveAttribute('href', '/tables/wondrous_environments');
       const row = bookRow() as HTMLElement;
       const books = within(row).getAllByRole('link');
       const names = [
@@ -1353,7 +1353,7 @@ describe('the chip nav', () => {
         books
           .filter((a) => a.getAttribute('aria-current') === 'page')
           .map((a) => a.getAttribute('href'))
-      ).toEqual([tablesHash(table as TableId)]);
+      ).toEqual([tablesHash(table as TableId).slice(1)]);
       if (table === 'voa') await expectNoA11yViolations(container);
     }
   );
@@ -1401,7 +1401,7 @@ describe('a sectioned body: Vault of Ages by tier', () => {
       name: 'Скопировать ссылку на этот раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
-    expect(clip.last.text).toBe('https://example.test/#/tables/vault_of_ages/tA');
+    expect(clip.last.text).toBe('https://example.test/tables/vault_of_ages/tA');
     expect(screen.getByText('Ссылка на раздел скопирована')).toBeInTheDocument();
   });
 
@@ -1637,7 +1637,7 @@ describe('the row and section anchor', () => {
        hashchange, which `memoryRouter` does not fire - so the fake
        router is driven directly, the file's own pattern (see "belongs
        to the table it was made on: a hash change drops it"). */
-    env.router.navigate('#/tables/hnf_item');
+    env.router.navigate('#/tables/hnf_item', 'ru');
     await tick();
     expect(document.querySelector('.flash')).not.toBeInTheDocument();
   });
@@ -1743,7 +1743,7 @@ describe("a row with the author's own relations", () => {
     drawn.unmount();
     const broken = render(RowMain, { props: { ...props, artBroken: () => true } });
     expect(broken.container.querySelector('img')?.getAttribute('src')).toBe(
-      'img/thumb/_none.webp'
+      '/img/thumb/_none.webp'
     );
   });
 

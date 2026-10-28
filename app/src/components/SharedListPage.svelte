@@ -78,6 +78,24 @@
   onDestroy(() => {
     view?.close();
   });
+
+  /* The share panel's version: a players' projection holds no GM-only entry and a GM's
+     holds every entry, so its length is the count the token's card shows. */
+  function shareVersion(s: NonNullable<NonNullable<typeof view>['shared']>): string {
+    return cardVersion([s.list.name, s.list.player_note, s.entries.length]);
+  }
+  /* The bar carries the version the copy hands out once the list is read
+     (docs/specs/CONTRACTS.md section 5), on the address this page is drawn for; a
+     filter pick rewrites the address, and this writes the version again. */
+  $effect(() => {
+    const s = view?.status === 'ready' ? view.shared : null;
+    const hash = app.hash;
+    const route = app.route;
+    if (!s || route.kind !== 'share' || route.token !== token) return;
+    untrack(() => {
+      app.setBarVersion(hash, shareVersion(s));
+    });
+  });
   const shared = $derived(
     view?.status === 'ready' && view.shared ? sharedListOf(view.shared, knows) : null
   );
@@ -196,9 +214,7 @@
   async function copyFilterLink(at: string): Promise<void> {
     const s = view?.shared;
     const gm = s?.audience === 'gm';
-    /* The share panel's version: a players' projection holds no GM-only entry and a GM's
-       holds every entry, so its length is the count the token's card shows. */
-    const v = s ? cardVersion([s.list.name, s.list.player_note, s.entries.length]) : undefined;
+    const v = s ? shareVersion(s) : undefined;
     const link = app.linkTo(shareHash(at, { filter: inForce }), v);
     await app.copied(
       () => app.env.clipboard.writeText(link),
@@ -297,7 +313,9 @@
   {#snippet children(openRecord)}
     {#if !view || view.status === 'gone'}
       <PageTitle title={t.shareGone} sub={t.shareGoneSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{t.toStart}</Button
+      >
     {:else if view.status === 'error'}
       <PageTitle title={t.sharedFailed} sub={t.sharedFailedSub} />
       <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
@@ -309,7 +327,7 @@
         <p class="ownline">
           {t.ownList}
           {#if hiddenN > 0}{`${t.ownGmOnly.replace('%n', String(hiddenN))} `}{/if}<a
-            href={storedListHash(view.mine)}>{t.ownListEdit}</a
+            href={app.href(storedListHash(view.mine))}>{t.ownListEdit}</a
           >
         </p>
       {/if}

@@ -429,7 +429,8 @@ const STATES = [
   { id: '#/i/q1', route: '#/i/q1', why: 'an equipment record' },
   {
     id: '#/i/nope',
-    route: '#/i/nope',
+    // The old form: the host answers /i/nope, an id with no file, with 404.html.
+    route: '/#/i/nope',
     why: 'the not-found record page: "Предмет не найден", the sub line, the "На главную" button'
   },
   {

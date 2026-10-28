@@ -405,7 +405,7 @@ async function brokenArtPath() {
     document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src')
   );
   ok(
-    rowSrc === 'img/thumb/_none.webp',
+    rowSrc === '/img/thumb/_none.webp',
     '11 (row thumbnail): instead of the thumbnail placeholder - ' + rowSrc
   );
   await row.ctx.close();
@@ -1381,7 +1381,7 @@ async function minimalWorker() {
     await page.evaluate(() =>
       caches.open('dhloot-shell-v1').then((c) => c.put('./', new Response('old shell')))
     );
-    const url = root + 'index.html#/roll/std';
+    const url = root + 'roll/std';
     await page.goto(url, { waitUntil: 'load' });
     ok(
       await page.evaluate(() => navigator.serviceWorker.ready.then(() => true)),
@@ -1395,7 +1395,7 @@ async function minimalWorker() {
       )
     );
     ok(
-      manifestLinks === '["./manifest.webmanifest"]',
+      manifestLinks === '["/manifest.webmanifest"]',
       at + 'the page does not carry exactly one manifest link - ' + manifestLinks
     );
     const footer = await page.evaluate(() =>
@@ -1403,7 +1403,7 @@ async function minimalWorker() {
     );
     ok(
       JSON.stringify(footer) ===
-        JSON.stringify(['pages/install.html', 'pages/privacy.html', 'pages/terms.html']),
+        JSON.stringify(['/pages/install.html', '/pages/privacy.html', '/pages/terms.html']),
       at +
         'the footer does not link the install guide and the two policy pages - ' +
         JSON.stringify(footer)
@@ -1538,9 +1538,10 @@ async function minimalWorker() {
 }
 
 /** 29. The install guide links back to the screen the reader left, in both
- *  languages: from `#/lists` the top back link of `pages/install.html`
- *  (`../`) and of `pages/en/install.html` (`../../`) returns to
- *  `index.html#/lists`, and on a direct visit it opens the app root. The
+ *  languages: from `/lists` the top back link of `pages/install.html`
+ *  (`../`) and from `/en/lists` and `/i/en/ci1` that of `pages/en/install.html`
+ *  (`../../en/`) return to it, and on a direct visit each opens the app root of its
+ *  language. The
  *  two policy pages draw the same back links in both languages, and
  *  `privacy` names the contact address (docs/specs/META.md section 9,
  *  "Static pages"). */
@@ -1552,7 +1553,7 @@ async function guideBackLink() {
     const root = baseUrl();
     for (const [dir, back] of [
       ['pages/', '../'],
-      ['pages/en/', '../../']
+      ['pages/en/', '../../en/']
     ]) {
       for (const id of ['privacy', 'terms']) {
         await page.goto(root + dir + id + '.html', { waitUntil: 'load' });
@@ -1579,7 +1580,7 @@ async function guideBackLink() {
         );
       }
     }
-    await page.goto(root + 'index.html#/lists', { waitUntil: 'load' });
+    await page.goto(root + 'lists', { waitUntil: 'load' });
     await page.waitForSelector('.foot-nav a');
     await page.click('.foot-nav a');
     await page.waitForFunction(() => location.pathname.endsWith('/pages/install.html'));
@@ -1601,14 +1602,13 @@ async function guideBackLink() {
       await page
         .waitForFunction(
           () =>
-            location.pathname === '/index.html' &&
-            location.hash === '#/lists' &&
+            location.pathname === '/lists' &&
             !!document.querySelector('#app')?.childElementCount,
           { timeout: 30_000 }
         )
         .then(() => true)
         .catch(() => false),
-      at + 'the back link did not return to index.html#/lists'
+      at + 'the back link did not return to /lists'
     );
     await page.goto(root + 'pages/install.html', { waitUntil: 'load' });
     await page.click('#app-page > a.back');
@@ -1629,7 +1629,7 @@ async function guideBackLink() {
     // prepare() clears storage on every document, so English needs its own seeded context.
     en = await fresh({ width: 1180, height: 900, lang: 'en' });
     const enPage = en.page;
-    await enPage.goto(root + 'index.html#/lists', { waitUntil: 'load' });
+    await enPage.goto(root + 'en/lists', { waitUntil: 'load' });
     await enPage.waitForSelector('.foot-nav a');
     await enPage.click('.foot-nav a');
     await enPage.waitForFunction(() => location.pathname.endsWith('/pages/en/install.html'));
@@ -1643,7 +1643,7 @@ async function guideBackLink() {
         return (
           first !== last &&
           [first, last].every(
-            (a) => a.matches('a.back') && a.getAttribute('href') === '../../'
+            (a) => a.matches('a.back') && a.getAttribute('href') === '../../en/'
           ) &&
           !!second &&
           second.matches('nav.lang') &&
@@ -1651,21 +1651,40 @@ async function guideBackLink() {
         );
       }),
       at +
-        'the English guide does not draw its back links ("../../") first and last, with the language link second'
+        'the English guide does not draw its back links ("../../en/") first and last, with the language link second'
     );
     await enPage.click('#app-page > a.back');
     ok(
       await enPage
         .waitForFunction(
           () =>
-            location.pathname === '/index.html' &&
-            location.hash === '#/lists' &&
+            location.pathname === '/en/lists' &&
             !!document.querySelector('#app')?.childElementCount,
           { timeout: 30_000 }
         )
         .then(() => true)
         .catch(() => false),
-      at + 'the English back link did not return to index.html#/lists'
+      at + 'the English back link did not return to /en/lists'
+    );
+    /* An English record's path, /i/en/<id>, lies outside /en/: the back link still
+       returns to it. */
+    await enPage.goto(root + 'i/en/ci1', { waitUntil: 'load' });
+    await enPage.waitForSelector('.foot-nav a');
+    await enPage.click('.foot-nav a');
+    await enPage.waitForFunction(() => location.pathname.endsWith('/pages/en/install.html'));
+    await enPage.waitForSelector('#app-page');
+    await enPage.click('#app-page > a.back');
+    ok(
+      await enPage
+        .waitForFunction(
+          () =>
+            location.pathname === '/i/en/ci1' &&
+            !!document.querySelector('#app')?.childElementCount,
+          { timeout: 30_000 }
+        )
+        .then(() => true)
+        .catch(() => false),
+      at + 'the English back link did not return to /i/en/ci1'
     );
     await enPage.goto(root + 'pages/en/install.html', { waitUntil: 'load' });
     await enPage.click('#app-page > a.back');
@@ -1673,14 +1692,14 @@ async function guideBackLink() {
       await enPage
         .waitForFunction(
           () =>
-            location.pathname === '/' &&
+            location.pathname === '/en/' &&
             location.hash === '' &&
             !!document.querySelector('#app')?.childElementCount,
           { timeout: 30_000 }
         )
         .then(() => true)
         .catch(() => false),
-      at + 'the English back link on a direct visit did not open the app root'
+      at + 'the English back link on a direct visit did not open the English app root'
     );
   } finally {
     if (en) await en.ctx.close();
@@ -2147,14 +2166,14 @@ async function accountPreferences() {
   ok(account === before, at + 'c: the print page press changed the account row - ' + account);
   let seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '#/account',
+    seen.bw && seen.note === '/account',
     at + 'c: the press did not draw black and white with the note - ' + JSON.stringify(seen)
   );
   await c.d.go('#/lists');
   await c.d.go('#/p/set-twocards');
   seen = await sheet(c.page);
   ok(
-    seen.bw && seen.note === '#/account',
+    seen.bw && seen.note === '/account',
     at + 'c: the pick did not survive a return from #/lists - ' + JSON.stringify(seen)
   );
   await c.d.open('#/p/set-twocards', { as: 'gm2' });
@@ -2199,7 +2218,7 @@ async function signInFromTheBar() {
   ok(
     await waitIn(
       page,
-      () => location.hash === '#/tables' && !!document.querySelector('.dropmenu')
+      () => location.pathname === '/tables' && !!document.querySelector('.dropmenu')
     ),
     at + 'the sign-in did not come back to #/tables with the menu open - ' + (await d.hash())
   );
@@ -2226,7 +2245,7 @@ async function signInFromTheBar() {
   await again.d.press('+ Новый список');
   await pressPromptSignIn(again.page);
   await again.d.press('Поиск');
-  await again.page.click('header a[href="#/account"]');
+  await again.page.click('header a[href="/account"]');
   await again.d.settle();
   await again.d.press('Войти через Google');
   await again.d.settle();
@@ -2267,7 +2286,7 @@ async function printAfterSignIn() {
     await waitIn(
       page,
       () =>
-        /^#\/p\/[A-Za-z0-9_-]{12}$/.test(location.hash) &&
+        /^\/p\/[A-Za-z0-9_-]{12}$/.test(location.pathname) &&
         document.querySelectorAll('.pcard[data-pid="ci1"]').length === 1 &&
         document.querySelectorAll('.pcard:not(.blank)').length === 1
     ),
@@ -2291,7 +2310,7 @@ async function signOutOnAccountList() {
   );
   await d.fake('auth.signOut');
   ok(
-    await waitIn(page, () => location.hash === '#/lists'),
+    await waitIn(page, () => location.pathname === '/lists'),
     at + 'the address is not #/lists - ' + (await d.hash())
   );
   ok(
@@ -2416,9 +2435,9 @@ const bodyHas = (text) => document.body.innerText.includes(text);
 const shareLinks = () => [...document.querySelectorAll('.sharelink')].map((a) => a.textContent);
 
 /** 43. An account list's share panel: both links made on open, «Скопировать»
- *  copies `#/s/<token>`, a deleted link opens nothing and a new one opens the
+ *  copies `/s/<token>`, a deleted link opens nothing and a new one opens the
  *  list with the owner's line; a deleted GM link stays deleted on the next
- *  open until «Создать ссылку». No `#/l/` address is ever copied. */
+ *  open until «Создать ссылку». No `/l/` address is ever copied. */
 async function shareLinksOfAnAccountList() {
   const at = '43 (share links): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -2431,7 +2450,7 @@ async function shareLinksOfAnAccountList() {
       page,
       () =>
         [...document.querySelectorAll('.sharelink')].map((a) => a.textContent).join() ===
-        '#/s/share-token-1,#/s/share-token-2'
+        '/s/share-token-1,/s/share-token-2'
     ),
     at +
       'the panel did not make both links - ' +
@@ -2440,7 +2459,10 @@ async function shareLinksOfAnAccountList() {
   await d.press('Скопировать');
   const clip = (await d.clipboard())?.text ?? '';
   copied.push(clip);
-  ok(clip.endsWith('#/s/share-token-1'), at + 'the players link was not copied - ' + clip);
+  ok(
+    /\/s\/share-token-1\?v=[0-9a-z]+$/.test(clip),
+    at + 'the players link was not copied - ' + clip
+  );
   await d.press('Удалить ссылку');
   ok(await waitIn(page, bodyHas, 'Ссылка удалена'), at + 'the deleted row does not say so');
   await d.press('Создать ссылку');
@@ -2449,7 +2471,7 @@ async function shareLinksOfAnAccountList() {
       page,
       () =>
         [...document.querySelectorAll('.sharelink')].map((a) => a.textContent)[0] ===
-        '#/s/share-token-3'
+        '/s/share-token-3'
     ),
     at + 'a new players link was not made - ' + JSON.stringify(await page.evaluate(shareLinks))
   );
@@ -2500,7 +2522,7 @@ async function shareLinksOfAnAccountList() {
       page,
       () =>
         [...document.querySelectorAll('.sharelink')].map((a) => a.textContent)[1] ===
-        '#/s/share-token-4'
+        '/s/share-token-4'
     ),
     at + 'a new GM link was not made - ' + JSON.stringify(await page.evaluate(shareLinks))
   );
@@ -2509,8 +2531,8 @@ async function shareLinksOfAnAccountList() {
   await d.press('Скопировать текст');
   copied.push((await d.clipboard())?.text ?? '');
   ok(
-    copied.every((c) => !c.includes('#/l/')),
-    at + 'a #/l/ address was copied - ' + JSON.stringify(copied)
+    copied.every((c) => !c.includes('/l/')),
+    at + 'an /l/ address was copied - ' + JSON.stringify(copied)
   );
   await ctx.close();
 }
@@ -2534,10 +2556,10 @@ async function saveShareLinkAfterSignIn() {
   ok(
     await waitIn(
       page,
-      (h) =>
-        location.hash === h &&
+      (p) =>
+        location.pathname === p &&
         document.querySelector('input.titleinput')?.value === 'Лавка кузнеца',
-      FIRST_NEW
+      FIRST_NEW.slice(1)
     ),
     at + 'the sign-in did not open the copy - ' + (await d.hash())
   );
@@ -3002,7 +3024,7 @@ async function accountMenu() {
   ok(
     await waitIn(
       page,
-      () => location.hash === '#/lists' && !document.querySelector('[role="menu"]')
+      () => location.pathname === '/lists' && !document.querySelector('[role="menu"]')
     ),
     at + '«Мои списки» did not land on #/lists with the menu closed - ' + (await d.hash())
   );
@@ -3011,7 +3033,7 @@ async function accountMenu() {
   ok(
     await waitIn(
       page,
-      () => location.hash === '#/homebrew' && !document.querySelector('[role="menu"]')
+      () => location.pathname === '/homebrew' && !document.querySelector('[role="menu"]')
     ),
     at + '«Мои предметы» did not land on #/homebrew with the menu closed - ' + (await d.hash())
   );
@@ -3030,7 +3052,7 @@ async function accountMenu() {
     await waitIn(
       page,
       () =>
-        location.hash === '#/lists' &&
+        location.pathname === '/lists' &&
         document.body.innerText.includes('Вы вышли из аккаунта.') &&
         (document.querySelector('header a.acct')?.textContent ?? '').includes('Войти')
     ),
@@ -4194,10 +4216,10 @@ async function pictureChooseCropSave() {
     };
     location.hash = '#/homebrew';
     await new Promise((r) => setTimeout(r, 300));
-    return { n, hash: location.hash };
+    return { n, hash: location.pathname };
   });
   ok(
-    asked.n >= 1 && asked.hash === '#/homebrew/new',
+    asked.n >= 1 && asked.hash === '/homebrew/new',
     at + 'the guard did not ask - ' + JSON.stringify(asked)
   );
   const art = await nameAndSave(page, d, 'Фонарь 70');
@@ -4794,6 +4816,120 @@ async function homebrewRefusalLook() {
   }
 }
 
+/** 81. The address bar in its path form (docs/specs/ROUTES.md, "Path form"): a link click
+ *  is one history step that Back undoes, a click on the active tab and the skip link are
+ *  none, the record modal leaves the bar, the bar carries `?v` on a record at once and on
+ *  an item and a share link after their read, and the page-level copy button hands out
+ *  the bar on a record, an item, a share link with no filter, a print set and a table
+ *  (docs/specs/FEATURES.md, "Consistency rules"). */
+async function addressBarPathForm() {
+  const at = '81 (the address bar): ';
+  const VERSIONS = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', '..', 'card-versions.json'), 'utf8')
+  );
+  /* The driver's own parameters, which a copy never carries; `v` and the rest stay. */
+  const TEST_PARAMS = ['as', 'lang', 'items', 'sections', 'sources', 'hold', 'toasts'];
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const bar = () =>
+    page.evaluate((drop) => {
+      const u = new URL(location.href);
+      for (const k of drop) u.searchParams.delete(k);
+      return { href: u.href, path: location.pathname, search: u.search, n: history.length };
+    }, TEST_PARAMS);
+  const copiedIs = async (what) => {
+    const clip = (await d.clipboard())?.text ?? '';
+    const now = await bar();
+    ok(clip === now.href, at + what + ': copied ' + clip + ', the bar is ' + now.href);
+  };
+  try {
+    await d.open('#/roll/std');
+    const start = await bar();
+    await page.click('nav.tabs a[href="/tables"]');
+    await d.settle();
+    const step = await bar();
+    ok(
+      step.path === '/tables' && step.n === start.n + 1,
+      at + 'a tab click is not one step to /tables - ' + JSON.stringify(step)
+    );
+    await page.goBack();
+    await d.settle();
+    ok((await bar()).path === '/roll/std', at + 'Back did not return to /roll/std');
+    const before = await bar();
+    await page.click('nav.tabs a[aria-current="page"]');
+    await d.settle();
+    await page.evaluate(() => document.querySelector('a.skip')?.click());
+    const after = await bar();
+    ok(
+      after.path === '/roll/std' && after.n === before.n && after.href === before.href,
+      at + 'the active tab or the skip link moved the address - ' + JSON.stringify(after)
+    );
+    ok(
+      await page.evaluate(() => document.activeElement?.id === 'main'),
+      at + 'the skip link did not move the focus to main'
+    );
+
+    await d.open('#/i/ci1');
+    const record = await bar();
+    ok(
+      record.path === '/i/ci1' && record.search === '?v=' + VERSIONS.ci1,
+      at + 'the record bar does not carry its card version - ' + JSON.stringify(record)
+    );
+    await d.press('Скопировать ссылку');
+    await copiedIs('a record');
+    await d.press('Таблицы', 0);
+    await d.settle();
+    ok((await bar()).search === '', at + 'a navigation kept ?v');
+
+    await d.open('#/tables');
+    const table = await bar();
+    await d.press('Кольцо Тишины');
+    ok(await waitIn(page, () => !!document.querySelector('dialog[open]')), at + 'no modal');
+    ok(
+      (await bar()).href === table.href,
+      at + 'the record modal wrote to the bar - ' + (await bar()).href
+    );
+    await page.keyboard.press('Escape');
+    ok(
+      (await bar()).href === table.href,
+      at + 'closing the modal wrote to the bar - ' + (await bar()).href
+    );
+    await d.open('#/tables/eq_weapon');
+    await d.press('Ссылка на таблицу');
+    await copiedIs('a table');
+
+    await d.open('#/h/00000000-0000-4000-8000-000000000662');
+    ok(
+      await waitIn(page, () => /^\?v=[0-9a-z]+$/.test(location.search)),
+      at + 'the item bar did not take its card version after the read'
+    );
+    await d.press('Скопировать ссылку');
+    await copiedIs('an item');
+
+    await d.open('#/p/set-twocards', { as: 'gm2' });
+    await waitIn(page, () => !!document.querySelector('.psheet'));
+    await d.click('Ссылка на набор');
+    await copiedIs('a print set');
+
+    /* The owner's panel copies the seeded players link; a reader opens it. */
+    await d.open(SHOP, { as: 'gm1' });
+    await waitIn(
+      page,
+      () => document.querySelector('input.titleinput')?.value === 'Лавка кузнеца'
+    );
+    await d.press('Поделиться');
+    await waitIn(page, () => document.querySelectorAll('.sharelink').length === 2);
+    await d.press('Скопировать');
+    const share = (await d.clipboard())?.text ?? '';
+    await d.open(new URL(share).pathname);
+    ok(
+      await waitIn(page, (s) => location.href === s, share),
+      at + 'a share link: copied ' + share + ', the bar is ' + (await bar()).href
+    );
+  } finally {
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -4867,7 +5003,8 @@ const CASES = [
   ["77 (the shared row's tick column)", sharedRowTickColumn],
   ['78 (a copy per press of a catalog record)', catalogCopyPerPress],
   ['79 (a picker list stays above the on-screen keyboard)', pickerAboveKeyboard],
-  ['80 (the homebrew refusals take the error look)', homebrewRefusalLook]
+  ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
+  ['81 (the address bar)', addressBarPathForm]
 ];
 
 (async () => {

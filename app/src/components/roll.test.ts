@@ -390,7 +390,7 @@ describe('the supplements panel', () => {
       links
         .filter((a) => a.getAttribute('aria-current') === 'page')
         .map((a) => a.getAttribute('href'))
-    ).toEqual([sectionHash(s)]);
+    ).toEqual([sectionHash(s).slice(1)]);
   });
 
   it.each(['#/roll/std', '#/roll/alt'])('draws no panel on %s', (hash) => {

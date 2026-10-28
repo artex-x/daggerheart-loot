@@ -1303,7 +1303,8 @@ tracing a feature back through history).
 | Row thumbnails | `desc.test.ts`, `tables.test.ts`, `listsPage.test.ts`, `dataint`, `tests/sw.test.mjs`, `tests/app/states.js` case 11 |
 | Installable app: manifest, icons, service worker (picture and asset caches, no shell) | `tests/sw.test.mjs`, `ports.test.ts`, `derived`, `tests/app/states.js` case 28, `tools/smoke-http.mjs`, `tools/check-site.test.mjs` |
 | The old host (`old-host/`): the forwarding root (each forwarding state, the loop guard, the installed app, no script), the unregistering worker, the mirror's file list | `derived` ("the old host forwards to the site"), `tests/sw.test.mjs` ("the old host worker"), `tests/stub.js` (`old-host/index.html` at 320 and 390 px), `tools/check-site.test.mjs` (`mirrorChecks()`) |
-| The site's host: the Pages routes and headers files, `/mcp` reserved, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows), `tools/check-site.test.mjs` (`previewChecks()`) |
+| The site's host: the Pages routes and headers files, `/mcp` reserved, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows; every route path covered, none taken by the worker from a rewrite), `tools/check-site.test.mjs` (`previewChecks()`) |
+| A card path answers the app document: the record and English-root documents the build writes, the worker's app document and its fallback card page | `derived` ("the app documents": the count, the card fields byte for byte, every record document's `<noscript>` text, `<html lang>`, no redirect), `preview/worker.test.mjs` ("the app document", "a failed shell read", "cardHead and appDocument"), `tools/check-site.test.mjs` (`documents`, the route checks of `previewChecks()`), `tools/smoke-http.mjs` (`/i/ci1` and `/i/en/ci1`, card and `<noscript>` text), `tests/app/serve.js` (the browser suites open the built `i/` and `en/`) |
 | The record link's card version (`card-versions.json`, `window.LOOT_V`, `<site>i/<id>?v=<v>`) | `derived` ("the card version map is current"), `tools/data-script.js` through `tests/app/serve.js`'s byte guard, `ports/ports.test.ts` ("the record links' card versions"), `lib/hash.test.ts` (`docs/fixtures/urls/record.json`), `components/record.test.ts`, `state/app.test.ts`, `tests/contracts.js` |
 
 ## The rewrite against the app it replaces (history)
@@ -1576,7 +1577,12 @@ control files: `_routes.json` names only the card families and never `/mcp`,
 holds no `robots.txt`, and `names.json` is read through `env.ASSETS`, not by
 a subrequest. Whether Pages applies `_headers` and answers `i/w1.html` with one
 308 to `/i/w1` is proven by `tools/check-site.mjs --preview` on the deployed
-host (a `manual: true` check reads it without following the redirect). The real Workers runtime,
+host (a `manual: true` check reads it without following the redirect). The
+route paths' `_redirects` rewrites, the `/en/i/` 301 and the worker's read of
+the app document through `env.ASSETS` are proven the same way; before the
+landing only a local `wrangler pages dev` probe shows them (`.claude/README.md`,
+"Preview host", "Host facts"), a known gap, because `wrangler pages dev` can
+differ from production. The real Workers runtime,
 the real reads and the CPU time are outside it: `wrangler pages deployment
 tail` measures them on the deployed host (`.claude/README.md`, "Preview
 host").

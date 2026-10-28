@@ -22,11 +22,12 @@ describe('keeping the lit tab in view', () => {
     const { container, rerender } = render(TabBar, {
       t: dict('ru'),
       current: 'roll/std',
-      label: 'Разделы'
+      label: 'Разделы',
+      lang: 'ru'
     });
     const nav = container.querySelector('nav.tabs') as HTMLElement;
     const tablesTab = [...nav.querySelectorAll('a')].find(
-      (a) => a.getAttribute('href') === '#/tables'
+      (a) => a.getAttribute('href') === '/tables'
     ) as HTMLAnchorElement;
 
     Object.defineProperty(nav, 'clientWidth', { value: 300, configurable: true });
@@ -34,7 +35,7 @@ describe('keeping the lit tab in view', () => {
     Object.defineProperty(tablesTab, 'offsetWidth', { value: 60, configurable: true });
     throwOnScrollIntoView(tablesTab);
 
-    await rerender({ t: dict('ru'), current: 'tables', label: 'Разделы' });
+    await rerender({ t: dict('ru'), current: 'tables', label: 'Разделы', lang: 'ru' });
     // target = offsetLeft - (clientWidth - offsetWidth) / 2 = 500 - 120 = 380
     expect(nav.scrollLeft).toBe(380);
   });
@@ -43,11 +44,12 @@ describe('keeping the lit tab in view', () => {
     const { container, rerender } = render(TabBar, {
       t: dict('ru'),
       current: 'search',
-      label: 'Разделы'
+      label: 'Разделы',
+      lang: 'ru'
     });
     const nav = container.querySelector('nav.tabs') as HTMLElement;
     const stdTab = [...nav.querySelectorAll('a')].find(
-      (a) => a.getAttribute('href') === '#/roll/std'
+      (a) => a.getAttribute('href') === '/roll/std'
     ) as HTMLAnchorElement;
 
     Object.defineProperty(nav, 'clientWidth', { value: 300, configurable: true });
@@ -55,12 +57,17 @@ describe('keeping the lit tab in view', () => {
     Object.defineProperty(stdTab, 'offsetWidth', { value: 60, configurable: true });
     throwOnScrollIntoView(stdTab);
 
-    await rerender({ t: dict('ru'), current: 'roll/std', label: 'Разделы' });
+    await rerender({ t: dict('ru'), current: 'roll/std', label: 'Разделы', lang: 'ru' });
     expect(nav.scrollLeft).toBe(0);
   });
 
   it('does nothing when nothing is lit', () => {
-    const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: null,
+      label: 'Разделы',
+      lang: 'ru'
+    });
     const nav = container.querySelector('nav.tabs') as HTMLElement;
     expect(nav.scrollLeft).toBe(0);
   });
@@ -68,15 +75,25 @@ describe('keeping the lit tab in view', () => {
 
 describe('the five tabs', () => {
   it('draws five links without #/lists, and Tables keeps its separator', () => {
-    const { container } = render(TabBar, { t: dict('ru'), current: null, label: 'Разделы' });
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: null,
+      label: 'Разделы',
+      lang: 'ru'
+    });
     const links = [...container.querySelectorAll('nav.tabs a')];
     expect(links).toHaveLength(5);
-    expect(links.map((a) => a.getAttribute('href'))).not.toContain('#/lists');
-    expect(container.querySelector('a[href="#/tables"]')).toHaveClass('sep');
+    expect(links.map((a) => a.getAttribute('href'))).not.toContain('/lists');
+    expect(container.querySelector('a[href="/tables"]')).toHaveClass('sep');
   });
 
   it('lights no tab on #/lists', () => {
-    const { container } = render(TabBar, { t: dict('ru'), current: 'lists', label: 'Разделы' });
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: 'lists',
+      label: 'Разделы',
+      lang: 'ru'
+    });
     expect(container.querySelector('nav.tabs a[aria-current="page"]')).toBeNull();
   });
 });
@@ -88,7 +105,12 @@ describe('the supplements tab', () => {
     );
 
   it('draws Core rules, the alternate tables and one supplements tab before Tables', () => {
-    const { container } = render(TabBar, { t: dict('en'), current: null, label: 'Sections' });
+    const { container } = render(TabBar, {
+      t: dict('en'),
+      current: null,
+      label: 'Sections',
+      lang: 'ru'
+    });
     expect([...container.querySelectorAll('nav.tabs a')].map((a) => a.textContent)).toEqual([
       'Standard rules',
       'Alt. tables',
@@ -99,8 +121,13 @@ describe('the supplements tab', () => {
   });
 
   it.each(SUPPLEMENTS)('lights «Дополнения» with aria-current on %s', (s) => {
-    const { container } = render(TabBar, { t: dict('ru'), current: s, label: 'Разделы' });
-    expect(lit(container)).toEqual(['#/roll/wondrous_environments']);
+    const { container } = render(TabBar, {
+      t: dict('ru'),
+      current: s,
+      label: 'Разделы',
+      lang: 'ru'
+    });
+    expect(lit(container)).toEqual(['/roll/wondrous_environments']);
     const tab = container.querySelector('a.on') as HTMLElement;
     expect(tab.textContent).toBe('Дополнения');
   });
@@ -108,8 +135,13 @@ describe('the supplements tab', () => {
   it.each(['roll/std', 'roll/alt', 'tables'] as const)(
     'lights its own tab and not «Дополнения» on %s',
     (s) => {
-      const { container } = render(TabBar, { t: dict('ru'), current: s, label: 'Разделы' });
-      expect(lit(container)).toEqual([`#/${s}`]);
+      const { container } = render(TabBar, {
+        t: dict('ru'),
+        current: s,
+        label: 'Разделы',
+        lang: 'ru'
+      });
+      expect(lit(container)).toEqual([`/${s}`]);
     }
   );
 
@@ -117,7 +149,8 @@ describe('the supplements tab', () => {
     const { container } = render(TabBar, {
       t: dict('ru'),
       current: 'roll/voa',
-      label: 'Разделы'
+      label: 'Разделы',
+      lang: 'ru'
     });
     await expectNoA11yViolations(container);
   });

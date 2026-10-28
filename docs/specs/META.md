@@ -7,10 +7,13 @@ any of them without the owner saying so.
 
 `<meta name="robots" content="noindex, nofollow">` is in `app/index.html` -
 the rewrite's entry document, which is what `dist/index.html` is built from -
-and in every generated page: the stubs in `i/` and `i/en/` and the English
-entry document `en/index.html` (`tools/build-share-pages.js`), and the
-static pages in `pages/` and `pages/en/` (`tools/build-pages.js`,
-section 9). This is a personal
+and in every generated page: the site's record and English-root app
+documents, which keep the shell's head outside the card block
+(`tools/app-documents.js`), the mirror's stubs in `i/` and `i/en/` and its
+English entry document `en/index.html` (`tools/build-share-pages.js`), and
+the static pages in `pages/` and `pages/en/` (`tools/build-pages.js`,
+section 9). The worker's app document carries it too, and the header
+`X-Robots-Tag: noindex, nofollow`. This is a personal
 tool and is meant to stay out of search results. Do not remove it to improve
 SEO.
 
@@ -22,8 +25,9 @@ the preview card needs - title, description, robots, colour scheme, viewport,
 every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
 `app/index.html`'s head against the now-deleted root `index.html`'s; that
 second document is gone, so the check is a single-document read now. The
-English entry document `en/index.html` gets the same read, less the two PWA
-tags (it is a redirect page, never the installed app's document). The
+mirror's English entry document `en/index.html` gets the same read, less the
+two PWA tags (it is a redirect page, never the installed app's document); the
+site's `dist/en/index.html` is the app document with the English card. The
 published pages are checked again after a deploy by `tools/check-site.mjs`.
 
 ## 2. Crawling is allowed on purpose
@@ -33,14 +37,17 @@ crawler that is not allowed to fetch a page never reads the `noindex` on it, and
 can still list the bare URL it found elsewhere. Letting it fetch and then telling
 it `noindex` is what actually keeps the page out.
 
-Link previews in messengers (Telegram, Discord, Slack) fetch the stub pages too,
-so a blanket `Disallow` would break those as well.
+Link previews in messengers (Telegram, Discord, Slack) fetch the card paths
+too, so a blanket `Disallow` would break those as well.
 
-A preview card has one language. `app/index.html` (the site root, and so
-every `#/...` link, since the fragment never reaches a crawler) and the
-record stub `i/<id>` carry the Russian card; `en/index.html`, published at
-`<site>en/`, and `i/en/<id>` carry the English one, with its own
-picture `og/_share_en.jpg` for the root (`docs/specs/I18N.md`).
+A preview card has one language. `app/index.html` (the site root, every
+non-card route path, and every old `#/...` link, since the fragment never
+reaches a crawler) and the record path `i/<id>` carry the Russian card;
+`<site>en/`, every `/en/` non-card route path and `i/en/<id>` carry the
+English one, with its own picture `og/_share_en.jpg` for the root
+(`docs/specs/I18N.md`). Each card path answers the app document with its card
+in the head (`CONTRACTS.md` section 5), so a pasted address-bar link draws the
+same card as the copy button's.
 
 The preview host's cards (`CONTRACTS.md` section 5), probed by the owner on
 2026-10-14 in Telegram Desktop:
@@ -261,9 +268,18 @@ folder does not start, because Chrome blocks modules over `file://`.
 
 What stays:
 
-- `base: './'`: relative paths serve from Pages, `vite preview` and the
-  test server at any path. The `base: '/daggerheart-loot/'` of the issue
-  47 plan stays rejected.
+- `base: '/'`: every URL starts at the host root (`/data.js`,
+  `/assets/...`, `/img/`, `/card/`, `/pages/`, `/schema/`, `/sw.js`), so
+  the app runs at every route path (`ROUTES.md`, "Path form"); it runs only
+  at a host root - the site's host, `vite preview` and the test server
+  (owner, 2026-10-28). Rejected: a `<base href="/">` element, which breaks a
+  fragment-only `url(#...)` of the print page's inline SVG in some engines
+  and sends the skip link `#main` off the document; relative paths at every
+  depth, which only a worker could answer, so a quota burn would reach the
+  whole site. CSS `url()` stays relative to its stylesheet, and the
+  manifest's `./` values resolve against `/manifest.webmanifest`. The
+  `base: '/daggerheart-loot/'` of the issue 47 plan stays rejected
+  (`docs/decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md`).
 - `data.js` stays a classic script that assigns `window.LOOT` before the
   module runs (`CONTRACTS.md` section 4).
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
@@ -323,8 +339,8 @@ Kept on the owner's instruction over the review's recommendation to skip it.
 data, so nothing generates it) and published by `.github/workflows/ci.yml`'s
 collect step alongside `llms.txt`/`robots.txt`, to both hosts. Each host serves
 it verbatim, with a 404 status, for any request that does not match a real
-path - a share link truncated by a chat client, a hand-typed record id, a
-stub whose record a data change dropped, `/mcp` until the task `ai-mcp`, and
+path - a share link truncated by a chat client, a hand-typed record id
+(`/i/zzzz`), a record path whose record a data change dropped, `/mcp` until the task `ai-mcp`, and
 on the old host the install guide (section 9, "The old host"). Before this page
 existed, every one of those landed on GitHub's own generic 404, with no
 route back to the app in either language (verified live on `i/zzzz.html`
@@ -347,8 +363,8 @@ while the browser still shows an arbitrary, possibly nested bad path, and a
 relative link would resolve against that path's own directory, not against
 this file's real location. One file serves both hosts, and the old host's
 root only forwards, so the links name the site's host itself. It exists only
-as a serving fallback, so section 4's relative-base rule does not apply to
-it. `tools/check-site.lib.mjs`'s `checks()` proves the
+as a serving fallback, so the relative links of the static pages
+(section 9) are not its rule. `tools/check-site.lib.mjs`'s `checks()` proves the
 fallback on every deploy, against the local `_site/` build before
 publishing and against the live URL after
 (`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`), and
@@ -372,8 +388,13 @@ changed card, an artwork refresh included, is a new URL to Telegram's cache.
 A link shared before a change keeps its old card for good (owner,
 2026-10-28). `/p/` and `/tables/` links carry none: a print card never
 changes, and a table card changes only with a data deploy, so an old
-message keeps the old count. The stubs' `og:url`, the site root and `en/`
+message keeps the old count. The record cards' `og:url`, the site root and `en/`
 carry no version: a cached card of the site itself stays as it is.
+
+The address bar carries the same version (owner, 2026-10-28): on a record at
+once, and on `/h/` and `/s/` once the page has read its card, so a link
+copied from the bar draws the same card as the copy button's link. A
+navigation drops it.
 
 ## 9. Installable app (PWA)
 
@@ -434,8 +455,8 @@ and the label either way.
 
 `app/public/sw.js`, hand-written plain JS, copied verbatim, outside the
 bundle and the TypeScript project. `app/src/main.ts` registers it at every
-boot through `PwaPort`, as `./sw.js`, so its scope is the site folder, the
-host root on the site's host. It
+boot through `PwaPort`, as `/sw.js` with the scope `/`, so a deep route path
+(`/i/ci1`) registers the same worker at the host root. It
 stays registered: it keeps the site an installable app, and it caches
 pictures and hashed build files. It holds no offline shell (2026-09-24,
 `docs/DECISIONS.md`).
@@ -557,17 +578,18 @@ JavaScript and without a hash route (the route grammar is frozen,
   browser installs the app from any static page; the manifest's
   `start_url` opens the app root.
 - The template owns the back links and the language link because their
-  depth differs: the Russian page links `en/<id>.html` and `../`, the
-  English one `../<id>.html` and `../../`. A relative link inside a
-  fragment would resolve on one output only, so a fragment links the app
-  only through `%APP%`, which the template replaces with that page's own
-  back link.
+  depth and language differ: the Russian page links `en/<id>.html` and the
+  app root `../`, the English one `../<id>.html` and the English app root
+  `../../en/`. A relative link inside a fragment would resolve on one output
+  only, so a fragment links the app only through `%APP%<route>`, which the
+  template replaces with that page's app root (`%APP%account` opens
+  `/account` or `/en/account`).
 - The back link reads «Назад к генератору» on the Russian page and "Back
   to the generator" on the English one, with `data-back`. A small inline
-  script calls `history.back()` instead when the referrer is the app
-  document (same origin; below the app root that the link's own `href`
-  names, the path is empty or `index.html`) and the tab has history, so
-  the reader returns to the exact hash route. A direct visit, a new tab, no
+  script calls `history.back()` instead when the referrer is a page of the
+  app (same origin and not under `/pages/`, whatever its language: an English
+  record is `/i/en/<id>`, outside `/en/`) and the tab has history, so the
+  reader returns to the exact route with its scroll. A direct visit, a new tab, no
   JavaScript, or a referrer that is the other language's copy opens the app
   root. The script is the page's only one and stores nothing, so an English
   page does not store the language preference the way an English stub does

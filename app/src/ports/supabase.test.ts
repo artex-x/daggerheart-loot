@@ -131,7 +131,7 @@ beforeEach(() => {
   store = new Map();
   shows = new Set();
   win = {
-    location: { href: 'https://example.test/loot/index.html#/lists', hash: '#/lists' },
+    location: { href: 'https://example.test/lists', hash: '' },
     sessionStorage: {
       getItem: (k) => store.get(k) ?? null,
       setItem: (k, v) => {
@@ -473,7 +473,7 @@ describe('createCloud', () => {
       });
       return Promise.resolve({ data: {}, error: null });
     });
-    const started = make().auth.signIn('google');
+    const started = make().auth.signIn('google', { hash: '#/lists' });
     await vi.waitFor(() => {
       expect(shows.size).toBe(1);
     });
@@ -481,12 +481,11 @@ describe('createCloud', () => {
     expect(await started).toEqual({ ok: true });
     expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
       provider: 'google',
-      options: { redirectTo: 'https://example.test/loot/?auth-callback=1' }
+      options: { redirectTo: 'https://example.test/?auth-callback=1' }
     });
   });
 
-  it('links with the same way back, and maps a refusal', async () => {
-    win.location.hash = '';
+  it('links back to the account page, and maps a refusal', async () => {
     client.auth.linkIdentity.mockResolvedValueOnce({
       data: {},
       error: { code: 'identity_already_exists' }

@@ -74,12 +74,12 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
+    ok(text.includes('/s/<token>'), name + ' does not name the share link /s/<token>');
     ok(
-      text.includes('#/s/<token>/f_'),
-      name + " does not name the share link's filter #/s/<token>/f_"
+      text.includes('/s/<token>/f_'),
+      name + " does not name the share link's filter /s/<token>/f_"
     );
-    ok(text.includes('#/h/<uuid>'), name + ' does not name the item address #/h/<uuid>');
+    ok(text.includes('/h/<uuid>'), name + ' does not name the item address /h/<uuid>');
   });
   /* The URL ids follow the source products and the old ids still resolve
      (CONTRACTS.md section 1): an agent builds the new id and reads an old link. */
@@ -118,13 +118,13 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/homebrew'), name + ' does not name the homebrew page #/homebrew');
+    ok(text.includes('`/homebrew`'), name + ' does not name the homebrew page /homebrew');
     ok(
-      text.includes('#/tables/homebrew'),
-      name + ' does not name the homebrew table #/tables/homebrew'
+      text.includes('/tables/homebrew'),
+      name + ' does not name the homebrew table /tables/homebrew'
     );
     ok(text.includes('hb_'), name + ' does not name the reserved key prefix hb_');
-    for (const tab of ['#/homebrew/sources', '#/homebrew/sets', '#/homebrew/rules']) {
+    for (const tab of ['/homebrew/sources', '/homebrew/sets', '/homebrew/rules']) {
       ok(text.includes(tab), name + ' does not name the «Мои предметы» tab ' + tab);
     }
     /* The meaning of `src` on the homebrew table: one value, the source chip. */
@@ -133,14 +133,14 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       name + ' does not say that `src` on `homebrew` holds one value and picks the source chip'
     );
   });
-  /* Every print is a stored set at #/p/<id>, and the long print links are retired
+  /* Every print is a stored set at /p/<id>, and the long print links are retired
      (CONTRACTS.md section 1): an agent must find the date and build no print address. */
   [
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/p/<id>'), name + ' does not name the print set address #/p/<id>');
+    ok(text.includes('/p/<id>'), name + ' does not name the print set address /p/<id>');
   });
   [
     ['llms.txt', machine],
@@ -148,12 +148,14 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
   ].forEach(function ([name, text]) {
     ok(
       text.includes('2026-10-08'),
-      name + ' does not name the date the #/print/ links were retired, 2026-10-08'
+      name + ' does not name the date the print links were retired, 2026-10-08'
     );
   });
   ok(
-    !machine.includes('#/print/<id>') && !machine.includes('#/print/ci1*3-q1'),
-    'llms.txt still teaches a #/print/ address'
+    !machine.includes('#/print/<id>') &&
+      !machine.includes('#/print/ci1*3-q1') &&
+      !machine.includes('`/print/<id>`'),
+    'llms.txt still teaches a print address'
   );
 
   /* Record text is Markdown subset source and the csv is plain text (CONTRACTS.md
@@ -207,7 +209,6 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
   const preview = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'preview.json'), 'utf8'));
   ok(preview.origin === PREVIEW_ORIGIN, 'preview.json names another origin: ' + preview.origin);
   for (const c of preview.build) {
-    if (c.url === null) continue;
     ok(
       c.url.startsWith(PREVIEW_ORIGIN + '/'),
       'preview.json build url off the origin: ' + c.url
@@ -259,6 +260,103 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       'record.json url carries ?v= other than exactly when its row has v: ' + c.url
     );
   }
+  /* The two forms of one address (CONTRACTS.md section 1, ROUTES.md "Path form"):
+     the fixture's shape, and the host answering every route the app parses in
+     both languages - a route the app reads but the host misses would answer 404
+     on a reload. */
+  console.log('path forms');
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/paths\.json/m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/urls/paths.json"
+  );
+  const paths = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'paths.json'), 'utf8'));
+  const LANG = (v) => v === 'ru' || v === 'en';
+  ok(
+    Array.isArray(paths.parse) &&
+      paths.parse.length > 0 &&
+      paths.parse.every(
+        (c) =>
+          typeof c.path === 'string' &&
+          c.path.startsWith('/') &&
+          typeof c.fragment === 'string' &&
+          typeof c.hash === 'string' &&
+          c.hash.startsWith('#/') &&
+          (c.lang === null || LANG(c.lang)) &&
+          typeof c.why === 'string' &&
+          c.why.length > 0
+      ),
+    'paths.json parse rows are not { path, fragment, hash, lang, why }'
+  );
+  ok(
+    Array.isArray(paths.build) &&
+      paths.build.length > 0 &&
+      paths.build.every(
+        (c) =>
+          typeof c.hash === 'string' &&
+          LANG(c.lang) &&
+          typeof c.path === 'string' &&
+          c.path.startsWith('/') &&
+          typeof c.why === 'string' &&
+          c.why.length > 0
+      ),
+    'paths.json build rows are not { hash, lang, path, why }'
+  );
+  const { pathOf } = require('../app/src/lib/address.ts');
+  const PUB = path.join(__dirname, '..', 'preview', 'public');
+  const pattern = (from) =>
+    from.endsWith('*') ? (p) => p.startsWith(from.slice(0, -1)) : (p) => p === from;
+  const rewrites = fs
+    .readFileSync(path.join(PUB, '_redirects'), 'utf8')
+    .split('\n')
+    .map((l) => l.trim().split(/\s+/))
+    .filter((w) => w[0] && !w[0].startsWith('#'))
+    .map(([from, , status]) => ({ match: pattern(from), status: Number(status) }));
+  /* Pages routes `/x/*` to the worker for the bare `/x` too (measured 2026-10-28 with
+     wrangler pages dev); `exclude` wins over `include`. */
+  const routePattern = (from) =>
+    from.endsWith('/*')
+      ? (p) => p === from.slice(0, -2) || p.startsWith(from.slice(0, -1))
+      : (p) => p === from;
+  const excluded = (routesFile.exclude || []).map(routePattern);
+  const workerPaths = routesFile.include
+    .map(routePattern)
+    .map((m) => (p) => m(p) && !excluded.some((x) => x(p)));
+  const ROOT_DIR = path.join(__dirname, '..');
+  /* A static page the site publishes: the two roots and a record's i/ page. */
+  const staticPage = (p) => {
+    if (p === '/' || p === '/en/') return true;
+    const rec = /^\/i\/(en\/)?([\w-]+)$/.exec(p);
+    return !!rec && fs.existsSync(path.join(ROOT_DIR, 'i', rec[1] || '', rec[2] + '.html'));
+  };
+  const answers = (p) =>
+    staticPage(p) ||
+    workerPaths.some((m) => m(p)) ||
+    rewrites.some((r) => r.status === 200 && r.match(p));
+  const routeRows = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
+  for (const row of routeRows) {
+    /* A row the app answers with the home section names no page of its own. */
+    if (row.resolves.hash !== row.hash) continue;
+    for (const lang of ['ru', 'en']) {
+      const p = pathOf(row.hash, lang);
+      ok(answers(p), 'the host answers ' + p + ' (' + row.hash + ') with no app document');
+      /* The worker answers a path it does not parse with a 302 home. */
+      ok(
+        !(
+          workerPaths.some((m) => m(p)) && rewrites.some((r) => r.status === 200 && r.match(p))
+        ),
+        'the worker takes ' + p + ' from its _redirects rewrite; add it to _routes.json exclude'
+      );
+    }
+  }
+  ok(
+    rewrites.some((r) => r.status === 301 && r.match('/en/i/ci1')),
+    '_redirects does not send /en/i/<id> to /i/en/<id>'
+  );
+  ok(
+    !rewrites.some((r) => r.match('/mcp') || r.match('/en/mcp')),
+    '_redirects names /mcp, which is reserved for the ai-mcp task'
+  );
+
   const ciText = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'ci.yml'),
     'utf8'

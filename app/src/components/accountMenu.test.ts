@@ -37,9 +37,9 @@ describe('the account menu', () => {
       'Мои предметы',
       'Выйти'
     ]);
-    expect(items()[0]).toHaveAttribute('href', '#/account');
-    expect(items()[1]).toHaveAttribute('href', '#/lists');
-    expect(items()[2]).toHaveAttribute('href', '#/homebrew');
+    expect(items()[0]).toHaveAttribute('href', '/account');
+    expect(items()[1]).toHaveAttribute('href', '/lists');
+    expect(items()[2]).toHaveAttribute('href', '/homebrew');
     expect(items()[3]?.tagName).toBe('BUTTON');
     expect(items().every((i) => i.getAttribute('tabindex') === '-1')).toBe(true);
     expect(menu).toHaveClass('acctmenu');

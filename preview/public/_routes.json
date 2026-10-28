@@ -10,5 +10,5 @@
     "/en/p/*",
     "/en/tables/*"
   ],
-  "exclude": []
+  "exclude": ["/tables", "/en/tables"]
 }

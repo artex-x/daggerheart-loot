@@ -4,7 +4,7 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=/homebrew/new?as=gm1]
   dialog "Обрезать картинку" [modal=true]
     heading "Обрезать картинку" [level=2]
     StaticText "Перетащите картинку, чтобы выбрать квадрат. Стрелки двигают её, ..." [namelen=85 namehash=0d5e8fc6]
@@ -67,7 +67,7 @@ daggerheart.com
 ХоумбрюМастерская Ольхи+ Новый источник...
 
 ## en :: tree
-RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
+RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1]
   dialog "Crop the picture" [modal=true]
     heading "Crop the picture" [level=2]
     StaticText "Drag the picture to choose the square. Arrow keys move it; + and..." [namelen=72 namehash=f7b3964e]

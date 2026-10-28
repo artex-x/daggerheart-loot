@@ -826,7 +826,7 @@
         />
       {:else}
         <PageTitle title={t.listNotFound} sub={t.listNotFoundSub} />
-        <Button variant="primary" href={sectionHash('lists')} sameTab
+        <Button variant="primary" href={app.href(sectionHash('lists'))} sameTab
           >{sectionLabel('lists', t)}</Button
         >
       {/if}

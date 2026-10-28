@@ -6,6 +6,8 @@
 const fs = require('fs');
 const path = require('path');
 const { fresh, reporter, closeBrowser } = require('./lib.js');
+/* The app's own conversion, so the bar is compared in the form the app writes. */
+const { pathOf } = require('../../app/src/lib/address.ts');
 
 const FIX = path.join(__dirname, '..', '..', 'docs', 'fixtures');
 const rep = reporter();
@@ -26,10 +28,10 @@ const { ok } = rep;
       await d.open(hash);
       const seen = await page.evaluate(() => ({
         h1: document.querySelector('main h1')?.textContent?.trim() ?? null,
-        hash: location.hash
+        bar: location.pathname + location.hash
       }));
       ok(seen.h1 === 'Предмет не найден', hash + ': the heading is ' + JSON.stringify(seen.h1));
-      ok(seen.hash === hash, hash + ': the address became ' + seen.hash);
+      ok(seen.bar === pathOf(hash, 'ru'), hash + ': the address became ' + seen.bar);
     }
     await ctx.close();
   }
@@ -44,14 +46,19 @@ const { ok } = rep;
    * ~1.8s-per-context floor (tests/app/golden.js's measured cost) once per fixture. */
   const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
-    await rD.open(fx.hash);
+    /* A route the app answers with the home section names no page the host
+       serves at its path (`/nonsense` answers 404.html), so it opens by its old
+       fragment form, which the app reads at the root. */
+    await rD.open(fx.resolves.hash === fx.hash ? fx.hash : '/' + fx.hash);
     const seen = await rPage.evaluate(() => {
       const on = document.querySelector('nav.tabs a[aria-current="page"]');
       /* `.chip[data-val]` is StdPanel's source row and only it - the `value`
          prop on Chip.svelte has no other caller. */
       const srcBtns = [...document.querySelectorAll('.chip[data-val]')];
       return {
-        hash: location.hash,
+        /* The card version is the states suite's (case 81); the route is this one's. */
+        bar:
+          location.pathname + location.search.replace(/[?&]v=[0-9a-z]+$/, '') + location.hash,
         tab: on ? on.getAttribute('href') : null,
         rows: document.querySelectorAll('.rows .row[data-row]').length,
         printCards: document.querySelectorAll('.pcard:not(.blank)').length,
@@ -107,8 +114,11 @@ const { ok } = rep;
         fx.hash + ': sub ' + JSON.stringify(sub) + ', the fixture says ' + want.sub
       );
     }
-    ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
-    ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
+    /* Opened by its path form, the bar keeps the path form of the route it resolves to. */
+    const wantBar = pathOf(want.hash, 'ru');
+    const wantTab = want.tab === null ? null : pathOf(want.tab, 'ru');
+    ok(seen.bar === wantBar, fx.hash + ': became ' + seen.bar + ', not ' + wantBar);
+    ok(seen.tab === wantTab, fx.hash + ': highlighted ' + seen.tab + ', not ' + wantTab);
     ok(
       seen.rows === want.rows,
       fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows
@@ -144,6 +154,66 @@ const { ok } = rep;
   }
   await rCtx.close();
 
+  /* An old `#/` address opens its page and the bar becomes the path form in one step,
+     with no extra history entry (docs/specs/ROUTES.md, "Path form"). */
+  console.log('an old address becomes its path');
+  {
+    const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
+    /* The entries a load itself makes, read before the app boots. */
+    await page.evaluateOnNewDocument(() => {
+      window.__entries = history.length;
+    });
+    const bar = () =>
+      page.evaluate(() => ({
+        bar: location.pathname + location.search + location.hash,
+        lang: document.documentElement.lang,
+        stored: localStorage.getItem('dhloot.lang.v1'),
+        added: history.length - window.__entries
+      }));
+    for (const [old, want, why] of [
+      ['#/i/ci1', '/i/ci1', 'a record'],
+      [
+        '#/s/player-token-1/f_kind-weapon.tier-1',
+        '/s/player-token-1/f_kind-weapon.tier-1',
+        'a share link with a filter'
+      ],
+      ['/roll/std#/i/ci1', '/i/ci1', 'a fragment over a path']
+    ]) {
+      await d.open(old);
+      await d.addressSettled();
+      const seen = await bar();
+      ok(seen.bar.split('?')[0] === want, why + ': ' + old + ' became ' + seen.bar);
+      ok(seen.added === 0, why + ': the conversion added ' + seen.added + ' history entries');
+    }
+    /* An old English link with nothing stored: English, stored, the English path. */
+    await d.open('en/#/tables/eq_weapon');
+    await d.addressSettled();
+    const en = await bar();
+    ok(en.bar === '/en/tables/eq_weapon', 'en/#/tables/eq_weapon became ' + en.bar);
+    ok(
+      en.lang === 'en' && en.stored === 'en',
+      'en/#/ drew ' + en.lang + ', stored ' + en.stored
+    );
+    ok(en.added === 0, 'en/#/: the conversion added ' + en.added + ' history entries');
+    /* An English path with nothing stored draws English. */
+    await d.open('/en/tables/eq_weapon');
+    const enPath = await bar();
+    ok(
+      enPath.bar === '/en/tables/eq_weapon' && enPath.lang === 'en',
+      '/en/tables/eq_weapon drew ' + enPath.lang + ' at ' + enPath.bar
+    );
+    /* A typed old address on an open page: the same page, its path form, in place. */
+    await d.open('#/roll/std');
+    await d.go('#/i/ci1');
+    await d.addressSettled();
+    const typed = await bar();
+    ok(
+      typed.bar.split('?')[0] === '/i/ci1' && typed.added === 1,
+      'a typed #/i/ci1 became ' + typed.bar + ' with ' + typed.added + ' entries'
+    );
+    await ctx.close();
+  }
+
   console.log('every relation link on an item page opens its item');
   /* `#/h/<uuid>` signed out: each relation line's link is an item address, and each one
      draws a card headed by the name the link carries (docs/specs/FEATURES.md, "Records"). */
@@ -158,7 +228,7 @@ const { ok } = rep;
     );
     ok(links.length === 4, 'the item page draws ' + links.length + ' relation links, not 4');
     for (const link of links) {
-      ok(/^#\/h\/[0-9a-f-]{36}$/.test(link.href), link.text + ': links ' + link.href);
+      ok(/^\/h\/[0-9a-f-]{36}$/.test(link.href), link.text + ': links ' + link.href);
       await hD.open(link.href);
       const heading = await hPage.evaluate(
         () => document.querySelector('h1')?.textContent.trim() ?? ''

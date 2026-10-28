@@ -137,7 +137,7 @@
     {#if toast.action?.href}
       <a
         class="toast-act"
-        href={toast.action.href}
+        href={app.href(toast.action.href)}
         target="_blank"
         rel="noopener"
         onclick={() => {

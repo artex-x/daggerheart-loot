@@ -517,7 +517,7 @@ export function createCloud(
     after?: SignInAfter
   ): Promise<AuthResult> {
     saveReturn(win, {
-      hash: after?.hash ?? (win.location.hash || '#/account'),
+      hash: after?.hash ?? '#/account',
       kind,
       provider,
       ...(after?.action ? { action: after.action } : {})

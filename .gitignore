@@ -71,12 +71,13 @@ i/
 # The preview host's own install and wrangler's local state (preview/).
 preview/node_modules/
 preview/.wrangler/
-# The deploy copies the site into preview/public/ beside the three Pages control
+# The deploy copies the site into preview/public/ beside the four Pages control
 # files; _site/, _old/ and _cf/ are the deploy's and the local Pages run's copies.
 preview/public/*
 !preview/public/_worker.js
 !preview/public/_routes.json
 !preview/public/_headers
+!preview/public/_redirects
 /_site/
 /_old/
 /_cf/

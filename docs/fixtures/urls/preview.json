@@ -73,38 +73,38 @@
     {
       "hash": "#/tables/homebrew",
       "lang": "ru",
-      "url": null,
-      "why": "the homebrew table is never a preview link"
+      "url": "https://daggerheart-loot.pages.dev/tables/homebrew",
+      "why": "the homebrew table: the path form; the worker answers it with the site card"
     },
     {
       "hash": "#/tables/homebrew/f_src-hb_alderworkshopaaa",
       "lang": "en",
-      "url": null,
-      "why": "nor its filter"
+      "url": "https://daggerheart-loot.pages.dev/en/tables/homebrew/f_src-hb_alderworkshopaaa",
+      "why": "its filter in English keeps the segment"
     },
     {
       "hash": "#/l/ABC",
       "lang": "ru",
-      "url": null,
-      "why": "an old list link has no preview link"
+      "url": "https://daggerheart-loot.pages.dev/l/ABC",
+      "why": "an old list link: the path form; the rewrite answers the site card"
     },
     {
       "hash": "#/i/ci1",
       "lang": "ru",
-      "url": null,
-      "why": "a catalog record keeps its i/ stub"
+      "url": "https://daggerheart-loot.pages.dev/i/ci1",
+      "why": "a catalog record: its app document; this row has no v"
     },
     {
       "hash": "#/lists",
       "lang": "ru",
-      "url": null,
-      "why": "a section is not a card family"
+      "url": "https://daggerheart-loot.pages.dev/lists",
+      "why": "a section: the path form; the rewrite answers the site card"
     },
     {
       "hash": "#/tables",
       "lang": "ru",
-      "url": null,
-      "why": "the tables page with no table"
+      "url": "https://daggerheart-loot.pages.dev/tables",
+      "why": "the tables page with no table: the path form; the rewrite answers the site card"
     }
   ],
   "serve": [

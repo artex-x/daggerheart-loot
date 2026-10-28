@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { card, esc, fit } from '../tools/share-card.mjs';
+import { appDocument, card, cardHead, esc, fit } from '../tools/share-card.mjs';
 
 /* Required before the worker imports it: Node imports a .ts file of this typeless
    package with a MODULE_TYPELESS_PACKAGE_JSON warning and requires it silently
@@ -124,10 +124,35 @@ const pick = (r, init, fallback) =>
   typeof r === 'function' ? r(init) : r ? r.clone() : fallback();
 let realFetch;
 let realNow;
-/** Installs a fake fetch: `item`, `list` and `names` each return a Response or a promise. */
-function serve({ item: itemRes, list: listRes, names: namesRes } = {}) {
+/* The app document the site publishes, in the shape of the built index.html. */
+const SHELL = `<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<!-- card -->
+<title>Генератор лута Daggerheart</title>
+<meta property="og:title" content="Генератор лута Daggerheart">
+<!-- /card -->
+<meta name="theme-color" content="#0e0c15">
+<script type="module" crossorigin src="/assets/index-test.js"></script>
+</head>
+<body>
+<div id="app"></div>
+</body>
+</html>
+`;
+const html = (text, status = 200) =>
+  new Response(text, { status, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+
+/** Installs a fake fetch: `item`, `list`, `names` and `shell` (the app document at
+ *  SITE) each return a Response or a promise. With no `shell` the app document is a
+ *  404, a failed read, so every card-body test reads the card page. */
+function serve({ item: itemRes, list: listRes, names: namesRes, shell: shellRes } = {}) {
   globalThis.fetch = async (url, init = {}) => {
     calls.push({ url: String(url), init, at: Date.now() });
+    if (String(url) === SITE)
+      return pick(shellRes, init, () => new Response('nope', { status: 404 }));
     if (String(url) === SITE + 'names.json') return pick(namesRes, init, () => json(NAMES));
     if (String(url).endsWith('/rpc/get_item_preview'))
       return pick(itemRes, init, () => json(itemAnswer()));
@@ -137,6 +162,8 @@ function serve({ item: itemRes, list: listRes, names: namesRes } = {}) {
     throw new Error('unexpected fetch ' + url);
   };
 }
+/** Returns the requests other than the app document's read. */
+const otherCalls = () => calls.filter((c) => c.url !== SITE);
 const hang = (init) =>
   new Promise((_, reject) => {
     init.signal.addEventListener('abort', () => reject(init.signal.reason));
@@ -469,7 +496,10 @@ describe('/h/: names.json', () => {
     const res = await w.fetch(new Request(HOST + '/h/' + ID), env, {});
     const body = await res.text();
     assert.equal(res.status, 200);
-    assert.deepEqual(assets, [SITE + 'names.json']);
+    assert.deepEqual(
+      assets.filter((u) => u.endsWith('names.json')),
+      [SITE + 'names.json']
+    );
     assert.ok(!calls.some((c) => c.url.endsWith('names.json')));
     assert.notDeepEqual(lines(body), []);
   });
@@ -594,7 +624,7 @@ describe('/h/: the id', () => {
     const { res, body } = await get('/h/ABC-12');
     assert.equal(res.status, 404);
     assertHeaders(res);
-    assert.equal(calls.length, 0);
+    assert.equal(otherCalls().length, 0);
     assert.equal(meta(body, 'og:title'), 'Предмет не найден');
     assert.equal(
       meta(body, 'og:description'),
@@ -707,7 +737,7 @@ describe('every answer', () => {
       host: 'https://1a2b.daggerheart-loot.pages.dev'
     });
     assert.equal(new URL(odd.res.headers.get('Location')).host, 'daggerheart-loot.pages.dev');
-    assert.equal(calls.length, 0);
+    assert.equal(otherCalls().length, 0);
   });
 
   it('sends the retired probe paths home', async () => {
@@ -812,12 +842,211 @@ describe('docs/fixtures/urls/preview.json, serve', () => {
   });
 });
 
+/** Returns the card fields of a page: from `<title>` to the `twitter:image` line. */
+function headBlock(html) {
+  const end = /<meta name="twitter:image" content="[^"]*">/.exec(html);
+  return html.slice(html.indexOf('<title>'), end.index + end[0].length);
+}
+function assertApp(html, lang) {
+  assert.ok(html.includes('<script type="module" crossorigin src="/assets/index-test.js">'));
+  assert.ok(html.includes('<div id="app"></div>'));
+  assert.ok(!html.includes('location.replace'));
+  assert.doesNotMatch(html, /http-equiv="refresh"/i);
+  assert.ok(html.includes('<html lang="' + lang + '">'), 'lang ' + lang);
+}
+function assertAppHeaders(res) {
+  assert.equal(res.headers.get('Cache-Control'), 'no-store');
+  assert.equal(res.headers.get('X-Robots-Tag'), 'noindex, nofollow');
+  assert.equal(res.headers.get('Referrer-Policy'), null);
+  assert.equal(res.headers.get('Set-Cookie'), null);
+  assert.equal(res.headers.get('Content-Type'), 'text/html; charset=utf-8');
+}
+
+describe('the app document', () => {
+  const answers = {
+    item: () => json(itemAnswer()),
+    null: () => json(null),
+    list: () => json(listAnswer())
+  };
+  const fetchRow = async (c, shell) => {
+    serve({
+      item: answers[c.answer === 'item' ? 'item' : 'null'],
+      list: answers[c.answer === 'list' ? 'list' : 'null'],
+      shell
+    });
+    const res = await worker.fetch(
+      new Request(c.url, { method: c.method ?? 'GET' }),
+      { ...ENV, SITE: FIXTURE.site },
+      {}
+    );
+    return { res, body: await res.text() };
+  };
+  const cards = FIXTURE.serve.filter((x) => !x.static && !x.location && x.status !== 405);
+
+  for (const c of cards) {
+    it(`${c.url.slice(0, 90)}: ${c.why}`, async () => {
+      const lang = new URL(c.url).pathname.startsWith('/en/') ? 'en' : 'ru';
+      const page = await fetchRow(c);
+      calls = [];
+      const { res, body } = await fetchRow(c, html(SHELL));
+      assert.equal(res.status, c.status);
+      assertAppHeaders(res);
+      assertApp(body, lang);
+      if (c.ogUrl) assert.equal(meta(body, 'og:url'), c.ogUrl);
+      assert.equal(headBlock(body), headBlock(page.body));
+      assert.equal(calls.filter((x) => x.url === SITE).length, 1);
+    });
+  }
+
+  it('answers HEAD with the headers of GET and no body', async () => {
+    serve({ item: () => json(itemAnswer()), shell: html(SHELL) });
+    const head = await get('/h/' + ID, { method: 'HEAD' });
+    const getRes = await get('/h/' + ID);
+    assert.equal(head.res.status, 200);
+    assert.equal(head.res.body, null);
+    for (const h of ['Content-Type', 'Cache-Control', 'X-Robots-Tag', 'Referrer-Policy'])
+      assert.equal(head.res.headers.get(h), getRes.res.headers.get(h));
+    assert.equal(calls.filter((x) => x.url === SITE).length, 2);
+  });
+
+  it('sets <html lang="en"> under /en/ and keeps the 404 and 503 statuses', async () => {
+    serve({ item: () => json(itemAnswer()), shell: html(SHELL) });
+    const en = await get('/en/h/' + ID);
+    assertApp(en.body, 'en');
+    assert.equal(meta(en.body, 'og:locale'), 'en_US');
+    serve({ item: () => json(null), shell: html(SHELL) });
+    assert.equal((await get('/h/' + ID)).res.status, 404);
+    serve({ item: () => new Response('', { status: 500 }), shell: html(SHELL) });
+    const down = await get('/h/' + ID);
+    assert.equal(down.res.status, 503);
+    assertApp(down.body, 'ru');
+    assert.equal(title(down.body), 'Генератор лута Daggerheart');
+  });
+});
+
+describe('a failed shell read', () => {
+  const failures = [
+    ['a 404', () => new Response('nope', { status: 404 })],
+    ['a throw', () => Promise.reject(new Error('down'))],
+    ['a 500', () => new Response(SHELL, { status: 500 })],
+    ['a document without the markers', () => html(SHELL.replace('<!-- card -->', ''))],
+    ['a document past 65536 bytes', () => html(SHELL + ' '.repeat(65536))]
+  ];
+  for (const [name, shell] of failures) {
+    it(`answers the card page on ${name}, then reads the shell again`, async () => {
+      serve({ item: () => json(itemAnswer()), shell });
+      const { res, body } = await get('/h/' + ID);
+      assert.equal(res.status, 200);
+      assertHeaders(res);
+      assertRedirect(body, SITE + '#/h/' + ID);
+      serve({ item: () => json(itemAnswer()), shell: html(SHELL) });
+      const next = await get('/h/' + ID);
+      assertApp(next.body, 'ru');
+    });
+  }
+
+  it('answers the card page after a 2 s timeout', async () => {
+    serve({ item: () => json(itemAnswer()), shell: hang });
+    const started = Date.now();
+    const { res, body } = await get('/h/' + ID);
+    assert.ok(Date.now() - started >= 1900, String(Date.now() - started));
+    assert.equal(res.status, 200);
+    assertHeaders(res);
+    assertRedirect(body, SITE + '#/h/' + ID);
+  });
+
+  it('keeps the 404 status of a not-found card page', async () => {
+    serve({ item: () => json(null) });
+    const { res, body } = await get('/h/' + ID);
+    assert.equal(res.status, 404);
+    assertRedirect(body, SITE + '#/h/' + ID);
+  });
+});
+
+describe('cardHead and appDocument', () => {
+  const catalog = {
+    title: 'Палаш',
+    desc: 'Описание',
+    body: 'Описание',
+    url: SITE + 'i/w1',
+    app: SITE + 'i/w1',
+    img: SITE + 'og/w1.jpg',
+    imgSrc: '../img/w1.webp',
+    subtitle: 'Core',
+    seed: false
+  };
+  const site = {
+    title: 'Лавка',
+    desc: '12 позиций',
+    body: '12 позиций',
+    url: HOST + '/s/' + TOKEN,
+    app: SITE + '#/s/' + TOKEN,
+    img: SITE + 'og/_share.jpg',
+    large: true,
+    caps: { meta: 480 }
+  };
+  for (const [name, ctx] of [
+    ['a catalog card', catalog],
+    ['a worker card', site]
+  ]) {
+    it(`is the head of card() for ${name}`, () => {
+      for (const lang of ['ru', 'en'])
+        assert.ok(card(lang, ctx).includes('\n' + cardHead(lang, ctx) + '\n'), lang);
+    });
+  }
+
+  it('replaces only the lines between the markers and sets <html lang>', () => {
+    const doc = appDocument(SHELL, '<title>X</title>', 'en');
+    assert.ok(doc.startsWith('<!doctype html>\n<html lang="en">\n'));
+    assert.ok(doc.includes('<!-- card -->\n<title>X</title>\n<!-- /card -->'));
+    assert.ok(!doc.includes('og:title'));
+    assert.ok(doc.includes('<meta name="theme-color" content="#0e0c15">'));
+  });
+
+  it('puts a record text after the mount point, and throws without one', () => {
+    const doc = appDocument(SHELL, '<title>X</title>', 'ru', '<noscript>T</noscript>');
+    assert.ok(doc.includes('<div id="app"></div>\n<noscript>T</noscript>\n</body>'));
+    assert.throws(
+      () => appDocument(SHELL.replace('<div id="app"></div>', ''), 'x', 'ru', 'T'),
+      {
+        message: 'The app document has no <div id="app"></div>. Keep it in app/index.html'
+      }
+    );
+  });
+
+  it('keeps $& and $1 in a title literal', () => {
+    const head = cardHead('ru', { ...catalog, title: 'A $& B $1 $$' });
+    const doc = appDocument(SHELL, head, 'ru');
+    assert.equal(meta(doc, 'og:title'), 'A $&amp; B $1 $$');
+    assert.ok(doc.includes('\n' + head + '\n'));
+  });
+
+  it('throws when a marker is missing or the markers are out of order', () => {
+    const want = {
+      message:
+        'The app document has no card block. Keep <!-- card --> and <!-- /card --> in app/index.html'
+    };
+    assert.throws(() => appDocument(SHELL.replace('<!-- /card -->', ''), 'x', 'ru'), want);
+    assert.throws(() => appDocument(SHELL.replace('<!-- card -->', ''), 'x', 'ru'), want);
+    const swapped = SHELL.replace('<!-- card -->', '@@')
+      .replace('<!-- /card -->', '<!-- card -->')
+      .replace('@@', '<!-- /card -->');
+    assert.throws(() => appDocument(swapped, 'x', 'ru'), want);
+  });
+});
+
 describe('the Pages control files', () => {
   const pub = (name) => join(import.meta.dirname, 'public', name);
 
   it('routes only the card families to the worker', () => {
     const routes = JSON.parse(readFileSync(pub('_routes.json'), 'utf8'));
-    assert.deepEqual(routes, { version: 1, include: FIXTURE.routes, exclude: [] });
+    /* The bare /tables is the static rewrite's: Pages matches /tables/* to /tables too
+       (measured 2026-10-28 with wrangler pages dev). */
+    assert.deepEqual(routes, {
+      version: 1,
+      include: FIXTURE.routes,
+      exclude: ['/tables', '/en/tables']
+    });
     assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/mcp') || r.startsWith('/en/mcp')));
   });
 
@@ -1067,7 +1296,7 @@ describe('/s/: a shared list', () => {
     calls = [];
     const short = await get('/s/abc');
     assert.equal(short.res.status, 404);
-    assert.equal(calls.length, 0);
+    assert.equal(otherCalls().length, 0);
     assertRedirect(short.body, SITE + '#/s/abc');
     const empty = await get('/en/s/');
     assert.equal(meta(empty.body, 'og:title'), 'This list is no longer available');
@@ -1180,7 +1409,7 @@ describe('a path run past 2048 characters', () => {
       serve();
       const { res, body } = await get(path);
       assert.equal(res.status, 404);
-      assert.equal(calls.length, 0);
+      assert.equal(otherCalls().length, 0);
       assert.ok(bytes(body) < 65536, String(bytes(body)));
       assertRedirect(body, home);
     });
@@ -1233,7 +1462,7 @@ describe('/p/: a print set', () => {
     serve();
     const ru = await get('/p/' + PRINT);
     assert.equal(ru.res.status, 200);
-    assert.equal(calls.length, 0);
+    assert.equal(otherCalls().length, 0);
     assert.equal(meta(ru.body, 'og:title'), 'Печать карточек');
     assert.equal(meta(ru.body, 'og:description'), 'Войдите, чтобы печатать карточки.');
     assert.equal(meta(ru.body, 'og:image'), SITE + 'og/_share.jpg');

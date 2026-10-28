@@ -30,13 +30,13 @@ describe("the trait cell's word", () => {
 
 describe('a vector file name', () => {
   it('is plain in colour', () => {
-    expect(cardArt('shield', false)).toBe('card/shield.svg');
+    expect(cardArt('shield', false)).toBe('/card/shield.svg');
   });
 
   it('takes -bw in black and white for each pair drawn as two files', () => {
-    expect(cardArt('shield', true)).toBe('card/shield-bw.svg');
-    expect(cardArt('burden-1', true)).toBe('card/burden-1-bw.svg');
-    expect(cardArt('burden-2', true)).toBe('card/burden-2-bw.svg');
+    expect(cardArt('shield', true)).toBe('/card/shield-bw.svg');
+    expect(cardArt('burden-1', true)).toBe('/card/burden-1-bw.svg');
+    expect(cardArt('burden-2', true)).toBe('/card/burden-2-bw.svg');
   });
 });
 

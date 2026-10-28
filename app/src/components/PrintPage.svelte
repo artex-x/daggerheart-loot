@@ -125,7 +125,8 @@
   <NoData>{t.noData}</NoData>
 {:else if !valid}
   <PageTitle title={t.printTitle} sub={t.printSetGone} />
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab>{t.toStart}</Button
+  >
 {:else if app.user === undefined}
   <!-- The session is not known yet: the heading alone, so no other state flashes (rule 7). -->
   <PageTitle title={t.printTitle} />
@@ -149,13 +150,15 @@
   />
 {:else if read === 'gone'}
   <PageTitle title={t.printTitle} sub={t.printSetGone} />
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab>{t.toStart}</Button
+  >
 {:else if !cards.length}
   <PageTitle title={t.printTitle} sub={t.printEmpty} />
   {#if missing > 0}
     <p class="printnote warnnote">{missingNote}</p>
   {/if}
-  <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab>{t.toStart}</Button
+  >
 {:else}
   <div class="printbar">
     <PageTitle title={t.printTitle} {sub} />

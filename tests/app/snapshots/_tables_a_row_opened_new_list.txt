@@ -3,7 +3,7 @@
 # why: signed out: the sign-in prompt in the new-list slot of the modal's menu, and which side the menu keeps when it grows - the rewrite re-measured from the flipped side and sent it under the card's edge
 
 ## ru :: tree
-RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables]
   dialog "Самоцвет Чутья" [modal=true]
     button "Закрыть" [description=Закрыть]
     button "Страница"
@@ -182,7 +182,7 @@ daggerheart.com
 Цепь Парагона
 
 ## en :: tree
-RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
   dialog "Gem of Insight" [modal=true]
     button "Close" [description=Close]
     button "Page"

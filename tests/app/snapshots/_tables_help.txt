@@ -3,21 +3,21 @@
 # why: the help panel, which uses a bold word mid-sentence twice over, and the «Хоумбрю» group with its three filters
 
 ## ru :: tree
-RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables]
-  link "К содержимому" [url=#main]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables]
+  link "К содержимому" [url=/tables#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -27,14 +27,14 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     ... StaticText x15 of 19 same-shape siblings elided
     link "daggerheart.su" [url=https://ru.daggerheart.su/]
     StaticText ", для Hope & Fear - таблица сообщества. Значения даны с учётом э..." [namelen=70 namehash=52485741]
-    link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
-    link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous_environments]
-    link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Прочее" [url=#/tables/other_starting]
-    link "Предметы" [url=#/tables/core_item]
-    link "Расходники" [url=#/tables/core_consumable]
+    link "Core" [url=/tables/core_item]
+    link "Hope & Fear" [url=/tables/hope_and_fear_item]
+    link "Альт. таблицы" [url=/tables/alt_item]
+    link "Дополнения" [url=/tables/wondrous_environments]
+    link "Снаряжение" [url=/tables/eq_weapon]
+    link "Прочее" [url=/tables/other_starting]
+    link "Предметы" [url=/tables/core_item]
+    link "Расходники" [url=/tables/core_consumable]
     searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -51,9 +51,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     button "60 Пояс Единства Один раз за сессию вы можете потратить 5 Надежд..." [namelen=144 namehash=5ce27726]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -205,21 +205,21 @@ daggerheart.su
 Цепь Парагона
 
 ## en :: tree
-RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
-  link "Skip to content" [url=#main]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
+  link "Skip to content" [url=/en/tables#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -228,14 +228,14 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
     StaticText "Every table in full. The top row holds the core set, Hope & Fear..." [namelen=791 namehash=21ef1ddc]
     ... StaticText x14 of 18 same-shape siblings elided
     StaticText "Sources: the Daggerheart Core Set and Hope & Fear, with the erra..." [namelen=75 namehash=35eaebfd]
-    link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
-    link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous_environments]
-    link "Equipment" [url=#/tables/eq_weapon]
-    link "Other" [url=#/tables/other_starting]
-    link "Items" [url=#/tables/core_item]
-    link "Consumables" [url=#/tables/core_consumable]
+    link "Core" [url=/en/tables/core_item]
+    link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+    link "Alt. tables" [url=/en/tables/alt_item]
+    link "Supplements" [url=/en/tables/wondrous_environments]
+    link "Equipment" [url=/en/tables/eq_weapon]
+    link "Other" [url=/en/tables/other_starting]
+    link "Items" [url=/en/tables/core_item]
+    link "Consumables" [url=/en/tables/core_consumable]
     searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]
@@ -252,9 +252,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables]
     button "60 Belt of Unity Once per session, you can spend 5 Hope to lead ..." [namelen=120 namehash=2cbc5f0e]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

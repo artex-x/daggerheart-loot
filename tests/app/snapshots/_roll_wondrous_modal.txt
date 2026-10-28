@@ -3,7 +3,7 @@
 # why: the card opened over the roll
 
 ## ru :: tree
-RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=/roll/wondrous_environments]
   dialog "Смола Бездны" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -63,7 +63,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
+RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/wondrous_environments]
   dialog "Abyssal Sap" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"

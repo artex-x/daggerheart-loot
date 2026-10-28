@@ -83,7 +83,7 @@
   >
 {/if}
 {#if app.homebrew?.has(it.id) && !foreign}
-  <Button size="sm" href={homebrewItemHash(it.id)} sameTab>{t.edit}</Button>
+  <Button size="sm" href={app.href(homebrewItemHash(it.id))} sameTab>{t.edit}</Button>
 {/if}
 {#if offered}
   <div class="savegroup">

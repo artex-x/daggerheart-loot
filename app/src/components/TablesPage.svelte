@@ -604,7 +604,7 @@
     <div class="panel tablenav">
       <ChipRow>
         {#each TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
-          <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
+          <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
         {/each}
       </ChipRow>
       {#if table === 'homebrew' && hbSources.length > 1}
@@ -621,12 +621,14 @@
               size="sm"
               label={s.label}
               on={s.key === hbSource}
-              href={tablesHash('homebrew', {
-                filter: {
-                  ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
-                  src: [s.key]
-                }
-              })}
+              href={app.href(
+                tablesHash('homebrew', {
+                  filter: {
+                    ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
+                    src: [s.key]
+                  }
+                })
+              )}
             />
           {/each}
           {#if hbSources.length > CHIP_FOLD_AT}
@@ -648,7 +650,7 @@
               label={t[navSubLabel(sub)]}
               short={shortOf(sub)}
               on={sub === table}
-              href={tablesHash(sub)}
+              href={app.href(tablesHash(sub))}
             />
           {/each}
         </ChipRow>
@@ -677,7 +679,7 @@
     {:else if table === 'homebrew' && !rows.length}
       <Empty>
         {t.hbEmptyTable}
-        <Button href={homebrewItemHash(null)} sameTab>{t.hbNewItem}</Button>
+        <Button href={app.href(homebrewItemHash(null))} sameTab>{t.hbNewItem}</Button>
       </Empty>
     {:else}
       <div class="toolbar">

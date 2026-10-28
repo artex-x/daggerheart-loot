@@ -25,10 +25,10 @@ Four things trip agents up here, in order of how often:
    you get the raw document, not the rendered UI. It is not empty, though:
    a `<noscript>` block carries direct links to `catalog.csv`, `data.json`
    and this file, so a plain fetch already points you at the data below.
-2. **Everything after `#` is a fragment and never leaves the browser.** A
-   shared list's address `#/s/<token>` holds an opaque token, so fetching it
-   tells you nothing about the list. Ask the person for the list's contents,
-   or for an exported file.
+2. **A shared list's address is a token, not the list.** Its address
+   `/s/<token>` holds an opaque token, so fetching it gives you a link card
+   and tells you nothing about the list. Ask the person for the list's
+   contents, or for an exported file.
 3. **Never name an item from memory.** Every name and id must come out of
    `catalog-index.csv` or `catalog.csv`. Names that sound right — "Tome of
    Ancient Knowledge", "Superior Alconite Crystal" — are usually not in any
@@ -36,13 +36,14 @@ Four things trip agents up here, in order of how often:
    entry.
 4. **A list for a GM is a file.** Build a JSON file as "Lists as a file
    (import-v1)" describes; the GM imports it into their account. Do not
-   build `#/l/` links: that format stopped opening on 2026-10-26.
+   build `/l/` links: that format stopped opening on 2026-10-26.
 
 Start with `catalog-index.csv`: one row per record, every column of
 `catalog.csv` but the two texts and the page link, under 200 KB. It holds 1459
 records, the rows of `catalog.csv`; if your tool returns fewer, it cut the
 file: read the rest in parts or filter its rows by column. Pick the ids there, then read a record's text on its page,
-`i/en/<id>` or `i/<id>` (the page text is plain; the Markdown source
+`i/en/<id>` or `i/<id>` (the page is the app; it holds the record's plain text
+in a `<noscript>` block and its description in the head; the Markdown source
 is `data.json`'s `ende`/`rud`, see "Data"). Read `catalog.csv` or `data.json`
 whole only with a tool that reads a large file in full: both are several times
 larger. Everything else here is about what to do with the records.
@@ -87,7 +88,7 @@ text, not the rules those items refer to.
   [i/q26](https://daggerheart-loot.pages.dev/i/q26).
 - `i/en/<id>` — the same page in English, e.g.
   [i/en/q26](https://daggerheart-loot.pages.dev/i/en/q26). Both
-  pages redirect a browser to `#/i/<id>`; a link preview reads the language of
+  pages open the record in the app; a link preview reads the language of
   the address. The older form `i/<id>.html` still opens the same page, and a
   `?v=...` after the id is a version for a messenger's cache; ignore it.
 
@@ -219,25 +220,34 @@ of two or three usually plays better than assigning one each.
 
 ## URL grammar
 
-- `#/roll/std` — roll on the book tables; `#/roll/alt` — roll by rarity;
-  `#/roll/wondrous_environments`; `#/roll/dread_gm_toolbox`;
-  `#/roll/vault_of_ages`; `#/roll/dragons_vault`; `#/roll/arazos_artifacts`;
-  `#/roll/community_items`; `#/roll/many_worlds_tavern` (a realm, then a roll
+Every address is a path under https://daggerheart-loot.pages.dev/ (the paths
+below start after that origin's `/`). The English interface puts `/en` before
+the same path, e.g. https://daggerheart-loot.pages.dev/en/tables/eq_weapon;
+a record keeps its own English form, `/i/en/<id>`. The language a person
+chose on the site wins over the address. Older links wrote the same address
+after `#`, as `https://daggerheart-loot.pages.dev/#/tables/eq_weapon` or
+`.../en/#/...`; they still open, and the site turns them into the path. Build
+new links as paths.
+
+- `/roll/std` — roll on the book tables; `/roll/alt` — roll by rarity;
+  `/roll/wondrous_environments`; `/roll/dread_gm_toolbox`;
+  `/roll/vault_of_ages`; `/roll/dragons_vault`; `/roll/arazos_artifacts`;
+  `/roll/community_items`; `/roll/many_worlds_tavern` (a realm, then a roll
   inside it)
-- `#/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
+- `/tables/<table>` — `core_item`, `core_consumable`, `hope_and_fear_item`,
   `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`,
   `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items`,
   `many_worlds_tavern`, `other_starting`, `other_frames`, `eq_weapon`,
-  `eq_secondary`, `eq_armor`, and `homebrew`: `#/tables/homebrew` is a
+  `eq_secondary`, `eq_armor`, and `homebrew`: `/tables/homebrew` is a
   signed-in GM's own items; signed out it asks to sign in
-- Old ids: `#/roll/wondrous`, `#/roll/dread`, `#/roll/voa`, `#/roll/dv`,
-  `#/roll/arazo`, `#/roll/community`, `#/roll/mwt` and the tables `hnf_item`,
+- Old ids: `/roll/wondrous`, `/roll/dread`, `/roll/voa`, `/roll/dv`,
+  `/roll/arazo`, `/roll/community`, `/roll/mwt` and the tables `hnf_item`,
   `hnf_consumable`, `wondrous`, `dread`, `voa`, `dv`, `arazo`, `community`,
   `mwt`. An old id still opens the same page; the address is not rewritten.
   Build new links with the ids above. Filter values keep the old keys
   (`src-dread`, `src-community`), and the filter keys below name a table by
   its old id
-- `#/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
+- `/tables/eq_weapon/f_tier-1-2.cls-phy.src-core` — filters, on every table
   rather than only on equipment. After `f_`, parts are separated by `.` and
   values inside a part by `-`. Equipment keys: `tier` (`1`–`4`, and `A` where
   the table holds an artifact), `cls` (`phy`/`mag`),
@@ -253,54 +263,53 @@ of two or three usually plays better than assigning one each.
   starting inventory first, then campaign frames. An empty key means "any", so a
   plain table link carries no `f_` part at all. Links written with the old `_`
   separator are still read
-- `#/p/<id>` - a print sheet stored in a person's account: cards nine to an A4
+- `/p/<id>` - a print sheet stored in a person's account: cards nine to an A4
   page at 63x88 mm, or sixteen at 44x63 mm on the compact sheet. The 12
   characters are made by the site when a signed-in person presses «Печать», so
   you cannot build one, and opening it needs sign-in. Printing needs an
-  account. `#/print/...` links are retired since 2026-10-08 and open a page that
-  says so; do not build one.
-- `#/i/<id>` — one record
-- `#/search` — search
-- `#/s/<token>` — a list shared from an account; the token is opaque and made
-  only by the list's owner, so you cannot build one, and fetching it tells you
-  nothing (the fragment never leaves the browser). A link a person gave you
-  may end in a filter, `#/s/<token>/f_<filter>`, with the keys `kind`
+  account. The long print links (`print/...`) are retired since 2026-10-08 and
+  open a page that says so; do not build one.
+- `/i/<id>` — one record
+- `/search` — search
+- `/s/<token>` — a list shared from an account; the token is opaque and made
+  only by the list's owner, so you cannot build one, and fetching it gives
+  you its link card, not the list. A link a person gave you
+  may end in a filter, `/s/<token>/f_<filter>`, with the keys `kind`
   (`item`/`consumable`/`weapon`/`secondary`/`armor`), `src`, `tier`, `cls`,
   `trait`, `range`, `burden`, `line`, written as on a table; you still cannot
   build the token.
-- `#/h/<uuid>` - one homebrew item, by an id the author's account made; you
-  cannot build one, and fetching it tells you nothing (the fragment never
-  leaves the browser). Ask the person for the item's text, or for an export
-- `#/lists` - the lists page; a signed-in GM imports a file here
-- `#/account` - the account page: sign in, connected providers, download
+- `/h/<uuid>` - one homebrew item, by an id the author's account made; you
+  cannot build one, and fetching it gives you its link card, not the item.
+  Ask the person for the item's text, or for an export
+- `/lists` - the lists page; a signed-in GM imports a file here
+- `/account` - the account page: sign in, connected providers, download
   my data as a file, sign out, delete the account
-- `#/homebrew` - a signed-in GM's own items («Мои предметы»), with
-  `#/homebrew/new` and `#/homebrew/<key>` to edit one, and the tabs
-  `#/homebrew/sources`, `#/homebrew/sets` and `#/homebrew/rules` for the
-  sources, the set cards and the rule cards (`#/homebrew/sets/<key>` and
-  `#/homebrew/rules/<key>` open one card); a key (`hb_` and 16 of `a-z2-7`)
-  lives in one account, so you cannot build one, and `#/i/<key>` opens only
+- `/homebrew` - a signed-in GM's own items («Мои предметы»), with
+  `/homebrew/new` and `/homebrew/<key>` to edit one, and the tabs
+  `/homebrew/sources`, `/homebrew/sets` and `/homebrew/rules` for the
+  sources, the set cards and the rule cards (`/homebrew/sets/<key>` and
+  `/homebrew/rules/<key>` open one card); a key (`hb_` and 16 of `a-z2-7`)
+  lives in one account, so you cannot build one, and `/i/<key>` opens only
   for its author
 
 The English interface is https://daggerheart-loot.pages.dev/en/
-followed by the same `#/...` address.
+followed by the same path.
 
-Links a person copies from the site may also be link cards on the same host
-https://daggerheart-loot.pages.dev. Each is a link card for a
-messenger that redirects a person to the app; the app's own `#/` addresses
-keep working. The same path with `/en` after the origin is the English card:
+A link a person copies from the site, or from the address bar, draws a link
+card in a messenger. These four families are link cards on
+https://daggerheart-loot.pages.dev, with `/en` after the origin for the
+English card:
 
-- `https://daggerheart-loot.pages.dev/h/<uuid>` - a homebrew item, the app's
-  `#/h/<uuid>`
-- `https://daggerheart-loot.pages.dev/s/<token>` - a shared list, the app's
-  `#/s/<token>`, optionally with `/f_<filter>`
-- `https://daggerheart-loot.pages.dev/p/<id>` - a print set, the app's `#/p/<id>`
-- `https://daggerheart-loot.pages.dev/tables/<table>` - a catalog table, the
-  app's `#/tables/<table>`, optionally with a block or a filter after it
+- `https://daggerheart-loot.pages.dev/h/<uuid>` - a homebrew item
+- `https://daggerheart-loot.pages.dev/s/<token>` - a shared list, optionally
+  with `/f_<filter>`
+- `https://daggerheart-loot.pages.dev/p/<id>` - a print set
+- `https://daggerheart-loot.pages.dev/tables/<table>` - a catalog table,
+  optionally with a block or a filter after it
 
-A `?v=...` on an item or a share link is a version for the messenger's cache;
-ignore it. You cannot build the id, the token or the print id, so read these
-links the way you read their `#/` addresses.
+A `?v=...` on a record, an item or a share link is a version for the
+messenger's cache; ignore it. You cannot build the id, the token or the print
+id, so read these links as the pages above describe them.
 
 ## Lists as a file (import-v1)
 
@@ -308,7 +317,7 @@ A signed-in GM can load lists into their account from a JSON file. This is
 the only way to hand a GM a list you built. You cannot import the file
 yourself - there is no API. The GM saves it and presses «Импорт из файла»
 ("Import from file") in the «Новый список» ("New list") panel on the Lists
-page (`#/lists`). Every list in the file is added as a new list; nothing
+page (`/lists`). Every list in the file is added as a new list; nothing
 already in the account changes.
 
 The site writes the same format: «Скачать JSON» ("Download JSON") on the
@@ -652,7 +661,7 @@ The schema files call this section "Homebrew items as a file (homebrew-v1)"
 and its subsection "Version 2: book items in a card (homebrew-v2)".
 
 A signed-in GM keeps their own items on the «Мои предметы» ("My items") page
-(`#/homebrew`): items, the sources they come from (a book, a supplement, a
+(`/homebrew`): items, the sources they come from (a book, a supplement, a
 setting) with sections, and their own set cards and rule cards. A homebrew
 file carries all of these. It is the way to hand a GM items you converted
 from a book or wrote for them. You cannot import it yourself - there is no
@@ -1012,7 +1021,7 @@ from the book.
 ## What this site cannot do
 
 - No public API. Signing in is optional; a signed-in GM's lists live in the
-  account and reach players through `#/s/` links. A list reaches an account
+  account and reach players through `/s/` links. A list reaches an account
   as a file ("Lists as a file (import-v1)"), and a GM's own items as a
   homebrew file ("Homebrew items as a file (homebrew-v2)"); you cannot import
   either yourself - the GM does, on the Lists page and on «Мои предметы».

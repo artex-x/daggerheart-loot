@@ -334,8 +334,8 @@ jobs:
   # knows about), db, e2e and migrate-prod.
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
-  # dist/data.js, assembled here with the generated data, the stub pages and the
-  # artwork that live in the repository. The site's host is the Cloudflare
+  # dist/data.js and the record app documents dist/i/ and dist/en/, assembled
+  # here with the generated data and the artwork that live in the repository. The site's host is the Cloudflare
   # Pages project daggerheart-loot (https://daggerheart-loot.pages.dev/), which
   # also runs the link-card worker; GitHub Pages, the old host, gets a mirror of
   # the same files whose root forwards there (docs/specs/META.md section 9,
@@ -363,7 +363,9 @@ jobs:
   # the full app to GitHub Pages. After that run is green and GitHub Pages'
   # `max-age=600` has passed, a second commit removes `if: false`. After the
   # second commit a record link handed out from the new host opens the old
-  # root, not the record.
+  # root, not the record. The app's root-absolute URLs (the path-urls task) do
+  # not run under the old host's /daggerheart-loot/, so the first commit also
+  # reverts that task's squash, or a commit before it reverts it alone.
   # .claude/README.md, "Quotas, recovery and failure", holds the procedure.
   #
   # A deploy that carried a migration: see the `migrate-prod` job above.
@@ -453,18 +455,21 @@ jobs:
       # section 9). `dist/data.js` carries the record links' card versions
       # (window.LOOT_V), so it is never the source data.js.
       #
-      # `i/` (with `i/en/`), `en/`, `data.json`, `catalog.csv`, `names.json`
-      # and `catalog-index.csv` are not in the repository - the Build step
-      # above regenerates them (npm run build -> npm run data ->
-      # tools/build.js) immediately before this step copies them, so Collect
-      # must never be reordered ahead of Build.
+      # `data.json`, `catalog.csv`, `names.json` and `catalog-index.csv` are
+      # not in the repository - the Build step above regenerates them (npm run
+      # build -> npm run data -> tools/build.js) immediately before this step
+      # copies them, so Collect must never be reordered ahead of Build.
+      # `dist/i/` (with `dist/i/en/`) and `dist/en/` are the record and
+      # English-root app documents the build writes (vite.config.mts,
+      # appDocuments); the repository root's `i/` and `en/` are the redirect
+      # pages, which only the old host's mirror publishes (CONTRACTS.md section 5).
       - name: Collect what the site is made of
         run: |
           mkdir -p _site
           cp -r dist/index.html dist/assets dist/data.js dist/manifest.webmanifest \
-                dist/sw.js dist/icons _site/
+                dist/sw.js dist/icons dist/i dist/en _site/
           cp -r data.json catalog.csv catalog-index.csv names.json llms.txt robots.txt LICENSE \
-                404.html img og i en card schema _site/
+                404.html img og card schema _site/
           # Only the generated site pages, one copy per language: pages/src/
           # is their authored source, not site content (docs/specs/META.md
           # section 9).
@@ -479,12 +484,20 @@ jobs:
           # file like that must never reach _site. The card families (h, s, p,
           # tables) belong to the worker, mcp is reserved for the ai-mcp task,
           # the Pages control files live in preview/public/ only, and old-host/
-          # is the mirror's (docs/specs/CONTRACTS.md section 5).
+          # is the mirror's (docs/specs/CONTRACTS.md section 5). A file or a
+          # folder named after a route that _redirects rewrites would shadow
+          # the rewrite (roll search lists account homebrew print l).
           for f in package.json node_modules app tests tools docs .git app.js style.css \
                    pages/src supabase preview old-host mcp h s p tables \
-                   _worker.js _routes.json _headers card-versions.json; do
+                   _worker.js _routes.json _headers _redirects card-versions.json \
+                   roll search lists account homebrew print l; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
+          # en/ holds only the English root document: anything else there would
+          # shadow an /en/ rewrite of _redirects.
+          if [ "$(ls -A _site/en)" != "index.html" ]; then
+            echo "::error::_site/en holds more than index.html"; exit 1
+          fi
           # The other half, and the deterministic detector for a dangling
           # symlink: [ -e ] is false for one, and [ -s ] / a non-empty listing
           # catches a link that resolved to nothing.
@@ -510,10 +523,10 @@ jobs:
                    icons/maskable-512.png; do
             if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
           done
-          # `i/` and `i/en/` are built output (npm run build -> npm run
-          # data -> tools/build-share-pages.js), one stub per data row per
+          # `i/` and `i/en/` are built output (npm run build ->
+          # tools/app-documents.js), one app document per data row per
           # language - "the directory is non-empty" above would pass just as
-          # happily for one stub as for all of them, so it cannot catch a
+          # happily for one document as for all of them, so it cannot catch a
           # partial generation. catalog.csv has exactly one header row plus
           # one row per record (tests/derived.js proves catalog.csv's own row
           # count against data.js already), so it is the count already on
@@ -522,9 +535,9 @@ jobs:
           csv_rows=$(($(wc -l < _site/catalog.csv) - 1))
           for d in i i/en; do
             stub_count=$(find "_site/$d" -maxdepth 1 -name '*.html' | wc -l)
-            echo "$d stub count: $stub_count, catalog.csv data rows: $csv_rows"
+            echo "$d document count: $stub_count, catalog.csv data rows: $csv_rows"
             if [ "$stub_count" -ne "$csv_rows" ]; then
-              echo "::error::_site/$d has $stub_count stub pages but catalog.csv has $csv_rows data rows - a partial generation would otherwise slip past the non-empty check above"
+              echo "::error::_site/$d has $stub_count app documents but catalog.csv has $csv_rows data rows - a partial generation would otherwise slip past the non-empty check above"
               exit 1
             fi
           done
@@ -551,13 +564,25 @@ jobs:
         run: node tools/check-site.mjs --dir _site
 
       # The old host's mirror: every frozen path, no app. The root forwards to
-      # the site's host and sw.js unregisters itself (docs/specs/META.md
-      # section 9, "The old host").
+      # the site's host and sw.js unregisters itself; i/ and en/ are the
+      # redirect pages of the repository root, not the app documents
+      # (docs/specs/META.md section 9, "The old host").
       - name: Assemble the old host
         run: |
           cp -r _site _old
           rm -r _old/assets _old/data.js _old/pages/install.html _old/pages/en/install.html
+          rm -r _old/i _old/en
+          cp -r i en _old/
           cp old-host/index.html old-host/sw.js _old/
+          csv_rows=$(($(wc -l < _old/catalog.csv) - 1))
+          for d in i i/en; do
+            stub_count=$(find "_old/$d" -maxdepth 1 -name '*.html' | wc -l)
+            echo "$d stub count: $stub_count, catalog.csv data rows: $csv_rows"
+            if [ "$stub_count" -ne "$csv_rows" ]; then
+              echo "::error::_old/$d has $stub_count stub pages but catalog.csv has $csv_rows data rows"
+              exit 1
+            fi
+          done
       - name: The old host's content is what tools/check-site.mjs expects
         run: node tools/check-site.mjs --mirror --dir _old
 

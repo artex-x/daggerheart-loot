@@ -5,7 +5,7 @@
 # hold: rows:stall
 
 ## ru :: tree
-RootWebArea "Таблицы - Генератор лута Daggerheart" [url=index.html?as=gm4&hold=rows%3Astall#/tables]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables?as=gm4&hold=rows%3Astall]
   dialog "Кольцо Тишины" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -188,7 +188,7 @@ daggerheart.com
 Цепь Парагона
 
 ## en :: tree
-RootWebArea "Tables - Daggerheart Loot Generator" [url=index.html?as=gm4&hold=rows%3Astall#/tables]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4&hold=rows%3Astall]
   dialog "Ring of Silence" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"

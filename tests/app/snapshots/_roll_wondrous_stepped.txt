@@ -3,34 +3,34 @@
 # why: the roll stepped up twice
 
 ## ru :: tree
-RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=#/roll/wondrous_environments]
-  link "К содержимому" [url=#main]
+RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [url=/roll/wondrous_environments]
+  link "К содержимому" [url=/roll/wondrous_environments#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Wondrous Environments" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [expanded=false]
     StaticText "Введите результат броска или получите случайную позицию."
     navigation "Дополнения"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Предметы сообществ" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=/roll/community_items]
+      link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–119)"
     button "На единицу меньше"
     textbox "Результат броска" [value=3 multiline=false readonly=false required=false]
@@ -41,20 +41,20 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
       StaticText "3"
       StaticText "ПРЕДМЕТ"
       StaticText "WONDROUS ENVIRONMENTS"
-      link "Эфироцвет" [description=Страница url=#/i/w3]
+      link "Эфироцвет" [description=Страница url=/i/w3]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Этот цветок чувствителен к магии и указывает в направлении сильн..." [namelen=171 namehash=72f58938]
       StaticText "УЛУЧШАЕТСЯ ДО"
-      link "Чай Эфироцвета" [url=#/i/w2]
+      link "Чай Эфироцвета" [url=/i/w2]
       button "Отправить"
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -95,34 +95,34 @@ daggerheart.com
 Эфироцвет
 
 ## en :: tree
-RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/wondrous_environments]
-  link "Skip to content" [url=#main]
+RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/wondrous_environments]
+  link "Skip to content" [url=/en/roll/wondrous_environments#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Wondrous Environments" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=false]
     StaticText "Enter your roll result, or pick a random entry."
     navigation "Supplements"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Community items" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/en/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/en/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/en/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
+      link "Community items" [url=/en/roll/community_items]
+      link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
     StaticText "ROLL RESULT (1–119)"
     button "One lower"
     textbox "Roll result" [value=3 multiline=false readonly=false required=false]
@@ -133,20 +133,20 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=#/roll/won
       StaticText "3"
       StaticText "ITEM"
       StaticText "WONDROUS ENVIRONMENTS"
-      link "Aetherflower" [description=Page url=#/i/w3]
+      link "Aetherflower" [description=Page url=/i/en/w3]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "This flower is sensitive to magic, and will point in the directi..." [namelen=186 namehash=f75955ca]
       StaticText "UPGRADES TO"
-      link "Aetherflower Tea" [url=#/i/w2]
+      link "Aetherflower Tea" [url=/i/en/w2]
       button "Share"
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

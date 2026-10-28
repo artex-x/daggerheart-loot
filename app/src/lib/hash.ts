@@ -14,6 +14,7 @@ import {
   LIST_GROUPS,
   type FilterState
 } from './filters.js';
+import { pathOf } from './address.js';
 import { canonJson, fnv1a128 } from './homebrew.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
 
@@ -278,52 +279,29 @@ export function tablesHash(
 
 /* ---------- links to hand somebody else ---------- */
 
-/** Where the page itself is. */
+/** Where the app is: the origin with a trailing `/`. */
 export interface Site {
   base: string;
 }
 
 /**
- * The address of the app itself.
- *
- * A web server serves `index.html` for the bare directory, so the file is not
- * named. With `lang` `en` the address goes through the English entry document
- * `en/`, which carries the English preview and redirects to the app
- * (docs/specs/I18N.md); without a language it is the app itself.
+ * The address of `hash` on `site` in `lang`, in the path form the address bar shows
+ * (docs/specs/ROUTES.md, "Path form"), with `?v=<v>` when `v` is given: a changed
+ * card is a new URL to a messenger's cache (docs/specs/CONTRACTS.md section 5).
  */
-export function appUrl(site: Site, hash: string, lang?: Lang): string {
-  return site.base + (lang === 'en' ? 'en/' : '') + hash;
+export function appUrl(site: Site, hash: string, lang: Lang, v?: string): string {
+  return site.base.replace(/\/$/, '') + pathOf(hash, lang) + (v ? '?v=' + v : '');
 }
 
 /**
- * The address of one record: the static stub in `i/`, not the app.
+ * The address of one record: `i/<id>` Russian, `i/en/<id>` English.
  *
- * The stub carries per-record Open Graph tags, so Telegram and Discord unfurl
- * the picture, the name and the description without anyone opening anything.
- * The stub of the language on screen, extensionless: `i/<id>` Russian,
- * `i/en/<id>` English. `v` is the card's version from the build's map; a
- * changed card is a new URL to a messenger's cache (docs/specs/CONTRACTS.md
- * section 5).
+ * The host answers it with the record's Open Graph tags, so Telegram and Discord
+ * unfurl the picture, the name and the description without anyone opening
+ * anything. `v` is the card's version from the build's map.
  */
 export function recordUrl(site: Site, id: string, lang: Lang, v?: string): string {
-  return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + (v ? '?v=' + v : '');
-}
-
-/* ---------- the preview host ---------- */
-
-const CARD_FAMILY = /^#\/(?:(?:h|s|p)\/.|tables\/[a-z_])/;
-const HOMEBREW_TABLE = /^#\/tables\/homebrew(?:\/|$)/;
-
-/** Returns the preview host's address of `hash` in `lang`, with `?v=<v>` when `v` is
- *  given, or null when `hash` is not a card family (`docs/specs/CONTRACTS.md` section 5). */
-export function previewUrl(
-  origin: string,
-  hash: string,
-  lang: Lang,
-  v?: string
-): string | null {
-  if (!CARD_FAMILY.test(hash) || HOMEBREW_TABLE.test(hash)) return null;
-  return origin + (lang === 'en' ? '/en' : '') + hash.slice(1) + (v ? '?v=' + v : '');
+  return appUrl(site, recordHash(id), lang, v);
 }
 
 /** Returns the `v` of a preview link: 40 bits of the FNV-1a hash of `drawn`'s canonical

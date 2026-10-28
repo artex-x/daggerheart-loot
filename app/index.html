@@ -6,28 +6,25 @@
      env(safe-area-inset-*) resolves to 0 on a notched phone, and SelBar.svelte
      positions the selection bar with all three insets. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Генератор лута Daggerheart</title>
 <!-- A personal tool: kept out of search results on purpose. Crawling is allowed
      so that this tag is actually read - a blocked page never is, and can still
      be listed as a bare URL. Messenger previews need the fetch too.
      docs/specs/META.md sections 1 and 2. -->
 <meta name="robots" content="noindex, nofollow">
+<!-- The site's own card, not an item's artwork. og/ci17.jpg used to sit here,
+     so every link to a table or a filter unfurled in Telegram with a picture of
+     one particular artefact, which read as "here is this item". 1200x630 is
+     what summary_large_image expects; the square item images were letterboxed. -->
+<!-- The build and the preview worker replace the lines between the card markers
+     with each path's own card (tools/share-card.mjs appDocument). -->
+<!-- card -->
+<title>Генератор лута Daggerheart</title>
 <meta name="description" content="Генератор добычи для Daggerheart: 1078 предметов и расходников, 381 единица оружия и брони. Core, Hope &amp; Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, предметы сообществ и альтернативные таблицы. Русский и английский.">
-<!-- The pre-stylesheet paint only; tokens.css sets the CSS property too. -->
-<meta name="color-scheme" content="dark">
-<!-- The installed app's title bar: --bg, the manifest's theme_color.
-     docs/specs/META.md section 9. -->
-<meta name="theme-color" content="#0e0c15">
-
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Генератор лута Daggerheart">
 <meta property="og:title" content="Генератор лута Daggerheart">
 <meta property="og:description" content="1459 позиций с картинками: добыча, расходники, оружие и броня из Core, Hope &amp; Fear, Wondrous Environments и предметов сообществ. Русский и английский.">
 <meta property="og:url" content="https://daggerheart-loot.pages.dev/">
-<!-- The site's own card, not an item's artwork. og/ci17.jpg used to sit here,
-     so every link to a table or a filter unfurled in Telegram with a picture of
-     one particular artefact, which read as "here is this item". 1200x630 is
-     what summary_large_image expects; the square item images were letterboxed. -->
 <meta property="og:image" content="https://daggerheart-loot.pages.dev/og/_share.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -38,13 +35,19 @@
 <meta name="twitter:title" content="Генератор лута Daggerheart">
 <meta name="twitter:description" content="1459 позиций с картинками: добыча, расходники, оружие и броня. Русский и английский.">
 <meta name="twitter:image" content="https://daggerheart-loot.pages.dev/og/_share.jpg">
+<!-- /card -->
+<!-- The pre-stylesheet paint only; tokens.css sets the CSS property too. -->
+<meta name="color-scheme" content="dark">
+<!-- The installed app's title bar: --bg, the manifest's theme_color.
+     docs/specs/META.md section 9. -->
+<meta name="theme-color" content="#0e0c15">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
 <!-- Copied verbatim from app/public/; Vite keeps this href as written.
      docs/specs/META.md section 9. -->
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="/manifest.webmanifest">
 <!-- iOS reads this tag, not the manifest, for the home-screen icon.
      docs/specs/META.md section 9. -->
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <!-- iOS reads the home-screen label from this tag: the manifest's short_name.
      docs/specs/META.md section 9. -->
 <meta name="apple-mobile-web-app-title" content="Лут DH">
@@ -53,7 +56,7 @@
 <!-- The data arrives as a classic script rather than as a module import: it
      is cached apart from the bundle, and the app needs no async bootstrap to
      read it. CONTRACTS.md section 4. -->
-<script defer src="./data.js"></script>
+<script defer src="/data.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -67,17 +70,17 @@
     <h1>Лут Daggerheart</h1>
     <p>Приложению нужен JavaScript. Данные лежат отдельными файлами и читаются без него:</p>
     <ul>
-      <li><a href="catalog.csv">catalog.csv</a> - 1459 записей, по строке на каждую</li>
-      <li><a href="data.json">data.json</a> - то же целиком</li>
-      <li><a href="llms.txt">llms.txt</a> - что это за сайт, адреса и формат файла списков</li>
-      <li><a href="schema/import-v1.json">schema/import-v1.json</a> - схема файла списков для импорта</li>
+      <li><a href="/catalog.csv">catalog.csv</a> - 1459 записей, по строке на каждую</li>
+      <li><a href="/data.json">data.json</a> - то же целиком</li>
+      <li><a href="/llms.txt">llms.txt</a> - что это за сайт, адреса и формат файла списков</li>
+      <li><a href="/schema/import-v1.json">schema/import-v1.json</a> - схема файла списков для импорта</li>
     </ul>
-    <p><a href="pages/privacy.html">Конфиденциальность</a></p>
-    <p><a href="pages/terms.html">Условия использования</a></p>
+    <p><a href="/pages/privacy.html">Конфиденциальность</a></p>
+    <p><a href="/pages/terms.html">Условия использования</a></p>
     <p lang="en">The app needs JavaScript. Machine-readable data:
-      <a href="catalog.csv">catalog.csv</a>, <a href="data.json">data.json</a>,
-      <a href="llms.txt">llms.txt</a>, and the lists file schema
-      <a href="schema/import-v1.json">schema/import-v1.json</a>.</p>
+      <a href="/catalog.csv">catalog.csv</a>, <a href="/data.json">data.json</a>,
+      <a href="/llms.txt">llms.txt</a>, and the lists file schema
+      <a href="/schema/import-v1.json">schema/import-v1.json</a>.</p>
   </div>
 </noscript>
 <script type="module" src="./src/main.ts"></script>

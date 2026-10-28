@@ -180,8 +180,12 @@ ok(
     'stub i/en/' + x.id + ': canonical is not its own extensionless English address'
   );
   ok(
-    html.includes('location.replace(' + JSON.stringify(D.SITE + 'en/#/i/' + x.id) + ')'),
-    'stub i/en/' + x.id + ': the app link is not <site>en/#/i/<id>'
+    html.includes('location.replace(' + JSON.stringify(D.SITE + 'i/en/' + x.id) + ')'),
+    'stub i/en/' + x.id + ': the app link is not <site>i/en/<id>'
+  );
+  ok(
+    page(x, 'ru').includes('location.replace(' + JSON.stringify(D.SITE + 'i/' + x.id) + ')'),
+    'stub i/' + x.id + ': the app link is not <site>i/<id>'
   );
   ok(
     html.includes('<meta property="og:locale" content="en_US">'),
@@ -297,7 +301,10 @@ ok(!!BG, 'tokens.css has no --bg colour to compare against');
    for English. */
 const PAGE_DIR = { ru: '', en: 'en/' };
 const SIBLING_HREF = { ru: (id) => 'en/' + id + '.html', en: (id) => '../' + id + '.html' };
-const BACK_HREF = { ru: '../', en: '../../' };
+/* The app root of the page's language, which the back links and %APP% name, and the
+   site root, which the manifest and the icon name. */
+const BACK_HREF = { ru: '../', en: '../../en/' };
+const ROOT_HREF = { ru: '../', en: '../../' };
 SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
   ok(
     !!(desc && desc.ru && desc.en),
@@ -353,22 +360,22 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
     ok(
       html.split('<link rel="manifest"').length - 1 === 1 &&
         html.includes(
-          '<link rel="manifest" href="' + BACK_HREF[lang] + 'manifest.webmanifest">'
+          '<link rel="manifest" href="' + ROOT_HREF[lang] + 'manifest.webmanifest">'
         ),
       'pages/' +
         rel +
         ' does not link the app manifest at its own depth ("' +
-        BACK_HREF[lang] +
+        ROOT_HREF[lang] +
         'manifest.webmanifest")'
     );
     ok(
       html.includes(
-        '<link rel="apple-touch-icon" href="' + BACK_HREF[lang] + 'icons/apple-touch-icon.png">'
+        '<link rel="apple-touch-icon" href="' + ROOT_HREF[lang] + 'icons/apple-touch-icon.png">'
       ),
       'pages/' +
         rel +
         ' does not link the iOS icon ("' +
-        BACK_HREF[lang] +
+        ROOT_HREF[lang] +
         'icons/apple-touch-icon.png")'
     );
     const shortName = manifest && manifest.short_name;
@@ -403,7 +410,7 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
     ok(!html.includes('%APP%'), 'pages/' + rel + ' still holds %APP%; page() replaces it');
     if (id === 'privacy') {
       ok(
-        html.includes('href="' + BACK_HREF[lang] + '#/account"'),
+        html.includes('href="' + BACK_HREF[lang] + 'account"'),
         'pages/' + rel + ' does not link the account page at its own depth'
       );
       /* The owner's sentences, word for word: the item address (owner, 2026-10-07) and
@@ -535,21 +542,21 @@ if (manifest) {
   );
 }
 const indexHtml = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
-const TOUCH = /<link\s+rel="apple-touch-icon"\s+href="\.\/([^"]*)"/i;
+const TOUCH = /<link\s+rel="apple-touch-icon"\s+href="\/([^"]*)"/i;
 const touch = (TOUCH.exec(indexHtml) || [])[1];
 ok(
   !!touch && fs.existsSync(path.join(APP_PUBLIC, touch)),
-  'app/index.html has no relative apple-touch-icon link to a file in app/public/'
+  'app/index.html has no root-absolute apple-touch-icon link to a file in app/public/'
 );
 /* The app links the manifest with a static tag (docs/specs/META.md section 9). */
 ok(
   indexHtml.split('<link rel="manifest"').length - 1 === 1 &&
-    indexHtml.includes('<link rel="manifest" href="./manifest.webmanifest">'),
-  'app/index.html does not carry exactly one static manifest link to ./manifest.webmanifest'
+    indexHtml.includes('<link rel="manifest" href="/manifest.webmanifest">'),
+  'app/index.html does not carry exactly one static manifest link to /manifest.webmanifest'
 );
 /* A reviewer without JavaScript finds the policy pages too (docs/specs/META.md
    section 9, "Static pages"). */
-['pages/privacy.html', 'pages/terms.html'].forEach(function (href) {
+['/pages/privacy.html', '/pages/terms.html'].forEach(function (href) {
   const noscript = (/<noscript>([\s\S]*?)<\/noscript>/i.exec(indexHtml) || ['', ''])[1];
   ok(noscript.includes('href="' + href + '"'), 'the <noscript> block does not link ' + href);
 });
@@ -656,25 +663,122 @@ ok(
   'en/index.html has a meta refresh, which drops the fragment of a link'
 );
 ok(
-  enRootHtml.includes("location.replace('../' + location.hash)"),
-  'en/index.html does not redirect to the app with the fragment kept'
+  enRootHtml.includes('location.replace(' + JSON.stringify(SITE + 'en/') + ' + location.hash)'),
+  "en/index.html does not redirect to the site's en/ with the fragment kept"
 );
 ['../catalog.csv', '../data.json', '../llms.txt', '../'].forEach(function (href) {
   ok(enRootHtml.includes('href="' + href + '"'), 'en/index.html does not link ' + href);
 });
+
+console.log('the app documents');
+/* The site answers a record path and en/ with the app document and the stub's
+   card fields (docs/specs/CONTRACTS.md section 5). Read from the source shell:
+   the build writes the same text from the built one (vite.config.mts). */
+{
+  const { documentsOf } = require(path.join(ROOT, 'tools', 'app-documents.js'));
+  const { appDocument } = require(path.join(ROOT, 'tools', 'share-card.mjs'));
+  const { headOf } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const MODULE_SCRIPT = '<script type="module" src="./src/main.ts"></script>';
+  const docs = documentsOf(indexHtml);
+  ok(
+    docs.size === 2 * ALL.length + 1,
+    'the app documents number ' + docs.size + ', not ' + (2 * ALL.length + 1)
+  );
+  [ALL.find((x) => x.craft), ALL.find((x) => x.eq && x.frame)].forEach(function (x) {
+    [
+      ['ru', 'i/'],
+      ['en', 'i/en/']
+    ].forEach(function ([lang, dir]) {
+      const where = dir + x.id + '.html';
+      const doc = docs.get(where) || '';
+      const head = headOf(x, lang);
+      ok(
+        doc.includes('\n' + head + '\n'),
+        where + ': the app document does not hold the card fields'
+      );
+      ok(
+        page(x, lang).includes('\n' + head + '\n'),
+        where + ': the stub does not hold the card fields'
+      );
+      ok(doc.includes('<html lang="' + lang + '">'), where + ': <html lang> is not ' + lang);
+      ok(doc.includes(MODULE_SCRIPT), where + ': the app document has no module script');
+      ok(doc.includes('<div id="app">'), where + ': the app document has no <div id="app">');
+      ok(
+        doc.includes('<meta property="og:url" content="' + D.SITE + dir + x.id + '">'),
+        where + ': og:url is not ' + D.SITE + dir + x.id
+      );
+      ok(
+        !doc.includes('location.replace') && !/http-equiv="refresh"/i.test(doc),
+        where + ': the app document redirects'
+      );
+    });
+  });
+  /* Every record's document carries its readable text for a reader without
+     JavaScript (owner, 2026-10-15 and 2026-10-28; llms.txt, "Data"). */
+  const { esc, descHtml } = require(path.join(ROOT, 'tools', 'share-card.mjs'));
+  const { bodyOf } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const unreadable = [];
+  for (const x of ALL) {
+    for (const [lang, dir, name, text] of [
+      ['ru', 'i/', x.ru || x.en, x.rud || x.ende],
+      ['en', 'i/en/', x.en, x.ende]
+    ]) {
+      const doc = docs.get(dir + x.id + '.html') || '';
+      const block = (/<noscript>\n<article[^>]*>([\s\S]*?)<\/article>\n<\/noscript>/.exec(
+        doc
+      ) || ['', ''])[1];
+      const first = descHtml(markupText(text || '')).split('\n')[0];
+      if (
+        !doc.includes('<div id="app"></div>\n' + bodyOf(x, lang)) ||
+        !block.includes('<h1>' + esc(name) + '</h1>') ||
+        !block.includes(first)
+      )
+        unreadable.push(dir + x.id);
+    }
+  }
+  ok(
+    unreadable.length === 0,
+    unreadable.length +
+      ' app documents lack the record text in <noscript>, for example ' +
+      unreadable.slice(0, 3).join(', ')
+  );
+  const en = docs.get('en/index.html') || '';
+  ok(
+    en.includes('<meta property="og:title" content="Daggerheart Loot Generator">') &&
+      en.includes('<meta property="og:url" content="' + D.SITE + 'en/">') &&
+      en.includes('<html lang="en">') &&
+      en.includes('<meta name="theme-color"') &&
+      en.includes(MODULE_SCRIPT),
+    'en/index.html: the English app document lacks its card, <html lang="en">, theme-color or the module script'
+  );
+  let threw = '';
+  try {
+    appDocument('<html lang="ru"><head></head></html>', '<title>x</title>', 'en');
+  } catch (e) {
+    threw = e.message;
+  }
+  ok(
+    threw ===
+      'The app document has no card block. Keep <!-- card --> and <!-- /card --> in app/index.html',
+    'appDocument on a shell with no card markers does not throw the expected message: ' + threw
+  );
+}
 
 /* 404.html serves both hosts, and the old host's root only forwards, so its
    way-home links name the site's host itself (docs/specs/META.md section 7). */
 {
   const html404 = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
   ok(
-    html404.includes('href="' + SITE + '#/roll/std"'),
-    '404.html does not link ' + SITE + '#/roll/std'
+    html404.includes('href="' + SITE + 'roll/std"') &&
+      html404.includes('href="' + SITE + 'search"'),
+    '404.html does not link ' + SITE + 'roll/std and ' + SITE + 'search'
   );
   ok(
-    html404.includes('href="' + SITE + 'en/#/roll/std"'),
-    '404.html does not link ' + SITE + 'en/#/roll/std in its English half'
+    html404.includes('href="' + SITE + 'en/roll/std"') &&
+      html404.includes('href="' + SITE + 'en/search"'),
+    '404.html does not link ' + SITE + 'en/roll/std and en/search in its English half'
   );
+  ok(!html404.includes(SITE + '#/'), '404.html links an address in the fragment form');
   ok(!html404.includes('/daggerheart-loot/#'), '404.html still links a path of the old host');
 }
 
@@ -815,7 +919,7 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 [
   'catalog.csv',
   'data.json',
-  '#/l/',
+  '/l/',
   '10 handfuls = 1 bag',
   'Player note',
   'GM note',

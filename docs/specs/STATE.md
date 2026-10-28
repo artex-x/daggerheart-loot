@@ -5,7 +5,7 @@ implementation detail. A fifth holds one short-lived record.
 
 | Where | Holds | Survives a reload |
 |---|---|---|
-| URL hash | anything shareable: route, table, anchor, filters, a share link's token, what to print | yes, and travels to other people |
+| URL path | anything shareable: route, table, anchor, filters, a share link's token, what to print, the language and a card's `?v` (`ROUTES.md`, "Path form"); an old `#/` fragment is read once and written back as the path | yes, and travels to other people |
 | `localStorage` | preferences, and the session of the signed-in account | yes, on this browser only; kept under storage pressure in the installed app (`META.md` section 9) |
 | The account (signed in only) | the language, starting section, tables view and print layout (`user_prefs`); the account lists with their entries (`lists`, `list_entries`) | yes, on every device signed in to the account |
 | `sessionStorage` | `dhloot.auth.return`: where a provider redirect comes back to, and the action a sign-in prompt started | this tab only, honoured for 10 minutes and removed when read |
@@ -42,7 +42,7 @@ with a revert of the move.
 
 | Key | Holds |
 |---|---|
-| `dhloot.lang.v1` | `ru` or `en`. Also written, as `en` and only when absent, by an English redirect page (`i/en/<id>.html`, `en/index.html`) before it opens the app (`docs/specs/I18N.md`) |
+| `dhloot.lang.v1` | `ru` or `en`. Also written, as `en` and only when absent, by the old host's English redirect page (`i/en/<id>.html`, `en/index.html`) before it opens the site, and by the app at an `/en/` or `/i/en/` address (`docs/specs/I18N.md`) |
 | `dhloot.home.v1` | the pinned starting section, as a full hash - a section, a named table (`#/tables/<table>`), or `#/homebrew` («Мои предметы», one pin for its four tabs; a build with no sign-in draws the not-found page for it, as for `#/tables/homebrew`); reading also accepts a bare `#/tables` from an older pin, but the app itself always writes the named form. A stored `#/tables/frames` (the legacy alias, `hash.ts` `TABLE_ALIASES`) normalises to `#/tables/other_frames` on read only, with no write-back; the home control compares the active route against the canonical path, and the next explicit save writes the canonical id (`app.svelte.ts` `pinOf`). A stored old id of a renamed section or table (`#/roll/dread`, `#/tables/dv/...`; `ROUTES.md`, "URL ids and old ids") reads as its URL id, with the rest of the hash kept (`hash.ts` `canonicalHash`); signed in, `#applyPrefs` writes that URL id to `dhloot.home.v1`, and the next account save writes it to `user_prefs.home`. The pin button compares and stores the URL id, so it reads pressed on an old address of the pinned page. The legacy `#/roll/core`, `#/roll/hnf` and `#/roll/all` stay as written. |
 | `dhloot.prefs.v1` | the defaults `{ view: 'list' \| 'grid', printBw: boolean, printCompact: boolean }`, written whole by the Display section and the account's answer, never by a page switch; read at boot for every reader; live's old `{ view }` still reads (a missing field is `list`/`false`) |
 | `sb-<ref>-auth-token` | the signed-in session (`<ref>` is the Supabase project). A provider redirect also writes its PKCE verifier three ways (auth-js 2.117.1): `sb-<ref>-auth-token-flow-<id>-code-verifier` per flow, the index `sb-<ref>-auth-token-flows-code-verifier` (a ring of five flows, the oldest evicted), and `sb-<ref>-auth-token-code-verifier`, the latest flow's copy. The return's code exchange reads and removes only that last key (the callback address carries no flow id), so the per-flow key and the index stay until sign-out or deletion ends the session. Written and removed by auth-js 2.117.1 under the key that `ports/supabase.ts` names by supabase-js's rule (`sb-<first host label>-auth-token`); never by the app's own code |
@@ -54,7 +54,11 @@ and `dhloot.probe` is not written.
 
 `dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider,
 action? }`, written just before sign-in or Connect leaves for the provider
-(`app/src/ports/redirect.ts`). `hash` is the page the reader left, or - when
+(`app/src/ports/redirect.ts`). Every address in storage is a route key
+(`#/...`), never a path. The provider always returns to the app root,
+`<site>?auth-callback=1`, the one form `supabase/config.toml` allows, and the
+page then appends `hash`, which the router reads as an old address and writes
+as its path. `hash` is the page the reader left, or - when
 a sign-in prompt's «Войти» led to `#/account` - the prompt's page, and
 `action` the action it started (`app/src/lib/pending.ts`: reopen the
 add-to-list menu with its rows and taken counts - the `name` key an older build

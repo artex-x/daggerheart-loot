@@ -313,7 +313,7 @@
                 <ListCard
                   {app}
                   list={l}
-                  href={storedListHash(l.id)}
+                  href={app.href(storedListHash(l.id))}
                   items={knownItems(l)}
                   edited={agoText(l.updated, app.now, app.lang, t)}
                   requests={waiting(l.id)}

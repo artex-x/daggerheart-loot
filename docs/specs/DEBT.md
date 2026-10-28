@@ -34,7 +34,26 @@ Owns: wording left by R10 on pages that the redesign rebuilds (owner,
 Owns: three small defects left by the Many Worlds Tavern sources: a missing
 landmark, a strip over its cap at mid widths, and a rule text with two Russian
 bodies. The task after R10 that puts the Items-tab filter in the address takes
-them (owner, 2026-10-22).
+them (owner, 2026-10-22). It also takes D117, a tables address with a
+trailing slash that the host does not answer (implementer default while the
+owner was away, task `path-urls`, 2026-10-28).
+
+### D117 - `/tables/` with a trailing slash answers the 404 page
+
+- **Where**: `preview/public/_routes.json` (`exclude: ["/tables", "/en/tables"]`)
+  and `preview/public/_redirects` (`/tables / 200`, no rule for `/tables/`).
+- **What**: `/tables/` and `/en/tables/` answer `404.html` on the site, while
+  the app reads the same address as the tables page (`addressOf` drops the
+  slash). Before the `path-urls` landing the worker answered them with a 302
+  home. The app never writes the slash form, so only a hand-typed address
+  reaches it.
+- **Why deferred**: the bare `/tables` had to leave the worker (Pages routes it
+  to `/tables/*`, measured 2026-10-28 with `wrangler pages dev`); a rule for
+  the slash form is a host change with no reader, and the task that puts the
+  table filters in the address rewrites the tables rules anyway.
+- **How to verify the fix**: `curl -s -o /dev/null -w "%{http_code}"
+  https://daggerheart-loot.pages.dev/tables/` prints `200` with the app
+  document (or one 301 to `/tables`), and the same for `/en/tables/`.
 
 ### D112 - the tables page chip panel has no navigation landmark
 
@@ -77,3 +96,50 @@ them (owner, 2026-10-22).
   bytes, and the owner has not chosen which body stays.
 - **How to verify the fix**: `q57`, `q74`, `q90` and `mw22` carry
   one Russian body, the one the owner chooses.
+
+## Address follow-ups (`path-urls-followups`, not scheduled)
+
+Owns: three small defects left by the move of every address to the path
+(task `path-urls`, landed 2026-10-28). The owner names the task that takes
+them; until then they stay here.
+
+### D118 - a sign-in return in English can come back in Russian
+
+- **Where**: `app/src/ports/redirect.ts` (the `dhloot.auth.return` record,
+  `docs/specs/STATE.md`) and the boot language of `AppState`.
+- **What**: the return record holds the route key, not the language. A
+  reader on an English address whose storage refuses the `dhloot.lang.v1`
+  write signs in through a provider and returns to the root callback
+  `<site>?auth-callback=1`, which names no language, so the app opens in
+  Russian.
+- **Why deferred**: it needs refused storage and a provider sign-in at once;
+  adding the language to the record changes a stored shape, which the task
+  kept unchanged (found in the plan review of `path-urls`).
+- **How to verify the fix**: with `localStorage.setItem` throwing for
+  `dhloot.lang.v1`, sign in from `/en/lists` through the fake provider; the
+  app returns to `/en/lists` in English.
+
+### D119 - the homebrew editor's English preview links `/en/` on a Russian screen
+
+- **Where**: `app/src/components/HomebrewEditor.svelte`, the `RecordCard`
+  previews that take `lang={editIn}`.
+- **What**: a preview in the edited language draws its in-card links in that
+  language, so an English preview on a Russian screen links `/en/...`. A
+  plain click stays in the app in the screen's language; only a link opened
+  in a new tab opens English.
+- **Why deferred**: found in the `path-urls` review; only a new tab differs,
+  and no reader reported it.
+- **How to verify the fix**: on a Russian screen, an English preview's links
+  read `/...`, not `/en/...`.
+
+### D120 - a typed old fragment of the route on screen stays in the bar
+
+- **Where**: `app/src/ports/router.ts`, `pathRouter`'s `hashchange` handler
+  (`hash !== seen` before it announces).
+- **What**: typing `#/roll/std` after `/roll/std` names the route already
+  showing, so the router announces nothing and the bar keeps
+  `/roll/std#/roll/std` instead of the path form.
+- **Why deferred**: the screen is right and a reload converts it; found in
+  the `path-urls` review.
+- **How to verify the fix**: on `/roll/std`, set `location.hash = '#/roll/std'`;
+  the bar reads `/roll/std` with no fragment.

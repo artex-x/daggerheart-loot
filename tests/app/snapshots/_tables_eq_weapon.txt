@@ -3,35 +3,35 @@
 # why: the biggest table: four tier sections and the artifacts, the strip folded
 
 ## ru :: tree
-RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/tables/eq_weapon]
-  link "К содержимому" [url=#main]
+RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/eq_weapon]
+  link "К содержимому" [url=/tables/eq_weapon#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
-    link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
-    link "Альт. таблицы" [url=#/tables/alt_item]
-    link "Дополнения" [url=#/tables/wondrous_environments]
-    link "Снаряжение" [url=#/tables/eq_weapon]
-    link "Прочее" [url=#/tables/other_starting]
-    link "Оружие" [url=#/tables/eq_weapon]
-    link "Вторичное" [url=#/tables/eq_secondary]
-    link "Броня" [url=#/tables/eq_armor]
+    link "Core" [url=/tables/core_item]
+    link "Hope & Fear" [url=/tables/hope_and_fear_item]
+    link "Альт. таблицы" [url=/tables/alt_item]
+    link "Дополнения" [url=/tables/wondrous_environments]
+    link "Снаряжение" [url=/tables/eq_weapon]
+    link "Прочее" [url=/tables/other_starting]
+    link "Оружие" [url=/tables/eq_weapon]
+    link "Вторичное" [url=/tables/eq_secondary]
+    link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -57,9 +57,9 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=#/ta
     button "9 Клятва Равновесия Артефакт · Магическое · Инстинкт · Далеко · ..." [namelen=847 namehash=70e32327]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -1009,35 +1009,35 @@ daggerheart.com
 Ярость Зантака
 
 ## en :: tree
-RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_weapon]
-  link "Skip to content" [url=#main]
+RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
+  link "Skip to content" [url=/en/tables/eq_weapon#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
-    link "Core" [url=#/tables/core_item]
-    link "Hope & Fear" [url=#/tables/hope_and_fear_item]
-    link "Alt. tables" [url=#/tables/alt_item]
-    link "Supplements" [url=#/tables/wondrous_environments]
-    link "Equipment" [url=#/tables/eq_weapon]
-    link "Other" [url=#/tables/other_starting]
-    link "Weapons" [url=#/tables/eq_weapon]
-    link "Secondary" [url=#/tables/eq_secondary]
-    link "Armor" [url=#/tables/eq_armor]
+    link "Core" [url=/en/tables/core_item]
+    link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+    link "Alt. tables" [url=/en/tables/alt_item]
+    link "Supplements" [url=/en/tables/wondrous_environments]
+    link "Equipment" [url=/en/tables/eq_weapon]
+    link "Other" [url=/en/tables/other_starting]
+    link "Weapons" [url=/en/tables/eq_weapon]
+    link "Secondary" [url=/en/tables/eq_secondary]
+    link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]
@@ -1063,9 +1063,9 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=#/tables/eq_weapon]
     button "9 Oath of Balance Artifact · Magic · Instinct · Far · d12+12 mag..." [namelen=762 namehash=4e67f12e]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

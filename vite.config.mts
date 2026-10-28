@@ -64,6 +64,25 @@ function noscriptData(out: string): Plugin {
   };
 }
 
+/* The record and English-root app documents, from the built index.html: the
+   site publishes these files; the old host's mirror publishes the redirect pages
+   (docs/specs/CONTRACTS.md section 5). Required inside closeBundle, never at plugin
+   creation: vitest builds every plugin, and data.js must not load there. */
+function appDocuments(out: string): Plugin {
+  return {
+    name: 'dhloot-app-documents',
+    apply: 'build',
+    closeBundle() {
+      const { writeAppDocuments } = createRequire(import.meta.url)(
+        './tools/app-documents.js'
+      ) as {
+        writeAppDocuments: (outDir: string) => number;
+      };
+      writeAppDocuments(join(ROOT, out));
+    }
+  };
+}
+
 /* The data beside the bundle: `data.js` stays a classic script that assigns
    `window.LOOT`, cached apart from the hashed modules and read without an
    async bootstrap; the build appends `window.LOOT_V`, the record links' card
@@ -154,10 +173,18 @@ export default defineConfig(({ command, mode }) => {
     /* The manifest, the service worker and the icons, copied verbatim: the
        worker must not pass through the bundle (docs/specs/META.md section 9). */
     publicDir: 'public',
-    /* A relative base, not '/daggerheart-loot/': the same build serves from
-       Pages, `vite preview` and the test server at any path. */
-    base: './',
-    plugins: [svelte(), dataScript(), artwork(OUT), noscriptData(OUT), rootFiles()],
+    /* The root: the app runs at every route path of a host root (Pages, `vite
+       preview`, the test server), so a URL relative to the page would name a
+       folder under the route (docs/specs/META.md section 4). */
+    base: '/',
+    plugins: [
+      svelte(),
+      dataScript(),
+      artwork(OUT),
+      noscriptData(OUT),
+      appDocuments(OUT),
+      rootFiles()
+    ],
     /* JSON literals, so a branch of main.ts a build does not take - the
        fake's in `dist/`, the Supabase client's in an unconfigured build -
        is dead code, and its chunk is never emitted. */

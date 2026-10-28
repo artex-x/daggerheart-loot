@@ -39,21 +39,23 @@ describe('collapse', () => {
 });
 
 describe('normUrl', () => {
-  it('cuts a served app url down to its hash, whatever the port', () => {
-    assert.equal(
-      normUrl('http://127.0.0.1:51234/index.html#/tables/eq_weapon'),
-      '#/tables/eq_weapon'
-    );
-    assert.equal(normUrl('http://127.0.0.1:7/#/lists'), '#/lists');
+  it('cuts a served app url down to its path, whatever the port', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/tables/eq_weapon'), '/tables/eq_weapon');
+    assert.equal(normUrl('http://127.0.0.1:7/en/lists?as=gm1'), '/en/lists?as=gm1');
   });
 
-  it('cuts a served site page down to its relative path', () => {
-    assert.equal(normUrl('http://127.0.0.1:51234/pages/privacy.html'), 'pages/privacy.html');
-    assert.equal(normUrl('http://127.0.0.1:51234/en/#/lists'), 'en/#/lists');
+  it('cuts a served site page down to its path', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/pages/privacy.html'), '/pages/privacy.html');
+  });
+
+  it('prints a card version as <v>, so a golden does not follow card-versions.json', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/i/ci1?v=k3x9a1'), '/i/ci1?v=<v>');
+    assert.equal(normUrl('http://127.0.0.1:51234/s/t?as=gm1&v=0'), '/s/t?as=gm1&v=<v>');
   });
 
   it('leaves a real outbound link whole - no test server origin to cut', () => {
     assert.equal(normUrl('https://daggerheart.com/'), 'https://daggerheart.com/');
+    assert.equal(normUrl('https://e.test/x?v=k3'), 'https://e.test/x?v=k3');
   });
 });
 

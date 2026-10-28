@@ -14,7 +14,7 @@ import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
 import { browserPage, fakePage } from './page.js';
 import { browserPwa, fakePwa } from './pwa.js';
-import { hashRouter, memoryRouter } from './router.js';
+import { memoryRouter, pathRouter } from './router.js';
 import { browserShare, fakeShare } from './share.js';
 import { browserStorage, memoryStorage } from './storage.js';
 import type { Env } from './types.js';
@@ -31,7 +31,8 @@ export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
 export { browserPage, fakePage } from './page.js';
 export { browserPwa, fakePwa, registerWith } from './pwa.js';
-export { hashRouter, memoryRouter } from './router.js';
+export { memoryRouter, pathRouter } from './router.js';
+export type { MemoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 export type { FakeStoragePort } from './storage.js';
@@ -49,7 +50,7 @@ export function browserEnv(): Env {
     storage: browserStorage(),
     clipboard: browserClipboard(),
     share: browserShare(),
-    router: hashRouter(),
+    router: pathRouter(),
     drag: nativeDrag(),
     dialog: browserDialog(),
     pwa: browserPwa(),

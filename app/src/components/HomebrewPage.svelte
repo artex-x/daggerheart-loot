@@ -330,7 +330,11 @@
       <nav aria-label={t.myItems}>
         <ChipRow>
           {#each TABS as x (x.tab)}
-            <Chip label={t[x.label]} on={x.tab === tab} href={homebrewTabHash(x.tab)} />
+            <Chip
+              label={t[x.label]}
+              on={x.tab === tab}
+              href={app.href(homebrewTabHash(x.tab))}
+            />
           {/each}
         </ChipRow>
       </nav>
@@ -342,7 +346,7 @@
         <HomebrewCards {app} {store} kind="ref" {openKey} />
       {:else}
         <div class="acts" bind:this={newRow}>
-          <Button variant="primary" href={homebrewItemHash(null)} sameTab
+          <Button variant="primary" href={app.href(homebrewItemHash(null))} sameTab
             ><Icon name="plus" />{t.hbNewItem}</Button
           >
         </div>

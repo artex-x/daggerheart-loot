@@ -13,7 +13,9 @@
 
 {#if app.env.cloud}
   <!-- Not `.printnote`: tests/app/print.js counts those on the print page. -->
-  <p class="keepnote">{t.keepBefore}<a href={ACCOUNT_HASH}>{t.keepLink}</a>{t.keepAfter}</p>
+  <p class="keepnote">
+    {t.keepBefore}<a href={app.href(ACCOUNT_HASH)}>{t.keepLink}</a>{t.keepAfter}
+  </p>
 {/if}
 
 <style>

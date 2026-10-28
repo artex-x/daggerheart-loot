@@ -3,31 +3,31 @@
 # why: an id no item has, after the read: «Предмет не найден», its sub and «На главную», the address kept
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=#/h/00000000-0000-4000-8000-000000009999]
-  link "К содержимому" [url=#main]
+RootWebArea "Генератор лута Daggerheart" [url=/h/00000000-0000-4000-8000-000000009999]
+  link "К содержимому" [url=/h/00000000-0000-4000-8000-000000009999#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Предмет не найден" [level=1]
     StaticText "Возможно, ссылка устарела или данные были изменены."
-    link "На главную" [url=#/roll/std]
+    link "На главную" [url=/roll/std]
     status ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -48,31 +48,31 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000009999]
-  link "Skip to content" [url=#main]
+RootWebArea "Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-000000009999]
+  link "Skip to content" [url=/en/h/00000000-0000-4000-8000-000000009999#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Item not found" [level=1]
     StaticText "The link may be out of date, or the data has changed."
-    link "Home" [url=#/roll/std]
+    link "Home" [url=/en/roll/std]
     status ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

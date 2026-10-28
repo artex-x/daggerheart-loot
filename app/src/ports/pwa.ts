@@ -8,7 +8,7 @@
 import type { Persistence, PwaPort, Registration } from './types.js';
 
 interface WorkerContainer {
-  register(url: string): Promise<unknown>;
+  register(url: string, options?: { scope: string }): Promise<unknown>;
 }
 
 interface StorageManagerLike {
@@ -19,7 +19,9 @@ interface StorageManagerLike {
 /** The decision, with the browser handed in so jsdom can cover every branch. */
 export function registerWith(sw: WorkerContainer | undefined): Promise<Registration> {
   if (!sw) return Promise.resolve('unsupported');
-  return sw.register('./sw.js').then(
+  /* From the root: the app runs at every route path, and a relative URL would name a
+     worker under the page's own directory. */
+  return sw.register('/sw.js', { scope: '/' }).then(
     (): Registration => 'registered',
     (): Registration => 'failed'
   );

@@ -3,34 +3,34 @@
 # why: a community other than the one it opens on
 
 ## ru :: tree
-RootWebArea "Предметы сообществ - Генератор лута Daggerheart" [url=#/roll/community_items]
-  link "К содержимому" [url=#main]
+RootWebArea "Предметы сообществ - Генератор лута Daggerheart" [url=/roll/community_items]
+  link "К содержимому" [url=/roll/community_items#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Предметы сообществ" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
     navigation "Дополнения"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Предметы сообществ" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=/roll/community_items]
+      link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
     StaticText "СООБЩЕСТВО"
     button "Великородное" [pressed=false]
     button "Научное" [pressed=true]
@@ -48,7 +48,7 @@ RootWebArea "Предметы сообществ - Генератор лута D
       StaticText "1"
       StaticText "ПРЕДМЕТ"
       StaticText "НАУЧНОЕ"
-      link "Вечная Свеча" [description=Страница url=#/i/cm11]
+      link "Вечная Свеча" [description=Страница url=/i/cm11]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Когда эта свеча горит, она создаёт ауру в пределах Средней диста..." [namelen=206 namehash=e8ef12ea]
@@ -57,9 +57,9 @@ RootWebArea "Предметы сообществ - Генератор лута D
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -108,34 +108,34 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Community items - Daggerheart Loot Generator" [url=#/roll/community_items]
-  link "Skip to content" [url=#main]
+RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/community_items]
+  link "Skip to content" [url=/en/roll/community_items#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Community items" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=false]
     StaticText "Pick an origin and roll d10."
     navigation "Supplements"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Community items" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/en/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/en/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/en/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
+      link "Community items" [url=/en/roll/community_items]
+      link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
     StaticText "COMMUNITY"
     button "Highborne" [pressed=false]
     button "Loreborne" [pressed=true]
@@ -153,7 +153,7 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=#/roll/community
       StaticText "1"
       StaticText "ITEM"
       StaticText "LOREBORNE"
-      link "Everlasting Candle" [description=Page url=#/i/cm11]
+      link "Everlasting Candle" [description=Page url=/i/en/cm11]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "When lit, this candle creates an aura within Close range. Creatu..." [namelen=201 namehash=cc0855de]
@@ -162,9 +162,9 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=#/roll/community
       button "Copy text" [description=Copy text]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

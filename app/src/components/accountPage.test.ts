@@ -48,11 +48,11 @@ describe('signed out', () => {
     expect(screen.getByRole('button', { name: 'Войти через Discord' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'условия' })).toHaveAttribute(
       'href',
-      'pages/terms.html'
+      '/pages/terms.html'
     );
     expect(screen.getByRole('link', { name: 'политику конфиденциальности' })).toHaveAttribute(
       'href',
-      'pages/privacy.html'
+      '/pages/privacy.html'
     );
     await expectNoA11yViolations(container);
   });
@@ -62,11 +62,11 @@ describe('signed out', () => {
     expect(await screen.findByRole('button', { name: 'Sign in with Discord' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'terms' })).toHaveAttribute(
       'href',
-      'pages/en/terms.html'
+      '/pages/en/terms.html'
     );
     expect(screen.getByRole('link', { name: 'privacy policy' })).toHaveAttribute(
       'href',
-      'pages/en/privacy.html'
+      '/pages/en/privacy.html'
     );
     await expectNoA11yViolations(container);
   });

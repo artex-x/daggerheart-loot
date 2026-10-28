@@ -72,7 +72,7 @@ const ownKeys = async (cloud: FakeCloud): Promise<string[]> => {
 const toastKey = (text: string): string => {
   const toast = screen.getByText(text).closest('.toast') as HTMLElement;
   const href = within(toast).getByRole('link', { name: t.edit }).getAttribute('href') ?? '';
-  return href.replace('#/homebrew/', '');
+  return href.replace('/homebrew/', '');
 };
 
 describe('«Сохранить себе»', () => {

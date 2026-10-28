@@ -11,7 +11,6 @@ import {
   canonicalHash,
   cardVersion,
   HOMEBREW_HASH,
-  previewUrl,
   homebrewItemHash,
   homebrewTabHash,
   itemHash,
@@ -724,45 +723,35 @@ describe('writing an address', () => {
 });
 
 describe('a link to hand somebody else', () => {
-  const host = { base: 'https://e.test/loot/' };
+  const host = { base: 'https://e.test/' };
 
-  it('leaves index.html off, because the server serves the directory', () => {
-    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+  it('writes the path form from the app root', () => {
+    expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/lists');
+    expect(appUrl({ base: 'https://e.test' }, '#/lists', 'ru')).toBe('https://e.test/lists');
   });
 
-  it('sends a record to its stub page, extensionless', () => {
-    /* The stub carries the record's Open Graph tags, which is what makes a
+  it('sends a record to its card path, extensionless', () => {
+    /* The host answers it with the record's Open Graph tags, which is what makes a
        pasted link unfurl in Telegram or Discord with the picture and the name. */
-    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1');
+    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/i/w1');
   });
 
-  it('sends an English record to its English stub', () => {
-    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1');
+  it('sends an English record to its English card path', () => {
+    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/i/en/w1');
   });
 
-  it('sends an English address through the English entry document', () => {
-    expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/loot/en/#/lists');
-    expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/loot/#/lists');
-    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+  it('puts /en/ before an English address and adds v when given', () => {
+    expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/en/lists');
+    expect(appUrl(host, '#/p/AbCdEf123456', 'ru', 'k3')).toBe(
+      'https://e.test/p/AbCdEf123456?v=k3'
+    );
   });
 
   it('lands on an address the app can read back', () => {
-    const r = parseHash(appUrl(host, recordHash('w1')).split('/loot/')[1] ?? '');
+    const r = parseHash('#' + new URL(appUrl(host, recordHash('w1'), 'ru')).pathname);
     expect(r).toEqual({ kind: 'record', id: 'w1' });
   });
 });
-
-interface PreviewFixture {
-  origin: string;
-  build: { hash: string; lang: 'ru' | 'en'; v?: string; url: string | null; why: string }[];
-}
-
-const PREVIEW = JSON.parse(
-  readFileSync(
-    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'urls', 'preview.json'),
-    'utf8'
-  )
-) as PreviewFixture;
 
 interface RecordFixture {
   site: string;
@@ -782,30 +771,6 @@ describe('a record link, docs/fixtures/urls/record.json', () => {
       expect(recordUrl({ base: RECORD.site }, c.id, c.lang, c.v)).toBe(c.url);
     });
   }
-});
-
-describe('a preview link, docs/fixtures/urls/preview.json', () => {
-  for (const c of PREVIEW.build) {
-    it(`${c.hash} (${c.lang}) - ${c.why}`, () => {
-      expect(previewUrl(PREVIEW.origin, c.hash, c.lang, c.v)).toBe(c.url);
-    });
-  }
-
-  it('adds no v when none is given, and every link reads back as the hash', () => {
-    expect(previewUrl(PREVIEW.origin, printSetHash('AbCdEf123456'), 'ru')).toBe(
-      PREVIEW.origin + '/p/AbCdEf123456'
-    );
-    for (const c of PREVIEW.build) {
-      if (c.url === null) continue;
-      const path = new URL(c.url).pathname.replace(/^\/en\//, '/');
-      expect(parseHash('#' + path)).toEqual(parseHash(c.hash));
-    }
-  });
-
-  it('answers null for a family with nothing after it', () => {
-    for (const hash of ['#/h/', '#/s/', '#/p/', '#/tables/'])
-      expect(previewUrl(PREVIEW.origin, hash, 'ru')).toBeNull();
-  });
 });
 
 describe('cardVersion', () => {

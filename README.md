@@ -64,10 +64,10 @@ descriptions and stat lines, in both languages.
 Sections are addressable, and every heading has a copy-link button:
 
 ```
-#/tables/alt_item            the alternate item table
-#/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
-#/tables/community_items/Seaborne  Seaborne items
-#/tables/other_frames/dark_heart  Frame items: equipment for the Dark Heart setting
+/tables/alt_item            the alternate item table
+/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
+/tables/community_items/Seaborne  Seaborne items
+/tables/other_frames/dark_heart  Frame items: equipment for the Dark Heart setting
 ```
 
 Every table has a filter panel; where there is nothing to filter by, there is no
@@ -82,7 +82,7 @@ The selection lives in the address rather than in storage, so a filtered view ca
 be copied straight out of the browser bar:
 
 ```
-#/tables/eq_weapon/f_tier-2.cls-mag
+/tables/eq_weapon/f_tier-2.cls-mag
 ```
 
 ## Lists
@@ -134,13 +134,13 @@ An account list is shared with **Share**, which holds both links.
 A share link opens an account list as it is now, read-only:
 
 ```
-https://daggerheart-loot.pages.dev/#/s/<token>
+https://daggerheart-loot.pages.dev/s/<token>
 ```
 
 The token is opaque: only the list's owner makes one, one per audience, and
 **Delete link** ends access through it. Text and images come from `data.js` at
 render time, so fixing the data fixes every list that points at it. An old
-`#/l/` link stopped opening on 26 October 2026 and draws the not-found page.
+`/l/` link stopped opening on 26 October 2026 and draws the not-found page.
 
 ### Where lists live
 
@@ -154,8 +154,8 @@ be made.
 of a playing card, so sleeves and card boxes fit. Up to 180 cards, twenty sheets,
 at a time. The button appears wherever a set of records exists: an item page, a
 list, a table selection. Printing needs an account: the press stores the sheet in
-the account and opens its short address `#/p/<id>`, which another signed-in person
-can open. A set is deleted 90 days after it was last opened. Old `#/print/` links
+the account and opens its short address `/p/<id>`, which another signed-in person
+can open. A set is deleted 90 days after it was last opened. Old `/print/` links
 no longer open. An opt-in compact sheet prints sixteen 44x63 mm cards per page, in
 either layout.
 
@@ -185,8 +185,10 @@ badge is not visible.
 
 ## Item links
 
-The link icon beside a name gives a static page with Open Graph markup that
-redirects into the app, so Telegram, Discord and the rest unfold it into a card:
+The link icon beside a name gives the record's address. The site answers it
+with the app and the record's Open Graph card in the page head, so Telegram,
+Discord and the rest unfold it into a card, and an address copied from the
+browser's bar unfolds the same way:
 
 ```
 https://daggerheart-loot.pages.dev/i/ci15?v=<version>
@@ -217,9 +219,9 @@ release order: Sporopolis `mw1`-`mw20`, Wagerwood `mw21`-`mw40`, Warrin' Warrens
 the order is kind, then name.
 
 A homebrew item link, a share link, a print set link and a table link are
-link cards on the same host `daggerheart-loot.pages.dev`: it shows a card to a
-messenger and sends a person on to the app. A catalog record keeps its `i/`
-stub page. A record link carries `?v=<version>`, which changes with the card,
+link cards on the same host `daggerheart-loot.pages.dev`: each address answers
+the app with the link's card in the page head, so a messenger shows the card
+and a person stays at the same address. A record link carries `?v=<version>`, which changes with the card,
 so a messenger draws a changed card afresh. The old address
 `https://artex-x.github.io/daggerheart-loot/` forwards here. The link families
 are in `docs/specs/CONTRACTS.md` section 5.
@@ -297,9 +299,11 @@ img/*.webp            1193 pictures, 640x640, ~35 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~37 MB
 i/*.html              1459 stub pages per language with Open Graph markup: i/ Russian,
-                      i/en/ English; generated, not committed
+                      i/en/ English; the old host's mirror publishes them, the site
+                      publishes the app with the same card (dist/i/); generated,
+                      not committed
 en/index.html         the English entry document (the site's English preview card),
-                      generated, not committed
+                      the mirror's; the site's is dist/en/; generated, not committed
 pages/src/*.html      the site pages (install guide, privacy, terms), authored, Russian; pages/src/en/ English
 pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
                       and pages/en/ English
@@ -312,7 +316,8 @@ schema/import-v1.json the JSON Schema of the lists import file
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
-tools/share-card.mjs        the card renderer of the stubs and the preview host
+tools/share-card.mjs        the card renderer of the stubs, the app documents and the preview host
+tools/app-documents.js      writes the record and English-root app documents into dist/
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
 preview/                    the site host's worker: link cards for messengers (Cloudflare Pages)

@@ -57,6 +57,7 @@ import type { Prefs } from '../lib/prefs.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
 import type { NoticeRow, OwnerRequest, RequestHead, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
+import type { Lang } from '../lib/types.js';
 
 export interface StoragePort {
   get(key: string): string | null;
@@ -125,22 +126,33 @@ export interface SharePort {
 /* ---------- the address ---------- */
 
 /**
- * Reading and writing the hash.
+ * Reading and writing the address.
  *
- * `replace` exists separately from `navigate` because the difference is
- * load-bearing: the filter segment is rewritten on every click and must not
- * fill the back button, while opening a list is a step a person expects to be
- * able to undo.
+ * The app speaks the `#/...` route key; the bar shows its path form
+ * (docs/specs/ROUTES.md, "Path form"). `replace` exists separately from
+ * `navigate` because the difference is load-bearing: the filter segment is
+ * rewritten on every click and must not fill the back button, while opening a
+ * list is a step a person expects to be able to undo. The router holds no
+ * language: every write takes the one on screen.
  */
 export interface RouterPort {
+  /** The route key the address names; an old `#/` fragment wins over the path. */
   hash(): string;
-  navigate(hash: string): void;
-  replace(hash: string): void;
+  /** The language the address names, or null when it names none. */
+  lang(): Lang | null;
+  /** One history step to `hash`, with `?v=<v>` when given, and the change listeners
+   *  told at once; the address already showing is no step and tells nobody. */
+  navigate(hash: string, lang: Lang, v?: string): void;
+  /** Rewrites the address in place and tells nobody. `v` undefined keeps the current
+   *  `v`, null drops it. */
+  replace(hash: string, lang: Lang, v?: string | null): void;
+  /** Rewrites the current address in place in `lang`'s form, `v` kept. */
+  relang(lang: Lang): void;
+  /** Back, Forward, or a typed old `#/` address. */
   onChange(fn: (hash: string) => void): () => void;
-  /**
-   * Where the page itself lives, with any hash stripped and `index.html` off
-   * the end - a web server serves the directory, so naming the file is noise.
-   */
+  /** A plain click on a link to an address the app answers; the click is prevented. */
+  onLink(fn: (hash: string) => void): () => void;
+  /** The app root: the origin with a trailing `/`. */
   base(): string;
   /** How many entries back there are, so a print page knows whether to offer one. */
   canGoBack(): boolean;
@@ -226,7 +238,7 @@ export type Registration = 'registered' | 'unsupported' | 'failed';
 export type Persistence = 'persisted' | 'denied' | 'skipped';
 
 export interface PwaPort {
-  /** Registers `./sw.js`. */
+  /** Registers `/sw.js` with the scope `/`. */
   register(): Promise<Registration>;
   /** Whether the page runs as an installed app (standalone display mode). */
   standalone(): boolean;

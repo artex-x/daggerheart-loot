@@ -19,9 +19,25 @@
    lazily: lib.js requires this file first. */
 const TARGETS = {
   get next() {
-    return require('./lib.js').baseUrl() + 'index.html';
+    return require('./lib.js').baseUrl();
   }
 };
+
+/* The app's own conversion between a route key and its path form
+   (docs/specs/ROUTES.md, "Path form"); import-free, so Node loads it. */
+const { addressOf, pathOf } = require('../../app/src/lib/address.ts');
+
+/** Returns the page address of `route` under `root` with `search`: a `#/` route key in
+ *  its Russian path form; any other route (an old form such as `en/#/tables`) as written
+ *  from the root, its fragment kept. */
+function pageUrl(root, route, search) {
+  if (route === '' || route.startsWith('#/')) {
+    return root + pathOf(route, 'ru').slice(1) + search;
+  }
+  const at = route.indexOf('#');
+  const p = (at < 0 ? route : route.slice(0, at)).replace(/^\//, '');
+  return root + p + search + (at < 0 ? '' : route.slice(at));
+}
 
 /* The quiet window of `addressSettled()`. ListPage.svelte's 150 ms address
    write went in R10, so no app write needs it now (docs/specs/COVERAGE.md). */
@@ -172,14 +188,15 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * A route, from a document that has just been made.
      *
      * The trip through about:blank is load-bearing. Two states on the same
-     * route differ only by the hash, and a hash-only navigation does not
-     * reload: the page keeps its variables, and `prepare` - which is what
+     * route differ only by the fragment or the query, and a fragment-only
+     * navigation does not reload: the page keeps its variables, and `prepare` - which is what
      * clears storage and stubs the clipboard - never runs again. The help panel
      * one state opened was still open in the next one, and it took an hour to
      * see that the harness was reporting its own leak.
      *
-     * `as` is the test build's signed-in switch: `?as=<user>` before the hash
-     * signs that seed user into the fake cloud; without it the page is
+     * A `#/` route opens at its path form; another route (an old address
+     * such as `en/#/tables/eq_weapon`) opens as written. `as` is the test
+     * build's signed-in switch: `?as=<user>` signs that seed user into the fake cloud; without it the page is
      * signed out (docs/specs/COVERAGE.md, "Test layers"). A user the seed
      * does not have stops the boot with `#boot-error` (main.ts), which
      * fails here at once rather than as a page that never draws.
@@ -208,7 +225,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       const search = qs ? '?' + qs : '';
       try {
         await page.goto('about:blank');
-        await page.goto(url + search + route, { waitUntil });
+        await page.goto(pageUrl(new URL('/', url).href, route, search), { waitUntil });
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         throw new Error(route + ': ' + message + d.inFlightText(), { cause: e });
@@ -504,7 +521,8 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       return true;
     },
 
-    /** Navigates in the page, as a pasted link does, then settles. */
+    /** Navigates in the page, as a pasted old `#/` link does, which the app turns into
+     *  its path form, then settles. */
     async go(hash) {
       await page.evaluate((h) => {
         location.hash = h;
@@ -637,7 +655,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
         );
       } catch {
         const state = await page.evaluate(() => [
-          location.hash,
+          location.pathname,
           document.querySelector('main')?.getAttribute('data-lists') ?? 'no main',
           document.querySelector('main')?.getAttribute('data-homebrew') ?? 'none'
         ]);
@@ -676,7 +694,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * Waits for the address bar to stop changing - for any debounced address
      * write (`URL_DEBOUNCE_MS` above) to land, which `settle()` no longer waits
      * long enough to catch (see its
-     * own doc comment). Polls `location.hash` every 40ms (the same cadence
+     * own doc comment). Polls the path and the query every 40ms (the same cadence
      * `golden.js`'s `waitForToast` uses) and returns once it has been
      * unchanged for `quiet` ms.
      *
@@ -689,11 +707,11 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      *    whether or not the address ever changes, so it never returns "at
      *    once". What it waits for is only a write landing within `quiet` of
      *    the call; a write that lands later is missed, and whatever reads
-     *    the hash next still fails red on content, same as today.
+     *    the address next still fails red on content, same as today.
      */
     async addressSettled({ quiet = URL_DEBOUNCE_MS + 100, cap = 2000 } = {}) {
       const start = Date.now();
-      let prev = await page.evaluate(() => location.hash);
+      let prev = await page.evaluate(() => location.pathname + location.search);
       let last = prev;
       let lastChange = start;
       for (;;) {
@@ -703,7 +721,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
           throw new Error(`addressSettled: still changing after ${cap}ms (${prev} -> ${last})`);
         }
         await new Promise((r) => setTimeout(r, 40));
-        const cur = await page.evaluate(() => location.hash);
+        const cur = await page.evaluate(() => location.pathname + location.search);
         if (cur !== last) {
           prev = last;
           last = cur;
@@ -817,8 +835,10 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       });
     },
 
-    hash() {
-      return page.evaluate(() => location.hash);
+    /** The route key the address names, read the way the app reads it. */
+    async hash() {
+      const [p, f] = await page.evaluate(() => [location.pathname, location.hash]);
+      return addressOf(p, f).hash;
     },
 
     /** The message the last `confirm()` on this page carried, or null if none

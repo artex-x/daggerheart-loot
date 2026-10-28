@@ -714,7 +714,7 @@ describe('a share link', () => {
     open('#/s/player-token-1');
     const name = await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
     const row = name.closest('.lrow') ?? name.closest('li') ?? name.parentElement;
-    expect(row?.querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+    expect(row?.querySelector('img')?.getAttribute('src')).toBe('/img/thumb/ci1.webp');
   });
 
   it('draws «Загружаем...» while the link reads, then the list', async () => {
@@ -758,7 +758,7 @@ describe('a share link', () => {
   it('tells the owner it is their list, with a link to its page', async () => {
     open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
     const edit = await screen.findByRole('link', { name: ru.ownListEdit });
-    expect(edit).toHaveAttribute('href', '#/lists/' + uuid(101));
+    expect(edit).toHaveAttribute('href', '/lists/' + uuid(101));
     expect(screen.getByText(ru.ownList, { exact: false })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
   });
@@ -861,7 +861,7 @@ describe('a share link', () => {
       expect(screen.getByText(ru.shareGoneSub)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
         'href',
-        '#/roll/std'
+        '/roll/std'
       );
       expect(router.hash()).toBe(hash);
     });
@@ -1666,11 +1666,13 @@ describe('the filter', () => {
       expect(screen.queryByRole('button', { name: 'Броня' })).not.toBeInTheDocument();
     });
 
-    it('copies the filter link and toasts; the English link goes through en/', async () => {
+    it('copies the filter link and toasts; the English link carries /en/', async () => {
       const { clip } = open('#/s/player-token-1/f_kind-weapon');
       await shopReady();
       await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
-      expect(clip.last.text).toBe('https://example.test/#/s/player-token-1/f_kind-weapon');
+      expect(clip.last.text).toMatch(
+        /^https:\/\/example\.test\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
+      );
       expect(screen.getByText(ru.filterLinkCopied)).toBeInTheDocument();
       cleanup();
       const en = open('#/s/player-token-1/f_kind-weapon', fakeCloud(SEED), {
@@ -1678,17 +1680,33 @@ describe('the filter', () => {
       });
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
       await userEvent.click(screen.getByRole('button', { name: dict('en').filterLink }));
-      expect(en.clip.last.text).toBe(
-        'https://example.test/en/#/s/player-token-1/f_kind-weapon'
+      expect(en.clip.last.text).toMatch(
+        /^https:\/\/example\.test\/en\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
       );
       expect(screen.getByText('Filter link copied')).toBeInTheDocument();
+    });
+
+    it("writes the copy's version into the bar once read, and again on another filter", async () => {
+      const { clip, router } = open('#/s/player-token-1');
+      await shopReady();
+      await waitFor(() => {
+        expect(router.bar()).toMatch(/^\/s\/player-token-1\?v=[0-9a-z]+$/);
+      });
+      router.navigate('#/s/player-token-1/f_kind-weapon');
+      await waitFor(() => {
+        expect(router.bar()).toMatch(/^\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/);
+      });
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(clip.last.text).toBe('https://example.test' + router.bar());
     });
 
     it('copies only the values in force, and toasts the GM warning on a GM link', async () => {
       const { clip, container } = open('#/s/gm-token-1/f_kind-weapon.range-veryfar');
       await shopReady();
       await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
-      expect(clip.last.text).toBe('https://example.test/#/s/gm-token-1/f_kind-weapon');
+      expect(clip.last.text).toMatch(
+        /^https:\/\/example\.test\/s\/gm-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
+      );
       expect(screen.getByText(ru.gmFilterLinkCopied)).toBeInTheDocument();
       await expectNoA11yViolations(container);
     });
@@ -1831,7 +1849,7 @@ describe('the filter', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/hb_aldersetaaaaaaaa'
+      '/homebrew/sets/hb_aldersetaaaaaaaa'
     );
     await expectNoA11yViolations(container);
     cleanup();

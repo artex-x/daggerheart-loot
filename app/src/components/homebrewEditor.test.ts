@@ -471,7 +471,7 @@ describe('another device', () => {
     /* The banner's way back and the button row's: the same name, the same place. */
     const back = screen.getAllByRole('link', { name: t.hbToMyItems });
     expect(back).toHaveLength(2);
-    for (const a of back) expect(a).toHaveAttribute('href', '#/homebrew');
+    for (const a of back) expect(a).toHaveAttribute('href', '/homebrew');
   });
 
   it('reloads a clean form when a read brings a newer row', async () => {
@@ -503,7 +503,7 @@ describe('the guard', () => {
     expect(row()).toEqual([t.save, t.hbToMyItems, t.del]);
     expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
       'href',
-      '#/homebrew'
+      '/homebrew'
     );
     /* The memory router sees no link press, so the test makes the link's navigation. */
     app.go('#/homebrew');
@@ -758,7 +758,7 @@ describe('the states around the form', () => {
     expect(screen.getByRole('heading', { name: t.notFound })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.hbToMyItems })).toHaveAttribute(
       'href',
-      '#/homebrew'
+      '/homebrew'
     );
     await expectNoA11yViolations(container);
   });
@@ -853,7 +853,7 @@ describe('a retry, a delete in flight, Enter and the preview', () => {
   it('draws the full card as the preview, with no link to an unsaved key', async () => {
     const { container } = await editor(null);
     await userEvent.type(screen.getByLabelText(/Название/), 'Рог');
-    expect(container.querySelector('a[href^="#/i/"]')).toBeNull();
+    expect(container.querySelector('a[href^="/i/"]')).toBeNull();
   });
 });
 
@@ -1504,7 +1504,7 @@ describe('the picture', () => {
     const tier = group(t.tier);
     expect(desc.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(field.compareDocumentPosition(tier) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(previewImg().src).toContain('img/_none.webp');
+    expect(previewImg().src).toContain('/img/_none.webp');
   });
 
   it('draws a cropped file in the preview and arms the guard', async () => {
@@ -1646,9 +1646,9 @@ describe('the picture', () => {
     expect((await rowOf(cloud, AXE))?.art).toBe('ci2.webp');
     /* The form and the preview draw the row's picture, not the one loaded before. */
     await waitFor(() => {
-      expect(previewImg().getAttribute('src')).toBe('img/ci2.webp');
+      expect(previewImg().getAttribute('src')).toBe('/img/ci2.webp');
     });
-    expect(document.querySelector('.th img')?.getAttribute('src')).toBe('img/thumb/ci2.webp');
+    expect(document.querySelector('.th img')?.getAttribute('src')).toBe('/img/thumb/ci2.webp');
   });
 
   it('removes the saved picture with «Убрать картинку»', async () => {

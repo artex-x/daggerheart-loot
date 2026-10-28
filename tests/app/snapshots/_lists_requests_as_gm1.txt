@@ -4,21 +4,21 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои списки - Генератор лута Daggerheart" [url=index.html?as=gm1#/lists]
-  link "К содержимому" [url=index.html?as=gm1#main]
+RootWebArea "Мои списки - Генератор лута Daggerheart" [url=/lists?as=gm1]
+  link "К содержимому" [url=/lists?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Поиск" [url=index.html?as=gm1#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Мои списки" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -35,27 +35,27 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
     StaticText "ВЫБРАТЬ ВСЕ"
     generic ""
     checkbox "Выбрать: Пустой список" [checked=false]
-    link "Пустой список, 0 позиций, изменён 1 час назад" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
+    link "Пустой список, 0 позиций, изменён 1 час назад" [url=/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 позиций · изменён 1 час назад"
       StaticText "Список пуст"
     button "Удалить"
     checkbox "Выбрать: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=69 namehash=cf9e017c]
+    link "Лавка кузнеца, 10 позиций, изменён 3 дня назад, 2 запроса ждут о..." [url=/lists/00000000-0000-4000-8000-000000000101 namelen=69 namehash=cf9e017c]
       StaticText "Лавка кузнеца"
       StaticText "10 позиций · изменён 3 дня назад"
       StaticText "2 запроса ждут ответа"
     button "Удалить"
     checkbox "Выбрать: Трофеи" [checked=false]
-    link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+    link "Трофеи, 2 позиции, изменён в прошлом месяце" [url=/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 позиции · изменён в прошлом месяце"
     button "Удалить"
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -88,21 +88,21 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/lists]
-  link "Skip to content" [url=index.html?as=gm1#main]
+RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
+  link "Skip to content" [url=/en/lists?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm1#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm1#/tables]
-      link "Search" [url=index.html?as=gm1#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "My lists" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -119,27 +119,27 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=index.html?as=gm1#/list
     StaticText "SELECT ALL"
     generic ""
     checkbox "Select: Пустой список" [checked=false]
-    link "Пустой список, 0 items, edited 1 hour ago" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000102]
+    link "Пустой список, 0 items, edited 1 hour ago" [url=/en/lists/00000000-0000-4000-8000-000000000102]
       StaticText "Пустой список"
       StaticText "0 items · edited 1 hour ago"
       StaticText "The list is empty"
     button "Delete"
     checkbox "Select: Лавка кузнеца" [checked=false]
-    link "Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ..." [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000101 namelen=73 namehash=f0d166c3]
+    link "Лавка кузнеца, 10 items, edited 3 days ago, 2 requests wait for ..." [url=/en/lists/00000000-0000-4000-8000-000000000101 namelen=73 namehash=f0d166c3]
       StaticText "Лавка кузнеца"
       StaticText "10 items · edited 3 days ago"
       StaticText "2 requests wait for an answer"
     button "Delete"
     checkbox "Select: Трофеи" [checked=false]
-    link "Трофеи, 2 items, edited last month" [url=index.html?as=gm1#/lists/00000000-0000-4000-8000-000000000103]
+    link "Трофеи, 2 items, edited last month" [url=/en/lists/00000000-0000-4000-8000-000000000103]
       StaticText "Трофеи"
       StaticText "2 items · edited last month"
     button "Delete"
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls

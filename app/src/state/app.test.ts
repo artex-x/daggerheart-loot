@@ -79,6 +79,11 @@ function quirkyRouter(start: string): RouterPort & { fire: (h: string) => void }
   const listeners = new Set<(h: string) => void>();
   return {
     hash: () => hash,
+    lang: () => null,
+    relang() {
+      /* The bar's language is not this double's concern. */
+    },
+    onLink: () => () => undefined,
     navigate(h) {
       if (h === hash) return;
       hash = h;
@@ -193,7 +198,7 @@ describe('the address on the way in', () => {
     const router = memoryRouter('');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
     expect(app.hash).toBe('#/search');
-    expect(router.stack).toEqual(['', '#/search']);
+    expect(router.stack, 'the bare address is written as the root').toEqual(['#/', '#/search']);
     expect(router.canGoBack()).toBe(true);
   });
 
@@ -528,10 +533,10 @@ describe('links to hand somebody else', () => {
   it('follow the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
     expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/lists');
     app.setLang('en');
     expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/en/lists');
   });
 
   it("carry the record's card version when the build's map holds it", () => {
@@ -551,10 +556,12 @@ describe('links to hand somebody else', () => {
   it('keep the app address for every card family in a build with no preview host', () => {
     const app = new AppState(at('#/roll/std'));
     const hb = { id: 'hb_emberaxeaaaaaaaa', src: 'homebrew', hid: HID } as unknown as Record_;
-    expect(app.linkToRecord(hb)).toBe('https://example.test/#/h/' + HID);
-    expect(app.linkTo('#/s/tok', 'v1')).toBe('https://example.test/#/s/tok');
-    expect(app.linkTo('#/p/AbCdEf123456')).toBe('https://example.test/#/p/AbCdEf123456');
-    expect(app.linkTo('#/tables/core_item')).toBe('https://example.test/#/tables/core_item');
+    expect(app.linkToRecord(hb)).toBe(
+      'https://example.test/h/' + HID + '?v=' + cardVersion(hb)
+    );
+    expect(app.linkTo('#/s/tok', 'v1')).toBe('https://example.test/s/tok?v=v1');
+    expect(app.linkTo('#/p/AbCdEf123456')).toBe('https://example.test/p/AbCdEf123456');
+    expect(app.linkTo('#/tables/core_item')).toBe('https://example.test/tables/core_item');
   });
 });
 
@@ -581,14 +588,14 @@ describe('links through the preview host', () => {
     expect(app.linkToRecord(hb())).toBe(`${ORIGIN}/en/h/${HID}?v=${v}`);
   });
 
-  it('keep a catalog record on its stub and every other address in the app', () => {
+  it('keep a catalog record on the app root and hand out every other address on the host', () => {
+    /* On the site's host the app and the card host are one origin: every path is the app. */
     const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
     expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
-    expect(app.linkTo('#/l/ABC')).toBe('https://example.test/#/l/ABC');
-    expect(app.linkTo('#/tables/homebrew')).toBe('https://example.test/#/tables/homebrew');
+    expect(app.linkTo('#/lists')).toBe(ORIGIN + '/lists');
+    expect(app.linkTo('#/l/ABC')).toBe(ORIGIN + '/l/ABC');
     expect(app.linkTo('#/tables/homebrew/f_src-hb_alderworkshopaaa')).toBe(
-      'https://example.test/#/tables/homebrew/f_src-hb_alderworkshopaaa'
+      ORIGIN + '/tables/homebrew/f_src-hb_alderworkshopaaa'
     );
   });
 
@@ -772,6 +779,151 @@ describe('replace vs navigate', () => {
 
     router.fire('#/lists'); // a genuine Back/Forward landing on that address
     expect(app.navigations).toBe(3);
+  });
+});
+
+describe('the address bar in its path form', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const withMap = (router: ReturnType<typeof memoryRouter>, over: Partial<Env> = {}): Env =>
+    fakeEnv({ router, data: fakeData({ items: {} }, { w1: 'k3x9a1' }), ...over });
+
+  it('pushes the path form on go() and counts one navigation', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/lists');
+    expect(router.stack).toEqual(['#/roll/std', '#/lists']);
+    expect(router.bar()).toBe('/lists');
+    expect(app.navigations).toBe(1);
+    app.stop();
+  });
+
+  it('adds no entry for the address already showing, and still counts one navigation', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/roll/std');
+    expect(router.stack).toEqual(['#/roll/std']);
+    expect(app.navigations).toBe(1);
+    app.stop();
+  });
+
+  it('takes a link click through go()', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    expect(router.click('/lists')).toBe(true);
+    expect(app.hash).toBe('#/lists');
+    expect(router.bar()).toBe('/lists');
+    app.stop();
+    expect(router.click('/search'), 'stop() removes the link listener').toBe(false);
+  });
+
+  it('opens an English address in English with nothing stored, and stores it', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router, storage }));
+    expect(app.lang).toBe('en');
+    expect(storage.get(LANG_KEY)).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+  });
+
+  it('keeps a stored language over the address, and the bar follows the screen', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [LANG_KEY]: 'ru' }) }));
+    expect(app.lang).toBe('ru');
+    expect(router.bar()).toBe('/lists');
+  });
+
+  it('rewrites the bar in place on a language switch', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.setLang('en');
+    expect(router.bar()).toBe('/en/roll/std');
+    expect(router.stack).toHaveLength(1);
+  });
+
+  it("rewrites the bar to the account's language after a sign-in", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.prefs.save({ lang: 'en' });
+    const router = memoryRouter('#/lists');
+    const app = new AppState(fakeEnv({ router, cloud }));
+    app.start();
+    await flush();
+    expect(app.lang).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+    app.stop();
+  });
+
+  it("rewrites the bar to another tab's language", () => {
+    const storage = memoryStorage();
+    const router = memoryRouter('#/lists');
+    const app = new AppState(fakeEnv({ router, storage }));
+    app.start();
+    storage.set(LANG_KEY, 'en');
+    storage.fireExternalChange(LANG_KEY);
+    expect(router.bar()).toBe('/en/lists');
+    app.stop();
+  });
+
+  it("carries a catalog record's card version at once, and a navigation drops it", () => {
+    const router = memoryRouter('#/i/w1');
+    const app = new AppState(withMap(router));
+    app.start();
+    expect(router.bar()).toBe('/i/w1?v=k3x9a1');
+    app.go('#/lists');
+    expect(router.bar()).toBe('/lists');
+    router.back();
+    expect(app.hash).toBe('#/i/w1');
+    expect(router.bar(), 'Back to a record').toBe('/i/w1?v=k3x9a1');
+    app.go('#/i/hb_emberaxeaaaaaaaa');
+    expect(router.bar(), 'an own item has no card version').toBe('/i/hb_emberaxeaaaaaaaa');
+    app.stop();
+  });
+
+  it('writes a typed old address in its path form, in the same entry', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(withMap(router));
+    app.start();
+    router.navigate('#/i/w1');
+    expect(app.hash).toBe('#/i/w1');
+    expect(router.stack).toEqual(['#/roll/std', '#/i/w1']);
+    expect(router.bar()).toBe('/i/w1?v=k3x9a1');
+    app.stop();
+  });
+
+  it('writes a page version only for the address still showing', () => {
+    const router = memoryRouter('#/s/tok');
+    const app = new AppState(fakeEnv({ router }));
+    app.setBarVersion('#/s/tok', 'v1');
+    expect(router.bar()).toBe('/s/tok?v=v1');
+    app.go('#/lists');
+    app.setBarVersion('#/s/tok', 'v2');
+    expect(router.bar()).toBe('/lists');
+    app.setBarVersion('#/lists', undefined);
+    expect(router.bar()).toBe('/lists');
+  });
+
+  it('hands out the bar as the link of every card family, with or without a preview host', () => {
+    for (const preview of ['', 'https://example.test']) {
+      for (const lang of ['ru', 'en'] as const) {
+        const router = memoryRouter('#/roll/std');
+        const app = new AppState(fakeEnv({ router, preview }));
+        app.setLang(lang);
+        for (const [hash, v] of [
+          ['#/h/' + HID, 'v1'],
+          ['#/s/tok', 'v2'],
+          ['#/p/AbCdEf123456', undefined],
+          ['#/tables/core_item', undefined]
+        ] as const) {
+          app.go(hash);
+          app.setBarVersion(hash, v);
+          expect(app.linkTo(hash, v), hash + ' ' + lang).toBe(
+            'https://example.test' + router.bar()
+          );
+        }
+      }
+    }
   });
 });
 
@@ -1441,9 +1593,9 @@ describe('the account session', () => {
 
   it('names the static pages of the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
-    expect(app.pagesDir).toBe('pages/');
+    expect(app.pagesDir).toBe('/pages/');
     app.setLang('en');
-    expect(app.pagesDir).toBe('pages/en/');
+    expect(app.pagesDir).toBe('/pages/en/');
   });
 });
 

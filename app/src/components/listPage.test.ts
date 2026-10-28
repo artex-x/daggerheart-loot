@@ -142,7 +142,7 @@ describe('the address', () => {
       ).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
         'href',
-        '#/roll/std'
+        '/roll/std'
       );
       expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
@@ -1799,7 +1799,7 @@ describe('homebrew entries', () => {
   it("draws the picture of another account's linked item on its row", async () => {
     open(fakeCloud(SEED, 'gm2'), GM2_ID);
     await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
-    expect(axeRow().querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+    expect(axeRow().querySelector('img')?.getAttribute('src')).toBe('/img/thumb/ci1.webp');
   });
 
   it("offers «Изменить» in the modal for an own item, and not for another account's", async () => {
@@ -1807,7 +1807,7 @@ describe('homebrew entries', () => {
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     expect(
       within(screen.getByRole('dialog')).getByRole('link', { name: 'Изменить' })
-    ).toHaveAttribute('href', '#/homebrew/' + AXE);
+    ).toHaveAttribute('href', '/homebrew/' + AXE);
     cleanup();
     const { container } = open(fakeCloud(SEED, 'gm2'), GM2_ID);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));

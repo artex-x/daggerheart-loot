@@ -650,7 +650,7 @@ describe('the change log in the panel', () => {
     );
     expect(
       within(rows[0] as HTMLElement).getByRole('link', { name: 'Открыть' })
-    ).toHaveAttribute('href', '#/h/' + AXE_ID);
+    ).toHaveAttribute('href', '/h/' + AXE_ID);
     await waitFor(async () => {
       const read = await cloud.requests.notices(GM2_LIST);
       expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);

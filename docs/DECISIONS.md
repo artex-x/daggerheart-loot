@@ -14,12 +14,13 @@ deleted.
 
 ## Index
 
+- 2026-10-28 - [Addresses are paths, with the language prefix and `?v` in the bar](decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md)
 - 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
 - 2026-10-28 - [`data.json` and `catalog.csv` leave git; the build writes both](decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md)
 - 2026-10-28 - [R10 deletes the date gates; a build with no sign-in has no lists](decisions/2026-10-28-r10-deletes-the-date-gates-a-build-with-no-sign-in-has-no-lists.md)
 - 2026-10-28 - [R10 drops the move function and the fingerprint column](decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md)
 - 2026-10-28 - [The account's first read takes list heads; a list's details load when needed](decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md)
-- 2026-10-28 - [The site moves to Cloudflare Pages and the old host mirrors its files](decisions/2026-10-28-the-site-moves-to-cloudflare-pages-and-the-old-host-mirrors.md)
+- 2026-10-28 - [The site moves to Cloudflare Pages and the old host mirrors its files](decisions/2026-10-28-the-site-moves-to-cloudflare-pages-and-the-old-host-mirrors.md) - superseded in part
 - 2026-10-22 - [A bulk delete of own items goes in chunks of 50](decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md)
 - 2026-10-22 - [A bulk delete of own items is one invoker call](decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md) - superseded in part
 - 2026-10-22 - [A deleted item's id may be taken again by another account](decisions/2026-10-22-a-deleted-items-id-may-be-taken-again.md)
