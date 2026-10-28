@@ -8,7 +8,8 @@ address or import file without touching the site.
 update the golden fixtures, the tests, this file and `llms.txt` together.
 
 Fixtures: `docs/fixtures/urls/routes.json`,
-`docs/fixtures/urls/preview.json` (section 5), `docs/fixtures/import/` (section 4).
+`docs/fixtures/urls/preview.json` (section 5), `docs/fixtures/urls/record.json`
+(section 5), `docs/fixtures/import/` (section 4).
 Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
 contract fixture in this sense - it is `share.test.ts`'s own golden,
 regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
@@ -147,7 +148,9 @@ shared list. Never renumber a record that has shipped.
   `tests/derived.js` holds; 99779 bytes at 1459 records, measured
   2026-10-21. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
-  `i/en/<id>.html` - the same page in English.
+  `i/en/<id>.html` - the same page in English. The record link the app and
+  the tools hand out is extensionless, `<site>i/<id>` and `<site>i/en/<id>`
+  (section 5); the files keep their `.html` paths.
 - `en/index.html` - the English entry document, published at `<site>en/`:
   the English preview card of the site, which redirects to the app at the
   root with the fragment kept.
@@ -329,6 +332,12 @@ JSON is blocked under `file://`, retired 2026-09-24.) Any build must keep
 loading the data this way, and read it through one typed adapter rather than
 importing it.
 
+The build appends one line to the published `data.js`: `window.LOOT_V = {...}`,
+the record links' card versions (section 5), from `card-versions.json`, which
+`node tools/build.js` writes (`tools/data-script.js`). The source `data.js`
+never holds `LOOT_V`. An artwork refresh changes a version, so it changes the
+published `data.js`, and a reader downloads it again after such a deploy.
+
 `data.json` and `catalog.csv` stay tracked in git (a generated pair kept
 rather than gitignored). Three triggers would reopen that: the seven
 `app/src/lib/*.test.ts` suites stop reading `data.json` off disk; `data.json`
@@ -394,11 +403,37 @@ was deliberately not treated as a new contract: `docs/fixtures/`,
 `tests/contracts.js` and `llms.txt` state behaviour the code already
 enforced, not a new promise the code just started keeping.
 
-**The preview host.** The origin `https://daggerheart-loot.pages.dev` (the
+**The site's host.** The origin `https://daggerheart-loot.pages.dev` (the
 Cloudflare Pages project `daggerheart-loot`) is frozen: only this production
-host is handed out, never a deployment host. It serves a link card to a
-messenger and sends a person on to the app. The families, each also with
-`/en` after the origin for the English card and the English app:
+host is handed out, never a deployment host. Since the task `cloudflare-pages`
+(2026-10-28) it is `<site>`: Pages serves every path above as a static file,
+and an unknown path answers `404.html` with status 404. A `.html` path answers
+308 to the same path without `.html` (`i/<id>.html` to `i/<id>`,
+`en/index.html` to `en/`), so every frozen `.html` URL keeps opening through
+one redirect. The path `/mcp` and every path under it are reserved for the
+task `ai-mcp`; until then `/mcp` answers the 404 page, and the deploy refuses a
+published `mcp`.
+
+**The record link.** The app and every tool hand out a record as
+`<site>i/<id>?v=<v>` in Russian and `<site>i/en/<id>?v=<v>` in English
+(owner, 2026-10-28). `<v>` is the record's card version from the build's map:
+opaque, so nothing parses it; a changed card is a new URL to a messenger's
+cache. A record the map does not hold gets the link without `?v`. The host
+ignores the query. The stubs' `og:url` and `canonical` and the `url` column
+of `catalog.csv` are the extensionless link without `?v`. The fixture is
+`docs/fixtures/urls/record.json`: `build` holds the links, `serve` the host's
+answers.
+
+**The old host.** `https://artex-x.github.io/daggerheart-loot/` (GitHub Pages)
+serves the same files as a mirror, without `assets/`, `data.js` and the
+install guide: its root forwards to `<site>` with the fragment, and its
+`sw.js` unregisters itself (`docs/specs/META.md` section 9, "The old host").
+The file schemas keep their `$id` there (section 4), and the mirror keeps
+each one readable.
+
+**The link cards.** The site's host serves a link card to a messenger and
+sends a person on to the app. The families, each also with `/en` after the
+origin for the English card and the English app:
 
 - `https://daggerheart-loot.pages.dev/h/<uuid>`, a homebrew item
   (`<site>#/h/<uuid>`)
@@ -409,13 +444,14 @@ messenger and sends a person on to the app. The families, each also with
   table, one of its blocks or its filter (`<site>#/tables/<table>[/<tail>]`);
   never `homebrew`
 
-The app adds `?v=<v>` to `/h/` and `/s/` links only: opaque, a version of
+Of the families, the app adds `?v=<v>` to `/h/` and `/s/` links only: opaque, a version of
 what the card draws, so a changed card is a new URL to a messenger's cache.
 The host ignores every query. A path run (an id, a token, a table or a
 tail) past 2048 characters reads as empty. Only `GET` and `HEAD` are
 answered; any other method answers 405 with `Allow: GET, HEAD`.
-`/robots.txt` is a static file; any other path answers 302 to `<site>`
-(`<site>en/` under `/en/`); a deployment or branch host answers 301 to the
-same path and query on the production host. The fixture is
-`docs/fixtures/urls/preview.json`: `build` holds the links the app hands
-out, `serve` the host's answers.
+`preview/public/_routes.json` sends only these families to the worker; every
+other path is a static file of the site or the 404 page. A deployment or
+branch host answers 301 to the same path and query on the production host
+for a family path. The fixture is `docs/fixtures/urls/preview.json`: `routes`
+is the routes file's list, `build` holds the links the app hands out, `serve`
+the host's answers (a `static` row is a path Pages serves, not the worker).

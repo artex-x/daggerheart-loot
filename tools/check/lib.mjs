@@ -99,10 +99,6 @@ export const STAGES = [
     gitVersion: true
   },
   {
-    name: 'test:tg-preview',
-    command: 'node --test --test-reporter=dot tools/tg-preview/lib.test.mjs'
-  },
-  {
     name: 'test:preview',
     command: 'node --test --test-reporter=dot preview/worker.test.mjs'
   },

@@ -1262,8 +1262,11 @@ address kept, and no add-to-list control is drawn.
 - Copy name, copy link, share, copy image, copy text. Copied text goes to the
   clipboard as both `text/html` (name in `<b>`) and `text/plain`; Markdown
   asterisks are deliberately not used. Copy link and share carry a catalog
-  record's stub in the language on screen - `i/<id>.html` in Russian,
-  `i/en/<id>.html` in English - and a homebrew item's preview link. That
+  record's stub in the language on screen, extensionless and versioned -
+  `<site>i/<id>?v=<v>` in Russian, `<site>i/en/<id>?v=<v>` in English, `<v>`
+  the card version from the build's map, no `?v` when the map lacks the
+  record (owner, 2026-10-28; `CONTRACTS.md` section 5) - and a homebrew
+  item's preview link. That
   link's card - the name, the subtitle, the description, the picture and the
   stub's craft and set lines folded with «и ещё N», catalog names from
   `names.json` - draws at any set size; `v` is a version of the record, made
@@ -2586,7 +2589,7 @@ Each rule keeps its number: a review cites it by number.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
   that copies or sends a link hands out the preview host's link with its own
   card - an item, a shared list, a print set, a catalog table; a catalog
-  record keeps its `i/<id>.html` stub. Excluded, each with its reason: a
+  record keeps its stub, `i/<id>?v=<v>`. Excluded, each with its reason: a
   homebrew copy with no id (nothing to link); `#/tables/homebrew`, which draws
   no table, filter or section link (each reader sees only their own items); the
   Items tab's filter (page memory).

@@ -300,11 +300,13 @@ export function appUrl(site: Site, hash: string, lang?: Lang): string {
  *
  * The stub carries per-record Open Graph tags, so Telegram and Discord unfurl
  * the picture, the name and the description without anyone opening anything.
- * The stub of the language on screen: `i/<id>.html` Russian, `i/en/<id>.html`
- * English.
+ * The stub of the language on screen, extensionless: `i/<id>` Russian,
+ * `i/en/<id>` English. `v` is the card's version from the build's map; a
+ * changed card is a new URL to a messenger's cache (docs/specs/CONTRACTS.md
+ * section 5).
  */
-export function recordUrl(site: Site, id: string, lang: Lang): string {
-  return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + '.html';
+export function recordUrl(site: Site, id: string, lang: Lang, v?: string): string {
+  return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + (v ? '?v=' + v : '');
 }
 
 /* ---------- the preview host ---------- */

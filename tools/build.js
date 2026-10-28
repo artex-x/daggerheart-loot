@@ -9,6 +9,9 @@
     names.json    catalog names, sets and table counts for the preview host
                   (not committed: build output, like i/)
     i/<id>.html   the share stubs
+    card-versions.json
+                  each record's card version, which the built data.js carries
+                  as window.LOOT_V (tools/data-script.js; not committed)
     pages/<id>.html  the site pages (tools/build-pages.js)
 
   Run after every edit to data.js:   node tools/build.js
@@ -46,3 +49,7 @@ execFileSync(process.execPath, [path.join(__dirname, 'build-share-pages.js')], {
 execFileSync(process.execPath, [path.join(__dirname, 'build-pages.js')], {
   stdio: 'inherit'
 });
+
+const versions = JSON.stringify(require('./build-share-pages.js').cardVersions());
+fs.writeFileSync(path.join(ROOT, 'card-versions.json'), versions + '\n');
+console.log('card-versions.json - ' + Math.round(Buffer.byteLength(versions) / 1024) + ' KB');

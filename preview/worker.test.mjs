@@ -1,7 +1,7 @@
 // The preview host, end to end through its fetch handler with a fake
 // `fetch`: no network, no Cloudflare runtime. `npm run check` runs it as the
 // stage test:preview (tools/check/lib.mjs).
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -14,14 +14,17 @@ import { card, esc, fit } from '../tools/share-card.mjs';
 createRequire(import.meta.url)('../app/src/lib/markup.ts');
 const { default: worker } = await import('./worker.mjs');
 
-const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 const HOST = 'https://daggerheart-loot.pages.dev';
 const SUPA = 'https://test-project.supabase.co';
+/* Pages binds the deployment's static files as ASSETS; here it goes through the
+   fake fetch of serve(), so names.json is answered and counted there. */
 const ENV = {
   SITE,
   PAGES_HOST: 'daggerheart-loot.pages.dev',
   SUPABASE_URL: SUPA,
-  SUPABASE_KEY: 'sb_publishable_test'
+  SUPABASE_KEY: 'sb_publishable_test',
+  ASSETS: { fetch: (url, init) => globalThis.fetch(url, init) }
 };
 const ID = '0b8f2c1e-1234-4abc-8def-0123456789ab';
 const TOKEN = 'A'.repeat(20) + 'b_c-' + 'z'.repeat(19);
@@ -449,6 +452,28 @@ describe('/h/: craft and set lines', () => {
 
 describe('/h/: names.json', () => {
   const withLines = () => json(itemAnswer({ craft: ['c1'] }));
+
+  it("reads names.json from the deployment's own files, not by a subrequest", async () => {
+    const w = await freshWorker();
+    serve({ item: withLines(), names: () => Promise.reject(new Error('not a subrequest')) });
+    const assets = [];
+    const env = {
+      ...ENV,
+      ASSETS: {
+        fetch: async (url) => {
+          assets.push(String(url));
+          return json(NAMES);
+        }
+      }
+    };
+    const res = await w.fetch(new Request(HOST + '/h/' + ID), env, {});
+    const body = await res.text();
+    assert.equal(res.status, 200);
+    assert.deepEqual(assets, [SITE + 'names.json']);
+    assert.ok(!calls.some((c) => c.url.endsWith('names.json')));
+    assert.notDeepEqual(lines(body), []);
+  });
+
   const failures = [
     ['a 404', () => new Response('nope', { status: 404 })],
     ['a non-JSON body', () => new Response('<html>', { status: 200 })],
@@ -739,8 +764,18 @@ describe('docs/fixtures/urls/preview.json, serve', () => {
     null: () => json(null),
     list: () => json(listAnswer())
   };
-  for (const c of FIXTURE.serve) {
+  /* A route `/x/*` matches a path that starts with `/x/`, as Pages matches it. */
+  const routed = (path) => FIXTURE.routes.some((r) => path.startsWith(r.slice(0, -1)));
+
+  for (const c of FIXTURE.serve.filter((x) => x.static)) {
+    it(`${c.url}: Pages serves it, not the worker: ${c.why}`, () => {
+      assert.equal(routed(new URL(c.url).pathname), false);
+    });
+  }
+
+  for (const c of FIXTURE.serve.filter((x) => !x.static)) {
     it(`${c.method ?? 'GET'} ${c.url.slice(0, 90)}: ${c.why}`, async () => {
+      assert.equal(routed(new URL(c.url).pathname), true);
       serve({
         item: answers[c.answer === 'item' ? 'item' : 'null'],
         list: answers[c.answer === 'list' ? 'list' : 'null']
@@ -777,24 +812,31 @@ describe('docs/fixtures/urls/preview.json, serve', () => {
   });
 });
 
-describe('robots.txt and the routes file', () => {
-  const directives = (text) =>
-    text.split('\n').filter((l) => /^(User-agent|Allow|Disallow|Content-Signal):/i.test(l));
-  const own = readFileSync(join(import.meta.dirname, 'public', 'robots.txt'), 'utf8');
-  it("holds the site's directive lines in their order", () => {
-    const site = readFileSync(join(import.meta.dirname, '..', 'robots.txt'), 'utf8');
-    assert.deepEqual(directives(own), directives(site));
-    assert.ok(directives(own).length > 2);
+describe('the Pages control files', () => {
+  const pub = (name) => join(import.meta.dirname, 'public', name);
+
+  it('routes only the card families to the worker', () => {
+    const routes = JSON.parse(readFileSync(pub('_routes.json'), 'utf8'));
+    assert.deepEqual(routes, { version: 1, include: FIXTURE.routes, exclude: [] });
+    assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/mcp') || r.startsWith('/en/mcp')));
   });
-  it('holds no number and no data pointer', () => {
-    assert.doesNotMatch(own, /\d/);
-    assert.doesNotMatch(own, /catalog(-index)?\.csv|data\.json|llms\.txt/);
+
+  it('sends X-Robots-Tag: noindex on each text file', () => {
+    const headers = readFileSync(pub('_headers'), 'utf8');
+    for (const path of [
+      '/llms.txt',
+      '/data.json',
+      '/catalog.csv',
+      '/catalog-index.csv',
+      '/names.json',
+      '/schema/*'
+    ]) {
+      assert.ok(headers.includes(path + '\n  X-Robots-Tag: noindex'), path);
+    }
   });
-  it('is excluded from the worker', () => {
-    const routes = JSON.parse(
-      readFileSync(join(import.meta.dirname, 'public', '_routes.json'), 'utf8')
-    );
-    assert.deepEqual(routes, { version: 1, include: ['/*'], exclude: ['/robots.txt'] });
+
+  it("holds no robots.txt: the site's own file is served at the root", () => {
+    assert.equal(existsSync(pub('robots.txt')), false);
   });
 });
 

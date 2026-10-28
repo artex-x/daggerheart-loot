@@ -20,7 +20,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** A path with no plausible collision, used to prove the 404 fallback -
- *  GitHub Pages serves /404.html, with a 404 status, for any path that does
+ *  both hosts serve /404.html, with a 404 status, for any path that does
  *  not exist. `dirReader` emulates that exact rule locally so this same
  *  check runs before a deploy has happened at all. */
 export const UNKNOWN_PATH = 'this-path-does-not-exist-9f2c.html';
@@ -75,12 +75,20 @@ function namesFormat(body) {
 const NO_ENTRY = 'assets/no-entry-module.js';
 const entryPath = (root) => entryOf(root) ?? NO_ENTRY;
 
-export function checks() {
-  const status200 = (name) => ({
-    test: (body, meta) => meta.status === 200,
-    message: (meta) => `${name} returned ${meta.status}, not 200`
-  });
+const status200 = (name) => ({
+  test: (body, meta) => meta.status === 200,
+  message: (meta) => `${name} returned ${meta.status}, not 200`
+});
 
+/** The whole site's checks: the app (`appChecks`) and the files both hosts serve
+ *  (`fileChecks`). */
+export function checks() {
+  return [...appChecks(), ...fileChecks()];
+}
+
+/** The app itself: the root page, its entry module, `data.js`, the manifest and the
+ *  service worker. Only the site's host runs it; the old host's mirror does not. */
+export function appChecks() {
   return [
     { path: '', ...status200('root') },
     {
@@ -125,7 +133,40 @@ export function checks() {
       test: (body) => body.startsWith('window.LOOT'),
       message: 'data.js no longer starts by assigning window.LOOT'
     },
+    /* The record links' card versions (docs/specs/CONTRACTS.md section 4). */
+    {
+      path: 'data.js',
+      test: (body) => body.includes('\nwindow.LOOT_V = {'),
+      message: 'data.js does not carry window.LOOT_V, the card version map'
+    },
 
+    /* The installable app (docs/specs/META.md section 9): build outputs
+     * copied from app/public/, published by name. */
+    { path: 'manifest.webmanifest', ...status200('manifest.webmanifest') },
+    {
+      path: 'manifest.webmanifest',
+      test: (body) => {
+        try {
+          return JSON.parse(body).start_url === './';
+        } catch {
+          return false;
+        }
+      },
+      message: 'manifest.webmanifest does not parse as JSON with start_url "./"'
+    },
+    { path: 'sw.js', ...status200('sw.js') },
+    {
+      path: 'sw.js',
+      test: (body) => body.includes('dhloot-assets-v1') && !body.includes('dhloot-shell'),
+      message: 'sw.js is not the current service worker - no dhloot-assets-v1, or a shell cache'
+    }
+  ];
+}
+
+/** The files the site's host and the old host's mirror both serve. `install` is false
+ *  for the mirror, which drops the install guide (docs/specs/META.md section 9). */
+export function fileChecks({ install = true } = {}) {
+  return [
     ...['data.json', 'catalog.csv', 'catalog-index.csv', 'llms.txt', 'robots.txt'].map((f) => ({
       path: f,
       ...status200(f)
@@ -152,13 +193,29 @@ export function checks() {
     ]),
 
     /* The stub is what a messenger fetches for a link preview, one per
-     * language (docs/specs/I18N.md). */
-    ...['i/w1.html', 'i/en/w1.html'].flatMap((f) => [
+     * language (docs/specs/I18N.md); its full text reads with no script, and
+     * its og:url is the extensionless record link (docs/specs/CONTRACTS.md
+     * section 5). */
+    ...[
+      ['i/w1.html', 'i/w1'],
+      ['i/en/w1.html', 'i/en/w1']
+    ].flatMap(([f, link]) => [
       { path: f, ...status200(f) },
       {
         path: f,
         test: (body) => body.includes('og:image'),
         message: `the stub ${f} has lost its preview image (og:image)`
+      },
+      {
+        path: f,
+        test: (body) => !/<div\s+id="app"/.test(body),
+        message: `the stub ${f} is the app shell, not the record's own page`
+      },
+      {
+        path: f,
+        test: (body) =>
+          new RegExp(`<meta property="og:url" content="[^"]*/${link}">`).test(body),
+        message: `the stub ${f} has an og:url that does not end with ${link}`
       }
     ]),
 
@@ -185,32 +242,12 @@ export function checks() {
       ...status200(f)
     })),
 
-    /* The installable app (docs/specs/META.md section 9): build outputs
-     * copied from app/public/, published by name. */
-    { path: 'manifest.webmanifest', ...status200('manifest.webmanifest') },
-    {
-      path: 'manifest.webmanifest',
-      test: (body) => {
-        try {
-          return JSON.parse(body).start_url === './';
-        } catch {
-          return false;
-        }
-      },
-      message: 'manifest.webmanifest does not parse as JSON with start_url "./"'
-    },
-    { path: 'sw.js', ...status200('sw.js') },
-    {
-      path: 'sw.js',
-      test: (body) => body.includes('dhloot-assets-v1') && !body.includes('dhloot-shell'),
-      message: 'sw.js is not the current service worker - no dhloot-assets-v1, or a shell cache'
-    },
     { path: 'icons/icon-192.png', ...status200('icons/icon-192.png') },
 
     /* The generated site pages (docs/specs/META.md section 9, "Static
      * pages"): a plain URL outside the app, one copy per language, kept out
      * of search results too. */
-    ...['install', 'privacy', 'terms']
+    ...(install ? ['install', 'privacy', 'terms'] : ['privacy', 'terms'])
       .flatMap((id) => ['pages/' + id + '.html', 'pages/en/' + id + '.html'])
       .flatMap((f) => [
         { path: f, ...status200(f) },
@@ -249,10 +286,53 @@ export function checks() {
   ];
 }
 
+/** The old host's mirror (docs/specs/META.md section 9, "The old host"): a root page
+ *  that forwards to the site's host, a service worker that unregisters itself, no
+ *  install guide, and every file the site's host serves. */
+export function mirrorChecks() {
+  return [
+    { path: '', ...status200('root') },
+    {
+      path: '',
+      test: (body, meta) => /html/i.test(meta.type),
+      message: (meta) => `root was served as "${meta.type}", not html`
+    },
+    {
+      path: '',
+      test: (body) => NOINDEX.test(body) && body.includes('id="app-moved"'),
+      message: 'the mirror root lost its noindex or its id="app-moved" text'
+    },
+    {
+      path: '',
+      test: (body) => body.includes('https://daggerheart-loot.pages.dev/'),
+      message: "the mirror root does not name the site's host"
+    },
+    {
+      path: '',
+      test: (body) => !body.includes('type="module"'),
+      message: 'the mirror root loads the app; it should only forward'
+    },
+    { path: 'sw.js', ...status200('sw.js') },
+    {
+      path: 'sw.js',
+      test: (body) => body.includes('unregister') && !body.includes('dhloot-assets-v1'),
+      message: "the mirror's sw.js is not the worker that unregisters itself"
+    },
+    {
+      path: 'pages/install.html',
+      test: (body, meta) => meta.status === 404,
+      message: (meta) => `the mirror serves pages/install.html (${meta.status}), not 404`
+    },
+    ...fileChecks({ install: false })
+  ];
+}
+
 /** The preview host's checks (docs/specs/CONTRACTS.md section 5), in the shape of
- *  `checks()`: the static robots.txt, a 404 card for each malformed run, a 404 card for
- *  a well-formed uuid no item has and for a well-formed token no list holds - which
- *  prove the secrets and both card reads before the site deploy - and a table card. */
+ *  `checks()`: the site's own robots.txt and the text files' X-Robots-Tag, the reserved
+ *  `/mcp`, a stub at its versioned extensionless link, a 404 card for each malformed
+ *  run, a 404 card for a well-formed uuid no item has and for a well-formed token no
+ *  list holds - which prove the secrets and both card reads - and a table card that
+ *  read names.json. */
 export function previewChecks() {
   const card404 = (path, why) => [
     {
@@ -278,6 +358,35 @@ export function previewChecks() {
       test: (body) => /^User-agent:/m.test(body),
       message: 'robots.txt has no User-agent line'
     },
+    {
+      path: 'robots.txt',
+      test: (body) => body.includes('Readable data') && body.includes('Content-Signal:'),
+      message: "robots.txt is not the site's own file (no Readable data or Content-Signal:)"
+    },
+    ...['llms.txt', 'catalog-index.csv'].map((f) => ({
+      path: f,
+      test: (body, meta) => /noindex/.test(meta.robots ?? ''),
+      message: (meta) => `${f} has no X-Robots-Tag: noindex (got "${meta.robots ?? ''}")`
+    })),
+    {
+      path: 'mcp',
+      test: (body, meta) => meta.status === 404,
+      message: (meta) => `mcp returned ${meta.status}, not 404 - the path is reserved`
+    },
+    /* One 308 for a frozen `.html` stub URL (docs/fixtures/urls/record.json, `serve`). */
+    {
+      path: 'i/w1.html',
+      manual: true,
+      test: (body, meta) => meta.status === 308 && /(^|\/)i\/w1$/.test(meta.location ?? ''),
+      message: (meta) =>
+        `i/w1.html answered ${meta.status} to "${meta.location ?? ''}", not one 308 to /i/w1`
+    },
+    {
+      path: 'i/w1?v=x',
+      test: (body, meta) =>
+        meta.status === 200 && body.includes('og:image') && !/<div\s+id="app"/.test(body),
+      message: (meta) => `i/w1?v=x returned ${meta.status}, or not the record's stub`
+    },
     ...card404('h/not-a-uuid', 'a malformed id sends no read'),
     ...card404('s/x', 'a malformed token sends no read'),
     ...card404('p/x', 'a print set sends no read'),
@@ -298,6 +407,14 @@ export function previewChecks() {
       path: 'tables/core_item',
       test: (body) => NOINDEX.test(body) && body.includes('og:title'),
       message: 'tables/core_item lost its noindex or its og:title'
+    },
+    {
+      path: 'tables/core_item',
+      test: (body) =>
+        /\d/.test(
+          (/<meta property="og:description" content="([^"]*)"/.exec(body) || ['', ''])[1]
+        ),
+      message: 'tables/core_item has no count in its og:description - names.json was not read'
     }
   ];
 }
@@ -305,19 +422,21 @@ export function previewChecks() {
 /** Runs `list` (default: the whole `checks()`) against `read`, caching one
  *  read per distinct path - several checks share a path (root, for
  *  instance), and re-reading it once per check would be wasteful for a
- *  network reader and pointless for a filesystem one. Returns the list of
- *  failure messages, empty when everything held. */
+ *  network reader and pointless for a filesystem one. A check with
+ *  `manual: true` reads its path without following a redirect. Returns the
+ *  list of failure messages, empty when everything held. */
 export async function runChecks(read, list = checks()) {
   const cache = new Map();
-  const get = async (path) => {
-    if (!cache.has(path)) cache.set(path, await read(path));
-    return cache.get(path);
+  const get = async (path, manual = false) => {
+    const key = (manual ? 'manual:' : '') + path;
+    if (!cache.has(key)) cache.set(key, await read(path, { manual }));
+    return cache.get(key);
   };
   const bad = [];
   for (const c of list) {
     /* A function path is read from the root page's body. */
     const path = typeof c.path === 'function' ? c.path((await get('')).body) : c.path;
-    const meta = await get(path);
+    const meta = await get(path, c.manual === true);
     if (!c.test(meta.body, meta)) {
       bad.push(typeof c.message === 'function' ? c.message(meta) : c.message);
     }
@@ -333,21 +452,28 @@ export async function runChecks(read, list = checks()) {
  *  retry loop below: `checks()`'s 25 distinct paths, `TRIES=6` and
  *  `WAIT_MS=10_000` between attempts add up to a worst case of roughly
  *  25 x 15s x 6 + 5 x 10s, about 38 minutes, if every request on every try
- *  stalls to its own ceiling - past `deploy`'s own 10-minute job timeout.
+ *  stalls to its own ceiling - past `deploy`'s own 20-minute job timeout.
  *  That worst case needs every request to fail
  *  identically on every attempt, unlike the few-seconds-of-stale-CDN read
  *  this retry loop actually exists for; the job timeout is still what bounds
  *  it in the end. */
 export function fetchReader(root, timeoutMs = 15_000) {
-  return async (path) => {
+  return async (path, { manual = false } = {}) => {
     const url = root + path;
     const res = await fetch(url, {
       cache: 'no-store',
-      redirect: 'follow',
+      redirect: manual ? 'manual' : 'follow',
       signal: AbortSignal.timeout(timeoutMs)
     });
     const body = await res.text();
-    return { url, status: res.status, type: res.headers.get('content-type') || '', body };
+    return {
+      url,
+      status: res.status,
+      type: res.headers.get('content-type') || '',
+      robots: res.headers.get('x-robots-tag') || '',
+      location: res.headers.get('location') || '',
+      body
+    };
   };
 }
 
@@ -368,7 +494,13 @@ export function dirReader(dir) {
     const rel = path === '' ? 'index.html' : path;
     const full = join(dir, rel);
     if (existsSync(full)) {
-      return { url: full, status: 200, type: typeOf(rel), body: readFileSync(full, 'utf8') };
+      return {
+        url: full,
+        status: 200,
+        type: typeOf(rel),
+        robots: '',
+        body: readFileSync(full, 'utf8')
+      };
     }
     const fallback = join(dir, '404.html');
     if (existsSync(fallback)) {
@@ -376,10 +508,11 @@ export function dirReader(dir) {
         url: full,
         status: 404,
         type: typeOf('404.html'),
+        robots: '',
         body: readFileSync(fallback, 'utf8')
       };
     }
-    return { url: full, status: 404, type: '', body: '' };
+    return { url: full, status: 404, type: '', robots: '', body: '' };
   };
 }
 

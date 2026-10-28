@@ -1302,6 +1302,9 @@ tracing a feature back through history).
 | Policy pages `privacy`, `terms` | `derived` (render, `<noscript>` links, the owner's privacy sentences word for word: the item address and the GM-only entries), `tests/app/states.js` case 29, `tools/check-site.test.mjs` (both languages, contact address) |
 | Row thumbnails | `desc.test.ts`, `tables.test.ts`, `listsPage.test.ts`, `dataint`, `tests/sw.test.mjs`, `tests/app/states.js` case 11 |
 | Installable app: manifest, icons, service worker (picture and asset caches, no shell) | `tests/sw.test.mjs`, `ports.test.ts`, `derived`, `tests/app/states.js` case 28, `tools/smoke-http.mjs`, `tools/check-site.test.mjs` |
+| The old host (`old-host/`): the forwarding root (each forwarding state, the loop guard, the installed app, no script), the unregistering worker, the mirror's file list | `derived` ("the old host forwards to the site"), `tests/sw.test.mjs` ("the old host worker"), `tests/stub.js` (`old-host/index.html` at 320 and 390 px), `tools/check-site.test.mjs` (`mirrorChecks()`) |
+| The site's host: the Pages routes and headers files, `/mcp` reserved, `names.json` through `env.ASSETS` | `preview/worker.test.mjs` ("the Pages control files", "/h/: names.json"), `tests/contracts.js` (`preview.json` `routes` and `static` rows), `tools/check-site.test.mjs` (`previewChecks()`) |
+| The record link's card version (`card-versions.json`, `window.LOOT_V`, `<site>i/<id>?v=<v>`) | `derived` ("the card version map is current"), `tools/data-script.js` through `tests/app/serve.js`'s byte guard, `ports/ports.test.ts` ("the record links' card versions"), `lib/hash.test.ts` (`docs/fixtures/urls/record.json`), `components/record.test.ts`, `state/app.test.ts`, `tests/contracts.js` |
 
 ## The rewrite against the app it replaces (history)
 
@@ -1560,36 +1563,20 @@ exercises the clipboard's rich-text and image writes for exactly this reason
 path stays a thin spot below, since no headless browser offers one to drive.
 The fallbacks, which is where the logic actually lives, are covered here.
 
-`tools/tg-preview/lib.test.mjs` is a separate suite again, run under
-`node --test` as its own step in `npm run check` rather than through vitest:
-it covers the Telegram preview refresher's pure logic (URL derivation in
-both languages, fingerprinting, what counts as stale, batching, the
-flood/fatal error table, button matching, and the two-phase
-send-and-press loop against a fake client, clock and live check), plus
-`@WebpageBot`'s own per-user attempt throttle: recognising its refusal text
-(`botThrottle`), the run-scoped press budget (`--press-limit`/`PRESS_LIMIT`)
-that spans both phases and stops a run before it overspends the bot's
-quota, and the warning when `--mode full` cannot finish the stale set on
-that budget. It also covers the
-`--stale-list` writer: `--stale-list` requires `--dry-run` and is rejected
-otherwise regardless of flag order, a dry run emits it exactly once whether
-or not anything is stale, `--only` narrows what it writes, a non-dry run
-never calls it even when the dependency is supplied, and an accidental
-`--apply` of its payload is a no-op because it carries no `urls` key. It
-covers the English seed (`adopt`: the added, overwritten and current
-counts, the prefix boundary, a foreign-site state, and the refusal of an
-empty or missing prefix, a prefix that matches nothing and a Russian stub).
-The real Telegram connection (`client.mjs`) and the real CDN fetch
-(`live.mjs`) are deliberately outside it - thin wrappers around a live network, where the only honest proof is
-Telegram and the CDN themselves. See `docs/tg-preview.md`.
-
 `preview/worker.test.mjs` is a separate suite again, run under `node
 --test` as the stage `test:preview` of `npm run check`: it covers the preview host's
 routes through its fetch handler with a fake `fetch` - every family's 200,
 404, 503 and oversize cards, the host guard, the 302 home and the 405, the
 injection cases, the inline script's `<` escaped (`card`), the byte bounds
 with a cancelled stream, the lines and the fold, the path runs past 2048 characters, the catch-all 503, and every
-`serve` case of `docs/fixtures/urls/preview.json`. The real Workers runtime,
+`serve` case of `docs/fixtures/urls/preview.json` (a `static` row only proves
+that no route of `public/_routes.json` matches it). It also covers the Pages
+control files: `_routes.json` names only the card families and never `/mcp`,
+`_headers` sends `X-Robots-Tag: noindex` on the six text paths, `public/`
+holds no `robots.txt`, and `names.json` is read through `env.ASSETS`, not by
+a subrequest. Whether Pages applies `_headers` and answers `i/w1.html` with one
+308 to `/i/w1` is proven by `tools/check-site.mjs --preview` on the deployed
+host (a `manual: true` check reads it without following the redirect). The real Workers runtime,
 the real reads and the CPU time are outside it: `wrangler pages deployment
 tail` measures them on the deployed host (`.claude/README.md`, "Preview
 host").
@@ -1605,8 +1592,7 @@ the plain text, a second run that changes nothing, and the refusal of a
 check holds the real `data.js` to the same rules.
 
 `tools/artwork/lib.test.mjs` is a separate suite again, run under `node
---test` as its own step in `npm run check`, right after
-`tools/tg-preview/lib.test.mjs`: it covers the artwork refresh tool's pure
+--test` as its own step in `npm run check`: it covers the artwork refresh tool's pure
 logic - name normalisation (typographic apostrophes, NFC, the trailing
 `v<N>` provenance suffix, case and whitespace), record indexing (`byId`,
 `byName` as arrays so a shared name is representable, `byImg` for the
@@ -1615,15 +1601,11 @@ value rather than its id, shared-asset grouping (one pair for four records
 sharing one asset, its `og/` file named after the asset and never after a
 sharing record), the thumbnail destination `img/thumb/<asset>` in both
 planners and `planThumbs` (one target per picture, orphans reported),
-collision and duplicate-source-bytes detection, the
-`--map`/`assign` override, the affected-stub-URL derivation (every matched
-record and every record it shares an asset with, in both languages), and
-the stale-set algebra `verify-previews` runs on two `tools/tg-preview`
-`--stale-list` files.
+collision and duplicate-source-bytes detection, and the
+`--map`/`assign` override.
 `tools/artwork/run.mjs` (hashing uploads, decoding geometry, the `sharp`
-encoder, atomic install, byte verification) is deliberately outside it - the
-same argument the tg-preview paragraph above makes for `client.mjs` and
-`live.mjs`: it is a thin wrapper around the filesystem and an encoder, where
+encoder, atomic install, byte verification) is deliberately outside it: it
+is a thin wrapper around the filesystem and an encoder, where
 the only honest proof is a real image going in and a real file coming out.
 `tools/artwork/icons.mjs`, which rasterises the app icons
 (`docs/artwork.md`, "Icons"), and `tools/artwork/cards.mjs`, which renders
@@ -1792,9 +1774,17 @@ document `en/index.html` with no `og:title`, and a site with no
 `og/_share_en.jpg` and no `pages/en/install.html`) each producing the
 expected failure message, and the 404-fallback probe both when it works and
 when no fallback exists at all - plus `dirReader`'s GitHub-Pages-missing-path
-emulation against a real temporary directory. `fetchReader` (the live-URL
+emulation against a real temporary directory. It also covers the split
+into `appChecks()` and `fileChecks()`, the stub's extensionless `og:url`
+and its missing app shell, `data.js` without `window.LOOT_V`,
+`mirrorChecks()` against an assembled old-host directory (a root that is
+the app, the app's worker, an install guide left on, a missing
+`catalog-index.csv`), and `previewChecks()`'s robots file, the
+`X-Robots-Tag` header field, `/mcp`, the one 308 of `i/w1.html` (read with
+`manual: true`), `i/w1?v=x` and the table card's count.
+`fetchReader` (the live-URL
 transport `tools/check-site.mjs` actually runs post-deploy) is deliberately
-outside it, the same argument as `client.mjs`/`live.mjs`/`run.mjs` above: a
+outside it, the same argument as `run.mjs` above: a
 thin wrapper around a real network call, where the only honest proof is a
 real deploy.
 
@@ -1873,7 +1863,11 @@ full picture and an online one is fetched; in both picture caches a hit is
 answered before one background fetch through `waitUntil` settles, the same
 `ETag` writes nothing, a changed or absent `ETag` on either side replaces
 the entry, and a 404 or a failed fetch keeps it without a rejection; one
-case fails when `img/thumb/` holds more files than `THUMB_CAP`.
+case fails when `img/thumb/` holds more files than `THUMB_CAP`. At the root
+scope of the site's host a picture is cached and a navigation to a card path
+is not answered. The same harness loads `old-host/sw.js`, the old host's
+worker: install skips waiting, activate deletes every `dhloot-*` cache,
+keeps a foreign one and unregisters once, and it has no fetch listener.
 Registration, control after one reload, the retired shell cache gone and
 the entry module cached are `tests/app/states.js` case 28
 (`docs/specs/META.md` section 9).
@@ -1899,7 +1893,9 @@ defect this rule exists to catch. B8 in fact claimed no movement with
 failures, because neither reaches an owned-list route. A prior claim of "no
 movement" is worth nothing if the build itself was stale when it was measured -
 `tests/app/lib.js` fails closed on a lagging `dist-test/` (`tests/app/serve.js`), both a byte mismatch
-against the three files `npm run data` regenerates and an mtime check against
+against the three files `npm run data` regenerates (the built `data.js`
+against `tools/data-script.js`'s bytes, so a stale card version map stops it
+too) and an mtime check against
 the bundle, before any suite requiring it can run.
 
 **The capture wait.** `golden.js`'s `captureState` calls

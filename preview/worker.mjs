@@ -2,7 +2,9 @@
   The preview host (.claude/README.md, "Preview host"): one stateless Pages
   Functions worker that answers a messenger's crawler with a link card and
   sends a person on to the app. It stores nothing, sets no cookie and caches
-  nothing; it reads only what a signed-out reader reads.
+  nothing; it reads only what a signed-out reader reads. It answers only the
+  families that public/_routes.json routes to it; Pages serves the site's
+  files on every other path.
 
   Routes, each also under /en/: /h/<uuid> (a homebrew item), /s/<token>
   (a shared list), /p/<id> (a print set), /tables/<table>[/<tail>] (a catalog
@@ -135,12 +137,13 @@ async function rpc(env, name, args, max) {
    of new data reaches the next request with no worker deploy. */
 let namesCache = null;
 
-/** Returns the site's names.json, or null when it cannot be read or is invalid. */
+/** Returns the site's names.json, or null when it cannot be read or is invalid. The file
+ *  comes from the same deployment's static files (`env.ASSETS`), not a subrequest. */
 async function readNames(env) {
   const now = Date.now();
   if (namesCache && now - namesCache.at < NAMES_TTL_MS) return namesCache.value;
   try {
-    const res = await globalThis.fetch(env.SITE + 'names.json', {
+    const res = await env.ASSETS.fetch(env.SITE + 'names.json', {
       signal: AbortSignal.timeout(NAMES_MS)
     });
     if (res.status !== 200) {

@@ -5,6 +5,7 @@
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
+const { builtDataScript } = require('../../tools/data-script.js');
 
 const ROOT = path.join(__dirname, '..', '..');
 
@@ -24,8 +25,11 @@ const BUILD_OF = { dist: 'npm run build', 'dist-test': 'npm run build:test' };
    their copies in the build (~1.3 MB, milliseconds). A copy the build did not
    emit is dropped from the comparison rather than treated as a mismatch.
    llms.txt is deliberately excluded - it is not one of the three files
-   `npm run data` writes. */
+   `npm run data` writes. The built data.js is the source plus the card
+   version map (tools/data-script.js), so a stale map fails here too. */
 const BYTE_FILES = ['data.js', 'data.json', 'catalog.csv'];
+const expectedBytes = (f) =>
+  f === 'data.js' ? builtDataScript(ROOT) : fs.readFileSync(path.join(ROOT, f));
 
 /* Mtime half: newest mtime under app/src/ - excluding every *.test.ts file
    and the whole app/src/test/ directory, neither of which is bundled -
@@ -58,8 +62,9 @@ function assertBuilt(dir, label) {
   for (const f of BYTE_FILES) {
     const copy = path.join(dir, f);
     if (!fs.existsSync(copy)) continue;
-    if (!fs.readFileSync(path.join(ROOT, f)).equals(fs.readFileSync(copy))) {
-      console.log(label + ' is stale (byte check, ' + f + ') - run ' + build + ' first');
+    if (!expectedBytes(f).equals(fs.readFileSync(copy))) {
+      const what = f === 'data.js' ? 'data.js or card-versions.json' : f;
+      console.log(label + ' is stale (byte check, ' + what + ') - run ' + build + ' first');
       process.exit(1);
     }
   }

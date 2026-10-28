@@ -17,6 +17,7 @@ deleted.
 - 2026-10-28 - [R10 deletes the date gates; a build with no sign-in has no lists](decisions/2026-10-28-r10-deletes-the-date-gates-a-build-with-no-sign-in-has-no-lists.md)
 - 2026-10-28 - [R10 drops the move function and the fingerprint column](decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md)
 - 2026-10-28 - [The account's first read takes list heads; a list's details load when needed](decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md)
+- 2026-10-28 - [The site moves to Cloudflare Pages and the old host mirrors its files](decisions/2026-10-28-the-site-moves-to-cloudflare-pages-and-the-old-host-mirrors.md)
 - 2026-10-22 - [A bulk delete of own items goes in chunks of 50](decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md)
 - 2026-10-22 - [A bulk delete of own items is one invoker call](decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md) - superseded in part
 - 2026-10-22 - [A deleted item's id may be taken again by another account](decisions/2026-10-22-a-deleted-items-id-may-be-taken-again.md)
@@ -59,7 +60,7 @@ deleted.
 - 2026-10-15 - [Formatted text is typed as Markdown in a box with a toolbar](decisions/2026-10-15-formatted-text-is-typed-as-markdown-in-a-box-with-a-toolbar.md)
 - 2026-10-15 - [The editor previews the print with the print card at its printed size](decisions/2026-10-15-the-editor-previews-the-print-with-the-print.md) - superseded in part
 - 2026-10-14 - [A link preview reads a lean projection](decisions/2026-10-14-a-link-preview-reads-a-lean-projection.md)
-- 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md)
+- 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md) - superseded in part
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
 - 2026-10-14 - [The configured bundle ceiling rises to 350 kB](decisions/2026-10-14-the-configured-bundle-ceiling-rises-to-350-kb.md)
 - 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md) - superseded in part
@@ -235,7 +236,7 @@ deleted.
 - 2026-09-23 - [Many lists: the index shows 24 cards at a time; a record's own lists lead its menu](decisions/2026-09-23-many-lists-the-index-shows-24-cards-at.md)
 - 2026-09-23 - [Navigations take the navigation preload response](decisions/2026-09-23-navigations-take-the-navigation-preload-response.md) - superseded
 - 2026-09-23 - [One plural() over Intl.PluralRules counts every number beside a word](decisions/2026-09-23-one-plural-over-intl-pluralrules-counts-every-number.md)
-- 2026-09-23 - [Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language](decisions/2026-09-23-per-language-previews-i-en-id-html-and.md)
+- 2026-09-23 - [Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language](decisions/2026-09-23-per-language-previews-i-en-id-html-and.md) - superseded in part
 - 2026-09-23 - [Pictures revalidate on every cache hit; an unchanged ETag writes nothing](decisions/2026-09-23-pictures-revalidate-on-every-cache-hit-an-unchanged.md)
 - 2026-09-23 - [Print card small text keeps the ribbon and gets one paper floor in every view](decisions/2026-09-23-print-card-small-text-keeps-the-ribbon-and.md)
 - 2026-09-23 - [PWA registration is a boot concern in `main.ts` behind `PwaPort`](decisions/2026-09-23-pwa-registration-is-a-boot-concern-in-main.md) - superseded in part

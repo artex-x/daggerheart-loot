@@ -1083,6 +1083,44 @@ describe('the dataset', () => {
   it('defaults to reading the real global, and finds nothing in a bare page', () => {
     /* jsdom has no data.js, so this is the missing case rather than a stub. */
     expect(browserData().load()).toBe(null);
+    expect(browserData().cardVersion('w1')).toBeUndefined();
+  });
+});
+
+describe("the record links' card versions", () => {
+  const data = (map: unknown) =>
+    browserData(
+      () => null,
+      () => map
+    );
+
+  it('answers the version the build wrote for a record', () => {
+    expect(data({ w1: 'k3x9a1', w2: '0' }).cardVersion('w1')).toBe('k3x9a1');
+    expect(data({ w1: 'k3x9a1', w2: '0' }).cardVersion('w2')).toBe('0');
+  });
+
+  it('answers nothing for a record the map lacks, an inherited key or a missing map', () => {
+    expect(data({ w1: 'k3x9a1' }).cardVersion('w2')).toBeUndefined();
+    expect(data({ w1: 'k3x9a1' }).cardVersion('toString')).toBeUndefined();
+    expect(data(undefined).cardVersion('w1')).toBeUndefined();
+  });
+
+  it('answers nothing when the global is not a plain object', () => {
+    for (const map of [null, 'w1', 7, ['k3x9a1']]) {
+      expect(data(map).cardVersion('0'), String(map)).toBeUndefined();
+    }
+  });
+
+  it('answers nothing for a value outside the shape the build writes', () => {
+    for (const v of ['', 'K3X9A1', 'k3x9a1k3x', 'a?b', 7, null]) {
+      expect(data({ w1: v }).cardVersion('w1'), String(v)).toBeUndefined();
+    }
+  });
+
+  it('hands a test its own versions, and none without a catalogue', () => {
+    expect(fakeData({ items: {} }, { w1: 'k3x9a1' }).cardVersion('w1')).toBe('k3x9a1');
+    expect(fakeData({ items: {} }).cardVersion('w1')).toBeUndefined();
+    expect(noData().cardVersion('w1')).toBeUndefined();
   });
 });
 

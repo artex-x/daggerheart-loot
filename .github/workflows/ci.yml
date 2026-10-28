@@ -264,10 +264,8 @@ jobs:
       - run: npm ci
       - name: Vulnerabilities we will not wave through
         run: npm audit --audit-level=high
-      # The three tool packages keep their own lockfiles; `npm audit` reads a
+      # The two tool packages keep their own lockfiles; `npm audit` reads a
       # lockfile alone, so none needs an install here.
-      - name: Vulnerabilities in the preview refresher
-        run: npm audit --prefix tools/tg-preview --audit-level=high
       - name: Vulnerabilities in the artwork tooling
         run: npm audit --prefix tools/artwork --audit-level=high
       - name: Vulnerabilities in the preview host's deploy tool
@@ -349,30 +347,36 @@ jobs:
   #
   # What is published is the BUILT REWRITE: dist/index.html, dist/assets/ and
   # dist/data.js, assembled here with the generated data, the stub pages and the
-  # artwork that live in the repository.
+  # artwork that live in the repository. The site's host is the Cloudflare
+  # Pages project daggerheart-loot (https://daggerheart-loot.pages.dev/), which
+  # also runs the link-card worker; GitHub Pages, the old host, gets a mirror of
+  # the same files whose root forwards there (docs/specs/META.md section 9,
+  # "The old host"). The site's host goes live and is checked first, so a
+  # Cloudflare failure stops the job before the old host forwards to it.
   #
-  # HOW TO UNDO A BAD DEPLOY OF THE REWRITE
+  # HOW TO UNDO A BAD DEPLOY
   #
   #     git revert <the commit that broke it>   # then push
   #
   # The next run of this job republishes whatever the tree looks like after the
-  # revert, so reverting the offending commit is the whole procedure. What this
-  # omits is the cost: push-to-live is ~7-8 minutes end to end (the `browser`
-  # matrix dominates it - measured 7m21s on run 35241351714, 2026-09-17, on
-  # top of the sharding described above), of which this `deploy` job's own
-  # steps are ~30-40 seconds (37s that run). A cheaper path exists when the
-  # *previous* commit was known good and nothing about the source needs to change:
+  # revert, so reverting the offending commit is the whole procedure for a
+  # defect inside the site. Push-to-live is ~7-8 minutes end to end (the
+  # `browser` matrix dominates it - measured 7m21s on run 35241351714,
+  # 2026-09-17).
   #
-  #     gh run rerun <that earlier green run's id> --job <its deploy job id>
-  #
-  # re-runs only the `deploy` job from that old run - verified on that same
-  # run (35241351714): 31s, no wait on `check`/`browser`/`audit`/`secrets`.
-  # This is a rollback, never a retry: it republishes exactly the tree that
-  # old run built, silently, with no new commit and no record in `git log` of
-  # what is now live - reach for it only to undo a bad publish fast while a
-  # proper revert is prepared, and never to "retry" a deploy that failed on
-  # the *current* commit, since it would just republish stale content
-  # instead.
+  # A revert of the move to Cloudflare Pages itself (a defect of the new host,
+  # or a Cloudflare outage) is two commits, and never a `gh run rerun` of a
+  # deploy made before the move, nor a rollback of the Pages project to a
+  # deployment made before it: the old worker sends every path to the old
+  # host, and the old host's root forwards back. The first commit reverts the
+  # landing commit, sets `if: false` on the Cloudflare steps of the restored
+  # `deploy` (three: the `npm ci` in `preview/`, the deploy and its check) and
+  # deletes the restored Telegram refresher workflow again; its run publishes
+  # the full app to GitHub Pages. After that run is green and GitHub Pages'
+  # `max-age=600` has passed, a second commit removes `if: false`. After the
+  # second commit a record link handed out from the new host opens the old
+  # root, not the record.
+  # .claude/README.md, "Quotas, recovery and failure", holds the procedure.
   #
   # A deploy that carried a migration: see the `migrate-prod` job above.
   #
@@ -390,8 +394,8 @@ jobs:
   # batch (re-adding the files, re-pointing this workflow's collect step,
   # reviving the suites that tested them), not a single revert.
   #
-  # Pages is already set to "GitHub Actions" (build_type: workflow), so this
-  # job is what publishes - nothing else does.
+  # GitHub Pages is set to "GitHub Actions" (build_type: workflow), so this
+  # job is what publishes the mirror - nothing else does. Keep GitHub Pages on.
   # ---------------------------------------------------------------------------
   deploy:
     needs: [changes, check, audit, secrets, browser, db, e2e, migrate-prod]
@@ -401,7 +405,9 @@ jobs:
     # configuration"); no other dispatch deploys.
     if: ${{ !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.skip_e2e) }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The first upload to the site's host is about 81 MB, and three live checks
+    # retry up to 6 times each.
+    timeout-minutes: 20
     # A job-level `permissions:` block replaces the workflow-level one above
     # entirely rather than adding to it - without `contents: read` here this
     # job's token actually has `contents: none`, and `actions/checkout`
@@ -412,7 +418,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.pages.outputs.page_url }}
+      url: https://daggerheart-loot.pages.dev/
     steps:
       - uses: actions/checkout@v5
 
@@ -456,7 +462,8 @@ jobs:
       # the repository below, like the rest of the static assets.
       # `dist/manifest.webmanifest`, `dist/sw.js` and `dist/icons` are build
       # outputs too, copied verbatim from app/public/ (docs/specs/META.md
-      # section 9).
+      # section 9). `dist/data.js` carries the record links' card versions
+      # (window.LOOT_V), so it is never the source data.js.
       #
       # `i/` (with `i/en/`), `en/`, `names.json` and `catalog-index.csv` are
       # not in the repository - the Build step above regenerates them (npm
@@ -480,9 +487,13 @@ jobs:
           # app.js and style.css do not exist in the repository any more (the
           # old app was deleted at R0c, issue 47, 23c00a6) - if either turns up
           # in _site anyway, some other step re-created it, and a stray root
-          # file like that must never reach _site.
+          # file like that must never reach _site. The card families (h, s, p,
+          # tables) belong to the worker, mcp is reserved for the ai-mcp task,
+          # the Pages control files live in preview/public/ only, and old-host/
+          # is the mirror's (docs/specs/CONTRACTS.md section 5).
           for f in package.json node_modules app tests tools docs .git app.js style.css \
-                   pages/src supabase preview; do
+                   pages/src supabase preview old-host mcp h s p tables \
+                   _worker.js _routes.json _headers card-versions.json; do
             if [ -e "_site/$f" ]; then echo "::error::$f must not be published"; exit 1; fi
           done
           # The other half, and the deterministic detector for a dangling
@@ -498,10 +509,9 @@ jobs:
           done
           # .nojekyll is empty by design - its presence here is the whole
           # signal that the collect step above copied it. It does not,
-          # however, do anything on the actually published site: Pages is
-          # set to build_type: workflow (see the deploy job's own comment
-          # below), which never runs Jekyll regardless, and
-          # actions/upload-pages-artifact@v4 tars _site/ with
+          # however, do anything on the actually published site: GitHub Pages
+          # is set to build_type: workflow, which never runs Jekyll
+          # regardless, and actions/upload-pages-artifact@v4 tars _old/ with
           # `--exclude=".[^/]*"`, so a dotfile never reaches the artifact it
           # uploads in the first place (confirmed: the live URL 404s for
           # it). This check can only ever fail for a reason that does not
@@ -550,6 +560,9 @@ jobs:
             echo "::error::_site/assets does not match dist/assets"; exit 1
           fi
           echo "published:"; ls -A _site
+          # Cloudflare Pages takes 20,000 files per deployment on the free plan
+          # (.claude/README.md, "Preview host").
+          echo "published files: $(find _site -type f | wc -l)"
 
       # The same content assertions tools/check-site.mjs makes against the
       # live URL after the deploy, run here first against the local copy -
@@ -560,31 +573,45 @@ jobs:
       - name: The published content is what tools/check-site.mjs expects
         run: node tools/check-site.mjs --dir _site
 
-      # The preview host serves the card of every link this build hands out, so it
-      # goes live first, after migrate-prod has added its reads; a Cloudflare failure
-      # stops the site deploy (.claude/README.md, "Preview host", "The CI deploy").
-      - name: Install the preview host's deploy tool
+      # The old host's mirror: every frozen path, no app. The root forwards to
+      # the site's host and sw.js unregisters itself (docs/specs/META.md
+      # section 9, "The old host").
+      - name: Assemble the old host
+        run: |
+          cp -r _site _old
+          rm -r _old/assets _old/data.js _old/pages/install.html _old/pages/en/install.html
+          cp old-host/index.html old-host/sw.js _old/
+      - name: The old host's content is what tools/check-site.mjs expects
+        run: node tools/check-site.mjs --mirror --dir _old
+
+      # The site's host goes live first, after migrate-prod has added the card
+      # reads; a Cloudflare failure stops the job before the old host forwards
+      # (.claude/README.md, "Preview host", "The CI deploy").
+      - name: Install the site host's deploy tool
         working-directory: preview
         run: npm ci
-      - name: Deploy the preview host
+      - name: Deploy the site's host
         working-directory: preview
-        run: npx wrangler pages deploy public --project-name daggerheart-loot --branch main
+        run: |
+          cp -r ../_site/. public/
+          npx wrangler pages deploy public --project-name daggerheart-loot --branch main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      - name: The preview host answers correctly
+      - name: The site's host answers correctly
+        run: node tools/check-site.mjs https://daggerheart-loot.pages.dev/
+      - name: The link cards answer correctly
         run: node tools/check-site.mjs --preview https://daggerheart-loot.pages.dev/
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: _old
       - id: pages
         uses: actions/deploy-pages@v4
 
-      # The first thing in this repository that reads the live URL. It cannot
-      # un-publish anything and is not meant to: it is what turns the run red so
-      # a person knows the revert above is needed. Runnable by hand against the
-      # same URL.
-      - name: The published site answers correctly
-        run: node tools/check-site.mjs "${{ steps.pages.outputs.page_url }}"
+      # It cannot un-publish anything and is not meant to: it is what turns the
+      # run red so a person knows the revert above is needed. Runnable by hand
+      # against the same URL.
+      - name: The old host answers correctly
+        run: node tools/check-site.mjs --mirror "${{ steps.pages.outputs.page_url }}"

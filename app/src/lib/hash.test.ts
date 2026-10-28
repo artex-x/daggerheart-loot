@@ -730,14 +730,14 @@ describe('a link to hand somebody else', () => {
     expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
   });
 
-  it('sends a record to its stub page', () => {
+  it('sends a record to its stub page, extensionless', () => {
     /* The stub carries the record's Open Graph tags, which is what makes a
        pasted link unfurl in Telegram or Discord with the picture and the name. */
-    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1.html');
+    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1');
   });
 
   it('sends an English record to its English stub', () => {
-    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1.html');
+    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1');
   });
 
   it('sends an English address through the English entry document', () => {
@@ -763,6 +763,26 @@ const PREVIEW = JSON.parse(
     'utf8'
   )
 ) as PreviewFixture;
+
+interface RecordFixture {
+  site: string;
+  build: { id: string; lang: 'ru' | 'en'; v?: string; url: string; why: string }[];
+}
+
+const RECORD = JSON.parse(
+  readFileSync(
+    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'urls', 'record.json'),
+    'utf8'
+  )
+) as RecordFixture;
+
+describe('a record link, docs/fixtures/urls/record.json', () => {
+  for (const c of RECORD.build) {
+    it(`${c.id} (${c.lang}, ${c.v ? 'with' : 'without'} a version) - ${c.why}`, () => {
+      expect(recordUrl({ base: RECORD.site }, c.id, c.lang, c.v)).toBe(c.url);
+    });
+  }
+});
 
 describe('a preview link, docs/fixtures/urls/preview.json', () => {
   for (const c of PREVIEW.build) {

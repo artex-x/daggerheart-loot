@@ -1,0 +1,13 @@
+# X-Robots-Tag on the text files: crawling stays allowed, and these stay out of search results (docs/specs/META.md section 2).
+/llms.txt
+  X-Robots-Tag: noindex
+/data.json
+  X-Robots-Tag: noindex
+/catalog.csv
+  X-Robots-Tag: noindex
+/catalog-index.csv
+  X-Robots-Tag: noindex
+/names.json
+  X-Robots-Tag: noindex
+/schema/*
+  X-Robots-Tag: noindex

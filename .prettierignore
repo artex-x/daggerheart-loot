@@ -19,6 +19,7 @@ card/
 # neither of these two is generated.
 app/index.html
 404.html
+old-host/index.html
 dist/
 dist-test/
 coverage/

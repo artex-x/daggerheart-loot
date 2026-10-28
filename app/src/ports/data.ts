@@ -32,14 +32,30 @@ function looksLikeLoot(v: unknown): v is Loot {
  * a test supplies its own reader without having to build a fake `Window`.
  */
 export function browserData(
-  read: () => unknown = () => Reflect.get(globalThis, 'LOOT')
+  read: () => unknown = () => Reflect.get(globalThis, 'LOOT'),
+  readV: () => unknown = () => Reflect.get(globalThis, 'LOOT_V')
 ): DataPort {
   return {
     load: () => {
       const v = read();
       return looksLikeLoot(v) ? v : null;
+    },
+    cardVersion: (id) => {
+      const map = readV();
+      if (typeof map !== 'object' || map === null || Array.isArray(map)) return undefined;
+      return versionOf(map as Record<string, unknown>, id);
     }
   };
+}
+
+/* The map is the build's (tools/data-script.js), but it comes off a global like
+   `LOOT`, so a value is kept only in the shape the build writes. */
+const VERSION = /^[0-9a-z]{1,8}$/;
+
+function versionOf(map: Record<string, unknown>, id: string): string | undefined {
+  if (!Object.hasOwn(map, id)) return undefined;
+  const v = map[id];
+  return typeof v === 'string' && VERSION.test(v) ? v : undefined;
 }
 
 /**
@@ -50,9 +66,9 @@ export function browserData(
  * show an empty book as though that were the truth.
  */
 export function noData(): DataPort {
-  return { load: () => null };
+  return { load: () => null, cardVersion: () => undefined };
 }
 
-export function fakeData(loot: Loot): DataPort {
-  return { load: () => loot };
+export function fakeData(loot: Loot, versions: Record<string, string> = {}): DataPort {
+  return { load: () => loot, cardVersion: (id) => versionOf(versions, id) };
 }

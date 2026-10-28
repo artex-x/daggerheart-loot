@@ -22,8 +22,10 @@
 # A crawler obeys the group that names it, so the named blocks below win for
 # their tokens.
 #
-# A crawler reads robots.txt only at a host root: a copy at a host root is
-# read; a copy under /daggerheart-loot/ is not.
+# A crawler reads robots.txt only at a host root. This file is read at the
+# root of daggerheart-loot.pages.dev; the old address
+# artex-x.github.io/daggerheart-loot keeps a copy under its path, which no
+# crawler reads.
 
 User-agent: *
 Allow: /

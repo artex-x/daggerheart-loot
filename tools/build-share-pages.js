@@ -11,9 +11,10 @@
 */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
-const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 const OUT = path.join(ROOT, 'i');
 const OUT_EN = path.join(OUT, 'en');
 const OUT_ROOT_EN = path.join(ROOT, 'en');
@@ -138,8 +139,9 @@ function page(it, lang = 'ru') {
     // An entry without art still needs one, or the unfurl comes out blank.
     img: SITE + 'og/' + (it.img ? it.img.replace(/\.webp$/, '.jpg') : '_none.jpg'),
     imgSrc: up + 'img/' + (it.img || '_none.webp'),
-    url: SITE + (lang === 'ru' ? 'i/' : 'i/en/') + it.id + '.html',
-    app: SITE + '#/i/' + it.id,
+    url: SITE + (lang === 'ru' ? 'i/' : 'i/en/') + it.id,
+    // en/ seeds the language on the app's own origin, also from the old host's mirror.
+    app: SITE + (lang === 'ru' ? '' : 'en/') + '#/i/' + it.id,
     subtitle: subtitle(it, lang),
     seed: lang !== 'ru'
   });
@@ -200,12 +202,49 @@ ${STYLE}
 `;
 }
 
+/* Every record in the stubs' order. */
+function records() {
+  return Object.values(DATA).concat([EQ]).flat();
+}
+
+function ogMeta(html, prop) {
+  const m = html.match(
+    new RegExp('<meta\\s+property="og:' + prop + '"\\s+content="([^"]*)"', 'i')
+  );
+  return m ? m[1] : '';
+}
+
+const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
+
+/* The card version of each record id: 40 bits of SHA-256 in base 36 over the
+   og:* text of both stubs and the og picture's bytes, so a changed card is a
+   new record link for a messenger's cache (docs/specs/META.md section 8). */
+function cardVersions(list = records(), root = ROOT) {
+  const out = {};
+  for (const it of list) {
+    const values = [];
+    let image = '';
+    for (const lang of ['ru', 'en']) {
+      const html = page(it, lang);
+      for (const prop of ['title', 'description', 'image']) values.push(ogMeta(html, prop));
+      if (lang === 'ru') image = ogMeta(html, 'image');
+    }
+    const name = image.slice((SITE + 'og/').length);
+    values.push(sha256(fs.readFileSync(path.join(root, 'og', name))));
+    out[it.id] = parseInt(sha256(JSON.stringify(values)).slice(0, 10), 16).toString(36);
+  }
+  const sorted = {};
+  for (const id of Object.keys(out).sort()) sorted[id] = out[id];
+  return sorted;
+}
+
 /* Exported so the test can render every page into memory and compare with
    what is on disk: that catches a change to this generator that was never
    rebuilt, not just data that moved on. */
 module.exports = {
   page,
   rootPage,
+  cardVersions,
   tableOf,
   SITE,
   FRAME_LABEL,
@@ -226,12 +265,10 @@ if (require.main === module) {
   }
 
   let n = 0;
-  for (const arr of Object.values(DATA).concat([EQ])) {
-    for (const it of arr) {
-      fs.writeFileSync(path.join(OUT, it.id + '.html'), page(it, 'ru'), 'utf8');
-      fs.writeFileSync(path.join(OUT_EN, it.id + '.html'), page(it, 'en'), 'utf8');
-      n++;
-    }
+  for (const it of records()) {
+    fs.writeFileSync(path.join(OUT, it.id + '.html'), page(it, 'ru'), 'utf8');
+    fs.writeFileSync(path.join(OUT_EN, it.id + '.html'), page(it, 'en'), 'utf8');
+    n++;
   }
   fs.writeFileSync(path.join(OUT_ROOT_EN, 'index.html'), rootPage(), 'utf8');
   console.log('wrote ' + n + ' share pages into i/, ' + n + ' into i/en/, and en/index.html');

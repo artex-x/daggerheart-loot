@@ -1,6 +1,6 @@
 /*
   node:test over lib.mjs's pure logic. No filesystem, no sharp, no network -
-  hand-built record fixtures, in the style of tools/tg-preview/lib.test.mjs.
+  hand-built record fixtures.
 */
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,8 +15,6 @@ import {
   planInstall,
   planIngest,
   planThumbs,
-  affectedStubUrls,
-  staleDelta,
   shareCardSvg,
   CARD_TEXT,
   CARD_FONT,
@@ -42,8 +40,6 @@ import {
   REVIEW_ART_SIZES,
   openCommand
 } from './lib.mjs';
-
-const SITE = 'https://example.test/';
 
 function rec(id, img, extra = {}) {
   return { id, img, en: id, ...extra };
@@ -211,28 +207,6 @@ describe('planThumbs', () => {
   });
 });
 
-describe('affectedStubUrls', () => {
-  it('includes both language stubs of every matched and sharedWith record, sorted and deduplicated', () => {
-    const pairs = [
-      { recordId: 'q24', sharedWith: ['q70', 'q138', 'q205'] },
-      { recordId: 'a', sharedWith: [] }
-    ];
-    const urls = affectedStubUrls(pairs, SITE);
-    assert.deepEqual(urls, [
-      SITE + 'i/a.html',
-      SITE + 'i/en/a.html',
-      SITE + 'i/en/q138.html',
-      SITE + 'i/en/q205.html',
-      SITE + 'i/en/q24.html',
-      SITE + 'i/en/q70.html',
-      SITE + 'i/q138.html',
-      SITE + 'i/q205.html',
-      SITE + 'i/q24.html',
-      SITE + 'i/q70.html'
-    ]);
-  });
-});
-
 describe('planIngest', () => {
   it('the og/ trap: a new record sharing an existing, already-installed asset lands in shares, not creates, and mints no og/<new-id>.jpg', () => {
     const records = [
@@ -344,60 +318,6 @@ describe('planIngest', () => {
       shared: 1,
       unarted: 1
     });
-  });
-});
-
-describe('staleDelta', () => {
-  const url = (id) => SITE + 'i/' + id + '.html';
-
-  it('accepts both language stubs going stale for one art change', () => {
-    const d = staleDelta({
-      before: [],
-      after: [SITE + 'i/q24.html', SITE + 'i/en/q24.html'],
-      expected: affectedStubUrls([{ recordId: 'q24', sharedWith: [] }], SITE)
-    });
-    assert.equal(d.ok, true);
-    assert.deepEqual(d.extra, []);
-  });
-
-  it('is ok when exactly the expected set went newly stale', () => {
-    const expected = [url('a'), url('b')];
-    const result = staleDelta({
-      before: [url('z')],
-      after: [url('z'), url('a'), url('b')],
-      expected
-    });
-    assert.equal(result.ok, true);
-    assert.deepEqual(result.missing, []);
-    assert.deepEqual(result.extra, []);
-  });
-
-  it('reports missing when an expected URL never went stale', () => {
-    const expected = [url('a'), url('b')];
-    const result = staleDelta({ before: [], after: [url('a')], expected });
-    assert.deepEqual(result.missing, [url('b')]);
-    assert.equal(result.ok, false);
-  });
-
-  it('reports extra when something outside expected went stale', () => {
-    const expected = [url('a')];
-    const result = staleDelta({ before: [], after: [url('a'), url('surprise')], expected });
-    assert.deepEqual(result.extra, [url('surprise')]);
-    assert.equal(result.ok, false);
-  });
-
-  it('reports disappeared for a URL stale before, not after, and not expected', () => {
-    const result = staleDelta({ before: [url('gone')], after: [], expected: [] });
-    assert.deepEqual(result.disappeared, [url('gone')]);
-    assert.equal(result.ok, true);
-  });
-
-  it('identical before/after with a non-empty expected yields missing equal to expected', () => {
-    const same = [url('a'), url('b')];
-    const expected = [url('a'), url('b')];
-    const result = staleDelta({ before: same, after: same, expected });
-    assert.deepEqual(result.missing.sort(), expected.slice().sort());
-    assert.equal(result.ok, false);
   });
 });
 

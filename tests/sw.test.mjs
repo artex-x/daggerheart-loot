@@ -71,9 +71,9 @@ function fakeCaches() {
 /** Loads the worker into a fresh context. `net.fn(url)` answers every
  *  `fetch`; it rejects (offline) until a test replaces it. `preload` gives
  *  the registration a `navigationPreload`, as Chrome has. */
-function load({ preload = false } = {}) {
+function load({ preload = false, src = SRC, scope = SCOPE } = {}) {
   const handlers = {};
-  const calls = { skipWaiting: 0, claim: 0, enable: 0, disable: 0, order: [] };
+  const calls = { skipWaiting: 0, claim: 0, enable: 0, disable: 0, unregister: 0, order: [] };
   const net = {
     urls: [],
     fn: async () => {
@@ -86,7 +86,13 @@ function load({ preload = false } = {}) {
   };
   const caches = fakeCaches();
   const self = {
-    registration: { scope: SCOPE },
+    registration: {
+      scope,
+      unregister: async () => {
+        calls.unregister++;
+        return true;
+      }
+    },
     addEventListener: (type, fn) => {
       handlers[type] = fn;
     },
@@ -112,7 +118,7 @@ function load({ preload = false } = {}) {
     };
   }
   const ctx = vm.createContext({ self, caches, fetch, URL });
-  vm.runInContext(SRC, ctx);
+  vm.runInContext(src, ctx);
   return { handlers, calls, caches, net, ctx };
 }
 
@@ -491,4 +497,52 @@ describe('picture and thumbnail hits: answered from the cache, revalidated on ev
       }
     );
   }
+});
+
+describe('the app worker at the root scope of the site host', () => {
+  const ROOT_SCOPE = 'https://x.test/';
+  const at = (path, init = {}) => ({
+    url: ROOT_SCOPE + path,
+    method: 'GET',
+    mode: 'cors',
+    ...init
+  });
+
+  it('caches a picture', async () => {
+    const w = load({ scope: ROOT_SCOPE });
+    w.net.fn = async () => body('pic');
+    const ev = dispatch(w, at('img/x.webp'));
+    assert.equal(await (await ev.response).text(), 'pic');
+    await Promise.all(ev.waits);
+    assert.ok(w.caches.named.get('dhloot-img-v1').entries.has(ROOT_SCOPE + 'img/x.webp'));
+  });
+
+  it('does not answer a navigation to a card path', () => {
+    const w = load({ scope: ROOT_SCOPE });
+    const ev = dispatch(w, at('h/00000000-0000-4000-8000-000000000511', { mode: 'navigate' }));
+    assert.equal(ev.answered, false);
+  });
+});
+
+describe('the old host worker', () => {
+  const OLD = readFileSync(join(import.meta.dirname, '..', 'old-host', 'sw.js'), 'utf8');
+
+  it('skips waiting on install', async () => {
+    const w = load({ src: OLD });
+    await lifecycle(w, 'install');
+    assert.equal(w.calls.skipWaiting, 1);
+  });
+
+  it('deletes every dhloot cache, keeps a foreign one, and unregisters once', async () => {
+    const w = load({ src: OLD });
+    for (const name of [...CURRENT, 'other']) await w.caches.open(name);
+    await lifecycle(w, 'activate');
+    assert.deepEqual([...w.caches.named.keys()], ['other']);
+    assert.equal(w.calls.unregister, 1);
+  });
+
+  it('has no fetch listener', () => {
+    const w = load({ src: OLD });
+    assert.equal(w.handlers.fetch, undefined);
+  });
 });

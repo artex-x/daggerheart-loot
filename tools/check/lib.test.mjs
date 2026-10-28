@@ -366,7 +366,6 @@ describe('the stage table', () => {
         'derived',
         'dataint',
         'selftest',
-        'test:tg-preview',
         'test:preview',
         'test:artwork',
         'test:desc-style',

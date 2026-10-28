@@ -9,11 +9,14 @@
 */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import {
+  appChecks,
   checks,
+  fileChecks,
+  mirrorChecks,
   runChecks,
   dirReader,
   UNKNOWN_PATH,
@@ -46,6 +49,9 @@ const SITE_PAGE =
   '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">' +
   '<main id="app-page"></main>';
 const CONTACT = '<a href="mailto:daggerheart.loot@gmail.com">mail</a>';
+const stub = (link) =>
+  '<meta property="og:image" content="og/1.jpg">' +
+  `<meta property="og:url" content="https://daggerheart-loot.pages.dev/${link}">`;
 
 const GOOD = {
   'index.html': {
@@ -55,7 +61,10 @@ const GOOD = {
       '<div id="app"></div><script type="module" crossorigin src="./assets/index-a1B2.js"></script>'
   },
   'assets/index-a1B2.js': { type: 'application/javascript', body: 'x'.repeat(30000) },
-  'data.js': { type: 'application/javascript', body: 'window.LOOT = {}' },
+  'data.js': {
+    type: 'application/javascript',
+    body: 'window.LOOT = {}\nwindow.LOOT_V = {};\n'
+  },
   'data.json': { type: 'application/json', body: '{}' },
   'catalog.csv': { type: 'text/csv', body: 'id\n' },
   'catalog-index.csv': { type: 'text/csv', body: 'id\n' },
@@ -71,8 +80,8 @@ const GOOD = {
       { type: 'application/json', body: JSON.stringify({ $id: id }) }
     ])
   ),
-  'i/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
-  'i/en/w1.html': { type: 'text/html', body: '<meta property="og:image" content="og/1.jpg">' },
+  'i/w1.html': { type: 'text/html', body: stub('i/w1') },
+  'i/en/w1.html': { type: 'text/html', body: stub('i/en/w1') },
   'en/index.html': {
     type: 'text/html',
     body: '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">'
@@ -237,7 +246,32 @@ describe('checks() against broken sites', () => {
       'i/en/w1.html': { type: 'text/html', body: '<p>no preview here</p>' }
     };
     const bad = await runChecks(memoryReader(broken));
-    assert.deepEqual(bad, ['the stub i/en/w1.html has lost its preview image (og:image)']);
+    assert.deepEqual(bad, [
+      'the stub i/en/w1.html has lost its preview image (og:image)',
+      'the stub i/en/w1.html has an og:url that does not end with i/en/w1'
+    ]);
+  });
+
+  it('catches a stub that is the app shell, or whose og:url keeps .html', async () => {
+    const broken = {
+      ...GOOD,
+      'i/w1.html': { type: 'text/html', body: stub('i/w1') + '<div id="app"></div>' },
+      'i/en/w1.html': { type: 'text/html', body: stub('i/en/w1.html') }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, [
+      "the stub i/w1.html is the app shell, not the record's own page",
+      'the stub i/en/w1.html has an og:url that does not end with i/en/w1'
+    ]);
+  });
+
+  it('catches a data.js without the card version map', async () => {
+    const broken = {
+      ...GOOD,
+      'data.js': { type: 'application/javascript', body: 'window.LOOT = {}' }
+    };
+    const bad = await runChecks(memoryReader(broken));
+    assert.deepEqual(bad, ['data.js does not carry window.LOOT_V, the card version map']);
   });
 
   it('catches an English entry document that lost its og:title', async () => {
@@ -282,6 +316,7 @@ describe('dirReader - the GitHub Pages missing-path emulation, against a real di
       const meta = await read('');
       assert.equal(meta.status, 200);
       assert.equal(meta.type, 'text/html');
+      assert.equal(meta.robots, '');
       assert.ok(meta.body.includes('id="app"'));
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -321,7 +356,8 @@ describe('checks() shape', () => {
     // a refactor, because a refactor that dropped several checks would
     // still pass it.
     // The exact count and the exact sorted distinct path set close that.
-    assert.equal(list.length, 59);
+    assert.equal(list.length, 64);
+    assert.equal(list.length, appChecks().length + fileChecks().length);
     const paths = [
       ...new Set(list.map((c) => (typeof c.path === 'function' ? '<entry>' : c.path)))
     ].sort();
@@ -367,6 +403,75 @@ describe('checks() shape', () => {
   });
 });
 
+describe('mirrorChecks() against the old host, from a directory', () => {
+  const MOVED =
+    '<meta name="robots" content="noindex, nofollow"><div id="app-moved">' +
+    '<a href="https://daggerheart-loot.pages.dev/">daggerheart-loot.pages.dev</a></div>';
+  const UNREGISTER = 'self.registration.unregister();';
+  /* The deploy's _old: the site minus assets/, data.js and the install guide, with the
+     forwarding root and the unregistering worker. */
+  const mirror = (over = {}) => {
+    const files = Object.fromEntries(
+      Object.entries(GOOD).filter(
+        ([k]) =>
+          !k.startsWith('assets/') &&
+          k !== 'data.js' &&
+          k !== 'pages/install.html' &&
+          k !== 'pages/en/install.html'
+      )
+    );
+    Object.assign(files, {
+      'index.html': { type: 'text/html', body: MOVED },
+      'sw.js': { type: 'application/javascript', body: UNREGISTER },
+      ...over
+    });
+    const dir = mkdtempSync(join(tmpdir(), 'check-site-mirror-'));
+    for (const [k, v] of Object.entries(files)) {
+      if (v === null) continue;
+      mkdirSync(dirname(join(dir, k)), { recursive: true });
+      writeFileSync(join(dir, k), v.body);
+    }
+    return dir;
+  };
+  const run = async (over) => {
+    const dir = mirror(over);
+    try {
+      return await runChecks(dirReader(dir), mirrorChecks());
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  it('reports nothing for the assembled mirror', async () => {
+    assert.deepEqual(await run(), []);
+  });
+
+  it('catches a root that is the app, not the forwarding page', async () => {
+    const bad = await run({ 'index.html': GOOD['index.html'] });
+    assert.ok(bad.includes('the mirror root lost its noindex or its id="app-moved" text'));
+    assert.ok(bad.includes('the mirror root loads the app; it should only forward'));
+  });
+
+  it("catches the app's worker in place of the unregistering one", async () => {
+    const bad = await run({ 'sw.js': GOOD['sw.js'] });
+    assert.deepEqual(bad, ["the mirror's sw.js is not the worker that unregisters itself"]);
+  });
+
+  it('catches an install guide left on the mirror', async () => {
+    const bad = await run({ 'pages/install.html': GOOD['pages/install.html'] });
+    assert.deepEqual(bad, ['the mirror serves pages/install.html (200), not 404']);
+  });
+
+  it('requires catalog-index.csv, as the site does', async () => {
+    const bad = await run({ 'catalog-index.csv': null });
+    assert.ok(bad.includes('catalog-index.csv returned 404, not 200'));
+    assert.ok(
+      mirrorChecks().some((c) => c.path === 'catalog-index.csv') &&
+        checks().some((c) => c.path === 'catalog-index.csv')
+    );
+  });
+});
+
 describe('previewChecks() against the preview host', () => {
   const CARD =
     '<meta name="robots" content="noindex, nofollow"><meta property="og:title" content="x">';
@@ -375,20 +480,36 @@ describe('previewChecks() against the preview host', () => {
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
-      'robots.txt': { status: 200, body: '# the preview host\nUser-agent: *\nAllow: /\n' },
+      'robots.txt': {
+        status: 200,
+        body: '# Readable data, for an agent\nUser-agent: *\nAllow: /\nContent-Signal: search=no\n'
+      },
+      'llms.txt': { status: 200, robots: 'noindex', body: 'ok' },
+      'catalog-index.csv': { status: 200, robots: 'noindex', body: 'id\n' },
+      mcp: { status: 404, body: '<div id="app-404"></div>' },
+      'i/w1?v=x': { status: 200, body: stub('i/w1') },
+      'manual:i/w1.html': { status: 308, location: '/i/w1', body: '' },
       'h/not-a-uuid': { status: 404, body: CARD },
       's/x': { status: 404, body: CARD },
       'p/x': { status: 404, body: CARD },
       [TOKEN]: { status: 404, body: CARD },
       [ITEM]: { status: 404, body: CARD },
-      'tables/core_item': { status: 200, body: CARD },
+      'tables/core_item': {
+        status: 200,
+        body: CARD + '<meta property="og:description" content="128 entries">'
+      },
       ...over
     };
-    return async (path) => ({
-      status: files[path].status,
-      type: 'text/html',
-      body: files[path].body
-    });
+    return async (path, { manual = false } = {}) => {
+      const f = files[(manual ? 'manual:' : '') + path];
+      return {
+        status: f.status,
+        type: 'text/html',
+        robots: f.robots ?? '',
+        location: f.location ?? '',
+        body: f.body
+      };
+    };
   };
 
   it('reports nothing for a host that answers every check', async () => {
@@ -415,6 +536,34 @@ describe('previewChecks() against the preview host', () => {
   for (const [path, answer, pattern] of [
     ['robots.txt', { status: 404, body: '' }, /robots\.txt returned 404/],
     ['robots.txt', { status: 200, body: 'nothing' }, /no User-agent line/],
+    [
+      'robots.txt',
+      { status: 200, body: 'User-agent: *\nAllow: /\n' },
+      /not the site's own file/
+    ],
+    ['llms.txt', { status: 200, body: 'ok' }, /llms\.txt has no X-Robots-Tag: noindex/],
+    [
+      'catalog-index.csv',
+      { status: 200, robots: 'all', body: 'id' },
+      /catalog-index\.csv has no X-Robots-Tag: noindex \(got "all"\)/
+    ],
+    ['mcp', { status: 200, body: '' }, /mcp returned 200, not 404 - the path is reserved/],
+    ['i/w1?v=x', { status: 404, body: '' }, /i\/w1\?v=x returned 404/],
+    [
+      'manual:i/w1.html',
+      { status: 200, body: stub('i/w1') },
+      /i\/w1\.html answered 200 to "", not one 308 to \/i\/w1/
+    ],
+    [
+      'manual:i/w1.html',
+      { status: 308, location: '/i/w1.html', body: '' },
+      /not one 308 to \/i\/w1/
+    ],
+    [
+      'tables/core_item',
+      { status: 200, body: CARD + '<meta property="og:description" content="a table">' },
+      /names\.json was not read/
+    ],
     ['h/not-a-uuid', { status: 200, body: CARD }, /h\/not-a-uuid returned 200, not 404/],
     ['s/x', { status: 404, body: '<p>no meta</p>' }, /s\/x has no noindex/],
     ['p/x', { status: 302, body: '' }, /p\/x returned 302/],
@@ -432,10 +581,15 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 14);
+    assert.equal(list.length, 21);
     assert.deepEqual([...new Set(list.map((c) => c.path))].sort(), [
+      'catalog-index.csv',
       ITEM,
       'h/not-a-uuid',
+      'i/w1.html',
+      'i/w1?v=x',
+      'llms.txt',
+      'mcp',
       'p/x',
       'robots.txt',
       TOKEN,

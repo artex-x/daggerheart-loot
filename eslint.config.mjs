@@ -155,10 +155,11 @@ export default ts.config(
     languageOptions: { globals: { ...globals.node } }
   },
   {
-    /* The service worker is plain JS outside the TypeScript project: the
+    /* The service workers are plain JS outside the TypeScript project: the
        `webworker` lib clashes with `dom` in one tsconfig, so the type-aware
-       rules have no project to resolve it against. */
-    files: ['app/public/**/*.js'],
+       rules have no project to resolve them against. `old-host/sw.js` is the
+       old host's worker that unregisters itself. */
+    files: ['app/public/**/*.js', 'old-host/**/*.js'],
     extends: [ts.configs.disableTypeChecked],
     languageOptions: { globals: { ...globals.serviceworker } }
   },

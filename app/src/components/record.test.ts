@@ -621,18 +621,28 @@ describe('taking a record somewhere else', () => {
     const { env, clip } = withClip();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
+  });
+
+  it("copies the stub link with the record's card version when the build's map holds it", async () => {
+    const clip = fakeClipboard();
+    render(App, {
+      env: at('cc1', { clipboard: clip, data: fakeData(LOOT, { cc1: 'k3x9a1' }) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    expect(clip.last.text).toBe('https://example.test/i/cc1?v=k3x9a1');
   });
 
   it('copies the English stub in English', async () => {
     const clip = fakeClipboard();
     const env = at('cc1', {
       clipboard: clip,
-      storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      storage: memoryStorage({ 'dhloot.lang.v1': 'en' }),
+      data: fakeData(LOOT, { cc1: 'k3x9a1' })
     });
     const { container } = render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Copy link' }));
-    expect(clip.last.text).toBe('https://example.test/i/en/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/en/cc1?v=k3x9a1');
     await expectNoA11yViolations(container);
   });
 
@@ -660,7 +670,7 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { share: fakeShare({ available: false }), clipboard: clip })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
   it('shares the full text, not just the name', async () => {
@@ -747,7 +757,7 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { share: fakeShare({ result: 'failed' }), clipboard: clip })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
   it('keeps the stub link of a catalog record in a build with a preview host', async () => {
@@ -757,9 +767,9 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { clipboard: clip, share, preview: 'https://daggerheart-loot.pages.dev' })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(share.last.url).toBe('https://example.test/i/cc1.html');
+    expect(share.last.url).toBe('https://example.test/i/cc1');
   });
 });
 

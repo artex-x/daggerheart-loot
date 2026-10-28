@@ -7,7 +7,7 @@
 
   Run `node tools/build.js` after editing data.js.
 */
-const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 /* The csv carries record text as it reads: no markup (docs/specs/CONTRACTS.md section 4). */
 const { markupText } = require('../app/src/lib/markup.ts');
 const { realmName } = require('../app/src/lib/realms.ts');
@@ -129,7 +129,7 @@ function catalogRow(L, rarity, sets, x) {
     thresholds: e && e.th ? e.th.join('/') : '',
     crafts_into: (x.craft || []).join(';'),
     community: x.community || '',
-    url: SITE + 'i/' + x.id + '.html',
+    url: SITE + 'i/' + x.id,
     text_ru: markupText(x.rud || '') + set.ru,
     text_en: markupText(x.ende || '') + set.en,
     realm: x.realm ? realmName(x.realm, 'en') : ''

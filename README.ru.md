@@ -7,7 +7,7 @@
 сбор выпавшего в список, отправка списка игрокам одной ссылкой и печать его
 карточками.
 
-**Открыть: https://artex-x.github.io/daggerheart-loot/**
+**Открыть: https://daggerheart-loot.pages.dev/**
 
 Сайт устанавливается как приложение на телефон или компьютер; инструкция -
 `pages/install.html` (на русском) и `pages/en/install.html` (на английском),
@@ -22,12 +22,12 @@
 > **Для ИИ-агентов.** Приложение рисуется на клиенте, а список хранится во
 > фрагменте адреса, который до сервера не доходит: загрузка `index.html` даст
 > пустую страницу. Читаемые данные лежат отдельно -
-> [`catalog-index.csv`](https://artex-x.github.io/daggerheart-loot/catalog-index.csv)
+> [`catalog-index.csv`](https://daggerheart-loot.pages.dev/catalog-index.csv)
 > для отбора,
-> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) с
-> текстом, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
+> [`catalog.csv`](https://daggerheart-loot.pages.dev/catalog.csv) с
+> текстом, [`data.json`](https://daggerheart-loot.pages.dev/data.json)
 > для полного текста и
-> [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) с
+> [`llms.txt`](https://daggerheart-loot.pages.dev/llms.txt) с
 > грамматикой адресов, форматом файла импорта списков и советами, из какого
 > набора брать.
 
@@ -138,7 +138,7 @@
 Ссылка открывает список из аккаунта таким, какой он сейчас, только для чтения:
 
 ```
-https://artex-x.github.io/daggerheart-loot/#/s/<token>
+https://daggerheart-loot.pages.dev/#/s/<token>
 ```
 
 Токен непрозрачен: его создаёт только владелец списка, по одному на аудиторию,
@@ -194,7 +194,7 @@ https://artex-x.github.io/daggerheart-loot/#/s/<token>
 разворачивают её в карточку:
 
 ```
-https://artex-x.github.io/daggerheart-loot/i/ci15.html
+https://daggerheart-loot.pages.dev/i/ci15?v=<версия>
 ```
 
 В `og/` лежат JPEG-копии картинок как раз для этого: часть клиентов Telegram не
@@ -223,10 +223,13 @@ Loreborne `cm11`-`cm20` и так далее. Many Worlds Tavern идёт по �
 каждого мира порядок такой: вид, потом название.
 
 Ссылка на собственный предмет, ссылка для доступа к списку, ссылка на набор
-для печати и ссылка на таблицу ведут через хост превью
+для печати и ссылка на таблицу - карточки на том же хосте
 `daggerheart-loot.pages.dev`: мессенджеру он показывает карточку, а человека
 сразу отправляет в приложение. Запись каталога сохраняет свою страницу в `i/`.
-Виды ссылок описаны в `docs/specs/CONTRACTS.md`, раздел 5.
+Ссылка на запись несёт `?v=<версия>`, которая меняется вместе с карточкой,
+поэтому мессенджер рисует изменённую карточку заново. Старый адрес
+`https://artex-x.github.io/daggerheart-loot/` переводит сюда. Виды ссылок
+описаны в `docs/specs/CONTRACTS.md`, раздел 5.
 
 ## Что приложение запоминает
 
@@ -323,8 +326,8 @@ tools/build-share-pages.js  генератор i/, i/en/ и en/ из data.js
 tools/share-card.mjs        отрисовка карточки для страниц i/ и хоста превью
 tools/build-pages.js        генератор pages/ из pages/src/
 tools/derived.js            как собираются производные файлы
-tools/tg-preview/           обновление превью в Telegram; см. docs/tg-preview.md
-preview/                    хост превью: карточки ссылок для мессенджеров (Cloudflare Pages)
+preview/                    воркер хоста сайта: карточки ссылок для мессенджеров (Cloudflare Pages)
+old-host/                   переадресация со старого адреса и sw.js, который удаляет себя
 tests/                tests/*.js (5 наборов на fs/node) и tests/app/*.js
                       (7 наборов в реальном Chrome против dist-test/) и запускалка
 docs/specs/           поведение и замороженные контракты

@@ -40,6 +40,7 @@ import type { Prefs } from '../lib/prefs.js';
 import { KINDS, type Record_ } from '../lib/types.js';
 import {
   brokenStorage,
+  fakeData,
   fakeDialog,
   fakeEnv,
   fakePage,
@@ -526,11 +527,25 @@ const HID = '00000000-0000-4000-8000-000000000511';
 describe('links to hand somebody else', () => {
   it('follow the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
     expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
     app.setLang('en');
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1.html');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1');
     expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
+  });
+
+  it("carry the record's card version when the build's map holds it", () => {
+    const app = new AppState(
+      at('#/roll/std', { data: fakeData({ items: {} }, { w1: 'k3x9a1' }) })
+    );
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe(
+      'https://example.test/i/w1?v=k3x9a1'
+    );
+    expect(app.linkToRecord({ id: 'w2' } as Record_)).toBe('https://example.test/i/w2');
+    app.setLang('en');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe(
+      'https://example.test/i/en/w1?v=k3x9a1'
+    );
   });
 
   it('keep the app address for every card family in a build with no preview host', () => {
@@ -568,7 +583,7 @@ describe('links through the preview host', () => {
 
   it('keep a catalog record on its stub and every other address in the app', () => {
     const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
     expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
     expect(app.linkTo('#/l/ABC')).toBe('https://example.test/#/l/ABC');
     expect(app.linkTo('#/tables/homebrew')).toBe('https://example.test/#/tables/homebrew');
@@ -1853,7 +1868,7 @@ describe('account lists', () => {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
     const app = new AppState(
-      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage, cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router, storage };
@@ -2595,7 +2610,7 @@ describe('the exports', () => {
         router: memoryRouter('#/lists'),
         storage: memoryStorage(),
         cloud: fakeCloud(seed, as, { limits }),
-        data: { load: () => loot },
+        data: fakeData(loot),
         clock: fixedClock(NOW),
         image
       })
@@ -2917,7 +2932,7 @@ describe('the exports', () => {
         router: memoryRouter('#/lists'),
         storage: memoryStorage(),
         cloud: fakeCloud(SEED, 'gm2'),
-        data: { load: () => loot },
+        data: fakeData(loot),
         clock: fixedClock(NOW),
         image
       })
@@ -3314,7 +3329,7 @@ describe('homebrew', () => {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
     const app = new AppState(
-      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage, cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router, storage };
@@ -3625,7 +3640,7 @@ describe('the item page and «Сохранить себе»', () => {
   function started(cloud: CloudPort, hash: string) {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
-    const app = new AppState(fakeEnv({ router, storage, cloud, data: { load: () => loot } }));
+    const app = new AppState(fakeEnv({ router, storage, cloud, data: fakeData(loot) }));
     app.start();
     return { app, router, storage };
   }
@@ -4446,7 +4461,7 @@ describe('printing', () => {
   function started(cloud: CloudPort | null, hash: string, over: Partial<Env> = {}) {
     const router = memoryRouter(hash);
     const app = new AppState(
-      fakeEnv({ router, storage: memoryStorage(), cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage: memoryStorage(), cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router };

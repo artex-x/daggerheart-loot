@@ -4,7 +4,7 @@
 80% that four artwork operations (`8e7fed1`, `ce0c414`, `37ecc8d`,
 `art-to-fix`) each re-derived from prose, one of them leaving a Pillow
 script behind in a task directory, since deleted and superseded by this
-tool. It is a sibling npm project, modelled on `tools/tg-preview/`: its own
+tool. It is a sibling npm project: its own
 `package.json` and lockfile carry `sharp`, so the root `package.json` gains
 no dependency and root `npm ci` never installs an image encoder. It also
 makes the 160 px row thumbnails under `img/thumb/` ("Thumbnails", below).
@@ -35,7 +35,6 @@ is a false positive and proves nothing about an ImageMagick install.
 node tools/artwork/run.mjs plan            --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>]
 node tools/artwork/run.mjs install         --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
 node tools/artwork/run.mjs verify          --uploads <dir> [--repo <dir>] [--map <f>]
-node tools/artwork/run.mjs verify-previews --before <f> --after <f> --report <f>
 node tools/artwork/run.mjs ingest          --uploads <dir> [--repo <dir>] [--map <f>] [--report <f>] [--dry-run]
 node tools/artwork/run.mjs thumbs          [--repo <dir>] [--dry-run]
 node tools/artwork/run.mjs review          [--port <n>] [--repo <dir>] [--open]
@@ -73,17 +72,6 @@ and `og/` to "try it out" (Risks, below).
   Scoped to the pairs this source set resolves to, never the whole `img/`
   tree (see "Determinism is per-run" below) - a bare `verify` with no
   `--uploads` is not a full-catalog audit.
-- **`verify-previews`** - the before/after preview-staleness proof. Reads
-  two `tools/tg-preview --dry-run --stale-list` files and the `--report`
-  a `plan` or `install` call wrote (for the `pairs` it resolved), computes
-  which stub URLs the change was expected to invalidate - both languages,
-  `i/<id>.html` and `i/en/<id>.html`, because both show the same `og/`
-  picture - and reports
-  `missing` (expected but never went stale - the change did not reach that
-  stub) and `extra` (went stale but was not expected) as failures; a
-  `disappeared` entry (stale before, not stale after, not expected) is
-  reported but is not itself a failure. Exits non-zero unless both `missing`
-  and `extra` are empty. Needs no encoder.
 - **`ingest`** - the counterpart to `install` for a **new-source ingest**: it
   *creates* art for a record a source ingest just added; it never replaces.
   See "The ingest path" below for what it does and the command sequence.
@@ -154,16 +142,17 @@ asset a Pillow-based refresh ever touched as "wrong."
 ## The replacement command sequence, end to end
 
 ```text
-node tools/tg-preview/run.mjs --dry-run --stale-list before.json
 node tools/artwork/run.mjs plan    --uploads <drop> --report plan.json
 node tools/artwork/run.mjs install --uploads <drop> --report install.json
-node tools/tg-preview/run.mjs --dry-run --stale-list after.json
-node tools/artwork/run.mjs verify-previews --before before.json --after after.json --report install.json
+node tools/build.js
 ```
 
-`verify-previews`'s `--report` reads `install.json`'s `pairs` (the same file
-`install` just wrote) rather than re-deriving the match a third time, so the
-proof is over exactly what was installed.
+An artwork refresh changes the card version of every record whose `og/`
+picture changed, through the next `node tools/build.js`
+(`card-versions.json`, `docs/specs/META.md` section 8): the record links the
+app hands out after the deploy are new URLs to a messenger's cache, so a new
+share draws the new picture. A link shared before the refresh keeps its old
+card.
 
 ## The ingest path
 
@@ -326,10 +315,9 @@ The encoding differs from the item pictures' on purpose, because a card is
 text: JPEG quality 85, progressive, 4:4:4 chroma subsampling, mozjpeg, no
 metadata, rendered at 72 dpi (one SVG unit is one pixel).
 
-A card's bytes are part of the Telegram fingerprint of the URL that names
-it (`docs/tg-preview.md`). After a re-render, the next `previews.yml` run
-finds the root (or the English root) stale, sends it and presses "Update
-with content"; no manual push is necessary.
+A site card's URL carries no version: Telegram keeps the card it cached
+for the site root (or `en/`) after a re-render (`docs/specs/META.md`
+section 8).
 
 ## Image review
 
@@ -481,9 +469,9 @@ Guards in `tools/artwork/lib.test.mjs`:
   because root `npm ci` carries no encoder to compare pixels. Change a
   picture only through `install` or `ingest`, which write the thumbnail
   from the new WebP.
-- `plan` and `verify-previews` need no encoder; `install`, `ingest`,
-  `verify` and `thumbs` do. If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt
-  binary on a given machine, the first two verbs are still useful there.
+- `plan` needs no encoder; `install`, `ingest`, `verify` and `thumbs` do.
+  If `tools/artwork/npm ci` cannot resolve `sharp`'s prebuilt binary on a
+  given machine, `plan` is still useful there.
 - `og/` is not derived from `img/`: `tools/artwork/run.mjs`'s `encodePair`
   writes the WebP and the JPEG as siblings from one original delivery
   buffer, and `verify` re-encodes from that same original; the originals

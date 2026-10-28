@@ -2,12 +2,14 @@
  *
  * Two callers, one list of assertions (tools/check-site.lib.mjs):
  *
- *     node tools/check-site.mjs https://artex-x.github.io/daggerheart-loot/
+ *     node tools/check-site.mjs https://daggerheart-loot.pages.dev/
  *     node tools/check-site.mjs --dir _site
  *     node tools/check-site.mjs --preview https://daggerheart-loot.pages.dev/
+ *     node tools/check-site.mjs --mirror --dir _old
+ *     node tools/check-site.mjs --mirror https://artex-x.github.io/daggerheart-loot/
  *
- * The URL form runs as the deploy job's last step against
- * `steps.pages.outputs.page_url`, and by hand against the same URL - it
+ * The URL form runs in the deploy job against the site's host after its
+ * deploy, and by hand against the same URL - it
  * cannot un-publish anything and is not meant to: it is what tells a person
  * that the revert described in .github/workflows/ci.yml is needed, in the
  * place they already look. It retries: a fresh deploy is not served
@@ -22,9 +24,19 @@
  *
  * The `--preview` form runs the preview host's own list (`previewChecks`) with the
  * URL form's retries, in the deploy job after the preview host deploy and before
- * the site deploy.
+ * the old host's deploy.
+ *
+ * `--mirror` selects the old host's list (`mirrorChecks`), with `--dir` before its
+ * deploy or with a URL after it (docs/specs/META.md section 9, "The old host").
  */
-import { runChecks, fetchReader, dirReader, previewChecks } from './check-site.lib.mjs';
+import {
+  runChecks,
+  fetchReader,
+  dirReader,
+  previewChecks,
+  mirrorChecks,
+  checks
+} from './check-site.lib.mjs';
 
 const TRIES = 6;
 const WAIT_MS = 10_000;
@@ -37,8 +49,8 @@ function report(bad, where) {
   process.exit(bad.length ? 1 : 0);
 }
 
-async function runDir(dir) {
-  const bad = await runChecks(dirReader(dir));
+async function runDir(dir, list) {
+  const bad = await runChecks(dirReader(dir), list);
   report(bad, dir);
 }
 
@@ -62,7 +74,10 @@ async function runUrl(base, list) {
   report(bad, root);
 }
 
-const args = process.argv.slice(2);
+const all = process.argv.slice(2);
+const mirror = all.includes('--mirror');
+const args = all.filter((a) => a !== '--mirror');
+const siteList = mirror ? mirrorChecks() : checks();
 const dirIdx = args.indexOf('--dir');
 const previewIdx = args.indexOf('--preview');
 
@@ -72,7 +87,7 @@ if (dirIdx >= 0) {
     console.log('  FAIL --dir needs a path - usage: node tools/check-site.mjs --dir <path>');
     process.exit(1);
   }
-  await runDir(dir);
+  await runDir(dir, siteList);
 } else if (previewIdx >= 0) {
   const origin = args[previewIdx + 1];
   if (!origin) {
@@ -83,10 +98,10 @@ if (dirIdx >= 0) {
   }
   await runUrl(origin, previewChecks());
 } else if (args[0]) {
-  await runUrl(args[0]);
+  await runUrl(args[0], siteList);
 } else {
   console.log(
-    '  FAIL no base url - usage: node tools/check-site.mjs <url> | --dir <path> | --preview <url>'
+    '  FAIL no base url - usage: node tools/check-site.mjs [--mirror] <url> | [--mirror] --dir <path> | --preview <url>'
   );
   process.exit(1);
 }

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- kept out of search results, same as every other page - docs/specs/META.md
+     section 1 -->
+<meta name="robots" content="noindex, nofollow">
+<title>Генератор лута Daggerheart</title>
+<!--
+  The old host's root (docs/specs/META.md section 9, "The old host"): the
+  deploy publishes this file in place of the app's index.html on GitHub Pages.
+  It forwards to the site's host with the fragment, so an old list or record
+  link still opens. The query is dropped on purpose: a stale auth callback's
+  PKCE verifier lives on this origin. The card fields are app/index.html's.
+-->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Генератор лута Daggerheart">
+<meta property="og:title" content="Генератор лута Daggerheart">
+<meta property="og:description" content="1459 позиций с картинками: добыча, расходники, оружие и броня из Core, Hope &amp; Fear, Wondrous Environments и предметов сообществ. Русский и английский.">
+<meta property="og:url" content="https://daggerheart-loot.pages.dev/">
+<meta property="og:image" content="https://daggerheart-loot.pages.dev/og/_share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Генератор лута Daggerheart">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Генератор лута Daggerheart">
+<meta name="twitter:description" content="1459 позиций с картинками: добыча, расходники, оружие и броня. Русский и английский.">
+<meta name="twitter:image" content="https://daggerheart-loot.pages.dev/og/_share.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
+<noscript><meta http-equiv="refresh" content="0; url=https://daggerheart-loot.pages.dev/"></noscript>
+<script>
+  /* A second forward in the same tab within 10 s means the two hosts send the
+     tab back and forth (.claude/README.md, "Quotas, recovery and failure"): stop and show the
+     text. An installed old-origin app shows the text too, so it does not open
+     a browser tab on each launch. */
+  (function () {
+    var NEW = 'https://daggerheart-loot.pages.dev/';
+    if (window.matchMedia && matchMedia('(display-mode: standalone)').matches) return;
+    var now = Date.now();
+    try {
+      var last = Number(sessionStorage.getItem('dhloot.moved.at')) || 0;
+      if (now - last < 10000) return;
+      sessionStorage.setItem('dhloot.moved.at', String(now));
+    } catch (e) {}
+    var en = false;
+    try {
+      en = localStorage.getItem('dhloot.lang.v1') === 'en';
+    } catch (e) {}
+    location.replace(NEW + (en ? 'en/' : '') + location.hash);
+  })();
+</script>
+<style>
+  body{background:#0e0c15;color:#ece8f6;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .w{max-width:420px;text-align:center}
+  h1{font-size:22px;margin:0 0 6px}
+  p{color:#cfc8e0;margin:0 0 20px}
+  hr{border:none;border-top:1px solid #2a2438;margin:24px 0}
+  a{color:#d8ab5e}
+</style>
+</head>
+<body>
+  <div class="w" id="app-moved">
+    <h1>Генератор лута переехал</h1>
+    <p>Генератор лута переехал на новый адрес:
+       <a href="https://daggerheart-loot.pages.dev/">daggerheart-loot.pages.dev</a>.
+       Старые ссылки работают и ведут туда же. Если вы установили сайт как
+       приложение, установите его заново с нового адреса.</p>
+    <hr>
+    <div lang="en">
+      <h1>The loot generator has moved</h1>
+      <p>The loot generator has moved to a new address:
+         <a href="https://daggerheart-loot.pages.dev/en/">daggerheart-loot.pages.dev</a>.
+         Old links still work and lead there too. If you installed the site as
+         an app, install it again from the new address.</p>
+    </div>
+  </div>
+</body>
+</html>

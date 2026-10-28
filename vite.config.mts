@@ -1,11 +1,5 @@
-import {
-  copyFileSync,
-  createReadStream,
-  existsSync,
-  readFileSync,
-  statSync,
-  symlinkSync
-} from 'node:fs';
+import { copyFileSync, createReadStream, existsSync, statSync, symlinkSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
@@ -72,8 +66,12 @@ function noscriptData(out: string): Plugin {
 
 /* The data beside the bundle: `data.js` stays a classic script that assigns
    `window.LOOT`, cached apart from the hashed modules and read without an
-   async bootstrap. docs/specs/CONTRACTS.md section 4. */
+   async bootstrap; the build appends `window.LOOT_V`, the record links' card
+   versions. docs/specs/CONTRACTS.md section 4. */
 function dataScript(): Plugin {
+  const { builtDataScript } = createRequire(import.meta.url)('./tools/data-script.js') as {
+    builtDataScript: (root: string) => Buffer;
+  };
   return {
     name: 'dhloot-data-script',
     apply: 'build',
@@ -81,7 +79,7 @@ function dataScript(): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'data.js',
-        source: readFileSync(new URL('./data.js', import.meta.url), 'utf8')
+        source: builtDataScript(ROOT)
       });
     }
   };

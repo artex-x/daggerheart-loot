@@ -7,7 +7,7 @@ on any of the published loot tables, browse them in full, collect what you rolle
 into a list, hand that list to your players as a single link, or print it as
 cards.
 
-**Open it: https://artex-x.github.io/daggerheart-loot/**
+**Open it: https://daggerheart-loot.pages.dev/**
 
 The site installs as an app on a phone or a desktop; the guide is at
 `pages/install.html` (Russian) and `pages/en/install.html` (English), linked
@@ -22,12 +22,12 @@ you reaches a server.
 > **For AI agents.** The app renders on the client, and a list lives in the URL
 > fragment, which never reaches the server: fetching `index.html` gives you an
 > empty page. The readable data is separate -
-> [`catalog-index.csv`](https://artex-x.github.io/daggerheart-loot/catalog-index.csv)
+> [`catalog-index.csv`](https://daggerheart-loot.pages.dev/catalog-index.csv)
 > for selection,
-> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) with
-> the text, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
+> [`catalog.csv`](https://daggerheart-loot.pages.dev/catalog.csv) with
+> the text, [`data.json`](https://daggerheart-loot.pages.dev/data.json)
 > for full text, and
-> [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) for the URL
+> [`llms.txt`](https://daggerheart-loot.pages.dev/llms.txt) for the URL
 > grammar, the lists import file, and guidance on which set to draw from.
 
 ## Rolling
@@ -134,7 +134,7 @@ An account list is shared with **Share**, which holds both links.
 A share link opens an account list as it is now, read-only:
 
 ```
-https://artex-x.github.io/daggerheart-loot/#/s/<token>
+https://daggerheart-loot.pages.dev/#/s/<token>
 ```
 
 The token is opaque: only the list's owner makes one, one per audience, and
@@ -189,7 +189,7 @@ The link icon beside a name gives a static page with Open Graph markup that
 redirects into the app, so Telegram, Discord and the rest unfold it into a card:
 
 ```
-https://artex-x.github.io/daggerheart-loot/i/ci15.html
+https://daggerheart-loot.pages.dev/i/ci15?v=<version>
 ```
 
 `og/` holds JPEG copies of the artwork for exactly this - some Telegram clients
@@ -216,10 +216,13 @@ release order: Sporopolis `mw1`-`mw20`, Wagerwood `mw21`-`mw40`, Warrin' Warrens
 `mw93`-`mw109`. Hornet Hold and The Drome print no card number, so inside each
 the order is kind, then name.
 
-A homebrew item link, a share link, a print set link and a table link go
-through the preview host `daggerheart-loot.pages.dev`: it shows a card to a
+A homebrew item link, a share link, a print set link and a table link are
+link cards on the same host `daggerheart-loot.pages.dev`: it shows a card to a
 messenger and sends a person on to the app. A catalog record keeps its `i/`
-stub page. The link families are in `docs/specs/CONTRACTS.md` section 5.
+stub page. A record link carries `?v=<version>`, which changes with the card,
+so a messenger draws a changed card afresh. The old address
+`https://artex-x.github.io/daggerheart-loot/` forwards here. The link families
+are in `docs/specs/CONTRACTS.md` section 5.
 
 ## What the app remembers
 
@@ -312,8 +315,8 @@ tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
 tools/share-card.mjs        the card renderer of the stubs and the preview host
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
-tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
-preview/                    the preview host: link cards for messengers (Cloudflare Pages)
+preview/                    the site host's worker: link cards for messengers (Cloudflare Pages)
+old-host/                   the old address's forwarding root and its unregistering sw.js
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behaviour and frozen contracts, for maintainers

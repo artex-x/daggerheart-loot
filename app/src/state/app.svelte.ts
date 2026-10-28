@@ -1745,12 +1745,13 @@ export class AppState {
 
   /** A record's address to hand somebody else, in the language on screen: a homebrew item's
    *  preview link, versioned by the record (its `#/h/` address in a build with no preview
-   *  host), else the record's stub page. Every record with a `hid` is saved. */
+   *  host), else the record's stub page, versioned by the build's card map when it holds
+   *  the record. Every record with a `hid` is saved. */
   linkToRecord(it: Record_): string {
     const hid = isHomebrewRecord(it) ? it.hid : undefined;
     return typeof hid === 'string'
       ? this.linkTo(itemHash(hid), cardVersion(it))
-      : recordUrl(this.site, it.id, this.lang);
+      : recordUrl(this.site, it.id, this.lang, this.env.data.cardVersion(it.id));
   }
 
   /* Art that failed to load, remembered for the session only: a missing file

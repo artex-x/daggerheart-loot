@@ -8,8 +8,8 @@
   each verb does and the runbook that drives this by hand.
 
   `sharp` is imported lazily, only by the verbs that encode (`install`,
-  `verify`, `ingest`, `thumbs`), so `plan` and `verify-previews` run on a
-  machine where `tools/artwork/node_modules/` does not exist.
+  `verify`, `ingest`, `thumbs`), so `plan` runs on a machine where
+  `tools/artwork/node_modules/` does not exist.
 */
 import { createHash } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
@@ -30,8 +30,6 @@ import {
   planInstall,
   planIngest,
   planThumbs,
-  affectedStubUrls,
-  staleDelta,
   parseImageDates,
   reviewRoute,
   cardCss,
@@ -43,7 +41,7 @@ const require = createRequire(import.meta.url);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, '..', '..');
 
-const VERBS = ['plan', 'install', 'verify', 'verify-previews', 'ingest', 'thumbs', 'review'];
+const VERBS = ['plan', 'install', 'verify', 'ingest', 'thumbs', 'review'];
 
 // The settings measured across three refreshes and documented once, in
 // docs/artwork.md - not restated anywhere else in the repository.
@@ -91,8 +89,8 @@ function sha256(buf) {
 }
 
 // Metadata-only sources for planInstall, plus a name -> Buffer map for the
-// verbs that need the actual bytes (install, verify). plan and
-// verify-previews never touch the second map's contents.
+// verbs that need the actual bytes (install, verify). plan never touches
+// the second map's contents.
 function readUploads(dir) {
   const names = readdirSync(dir).filter((n) => !n.startsWith('.'));
   const bytesByName = new Map();
@@ -114,16 +112,15 @@ function writeReport(path, report) {
   writeFileSync(path, JSON.stringify(report, null, 2) + '\n');
 }
 
-// The createRequire + window.LOOT shim tools/tg-preview/manifest.mjs already
-// demonstrates. `--repo` only changes where data.js is loaded from; the
-// generic derived.js helper (everything()/SITE) always comes from this
-// repository's own tools/, since it is code, not the fixture's data.
+// A createRequire + window.LOOT shim. `--repo` only changes where data.js
+// is loaded from; the generic derived.js helper (everything()) always comes
+// from this repository's own tools/, since it is code, not the fixture's data.
 function loadRecords(dataRoot) {
   if (!globalThis.window) globalThis.window = {};
   if (!globalThis.window.LOOT) require(join(dataRoot, 'data.js'));
   const L = globalThis.window.LOOT;
-  const { everything, SITE } = require(join(REPO_ROOT, 'tools', 'derived.js'));
-  return { records: everything(L), site: SITE };
+  const { everything } = require(join(REPO_ROOT, 'tools', 'derived.js'));
+  return { records: everything(L) };
 }
 
 function printPlan(result) {
@@ -582,31 +579,6 @@ async function verbThumbs(flags) {
   return 0;
 }
 
-// Reads the `pairs` a prior `plan`/`install --report <f>` call wrote, so the
-// preview-staleness proof reuses exactly what was actually planned or
-// installed rather than re-deriving it a third time. `--report` here is an
-// input, the same artifact `plan`/`install` produce as output.
-async function verbVerifyPreviews(flags) {
-  if (!flags.before || !flags.after)
-    throw new Error('verify-previews needs --before <f> and --after <f>');
-  if (!flags.report)
-    throw new Error(
-      'verify-previews needs --report <f>, the plan/install report to read pairs from'
-    );
-  const before = JSON.parse(readFileSync(flags.before, 'utf8'));
-  const after = JSON.parse(readFileSync(flags.after, 'utf8'));
-  if (before.site !== after.site) {
-    throw new Error(
-      '--before and --after are for different sites: ' + before.site + ' vs ' + after.site
-    );
-  }
-  const report = JSON.parse(readFileSync(flags.report, 'utf8'));
-  const expected = affectedStubUrls(report.pairs || [], before.site);
-  const delta = staleDelta({ before: before.stale || [], after: after.stale || [], expected });
-  log(JSON.stringify(delta, null, 2));
-  return delta.ok ? 0 : 1;
-}
-
 // The read-only image review server (docs/artwork.md, "Image review"). It
 // serves an allowlist of files, the card CSS of the app's own components,
 // the transpiled app/src/lib/ modules and the picture dates and hashes. It
@@ -770,7 +742,6 @@ async function main() {
   if (verb === 'plan') process.exitCode = await verbPlan(flags);
   else if (verb === 'install') process.exitCode = await verbInstall(flags);
   else if (verb === 'verify') process.exitCode = await verbVerify(flags);
-  else if (verb === 'verify-previews') process.exitCode = await verbVerifyPreviews(flags);
   else if (verb === 'ingest') process.exitCode = await verbIngest(flags);
   else if (verb === 'thumbs') process.exitCode = await verbThumbs(flags);
   else if (verb === 'review') {

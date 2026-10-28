@@ -94,9 +94,8 @@ Do not distort aspect ratio, overwrite the approval sources, rename public asset
    "Determinism is per-run"). Confirm shared mappings resolve to the one
    asset policy intends; the tool's `sharedWith` report is the source of
    truth for that, not a byte comparison across records.
-2. When a before/after `--stale-list` pair exists, run
-   `node tools/artwork/run.mjs verify-previews --before before.json --after after.json --report install.json`
-   (`docs/artwork.md` has the exact two-`--stale-list`-runs sequence).
+2. Run `node tools/build.js`: a changed `og/` picture changes its records' card
+   versions (`docs/artwork.md`, "The replacement command sequence, end to end").
 3. Inspect the final git diff and verify that only intended `img/` (with `img/thumb/`), `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
 4. Run focused repository gates first:
    - `node tests/run-all.js dataint,noart`

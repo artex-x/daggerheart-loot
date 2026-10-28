@@ -128,8 +128,8 @@ ok(
   "can't pick a blacksmith's stock from the catalog: found " + smith.length
 );
 ok(
-  parsed.every((r) => !r[idx.id] || /^https:\/\/artex-x\.github\.io\//.test(r[idx.url])),
-  'the catalog has a broken link to a record page'
+  parsed.every((r) => !r[idx.id] || r[idx.url] === D.SITE + 'i/' + r[idx.id]),
+  'the catalog has a record link that is not <site>i/<id>, extensionless and without ?v'
 );
 
 console.log('stubs match the generator');
@@ -173,8 +173,16 @@ ok(
   const html = page(x, 'en');
   ok(html.includes('<html lang="en">'), 'stub i/en/' + x.id + ': <html lang> is not en');
   ok(
-    html.includes('<meta property="og:url" content="' + D.SITE + 'i/en/' + x.id + '.html">'),
-    'stub i/en/' + x.id + ': og:url is not its own English address'
+    html.includes('<meta property="og:url" content="' + D.SITE + 'i/en/' + x.id + '">'),
+    'stub i/en/' + x.id + ': og:url is not its own extensionless English address'
+  );
+  ok(
+    html.includes('<link rel="canonical" href="' + D.SITE + 'i/en/' + x.id + '">'),
+    'stub i/en/' + x.id + ': canonical is not its own extensionless English address'
+  );
+  ok(
+    html.includes('location.replace(' + JSON.stringify(D.SITE + 'en/#/i/' + x.id) + ')'),
+    'stub i/en/' + x.id + ': the app link is not <site>en/#/i/<id>'
   );
   ok(
     html.includes('<meta property="og:locale" content="en_US">'),
@@ -562,7 +570,7 @@ console.log('og facts are absolute values');
 /* This block used to pin only what index.html and app/index.html agreed on -
    a generator change that shifted both pages the same wrong way would still
    pass. Now one page is checked against absolute values directly. */
-const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 ok(
   shareFacts['og:image'] === SITE + 'og/_share.jpg',
   "og:image is not the site's shared picture, but something else: " + shareFacts['og:image']
@@ -656,17 +664,124 @@ ok(
   ok(enRootHtml.includes('href="' + href + '"'), 'en/index.html does not link ' + href);
 });
 
-/* `/daggerheart-loot/` is hardcoded in 404.html's two way-home links too
-   (tools/derived.js and tools/build-share-pages.js already read SITE, and
-   llms.txt carries the same literal) - a repo rename or an apex CNAME would
-   break all of them with every other gate green. One assertion against the
-   pathname SITE already carries closes 404.html's own copy. */
-ok(
-  fs.readFileSync(path.join(ROOT, '404.html'), 'utf8').includes(new URL(SITE).pathname),
-  '404.html no longer contains ' +
-    new URL(SITE).pathname +
-    ' - a repo rename or an apex CNAME would silently break its way-home links'
-);
+/* 404.html serves both hosts, and the old host's root only forwards, so its
+   way-home links name the site's host itself (docs/specs/META.md section 7). */
+{
+  const html404 = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
+  ok(
+    html404.includes('href="' + SITE + '#/roll/std"'),
+    '404.html does not link ' + SITE + '#/roll/std'
+  );
+  ok(
+    html404.includes('href="' + SITE + 'en/#/roll/std"'),
+    '404.html does not link ' + SITE + 'en/#/roll/std in its English half'
+  );
+  ok(!html404.includes('/daggerheart-loot/#'), '404.html still links a path of the old host');
+}
+
+console.log('the old host forwards to the site');
+/* old-host/index.html replaces the app's index.html on the old host
+   (docs/specs/META.md section 9, "The old host"). Each line is one state. */
+{
+  const OLD = fs.readFileSync(path.join(ROOT, 'old-host', 'index.html'), 'utf8');
+  const script = (/<script>([\s\S]*?)<\/script>/.exec(OLD) || ['', ''])[1];
+  ok(NOINDEX.test(OLD), 'old-host/index.html has no noindex');
+  ok(OLD.includes('id="app-moved"'), 'old-host/index.html lost its id="app-moved" text');
+  ok(OLD.includes('<div lang="en">'), 'old-host/index.html has no English half');
+  ok(!OLD.includes('type="module"'), 'old-host/index.html loads the app');
+  ok(
+    script.includes("var NEW = '" + SITE + "'") && script.includes('location.replace(NEW'),
+    'old root, no fragment and no stored language: it does not forward to ' + SITE
+  );
+  ok(
+    script.includes('+ location.hash)'),
+    'old root with a fragment: the forward does not keep location.hash'
+  );
+  ok(
+    script.includes("localStorage.getItem('dhloot.lang.v1') === 'en'") &&
+      script.includes("(en ? 'en/' : '')"),
+    'old root with dhloot.lang.v1 = en: it does not forward to <site>en/'
+  );
+  ok(
+    (script.match(/try \{/g) || []).length === 2 &&
+      (script.match(/catch \(e\) \{\}/g) || []).length === 2,
+    'old root, storage throws: a storage read is outside its try block'
+  );
+  ok(
+    script.includes("sessionStorage.getItem('dhloot.moved.at')") &&
+      script.includes('now - last < 10000') &&
+      script.includes("sessionStorage.setItem('dhloot.moved.at'"),
+    'old root, a second forward within 10 s: the loop guard on dhloot.moved.at is gone'
+  );
+  ok(
+    script.includes("matchMedia('(display-mode: standalone)').matches) return"),
+    'old root in an installed app: the page forwards instead of showing the text'
+  );
+  ok(
+    OLD.includes(
+      '<noscript><meta http-equiv="refresh" content="0; url=' + SITE + '"></noscript>'
+    ) && OLD.includes('<a href="' + SITE + '">'),
+    'old root without a script: no meta refresh or link to ' + SITE
+  );
+  const oldFacts = headFacts('old-host/index.html');
+  Object.keys(shareFacts)
+    .filter((k) => k === '<title>' || /^(og|twitter):/.test(k))
+    .forEach(function (key) {
+      ok(
+        oldFacts[key] === shareFacts[key],
+        'old-host/index.html ' + key + " is not app/index.html's: " + oldFacts[key]
+      );
+    });
+}
+
+console.log('the card version map is current');
+/* tools/build.js writes card-versions.json; the build appends it to data.js
+   as window.LOOT_V (docs/specs/META.md section 8). */
+{
+  const { cardVersions } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const file = path.join(ROOT, 'card-versions.json');
+  const onDisk = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const fresh = JSON.stringify(cardVersions()) + '\n';
+  ok(onDisk === fresh, 'card-versions.json is missing or stale - run node tools/build.js');
+  const map = JSON.parse(fresh);
+  ok(
+    ALL.every((x) => /^[0-9a-z]{1,8}$/.test(map[x.id] || '')),
+    'card-versions.json lacks a record id or holds a malformed version'
+  );
+  const gz = require('zlib').gzipSync('window.LOOT_V = ' + JSON.stringify(map) + ';').length;
+  console.log('  window.LOOT_V: ' + Math.round(gz / 1024) + ' KB gzip');
+
+  /* The property the refresher's removal rests on: a changed card is a new
+     version - other picture bytes under the same name, or other text in
+     either language (docs/specs/META.md section 8). */
+  const os = require('os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'card-versions-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'og'));
+    const rec = Object.assign(
+      {},
+      ALL.find((x) => x.img && x.ende && x.rud)
+    );
+    const jpg = path.join(tmp, 'og', rec.img.replace(/\.webp$/, '.jpg'));
+    const v = (r) => cardVersions([r], tmp)[r.id];
+    fs.writeFileSync(jpg, 'picture one');
+    const base = v(rec);
+    ok(base === v(rec), 'cardVersions gives the same card two values');
+    fs.writeFileSync(jpg, 'picture two');
+    ok(v(rec) !== base, 'cardVersions keeps the version when the og picture bytes change');
+    fs.writeFileSync(jpg, 'picture one');
+    ok(
+      v(Object.assign({}, rec, { ende: rec.ende + ' Changed.' })) !== base,
+      'cardVersions keeps the version when the English text changes'
+    );
+    ok(
+      v(Object.assign({}, rec, { rud: rec.rud + ' Изменено.' })) !== base,
+      'cardVersions keeps the version when the Russian text changes'
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
 
 /* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
    own "summary_large_image" - one record with art, one built with its art

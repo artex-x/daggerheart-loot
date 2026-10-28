@@ -209,6 +209,9 @@ export interface DragPort {
  */
 export interface DataPort {
   load(): Loot | null;
+  /** The record link's card version from `window.LOOT_V`, which the build appends to
+   *  `data.js`; `undefined` when the map is absent, malformed or lacks the id. */
+  cardVersion(id: string): string | undefined;
 }
 
 /**

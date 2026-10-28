@@ -23,6 +23,21 @@ Do not persist filters, search text or selections, a selection's taken counts
 included. Filters are shared by link instead - that is what the `f_` segment
 is for.
 
+## The site's origin
+
+`localStorage` and `sessionStorage` belong to one origin. The site moved from
+`https://artex-x.github.io` to `https://daggerheart-loot.pages.dev` (task
+`cloudflare-pages`, 2026-10-28): every key stays on the old origin, nothing is
+deleted, and the new origin starts empty. The old host's forwarding page reads
+`dhloot.lang.v1` there and opens `<site>en/` when it is `en`, which seeds the
+language on the new origin; no other key follows. A signed-in reader signs in
+once more, and the account restores `user_prefs`. The forwarding page writes
+`dhloot.moved.at` (the time of its last forward) to the old origin's
+`sessionStorage` and stops at a second forward in the same tab within 10 s
+(`META.md` section 9, "The old host"). A revert of R10 after the move reads the
+new origin's storage; it reaches R10's kept browser-list keys only together
+with a revert of the move.
+
 ## localStorage keys
 
 | Key | Holds |

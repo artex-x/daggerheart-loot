@@ -59,12 +59,12 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
   /* The English addresses are public paths too (CONTRACTS.md sections 3-5):
      an agent reads llms.txt to build them. */
   ok(
-    machine.includes('i/en/<id>.html'),
-    'llms.txt does not name the English stub i/en/<id>.html'
+    machine.includes('`i/en/<id>`') && machine.includes('i/<id>.html'),
+    'llms.txt does not name the English stub i/en/<id> and the older .html form'
   );
   ok(
-    machine.includes('daggerheart-loot/en/'),
-    'llms.txt does not name the English address daggerheart-loot/en/'
+    machine.includes('https://daggerheart-loot.pages.dev/en/'),
+    'llms.txt does not name the English address https://daggerheart-loot.pages.dev/en/'
   );
   /* The account share link is a public address (CONTRACTS.md section 1). */
   const routesDoc = fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
@@ -219,6 +219,46 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
       /^https:\/\/[a-z0-9]+\.daggerheart-loot\.pages\.dev\//.test(offOrigin[0].url),
     'preview.json serves a url off the origin other than the one deployment-host case'
   );
+  /* The site and the card families share one host since the move to Cloudflare Pages;
+     Pages routes only the families to the worker (CONTRACTS.md section 5). */
+  ok(preview.site === PREVIEW_ORIGIN + '/', 'preview.json names another site: ' + preview.site);
+  const routesFile = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'preview', 'public', '_routes.json'), 'utf8')
+  );
+  ok(
+    JSON.stringify(preview.routes) === JSON.stringify(routesFile.include),
+    "preview.json's routes are not preview/public/_routes.json's include list"
+  );
+  const routed = (p) => preview.routes.some((r) => p.startsWith(r.slice(0, -1)));
+  for (const c of preview.serve) {
+    const p = new URL(c.url).pathname;
+    ok(
+      c.static ? !routed(p) : routed(p),
+      'preview.json ' + c.url + (c.static ? ' is static but routed' : ' is not routed')
+    );
+  }
+  ok(
+    !preview.routes.some((r) => /^\/(en\/)?mcp/.test(r)),
+    'a route names /mcp, which is reserved for the ai-mcp task'
+  );
+
+  console.log('record links');
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/record\.json/m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/urls/record.json"
+  );
+  const record = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'record.json'), 'utf8'));
+  ok(record.site === PREVIEW_ORIGIN + '/', 'record.json names another site: ' + record.site);
+  for (const c of record.build) {
+    ok(
+      c.url.startsWith(PREVIEW_ORIGIN + '/i/') && !c.url.includes('.html'),
+      'record.json url is not an extensionless stub on the site: ' + c.url
+    );
+    ok(
+      c.url.includes('?v=') === Boolean(c.v) && (!c.v || c.url.endsWith('?v=' + c.v)),
+      'record.json url carries ?v= other than exactly when its row has v: ' + c.url
+    );
+  }
   const ciText = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'ci.yml'),
     'utf8'
