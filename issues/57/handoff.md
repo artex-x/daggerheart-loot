@@ -6,8 +6,8 @@
   Rule are in the plan; a second plan-review look on the changed parts is
   next; mock 1 is approved)
 - Last agent: planner (mock answers pass)
-- NEEDS_HUMAN_CONFIRMATION: no for batch 1; Q1b.1 (the black-and-white
-  card) is asked at mock 1b and blocks batch 1b only
+- NEEDS_HUMAN_CONFIRMATION: no (Q1b.1 answered: black-and-white stays; the
+  colour print well is light, checked against the Figma colour node)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `9112c4ed` (the merge of `main` `c8243ba6`)
 - Pushed: the orchestrator records the sha of this pass
@@ -36,9 +36,9 @@
   orchestrator's answers).
 - Previous sha (batch diff base): the plan review pass, `69cc77e4`
 - Deviations and rationale:
-  - Black-and-white: no card draws a picture today (`{#if !bw}`), so the
-    owner's "black-and-white included" has no art area to change; Q1b.1 asks,
-    with no change recommended.
+  - Black-and-white: no card draws a picture today (`{#if !bw}`); the owner
+    answered Q1b.1: it stays as it is, and the colour print well is light (the
+    paper-side tone, a dark-ink glyph; Figma node `714-42387`).
   - First-screen fixes for `/homebrew` and the catalog at 360 make the H1 a
     picker of the sibling tabs or tables; the four-tab row is the named
     alternative at about 45%.
@@ -84,7 +84,6 @@
 
 ## Blockers
 - The second plan-review look (orchestrator).
-- Batch 1b only: Q1b.1 at mock 1b.
 
 ## Deferred
 - A print font change: optional, its own batch, owner's yes.

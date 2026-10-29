@@ -222,6 +222,14 @@
       section; R3 the account menu in `FEATURES.md` order with no counts;
       C57 a temporary grid/table choice with no note.
     - Mock 1 approved (batch 1 may start once the plan review allows it).
+  - Print answers (owner, 2026-10-29, interactive, after mock 1's print
+    state): Q1b.1 - the black-and-white card stays as it is (no art block
+    for any record, so no glyph there; this narrows the earlier "print
+    included"). The colour print card's no-picture well is lighter on
+    print only: the paper-side tone with the glyph in dark ink (less
+    toner, a clear mark); the screen keeps the dark well; check it against
+    the Figma colour node. Q1.1 confirmed: today's share card text, with
+    "armor".
   - First-screen rule (owner, 2026-10-29, chat): at 360x640 and 1180x720
     each page's primary content (roll results, first table rows, first
     list entry, the item) starts inside the first screen, and the controls

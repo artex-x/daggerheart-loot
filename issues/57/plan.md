@@ -58,8 +58,7 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   (section 10), R's `.rl.sel` side-tab not built (batch 3), three labelled
   controls in the item sheet bar (batch 4).
 - NEEDS_HUMAN_CONFIRMATION: no - every section 13 question is answered
-  (owner, 2026-10-29) except Q1b.1 (the black-and-white card), which mock 1b
-  asks; it blocks batch 1b only.
+  (owner, 2026-10-29), Q1b.1 included ("Print answers").
 
 Earlier plan review: `reviews/plan-1.md` (fix-then-continue) was applied to
 the plan of 2026-10-23 (`git show 69f2178:issues/57/plan.md` and the commit
@@ -358,9 +357,20 @@ Batch 1b (owner, 2026-10-29, "Mock answers"; mock step: `mocks/1b/`):
 - `PrintCard.svelte` (colour layout): the art area of a record with no picture,
   or a broken one, draws the kind glyph on the art well inside the same
   `pc-art` box, at the same `cqw` geometry; nothing else on the card moves. The
-  editor's print preview (`PrintPreview.svelte`) follows. Black-and-white: no
-  card draws a picture today (`{#if !bw}<div class="pc-art"`); Q1b.1 at mock
-  1b decides (section 13).
+  editor's print preview (`PrintPreview.svelte`) follows.
+- The print well is light (owner, 2026-10-29, "Print answers"): on the colour
+  print card only, the no-picture well takes the paper-side tone with the
+  glyph in dark ink (less toner, a clear mark); the screen keeps the dark
+  `--art-well`. The tone and the ink come from the Figma colour node
+  (`88Hhc89oY9Orcbvd2ok1Hx`, node `714-42387`): read its paper and ink fills
+  through the Figma export, use those values in `card-vectors.css` paint
+  tokens (no new literal outside them), and name the two values and the node
+  in the commit. Proof: a `printPage.test.ts` case (a colour card with no
+  picture has no `<img>`, draws the glyph, and its well takes the print
+  tone, not `--art-well`) and a `tests/app/print.js` measure that the card's
+  geometry is unchanged; the screen `ArtWell` case keeps the dark well.
+- Black-and-white stays as it is (owner, Q1b.1): no black-and-white card has
+  an art block (`{#if !bw}<div class="pc-art"`), so no glyph is drawn there.
 - The three files leave the repository: `img/_none.webp`,
   `img/thumb/_none.webp`, `og/_none.jpg`.
 - Link cards of a record with no picture: `og:image` is the site share card of
@@ -799,8 +809,9 @@ Plan review additions to the units (the orchestrator sends them):
 - Mock 1b (owner, 2026-10-29; unit A, folder `mocks/1b/`): the colour print card
   of a no-picture record with the kind glyph in its art area (one of each kind,
   nine and sixteen per sheet), the editor's print preview of one, the link
-  card of a no-picture item (the site share card, RU and EN), and Q1b.1 (the
-  black-and-white card) as its question. Mock depends on: none (mock 1's glyph
+  card of a no-picture item (the site share card, RU and EN), and the light print well (paper-side tone, dark-ink glyph) checked against
+  the Figma colour node; the black-and-white card stays as it is (Q1b.1
+  answered). Mock depends on: none (mock 1's glyph
   is approved).
 - Mock-unit follow-ups (2026-10-29): unit B's folders 6, 8 and 9 use the
   linear page ground (section 10, "One page ground"; owner, 2026-10-29); no copy keeps R's
@@ -1261,19 +1272,11 @@ review answers" and "Mock answers"):
 - Q8.1: the `/lists` «Справка» panel goes (batch 8).
 - Q9.1: the list page's inline «?» buttons go (batch 9).
 
-Open, asked at mock 1b:
-
-- Q1b.1, the black-and-white card of a record with no picture. Today no
-  black-and-white card draws a picture (`PrintCard.svelte`, `{#if !bw}<div
-  class="pc-art"`): its rules text takes the space instead, so a record with
-  no picture already looks like every other black-and-white card. The owner's
-  answer names black-and-white too. Recommended: no change to the
-  black-and-white layout; the glyph appears on the colour card only, because
-  the black-and-white card has no art area to put it in. Trade-off: the
-  black-and-white sheet does not tell a picture-less record apart, as today.
-  Alternative: a small kind glyph in the black-and-white head of every card (a
-  new print element in the Figma node's layout, with the print checks); it
-  blocks batch 1b until the mock shows it.
+- Q1b.1 (owner, "Print answers"): the black-and-white card stays as it is;
+  the colour print card's no-picture well takes the paper-side tone with the
+  glyph in dark ink, checked against the Figma colour node; the screen keeps
+  the dark well (batch 1b).
+- Q1.1 confirmed: today's share card text, with "armor".
 
 Open for the batch 7 refresh: C30, the print preview at 360 (screen only;
 section 7, batch 7).
