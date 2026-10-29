@@ -17,7 +17,7 @@ const path = require('path');
 const { PNG } = require('pngjs');
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
-const { HB_FILE, hbImportOpen } = require('./inventory.js');
+const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
  *  the fake hands a new list, `uuid(5000)`. */
@@ -353,10 +353,13 @@ async function brokenArtPath() {
   };
   page.on('request', onReq);
   await d.open('#/i/w3');
-  const src = await page.evaluate(() =>
-    document.querySelector('.card-media img')?.getAttribute('src')
+  const glyphOnly = (sel) =>
+    !document.querySelector(sel + ' img') && !!document.querySelector(sel + ' svg path');
+  await page.waitForFunction(glyphOnly, { timeout: 5000 }, '.card-media').catch(() => {});
+  ok(
+    await page.evaluate(glyphOnly, '.card-media'),
+    '11 (no picture): the card well does not show the kind glyph alone'
   );
-  ok(/_none\.webp$/.test(src || ''), '11 (no picture): instead of the placeholder — ' + src);
   ok(
     await d.has('Скопировать текст'),
     '11 (no picture): the text button disappeared along with the picture'
@@ -372,8 +375,8 @@ async function brokenArtPath() {
   await ctx.close();
 
   /* A table row asks for its 160 px thumbnail, never the full picture, and a
-   * failed thumbnail falls back to the thumbnail placeholder
-   * (docs/specs/FEATURES.md, "Records"). */
+   * failed thumbnail falls back to the kind glyph (docs/specs/FEATURES.md,
+   * "Records"). */
   const row = await fresh({ width: 1180, height: 900 });
   const asked = [];
   await row.page.setBypassServiceWorker(true);
@@ -385,13 +388,7 @@ async function brokenArtPath() {
   });
   await row.d.open('#/tables/wondrous/w3');
   await row.page
-    .waitForFunction(
-      () =>
-        /\/_none\.webp$/.test(
-          document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src') || ''
-        ),
-      { timeout: 5000 }
-    )
+    .waitForFunction(glyphOnly, { timeout: 5000 }, '[data-row="w3"] .row-main')
     .catch(() => {});
   ok(
     asked.some((u) => /\/img\/thumb\/w3\.webp$/.test(u)),
@@ -401,12 +398,9 @@ async function brokenArtPath() {
     !asked.some((u) => /\/img\/w3\.webp$/.test(u)),
     '11 (row thumbnail): the row downloaded the full picture'
   );
-  const rowSrc = await row.page.evaluate(() =>
-    document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src')
-  );
   ok(
-    rowSrc === '/img/thumb/_none.webp',
-    '11 (row thumbnail): instead of the thumbnail placeholder - ' + rowSrc
+    await row.page.evaluate(glyphOnly, '[data-row="w3"] .row-main'),
+    '11 (row thumbnail): the row well does not show the kind glyph alone'
   );
   await row.ctx.close();
 }
@@ -4378,8 +4372,8 @@ async function keepsTheCardDescriptionLook() {
     {
       padding: '7px 9px 5px',
       color: 'rgb(155, 147, 179)',
-      'font-size': '12.5px',
-      'line-height': '18.75px'
+      'font-size': '13px',
+      'line-height': '19.5px'
     },
     "w1's rule card text"
   );
@@ -4389,7 +4383,7 @@ async function keepsTheCardDescriptionLook() {
   await d.settle();
   expect(
     await style('.craft .set-bonus p', ['font-size', 'line-height', 'margin']),
-    { 'font-size': '12.5px', 'line-height': '18.125px', margin: '0px' },
+    { 'font-size': '13px', 'line-height': '18.85px', margin: '0px' },
     'the set bonus'
   );
 
@@ -5000,6 +4994,94 @@ async function homebrewItemsFilterAddress() {
   }
 }
 
+/** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
+ *  opens each, and the batch of task 57 that brings it under the rule. A row whose
+ *  batch has not shipped is measured and logged, not asserted (`shipped: false`).
+ *  A roll page draws its result for the number field's first value, so no roll is
+ *  made and the offset is deterministic. */
+const FIRST_SCREEN = [
+  { state: '#/roll/std', batch: 5, shipped: false },
+  { state: '#/tables/eq_weapon', batch: 3, shipped: false },
+  { state: '#/i/ci1', batch: 4, shipped: false },
+  { state: '#/search ~ searched', batch: 7, shipped: false },
+  { state: '#/account as gm1', batch: 7, shipped: false },
+  { state: '#/p/set-emberaxe as gm2', batch: 'P', shipped: false },
+  { state: '#/homebrew as gm3', batch: 6, shipped: false },
+  { state: '#/homebrew/sets ~ long name as gm4', batch: 6, shipped: false },
+  { state: '#/homebrew/new as gm1', batch: 6, shipped: false },
+  { state: '#/lists as gm1', batch: 8, shipped: false },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', batch: 9, shipped: false },
+  { state: '#/s/player-token-1', batch: 9, shipped: false }
+];
+
+/** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
+ *  after the fonts and two frames, or null when the page marks none. */
+async function primaryTop(page) {
+  return page.evaluate(async () => {
+    await document.fonts.ready;
+    scrollTo(0, 0);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const el = [...document.querySelectorAll('[data-primary]')].find(
+      (e) => e.getBoundingClientRect().height > 0
+    );
+    return el ? { top: el.getBoundingClientRect().top, vh: innerHeight } : null;
+  });
+}
+
+/** 83. The primary content of each route family starts within 40% of the viewport
+ *  height at 360x640 and 1180x720, in Russian and in English (DESIGN.md, "The
+ *  First-Screen Rule"). */
+async function primaryContentInFirstScreen() {
+  const states = new Map(STATES.map((s) => [s.id, s]));
+  for (const row of FIRST_SCREEN) {
+    const state = states.get(row.state);
+    ok(!!state, '83 (first screen): no inventory state ' + row.state);
+    if (!state) continue;
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const lang of ['ru', 'en']) {
+        const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
+        try {
+          await d.open(state.route, {
+            as: state.as,
+            items: state.items,
+            sections: state.sections,
+            sources: state.sources,
+            hold: state.hold
+          });
+          if (state.enter) await state.enter(d);
+          await d.settled(state.id);
+          if (lang === 'en') await d.click('EN');
+          await d.addressSettled();
+          const got = await primaryTop(page);
+          const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
+          ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
+          if (!got) continue;
+          const limit = 0.4 * got.vh;
+          const pass = got.top <= limit;
+          fs.writeSync(
+            1,
+            '  first screen: ' +
+              where +
+              ' top ' +
+              got.top.toFixed(0) +
+              ' / ' +
+              limit.toFixed(0) +
+              (pass ? ' pass' : ' over') +
+              (row.shipped ? '' : ' (logged, batch ' + row.batch + ')') +
+              '\n'
+          );
+          if (row.shipped) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5075,7 +5157,8 @@ const CASES = [
   ['79 (a picker list stays above the on-screen keyboard)', pickerAboveKeyboard],
   ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
   ['81 (the address bar)', addressBarPathForm],
-  ['82 (the Items tab filter address)', homebrewItemsFilterAddress]
+  ['82 (the Items tab filter address)', homebrewItemsFilterAddress],
+  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen]
 ];
 
 (async () => {

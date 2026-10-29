@@ -78,7 +78,7 @@
     EQ_TYPE,
     nameOf
   } from '../lib/i18n.js';
-  import { whereFrom } from '../lib/label.js';
+  import { kindGlyph, whereFrom } from '../lib/label.js';
   import type { MarkupTool } from '../lib/markupEdit.js';
   import { plural } from '../lib/plural.js';
   import type { Lang } from '../lib/types.js';
@@ -881,6 +881,7 @@
     <Panel>
       <form
         class="hbform"
+        data-primary
         novalidate
         bind:this={formEl}
         onsubmit={(e) => {
@@ -1114,6 +1115,7 @@
           saved={loadedArt}
           bind:value={art}
           line={artLine?.(t, lang) ?? null}
+          glyph={kindGlyph(preview.kind, preview.eq?.t)}
         />
 
         {#if draft.kind !== 'equip'}
@@ -1488,7 +1490,7 @@
   .hint,
   .counter {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
@@ -1498,7 +1500,7 @@
 
   .refused {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 
@@ -1541,7 +1543,7 @@
   }
 
   .sub {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -1588,7 +1590,7 @@
 
   .rel summary {
     cursor: pointer;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--gold-soft);
     width: fit-content;
   }
@@ -1616,7 +1618,7 @@
     background: none;
     border: 1px solid var(--danger);
     color: var(--danger-text);
-    font-size: 13px;
+    font-size: var(--t-data);
     line-height: 1.5;
   }
 

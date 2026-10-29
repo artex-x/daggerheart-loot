@@ -97,7 +97,7 @@
     color: var(--muted);
     padding: 9px 13px 10px;
     border-bottom: 2px solid transparent;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     font-weight: 560;
     white-space: nowrap;
     transition: 0.15s;

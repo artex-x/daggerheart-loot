@@ -308,12 +308,12 @@
 
   h2 {
     margin: 0 0 6px;
-    font-size: 18px;
+    font-size: var(--t-title);
   }
 
   .hint {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -366,7 +366,7 @@
   }
 
   .zoom label {
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 600;
     color: var(--muted);
   }

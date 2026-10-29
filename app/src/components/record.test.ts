@@ -36,6 +36,7 @@ import { listOf, seedWith } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
+import { ICONS } from '../lib/icons.js';
 import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
@@ -451,21 +452,29 @@ describe('a record on its own page', () => {
     );
   });
 
-  it('shows the placeholder for a record with no art', () => {
-    render(App, { env: at('ci2') });
-    expect(screen.getByRole('presentation')).toHaveAttribute('src', '/img/_none.webp');
+  it('shows the kind glyph and no picture for a record with no art', () => {
+    const { container } = render(App, { env: at('ci2') });
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg path')).toHaveAttribute(
+      'd',
+      ICONS.kindItem.d
+    );
   });
 
-  it('falls back to the placeholder when the file fails to load', async () => {
+  it('falls back to the kind glyph when the file fails to load', async () => {
     /* A picture can go missing between a deploy and a cache. The layout must
-       not shift, so the failure lands on the same placeholder. */
+       not shift, so the failure lands on the same well with the kind glyph. */
     const { container } = render(App, { env: at('ci1') });
     const img = container.querySelector('img');
     expect(img).toHaveAttribute('src', '/img/ci1.webp');
 
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg path')).toHaveAttribute(
+      'd',
+      ICONS.kindItem.d
+    );
   });
 
   it('offers no copy-image button for a record with no art at all', () => {
@@ -501,13 +510,14 @@ describe('a record on its own page', () => {
     const { container } = render(App, { env });
     container.querySelector('img')?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
 
     env.router.navigate('#/i/cc1', 'ru');
     await tick();
     env.router.navigate('#/i/ci1', 'ru');
     await tick();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg')).not.toBeNull();
   });
 });
 
@@ -1254,9 +1264,7 @@ describe('an own homebrew item', () => {
     const broken = render(RecordCard, {
       props: { ...props, artBroken: true, onartfail: failed }
     });
-    expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
-      '/img/_none.webp'
-    );
+    expect(broken.container.querySelector('.card-media img')).toBeNull();
   });
 
   it('marks a text written in the other language only, on both card variants', async () => {

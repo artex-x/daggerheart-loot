@@ -464,9 +464,9 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
 
 | Request (path relative to the scope) | Policy |
 |---|---|
-| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit as `img/`; a miss without a connection is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects and the app's `onerror` swaps in `img/thumb/_none.webp` |
+| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit as `img/`; a miss without a connection is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects and the app's `onerror` marks the picture broken and draws the kind glyph |
 | `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit is answered from the cache at once and revalidated in the background: an ok answer with the cached `ETag` writes nothing, a different or absent `ETag` replaces the entry, a failed fetch keeps it; a miss is answered as soon as the network answers, and stored and trimmed in the background |
-| `assets/` (the hashed build files) | Cache first in `dhloot-assets-v1`, never revalidated: a hashed name never changes its bytes. Capped at 30 entries by insertion order, so the files of old deploys, which nothing asks for again, leave as new ones arrive |
+| `assets/` (the hashed build files) | Cache first in `dhloot-assets-v1`, never revalidated: a hashed name never changes its bytes. Capped at 60 entries by insertion order, so the files of old deploys, which nothing asks for again, leave as new ones arrive |
 | Everything else: every navigation (the document, `en/`, `pages/`, `i/`), `data.js`, `sw.js`, the manifest, `icons/`, `card/`, `og/`, the other root files, another origin (Supabase, now and later), a URL whose query holds `auth-callback`, a path outside the scope, any method but `GET` | Not answered: the worker calls no `respondWith`, and the browser's own network answers |
 
 - There is no offline shell, no document cache and no navigation preload.
@@ -507,8 +507,10 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
   holds more files than the cap. The full-picture cache still keeps 300 by
   insertion order, so a tile view of a table longer than 300 evicts its own
   first tiles; they refetch.
-- The asset cap of 30 holds several deploys of today's two files (one
-  module, one stylesheet). A build that splits into more files than the cap
+- The asset cap of 60 holds several deploys of what one visit takes: the
+  module, the stylesheet, a few lazy chunks and up to four files of the
+  self-hosted UI face (the Latin and Cyrillic subsets, upright and italic).
+  A build that splits into more files than the cap
   evicts its own oldest file, which is then fetched again; raise the cap
   with the split.
 - The URL `sw.js` is stable: a registered worker keeps polling its own URL,

@@ -603,6 +603,8 @@ const COVERED: Record<string, string> = {
     'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
   'ImportPanel.svelte':
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
+  'ArtWell.svelte':
+    'artWell.test.ts with the glyph alone and under a picture, and its callers in record.test.ts, tables.test.ts, listsPage.test.ts and artField.test.ts',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
   'Die.svelte': 'the roll button on every roll page',

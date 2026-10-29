@@ -700,6 +700,7 @@
         {/if}
         <Seg
           small
+          neutral
           options={VIEWS}
           value={view}
           label={t.view}
@@ -753,6 +754,7 @@
               {#each s.cols as col (col.key)}
                 <h3 class="altcol {col.key}">{col.label}</h3>
                 <TableRows
+                  primary
                   entries={col.entries}
                   {view}
                   {index}
@@ -797,6 +799,7 @@
                 : undefined}
             />
             <TableRows
+              primary
               entries={s.entries}
               {view}
               {index}
@@ -819,6 +822,7 @@
         {/each}
       {:else}
         <TableRows
+          primary
           entries={filtered.map((it) => ({ it }))}
           {view}
           {index}
@@ -947,7 +951,7 @@
   /* off `.altcol` */
   .altcol {
     margin: 16px 0 8px;
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.09em;
     text-transform: uppercase;
   }

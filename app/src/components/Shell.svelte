@@ -153,6 +153,7 @@
     </a>
     <div class="topbar-right">
       <Seg
+        neutral
         options={LANG_OPTIONS}
         value={app.lang}
         label={app.t.langLabel}
@@ -328,13 +329,13 @@
   }
 
   .brand-txt b {
-    font-size: 16px;
+    font-size: var(--t-body);
     letter-spacing: 0.2px;
   }
 
   .brand-txt i {
     font-style: normal;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -361,7 +362,7 @@
     background: var(--surface);
     border: 1px solid var(--line);
     color: var(--muted);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     font-weight: 650;
     letter-spacing: 0.05em;
     font-family: inherit;
@@ -387,7 +388,7 @@
     background: var(--surface2);
     border-color: rgb(216 171 94 / 45%);
     color: var(--gold-soft);
-    font-size: 14px;
+    font-size: var(--t-small);
     letter-spacing: 0;
     text-transform: uppercase;
   }
@@ -437,7 +438,7 @@
     margin-top: 20px;
     padding: 22px 0 40px;
     color: var(--muted2);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     border-top: 1px solid var(--line);
   }
 
@@ -450,8 +451,14 @@
     width: fit-content;
   }
 
-  /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap; the link
-     colour is the global `a` rule, the same one the licence link uses. */
+  /* Footer links are muted and underlined: they are not the page's action
+     (DESIGN.md, "The Seal Rule"). */
+  .foot a {
+    color: var(--muted);
+    text-decoration: underline;
+  }
+
+  /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap. */
   .foot-nav {
     display: flex;
     flex-wrap: wrap;

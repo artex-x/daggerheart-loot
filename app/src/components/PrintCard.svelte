@@ -472,7 +472,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    font-family: var(--ui);
+    font-family: var(--print-ui);
     /* The paper floor for small text (docs/DECISIONS.md, "Print card small
        text keeps the ribbon and gets one paper floor in every view"). */
     --pc-min-label: calc(4.5pt * var(--pc-scale, 1));
@@ -542,7 +542,7 @@
     left: 0;
     top: 2.6cqw;
     width: 100%;
-    font: 900 6.4cqw/1 var(--ui);
+    font: 900 6.4cqw/1 var(--print-ui);
   }
 
   .pc-tier i {
@@ -550,7 +550,7 @@
     left: 0;
     top: 9.6cqw;
     width: 100%;
-    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--ui);
+    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--print-ui);
     font-style: normal;
     letter-spacing: 0;
     text-transform: uppercase;
@@ -577,7 +577,7 @@
     top: 100%;
     margin-top: 0.3cqw;
     text-align: center;
-    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--ui);
+    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--print-ui);
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
@@ -615,7 +615,7 @@
     padding: 0.6cqw 2.3cqw;
     border-radius: 9cqw;
     white-space: nowrap;
-    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--ui);
+    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--print-ui);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #000;
@@ -633,7 +633,7 @@
 
   .pc-name {
     margin: 0;
-    font: 900 5.8cqw/1.1 var(--ui);
+    font: 900 5.8cqw/1.1 var(--print-ui);
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
@@ -706,7 +706,7 @@
 
   .pc-th-lab small {
     display: block;
-    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--ui);
+    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--print-ui);
     letter-spacing: -0.01em;
     text-transform: uppercase;
     color: #000;
@@ -776,7 +776,7 @@
   .pc-th-box b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #fff;
   }
 
@@ -811,7 +811,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #fff;
   }
 
@@ -820,7 +820,7 @@
     left: -2cqw;
     right: -2cqw;
     top: 109%;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--print-ui);
     font-style: normal;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -1015,7 +1015,7 @@
   .pc-die b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #000;
   }
 
@@ -1071,7 +1071,7 @@
 
   .pc-bonus {
     flex: none;
-    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #000;
   }
 
@@ -1088,7 +1088,7 @@
   .pc-box small {
     display: block;
     margin-bottom: 0.25em;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--print-ui);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #000;
@@ -1103,7 +1103,7 @@
      keeps one line or wraps to two, and `fit()` shrinks it. */
   .pc-box b {
     display: block;
-    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--print-ui);
     text-transform: none;
     color: #000;
   }
@@ -1171,7 +1171,7 @@
     justify-content: space-between;
     gap: 2cqw;
     padding-top: 1.4cqw;
-    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--ui);
+    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--print-ui);
     color: #000;
   }
 

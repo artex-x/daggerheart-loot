@@ -396,7 +396,7 @@
 
   .reqpanel > h2 {
     margin: 0 0 8px;
-    font-size: var(--step-0);
+    font-size: var(--t-body);
     font-weight: 650;
   }
 
@@ -411,7 +411,7 @@
   }
 
   .who {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
@@ -419,7 +419,7 @@
     width: 100%;
     border-collapse: collapse;
     margin: 6px 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
   }
 
   td {
@@ -438,7 +438,7 @@
   }
 
   .total {
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--gold-soft);
     margin-bottom: 8px;
   }
@@ -452,7 +452,7 @@
   }
 
   .shortmsg {
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--danger-text);
     margin: 0 0 8px;
   }
@@ -485,7 +485,7 @@
   }
 
   .nnew {
-    font-size: 12px;
+    font-size: var(--t-label);
     font-weight: 650;
     color: var(--gold-soft);
   }
@@ -505,7 +505,7 @@
     margin: 6px 0 0;
     padding: 0;
     list-style: none;
-    font-size: 13.5px;
+    font-size: var(--t-small);
   }
 
   li + li {
@@ -524,7 +524,7 @@
 
   table.dlines {
     margin: 4px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 

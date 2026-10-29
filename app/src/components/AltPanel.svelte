@@ -189,7 +189,7 @@
     {/if}
 
     {#if index && picks.length}
-      <div class="results" role="status" aria-live="polite">
+      <div class="results" data-primary role="status" aria-live="polite">
         {#if crit}
           <!-- Both tables, because the player may take any entry of this rarity
                from either one. A single link into the items table used to be the
@@ -264,7 +264,7 @@
   }
 
   .dielbl {
-    font-size: 11px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -326,12 +326,12 @@
 
   .crit b {
     color: var(--gold-soft);
-    font-size: 14.5px;
+    font-size: var(--t-control);
   }
 
   .crit span {
     color: var(--muted);
-    font-size: 13px;
+    font-size: var(--t-data);
   }
 
   .crit-acts {

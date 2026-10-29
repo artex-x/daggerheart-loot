@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import Toast from './Toast.svelte';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { ICONS } from '../lib/icons.js';
+import { dict } from '../lib/dict.js';
 import {
   brokenStorage,
   fakeData,
@@ -232,6 +234,25 @@ describe('the language', () => {
       'href',
       '/en/roll/std'
     );
+  });
+
+  it('draws the pressed language as a neutral toggle: a check and no gold', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    const group = screen.getByRole('group', { name: dict('ru').langLabel });
+    expect(group).toHaveClass('seg', 'neutral');
+    const ru = within(group).getByRole('button', { name: 'RU' });
+    const en = within(group).getByRole('button', { name: 'EN' });
+    expect(ru).toHaveAttribute('aria-pressed', 'true');
+    expect(ru.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(en.querySelector('svg')).toBeNull();
+    await userEvent.click(en);
+    const pressed = within(screen.getByRole('group', { name: dict('en').langLabel })).getByRole(
+      'button',
+      { name: 'EN' }
+    );
+    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    expect(pressed.querySelector('svg path')).toHaveAttribute('d', ICONS.check.d);
+    await expectNoA11yViolations(container);
   });
 
   it('is remembered', async () => {

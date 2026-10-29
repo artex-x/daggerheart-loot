@@ -272,17 +272,25 @@ first, the English entry document `en/index.html` the second
 language is the `CARD_TEXT` table beside it. The JPEGs are committed build
 inputs, like the icons: the deploy job never renders them.
 
-The text is set in Inter, the first family of the app's own stack
-(`app/src/styles/tokens.css`, `--ui`). `tools/artwork/fonts/` ships the two
-static faces the template uses and the licence (SIL Open Font License 1.1),
-taken from the Inter 4.1 release archive (`Inter-4.1.zip`,
-`github.com/rsms/inter/releases/tag/v4.1`, `extras/ttf/`):
+The text is set in Source Sans 3, the app's UI family (`--ui` in
+`app/src/styles/tokens.css`), as static faces: the app loads the variable
+face from `@fontsource-variable/source-sans-3`, and fontconfig renders TTF.
+`tools/artwork/fonts/` ships the two faces the template uses and the licence
+(SIL Open Font License 1.1), taken from the Adobe release 3.052R
+(`github.com/adobe-fonts/source-sans`, tag `3.052R`, `TTF/` and the root
+`LICENSE.md`):
 
 | File | sha256 |
 |---|---|
-| `Inter-Regular.ttf` | `40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82` |
-| `Inter-SemiBold.ttf` | `78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3` |
-| `LICENSE.txt` | `262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a` |
+| `SourceSans3-Regular.ttf` | `4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f` |
+| `SourceSans3-Semibold.ttf` | `a3f4f8dcf343a8f24dc61951de93f3ba1558b15cd250ba24af8a40e957081b7d` |
+| `LICENSE.md` | `89ad2c4f66dd29127527493e729c31e731f111cf10faf5774c3db9275ed0c22c` |
+
+The card stands on the app's page ground: a vertical gradient from `--bg2`
+(`#14111d`) at the top to `--bg` (`#0e0c15`) at 520 px. The title is
+`--txt`, «DAGGERHEART» is the header's muted brand line (`--muted2`, letter
+spacing 2), and the subtitle is `--muted`. Gold (`--gold`) is on the star
+only, as on the header's brand mark (DESIGN.md, "The Seal Rule").
 
 `tools/artwork/cards.mjs` writes a `fonts.conf` that lists only that
 directory, and runs itself again with `FONTCONFIG_PATH` and
@@ -290,7 +298,7 @@ directory, and runs itself again with `FONTCONFIG_PATH` and
 second process is necessary: fontconfig reads the variables through the C
 runtime, which never sees a `process.env` write made after start-up, and
 the render then silently used a host face (measured 2026-09-23). So no host
-font can stand in for Inter: with the fonts directory empty the render has
+font can stand in for Source Sans 3: with the fonts directory empty the render has
 no glyphs, and the script fails.
 
 To change the text or the layout, edit `CARD_TEXT` or `shareCardSvg`, run
@@ -307,7 +315,7 @@ cards in memory and compares them with the files in `og/`: it fails when more
 than 0.5% of the pixels differ by more than 32 in a channel, or when a card
 has no text. Bytes are not compared, because encoder builds differ
 ("Determinism is per-run", above). The script also checks where each title
-ends, so a host face that stands in for Inter fails in both modes, and write
+ends, so a host face that stands in for Source Sans 3 fails in both modes, and write
 mode writes neither card when one fails. Open both files and look at them, then
 commit both.
 

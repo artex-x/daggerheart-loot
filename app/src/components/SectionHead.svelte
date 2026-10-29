@@ -83,7 +83,7 @@
 
   .lbl {
     display: block;
-    font-size: 11.5px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;

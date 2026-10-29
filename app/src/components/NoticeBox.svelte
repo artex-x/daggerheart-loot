@@ -31,7 +31,7 @@
     border-radius: var(--r-sm);
     background: var(--warn-bg);
     color: var(--warn-text);
-    font-size: 13px;
+    font-size: var(--t-data);
     line-height: 1.5;
   }
 

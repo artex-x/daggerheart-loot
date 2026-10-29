@@ -838,7 +838,7 @@
 <style>
   .preview {
     margin: 12px 0 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.55;
   }
 
@@ -852,7 +852,7 @@
 
   .lbl {
     display: block;
-    font-size: 11.5px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -879,13 +879,13 @@
 
   .srcrow b {
     min-width: 0;
-    font-size: 14px;
+    font-size: var(--t-small);
     font-weight: 650;
     overflow-wrap: anywhere;
   }
 
   .srcrow small {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
@@ -896,21 +896,21 @@
   }
 
   .sub {
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
   .fhint {
     display: block;
     margin: 6px 0 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.45;
     color: var(--muted2);
   }
 
   .err {
     display: block;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 
@@ -920,7 +920,7 @@
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
     background: var(--bg2);
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
     overflow-wrap: anywhere;
   }
@@ -938,7 +938,7 @@
     background: none;
     border: 1px solid var(--danger);
     color: var(--danger-text);
-    font-size: 13px;
+    font-size: var(--t-data);
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
@@ -963,7 +963,7 @@
 
   .hint {
     margin: 10px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 </style>

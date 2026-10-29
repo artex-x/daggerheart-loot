@@ -398,6 +398,7 @@
         </Empty>
       {:else}
         <TableRows
+          primary
           {entries}
           view="list"
           {index}
@@ -487,7 +488,7 @@
     border: 1px solid rgb(var(--gold-rgb) / 45%);
     border-radius: var(--r-sm);
     background: rgb(var(--gold-rgb) / 6%);
-    font-size: 13.5px;
+    font-size: var(--t-small);
   }
 
   /* The take line inside a ticked row, in the column right of the select box

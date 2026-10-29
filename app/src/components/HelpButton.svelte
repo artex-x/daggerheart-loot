@@ -49,7 +49,7 @@
     border: 1px solid var(--line2);
     background: var(--surface);
     color: var(--muted);
-    font: 700 14px/1 var(--mono);
+    font: 700 var(--t-control)/1 var(--mono);
     transition: 0.15s;
     position: relative;
     cursor: pointer;
@@ -81,14 +81,14 @@
   .helpbtn.sm {
     width: 22px;
     height: 22px;
-    font-size: 12px;
+    font-size: var(--t-label);
   }
 
   @media (max-width: 600px) {
     .helpbtn {
       width: 34px;
       height: 34px;
-      font-size: 16px;
+      font-size: var(--t-body);
     }
   }
 </style>

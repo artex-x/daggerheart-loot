@@ -26,10 +26,20 @@ import { realmName } from './realms.js';
 import { EQ_TYPE, eqWord, nameOf } from './i18n.js';
 import { SUB_LABEL, groupOf } from './tables.js';
 import type { Dict } from './dict.js';
-import type { Lang, Record_, TableId } from './types.js';
+import type { IconName } from './icons.js';
+import type { EquipKind, Kind, Lang, Record_, TableId } from './types.js';
 
 export function badgeKind(it: Record_): 'item' | 'cons' {
   return it.kind === 'consumable' ? 'cons' : 'item';
+}
+
+/** Returns the glyph the art well draws for a record's kind: the equipment type
+ *  first, then the consumable, then any other item (DESIGN.md, "Cards"). */
+export function kindGlyph(kind: Kind, t: EquipKind | undefined): IconName {
+  if (t === 'armor') return 'kindArmor';
+  if (t === 'weapon' || t === 'secondary') return 'kindWeapon';
+  if (kind === 'consumable') return 'kindConsumable';
+  return 'kindItem';
 }
 
 /** Whether a record belongs to a campaign frame - `it.frame` names it, or

@@ -1533,7 +1533,8 @@ describe('the picture', () => {
     const tier = group(t.tier);
     expect(desc.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(field.compareDocumentPosition(tier) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(previewImg().src).toContain('/img/_none.webp');
+    expect(document.querySelector('.preview .card-media img')).toBeNull();
+    expect(document.querySelector('.preview .card-media svg')).not.toBeNull();
   });
 
   it('draws a cropped file in the preview and arms the guard', async () => {

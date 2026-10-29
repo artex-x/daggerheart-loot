@@ -46,7 +46,7 @@
   /* off `.page-h` (`git show 23c00a6^:style.css`), the tokens every caller already used */
   .page-h {
     margin: 0 0 4px;
-    font-size: var(--h-page-size);
+    font-size: var(--t-page);
     font-weight: var(--h-page-weight);
     letter-spacing: var(--h-page-spacing);
     display: flex;
@@ -60,7 +60,7 @@
   .page-sub {
     margin: 0 0 18px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--t-small);
     max-width: 70ch;
     overflow-wrap: anywhere;
   }

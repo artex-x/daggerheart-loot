@@ -198,6 +198,7 @@
         {#each sheet.pages as page, i (i)}
           <div
             class="psheet"
+            data-primary
             class:bw={app.shownPrintBW}
             class:compact={app.shownPrintCompact}
             data-next={i ? '1' : undefined}
@@ -244,7 +245,7 @@
 
   .printnote {
     margin: 12px 0 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.55;
     color: var(--muted2);
     max-width: 62ch;

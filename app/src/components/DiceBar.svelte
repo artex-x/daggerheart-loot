@@ -72,7 +72,7 @@
   }
 
   small {
-    font-size: 9.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     opacity: 0.62;
@@ -87,7 +87,7 @@
     background: linear-gradient(180deg, #e2b76c, var(--gold));
     color: var(--ink-on-gold);
     border-radius: var(--r-sm);
-    font-size: 14px;
+    font-size: var(--t-control);
     font-weight: 700;
     transition: 0.15s;
     display: inline-flex;

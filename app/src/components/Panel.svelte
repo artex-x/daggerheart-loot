@@ -11,10 +11,15 @@
    * five-line copies. */
   import type { Snippet } from 'svelte';
 
-  const { children, style }: { children: Snippet; style?: string } = $props();
+  /* `primary` marks the page's primary content (DESIGN.md, "The First-Screen Rule"). */
+  const {
+    children,
+    style,
+    primary = false
+  }: { children: Snippet; style?: string; primary?: boolean } = $props();
 </script>
 
-<div class="panel" {style}>{@render children()}</div>
+<div class="panel" {style} data-primary={primary ? '' : undefined}>{@render children()}</div>
 
 <style>
   /* off `.panel` in style.css */

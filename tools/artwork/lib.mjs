@@ -227,11 +227,13 @@ export const CARD_TEXT = {
   en: {
     title: 'Loot Generator',
     brand: 'DAGGERHEART',
-    subtitle: 'Loot, consumables, weapons and armour · RU / EN'
+    subtitle: 'Loot, consumables, weapons and armor · RU / EN'
   }
 };
 
-export const CARD_FONT = 'Inter';
+// The family that fontconfig reads from the static faces in
+// tools/artwork/fonts/: the app's UI family (docs/artwork.md, "The site share cards").
+export const CARD_FONT = 'Source Sans 3';
 
 function escXml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -249,8 +251,9 @@ function starPath(cx, cy, outer, inner) {
 }
 
 // The 1200x630 SVG of one site share card. The layout is the one the
-// hand-made og/_share.jpg of 7fd046c carried; the colours are the share
-// stubs' stylesheet (tools/share-card.mjs).
+// hand-made og/_share.jpg of 7fd046c carried; the ground, the text colours
+// and the gold budget are the app's (app/src/styles/tokens.css: the page
+// ground, --txt, --muted, --muted2, and --gold on the star only).
 export function shareCardSvg(lang) {
   const text = CARD_TEXT[lang];
   if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');
@@ -258,19 +261,11 @@ export function shareCardSvg(lang) {
   return [
     '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">',
     '<defs>',
-    '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">',
-    '<stop offset="0" stop-color="#171425"/><stop offset="0.75" stop-color="#0e0c15"/>',
+    '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">',
+    '<stop offset="0" stop-color="#14111d"/><stop offset="1" stop-color="#0e0c15"/>',
     '</linearGradient>',
-    '<radialGradient id="violet" cx="150" cy="0" r="620" gradientUnits="userSpaceOnUse">',
-    '<stop offset="0" stop-color="#2c2248" stop-opacity="0.85"/><stop offset="1" stop-color="#2c2248" stop-opacity="0"/>',
-    '</radialGradient>',
-    '<radialGradient id="blue" cx="1180" cy="0" r="520" gradientUnits="userSpaceOnUse">',
-    '<stop offset="0" stop-color="#26334e" stop-opacity="0.85"/><stop offset="1" stop-color="#26334e" stop-opacity="0"/>',
-    '</radialGradient>',
     '</defs>',
     '<rect width="1200" height="630" fill="url(#bg)"/>',
-    '<rect width="1200" height="630" fill="url(#violet)"/>',
-    '<rect width="1200" height="630" fill="url(#blue)"/>',
     '<path d="' + starPath(92, 301, 35, 15) + '" fill="#d8ab5e"/>',
     '<text x="150" y="321" ' +
       font +
@@ -279,7 +274,7 @@ export function shareCardSvg(lang) {
       '</text>',
     '<text x="152" y="368" ' +
       font +
-      ' font-size="30" font-weight="600" letter-spacing="2" fill="#d8ab5e">' +
+      ' font-size="30" font-weight="600" letter-spacing="2" fill="#8a83a3">' +
       escXml(text.brand) +
       '</text>',
     '<text x="152" y="418" ' +
@@ -287,7 +282,6 @@ export function shareCardSvg(lang) {
       ' font-size="26" font-weight="400" fill="#9b93b3">' +
       escXml(text.subtitle) +
       '</text>',
-    '<rect y="624" width="1200" height="6" fill="#d8ab5e"/>',
     '</svg>'
   ].join('\n');
 }
@@ -802,7 +796,7 @@ export const REVIEW_ART_SIZES = [
     dir: 'img/thumb/',
     radius: 8,
     file: COMPONENTS + 'RowMain.svelte',
-    selector: '.row-main img',
+    selector: '.row-main .ra',
     declarations: ['width: 60px', 'border-radius: 8px']
   },
   {
@@ -811,7 +805,7 @@ export const REVIEW_ART_SIZES = [
     dir: 'img/thumb/',
     radius: 7,
     file: COMPONENTS + 'ListCard.svelte',
-    selector: '.listcard-thumbs img',
+    selector: '.listcard-thumbs .thumb',
     declarations: ['width: 40px', 'border-radius: 7px']
   }
 ];

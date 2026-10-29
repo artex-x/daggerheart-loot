@@ -33,7 +33,7 @@
     align-items: center;
     gap: var(--gap-sm);
     min-height: 32px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--muted);
     cursor: pointer;
     overflow-wrap: anywhere;

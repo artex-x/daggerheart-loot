@@ -46,6 +46,6 @@
   }
 
   code {
-    font: 12px/1.4 var(--mono);
+    font: var(--t-data)/1.4 var(--mono);
   }
 </style>

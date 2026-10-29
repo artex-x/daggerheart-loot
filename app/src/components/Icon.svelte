@@ -13,7 +13,7 @@
 </script>
 
 <svg
-  viewBox="0 0 24 24"
+  viewBox={'viewBox' in icon ? icon.viewBox : '0 0 24 24'}
   width={icon.size}
   height={icon.size}
   fill="currentColor"

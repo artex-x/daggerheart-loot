@@ -196,7 +196,7 @@
     background: var(--gold);
     color: var(--ink-on-gold);
     font-weight: 650;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     padding: 10px 18px;
     border-radius: 999px;
     box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
@@ -224,7 +224,7 @@
     padding: 5px 12px;
     font: inherit;
     font-weight: 700;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     background: rgb(26 18 6 / 16%);
     color: inherit;
     text-decoration: none;

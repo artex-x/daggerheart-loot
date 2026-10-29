@@ -293,7 +293,7 @@
   .tool.text {
     margin-left: auto;
     padding: 0 10px;
-    font: 600 13px var(--ui);
+    font: 600 var(--t-data) var(--ui);
   }
 
   .tool[aria-pressed='true'] {
@@ -312,7 +312,7 @@
   /* A refusal: the danger text of rule 19. */
   .capped {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 
@@ -324,7 +324,7 @@
     border-radius: var(--r-sm);
     background: var(--bg2);
     color: #cfc8e0;
-    font-size: 14px;
+    font-size: var(--t-small);
     line-height: 1.62;
     overflow-wrap: anywhere;
   }

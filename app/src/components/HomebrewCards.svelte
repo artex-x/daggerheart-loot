@@ -458,7 +458,7 @@
   {:else if !shown.length}
     <Empty>{t.nothing}</Empty>
   {:else}
-    <ul class="cards">
+    <ul class="cards" data-primary>
       {#each shown as c (c.id)}
         {@const members = membersOf(c)}
         {@const source = sourceOf(c)}
@@ -601,7 +601,7 @@
 
   .note {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: var(--t-small);
     color: var(--muted);
   }
 
@@ -658,7 +658,7 @@
   .count,
   .src {
     min-width: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
@@ -681,14 +681,14 @@
   .sub,
   .text {
     margin: 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.5;
     color: var(--muted);
     overflow-wrap: anywhere;
   }
 
   .url {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--gold-soft);
     overflow-wrap: anywhere;
   }

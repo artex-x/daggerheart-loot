@@ -1423,10 +1423,13 @@ address kept, and no add-to-list control is drawn.
   Supabase bucket (`META.md` section 3); a picture chosen from the catalog
   draws as the catalog's. A list row of another account's item draws the
   author's current picture.
-- A record with no artwork falls back to `_none.webp` at the size the site
-  draws, and hides the image button; so does a record whose picture or
+- A record with no artwork shows the glyph of its kind on the dark art well
+  on every screen surface (card, row, tile, list cover, editor thumbnail:
+  armor a shield, a weapon swords, a consumable a flask, any other item a
+  gem), and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
-  failed thumbnail also shows the placeholder on the record's card.
+  failed thumbnail also shows the glyph on the record's card. While a
+  picture loads, the glyph shows under it.
   Without a connection, a thumbnail the service worker never cached is
   answered with the cached 640 px picture when there is one, so
   the row draws that picture and nothing is remembered as failed
@@ -2256,11 +2259,11 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   file, as a catalog picture does; the black-and-white card draws no
   picture.
 - A colour card of a record with no picture draws the site's `img/_none.webp`
-  in the art block, as every page does, on the standard and the compact sheet;
+  in the art block, on the standard and the compact sheet;
   black and white has no art block. A departure from Figma node `714-42387`,
   whose drawn outline per kind it replaces (owner, 2026-10-15).
 - A missing picture (a partial deploy, a cold cache) falls back to the same
-  `img/_none.webp`, the same way `RecordCard` does - reached from a print
+  `img/_none.webp` - reached from a print
   sheet opened directly at a `#/p/` address, where nothing has already caught
   the failure.
 - An open record dialog and an action toast both stay hidden under print
@@ -2503,12 +2506,16 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the live app's closed list of 18 selectors at an 8px radius, with
   everything outside that list falling back to the browser's own outline.
   Broader coverage was the owner's call.
-- Self-hosted fonts were considered and dropped: the app declares `Inter,
-  -apple-system, 'Segoe UI', Roboto, ...` with no `@font-face` (`tokens.
-  css`), so glyphs depend on the machine. The five weights in use (650, 680,
-  620, 560, 540) render as authored only with a variable font, and the print
-  card needs a real italic - both argue for self-hosting, but the owner
-  decided against it.
+- The UI face is self-hosted: Source Sans 3 from
+  `@fontsource-variable/source-sans-3` (variable, upright and italic, with
+  Cyrillic), imported in `main.ts` and served from the build's own
+  `/assets/`, so the app draws the same glyphs on a machine without the face
+  installed. The weights in use (540 to 680) render as authored on the
+  variable face. `font-display: swap` draws the system stack until a file
+  arrives; no font comes from another origin. The print card keeps its own
+  local stack (`--print-ui`, Inter first) until the print batch decides its
+  face (owner, 2026-10-23;
+  `docs/decisions/2026-10-29-the-ui-font-is-source-sans-3-self-hosted.md`).
 
 ### Consistency rules
 

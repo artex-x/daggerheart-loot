@@ -215,14 +215,14 @@
 
   h2 {
     margin: 0;
-    font-size: 15px;
+    font-size: var(--t-control);
     font-weight: 650;
   }
 
   .refused,
   .note {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -232,7 +232,7 @@
 
   .counter {
     justify-self: end;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 </style>

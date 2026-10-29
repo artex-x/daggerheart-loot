@@ -127,7 +127,7 @@
       <PageTitle title={nameOf(it, app.lang)} {sub} />
       {#if view?.updatedAt}<UpdatedLine {app} at={view.updatedAt} />{/if}
 
-      <div class="itempage">
+      <div class="itempage" data-primary>
         <RecordCard
           {it}
           {index}

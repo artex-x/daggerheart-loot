@@ -8,13 +8,14 @@
      `gmOnly`, dims the art and names the state for a screen reader.
      The description's bold and italics come from MarkupInline: the scoped
      `.row-main .rt b` rule below draws any `<b>` written here as the name. */
+  import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
   import Icon from './Icon.svelte';
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { descOf, eqLine, nameOf } from '../lib/i18n.js';
-  import { cardBadges, relText, srcLabel } from '../lib/label.js';
+  import { cardBadges, kindGlyph, relText, srcLabel } from '../lib/label.js';
   import { madeFrom, upgradesTo } from '../lib/data.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
@@ -58,16 +59,19 @@
     onopen(it);
   }}
 >
-  <img
-    class:gm={gmOnly}
-    src={artSrc(it.img, artBroken(it.id), 'thumb')}
-    alt=""
-    loading="lazy"
-    decoding="async"
-    onerror={() => {
-      onartfail(it.id);
-    }}
-  />
+  <span class="ra" class:gm={gmOnly}
+    ><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
+      >{#if it.img && !artBroken(it.id)}<img
+          src={artSrc(it.img, false, 'thumb')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onerror={() => {
+            onartfail(it.id);
+          }}
+        />{/if}</ArtWell
+    ></span
+  >
   <span class="rt"
     ><b
       >{#if num}<span class="rnum">{num}</span>{/if}{nameOf(it, lang)}{#if gmOnly}<span
@@ -129,16 +133,15 @@
      global `:focus-visible` rule (tokens.css) already reaches every control,
      at the one radius the owner chose. */
 
-  .row-main img {
+  .row-main .ra {
     width: 60px;
     height: 60px;
     border-radius: 8px;
-    object-fit: cover;
+    overflow: hidden;
     flex: none;
-    background: #0a0810;
   }
 
-  .row-main img.gm {
+  .row-main .ra.gm {
     opacity: 0.45;
   }
 
@@ -151,12 +154,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 14px;
+    font-size: var(--t-small);
     font-weight: 620;
   }
 
   .row-main .rt .rnum {
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-badge)/1 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--gold-soft);
     flex: none;
     border: 1px solid rgb(216 171 94 / 40%);
@@ -166,7 +170,7 @@
 
   .row-main .rt span {
     display: block;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     margin-top: 3px;
     line-height: 1.45;
@@ -186,7 +190,7 @@
     line-clamp: none;
     min-width: 0;
     color: var(--muted);
-    font-size: 11.5px;
+    font-size: var(--t-data);
     margin-top: 4px;
   }
 
@@ -210,7 +214,8 @@
     line-clamp: none;
     display: block;
     margin-top: 3px;
-    font: 600 11.5px/1.4 var(--mono);
+    font: 600 var(--t-data)/1.4 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
   }
 
@@ -227,7 +232,7 @@
     font-weight: 600;
     color: var(--gold-soft);
     margin-left: 7px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
   }
 
   @media (max-width: 600px) {

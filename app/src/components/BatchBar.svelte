@@ -95,7 +95,7 @@
   }
 
   .batch-all {
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -120,7 +120,7 @@
     align-items: center;
     column-gap: 12px;
     row-gap: 6px;
-    font: 400 13.5px/1.3 var(--ui);
+    font: 400 var(--t-small)/1.3 var(--ui);
     color: var(--gold-soft);
   }
 

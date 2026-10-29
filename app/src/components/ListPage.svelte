@@ -1054,7 +1054,7 @@
             {/if}
           {/snippet}
         </BatchBar>
-        <div class="rows lrows" bind:this={rowsEl}>
+        <div class="rows lrows" data-primary bind:this={rowsEl}>
           {#each rows as row, i (row.id)}
             {@const it = row.it}
             {@const id = row.id}
@@ -1308,7 +1308,7 @@
     border-bottom: 1px dashed var(--line2);
     color: var(--txt);
     font: inherit;
-    font-size: var(--h-page-size);
+    font-size: var(--t-page);
     font-weight: var(--h-page-weight);
     letter-spacing: var(--h-page-spacing);
     padding: 0 0 4px;
@@ -1344,7 +1344,7 @@
     background: transparent;
     color: var(--gold-soft);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--t-control);
     font-weight: 620;
     text-align: left;
     cursor: pointer;
@@ -1375,7 +1375,7 @@
 
   .addhint {
     font-weight: 400;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
@@ -1417,7 +1417,7 @@
   }
 
   .money-l {
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -1460,7 +1460,7 @@
   }
 
   .lnote summary span {
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -1486,14 +1486,14 @@
     border: 1px solid var(--line2);
     border-radius: 8px;
     color: var(--txt);
-    font: 14px/1.5 var(--ui);
+    font: var(--t-small)/1.5 var(--ui);
     padding: 9px 11px;
     max-height: 320px;
     overflow-y: auto;
   }
 
   .rnote :global(textarea) {
-    font-size: 13px;
+    font-size: var(--t-data);
     background: var(--surface);
   }
 
@@ -1533,7 +1533,7 @@
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-    font: 650 10.5px/1 var(--mono);
+    font: 650 var(--t-badge)/1 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -1541,7 +1541,7 @@
 
   .nlbl i {
     font-style: normal;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.02em;
     text-transform: none;
     color: var(--muted2);
@@ -1555,7 +1555,7 @@
   /* FormField's `.fhelp`: the hint keeps its line breaks. */
   .nhelp {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     white-space: pre-line;
   }
@@ -1577,7 +1577,7 @@
     border-radius: 6px;
     background: none;
     color: var(--muted2);
-    font: 400 17px/1 var(--ui);
+    font: 400 var(--t-title)/1 var(--ui);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -1644,7 +1644,7 @@
   }
 
   .lroll > summary span {
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -1670,7 +1670,7 @@
   /* off `.rollhint` (`git show 23c00a6^:style.css`) */
   .rollhint {
     margin: 10px 0 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
@@ -1693,7 +1693,7 @@
 
   .guess-note {
     margin: 0 0 9px;
-    font-size: 12px;
+    font-size: var(--t-label);
     line-height: 1.55;
     color: var(--muted);
   }
@@ -1711,7 +1711,7 @@
     display: flex;
     align-items: baseline;
     gap: 9px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--txt);
   }
 
@@ -1725,7 +1725,7 @@
 
   .guess-band {
     color: var(--muted2);
-    font-size: 11.5px;
+    font-size: var(--t-data);
     white-space: nowrap;
   }
 
@@ -1759,19 +1759,19 @@
   .money-act :global(.numbox button) {
     width: 28px;
     height: 30px;
-    font-size: 15px;
+    font-size: var(--t-control);
   }
 
   .money-act :global(.numbox input[type='text']) {
     width: 52px;
     height: 30px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     padding: 0;
   }
 
   /* off `.money-hint` (`git show 23c00a6^:style.css`) */
   .money-hint {
-    font-size: 11.5px;
+    font-size: var(--t-data);
     line-height: 1.45;
     color: var(--muted2);
     flex: 1 1 200px;
@@ -1785,7 +1785,7 @@
 
   /* off `.batch-lbl` (`git show 23c00a6^:style.css`) */
   .batch-lbl {
-    font: 650 10.5px/1 var(--mono);
+    font: 650 var(--t-badge)/1 var(--mono);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -1843,7 +1843,7 @@
     padding: 8px;
     overflow-wrap: anywhere;
     color: var(--muted);
-    font-size: 13.5px;
+    font-size: var(--t-small);
   }
 
   .unk b {
@@ -1892,7 +1892,7 @@
     flex: 0 0 100%;
     margin: 0;
     padding: 0 11px 8px 107px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
@@ -1965,7 +1965,7 @@
     padding: 0 2px;
     border: 0;
     border-right: 1px solid var(--line);
-    font: 650 12px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     color: var(--gold-soft);
     text-align: center;
     background: rgb(216 171 94 / 7%);
@@ -2026,7 +2026,7 @@
   }
 
   .lrow-meta span {
-    font-size: 9.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -2045,7 +2045,7 @@
     background: var(--bg2);
     border: 1px solid var(--line2);
     color: var(--txt);
-    font: 600 13px/1 var(--mono);
+    font: 600 var(--t-data)/1 var(--mono);
     text-align: center;
   }
 
@@ -2084,7 +2084,7 @@
     border: 0;
     background: transparent;
     color: var(--muted2);
-    font-size: 14px;
+    font-size: var(--t-control);
     line-height: 1;
     transition: 0.15s;
   }
@@ -2101,7 +2101,7 @@
   .lrow-acts .row-x {
     border-left: 0;
     border-top: 1px solid var(--line);
-    font-size: 18px;
+    font-size: var(--t-title);
   }
 
   /* off `.lrow-pick` (`git show 23c00a6^:style.css`) */

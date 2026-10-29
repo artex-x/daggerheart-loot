@@ -18,11 +18,12 @@
      `selectAllHTML` wrapper, unlike every other body, which goes through
      `renderList` and always gets one. */
   import type { Snippet } from 'svelte';
+  import ArtWell from './ArtWell.svelte';
   import RowMain from './RowMain.svelte';
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { nameOf } from '../lib/i18n.js';
-  import { cardBadges } from '../lib/label.js';
+  import { cardBadges, kindGlyph } from '../lib/label.js';
   import type { Index } from '../lib/data.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
@@ -59,6 +60,8 @@
      *  losing it to a replaced node. `TablesPage`'s `flashKey`; `undefined`
      *  for `SearchPage` and `SharedListPage`, which pass nothing. */
     flash?: string;
+    /** Marks the rows as the page's primary content (DESIGN.md, "The First-Screen Rule"). */
+    primary?: boolean;
   }
 
   const {
@@ -73,7 +76,8 @@
     onopen,
     ontoggleall,
     inside,
-    flash
+    flash,
+    primary = false
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -107,7 +111,7 @@
   </label>
 {/if}
 
-<div class={view === 'list' ? 'rows' : 'tgrid'}>
+<div class={view === 'list' ? 'rows' : 'tgrid'} data-primary={primary ? '' : undefined}>
   {#each entries as entry (entry.it.id)}
     {@const it = entry.it}
     {@const rollNum = entry.n ?? it.roll}
@@ -170,13 +174,15 @@
             >{#if n}<span class="tile-n">{n}</span>{/if}<span
               class="tile-k {it.eq ? eqClass(it.eq) : it.kind === 'consumable' ? 'cons' : 'item'}"
               title={it.eq ? cardBadges(it, lang, t)[0]?.text : it.kind === 'consumable' ? t.cons : t.item}
-            ></span><img
-              src={artSrc(it.img, artBroken(it.id))}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              onerror={() => { onartfail(it.id); }}
-            /></div
+            ></span><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
+              >{#if it.img && !artBroken(it.id)}<img
+                src={artSrc(it.img)}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                onerror={() => { onartfail(it.id); }}
+              />{/if}</ArtWell
+            ></div
           ><div class="tile-b"
             ><b>{nameOf(it, lang)}</b>{#if sub}<span>{sub}</span>{/if}</div
           ></button
@@ -223,7 +229,7 @@
     align-items: center;
     margin-bottom: 8px;
     color: var(--muted2);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     cursor: pointer;
     border-radius: 9px;
     padding-right: 12px;
@@ -370,21 +376,15 @@
     flex: none;
     position: relative;
     aspect-ratio: 1;
-    background: #0a0810;
-  }
-
-  .tile-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    background: var(--art-well);
   }
 
   .tile-n {
     position: absolute;
     left: 7px;
     bottom: 7px;
-    font: 700 11.5px/1 var(--mono);
+    font: 700 var(--t-badge)/1 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--gold-soft);
     background: rgb(10 8 16 / 80%);
     border-radius: 6px;
@@ -427,14 +427,14 @@
 
   .tile-b b {
     display: block;
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 620;
     line-height: 1.32;
   }
 
   .tile-b span {
     display: block;
-    font-size: 11px;
+    font-size: var(--t-data);
     color: var(--muted2);
     margin-top: 3px;
     line-height: 1.3;

@@ -33,6 +33,7 @@ import { readList } from '../test/accountList.js';
 import { DAY, listOf, seedWith, TWO_LISTS } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
+import { ICONS } from '../lib/icons.js';
 import { dict } from '../lib/dict.js';
 import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
@@ -365,13 +366,15 @@ describe('the view switch', () => {
     expect(tile?.querySelector('.tile-k')).toHaveClass('cons');
   });
 
-  it('draws the thumbnail in a row and the full picture on a tile', async () => {
+  it('draws the kind glyph and no picture in a row and on a tile of a record with no art', async () => {
     const { container } = render(App, { env: at() });
     const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
-    expect(rowEl?.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
+    expect(rowEl?.querySelector('img')).toBeNull();
+    expect(rowEl?.querySelector('.ra svg path')).toHaveAttribute('d', ICONS.kindItem.d);
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
-    expect(tile?.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(tile?.querySelector('img')).toBeNull();
+    expect(tile?.querySelector('.tile-img svg path')).toHaveAttribute('d', ICONS.kindItem.d);
     await expectNoA11yViolations(container);
   });
 
@@ -1770,9 +1773,8 @@ describe("a row with the author's own relations", () => {
     );
     drawn.unmount();
     const broken = render(RowMain, { props: { ...props, artBroken: () => true } });
-    expect(broken.container.querySelector('img')?.getAttribute('src')).toBe(
-      '/img/thumb/_none.webp'
-    );
+    expect(broken.container.querySelector('img')).toBeNull();
+    expect(broken.container.querySelector('.ra svg')).not.toBeNull();
   });
 
   it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {
@@ -1791,7 +1793,7 @@ describe("a row with the author's own relations", () => {
     const marked = render(RowMain, { props: { ...props, gmOnly: true } });
     const button = marked.container.querySelector('.row-main');
     expect(button?.textContent).toContain(`${it.ru}, Только для мастера`);
-    expect(marked.container.querySelector('img')?.classList.contains('gm')).toBe(true);
+    expect(marked.container.querySelector('.ra')?.classList.contains('gm')).toBe(true);
     /* The words sit only in the visually hidden span (its rule is RowMain.svelte's
        `.gmstate`; tests/app/states.js case 69 proves its box is at most 1x1 px). */
     const holders = [...marked.container.querySelectorAll('*')].filter(
@@ -1805,7 +1807,7 @@ describe("a row with the author's own relations", () => {
     expect(plain.container.querySelector('.row-main')?.textContent).not.toContain(
       'Только для мастера'
     );
-    expect(plain.container.querySelector('img')?.classList.contains('gm')).toBe(false);
+    expect(plain.container.querySelector('.ra')?.classList.contains('gm')).toBe(false);
     await expectNoA11yViolations(plain.container);
   });
 });

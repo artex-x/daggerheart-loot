@@ -9,12 +9,15 @@ web
 ## Users
 
 - **Primary: the Game Master of a Daggerheart table.** The GM rolls loot during a
-  session and prepares loot before one. The GM works mostly on a desktop or a
-  laptop. Both situations are real; neither is a secondary case.
-- **Secondary: the players at that table.** A player opens a shared list on a
-  phone to read what the party received. A player also keeps a list as a running
-  inventory across sessions. The inventory use is confirmed by the owner and is
-  not an accident of the sharing feature.
+  session and prepares loot before one. A GM works on a laptop or a desktop
+  about 80% of the time and on a phone about 20% of the time. Both situations
+  are real; neither is a secondary case.
+- **Primary: the players at that table.** A player opens a shared list to read
+  what the party received, and keeps a list as a running inventory across
+  sessions. A player works on a phone about 80% of the time and on a laptop
+  about 20% of the time, so the player on a phone is a primary case, not a
+  secondary one. The inventory use is confirmed by the owner and is not an
+  accident of the sharing feature.
 
 Russian is the first language of both audiences. English is one switch away and
 is always complete.
@@ -29,24 +32,25 @@ leaving the session. The players read and keep what they received.
 
 ## Positioning
 
-The catalogue, the sharing mechanism and the print layout all run on the client.
-A list lives in the URL fragment and in `localStorage`, so the product shares and
-prints without an account, a server or tracking. It carries every published
-source at once - Core Rulebook, Hope and Fear, Wondrous Environments, Dread GM
-Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Community Magic Items, the
-alternate tables and the campaign frames - in Russian and in English. Complete
-bilingual coverage plus
-serverless sharing is the combination a neighbouring generator cannot copy
-cheaply.
+The catalogue, the rolls and the print layout run on the client. Lists are
+account lists since R10 (`docs/decisions/`, 2026-10-28): a signed-in person
+keeps them in the one backend, and a share link (`/s/<token>`) opens a list for
+the players without an account and without tracking. The product carries every
+published source at once - Core Rulebook, Hope and Fear, Wondrous Environments,
+Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many
+Worlds Tavern, Community Magic Items, the alternate tables and the campaign
+frames - in Russian and in English. Complete bilingual coverage plus a list
+that the players open from one link is the combination a neighbouring
+generator cannot copy cheaply.
 
 ## Operating Context
 
 | Scene | Device | What the person does |
 |---|---|---|
-| Session preparation | desktop or laptop | browses tables, filters, searches, builds a list, prints cards |
-| Live session | desktop or laptop | rolls a mode, reads the result, adds it to a list, shares the link |
-| Play and after play | player phone | opens a shared list, reads records, keeps the list as an inventory |
-| Table handout | paper | nine 63x88 mm cards per A4 sheet, in colour or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
+| Session preparation | GM: laptop or desktop about 80%, phone about 20% | browses tables, filters, searches, builds a list, prints cards |
+| Live session | GM: laptop about 80%, phone about 20%; players: phone about 80% | the GM rolls a mode, reads the result, adds it to a list, shares the link; a player opens the link |
+| Play and after play | players: phone about 80%, laptop about 20% | opens a shared list, reads records, keeps the list as an inventory |
+| Table handout | paper | the players read printed cards at the table: nine 63x88 mm cards per A4 sheet, in colour or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
 
 The app is served over HTTP only; running from `file://` was retired on
 2026-09-24 (`docs/DECISIONS.md`).
@@ -70,23 +74,17 @@ The app is served over HTTP only; running from `file://` was retired on
 
 **Durable constraints**
 
-- There is no backend and there will not be one. A shared list is the address.
+- The Supabase backend is the only server that stores data, and one stateless
+  preview Worker renders link cards. No other backend is added.
 - Every page carries `noindex`, and crawling stays allowed so that crawlers can
   read the `noindex`.
 - Equipment tier comes from the source book data. It is never inferred from
   stats.
 - `data.js` is canonical. `data.json`, `catalog.csv` and `i/*.html` are
   generated. A shipped record id is never renumbered.
-- Relative asset paths and the classic-script data adapter must survive: the
-  same build serves at any path, and `data.js` is cached apart from the
-  bundle.
-- The site is published to GitHub Pages from `dist/`.
-
-**Open product decision**
-
-- A player who uses a list as an inventory depends on `localStorage`, which can
-  be lost. The app states the risk today. No replacement mechanism is decided,
-  and none may be assumed. Any answer must respect the no-backend constraint.
+- Root-absolute URLs and the classic-script data adapter must survive: the app
+  runs at a host root, and `data.js` is cached apart from the bundle.
+- The site is published from `dist/` by the `deploy` job of `ci.yml`.
 
 ## Brand Commitments
 

@@ -503,7 +503,7 @@
 
   .note {
     margin: 18px 0 10px;
-    font-size: 14px;
+    font-size: var(--t-small);
     color: var(--muted);
   }
 
@@ -531,7 +531,7 @@
 
   .count {
     min-width: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }

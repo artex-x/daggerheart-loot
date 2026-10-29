@@ -117,7 +117,7 @@
     color: var(--muted);
     padding: 7px 12px;
     border-radius: 999px;
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 540;
     transition: 0.15s;
     overflow-wrap: anywhere;
@@ -125,7 +125,7 @@
 
   .chip small {
     display: block;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     font-weight: 500;
     letter-spacing: 0.02em;
   }
@@ -166,6 +166,6 @@
   /* off `.chip.sm` in style.css */
   .chip.sm {
     padding: 5px 11px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
   }
 </style>

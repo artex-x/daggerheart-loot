@@ -105,7 +105,8 @@ const TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
-  '.webp': 'image/webp'
+  '.webp': 'image/webp',
+  '.woff2': 'font/woff2'
 };
 
 /* Which path answers the app document. This server stands in for the host, so it

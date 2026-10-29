@@ -83,8 +83,9 @@ describe('a card per list', () => {
     /* The link's name is its own `aria-label`: the list name, the count and the edit age. */
     const cardA = screen.getByRole('link', { name: /^Клад дракона, 1 позиция, изменён / });
     expect(cardA).toHaveAttribute('href', '/lists/' + uuid(831));
-    expect(cardA.querySelectorAll('img')).toHaveLength(1);
-    expect(cardA.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
+    expect(cardA.querySelectorAll('.thumb')).toHaveLength(1);
+    expect(cardA.querySelector('img')).toBeNull();
+    expect(cardA.querySelector('.thumb svg')).not.toBeNull();
 
     const cardB = screen.getByRole('link', { name: /^Лавка в порту, 0 позиций, изменён / });
     expect(cardB).toHaveAttribute('href', '/lists/' + uuid(832));
@@ -282,12 +283,12 @@ describe('with sign-in configured', () => {
     const gm2 = withCloud(fakeCloud(SEED, 'gm2'));
     const linked = await screen.findByRole('link', { name: /^Список второго ГМа, / });
     expect(linked.querySelector('.listcard-meta')?.textContent).toMatch(/^1 позиция · /);
-    const known = linked.querySelectorAll('.listcard-thumbs img').length;
+    const known = linked.querySelectorAll('.listcard-thumbs .thumb').length;
     expect(known).toBeGreaterThan(0);
     gm2.unmount();
     withCloud(fakeCloud(SEED, 'gm1'));
     const shop = await screen.findByRole('link', { name: /^Лавка кузнеца, / });
-    expect(shop.querySelectorAll('.listcard-thumbs img').length).toBeGreaterThan(1);
+    expect(shop.querySelectorAll('.listcard-thumbs .thumb').length).toBeGreaterThan(1);
   });
 
   it('draws the prompt as the panel signed out, and «Войти» opens the account page', async () => {
@@ -869,7 +870,7 @@ describe('selecting account lists', () => {
     expect(screen.getByRole('checkbox', { name: 'Выбрать: Без названия' })).toBeInTheDocument();
   });
 
-  it('draws the missing-art thumb after a card picture fails', async () => {
+  it('draws the kind glyph after a card picture fails', async () => {
     const withArt: Loot = {
       ...LOOT,
       items: { core_item: [{ ...LOOT.items['core_item']![0]!, img: 'ci1.webp' }] }
@@ -877,13 +878,12 @@ describe('selecting account lists', () => {
     const { container } = await signedIn(fakeCloud(SEED, 'gm1'), { data: fakeData(withArt) });
     const img = container.querySelector<HTMLImageElement>('.listcard-thumbs img');
     expect(img).toHaveAttribute('src', '/img/thumb/ci1.webp');
+    const thumb = img!.closest('.thumb')!;
     await fireEvent.error(img!);
     await waitFor(() => {
-      expect(container.querySelector('.listcard-thumbs img')).toHaveAttribute(
-        'src',
-        '/img/thumb/_none.webp'
-      );
+      expect(thumb.querySelector('img')).toBeNull();
     });
+    expect(thumb.querySelector('svg')).not.toBeNull();
   });
 
   it('passes axe with one card picked', async () => {

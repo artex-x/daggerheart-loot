@@ -231,7 +231,8 @@
     border-radius: 8px;
     background: rgb(216 171 94 / 12%);
     color: var(--gold-soft);
-    font-size: 12.5px;
+    font-size: var(--t-data);
+    line-height: 20px;
     font-weight: 600;
     white-space: normal;
     overflow-wrap: anywhere;
@@ -241,7 +242,7 @@
 
   .fpill i {
     font-style: normal;
-    font-size: 15px;
+    font-size: var(--t-control);
     line-height: 1;
     color: var(--muted);
     width: 16px;
@@ -269,7 +270,7 @@
     border-radius: 8px;
     background: transparent;
     color: var(--muted);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     font-weight: 600;
     white-space: nowrap;
     transition: 0.15s;
@@ -304,7 +305,7 @@
   /* off `.fcount` */
   .fcount {
     margin-left: auto;
-    font: 600 12px/1 var(--mono);
+    font: 600 var(--t-label)/1 var(--mono);
     color: var(--muted2);
     white-space: nowrap;
   }
@@ -337,7 +338,7 @@
      the margin differs from the base rule. */
   .lbl {
     display: block;
-    font-size: 11.5px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -349,7 +350,7 @@
     font-style: normal;
     text-transform: none;
     letter-spacing: 0;
-    font-size: 11px;
+    font-size: var(--t-label);
     color: var(--muted2);
     opacity: 0.8;
   }

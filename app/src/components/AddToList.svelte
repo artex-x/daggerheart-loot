@@ -494,7 +494,7 @@
      FilterBar.svelte's; extract only once a fourth wants it. */
   .lbl {
     display: block;
-    font-size: 11.5px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -505,7 +505,7 @@
   .dropmenu :global(.chip) {
     width: 100%;
     text-align: left;
-    font-size: 13px;
+    font-size: var(--t-data);
   }
 
   /* off `.dropmenu.long` - the picker grows a search box once there are more
@@ -530,7 +530,7 @@
     border-radius: 8px;
     color: var(--txt);
     font: inherit;
-    font-size: 13px;
+    font-size: var(--t-data);
   }
 
   input.pickq:focus {
@@ -556,7 +556,7 @@
   }
 
   .picker-none {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     padding: 2px 0;
   }
@@ -579,7 +579,7 @@
     border: 1px solid var(--line2);
     color: var(--txt);
     font: inherit;
-    font-size: 13px;
+    font-size: var(--t-data);
   }
 
   .picker-new input:focus {

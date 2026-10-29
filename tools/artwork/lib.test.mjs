@@ -339,7 +339,7 @@ describe('shareCardSvg', () => {
     assert.deepEqual(CARD_TEXT.en, {
       title: 'Loot Generator',
       brand: 'DAGGERHEART',
-      subtitle: 'Loot, consumables, weapons and armour · RU / EN'
+      subtitle: 'Loot, consumables, weapons and armor · RU / EN'
     });
     for (const lang of ['ru', 'en']) {
       const svg = shareCardSvg(lang);
@@ -348,12 +348,24 @@ describe('shareCardSvg', () => {
     assert.ok(!shareCardSvg('en').includes(CARD_TEXT.ru.title));
   });
 
-  it('names Inter as the font of every text element', () => {
-    assert.equal(CARD_FONT, 'Inter');
+  it('names Source Sans 3 as the font of every text element', () => {
+    assert.equal(CARD_FONT, 'Source Sans 3');
     const svg = shareCardSvg('ru');
     const texts = svg.match(/<text [^>]*>/g);
     assert.equal(texts.length, 3);
-    for (const t of texts) assert.ok(t.includes('font-family="\'Inter\'"'), t);
+    for (const t of texts) assert.ok(t.includes('font-family="\'Source Sans 3\'"'), t);
+  });
+
+  it('spends gold on the star only, on the linear page ground', () => {
+    for (const lang of ['ru', 'en']) {
+      const svg = shareCardSvg(lang);
+      assert.equal(svg.match(/#d8ab5e/g).length, 1);
+      assert.match(svg, /<path d="[^"]+" fill="#d8ab5e"\/>/);
+      assert.ok(!svg.includes('radialGradient'));
+      assert.match(svg, /<linearGradient id="bg" x1="0" y1="0" x2="0" y2="520"/);
+      assert.match(svg, /stop-color="#14111d"\/><stop offset="1" stop-color="#0e0c15"/);
+      assert.match(svg, /letter-spacing="2" fill="#8a83a3">DAGGERHEART</);
+    }
   });
 
   it('throws for an unknown language', () => {
@@ -379,7 +391,7 @@ const RULE = 'docs/artwork.md, "The card follows the site\'s card"';
 
 // The pinned hash of RecordCard.svelte's card head (docs/artwork.md, "The card
 // follows the site's card").
-const CARD_HEAD_SHA256 = 'cbff69b7bf4d697159cb78abf62a6358cf58884ef9c365424300ae11749ff425';
+const CARD_HEAD_SHA256 = 'ee5942dc809f1985343a8296d8bb0277bd6a87aa0e2deccf12b1abebf21279b4';
 
 const CARD_FILES = ['RecordCard', 'Badge', 'Seg', 'Markup'].map(
   (n) => `app/src/components/${n}.svelte`

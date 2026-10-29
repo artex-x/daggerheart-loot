@@ -160,7 +160,7 @@
     background: transparent;
     color: var(--txt);
     text-align: center;
-    font: 650 20px/1 var(--mono);
+    font: 650 var(--t-num)/1 var(--mono);
   }
 
   input[type='text']:focus {
@@ -190,7 +190,7 @@
     color: var(--muted);
     width: 40px;
     height: 46px;
-    font-size: 19px;
+    font-size: var(--t-title);
     line-height: 1;
     transition: 0.14s;
   }

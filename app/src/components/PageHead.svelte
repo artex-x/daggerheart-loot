@@ -92,7 +92,7 @@
 
   .page-h {
     margin: 0;
-    font-size: var(--h-page-size);
+    font-size: var(--t-page);
     font-weight: var(--h-page-weight);
     letter-spacing: var(--h-page-spacing);
   }
@@ -145,7 +145,7 @@
   .page-sub {
     margin: 0 0 18px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--t-small);
     max-width: 70ch;
   }
 
@@ -153,7 +153,7 @@
     .homebtn {
       width: 34px;
       height: 34px;
-      font-size: 16px;
+      font-size: var(--t-body);
     }
 
     .homebtn :global(svg) {

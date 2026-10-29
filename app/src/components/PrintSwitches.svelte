@@ -25,6 +25,7 @@
 
 <Seg
   small
+  neutral
   options={ART}
   value={app.shownPrintBW ? 'bw' : 'color'}
   label={t.printTitle}

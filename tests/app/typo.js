@@ -22,10 +22,29 @@
  * of quietly skipping it. */
 const { fresh, reporter, closeBrowser } = require('./lib.js');
 
-const UI = 'Inter';
+/* The family the self-hosted package declares (DESIGN.md, "The Local Font Rule"). */
+const UI = 'Source Sans 3 Variable';
 const MONO = 'ui-monospace';
-/* every size the design actually uses, largest first */
-const SCALE = [23, 20, 19, 18, 17, 16, 15.5, 14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5, 9.5];
+/* The ten steps, largest first: the nine of tokens.css and the numeral 19
+   (DESIGN.md, "The Ten Steps Rule"). */
+const SCALE = [23, 20, 19, 18, 16, 15, 14, 13, 12, 11.5];
+
+/* The subset each language needs first: the face whose unicode-range holds
+   this range must have loaded on a page in that language. */
+const FACE_RANGE = { ru: [0x0400, 0x045f], en: [0x0000, 0x00ff] };
+
+/* The three mode toggles that draw the neutral pressed state (DESIGN.md,
+   "Segmented control"), each opened where it lives. */
+const SWITCHES = [
+  { route: '#/roll/std', group: { ru: 'Язык', en: 'Language' } },
+  { route: '#/tables/core_item', group: { ru: 'Вид', en: 'View' } },
+  /* gm1's account keeps Russian, so its sheet turns Russian on an English start. */
+  {
+    route: '#/p/set-emberaxe',
+    as: 'gm1',
+    group: { ru: 'Печать карточек', en: 'Печать карточек' }
+  }
+];
 
 /* The account list `accountLists` makes first (`n: 1`): `uuid(8001)`. */
 const LIST = '#/lists/00000000-0000-4000-8000-000000008001';
@@ -146,9 +165,37 @@ async function softClick(d, name) {
   return has;
 }
 
+/** Returns the icon's vertical centre against its label's first line box, for
+ *  each button with an icon in the group of that accessible name. */
+async function iconCentres(page, groupName) {
+  return page.evaluate((name) => {
+    const g = [...document.querySelectorAll('[role="group"]')].find(
+      (e) => e.getAttribute('aria-label') === name
+    );
+    if (!g) return null;
+    return [...g.querySelectorAll('button')]
+      .filter((b) => b.querySelector('svg'))
+      .map((b) => {
+        const icon = b.querySelector('svg').getBoundingClientRect();
+        const text = [...b.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+        const r = document.createRange();
+        r.selectNodeContents(text);
+        const line = r.getClientRects()[0];
+        return {
+          label: text.textContent.trim(),
+          off: Math.abs(icon.top + icon.height / 2 - (line.top + line.height / 2))
+        };
+      });
+  }, groupName);
+}
+
 (async () => {
   for (const lang of ['ru', 'en']) {
     const { ctx, page, d } = await fresh({ width: 1180, height: 1000, lang });
+    const fonts = [];
+    page.on('request', (req) => {
+      if (req.resourceType() === 'font') fonts.push(req.url());
+    });
 
     for (const hash of PAGES) {
       if (hash === '#/lists' || hash === LIST) {
@@ -207,20 +254,81 @@ async function softClick(d, name) {
         { UI, MONO, SCALE }
       );
 
+      if (hash === PAGES[0]) {
+        const [lo, hi] = FACE_RANGE[lang];
+        const face = await page.evaluate(
+          async (lo, hi) => {
+            await document.fonts.ready;
+            /* Chrome writes a range without leading zeros (`U+400-45F`). */
+            const holds = (u) =>
+              u.split(/,\s*/).some((r) => {
+                const [a, b] = r.replace(/^U\+/i, '').split('-');
+                return parseInt(a, 16) <= lo && parseInt(b ?? a, 16) >= hi;
+              });
+            const f = [...document.fonts].find(
+              (x) =>
+                x.family.replace(/["']/g, '') === 'Source Sans 3 Variable' &&
+                x.style === 'normal' &&
+                holds(x.unicodeRange)
+            );
+            return f ? f.status : 'absent';
+          },
+          lo,
+          hi
+        );
+        ok(
+          face === 'loaded',
+          where + ': the face for U+' + lo.toString(16) + '-' + hi.toString(16) + ' is ' + face
+        );
+      }
+
       ok(!bad.fam.length, where + ': wrong font — ' + bad.fam.slice(0, 3).join(', '));
       ok(
         !bad.size.length,
         where + ': size outside the scale — ' + bad.size.slice(0, 3).join(', ')
       );
     }
+    const here = new URL(page.url()).origin;
+    const foreign = fonts.filter((u) => {
+      const x = new URL(u);
+      return x.origin !== here || !x.pathname.startsWith('/assets/');
+    });
+    ok(fonts.length > 0, lang + ': no font request seen, so the origin check proved nothing');
+    ok(
+      !foreign.length,
+      lang + ': a font from outside /assets/ — ' + foreign.slice(0, 3).join(', ')
+    );
     await ctx.close();
+  }
+
+  /* The icon and the label share one centre on each neutral switch, at both widths. */
+  for (const lang of ['ru', 'en']) {
+    for (const width of [360, 1180]) {
+      const { ctx, page, d } = await fresh({ width, height: 900, lang });
+      for (const s of SWITCHES) {
+        await d.open(s.route, s.as ? { as: s.as } : {});
+        const where = s.route + ' ' + lang + ' ' + width;
+        const got = await iconCentres(page, s.group[lang]);
+        ok(
+          !!got && got.length === 1,
+          where + ': no pressed switch with a check in ' + s.group[lang]
+        );
+        for (const c of got ?? []) {
+          ok(
+            c.off <= 1,
+            where + ': the check sits ' + c.off.toFixed(2) + ' px off «' + c.label + '»'
+          );
+        }
+      }
+      await ctx.close();
+    }
   }
 
   await closeBrowser();
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\ntypography (dist-test/): two fonts and one scale across every page'
+      : '\ntypography (dist-test/): the self-hosted face, two fonts and ten steps across every page'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

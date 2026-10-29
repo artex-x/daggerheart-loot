@@ -6,6 +6,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ArtField from './ArtField.svelte';
+import { ICONS } from '../lib/icons.js';
 import { ART_SOURCE_MAX } from '../lib/art.js';
 import { dict } from '../lib/dict.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
@@ -81,12 +82,18 @@ async function field(
     store,
     selfKey: opts.selfKey ?? POTION,
     saved: opts.saved ?? null,
-    line: opts.line ?? null
+    line: opts.line ?? null,
+    glyph: 'kindConsumable'
   });
   return { ...view, media, store };
 }
 
 const thumb = (): HTMLImageElement => document.querySelector('.th img') as HTMLImageElement;
+/* The empty square: no picture, the kind glyph alone. */
+const glyphOnly = (): void => {
+  expect(document.querySelector('.th img')).toBeNull();
+  expect(document.querySelector('.th svg path')).toHaveAttribute('d', ICONS.kindConsumable.d);
+};
 const button = (name: string): HTMLElement => screen.getByRole('button', { name });
 const fileInput = (): HTMLInputElement =>
   document.getElementById('hb-art-file') as HTMLInputElement;
@@ -117,9 +124,9 @@ describe('the crop chunk', () => {
 });
 
 describe('the states of m40', () => {
-  it('draws no picture with «Выбрать файл» and «Выбрать из предметов»', async () => {
+  it('draws the kind glyph with «Выбрать файл» and «Выбрать из предметов»', async () => {
     const { container } = await field();
-    expect(thumb().src).toContain('/img/thumb/_none.webp');
+    glyphOnly();
     expect(button(t.hbArtChoose)).toBeInTheDocument();
     expect(button(t.hbArtFromItems)).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: t.hbArtRemove })).toBeNull();
@@ -155,7 +162,7 @@ describe('the states of m40', () => {
   it('removes a saved picture, and keeps none for a crop over no saved picture', async () => {
     await field({ saved: 'ci1.webp' });
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('/img/thumb/_none.webp');
+    glyphOnly();
     await waitFor(() => {
       expect(button(t.hbArtChoose)).toHaveFocus();
     });
@@ -163,16 +170,16 @@ describe('the states of m40', () => {
     const { media } = await field();
     await crop();
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('/img/thumb/_none.webp');
+    glyphOnly();
     expect(media.released).toContain('blob:fake-2');
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
   });
 
-  it('draws the placeholder for a picture that fails to load', async () => {
+  it('draws the kind glyph for a picture that fails to load', async () => {
     await field({ saved: 'ci1.webp' });
     thumb().dispatchEvent(new Event('error'));
     await waitFor(() => {
-      expect(thumb().src).toContain('/img/thumb/_none.webp');
+      glyphOnly();
     });
   });
 
@@ -284,7 +291,7 @@ describe('«Выбрать из предметов»', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     /* No saved picture: a removal goes back to none. */
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('/img/thumb/_none.webp');
+    glyphOnly();
   });
 
   it('closes on a second press', async () => {

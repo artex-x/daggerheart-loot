@@ -498,7 +498,7 @@
     border-radius: var(--r-sm);
     padding: 8px 12px;
     background: var(--bg2);
-    font-size: 13px;
+    font-size: var(--t-data);
   }
 
   .rep-list.bad {
@@ -508,7 +508,7 @@
 
   .rep-list > b {
     display: block;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--txt);
   }
 
@@ -518,7 +518,7 @@
 
   .rep-list small {
     color: var(--muted2);
-    font-size: 12.5px;
+    font-size: var(--t-data);
   }
 
   .rep-list :global(code) {
@@ -536,13 +536,13 @@
   /* The count of errors past the kept ones. */
   .rep-more {
     margin: 4px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 
   .preview {
     margin: 12px 0 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.55;
   }
 
@@ -555,7 +555,7 @@
     background: none;
     border: 1px solid var(--danger);
     color: var(--danger-text);
-    font-size: 13px;
+    font-size: var(--t-data);
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
@@ -572,7 +572,7 @@
 
   .hint {
     margin: 10px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 </style>

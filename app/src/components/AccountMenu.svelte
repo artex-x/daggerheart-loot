@@ -140,7 +140,7 @@
     border-radius: 8px;
     color: var(--txt);
     font: inherit;
-    font-size: 14px;
+    font-size: var(--t-control);
     text-align: left;
     text-decoration: none;
     background: transparent;
