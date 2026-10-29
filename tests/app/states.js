@@ -3756,6 +3756,13 @@ async function requestsPanelFolds() {
     at + 'the first «Принять» is past one screen under the head - ' + JSON.stringify(m)
   );
   ok(!m.sideways, at + 'the panel scrolls the page sideways');
+  /* The new-request toast covers the window's bottom for 7000 ms; a press scrolled only
+     into view would land on it. */
+  await page.evaluate(() => {
+    [...document.querySelectorAll('.reqpanel button')]
+      .find((b) => b.textContent.trim() === 'и ещё 2 позиции')
+      ?.scrollIntoView({ block: 'center' });
+  });
   await d.press('и ещё 2 позиции');
   const open = await page.evaluate(() => ({
     lines: document.querySelector('.reqpanel .req')?.querySelectorAll('tbody tr').length ?? 0,

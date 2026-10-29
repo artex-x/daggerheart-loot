@@ -1,8 +1,9 @@
 <script lang="ts">
   /* The one notice the app raises, off `showToast`/`toast`/`toastAction` in
      `git show 23c00a6^:app.js` and `.toast`/`.toast.err`/`.toast.act`/`.toast-act`/
-     `toastIn` in style.css. An action is an undo button, which takes focus, or a
-     link opened in a new tab, which never does; an action toast pauses while
+     `toastIn` in style.css. An action is an undo button, which takes focus, a
+     link opened in a new tab, or a move to another page (the new-request toast);
+     the last two never take it. An action toast pauses while
      hovered or while the person has moved focus into it (docs/specs/FEATURES.md,
      the accessibility toast rule).
 
@@ -97,6 +98,22 @@
     action?.run?.();
   }
 
+  /* A `go` action moves to another page and never takes the focus; its button leaves
+     the DOM with the toast, so a focus nothing else took lands on `#main`. */
+  function goAction(go: () => void): void {
+    /* Inside the record dialog the page under it is inert: the dialog closes first, so
+       the panel head or `#main` can take the focus. */
+    const dialog = inDialog ? el?.closest('dialog') : null;
+    app.hideToast();
+    dialog?.close();
+    go();
+    void tick().then(() => {
+      const now = document.activeElement;
+      if (now && now !== document.body && now.isConnected) return;
+      document.getElementById('main')?.focus();
+    });
+  }
+
   /* An action toast holds its clock while hovered or while the person moved focus
      into it (`app.holdToast`). The undo's own `.focus()` above does not count
      (`selfFocus`), so it still runs out at 7000 ms and returns focus. */
@@ -143,6 +160,15 @@
         onclick={() => {
           app.hideToast();
         }}>{toast.action.label}</a
+      >
+    {:else if toast.action?.go}
+      {@const go = toast.action.go}
+      <button
+        type="button"
+        class="toast-act"
+        onclick={() => {
+          goAction(go);
+        }}>{toast.action.label}</button
       >
     {:else if toast.action}
       <button type="button" class="toast-act" onclick={runAction}>{toast.action.label}</button>

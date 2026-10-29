@@ -1741,15 +1741,72 @@ describe("the fake's purchase requests", () => {
     expect(owner).toEqual([
       ['request', { list: SHOP, by: null, id: '1' }],
       ['request', { list: SHOP, by: null, id: '2' }],
-      ['list', { list: SHOP, revision: 2, by: 'other-device', id: '3' }],
-      ['request', { list: SHOP, by: 'other-device', id: '6' }],
-      ['request', { list: SHOP, by: 'other-device', id: '7' }]
+      /* Message 3 is the apply's share `request`, before the deferred revision. */
+      ['list', { list: SHOP, revision: 2, by: 'other-device', id: '4' }],
+      ['request', { list: SHOP, by: 'other-device', id: '7' }],
+      ['request', { list: SHOP, by: 'other-device', id: '8' }]
     ]);
     const read = await cloud.shares.read('player-token-1');
     expect(read.ok && read.shared?.entries.find((e) => e.item_key === 'ci1')?.quantity).toBe(1);
     const q = cloud.request('player-token-1', [{ item: 'q1', qty: 1 }]);
     await cloud.lists.apply([{ op: 'remove_entries', ids: [uuid(1102)] }]);
     expect(q && cloud.decide(q, 'applied')).toBe(false);
+  });
+
+  it("tells the request's own active share topic each decision, before an apply's revision", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const read = await cloud.shares.read('player-token-1');
+    const topic = read.ok && read.shared ? read.shared.topic_key : '';
+    const gmRead = await cloud.shares.read('gm-token-1');
+    const gmTopic = gmRead.ok && gmRead.shared ? gmRead.shared.topic_key : '';
+    const seen: [string, unknown][] = [];
+    const gmSeen: unknown[] = [];
+    cloud.events.subscribe('share:' + topic, {
+      message: (event, payload) => seen.push([event, payload]),
+      status: () => undefined
+    });
+    cloud.events.subscribe('share:' + gmTopic, {
+      message: (event) => gmSeen.push(event),
+      status: () => undefined
+    });
+    await tick();
+    /* ci1 holds 2: three asked, two taken, so the apply is partial. */
+    const a = cloud.request('player-token-1', [{ item: 'ci1', qty: 3 }]);
+    const b = cloud.request('player-token-1', ONE);
+    expect(cloud.decideNewest('player-token-1', 'declined')).toBe(true);
+    expect(cloud.decideNewest('player-token-1', 'applied')).toBe(true);
+    expect(cloud.decideNewest('player-token-1', 'applied')).toBe(false);
+    await tick();
+    const strip = ([event, payload]: [string, unknown]) => [
+      event,
+      { ...(payload as Record<string, unknown>), id: undefined }
+    ];
+    expect(seen.map(strip)).toEqual([
+      ['request', { request: b, status: 'declined', partial: false, id: undefined }],
+      ['request', { request: a, status: 'applied', partial: true, id: undefined }],
+      ['revision', { revision: 2, id: undefined }]
+    ]);
+    expect(gmSeen).toEqual(['revision']);
+  });
+
+  it('tells a stopped share nothing', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const read = await cloud.shares.read('player-token-1');
+    const share = read.ok ? read.shared : null;
+    const seen: unknown[] = [];
+    cloud.events.subscribe('share:' + (share?.topic_key ?? ''), {
+      message: (event) => seen.push(event),
+      status: () => undefined
+    });
+    await tick();
+    const id = cloud.request('player-token-1', ONE);
+    const shares = await cloud.shares.list(SHOP);
+    const player = shares.ok ? shares.shares.find((s) => s.audience === 'player') : undefined;
+    await cloud.shares.revoke(player?.id ?? '');
+    seen.length = 0;
+    expect(id && cloud.decide(id, 'declined')).toBe(true);
+    await tick();
+    expect(seen).not.toContain('request');
   });
 
   it("drops a list's requests with the list and with the account", async () => {

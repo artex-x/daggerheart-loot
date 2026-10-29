@@ -1,10 +1,10 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ many requests as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: «Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn
+# why: «Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn; the toast «Новых запросов по списку «Лавка кузнеца»: 4» with «Показать»; the tab title «(4) Лавка кузнеца - ...» (unread: the fold is closed)
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Лавка кузнеца - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101?as=gm1]
+RootWebArea "(4) Лавка кузнеца - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101?as=gm1]
   link "К содержимому" [url=/lists/00000000-0000-4000-8000-000000000101?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=/roll/std]
@@ -44,7 +44,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       button "Отклонить"
       button "и ещё 1 запрос" [expanded=false]
     status ""
-      StaticText "Новый запрос"
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -147,6 +146,9 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Новых запросов по списку «Лавка кузнеца»: 4"
+    button "Показать"
 
 ## ru :: controls
 EN
@@ -193,6 +195,7 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Показать
 Принять
 Просмотр
 Результат броска
@@ -226,7 +229,7 @@ daggerheart.com
 и ещё 2 позиции
 
 ## en :: tree
-RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1]
+RootWebArea "(4) Лавка кузнеца - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=/en/roll/std]
@@ -266,7 +269,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       button "Decline"
       button "and 1 more request" [expanded=false]
     status ""
-      StaticText "New request"
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]
@@ -369,6 +371,9 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "New requests for the list "Лавка кузнеца": 4"
+    button "Show"
 
 ## en :: controls
 Account: gm1@example.test
@@ -433,6 +438,7 @@ ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namele
 Search
 Select all
 Share
+Show
 Skip to content
 Standard rules
 Stride Potion

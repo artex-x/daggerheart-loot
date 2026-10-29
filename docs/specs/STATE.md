@@ -131,10 +131,12 @@ setting, and so do the pin and the starting-section select.
   before a new user's row is pulled, so one user's answer never seeds
   another's row.
 - **A purchase request leaves nothing in the browser.** The request id a
-  send makes lives in memory, only so that a second press after a send with
-  no answer is a replay; no key of `localStorage` or `sessionStorage` holds
-  a request, its id or its status (`FEATURES.md`, "Account and browser
-  lists").
+  send makes lives in memory: before a success so that a second press after
+  a send with no answer is a replay, and after it, the newest 20 ids this
+  page load sent, with the owner's decision of the one the sent mark holds,
+  so the share topic's decision message toasts in that tab only. No key of
+  `localStorage` or `sessionStorage` holds a request, its id or its status;
+  a reload forgets them (`FEATURES.md`, "Purchase requests: the send").
 
 - **First paint is local.** The page draws this browser's values, then
   switches once the account answers - a new device may flip its language or
@@ -169,7 +171,7 @@ state exists, by what it was for:
 
 | Group | Fields |
 |---|---|
-| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), the pending action (forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the uuid of the item or the id of the catalog record «Сохранить себе» copies now), `saveItemFor` (the uuid of the item or the id of the catalog record a sign-in left to copy, until its pick row makes the copy; forgotten with the pending action), and the key of a «Сохранить себе» press whose answer was lost, per user and source, in memory only and never stored (the purchase request's pattern; FEATURES.md, "Records") |
+| Session | `lang`, `route`, `user` (the signed-in session: unknown, none, or who), the tab id sent as `x-dhloot-tab` (one per page load, in the cloud port), the owner feed's and the share feed's states (`off`, `connecting`, `live`, `down`), `alreadyLinked` (the provider a Connect was refused for), `signInFor` (the page and action a sign-in prompt's «Войти» remembered, forgotten on leaving `#/account`), the pending action (forgotten on a navigation and on sign-out), `now` (the clock the relative times read, moved every 45 s and when the tab is shown again), `cloning` (true while «Сохранить себе» copies a share link's list), `savingItem` (the uuid of the item or the id of the catalog record «Сохранить себе» copies now), `saveItemFor` (the uuid of the item or the id of the catalog record a sign-in left to copy, until its pick row makes the copy; forgotten with the pending action), and the key of a «Сохранить себе» press whose answer was lost, per user and source, in memory only and never stored (the purchase request's pattern; FEATURES.md, "Records"), `requestsFocus` (the list whose requests panel head takes the focus once drawn, set by the new-request toast's button, cleared by the panel or by leaving that list), and the new-request toast's list ids while it shows, waits or is held for a hidden tab (dropped when it ends or a later toast replaces it, unless held for a hidden tab, and on sign-out; FEATURES.md, "Purchase requests: the owner") |
 | Roll inputs | `std {n, src{core,hnf}}`, `alt {rarity, hope, fear}`, `wond {n}`, `dread {n}`, `voa {k, n}`, `dv {n}`, `arazo {n}`, `comm {c, n}`, `mwt {r, n}` |
 | Tables | `tables {t, q, view, anchor}`, `search {q}`, the tables view a page switch picked for this visit (`AppState`) |
 | Filters | `kind {item,consumable,equip}`, `fOn`, `fOpen`, `fSeg`, `homebrewShown` (the «Свои предметы» switch on search and the equipment tables: memory only, on by default, kept across pages, on again at each sign-in, never in the address or storage); on the shared list page, the query, the fold of the panel, whether the search box and the strip are drawn (the picked values are the address); the open folds of the filter rows of more than 12 values (page memory of the strip, closed when it mounts); the source chips' fold of `#/tables/homebrew` (page memory, closed when the page mounts) |

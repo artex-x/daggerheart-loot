@@ -887,10 +887,32 @@ address kept, and no add-to-list control is drawn.
   sent; the reader cannot read the owner's limit, so no line warns before
   the send, and no text asks the reader to write to the address), and
   «Сервер не принял запрос.»; a stopped or deleted link draws
-  «Список больше не доступен». The requester sees no answer from the owner:
-  the toast is the only answer, and an applied request reaches an open page
-  as a lowered or removed entry, as any owner edit. Nothing of a request is kept in the
-  browser.
+  «Список больше не доступен». While «Запрос отправлен» holds, a plain muted
+  line under the actions says what was sent and how long it waits: «Запрос
+  (2 позиции · 7 шт.) ждёт ответа владельца до 30 дней. Если владелец его
+  примет, взятое спишут из этого списка.» / "The request (2 items · 7 pcs)
+  waits up to 30 days for the owner's answer. If the owner applies it, what
+  you took comes off this list." (the pieces only when they differ from the
+  entries; not a live region, not a warning; not while flow b's question or
+  the print prompt holds the row). When the owner applies or declines a
+  request this page load sent, while the page stays open, a plain toast says
+  it: «Владелец принял ваш запрос.», «Владелец принял ваш запрос частично:
+  взял не всё.» or «Владелец отклонил ваш запрос.» / "The owner applied your
+  request.", "The owner applied part of your request.", "The owner declined
+  your request.". If that request is the one «Запрос отправлен» holds, the
+  line becomes «Владелец принял запрос.», «Владелец принял запрос частично.»
+  or «Владелец отклонил запрос.», and the button stays disabled until the
+  ticks or counts change. The words are the owner's own: «принять» /
+  «отклонить», "apply" / "decline", with «Владелец» / "The owner" as the
+  subject, because the sender does not own the list. After an apply the line
+  usually goes at once: the apply's revision re-read lowers the stock, the
+  taken counts clamp and the sent mark ends; the toast still says it. After a
+  decline the line keeps its text. A hidden tab runs the toast unseen; a
+  reload, a closed tab, an offline tab or a down feed at the decision misses
+  it (Realtime does not replay), and an expiry says nothing. Another reader's
+  request says nothing. An applied request reaches an open page as a lowered
+  or removed entry, as any owner edit. Nothing of a request is kept in the
+  browser: the sent ids live in the page's memory, the newest 20.
 - **Purchase requests: flow b**: after an add from a `#/s/` page's selection
   bar (never a card's own menu), signed in and not the owner, `notifyGm`
   decides: «Спрашивать» replaces the bar's actions with «Сообщить владельцу
@@ -947,9 +969,28 @@ address kept, and no add-to-list control is drawn.
   answer that comes back decided, and a request that is gone (its list
   deleted, or removed by the hourly clean-up once it expired, `META.md`
   section 3), are read again with no toast. A new request arrives with no reload through the
-  owner's Realtime topic, or on the 45 s poll and the shown-again signal
-  while it is down, and a hidden status, on an account list's page before any
-  request, says «Новый запрос» once per arrival. A request's age, its time to
+  owner's Realtime topic, or on the 45 s poll on the lists pages and the
+  shown-again signal while it is down. On every page an arrival after the
+  page's first requests read (never a request this tab decided) shows the
+  gold action toast «Новый запрос по списку «%s»» / "New request for the
+  list "%s"", for two or more on one list «Новых запросов по списку «%s»:
+  N», on two or more lists «Новых запросов: N», 7000 ms; an arrival while
+  it shows or waits adds to its count and restarts its time. Its button
+  reads «Показать» / "Show" on that list's page and «Открыть» / "Open"
+  elsewhere: it opens the list and moves the focus to «Новое в списке (N)»
+  once drawn, or to the main landmark when the read settles with no panel
+  (the request decided elsewhere or expired); with several lists it opens
+  `#/lists` and the focus goes to the main landmark. Unsaved edits that
+  refuse the move leave the page as it is. A hidden tab holds the toast
+  and shows it when the tab is shown again. The press marks nothing read.
+  The tab title counts the unread requests that have not expired, on every
+  page: «(2) Мои списки - Генератор лута Daggerheart»; a read request
+  leaves the count, while the index card counts pending ones. The prefix is
+  a count before the page's name and changes no word of it, so it is not a
+  rule 4 departure. Another tab or device keeps its count until its next
+  requests read, at most 5 minutes with a live feed (a read mark sends no
+  message). A change-log notice has no toast: its hidden status on the list's page says
+  «Предмет в списке изменился» once per arrival. A request's age, its time to
   expiry and whether it has expired move with the 45 s clock and when the tab
   is shown again, and an expired one stays drawn until then. A request
   expires 30 days after it was sent while nobody reads it; when the panel
@@ -966,7 +1007,10 @@ address kept, and no add-to-list control is drawn.
   index an account card with pending requests says «2 запроса ждут ответа»
   in gold under its meta line, in its link's name too, and its unread
   notices after them, «2 запроса ждут ответа · 1 изменение», or alone «2
-  изменения». An apply cannot be undone.
+  изменения». An apply cannot be undone. A decision also goes to the
+  request's own link while it is active, as the request's random id, its
+  status and whether the apply took less than asked, so the sending page can
+  say it ("Purchase requests: the send").
 - **The change log**: when the author of another account's item a list links
   changes it (its text, its source or a card it names) or deletes it, the
   list's owner finds a notice in the same panel, after the requests, newest
@@ -2364,7 +2408,15 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   later plain toast waits and shows when it ends - its timer, its close or its
   action - for its own 1600 ms (one waits; a newer plain toast takes its
   place); a later error or action toast replaces it at once (owner,
-  2026-10-08).
+  2026-10-08). The new-request toast ("Purchase requests: the owner") is
+  the lowest: an action toast whose button («Открыть» / «Показать») moves
+  to a page of the app and never takes focus; it waits behind any other
+  toast, a plain one too, and displaces nothing; any later toast, a plain
+  one too, replaces it when it shows, and a later plain toast that has to
+  wait takes the waiting slot from it; it is then dropped (the title count
+  keeps it). Pressed inside the record dialog, its button closes the
+  dialog first. With its button gone and no control taking the focus, the
+  focus goes to the main landmark.
 - The footer carries the full DPCGL licence notice (`dict.ts`'s
   `footBefore`, `footLink`, `footAfter`, the text `tests/derived.js` pins)
   on every page, folded in a native `<details>`: its `<summary>` is one line,
@@ -2653,5 +2705,6 @@ Each rule keeps its number: a review cites it by number.
   (`docs/decisions/2026-10-21-focus-moves-to-the-control-that-takes-the.md`).
   Departure: the requests panel's head «Новое в списке (N)» has
   `tabindex="-1"`, a target for focus from script only («Скрыть» on the
-  decided fold, the fallback after an answer or «Повторить», "Lists"): it
-  names the panel, not the page (owner, 2026-10-22).
+  decided fold, the fallback after an answer or «Повторить», the
+  new-request toast's «Открыть» / «Показать», "Lists"): it names the panel,
+  not the page (owner, 2026-10-22).

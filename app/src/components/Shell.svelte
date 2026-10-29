@@ -110,7 +110,11 @@
                 : route.kind === 'homebrewItem'
                   ? homebrewTitle(route.key)
                   : undefined;
-    document.title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
+    /* The owner's unread purchase requests count before the page's name (docs/specs/FEATURES.md,
+       "Purchase requests: the owner"). */
+    const unread = app.ownerRequests?.unreadCount(app.now) ?? 0;
+    const title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
+    document.title = unread > 0 ? `(${String(unread)}) ${title}` : title;
   });
 
   /* The editor's tab: the item's stored name, or «Новый предмет». */
@@ -203,16 +207,17 @@
   <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} lang={app.lang} />
 </header>
 
-<!-- `data-lists` and `data-homebrew` are what the browser suites wait on before a
-     capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session is
-     unknown, the account lists' status once signed in (on an account list's page the
+<!-- `data-lists`, `data-homebrew` and `data-requests` are what the browser suites wait on
+     before a capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session
+     is unknown, the account lists' status once signed in (on an account list's page the
      read of that list's entries), none signed out or with no sign-in; the homebrew
-     store's status signed in. -->
+     store's status signed in; the owner's requests read status signed in. -->
 <main
   id="main"
   tabindex="-1"
   data-lists={listsState}
   data-homebrew={app.user ? app.homebrew?.status : undefined}
+  data-requests={app.user ? app.ownerRequests?.status : undefined}
 >
   {@render children()}
 </main>

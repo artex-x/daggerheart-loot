@@ -7,6 +7,7 @@ import {
   readHomebrewMessage,
   readRequestMessage,
   readShareMessage,
+  readShareRequestMessage,
   type FeedEvent,
   type FeedState,
   readNoticeMessage
@@ -152,6 +153,43 @@ describe('readShareMessage', () => {
       ['revision', { revision: Number.MAX_SAFE_INTEGER + 1 }]
     ] as const) {
       expect(readShareMessage(event, payload)).toBeNull();
+    }
+  });
+
+  it('ignores a decision message, so an older bundle drops it', () => {
+    expect(readShareMessage('request', { request: LIST, status: 'declined' })).toBeNull();
+  });
+});
+
+describe('readShareRequestMessage', () => {
+  it('reads a decision, a missing partial as false, with Realtime id key ignored', () => {
+    expect(
+      readShareRequestMessage('request', {
+        request: LIST,
+        status: 'applied',
+        partial: true,
+        id: 'm1'
+      })
+    ).toEqual({ id: LIST, status: 'applied', partial: true });
+    expect(readShareRequestMessage('request', { request: LIST, status: 'declined' })).toEqual({
+      id: LIST,
+      status: 'declined',
+      partial: false
+    });
+  });
+
+  it('drops any other event or shape', () => {
+    for (const [event, payload] of [
+      ['revision', { request: LIST, status: 'applied' }],
+      ['request', null],
+      ['request', [LIST]],
+      ['request', { id: LIST, status: 'applied' }],
+      ['request', { request: 'not-an-id', status: 'applied' }],
+      ['request', { request: LIST, status: 'pending' }],
+      ['request', { request: LIST }],
+      ['request', { request: LIST, status: 'applied', partial: 'yes' }]
+    ] as const) {
+      expect(readShareRequestMessage(event, payload)).toBeNull();
     }
   });
 });

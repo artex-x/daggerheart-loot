@@ -169,14 +169,24 @@ const hang = (init) =>
     init.signal.addEventListener('abort', () => reject(init.signal.reason));
   });
 
+/* A test that reads before `serve()` would read the live site, whose answer moves with
+   each deploy (since path-urls its app document has no redirect). The worker reads a
+   failed fetch as a failed read, so the test fails here instead. */
+let unstubbed;
 beforeEach(() => {
   calls = [];
+  unstubbed = [];
   realFetch = globalThis.fetch;
   realNow = Date.now;
+  globalThis.fetch = (url) => {
+    unstubbed.push(String(url));
+    return Promise.reject(new Error('network read with no serve(): ' + String(url)));
+  };
 });
 afterEach(() => {
   globalThis.fetch = realFetch;
   Date.now = realNow;
+  assert.deepEqual(unstubbed, [], 'a read with no serve()');
 });
 
 async function get(path, { method = 'GET', w = worker, host = HOST } = {}) {
@@ -1475,6 +1485,7 @@ describe('/p/: a print set', () => {
   });
 
   it('answers 404 printSetGone for another length', async () => {
+    serve();
     const r = await get('/p/abc');
     assert.equal(r.res.status, 404);
     assert.equal(meta(r.body, 'og:title'), 'Печать карточек');
@@ -1488,6 +1499,7 @@ describe('/p/: a print set', () => {
   });
 
   it('changes nothing for %22, %3C and </script> after the id or in a query', async () => {
+    serve();
     const clean = (await get('/p/' + PRINT)).body;
     for (const p of [
       '/p/' + PRINT + '%22%3C',

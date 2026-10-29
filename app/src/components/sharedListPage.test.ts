@@ -1176,6 +1176,33 @@ describe('a purchase request', () => {
     await expectNoA11yViolations(signed.container);
   });
 
+  it('draws the sent line, takes the decision into it with a toast, and drops it with the ticks', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    await tickFirst();
+    await waitFor(() => {
+      expect(document.querySelector('.said[role="status"]')).toHaveAttribute(
+        'data-live',
+        'live'
+      );
+    });
+    await userEvent.click(notify() as HTMLElement);
+    await screen.findByText('Запрос отправлен владельцу списка.');
+    const line = (): HTMLElement | null => bar().querySelector('.sentline');
+    expect(line()).toHaveTextContent(
+      'Запрос (1 позиция · 2 шт.) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.'
+    );
+    expect(line()).not.toHaveAttribute('role');
+    expect(cloud.decide(uuid(5000), 'declined')).toBe(true);
+    expect(await screen.findByText('Владелец отклонил ваш запрос.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Владелец отклонил запрос.');
+    });
+    expect(within(bar()).getByRole('button', { name: 'Запрос отправлен' })).toBeDisabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
+    expect(line()).toBeNull();
+  });
+
   it('enables «Сообщить владельцу» again after a changed count', async () => {
     const { cloud, container } = open('#/s/player-token-1');
     const send = vi.spyOn(cloud.requests, 'send');

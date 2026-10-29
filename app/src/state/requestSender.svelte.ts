@@ -1,18 +1,21 @@
 /* The reader's side of a purchase request on a share page `#/s/<token>`: the
- * send from the selection bar, and flow b - after an add from the bar, the
- * question whether to tell the list's owner, or the remembered answer.
+ * send from the selection bar, flow b - after an add from the bar, the
+ * question whether to tell the list's owner, or the remembered answer - and the
+ * owner's decision, heard while this page stays open.
  *
- * Nothing of a request is stored in the browser: the request id lives here, in
- * memory, only so that a second press after a `network` answer is a replay the
- * database inserts nothing for (docs/specs/FEATURES.md, "Account and browser
- * lists"; docs/DECISIONS.md, 2026-09-27, "A requester sees no request status;
- * the send toast is the only answer"). A success keeps the selection and marks its
- * lines sent: the same lines are not sent again until the ticks or counts change
- * (docs/DECISIONS.md, 2026-09-29, "A sent purchase request keeps the ticks; the send
- * waits until they change"). */
+ * Nothing of a request is stored in the browser. The request id lives here, in
+ * memory: before a success, so that a second press after a `network` answer is a
+ * replay the database inserts nothing for; after it, the newest 20 ids this page
+ * load sent, so the share topic's decision message toasts in this tab only
+ * (docs/specs/FEATURES.md, "Purchase requests: the send";
+ * docs/decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md).
+ * A success keeps the selection and marks its lines sent: the same lines are not
+ * sent again until the ticks or counts change (docs/DECISIONS.md, 2026-09-29, "A
+ * sent purchase request keeps the ticks; the send waits until they change"). */
 
 import { limitText } from '../lib/cloudLists.js';
 import type { Msg } from '../lib/dict.js';
+import { countPiecesText } from '../lib/i18n.js';
 import { plural } from '../lib/plural.js';
 import type { NotifyGm } from '../lib/prefs.js';
 import type { RequestRepository } from '../ports/index.js';
@@ -34,6 +37,22 @@ function keyOf(token: string, lines: RequestLines): string {
   return [token, ...lines.map((l) => `${l.item}*${String(l.qty)}`).sort()].join(' ');
 }
 
+/* The sent ids a page load keeps for a decision: one per send, the oldest dropped. */
+const MINE_MAX = 20;
+
+/** The owner's decision of a request, as the share topic says it. */
+export interface Decision {
+  id: string;
+  status: 'applied' | 'declined';
+  partial: boolean;
+}
+
+/** Returns what a request held: «2 позиции» and, when the pieces differ, « · 4 шт.». */
+export function sentSummary(lines: RequestLines): Msg {
+  const pieces = lines.reduce((n, l) => n + l.qty, 0);
+  return (t, lang) => countPiecesText(lines.length, pieces, t.itemsN, lang, t);
+}
+
 export class RequestSender {
   /** A send runs. */
   sending = $state(false);
@@ -47,6 +66,12 @@ export class RequestSender {
   #id: string | null = null;
   /* The key of the lines last sent through a link; reactive, so the button redraws. */
   #sent = $state<string | null>(null);
+  /* The ids sent with success on this page load, newest last, with the key of their lines. */
+  #mine: { id: string; key: string }[] = [];
+  /* The decision of the request the sent mark holds; reactive, so the line redraws. */
+  #verdict = $state.raw<{ key: string; status: Decision['status']; partial: boolean } | null>(
+    null
+  );
 
   constructor(repo: RequestRepository, hooks: SenderHooks) {
     this.#repo = repo;
@@ -67,13 +92,16 @@ export class RequestSender {
       this.#key = key;
       this.#id = this.#hooks.newId();
     }
+    const id = this.#id;
     this.sending = true;
-    const r = await this.#repo.send(this.#id, token, lines);
+    const r = await this.#repo.send(id, token, lines);
     this.sending = false;
     const say = this.#hooks.say;
     if (r.ok) {
+      this.#mine = [...this.#mine, { id, key }].slice(-MINE_MAX);
       this.#drop();
       this.#sent = key;
+      this.#verdict = null;
       say(
         after === undefined
           ? (t) => t.requestSent
@@ -143,6 +171,38 @@ export class RequestSender {
   dismiss(): void {
     this.asking = null;
     this.#sent = null;
+    this.#verdict = null;
+  }
+
+  /** The owner applied or declined a request: a toast when this page load sent it, once;
+   *  the line under the bar's actions takes the decision while the sent mark holds it. */
+  decided(m: Decision): void {
+    const mine = this.#mine.find((x) => x.id === m.id);
+    if (!mine) return;
+    this.#mine = this.#mine.filter((x) => x !== mine);
+    this.#hooks.say((t) =>
+      m.status === 'declined'
+        ? t.requestDeclinedToast
+        : m.partial
+          ? t.requestPartialToast
+          : t.requestAppliedToast
+    );
+    if (mine.key === this.#sent) {
+      this.#verdict = { key: mine.key, status: m.status, partial: m.partial };
+    }
+  }
+
+  /** The line under the bar's actions for these lines: the decision while the sent mark
+   *  holds the decided request, else what was sent and how long it waits, else null. */
+  lineFor(token: string, lines: RequestLines): Msg | null {
+    if (!this.isSent(token, lines)) return null;
+    const v = this.#verdict;
+    if (v && v.key === this.#sent) {
+      if (v.status === 'declined') return (t) => t.requestDeclinedSentLine;
+      return v.partial ? (t) => t.requestPartialSentLine : (t) => t.requestAppliedSentLine;
+    }
+    const what = sentSummary(lines);
+    return (t, lang) => t.requestSentLine.replace('%s', what(t, lang));
   }
 
   #drop(): void {

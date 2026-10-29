@@ -14,6 +14,8 @@ deleted.
 
 ## Index
 
+- 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
+- 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
 - 2026-10-28 - [Addresses are paths, with the language prefix and `?v` in the bar](decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md)
 - 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
 - 2026-10-28 - [`data.json` and `catalog.csv` leave git; the build writes both](decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md)
@@ -135,7 +137,7 @@ deleted.
 - 2026-09-28 - [The account's data file is a store-only zip with one JSON file per kind](decisions/2026-09-28-the-accounts-data-file-is-a-store-only-zip.md)
 - 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)
 - 2026-09-27 - [A plan that changes schema, contracts, stored data or sync is reviewed first](decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
-- 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md)
+- 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md) - superseded in part
 - 2026-09-27 - [A signed-out reader with browser lists sees a move banner until the cutoff](decisions/2026-09-27-a-signed-out-reader-with-browser-lists-sees-a-move-banner.md)
 - 2026-09-27 - [A stale reorder keeps the given order and puts the other entries after it](decisions/2026-09-27-a-stale-reorder-keeps-the-given-order-and-puts-the.md)
 - 2026-09-27 - [Agents read no .env file; the program loads it with `--env-file`](decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md)

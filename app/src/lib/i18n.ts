@@ -170,7 +170,21 @@ export function eqLine(
  * "Lists").
  */
 export function selCountText(entries: number, pieces: number, lang: Lang, t: Dict): string {
-  const head = plural(entries, t.selectedN, lang);
+  return countPiecesText(entries, pieces, t.selectedN, lang, t);
+}
+
+/**
+ * Returns the entries in the plural set `set`, then the pieces when they differ:
+ * «2 позиции · 7 шт.». The selection summary and the sender's sent line share it.
+ */
+export function countPiecesText(
+  entries: number,
+  pieces: number,
+  set: string,
+  lang: Lang,
+  t: Pick<Dict, 'pcsN'>
+): string {
+  const head = plural(entries, set, lang);
   return pieces === entries ? head : `${head} · ${t.pcsN.replace('%n', String(pieces))}`;
 }
 

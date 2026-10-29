@@ -1497,6 +1497,23 @@ describe('the page going out of sight', () => {
     expect(fn).toHaveBeenCalledOnce();
   });
 
+  it('answers whether the page is in sight from the document', () => {
+    const { win, doc } = pageWin();
+    const page = browserPage(win as unknown as Parameters<typeof browserPage>[0]);
+    expect(page.visible()).toBe(true);
+    doc.visibilityState = 'hidden';
+    expect(page.visible()).toBe(false);
+  });
+
+  it('has a fake that is in sight until hidden and again once shown', () => {
+    const page = fakePage();
+    expect(page.visible()).toBe(true);
+    page.fireHidden();
+    expect(page.visible()).toBe(false);
+    page.fireShown();
+    expect(page.visible()).toBe(true);
+  });
+
   it('asks before an unload only while the check answers true, and stops on removal', () => {
     /* A window that keeps its listeners: jsdom's own `returnValue` is the legacy boolean. */
     const handlers: ((e: unknown) => void)[] = [];

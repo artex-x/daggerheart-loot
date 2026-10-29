@@ -33,7 +33,12 @@ import {
   type HomebrewContent
 } from '../lib/homebrew.js';
 import type { HomebrewImportRows } from '../lib/homebrewFile.js';
-import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
+import {
+  readOwnerMessage,
+  readRequestMessage,
+  readShareMessage,
+  readShareRequestMessage
+} from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { NoticeRow } from '../lib/requests.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
@@ -605,7 +610,9 @@ async function liveCases(
    as stale, over the rate and for a link or a request that is not there. */
 async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
   const got: Delivered[] = [];
+  const gotShare: Delivered[] = [];
   let leave: (() => void) | null = null;
+  let leaveShare: (() => void) | null = null;
   const { lists, shares, requests } = port;
   const id = lists.newId();
   try {
@@ -629,6 +636,18 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     leave = await joinLive(port, 'owner:' + userId, got);
     assert(leave !== null, 'requests: the owner topic was refused three times');
     if (!leave) return;
+    /* The share's own topic hears each decision of a request sent through it. */
+    const opened0 = await shares.read(share.token);
+    const topicKey = opened0.ok && opened0.shared ? opened0.shared.topic_key : '';
+    leaveShare = await joinLive(port, 'share:' + topicKey, gotShare);
+    assert(leaveShare !== null, 'requests: the share topic was refused three times');
+    const heard = (want: { id: string; status: string; partial: boolean }): Promise<boolean> =>
+      waitFor(() =>
+        gotShare.some((m) => {
+          const r = readShareRequestMessage(m.event, m.payload);
+          return r?.id === want.id && r.status === want.status && r.partial === want.partial;
+        })
+      );
     const saw = (by: (b: string | null) => boolean): Promise<boolean> =>
       waitFor(() =>
         got.some((m) => {
@@ -727,11 +746,19 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
         .join(';') === 'ci1|4|0',
       'requests: the apply did not lower ci1 and delete cc1'
     );
+    assert(
+      await heard({ id: r2, status: 'applied', partial: true }),
+      'requests: the share topic did not hear the clamped apply as partial'
+    );
 
     assert((await requests.decline(r1)).ok, 'requests: the decline was refused');
     assert(
       await saw((b) => b === port.events.tab),
       "requests: no request message with this port's tab"
+    );
+    assert(
+      await heard({ id: r1, status: 'declined', partial: false }),
+      'requests: the share topic did not hear the decline'
     );
     const twice = await requests.decline(r1);
     assert(
@@ -777,6 +804,7 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     );
   } finally {
     leave?.();
+    leaveShare?.();
     await lists.apply([{ op: 'remove', id }]);
   }
 }

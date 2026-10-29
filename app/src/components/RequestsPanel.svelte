@@ -81,6 +81,19 @@
     owner?.focus(null);
   });
 
+  /* The new-request toast's «Открыть» / «Показать» (`app.requestsFocus`): the head takes the
+     focus once drawn; a settled read with no panel for this list hands it to `#main`. */
+  $effect(() => {
+    if (!owner || app.requestsFocus !== list.id) return;
+    if (head) {
+      head.focus();
+      app.requestsFocus = null;
+    } else if (owner.status === 'ready' || owner.status === 'error') {
+      document.getElementById('main')?.focus();
+      app.requestsFocus = null;
+    }
+  });
+
   /* The focus stays in the panel while it stays, and goes to the page's main when it goes. */
   async function refocus(): Promise<void> {
     await tick();
@@ -356,14 +369,12 @@
   </section>
 {/if}
 {#if owner}
-  <!-- Mounted before any request, outside the panel, so the first arrival is a
+  <!-- Mounted before any notice, outside the panel, so the first arrival is a
        change to a live region that already exists; keyed, so a second arrival is
-       announced again. -->
+       announced again. A new request is said by its toast. -->
   <StatusRegion
-    text={owner.arrived && owner.arrivedList === list.id
-      ? owner.arrivedKind === 'notice'
-        ? t.noticeArrived
-        : t.requestNew
+    text={owner.arrived && owner.arrivedList === list.id && owner.arrivedKind === 'notice'
+      ? t.noticeArrived
       : ''}
     key={owner.arrived}
   />

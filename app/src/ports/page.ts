@@ -38,15 +38,24 @@ export function browserPage(win: PageWindow = window): PagePort {
       return () => {
         win.removeEventListener('beforeunload', onBeforeUnload);
       };
+    },
+    visible() {
+      return win.document.visibilityState === 'visible';
     }
   };
 }
 
-/** A page a test hides with `fireHidden()`; `unloadAsks()` answers whether a close would
- *  ask now. */
-export function fakePage(): PagePort & { fireHidden(): void; unloadAsks(): boolean } {
+/** A page a test hides with `fireHidden()` and shows again with `fireShown()`;
+ *  `unloadAsks()` answers whether a close would ask now. The app's shown-again signal is
+ *  the storage port's, so a test fires both. */
+export function fakePage(): PagePort & {
+  fireHidden(): void;
+  fireShown(): void;
+  unloadAsks(): boolean;
+} {
   const listeners = new Set<() => void>();
   const guards = new Set<() => boolean>();
+  let shown = true;
   return {
     onHidden(fn) {
       listeners.add(fn);
@@ -55,7 +64,14 @@ export function fakePage(): PagePort & { fireHidden(): void; unloadAsks(): boole
       };
     },
     fireHidden() {
+      shown = false;
       for (const fn of [...listeners]) fn();
+    },
+    fireShown() {
+      shown = true;
+    },
+    visible() {
+      return shown;
     },
     guardUnload(dirty) {
       guards.add(dirty);

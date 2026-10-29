@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ decided as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: «Отклонить» on the GM link's request, the fold opened: «Новое в списке (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end
+# why: «Отклонить» on the GM link's request, the fold opened: «Новое в списке (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end; the toast «Запрос отклонён», which replaced the new-request toast
 # as: gm1
 
 ## ru :: tree
@@ -41,7 +41,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       StaticText "Палаш"
       StaticText "×1"
     status ""
-      StaticText "Новый запрос"
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -262,7 +261,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       StaticText "Broadsword"
       StaticText "×1"
     status ""
-      StaticText "New request"
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]

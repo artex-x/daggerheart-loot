@@ -160,6 +160,9 @@ export type FakeCloud = CloudPort & {
   /** Applies (taking what is there) or declines any user's pending request as the owner's
    *  other device would, with its messages; false for an unknown or decided request. */
   decide(id: string, verdict: 'applied' | 'declined'): boolean;
+  /** `decide` on the newest pending request sent through the link `token`; false when it
+   *  has none. */
+  decideNewest(token: string, verdict: 'applied' | 'declined'): boolean;
   /** A port of the same world signed in as `user`, or signed out without one: what one
    *  account writes another reads, as on the real project. */
   as(user?: string): CloudPort;
@@ -1373,6 +1376,17 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by: null });
     return OK;
   };
+  /* The decision on the request's own active share topic (`purchase_requests_broadcast`):
+     its row trigger runs at the status update, before an apply's deferred revision. */
+  const tellShare = (r: HeldRequest): void => {
+    const sh = shareRows.find((x) => x.id === r.shareId && x.revoked_at === null);
+    if (!sh || (r.status !== 'applied' && r.status !== 'declined')) return;
+    send('share:' + sh.topic_key, 'request', {
+      request: r.id,
+      status: r.status,
+      partial: r.lines.some((l) => l.applied !== null && l.applied < l.qty)
+    });
+  };
   /* `apply_purchase_request` after its checks: stock by item, short, clamp, an entry
      taken to zero deleted and the list renumbered. */
   const applyHeld = (r: HeldRequest, h: Held, clamp: boolean, by: string): RequestApplied => {
@@ -1401,6 +1415,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (emptied.size) reorder([h], h.row.id, []);
     else touch(h);
     r.status = 'applied';
+    tellShare(r);
     announce(was, by);
     const owner = userIdOf(h);
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
@@ -1410,6 +1425,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     r.status = 'declined';
     const owner = userIdOf(h);
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
+    tellShare(r);
   };
   /* A request's first read, by a draw or a decision: an hour left at most from now. */
   const markHeld = (r: HeldRequest, now: number): void => {
@@ -2224,6 +2240,15 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         return true;
       }
       return applyHeld(r, h, true, 'other-device').ok;
+    },
+    decideNewest(token, verdict) {
+      const sh = shareRows.find((x) => x.token === token);
+      let newest: HeldRequest | null = null;
+      for (const x of purchases) {
+        if (!sh || x.shareId !== sh.id || x.status !== 'pending') continue;
+        if (!newest || x.createdAt >= newest.createdAt) newest = x;
+      }
+      return newest ? this.decide(newest.id, verdict) : false;
     },
     setOffline(on) {
       offline = on;

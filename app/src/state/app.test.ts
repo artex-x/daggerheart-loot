@@ -34,6 +34,7 @@ import {
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { cardVersion } from '../lib/hash.js';
+import { COALESCE_MS } from '../lib/live.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import { readDataZip } from '../lib/zip.js';
 import type { Prefs } from '../lib/prefs.js';
@@ -2727,6 +2728,287 @@ describe('purchase requests', () => {
     await flush();
     const read = await cloud.prefs.load();
     expect(read.ok && read.prefs?.notifyGm).toBe('always');
+    app.stop();
+  });
+});
+
+describe('the new-request toast', () => {
+  const SHOP = uuid(101);
+  const TROPHIES = uuid(103);
+  const ONE = [{ item: 'ci1', qty: 1 }];
+  const undo = { label: () => 'Вернуть', run: vi.fn() };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /* gm1 signed in, the lists and the first heads read done. */
+  async function owner(hash = '#/roll/std', dialog = fakeDialog(true)) {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage();
+    const page = fakePage();
+    const app = new AppState(
+      fakeEnv({ router: memoryRouter(hash), storage, cloud, page, dialog })
+    );
+    app.start();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.ownerRequests?.status).toBe('ready');
+    return { app, cloud, storage, page, dialog };
+  }
+
+  /* A request sent now, heard on the owner topic and read. */
+  async function arrive(cloud: FakeCloud, token = 'player-token-1'): Promise<string | null> {
+    const id = cloud.request(token, ONE);
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 50);
+    return id;
+  }
+
+  async function trophiesToken(cloud: FakeCloud): Promise<string> {
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    return made.ok ? made.token : '';
+  }
+
+  it('says one request on another page with «Открыть», for 7000 ms, and nothing on the first read', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', ONE);
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/std'), cloud }));
+    app.start();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.ownerRequests?.status).toBe('ready');
+    expect(app.toast).toBeNull();
+    await arrive(cloud);
+    expect(app.toast).toMatchObject({
+      msg: 'Новый запрос по списку «Лавка кузнеца»',
+      mode: 'act',
+      action: { label: 'Открыть' }
+    });
+    await vi.advanceTimersByTimeAsync(7000 - COALESCE_MS - 51);
+    expect(app.toast).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 60);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it("reads «Показать» on that list's page and in English", async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    await arrive(cloud);
+    expect(app.toast?.action?.label).toBe('Показать');
+    app.setLang('en');
+    expect(app.toast?.msg).toBe('New request for the list "Лавка кузнеца"');
+    expect(app.toast?.action?.label).toBe('Show');
+    app.go('#/roll/std');
+    expect(app.toast?.action?.label).toBe('Open');
+    app.stop();
+  });
+
+  it('keeps a list name of 200 characters whole', async () => {
+    const { app, cloud } = await owner();
+    const long = 'Я'.repeat(200);
+    app.cloudLists?.rename(SHOP, long);
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe(`Новый запрос по списку «${long}»`);
+    app.stop();
+  });
+
+  it('counts a second arrival while it shows and restarts its 7000 ms', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    await vi.advanceTimersByTimeAsync(5000);
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('counts requests on two lists, and «Открыть» goes to the lists page with no focus flag', async () => {
+    const { app, cloud } = await owner();
+    const token = await trophiesToken(cloud);
+    cloud.request(token, [{ item: 'q1', qty: 1 }]);
+    cloud.request('player-token-1', ONE);
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов: 3');
+    expect(app.toast?.action?.label).toBe('Открыть');
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(app.route).toEqual({ kind: 'section', section: 'lists' });
+    expect(app.requestsFocus).toBeNull();
+    app.stop();
+  });
+
+  it('«Открыть» opens the list and flags its panel; leaving the list drops the flag', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(app.route).toEqual({ kind: 'storedList', listId: SHOP });
+    expect(app.requestsFocus).toBe(SHOP);
+    app.go('#/tables/eq_weapon');
+    expect(app.requestsFocus).toBeNull();
+    app.stop();
+  });
+
+  it('sets no flag when unsaved edits refuse the navigation', async () => {
+    const dialog = fakeDialog(false);
+    const { app, cloud } = await owner('#/homebrew/new', dialog);
+    const release = app.guardLeave(() => true);
+    await arrive(cloud);
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(dialog.asked).toHaveLength(1);
+    expect(app.hash).toBe('#/homebrew/new');
+    expect(app.requestsFocus).toBeNull();
+    release();
+    app.stop();
+  });
+
+  it('waits behind an undo toast and an error toast, and shows after them', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe('убрано');
+    app.say(() => 'ошибка', { error: true });
+    expect(app.toast?.msg).toBe('ошибка');
+    await vi.advanceTimersByTimeAsync(2600);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('a plain toast replaces a shown arrival and drops it; the title count keeps it', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    app.say(() => 'скопировано');
+    expect(app.toast?.msg).toBe('скопировано');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(1);
+    app.stop();
+  });
+
+  it('a plain toast said while an arrival waits takes the slot and drops the arrival', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    app.say(() => 'потом');
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast?.msg).toBe('потом');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('an arrival never takes the slot from a waiting plain toast', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    app.say(() => 'потом');
+    await arrive(cloud);
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast?.msg).toBe('потом');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it("the owner's decline toast replaces a shown arrival", async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    const id = await arrive(cloud);
+    expect(app.toast?.mode).toBe('act');
+    await app.ownerRequests?.decline(id ?? '');
+    expect(app.toast?.msg).toBe('Запрос отклонён');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('holds the arrival in a hidden tab until it is shown again', async () => {
+    const { app, cloud, page, storage } = await owner();
+    page.fireHidden();
+    await arrive(cloud);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('an arrival waits behind a plain toast and shows after it', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'Запрос принят');
+    const id = cloud.request('player-token-1', ONE);
+    expect(id).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 50);
+    expect(app.toast?.msg).toBe('Запрос принят');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('keeps a list name with replacement patterns and «%n» as written', async () => {
+    const { app, cloud } = await owner();
+    app.cloudLists?.rename(SHOP, 'a$&b%n');
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «a$&b%n»');
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов по списку «a$&b%n»: 2');
+    app.stop();
+  });
+
+  it('keeps an arrival heard in a hidden tab after the shown arrival toast ran out unseen', async () => {
+    const { app, cloud, page, storage } = await owner();
+    await arrive(cloud);
+    page.fireHidden();
+    await arrive(cloud, 'gm-token-1');
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    app.stop();
+  });
+
+  it('holds a waiting arrival whose blocking toast ends while the tab is hidden', async () => {
+    const { app, cloud, page, storage } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    page.fireHidden();
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('a sign-out hides a shown arrival, clears the focus flag and the unread count', async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    await arrive(cloud);
+    expect(app.toast?.mode).toBe('act');
+    app.openRequests(SHOP);
+    expect(app.requestsFocus).toBe(SHOP);
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(1);
+    await cloud.auth.signOut();
+    expect(app.toast).toBeNull();
+    expect(app.requestsFocus).toBeNull();
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(0);
+    app.stop();
+  });
+
+  it('drops a held arrival on sign-out', async () => {
+    const { app, cloud, page, storage } = await owner();
+    page.fireHidden();
+    await arrive(cloud);
+    await cloud.auth.signOut();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast).toBeNull();
     app.stop();
   });
 });

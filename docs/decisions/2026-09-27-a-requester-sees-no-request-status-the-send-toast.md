@@ -1,13 +1,9 @@
 # 2026-09-27 - A requester sees no request status; the send toast is the only answer
 
+- Superseded in part by "A sender hears a decision while the page stays open" (2026-10-29): the sending page hears a decision while it stays open.
 - Amended by "A sent purchase request keeps the ticks; the send waits until they change" (2026-09-29): the send button reads «Запрос отправлен» while the sent ticks stay.
 - Task: `persist-4-requests` (owner's feedback on the mocks, 2026-09-27: "as a player I would not care much, it is more relevant for DM to keep their list up-to-date"; planner, the removal).
-- Decision: a share page draws no status of the requests it sent. The
-  send answers only success or a refusal, shown as a toast;
-  `create_purchase_request` returns nothing, no key or request id leaves
-  the database, and the requester's browser stores nothing. An applied
-  request lowers the entries, which the open share page redraws like any
-  owner edit. Request events go to the owner topic only.
+- Decision: a share page draws no status of the requests it sent. The send answers only success or a refusal, shown as a toast; `create_purchase_request` returns nothing, no key or request id leaves the database, and the requester's browser stores nothing. An applied request lowers the entries, which the open share page redraws like any owner edit. Request events go to the owner topic only.
 - Rejected: the status block of pass 1 (the player does not care; it
   cost a status key column, an `anon` read function, a share-topic event
   and a `sessionStorage` key); a status line shown only while a request

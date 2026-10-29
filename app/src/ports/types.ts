@@ -264,6 +264,8 @@ export interface PagePort {
   /** Asks the browser's own prompt before the page closes while `dirty()` answers true.
    *  Returns the removal. */
   guardUnload(dirty: () => boolean): () => void;
+  /** Whether the page is in sight now. */
+  visible(): boolean;
 }
 
 /**

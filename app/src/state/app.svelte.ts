@@ -143,24 +143,38 @@ function readLocalPrefs(env: Env): LocalPrefs {
   };
 }
 
-/** What a toast offers for the 7000ms it lasts: an undo (`run`) or a link to
- *  a page opened in a new tab (`href`). The label is built in the language on
- *  screen each time it is drawn. */
-export type ToastAction = { label: Msg; run: () => void } | { label: Msg; href: string };
+/** What a toast offers for the 7000ms it lasts: an undo (`run`), a link to
+ *  a page opened in a new tab (`href`), or a move to a page of the app (`go`). Only
+ *  `run` takes the focus. The label is built in the language on screen each time it
+ *  is drawn. */
+export type ToastAction =
+  | { label: Msg; run: () => void }
+  | { label: Msg; href: string }
+  | { label: Msg; go: () => void };
 
 /** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
  *  with an action - each its own duration, decided by `say` below. */
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
-  action?: { label: string; run?: () => void; href?: string } | undefined;
+  action?: { label: string; run?: () => void; href?: string; go?: () => void } | undefined;
 }
 
-/* What `say` was given: the toast before it is drawn in a language. */
+/* What `say` was given: the toast before it is drawn in a language. `arrival` marks the
+   new-request toast, the lowest-priority one (docs/specs/FEATURES.md, "Chrome"). */
 interface Said {
   msg: Msg;
   mode: Toast['mode'];
   action?: ToastAction | undefined;
+  arrival?: true | undefined;
+}
+
+const ARRIVAL_MS = 7000;
+
+/* The one list that every id names, or null for none or several. */
+function oneList(ids: readonly string[]): string | null {
+  const first = ids[0];
+  return first !== undefined && ids.every((id) => id === first) ? first : null;
 }
 
 /** Settings are read as untrusted data: a bad value falls back, quietly. */
@@ -411,7 +425,9 @@ export class AppState {
         s.action &&
         ('run' in s.action
           ? { label: s.action.label(t, lang), run: s.action.run }
-          : { label: s.action.label(t, lang), href: s.action.href })
+          : 'go' in s.action
+            ? { label: s.action.label(t, lang), go: s.action.go }
+            : { label: s.action.label(t, lang), href: s.action.href })
     };
   });
   /** True while `RecordModal`'s modal dialog is open, set after its
@@ -422,9 +438,18 @@ export class AppState {
   /* An action toast's deadline while it runs, and its time left while held. */
   #toastDue = 0;
   #toastLeft: number | null = null;
-  /* A plain message said while an error or an action toast shows: it waits for that
-     toast's end (owner, 2026-10-08). One waits; a newer plain message takes its place. */
-  #waiting: Msg | null = null;
+  /* A plain message or the arrival toast said while an error or an action toast shows: it
+     waits for that toast's end (owner, 2026-10-08). One waits; a newer plain message takes
+     its place. */
+  #waiting: Said | null = null;
+  /* The list id of each new purchase request the arrival toast tells of, while it shows,
+     waits or is held for a hidden tab; null otherwise. */
+  #arrival = $state.raw<string[] | null>(null);
+  #arrivalHeld = false;
+  #arrivalLast: string[] = [];
+  /** The list whose Requests panel takes the focus once drawn (`RequestsPanel.svelte`), set
+   *  by the arrival toast's action and cleared by the panel or by leaving that list. */
+  requestsFocus = $state<string | null>(null);
 
   #home = $state(DEFAULT_HOME);
   /** The default tables view, list or grid, set by the Display section and
@@ -519,7 +544,10 @@ export class AppState {
           flush: () => this.cloudLists?.flushNow() ?? Promise.resolve(true),
           refreshLists: () => this.cloudLists?.refresh() ?? Promise.resolve(),
           say,
-          tab: () => cloud.events.tab
+          tab: () => cloud.events.tab,
+          arrived: (ids) => {
+            this.#arrive(ids);
+          }
         })
       : null;
     this.cloudLists = cloud
@@ -559,7 +587,13 @@ export class AppState {
         })
       : null;
     this.sharedView = env.cloud
-      ? new SharedView(env.cloud.shares, { events: env.cloud.events, random: env.random })
+      ? new SharedView(env.cloud.shares, {
+          events: env.cloud.events,
+          random: env.random,
+          request: (m) => {
+            this.requestSender?.decided(m);
+          }
+        })
       : null;
     this.itemView = env.cloud ? new ItemView(env.cloud.lists, () => this.catalog) : null;
 
@@ -646,6 +680,7 @@ export class AppState {
       }
       this.#forgetSignIn();
       this.#forgetPending();
+      this.#forgetRequestsFocus();
       this.navigations++;
       this.menuFor = '';
       this.#clearTicksOnLeave(from);
@@ -690,6 +725,10 @@ export class AppState {
     const offShown = this.env.storage.onExternalChange((key) => {
       if (key !== null) return;
       this.now = Date.now();
+      if (this.#arrivalHeld) {
+        this.#arrivalHeld = false;
+        this.#sayArrival();
+      }
       this.#refreshShared(true);
       if (this.route.kind === 'item') void this.itemView?.refresh();
       if (!this.user) return;
@@ -760,6 +799,7 @@ export class AppState {
     if (lists) {
       lists.clear();
       this.ownerRequests?.clear();
+      this.#dropArrival();
       this.homebrew?.clear();
       void this.homebrew?.load();
       void lists.load().then(() => {
@@ -948,6 +988,7 @@ export class AppState {
   #listsSignedOut(): void {
     this.cloudLists?.clear();
     this.ownerRequests?.clear();
+    this.#dropArrival();
     this.homebrew?.clear();
     const r = this.route;
     if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
@@ -1684,6 +1725,8 @@ export class AppState {
        leak of the same kind `#stopRouter`/`#stopSettings` already guard
        against. */
     this.#waiting = null;
+    this.#arrival = null;
+    this.#arrivalHeld = false;
     this.hideToast();
   }
 
@@ -1692,20 +1735,41 @@ export class AppState {
    * app.js. Plain notices last 1600ms, an error 2600ms and `role="alert"`,
    * and one with an action 7000ms. A second call replaces the first and
    * restarts the clock, except a plain notice said while an error or an action
-   * toast shows: it waits and shows when that toast ends (docs/specs/FEATURES.md,
-   * "Chrome").
+   * toast shows: it waits and shows when that toast ends. The arrival toast
+   * (`arrival`) is the lowest: it waits behind any other toast, a plain one too,
+   * displaces nothing, and any later toast replaces it or takes its waiting slot
+   * (docs/specs/FEATURES.md, "Chrome").
    */
   say(
     msg: Msg,
-    opts: { error?: boolean | undefined; action?: ToastAction | undefined } = {}
+    opts: {
+      error?: boolean | undefined;
+      action?: ToastAction | undefined;
+      arrival?: true | undefined;
+    } = {}
   ): void {
     const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
-    if (mode === '' && this.#said && this.#said.mode !== '') {
-      this.#waiting = msg;
-      return;
+    const said: Said = { msg, mode, action: opts.action, arrival: opts.arrival };
+    const shown = this.#said;
+    /* The arrival waits behind any other toast, a plain one too; a plain toast waits
+       behind an error or an action toast but never behind the arrival. */
+    const blocks = !!shown && !shown.arrival && (!!opts.arrival || shown.mode !== '');
+    if (opts.arrival) {
+      if (blocks) {
+        if (!this.#waiting || this.#waiting.arrival) this.#waiting = said;
+        else this.#arrival = null;
+        return;
+      }
+    } else {
+      if (mode === '' && blocks) {
+        if (this.#waiting?.arrival) this.#arrival = null;
+        this.#waiting = said;
+        return;
+      }
+      if (shown?.arrival) this.#arrival = null;
     }
     const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
-    this.#said = { msg, mode, action: opts.action };
+    this.#said = said;
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = null;
     this.#toastLeft = null;
@@ -1754,8 +1818,10 @@ export class AppState {
   }
 
   /** Ends the shown toast - its timer, its close or its action - and shows a waiting
-   *  plain message with its own 1600ms. */
+   *  toast with its own clock. */
   hideToast(): void {
+    /* An arrival held for a hidden tab outlives the toast that ran unseen. */
+    if (this.#said?.arrival && !this.#arrivalHeld) this.#arrival = null;
     this.#said = null;
     this.#toastLeft = null;
     if (this.#toastTimer) {
@@ -1764,7 +1830,99 @@ export class AppState {
     }
     const next = this.#waiting;
     this.#waiting = null;
-    if (next) this.say(next);
+    if (next?.arrival && !this.env.page.visible()) {
+      this.#arrivalHeld = true;
+      return;
+    }
+    if (next) {
+      this.say(next.msg, {
+        error: next.mode === 'err',
+        action: next.action,
+        arrival: next.arrival
+      });
+    }
+  }
+
+  /* New purchase requests, one list id each, after the first heads read of the page. */
+  #arrive(ids: string[]): void {
+    this.#arrival = [...(this.#arrival ?? []), ...ids];
+    this.#arrivalLast = this.#arrival;
+    if (!this.env.page.visible()) {
+      this.#arrivalHeld = true;
+      return;
+    }
+    this.#sayArrival();
+  }
+
+  /* Shows the arrival toast, or restarts its clock when it shows; a waiting one only
+     redraws its text. A held clock (pointer or focus inside) stays held with the full time. */
+  #sayArrival(): void {
+    const ids = this.#arrival;
+    if (!ids?.length || this.#waiting?.arrival) return;
+    if (this.#said?.arrival && this.#toastLeft !== null) {
+      this.#toastLeft = ARRIVAL_MS;
+      return;
+    }
+    /* Read at draw time: an arrival while the toast shows or waits changes the text. The
+       action runs after `hideToast()` has dropped the ids, so it reads the last ones. */
+    const held = (): string[] => this.#arrival ?? this.#arrivalLast;
+    this.say(
+      (t) => {
+        const n = held().length;
+        const one = oneList(held());
+        if (one === null) return t.requestsNewN.replace('%n', String(n));
+        const name = this.cloudLists?.get(one)?.name || t.untitled;
+        return n === 1
+          ? t.requestArrived.replace('%s', () => name)
+          : t.requestsArrivedList.replace('%n', String(n)).replace('%s', () => name);
+      },
+      {
+        arrival: true,
+        action: {
+          label: (t) => {
+            const r = this.route;
+            return r.kind === 'storedList' && r.listId === oneList(held())
+              ? t.arrivalShow
+              : t.arrivalOpen;
+          },
+          go: () => {
+            this.openRequests(oneList(held()));
+          }
+        }
+      }
+    );
+  }
+
+  /* Signed out or another user: the arrival toast and what it holds go. */
+  #dropArrival(): void {
+    if (this.#waiting?.arrival) this.#waiting = null;
+    if (this.#said?.arrival) this.hideToast();
+    this.#arrival = null;
+    this.#arrivalHeld = false;
+    this.requestsFocus = null;
+  }
+
+  /**
+   * The arrival toast's action: opens the list's page, or `#/lists` for several lists,
+   * unless the route is already there. With a list, the panel takes the focus
+   * (`requestsFocus`) once the route is that list; a navigation refused by unsaved edits
+   * sets nothing. The toast moves a focus left on `body` to `#main` (`Toast.svelte`).
+   */
+  openRequests(listId: string | null): void {
+    const there = (): boolean => {
+      const r = this.route;
+      return listId
+        ? r.kind === 'storedList' && r.listId === listId
+        : r.kind === 'section' && r.section === 'lists';
+    };
+    if (!there()) this.go(listId ? storedListHash(listId) : sectionHash('lists'));
+    if (listId && there()) this.requestsFocus = listId;
+  }
+
+  /* A route away from the flagged list drops the panel's focus flag. */
+  #forgetRequestsFocus(): void {
+    const r = this.route;
+    if (r.kind !== 'storedList' || r.listId !== this.requestsFocus) this.requestsFocus = null;
   }
 
   #applySource(): void {
@@ -1947,6 +2105,7 @@ export class AppState {
     this.hash = this.#fallback(hash);
     this.#forgetSignIn();
     this.#forgetPending();
+    this.#forgetRequestsFocus();
     this.navigations++;
     this.menuFor = '';
     this.#clearTicksOnLeave(from);

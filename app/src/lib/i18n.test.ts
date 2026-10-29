@@ -33,6 +33,7 @@ import {
   eqWord,
   fewNames,
   selCountText,
+  countPiecesText,
   nameOf,
   type StatLabels
 } from './i18n.js';
@@ -318,6 +319,18 @@ describe('selCountText', () => {
     expect(selCountText(1, 3, 'en', en)).toBe('Selected 1 item · 3 pcs');
     expect(selCountText(4, 9, 'en', en)).toBe('Selected 4 items · 9 pcs');
     expect(selCountText(21, 21, 'en', en)).toBe('Selected 21 items');
+  });
+});
+
+describe('countPiecesText', () => {
+  it('counts the entries in the given plural set and adds the pieces only when they differ', () => {
+    const ru = dict('ru');
+    const en = dict('en');
+    expect(countPiecesText(1, 1, ru.itemsN, 'ru', ru)).toBe('1 позиция');
+    expect(countPiecesText(2, 7, ru.itemsN, 'ru', ru)).toBe('2 позиции · 7 шт.');
+    expect(countPiecesText(100, 9900, ru.itemsN, 'ru', ru)).toBe('100 позиций · 9900 шт.');
+    expect(countPiecesText(2, 7, en.itemsN, 'en', en)).toBe('2 items · 7 pcs');
+    expect(countPiecesText(4, 9, ru.selectedN, 'ru', ru)).toBe(selCountText(4, 9, 'ru', ru));
   });
 });
 

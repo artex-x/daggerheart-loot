@@ -1,10 +1,10 @@
 # #/lists ~ requests as gm1
 # route: #/lists
-# why: two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards
+# why: two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои списки - Генератор лута Daggerheart" [url=/lists?as=gm1]
+RootWebArea "(2) Мои списки - Генератор лута Daggerheart" [url=/lists?as=gm1]
   link "К содержимому" [url=/lists?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=/roll/std]
@@ -57,6 +57,9 @@ RootWebArea "Мои списки - Генератор лута Daggerheart" [url
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Новых запросов по списку «Лавка кузнеца»: 2"
+    button "Открыть"
 
 ## ru :: controls
 EN
@@ -78,6 +81,7 @@ daggerheart.com
 Новый список
 Обычные правила
 Открывать этот раздел при запуске
+Открыть
 Поиск
 Пустой список, 0 позиций, изменён 1 час назад
 Создать
@@ -88,7 +92,7 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
+RootWebArea "(2) My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
   link "Skip to content" [url=/en/lists?as=gm1#main]
   banner ""
     link "Лут DAGGERHEART" [url=/en/roll/std]
@@ -141,6 +145,9 @@ RootWebArea "My lists - Daggerheart Loot Generator" [url=/en/lists?as=gm1]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "New requests for the list "Лавка кузнеца": 2"
+    button "Open"
 
 ## en :: controls
 Account: gm1@example.test
@@ -152,6 +159,7 @@ How this works
 Import from file
 Install as an app
 New list
+Open
 Open this section on start
 Privacy
 RU

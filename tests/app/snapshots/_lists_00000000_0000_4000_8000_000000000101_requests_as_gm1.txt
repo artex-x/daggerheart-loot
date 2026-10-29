@@ -1,6 +1,6 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ requests as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»
+# why: the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»
 # as: gm1
 
 ## ru :: tree
@@ -41,7 +41,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       button "Принять"
       button "Отклонить"
     status ""
-      StaticText "Новый запрос"
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -144,6 +143,9 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
       link "Конфиденциальность" [url=/pages/privacy.html]
       link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Новых запросов по списку «Лавка кузнеца»: 2"
+    button "Показать"
 
 ## ru :: controls
 EN
@@ -190,6 +192,7 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Показать
 Принять
 Просмотр
 Результат броска
@@ -258,7 +261,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       button "Apply"
       button "Decline"
     status ""
-      StaticText "New request"
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]
@@ -361,6 +363,9 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "New requests for the list "Лавка кузнеца": 2"
+    button "Show"
 
 ## en :: controls
 Account: gm1@example.test
@@ -425,6 +430,7 @@ ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namele
 Search
 Select all
 Share
+Show
 Skip to content
 Standard rules
 Stride Potion

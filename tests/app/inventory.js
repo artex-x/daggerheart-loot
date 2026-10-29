@@ -301,7 +301,11 @@ async function tickTwo(d) {
   await d.tick('Выбрать: Трофеи');
 }
 
+/** Two purchase requests, sent once the owner's first requests read has landed: an arrival
+ *  before it says nothing, so the new-request toast is the same in every run. */
 async function twoRequests(d) {
+  for (let i = 0; i < 40 && !(await d.count('main[data-requests="ready"]')); i++)
+    await d.settle();
   await d.fake('request', 'player-token-1', [
     { item: 'ci1', qty: 1 },
     { item: 'cc1', qty: 3 }
@@ -1344,11 +1348,25 @@ const STATES = [
     id: '#/lists ~ requests as gm1',
     route: '#/lists',
     as: 'gm1',
-    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards',
+    why: 'two purchase requests on «Лавка кузнеца», one per link: the gold line «2 запроса ждут ответа» under its meta line «10 позиций · изменён 3 дня назад», and in its link name; the pick box in its corner; no line on the other cards; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть»; the tab title «(2) Мои списки - ...»',
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.count('.listcard-req')); i++) await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/roll/std ~ request arrived as gm1',
+    route: '#/roll/std',
+    as: 'gm1',
+    why: 'two purchase requests on «Лавка кузнеца» arrive on another page: the gold action toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Открыть» at the bottom; the tab title «(2) Обычные правила - ...»; the page itself unchanged',
+    enter: async (d) => {
+      await twoRequests(d);
+      for (let i = 0; i < 40 && !(await d.count('.toast.act')); i++) await d.settle();
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: '#/lists ~ lists selected as gm1',
@@ -1614,34 +1632,38 @@ const STATES = [
     id: SHOP + ' ~ requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»",
+    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»",
     enter: async (d) => {
       await twoRequests(d);
       /* A drawn request is read at once in a visible tab; wait for that read. */
       for (let i = 0; i < 40 && !(await d.text()).includes('истечёт через'); i++)
         await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: SHOP + ' ~ requests loading as gm1',
     route: SHOP,
     as: 'gm1',
     hold: 'lines:stall',
-    why: 'the requests read whose lines never answer: the small «Загружаем...» line in the panel slot after the action row, no panel; the page otherwise as «~ requests as gm1»',
+    why: 'the requests read whose lines never answer: the small «Загружаем...» line in the panel slot after the action row, no panel; the page otherwise as «~ requests as gm1»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the requests arrived on the index); the tab title «(2) Лавка кузнеца - ...» (unread: no lines drawn)',
     enter: async (d) => {
       /* A request that arrives on an open list page draws with no loading line: they arrive
          on the index, and the list page opened then reads their lines. */
       await requestsOnIndex(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Загружаем...'); i++)
         await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: SHOP + ' ~ requests failed as gm1',
     route: SHOP,
     as: 'gm1',
     hold: 'lines:fail',
-    why: 'the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel',
+    why: 'the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the requests arrived on the index); the tab title «(2) Лавка кузнеца - ...» (unread: no lines drawn)',
     enter: async (d) => {
       await requestsOnIndex(d);
       for (
@@ -1650,7 +1672,9 @@ const STATES = [
         i++
       )
         await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: SHOP + ' ~ details failed as gm1',
@@ -1671,31 +1695,35 @@ const STATES = [
     id: SHOP + ' ~ many requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: '«Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn',
+    why: '«Новое в списке (4)»: three requests drawn, the newest first with its first five lines and «и ещё 2 позиции» under them, then «и ещё 1 запрос» after the third; each fold a bare button with a caret; no «истечёт»: the list is read only once every pending request is drawn; the toast «Новых запросов по списку «Лавка кузнеца»: 4» with «Показать»; the tab title «(4) Лавка кузнеца - ...» (unread: the fold is closed)',
     enter: async (d) => {
       await manyRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (4)'); i++)
         await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: SHOP + ' ~ short as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "«Принять» on the GM link's over-stock request: the alert «Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не списано.», «Принять доступное» in place of «Принять»; nothing changed in the list",
+    why: "«Принять» on the GM link's over-stock request: the alert «Не хватает: Зелье Быстрого Шага - просят 9, есть 5. Ничего не списано.», «Принять доступное» in place of «Принять»; nothing changed in the list; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the refusal is the panel's alert line, not a toast)",
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
         await d.settle();
       await d.click('Принять');
       for (let i = 0; i < 40 && !(await d.count('.shortmsg')); i++) await d.settle();
-    }
+    },
+    /* a 7000ms toast; arrived at afresh per language - see this file's header */
+    timed: true
   },
   {
     id: SHOP + ' ~ decided as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "«Отклонить» on the GM link's request, the fold opened: «Новое в списке (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end",
+    why: "«Отклонить» on the GM link's request, the fold opened: «Новое в списке (1)» with the players' request, «Решённые в этот раз (1)» expanded with «По ссылке для мастера · только что · отклонён», «Зелье Быстрого Шага ×9» and «Палаш ×1», and «Скрыть» at the fold row's end; the toast «Запрос отклонён», which replaced the new-request toast",
     enter: async (d) => {
       await twoRequests(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Новое в списке (2)'); i++)
@@ -2145,11 +2173,36 @@ const STATES = [
   {
     id: '#/s/player-token-1 ~ sent',
     route: '#/s/player-token-1',
-    why: 'signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»',
+    why: 'signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the muted line under the actions «Запрос (2 позиции · 7 шт.) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.», the toast «Запрос отправлен владельцу списка.»',
     enter: async (d) => {
       await d.tick('Первоклассный Спальный Мешок');
       await d.tick('Зелье Быстрого Шага');
       await d.click('Сообщить владельцу');
+      for (let i = 0; i < 40 && !(await d.count('.sentline')); i++) await d.settle();
+    },
+    /* a 1600ms toast; arrived at afresh per language - see this file's header */
+    timed: true
+  },
+  {
+    id: '#/s/player-token-1 ~ sent and declined',
+    route: '#/s/player-token-1',
+    why: 'signed out, ci1 and cc1 sent, then the owner declines on another device: the toast «Владелец отклонил ваш запрос.», the line «Владелец отклонил запрос.» under the actions, «Запрос отправлен» still disabled, both ticks kept',
+    enter: async (d) => {
+      /* The decision is heard on the share topic only once it is joined. */
+      for (let i = 0; i < 40 && !(await d.count('.said[data-live="live"]')); i++)
+        await d.settle();
+      await d.tick('Первоклассный Спальный Мешок');
+      await d.tick('Зелье Быстрого Шага');
+      await d.click('Сообщить владельцу');
+      for (let i = 0; i < 40 && !(await d.count('.sentline')); i++) await d.settle();
+      await d.fake('decideNewest', 'player-token-1', 'declined');
+      for (
+        let i = 0;
+        i < 40 &&
+        !/Владелец отклонил запрос\.|The owner declined the request\./.test(await d.text());
+        i++
+      )
+        await d.settle();
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true

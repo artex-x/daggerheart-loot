@@ -8,7 +8,8 @@
   whole deleted and the positions renumbered) or declines; two sends at the cap
   and two applies on one list run in order; a line whose entry is deleted
   while the send waits keeps a null price; each send and decision nudges
-  the owner's topic, with the tab only on a decision, and no share topic. A
+  the owner's topic, with the tab only on a decision; a decision also tells
+  the request's own active share topic { request, status, partial }. A
   request can be decided for 30 days, or until 1 hour after its first read
   (mark_list_read(), an apply or a decline), and counts against the cap
   while unread.
@@ -1048,12 +1049,69 @@ describe('the owner topic', () => {
       assert.equal(listRows.length, 1);
       assert.equal(listRows[0].payload.list, list);
       assert.equal(listRows[0].payload.by, 'tab-1');
-      assert.equal(await shareRequestRows(), shares);
+      // The request's own share topic hears each decision; the other share only R3's revision.
+      assert.equal(await shareRequestRows(), shares + 2);
+      assert.deepEqual(
+        (await requestRows(`share:${topic.gm}`)).map((r) => r.payload),
+        [
+          { request: ids[0], status: 'applied', partial: false },
+          { request: ids[1], status: 'declined', partial: false }
+        ]
+      );
       // The apply lowered an entry: R3's own revision message, not a request.
       assert.deepEqual(
         (await rowsOf(`share:${topic.player}`)).slice(shareRows).map((r) => r.event),
         ['revision']
       );
+    });
+  });
+
+  /* One transaction gives both rows the same inserted_at, so their order is not read. */
+  it('sends partial: true for a clamped apply, beside the revision', async () => {
+    await withWorld(async ({ a, tokens, topic }) => {
+      const rid = uuid();
+      await commitAs(sql, { role: 'anon' }, (tx) =>
+        send(tx, tokens.player, [{ item: 'ci1', qty: 3 }], rid)
+      );
+      const before = (await rowsOf(`share:${topic.player}`)).length;
+      const v = await commitAs(sql, { role: 'authenticated', sub: a }, (tx) =>
+        apply(tx, rid, true)
+      );
+      assert.deepEqual(v, { applied: true, taken: 2 });
+      const got = (await rowsOf(`share:${topic.player}`)).slice(before);
+      assert.deepEqual(got.map((r) => r.event).sort(), ['request', 'revision']);
+      assert.deepEqual(got.find((r) => r.event === 'request')?.payload, {
+        request: rid,
+        status: 'applied',
+        partial: true
+      });
+    });
+  });
+
+  it('sends no share message for a request whose share was stopped after the send', async () => {
+    await withWorld(async ({ a, list, tokens, topic }) => {
+      const rid = uuid();
+      await commitAs(sql, { role: 'anon' }, (tx) => send(tx, tokens.player, ONE, rid));
+      await sql`update public.list_shares set revoked_at = now() where topic_key = ${topic.player}`;
+      const owner = (await requestRows(`owner:${a}`)).length;
+      await commitAs(sql, { role: 'authenticated', sub: a }, (tx) => decline(tx, rid));
+      assert.deepEqual(await requestRows(`share:${topic.player}`), []);
+      assert.deepEqual((await requestRows(`owner:${a}`)).slice(owner), [
+        { event: 'request', payload: { list, by: null } }
+      ]);
+    });
+  });
+
+  it("sends a decision of a players' link request on the players' topic only", async () => {
+    await withWorld(async ({ a, tokens, topic }) => {
+      const rid = uuid();
+      await commitAs(sql, { role: 'anon' }, (tx) => send(tx, tokens.player, ONE, rid));
+      await commitAs(sql, { role: 'authenticated', sub: a }, (tx) => decline(tx, rid));
+      assert.deepEqual(
+        (await requestRows(`share:${topic.player}`)).map((r) => r.payload),
+        [{ request: rid, status: 'declined', partial: false }]
+      );
+      assert.deepEqual(await requestRows(`share:${topic.gm}`), []);
     });
   });
 });

@@ -216,6 +216,26 @@ describe('SharedView', () => {
       expect(view.live).toBe(false);
     });
 
+    it('passes a decision message on, and reads nothing for it', async () => {
+      vi.useFakeTimers();
+      const cloud = fakeCloud(SEED);
+      const tap = tapped(cloud);
+      const heard = vi.fn();
+      const view = new SharedView(cloud.shares, {
+        events: tap.events,
+        random: () => 0.5,
+        request: heard
+      });
+      await view.open('player-token-1', null);
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      const read = vi.spyOn(cloud.shares, 'read');
+      const id = cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+      expect(id && cloud.decide(id, 'declined')).toBe(true);
+      await vi.advanceTimersByTimeAsync(COALESCE_MS);
+      expect(heard).toHaveBeenCalledExactlyOnceWith({ id, status: 'declined', partial: false });
+      expect(read).not.toHaveBeenCalled();
+    });
+
     it('leaves the topic on close', async () => {
       const { view } = await opened(fakeCloud(SEED));
       view.close();

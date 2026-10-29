@@ -746,6 +746,136 @@ describe('the toast component, directly', () => {
     expect(elsewhere).toHaveFocus();
     await expectNoA11yViolations(container);
   });
+
+  it('leaves focus where it is for a move to another page', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const from = add(document.createElement('input'));
+    from.focus();
+    app.say(() => 'Новый запрос по списку «Клад»', {
+      action: { label: (t) => t.arrivalOpen, go: vi.fn() }
+    });
+    await screen.findByRole('button', { name: 'Открыть' });
+    await tick();
+    await tick();
+    expect(from).toHaveFocus();
+    await expectNoA11yViolations(container);
+  });
+
+  it('pauses a move toast while the pointer is over it', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      app.say(() => 'Новый запрос по списку «Клад»', {
+        action: { label: (t) => t.arrivalOpen, go: vi.fn() }
+      });
+      await tick();
+      const box = container.querySelector('.toast') as HTMLElement;
+      await fireEvent.pointerEnter(box);
+      vi.advanceTimersByTime(60_000);
+      expect(app.toast).not.toBeNull();
+      await fireEvent.pointerLeave(box);
+      vi.advanceTimersByTime(7000);
+      expect(app.toast).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hides the toast, then moves, and hands a focus left on the page to the main landmark', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const order: string[] = [];
+    const go = vi.fn(() => {
+      order.push(app.toast ? 'shown' : 'hidden');
+    });
+    app.say(() => 'Новых запросов: 3', { action: { label: (t) => t.arrivalOpen, go } });
+    await userEvent.click(await screen.findByRole('button', { name: 'Открыть' }));
+    expect(go).toHaveBeenCalledOnce();
+    expect(order).toEqual(['hidden']);
+    expect(app.toast).toBeNull();
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('leaves a focus the move gave to the page where it is', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const head = add(document.createElement('h2'), 'Новое в списке (1)');
+    head.tabIndex = -1;
+    app.say(() => 'Новый запрос по списку «Клад»', {
+      action: {
+        label: (t) => t.arrivalShow,
+        go: () => {
+          head.focus();
+        }
+      }
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Показать' }));
+    await tick();
+    await tick();
+    expect(head).toHaveFocus();
+  });
+});
+
+describe('the unread requests count in the tab title', () => {
+  const two = () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    cloud.request('gm-token-1', [{ item: 'ci1', qty: 1 }]);
+    return cloud;
+  };
+
+  it('prefixes the count of unread requests, and none once they are read', async () => {
+    const router = memoryRouter('#/lists');
+    const { container } = render(App, {
+      env: fakeEnv({ router, data: fakeData(LOOT), cloud: two() })
+    });
+    await waitFor(() => {
+      expect(document.title).toBe('(2) Мои списки - Генератор лута Daggerheart');
+    });
+    await expectNoA11yViolations(container);
+    router.navigate('#/lists/' + uuid(101));
+    await waitFor(() => {
+      expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
+    });
+  });
+
+  it('drops the count once the requests expired', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const storage = memoryStorage();
+      render(App, { env: at('#/roll/std', { data: fakeData(LOOT), cloud: two(), storage }) });
+      await waitFor(() => {
+        expect(document.title).toBe('(2) Обычные правила - Генератор лута Daggerheart');
+      });
+      vi.setSystemTime(Date.now() + 31 * 24 * 3_600_000);
+      storage.fireExternalChange(null);
+      await waitFor(() => {
+        expect(document.title).toBe('Обычные правила - Генератор лута Daggerheart');
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the plain title with no unread request', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = render(App, { env: at('#/lists', { data: fakeData(LOOT), cloud }) });
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
+    expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
+  });
 });
 
 describe('the account control', () => {

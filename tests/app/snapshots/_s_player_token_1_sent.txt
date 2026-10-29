@@ -1,6 +1,6 @@
 # #/s/player-token-1 ~ sent
 # route: #/s/player-token-1
-# why: signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the toast «Запрос отправлен владельцу списка.»
+# why: signed out, ci1 and cc1 ticked and «Сообщить владельцу» pressed: both ticks and both take lines kept, «Запрос отправлен» disabled last in the bar, the muted line under the actions «Запрос (2 позиции · 7 шт.) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.», the toast «Запрос отправлен владельцу списка.»
 
 ## ru :: tree
 RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<v>]
@@ -54,6 +54,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
     button "Скопировать"
     button "Запрос отправлен" [disabled=true]
+    StaticText "Запрос (2 позиции · 7 шт.) ждёт ответа владельца до 30 дней. Есл..." [namelen=117 namehash=c78ca0f4]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -164,6 +165,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
     button "Copy"
     button "Request sent" [disabled=true]
+    StaticText "The request (2 items · 7 pcs) waits up to 30 days for the owner'..." [namelen=133 namehash=d23cc301]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]

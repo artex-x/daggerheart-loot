@@ -70,6 +70,9 @@
   const sender = $derived(app.requestSender);
   const lines = $derived(ids.map((id) => ({ item: id, qty: takenOf(id) })));
   const sent = $derived(token !== null && !!sender && sender.isSent(token, lines));
+  /* What was sent and how long it waits, or the owner's decision, while the sent mark
+     holds; plain text, not a live region: the toasts say the send and the decision. */
+  const sentLine = $derived(token !== null && sender ? sender.lineFor(token, lines) : null);
   const asking = $derived(
     sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
   );
@@ -210,6 +213,9 @@
               >
             {/if}
           </div>
+          {#if sentLine}
+            <p class="sentline">{sentLine(t, app.lang)}</p>
+          {/if}
         {/if}{/if}
     </div>
   </section>
@@ -328,6 +334,15 @@
 
   .notify {
     display: flex;
+  }
+
+  /* Information under the action row, not a warning (rule 19). */
+  .sentline {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
 
   /* The print sign-in prompt takes the action row's place, as the question does. */
