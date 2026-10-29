@@ -15,6 +15,7 @@ deleted.
 ## Index
 
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
+- 2026-10-29 - [A resume past the prompt-cache lifetime is replaced by a fresh dispatch](decisions/2026-10-29-a-resume-past-the-prompt-cache-lifetime-is-replaced-by-a-fresh-dispatch.md)
 - 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)
 - 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
 - 2026-10-29 - [A sign-in return keeps the language of the address left](decisions/2026-10-29-a-sign-in-return-keeps-the-language-of-the-address-left.md)

@@ -158,6 +158,9 @@ trap row 45 fixed).
 
 ## Resuming a worker
 
+The prompt-cache lifetime a subagent gets on this host is unmeasured
+(2026-10-29), so the orchestrate prompt treats an unknown age as expired.
+
 A subagent that ended its turn is still listed and still holds its
 context; `SendMessage` to its name resumes it from its transcript, and
 its reply arrives as an ordinary task notification. Measured 2026-09-11
