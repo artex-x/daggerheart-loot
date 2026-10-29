@@ -4,7 +4,8 @@
  * its path form convert; this decides how the bar is read and written. The two
  * are separate because the meaning is a frozen contract and the mechanism is not
  * - and because a parser that reaches for `location` cannot be tested without a
- * browser. The router holds no language: every write takes it from its caller. */
+ * browser. The router holds no language: every write takes it from its caller,
+ * except the rewrite of a typed old fragment, which keeps the language of the path. */
 
 import { addressOf, pathOf } from '../lib/address.js';
 import { parseHash } from '../lib/hash.js';
@@ -109,7 +110,14 @@ export function pathRouter(win: RouterWin = window): RouterPort {
   };
   const onEvent = (): void => {
     const { hash } = read();
-    if (hash !== seen) announce(hash);
+    if (hash !== seen) {
+      announce(hash);
+    } else if (win.location.hash.startsWith('#/')) {
+      /* A typed `#/...` of the route on screen is no step, but the bar must lose it. An
+         announce would count a navigation and close menus for a route that did not change. */
+      const lang = addressOf(win.location.pathname, '').lang ?? 'ru';
+      write('replaceState', hash, lang, vOf(win.location.search));
+    }
   };
   return {
     hash: () => read().hash,

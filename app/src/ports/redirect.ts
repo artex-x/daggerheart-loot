@@ -5,10 +5,14 @@
  * the only place a refused link or a cancelled consent is ever reported.
  * `takeRedirect` runs before the app mounts: it reads those parameters,
  * takes the record `saveReturn` left in this tab, and puts the address back
- * to the page the reader left, so the router never sees the callback.
+ * to the page the reader left, so the router never sees the callback. The
+ * record keeps the language of the address left, so an English page comes back
+ * under `/en/` even where the language could not be stored.
  * docs/specs/FEATURES.md, "Account"; docs/specs/STATE.md. */
 
+import { addressOf } from '../lib/address.js';
 import { readPending, type PendingAction } from '../lib/pending.js';
+import type { Lang } from '../lib/types.js';
 import type { Provider } from './types.js';
 
 export const RETURN_KEY = 'dhloot.auth.return';
@@ -21,6 +25,7 @@ const CALLBACK = 'auth-callback';
 const DROP = [CALLBACK, 'code', 'error', 'error_code', 'error_description'];
 const PROVIDERS: readonly string[] = ['google', 'discord'];
 const KINDS: readonly string[] = ['signIn', 'link'];
+const LANGS: readonly string[] = ['ru', 'en'];
 
 type Kind = 'signIn' | 'link';
 
@@ -37,6 +42,8 @@ export interface ReturnRecord {
   provider: Provider;
   /** What a sign-in prompt asked to finish on `hash` (lib/pending.ts). */
   action?: PendingAction;
+  /** The language of the address the reader left, read from the bar at the write. */
+  lang?: Lang;
 }
 
 export interface Redirect {
@@ -56,9 +63,17 @@ export function callbackUrl(href: string): string {
 
 /** Remembers where to come back to, for this tab only. A storage that refuses
  *  loses the way back, not the sign-in: the page then opens `#/account`. */
-export function saveReturn(win: RedirectWindow, record: ReturnRecord, now = Date.now()): void {
+export function saveReturn(
+  win: RedirectWindow,
+  record: Omit<ReturnRecord, 'lang'>,
+  now = Date.now()
+): void {
   try {
-    win.sessionStorage.setItem(RETURN_KEY, JSON.stringify({ ...record, at: now }));
+    const { lang } = addressOf(new URL(win.location.href).pathname, win.location.hash);
+    win.sessionStorage.setItem(
+      RETURN_KEY,
+      JSON.stringify({ ...record, ...(lang ? { lang } : {}), at: now })
+    );
   } catch {
     /* no record */
   }
@@ -83,7 +98,7 @@ function takeRecord(win: RedirectWindow, now: number): ReturnRecord | null {
   }
   if (!v || typeof v !== 'object') return null;
   const r = v as Record<string, unknown>;
-  const { hash, at, kind, provider, action } = r;
+  const { hash, at, kind, provider, action, lang } = r;
   if (typeof hash !== 'string' || !hash.startsWith('#/') || hash.length >= HASH_MAX)
     return null;
   if (typeof at !== 'number' || now - at < 0 || now - at > RETURN_MS) return null;
@@ -95,7 +110,8 @@ function takeRecord(win: RedirectWindow, now: number): ReturnRecord | null {
     hash,
     kind: kind as Kind,
     provider: provider as Provider,
-    ...(pending ? { action: pending } : {})
+    ...(pending ? { action: pending } : {}),
+    ...(typeof lang === 'string' && LANGS.includes(lang) ? { lang: lang as Lang } : {})
   };
 }
 
@@ -125,7 +141,10 @@ export function takeRedirect(win: RedirectWindow = window, now = Date.now()): Re
   win.history.replaceState(
     null,
     '',
-    url.origin + url.pathname + (query ? '?' + query : '') + (record?.hash ?? '#/account')
+    url.origin +
+      (record?.lang === 'en' ? '/en/' : url.pathname) +
+      (query ? '?' + query : '') +
+      (record?.hash ?? '#/account')
   );
   return {
     code,

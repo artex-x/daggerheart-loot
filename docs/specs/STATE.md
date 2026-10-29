@@ -53,8 +53,12 @@ where the last build wrote them. Since R10 the app reads, writes and deletes non
 and `dhloot.probe` is not written.
 
 `dhloot.auth.return` (`sessionStorage`) is `{ hash, at, kind, provider,
-action? }`, written just before sign-in or Connect leaves for the provider
-(`app/src/ports/redirect.ts`). Every address in storage is a route key
+action?, lang? }`, written just before sign-in or Connect leaves for the provider
+(`app/src/ports/redirect.ts`). `lang` is the language of the address the
+reader left (`ru` or `en`, read from the bar at the write); on `en` the page
+comes back as `<site>en/` plus `hash`. A `lang` that fails its check is
+dropped and the rest is kept; a record with no `lang` (an older build's)
+comes back at the root. Every address in storage is a route key
 (`#/...`), never a path. The provider always returns to the app root,
 `<site>?auth-callback=1`, the one form `supabase/config.toml` allows, and the
 page then appends `hash`, which the router reads as an old address and writes

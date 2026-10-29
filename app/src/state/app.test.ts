@@ -829,6 +829,13 @@ describe('the address bar in its path form', () => {
     expect(router.bar()).toBe('/en/lists');
   });
 
+  it('opens an English address in English when the storage refuses the language', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const app = new AppState(fakeEnv({ router, storage: brokenStorage() }));
+    expect(app.lang).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+  });
+
   it('keeps a stored language over the address, and the bar follows the screen', () => {
     const router = memoryRouter('#/lists', 'en');
     const app = new AppState(fakeEnv({ router, storage: stored({ [LANG_KEY]: 'ru' }) }));

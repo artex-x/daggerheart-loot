@@ -11,7 +11,7 @@ import {
 } from './redirect.js';
 
 const NOW = 1_800_000_000_000;
-const PAGE = 'https://example.test/loot/';
+const PAGE = 'https://example.test/';
 
 function stubWin(href: string, stored: Record<string, string> = {}) {
   const store = new Map(Object.entries(stored));
@@ -73,8 +73,21 @@ describe('saveReturn', () => {
       hash: '#/lists',
       kind: 'signIn',
       provider: 'google',
+      lang: 'ru',
       at: NOW
     });
+  });
+
+  it('stores the language of an English page', () => {
+    const { win, store } = stubWin('https://example.test/en/lists');
+    saveReturn(win, { hash: '#/lists', kind: 'signIn', provider: 'google' }, NOW);
+    expect(JSON.parse(store.get(RETURN_KEY) ?? '')).toMatchObject({ lang: 'en' });
+  });
+
+  it('stores no language for an old fragment under a Russian root', () => {
+    const { win, store } = stubWin('https://example.test/#/lists');
+    saveReturn(win, { hash: '#/lists', kind: 'signIn', provider: 'google' }, NOW);
+    expect(JSON.parse(store.get(RETURN_KEY) ?? '')).not.toHaveProperty('lang');
   });
 
   it('ignores a storage that throws', () => {
@@ -186,6 +199,35 @@ describe('takeRedirect', () => {
       action
     });
     expect(landed()).toBe(PAGE + hash);
+  });
+
+  it('returns an English page under /en/', () => {
+    const plain = stubWin('https://example.test/?auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ lang: 'en' })
+    });
+    takeRedirect(plain.win, NOW);
+    expect(plain.landed()).toBe('https://example.test/en/#/lists');
+    const kept = stubWin('https://example.test/?as=gm1&auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ lang: 'en' })
+    });
+    takeRedirect(kept.win, NOW);
+    expect(kept.landed()).toBe('https://example.test/en/?as=gm1#/lists');
+  });
+
+  it('returns a Russian page at the root', () => {
+    const { win, landed } = stubWin(PAGE + '?auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ lang: 'ru' })
+    });
+    takeRedirect(win, NOW);
+    expect(landed()).toBe(PAGE + '#/lists');
+  });
+
+  it('keeps the way back and drops a language it cannot read', () => {
+    const { win, landed } = stubWin(PAGE + '?auth-callback=1&code=abc', {
+      [RETURN_KEY]: record({ lang: 'de' })
+    });
+    expect(takeRedirect(win, NOW)?.provider).toBe('discord');
+    expect(landed()).toBe(PAGE + '#/lists');
   });
 
   it('keeps the way back and drops an action it cannot read', () => {

@@ -35,7 +35,12 @@ The old form `#/<rest>` after any path keeps working: a fragment that starts
 with `#/` wins over the path, its language comes from an English root path
 (`/en/#/...`, else none), and the app writes the path form in the same history
 entry at boot, and on a typed or pasted fragment (owner, 2026-10-28). A
-fragment that does not start with `#/` (`#main`) is not an address.
+fragment that does not start with `#/` (`#main`) is not an address. The
+rewrite of a typed fragment of the route on screen takes its language from
+the path, which the last write set to the language on screen. After a
+history write that threw (WebKit past 100 calls in 30 s), the path can name
+an older language; the bar then keeps that language until the next write,
+and the screen stays right.
 
 ## Sections
 
@@ -260,7 +265,8 @@ address as it is, and never sends it home (`FEATURES.md`, "Account").
 A provider's sign-in or linking redirect returns to
 `?auth-callback=1` on the page, with a `code` or the error parameters. That
 query is read and removed before the app mounts, and the address is put
-back to the page the reader left (`#/account` when none was recorded), so
+back to the page the reader left (`#/account` when none was recorded), under
+`/en/` when the reader left an English address, so
 the router never sees it (`STATE.md`, `dhloot.auth.return`).
 
 ## Homebrew

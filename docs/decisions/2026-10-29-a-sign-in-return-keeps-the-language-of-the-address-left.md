@@ -1,0 +1,6 @@
+# 2026-10-29 - A sign-in return keeps the language of the address left
+
+- Task: `path-urls-followups` (planner, 2026-10-29; owner request to pay the address debts).
+- Decision: the sign-in return record `dhloot.auth.return` carries an optional `lang` (`ru` or `en`), read from the bar when sign-in or Connect leaves for the provider (`app/src/ports/redirect.ts` `saveReturn`). An `en` record comes back at `<site>en/` plus the record's `hash`; a bad `lang` is dropped and the record kept; a record with no `lang` comes back at the root. A stored language still wins. Homes: `docs/specs/STATE.md`, `dhloot.auth.return`; `ROUTES.md`, the provider redirect paragraph; `I18N.md`, "The address bar carries the language on screen".
+- Rejected: a language in the callback, `<site>en/?auth-callback=1` (`supabase/config.toml` and the hosted projects allow one root callback per host, and two more redirect entries per host widen an owner setting); the language from `AppState.lang` passed through `SignInAfter` (it changes `AuthPort.signIn`, `link` and `SignInAfter`, Connect has no `after`, and the bar names the same language).
+- Accepted trade-off: after a history write that threw, the bar can name an older language, and the return then opens in that language. Both builds read both record shapes: an older build ignores `lang`.

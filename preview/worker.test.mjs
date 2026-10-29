@@ -169,6 +169,20 @@ const hang = (init) =>
     init.signal.addEventListener('abort', () => reject(init.signal.reason));
   });
 
+/** Returns a wrapper that holds every read until `n` of them have started. */
+const gateOf = (n) => {
+  let started = 0;
+  let release;
+  const gate = new Promise((r) => (release = r));
+  const wait = (res) => async () => {
+    started++;
+    if (started === n) release();
+    await gate;
+    return res();
+  };
+  return { wait, started: () => started };
+};
+
 /* A test that reads before `serve()` would read the live site, whose answer moves with
    each deploy (since path-urls its app document has no redirect). The worker reads a
    failed fetch as a failed read, so the test fails here instead. */
@@ -546,18 +560,10 @@ describe('/h/: names.json', () => {
 
   it('starts the item read and the names.json fetch together', { timeout: 5000 }, async () => {
     const w = await freshWorker();
-    let started = 0;
-    let release;
-    const gate = new Promise((r) => (release = r));
-    const wait = (res) => async () => {
-      started++;
-      if (started === 2) release();
-      await gate;
-      return res();
-    };
+    const { wait, started } = gateOf(2);
     serve({ item: wait(withLines), names: wait(() => json(NAMES)) });
     const { body } = await get('/h/' + ID, { w });
-    assert.equal(started, 2);
+    assert.equal(started(), 2);
     assert.deepEqual(lines(body), ['Улучшается до: Смола Бездны']);
   });
 
@@ -931,6 +937,45 @@ describe('the app document', () => {
     assert.equal(down.res.status, 503);
     assertApp(down.body, 'ru');
     assert.equal(title(down.body), 'Генератор лута Daggerheart');
+  });
+
+  const reads = [
+    [
+      '/h/',
+      '/h/' + ID,
+      3,
+      (wait) => ({ item: wait(() => json(itemAnswer())), names: wait(() => json(NAMES)) })
+    ],
+    ['/s/', '/s/' + TOKEN, 2, (wait) => ({ list: wait(() => json(listAnswer())) })],
+    ['/tables/', '/tables/core_item', 2, (wait) => ({ names: wait(() => json(NAMES)) })]
+  ];
+  for (const [route, path, n, stubs] of reads) {
+    it(
+      `starts the app document read together with the card reads of ${route}`,
+      { timeout: 5000 },
+      async () => {
+        const w = await freshWorker();
+        const g = gateOf(n);
+        serve({ ...stubs(g.wait), shell: g.wait(() => html(SHELL)) });
+        const { res, body } = await get(path, { w });
+        assert.equal(g.started(), n);
+        assert.equal(res.status, 200);
+        assertAppHeaders(res);
+        assertApp(body, 'ru');
+      }
+    );
+  }
+
+  it('answers /tables/ within 3 s when names.json and the app document both hang', async () => {
+    const w = await freshWorker();
+    serve({ names: hang, shell: hang });
+    const t0 = realNow();
+    const { res, body } = await get('/tables/core_item', { w });
+    const took = realNow() - t0;
+    assert.equal(res.status, 200);
+    assertHeaders(res);
+    assertRedirect(body, SITE + '#/tables/core_item');
+    assert.ok(took >= 1900 && took < 3000, String(took));
   });
 });
 

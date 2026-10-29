@@ -203,9 +203,11 @@ async function readShell(env) {
 }
 
 /** Returns the answer for a card: the app document with the card in its head, or the
- *  card page when the app document cannot be read or holds no card block. */
-async function respond(env, lang, method, status, ctx) {
-  const shell = await readShell(env);
+ *  card page when the app document cannot be read or holds no card block. A route that
+ *  reads its card first passes `started`, the app document read it began together with
+ *  that read, so the answer waits for the slower of the two reads, not for their sum. */
+async function respond(env, lang, method, status, ctx, started = readShell(env)) {
+  const shell = await started;
   if (shell !== null) {
     try {
       const doc = appDocument(shell, cardHead(lang, ctx), lang);
@@ -374,7 +376,7 @@ async function itemRoute(rest, lang, env, method) {
   let run = (/^[0-9A-Fa-f-]*/.exec(rest)?.[0] ?? '').toLowerCase();
   if (run.length > TAIL_MAX) run = '';
   const t = TEXT[lang];
-  const notFound = () =>
+  const notFound = (shell) =>
     respond(
       env,
       lang,
@@ -385,23 +387,25 @@ async function itemRoute(rest, lang, env, method) {
         desc: t.notFoundSub,
         url: hostUrl(env, lang, '/h/' + run),
         app: appUrl(env, lang, run ? 'h/' + run : '')
-      })
+      }),
+      shell
     );
   if (!UUID.test(run)) return notFound();
   const url = hostUrl(env, lang, '/h/' + run);
   const app = appUrl(env, lang, 'h/' + run);
+  const shell = readShell(env);
   const [read, names] = await Promise.all([
     rpc(env, 'get_item_preview', { p_id: run, p_lang: lang }, ITEM_MAX),
     readNames(env)
   ]);
   if (read.fail === 'big')
-    return respond(env, lang, method, 200, siteText(env, lang, url, app));
-  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app));
-  if (read.value === null) return notFound();
+    return respond(env, lang, method, 200, siteText(env, lang, url, app), shell);
+  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app), shell);
+  if (read.value === null) return notFound(shell);
   const v = read.value;
   if (!isObject(v) || !isObject(v.item) || !isObject(v.lines))
-    return respond(env, lang, method, 503, siteText(env, lang, url, app));
-  return respond(env, lang, method, 200, homebrewCtx(v, lang, env, names, run));
+    return respond(env, lang, method, 503, siteText(env, lang, url, app), shell);
+  return respond(env, lang, method, 200, homebrewCtx(v, lang, env, names, run), shell);
 }
 
 /* ---------- /s/: a shared list ---------- */
@@ -430,7 +434,7 @@ async function listRoute(rest, lang, env, method) {
   const run = m[1].length > TAIL_MAX ? '' : m[1];
   const filter = m[2] && m[2].length <= TAIL_MAX ? m[2] : '';
   const t = TEXT[lang];
-  const gone = (app) =>
+  const gone = (app, shell) =>
     respond(
       env,
       lang,
@@ -441,20 +445,22 @@ async function listRoute(rest, lang, env, method) {
         desc: t.shareGoneSub,
         url: hostUrl(env, lang, '/s/' + run),
         app
-      })
+      }),
+      shell
     );
   if (run.length !== 43) return gone(appUrl(env, lang, run ? 's/' + run : ''));
   const url = hostUrl(env, lang, '/s/' + run);
   const app = appUrl(env, lang, 's/' + run + (filter ? '/' + filter : ''));
+  const shell = readShell(env);
   const read = await rpc(env, 'get_shared_list_preview', { p_token: run }, LIST_MAX);
   if (read.fail === 'big')
-    return respond(env, lang, method, 200, siteText(env, lang, url, app));
-  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app));
-  if (read.value === null) return gone(app);
+    return respond(env, lang, method, 200, siteText(env, lang, url, app), shell);
+  if (read.fail) return respond(env, lang, method, 503, siteText(env, lang, url, app), shell);
+  if (read.value === null) return gone(app, shell);
   const v = read.value;
   if (!isObject(v) || !Number.isInteger(v.n) || v.n < 0)
-    return respond(env, lang, method, 503, siteText(env, lang, url, app));
-  return respond(env, lang, method, 200, listCtx(read.value, lang, env, run, filter));
+    return respond(env, lang, method, 503, siteText(env, lang, url, app), shell);
+  return respond(env, lang, method, 200, listCtx(read.value, lang, env, run, filter), shell);
 }
 
 /* ---------- /p/: a print set ---------- */
@@ -572,9 +578,10 @@ async function tablesRoute(rest, lang, env, method) {
     const at = hostUrl(env, lang, '/tables/' + run);
     return respond(env, lang, method, 404, siteText(env, lang, at, home));
   }
+  const shell = readShell(env);
   const names = await readNames(env);
-  if (!names) return respond(env, lang, method, 200, siteText(env, lang, url, app));
-  return respond(env, lang, method, 200, tableCtx(table, tail, lang, names, env, run));
+  if (!names) return respond(env, lang, method, 200, siteText(env, lang, url, app), shell);
+  return respond(env, lang, method, 200, tableCtx(table, tail, lang, names, env, run), shell);
 }
 
 /* ---------- the entry ---------- */

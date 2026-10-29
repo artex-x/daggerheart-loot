@@ -57,6 +57,9 @@
     it: Record_;
     index: Index;
     lang: Lang;
+    /** The language the card's links open in, where it differs from the card's: the
+     *  editor's preview of the other language. Defaults to `lang`. */
+    linkLang?: Lang;
     /** Whether the picture failed to load earlier in this session. */
     artBroken: boolean;
     /**
@@ -94,6 +97,7 @@
     it,
     index,
     lang,
+    linkLang,
     artBroken,
     rollLabel,
     col,
@@ -105,6 +109,7 @@
     manage = false
   }: Props = $props();
 
+  const hrefLang = $derived(linkLang ?? lang);
   const t = $derived(dict(lang));
   const name = $derived(nameOf(it, lang));
   /* Chips rather than a sentence, as the live app draws them, and without the
@@ -251,7 +256,7 @@
     <h2 class="card-name">
       {#if variant === 'compact'}
         <!-- A link, because from a result the name is the way to the page. -->
-        <a href={pathOf(recordHref(it), lang)} title={t.openPage}>{name}</a>
+        <a href={pathOf(recordHref(it), hrefLang)} title={t.openPage}>{name}</a>
       {:else}
         <span>{name}</span>
       {/if}
@@ -319,7 +324,7 @@
             <span class="craft-l">{t.craftFrom}</span>
             <span
               >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), lang)}>{relName(r, lang)}</a
+                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
                 >{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
@@ -333,7 +338,7 @@
             <span class="craft-l">{t.craftInto}</span>
             <span
               >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
-                  href={pathOf(recordHref(r), lang)}>{relName(r, lang)}</a
+                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
                 >{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
@@ -356,7 +361,8 @@
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
                     >{relName(member, lang)}</span
-                  >{:else}<a href={pathOf(recordHref(member), lang)}>{relName(member, lang)}</a
+                  >{:else}<a href={pathOf(recordHref(member), hrefLang)}
+                    >{relName(member, lang)}</a
                   >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
@@ -377,7 +383,7 @@
               {#snippet lead()}<b
                   ><i
                     >{#if ownSet && setKey}<a
-                        href={pathOf(homebrewTabHash('sets', setKey), lang)}>{bonus.name}</a
+                        href={pathOf(homebrewTabHash('sets', setKey), hrefLang)}>{bonus.name}</a
                       >:{:else}{bonus.name}:{/if}</i
                   ></b
                 >{/snippet}
@@ -418,7 +424,7 @@
               <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
             {/if}
             {#if ownRef(key)}
-              <a href={pathOf(homebrewTabHash('rules', key), lang)}>{t.hbCardManage}</a>
+              <a href={pathOf(homebrewTabHash('rules', key), hrefLang)}>{t.hbCardManage}</a>
             {/if}
           </details>
         {/each}

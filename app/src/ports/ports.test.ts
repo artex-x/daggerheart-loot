@@ -1084,6 +1084,28 @@ describe('the address bar', () => {
     expect(listeners.get('hashchange')?.size).toBe(0);
   });
 
+  it.each([
+    ['/roll/std?v=1', 'replace /roll/std?v=1'],
+    ['/en/roll/std?v=1', 'replace /en/roll/std?v=1']
+  ])(
+    'rewrites a typed old fragment of the route on screen at %s to its path, and tells nobody',
+    (at, want) => {
+      const { win, calls, fire, go } = fakeWin(at);
+      const seen: string[] = [];
+      pathRouter(win).onChange((h) => seen.push(h));
+      go(at + '#/roll/std');
+      fire('hashchange');
+      expect(calls).toEqual([want]);
+      expect(win.location.hash).toBe('');
+      expect(seen).toEqual([]);
+
+      go(win.location.pathname + '#main');
+      fire('hashchange');
+      expect(calls, 'a fragment that is not an address stays').toHaveLength(1);
+      expect(win.location.hash).toBe('#main');
+    }
+  );
+
   describe('a link click', () => {
     function click(
       r: ReturnType<typeof pathRouter>,

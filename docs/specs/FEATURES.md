@@ -1881,7 +1881,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   no name, subtitle or text reads «EN - пусто» / "EN - empty" on its
   button. The form opens on the item's own language: the language on
   screen for a new item or one named in both, else the one language that
-  names it. The card beside the item form draws the shown language. A save
+  names it. The card beside the item form draws the shown language. Its
+  links open in the language on screen. A save
   writes both languages in one write (one revision); a language the author
   did not change is written as the row holds it, a changed one trimmed. The
   summary names a problem of the hidden language with its code («Описание

@@ -1468,6 +1468,35 @@ describe('the fold «Связи»', () => {
         OTHERS
     );
   });
+
+  it('links the preview in the language on screen, whatever the edited language', async () => {
+    const BEDROLL = 'Первоклассный Спальный Мешок';
+    const own = (c: HTMLElement): HTMLAnchorElement[] => [
+      ...preview(c).querySelectorAll<HTMLAnchorElement>('a[href^="/"]')
+    ];
+    const ru = await editor(AXE, { cloud: await seeded({ [AXE]: ALL_FIVE }), real: true });
+    await press(t.hbTextLang, 'EN');
+    expect(own(ru.container).length).toBeGreaterThan(0);
+    for (const a of own(ru.container))
+      expect(a.getAttribute('href')).not.toMatch(/^\/(i\/)?en\//);
+    /* The link text stays in the edited language. */
+    expect(within(preview(ru.container)).queryByRole('link', { name: BEDROLL })).toBeNull();
+    await expectNoA11yViolations(ru.container);
+    cleanup();
+
+    const en = await editor(AXE, {
+      cloud: await seeded({ [AXE]: ALL_FIVE }),
+      real: true,
+      lang: 'en'
+    });
+    await press(dict('en').hbTextLang, 'RU');
+    expect(own(en.container).length).toBeGreaterThan(0);
+    for (const a of own(en.container)) expect(a.getAttribute('href')).toMatch(/^\/(i\/)?en\//);
+    expect(
+      within(preview(en.container)).getByRole('link', { name: BEDROLL }).getAttribute('href')
+    ).toMatch(/^\/i\/en\//);
+    await expectNoA11yViolations(en.container);
+  });
 });
 
 describe('the picture', () => {

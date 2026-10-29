@@ -907,7 +907,7 @@ documented; the parity rows below are replaced by the gates that survive.
 | gate | idle host | loaded host |
 |---|---|---|
 | a CI run (push to the last gate job) | 10.5-11.5 min, about 65 runner-minutes, no Actions cost (public repository; runs 39563712504 and 39599556984, 2026-10-21) | remote; the orchestrator waits with one background `ci-credit.mjs` call ("CI credit") |
-| `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21), 841 s for the merge of R10 and CF1 (2026-10-28); 657-710 s when the changed files reach `app.test.ts` and the component suites (2026-10-22, catalog-copy, host idle); 676-840 s for changes to `app.svelte.ts`, `dict.ts` or `i18n.ts` (2026-10-29, request-notices, 1704-4032 tests); the local floor before every task-branch commit |
+| `npm run check:fast` | 215-310 s (2026-10-07); 474-479 s when a merge of `main` puts every vitest file in the related run (2026-10-21), 841 s for the merge of R10 and CF1 (2026-10-28); 657-710 s when the changed files reach `app.test.ts` and the component suites (2026-10-22, catalog-copy, host idle); 676-840 s for changes to `app.svelte.ts`, `dict.ts` or `i18n.ts` (2026-10-29, request-notices, 1704-4032 tests); 564 s for changes to `RecordCard.svelte`, `router.ts` and `redirect.ts` that reach `app.test.ts` and the component suites (2026-10-29, path-urls-followups, 2286 tests); the local floor before every task-branch commit |
 | `npm run check:db` | 752 s, 548 tests, with a cold `supabase start` after `rdctl start` (2026-10-29, request-notices); the commit gate for `supabase/` and `tests/db/` | longer; stop the stack and Rancher (`rdctl shutdown`) before `check:fast` | longer; 792 s with WSL and Rancher up (2026-10-15), past 600 s it runs on in the background and still arms by its exit |
 | `npm run check` | 10-18 min with nothing cached (2026-10-07); the offline path only, in the main session with `run_in_background` or the owner's terminal | past the Bash tool's 600s foreground cap; it arms the commit gate by its own exit ("Gate credit") - wait for its exit, then confirm `.check-cache.json` before the commit |
 | `npm run check:built` | a few minutes | longer |
@@ -3442,12 +3442,13 @@ so the build tools `require()` it and `preview/worker.test.mjs` requires it
 before it imports the worker. It answers every client with the app document
 and the card in its head: it reads the site's `index.html` from the same
 deployment through `env.ASSETS` on every request (2 s, 65536 bytes, never
-cached, because an isolate can outlive a deployment) and replaces the lines
-between its card markers (`tools/share-card.mjs` `appDocument`). When that
-read fails, it answers the card page, which sends a person to `<site>#/...`
-by `meta refresh` and `location.replace`. It reads `names.json` from the
-same deployment through `env.ASSETS` too. It
-stores nothing (`docs/specs/META.md` section 3; `docs/decisions/`,
+cached, because an isolate can outlive a deployment), started together with
+the card's own reads, so the answer waits for the slower of the two reads,
+not for their sum. It replaces the lines between its card markers
+(`tools/share-card.mjs` `appDocument`). When that read fails, it answers the
+card page, which sends a person to `<site>#/...` by `meta refresh` and
+`location.replace`. It reads `names.json` from the same deployment through
+`env.ASSETS` too. It stores nothing (`docs/specs/META.md` section 3; `docs/decisions/`,
 2026-10-14, "Link previews come from a stateless worker"). GitHub Pages
 stays on as the old host, a mirror whose root forwards here
 (`docs/specs/META.md` section 9, "The old host"); never turn it off.
@@ -3494,7 +3495,11 @@ Rules:
   `Referrer-Policy` and `no-store`. Pages also routes the bare `/tables`
   to `/tables/*`: the worker answered it 302 home until `_routes.json`
   excluded `/tables` and `/en/tables`; since then `/tables` answers 200 from
-  the rewrite, and `/tables/` with a slash answers `404.html`. Both
+  the rewrite. Measured 2026-10-29 on production after the deploy of
+  `f74eae09`: `/tables/` and `/en/tables/` answer 200 with the app document
+  from the static rewrite (`Cache-Control: public, max-age=0,
+  must-revalidate`, not the worker's `no-store`), and
+  `/homebrew/f_kind-item.src-hb` answers 200. Both
   `check-site` lists printed `site published correctly` against the probe.
 
 Owner setup, facts of 2026-10-14:

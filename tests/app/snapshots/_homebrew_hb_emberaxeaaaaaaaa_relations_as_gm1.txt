@@ -365,10 +365,10 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
     button "Улучшенный Палаш" [description=Улучшенный Палаш]
     button "Продвинутый Палаш" [description=Продвинутый Палаш]
     button "Легендарный Палаш" [description=Легендарный Палаш]
-    link "Первоклассный Спальный Мешок" [url=/i/ci1]
-    link "Длинный Меч" [url=/i/q2]
-    link "Уголёк" [url=/i/dve19]
-    link "Искра" [url=/i/dve20]
+    link "Первоклассный Спальный Мешок" [url=/i/en/ci1]
+    link "Длинный Меч" [url=/i/en/q2]
+    link "Уголёк" [url=/i/en/dve19]
+    link "Искра" [url=/i/en/dve20]
     StaticText "Пылает"
     StaticText ", она должна отметить 1 Рану во время своей активации."
     DisclosureTriangle "Клеймо Ольхи СВОЙСТВО ОРУЖИЯ" [expanded=false]

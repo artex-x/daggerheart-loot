@@ -1419,6 +1419,7 @@
             it={card}
             index={previewIndex ?? app.index}
             lang={editIn}
+            linkLang={app.lang}
             artBroken={previewBroken}
             onartfail={() => {
               previewBroken = true;
