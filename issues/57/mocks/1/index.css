@@ -1,0 +1,129 @@
+/* The overview pages of the unit A batch mocks (1-5, 7). Mock chrome only:
+   the proposed UI is in the PNGs and in state.html. */
+:root {
+  color-scheme: dark;
+  --bg: #0e0c15;
+  --panel: #1a1626;
+  --line: #312a45;
+  --txt: #ece8f6;
+  --muted: #9b93b3;
+  --gold: #d8ab5e;
+  --gold-soft: #f0d091;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font:
+    15px/1.55 system-ui,
+    sans-serif;
+  padding: 16px;
+}
+main {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 23px;
+  margin: 0 0 6px;
+}
+h2 {
+  font-size: 20px;
+  margin: 28px 0 8px;
+}
+h3 {
+  font-size: 16px;
+  margin: 18px 0 6px;
+}
+p,
+li {
+  max-width: 85ch;
+}
+a {
+  color: var(--gold-soft);
+}
+.lead {
+  color: var(--muted);
+}
+section.q {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.opts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.opt {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+.opt.rec {
+  border-color: var(--gold);
+}
+.opt h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.opt.rec h4::before {
+  content: 'Recommended · ';
+  color: var(--gold);
+}
+.opt p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.shots {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2.6fr) minmax(0, 2.6fr);
+  gap: 10px;
+  align-items: start;
+}
+.shots.two {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr);
+}
+figure {
+  margin: 0;
+}
+figcaption {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+th,
+td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6px 8px;
+  border-top: 1px solid var(--line);
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+code {
+  font-size: 13px;
+}
+@media (max-width: 700px) {
+  .shots {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr);
+  }
+}

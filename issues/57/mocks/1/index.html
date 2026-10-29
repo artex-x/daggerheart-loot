@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 1 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 1 mock: foundation</h1>
+      <p class="lead">
+        This page shows the batch 1 mock for the owner to confirm: the UI font, the ten-step
+        ramp, the neutral pressed state, the badges, the footer links, the art well with the
+        kind glyph, and the two site share cards. Batch 1 changes no layout and no label.
+      </p>
+      <p>
+        <b>Status:</b> approved by the owner (2026-10-29), with two changes drawn on this page
+        since: the linear page ground on every mock of 1-5 and 7, and the kind glyph on the
+        print card.
+      </p>
+      <h2>The page ground</h2>
+      <p>
+        Every state of mocks 1-5 and 7 and both share cards now stand on one linear ground,
+        <code>linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)</code>; the two radial
+        washes of <code>tokens.css</code> <code>body</code> are gone (owner, 2026-10-29).
+      </p>
+      <h2>The face in these renders</h2>
+      <p>
+        Every PNG on this page renders <b>Source Sans Pro</b> TTF files
+        (<code>SourceSansPro-Regular</code>, <code>-SemiBold</code>, <code>-Bold</code>,
+        <code>-Black</code>) from <code>C:\Users\Ignat\.dhloot\notes\57\fonts\</code>, outside
+        the checkout. Source Sans Pro is the earlier release name of Source Sans 3. No Source
+        Sans 3 file is on this host: <code>@fontsource-variable/source-sans-3</code> is not
+        installed yet, and no system face has that name. Batch 1 ships the package for the app
+        and the static Source Sans 3 Regular and Semibold TTF faces for the share cards (owner,
+        Q1). Small metric differences between the two releases are possible, so step 9h compares
+        the real cards with these PNGs by eye, not by pixel.
+      </p>
+      <h2>The site share cards (1200 x 630)</h2>
+      <p class="lead">
+        Drawn as the owner chose for Q2: the page ground (the linear <code>--bg2</code> to
+        <code>--bg</code> ground over 520 px), the title in <code>--txt</code>, «DAGGERHEART» in
+        the muted brand-line colour <code>--muted2</code>, gold on the star only, Source Sans,
+        EN "armor" (Q3). The layout, the sizes and the positions of
+        <code>shareCardSvg()</code> stay.
+      </p>
+      <div class="opts">
+        <figure>
+          <figcaption>New, RU</figcaption>
+          <a href="share-rec__ru.png"
+            ><img src="share-rec__ru.png" alt="New, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>New, EN</figcaption>
+          <a href="share-rec__en.png"
+            ><img src="share-rec__en.png" alt="New, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Today, RU (og/_share.jpg)</figcaption>
+          <a href="../../../../og/_share.jpg"
+            ><img
+              src="../../../../og/_share.jpg"
+              alt="Today, RU (og/_share.jpg)"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Today, EN (og/_share_en.jpg)</figcaption>
+          <a href="../../../../og/_share_en.jpg"
+            ><img
+              src="../../../../og/_share_en.jpg"
+              alt="Today, EN (og/_share_en.jpg)"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <p>
+        <b>Plan defect found:</b> <code>shareCardSvg()</code> also draws a 6 px gold rule along
+        the bottom edge (<code>lib.mjs</code>,
+        <code>&lt;rect y="624" ... fill="#d8ab5e"/&gt;</code>). Plan step 9c says "gold only on
+        the star" but does not name the rule. The mock removes it; step 9c needs one line that
+        removes it too.
+      </p>
+
+      <h2>Owner questions</h2>
+      <section class="q">
+        <h2>Share card text (approved with the mock: keep the text)</h2>
+        <p class="lead">
+          Today both cards read «Генератор лута» / "Loot Generator", «DAGGERHEART», and a
+          subtitle that lists the kinds of records. The plan keeps the text and changes only
+          "armour" to "armor".
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>Keep the text</h4>
+            <p>
+              RU: «Добыча, расходники, оружие и броня · RU / EN». EN: "Loot, consumables,
+              weapons and armor · RU / EN".
+            </p>
+            <p>
+              <b>Trade-off:</b> The subtitle says what is in the data, not what a person does
+              with it.
+            </p>
+            <a href="share-rec__ru.png"><img src="share-rec__ru.png" alt="Text kept, RU" /></a>
+            <p>
+              <b>Why:</b> The text is true and short, and a link preview keeps the cached card
+              for a long time (META.md section 8), so a change of words gains little.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Name the three jobs</h4>
+            <p>
+              RU: «Бросок лута, все таблицы и поиск · RU / EN». EN: "Loot rolls, every table and
+              search · RU / EN". It matches the batch 2 header.
+            </p>
+            <p>
+              <b>Trade-off:</b> A new product sentence in both languages; the kinds of records
+              are no longer named.
+            </p>
+            <a href="share-text__ru.png"
+              ><img src="share-text__ru.png" alt="Three jobs, RU" /></a
+            ><a href="share-text__en.png"
+              ><img src="share-text__en.png" alt="Three jobs, EN" style="margin-top: 8px"
+            /></a>
+          </div>
+        </div>
+      </section>
+      <section class="q">
+        <h2>The kind glyph on the black-and-white print card - chosen (owner, Q1b.1)</h2>
+        <p class="lead">
+          Owner, 2026-10-29: the no-picture state is the kind glyph on print too, in colour and
+          in black and white, and the <code>_none</code> files go. The colour card has an art
+          block, so the glyph takes its place (the print state below). The black-and-white
+          layout has no art block for any record (<code>PrintCard.svelte</code> draws
+          <code>pc-art</code> only when not <code>bw</code>), so a no-picture record already
+          prints with no pedestal there.
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>Black and white stays as it is</h4>
+            <p>
+              The colour card shows the glyph; the black-and-white card is unchanged, with no
+              picture for any record.
+            </p>
+            <p>
+              <b>Trade-off:</b> In black and white a no-picture record looks like every other
+              record: no glyph.
+            </p>
+            <p>
+              <b>Why:</b> The black-and-white layout (Figma 3773-90792) is product law; it has
+              no art block to put the glyph in, and it already shows no pedestal.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Add the glyph to black and white</h4>
+            <p>
+              A small kind glyph in the black-and-white card, for every record or for no-picture
+              records only.
+            </p>
+            <p>
+              <b>Trade-off:</b> A change to a print layout: it needs its own print batch with
+              the print checks and a Figma node, as the plan says for a print font change.
+            </p>
+          </div>
+        </div>
+      </section>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="print">
+        The print card with no picture · <a href="state.html?s=print">ru</a> ·
+        <a href="state.html?s=print&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        Colour: the kind glyph on a dark well in the art block; the rest of the 63x88 mm card is
+        the capture of PrintCard.svelte. Black and white: unchanged (see the question above).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print__360__ru.png"
+            ><img src="print__360__ru.png" alt="print, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print__360__en.png"
+            ><img src="print__360__en.png" alt="print, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print__1180__ru.png"
+            ><img src="print__1180__ru.png" alt="print, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print__1180__en.png"
+            ><img src="print__1180__en.png" alt="print, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="type">
+        The font and the ten steps · <a href="state.html?s=type">ru</a> ·
+        <a href="state.html?s=type&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="type__360__ru.png"
+            ><img src="type__360__ru.png" alt="type, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="type__360__en.png"
+            ><img src="type__360__en.png" alt="type, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="type__1180__ru.png"
+            ><img src="type__1180__ru.png" alt="type, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="type__1180__en.png"
+            ><img src="type__1180__en.png" alt="type, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="pressed">
+        The neutral pressed state, gold, badges, focus · <a href="state.html?s=pressed">ru</a> ·
+        <a href="state.html?s=pressed&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="pressed__360__ru.png"
+            ><img src="pressed__360__ru.png" alt="pressed, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="pressed__360__en.png"
+            ><img src="pressed__360__en.png" alt="pressed, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="pressed__1180__ru.png"
+            ><img src="pressed__1180__ru.png" alt="pressed, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="pressed__1180__en.png"
+            ><img src="pressed__1180__en.png" alt="pressed, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="glyph">
+        The art well and the kind glyph on the five screen surfaces ·
+        <a href="state.html?s=glyph">ru</a> · <a href="state.html?s=glyph&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="glyph__360__ru.png"
+            ><img src="glyph__360__ru.png" alt="glyph, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="glyph__360__en.png"
+            ><img src="glyph__360__en.png" alt="glyph, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="glyph__1180__ru.png"
+            ><img src="glyph__1180__ru.png" alt="glyph, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="glyph__1180__en.png"
+            ><img src="glyph__1180__en.png" alt="glyph, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 1 (<code>mocks/1/</code>): the type ramp, the neutral pressed state on
+          <code>Seg</code> (the language switch, the table view, the print color), the badges,
+          the footer links, the art well and the kind glyph.
+        </li>
+        <li>
+          The «Все» chip and the other default chips keep their gold until batch 3 (plan section
+          10, interim departure); this page shows the batch 1 callers only.
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          The neutral pressed variant is drawn on <code>Seg</code> only (the language switch,
+          the table view, the print color), as plan review R4 asks; the
+          <code>Chip</code> variant is batch 3's.
+        </li>
+        <li>
+          The kind glyphs are the filled Material Icons paths of plan section 10
+          (<code>shield</code>, <code>science</code>, <code>diamond</code>, <code>check</code>).
+          The weapon glyph is a stand-in drawn for the mock: batch 1 copies the real Material
+          Symbols <code>swords</code> path. R drew stroke icons.
+        </li>
+        <li>
+          The footer shows the real DPCGL summary line («Источники и лицензия» / "Sources and
+          license", American spelling) under the three links.
+        </li>
+        <li>
+          Every EN string uses American spelling (owner, Q3): "color", "armor", "smolders",
+          "Traveler's".
+        </li>
+        <li>
+          The color print card of a no-picture record is drawn again in mock 1b with the lighter
+          print well (owner, 2026-10-29).
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          The stand-in weapon glyph reads as a plain cross at 36 px (the list cover). Batch 1
+          checks the real <code>swords</code> path at 36 px before it ships.
+        </li>
+        <li>
+          The badge (11.5 px) and the section label (12 px) are only half a step apart; weight
+          and tracking keep them apart in the specimen. No change.
+        </li>
+        <li>
+          The muted brand line on the share card measures about 5.4:1 on <code>--bg</code>; the
+          subtitle in <code>--muted</code> about 6.5:1. Both pass.
+        </li>
+        <li>
+          Clarity Rule: no help text, tooltip or legend in the proposed UI. The MOCK captions
+          are mock chrome.
+        </li>
+        <li>
+          Detector (<code>impeccable detect --json</code> over the static files): 4 findings,
+          none in proposed UI. <code>ua.css</code>: the mock address colour
+          <code>#8fa9c4</code> (mock chrome) and <code>20px</code> (the new
+          <code>--t-section</code> step, which DESIGN.md gets in batch 1);
+          <code>share.html</code>: the black page behind the card (mock chrome) and the family
+          "Source Sans 3" (DESIGN.md gets it in batch 1). No ignore was added. The state pages
+          draw with JavaScript, so the static detector cannot read them; the critique above is
+          the visual pass.
+        </li>
+      </ul>
+      <h2>Unit A files</h2>
+      <p>
+        The state pages of 1, 2, 3, 4, 5 and 7 load direction R read-only through
+        <code>&lt;base href="../direction/R/"&gt;</code>, then the unit A layer in this folder:
+        <code>ua.js</code> and <code>ua.css</code> (the batch 1 and 2 system every later mock
+        inherits) and <code>states-a.js</code> (the states of R with the paths of main and the
+        batch hooks). Each batch adds <code>b&lt;N&gt;.js</code>. Re-render:
+        <code>node issues/57/mocks/1/render.mjs 1 2 3 4 5 7</code> (puppeteer; it reads
+        <code>shots.json</code> in each folder).
+      </p>
+    </main>
+  </body>
+</html>

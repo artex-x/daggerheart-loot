@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Batch 1 mock - site share card</title>
+    <style>
+      /* The faces the mock can reach: Source Sans (OFL TTF files in the
+         owner's notes folder, outside the checkout). Batch 1 ships the static
+         Source Sans 3 Regular and Semibold TTF faces in tools/artwork/fonts/. */
+      @font-face {
+        font-family: 'Source Sans 3';
+        font-weight: 400;
+        src:
+          local('Source Sans 3'),
+          url('file:///C:/Users/Ignat/.dhloot/notes/57/fonts/SourceSansPro-Regular.ttf');
+      }
+      @font-face {
+        font-family: 'Source Sans 3';
+        font-weight: 600;
+        src:
+          local('Source Sans 3 SemiBold'),
+          url('file:///C:/Users/Ignat/.dhloot/notes/57/fonts/SourceSansPro-SemiBold.ttf');
+      }
+      html,
+      body {
+        margin: 0;
+        background: #000;
+      }
+      svg {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      /* shareCardSvg() of tools/artwork/lib.mjs with the batch 1 changes:
+         ?v=rec  the plan (Q2 recommended): the page ground (--bg2 to --bg over
+                 520 px, owner 2026-10-29), --txt title, --muted
+                 subtitle, «DAGGERHEART» in --muted2, gold on the star only (the
+                 6 px gold bottom rule of lib.mjs goes);
+         ?v=gold the Q2 alternative: as rec, with «DAGGERHEART» and the 6 px
+                 bottom rule in gold, as today;
+         ?v=text the text alternative: as rec, the subtitle names the three jobs.
+         The layout, the sizes and the positions stay as lib.mjs draws them. */
+      const q = new URLSearchParams(location.search);
+      const lang = q.get('lang') === 'en' ? 'en' : 'ru';
+      const v = q.get('v') || 'rec';
+      document.documentElement.lang = lang;
+      const TEXT = {
+        ru: {
+          title: 'Генератор лута',
+          brand: 'DAGGERHEART',
+          subtitle: 'Добыча, расходники, оружие и броня · RU / EN',
+          jobs: 'Бросок лута, все таблицы и поиск · RU / EN'
+        },
+        en: {
+          title: 'Loot Generator',
+          brand: 'DAGGERHEART',
+          subtitle: 'Loot, consumables, weapons and armor · RU / EN',
+          jobs: 'Loot rolls, every table and search · RU / EN'
+        }
+      }[lang];
+      const sub = v === 'text' ? TEXT.jobs : TEXT.subtitle;
+      const brandFill = v === 'gold' ? '#d8ab5e' : '#8a83a3';
+      const star = (cx, cy, o, i) => {
+        const p = [];
+        for (let k = 0; k < 10; k++) {
+          const r = k % 2 ? i : o;
+          const a = -Math.PI / 2 + (k * Math.PI) / 5;
+          p.push((cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1));
+        }
+        return 'M' + p.join(' L') + ' Z';
+      };
+      const font = `font-family="'Source Sans 3'"`;
+      /* the page ground (owner, 2026-10-29): linear-gradient(180deg,
+         var(--bg2) 0, var(--bg) 520px), the same 520 px on the 630 px card */
+      document.body.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+        <defs>
+          <linearGradient id="ground" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#14111d"/><stop offset="1" stop-color="#0e0c15"/>
+          </linearGradient>
+        </defs>
+        <rect width="1200" height="630" fill="url(#ground)"/>
+        <path d="${star(92, 301, 35, 15)}" fill="#d8ab5e"/>
+        <text x="150" y="321" ${font} font-size="64" font-weight="600" fill="#ece8f6">${TEXT.title}</text>
+        <text x="152" y="368" ${font} font-size="30" font-weight="600" letter-spacing="2" fill="${brandFill}">${TEXT.brand}</text>
+        <text x="152" y="418" ${font} font-size="26" font-weight="400" fill="#9b93b3">${sub}</text>${v === 'gold' ? '<rect y="624" width="1200" height="6" fill="#d8ab5e"/>' : ''}
+      </svg>`;
+    </script>
+  </body>
+</html>
