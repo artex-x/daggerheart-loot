@@ -116,8 +116,26 @@ Read CLAUDE.md, issues/57/context.md, plan.md, handoff.md.
 
 ```text
 Follow .claude/prompts/orchestrate.prompt.md. TASK: 57
-GOAL: refresh task 57 against main, plan the batches, then implement them on
-the task branch. Nothing lands on main until the owner has seen the batches.
+GOAL: first ship two small tasks to main, then refresh task 57 against main,
+plan its batches and implement them on the task branch. Nothing of task 57
+lands on main until the owner has seen the batches.
+
+0. Two small tasks first, each its own worktree, branch, plan, review and
+   squash onto main per orchestrate.prompt.md (they change no visual design,
+   so they land without waiting for the owner):
+   a. TASK deploy-replay-ci: a CI job on task branches that replays the
+      deploy job's collect and guard steps and runs
+      node tools/check-site.mjs --dir _site and --mirror --dir _old, so a
+      defect that only the main deploy would find fails on the branch.
+      Owner approved 2026-10-28; cost about 2-3 min per branch run.
+   b. TASK path-urls-followups: docs/specs/DEBT.md D118, D119, D120 (the
+      section "Address follow-ups"), plus the preview worker reading the card
+      and the app document in parallel (up to about 5 s saved for a crawler
+      when ASSETS hangs), plus one dated host fact in .claude/README.md (the
+      bare /tables probe paragraph): measured 2026-10-29 after deploy
+      f74eae09, /tables/ and /en/tables/ answer 200 with the app document,
+      and /homebrew/f_kind-item.src-hb answers 200.
+   Then continue with task 57 below; its step 1 merge picks both up.
 
 Work in .claude/worktrees/57 (branch claude/57). Read CLAUDE.md, then
 issues/57/context.md - its section "Owner directions (2026-10-28, chat)" is
@@ -157,14 +175,6 @@ inside the worktree (the guards read the cwd's checkout); a reviewer cannot
 write under issues/ - write its report from its message; agents never write
 to production.
 ```
-
-Still queued after task 57, not started: a branch-CI job that replays the
-deploy's collect and check-site steps; the address follow-ups D118-D120 with
-the preview worker reading the card and the app document in parallel. That
-follow-up task also writes one dated host fact into `.claude/README.md`
-(the bare `/tables` probe paragraph): measured 2026-10-29 after deploy
-`f74eae09`, `/tables/` and `/en/tables/` answer 200 with the app document,
-and `/homebrew/f_kind-item.src-hb` answers 200.
 
 ## Close - lock and land
 
