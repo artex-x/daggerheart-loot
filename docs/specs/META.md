@@ -365,8 +365,9 @@ this file's real location. One file serves both hosts, and the old host's
 root only forwards, so the links name the site's host itself. It exists only
 as a serving fallback, so the relative links of the static pages
 (section 9) are not its rule. `tools/check-site.lib.mjs`'s `checks()` proves the
-fallback on every deploy, against the local `_site/` build before
-publishing and against the live URL after
+fallback on every deploy and on every CI run outside `main`
+(`deploy-replay`), against the local `_site/` build before publishing, and
+on every deploy against the live URL after
 (`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`), and
 `mirrorChecks()` does the same for the old host (`--mirror`).
 

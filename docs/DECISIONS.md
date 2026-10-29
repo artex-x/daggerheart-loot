@@ -15,6 +15,7 @@ deleted.
 ## Index
 
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
+- 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)
 - 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
 - 2026-10-29 - [The Items tab filter lives in the address](decisions/2026-10-29-the-items-tab-filter-lives-in-the-address.md)
 - 2026-10-29 - [The Scary rule keeps one Russian body](decisions/2026-10-29-the-scary-rule-keeps-one-russian-body.md)

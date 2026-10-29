@@ -44,7 +44,8 @@ export const REQUIRED_JOBS = Object.freeze([
   'db',
   'e2e',
   'audit',
-  'secrets'
+  'secrets',
+  'deploy-replay'
 ]);
 
 // A push run appeared 6-8 min after its push on 2026-10-21; the owner's

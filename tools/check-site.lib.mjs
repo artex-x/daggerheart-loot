@@ -7,10 +7,10 @@
  * `read(path)` reader, resolving to `{ status, type, body }` - so the exact
  * same list runs against a live URL (`fetchReader`, used by check-site.mjs
  * after a deploy) and against a local `_site/` build (`dirReader`, used by
- * ci.yml's guard step before the deploy even starts). Before this file
- * existed, ci.yml's guard step re-implemented a subset of these assertions
- * as hand-written `grep`/`wc` lines that had already drifted from
- * check-site.mjs once.
+ * the `--dir` steps of ci.yml's `deploy` and `deploy-replay` jobs before a
+ * deploy even starts). Before this file existed, ci.yml's guard step
+ * re-implemented a subset of these assertions as hand-written `grep`/`wc`
+ * lines that had already drifted from check-site.mjs once.
  *
  * English throughout: this is a tool, not product text (docs/specs/META.md
  * section 6). The rest of tests/ still prints Russian and moves to English
@@ -580,9 +580,10 @@ export function fetchReader(root, timeoutMs = 15_000) {
 }
 
 /** The local-`_site/`-build reader, used before a deploy exists at all
- *  (ci.yml's guard step). Emulates only the one Pages rule this file's
- *  checks depend on: a path that is not on disk is served as 404.html's
- *  content with a 404 status - not GitHub Pages' missing-path behaviour in
+ *  (the `--dir` steps of ci.yml's `deploy` and `deploy-replay`). Emulates
+ *  only the one Pages rule this file's checks depend on: a path that is not
+ *  on disk is served as 404.html's content with a 404 status - not GitHub
+ *  Pages' missing-path behaviour in
  *  general, which measurably diverges from this locally (an extensionless
  *  path is 200 live but 404 here; a directory path throws `EISDIR`; a
  *  case-insensitive filesystem 200s where Pages 404s). None of that matters

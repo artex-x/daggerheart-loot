@@ -1760,6 +1760,66 @@ ok(
   'ci.yml: applied-check.mjs is gone; the database is the applied record'
 );
 
+/* `deploy-replay` is `deploy` before its first secret, on every run outside
+   `main` (docs/decisions/, 2026-10-29, "A run outside main replays the
+   deploy's steps before its first secret"). */
+{
+  const replay = jobOf('deploy-replay');
+  ok(replay, 'deploy-replay: the job is missing from ci.yml');
+  const normal = function (step) {
+    return step
+      .split(/\r?\n/)
+      .filter(function (line) {
+        return !/^\s*#/.test(line) && line.trim() !== '';
+      })
+      .map(function (line) {
+        return line.trimEnd();
+      })
+      .join('\n');
+  };
+  const deploySteps = stepsOf(deploy).map(normal);
+  const cut = deploySteps.findIndex(function (step) {
+    return /\bsecrets\b/.test(step);
+  });
+  ok(cut > 0, 'deploy-replay: deploy has no step that reads a secret');
+  const replaySteps = stepsOf(replay).map(normal);
+  const want = deploySteps.slice(0, cut);
+  let differs = -1;
+  for (let i = 0; i < Math.max(want.length, replaySteps.length); i++) {
+    if (want[i] !== replaySteps[i]) {
+      differs = i;
+      break;
+    }
+  }
+  ok(
+    JSON.stringify(replaySteps) === JSON.stringify(want),
+    "deploy-replay: its steps must equal deploy's before its first secret (first difference at step " +
+      differs +
+      ': ' +
+      JSON.stringify(replaySteps[differs]) +
+      ' vs ' +
+      JSON.stringify(want[differs]) +
+      ')'
+  );
+  const body = replay ? normal(replay[1]) : '';
+  ok(!/\bsecrets\b/.test(body), 'deploy-replay: the job must read no secret');
+  ok(
+    !/^ {4}continue-on-error:/m.test(body),
+    'deploy-replay: the job must not continue on error'
+  );
+  ok(!/^ {4}environment:/m.test(body), 'deploy-replay: the job must declare no environment');
+  ok(!/^ {4}permissions:/m.test(body), 'deploy-replay: the job must declare no permissions');
+  ok(
+    replay && /^ {4}if:\s*\$\{\{ github\.ref != 'refs\/heads\/main' \}\}\s*$/m.test(replay[1]),
+    "deploy-replay: its job-level if: must be exactly ${{ github.ref != 'refs/heads/main' }}"
+  );
+  ok(
+    body.indexOf('node tools/check-site.mjs --dir _site') >= 0 &&
+      body.indexOf('node tools/check-site.mjs --mirror --dir _old') >= 0,
+    'deploy-replay: the job must run both check-site --dir commands'
+  );
+}
+
 /** The jobs of a workflow text, one `{ name, body }` per job under `jobs:`. */
 function jobsOf(code) {
   const jobsAt = code.search(/^jobs:\s*$/m);
@@ -2216,7 +2276,8 @@ if (shardList && shardRun) {
 /* The CI credit (.claude/hooks/ci-credit.mjs) arms the gates only when each
    job of REQUIRED_JOBS succeeded, so that list must be every gate job of
    ci.yml, one `browser (n)` per shard; migrate-prod and deploy run on main
-   only. */
+   only, and deploy-replay runs on every run outside main, which is the run
+   the credit reads. */
 {
   const creditText = fs.readFileSync(
     path.join(ROOT, '.claude', 'hooks', 'ci-credit.mjs'),

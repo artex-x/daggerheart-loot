@@ -20,7 +20,9 @@
  * The `--dir` form runs inside the deploy job itself, before the deploy
  * step, against the local `_site/` collect output - the same assertions,
  * with no network and no retry, so a stale or partial local build is caught
- * before anything is published rather than after.
+ * before anything is published rather than after. It also runs in the
+ * `deploy-replay` job on every CI run outside `main`, so a task branch
+ * finds the same defect before it lands.
  *
  * The `--preview` form runs the preview host's own list (`previewChecks`) with the
  * URL form's retries, in the deploy job after the preview host deploy and before

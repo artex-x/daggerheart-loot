@@ -538,8 +538,8 @@ authenticated `gh`:
    and `head_sha` the full sha asked for;
 2. the latest attempt's jobs: each job of `REQUIRED_JOBS` (`changes`,
    `check`, `browser (1)` to `browser (5)`, `db`, `e2e`, `audit`,
-   `secrets`; `tests/derived.js` keeps it equal to `ci.yml`) concluded
-   `success`, with two exceptions (owner, 2026-10-21; the test host stalls
+   `secrets`, `deploy-replay`; `tests/derived.js` keeps it equal to
+   `ci.yml`) concluded `success`, with two exceptions (owner, 2026-10-21; the test host stalls
    under frequent E2E runs):
    - one re-run of `e2e`: the run is at attempt 2 (`run_attempt`), its
      latest jobs are all green, and in attempt 1 (`.../attempts/1/jobs`)
@@ -3539,10 +3539,13 @@ and a paused project gives the 503 card).
    test project. A deployment keeps the secrets it was made with; a changed
    secret applies only at the next deploy (Cloudflare Pages documentation,
    "Bindings": a secret is set "before a deployment that uses those secrets").
-4. Copy the site. Run `npm run build` at the root, run the collect commands
-   of `ci.yml`'s `deploy` job into `_site/`, then run
+4. Copy the site. Run `npm run build` at the root, run
+   `bash tools/collect-site.sh collect` (Git Bash on Windows), then run
    `cp -r _site/. preview/public/`. A deploy without this step publishes a
-   host with no site: every path but the card families answers 404.
+   host with no site: every path but the card families answers 404. On
+   Windows Git Bash the guard counts one file fewer than CI on Linux
+   (`published files: 6572` against 6573, 2026-10-29; the file is not
+   identified): compare the two lists before you trust a local count.
 5. Deploy. In `preview/`, run
    `npx wrangler pages deploy public --project-name daggerheart-loot --branch main`.
    Expected: a deployment URL `https://<hash>.daggerheart-loot.pages.dev`.
@@ -3552,7 +3555,10 @@ and a paused project gives the 503 card).
    `curl -I https://<hash>.daggerheart-loot.pages.dev/h/x`. Expected: `301`
    with `Location: https://daggerheart-loot.pages.dev/h/x`.
 7. Delete the copy: `_site/` and every file in `preview/public/` except the
-   four control files.
+   four control files. Also delete `_old/` after a local `old-host` run:
+   `eslint.config.mjs` and `.prettierignore` do not ignore `_site/` or
+   `_old/`, so while either is on disk `npm run lint:untyped` fails with
+   `was not found by the project service` for their `.js` files.
 
 The Worker keeps no persistent log, so no id is stored.
 `npx wrangler pages deployment tail --project-name daggerheart-loot`
@@ -3579,6 +3585,17 @@ site's host with `node tools/check-site.mjs https://daggerheart-loot.pages.dev/`
 and `--preview`. Only then does it upload `_old/` to GitHub Pages and check
 it with `--mirror`. The site's host is live and checked before the old host
 forwards to it. `timeout-minutes` is 20: the first upload is about 81 MB.
+`tools/collect-site.sh` does the collect, the guard and the old host's
+assembly (`collect`, `guard`, `old-host`); the job's three steps call it.
+
+- `deploy-replay` runs every `deploy` step before `Deploy the site's host`
+  on every CI run outside `main`, with no secret, no environment and no
+  write permission, and the credit requires it. `tests/derived.js` keeps
+  its steps equal to `deploy`'s.
+- The published file count, 2026-10-29: 6573 files (run 40862137001);
+  `i/` and `i/en/` grow by one document each per record, so at three
+  times the records the site is about 19,700 files against Cloudflare's
+  20,000 per deployment. The guard prints the count and does not fail on it.
 
 - The preview check asks for a 404 card on `s/` and 43 `A`, a well-formed
   token that no list holds, and on `h/00000000-0000-4000-8000-000000000000`,
@@ -3592,8 +3609,8 @@ forwards to it. `timeout-minutes` is 20: the first upload is about 81 MB.
   `roll/std`, `tables`, `lists/x`, `i/hb_<key>`, `en/search`, `en/tables` and
   `i/en/hb_<key>` must answer the app document with no redirect, and
   `en/i/w1` one 301 to `/i/en/w1`. The deploy's `check-site` run on `main`
-  is the first production proof of the rewrites; no branch run executes the
-  deploy steps.
+  is the first production proof of the rewrites: a branch run replays the
+  steps up to the `preview/` install, and the URL checks run on `main` only.
 - After the landing of `path-urls` (owner step): paste three address-bar
   addresses into Telegram Desktop - a record (`/i/<id>?v=<v>`), a homebrew
   item (`/h/<uuid>?v=<v>`) and a share link (`/s/<token>?v=<v>`). Expected:
