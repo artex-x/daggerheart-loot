@@ -5,6 +5,43 @@
   design direction with the owner from mocks, then fix the findings in small
   batches whose mocks the owner approves. Lock the result in `DESIGN.md`.
 
+## Owner directions (2026-10-28, chat)
+
+- Scheduled: task 57 starts after `request-notices`, `catalog-filter-links`,
+  the branch-CI deploy check and the address follow-ups (D118-D120).
+- The mocks of direction R are a direction, not a source of truth. A state,
+  page, dialog or width that no mock shows explicitly adopts the new design
+  by its system (tokens, components, patterns); it does not keep the old
+  look and it does not wait for a mock. Where a mock and a spec rule
+  conflict, the spec wins and the difference is named to the owner.
+- Reuse Impeccable as much as possible (shape, critique, audit, polish,
+  harden, document) instead of hand-made equivalents.
+- Minimise or remove every Impeccable exception: the detector's
+  `ignoreValues` (target empty at closeout, as already settled) and the
+  repository's exceptions for Impeccable's own files and hooks (on `main`
+  2026-10-28: `.gitignore` lines for `.impeccable/hook.cache.json`,
+  `hook.pending.json`, `config.local.json`; `.prettierignore` lines for those
+  three plus `.impeccable/config.json`). The plan inventories every such
+  exception (hooks, ignores, lint, prettier, guards), removes each one it
+  can, and names each kept one to the owner with its reason.
+- Pay the debt: the task takes every `docs/specs/DEBT.md` entry owned by
+  task 57 (on `main` 2026-10-28: D116, the lists page's «Ваш аккаунт»
+  heading) and every other open entry that is a UI or UX defect, unless
+  another scheduled task already owns it. The refresh lists them against
+  `DEBT.md` on `main` at that time, places each in a batch or names it to the
+  owner, and closes the task with no UI/UX entry left in `DEBT.md` unless the
+  owner keeps it. Also re-check the UI-related items in `issues/57/audit.md`
+  that later tasks may have fixed or changed.
+- Owner away (2026-10-28): after the refresh and plan, implement the
+  batches on the task branch with their reviews and CI, foundations first
+  (tokens, type, shell). Direction R is the approved direction; no batch
+  lands on `main` until the owner has seen it (screenshots at 360 and
+  1180 px). The owner may change the direction before implementation
+  starts.
+- Before planning resumes: refresh this task against `main` (path routes,
+  R10's five tabs, request-notices, catalog-filter-links have changed the
+  surfaces since direction R was drawn on 2026-10-23).
+
 ## GitHub issue (if any)
 - URL: https://github.com/artex-x/daggerheart-loot/issues/57
 - Captured or last verified: 2026-10-23
