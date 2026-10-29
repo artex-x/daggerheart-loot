@@ -251,3 +251,52 @@ panel or feature needs the owner's yes.
 Owner, 2026-10-23 (`context.md`, "Decisions already settled"): all eight
 themes go to phase 2; help panels are decided per batch mock; every other
 row is phase 3 input; D11 resolved: EN shows «Loot». No row rejected yet.
+
+## Re-check against main (2026-10-29)
+
+Base: `claude/57` at `9112c4ed` (the merge of `main` `c8243ba6`). Main gained
+R10, Cloudflare Pages, path addresses with `/en/`, the request toasts and the
+(N) title, the Items-tab filter address, the tables nav landmark and the
+210 px strip cap, bold-italic set names, deploy-replay-ci and
+path-urls-followups. Method: code and spec reads plus `impeccable detect
+--json app/src`; no live build. The `verify` rows stay `verify`: each batch
+checks its rows in a live browser first. Addresses in the rows above keep
+their `#/` form as evidence names; the app now serves them as paths (`#/i/ci1`
+is `/i/ci1`, EN `/en/i/ci1`).
+
+Fixed: none of the rows above. (`DEBT.md` D112 and D113, which the plan
+had inherited, were fixed on `main` by `f74eae09`.)
+
+Changed, still open:
+
+| id | what changed | what stays open |
+|---|---|---|
+| C6, P9, D10 | R10: five tabs, not six (`TabBar.svelte`) | under 640 px the strip still scrolls; «Таблицы» and «Поиск» stay off-screen at 360 |
+| A35 | R10 removed the Lists tab: «Мои списки» has no rival tab name | the menu is the only path to `/lists`, and no control is lit there (A37) |
+| A18 | R10 removed browser lists | `listNotFoundSub` still says «...или открыт в другом браузере»: the cause is now false |
+| C61, C35 | `AddToList.svelte` rewritten; signed out it shows only the new-list action | the «Лежит в списках» heading and the gold-only membership stay |
+| A1, A2, A3, A5, A41, A42 | `ListPage.svelte` rewritten for account lists only (-752 lines) | no stacking rule below 900 px; the row icons, the note labels, «Свой предмет» and «Бросок по списку» stay |
+| A19, A20, A22 | `SharedListPage.svelte` rewritten (requests, the sender's sent line) | the bare count, the read-only ticks, the eight filter groups and the GM note style stay |
+| C12 | the selection bar gained the sender's sent line | the bar still covers the row under it (`verify`) |
+| C34, A15 | the toast gained the `go` action and the new-request toast | the toast position and the error fill (`verify`); `DEBT.md` D121 is the toast's focus defect |
+| C7, A25 | the tables chip panel is a navigation landmark | two chip rows in one style and gold |
+| A28 | the Items tab keeps its filter in the address | pills that act as tabs |
+
+Open, unchanged: C1, C2, C3, C4, C5, C8, C9, C10, C11, C13, C14, C15, C16,
+C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31,
+C32, C33, C36, C37, C38, C39, C40, C41, C43, C44, C45, C46, C47, C48, C49,
+C50, C52, C53, C54, C55, C56, C57, C58, C59, C60, C62, C64, A4, A6, A7, A8,
+A9, A10, A12, A13, A14, A16, A21, A23, A24, A26, A27, A29, A30, A31, A32,
+A33, A34, A36, A37, A38, A39, A40, P1, P4, P5, P6, P7, P10, P11, P13, P14,
+P15, D2, D5, D6, D7, D8, D9, D11, D14, D15, D16, D20. Artefacts, closed by
+their batch's live check: C63, A11.
+
+New in the re-check:
+
+| id | surface | finding | batch |
+|---|---|---|---|
+| N1 | `HitNote.svelte` (list page and `/s/`) | detector warning `side-tab`: `border-left: 2px solid var(--gold)`; no ignore covers it | 9 |
+| N2 | `orGrid.test.ts` | detector warning `broken-image`: a test `<img>` with no `src` | 5 |
+| N3 | `app/src` | 128 detector advisories (`design-system-font-size`, `-color`, `-radius`): literals that DESIGN.md does not list; 33 of them in `PrintCard.svelte` | each batch in its files; 10 the rest |
+| N4 | `TabBar.svelte` | the comment says "six supplement roll sections"; `nav.ts` has seven | 2 |
+| N5 | share cards `og/_share*.jpg` | Inter, the old violet and blue washes, a gold «DAGGERHEART»; EN subtitle "armour" | 1 |

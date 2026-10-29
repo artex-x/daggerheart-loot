@@ -64,7 +64,7 @@
     code. One batch per session; `sessions.md` holds each session's prompt.
   - Clarity rule: "a user interface is like a joke - if you have to explain
     it, it is not that good". Every critique and mock review applies it
-    (see Constraints). Home: `DESIGN.md`, at the lock batch.
+    (see Constraints). Home: `DESIGN.md`, batch 1 (owner, 2026-10-29).
   - Use Impeccable wherever it applies: `critique`/`audit` in phase 1,
     `shape` and mocks in phase 2, `polish`/`harden` per batch, `document`
     for the `DESIGN.md` lock.
@@ -108,11 +108,11 @@
     current-place gold («Vault of Ages ▾»). Three controls, one line at
     every width. Accepted trade-off: a switch between supplements takes one
     more tap. Not taken: one row of nine that scrolls with an edge fade.
-    Home: `FEATURES.md` "Chrome" and DESIGN.md, written by batch 7.
+    Home: `FEATURES.md` "Chrome" and DESIGN.md, written by batch 2 (batch 7 before the 2026-10-29 refresh).
   - Job icons (owner, 2026-10-23): an icon before each job label, as in R's
     header mock; a label never gives way to an icon at any width (theme 3).
     Source: `app/src/lib/icons.ts` (`die`, `table`; `search` added from
-    Material Icons, Apache 2.0). Home: batch 7.
+    Material Icons, Apache 2.0). Home: batch 2.
   - Font dependency (owner, 2026-10-23): batch 1 adds
     `@fontsource-variable/source-sans-3`; print cards keep their font
     through `--print-ui`.
@@ -121,15 +121,15 @@
     them all before batch 1.
   - Review round answers (owner, 2026-10-23, `mocks/direction/questions.html`):
     - At 360 a mode chip may show its label on two lines; the chip text
-      matches the page heading. Home: batch 7.
+      matches the page heading. Home: batch 2.
     - The «Дополнения ▾» menu replaces the supplement chip panel on
-      supplement pages (C48). Home: batch 7, `FEATURES.md` "Chrome".
+      supplement pages (C48). Home: batch 2, `FEATURES.md` "Chrome".
     - ESLint ignores `issues/*/mocks/**` (task mock pages are scratch that a
       closeout deletes). Home: `eslint.config.mjs`.
     - Order: a plan review of R runs now. Implementation (batch 1 onward)
       starts only after R10 and `cloudflare-pages` have shipped; the
       dispatch refresh of batch 1 re-reads both landings (the `/en/` URL
-      and the language switch reach batch 7). The owner sends review notes
+      and the language switch reach batch 2 since the 2026-10-29 refresh). The owner sends review notes
       on the R states before batch 1; each note becomes an acceptance line
       in the batch that owns the screen.
   - Bundle budget (owner, 2026-10-23, `plan.md` Q1): if the font CSS
@@ -163,7 +163,15 @@
     gate cycles. The planner may pair 10 with 9a instead when the shared
     page reuses more of `ListPage.svelte` than of the lists page; it names
     the evidence. Home: `plan.md` only (scratch).
-- Open questions: none.
+  - Batch mocks first (owner, 2026-10-29, chat): every batch's planner
+    refresh makes or updates the batch mock and shows it to the owner for
+    confirmation before the implementer starts, unless the owner is away
+    (then the recommended option, logged as in "Owner away"). While the
+    owner is present (about five hours from 2026-10-29 afternoon), draw the
+    mocks of every batch that does not depend on an earlier batch's
+    implementation, ahead of time and in parallel where the host allows, so
+    the owner confirms them before going away. Home: `plan.md` (scratch).
+- Open questions: `plan.md` section 13, Q1-Q4 (2026-10-29).
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -183,20 +191,25 @@
   `mocks/direction/R/state.html?s=<state>&lang=en`, from `R/states.js` and
   `R/r.css`; PNGs `R/<surface>-<state>__<width>__<lang>.png`.
 
-## Persistence clean-up (R10) and other tasks that move the UI
-- R10 (`issues/persist-10-legacy-removal/`, on `main`) is dispatchable from
-  2026-10-26. It deletes the Lists tab (nine sections stay), the banner under
-  the header, `MoveNotice`, `MoveStatus`, `StorageNotice`, browser lists,
-  the `#/l/` pages and the signed-out print prompt of a browser list, and
-  re-seeds goldens (`B10.1`, `B10.3`). Its plan section 5 is the post-R10
-  shape.
-- `cloudflare-pages` (after R10) puts `/en/` in the URL: Vite `base: '/'`,
-  absolute paths in `app/index.html`, every `href` through `app.href()`,
-  `pathRouter`, `/sw.js` at scope `/`. The language switch rewrites the
-  `/en` prefix with `replaceState` and stays a control, not a link (its B1,
-  read by the plan review on 2026-10-23). Repo layout changes, no visual
-  redesign.
-- `catalog-filter-links` (after R10, not ordered) touches filter UI.
+## Tasks that moved the UI (all on `main` at `c8243ba6`, checked 2026-10-29)
+- R10 `e02364d3`: five tabs, no browser lists, no banner or move notices,
+  `/l/` draws not-found; the list states of `inventory.js` are account-list
+  states (`LIST_A ... as gm4`).
+- Cloudflare Pages `d0fd98bc` and path addresses `1ace55e7`: every route is a
+  path, `/en/` before every English one; links through `pathOf()` and
+  `app.href()`; `routes.json` keeps internal `#/` strings and
+  `tests/app/contracts.js` compares through `pathOf()`; the language switch
+  stays a `Seg` control.
+- Request toasts `198997ed`: a `go` toast action, the lowest-priority arrival
+  toast, the (N) title; `DEBT.md` D121 is its focus defect.
+- `f74eae09`: the Items-tab filter address, the tables nav landmark and 210 px
+  strip cap (D112, D113 fixed), bold-italic set names.
+- `DEBT.md` on `c8243ba6`: D116 and D121 only, both task 57.
+- Detector on `app/src` (2026-10-29): 130 findings - `side-tab` on
+  `HitNote.svelte` (not ignored), `broken-image` in `orGrid.test.ts`, 128
+  `design-system-*` advisories (33 in `PrintCard.svelte`).
+- `test:artwork` is a check stage, not an npm script: `node --test
+  tools/artwork/lib.test.mjs`.
 
 ## Command costs
 | Command | Wall clock | Fits one call? |
