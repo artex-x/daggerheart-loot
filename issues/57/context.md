@@ -387,9 +387,8 @@
     Run order since then: 1, 1b, 2, 3-7, 8, 9, P, 10 (P moved from after 1b
     to wave 3). Facts for the squash (measured 2026-10-29): `issues/57/`
     holds 1094 tracked files, 134 MB, mostly mock PNGs; the CI credit's tree
-    key skips `issues/` (`isExempt`, `.claude/hooks/lib.mjs`). Open: Q-W1
-    (`plan.md` section 13) - recommended, each wave's squash leaves
-    `issues/57/` out of `main`.
+    key skips `issues/` (`isExempt`, `.claude/hooks/lib.mjs`). Q-W1 is
+    answered by "Wave squash content" below (`issues/57/` goes onto `main`).
   - Interim mix between waves (owner, 2026-10-29, chat, batch 1 review
     R3): accepted. Production may show the neutral switches beside the
     old gold default chips between waves 1 and 2; the chips turn neutral
@@ -401,6 +400,16 @@
     2, 10, 14) were fixed at the refresh of 2026-10-29; `80872b35` already
     keyed `FIRST_SCREEN` by state with `shipped: false` and no batch id
     (batch 2 re-checks it before wave 1 lands).
+  - Wave squash content (owner, 2026-10-29, interactive, plan Q-W1):
+    `issues/57/` goes onto `main` with the wave squashes (about 1094
+    files, 134 MB, mostly mock PNGs); the closeout deletes it there. Home:
+    the waves decision file, batch 2 (`plan.md` section 10, S11.4; section 16).
+  - Model tier (owner, 2026-10-29, interactive): quality first. Keep the
+    `max` profile's tiers (writer test 3 dispatches `opus` for every batch
+    that re-seeds goldens or rests on visual judgement, the reviewer
+    follows the writer); do not lower a tier to save usage. If the weekly
+    limit runs out, the work stops at a committed boundary and resumes
+    after the reset.
   - Post-release review (owner, 2026-10-29, chat): after the squash onto
     `main` and a green deploy, a fresh blind reviewer checks production
     only: Source Sans 3 loads from the site (no fallback face); the
@@ -493,6 +502,17 @@
   `design-system-*` advisories (33 in `PrintCard.svelte`).
 - `test:artwork` is a check stage, not an npm script: `node --test
   tools/artwork/lib.test.mjs`.
+- Spelling sweep size on `3e5f6301` (2026-10-29, the word list of `plan.md`
+  section 10, S10): 1381 lines in 539 files outside `issues/` and `schema/`;
+  476 lines in 340 goldens, 64 in 44 decision files.
+- The menu pattern (`role="menu"` with arrow keys) has one copy on
+  `3e5f6301`, `AccountMenu.svelte`; `AddToList.svelte`'s menu has no arrow
+  keys. The browser suites read the job row as `nav.tabs` (`states.js`,
+  `sweep.js`, `contracts.js`) and the account menu as `.acctmenu`.
+- The emoji favicon data URI is in `app/index.html`, `404.html`,
+  `old-host/index.html`, `tools/build-pages.js` and
+  `tools/build-share-pages.js` (`rootPage`); `404.html` and the old host link
+  the site's host by absolute URL.
 
 ## Command costs
 | Command | Wall clock | Fits one call? |

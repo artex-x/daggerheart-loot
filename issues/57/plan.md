@@ -12,9 +12,11 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   against main"); every address in this plan is a path.
 - Phase 3: twelve batches in the order 1, 1b, 2, 3-7, 8, 9, P, 10 (section 7;
   the waves of section 16 moved P from after 1b into wave 3). Batch 1 is done
-  (`9a31aede`, review fix `80872b35`). Batch 1b is implemented (section 10;
-  `handoff.md`, Completed) and waits for its batch review and CI. Batch 2 is
-  next; batches P and 2-10 are outlines; each one's refresh expands it.
+  (`9a31aede`, review fix `80872b35`). Batch 1b is done (`fce4a9f8`, merge
+  `3e5f6301`; `reviews/1b.md` approve, no finding; its CI run 40960103117 was
+  in progress at the refresh). Batch 2 is implement-ready (section 10, refresh
+  of 2026-10-29); then the wave 1 squash (section 16). Batches 3-10 and P are
+  outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph): three waves - 1, 1b, 2; then 3-7; then 8, 9, P, 10 -
   each squashed onto `main` after its last batch's review and green CI, with
@@ -36,6 +38,15 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   protocol. If its refresh makes it delete or rename a `card/` file, it writes
   a `required` line before P.
 - Plan review: required before 1 (trigger: public contract changes in batch 1b - the no-picture asset paths of CONTRACTS.md - and in batch 2 - routes.json tab, llms.txt)
+- Plan review coverage at the batch 2 refresh (2026-10-29): no new plan
+  review is required. Batch 2's triggers are the contract set that
+  `reviews/plan-1-2.md` (R1, B3) and `reviews/plan-1-3.md` (B3, R4) reviewed:
+  `routes.json` `tab` and `mode`, `llms.txt` with `tests/contracts.js` and
+  `CONTRACTS.md`. The refresh keeps that set and adds no trigger: the mode
+  chip's text (B5-2), the interim pin below 760 px, `Menu.svelte`, the
+  favicon file (an added asset path), the D121 fix and the waves decision
+  (`issues/57/` on `main`, owner) change no fixture, store no data and add no
+  write protocol; `rollHash` is memory per tab.
 - Plan review coverage at the refresh of 2026-10-29: no new plan review is
   required. `reviews/plan-1-3.md` reviewed batch 1b's contract set (B1, B2, N3,
   N4 applied) and batch 2's (B3, R1, R4), and this refresh keeps both sets and
@@ -110,9 +121,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   round 2 departures from DESIGN.md (section 4, one line per batch in section
   7), the first-screen exceptions (section 14), and the answers of the mock
   reviews and rounds 3, 6 and 2 (one line each in section 7).
-- NEEDS_HUMAN_CONFIRMATION: no. QP.1 and QP.6-QP.8 are answered ("Mock P
-  answers"; section 13). One question for the wave 1 squash after batch 2
-  (Q-W1, section 13) has a recommendation and blocks no batch.
+- NEEDS_HUMAN_CONFIRMATION: no. Every question of section 13 is answered;
+  Q-W1 took the owner's answer "Wave squash content" (`issues/57/` goes onto
+  `main` with each squash).
 
 Earlier plan review: `reviews/plan-1.md` (fix-then-continue) was applied to
 the plan of 2026-10-23 (`git show 69f2178:issues/57/plan.md` and the commit
@@ -146,7 +157,7 @@ owner.
 | Part | Source | Reason |
 |---|---|---|
 | Three jobs (Бросок, Таблицы, Поиск), an icon before each label | B1 | every top-level place is visible at 360 in both languages (C6, P9, D10) |
-| Roll mode row: «Обычные правила», «Альт. таблицы», «Дополнения ▾» (a menu of the seven) | owner, 2026-10-23 | three controls hold one line at every width; the chip shows the open supplement in the current-place gold |
+| Roll mode row: «Обычные правила», «Альтернативные таблицы» (B5-2), «Дополнения ▾» (a menu of the seven) | owner, 2026-10-23 | three controls hold one line at every width; the chip shows the open supplement in the current-place gold |
 | Filter column beside a column table at desktop width; a filter sheet at 360 | B1 | the panel no longer pushes the rows 570 px down (C3, C54) |
 | Two-pane roller | B1 | the result is the focus and the controls stay in reach (C39, C25) |
 | Dossier item page; a bottom-sheet dialog with a fixed action bar at 360 | B1 | it uses the desktop width (C17) and keeps the actions in reach (C44) |
@@ -157,8 +168,8 @@ owner.
 
 Trade-offs accepted: a returning GM learns one new click («Бросок», then the
 mode); a switch between two supplements takes one more tap; at 360 a mode
-label can take two lines inside its control; the mode chip keeps «Альт.
-таблицы» against the H1 «Альтернативные таблицы» (rule 4 departure, batch 2).
+label can take two lines inside its control (the mode chip reads the H1's
+words «Альтернативные таблицы», B5-2, so it has no rule 4 departure).
 The comparison of A, B, C and R is history: `git show 69f2178:issues/57/plan.md`,
 sections 1 and 2.
 
@@ -214,8 +225,12 @@ Theme decisions (from `audit.md`, "Systemic themes"):
   its last batch's review and green CI, with no owner screenshot gate; the
   owner checks the live site after release (section 16).
 - Decisions (`docs/decisions/`, indexed by `node tools/decisions.js`): the UI
-  font (batch 1, done), the navigation and the release waves (batch 2), the
-  American spelling (batch 2), the print card (batch P).
+  font (batch 1, done), the navigation (supersedes 2026-10-20 "Supplement roll
+  sections share one tab and a chip panel"), the release waves (amends
+  2026-10-21 "A task branch pushes every batch; a green CI run gates main")
+  and the American spelling (batch 2), the print card (batch P).
+- Added asset path in batch 2: `icons/favicon.svg` (the tab favicon, owner,
+  "One mark"); no frozen path changes.
 
 ## 3. Font
 
@@ -487,210 +502,21 @@ acceptance in section 15; mock step `mocks/P/`):
   line; The Two Breakpoints Rule takes the `/p/` card step (one card per row
   below 600 px).
 
-Batch 2:
-
-- R3 answered (owner): the account menu in the `FEATURES.md` order, no counts.
-- R7 answered (owner): «Бросок» opens the last roll section of this tab, else
-  the start section when it is a roll section, else `/roll/std`, with an
-  `app/src/state/app.test.ts` case.
-- The same-commit `routes.json` contract set (plan review R1):
-  - `resolves.tab` becomes the lit job: `"roll"`, `"tables"`, `"search"` or
-    `null` («Бросок» has a dynamic `href`). `tests/app/contracts.js` reads it
-    from `data-job` on the lit job link and compares it as a plain string.
-  - A new `resolves.mode` holds the lit mode control's canonical route key,
-    `#/roll/<URL id>` (for example `#/roll/vault_of_ages` for `/roll/voa`), or
-    `null` off the roll routes. `tests/app/contracts.js` reads it from
-    `data-section` on the mode control that carries `aria-current`, the
-    «Дополнения ▾» menu button included, and compares it through `pathOf()`.
-  - Readers that change: `tests/app/contracts.js`, `app/src/lib/hash.test.ts`
-    (today `fx.resolves.tab === '#/tables'` becomes `'tables'`).
-    `tests/contracts.js` and `address.test.ts` read only `hash`: no change for
-    `tab`.
-  - `docs/specs/CONTRACTS.md` section 1 gains one sentence: "`routes.json`
-    pins each route's resolved address, its lit job and its lit mode."
-    `docs/specs/ROUTES.md` "Sections" names the jobs and the mode row.
-  - `COVERAGE.md`: the row at "`hash.test.ts`" and the row "Route resolution
-    had no fixture" (its "28 shapes" is stale: 97 rows).
-  - One `/en/roll/dread` probe in `tests/app/contracts.js` (`routes.json` has
-    no `/en/` row).
-  - Gates: `node tests/run-all.js contracts,dataint,derived` (`derived`
-    checks the README licence line and the heads that
-    `tools/build-share-pages.js` writes; plan review B3) and `node
-    tests/run-all.js app/contracts`. A batch review before the next batch.
-- «Бросок»: the memory holds the canonical section (`SECTION_SLUG` in
-  `app/src/lib/hash.ts`), never the raw address, so `/roll/hnf` does not
-  replay its source switch; `STATE.md` records it (memory only). The owner's
-  answer (R7): the last roll section of this tab, else the start section when
-  it is a roll section, else `/roll/std`, with a case in
-  `app/src/state/app.test.ts`.
-- Each old address lights the right job and mode: `/roll/core`, `/roll/hnf`
-  and `/roll/all` light «Обычные правила»; `/roll/dread`, `/roll/voa` and every
-  other supplement alias light «Дополнения ▾» with that supplement's name. Both
-  sets are `routes.json` replay rows.
-- The account menu keeps the `FEATURES.md` "Chrome" order («Аккаунт», «Мои
-  списки», «Мои предметы», then «Выйти») with no counts (the owner's answer,
-  R3). R's «Вы вошли как ...» and its counts are not built.
-- The account control has a lit state on its pages (A37), drawn in
-  `mocks/2/` (plan review N6).
-- Off the roll, tables and search routes no job is lit. The account control
-  is lit on `/account`, `/lists`, `/lists/<uuid>` and `/homebrew` with its tabs
-  (A37); nothing is lit on `/i/`, `/h/`, `/p/` and `/s/`.
-- The header is measured at 360 and 1180 in both languages. The brand row and
-  the job row stay sticky; the mode row scrolls with the page; the sticky part
-  is no taller than today's 112 px at 360. `FEATURES.md` "Chrome" (the tab-bar
-  bullets) and DESIGN.md "The Two Breakpoints Rule" take the measured figures.
-- C48 removes `SupplementNav`: `SupplementNav.svelte`, `supplementNav.test.ts`,
-  its `COVERAGE.md` row and its `a11y.test.ts` `COVERED` entry; `TabBar.svelte`
-  gives way to the job row, and `tabBar.test.ts` and its `COVERAGE.md` row go
-  with it (plan review R1); rule 4's
-  «Дополнения» departure and the `FEATURES.md` "Rolling" paragraph that cites
-  the supplements panel are rewritten.
-- The mode row has three controls at every width; «Дополнения ▾» opens a menu
-  of the seven supplements (`nav.ts`), each a link to its section path; on a
-  supplement page the chip shows that supplement's name in the current-place
-  gold; at 360 a label may take two lines; the chip text matches the page
-  heading (owner, 2026-10-23).
-- Each job shows its icon before its label at every width: `die`, `table` and
-  a new `search` (Material Icons, Apache 2.0) in `app/src/lib/icons.ts`.
-- Rule 4 departures recorded: the mode chip «Альт. таблицы» against the H1
-  «Альтернативные таблицы»; the job «Бросок» names a group of nine roll pages
-  and has no page heading of its own (plan review N8).
-- DESIGN.md records the EN wordmark «Loot», the header only; `<title>`, the
-  manifest name and `en/index.html` keep their text.
-- P7 and the American-spelling sweep (owner, 2026-10-29, Q3 and plan review
-  B3: everywhere, in batch 2, no batch 2b; the owner accepts the longer batch 2
-  review). One English spelling, American, in every file that can change
-  without breaking data or a frozen contract:
-  - The UI: `footSummary` and `printColor` in `dict.ts` and the files that
-    quote them (`shell.test.ts`, `printPage.test.ts`, `tests/app/print.js`
-    `'Colour'`, `FEATURES.md` "Chrome"); the two EN head descriptions in
-    `tools/build-share-pages.js` ("weapons and armour", the `en/index.html` and
-    `i/en/*.html` link previews) and `tools/build-pages.js` (the Terms page,
-    "the licence for the game content"), then `node tools/build.js`
-    (`tests/derived.js` checks the heads).
-  - The public contract file `llms.txt` (15 lines: "armour", "colour",
-    "catalogue", "## Licence", "Recognising") with `docs/specs/CONTRACTS.md`
-    and `tests/contracts.js` (line 187 pins `'| Artefact | Field | Carries |'`)
-    in the same commit; `docs/fixtures/`: no change expected (no fixture that
-    `llms.txt` quotes holds a British form; `from-llms.json` keys and the value
-    "Armour" are data and stay); state it in the commit.
-  - Developer docs: `README.md` with `tests/derived.js` (line 1612 matches
-    `fall\s+outside that licence`), `docs/specs/*`, `DESIGN.md`, `PRODUCT.md`,
-    `docs/artwork.md`, `.claude/README.md`.
-  - AI-facing files: `.claude/prompts/`, `.claude/skills/`, `.claude/agents/`,
-    `.claude/templates/`, `CLAUDE.md` (respelling only, no new rule line:
-    `CLAUDE.md` "Maintaining this file").
-  - Code comments, test titles and `.claude/hooks/*.mjs` (owner: minimise
-    British). `node .claude/hooks/selftest.mjs` runs once on its own after the
-    hook edits (434-563 s on this host; past 600 s it runs in the
-    background); CI runs it again (`check:fast` does not run it; plan review
-    B3). A hook change is its own review trigger.
-  - `tests/db/` comments («serialises» in `import-homebrew.test.mjs`,
-    `import-lists.test.mjs`, `list-writes.test.mjs`): respelled (the owner's
-    minimum of British forms), so the batch runs `npm run check:db` through
-    the PowerShell tool before the commit (about 13 min; stop Supabase and
-    Rancher before `check:fast`); `bash-guard.mjs` rule 2m refuses the commit
-    without it (plan review B3).
-  - `tools/decisions.js` (line 45 writes "Behaviour decisions"), then `node
-    tools/decisions.js` renders `docs/DECISIONS.md` again.
-  - Kept, each named in the decision file: identifiers and stored values
-    (`VectorPaint` `'colour'` in `cardVectors.ts`, CSS class names such as
-    `.foot-licence`, fixture keys, inventory ids and golden file names such as
-    `~ colour for this visit`, decision file names and titles, which
-    `tools/decisions.js` checks by path and title); the frozen `schema/*.json`
-    wording (`CONTRACTS.md` section 4); quotations and records (earlier
-    decision bodies, commit messages, the DPCGL text, source-book text in
-    `data.js`, log excerpts); the `issues/57/` scratch.
-  - Sizing on `deaa7989`: the grep below hits about 1330 lines in 529 files
-    outside `issues/` and `schema/`; about 475 of them are goldens (340
-    "licence" from `footSummary`, re-seeded, not edited by hand) and 60 are
-    earlier decision bodies (kept). The batch refresh re-runs the count.
-  - One decision file (`.claude/templates/decision.template.md`): American
-    spelling everywhere; rejected: British everywhere, and the plan's earlier
-    "UI only" default; the kept forms above; the word list for the grep:
-    `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell`
-    (plan review R4 added `sanitis` to `defence`). Kept forms named in the
-    decision file besides those above: `cancelled` everywhere (an accepted
-    American form, and GitHub Actions' `cancelled()` and `'cancelled'` in
-    `ci.yml` and `backup.yml`, so `.github/workflows/` does not change;
-    `cancelledOrder` in `tests/app/states.js` is an identifier); `smoulder`
-    (fixture data that `llms.txt` quotes); the `package-lock.json` files of
-    `preview/` and `tools/artwork/` and every third-party licence text
-    (generated or quoted). Then `node tools/decisions.js`.
-  - `docs/specs/I18N.md` gains the rule: English text uses American spelling;
-    the kept forms are the decision file's.
-  - Acceptance: `git grep -n -i -E "<the word list>"` over the paths in scope
-    returns only the kept forms the decision file names. The DPCGL notice
-    keeps its own "License". Optional, recommended: a `tests/derived.js` check
-    of the EN strings in `dict.ts` and of `llms.txt` against the word list, so
-    the rule holds after closeout.
-  - Risk: a hook guard may refuse a write under `.claude/`; the implementer
-    stops and returns the text for the orchestrator (`CLAUDE.md`, "Task and
-    session protocol").
-- One `docs/decisions/` file for the navigation: three jobs and the
-  three-control mode row; rejected: the scrolling strip with a fade, B2's rail
-  and bottom bar, B1's row of nine chips, one scrolling row of nine. Indexed.
-- D121 (section 6).
-- The language switch stays a control that rewrites the `/en` prefix with
-  `replaceState`, not a link.
-- The pin (house) and «?» by the H1 are labelled controls on every page that
-  draws them (`PageHead.svelte`, `HelpButton.svelte`): the pin says what it
-  does and shows its pinned state with the same facts in both languages
-  («Открывать при запуске» / "Open on start", pinned «Открывается при
-  запуске» / "Opens on start"; plan review N4); «?» reads «Справка» / "Help"
-  only where its panel keeps that name. A button that opens a renamed panel
-  takes the panel's name (plan review R3, rule 4 and the Same Label Rule):
-  «Об этих данных» / "About this data" on the tables (C1, batch 3), «Где какая
-  редкость» / "Where each rarity is" on the roller (C38, batch 5); batch 2
-  ships «Справка» and each of those batches renames its button with its
-  panel. The panels the owner removes (Q6.1, Q8.1) take their buttons with
-  them.
-- The `TabBar.svelte` comment that counts six supplement sections goes with
-  the component (N4).
-- A new state: the «Дополнения ▾» menu open and the account menu with its
-  chevron; each with an `inventory.js` entry, RU and EN goldens and an axe case.
-- The mark (owner, 2026-10-29, "One mark", candidate B): the vault die of
-  `issues/57/mocks/mark/b-vault-die.svg` (a d12 outline, a lighter pentagon
-  face, a keyhole cut as a mask, gold `#d8ab5e` / `#f0d091`) replaces the three
-  marks: `app/public/icons/icon.svg` becomes the mark, inside the maskable safe
-  zone, and `tools/artwork/icons.mjs` renders `icon-192.png`, `icon-512.png`,
-  `maskable-512.png` and `apple-touch-icon.png` from it; the tab favicon is
-  that SVG file (no emoji data URI) in every document that has one (`git grep
-  -l 'rel="icon"'`: `app/index.html`, `404.html`, `old-host/index.html`,
-  `tools/build-pages.js`, `tools/build-share-pages.js`, with `tests/derived.js`
-  where it pins them); `Shell.svelte` `.brand-ico` draws the mark; both share
-  cards draw it for the star (`tools/artwork/lib.mjs` `shareCardSvg`,
-  `cards.mjs`, `--check`). Checks: the mark reads at 16 px (a render at 16, 32
-  and 48 on dark and light browser chrome, named in `handoff.md`); `node
-  tools/artwork/cards.mjs --check`. Homes: `docs/artwork.md` ("Icons", "The
-  site share cards"), `META.md` (the icons bullet; "The tab favicon is
-  unchanged" goes), DESIGN.md "Navigation", "Brand".
-- The release waves decision file (owner, 2026-10-29, "Release in three
-  waves", "Interim mix between waves"): `docs/decisions/<date>-task-57-lands-on-main-in-three-waves.md`
-  from `.claude/templates/decision.template.md`. Decision: three waves (1, 1b,
-  2; 3-7; 8, 9, P, 10), a squash after each wave's last batch review and green
-  CI, no owner screenshot gate, the task directory kept on the branch and left
-  out of each squash (Q-W1, section 13), one post-release live check after
-  wave 3 before the closeout; an inconsistency between batches is accepted
-  when a planned later batch removes it (the option with less work, that batch
-  named). It amends, for task 57 only, the 2026-10-21 decision "A task branch
-  pushes every batch; a green CI run of the same tree gates main" (one squash
-  per task). Rejected: one squash at closeout; a landing per batch; an owner
-  screenshot review per wave; the task directory on `main`. Then `node
-  tools/decisions.js`.
-- The interim mix (owner, 2026-10-29, `reviews/1.md` R3): wave 1 ships the
-  neutral switches beside the gold default chips; batch 2 makes no chip
-  neutral, batch 3 and the surface batches do.
-- `FIRST_SCREEN` (`reviews/1.md` N7): the `80872b35` fix keys every row by its
-  inventory state with `shipped: false` and no batch id; batch 2 checks that
-  this holds before wave 1 lands.
-- Mode chips at 360 (owner, round 3, unit A): the mode-row chips are 40 px tall
-  at 360.
-- «Мои предметы» is capitalised in the account menu (owner, M4-2).
-- DESIGN.md (section 4, departures): "Navigation" ("Tabs", "Brand"), The Two
-  Breakpoints Rule (the 760 px pin step), "Layout" (the 111 px sticky header
-  at 360 and the scrolling mode row), "Toast" (the plate and the error toast)
-  and "Chips" (the 40 px mode chips) are rewritten to what batch 2 ships.
+Batch 2: its implement-ready brief and acceptance lines are section 10 (mock
+`mocks/2/`, the mark `mocks/mark/b-vault-die.svg`). Every line that this
+section held for batch 2 before the refresh of 2026-10-29 (R3, R7, the
+`routes.json` set, «Бросок», the old addresses, the account menu and its lit
+state, the header measure, C48, the mode row, the job icons, the rule 4
+departures, the EN wordmark, P7 and the sweep, the navigation decision, D121,
+the language switch, the pin and «Справка», the `TabBar.svelte` comment, the
+new states, the mark, the waves decision file, the interim mix,
+`FIRST_SCREEN`, the 40 px mode chips, «Мои предметы», the DESIGN.md
+departures) is an acceptance line there; the earlier text is at `git show
+5d9aefbc:issues/57/plan.md`, section 7. Changed at the refresh: the mode chip
+reads «Альтернативные таблицы» (B5-2), so the «Альт. таблицы» rule 4
+departure goes; `issues/57/` rides onto `main` with each squash (owner, "Wave
+squash content"); below 760 px the pin and the help stay round buttons until
+their page's batch moves them (lines in batches 3, 5, 6, 7, 8 below).
 
 Batch 3:
 
@@ -730,6 +556,9 @@ Batch 3:
   empty-state plate), "Don'ts" (the glyph tile, or N0-2 applied), the Seal
   Rule's neutral selection and "Components" (the bottom sheet, first used by
   the filter sheet) are rewritten to what batch 3 ships.
+- M2-2 (from batch 2): on `/tables` below 760 px the pin and the page's
+  panel button leave the H1 row for the page's «Ещё»; batch 2's interim round
+  buttons go there; the Same Label Rule's interim note loses `/tables`.
 
 Batch 4:
 
@@ -772,6 +601,9 @@ Batch 5:
 - N2-2 (owner, round 2): the Vault of Ages panel stays; its button takes the
   panel's name (the Same Label Rule), which mock 5 gives from its content.
 - The roll cards drop «Daggerheart» from their bottom line (batch 4's card).
+- M2-2 and R2-1 (from batch 2): on the nine roll pages below 760 px the pin
+  and the panel button move into «Настроить» and «··· Ещё» (mock 5), and the
+  H1 is visually hidden at 360; batch 2's interim round buttons go there.
 - DESIGN.md (section 4, departures): "Cards" (the 96 px compact image at 360),
   "Badges" (the roll number at 1180 only) and the dice in "Chips" are
   rewritten; "Shapes" (batch 4's crop window) is checked on the roll cards.
@@ -796,6 +628,8 @@ Batch 6:
 - DESIGN.md (section 4, departures): "Segmented control" (the neutral check on
   form-field pickers) is rewritten; "Filter pills" (none at any width on
   `/homebrew`) and the neutral selection are checked.
+- M2-2 (from batch 2): on `/homebrew` below 760 px the pin moves into the head
+  row's «Ещё» (mock 6); batch 2's interim round button goes there.
 
 Batch 7:
 
@@ -812,6 +646,8 @@ Batch 7:
 - DESIGN.md (section 4, departures): "Buttons" (the danger fill in the delete
   confirm) is rewritten; the empty-state plate and the bottom sheet are
   checked.
+- M2-2 (from batch 2): on `/search` below 760 px the pin takes the place
+  mock 7 draws; batch 2's interim round button goes.
 
 Batch 8:
 
@@ -827,6 +663,9 @@ Batch 8:
 - DESIGN.md (section 4, departures): the Seal Rule's gold budget (the
   «Новое в списке (3)» chip) is rewritten; the empty-state plate, the bottom
   sheet and the neutral selection are checked.
+- M2-2 (from batch 2): on `/lists` below 760 px the pin moves into «Ещё»
+  (mock 8); batch 2's interim round button goes, and with it the Same Label
+  Rule's interim note in DESIGN.md (the last page that draws it).
 
 Batch 9:
 
@@ -959,17 +798,18 @@ code batch.
 | 1 (done) | `node tests/run-all.js app/print,app/typo,app/hues,stub,app/states`, `npm run check:built`, both lints, `node --test tools/artwork/lib.test.mjs`, `node tools/artwork/cards.mjs --check` | 13 (spent) |
 | 1b | `node tests/run-all.js app/print,app/states,contracts,dataint,derived,stub` (12-14), `npm run check:built` (1), `npm run lint:untyped` and `npm run lint:typed` (2), `node --test preview/worker.test.mjs tools/check-site.test.mjs tools/artwork/lib.test.mjs` (1), the one-state golden re-seed (about 1 after `build:test`); CI runs deploy-replay (about 2-3 inside the CI run) | 16-18 |
 | P | `node tests/run-all.js app/print,app/states,stub` (6-8); `npm run check:built` (1); the catalog fit measure for the `FEATURES.md` figures (`issues/57/mocks/P/tools/print-measure.cjs` and `print-analyse.cjs`, RU and EN, four layouts, about 12); the burden export through the owner's Chrome (about 5); the print-resolution screenshot set (about 5); the batch review of the Figma departures in its fix cycle (about 5) | 30-35 |
-| 2 | `node tests/run-all.js contracts,dataint` and `app/contracts` (6-7); `npm run check:built` (1); `node tools/build.js` and `node tools/decisions.js` (1); `npm run lint:untyped` and `npm run lint:typed` (2, comments in `.mjs` and `.ts` files); `derived` (about 1); the hook selftest once on its own after the hook edits (434-563 s: 7-9.5; plan review B3); `npm run check:db` for the `tests/db/` comments (about 13); the mark: `tools/artwork/icons.mjs`, `cards.mjs --check` and the 16 px render (about 5); the longer review of the spelling diff in its fix cycle (about 5-10); the goldens: every golden moves (the header, `footSummary`), so the batch takes CI's golden text (CI credit), or pays the four shards locally (4 x 3-4 = 12-16) | 41-66 |
+| 2 | `npm run check:db` for the `tests/db/` comments (about 13); `node tests/run-all.js app/contracts,app/states,app/typo,contracts,dataint,derived,stub` (11-13, measured costs of `run-all.js`); `node tests/app/sweep.js 360` (about 7); the golden re-seed, `build:test` and four `--update` shards (about 11-12; every golden moves, and a local re-seed avoids a red CI run, a download and a second run, about 25); `npm run check:built` (1); `node tools/build.js` and `node tools/decisions.js` (1); both lints (2); the hook selftest once on its own (434-563 s: 7-9.5); the mark: `npm ci --prefix tools/artwork`, `icons.mjs`, `cards.mjs`, `--check`, `lib.test.mjs` and the 16 px render (about 5); the detector and the spelling grep (1); the longer review of the spelling diff in its fix cycle (5-10) | 65-75 |
 | 3-9 | `npm run check:built` where `dist` assets change (1) | 1 each |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 | waves (section 16) | per wave: the merge of `origin/main`, the squash in the main checkout, the `main` CI run with the deploy (10.5-11.5) and the merge back (about 2); three waves | 37-41 |
 | post-release check and closeout (section 16) | the blind production review (about 45-60, the owner's print not counted), then the closeout commit and its docs-only CI run and the last squash (about 20) | 65-80 |
 
-Remaining total: ten code batches (1b, P, 2-9) at 45-60 min (450-600), plus
-94-126 min of extra gates (1b: 16-18; P: 30-35; 2: 41-66; 3-9: 7), plus batch
-10 at about 20, plus the waves (37-41) and the post-release check and
-closeout (65-80): about 666-867 min, so about 11.1-14.5 hours. If batch 10
-takes code, add 25-35 min. Batch P adds 75-95 min; taking the `/p/` rows from
+Remaining total at the batch 2 refresh (1b spent): nine code batches (2-9,
+P) at 45-60 min (405-540), plus 102-117 min of extra gates (2: 65-75; P:
+30-35; 3-9: 7), plus batch 10 at about 20, plus the waves (37-41) and the
+post-release check and closeout (65-80): about 629-798 min, so about
+10.5-13.3 hours. Batch 2 alone, with the wave 1 squash: about 122-149 min. If
+batch 10 takes code, add 25-35 min. Batch P adds 75-95 min; taking the `/p/` rows from
 batch 7 saves that batch no gate (its `check:built` stays). The owner's
 merges saved two batches (about 90-120 min); keeping the spelling sweep in
 batch 2 instead of a batch 2b saves one CI run and one review (about 30 min);
@@ -984,7 +824,7 @@ for the orchestrator's dispatch, not a model choice):
 |---|---|---|---|
 | 1b | yes: `CONTRACTS.md` section 5 asset paths | yes: one golden re-seed; the print well against mock 1b | covered by `reviews/plan-1-3.md` |
 | P | yes: the product law's card size (QP.2, `CLAUDE.md`) | yes: print fitting; parity with Figma nodes `714-42387` and `3773-90792` (the burden export) | none |
-| 2 | yes: `routes.json`, `llms.txt`; the lit route state; `.claude/hooks/`, prompts, agents and `CLAUDE.md` respelled | yes: every golden moves; the mark's renders | covered by `reviews/plan-1-2.md` and `plan-1-3.md` |
+| 2 | yes: `routes.json`, `llms.txt`; the lit route state; `.claude/hooks/`, prompts, agents and `CLAUDE.md` respelled | yes: every golden moves; the mark's renders | covered by `reviews/plan-1-2.md` and `plan-1-3.md`; the batch 2 refresh adds none (Status) |
 | 3 | no | yes: new states and their goldens | none |
 | 4 | no | yes: new states and their goldens | none |
 | 5 | no | yes: goldens | none |
@@ -1018,351 +858,596 @@ Rules that still hold for each batch's mock step (section 7):
 - Every mock step measures with `issues/57/mocks/measure.mjs` (N6), at
   360x640 and 1180x720, RU and EN.
 
-## 10. Batch 1b - No-picture placeholder retired (implemented; review next)
+## 10. Batch 2 - Shell, the mark and the American spelling (implement-ready)
 
-Batch 1 is done: `9a31aede` and the review fix pass `80872b35`
-(`reviews/1.md`, fix-then-continue; B1, R1, R2, N1-N5 and N7 fixed; R3 is
-folded into sections 2, 14 and 16; N6 is a line of this batch). Its outcomes and
-measurements are in `handoff.md`, "Completed" and "Verification"; its rules are
-in DESIGN.md. The implement-ready text of batch 1 is at `git show
-80872b35:issues/57/plan.md`, section 10.
+Batch 1b is done: `fce4a9f8` and the merge `3e5f6301` (`reviews/1b.md`,
+approve, no finding, five deviations accepted). Its brief is at `git show
+5d9aefbc:issues/57/plan.md`, section 10. Batch 1 is done: `9a31aede` and
+`80872b35`; its brief is at `git show 80872b35:issues/57/plan.md`, section 10.
 
-Objective: a record with no picture, or with a broken one, draws the kind glyph
-on every surface, the colour print card included; the three placeholder files
-leave the repository and every reader; the link card of a record with no
-picture takes the site share card of its language as a large card.
+Batch 2 is the last batch of wave 1. Mock: `mocks/2/` (confirmed, rounds 1 to
+5; the round 5 fixes are on its `index.html`), the mark
+`mocks/mark/b-vault-die.svg` (owner, "One mark", candidate B).
 
-Mock step: `mocks/1b/` (unit A). The owner confirmed it with the mock review
-answer M1b-1 (`context.md`, "Mock review answers"): the colour print card with
-no picture draws the light well `#ebe7f0` with the glyph in `#3a3350`, a named
-departure from Figma node `714-42387`. The node leaves that art area as blank
-paper, with no outline, glyph or tone (`context.md`, "Figma fact"), so there are
-no node values to read: the earlier lines of this plan that asked for the
-node's paper and ink values and its "outline per kind" are void. No question is
-open. Mock depends on: none.
+### Objective
 
-In scope: `artSrc` without a placeholder; the glyph on the colour print card
-(the paper sheet, the `/p/` sheet on screen, the editor's print preview); the
-`#0a0810` literal of `PrintCard.svelte` on the `--art-well` token (`reviews/1.md`
-N6); the link card of a record with no picture in the preview Worker and in the
-share pages; the deploy and data checks; the three files deleted; the docs and
-counts that name them.
+Ship the header of direction R: three jobs with icons, the three-control mode
+row with the «Дополнения ▾» menu, the account control and its lit state, the
+EN wordmark, the labelled pin and «Справка», the toast as a plate, and D121.
+Replace the three marks with the vault die. Respell the repository in American
+English, with the kept forms named in a decision file. Record the release
+waves. Then wave 1 lands (section 16).
 
-Out of scope: the black-and-white card (it has no art block; Q1b.1); the screen
-art well (batch 1); the bottom line «Daggerheart» and every other print card
-change (batch P); the card text; the per-item `og/<id>.jpg`.
+### Dispatch preflight
+
+- Merge `origin/main` into `claude/57` (a merge, never a rebase). On
+  2026-10-29 the branch already holds `main` `eea84371` (the usage guards of
+  `dd13136d` and `eea84371`); the merge takes whatever landed after it.
+- The CI credit of `3e5f6301` (run 40960103117) is in `handoff.md` before the
+  implementer starts.
+- The usage wrap-up (`orchestrate.prompt.md`, "Usage guards") can reach the
+  implementer mid-batch. The steps below are numbered S1 to S12; the line
+  "Session end partial progress" names the last finished step and the next
+  one. A fresh implementer continues from that step on the uncommitted tree.
+  Run the long gates (S12) only after every edit: the selftest and `check:db`
+  prove the final text of their files.
+
+### In scope
+
+- The rows of section 7, row 2: C6, C27, C34 (verify), C37, C47, C48, C52,
+  A15 (verify), A27 (icons), A35, A36, A37, P7, P9, D9, D10, D11, N4, D121.
+- The mark at every size it ships at, both share cards re-rendered.
+- The whole American-spelling sweep (owner, Q3 and B3: no batch 2b).
+- Three decision files: the navigation, the release waves, the spelling.
+
+### Out of scope
+
+- The gold default chips («Все» and the others): they stay gold until their
+  surface batches (owner, "Interim mix between waves"; batch 3 first).
+- The pin and the help in «Ещё» / «Настроить» at 360 (M2-2): those containers
+  arrive with batches 3, 5, 6, 7 and 8 (each carries the line, section 7).
+- The renamed help panels (C1 batch 3, C38 and N2-2 batch 5): batch 2 ships
+  the label «Справка» only.
+- The visually hidden H1 at 360 on roll pages (R2-1): batch 5.
+- The EN `<title>`, the manifest name and `en/index.html` keep their text.
+- The `FIRST_SCREEN` rows stay logged (`shipped: false`); batch 2 asserts no
+  row (section 14: the header is part of the roll pages' row, batch 5).
+- The link-preview Worker's card images (`tools/share-card.mjs`, Deferred).
 
 ### Files expected
 
-App code:
+| Step | Files |
+|---|---|
+| S1 | `app/src/lib/nav.ts`, `nav.test.ts`; `app/src/state/app.svelte.ts`, `app.test.ts` |
+| S2 | new `app/src/components/Menu.svelte`; `AccountMenu.svelte`; `accountMenu.test.ts`; `a11y.test.ts` (`COVERED`) |
+| S3 | `TabBar.svelte`, `tabBar.test.ts`; `app/src/lib/icons.ts` (`search`, `chevron` if absent) |
+| S4 | new `app/src/components/ModeRow.svelte`, new `modeRow.test.ts`; `Shell.svelte`; `RollPanel.svelte`; deleted `SupplementNav.svelte`, `supplementNav.test.ts`; `roll.test.ts` (the `SUPPLEMENTS` case that reads the chip panel) |
+| S5 | `Shell.svelte`, `shell.test.ts`; `app/src/lib/dict.ts` |
+| S6 | `PageHead.svelte`, `HelpButton.svelte`, `dict.ts`; the tests that name `homeHint` or `helpHint` (`homebrewPage.test.ts` and the others `git grep -n -E "homeHint|helpHint" -- app/src` finds) |
+| S7 | `Toast.svelte`, `shell.test.ts` (D121) |
+| S8 | `docs/fixtures/urls/routes.json`, `tests/app/contracts.js`, `app/src/lib/hash.test.ts`, `docs/specs/CONTRACTS.md`, `docs/specs/ROUTES.md`, `docs/specs/COVERAGE.md`; `tests/app/states.js` and `tests/app/sweep.js` where they read the tab bar |
+| S9 | `app/public/icons/icon.svg`, new `app/public/icons/favicon.svg`, the four PNGs; `app/index.html`, `404.html`, `old-host/index.html`, `tools/build-pages.js`, `tools/build-share-pages.js`; `tests/derived.js`; `tools/collect-site.sh`; `tools/artwork/lib.mjs`, `lib.test.mjs`; `og/_share.jpg`, `og/_share_en.jpg`; `docs/artwork.md`, `docs/specs/META.md`; `issues/57/mocks/mark/candidates.js` (evidence only) |
+| S10 | the sweep's file set (below); `llms.txt`, `tests/contracts.js`; `tools/decisions.js`; `docs/specs/I18N.md`; `tests/derived.js` |
+| S11 | `docs/specs/FEATURES.md`, `STATE.md`, `DEBT.md`, `DESIGN.md`; three files under `docs/decisions/` and the two older files they amend or supersede; `docs/DECISIONS.md`; `tests/app/inventory.js`; `tests/app/snapshots/` |
+| S12 | `issues/57/mocks/2/built/`, `handoff.md` |
 
-1. `app/src/lib/desc.ts`: `artSrc(img, broken, size)` returns `string | null`.
-   It returns `null` when `img` is empty or `broken` is true; `NO_ART` goes. The
-   doc comment says: "Returns where a record's picture lives, or null when it has
-   none or it failed to load; the caller then draws the kind glyph (DESIGN.md,
-   "Cards")."
-2. `app/src/components/PrintCard.svelte`:
-   - Import `ArtWell` and `kindGlyph` (`../lib/label.js`); add `const glyph =
-     $derived(kindGlyph(it.kind, it.eq?.t));`, as the screen callers do.
-   - Markup, inside the existing `.pc-art` div: `{#if artUrl}` the two `<img>`
-     elements as today `{:else}<ArtWell {glyph} />{/if}`, and `class:none={!artUrl}`
-     on the div. Add no whitespace text node: the block is under
-     `prettier-ignore` (`docs/specs/COVERAGE.md`, "Whitespace text nodes are
-     content").
-   - Styles: `.pc-art` takes `background: var(--art-well)` in place of `#0a0810`
-     (N6). One new rule after it: `.pcard:not(.bw) .pc-art.none { --art-well:
-     #ebe7f0; --line2: #3a3350; }`, with a one-line comment that gives the reason
-     (the owner's light print well: less toner, a clear mark; a departure from
-     Figma node `714-42387`, `FEATURES.md` "Print"). The two values are the
-     card's own print literals, beside its `#fff` and `#000`. `ArtWell.svelte`
-     does not change: its well reads `--art-well` and its glyph `--line2`.
-   - The comment above `artUrl` says: a colour card with no picture, or a
-     broken one, draws the kind glyph on the light print well; the screen keeps
-     the dark well (`FEATURES.md`, "Print").
-   - `fit()` does not change. It writes `.pc-art`'s `height`, `--artw` and
-     `display` as today and reads nothing inside the well; the glyph is 42% of
-     the well box and centred (`ArtWell`), and `.pc-content`'s white gradient
-     fades the lower edge of the well as it fades a picture.
-3. `app/src/components/RecordActions.svelte`: `copyImage` returns at once when
-   `artSrc(...)` is `null` (the button is hidden then, so this is the type's
-   guard, not a new path). In the share action, compute `const src = hasArt ?
-   artSrc(it.img) : null` and build `file` only when `src` is set; no `!`
-   assertion.
-4. The screen callers (`ArtField`, `ListCard`, `RowMain`, `TableRows`,
-   `RecordCard`) call `artSrc` only inside their `it.img && !broken` guard. Change
-   one only if `npm run check:fast` (svelte-check) reports a type error, and
-   then with a guard at the caller.
+### Constraints from the mock and the owner
 
-Tests:
-
-5. `app/src/lib/desc.test.ts`: the six `_none` expectations become
-   `toBeNull()` (no picture, a broken picture, a broken own picture, full and
-   thumb).
-6. `app/src/components/printPage.test.ts` (the `NONE` cases, about lines
-   393-431): `NONE` goes. A colour card with no picture, and one whose picture
-   failed, has `.pc-art.none`, no `.pc-img` and no `.pc-back`, and draws the
-   glyph path of its kind inside `.pc-art` (`ICONS.kindItem.d` for an item,
-   from `../lib/icons.js`), on the standard and the compact sheet; a
-   black-and-white card still has no `.pc-art`. Keep the case group's
-   `expectNoA11yViolations`.
-7. `tests/app/print.js`: one new check, in a real browser (jsdom resolves no
-   `var()`), on `#/p/set-longsrc1 as gm2` (gm4's homebrew item with no
-   picture), on the standard and the compact colour sheet: the computed
-   `background-color` of `.pc-art.none` is `rgb(235, 231, 240)`; the glyph
-   `svg`'s computed `color` is `rgb(58, 51, 80)`; the glyph's box lies inside
-   the `.pc-art` box, and its bottom is above the top of the first line of
-   `.pc-text`. On a colour sheet that the suite already opens with a catalog
-   picture, `.pc-art`'s computed `background-color` stays `rgb(10, 8, 16)`. In
-   the editor parity case 'the long source line' (`#/homebrew/hb_longsrc...`),
-   the preview card's `.pc-art.none` has the same background as the sheet's.
-   Every existing print measurement passes unchanged.
-8. `tests/app/inventory.js`: the `why` of `#/p/set-longsrc1 as gm2` ends "the
-   art block draws the kind glyph on the light print well" (the «Daggerheart»
-   part stays until batch P). Re-seed its golden: `npm run build:test`, then
-   `node tests/app/golden.js --update --only=p/set-longsrc1`. Only the `# why:`
-   line of `tests/app/snapshots/_p_set_longsrc1_as_gm2.txt` may change; if the
-   tree moves, stop (the glyph must stay `aria-hidden`).
-
-Link cards:
-
-9. `preview/worker.mjs`: `homebrewImage(env, img, lang)`. Its last branch
-   returns `{ img: sitePicture(env, lang), src: '', large: true }`;
-   `homebrewCtx` passes `lang` and sets `large: pic.large` beside `img` and
-   `imgSrc`, so `cardHead` writes `og:image:width` 1200, `og:image:height` 630
-   and `twitter:card` `summary_large_image` (the `siteCtx` pattern), and `card()`
-   draws no visible `<img>` (`tools/share-card.mjs` omits it for an empty
-   `imgSrc`). The doc comment names the three outcomes.
-10. `preview/worker.test.mjs`: the found-item test expects `og:image` `SITE +
-    'og/_share.jpg'`, `twitter:card` `summary_large_image`, `og:image:width`
-    `1200` and `og:image:height` `630`; the English test expects `SITE +
-    'og/_share_en.jpg'` and the same three. The picture table gives each case
-    its width (640 with a picture, 1200 without) and its `twitter:card`; a case
-    with no picture asserts that the body holds no `<img src=`; one case with
-    no picture runs under `/en/h/`.
-11. `tools/build-share-pages.js` `pageCtx`: with `it.img`, as today; without,
-    `img: SITE + (lang === 'ru' ? 'og/_share.jpg' : 'og/_share_en.jpg')`,
-    `imgSrc: ''` and `large: true`. The comment above says why: a messenger
-    draws no large card without an image, and the site card is published at
-    1200x630 in both languages. No catalog record has `img: ''` today, so `node
-    tools/build.js` writes no other file.
-12. `tests/derived.js`: the stub check (the comment that starts "Every stub
-    (i/<id>.html) is a square-art "summary" card"): a stub with art stays
-    `summary` with `og/<asset>.jpg`; the stub built without art expects
-    `summary_large_image`, the site card of its language and `og:image:width`
-    `1200`. The `N.art` comment loses "and it also holds the _none.webp stub".
-
-Deploy tooling and data checks:
-
-13. `tools/collect-site.sh`: in the by-name loop, `img/_none.webp
-    img/thumb/_none.webp` become `img/ci1.webp img/thumb/ci1.webp` (a frozen
-    catalog picture and its thumbnail: one probe per symlinked folder still).
-14. `tools/check-site.lib.mjs`: the same two paths in the probe list;
-    `tools/check-site.test.mjs`: the fixture map and the expected probe list.
-15. `tests/dataint.js`: the `_none.webp` skip in the `img/` loop and `_none.jpg`
-    in the `og/` skip go. A placeholder that comes back then fails as "belongs
-    to nobody", which is the guard against a re-add.
-16. `tools/artwork/lib.mjs`: the `thumbPath` comment ("one per `img/<asset>`")
-    and the `unarted` comment (a record with `img: ''` draws the kind glyph,
-    `app/src/components/record.test.ts`); `tools/artwork/lib.test.mjs`: the
-    thumbnail plan case is "plans one thumbnail per picture, in name order",
-    with no `_none.webp` in its input.
-17. `git rm img/_none.webp img/thumb/_none.webp og/_none.jpg`.
-
-Docs, in the same commit:
-
-18. `docs/specs/CONTRACTS.md` section 5: `img/thumb/` is "one per picture"
-    (without "including `_none.webp`"). Add: "A record with no picture has no
-    `img/` or `og/` file; its link card names the site card of its language,
-    `og/_share.jpg` or `og/_share_en.jpg`, as a large card. The placeholder
-    `img/_none.webp`, its thumbnail and `og/_none.jpg` were removed on
-    2026-10-29 (owner); a messenger that cached a card before then keeps a dead
-    picture until it fetches the page again." `docs/fixtures/`,
-    `tests/contracts.js` and `llms.txt` name no `_none` path, so they do not
-    change; the commit body says so.
-19. `docs/specs/FEATURES.md` "Records" (the no-artwork bullet): add "The colour
-    print card draws it too, on a light well ("Print")." "Print": the two
-    no-picture bullets become one: "A colour card of a record with no picture,
-    or with a picture that fails to load (a partial deploy, a cold cache, a
-    sheet opened directly at a `#/p/` address), draws the glyph of its kind in
-    dark ink (`#3a3350`) on a light well (`#ebe7f0`) in the art block, on the
-    standard and the compact sheet, on the `/p/` sheet on screen and in the
-    editor's print preview; the screen keeps the dark well. Black and white has
-    no art block. A departure from Figma node `714-42387`, which leaves that
-    area as blank paper (owner, 2026-10-29)." The old claim that the node draws
-    "an outline per kind" goes (M1b-1).
-20. `docs/specs/META.md`, the preview-card table: the picture of the `/h/` rich
-    item row and the 1000-related-items row reads "the site picture of its
-    language, large (since 2026-10-29; probed with `og/_none.jpg` on
-    2026-10-14)".
-21. `docs/specs/COVERAGE.md`, the `components/printPage.test.ts` row:
-    "`img/_none.webp` for no picture on both sheets and for a broken image"
-    becomes "the kind glyph on the light well for no picture on both sheets and
-    for a broken image".
-22. `README.md`: the tree line "1193 pictures" becomes 1192; the ingest
-    sentence says that where `img` is empty the app draws the glyph of the
-    record's kind and hides the **Image** button. `README.ru.md`: «1193
-    картинки» becomes «1192 картинки»; the same sentence in Russian («Если `img`
-    пустой, приложение рисует значок вида записи, а кнопка «Картинка»
-    пропадает, ...»). `tests/derived.js` checks both counts.
-23. `docs/artwork.md`: "Thumbnails" (`thumbs` makes one per `img/*.webp`, with
-    no `_none.webp`), the `unarted` bullet and "`unarted` is a normal outcome"
-    (the record draws the kind glyph until its art arrives).
-24. `.claude/prompts/add-source.prompt.md`: a record with `img: ''` draws the
-    kind glyph (a prompt change: a batch review trigger, already required).
-25. DESIGN.md "Cards", the "Art well" bullet: its last sentence becomes "No
-    surface draws a placeholder picture; the colour print card draws the glyph
-    on a light well (`#ebe7f0`, glyph `#3a3350`)." "Signature component: the
-    print card": one sentence after the artwork sentence: "A colour card with
-    no picture draws the kind glyph in dark ink on a light well, where Figma
-    node `714-42387` leaves blank paper." This is the 1b row of section 4's
-    departures table.
-
-Earlier decision bodies that name `_none.webp` stay as they are (records).
+- Jobs: «Бросок» / "Roll" (`die`), «Таблицы» / "Tables" (`table`),
+  «Поиск» / "Search" (`search`, Material Icons, Apache 2.0); the icon before
+  the label at every width; a label never gives way to an icon (theme 3).
+  The lit job: gold text and the gold underline (today's `a.on`). Three jobs
+  hold one row at 360 in both languages; the 640 px scroller and its
+  `scrollLeft` effect go.
+- The mode row shows on the nine roll sections only, under the sticky
+  header, and scrolls with the page. Three controls at every width:
+  «Обычные правила» / "Standard rules" (`t.pageStd`), «Альтернативные
+  таблицы» / "Alternate tables" (`t.pageAlt`, the page heading's words, B5-2),
+  and the menu button «Дополнения ▾» / "Supplements ▾". On a supplement page
+  the button shows that supplement's name (`t[SECTION_LABEL[s]]`) with the
+  chevron. The lit control takes the current-place gold fill. At 360 each
+  control is 40 px tall, a label may take two lines, and the row takes 6 px
+  above and below (mock 2, M2-3); the widths share the row as 0.8 / 1.25 / 1
+  at 13 px (mock 2, "Changes"), so the longest names hold two lines.
+- The menu: seven links in `SUPPLEMENTS` order, each to its section path
+  (`app.href(sectionHash(s))`), 44 px items, a muted caption «Дополнения» /
+  "Supplements" at the top, the open supplement with a check and
+  `aria-current="page"`, right-aligned under its button. No grab handle and no
+  sheet (N0-3).
+- The account control: signed out, the person icon and «Войти» / "Sign in" at
+  every width (the label is never hidden; the 419 px rule goes); signed in,
+  the initial in the 38 px circle (44 px at 600 px and below) and a chevron.
+  The gold ring on `/account`, `/lists`, `/lists/<uuid>`, `/homebrew` with its
+  tabs, `/homebrew/<id>` and `/homebrew/new` (the «Мои предметы» pages), and
+  while the menu is open. `aria-current="page"` stays on `/account` only (the
+  control is a link to `/account` only there).
+- The account menu: the `FEATURES.md` order «Аккаунт», «Мои списки», «Мои
+  предметы», a rule, «Выйти»; no counts, no «Вы вошли как» line (owner, R3).
+  «Мои предметы» is capitalised (M4-2; `t.myItems` already is: check).
+- The brand: the mark (26 px, the same gold drop shadow as today), then the
+  wordmark «Лут» in Russian and «Loot» in English over «DAGGERHEART». The
+  wordmark is the header only.
+- The pin and the page help (M2-2): from 760 px they are labelled buttons
+  beside the H1 - the pin «Открывать при запуске» / "Open on start", pinned
+  «Открывается при запуске» / "Opens on start" with the neutral pressed check
+  (N4); the help «Справка» / "Help" where the panel has that name. Below
+  760 px each stays today's round button with the same accessible name, until
+  its page's batch moves it into «Ещё» or «Настроить» (the interim rule;
+  batches 3, 5, 6, 7, 8).
+- The toast: a plate - `--surface`, a 1px `--muted2` border, `--txt`, the
+  Float shadow, `--r` corners (not a pill), at most the window's width less
+  16 px a side, 26 px off the bottom. Its action button: `--surface2` with a
+  `--line2` border. The error toast: the Alarm Red fill (`--danger`) with
+  dark ink (`--ink-on-gold`, about 5.6:1). The gold leaves the toast.
+- The language switch stays the `Seg` control that rewrites the `/en` prefix
+  with `replaceState`; it is not a link.
+- The mark: `mocks/mark/b-vault-die.svg` as drawn - the d12 decagon
+  `#d8ab5e`, the pentagon face `#f0d091`, the edges and the keyhole cut as a
+  mask. Its decagon reaches 198 units from the centre, inside the maskable
+  safe zone (204.8). The favicon is the mark on the dark tile the owner saw
+  (`mocks/mark/stage.html`, `.tile`: `#0e0c15`, radius 18.75%).
 
 ### Steps
 
-1. Wait for the green CI run of `80872b35` (the orchestrator). Merge
-   `origin/main` into `claude/57` if it moved (a merge, never a rebase).
-2. `desc.ts` and `desc.test.ts` (items 1, 5); then `PrintCard.svelte` and
-   `RecordActions.svelte` (items 2, 3); `printPage.test.ts` (item 6). Run `npx
-   vitest run app/src/lib/desc.test.ts app/src/components/printPage.test.ts
-   app/src/components/record.test.ts`.
-3. The link cards (items 9-12): `node --test preview/worker.test.mjs`, then
-   `node tests/run-all.js derived`.
-4. The tooling and data checks (items 13-16), then `git rm` the three files
-   (item 17): `node --test tools/check-site.test.mjs tools/artwork/lib.test.mjs`,
-   `node tests/run-all.js dataint`.
-5. The docs (items 18-25); `git grep -n "_none" -- . ":!issues"
-   ":!docs/decisions" ":!supabase" ":!tests/db"` returns only the `v_none`
-   and `hb_none...` identifiers (unrelated names) and nothing else.
-6. `npm run build:test`; `tests/app/print.js` (item 7) and the inventory and
-   golden (item 8); `node tests/run-all.js app/print,app/states,stub`.
-7. Impeccable `polish` and `harden` on the print card's no-picture well (`/p/`
-   at 360 and 1180, the editor's print preview); `handoff.md` gives the
-   outcome. `impeccable detect --json --no-inline-ignores app/src`.
-8. The evidence set into `issues/57/mocks/1b/built/`: `/p/set-longsrc1 as gm2`
-   on the standard and the compact colour sheet and the editor's print preview
-   of `hb_longsrc`, at 360 and 1180 px, RU and EN, from `npm run build:test`;
-   one Chrome print-to-PDF of the standard colour sheet rasterised at 300 dpi
-   (the method of `mocks/P/tools/`). Compare the well and the glyph with
-   `mocks/1b/print-card__1180__ru.png`; name a difference in `handoff.md`.
-9. `rtk npm run check:fast` (Bash timeout 600000); `npm run check:built`; `npm
-   run lint:untyped`; `npm run lint:typed`. Commit, push, CI credit.
+S1. Navigation logic.
+   1. `nav.ts`: replace `tabOf` with `jobOf(s: Section | null): Job | null`
+      (`type Job = 'roll' | 'tables' | 'search'`; every `roll/*` section is
+      `'roll'`, `'lists'` and `null` are `null`) and `modeOf(s)` (`'roll/std'`,
+      `'roll/alt'`, the supplement itself, or `null` off the roll sections).
+      Keep `SUPPLEMENTS` and `isSupplement`. The file comment cites the new
+      navigation decision file (S11), not the 2026-10-20 one.
+   2. `app.svelte.ts`: `hash` becomes a `$state` behind a get/set pair, so the
+      five assignments stay as written. The setter records the last roll
+      section of this tab (`#lastRoll`) from `parseHash(h)` when it is a
+      `section` route with a `roll/*` section; a legacy `#/roll/hnf` parses to
+      `roll/std`, so the memory never holds a raw address (no replayed source
+      switch). New getter `rollHash`: `sectionHash(#lastRoll)`, else the
+      pinned start section when it is a roll section, else `'#/roll/std'`
+      (owner, R7). Memory only; nothing is stored.
+   3. Tests: `nav.test.ts` (each section's job and mode, `null`);
+      `app.test.ts` - a fresh tab pinned at `#/roll/vault_of_ages` on a table
+      gives `#/roll/vault_of_ages`; after `/roll/dread` then `/tables` it gives
+      `#/roll/dread_gm_toolbox`; after `/roll/hnf` it gives `#/roll/std`; a
+      fresh tab pinned at `#/tables/eq_weapon` gives `#/roll/std`.
+S2. `Menu.svelte` (the menu pattern's second use: extract it, `CLAUDE.md`).
+   Move `AccountMenu.svelte`'s box, `role="menu"`, the first-item focus, the
+   Up, Down, Home, End and Escape keys and the outside-click close into
+   `Menu.svelte` (props: `control`, `label`, `id`, `onclose`, `cls`,
+   `children`). `AccountMenu.svelte` keeps its items, its sign-out and the
+   class `acctmenu` (`tests/app/states.js` reads it) and renders through
+   `Menu`. `accountMenu.test.ts` passes unchanged; `a11y.test.ts` `COVERED`
+   names `Menu.svelte`.
+S3. `TabBar.svelte` becomes the job row: `<nav class="tabs"
+   aria-label={t.sectionsLabel}>` keeps its class, so the browser suites'
+   `nav.tabs` selectors stay; three links, each `data-job="<job>"`, with
+   `Icon` before the label; «Бросок» links to `app.href(app.rollHash)`,
+   «Таблицы» to `/tables`, «Поиск» to `/search`; `aria-current="page"` and
+   `.on` on `jobOf(app.section)`. The props change to `{ app }`. The
+   `scrollLeft` effect, the separator and the six-supplements comment go (N4).
+   `tabBar.test.ts` is rewritten: three links in both languages with their
+   icons, the lit job on a roll, a table and a search route, none lit on
+   `/lists`, `/i/ci1`, `/p/<id>`, `/account`; «Бросок»'s `href` follows
+   `rollHash`; `expectNoA11yViolations`.
+S4. `ModeRow.svelte`: `<nav class="modes" aria-label={t.modesLabel}>` with
+   two links and the menu button, each carrying `data-section` (the
+   canonical key, `sectionHash(s)`); the lit one carries `aria-current="page"`.
+   Its own controls, not `Chip`: `Chip`'s button form is a pressed toggle
+   (`aria-pressed`), and the menu button needs `aria-haspopup="menu"` and
+   `aria-expanded`; the styles compose Chip's tokens. The menu renders through
+   `Menu.svelte` and closes on a navigation. `Shell.svelte` draws `ModeRow`
+   after `</header>` and before `<main>` when `modeOf(app.section)` is not
+   null. `RollPanel.svelte` drops `SupplementNav`; delete
+   `SupplementNav.svelte`, `supplementNav.test.ts`, its `COVERAGE.md` row and
+   its `a11y.test.ts` entry. `modeRow.test.ts`: the three controls on each of
+   the nine sections, the lit one and its text equal to the page's H1 (the
+   chip matches the heading), the menu's seven links in order with the check
+   on the open one, the keys, `expectNoA11yViolations` closed and open.
+S5. `Shell.svelte`: the mark as an inline SVG (`viewBox="0 0 512 512"`, the
+   mask id `brand-mark-cut`) in `.brand-ico`; the wordmark from a new `dict`
+   key `brandWord` («Лут» / "Loot"), whose comment says the wordmark follows
+   the language in the header only (it replaces the "not a translated
+   string" comment); the account control of the constraints above, its ring
+   on the account pages (`acctPage`, derived from the route kinds `account`,
+   `section` `lists`, `storedList`, `homebrew`, `homebrewItem`); the
+   chevron after the initial; the 419 px block goes. `shell.test.ts`: the
+   brand link names «ЛутDaggerheart» and "LootDaggerheart"; «Войти» visible at
+   360; the ring on each account page and on none of `/i/ci1`, `/roll/std`.
+S6. `PageHead.svelte` and `HelpButton.svelte`: the pin and the help take a
+   visible label from 760 px (`homeHint` becomes «Открывать при запуске» /
+   "Open on start"; `homeOn` stays; `helpHint` becomes «Справка» / "Help");
+   below 760 px the label is visually hidden and stays the name (the `.vh`
+   rule). The pressed pin draws the neutral check of `Seg`, not a gold fill.
+   `HelpButton` gets the visible label only where `PageHead` asks for it (one
+   prop, one caller); the field «?» buttons are unchanged (batches 6 and 9
+   remove them). The tests that read the names follow the new values.
+S7. `Toast.svelte`: the plate and the error flavour of the constraints. D121:
+   the focus effect is keyed on `run ?? go ?? href` of the action, so it runs
+   when a link or move toast gives way, and still not on a language redraw
+   (the same `Said` keeps the same functions); `onfocusin` records
+   `relatedTarget` as the origin when it lies outside the toast. When a later
+   toast replaces a toast that held the focus, the focus goes to that origin,
+   else `#main` (inside the record dialog, its close button). `shell.test.ts`:
+   one case each for `href` and `go` as `DEBT.md` D121 says, ending in
+   `expectNoA11yViolations`. D121 leaves `DEBT.md`; its section stays for D116.
+S8. The contract set (plan review R1), in the same commit:
+   1. `routes.json`, all 97 rows by a one-off script (not committed):
+      `tab` `'#/roll/<any>'` becomes `"roll"`, `'#/tables'` `"tables"`,
+      `'#/search'` `"search"`, `null` stays; a new `mode` after `tab`: the
+      `sectionHash` of the section the row resolves to on a roll route
+      (`#/` and the legacy names give `"#/roll/std"`, a supplement its URL id,
+      for example `"#/roll/vault_of_ages"` for `#/roll/voa`), else `null`.
+   2. `tests/app/contracts.js`: `tab` from `data-job` of `nav.tabs
+      a[aria-current="page"]`, `mode` from `data-section` of `nav.modes
+      [aria-current="page"]`, both compared as plain strings (both sides are
+      canonical keys, so `pathOf()` adds nothing); one `/en/roll/dread` probe:
+      English, job `roll`, mode `#/roll/dread_gm_toolbox`, the button text
+      "Dread GM Toolbox".
+   3. `hash.test.ts`: `fx.resolves.tab === 'tables'`; its comment loses
+      `tabOf`.
+   4. `CONTRACTS.md` section 1 gains: "`routes.json` pins each route's
+      resolved address, its lit job and its lit mode." `ROUTES.md` "Sections"
+      (the paragraph after "URL ids and old ids") names the three jobs and the
+      mode row in place of the five tabs.
+   5. `COVERAGE.md`: the `hash.test.ts` row, the row "Route resolution had no
+      fixture" (97 rows, not 28 shapes), the `tabBar.test.ts` and `nav.test.ts`
+      rows, a `modeRow.test.ts` row, the accounts row (line "Accounts: sign-in,
+      the header control"), the `supplementNav.test.ts` row deleted.
+   6. `tests/app/states.js` and `tests/app/sweep.js`: each `nav.tabs` reader
+      still finds its links (the Tables job is `a[href="/tables"]`); a reader
+      that expects five tabs reads three.
+S9. The mark.
+   1. `app/public/icons/icon.svg`: the `#0e0c15` ground and the mark of
+      `b-vault-die.svg`; the comment keeps the safe-zone sentence with the
+      198-unit reach.
+   2. New `app/public/icons/favicon.svg`: the mark on the rounded tile
+      (`<rect width="512" height="512" rx="96" fill="#0e0c15"/>`).
+   3. `npm ci --prefix tools/artwork`, then `node tools/artwork/icons.mjs`:
+      the four PNGs.
+   4. The favicon link in every document that has one: `app/index.html`
+      `<link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">`;
+      `tools/build-pages.js` `${t.rootHref}icons/favicon.svg` (the pattern of
+      its apple-touch line); `404.html`, `old-host/index.html` and
+      `tools/build-share-pages.js` `rootPage()` the absolute
+      `https://daggerheart-loot.pages.dev/icons/favicon.svg` (their links name
+      the site's host already). Then `node tools/build.js`.
+   5. `tests/derived.js`: the app's icon link is `/icons/favicon.svg` and the
+      file exists in `app/public/`; no tracked document holds the emoji data
+      URI (`%F0%9F%97%9D`). `tools/collect-site.sh` `guard` names
+      `icons/favicon.svg` beside `icons/maskable-512.png`.
+   6. `tools/artwork/lib.mjs`: export `MARK`, the mark's `<defs>` and `<g>`
+      with a mask id parameter; `shareCardSvg` draws it in the star's place in
+      an 84 px box at (50, 258) (`translate(50 258) scale(0.1640625)`, the box
+      of `mocks/mark/stage.html`, view `share`); `starPath` goes. `lib.test.mjs`:
+      the gold test counts `#d8ab5e` once and `#f0d091` once and names "the
+      mark", not "the star"; one more case reads `app/public/icons/icon.svg`,
+      `favicon.svg` and `app/src/components/Shell.svelte` and asserts the same
+      path data as `MARK` (four copies, one drawing).
+   7. `node tools/artwork/cards.mjs`, then `node tools/artwork/cards.mjs
+      --check`: both `ok`.
+   8. The 16 px check: add `{ id: 'shipped', file:
+      '../../../../app/public/icons/favicon.svg', ... }` to
+      `issues/57/mocks/mark/candidates.js` and run `node
+      issues/57/mocks/mark/render.mjs shipped`; the handoff names
+      `png/shipped__fav.png`, `__apps`, `__big`, `__head__*` and `__share__*`
+      and says how the mark reads at 16 px on the dark and the light strip.
+      The owner chose B knowing its 16 px cost (`candidates.js`: the keyhole
+      becomes a dot below 32 px); the batch records the outcome and changes no
+      geometry.
+   9. Homes: `docs/artwork.md` "Icons" (the vault die, owner 2026-10-29,
+      replacing "a flat key"; `favicon.svg` and its tile) and "The site share
+      cards" (the mark in the star's place; gold on the mark only);
+      `META.md` the icons bullet (`favicon.svg`; "The tab favicon is
+      unchanged" goes).
+S10. The American-spelling sweep (owner, Q3 and B3).
+   1. Word list (`git grep -n -i -I -E`):
+      `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell`.
+      On `3e5f6301` it hits 1381 lines in 539 files outside `issues/` and
+      `schema/`: 476 in 340 goldens (re-seeded in S11, never edited), 64 in 44
+      decision files (kept), 273 in 81 `app/src` files, 222 in 15 other test
+      files (102 in `tests/app/print.js`), 85 in `docs/specs/`, 73 under
+      `.claude/` (23 in `.claude/hooks/`), 41 in `tools/`, 31 `DESIGN.md`, 21
+      `README.md`, 16 `llms.txt`, 14 `CLAUDE.md`, 7 `tests/db/`.
+   2. Respell: prose, comments, test and suite titles, log and error texts,
+      the UI (`footSummary` "Sources and license", EN `printColor` "Color"),
+      the inventory `why` texts, `llms.txt`, `README.md` (with the
+      `tests/derived.js` pattern `fall\s+outside that license`),
+      `docs/specs/*`, `DESIGN.md`, `PRODUCT.md`, `docs/artwork.md`,
+      `docs/provenance/*`, `docs/fixtures/homebrew-file/README.md`,
+      `.claude/README.md`, prompts, skills, agents, templates, hooks,
+      `CLAUDE.md` (respelling only, no new line), `tools/decisions.js` (its
+      generated header, then `node tools/decisions.js`), the two EN head
+      descriptions in `tools/build-share-pages.js` and the Terms description in
+      `tools/build-pages.js` (then `node tools/build.js`), `.prettierignore`
+      and `eslint.config.mjs` comments, the three `tests/db/` comments.
+   3. Kept, each class named in the decision file: identifiers (code names
+      such as `VectorPaint` `'colour'`, `isLabelled`, CSS classes such as
+      `.foot-licence`, keys such as `hb_sectarmouraaaaaa`); stored and seed
+      values (`docs/fixtures/` data, `from-llms.json` "Armour", the seeds of
+      `app/src/ports/fake-cloud-seed.ts` such as «Traveller's Roll» and «the
+      old armourer», the `tests/db/` inputs); inventory ids and golden file
+      names (`~ colour for this visit`); decision file names and titles
+      (`tools/decisions.js` checks them) and earlier decision bodies; the
+      frozen `schema/*.json` wording; quotations and records (commit
+      messages, the DPCGL text and its "License", source-book text in
+      `data.js` such as «Crown of Judgement», log excerpts); `cancelled`
+      (American too, and GitHub's `cancelled()` in `.github/workflows/`);
+      `smoulder` (fixture data `llms.txt` quotes); `preview/` and
+      `tools/artwork/` `package-lock.json` and third-party licence texts;
+      `.impeccable/design.json` (generated; batch 10 regenerates it from
+      DESIGN.md); the `issues/57/` scratch.
+   4. `llms.txt` with `docs/specs/CONTRACTS.md` and `tests/contracts.js` (the
+      pinned `'| Artefact | Field | Carries |'` and its `CONTRACTS.md` table
+      head move together); `docs/fixtures/` does not change (state it in the
+      commit body). The cited `schema/*.json` sections hold no listed word, so
+      the frozen-schema check holds.
+   5. `.claude/hooks/*.mjs`: comments and messages only. After the hook
+      edits, `node --check` each edited hook. A message that a selftest case
+      matches changes with that case. If a guard refuses a write under
+      `.claude/` or to `CLAUDE.md`, stop and return the text for the
+      orchestrator (`CLAUDE.md`, "Task and session protocol").
+   6. `tests/derived.js`: a new check that the EN strings of `dict.ts` and
+      the text of `llms.txt` hold no listed word except the kept forms, so the
+      rule holds after closeout.
+   7. `docs/specs/I18N.md` "Rules": "English text uses American spelling;
+      the kept forms are the spelling decision file's."
+S11. Docs, decisions, states and goldens.
+   1. `FEATURES.md` "Chrome": the tab-bar bullets become the jobs, the mode
+      row, the menu and the measured header; the account control bullet (the
+      label at every width, the chevron, the ring on the account pages); the
+      pin bullet (the labels, the 760 px step); the toast plate; "Help panels
+      under a `?`" reads «Справка»; `footSummary` in EN. "Rolling": the
+      paragraph that cites the supplements panel. "Consistency rules", rule 4:
+      the «Дополнения» departure is rewritten (the menu button shows the open
+      supplement's name); the job «Бросок» names a group of nine roll pages and
+      has no heading of its own (N8); the «Альт. таблицы» departure goes (B5-2).
+   2. `STATE.md`, "The in-memory state object": the last roll section of this
+      tab, memory only, never a raw address.
+   3. `DESIGN.md` (section 4, departures for batch 2): "Navigation" ("Tabs":
+      the jobs, the mode row, the menu; "Brand": the mark and «Лут» /
+      «Loot», replacing "never translated"); The Two Breakpoints Rule (the
+      760 px label step; the 640 px tab scroller goes); "Layout" (the measured
+      sticky header at 360 and 1180, the scrolling mode row); "Toast" (the
+      plate, the error toast with dark ink); "Chips" (the 40 px mode controls
+      at 360); The Same Label Rule (a label does not change with the width;
+      the pin and «Справка» are labelled; the interim round buttons below 760
+      px named with their batches).
+   4. Decision files (`.claude/templates/decision.template.md`, then `node
+      tools/decisions.js`):
+      - `2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`: three jobs
+        and the three-control mode row with the supplements menu; rejected:
+        five tabs with a chip panel, one row of nine chips, one scrolling row
+        of nine with an edge fade, B2's rail and bottom bar. `- Supersedes
+        "Supplement roll sections share one tab and a chip panel"
+        (2026-10-20).` and the mirror pointer in that file.
+      - `2026-10-29-task-57-lands-on-main-in-three-waves.md`: three waves (1,
+        1b, 2; 3-7; 8, 9, P, 10), a squash after each wave's last batch review
+        and green CI, no owner screenshot gate, `issues/57/` on `main` with
+        each squash and deleted there by the closeout (owner, "Wave squash
+        content"), one post-release live check after wave 3; an
+        inconsistency between batches is accepted when a planned later batch
+        removes it (the option with less work, that batch named). Rejected:
+        one squash at closeout; a landing per batch; an owner screenshot
+        review per wave; `issues/57/` left out of each squash. `- Amends "A
+        task branch pushes every batch; a green CI run gates main"
+        (2026-10-21): for task 57, three squashes.` and the mirror pointer.
+      - `2026-10-29-english-text-uses-american-spelling.md`: American
+        everywhere it can change; the kept classes of S10.3; rejected: British
+        everywhere; American in the UI only.
+   5. `tests/app/inventory.js`: a new state `#/roll/vault_of_ages ~
+      supplements menu` (the menu open on a supplement page; RU and EN
+      goldens; its axe case is `modeRow.test.ts`). The account menu state
+      `#/roll/std ~ account menu as gm1` keeps its id; its golden moves.
+   6. Goldens: `npm run build:test`, then `node tests/app/golden.js --update
+      --shard=n/4` for n = 1 to 4 (each call fits 600 s). Every golden moves
+      (the header, `footSummary`). Then `git diff --stat --
+      tests/app/snapshots` and a read of a sample per class: the job row, the
+      mode row, the account control, the pin and help names, the footer line,
+      "Color", the respelled `# why:` lines. A changed line outside those
+      classes is a defect to fix in code, never in the golden.
+S12. Polish, evidence and gates.
+   1. Impeccable `polish` and `harden` on `Shell`, `TabBar`, `ModeRow`,
+      `Menu`, `AccountMenu`, `PageHead`, `HelpButton` and `Toast`; outcome in
+      `handoff.md`. `impeccable detect --json --no-inline-ignores app/src`:
+      no finding in a touched file (N3 advisories excepted); `git grep -n
+      impeccable-disable -- app/src` returns nothing.
+   2. C34 and A15 (`verify`): check the toast on the live site first and
+      name what the plate fixes.
+   3. The screenshot set from `npm run build:test` into
+      `issues/57/mocks/2/built/`, at 360 and 1180, RU and EN: the header on
+      `/roll/std` signed out, `/roll/hnf` pinned, `/roll/vault_of_ages`
+      signed in, `/lists` (the ring), `/i/ci1` (nothing lit); the longest
+      supplement names (`/roll/many_worlds_tavern`, `/roll/community_items`);
+      the supplements menu open; the account menu open; the three toasts; a
+      page head from 760 px with the labelled pin and «Справка».
+   4. The header measured at 360 and 1180 in both languages: the sticky part
+      (brand row and job row) and the mode row; the figures go into
+      `FEATURES.md` "Chrome" and DESIGN.md. The `FIRST_SCREEN` log of
+      `app/states` (case 83) for every row goes into `handoff.md`.
+   5. Gates (Verification, below), then one commit
+      `feat(ui): ship the shell, the vault-die mark and American spelling`
+      (body: the contract set, "docs/fixtures/ unchanged", the kept forms),
+      push, the CI credit.
 
 ### Acceptance criteria
 
-- `artSrc` returns `null` for no picture or a broken one; `desc.ts` holds no
-  `NO_ART`; `desc.test.ts` proves both sizes.
-- A colour print card with no picture, or with a broken one, draws the kind
-  glyph in `#3a3350` on a `#ebe7f0` well, on the standard and the compact
-  sheet, on the `/p/` sheet on screen and in the editor's print preview
-  (`tests/app/print.js`, `printPage.test.ts`); the card's measured geometry is
-  unchanged (the print suite passes with no changed figure).
-- A colour card with a picture keeps the dark well behind its picture, now
-  through `var(--art-well)`: `PrintCard.svelte` holds no `#0a0810`
-  (`reviews/1.md` N6).
-- The black-and-white card has no art block and no glyph, as before (Q1b.1).
-- The screen art well stays dark on every screen surface (the batch 1 cases
-  pass unchanged).
-- «Скопировать картинку» stays hidden for a record with no picture or a broken
-  one; `RecordActions.svelte` holds no non-null assertion on `artSrc`.
-- `img/_none.webp`, `img/thumb/_none.webp` and `og/_none.jpg` are gone;
-  `git grep -n "_none" -- . ":!issues" ":!docs/decisions"` finds only the
-  unrelated `v_none` and `hb_none...` identifiers.
-- The `/h/` link card of a homebrew item with no picture, RU and EN, names the
-  site card of its language with `og:image:width` 1200, `og:image:height` 630
-  and `twitter:card` `summary_large_image`, and the card page draws no visible
-  picture (`preview/worker.test.mjs`).
-- A share page of a record built without art takes the same large site card in
-  each language (`tests/derived.js`); a record with art keeps its square
-  `summary` card.
-- `tools/collect-site.sh` and `tools/check-site.lib.mjs` probe `img/ci1.webp`
-  and `img/thumb/ci1.webp`; `check-site.test.mjs` passes; CI's deploy-replay
-  passes.
-- `tests/dataint.js` skips no `_none` file; `tools/artwork/lib.test.mjs` plans
-  no `_none.webp` thumbnail.
-- `README.md` and `README.ru.md` give 1192 pictures and the glyph sentence;
-  `tests/derived.js` passes its counters.
-- `CONTRACTS.md` section 5, `FEATURES.md` "Records" and "Print", `META.md`,
-  `COVERAGE.md`, `docs/artwork.md`, `add-source.prompt.md` and DESIGN.md
-  ("Cards", "Signature component: the print card") say what items 18-25 say,
-  and none of them names a `_none` file; the commit body states that
-  `docs/fixtures/`, `tests/contracts.js` and `llms.txt` hold no `_none` path.
-- The `#/p/set-longsrc1 as gm2` golden differs only in its `# why:` line.
-- The detector (`impeccable detect --json --no-inline-ignores app/src`) reports
-  at most 74 findings (73 after batch 1, plus the two print-well literals,
-  minus `#0a0810`); the only new ones are those two `design-system-*`
-  advisories in `PrintCard.svelte`, which batch 10 records (N3); `git grep -n
-  impeccable-disable -- app/src` returns nothing.
-- Impeccable `polish` and `harden` ran on the no-picture print well;
-  `handoff.md` gives the outcome.
-- The evidence set is in `issues/57/mocks/1b/built/`.
-- `rtk npm run check:fast`, `npm run check:built`, both lints and the focused
-  suites pass; CI is green on the pushed tip.
+- Three jobs with their icons at every width in RU and EN; the lit job on
+  every roll, tables and search route; nothing lit on `/i/`, `/h/`, `/p/`,
+  `/s/`, `/lists`, `/lists/<uuid>`, `/account`, `/homebrew` and its pages.
+- «Бросок» opens the last roll section of this tab, else the pinned start
+  section when it is a roll section, else `/roll/std` (owner, R7;
+  `app.test.ts`). The memory holds the canonical section (`/roll/hnf` gives
+  `/roll/std` with no source switch); `STATE.md` says memory only.
+- The mode row has three controls on each of the nine roll sections and none
+  elsewhere. `/roll/core`, `/roll/hnf` and `/roll/all` light «Обычные
+  правила»; `/roll/dread`, `/roll/voa` and every other supplement alias light
+  the menu button with that supplement's name. Both sets are `routes.json`
+  replay rows. The lit control's text equals the page's H1 (B5-2).
+- At 360 the mode controls are 40 px tall and hold the longest supplement
+  names in two lines in RU and EN (N5; mock 2, `mode-long`).
+- The «Дополнения ▾» menu: seven links in `SUPPLEMENTS` order, the open one
+  checked with `aria-current`, 44 px items, the menu keys of the account
+  menu, its height at 360 named in the handoff.
+- `Menu.svelte` serves the account menu and the supplements menu;
+  `AccountMenu.svelte` keeps no keyboard code of its own.
+- `SupplementNav.svelte`, `supplementNav.test.ts`, their `COVERAGE.md` row and
+  `a11y.test.ts` entry are gone (C48); `FEATURES.md` "Rolling" holds no
+  supplements panel.
+- The account menu in the `FEATURES.md` order with no counts (R3); «Мои
+  предметы» capitalised (M4-2).
+- The account control: «Войти» / "Sign in" visible at 360 and 390 in both
+  languages; signed in, the initial and the chevron; the gold ring on the
+  account pages of the constraints and while its menu is open (A37, N6).
+- The brand shows the mark and «Лут» / «Loot»; `<title>`, the manifest name
+  and `en/index.html` keep their text; DESIGN.md records the header-only EN
+  wordmark.
+- The sticky header is no taller than 112 px at 360 in both languages; the
+  mode row scrolls; the measured figures are in `FEATURES.md` "Chrome" and
+  DESIGN.md.
+- The pin and «Справка» are labelled from 760 px with the N4 pair; below 760
+  px the round buttons keep the same names; the pressed pin shows the neutral
+  check. A button whose panel the owner renamed is renamed by batch 3 or 5.
+- The toast is a plate; the error toast is the Alarm Red fill with dark ink
+  at 4.5:1 or more; the toast priority rules of `FEATURES.md` "Chrome" hold
+  (the existing shell and state cases pass).
+- D121: the two `shell.test.ts` cases pass; the entry leaves `DEBT.md` and the
+  "Tool UI redesign" section stays for D116.
+- The contract set: `routes.json` (`tab` as the job, the new `mode`),
+  `tests/app/contracts.js`, `hash.test.ts`, the `/en/roll/dread` probe,
+  `CONTRACTS.md` section 1, `ROUTES.md` "Sections", the `COVERAGE.md` rows,
+  `llms.txt` with `tests/contracts.js` and `CONTRACTS.md`, all in the one
+  commit; `docs/fixtures/` otherwise unchanged.
+- The language switch is unchanged (a `Seg` control, `replaceState`).
+- The mark: `icon.svg`, `favicon.svg`, the four PNGs, the header and both
+  share cards draw the vault die; every document that had the emoji favicon
+  links `favicon.svg`; `tests/derived.js` and `lib.test.mjs` hold the four
+  copies to one drawing; `cards.mjs --check` passes; the 16 px renders are in
+  `mocks/mark/png/shipped__*` with the outcome in the handoff; the
+  `collect-site.sh` guard names `icons/favicon.svg`.
+- `docs/artwork.md` "Icons" and "The site share cards", `META.md` (icons)
+  and DESIGN.md "Brand" describe the mark.
+- The spelling: the word-list grep over the paths in scope returns only the
+  kept classes of the decision file; the handoff gives the count per class.
+  `tests/derived.js` holds `dict.ts` EN and `llms.txt` to the rule;
+  `I18N.md` states it; the decision file is indexed.
+- The navigation and the waves decision files exist with their pointers in
+  the older files; `node tools/decisions.js` leaves `docs/DECISIONS.md`
+  current.
+- The interim mix (owner, `reviews/1.md` R3): no chip turns neutral in this
+  batch; the waves decision file names the rule.
+- `FIRST_SCREEN` (`reviews/1.md` N7) still keys each row by its inventory
+  state with `shipped: false` and no batch id; the logged offsets after the
+  new header are in the handoff.
+- The new state `#/roll/vault_of_ages ~ supplements menu` has its inventory
+  entry, RU and EN goldens and an axe case; every other golden is re-seeded,
+  none edited by hand.
+- DESIGN.md "Navigation" ("Tabs", "Brand"), The Two Breakpoints Rule, "Layout",
+  "Toast", "Chips" and The Same Label Rule match what ships (section 4).
+- The owner's mock 2 notes (rounds 1 to 5, `mocks/2/index.html`) are applied.
+- `polish` and `harden` ran; the detector line holds; the screenshot set is
+  in `mocks/2/built/`.
+- The gates below pass; CI is green on the pushed tip.
 
 ### Verification
 
-`rtk npm run check:fast`; `node tests/run-all.js
-app/print,app/states,contracts,dataint,derived,stub`; `npm run check:built`; `npm
-run lint:untyped`; `npm run lint:typed`; `node --test preview/worker.test.mjs
-tools/check-site.test.mjs tools/artwork/lib.test.mjs`; `node tests/app/golden.js
---only=p/set-longsrc1` (compare after the re-seed); `impeccable detect --json
---no-inline-ignores app/src`; `git grep -n "_none" -- . ":!issues"
-":!docs/decisions"`; push and CI credit (CI runs deploy-replay with
-`collect-site.sh` and `check-site.mjs`). A batch review follows (triggers: a
-public contract, a prompt, changed print UI).
+In this order, after S11:
+
+0. `npm run check:db` through the PowerShell tool (about 13 min;
+   `bash-guard.mjs` rule 2m requires it for the `tests/db/` comments). Then
+   stop Supabase and Rancher before the next check (a busy WSL VM slows
+   `check:fast`).
+1. `rtk npm run check:fast` (Bash timeout 600000).
+2. `npm run lint:untyped`, `npm run lint:typed`.
+3. `node tools/build.js` (no unexpected change), `node tools/decisions.js`.
+4. `npm run check:built`.
+5. `npm run build:test`, then `node tests/run-all.js
+   app/contracts,app/states,app/typo,contracts,dataint,derived,stub` and
+   `node tests/app/sweep.js 360` (the header at the narrowest width; CI runs
+   390, 768 and 1180).
+6. `node --test tools/artwork/lib.test.mjs`; `node tools/artwork/cards.mjs
+   --check`.
+7. `node .claude/hooks/selftest.mjs` once, on its own (434-563 s; past 600 s
+   run it in the background).
+8. `impeccable detect --json --no-inline-ignores app/src`; the spelling grep.
+9. Commit, push, the CI credit (`ci-credit.mjs`). A batch review follows
+    (triggers: public contracts, `.claude/hooks/`, prompts and agents).
+
+A fix pass after the review that touches `tests/db/` runs step 0 again; one
+that touches `.claude/hooks/` runs step 7 again.
 
 ### Risks and do-nots
 
-- Do not change `fit()`, the card's geometry, `card-vectors.css` or the
-  black-and-white layout.
-- Do not change `ArtWell.svelte`; the print values live in `PrintCard.svelte`.
-- Do not hand-edit a golden; re-seed it with `golden.js --update --only`.
-- A messenger keeps a card that it cached with `og/_none.jpg`; the picture now
-  answers 404 until the messenger fetches the page again (expected).
-- Wave 1 deploys batches 1, 1b and 2 together. A tab that loaded the bundle
-  before wave 1 asks for `img/_none.webp` and `img/thumb/_none.webp` on every
-  no-picture surface: the service worker's image caches answer while they hold
-  a copy, else the request gets a 404 and the browser draws its broken-image
-  mark until a reload loads the new bundle. No stored data is involved.
-- The print tone needs "background graphics" in the print dialog, as every
-  colour card does; without it the well prints as paper and the dark glyph
-  stays (`FEATURES.md` "Print" keeps its background-graphics hint).
+- Do not hand-edit a golden; re-seed it.
+- Do not respell an identifier, a stored or seed value, a golden id, a
+  decision file name or title, or a quotation (the decision file's classes).
+- A hook edit that breaks a hook breaks the session's guards: edit comments
+  and messages only, `node --check` each file, then the selftest.
+- A guard may refuse a write under `.claude/` or to `CLAUDE.md`: stop and
+  return the text.
+- Do not move a chip to neutral, a help panel's name, or the H1 at 360: later
+  batches own them.
+- `routes.json` is a public contract: change `tab` and add `mode`, nothing
+  else.
+- Review order for the batch review (section 12): the shell code, then the
+  contract set, then the mark, then the prose.
+- A stale tab (a bundle from before wave 1) keeps the old header until a
+  reload; every address still resolves. A browser keeps the old favicon in
+  its cache for a while.
 
-### Standing checks for batch 1b
+### Standing checks for batch 2
 
-1. Scale: no collection or cap changes. States:
+1. Scale. No collection or cap changes. States:
 
    | State | Shows | Proof |
    |---|---|---|
-   | no-picture record, standard colour sheet (one card, nine) | the glyph on the light well | `print.js`, `printPage.test.ts` |
-   | no-picture record, compact colour sheet (sixteen) | the same, at the compact `cqw` geometry | `print.js`, `printPage.test.ts` |
-   | a broken picture on either sheet | the glyph on the light well after `onerror` | `printPage.test.ts` |
-   | a record with a picture | the picture on the dark `--art-well` | `print.js` |
-   | the editor's print preview of a no-picture item | the light well, the same fit as the sheet | `print.js` parity case |
-   | black and white | no art block | `printPage.test.ts` |
-   | the 180-card cap and 181 (the refusal) | unchanged | `print.js` (`MAX`) |
-   | `/p/` at 360 and 1180, RU and EN | the light well on the scaled sheet | evidence set |
-   | `/h/` link card with no picture, RU and EN | the large site card, no visible picture | `worker.test.mjs` |
-   | share page built without art, RU and EN | the large site card | `tests/derived.js` |
+   | each of the nine roll sections | three jobs, «Бросок» lit; the mode row, its lit control | `tabBar.test.ts`, `modeRow.test.ts`, `routes.json` |
+   | a table, `/tables`, `/search` | the lit job; no mode row | `routes.json`, `tabBar.test.ts` |
+   | `/i/`, `/h/`, `/p/`, `/s/` | nothing lit | `routes.json`, `tabBar.test.ts` |
+   | `/account`, `/lists`, `/lists/<uuid>`, `/homebrew`, its tabs and the editor | no job lit; the account ring | `shell.test.ts`, mock 2 `header` |
+   | the seven supplements in the menu (the menu's whole length) | seven 44 px items, the open one checked | `modeRow.test.ts`; its height at 360 in the handoff |
+   | the longest supplement names at 360, RU and EN | two lines inside a 40 px control | screenshot set, `sweep.js 360` |
+   | signed out at 360 and 390 in EN | «Войти» / "Sign in" visible, nothing cut | `shell.test.ts`, `sweep.js 360`, CI 390 |
+   | the header at 360 and 1180, RU and EN | sticky part at most 112 px at 360; the mode row scrolls | the handoff's measure |
+   | a long toast (rule 16) at 360 | the plate wraps within the window less 16 px a side | the existing toast cases, screenshot set |
 
-2. Error scenarios: loading - the glyph is inline SVG and needs no request;
-   the fit runs as before. A failed picture read - `onartfail` marks the
-   picture broken and the card draws the glyph (memory only). Offline - an
-   uncached picture fails and gives the glyph. A failed write, a conflict and a
-   deleted record - no write path changes; a deleted homebrew record on a set
-   keeps its existing note. A stale tab - see "Risks" (a 404 placeholder until
-   a reload). A revert - the previous frontend and the three files come back
-   together in the reverted commit. No stored data or key changes.
-3. Consistency: the no-picture state has one shape on every surface (the kind
-   glyph); the print tone is the one named departure (the light well on paper,
-   the dark well on screen), recorded in `FEATURES.md` "Print" and DESIGN.md.
-   `FEATURES.md` "Consistency rules" are unchanged. The link card of a record
-   with no picture takes the same large site card as the `/s/`, `/p/` and
-   `/tables/` cards (`META.md`).
-4. RU/EN parity: no app string changes. The link card names `og/_share.jpg` in
-   Russian and `og/_share_en.jpg` in English, and both cards carry the same
-   facts (batch 1); the README sentence and count change in both languages.
+   The primary action of each page is unchanged. The menu at 360 opens under
+   its button with no on-screen keyboard (no text field); the account menu as
+   today.
+2. Error scenarios: no write path or stored shape changes. Loading - the
+   session unknown draws no account control, as today; `rollHash` needs no
+   read. A failed read and offline - the header needs no data; the favicon
+   and icons are static files. A conflict and a deleted record - none. A
+   stale tab - the old bundle draws the old header and the old favicon until
+   a reload; every address resolves, because no route changes. A revert - the
+   previous frontend draws five tabs again; nothing is stored (the last roll
+   section is memory per tab), `dhloot.home.v1` keeps its shape, and the
+   reverted commit brings back the emoji favicon and the star.
+3. Consistency: rule 4 (one name for one thing) - the lit mode control reads
+   its page's H1 (B5-2); the departures are the job «Бросок» (a group of nine
+   pages, no heading of its own) and the menu button's name (it shows the open
+   supplement). Rule 11 - Escape and a click outside close both menus the same
+   way (one `Menu`). Rule 20 - D121, the toast's focus return. The Same Label
+   Rule - the labels hold at every width, except the interim round pin and
+   help below 760 px, named with the batches that move them. Sibling headers:
+   none; every page shares the one shell. The toast keeps its priority rules.
+4. RU/EN parity: new and changed strings, both languages, the same facts:
+   `jobRoll` «Бросок» / "Roll"; `modesLabel` «Режим броска» / "Roll mode";
+   `brandWord` «Лут» / "Loot"; `homeHint` «Открывать при запуске» / "Open on
+   start"; `helpHint` «Справка» / "Help"; EN `footSummary` "... Sources and
+   license", EN `printColor` "Color" (the RU strings keep their text). The menu
+   caption reuses `grpSupplements`, the mode labels `pageStd` and `pageAlt`.
+   No plural form is added. A key that loses its last caller (`alt` «Альт.
+   таблицы», `std` if unused) leaves both languages.
+
+### Gate cost
+
+Section 8, row 2: 65-75 min of extra gates on top of the 45-60 min of a code
+batch, then the wave 1 squash (section 16, about 12-14 min).
+
+### After batch 2: the wave 1 squash
+
+After batch 2's batch review (and its fix pass, if any) and the green CI run
+of the branch tip, wave 1 lands by section 16. The orchestrator runs it; it is
+not the implementer's step.
 
 ## 11. Standing checks for the plan
 
@@ -1384,7 +1469,7 @@ public contract, a prompt, changed print UI).
    deleted record, stale tab and revert for its screen. The last roll section
    (batch 2) is memory per tab and loses nothing.
 3. Consistency: rule 4 (one name) drives the job, the mode chip and the H1,
-   with one departure («Альт. таблицы», batch 2); rule 9 (the primary action
+   with one departure (the job «Бросок», a group of nine pages, batch 2); rule 9 (the primary action
    first) drives the item and editor bars; rule 11 drives «Закрыть» on sheets;
    rule 20 drives D121 and every control that removes itself. The empty-state
    and error-page patterns give every load, empty and error state one shape.
@@ -1429,9 +1514,12 @@ public contract, a prompt, changed print UI).
 - Risk: a self-hosted print face makes the fit depend on a font load (QP.1);
   the fit after `document.fonts.ready` and the waiting print button are the
   guard, and an offline tab prints in the fallback with its clip count.
-- Risk: batch 2 is now the widest diff (the shell code plus the spelling sweep
-  over about 530 files); its refresh orders the review (the shell code first,
-  then the contract set, then the prose) and keeps the goldens to CI's text.
+- Risk: batch 2 is the widest diff (the shell code plus the spelling sweep
+  over about 540 files and every golden); section 10 orders the review (the
+  shell code, the contract set, the mark, then the prose) and re-seeds the
+  goldens locally, so the first CI run can be green.
+- Risk: a usage wrap-up stops batch 2 mid-sweep; the step ids S1-S12 of
+  section 10 let a fresh implementer continue from the progress line.
 
 ## 13. Owner questions
 
@@ -1504,20 +1592,10 @@ Batch P (`mocks/P/index.html`), all answered (owner, 2026-10-29, `context.md`
   1 EN standard cards, 17 RU and 8 EN compact cards give their picture way.
 - RP-1 (round 2): the `/p/` primary reads «Напечатать» / "Print".
 
-Open, for the wave 1 squash after batch 2 (blocks no batch):
-
-- Q-W1 - The task directory at a wave squash. A squash of the branch tip puts
-  `issues/57/` on `main`: 1094 tracked files, 134 MB, mostly mock PNGs, which
-  `main`'s history would then keep for good. Recommended: each wave's squash
-  leaves `issues/57/` out (`git rm -r -q --cached issues/57` after `git merge
-  --squash`, then the untracked copy in the main checkout is deleted; the
-  branch keeps the directory). Reason: the directory is scratch that the
-  closeout deletes, and nothing outside it may cite it. The CI credit ignores
-  `issues/` (`isExempt` in `.claude/hooks/lib.mjs`), so the tree key still
-  matches the CI-verified tip. Trade-off: two more commands per wave in the
-  main checkout. Alternative: the directory rides onto `main` with wave 1 and
-  the closeout deletes it there; the 134 MB stays in `main`'s history. With the
-  owner away, the recommended option applies and is logged.
+- Q-W1 (owner, 2026-10-29, `context.md` "Wave squash content"): `issues/57/`
+  goes onto `main` with each wave squash (about 1094 files, 134 MB, mostly
+  mock PNGs); the closeout deletes it there. The owner took the alternative,
+  not the recommendation to leave it out; section 16 follows.
 
 Settled, not asked again: the batch 9 merge is 9a + 10 (section 7, the
 evidence); the shell is batch 2 (foundations first); D121 is batch 2 and D116
@@ -1739,48 +1817,9 @@ The `/p/` page (C29, C30, C31, PR4, PR12; the First-Screen Rule):
 - The not-found and retired-link pages keep their wording for batch 7's
   error pattern.
 
-Mock spec (`issues/57/mocks/P/`; drawn on 2026-10-29, owner; the refresh
-shows it again only where batch 1b or the owner's answers change it):
-
-- Source: the pre-batch-1 build of `13ffd5e4` in a detached worktree outside
-  the checkout (`C:UsersIgnat.dhloot
-otes/p-build`, its own server),
-  never the task worktree's `dist-test/` while an implementer runs there.
-  Proposed renders inject a stylesheet (the card size, the face, the tier
-  floor, the marker) and a port of `fit()` that starts at the base
-  (`mocks/P/tools/mockp.cjs`); no app code changes. The `/p/` page is a DOM
-  rearrangement of the built page (`mockp-page.cjs`). The no-picture card
-  shows today's placeholder until mock 1b's light well is drawn in. Each render is the real print
-  output: Chrome's PDF under print media (`printBackground`, the CSS page
-  size), rasterised at 300 dpi with `pdftoppm`, plus single cards cropped at
-  real size.
-- States, current beside proposed: both sheets (nine at 63 x 88, sixteen at
-  44 x 63), colour and black-and-white, RU and EN: 8 sheet pairs. Sets: the
-  audit's nine and sixteen (short and long text, a physical, a magic, a
-  two-strip and an artifact weapon, armour, loot, a consumable, a long name,
-  the no-picture homebrew on the light well, the long-text homebrew that
-  clips). With QP.2: the 63.5 x 88.9 sheet beside 63 x 88. With QP.3's
-  alternative: one 44 x 68 sheet.
-- The face (QP.1): today's stack (Segoe UI on this host) beside Source Sans 3
-  and Overpass (when its files are on the host) at real size, on the same
-  cards, with the catalog measure for each (`mockp.cjs`, `mockp-analyse.cjs`): cards at the base, shrunk, at
-  the padding rung, at the floor, clipped; the art median and p10; the names
-  on three lines; the smallest rendered text and where; both languages, all
-  four layouts.
-- The `/p/` page at 360x640 and 1180x720, RU and EN, today beside proposed,
-  measured with `issues/57/mocks/measure.mjs` against the 240 and 270 px
-  target; the QP.6 options at 360.
-- The reference check: the `index.html` names the Core Set PDF pages used
-  (PDF page 27, printed page 26; PDF page 330, printed page 329) and states,
-  for each proposal, the hierarchy, the type feel, the density and the
-  proportion of art to text against them in words and numbers. It shows no
-  page, art, frame, icon or text from the book.
-- `index.html`: the open questions (QP.1, QP.6, QP.7, QP.8) first, each with the recommendation,
-  the trade-off and the PNGs that show it; then the list of Figma departures
-  for the owner's yes; the Impeccable `critique` outcome with the Clarity
-  Rule; the First-Screen offsets. The owner is told to print one A4 page of
-  each sheet at 100% scale for the real-size check (the PDFs are in the
-  folder).
+Mock spec: drawn and answered (`mocks/P/index.html`; the spec is at `git show
+5d9aefbc:issues/57/plan.md`, section 15, "Mock spec"). Its tools stay in
+`mocks/P/tools/` for the catalog measure.
 
 Files expected (outline; the refresh names every edit): `PrintCard.svelte`
 (the face, the base and grow start per sheet, the tier floor, the marker, the
@@ -1884,26 +1923,34 @@ review as a gate; the batches still save their screenshot sets as evidence.
 | 3 | 8, 9, P, 10 | batch 10's review and the green CI run of its tip | the finished task |
 
 Each wave lands by `orchestrate.prompt.md`, "Task closeout and cleanup", step
-8, with two changes:
+8, with these changes (owner, "Wave squash content"):
 
 1. `claude/57` merges the latest `origin/main`; push; the CI credit for the
    tip.
-2. In the main checkout: `git pull`, `git merge --squash claude/57`, then
-   `issues/57/` comes out of the squash (Q-W1, recommended): `git rm -r -q
-   --cached issues/57`, and the untracked copy of `issues/57/` in the main
-   checkout is deleted (never the worktree's). The CI credit ignores
-   `issues/` (`isExempt`, `.claude/hooks/lib.mjs`), so its tree key still
-   matches the tip.
-3. `node .claude/hooks/ci-credit.mjs <tip sha>`, commit (one Conventional
-   Commits subject per wave, the issue in the footer), push `main`, watch its
-   run deploy.
-4. `claude/57` merges `origin/main` (the squash commit) and the next batch
+2. In the main checkout: `git pull`, `git merge --squash claude/57`. The
+   squash carries `issues/57/` onto `main` (about 1094 files, 134 MB);
+   nothing is taken out. The main checkout's own untracked files (for example
+   `issues/pistolheart/`) stay as they are.
+3. `node E:/dev/daggerheart-loot/.claude/hooks/ci-credit.mjs <tip sha>`,
+   commit (one Conventional Commits subject per wave, for example
+   `feat(ui): land task 57 wave 1, the system, the mark and the shell`, the
+   issue in the footer), push `main`, watch its run deploy with one
+   background `gh run watch <id> --exit-status`.
+4. Waves 1 and 2 keep the remote branch, the worktree and its
+   `.env.test.local`: step 8's last sentence applies after wave 3 only.
+5. `claude/57` merges `origin/main` (the squash commit) and the next batch
    starts. The merge is clean: the squash holds the same changes as the
    branch.
 
-The task directory stays on the branch until the closeout. No owner
-screenshot review gates a wave; the owner checks the live site after each
-release.
+Who runs the squash: in a session that the owner started or is present in,
+the orchestrator runs it when the table's conditions hold (the waves decision
+file; no owner gate). In a session that a `USAGE RESUME` job continued, the
+squash and the push to `main` wait for the owner (`orchestrate.prompt.md`,
+"Resume after the reset", step 4); the orchestrator reports it and stops that
+task.
+
+No owner screenshot review gates a wave; the owner checks the live site after
+each release.
 
 After wave 3, in order (batch 10's last lines):
 
@@ -1920,8 +1967,8 @@ After wave 3, in order (batch 10's last lines):
    to a named follow-up task.
 3. The closeout (`/handoff`): the audit, the durable moves, `git rm -r
    issues/57` in the closeout commit, push, a docs-only CI run, and a last
-   squash onto `main` with the `DEBT.md` lines and the durable moves. The task
-   directory was never on `main`, so its deletion is a branch-only change.
+   squash onto `main` with the `DEBT.md` lines and the durable moves; that
+   squash deletes `issues/57/` from `main` too.
 
 Between waves (owner, "Interim mix between waves"): an inconsistency between
 batches is accepted when a planned later batch removes it; take the option

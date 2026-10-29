@@ -50,4 +50,5 @@
 | 1-R2 | risk | local | fixed 1-fix | `PrintSwitches.svelte` size switch still gold beside the neutral colour switch |
 | 1-R3 | risk | deferred-scope | fixed plan (refresh of 2026-10-29) | Waves made plan sections 2, 10, 14 false; owner accepted the interim gold mix on production (chips turn neutral in their own batches, no extra work in batch 2) |
 | 1-N1..N5, N7 | nit | local | fixed 1-fix | See `reviews/1.md`, "Nits" |
-| 1-N6 | nit | deferred-scope | placed (batch 1b, plan section 10, an acceptance line) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |
+| 1-N6 | nit | deferred-scope | fixed 1b (`fce4a9f8`) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |
+| 1b | - | - | approve, no finding | `reviews/1b.md`: no blocker, risk or nit; five deviations accepted (the `_none` removal record, the EN pictures counter, the light-well loop, the taller one-line well, the `DECISIONS.md` regeneration) |
