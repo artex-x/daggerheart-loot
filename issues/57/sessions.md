@@ -112,6 +112,56 @@ Read CLAUDE.md, issues/57/context.md, plan.md, handoff.md.
 5. Update audit.md rows to fixed <N>. /handoff, and name the next batch.
 ```
 
+## Restart - refresh, plan and implement (2026-10-29)
+
+```text
+Follow .claude/prompts/orchestrate.prompt.md. TASK: 57
+GOAL: refresh task 57 against main, plan the batches, then implement them on
+the task branch. Nothing lands on main until the owner has seen the batches.
+
+Work in .claude/worktrees/57 (branch claude/57). Read CLAUDE.md, then
+issues/57/context.md - its section "Owner directions (2026-10-28, chat)" is
+binding: direction R is the direction, not the source of truth; a state,
+page or width that no mock shows adopts the new design by its system; reuse
+Impeccable everywhere it applies; remove or minimise every Impeccable
+exception (detector ignoreValues, the .impeccable/ lines in .gitignore and
+.prettierignore, any hook or lint exception) and name each kept one; pay the
+UI/UX debt in docs/specs/DEBT.md (D116, D121 and any other UI entry not owned
+by another task). Then plan.md, handoff.md, audit.md, sessions.md.
+
+1. Merge origin/main (a merge, never a rebase). Since direction R was drawn
+   (2026-10-23) main gained: R10 (five tabs, no browser lists), the move to
+   Cloudflare Pages, path addresses with /en/, the request toasts and the
+   (N) title, the Items-tab filter address, the tables nav landmark and
+   bold-italic set names. Gate the merge (check:fast; check:db if supabase/
+   or tests/db/ are staged) and push.
+2. Planner refresh (opus): re-check audit.md rows against the merged app
+   (mark fixed or changed rows), list the UI/UX DEBT entries and place each,
+   inventory the Impeccable exceptions, and rewrite plan.md as ordered
+   batches - foundations first (tokens and type, then the shell), each batch
+   sized by gates per CLAUDE.md, with the four standing checks and a
+   Plan review line. Questions that need the owner go to the owner as one
+   list with a recommendation each; if the owner is away, take the recommended option
+   and log it in C:\Users\Ignat\.dhloot\notes\owner-afk-<date>\decisions.md.
+3. Plan review (opus), one fix cycle, commit and push the plan.
+4. For each batch in order: implementer (opus), batch review (opus), one fix
+   cycle, push, green CI. Make each batch's screenshots at 360 and 1180 px,
+   RU and EN, into issues/57/mocks/<batch>/built/ for the owner.
+5. Stop when every batch is green on the branch. Do not squash onto main:
+   show the owner the screenshots and wait for approval or corrections.
+   Then the Close prompt below.
+
+Known host facts: run lint:untyped, lint:typed and test:artwork yourself
+(check:fast runs none of them); commit or push only with the session cwd
+inside the worktree (the guards read the cwd's checkout); a reviewer cannot
+write under issues/ - write its report from its message; agents never write
+to production.
+```
+
+Still queued after task 57, not started: a branch-CI job that replays the
+deploy's collect and check-site steps; the address follow-ups D118-D120 with
+the preview worker reading the card and the app document in parallel.
+
 ## Close - lock and land
 
 ```text
