@@ -54,9 +54,9 @@ The preview host's cards (`CONTRACTS.md` section 5), probed by the owner on
 
 | Link | Card | Picture |
 |---|---|---|
-| `/h/` rich item, Russian and English | the title, the full subtitle and text; the English card in English | `og/_none.jpg` |
+| `/h/` rich item, Russian and English | the title, the full subtitle and text; the English card in English | the site picture of its language, large (since 2026-10-29; probed with `og/_none.jpg` on 2026-10-14) |
 | `/h/` item with its own WebP picture | the same | its WebP picture |
-| `/h/` item with 1000 related items | drawn, the set line folded | `og/_none.jpg` |
+| `/h/` item with 1000 related items | drawn, the set line folded | the site picture of its language, large (since 2026-10-29; probed with `og/_none.jpg` on 2026-10-14) |
 | `/s/` players' link | the list name, «5 позиций.» and the players' note | the site picture |
 | `/s/` GM link | the same and « · Ссылка для мастера» | the site picture |
 | `/p/` | «Печать карточек», «Войдите, чтобы печатать карточки.» | the site picture |

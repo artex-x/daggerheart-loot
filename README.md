@@ -295,7 +295,7 @@ app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
 data.js               the data: window.LOOT
 card/*.svg            36 vectors for the print cards, exported from Figma
-img/*.webp            1193 pictures, 640x640, ~35 MB
+img/*.webp            1192 pictures, 640x640, ~35 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~37 MB
 i/*.html              1459 stub pages per language with Open Graph markup: i/ Russian,
@@ -438,8 +438,8 @@ stop working entirely. Training scrapers are excluded separately in `robots.txt`
 | `recall` | Vault of Ages only: Recall Cost |
 
 To fix a translation, edit `ru` / `rud`. To remove a record, delete the object
-and renumber `roll` on the rest. Where `img` is empty the app falls back to
-`img/_none.webp` and hides the **Image** button, so a record can be added before
+and renumber `roll` on the rest. Where `img` is empty the app draws the glyph of
+the record's kind and hides the **Image** button, so a record can be added before
 its illustration exists; the same happens when a listed file fails to load.
 
 Thirty-one records carry `craft`, the list of `id`s they turn into - Core

@@ -140,10 +140,16 @@ function pageCtx(it, lang) {
     body: rawDesc,
     craft,
     set,
-    // JPEG copy: some Telegram clients will not render a WebP og:image.
-    // An entry without art still needs one, or the unfurl comes out blank.
-    img: SITE + 'og/' + (it.img ? it.img.replace(/\.webp$/, '.jpg') : '_none.jpg'),
-    imgSrc: up + 'img/' + (it.img || '_none.webp'),
+    // JPEG copy: some Telegram clients will not render a WebP og:image. An entry
+    // without art takes the site card of its language: a messenger draws no large card
+    // without an image, and the site card is published at 1200x630 in both languages.
+    ...(it.img
+      ? { img: SITE + 'og/' + it.img.replace(/\.webp$/, '.jpg'), imgSrc: up + 'img/' + it.img }
+      : {
+          img: SITE + (lang === 'ru' ? 'og/_share.jpg' : 'og/_share_en.jpg'),
+          imgSrc: '',
+          large: true
+        }),
     url: SITE + (lang === 'ru' ? 'i/' : 'i/en/') + it.id,
     // The old host's mirror publishes the stubs; the site answers this path with the app.
     app: SITE + (lang === 'ru' ? 'i/' : 'i/en/') + it.id,

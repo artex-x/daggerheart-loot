@@ -16,6 +16,7 @@ import App from '../App.svelte';
 import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { ICONS } from '../lib/icons.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
 import type { Record_ } from '../lib/types.js';
 import {
@@ -388,33 +389,38 @@ describe('the loot card', () => {
 });
 
 describe('no art', () => {
-  /* The site's own picture for no picture, in place of Figma's outline (owner, 2026-10-15;
-     FEATURES.md, "Print"). */
-  const NONE = '/img/_none.webp';
+  /* The kind glyph on the light print well, a departure from Figma node 714-42387
+     (owner, 2026-10-29; FEATURES.md, "Print"). */
+  const glyphOf = (card: Element | null): string | null | undefined =>
+    card?.querySelector('.pc-art.none svg path')?.getAttribute('d');
 
-  it('draws the no-picture image for a record with no image, on both sheets', async () => {
-    render(App, { env: await atSet('ni1-ci1') });
+  it('draws the kind glyph for a record with no image, on both sheets', async () => {
+    const { container } = render(App, { env: await atSet('ni1-ci1') });
     await opened();
     const bare = (): Element | null => document.querySelector('.pcard[data-pid="ni1"]');
-    expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
-    expect(bare()?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
-    expect(bare()?.querySelector('svg')).toBeNull();
-    expect(document.querySelector('.pcard[data-pid="ci1"] .pc-img')).toHaveAttribute(
-      'src',
-      '/img/ci1.webp'
-    );
+    expect(bare()?.querySelector('.pc-img')).toBeNull();
+    expect(bare()?.querySelector('.pc-back')).toBeNull();
+    expect(glyphOf(bare())).toBe(ICONS.kindItem.d);
+    expect(bare()?.querySelector('.pc-art svg')).toHaveAttribute('aria-hidden', 'true');
+    const art = document.querySelector('.pcard[data-pid="ci1"] .pc-art');
+    expect(art).not.toHaveClass('none');
+    expect(art?.querySelector('.pc-img')).toHaveAttribute('src', '/img/ci1.webp');
+    expect(art?.querySelector('svg')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     await waitFor(() => {
-      expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
+      expect(document.querySelector('.psheet.compact')).not.toBeNull();
     });
+    expect(bare()?.querySelector('.pc-img')).toBeNull();
+    expect(glyphOf(bare())).toBe(ICONS.kindItem.d);
+    await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     await waitFor(() => {
       expect(bare()?.querySelector('.pc-art')).toBeNull();
     });
-    expect(bare()?.querySelector('img[src="' + NONE + '"]')).toBeNull();
+    expect(bare()?.querySelector('svg path[d="' + ICONS.kindItem.d + '"]')).toBeNull();
   });
 
-  it('swaps to the no-picture image once the picture 404s, reached directly at a set address', async () => {
+  it('swaps to the kind glyph once the picture 404s, reached directly at a set address', async () => {
     /* Unlike every other route, a handed-over #/p/ address may be the first (and only)
        page this session ever draws for this id - nothing else could already have caught
        the failure the way RecordCard's own onerror does elsewhere. */
@@ -427,9 +433,9 @@ describe('no art', () => {
     card?.querySelector('.pc-back')?.dispatchEvent(new Event('error'));
     card?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
     await tick();
-    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
-    expect(card?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
-    expect(card?.querySelector('svg')).toBeNull();
+    expect(card?.querySelector('.pc-img')).toBeNull();
+    expect(card?.querySelector('.pc-back')).toBeNull();
+    expect(glyphOf(card)).toBe(ICONS.kindItem.d);
   });
 });
 

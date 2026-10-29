@@ -76,7 +76,7 @@ and `og/` to "try it out" (Risks, below).
   *creates* art for a record a source ingest just added; it never replaces.
   See "The ingest path" below for what it does and the command sequence.
 - **`thumbs`** - (re)generates the whole thumbnail set: one
-  `img/thumb/<asset>.webp` for every `img/*.webp`, `_none.webp` included.
+  `img/thumb/<asset>.webp` for every `img/*.webp`.
   It reads the committed 640 px files, not `data.js` and not an upload, and
   writes only `img/thumb/`. A thumbnail whose picture is gone is refused
   (`refused: orphan thumbnail ...`, nothing written); remove it with
@@ -180,7 +180,7 @@ same existence check as `install`'s, with the sense flipped.
   line (legal only inside one `eq.line` - `tests/dataint.js` enforces that
   separately). A `shares` entry carries no filenames at all.
 - **`unarted`** - a record with `img: ''`. Legal (`record.test.ts` pins the
-  `_none.webp` render path); reported so the ingest report is honest about
+  kind glyph it draws); reported so the ingest report is honest about
   which records still need art.
 
 **The blocker an ingest most often hits: `unsourced`.** An asset that is
@@ -204,7 +204,7 @@ delivered. Use `--map`'s `assign` only for a name that `plan` still lists
 as unmatched.
 
 **`unarted` is a normal outcome.** Name each unarted record in the
-handoff; the record ships with `img: ''` and renders `_none.webp` until its
+handoff; the record ships with `img: ''` and draws the kind glyph until its
 art arrives.
 
 **Ordering.** A record's `img` value must already be in `data.js` before or

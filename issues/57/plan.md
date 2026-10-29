@@ -12,10 +12,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   against main"); every address in this plan is a path.
 - Phase 3: twelve batches in the order 1, 1b, 2, 3-7, 8, 9, P, 10 (section 7;
   the waves of section 16 moved P from after 1b into wave 3). Batch 1 is done
-  (`9a31aede`, review fix `80872b35`; `handoff.md`, Completed). Batch 1b is
-  next and implement-ready (section 10, refresh of 2026-10-29); it starts after
-  the green CI run of `80872b35`. Batches P and 2-10 are outlines; each one's
-  refresh expands it.
+  (`9a31aede`, review fix `80872b35`). Batch 1b is implemented (section 10;
+  `handoff.md`, Completed) and waits for its batch review and CI. Batch 2 is
+  next; batches P and 2-10 are outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph): three waves - 1, 1b, 2; then 3-7; then 8, 9, P, 10 -
   each squashed onto `main` after its last batch's review and green CI, with
@@ -1019,7 +1018,7 @@ Rules that still hold for each batch's mock step (section 7):
 - Every mock step measures with `issues/57/mocks/measure.mjs` (N6), at
   360x640 and 1180x720, RU and EN.
 
-## 10. Batch 1b - No-picture placeholder retired (implement-ready)
+## 10. Batch 1b - No-picture placeholder retired (implemented; review next)
 
 Batch 1 is done: `9a31aede` and the review fix pass `80872b35`
 (`reviews/1.md`, fix-then-continue; B1, R1, R2, N1-N5 and N7 fixed; R3 is

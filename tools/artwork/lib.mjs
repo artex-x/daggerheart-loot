@@ -128,8 +128,8 @@ function matchSources({ sources, index, assign }) {
   return { candidates, unmatched, ambiguous, duplicateSources };
 }
 
-// The 160 px row thumbnail of a picture: one per `img/<asset>`, including
-// `_none.webp` (docs/artwork.md, "Thumbnails").
+// The 160 px row thumbnail of a picture: one per `img/<asset>` (docs/artwork.md,
+// "Thumbnails").
 export function thumbPath(asset) {
   return 'img/thumb/' + asset;
 }
@@ -305,8 +305,8 @@ export function shareCardSvg(lang) {
 //   line - so a `shares` entry carries no filenames at all, only
 //   `{ recordId, asset, alsoClaimedBy }`. A record nobody uploaded a source
 //   for is not reported here: if it needs no art, there is nothing to plan.
-// - `unarted`: every record with a falsy `img` - `img: ''` rendering
-//   `_none.webp` is a legal ingest outcome (app/src/components/record.test.ts,
+// - `unarted`: every record with a falsy `img` - `img: ''` drawing the kind
+//   glyph is a legal ingest outcome (app/src/components/record.test.ts,
 //   ported from the live app's tests/noart.js), reported, not an error.
 // - `unsourced`: every asset in `missingAssets` that no source resolved to -
 //   the blocker an ingest most often hits - named by asset and by the

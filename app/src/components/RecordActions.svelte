@@ -81,6 +81,7 @@
    */
   async function copyImage(): Promise<void> {
     const src = artSrc(it.img, app.artBroken(it.id));
+    if (!src) return;
     const png = app.env.image.pngOf(src);
     const copied = await app.env.clipboard.writeImage(() => png);
     if (copied) {
@@ -134,9 +135,10 @@
     const name = shareName(it, app.lang);
     const { text } = share(it, index, app.lang, { extra });
     const hasArt = it.img && !app.artBroken(it.id);
-    const file = hasArt
+    const src = hasArt ? artSrc(it.img) : null;
+    const file = src
       ? async (): Promise<File> => {
-          const blob = await app.env.image.pngOf(artSrc(it.img, false));
+          const blob = await app.env.image.pngOf(src);
           return new File([blob], imageFileName(it, app.lang), { type: 'image/png' });
         }
       : undefined;

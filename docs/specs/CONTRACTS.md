@@ -416,11 +416,17 @@ Google OAuth console. `tools/build-pages.js` generates them from
 outside links to it (`docs/specs/META.md` section 9, "Static pages").
 
 `img/thumb/<id>.webp` is a 160x160 derivative of `img/<id>.webp`, one per
-picture including `_none.webp`, committed and published with `img/`;
+picture, committed and published with `img/`;
 `tools/artwork/` writes it (`docs/artwork.md`, "Thumbnails"). It is internal:
 the app draws it in rows, and nothing outside links to it, so
 `docs/fixtures/`, `tests/contracts.js` and `llms.txt` do not name it - on the
 same footing as the `tools/artwork/` paragraph below.
+
+A record with no picture has no `img/` or `og/` file; its link card names the
+site card of its language, `og/_share.jpg` or `og/_share_en.jpg`, as a large
+card. The placeholder `img/_none.webp`, its thumbnail and `og/_none.jpg` were
+removed on 2026-10-29 (owner); a messenger that cached a card before then keeps
+a dead picture until it fetches the page again.
 
 `<id>` in `img/<id>.webp` and `og/<id>.jpg` is the **asset id**, not
 necessarily the record id: it is the basename of a record's `img` field, and

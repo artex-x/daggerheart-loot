@@ -886,11 +886,11 @@ console.log('the card version map is current');
   }
 }
 
-/* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
-   own "summary_large_image" - one record with art, one built with its art
-   field stripped, so both branches of the img fallback are pinned, not only
-   that a stub matches its own generator (the check above this file already
-   proves that). Every real record carries art today, so the no-art branch
+/* A stub (i/<id>.html) with art is a square-art "summary" card; one built without
+   art takes the site card of its language as a "summary_large_image" card - one
+   record with art, one built with its art field stripped, so both branches are
+   pinned, not only that a stub matches its own generator (the check above this file
+   already proves that). Every real record carries art today, so the no-art branch
    has no record of its own to read off - built rather than found. */
 const artless = Object.assign(
   {},
@@ -901,16 +901,26 @@ delete artless.img;
   ['ru', 'en'].forEach(function (lang) {
     const html = page(x, lang);
     const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
+    const wantCard = x.img ? 'summary' : 'summary_large_image';
     ok(
-      twCard && twCard[1] === 'summary',
-      lang + ' stub ' + x.id + ': twitter:card is not summary'
+      twCard && twCard[1] === wantCard,
+      lang + ' stub ' + x.id + ': twitter:card is not ' + wantCard
     );
     const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
-    const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
+    const wantImg = x.img
+      ? SITE + 'og/' + x.img.replace(/\.webp$/, '.jpg')
+      : SITE + (lang === 'ru' ? 'og/_share.jpg' : 'og/_share_en.jpg');
     ok(
       ogImg && ogImg[1] === wantImg,
       lang + ' stub ' + x.id + ': og:image is not ' + wantImg + ', but ' + (ogImg && ogImg[1])
     );
+    const ogW = /<meta property="og:image:width" content="([^"]*)">/.exec(html);
+    const wantW = x.img ? '640' : '1200';
+    ok(
+      ogW && ogW[1] === wantW,
+      lang + ' stub ' + x.id + ': og:image:width is not ' + wantW + ', but ' + (ogW && ogW[1])
+    );
+    if (!x.img) ok(!html.includes('<img src='), lang + ' stub ' + x.id + ': draws a picture');
   });
 });
 
@@ -1304,7 +1314,7 @@ const N = {
   eq: L.eq.length,
   all: ALL.length,
   wondrous: L.items.wondrous.length,
-  // the README describes the folder, and it also holds the _none.webp stub
+  // the README describes the folder
   art: fs.readdirSync(path.join(ROOT, 'img')).filter((f) => f.endsWith('.webp')).length
 };
 /* The word "позиции" (entries) is honestly shared between two counters at
@@ -1316,6 +1326,7 @@ const COUNTERS = [
   [/(\d{3,})\s+запис/g, [N.all], 'записей'],
   [/(\d{3,})\s+страниц/g, [N.all], 'страниц-заглушек'],
   [/(\d{3,})\s+картин/g, [N.art], 'картинок'],
+  [/(\d{3,})\s+pictures/g, [N.art], 'pictures'],
   [/(\d{3,})\s+records/g, [N.all], 'records'],
   [/(\d{3,})\s+позици/g, [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g, [N.all, N.wondrous], 'entries']

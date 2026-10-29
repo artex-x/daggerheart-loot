@@ -547,7 +547,8 @@ means "a thing". Do not round a card to a pill or square a chip.
   technology. Armor is a shield, a weapon is crossed swords, a consumable is a
   flask, and any other item is a gem (`kindGlyph`). A record with no picture,
   or a broken one, shows the glyph alone; a picture that loads covers it. No
-  screen surface draws a placeholder picture.
+  surface draws a placeholder picture; the colour print card draws the glyph
+  on a light well (`#ebe7f0`, glyph `#3a3350`).
 - **Entrance:** a 0.28s `pop` (10px up, 0.985 to 1) on
   `cubic-bezier(0.2, 0.8, 0.3, 1)`, cancelled under reduced motion.
 - **Image review:** the page under `tools/artwork/review/` draws this card
@@ -618,7 +619,9 @@ The second world. A print card is 63x88 mm of white paper inside a 0.4mm dashed
 14.5mm by 8.5mm sheet margins. Inside, the card is a container-query system:
 every dimension is written in `cqw`, so the composition scales with the card
 rather than with the viewport. The artwork fills a square region at the top,
-masked to fade at both edges, over a blurred and darkened copy of itself. The
+masked to fade at both edges, over a blurred and darkened copy of itself. A
+colour card with no picture draws the kind glyph in dark ink on a light well,
+where Figma node `714-42387` leaves blank paper. The
 tier plate and the burden mark sit at fixed `cqw` offsets. Text is fitted by
 measuring the rendered box, which is why reduced motion sets transition duration
 to `0s` rather than removing transitions: a zero duration still applies the end

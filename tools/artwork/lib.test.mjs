@@ -177,15 +177,15 @@ describe('planInstall', () => {
 });
 
 describe('planThumbs', () => {
-  it('plans one thumbnail per picture, _none.webp included, in name order', () => {
+  it('plans one thumbnail per picture, in name order', () => {
     const { targets, orphans } = planThumbs({
-      images: ['b.webp', '_none.webp', 'a.webp'],
+      images: ['b.webp', 'c.webp', 'a.webp'],
       thumbs: []
     });
     assert.deepEqual(targets, [
-      { source: 'img/_none.webp', thumb: 'img/thumb/_none.webp' },
       { source: 'img/a.webp', thumb: 'img/thumb/a.webp' },
-      { source: 'img/b.webp', thumb: 'img/thumb/b.webp' }
+      { source: 'img/b.webp', thumb: 'img/thumb/b.webp' },
+      { source: 'img/c.webp', thumb: 'img/thumb/c.webp' }
     ]);
     assert.deepEqual(orphans, []);
   });

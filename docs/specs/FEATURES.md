@@ -1429,7 +1429,8 @@ address kept, and no add-to-list control is drawn.
   gem), and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
   failed thumbnail also shows the glyph on the record's card. While a
-  picture loads, the glyph shows under it.
+  picture loads, the glyph shows under it. The colour print card draws it
+  too, on a light well ("Print").
   Without a connection, a thumbnail the service worker never cached is
   answered with the cached 640 px picture when there is one, so
   the row draws that picture and nothing is remembered as failed
@@ -2258,14 +2259,14 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - An own homebrew item's picture prints on the colour card from its 640 px
   file, as a catalog picture does; the black-and-white card draws no
   picture.
-- A colour card of a record with no picture draws the site's `img/_none.webp`
-  in the art block, on the standard and the compact sheet;
-  black and white has no art block. A departure from Figma node `714-42387`,
-  whose drawn outline per kind it replaces (owner, 2026-10-15).
-- A missing picture (a partial deploy, a cold cache) falls back to the same
-  `img/_none.webp` - reached from a print
-  sheet opened directly at a `#/p/` address, where nothing has already caught
-  the failure.
+- A colour card of a record with no picture, or with a picture that fails to
+  load (a partial deploy, a cold cache, a sheet opened directly at a `#/p/`
+  address), draws the glyph of its kind in dark ink (`#3a3350`) on a light
+  well (`#ebe7f0`) in the art block, on the standard and the compact sheet,
+  on the `/p/` sheet on screen and in the editor's print preview; the screen
+  keeps the dark well. Black and white has no art block. A departure from
+  Figma node `714-42387`, which leaves that area as blank paper (owner,
+  2026-10-29).
 - An open record dialog and an action toast both stay hidden under print
   media, the way the live app's `#modal`/`#toast` rules did unconditionally -
   neither had an equivalent rule in the rewrite.

@@ -525,10 +525,50 @@ const { ok } = rep;
       fit.srcLines >= 2,
       where + ': the long source line did not wrap: ' + JSON.stringify(fit)
     );
+    if (isBw) continue;
+    /* The item has no picture: the kind glyph on the light print well, above the
+       text (FEATURES.md, "Print"). jsdom resolves no var(), so this is the browser's. */
+    const well = await page.$eval('.pcard', (c) => {
+      const art = c.querySelector('.pc-art.none');
+      const svg = art?.querySelector('svg');
+      if (!art || !svg) return null;
+      const a = art.getBoundingClientRect();
+      const g = svg.getBoundingClientRect();
+      const rng = document.createRange();
+      rng.selectNodeContents(c.querySelector('.pc-text'));
+      const first = [...rng.getClientRects()].find((r) => r.width > 0);
+      return {
+        bg: getComputedStyle(art).backgroundColor,
+        ink: getComputedStyle(svg).color,
+        inside:
+          g.left >= a.left - 0.5 &&
+          g.right <= a.right + 0.5 &&
+          g.top >= a.top - 0.5 &&
+          g.bottom <= a.bottom + 0.5,
+        clear: !!first && g.bottom < first.top
+      };
+    });
+    ok(
+      !!well && well.bg === 'rgb(235, 231, 240)' && well.ink === 'rgb(58, 51, 80)',
+      where + ': the no-picture well is not the light print well: ' + JSON.stringify(well)
+    );
+    ok(
+      !!well && well.inside && well.clear,
+      where + ': the glyph leaves the well or covers the text: ' + JSON.stringify(well)
+    );
   }
 
   /* Damage with a bonus: "d6 +2" beside the die, not a digit over it. */
   await openPrint(d, 'w7');
+  /* A catalog picture keeps the dark well behind it (--art-well). */
+  const darkWell = await page.$eval('.pc-art', (e) => ({
+    bg: getComputedStyle(e).backgroundColor,
+    none: e.classList.contains('none')
+  }));
+  ok(
+    darkWell.bg === 'rgb(10, 8, 16)' && !darkWell.none,
+    'a card with a picture lost the dark well: ' + JSON.stringify(darkWell)
+  );
   ok(
     (await page.$eval('.pc-die', (e) => e.textContent.trim())) === 'd6',
     'the damage bonus crept onto the die'
@@ -2937,7 +2977,8 @@ const { ok } = rep;
           art:
             art && getComputedStyle(art).display !== 'none'
               ? cq(art.getBoundingClientRect().height)
-              : null
+              : null,
+          well: art ? getComputedStyle(art).backgroundColor : null
         };
       }, sel);
     const near = (a, b, d) => (a === null && b === null) || Math.abs(a - b) < d;
@@ -3001,11 +3042,18 @@ const { ok } = rep;
             shown.pad === printed.pad &&
             /* The picture band is set from `offsetTop`, a whole pixel on each card. */
             near(shown.art, printed.art, 100 / shown.w + 100 / printed.w) &&
+            shown.well === printed.well &&
             shownCut === printedCut,
           name +
             ': the preview fits otherwise than the sheet - ' +
             JSON.stringify({ shown, printed, shownCut, printedCut })
         );
+        if (set === 'set-longsrc1' && !isBw) {
+          ok(
+            !!shown && shown.well === 'rgb(235, 231, 240)',
+            name + ': the preview card has no light print well - ' + JSON.stringify(shown)
+          );
+        }
         await d.go(editor);
         for (let i = 0; i < 40 && !(await d.has('На печати')); i++) await d.settle();
         await d.click('На печати');

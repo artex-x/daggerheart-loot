@@ -3516,7 +3516,7 @@ const STATES = [
     id: '#/p/set-longsrc1 as gm2',
     route: '#/p/set-longsrc1',
     as: 'gm2',
-    why: "gm4's item with an 80-code-point source and section on the standard colour sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws img/_none.webp",
+    why: "gm4's item with an 80-code-point source and section on the standard colour sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws the kind glyph on the light print well",
     enter: sheet
   },
   {

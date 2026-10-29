@@ -9,6 +9,7 @@
    * `RecordCard`'s `<p>`s, and has no whitespace of any kind between the tags
    * in that block (docs/specs/COVERAGE.md, "Whitespace text nodes are content"). */
   import { untrack } from 'svelte';
+  import ArtWell from './ArtWell.svelte';
   import CardVector from './CardVector.svelte';
   import MarkupInline from './MarkupInline.svelte';
   import '../styles/card-vectors.css';
@@ -16,7 +17,7 @@
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
-  import { printSrc } from '../lib/label.js';
+  import { kindGlyph, printSrc } from '../lib/label.js';
   import { afterLead, parseMarkup, type MarkupBlock } from '../lib/markup.js';
   import { qtySuffix } from '../lib/share.js';
   import { cardArt, CARD_DIR, dmgParts, printTrait } from '../lib/print.js';
@@ -117,10 +118,10 @@
     }
   );
   const src = $derived(printSrc(it, lang));
-  /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`; the
-     screen pages draw a glyph instead. The owner's departure from Figma node 714-42387
-     (FEATURES.md, "Print"). */
+  /* A colour card with no picture, or a broken one, draws the kind glyph on the light
+     print well; the screen keeps the dark well (FEATURES.md, "Print"). */
   const artUrl = $derived(artSrc(it.img, artBroken));
+  const glyph = $derived(kindGlyph(it.kind, it.eq?.t));
   /* The folded vectors' paint: one geometry, the layout's colours (card-vectors.css). */
   const paint = $derived(bw ? 'bw' : 'colour');
   const pkClass = $derived(
@@ -417,8 +418,8 @@
      docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
 <!-- prettier-ignore -->
 <article class="pcard {pkClass}" class:bw data-pid={it.id} style:--pc-scale={scale === 1 ? undefined : scale} bind:this={card}
-  >{#if !bw}<div class="pc-art"
-      ><img
+  >{#if !bw}<div class="pc-art" class:none={!artUrl}
+      >{#if artUrl}<img
           class="pc-back"
           src={artUrl}
           alt=""
@@ -429,7 +430,7 @@
           src={artUrl}
           alt=""
           onerror={() => onartfail(it.id)}
-        /></div
+        />{:else}<ArtWell {glyph} />{/if}</div
     >{@render band()}{@render mark()}{/if}<div class="pc-content"
     >{#if bw}<div class="pc-head" class:withtier={!!tier}
         >{@render band()}{@render tags()}{@render mark()}</div
@@ -491,7 +492,14 @@
     align-items: flex-start;
     justify-content: center;
     overflow: hidden;
-    background: #0a0810;
+    background: var(--art-well);
+  }
+
+  /* The owner's light print well: less toner and a clear mark, a departure from Figma
+     node 714-42387 (FEATURES.md, "Print"). */
+  .pcard:not(.bw) .pc-art.none {
+    --art-well: #ebe7f0;
+    --line2: #3a3350;
   }
 
   .pc-img {

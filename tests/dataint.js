@@ -446,7 +446,7 @@ ALL.forEach((x) => {
    same picture as its base, and four copies of the same bytes helped nobody. */
 const used = new Set(ALL.filter((x) => x.img).map((x) => x.img));
 fs.readdirSync(path.join(ROOT, 'img')).forEach((f) => {
-  if (f === '_none.webp' || !f.endsWith('.webp')) return;
+  if (!f.endsWith('.webp')) return;
   ok(used.has(f), 'picture img/' + f + ' belongs to nobody');
 });
 /* Same trap, ingest side: a stray og/<id>.jpg with no claiming record passes
@@ -454,8 +454,7 @@ fs.readdirSync(path.join(ROOT, 'img')).forEach((f) => {
    record id, so this is the same `used` set, just re-suffixed. */
 const usedJpg = new Set(Array.from(used).map((f) => f.replace(/\.webp$/, '.jpg')));
 fs.readdirSync(path.join(ROOT, 'og')).forEach((f) => {
-  if (f === '_none.jpg' || f === '_share.jpg' || f === '_share_en.jpg' || !f.endsWith('.jpg'))
-    return;
+  if (f === '_share.jpg' || f === '_share_en.jpg' || !f.endsWith('.jpg')) return;
   ok(usedJpg.has(f), 'picture og/' + f + ' belongs to nobody');
 });
 // One stub per record per language: i/ Russian, i/en/ English.

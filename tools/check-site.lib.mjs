@@ -294,8 +294,8 @@ export function fileChecks({ install = true, documents = false } = {}) {
      * build makes, and a broken link is served as a 404 rather than as an
      * error. The row thumbnails ride the img/ link. */
     ...[
-      'img/_none.webp',
-      'img/thumb/_none.webp',
+      'img/ci1.webp',
+      'img/thumb/ci1.webp',
       'og/_share.jpg',
       'og/_share_en.jpg',
       'card/die-d12-bw.svg'

@@ -51,7 +51,7 @@ art. The asset id is the basename of a record's
 `img` field, not necessarily the record id: several records may share one
 asset, and a record joining one gets no `img/`, `img/thumb/` or `og/` file of
 its own. A
-record may legitimately ship with `img: ''`, which renders `_none.webp`. Use
+record may legitimately ship with `img: ''`, which draws the kind glyph. Use
 `node tools/artwork/run.mjs ingest` to install and validate art - never
 hand-convert; see `docs/artwork.md` for the tool and its settings, and its
 "The ingest path" for the drop: image files only, counted against the
