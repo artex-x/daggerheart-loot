@@ -24,6 +24,7 @@ deleted.
 - 2026-10-29 - [The Scary rule keeps one Russian body](decisions/2026-10-29-the-scary-rule-keeps-one-russian-body.md)
 - 2026-10-29 - [The set name before a set bonus is bold italic](decisions/2026-10-29-the-set-name-before-a-set-bonus-is-bold-italic.md)
 - 2026-10-29 - [The tables strip cap follows its measured layout](decisions/2026-10-29-the-tables-strip-cap-follows-its-measured-layout.md)
+- 2026-10-29 - [Usage guards park work, never change a tier, and resume AFK work after a reset](decisions/2026-10-29-usage-guards-park-work-never-change-a-tier.md)
 - 2026-10-28 - [Addresses are paths, with the language prefix and `?v` in the bar](decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md)
 - 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
 - 2026-10-28 - [`data.json` and `catalog.csv` leave git; the build writes both](decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md)

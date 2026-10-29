@@ -376,9 +376,12 @@ human is in a hurry, or Fable is available. Before the dispatch, name the
 tests in chat and ask the human; dispatch on `fable` only after a clear
 yes, and on `opus` otherwise. Escalation is per dispatch and never edits
 the frontmatter; a resume carries no `model`, so a tier change is a fresh
-dispatch. When the tests hold but Fable is not available or the profile is `pro`, plan on `opus`
-and say so - never wait. Fable is never the tier of an implementer, reviewer, add-source or
-helper dispatch. Announce the routing in chat only; never write it into
+dispatch. When the tests hold but Fable is not available or the profile is
+`pro`, plan on `opus` and say so - never wait. Fable is not available when
+the host or the plan does not offer it; a reached Fable weekly window is not
+that case, so the `fable` dispatch waits for the reset, you tell the owner,
+and you never plan on `opus` because of it. Fable is never the tier of an
+implementer, reviewer, add-source or helper dispatch. Announce the routing in chat only; never write it into
 `plan.md`, `handoff.md` or `context.md`.
 
 ## When to run reviewer (do not skip these)
@@ -557,17 +560,23 @@ Act on the reading:
 - **5-hour at 90 % or more:** dispatch and resume nothing. Send the wrap-up
   message (below) to each subagent that `ListAgents` shows `running`; an
   agent that ended its turn gets nothing, because a message would resume
-  it. Send it once per agent; the chat line `wrap-up sent to <agent> at
-  HH:MM` is the record. Write nothing into a running agent's files. When
+  it. Send it once per dispatch: a chat line `wrap-up sent to <agent> at
+  HH:MM` later than that agent's latest dispatch or resume is the record. Write nothing into a running agent's files. When
   the last one ends its turn, report to the human: the TASK id, the handoff
-  path, each agent's last line, `resetsAt` and the next step.
+  path, each agent's last line, `resetsAt` and the next step. Then apply
+  "Resume after the reset" (below).
 - **Weekly (all models) at 95 % or more:** dispatch and resume nothing, for
   every role, a review, a fix pass and a CI fix included. A running agent
   finishes its turn. A background shell command (the CI credit) continues;
   it costs no usage. Report to the human: the reading, `resetsAt` and what
   waits. Report a crossing once; later ticks give only the status line.
-- A `fable` dispatch also reads the Fable weekly window: at 95 % or more,
-  plan on `opus`.
+- **Weekly (all models) at 98 % or more:** also send the wrap-up message to
+  each running subagent, as at the 5-hour 90 %, with the same record and the
+  same report when the last one ends its turn. An agent gets one wrap-up per
+  dispatch for both windows, with the same record.
+- The guards stop and park work; they never change a model or a tier
+  because of the remaining usage. Running out is accepted (owner,
+  2026-10-29).
 - Below both thresholds, continue.
 
 After a reset, the next dispatch is a fresh agent ("Past the cache
@@ -578,14 +587,14 @@ edits, which the handoff names.
 tick, create one recurring job with `CronCreate` (deferred; load
 `CronCreate`, `CronList` and `CronDelete` with one `ToolSearch`), prompt:
 
-    USAGE TICK: read the usage and act on it (orchestrate.prompt.md, "Usage guards"). If your record (dispatches, resumes, task notifications) shows no subagent of yours running, delete this job. Below both thresholds, end the turn with one line: `usage <5-hour> % / <weekly> % at HH:MM UTC`.
+    USAGE TICK: read the usage and act on it (orchestrate.prompt.md, "Usage guards"). Before 2026-11-05 UTC, append the reading to the usage log ("The usage log"). If your record (dispatches, resumes, task notifications) shows no subagent of yours running, delete this job. Below both thresholds, end the turn with one line: `usage <5-hour> % / <weekly> % at HH:MM UTC`.
 
 The period follows the latest 5-hour reading:
 
 - below 75 %: cron `7,22,37,52 * * * *` (every 15 minutes);
 - at 75 % or more: delete that job and create the same prompt with cron
-  `*/5 * * * *`. When the wrap-up is sent, delete the 5-minute job; the
-  task notifications are the wakes from then on.
+  `*/5 * * * *`. When the wrap-up is sent, delete the usage tick at either
+  period; the task notifications are the wakes from then on.
 
 A tick below both thresholds calls no `ListAgents`: your record of
 dispatches, resumes and task notifications (the "<agent> ended its turn at
@@ -602,10 +611,27 @@ burn measured on 2026-10-29 (`.claude/README.md`, "Usage guards"). The main
 session's prompt cache lives 1 hour, so a 15-minute gap still reads the
 cached context.
 
-**The wrap-up message**, word for word; fill `<P>`, `<time>` (`resetsAt` as
-`HH:MM` UTC) and `<id>`:
+**The usage log.** Before 2026-11-05 UTC, each tick appends its reading to
+`C:\Users\Ignat\.dhloot\notes\usage-log.csv` with one Bash call after the
+`get_usage` call: one week of readings sets the tick period, the 75 % switch
+and the 90 % margin (owner, 2026-10-29). A Node one-liner appends one row
+in one Bash call and writes the header when the file is missing; the Write
+tool replaces the whole file. Fill the 5-hour `percentUsed`, the weekly all-models `percentUsed` and
+`context.percentUsed`:
 
-    USAGE WRAP-UP: the 5-hour limit is at <P> % (resets <time> UTC). Start no new step and dispatch nothing.
+    node -e "const fs=require('fs'),f='C:/Users/Ignat/.dhloot/notes/usage-log.csv',t=new Date().toISOString().slice(0,16)+'Z';if(t>='2026-11-05'){console.log('usage log closed 2026-11-05');process.exit(0)}if(!fs.existsSync(f))fs.writeFileSync(f,'utc,five_hour_pct,weekly_pct,context_pct\n');fs.appendFileSync(f,[t,...process.argv.slice(1)].join(',')+'\n');console.log('logged '+t)" <5-hour> <weekly> <context>
+
+It writes the header when the file is missing and prints `logged <time>`;
+the status line takes its `HH:MM` from that time. From 2026-11-05 it writes
+nothing and prints `usage log closed 2026-11-05`; skip the call after that.
+If the call fails, say so once and continue without the log. Only the tick
+logs.
+
+**The wrap-up message**, word for word; fill `<window>` (`5-hour` or
+`weekly`; `5-hour` when both are reached), `<P>`, `<time>` (that window's
+`resetsAt` as `YYYY-MM-DD HH:MM` UTC) and `<id>`:
+
+    USAGE WRAP-UP: the <window> limit is at <P> % (resets <time> UTC). Start no new step and dispatch nothing.
     1. If a check is running, wait for its exit.
     2. If the batch's gates passed and only the commit or the push remains, do it.
     3. Otherwise commit nothing and revert nothing: your edits stay in the worktree.
@@ -615,6 +641,42 @@ cached context.
 A subagent reads a message at its next tool round, so an agent inside one
 long foreground check reads the wrap-up when that check ends. The check
 spends wall clock, not usage.
+
+**Resume after the reset.** Only in a session where the owner said that
+they are away (owner AFK). When the last agent has ended its turn after a
+5-hour wrap-up and the weekly reading is below 95 %, arm one one-shot
+`CronCreate` job (not recurring) at the 5-hour `resetsAt` plus 2 minutes.
+Never after a weekly wrap-up. Cron reads the local time; take its fields
+from one Bash call:
+
+    node -e "const d=new Date(Date.parse(process.argv[1])+120000);console.log([d.getMinutes(),d.getHours(),d.getDate(),d.getMonth()+1,'*'].join(' '))" <resetsAt>
+
+The prompt, with `<id>` filled:
+
+    USAGE RESUME: TASK <id>. Act on orchestrate.prompt.md, "Usage guards", "Resume after the reset".
+
+Say in chat `resume armed for HH:MM local`. If the owner writes in chat
+before the job fires, delete it with `CronDelete`. When it fires:
+
+1. Read the usage. If the 5-hour window is at 90 % or more, or the weekly
+   at 95 % or more, report the reading and `resetsAt`, arm nothing, and end
+   the turn.
+2. Read `handoff.md` Status, "Session end partial progress" and "Next
+   batch", and run `git status --short` in the worktree. If its path count
+   differs from the count that the handoff names, report both and end the
+   turn. A handoff that names no count counts as 0.
+3. Dispatch one fresh worker, never a resume, for the step that the
+   handoff names, after the tree preflight, under the tier rules, with the
+   usage tick. Its brief says that the worktree holds the uncommitted edits
+   that the handoff names, and that it continues from the progress line.
+4. Continue the procedure: the owner is away, so take the recommended
+   option at each choice and log it in chat. These wait for the
+   owner: a push to `main`, the squash and the rest of the closeout's
+   landing, the deletion of a branch or a worktree, and every step that
+   this prompt says to ask the human about (`NEEDS_HUMAN_CONFIRMATION: yes`,
+   a `fable` dispatch, an effort exception, a gate still red after the one
+   remediation cycle, a `replan` from a second look). Report each in chat
+   and stop that task.
 
 **Without the tool.** If `get_usage` is absent, or `plan.status` is not
 `ok`, say so once in chat and continue without the guard. Do not infer the
@@ -629,6 +691,49 @@ If the human says the session is ending (or usage is exhausted):
 - do not start a new batch
 - if mid-work: worker stops coding, no half-batch commit, handoff updated with partial progress and exact next step
 - summarize state for the next session: TASK id, context/handoff paths, next step
+
+### A fresh session at half context
+
+Every orchestrator turn and every tick replays the main transcript. At a
+batch boundary, read `context.percentUsed` in the usage reading before the
+next batch's dispatch or before the closeout. At 50 % or more, offer the
+task to a fresh orchestrator session (owner, 2026-10-29). A batch boundary:
+the batch is committed and pushed, its review is acted on, the CI credit of
+the last push has returned and the handoff records it, and no subagent of
+yours runs. Mid-batch, and when `context` reports unavailable, skip this
+rule.
+
+1. Write into `context.md` each owner instruction of this session that it
+   does not hold. Bring `handoff.md` to the next step.
+2. Delete each cron job of this session (`CronList`, `CronDelete`).
+3. Call `mcp__ccd_session__start_session` (deferred; load it with
+   `ToolSearch`) with `initiation: "own_initiative"`, `context: "fresh"`,
+   `use_worktree: false`, the title `orchestrate <id>`, the prompt below,
+   and a `background` with the goal from `context.md` in one sentence, the
+   owner-AFK state when it applies (the owner is away: take the recommended
+   option and log it in chat), and the latest usage reading. The app refuses `user_asked` on a turn that a task
+   notification, a cron tick or another session's message started, and a
+   batch boundary is such a turn. `own_initiative` makes a card that the
+   owner starts with one click; the card waits up to a week.
+4. Say in chat `fresh session card <session name> waits for the owner;
+   start it while this session is idle`. Then continue the task in this
+   session. Make one card per task: at a later boundary, say the line
+   again and make no second card.
+5. When the app continues this session after the new session ends a turn,
+   the owner has started the card: answer with the one line `handed off to
+   <session name>`, and from then on dispatch, resume, send and write
+   nothing. Also, before each dispatch after the card exists, look in the
+   `ListAgents` preflight for the session `orchestrate <id>`; if it is not
+   offline, act as this step says at once.
+
+The prompt, filled (`<old session name>` is this session's title):
+
+    You are the orchestrator. Follow .claude/prompts/orchestrate.prompt.md with TASK: <id> in the worktree <path>, branch <branch>. First run `ListAgents` and `git rev-parse HEAD`. If a subagent of the session <old session name> shows `running`, or HEAD differs from the handoff's last commit, report both and end the turn without a dispatch. Then read CLAUDE.md, then issues/<id>/context.md, plan.md, handoff.md and reviews.md, and act on the handoff's next step. Agent ages are unknown, so every resume is a spawn.
+
+The new session loses the "ended its turn at" ages, the chat-only records
+and this transcript's cache; it reads the task files once (about 30-60k
+tokens). If `start_session` refuses or is absent, say so once and continue
+in this session; do not retry in this task.
 
 ## Task closeout and cleanup
 Before reporting a batch or task complete:

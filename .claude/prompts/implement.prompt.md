@@ -67,6 +67,7 @@ Session rules:
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
 * A message that starts with `USAGE WRAP-UP` is the same stop, sent by the orchestrator before a plan limit cuts the session: follow its steps exactly. Commit only a batch whose gates passed, and revert nothing.
+* After each numbered step of the batch, replace the handoff's line that starts `- Session end partial progress (if any):` with one `Edit` whose `old_string` is the whole current line, so a cut leaves a resumable record: `- Session end partial progress (if any): <batch> step <n> of <m> done; next: step <n+1>, <its first five words>.` Keep it one line; a `USAGE WRAP-UP` rewrites the same line.
 * Write a durable fact or decision to its permanent home in this batch (`CLAUDE.md`, "Task and session protocol"); a comment follows `CLAUDE.md`, "Comments"
 
 For the current batch:
@@ -97,7 +98,7 @@ For the current batch:
    where you stopped.
 8. Review the final diff for unintended changes
 9. Update `<TASK_DIR>/plan.md`
-10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; record the pre-batch sha (`git rev-parse HEAD` before the commit) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
+10. Update `<TASK_DIR>/handoff.md` using template headings (completed, verification commands/results, next batch, blockers) - say what happened to every inherited acceptance line, not only the batch's own; set the line `Session end partial progress` to `none`; record the pre-batch sha (`git rev-parse HEAD` before the commit) as "Previous sha" - the handoff is inside the commit it would otherwise name, so it never records a "new" sha for itself; report that sha in this turn's final summary instead
 11. Commit only after checks pass, using Conventional Commits as defined in `CLAUDE.md` - each batch is a new commit on the task branch, never an amend of a pushed one; commit the coherent batch, not unrelated foreign changes. The message body names the task id (a `Task: <id>` line, or the id stated in a sentence) - this is what `git log --grep=<id>` and a `docs/decisions/` file's provenance pointer resolve through; a commit that never names it leaves that pointer dead.
 12. Before the push, `git fetch origin` and merge the latest `origin/main` (a merge commit, never a rebase; owner, 2026-10-22); on a conflict outside `docs/DECISIONS.md` (`.claude/README.md` has its procedure), stop and report. Push the task branch (`git push -u origin <branch>`) unless the dispatch says not to, or the batch is a schema batch before its approve; the orchestrator then waits on CI with the CI credit (`CLAUDE.md`, "Source and commit conventions"; `.claude/README.md`, "CI credit").
 
