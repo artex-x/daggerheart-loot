@@ -160,7 +160,11 @@ to production.
 
 Still queued after task 57, not started: a branch-CI job that replays the
 deploy's collect and check-site steps; the address follow-ups D118-D120 with
-the preview worker reading the card and the app document in parallel.
+the preview worker reading the card and the app document in parallel. That
+follow-up task also writes one dated host fact into `.claude/README.md`
+(the bare `/tables` probe paragraph): measured 2026-10-29 after deploy
+`f74eae09`, `/tables/` and `/en/tables/` answer 200 with the app document,
+and `/homebrew/f_kind-item.src-hb` answers 200.
 
 ## Close - lock and land
 
