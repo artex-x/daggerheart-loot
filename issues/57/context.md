@@ -230,6 +230,41 @@
     toner, a clear mark); the screen keeps the dark well; check it against
     the Figma colour node. Q1.1 confirmed: today's share card text, with
     "armor".
+  - Print review (owner, 2026-10-29, interactive): task 57 takes a print
+    review - a print audit (both sheets, colour and black-and-white, RU and
+    EN, long text, how often the fit ladder shrinks text), then a print
+    mock the owner confirms, then its own print batch after 1b with the
+    print checks. Limits: 63x88 mm is the standard Daggerheart card size
+    and 44x63 mm the best standard size that fits sixteen; the owner does
+    not want them changed significantly, but is open to a good proposal,
+    named and argued at the mock. Inside the card (fonts, type sizes,
+    spacing, art and stat blocks) may change; each departure from the
+    Figma nodes is named for the owner's yes. Print font: decided at the
+    print mock, which shows today's print stack beside Source Sans 3 at
+    the real sizes with the fit ladder's results. This replaces the
+    earlier "print layouts stay" constraint for this task only; the
+    product law (sheet counts, colour and black-and-white distinct,
+    browser-measured fitting) holds.
+  - Print feel (owner, 2026-10-29, chat): the printed cards must keep the
+    feeling of Daggerheart cards. Reference: the Daggerheart Core Set PDF
+    on the owner's machine (`C:\Users\Ignat\Downloads\Daggerheart Core Set
+    (Spenser Starke, Rowan Hall, Matthew Mercer) (z-library.sk, 1lib.sk,
+    z-lib.sk).pdf`), its card pages. It is a style reference only
+    (hierarchy, type feel, banners, stat blocks, density): no page, art,
+    frame or text from it is copied into the repository or a mock; crops
+    used as evidence stay outside the checkout.
+  - Devices during play (owner, 2026-10-29, chat): players use a phone
+    about 80% and a laptop about 20%; GMs a laptop about 80% and a phone
+    about 20%. Mobile behaviour matters: it is why the first-screen rule
+    optimises height. Player surfaces (shared list, list page, item,
+    search, lists) are designed phone-first at 360x640; GM surfaces
+    (roller, tables, homebrew, print) keep both widths and still pass the
+    first-screen rule on a phone. Home: batch 1 rewrites `PRODUCT.md`
+    "Users" and "Operating Context" with these shares (the player phone is
+    a primary case, not a secondary one) and fixes its stale
+    "Positioning" paragraph (lists are account lists since R10); `DESIGN.md`
+    gets a phone-first rule beside the first-screen rule. Every later mock
+    and batch review checks 360x640 first.
   - First-screen rule (owner, 2026-10-29, chat): at 360x640 and 1180x720
     each page's primary content (roll results, first table rows, first
     list entry, the item) starts inside the first screen, and the controls

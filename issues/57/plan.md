@@ -11,11 +11,28 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
 - Phase 3: eleven batches (1, 1b, 2-10; section 7). Batch 1 is implement-ready after its
-  mock step (section 10). Batches 2-10 are outlines; each one's refresh
+  mock step (section 10). Batches 1b and 2-10 are outlines; each one's refresh
   expands it.
 - Mocks: every batch mock from 1 to 9 is drawn ahead (section 9); the owner
   confirms each one before its implementer starts.
 - Plan review: required before 1 (trigger: public contract changes in batch 1b - the no-picture asset paths of CONTRACTS.md - and in batch 2 - routes.json tab, llms.txt)
+- Plan review findings applied: reviews/plan-1-3.md
+  - B1, sections 7 (batch 1b) and 8: the README pair 1193 to 1192 with the `tests/derived.js` comment, the two `COVERAGE.md` rows, the `set-longsrc1` inventory `why` and its golden header, the `tools/artwork/lib.mjs` comments; the 1b gates add `app/states`, `derived` and both lints; row 1b gains 5 min.
+  - B2, section 7 (batch 1b): a no-picture link card takes the site share card of its language with `large: true` (the `siteCtx` pattern) in `preview/worker.mjs` and in `pageCtx`; `wantImg`, `worker.test.mjs` asserts (1200, 630, `summary_large_image`, RU and EN) and the two `META.md` rows follow.
+  - B3, sections 7 (batch 2) and 8: the hook selftest runs once on its own; `tests/db/` joins the sweep with `npm run check:db` (owner's minimum of British forms, the recommended option); `derived` joins the batch 2 suites; row 2 is recomputed.
+  - R1, sections 7 (batch 1b) and 9: the mock step reads the node's paper and ink values and its per-kind outline and writes them into the 1b line; the values live in `PrintCard.svelte` as overrides on `.pcard:not(.bw) .pc-art`; the tone is proved in `tests/app/print.js`; the `/p/` sheet and the editor preview draw the light well; `FEATURES.md` "Print" and the `PrintCard.svelte` comment change with it.
+  - R2, sections 10 and 14: the fifteen real components are named (four roll panels); a roll route sets the number field instead of a roll; the design target is 240 px at 640 and 270 px at 720 under the 0.4 assertion; `scrollTo(0, 0)` and two frames before the read; zero matches fail; one row per user-named H1 at its longest name.
+  - R3, section 14: one place for «Выбрать» and one for the search on every list surface; the view switch stays its own control; one count per collection (rule 1); a button that opens a renamed panel takes the panel's name (batch 2).
+  - R4, section 7 (batch 2): the word list gains `sanitis|tokenis|capitalis|italicis|millimetre|defence`; `cancelled` (an American form and GitHub's API value), `smoulder` (fixture data) and the sub-package lock files are kept forms.
+  - R5: deferred-scope (`handoff.md`, Deferred): `review.prompt.md`'s naming of a third look against `agent-guard.mjs`.
+  - N1, sections 1 and 7 (batch 2): the R3 and R7 lines state the owner's answer only.
+  - N2, section 10: an acceptance line for the page ground and its `background-attachment`.
+  - N3, section 7 (batch 1b): `docs/fixtures/`, `tests/contracts.js` and `llms.txt` hold no `_none` path; the commit says so.
+  - N4, section 7 (batch 1b): the stale tab and the revert.
+  - N5, `handoff.md`: "Pushed" and "Review" take the template values.
+  - N6, sections 7, 14 and `handoff.md`: `issues/57/mocks/measure.mjs` is the measure script.
+  - N7, section 14: every new label has its EN pair.
+- Device shares (owner, 2026-10-29, `context.md` "Devices during play"): batch 1 rewrites `PRODUCT.md` "Users", "Operating Context" and "Positioning" and writes the Phone-First Rule beside the First-Screen Rule (section 10).
 - First-Screen Rule (owner, 2026-10-29, `context.md` "First-screen rule"): written by batch 1 with a measured `tests/app/states.js` case; section 14 lists each mock's pass or fail at 360x640 and 1180x720 and the recommended fix; the mock re-renders of 3, 5, 6, 7, 8 and 9 follow from it.
 - Mock answers recorded (owner, 2026-10-29, `context.md` "Mock answers"): mock 1 approved; batch 1b added (the glyph replaces the no-picture placeholder everywhere, print included, and the three placeholder files go); the linear page ground in batch 1; C1 and C38 renamed, not removed; every other section 13 question answered. A second plan-review look on these parts follows.
 - Plan review findings applied: reviews/plan-1-2.md
@@ -58,7 +75,8 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   (section 10), R's `.rl.sel` side-tab not built (batch 3), three labelled
   controls in the item sheet bar (batch 4).
 - NEEDS_HUMAN_CONFIRMATION: no - every section 13 question is answered
-  (owner, 2026-10-29), Q1b.1 included ("Print answers").
+  (owner, 2026-10-29), Q1b.1 included ("Print answers"). The print review
+  (`context.md` "Print review") adds its batch after 1b in a separate pass.
 
 Earlier plan review: `reviews/plan-1.md` (fix-then-continue) was applied to
 the plan of 2026-10-23 (`git show 69f2178:issues/57/plan.md` and the commit
@@ -115,7 +133,7 @@ Theme decisions (from `audit.md`, "Systemic themes"):
 | 1 | Gold spent on things nobody chose | Gold fill: one primary action per panel, a choice that narrows the view, the current place. A pressed default («Все»), a mode toggle and a selection are neutral: a lit border and a check. Unique tag neutral dashed; footer links muted; roll number in the UI face. |
 | 2 | Help text repairs controls | Each control says what it does, so a panel holds nothing new. The panels stay behind a labelled «Справка» button until the owner decides each one at its batch mock. |
 | 3 | Labels change with the width | One action vocabulary at every width and one «Ещё» overflow: «В список», «Поделиться», «Печать», «Ещё» (Скопировать текст, Скопировать название, Скопировать картинку, Скопировать ссылку, Копия в мои предметы). |
-| 4 | Navigation | Three jobs and the three-control mode row; «Бросок» opens the last roll section of this tab, else (owner question at mock 2, R7) the start section when it is a roll section, else `/roll/std`; the account control is «Войти» signed out and an initial with a chevron signed in, lit on its pages. |
+| 4 | Navigation | Three jobs and the three-control mode row; «Бросок» opens the last roll section of this tab, else the start section when it is a roll section, else `/roll/std` (owner, R7); the account control is «Войти» signed out and an initial with a chevron signed in, lit on its pages. |
 | 5 | Type floor and caps | Ten steps (23, 20, 18, 16, 15, 14, 13, 12, 11.5, numeral 19); data text 13 px at the least; capitals only for section labels and badges. |
 | 6 | Density | Rows: name with its tags after it, one stat line, one feature line; tags that repeat the active filter hidden; a selection mode («Выбрать») replaces the always-on checkbox column. |
 | 7 | Missing art | The kind glyph on the art well for a record with no picture and while a picture loads; the "?" pedestal and its three files go (owner, 2026-10-29; batch 1b), so an empty state draws no pedestal. |
@@ -170,7 +188,7 @@ Inter from `tools/artwork/fonts/`.
 Loading: `@fontsource-variable/source-sans-3` (owner, 2026-10-23), woff2
 from the build's own origin, `font-display: swap`, no font service. The family
 name comes from the installed package CSS (expected `'Source Sans 3
-Variable'`). Print keeps today's stack through `--print-ui`. The share cards
+Variable'`). Print keeps today's stack through `--print-ui` The share cards
 take static Source Sans 3 TTF faces in `tools/artwork/fonts/` (fontconfig
 renders TTF; Q1).
 
@@ -213,7 +231,7 @@ that writes its rule; a row with no rule is a local fix in its batch
 | Icon and label share one centre ("Buttons") | 1 | owner review note (2026-10-23) |
 | The art well and the kind glyph ("Cards") | 1 (screen), 1b (print, the placeholder files gone; "Signature component: the print card") | theme 7: C55, C11, A10, A38 (the pedestal leaves rows; owner, 2026-10-29: the pedestal file goes too) |
 | The First-Screen Rule ("Layout"): primary content starts within 40% of the height at 360x640 and 1180x720 | 1 (rule and check), each batch for its routes | owner, 2026-10-29; section 14 |
-| One page ground: `linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)` ("Overview", "Neutral") | 1 | owner, 2026-10-29 |
+| The Phone-First Rule ("Layout"): the player surfaces (the shared list, the list page, the item, search, `/lists`) are designed at 360x640 first; the GM surfaces (the roller, the tables, homebrew, print) keep both widths and pass the First-Screen Rule on a phone | 1 | owner, 2026-10-29, "Devices during play" |
 | Navigation: three jobs, the mode row, the account control, the wordmark «Лут» / «Loot» (replaces "never translated"); The Two Breakpoints Rule takes the measured header | 2 | theme 4: C6, C27, C48, C52, A28, A35, A36, A37, P9, D10, D11 |
 | The Same Label Rule: a label does not change with the width; the pin and «Справка» are labelled | 2 | theme 3: C27, A36, C37, A27 |
 | Toast: its fill, its place over a fixed bar | 2 | C34, C47, A15 |
@@ -359,29 +377,55 @@ Batch 1b (owner, 2026-10-29, "Mock answers"; mock step: `mocks/1b/`):
   `pc-art` box, at the same `cqw` geometry; nothing else on the card moves. The
   editor's print preview (`PrintPreview.svelte`) follows.
 - The print well is light (owner, 2026-10-29, "Print answers"): on the colour
-  print card only, the no-picture well takes the paper-side tone with the
-  glyph in dark ink (less toner, a clear mark); the screen keeps the dark
-  `--art-well`. The tone and the ink come from the Figma colour node
-  (`88Hhc89oY9Orcbvd2ok1Hx`, node `714-42387`): read its paper and ink fills
-  through the Figma export, use those values in `card-vectors.css` paint
-  tokens (no new literal outside them), and name the two values and the node
-  in the commit. Proof: a `printPage.test.ts` case (a colour card with no
-  picture has no `<img>`, draws the glyph, and its well takes the print
-  tone, not `--art-well`) and a `tests/app/print.js` measure that the card's
-  geometry is unchanged; the screen `ArtWell` case keeps the dark well.
+  print card, the no-picture well takes the paper-side tone with the glyph in
+  dark ink (less toner, a clear mark). The print card draws it wherever it
+  shows what prints: the paper sheet, the `/p/` sheet on screen and the
+  editor's print preview. Every other screen surface keeps the dark
+  `--art-well` (plan review R1).
+- The node's own design (plan review R1): `FEATURES.md` "Print" says the
+  colour node (`88Hhc89oY9Orcbvd2ok1Hx`, node `714-42387`) draws an outline
+  per kind for a card with no picture, which `_none.webp` replaced (owner,
+  2026-10-15). Mock 1b shows that outline beside the glyph on the light well.
+  The mock step (the orchestrator or the mock unit, with Figma access) reads
+  the node's paper and ink values and writes them into this line before the
+  implementer starts; the implementer does not read Figma. If the owner
+  prefers the node's outlines, they are exported as vectors, not redrawn
+  (`CLAUDE.md`), and this line names the files.
+- Where the values live: `PrintCard.svelte` overrides the well and glyph
+  custom properties in `.pcard:not(.bw) .pc-art` with the two values, beside
+  the card's own paper and ink literals (`card-vectors.css` holds only the
+  folded vectors' paints); `ArtWell` does not change. The commit names the
+  two values and the node.
+- Proof: `printPage.test.ts` asserts a colour card with no picture has no
+  `<img>` and draws the glyph; `tests/app/print.js` reads the well's computed
+  background and the glyph's fill in a real browser (jsdom resolves no
+  `var()`) and measures that the card's geometry is unchanged; the screen
+  `ArtWell` case keeps the dark well. `FEATURES.md` "Print" (the two
+  no-picture bullets) and the `PrintCard.svelte` comment on `artUrl` change in
+  the same commit.
 - Black-and-white stays as it is (owner, Q1b.1): no black-and-white card has
   an art block (`{#if !bw}<div class="pc-art"`), so no glyph is drawn there.
 - The three files leave the repository: `img/_none.webp`,
   `img/thumb/_none.webp`, `og/_none.jpg`.
 - Link cards of a record with no picture: `og:image` is the site share card of
-  the page's language (`og/_share.jpg`, `og/_share_en.jpg`), and the stub draws
-  no visible `<img>` (`tools/share-card.mjs` already omits it when `imgSrc` is
-  empty). Reason: a messenger needs an image to draw a large card; the site
-  card is published, 1200x630, and names the product; a per-kind glyph card
-  would add four generated assets and a renderer (a new feature). Readers:
-  `preview/worker.mjs` (`homebrewImage`, the last `return`) and
-  `preview/worker.test.mjs`; `tools/build-share-pages.js` (`img`, `imgSrc`);
-  `tests/derived.js` (the `wantImg` rule).
+  the page's language (`og/_share.jpg`, `og/_share_en.jpg`), with the large
+  card's meta, and the stub draws no visible `<img>` (`tools/share-card.mjs`
+  already omits it when `imgSrc` is empty). Reason: a messenger needs an image
+  to draw a large card; the site card is published, 1200x630, and names the
+  product; a per-kind glyph card would add four generated assets and a
+  renderer (a new feature). Readers (plan review B2):
+  - `preview/worker.mjs`: `homebrewImage` takes the language; a homebrew card
+    with no picture takes `img: sitePicture(env, lang)`, no `imgSrc` and
+    `large: true` (the `siteCtx` pattern), so `cardHead` writes
+    `og:image:width` 1200, `og:image:height` 630 and `twitter:card`
+    `summary_large_image`, not the 640x640 `summary`.
+  - `preview/worker.test.mjs`: asserts those three values in RU and EN.
+  - `tools/build-share-pages.js` `pageCtx`: a record with `img: ''` (no
+    catalog record today; `add-source` allows one) takes `og/_share.jpg` or
+    `og/_share_en.jpg` by language and `large: true`.
+  - `tests/derived.js`: the `wantImg` rule follows `pageCtx`.
+  - `META.md`: the two `/h/` link-card rows that name `og/_none.jpg` say "the
+    site picture of its language".
 - Deploy and site checks: `tools/collect-site.sh` (the file list that
   deploy-replay also runs), `tools/check-site.lib.mjs` (its required list) and
   `tools/check-site.test.mjs`; `tests/dataint.js` (the `_none.webp` and
@@ -390,7 +434,28 @@ Batch 1b (owner, 2026-10-29, "Mock answers"; mock step: `mocks/1b/`):
   (`META.md` section 9, the `img/thumb/` row); the app's `onerror` marks the
   art broken and draws the glyph instead of `img/thumb/_none.webp`.
 - `tools/artwork/lib.mjs`: the thumbnail plan no longer names `_none.webp`
-  (its comments and the `lib.test.mjs` case).
+  (its comments, the line 315 comment that cites `_none.webp` as an ingest
+  outcome, and the `lib.test.mjs` case).
+- Counts (plan review B1): `tests/derived.js` counts `img/*.webp` into
+  `N.art`, `_none.webp` included, so `README.md` "1193 pictures" and
+  `README.ru.md` «1193 картинки» become 1192 in the same commit, and the
+  `tests/derived.js` comment that says the count includes `_none.webp`
+  changes (`CLAUDE.md`, "Data and published artefacts").
+- `docs/specs/COVERAGE.md`: the `app/states` row ("shows
+  `img/thumb/_none.webp` after the abort") and the
+  `components/printPage.test.ts` row ("`img/_none.webp` for no picture on both
+  sheets and for a broken image") say the glyph.
+- `tests/app/inventory.js`: the `why` of `#/p/set-longsrc1 as gm2` ("the art
+  block draws img/_none.webp") says the glyph on the light well, and its
+  golden `tests/app/snapshots/_p_set_longsrc1_as_gm2.txt` is re-seeded (CI's
+  golden text, or the shard).
+- Contract set (plan review N3): `docs/fixtures/`, `tests/contracts.js` and
+  `llms.txt` hold no `_none` path, so they do not change; the commit says so.
+- Error scenarios (plan review N4): a stale tab's old bundle still asks for
+  `img/_none.webp`; the service worker's image cache answers it while it holds
+  a copy, else the request gets a 404 and the browser draws its broken-image
+  mark until a reload loads the new bundle. A revert brings the three files
+  back with the code. No stored data or key changes.
 - Tests that pin `/_none.webp`: `desc.test.ts`, `artField.test.ts`,
   `homebrewEditor.test.ts`, `listsPage.test.ts`, `printPage.test.ts`,
   `record.test.ts`, `tables.test.ts`, `tests/app/states.js`; each asserts the
@@ -402,10 +467,12 @@ Batch 1b (owner, 2026-10-29, "Mock answers"; mock step: `mocks/1b/`):
   `.claude/prompts/add-source.prompt.md` (a record with `img: ''` draws the
   glyph), DESIGN.md "Signature component: the print card". Earlier decision
   bodies that name `_none.webp` stay (records).
-- Gates: `node tests/run-all.js app/print,contracts,dataint,stub`, `npm run
-  check:built`, `node --test preview/worker.test.mjs tools/check-site.test.mjs`,
-  `node --test tools/artwork/lib.test.mjs`; CI runs deploy-replay
-  (`collect-site.sh` and `check-site.mjs`). A batch review.
+- Gates (plan review B1): `node tests/run-all.js
+  app/print,app/states,contracts,dataint,derived,stub`, `npm run check:built`,
+  `npm run lint:untyped`, `npm run lint:typed`, `node --test
+  preview/worker.test.mjs tools/check-site.test.mjs
+  tools/artwork/lib.test.mjs`; CI runs deploy-replay (`collect-site.sh` and
+  `check-site.mjs`). A batch review.
 - Risk: link cards cached by a messenger before the change keep pointing at
   `og/_none.jpg`, which now answers 404; a re-share fetches the new card.
   Nothing else outside links to the three files (`CONTRACTS.md`: `img/thumb/`
@@ -440,27 +507,23 @@ Batch 2:
     had no fixture" (its "28 shapes" is stale: 97 rows).
   - One `/en/roll/dread` probe in `tests/app/contracts.js` (`routes.json` has
     no `/en/` row).
-  - Gates: `node tests/run-all.js contracts,dataint` and `node
+  - Gates: `node tests/run-all.js contracts,dataint,derived` (`derived`
+    checks the README licence line and the heads that
+    `tools/build-share-pages.js` writes; plan review B3) and `node
     tests/run-all.js app/contracts`. A batch review before the next batch.
 - «Бросок»: the memory holds the canonical section (`SECTION_SLUG` in
   `app/src/lib/hash.ts`), never the raw address, so `/roll/hnf` does not
-  replay its source switch; `STATE.md` records it (memory only). Owner
-  question at mock 2 (plan review R7). Recommended: the last roll section of
-  this tab, else the start section when it is a roll section, else
-  `/roll/std`, with a case in `app/src/state/app.test.ts`. Alternative: the
-  last roll section, else `/roll/std`, with the reason named. The batch ships
-  the owner's answer.
+  replay its source switch; `STATE.md` records it (memory only). The owner's
+  answer (R7): the last roll section of this tab, else the start section when
+  it is a roll section, else `/roll/std`, with a case in
+  `app/src/state/app.test.ts`.
 - Each old address lights the right job and mode: `/roll/core`, `/roll/hnf`
   and `/roll/all` light «Обычные правила»; `/roll/dread`, `/roll/voa` and every
   other supplement alias light «Дополнения ▾» with that supplement's name. Both
   sets are `routes.json` replay rows.
 - The account menu keeps the `FEATURES.md` "Chrome" order («Аккаунт», «Мои
-  списки», «Мои предметы», then «Выйти») with no counts (plan review R3). R's
-  menu adds «Вы вошли как ...» and counts; that is a new feature (two reads on
-  every page, their load and failure states, a rule 1 departure). Owner
-  question at mock 2; recommended: no counts. If the owner wants them, the
-  batch refresh names the reads, the failure states, the rule 1 departure and
-  both languages.
+  списки», «Мои предметы», then «Выйти») with no counts (the owner's answer,
+  R3). R's «Вы вошли как ...» and its counts are not built.
 - The account control has a lit state on its pages (A37), drawn in
   `mocks/2/` (plan review N6).
 - Off the roll, tables and search routes no job is lit. The account control
@@ -512,8 +575,16 @@ Batch 2:
     `.claude/templates/`, `CLAUDE.md` (respelling only, no new rule line:
     `CLAUDE.md` "Maintaining this file").
   - Code comments, test titles and `.claude/hooks/*.mjs` (owner: minimise
-    British); `node .claude/hooks/selftest.mjs` runs in `check:fast` when
-    `.claude/` changes, and a hook change is its own review trigger.
+    British). `node .claude/hooks/selftest.mjs` runs once on its own after the
+    hook edits (434-563 s on this host; past 600 s it runs in the
+    background); CI runs it again (`check:fast` does not run it; plan review
+    B3). A hook change is its own review trigger.
+  - `tests/db/` comments («serialises» in `import-homebrew.test.mjs`,
+    `import-lists.test.mjs`, `list-writes.test.mjs`): respelled (the owner's
+    minimum of British forms), so the batch runs `npm run check:db` through
+    the PowerShell tool before the commit (about 13 min; stop Supabase and
+    Rancher before `check:fast`); `bash-guard.mjs` rule 2m refuses the commit
+    without it (plan review B3).
   - `tools/decisions.js` (line 45 writes "Behaviour decisions"), then `node
     tools/decisions.js` renders `docs/DECISIONS.md` again.
   - Kept, each named in the decision file: identifiers and stored values
@@ -531,8 +602,15 @@ Batch 2:
   - One decision file (`.claude/templates/decision.template.md`): American
     spelling everywhere; rejected: British everywhere, and the plan's earlier
     "UI only" default; the kept forms above; the word list for the grep:
-    `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|analys(e|ed|ing)\b|judgement|travell|modell|labell`.
-    Then `node tools/decisions.js`.
+    `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell`
+    (plan review R4 added `sanitis` to `defence`). Kept forms named in the
+    decision file besides those above: `cancelled` everywhere (an accepted
+    American form, and GitHub Actions' `cancelled()` and `'cancelled'` in
+    `ci.yml` and `backup.yml`, so `.github/workflows/` does not change;
+    `cancelledOrder` in `tests/app/states.js` is an identifier); `smoulder`
+    (fixture data that `llms.txt` quotes); the `package-lock.json` files of
+    `preview/` and `tools/artwork/` and every third-party licence text
+    (generated or quoted). Then `node tools/decisions.js`.
   - `docs/specs/I18N.md` gains the rule: English text uses American spelling;
     the kept forms are the decision file's.
   - Acceptance: `git grep -n -i -E "<the word list>"` over the paths in scope
@@ -553,8 +631,14 @@ Batch 2:
   draws them (`PageHead.svelte`, `HelpButton.svelte`): the pin says what it
   does and shows its pinned state with the same facts in both languages
   («Открывать при запуске» / "Open on start", pinned «Открывается при
-  запуске» / "Opens on start"; plan review N4); «?» reads «Справка» / "Help".
-  Each help panel's removal stays the owner's choice in its batch.
+  запуске» / "Opens on start"; plan review N4); «?» reads «Справка» / "Help"
+  only where its panel keeps that name. A button that opens a renamed panel
+  takes the panel's name (plan review R3, rule 4 and the Same Label Rule):
+  «Об этих данных» / "About this data" on the tables (C1, batch 3), «Где какая
+  редкость» / "Where each rarity is" on the roller (C38, batch 5); batch 2
+  ships «Справка» and each of those batches renames its button with its
+  panel. The panels the owner removes (Q6.1, Q8.1) take their buttons with
+  them.
 - The `TabBar.svelte` comment that counts six supplement sections goes with
   the component (N4).
 - A new state: the «Дополнения ▾» menu open and the account menu with its
@@ -564,7 +648,8 @@ Batch 3:
 
 - Q3.1 (owner): the tables help panel (C1) is renamed «Об этих данных» /
   "About this data" and holds three data notes, as `mocks/3/` draws them; the
-  rest of its paragraphs go; `help.ts` and its tests change with it.
+  rest of its paragraphs go; `help.ts` and its tests change with it. Its
+  button reads «Об этих данных» / "About this data" (plan review R3).
 - Q3.2 (owner): the grid/table view choice is temporary, lives in its own
   control for the visit and carries no note («Только до перезагрузки...»
   goes); it covers the `/p/` compact-sheet note (C31) too, which batch 7
@@ -602,6 +687,8 @@ Batch 5:
 - Q5.1 (owner): the roller help panel (C38) is renamed «Где какая редкость» /
   "Where each rarity is" and holds the book's four placement lines, as
   `mocks/5/` draws them; the rest goes; `help.ts` and its tests change with it.
+  Its button reads «Где какая редкость» / "Where each rarity is" (plan review
+  R3).
 - N2: `orGrid.test.ts` gives its `<img>` a `src`, or the case uses no `<img>`.
 
 Batch 6:
@@ -747,14 +834,14 @@ code batch.
 | Batch | Extra gates | Minutes |
 |---|---|---|
 | 1 | `node tests/run-all.js app/print,app/typo,app/hues,stub,app/states` (about 9; `app/states` with the new first-screen case), `npm run check:built` (about 1), `npm run lint:untyped`, `npm run lint:typed`, `node --test tools/artwork/lib.test.mjs` (the `test:artwork` stage) (about 2), `node tools/artwork/cards.mjs --check` (about 1) | 13 |
-| 2 | `node tests/run-all.js contracts,dataint` and `app/contracts` (6-7); `npm run check:built` (1); `node tools/build.js` and `node tools/decisions.js` (1); `npm run lint:untyped` and `npm run lint:typed` (2, comments in `.mjs` and `.ts` files); the hook selftest inside each `check:fast` because `.claude/hooks/` changes (253-563 s, so 4-9 per run, two runs with the fix cycle: 8-18); the longer review of the spelling diff in its fix cycle (about 5-10); the goldens: every golden moves (the header, `footSummary`), so the batch takes CI's golden text (CI credit), or pays the four shards locally (4 x 3-4 = 12-16) | 25-55 |
-| 1b | `node tests/run-all.js app/print,contracts,dataint,stub` (8-10), `npm run check:built` (1), `node --test preview/worker.test.mjs tools/check-site.test.mjs tools/artwork/lib.test.mjs` (1); CI runs deploy-replay (about 2-3 inside the CI run) | 10-12 |
+| 2 | `node tests/run-all.js contracts,dataint` and `app/contracts` (6-7); `npm run check:built` (1); `node tools/build.js` and `node tools/decisions.js` (1); `npm run lint:untyped` and `npm run lint:typed` (2, comments in `.mjs` and `.ts` files); `derived` (about 1); the hook selftest once on its own after the hook edits (434-563 s: 7-9.5; plan review B3); `npm run check:db` for the `tests/db/` comments (about 13); the longer review of the spelling diff in its fix cycle (about 5-10); the goldens: every golden moves (the header, `footSummary`), so the batch takes CI's golden text (CI credit), or pays the four shards locally (4 x 3-4 = 12-16) | 36-61 |
+| 1b | `node tests/run-all.js app/print,app/states,contracts,dataint,derived,stub` (12-14), `npm run check:built` (1), `npm run lint:untyped` and `npm run lint:typed` (2), `node --test preview/worker.test.mjs tools/check-site.test.mjs tools/artwork/lib.test.mjs` (1); CI runs deploy-replay (about 2-3 inside the CI run) | 15-17 |
 | 3-9 | `npm run check:built` where `dist` assets change (1) | 1 each |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 
-Total: ten code batches (1, 1b, 2-9) at 45-60 min (450-600), plus 55-87 min
-of extra gates (batch 1: 13; batch 1b: 10-12; batch 2: 25-55; batches 3-9: 7),
-plus batch 10 at about 20: about 525-707 min, so about 8.8-11.8 hours of
+Total: ten code batches (1, 1b, 2-9) at 45-60 min (450-600), plus 71-98 min
+of extra gates (batch 1: 13; batch 1b: 15-17; batch 2: 36-61; batches 3-9: 7),
+plus batch 10 at about 20: about 541-718 min, so about 9.0-12.0 hours of
 gates. If batch 10 takes code, add 25-35 min. The owner's merges saved two
 batches (about 90-120 min); keeping the spelling sweep in batch 2 instead of a
 batch 2b saves one CI run and one review (about 30 min); batch 1b costs one
@@ -810,9 +897,12 @@ Plan review additions to the units (the orchestrator sends them):
   of a no-picture record with the kind glyph in its art area (one of each kind,
   nine and sixteen per sheet), the editor's print preview of one, the link
   card of a no-picture item (the site share card, RU and EN), and the light print well (paper-side tone, dark-ink glyph) checked against
-  the Figma colour node; the black-and-white card stays as it is (Q1b.1
-  answered). Mock depends on: none (mock 1's glyph
-  is approved).
+  the Figma colour node, with the node's own per-kind outline beside the
+  glyph (plan review R1); the mock step writes the node's paper and ink
+  values into the batch 1b line; the black-and-white card stays as it is
+  (Q1b.1 answered). Mock depends on: none (mock 1's glyph is approved).
+- Every mock step measures with `issues/57/mocks/measure.mjs` (plan review
+  N6).
 - Mock-unit follow-ups (2026-10-29): unit B's folders 6, 8 and 9 use the
   linear page ground (section 10, "One page ground"; owner, 2026-10-29); no copy keeps R's
   `.rl.sel` side-tab (a lit border and a check instead); `mocks/9/` draws the
@@ -826,7 +916,7 @@ Plan review additions to the units (the orchestrator sends them):
 | A (catalog side) | `mocks/1/`, `mocks/2/`, `mocks/3/`, `mocks/4/`, `mocks/5/`, `mocks/7/` | 1: both share cards (1200x630, RU and EN; no width set), a type and pressed-default specimen, the glyph on a card, a row, a tile, a list cover and the editor thumbnail. 2: `header`, `shell-signed-out`, `shell-account-menu`, `roller-supmenu`, the request toast with the (N) title. 3: `catalog`, `catalog-filtered`, `catalog-filters`, `catalog-grid`, `catalog-nothing`, `catalog-selection`, `pattern-empty`, and the help panel question. 4: `item`, `item-dialog`, `item-nope`, `item-save-signedout`, `h-item`, `pattern-error`. 5: `roller`, `roller-alt-crit`, `roller-mwt`, and the help panel question. 7: `search-empty`, `search-nothing`, `search-results`, `account-settings`, `account-delete`, `print-preview` | about 2 cards + 30 states x 4 = 122 | 2-3 hours |
 | B (account side) | `mocks/6/`, `mocks/8/`, `mocks/9/` | 6: `editor`, `editor-errors`, `editor-crop`, `editor-conflict`, `homebrew-items` (with the filter strip), `homebrew-sources`, `homebrew-sets`, `homebrew-rules`, `homebrew-import`, and the help panel question. 8: `lists-index`, `lists-nope`, `lists-import`, `item-listmenu`. 9: `list`, `list-note`, `list-picked`, `list-prices`, `list-prices-none`, `list-prices-panel`, `list-requests`, `list-roll`, `list-selected`, `list-share`, `list-sold`, `shared-gm`, `shared-player` | 26 states x 4 = 104 | 2-3 hours |
 
-Order to show them to the owner: 1, 2, 3, 4, 5, 6, 7, 8, 9 - batch order,
+Order to show them to the owner: 1, 1b, 2, 3, 4, 5, 6, 7, 8, 9 - batch order,
 because each earlier mock fixes a rule that later ones reuse (the type and the
 gold budget in 1, the header in 2, the row and the selection mode in 3, the
 action vocabulary and the dialog in 4). Unit A's folders arrive first in that
@@ -968,10 +1058,18 @@ Files expected:
 - `.prettierignore`: remove the three lines of E3; keep `.impeccable/config.json`
   until batch 9 (E4).
 - `.gitignore`: no change (E5 and E6 stay, owner).
-- First-Screen check (section 14): `data-primary` on the eleven primary
-  elements, and the `tests/app/states.js` case with its `FIRST_SCREEN` table
-  (every row logged in batch 1); DESIGN.md "Layout" gains "The First-Screen
-  Rule".
+- First-Screen check (section 14): `data-primary` on the fifteen primary
+  elements (section 14 names them; plan review R2), and the
+  `tests/app/states.js` case with its `FIRST_SCREEN` table (every row logged
+  in batch 1); DESIGN.md "Layout" gains "The First-Screen Rule" and, beside
+  it, "The Phone-First Rule" (owner, 2026-10-29, "Devices during play").
+- `PRODUCT.md` (owner, 2026-10-29, "Devices during play"): "Users" gives the
+  shares - players on a phone about 80% and a laptop about 20%, GMs on a
+  laptop about 80% and a phone about 20% - and makes the player on a phone a
+  primary case; "Operating Context" gives each scene its device share and the
+  player reading printed cards at the table; "Positioning" says that lists
+  are account lists since R10 (the URL-fragment and `localStorage` sentence
+  goes; `docs/decisions/` 2026-10-28, R10).
 - `tests/app/inventory.js` and goldens: no new state; re-seed only what moves
   (the art well's text where a record has no picture).
 
@@ -1060,9 +1158,11 @@ Steps:
     "Chrome", the decision file, `node tools/decisions.js`. Then Impeccable
     `polish` and `harden` on the changed surfaces; `handoff.md` gives the
     outcome (plan review R5).
-10a. Add `data-primary` to the eleven primary elements and the first-screen
-    case to `tests/app/states.js` (section 14); run `node tests/run-all.js
-    app/states` and copy the logged offsets into `handoff.md`.
+10a. Add `data-primary` to the fifteen primary elements and the first-screen
+    case to `tests/app/states.js` (section 14, "The check"); run `node
+    tests/run-all.js app/states` and copy the logged offsets into
+    `handoff.md`. Rewrite `PRODUCT.md` "Users", "Operating Context" and
+    "Positioning" and add The Phone-First Rule to DESIGN.md "Layout".
 11. Screenshot set: `npm run build:test`, then every route family at 360 and
     1180 px, RU and EN, into `issues/57/mocks/1/built/`, plus both share
     cards.
@@ -1128,6 +1228,20 @@ Acceptance criteria:
   at 360x640 and 1180x720 in RU and EN and logs each route's offset;
   `handoff.md` lists the offsets; the `data-primary` marks change no
   accessibility text (the goldens do not move for them).
+- DESIGN.md "Layout" holds The Phone-First Rule: the player surfaces (the
+  shared list, the list page, the item, search, `/lists`) are designed at
+  360x640 first; the GM surfaces (the roller, the tables, homebrew, print)
+  keep both widths and pass the First-Screen Rule on a phone.
+- `PRODUCT.md` "Users" and "Operating Context" give the device shares
+  (players: phone about 80%, laptop about 20%; GMs: laptop about 80%, phone
+  about 20%), and the player on a phone is a primary case; "Positioning" no
+  longer says that a list lives in the URL fragment and `localStorage`.
+- The page ground (plan review N2): `tokens.css` `body` draws
+  `linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)` over `var(--bg)`;
+  `app/src` holds no `radial-gradient` for the ground (`git grep -n
+  radial-gradient -- app/src`); `background-attachment` is `scroll`, as
+  `mocks/1/ua.css` draws it (today `fixed`), unless the owner chose otherwise
+  at mock 1; DESIGN.md "Overview" and "Neutral" say so.
 
 Verification: `rtk npm run check:fast`; `node tests/run-all.js
 app/print,app/typo,app/hues,stub`; `npm run check:built` (it runs the budget);
@@ -1306,28 +1420,64 @@ the sheet (`/p/`), the first item row (`/homebrew` tabs), the first form field
 The check (batch 1 adds it):
 
 - Each page marks its primary content with one `data-primary` attribute on
-  the element named above (`RollPage` results, `TablesPage` rows, `ItemPage`
-  and `RecordPage` card, `SearchPage` results, `AccountPage` first panel,
-  `PrintPage` sheet, `HomebrewPage` rows, `HomebrewEditor` form, `ListsPage`
-  cards, `ListPage` entries, `SharedListPage` entries).
+  the element named above, fifteen in all (plan review R2): the result
+  container of each of the four roll panels that `App.svelte` mounts
+  (`StdPanel`, `AltPanel`, `RollPanel`, `PickerRollPanel`), the `TablesPage`
+  rows, the `ItemPage` and `RecordPage` card, the `SearchPage` results, the
+  `AccountPage` first panel, the `PrintPage` sheet, the `HomebrewPage` rows,
+  the `HomebrewEditor` form, the `ListsPage` cards, the `ListPage` entries and
+  the `SharedListPage` entries.
 - A case in `tests/app/states.js` ("primary content starts in the first
-  screen") opens one inventory state per route family through `driver.js` (the
-  rolled `/roll/std`, `/tables/eq_weapon`, `/i/ci1`, `/search` with results,
+  screen") opens one inventory state per route family through `driver.js`
+  (`/roll/std`, `/tables/eq_weapon`, `/i/ci1`, `/search` with results,
   `/account as gm1`, `/p/<set> as gm2`, `/homebrew as gm3`, the editor as gm1,
   `/lists as gm1`, `LIST_A as gm4`, `/s/player-token-1`), at 360x640 and
-  1180x720, RU and EN. After `document.fonts.ready` and the page's load state,
-  it reads the top of the first `[data-primary]` with a nonzero height at
-  scroll 0 and asserts it is at most `0.4 * innerHeight`.
+  1180x720, RU and EN. A roll is random and has no golden state, so on a roll
+  route the case types a value in the number field (a deterministic result)
+  instead of a roll; it adds no inventory state. After `document.fonts.ready`
+  and the page's load state, it calls `scrollTo(0, 0)`, waits two animation
+  frames, reads the top of the first `[data-primary]` with a nonzero height
+  and asserts it is at most `0.4 * innerHeight`. Zero matches fail with the
+  route name, so a load failure cannot pass.
+- Design target (plan review R2): every section 14 fix aims at 240 px at 640
+  and 270 px at 720, so a few pixels of face or line-box difference (the mocks
+  render Source Sans Pro, the app Source Sans 3 Variable) do not fail the 0.4
+  assertion. The roller, the list page and the shared page (estimates at the
+  limit) re-fold to that target at their mocks.
+- Longest names (plan review R2): one more row per route whose H1 is a user's
+  name (`/lists/<uuid>`, `/s/<token>`, `/homebrew/<id>`), at its longest-name
+  state (for example `#/homebrew/sets ~ long name as gm4`; a missing state is
+  added with its inventory entry and golden by the batch that owns the
+  route). That batch meets the rule there, or names the exception (for
+  example an H1 clamped to two lines) to the owner.
 - A table in the case, `FIRST_SCREEN`, names each route family with the batch
   that brings it under the rule (below). A route whose batch has not shipped is
   measured and logged, not asserted; each batch moves its routes to asserted,
   and batch 10 asserts every route. The table never reaches `main` with a
   logged row (one squash at closeout).
-- Cost: about 44 page loads, about 60-90 s added to `app/states`.
-- The mock step measures each batch mock the same way (the planner's script,
-  `measure.mjs` in this session's scratchpad: the top of the primary element
-  below the top of `header.top`, both viewports, RU and EN); the orchestrator
-  may copy it beside the mocks.
+- Cost: about 50 page loads, about 70-100 s added to `app/states`.
+- The mock step measures each batch mock the same way with
+  `issues/57/mocks/measure.mjs` (plan review N6: the top of the primary
+  element below the top of `header.top`, both viewports, RU and EN).
+
+One place for each list control (plan review R3), on every list surface (the
+catalog, `/homebrew`, `/lists`, `/lists/<uuid>`, `/s/`), at both widths:
+
+- «Выбрать» / "Select" sits at the right end of the collection's head row
+  (the row that holds the count). It never goes into «Ещё» / "More" and never
+  joins the primary action's row.
+- The search sits first in the row under the page head, beside «Фильтры · N»
+  / "Filters · N" at 360; it is never inside the filter sheet.
+- The view switch (grid or table, a choice for the visit, Q3.2) stays its own
+  control in the section head beside the count; it never goes into «Ещё».
+- One count per collection (rule 1): the count sits at the head of that
+  collection. On `/homebrew` the H1 picker shows the tab's name only
+  («Предметы ▾» / "Items ▾"); the tab's count sits in its collection head,
+  not in the picker and not in a group head.
+- Mocks 3, 6, 8 and 9 draw these places; `mocks/3/` owns the row and the
+  selection mode (R9), and the dependent unit B states follow it. A mock that
+  cannot meet the design target with them names the departure and its
+  reason to the owner.
 
 Measured on the batch mocks (2026-10-29, `mocks/<N>/state.html?s=<state>`,
 RU / EN; limit 256 at 640 and 288 at 720):
@@ -1336,17 +1486,17 @@ RU / EN; limit 256 at 640 and 288 at 720):
 |---|---|---|---|---|
 | 1 | share cards and the specimen: no page | n/a | n/a | - |
 | 2 / `header` (roll page head) | content under the header and the mode row | pass, 176 / 176 | pass, 116 / 116 | - (2) |
-| 3 / `catalog` | first table row | fail, 632 / 586 | fail, 399 / 399 | At 360 the H1 is the table picker («Оружие ▾» with «Снаряжение · Core» under it), which opens a sheet with the group and book chips (C7); one row holds the search and «Фильтры · N»; the link, the view switch and «Выбрать» go into «Ещё»; the count sits in the section head. About 215. At 1180 the H1 and the group chips share one row, the sub-tables are the second, and the search, count and «Выбрать» share the third beside the filter column. About 240. (3) |
+| 3 / `catalog` | first table row | fail, 632 / 586 | fail, 399 / 399 | At 360 the H1 is the table picker («Оружие ▾» / "Weapons ▾", with «Снаряжение · Core» / "Equipment · Core" under it), which opens a sheet with the group and book chips (C7); one row holds the search and «Фильтры · N» / "Filters · N"; the link goes into «Ещё» / "More"; the section head holds the count, the view switch and «Выбрать» / "Select" (R3). About 215; re-measured at mock 3 against the 240 target. At 1180 the H1 and the group chips share one row, the sub-tables are the second, and the search, count and «Выбрать» share the third beside the filter column. About 240. (3) |
 | 4 / `item` | the item | pass, 133 / 133 | pass, 85 / 85 | - (4) |
-| 5 / `roller` | first roll result | fail, 971 / 877 (below the fold) | pass, 234 / 234 | At 360: the five dice are one row of 44 px buttons (the rarity is on the result cards, C38); the results follow the dice row; the number field, the source and type rows and the pin fold below the results into «Настроить бросок»; the H1 is visually hidden, because the lit mode control and the job show the same name (rule 4). About 254, at the limit. (5) |
-| 6 / `homebrew-items` | first item row | fail, 591 / 555 | fail, 347 / 347 | At 360, as the catalog: the H1 names the tab and opens the four tabs with their counts («Мои предметы · Предметы 9 ▾»), with «Ещё» (import, pin) on its row; one row holds «Новый предмет», «Фильтры» and «Выбрать», and the search sits at the top of the filter sheet; the count goes to the group head. About 241. Alternative: four tabs in one row, about 290 (45%), a named departure. At 1180 the tabs stay a row, and the head row holds the H1, «Новый предмет» and «Ещё»; the search row sits beside the filter column. About 230. Rule 9's import departure is rewritten: import moves into «Ещё». (A28 changes form: the owner sees it at mock 6.) (6) |
+| 5 / `roller` | first roll result | fail, 971 / 877 (below the fold) | pass, 234 / 234 | At 360: the five dice are one row of 44 px buttons (the rarity is on the result cards, C38); the results follow the dice row; the number field, the source and type rows and the pin fold below the results into «Настроить бросок» / "Set up the roll"; the H1 is visually hidden, because the lit mode control and the job show the same name (rule 4). About 254, at the limit; re-folded at mock 5 to the 240 target (R2). (5) |
+| 6 / `homebrew-items` | first item row | fail, 591 / 555 | fail, 347 / 347 | At 360, as the catalog: the H1 names the tab and opens the four tabs with their counts («Мои предметы · Предметы 9 ▾»), with «Ещё» (import, pin) on its row; the picker shows the tab's name only («Мои предметы · Предметы ▾» / "My items · Items ▾"); one row holds the search and «Фильтры» / "Filters", «Новый предмет» / "New item" sits on the head row with «Ещё», and the collection head holds the tab's one count and «Выбрать» (R3, rule 1). About 241 before the R3 places; re-measured at mock 6 against the 240 target. Alternative: four tabs in one row, about 290 (45%), a named departure. At 1180 the tabs stay a row, and the head row holds the H1, «Новый предмет» and «Ещё»; the search row sits beside the filter column. About 230. Rule 9's import departure is rewritten: import moves into «Ещё». (A28 changes form: the owner sees it at mock 6.) (6) |
 | 6 / `editor` | first form field | fail at the margin, 264 / 264 | pass, 220 / 220 | The back link joins the H1 row as a breadcrumb. About 234. (6) |
-| 7 / `search-results` | first result | fail, 343 / 343 | pass, 254 / 254 | At 360 the H1 and the count share one line, and the type chips become one «Вид: все ▾» control beside the field (a menu of the five). About 225. (7) |
+| 7 / `search-results` | first result | fail, 343 / 343 | pass, 254 / 254 | At 360 the H1 and the count share one line, and the type chips become one «Вид: все ▾» / "Kind: all ▾" control beside the field (a menu of the five). About 225. (7) |
 | 7 / `account-settings` | first settings panel | pass, 177 / 177 | pass, 129 / 129 | - (7) |
-| 7 / `print-preview` | the sheet | fail, 455 / 409 | pass, 267 / 267 | At 360 «Назад» and the H1 share one row; the primary «Отправить на печать» and one «Настройки листа ▾» (colour or black-and-white, the sheet size, the link) share the next; the lead and the background-graphics hint go under the sheet. About 221. Screen only (C30). (7) |
-| 8 / `lists-index` | first list card | fail, 469 / 469 | fail, 343 / 343 | «Новый список» becomes a primary button in the head row that opens the name field in place (rule 8: «Новый <noun>» opens a create form); «Импорт из файла» goes into «Ещё»; the count and «Выбрать» share one line. About 211 at 360, 155 at 1180. (8) |
-| 9 / `list` | first entry | fail, 514 / 514 | pass, 159 / 159 | At 360 the side column becomes a head: the name, «Поделиться» and «Ещё» (Печать, notes, delete) on one row, the meta line, one row with «Бросить по списку» and «Выбрать»; the price switch and the list notes move under the entries. About 256, at the limit. (9) |
-| 9 / `shared-player` | first entry | fail, 413 / 413 | pass, 287 / 287 | At 360 «Копия в мои списки» and «Выбрать» share one row; the count joins the lead line; the player note becomes a «Заметка для игроков ▾» link on the lead line that opens it in place. About 247. At 1180 it passes by 1 px; the same fold gives margin. (9) |
+| 7 / `print-preview` | the sheet | fail, 455 / 409 | pass, 267 / 267 | At 360 «Назад» and the H1 share one row; the primary «Отправить на печать» and one «Настройки листа ▾» / "Sheet settings ▾" (colour or black-and-white, the sheet size, the link) share the next; the lead and the background-graphics hint go under the sheet. About 221. Screen only (C30). (7) |
+| 8 / `lists-index` | first list card | fail, 469 / 469 | fail, 343 / 343 | «Новый список» becomes a primary button in the head row that opens the name field in place (rule 8: «Новый <noun>» opens a create form); «Импорт из файла» goes into «Ещё»; the collection head holds the count and «Выбрать» / "Select" (R3). About 211 at 360, 155 at 1180. (8) |
+| 9 / `list` | first entry | fail, 514 / 514 | pass, 159 / 159 | At 360 the side column becomes a head: the name, «Поделиться» and «Ещё» (Печать, notes, delete) on one row, the meta line, one row with «Бросить по списку» / "Roll from the list"; the entries' head holds the count and «Выбрать» (R3); the price switch and the list notes move under the entries. About 256 before the R3 places, at the limit; re-folded at mock 9 to the 240 target (R2). (9) |
+| 9 / `shared-player` | first entry | fail, 413 / 413 | pass, 287 / 287 | At 360 «Копия в мои списки» / "Copy to my lists" keeps its own row; the entries' head holds the count and «Выбрать» (R3); the player note becomes a «Заметка для игроков ▾» / "Note for players ▾" link on the lead line that opens it in place. About 247 before the R3 places; re-measured at mock 9 against the 240 target. At 1180 it passes by 1 px; the same fold gives margin. (9) |
 
 The estimates are sums of the mocks' own row heights and gaps; each batch
 mock re-renders with its fix and is measured again before the owner sees it.

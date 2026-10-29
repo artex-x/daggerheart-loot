@@ -36,3 +36,12 @@
 | plan-1-2-R8 | risk | local | fixed plan | E4 assumes only `ignore-value` rewrites `config.json` |
 | plan-1-2-R9 | risk | local | fixed plan | Shared patterns drawn by two mock units in parallel; name owners, re-render unit B after mocks 2-4 |
 | plan-1-2-N1..N17 | nit | local (N14 deferred-scope, applied: homes in section 5) | fixed plan | See `reviews/plan-1-2.md`, "Nits" |
+| plan-1-3-B1 | blocker | local | fixed plan | Batch 1b misses README counts (derived gate), COVERAGE rows, an inventory why/golden header, a lib.mjs comment; gates miss derived, app/states, lints |
+| plan-1-3-B2 | blocker | local | fixed plan | No-picture link card: the site share card needs `large: true` meta and a language; worker, build-share-pages, wantImg, META.md |
+| plan-1-3-B3 | blocker | local | fixed plan | Batch 2 gates: selftest is not in check:fast, tests/db comments need check:db, derived missing |
+| plan-1-3-R1 | risk | local | fixed plan | Light print well: the Figma node's per-kind outline, no export procedure, wrong token home, jsdom cannot prove the tone |
+| plan-1-3-R2 | risk | local | fixed plan | First-screen check: wrong component names, no rolled state, values at the limit, scrollTo, zero matches, long names |
+| plan-1-3-R3 | risk | local | fixed plan | Section 14 fixes break consistency: «Выбрать», search, view switch, tab counts, «Справка» label |
+| plan-1-3-R4 | risk | local | fixed plan | Spelling word list incomplete; `cancelled`, `smoulder`, lock files undecided |
+| plan-1-3-R5 | risk | deferred-scope (handoff Deferred) | fixed plan | agent-guard reads only plan-1-<n>.md; review.prompt.md names a third look `<name>-2.md` |
+| plan-1-3-N1..N7 | nit | local | fixed plan | See `reviews/plan-1-3.md`, "Nits" |
