@@ -76,8 +76,8 @@ async function ready(page) {
       })
   );
 
-  /* And until the document has finished loading, which is what an empty
-     `document.fonts` set makes `fonts.ready` mean.
+  /* And until the document and its self-hosted UI font have finished loading,
+     which is what `fonts.ready` waits for.
      Not decoration: `TablesPage.svelte`'s row/section anchor defers its
      `scrollIntoView` behind that same promise, because its first layout is
      8px short of its final one. Without this wait the run could start the

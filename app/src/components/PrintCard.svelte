@@ -117,8 +117,9 @@
     }
   );
   const src = $derived(printSrc(it, lang));
-  /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`, as
-     every page does: the owner's departure from Figma node 714-42387 (FEATURES.md, "Print"). */
+  /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`; the
+     screen pages draw a glyph instead. The owner's departure from Figma node 714-42387
+     (FEATURES.md, "Print"). */
   const artUrl = $derived(artSrc(it.img, artBroken));
   /* The folded vectors' paint: one geometry, the layout's colours (card-vectors.css). */
   const paint = $derived(bw ? 'bw' : 'colour');

@@ -38,11 +38,16 @@ const FACE_RANGE = { ru: [0x0400, 0x045f], en: [0x0000, 0x00ff] };
 const SWITCHES = [
   { route: '#/roll/std', group: { ru: 'Язык', en: 'Language' } },
   { route: '#/tables/core_item', group: { ru: 'Вид', en: 'View' } },
-  /* gm1's account keeps Russian, so its sheet turns Russian on an English start. */
+  /* gm1's account keeps Russian, so the English pass presses EN after the open. */
   {
     route: '#/p/set-emberaxe',
     as: 'gm1',
-    group: { ru: 'Печать карточек', en: 'Печать карточек' }
+    group: { ru: 'Печать карточек', en: 'Printing cards' }
+  },
+  {
+    route: '#/p/set-emberaxe',
+    as: 'gm1',
+    group: { ru: 'Размер карты', en: 'Card size' }
   }
 ];
 
@@ -307,6 +312,10 @@ async function iconCentres(page, groupName) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang });
       for (const s of SWITCHES) {
         await d.open(s.route, s.as ? { as: s.as } : {});
+        if (s.as && lang === 'en') {
+          await d.click('EN');
+          await d.addressSettled();
+        }
         const where = s.route + ' ' + lang + ' ' + width;
         const got = await iconCentres(page, s.group[lang]);
         ok(

@@ -9,7 +9,8 @@
   batch 1b does not wait
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `9112c4ed` (the merge of `main` `c8243ba6`)
-- Pushed: see the implementer's report for the batch 1 sha
+- Pushed: yes, `claude/57` tip `a07f3e3d` (batch 1); the fix pass `1-fix`
+  follows it
 
 ## Completed
 - Batch name/id: batch 1 - Foundation (mock 1 approved)
@@ -55,8 +56,8 @@
   `docs/`, `og/`, `DESIGN.md`, `PRODUCT.md`, `.impeccable/config.json`,
   `.prettierignore`, `package.json`, `package-lock.json`; screenshots in
   `issues/57/mocks/1/built/`.
-- Previous sha (batch diff base): `01feba8f` (the mocks commit; batch 1
-  code starts after it)
+- Previous sha (batch diff base): `45cd6ccd` (the docs commit before the
+  batch 1 code)
 - Deviations and rationale:
   - Case 83 types nothing on a roll page: StdPanel draws the result for the
     number field's first value (1) on open, so the offset is already
@@ -95,7 +96,8 @@
     option is always pressed); forced colours keep the check where the inset
     border goes; the glyph is decorative and `aria-hidden`; the muted footer
     links and badges keep their measured contrast.
-- Review: the orchestrator decides (triggers in `orchestrate.prompt.md`).
+- Review: required (trigger: changed UI), report `issues/57/reviews/1.md`
+  (fix-then-continue; one fix pass `1-fix`).
 
 ## Verification
 - Commands run (exact) and results:
@@ -115,8 +117,9 @@
   - `impeccable detect --json --no-inline-ignores app/src`: 73 findings.
   - `npx vitest run` on artWell, record, tables, listsPage, artField, shell:
     367 passed.
-  - `rtk npm run check:fast`: see the implementer's report (run before the
-    commit, and again after the merge of `origin/main`).
+  - `rtk npm run check:fast` (batch 1): 769 s, PASS, budget 247.8/253 kB.
+    CI on `a07f3e3d` failed at `test:sw` (asset cap 60); the fix pass
+    changes that test.
 - First-screen offsets (case 83, top of the first `[data-primary]` /
   limit, RU then EN; all logged, none asserted yet):
 
@@ -157,6 +160,12 @@
 - The EN `<title>`, manifest name and `en/index.html` wordmark.
 - Uppercase controls outside the capitals rule are audited by their surface
   batches (15 components carry `text-transform: uppercase`).
+- Monospace labels still outside the Key Characteristics rule, owed to their
+  surface batches: `.batch-all` (BatchBar), `.ordiv i` (OrGrid), `.altcol`
+  (TablesPage), the ListPage summary labels (`.lnote`, `.lroll`,
+  `.batch-lbl`, `.money-l`), HelpButton, `.steps-l` (RecordCard).
+- N6 of `reviews/1.md`: `PrintCard.svelte` keeps a literal `#0a0810` for its
+  art block; `--art-well` names it. Batch 1b takes it.
 
 ## Notes
 - Mocks path: `issues/57/mocks/<N>/`; batch 1 built screenshots in

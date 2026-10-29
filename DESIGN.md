@@ -230,7 +230,10 @@ the two disagree, the code is right and this file is stale.
 - One self-hosted UI face, Source Sans 3, with tabular figures.
 - A locked type scale of ten steps, enforced by a test.
 - Monospace only for a value a person types or counts: a number field, a rung,
-  a quantity, a price, damage dice.
+  a quantity, a price, damage dice. Some monospace labels remain (the batch
+  bar's select-all, the "or" divider, alternate-table column heads, list
+  summary labels, the help button, the record steps label); their surfaces
+  still owe the change.
 - Two worlds in one product: the dark screen, and the white printed card.
 
 ## Colors

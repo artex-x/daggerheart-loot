@@ -505,13 +505,12 @@
      still *starts* immediately, same as the live app's own synchronous
      `render()` call - it is a decorative outline and does not depend on
      layout. The *scroll* waits, and the reason is not the one this comment
-     used to give. It said the wait was for a font face to swap in. Measured:
-     that face does not exist. Neither app declares an `@font-face` or links a
-     font service - `--ui` and `--mono` are lists of locally installed
-     families - so `document.fonts.size` is 0 and `document.fonts.status` is
-     already `loaded` before the first paint.
+     used to give. It said the wait was for a font face to swap in. Measured
+     before the UI font was self-hosted: no face existed, so `fonts.ready`
+     settled before the first paint and the row still landed low. The face
+     now loads from `/assets/`, and the wait covers it as well.
 
-     The wait is still load-bearing, for a different reason: this component's
+     The wait is load-bearing for a layout reason: this component's
      first layout is not its final one. Scrolling synchronously here lands the
      row 8px low - `[data-row="ci1"]`'s absolute top reads 493.97 at effect
      time against 485.97 once the page settles, and `scrollHeight` 5909

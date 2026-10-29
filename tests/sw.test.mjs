@@ -265,18 +265,18 @@ describe('hashed build files: cache first, never revalidated, capped', () => {
     assert.equal(ev.waits.length, 0);
   });
 
-  it('evicts the oldest file when the 31st arrives', async () => {
+  it('evicts the oldest file when the 61st arrives', async () => {
     const w = load();
     const assets = await w.caches.open('dhloot-assets-v1');
-    for (let i = 0; i < 30; i++) await assets.put(SCOPE + 'assets/f' + i + '.js', body('f'));
+    for (let i = 0; i < 60; i++) await assets.put(SCOPE + 'assets/f' + i + '.js', body('f'));
     w.net.fn = async () => body('newest');
-    const ev = dispatch(w, req('assets/f30.js'));
+    const ev = dispatch(w, req('assets/f60.js'));
     await (await ev.response).text();
     await Promise.all(ev.waits);
     const keys = [...assets.entries.keys()];
-    assert.equal(keys.length, 30);
+    assert.equal(keys.length, 60);
     assert.equal(keys[0], SCOPE + 'assets/f1.js');
-    assert.equal(keys[29], SCOPE + 'assets/f30.js');
+    assert.equal(keys[59], SCOPE + 'assets/f60.js');
   });
 });
 

@@ -4995,23 +4995,22 @@ async function homebrewItemsFilterAddress() {
 }
 
 /** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
- *  opens each, and the batch of task 57 that brings it under the rule. A row whose
- *  batch has not shipped is measured and logged, not asserted (`shipped: false`).
- *  A roll page draws its result for the number field's first value, so no roll is
- *  made and the offset is deterministic. */
+ *  opens each. A row whose surface is not yet under the rule is measured and logged,
+ *  not asserted (`shipped: false`). A roll page draws its result for the number
+ *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
-  { state: '#/roll/std', batch: 5, shipped: false },
-  { state: '#/tables/eq_weapon', batch: 3, shipped: false },
-  { state: '#/i/ci1', batch: 4, shipped: false },
-  { state: '#/search ~ searched', batch: 7, shipped: false },
-  { state: '#/account as gm1', batch: 7, shipped: false },
-  { state: '#/p/set-emberaxe as gm2', batch: 'P', shipped: false },
-  { state: '#/homebrew as gm3', batch: 6, shipped: false },
-  { state: '#/homebrew/sets ~ long name as gm4', batch: 6, shipped: false },
-  { state: '#/homebrew/new as gm1', batch: 6, shipped: false },
-  { state: '#/lists as gm1', batch: 8, shipped: false },
-  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', batch: 9, shipped: false },
-  { state: '#/s/player-token-1', batch: 9, shipped: false }
+  { state: '#/roll/std', shipped: false },
+  { state: '#/tables/eq_weapon', shipped: false },
+  { state: '#/i/ci1', shipped: false },
+  { state: '#/search ~ searched', shipped: false },
+  { state: '#/account as gm1', shipped: false },
+  { state: '#/p/set-emberaxe as gm2', shipped: false },
+  { state: '#/homebrew as gm3', shipped: false },
+  { state: '#/homebrew/sets ~ long name as gm4', shipped: false },
+  { state: '#/homebrew/new as gm1', shipped: false },
+  { state: '#/lists as gm1', shipped: false },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
+  { state: '#/s/player-token-1', shipped: false }
 ];
 
 /** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
@@ -5070,7 +5069,7 @@ async function primaryContentInFirstScreen() {
               ' / ' +
               limit.toFixed(0) +
               (pass ? ' pass' : ' over') +
-              (row.shipped ? '' : ' (logged, batch ' + row.batch + ')') +
+              (row.shipped ? '' : ' (logged)') +
               '\n'
           );
           if (row.shipped) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);

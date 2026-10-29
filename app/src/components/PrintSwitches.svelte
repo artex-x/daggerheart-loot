@@ -35,6 +35,7 @@
 />
 <Seg
   small
+  neutral
   options={SIZE}
   value={app.shownPrintCompact ? 'compact' : 'std'}
   label={t.printSize}

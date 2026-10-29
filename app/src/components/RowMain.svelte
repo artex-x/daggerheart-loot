@@ -161,9 +161,9 @@
   .row-main .rt .rnum {
     font: 650 var(--t-badge)/1 var(--ui);
     font-variant-numeric: tabular-nums;
-    color: var(--gold-soft);
+    color: var(--txt);
     flex: none;
-    border: 1px solid rgb(216 171 94 / 40%);
+    border: 1px solid var(--line2);
     border-radius: 5px;
     padding: 3px 5px;
   }
