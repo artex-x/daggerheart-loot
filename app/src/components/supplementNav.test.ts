@@ -20,7 +20,9 @@ describe('SupplementNav', () => {
   it('links every supplement section in order, in Russian', () => {
     render(SupplementNav, { app: appAt('#/roll/wondrous') });
     const links = chips('Дополнения');
-    expect(links.map((a) => a.getAttribute('href'))).toEqual(SUPPLEMENTS.map(sectionHash));
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(
+      SUPPLEMENTS.map((x) => sectionHash(x).slice(1))
+    );
     const nav = screen.getByRole('navigation', { name: 'Дополнения' });
     for (const name of [
       'Wondrous Environments',
@@ -74,7 +76,7 @@ describe('SupplementNav', () => {
     const { container } = render(SupplementNav, { app: appAt(`#/${s}`) });
     const on = container.querySelectorAll('a.on');
     expect(on).toHaveLength(1);
-    expect(on[0]).toHaveAttribute('href', sectionHash(s));
+    expect(on[0]).toHaveAttribute('href', sectionHash(s).slice(1));
     expect(on[0]).toHaveAttribute('aria-current', 'page');
     await expectNoA11yViolations(container);
   });

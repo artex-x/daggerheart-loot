@@ -7,8 +7,9 @@ address or import file without touching the site.
 **Default: no contract change.** If one is unavoidable, the same change must
 update the golden fixtures, the tests, this file and `llms.txt` together.
 
-Fixtures: `docs/fixtures/lists/*.json`, `docs/fixtures/urls/routes.json`,
-`docs/fixtures/urls/preview.json` (section 5), `docs/fixtures/import/` (section 4).
+Fixtures: `docs/fixtures/urls/routes.json`, `docs/fixtures/urls/paths.json`
+(section 1), `docs/fixtures/urls/preview.json` (section 5),
+`docs/fixtures/urls/record.json` (section 5), `docs/fixtures/import/` (section 4).
 Checked by `tests/contracts.js`. `docs/fixtures/share/records.json` is not a
 contract fixture in this sense - it is `share.test.ts`'s own golden,
 regenerated from `dist/` by `tools/capture-share-fixture.mjs` and last
@@ -18,16 +19,35 @@ contract fixture either until R7d's homebrew file: it holds the cases the
 homebrew validators of `app/src/lib/homebrew.ts` and of the database share
 (`docs/specs/COVERAGE.md`, "Suites").
 
-## 1. Hash route grammar
+## 1. Route grammar
 
-Frozen as written in `ROUTES.md`. In particular:
+Frozen as written in `ROUTES.md`. The routes below are named by their route
+key; the address is its path form (`ROUTES.md`, "Path form"; owner,
+2026-10-28): `#/<rest>` is `<site><rest>` in Russian and `<site>en/<rest>` in
+English (`/tables/eq_weapon`, `/en/tables/eq_weapon`, `/lists`, `/account`,
+`/homebrew`), a record `<site>i/<id>` and `<site>i/en/<id>`. The bar and every
+in-app link show this form. Every older address keeps opening: `<site>#/<rest>`,
+`<site>en/#/<rest>` and `<site><path>#/<rest>` open the fragment's route, an
+English root keeps English, and the app writes the path form in the same
+history entry. `docs/fixtures/urls/paths.json` pins both directions. The host
+answers every route path in both forms with the app: the worker's families
+(`preview/public/_routes.json`), the static record pages `i/` and `i/en/`, and
+the rewrites of `preview/public/_redirects` for every other route, which also
+answers `/en/i/<id>` with a 301 to `/i/en/<id>`. Pages routes `/tables/*` to the
+worker for the bare `/tables` too, so `_routes.json` excludes `/tables` and
+`/en/tables`, and their slash forms `/tables/` and `/en/tables/`, which the
+rewrite answers. `tests/contracts.js` checks that each
+route of `routes.json` is covered and that the worker takes no rewritten path. In particular:
 
 - the twelve section names, and the three legacy ones that fold into `roll/std`
 - the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items` and `roll/many_worlds_tavern`, and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items` and `many_worlds_tavern`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
 - the table names in `#/tables/<table>`, including `other_starting` and `other_frames`; legacy `frames` resolves to `other_frames` without rewriting the pasted hash; the tables page's three copy buttons (the table, its filter, one block) hand out the preview host's address of the table (section 5), except on `homebrew`, and `<site>#/tables/...` keeps opening
 - the filter grammar `f_group-value[-value][.group-value]`, **including the
   group key spelling**: `range` and `burden`, not `rg` and `bu`
-- `#/i/<id>`, `#/lists/<listId>`, `#/l/<payload>`
+- `#/i/<id>`, `#/lists/<listId>`
+- Retired on 2026-10-26: `#/l/<payload>`, an old list link, and every address
+  under `#/l/` draw the not-found page, the address kept, the payload never
+  read (section 3)
 - `#/p/<id>`, a stored print set: 12 base64url characters made by the
   database when a signed-in reader presses «Печать», so a set is unlisted, not
   secret, and an agent cannot build one; it opens for a signed-in reader only,
@@ -44,6 +64,10 @@ Frozen as written in `ROUTES.md`. In particular:
   `#/homebrew/sets[/<key>]` and `#/homebrew/rules[/<key>]` (a key opens that
   card), read in every build as `#/account` is; an own item also opens at
   `#/i/<key>`, for its author only
+- `#/homebrew/f_<filter>`, the Items tab with its filter: the groups `kind`,
+  `src` (any number of values, OR'd) and `sect` of the `homebrew` table; a
+  pick rewrites the address in place; an earlier build reads it as
+  unreadable and opens the home section (`ROUTES.md`, "Homebrew")
 - `#/tables/homebrew`, the author's own items as a table, read in every build
   as `#/account` is; its filter group `sect`, and the `src` values `hb` and
   `hb_<16>` on it and on the equipment tables (values that live in one
@@ -97,70 +121,11 @@ shared list. Never renumber a record that has shipped.
 | `q` | Core and Hope & Fear equipment |
 | `hb_` | reserved: a homebrew item's key, `hb_` and 16 of `a-z2-7`, per account; never a catalog id |
 
-## 3. List link encoding
+## 3. List link encoding (retired)
 
-`#/l/` links stop decoding on 2026-10-26 (`LEGACY_WRITE_UNTIL`; decision
-"`LEGACY_WRITE_UNTIL` is 2026-10-26; the migration release moves directly
-after lists"); from then the codec, these fixtures and this section are
-removed by a later release. `llms.txt` no longer documents building a `#/l/`
-link (R6); an agent writes an import file (section 4).
-
-`#/l/<payload>` where `payload` is `base64url(utf8(raw))`, unpadded, `+`/`/`
-replaced by `-`/`_`.
-
-The address bar always holds the **plain** form and the **player** variant.
-From 2026-10-26 the app writes no `#/l/` address and expands no packed link; a
-`#/l/` address then draws the retired page (`ROUTES.md`).
-
-A list link opens from the site root, `<site>#/l/<payload>`, and from the
-English entry document, `<site>en/#/l/<payload>`: the second redirects to the
-first with the fragment kept, so both open the same list. The only difference
-is the link preview a messenger builds, Russian for the first and English for
-the second (section 5).
-
-### The raw string
-
-```
-<name>\n<stamp><items>[\n<notes>]
-```
-
-**Items.** Comma separated, each `id` or `id*qty` or `id*qty*gold`. A price
-forces the quantity to be written even when it is 1. A quantity of 1 with no
-price is written as a bare id. Ids the data does not know are dropped on read.
-
-**Stamp.** `<count base36>.<hash base36, last 4>~` prefixed to the items line.
-The hash is FNV-1a over the joined items string. A messenger that wraps or
-clips a long URL leaves a payload that still decodes into a shorter list which
-looks complete; the stamp is what disagrees. A payload whose stamp does not
-match the items is rejected outright. Links written before the stamp existed
-have no `~` on the items line and are read as they always were.
-
-**Notes.** A tail of records, each `\x1e[+]<id>\x1f<text>`.
-
-- `\x1e` (record separator) starts a record, `\x1f` (unit separator) divides id
-  from text. Neither can be typed into a note.
-- A leading `+` on the id marks the note as meant for players. It rides on the
-  id, not the text, because ids are letters and digits while a note may begin
-  with anything. This is the same marker the pre-split format used for "copy
-  along with the item", and it meant the same thing, so old links carry over.
-- `~` as the id means the list's own note.
-- `$` as the id carries the price display mode (`bag` or `coin`); `bag` is the
-  default and is not written. It is not a record id and never can be, so a
-  reader that predates the mode skips it and opens the list unchanged.
-- Anything before the first `\x1e` is a list note from the first cut of this
-  format, which had no marker; it meant the GM's own note.
-
-**Player vs GM.** The player variant omits every note without `+`. The GM
-variant carries both. Both are `#/l/<payload>`; nothing in the payload says
-which it is.
-
-### Short links
-
-`#/l/~<payload>` is `base64url(deflate-raw(utf8(raw)))`. `~` cannot occur in
-base64url, so the first character tells the two apart. Produced only by the
-share buttons, and only when it actually comes out shorter; the address bar is
-never compressed. On open the app expands it and rewrites the address to the
-plain form, so everything downstream sees one format.
+`#/l/` links stopped opening on 2026-10-26, and R10 removed their format; an old
+`#/l/` address draws the not-found page (section 1). The format is in `git show
+0b73fd5c:docs/specs/CONTRACTS.md`, section 3.
 
 ## 4. Machine-readable data
 
@@ -174,8 +139,9 @@ plain form, so everything downstream sees one format.
   `craft` is a list of one or more record ids, the records it upgrades into,
   in drawing order, never its own id; before R7c it was one id string.
   `catalog.csv`'s `crafts_into` joins the ids with `;`. Field meanings are in
-  `README.md`.
-- `catalog.csv` - one row per record, with the stat line.
+  `README.md`. Not committed, like `names.json`.
+- `catalog.csv` - one row per record, with the stat line. Not committed, like
+  `names.json`.
 - `catalog-index.csv` - the catalog without its text, for an agent's one
   fetch (`llms.txt`, "Read this first"): the columns of `catalog.csv` without
   `url`, `text_ru` and `text_en`, in the same order, with the same rows, row
@@ -203,10 +169,21 @@ plain form, so everything downstream sees one format.
   `tests/derived.js` holds; 99779 bytes at 1459 records, measured
   2026-10-21. Not committed, like `i/`.
 - `i/<id>.html` - a stub page per record with Open Graph markup, in Russian;
-  `i/en/<id>.html` - the same page in English.
-- `en/index.html` - the English entry document, published at `<site>en/`:
-  the English preview card of the site, which redirects to the app at the
-  root with the fragment kept.
+  `i/en/<id>.html` - the same page in English. Each redirects to the record's
+  path on the site. The old host's mirror publishes them; the site publishes,
+  under the same paths, the app document with the same card fields between
+  the card markers of `app/index.html` and the record's plain text (name,
+  path line, text, craft and set lines) in a `<noscript>` block after the
+  app's mount point, which the build writes into `dist/i/`
+  (`tools/app-documents.js`; about 420 bytes a document on average, 1.2 MB over
+  the 2918 documents, measured 2026-10-28). An agent and a reader without
+  JavaScript read the record there (`llms.txt`). The record link the app and the tools hand out
+  is extensionless, `<site>i/<id>` and `<site>i/en/<id>` (section 5); the
+  files keep their `.html` paths.
+- `en/index.html` - the English entry document: on the mirror, the English
+  preview card of the site, which redirects to `<site>en/` with the fragment
+  kept; on the site, `dist/en/index.html`, the app document with the same
+  card fields.
 
 All of them except the five `schema/` files are generated from `data.js` by
 `node tools/build.js` and compared byte for byte by `tests/derived.js`.
@@ -367,12 +344,11 @@ the stubs did not change. The app no longer finds labels by a colon.
 | `data.js`, `data.json` | `ende`, `rud` of records, `sets` and `refs` | Markdown subset source |
 | `names.json` | `sets[k].ende`, `sets[k].rud` | Markdown subset source, as `data.js` |
 | `catalog.csv` | `text_ru`, `text_en` | plain text (`markupText`, newlines folded) |
-| `i/<id>.html`, `i/en/<id>.html` | meta and Open Graph description, visible body | plain text |
+| `i/<id>.html`, `i/en/<id>.html` (stubs and app documents) | meta and Open Graph description, the stub's visible body | plain text |
 | Preview host cards (`/h/`, `/s/`) | description, set bonus, players' note | plain text, cut by `fit` |
 | `homebrew_items.content`, `homebrew_cards.content` | `ende`, `rud` | Markdown subset source |
 | `lists.player_note`, `lists.gm_note`, `list_entries.player_note`, `list_entries.gm_note` | notes | Markdown subset source |
 | `import-v1`, `import-v2`, `import-v3` files | list and entry `player_note`, `gm_note` | Markdown subset source |
-| `dhloot.lists.v2`, `#/l/` payload | list and entry `note`, `hnote` | Markdown subset source |
 | `homebrew-v1`, `homebrew-v2` files | item and card `ende`, `rud` | Markdown subset source |
 | `import-v2`, `import-v3` files | entry `snapshot` `ende`, `rud` and its `cards` texts | Markdown subset source |
 | Clipboard «Скопировать» | `text/plain`; `text/html` | plain text; flat HTML (`<b>`, `<i>`, `<br>`) |
@@ -386,11 +362,18 @@ JSON is blocked under `file://`, retired 2026-09-24.) Any build must keep
 loading the data this way, and read it through one typed adapter rather than
 importing it.
 
-`data.json` and `catalog.csv` stay tracked in git (a generated pair kept
-rather than gitignored). Three triggers would reopen that: the seven
-`app/src/lib/*.test.ts` suites stop reading `data.json` off disk; `data.json`
-stops being one line (what keeps its diff invisible); its packed history
-grows past a few MB (433 KB measured).
+The build appends one line to the published `data.js`: `window.LOOT_V = {...}`,
+the record links' card versions (section 5), from `card-versions.json`, which
+`node tools/build.js` writes (`tools/data-script.js`). The source `data.js`
+never holds `LOOT_V`. An artwork refresh changes a version, so it changes the
+published `data.js`, and a reader downloads it again after such a deploy.
+
+`data.json` and `catalog.csv` are not committed, like `names.json`:
+`node tools/build.js` writes them from `data.js` and the deploy publishes
+them at the same URLs. Vitest reads the catalog from `data.js` through
+`app/src/test/loot.ts`, which calls the same `tools/derived.js` functions.
+A data change has no readable diff in git
+(`docs/decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md`).
 
 ## 5. Static asset paths
 
@@ -401,18 +384,20 @@ grows past a few MB (433 KB measured).
 Referenced from outside (link previews, other people's bookmarks), so the
 layout is public. `i/<id>.html` and the site root keep a Russian preview;
 `i/en/<id>.html` and `en/` are their English counterparts (issue 64,
-`docs/specs/I18N.md`).
+`docs/specs/I18N.md`). On the site each of them is the app document with that
+card in its head; on the old host's mirror, a page that redirects to the site.
 
 `img/<id>.webp`, `og/<id>.jpg`, `card/*.svg` and the two site cards
 `og/_share.jpg` and `og/_share_en.jpg` are committed and published as they
 are; `tools/artwork/cards.mjs` renders the two cards (`docs/artwork.md`, "The
 site share cards"). `i/<id>.html`, `i/en/<id>.html`, `en/index.html`,
 `names.json`, `catalog-index.csv`, the entry document and `assets/` are not
-committed: they are what the build emits (`node tools/build.js` for `i/`,
-`i/en/`, `en/`, `names.json` and `catalog-index.csv`; `app/index.html` and the
-bundle become `dist/index.html` and the hashed files under `dist/assets/`,
-whose names change with every build and are not public), and the deploy job
-publishes them from the build rather than from a committed file. Nothing about
+committed: they are what the build emits (`node tools/build.js` for the
+mirror's `i/`, `i/en/` and `en/`, `names.json` and `catalog-index.csv`;
+`app/index.html` and the bundle become `dist/index.html`, the site's app
+documents `dist/i/`, `dist/i/en/` and `dist/en/`, and the hashed files under
+`dist/assets/`, whose names change with every build and are not public), and
+the deploy job publishes them from the build rather than from a committed file. Nothing about
 the frozen paths above changes with them.
 
 `manifest.webmanifest`, `sw.js` and `icons/` are build outputs too, published
@@ -451,28 +436,69 @@ was deliberately not treated as a new contract: `docs/fixtures/`,
 `tests/contracts.js` and `llms.txt` state behaviour the code already
 enforced, not a new promise the code just started keeping.
 
-**The preview host.** The origin `https://daggerheart-loot.pages.dev` (the
+**The site's host.** The origin `https://daggerheart-loot.pages.dev` (the
 Cloudflare Pages project `daggerheart-loot`) is frozen: only this production
-host is handed out, never a deployment host. It serves a link card to a
-messenger and sends a person on to the app. The families, each also with
-`/en` after the origin for the English card and the English app:
+host is handed out, never a deployment host. Since the task `cloudflare-pages`
+(2026-10-28) it is `<site>`: Pages serves every path above as a static file,
+answers every route path with the app document (section 1), and an unknown
+path answers `404.html` with status 404 (an unknown record id `/i/zzzz` too). A `.html` path answers
+308 to the same path without `.html` (`i/<id>.html` to `i/<id>`,
+`en/index.html` to `en/`), so every frozen `.html` URL keeps opening through
+one redirect. The path `/mcp` and every path under it are reserved for the
+task `ai-mcp`; until then `/mcp` answers the 404 page, and the deploy refuses a
+published `mcp`.
+
+**The record link.** The app and every tool hand out a record as
+`<site>i/<id>?v=<v>` in Russian and `<site>i/en/<id>?v=<v>` in English
+(owner, 2026-10-28). The address bar on a record page carries the same `?v`
+at once, so a link copied from the bar equals the copy button's (owner,
+2026-10-28). `<v>` is the record's card version from the build's map:
+opaque, so nothing parses it; a changed card is a new URL to a messenger's
+cache. A record the map does not hold gets the link without `?v`. The host
+ignores the query and answers the record's app document: the app runs at the
+same URL with no redirect, and a crawler reads the record's card from the head.
+The card fields' `og:url` and `canonical` and the `url` column of
+`catalog.csv` are the extensionless link without `?v`. The fixture is
+`docs/fixtures/urls/record.json`: `build` holds the links, `serve` the host's
+answers.
+
+**The old host.** `https://artex-x.github.io/daggerheart-loot/` (GitHub Pages)
+serves the same files as a mirror, without `assets/`, `data.js` and the
+install guide: its root forwards to `<site>` with the fragment, its `i/`,
+`i/en/` and `en/` are the redirect pages of `tools/build-share-pages.js` (to
+`<site>i/<id>`, `<site>i/en/<id>` and `<site>en/` with the fragment), and its
+`sw.js` unregisters itself (`docs/specs/META.md` section 9, "The old host").
+The file schemas keep their `$id` there (section 4), and the mirror keeps
+each one readable.
+
+**The link cards.** A card path answers the app document with the link card
+in its head: a messenger reads the card, and a person's browser runs the app
+at the same URL with no redirect. The status is the card's (200, 404 for a
+not-found card, 503 for a failed read). When the worker cannot read the app
+document (`index.html` from the deployment's own files), it answers the card
+page instead, which redirects a person to the route's `#/` form. The
+families, each also with `/en` after the origin for the English card and the
+English app:
 
 - `https://daggerheart-loot.pages.dev/h/<uuid>`, a homebrew item
-  (`<site>#/h/<uuid>`)
 - `https://daggerheart-loot.pages.dev/s/<token>[/f_<filter>]`, a share link
-  (`<site>#/s/<token>[/f_<filter>]`)
-- `https://daggerheart-loot.pages.dev/p/<id>`, a print set (`<site>#/p/<id>`)
+- `https://daggerheart-loot.pages.dev/p/<id>`, a print set
 - `https://daggerheart-loot.pages.dev/tables/<table>[/<tail>]`, a catalog
-  table, one of its blocks or its filter (`<site>#/tables/<table>[/<tail>]`);
-  never `homebrew`
+  table, one of its blocks or its filter; `homebrew` and an unread
+  `names.json` draw the site's words
 
-The app adds `?v=<v>` to `/h/` and `/s/` links only: opaque, a version of
+Of the families, the app adds `?v=<v>` to `/h/` and `/s/` links only: opaque, a version of
 what the card draws, so a changed card is a new URL to a messenger's cache.
+The address bar on an item and a share link page carries the same `?v` once
+the page has read its card; a navigation drops it.
 The host ignores every query. A path run (an id, a token, a table or a
 tail) past 2048 characters reads as empty. Only `GET` and `HEAD` are
 answered; any other method answers 405 with `Allow: GET, HEAD`.
-`/robots.txt` is a static file; any other path answers 302 to `<site>`
-(`<site>en/` under `/en/`); a deployment or branch host answers 301 to the
-same path and query on the production host. The fixture is
-`docs/fixtures/urls/preview.json`: `build` holds the links the app hands
-out, `serve` the host's answers.
+`preview/public/_routes.json` sends only these families to the worker; every
+other path is a static file of the site or the 404 page. A deployment or
+branch host answers 301 to the same path and query on the production host
+for a family path. The fixture is `docs/fixtures/urls/preview.json`: `routes`
+is the routes file's list, `build` holds the links the app hands out, `serve`
+the host's answers (a `static` row is a path Pages serves, not the worker;
+`app` is the card page's redirect target, the answer when the app document
+cannot be read).

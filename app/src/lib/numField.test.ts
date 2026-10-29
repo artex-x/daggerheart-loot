@@ -75,15 +75,15 @@ describe('a field whose range dips below zero', () => {
   });
 
   it('never caps a negative-range field while it is typed - only the stepper does that', () => {
-    /* app.js 4336-4343: the reprice field's own `input` handler does not
-       clamp at all; app.js 3916's stepper is the only thing that does. A
+    /* The live reprice field's own `input` handler (`git show 23c00a6^:app.js`) does not
+       clamp at all; the live stepper is the only thing that does. A
        positive-only field still caps mid-keystroke (the case above). */
     expect(typed('900', 3, 500, -90)).toEqual({ value: '900', caret: 3 });
     expect(typed('-900', 4, 500, -90)).toEqual({ value: '-900', caret: 4 });
   });
 
   it('commits a negative number verbatim - unclamped, like the live field - and a bare minus to zero', () => {
-    /* app.js 4336-4344: `S.rp = parseInt(el.value, 10) || 0`, with no clamp at
+    /* The live reprice handler: `S.rp = parseInt(el.value, 10) || 0`, with no clamp at
        all - a typed -900 stays -900, and a value floors to 1 only once it is
        applied to a price. A bare `-` parses to `NaN`, which `|| 0` turns into
        0, not into `min`: the button reads "Поднять цену" and a press does

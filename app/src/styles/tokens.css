@@ -50,12 +50,10 @@
   /* The danger colour as text on the dark ground: a destructive button's
      label, an error line, an account list's failed save. */
   --danger-text: #f0a49d;
-  /* The warning box: the storage notice and the move's failed status - the
-     danger colour at the tints `StorageNotice.svelte` has always drawn. */
+  /* The warning box (`NoticeBox`): the danger colour at low tints. */
   --warn-bg: rgb(224 104 95 / 9%);
   --warn-line: rgb(224 104 95 / 30%);
   --warn-text: #e0b6b1;
-  --warn-strong: #f5c0ba;
 
   /* The badge's own ground - moved here from `Badge.svelte`, where it
      was the base rule's `background` alone; every variant sits on it. */
@@ -123,8 +121,8 @@ body {
   min-height: 100vh;
 }
 
-/* off `html,body{background:#fff;color:#000}` in style.css's `@media print`
-   (1403). It lives here rather than in `Shell.svelte` because `:global(html)`
+/* off `html,body{background:#fff;color:#000}` in the `@media print` block of
+   `git show 23c00a6^:style.css`. It lives here rather than in `Shell.svelte` because `:global(html)`
    and `:global(body)` are specificity (0,0,1), identical to the `body` above,
    and the bundle emits component styles *before* this file - so the same rule
    written in the component lost the cascade and printed the dark ground under
@@ -170,6 +168,18 @@ textarea::placeholder {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
   border-radius: var(--r-sm);
+}
+
+/* Visually hidden: out of sight, still read by assistive technology. `!important`
+   lets the class win over a component's own scoped rule on the same element. */
+.vh {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
 }
 
 /* D1, paid off: the real policy the comment above used to point at as owed.

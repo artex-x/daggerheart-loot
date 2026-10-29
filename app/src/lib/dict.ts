@@ -13,7 +13,6 @@
  * advance - an unused string is a translation somebody maintains for nothing,
  * and the old dictionary accumulated five of those. */
 
-import { legacyDateText } from './legacy.js';
 import type { Lang, Section } from './types.js';
 
 const ru = {
@@ -38,7 +37,6 @@ const ru = {
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
   tables: 'Таблицы',
-  lists: 'Списки',
   search: 'Поиск',
 
   /* Outside the app a bare name loses the badge, so a consumable says so */
@@ -291,7 +289,7 @@ const ru = {
   sectionLinkCopied: 'Ссылка на раздел скопирована',
 
   /* The add-to-list row every full card draws, and the toast it and the pin
-     button both raise - app.js 109-164, 199-200. */
+     button both raise - `git show 23c00a6^:app.js`. */
   addToList: 'Добавить в список',
   addTo: 'Добавить в',
   inLists: 'Лежит в списках',
@@ -307,9 +305,8 @@ const ru = {
   untitled: 'Без названия',
   saveFailed:
     'Не удалось сохранить: браузер не дал записать в локальное хранилище - оно заблокировано или переполнено',
-  /* The shared page - app.js 3130-3170: a list from another player, the
-     bad-link page's own link home, and the button that saves the shared
-     list as a new own list. */
+  /* The shared page - `git show 23c00a6^:app.js`: a list from another player, and the
+     button that saves the shared list as a new own list. */
   sharedList: 'Список от другого игрока',
   saveShared: 'Сохранить себе',
   toStart: 'На главную',
@@ -337,41 +334,22 @@ const ru = {
   homeSet: 'Приложение будет открываться на этом разделе',
   homeReset: 'Приложение снова будет открываться на обычных правилах',
 
-  /* The lists index - app.js 107-108/110-111/154/156/159-160/162-168/163/148,
-     and the storage notice's two live forms. */
-  dismiss: 'Скрыть',
-  readMore: 'подробнее',
+  /* The lists index, off `renderLists` (`git show 23c00a6^:app.js`). */
   listCreated: 'Список «%s» создан',
-  noLists: 'Списков пока нет - создайте первый выше.',
   share: 'Поделиться',
   del: 'Удалить',
   listEmpty: 'Список пуст',
-  noStorageTitle: 'Браузер блокирует локальное хранилище.',
-  noStorage:
-    'Списки не сохранятся после перезагрузки страницы. Обычно так бывает в режиме инкогнито или при запрете сайту хранить данные. Ссылкой поделиться всё равно можно.',
-  badStorageTitle: 'Сохранённые списки не удалось прочитать.',
-  badStorage:
-    'Похоже, их записала другая версия приложения, расширение браузера или другая вкладка на этом сайте. Исходное содержимое сохранено под отдельным ключом и не потеряно; дальнейшие изменения будут сохраняться заново, начиная с чистого списка.',
-  localOnlyTitle: 'Списки живут только в этом браузере.',
-  localOnly:
-    'Очистка данных сайта, режим инкогнито или другое устройство - и списки пропадут. Чтобы не потерять, нажмите «Ссылка себе»: весь состав закодирован прямо в адресе, и список восстанавливается из неё целиком, вместе с обеими заметками. Эта ссылка только для вас - в ней есть и то, что вы писали в «Только для мастера». Игрокам отправляйте «Ссылка игрокам» или результат кнопки «Скопировать текст»: туда попадает лишь то, что написано в «Для игроков». В адресной строке браузера тоже лежит ссылка для игроков, так что скопировать её оттуда безопасно. Только помните, что ссылка - это снимок: она помнит список таким, каким он был в момент копирования. Добавили позицию или поправили заметку - сохраните ссылку заново.',
-  deleteConfirm: 'Удалить список «%s»? Отменить удаление нельзя.',
   /* Delete gets an undo, like every other destructive action. */
   listDeleted: 'Список «%s» удалён',
-  playersLinkCopied: 'Ссылка для игроков скопирована - заметок мастера в ней нет',
-  badShare: 'Ссылка повреждена или собрана в другой версии данных.',
   /* An old link naming a renumbered or deleted record would otherwise lose
      those entries with no sign anything was missing - toasted once, on the
      shared page and after restoring a copy. One colon form: a pronoun after
      "Пропущена 21 позиция" would refer to 21 records as to one. */
   droppedItems: 'Пропущено позиций, которых больше нет в данных: %n',
 
-  /* The list page - app.js 114-195, the address, the actions, the notes,
+  /* The list page - `git show 23c00a6^:app.js`, the address, the actions, the notes,
      the roll panel and a row's own controls. */
   rename: 'Название списка',
-  sharePlayers: 'Ссылка игрокам',
-  shareGm: 'Ссылка себе',
-  gmLinkCopied: 'Ссылка со всеми заметками скопирована - она только для вас',
   listCopied: 'Список скопирован',
   listEmptyHint:
     'Пока пусто. Откройте «Таблицы» или «Поиск», отметьте нужное галочками и нажмите «Добавить в список» - или сделайте это прямо с карточки предмета.',
@@ -508,7 +486,6 @@ const ru = {
   /* Account lists: the index groups, the save status, the sign-in prompts,
      the delete confirm and the limits (docs/specs/FEATURES.md, "Lists"). */
   groupAccount: 'Ваш аккаунт',
-  groupBrowser: 'Этот браузер',
   noCloudLists: 'В аккаунте пока нет списков - создайте первый выше.',
   cloudLoading: 'Загружаем...',
   cloudLoadFailed: 'Не получилось загрузить списки аккаунта.',
@@ -1031,8 +1008,6 @@ const ru = {
   itemUpdated: 'Предмет обновлён',
   cloneFailed:
     'Не получилось сохранить список себе. Проверьте соединение и попробуйте ещё раз.',
-  legacyLinks:
-    'Ссылки вида #/l/ перестанут открываться %d. Сохраните список себе, чтобы не потерять его.',
 
   /* Purchase requests: the reader's send and flow b, the owner's panel and
      the index line (docs/specs/FEATURES.md, "Account and browser lists").
@@ -1041,6 +1016,14 @@ const ru = {
   requestSending: 'Отправляем...',
   requestSentDone: 'Запрос отправлен',
   requestSent: 'Запрос отправлен владельцу списка.',
+  requestSentLine:
+    'Запрос (%s) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.',
+  requestAppliedToast: 'Владелец принял ваш запрос.',
+  requestPartialToast: 'Владелец принял ваш запрос частично: взял не всё.',
+  requestDeclinedToast: 'Владелец отклонил ваш запрос.',
+  requestAppliedSentLine: 'Владелец принял запрос.',
+  requestPartialSentLine: 'Владелец принял запрос частично.',
+  requestDeclinedSentLine: 'Владелец отклонил запрос.',
   requestSentOwner: 'Владелец получил запрос.',
   requestRate: 'Слишком много запросов по этой ссылке: подождите минуту.',
   requestPending: 'У владельца уже %s без ответа. Попробуйте позже.',
@@ -1077,7 +1060,11 @@ const ru = {
     'Этот запрос истёк: прошёл час после того, как его открыли, или 30 дней без ответа.',
   requestActFailed:
     'Не получилось ответить на запрос. Проверьте соединение и попробуйте ещё раз.',
-  requestNew: 'Новый запрос',
+  requestArrived: 'Новый запрос по списку «%s»',
+  requestsArrivedList: 'Новых запросов по списку «%s»: %n',
+  requestsNewN: 'Новых запросов: %n',
+  arrivalOpen: 'Открыть',
+  arrivalShow: 'Показать',
   noticeChanged: 'Автор изменил «%s».',
   noticeDeleted: 'Автор удалил «%s» - строка убрана из списка.',
   noticeNew: 'новое',
@@ -1106,29 +1093,8 @@ const ru = {
   copyArtFailed: 'Картинку скопировать не получилось - копия сохранена без неё.',
   requestsWaitN: '%n запрос ждёт ответа|%n запроса ждут ответа|%n запросов ждут ответа',
 
-  /* Browser lists moved into the account, and read-only after the cutoff
-     (docs/specs/FEATURES.md, "Account and browser lists"). `%d` is the
-     cutoff date (`legacyDateText`). */
+  /* A name in quotation marks, for a toast that names lists. */
   quoted: '«%s»',
-  movedNotice: 'Списки из этого браузера перенесены в ваш аккаунт: %s.',
-  movedBad:
-    'В этом браузере осталась повреждённая копия списков: её не получилось прочитать и перенести. Если в ней было что-то важное, напишите на daggerheart.loot@gmail.com.',
-  moving: 'Переносим списки в аккаунт...',
-  moveFailed: 'Не все списки перенесены: нет связи. Попробуем при следующем открытии.',
-  moveAttention: 'Не перенесён: %s.',
-  moveAttentionWhy: 'Сервер не принял список. Напишите на daggerheart.loot@gmail.com.',
-  moveHeldWhy:
-    'Копия в аккаунте не совпала со списком. Напишите на daggerheart.loot@gmail.com.',
-  localOnlyMove:
-    'Войдите до %d - и они перенесутся в аккаунт. После этой даты приложение перестанет их показывать.',
-  moveBannerLead: 'Ваши списки хранятся только в этом браузере.',
-  moveBannerSignIn: 'Войти и перенести списки',
-  moveBannerHide: 'Скрыть напоминание',
-  localReadOnlyTitle: 'Списки в этом браузере только для чтения с %d.',
-  localReadOnly:
-    'Войдите - они перенесутся в аккаунт, и их снова можно будет править. Скопировать текст можно и так.',
-  linkRetired: 'Ссылки такого вида перестали открываться %d.',
-  linkRetiredSub: 'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.',
   printLinkRetired: 'Такие ссылки на печать больше не открываются.',
   printLinkRetiredSub:
     'Попросите у отправителя новую ссылку вида /#/p/ или войдите и соберите карточки сами.',
@@ -1162,7 +1128,6 @@ const en: Dict = {
   arazo: "Arazo's Artifacts",
   mwt: 'Many Worlds Tavern',
   tables: 'Tables',
-  lists: 'Lists',
   search: 'Search',
 
   item: 'Item',
@@ -1397,33 +1362,15 @@ const en: Dict = {
   homeSet: 'The app will open on this section',
   homeReset: 'The app will open on the standard rules again',
 
-  dismiss: 'Dismiss',
-  readMore: 'more',
   listCreated: 'List "%s" created',
-  noLists: 'No lists yet - create one above.',
   share: 'Share',
   del: 'Delete',
   listEmpty: 'The list is empty',
-  noStorageTitle: 'The browser is blocking local storage.',
-  noStorage:
-    'Lists will not survive a page reload. This usually happens in private mode or when the site is denied storage. Sharing a link still works.',
-  badStorageTitle: 'The saved lists could not be read.',
-  badStorage:
-    'Something else on this site - another build, a browser extension, or another tab - seems to have written them. The original content was kept under a separate key rather than lost; further changes save again from a clean list.',
-  localOnlyTitle: 'Lists live in this browser only.',
-  localOnly:
-    'Clearing site data, a private window or another device, and the lists are gone. To keep one, press "Your own link": the whole list is encoded in the address and comes back from it entire, both notes included. That link is for you alone - it carries whatever you wrote under "GM only". Send players the "Players\' link" or the result of "Copy text": only what is written under "For players" goes there. The browser\'s own address bar holds the players\' link too, so copying it from there is safe. Do remember that a link is a snapshot: it holds the list as it was when you copied it. Add an entry or edit a note and save the link again.',
-  deleteConfirm: 'Delete the list "%s"? This cannot be undone.',
   listDeleted: 'List "%s" deleted',
-  playersLinkCopied: "Players' link copied - it carries no GM notes",
-  badShare: 'The link is damaged or was built from a different data version.',
   droppedItems:
     'Skipped %n item - no longer in the data|Skipped %n items - no longer in the data',
 
   rename: 'List name',
-  sharePlayers: "Players' link",
-  shareGm: 'Your own link',
-  gmLinkCopied: 'Link with every note copied - this one is for you',
   listCopied: 'List copied',
   listEmptyHint:
     'Nothing here yet. Open Tables or Search, tick what you need and press "Add to list" - or do it straight from an item card.',
@@ -1551,7 +1498,6 @@ const en: Dict = {
   zipNoArt: 'The archive holds no pictures: add them again after the move.',
 
   groupAccount: 'Your account',
-  groupBrowser: 'This browser',
   noCloudLists: 'No lists in your account yet - create one above.',
   cloudLoading: 'Loading...',
   cloudLoadFailed: 'Could not load the lists in your account.',
@@ -2059,13 +2005,19 @@ const en: Dict = {
   listUpdated: 'The list was updated',
   itemUpdated: 'The item was updated',
   cloneFailed: 'Could not save the list to your lists. Check the connection and try again.',
-  legacyLinks:
-    'Links like this one (#/l/) stop opening on %d. Save the list to your lists to keep it.',
 
   requestSend: 'Notify the owner',
   requestSending: 'Sending...',
   requestSentDone: 'Request sent',
   requestSent: "The request was sent to the list's owner.",
+  requestSentLine:
+    "The request (%s) waits up to 30 days for the owner's answer. If the owner applies it, what you took comes off this list.",
+  requestAppliedToast: 'The owner applied your request.',
+  requestPartialToast: 'The owner applied part of your request.',
+  requestDeclinedToast: 'The owner declined your request.',
+  requestAppliedSentLine: 'The owner applied the request.',
+  requestPartialSentLine: 'The owner applied part of the request.',
+  requestDeclinedSentLine: 'The owner declined the request.',
   requestSentOwner: 'The owner got the request.',
   requestRate: 'Too many requests through this link: wait a minute.',
   requestPending: 'The owner already has %s with no answer. Try again later.',
@@ -2101,7 +2053,11 @@ const en: Dict = {
   requestExpired:
     'This request has expired: an hour passed after it was opened, or 30 days with no answer.',
   requestActFailed: 'Could not answer the request. Check the connection and try again.',
-  requestNew: 'New request',
+  requestArrived: 'New request for the list "%s"',
+  requestsArrivedList: 'New requests for the list "%s": %n',
+  requestsNewN: 'New requests: %n',
+  arrivalOpen: 'Open',
+  arrivalShow: 'Show',
   noticeChanged: 'The author changed "%s".',
   noticeDeleted: 'The author deleted "%s" - the row was removed from the list.',
   noticeNew: 'new',
@@ -2128,25 +2084,6 @@ const en: Dict = {
   requestsWaitN: '%n request waits for an answer|%n requests wait for an answer',
 
   quoted: '"%s"',
-  movedNotice: 'Lists from this browser were moved to your account: %s.',
-  movedBad:
-    'This browser still holds a damaged copy of your lists: it could not be read or moved. If it held something important, write to daggerheart.loot@gmail.com.',
-  moving: 'Moving your lists to your account...',
-  moveFailed: 'Not every list was moved: no connection. We will try again next time.',
-  moveAttention: 'Not moved: %s.',
-  moveAttentionWhy: 'The server did not take the list. Write to daggerheart.loot@gmail.com.',
-  moveHeldWhy:
-    'The copy in your account did not match the list. Write to daggerheart.loot@gmail.com.',
-  localOnlyMove:
-    'Sign in before %d and they move to your account. After that date the app stops showing them.',
-  moveBannerLead: 'Your lists are stored only in this browser.',
-  moveBannerSignIn: 'Sign in and move the lists',
-  moveBannerHide: 'Dismiss the reminder',
-  localReadOnlyTitle: 'Lists in this browser are read-only from %d.',
-  localReadOnly:
-    'Sign in and they move to your account, where you can edit them again. Copying the text still works.',
-  linkRetired: 'Links of this kind stopped opening on %d.',
-  linkRetiredSub: 'Ask the sender for a new link, or sign in to build a list.',
   printLinkRetired: 'Print links of this kind no longer open.',
   printLinkRetiredSub:
     'Ask the sender for a new /#/p/ link, or sign in and pick the cards yourself.',
@@ -2157,21 +2094,7 @@ const en: Dict = {
   printSetFailed: 'Could not prepare the print. Check the connection and try again.'
 };
 
-/* The texts that name the cutoff take its date from the one constant. */
-const DATED: readonly (keyof Dict)[] = [
-  'legacyLinks',
-  'localOnlyMove',
-  'localReadOnlyTitle',
-  'linkRetired'
-];
-
-function dated(d: Dict, lang: Lang): Dict {
-  const out: Dict = { ...d };
-  for (const k of DATED) out[k] = d[k].replace('%d', legacyDateText(lang));
-  return out;
-}
-
-const DICTS: Record<Lang, Dict> = { ru: dated(ru, 'ru'), en: dated(en, 'en') };
+const DICTS: Record<Lang, Dict> = { ru, en };
 
 export function dict(lang: Lang): Dict {
   return DICTS[lang];
@@ -2192,13 +2115,12 @@ export const SECTION_LABEL: Record<Section, keyof Dict> = {
   'roll/community': 'pageCommunity',
   'roll/mwt': 'mwt',
   tables: 'tables',
-  lists: 'lists',
+  lists: 'menuLists',
   search: 'search'
 };
 
 /** Returns a section's label for the tab title, the start-section select and the buttons
  *  to the section. */
-export function sectionLabel(s: Section, t: Dict, legacyWritable: boolean): string {
-  // From the legacy write cutoff the page is headed «Мои списки» (docs/specs/FEATURES.md, rule 4).
-  return s === 'lists' && !legacyWritable ? t.menuLists : t[SECTION_LABEL[s]];
+export function sectionLabel(s: Section, t: Dict): string {
+  return t[SECTION_LABEL[s]];
 }

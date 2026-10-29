@@ -1,5 +1,6 @@
 # 2026-09-26 - A browser list moves through one RPC that hashes its canonical text
 
+- Superseded in part by "R10 drops the move function and the fingerprint column" (2026-10-28): the function, the guard and the column.
 - Task: `persist-5-migration` (planner, 2026-09-26, passes 1, 7 and 8; the owner's answers of 2026-09-26: automatic, the two guards; decision 31's limit exemption).
 - Decision: when a signed-in reader's app loads with browser lists and its catalog, each list is
   sent as one canonical JSON text (keys sorted, repeated and malformed ids dropped, every other id
@@ -11,7 +12,4 @@
   list whose account copy differs (`held`, never sent again), and in one settle step removes a list
   only while its raw stored text still equals the moved one, writing the tombstones, the owner, the
   held ids and the names of new tombstones into `dhloot.migrated.v1` before the lists; one notice.
-- Rejected: a button (the owner: seamless for readers who do not know); a client digest (jsdom has
-  no `crypto.subtle`); the two-upsert `create` path (a drop leaves an empty list with the
-  fingerprint); refusing over-limit lists; dropping ids the catalog does not know (with no
-  `data.js` loaded every list would move empty and leave the browser).
+- Rejected: a button (the owner: seamless for readers who do not know); a client digest (jsdom has no `crypto.subtle`); the two-upsert `create` path (a drop leaves an empty list with the fingerprint); refusing over-limit lists; dropping ids the catalog does not know (with no `data.js` loaded every list would move empty and leave the browser).

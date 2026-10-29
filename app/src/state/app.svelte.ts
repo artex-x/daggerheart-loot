@@ -37,10 +37,12 @@ import {
   limitText,
   linkedOf,
   snapshotRecords,
-  type CloudList
+  type CloudList,
+  type SharedList
 } from '../lib/cloudLists.js';
 import { isArtName, isOwnArt } from '../lib/art.js';
 import { buildIndex, type Index } from '../lib/data.js';
+import { pathOf } from '../lib/address.js';
 import { dict, type Dict, type Msg } from '../lib/dict.js';
 import {
   appUrl,
@@ -51,14 +53,11 @@ import {
   itemHash,
   keepsTicks,
   legacySource,
-  PACK_MARK,
   parseHash,
-  previewUrl,
   printSetHash,
   PRINT_MAX,
   recordUrl,
   sectionHash,
-  sharedListHash,
   storedListHash,
   stripHash,
   type Route,
@@ -75,9 +74,7 @@ import {
 } from '../lib/homebrew.js';
 import { fewNames, nameOf } from '../lib/i18n.js';
 import { plural } from '../lib/plural.js';
-import { legacyWritable } from '../lib/legacy.js';
-import { decodeList, encodeList, type DecodedList } from '../lib/listLink.js';
-import { copyInit, findListByPayload, LIST_PAGE, type StoredList } from '../lib/lists.js';
+import { LIST_PAGE } from '../lib/lists.js';
 import type { Subset } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
@@ -100,18 +97,15 @@ import type {
 import { CloudLists } from './cloudLists.svelte.js';
 import { Homebrew } from './homebrew.svelte.js';
 import { ItemView } from './itemView.svelte.js';
-import { LegacyMove } from './legacyMove.svelte.js';
-import { ListStore, type ListModel, type MovedList } from './lists.svelte.js';
 import { OwnerRequests } from './ownerRequests.svelte.js';
 import { RequestSender } from './requestSender.svelte.js';
 import { SharedView } from './sharedView.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
 const HOME_KEY = 'dhloot.home.v1';
-const WARN_KEY = 'dhloot.warn.v1';
 const PREFS_KEY = 'dhloot.prefs.v1';
 /* The settings a signed-out tab follows when another tab writes them (docs/specs/STATE.md). */
-const SETTINGS_KEYS: readonly string[] = [LANG_KEY, HOME_KEY, WARN_KEY, PREFS_KEY];
+const SETTINGS_KEYS: readonly string[] = [LANG_KEY, HOME_KEY, PREFS_KEY];
 
 const DEFAULT_HOME = '#/roll/std';
 
@@ -149,24 +143,38 @@ function readLocalPrefs(env: Env): LocalPrefs {
   };
 }
 
-/** What a toast offers for the 7000ms it lasts: an undo (`run`) or a link to
- *  a page opened in a new tab (`href`). The label is built in the language on
- *  screen each time it is drawn. */
-export type ToastAction = { label: Msg; run: () => void } | { label: Msg; href: string };
+/** What a toast offers for the 7000ms it lasts: an undo (`run`), a link to
+ *  a page opened in a new tab (`href`), or a move to a page of the app (`go`). Only
+ *  `run` takes the focus. The label is built in the language on screen each time it
+ *  is drawn. */
+export type ToastAction =
+  | { label: Msg; run: () => void }
+  | { label: Msg; href: string }
+  | { label: Msg; go: () => void };
 
 /** Off `showToast` in app.js: a plain notice, an error (`role=alert`), or one
  *  with an action - each its own duration, decided by `say` below. */
 export interface Toast {
   msg: string;
   mode: '' | 'err' | 'act';
-  action?: { label: string; run?: () => void; href?: string } | undefined;
+  action?: { label: string; run?: () => void; href?: string; go?: () => void } | undefined;
 }
 
-/* What `say` was given: the toast before it is drawn in a language. */
+/* What `say` was given: the toast before it is drawn in a language. `arrival` marks the
+   new-request toast, the lowest-priority one (docs/specs/FEATURES.md, "Chrome"). */
 interface Said {
   msg: Msg;
   mode: Toast['mode'];
   action?: ToastAction | undefined;
+  arrival?: true | undefined;
+}
+
+const ARRIVAL_MS = 7000;
+
+/* The one list that every id names, or null for none or several. */
+function oneList(ids: readonly string[]): string | null {
+  const first = ids[0];
+  return first !== undefined && ids.every((id) => id === first) ? first : null;
 }
 
 /** Settings are read as untrusted data: a bad value falls back, quietly. */
@@ -180,7 +188,7 @@ function pinOf(v: string): string | null {
   /* A pinned section has to still be a section. A record or a list is refused
      because it is a snapshot that drifts away from the data. A named table
      survives the same way; a bare `#/tables` is accepted too - live's own
-     `homeAllows` (app.js 1124-1130) keeps that shape, for a pin written
+     `homeAllows` (`git show 23c00a6^:app.js`) keeps that shape, for a pin written
      before this fix as much as one typed by hand - but a name outside
      TABLE_IDS is not, because there is nothing specific behind it to reopen.
      `parseHash` cannot tell "no name" from "a name it did not recognise"
@@ -213,8 +221,8 @@ export class AppState {
    *
    * Built once: it is a few thousand records and nothing about it changes while
    * the page is open. Null is a state the interface has to render, not a crash -
-   * see docs/specs/FEATURES.md, "Records". A `#/l/` link and a lists file read it
-   * alone: they hold catalog ids only.
+   * see docs/specs/FEATURES.md, "Records". A lists file reads it alone: it holds
+   * catalog ids only.
    */
   readonly catalog: Index | null;
 
@@ -282,26 +290,16 @@ export class AppState {
    */
   navigations = $state(0);
 
-  /** The lists a person has made in this browser, and how they are saved. */
-  readonly lists: ListStore;
   /** The signed-in owner's account lists; null in a build with no sign-in configured. */
   readonly cloudLists: CloudLists | null;
   /** The list behind the open share link; null in a build with no sign-in configured. */
   readonly sharedView: SharedView | null;
   /** The homebrew item behind the open `#/h/`; null in a build with no sign-in configured. */
   readonly itemView: ItemView | null;
-  /** The move of this browser's lists into the account; null with no sign-in configured. */
-  readonly legacyMove: LegacyMove | null;
   /** The signed-in owner's purchase requests; null with no sign-in configured. */
   readonly ownerRequests: OwnerRequests | null;
   /** A share page reader's purchase request; null with no sign-in configured. */
   readonly requestSender: RequestSender | null;
-  /**
-   * Whether browser lists may be written: before the legacy write cutoff, read once
-   * at load (a tab open across the midnight keeps its value). Always true in a
-   * build with no sign-in configured: it has no account to move into.
-   */
-  readonly legacyWritable: boolean;
   /** The clock the relative times read: moved every 45 s and when the tab is shown again. */
   now = $state(Date.now());
   /** True while «Сохранить себе» copies a share link's list. */
@@ -321,9 +319,6 @@ export class AppState {
    * (docs/specs/STATE.md, "Session"). Raw: it crosses into sessionStorage.
    */
   signInFor = $state.raw<SignInAfter | null>(null);
-  /** The name a reader typed for a new list before a sign-in; the add-to-list menu that
-   *  reopens after it takes the name into its create slot, once. */
-  pendingListName = $state<string | null>(null);
   /* The action a sign-in finishes once the account's lists are read. A
      navigation or a sign-out forgets it, so it never runs on another page
      or for the next user. */
@@ -340,15 +335,6 @@ export class AppState {
      answer was lost; memory only, so a key never reaches another account. */
   // eslint-disable-next-line svelte/prefer-svelte-reactivity -- never drawn
   #copyRetry = new Map<string, string>();
-
-  /**
-   * The list currently open on the list page, and the payload its address
-   * was last rewritten to - the live `S.openList` / `S.urlPayload`. Both are
-   * cleared on any route that is not a list page, the way the live app
-   * clears them on every other route.
-   */
-  openList = $state('');
-  urlPayload = $state('');
 
   /**
    * Which opener's add-to-list menu is open, app-wide - a record id on a
@@ -416,14 +402,12 @@ export class AppState {
   }
 
   /**
-   * What the open shared page shows - the live `S.shared` (app.js 51,
+   * What the open shared page shows - the live `S.shared` (`git show 23c00a6^:app.js`,
    * 3140-3141). Set by `SharedListPage` while mounted, null on every other
-   * page: the route gate the live `metaForKey` applies (`route is l/ and no
-   * openList`, 1874-1877), done here by mount instead. Every add-to-list menu
-   * on the shared page - the bar's, a card's - reads this to copy the
-   * entry's qty, price and players' note along.
+   * page: the route gate is done here by mount. Every add-to-list menu on the shared page - the bar's, a
+   * card's - reads this to copy the entry's qty, price and players' note along.
    */
-  shared = $state<DecodedList | null>(null);
+  shared = $state<SharedList | null>(null);
 
   #said = $state.raw<Said | null>(null);
   /** What the toast is showing, or nothing, in the language on screen: a
@@ -441,7 +425,9 @@ export class AppState {
         s.action &&
         ('run' in s.action
           ? { label: s.action.label(t, lang), run: s.action.run }
-          : { label: s.action.label(t, lang), href: s.action.href })
+          : 'go' in s.action
+            ? { label: s.action.label(t, lang), go: s.action.go }
+            : { label: s.action.label(t, lang), href: s.action.href })
     };
   });
   /** True while `RecordModal`'s modal dialog is open, set after its
@@ -452,15 +438,20 @@ export class AppState {
   /* An action toast's deadline while it runs, and its time left while held. */
   #toastDue = 0;
   #toastLeft: number | null = null;
-  /* A plain message said while an error or an action toast shows: it waits for that
-     toast's end (owner, 2026-10-08). One waits; a newer plain message takes its place. */
-  #waiting: Msg | null = null;
+  /* A plain message or the arrival toast said while an error or an action toast shows: it
+     waits for that toast's end (owner, 2026-10-08). One waits; a newer plain message takes
+     its place. */
+  #waiting: Said | null = null;
+  /* The list id of each new purchase request the arrival toast tells of, while it shows,
+     waits or is held for a hidden tab; null otherwise. */
+  #arrival = $state.raw<string[] | null>(null);
+  #arrivalHeld = false;
+  #arrivalLast: string[] = [];
+  /** The list whose Requests panel takes the focus once drawn (`RequestsPanel.svelte`), set
+   *  by the arrival toast's action and cleared by the panel or by leaving that list. */
+  requestsFocus = $state<string | null>(null);
 
   #home = $state(DEFAULT_HOME);
-  /** Whether the "lists live in this browser only" notice has been dismissed
-   *  for good - the live app's `dhloot.warn.v1`. App-level because the list
-   *  page reads the same flag, not only the index. */
-  #warnHidden = $state(false);
   /** The default tables view, list or grid, set by the Display section and
    *  the account and stored in `dhloot.prefs.v1` (`STATE.md`, "Account
    *  preferences"). */
@@ -482,15 +473,6 @@ export class AppState {
    *  a list page shows the same cards; a reload starts at `LIST_PAGE`
    *  (`STATE.md`'s "Lists" group). */
   listsShown = $state(LIST_PAGE);
-  /** The packed payload a failed expansion is stuck on, or `''`.
-   *  Compared against `route.payload` by whoever draws the bad-link state, so
-   *  a later navigation to a *different* packed link is not mistaken for the
-   *  same failure. */
-  expandFailed = $state('');
-  /** Whether storage works at all, read once - probing it (a write and a
-   *  delete) on every mount of `StorageNotice` cost the same round trip for
-   *  nothing, since the answer cannot change while the page is open. */
-  readonly storageWorks: boolean;
   /** Whether the footer offers the install guide: inside the installed app it
    *  is done (`FEATURES.md`, "Chrome"). */
   readonly showInstall: boolean;
@@ -506,7 +488,7 @@ export class AppState {
    *  the next account action there. */
   alreadyLinked = $state<Provider | null>(null);
   #stopRouter: (() => void) | null = null;
-  #stopListWatch: (() => void) | null = null;
+  #stopLinks: (() => void) | null = null;
   #stopAuth: (() => void) | null = null;
   #stopHidden: (() => void) | null = null;
   #stopSettings: (() => void) | null = null;
@@ -533,20 +515,23 @@ export class AppState {
     this.env = env;
     const loot = env.data.load();
     this.catalog = loot ? buildIndex(loot) : null;
-    this.lang = readLang(env);
+    /* A stored choice wins; an English address stores English only when nothing is
+       stored (docs/specs/I18N.md). */
+    const stored = env.storage.get(LANG_KEY);
+    if (stored !== 'ru' && stored !== 'en' && env.router.lang() === 'en') {
+      this.lang = 'en';
+      env.storage.set(LANG_KEY, 'en');
+    } else this.lang = readLang(env);
     this.#home = homeOf(env.storage.get(HOME_KEY));
-    this.#warnHidden = env.storage.get(WARN_KEY) === '1';
     const local = readLocalPrefs(env);
     this.#tablesView = local.view;
     this.#printBW = local.printBw;
     this.#printCompact = local.printCompact;
-    this.storageWorks = env.storage.works();
     if (!env.cloud) this.user = null;
     this.showInstall = !env.pwa.standalone();
     const say = (msg: Msg, error?: boolean): void => {
       this.say(msg, { error });
     };
-    this.lists = new ListStore(env, say, () => this.t);
     const cloud = env.cloud;
     this.homebrew = cloud
       ? new Homebrew(cloud.homebrew, {
@@ -559,7 +544,10 @@ export class AppState {
           flush: () => this.cloudLists?.flushNow() ?? Promise.resolve(true),
           refreshLists: () => this.cloudLists?.refresh() ?? Promise.resolve(),
           say,
-          tab: () => cloud.events.tab
+          tab: () => cloud.events.tab,
+          arrived: (ids) => {
+            this.#arrive(ids);
+          }
         })
       : null;
     this.cloudLists = cloud
@@ -599,33 +587,41 @@ export class AppState {
         })
       : null;
     this.sharedView = env.cloud
-      ? new SharedView(env.cloud.shares, { events: env.cloud.events, random: env.random })
+      ? new SharedView(env.cloud.shares, {
+          events: env.cloud.events,
+          random: env.random,
+          request: (m) => {
+            this.requestSender?.decided(m);
+          }
+        })
       : null;
     this.itemView = env.cloud ? new ItemView(env.cloud.lists, () => this.catalog) : null;
-    this.legacyMove = env.cloud ? new LegacyMove(this, () => this.user?.userId ?? null) : null;
-    this.legacyWritable = !env.cloud || legacyWritable(env.clock.now());
 
     /* A bare address opens the pinned section - but only at boot, and only a
        bare one: a link to a record or a shared list must not be overridden by
-       a preference. Live's own boot check, app.js 4610-4614: an assignment,
+       a preference. Live's own boot check (`git show 23c00a6^:app.js`): an assignment,
        not a replaceState, so a non-default pin still pushes a history entry
        (Back leaves the bare address rather than returning to it); a default
-       pin - nothing to add - writes nothing and leaves the bar bare. An
-       unreadable address at boot is rule 2, below, same as on navigation. */
+       pin - nothing to add - leaves the bar at the bare root. An
+       unreadable address at boot is rule 2, below, same as on navigation. Either
+       way the bar is rewritten in the path form of the language on screen, which
+       also turns an old `#/` address into its path in the same entry. */
     const first = env.router.hash();
     if (first === '' || first === '#' || first === '#/') {
       this.hash = this.#home;
-      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash);
+      env.router.replace('#/', this.lang, null);
+      if (this.#home !== DEFAULT_HOME) env.router.navigate(this.hash, this.lang);
     } else {
       this.hash = this.#fallback(first);
+      if (this.hash === first)
+        env.router.replace(first, this.lang, this.#barVersion(first) ?? null);
     }
     this.#applySource();
-    this.#expand();
   }
 
   /**
    * What a non-boot address resolves to, and what it does to the bar -
-   * live's `currentRoute` fallback (app.js 3638-3647), reused by the
+   * live's `currentRoute` fallback (`git show 23c00a6^:app.js`), reused by the
    * constructor for its own non-bare branch since an unreadable address is
    * answered the same way at boot or on navigation. A bare address here is
    * navigation's own rule, distinct from boot's above: it draws the default
@@ -634,8 +630,29 @@ export class AppState {
   #fallback(h: string): string {
     if (h === '' || h === '#' || h === '#/') return DEFAULT_HOME;
     if (parseHash(h).kind !== 'unknown') return h;
-    this.env.router.replace(this.#home);
+    this.env.router.replace(this.#home, this.lang, null);
     return this.#home;
+  }
+
+  /** The `?v` the bar carries for `hash`: a catalog record's card version, at once
+   *  (docs/specs/CONTRACTS.md section 5). An item and a share link set theirs through
+   *  `setBarVersion` once read; every other address carries none. */
+  #barVersion(hash: string): string | undefined {
+    const r = parseHash(hash);
+    if (r.kind !== 'record' || isHomebrewKey(r.id)) return undefined;
+    return this.env.data.cardVersion(r.id);
+  }
+
+  /** Writes `v` into the bar of `hash` once its page has read it; nothing when the
+   *  reader has left `hash` meanwhile. */
+  setBarVersion(hash: string, v: string | undefined): void {
+    if (hash !== this.hash) return;
+    this.env.router.replace(hash, this.lang, v ?? null);
+  }
+
+  /** The path form of `hash` in the language on screen: every rendered in-app link. */
+  href(hash: string): string {
+    return pathOf(hash, this.lang);
   }
 
   /** Starts listening. Returns a stop, so a test does not leak a listener. */
@@ -652,22 +669,25 @@ export class AppState {
       }
       /* A refused leave puts the address back: the page with the edits stays. */
       if (h !== this.hash && !this.#mayLeave()) {
-        this.env.router.replace(this.hash);
+        this.env.router.replace(this.hash, this.lang, this.#barVersion(this.hash) ?? null);
         return;
       }
       const from = this.route;
       this.hash = this.#fallback(h);
+      /* A typed old `#/` address leaves the bar in its path form, in the same entry. */
+      if (this.hash === h) {
+        this.env.router.replace(h, this.lang, this.#barVersion(h) ?? null);
+      }
       this.#forgetSignIn();
       this.#forgetPending();
+      this.#forgetRequestsFocus();
       this.navigations++;
       this.menuFor = '';
       this.#clearTicksOnLeave(from);
       this.#applySource();
-      this.#expand();
     });
-    /* A list another tab moved leaves this one; its open page follows it. */
-    this.#stopListWatch = this.lists.watch((moved) => {
-      this.followMoved(moved);
+    this.#stopLinks = this.env.router.onLink((h) => {
+      this.go(h);
     });
     this.#stopSettings = this.env.storage.onExternalChange((key) => {
       if (key === null || SETTINGS_KEYS.includes(key)) this.#followSettings();
@@ -705,12 +725,18 @@ export class AppState {
     const offShown = this.env.storage.onExternalChange((key) => {
       if (key !== null) return;
       this.now = Date.now();
+      if (this.#arrivalHeld) {
+        this.#arrivalHeld = false;
+        this.#sayArrival();
+      }
       this.#refreshShared(true);
       if (this.route.kind === 'item') void this.itemView?.refresh();
       if (!this.user) return;
       if (this.#stale) this.#saveAccount();
       else void this.#pull();
-      void this.cloudLists?.refresh().then(() => this.#listsReady());
+      void this.cloudLists?.refresh().then(() => {
+        this.#runPending();
+      });
       void this.ownerRequests?.read();
       void this.homebrew?.read();
     });
@@ -769,12 +795,11 @@ export class AppState {
     /* One user's choice never hides another user's items. */
     this.homebrewShown = true;
     void this.#pull();
-    /* Another user's move said nothing about this one's. */
-    this.legacyMove?.reset();
     const lists = this.cloudLists;
     if (lists) {
       lists.clear();
       this.ownerRequests?.clear();
+      this.#dropArrival();
       this.homebrew?.clear();
       void this.homebrew?.load();
       void lists.load().then(() => {
@@ -783,35 +808,37 @@ export class AppState {
           lists.watch(s.userId);
           void this.ownerRequests?.read();
         }
-        return this.#listsReady();
+        this.#runPending();
       });
     }
   }
 
-  /* The account's lists were read: the move runs when it is due, then the
-     action a sign-in left. The move first, so the action never runs beside
-     it (docs/specs/FEATURES.md, "Account and browser lists"). */
-  async #listsReady(): Promise<void> {
-    const id = this.user?.userId;
-    if (id && this.legacyMove) await this.legacyMove.runIfDue(id);
-    this.#runPending();
-  }
-
-  /** «Повторить» after a failed read of the account: reads again, then runs the move. */
+  /** «Повторить» after a failed read of the account: reads again, then runs the action a
+   *  sign-in left. */
   async retryLists(): Promise<void> {
     await this.cloudLists?.load();
-    await this.#listsReady();
+    this.#runPending();
   }
 
   /** Downloads the account's lists as one lists file: every list, or the lists `ids` names,
    *  in the index's order. A file past the schema's bounds or the import's 5 MiB still
    *  downloads whole, and a toast says why it cannot be imported whole
-   *  (docs/specs/FEATURES.md, "Account and browser lists"). */
+   *  (docs/specs/FEATURES.md, "Account and browser lists"). The entries of the lists this
+   *  tab has not read are read first; a failed read downloads nothing. */
   async exportLists(ids?: readonly string[]): Promise<void> {
     const store = this.cloudLists;
     if (!store) return;
-    const lists = ids ? store.lists.filter((l) => ids.includes(l.id)) : store.lists;
-    if (!this.#homebrewReady(lists)) return;
+    /* The ids are taken at the press: a list a re-read brings during the entries read has
+       heads only, and the file is the account at the press. */
+    const taken = ids ? [...ids] : store.lists.map((l) => l.id);
+    const named = (): CloudList[] => store.lists.filter((l) => taken.includes(l.id));
+    if (!this.#homebrewReady(named())) return;
+    if (!(await store.detail(taken))) {
+      this.say((t) => t.accountFailed, { error: true });
+      return;
+    }
+    /* The read replaced the list objects. */
+    const lists = named();
     const now = this.#exportedAt();
     const { b, skipped } = this.#bundle(lists, now);
     const bytes = new TextEncoder().encode(bundleText(b));
@@ -834,8 +861,17 @@ export class AppState {
     const store = this.cloudLists;
     if (!store) return;
     if (!this.#homebrewReady(null)) return;
+    /* As `exportLists`: the lists of the press, so none in the file has heads only. */
+    const taken = store.lists.map((l) => l.id);
+    if (!(await store.detail(taken))) {
+      this.say((t) => t.accountFailed, { error: true });
+      return;
+    }
     const now = this.#exportedAt();
-    const { b, skipped } = this.#bundle(store.lists, now);
+    const { b, skipped } = this.#bundle(
+      store.lists.filter((l) => taken.includes(l.id)),
+      now
+    );
     const own = this.homebrew;
     const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
     const listsBytes = encode(bundleText(b));
@@ -949,50 +985,10 @@ export class AppState {
     );
   }
 
-  /**
-   * Whether a signed-in reader's browser lists wait for the move: from sign-in until a
-   * run ends with nothing left (or finds the lists another account's). They are
-   * read-only and cannot be deleted meanwhile (docs/DECISIONS.md, 2026-09-26,
-   * "Browser lists are read-only while the move is due").
-   */
-  get moveDue(): boolean {
-    return !!this.user && !!this.legacyMove && this.legacyMove.status !== 'done';
-  }
-
-  /** Whether a browser list may be edited now: before the cutoff, and not while the move is due. */
-  get localWritable(): boolean {
-    return this.legacyWritable && !this.moveDue;
-  }
-
-  /**
-   * Moves the address of a browser list's open page to the account list it moved into:
-   * the list the page holds (`openList`), the `#/lists/<id>` on screen, or a `#/l/`
-   * payload that matches a removed list. `replace`, so a waiting action is kept.
-   */
-  followMoved(removed: readonly MovedList[]): void {
-    if (!removed.length) return;
-    const into = (id: string): string | undefined =>
-      removed.find((m) => m.list.id === id)?.accountId;
-    const r = this.route;
-    let to = this.openList ? into(this.openList) : undefined;
-    if (!to && r.kind === 'storedList') to = into(r.listId);
-    if (!to && r.kind === 'sharedList' && !r.packed) {
-      const knows = (id: string): boolean => this.catalog?.byId.has(id) ?? false;
-      const mine = findListByPayload(
-        removed.map((m) => m.list),
-        r.payload,
-        knows
-      );
-      if (mine) to = into(mine.id);
-    }
-    if (!to) return;
-    this.clearOpenList();
-    this.replace(storedListHash(to));
-  }
-
   #listsSignedOut(): void {
     this.cloudLists?.clear();
     this.ownerRequests?.clear();
+    this.#dropArrival();
     this.homebrew?.clear();
     const r = this.route;
     if (r.kind === 'storedList' && isCloudId(r.listId)) this.replace(sectionHash('lists'));
@@ -1006,10 +1002,8 @@ export class AppState {
   }
 
   /* The index and an account list page re-read while they are on screen and the
-     owner's topic is not joined; a failed first read, or a move the network
-     stopped, is retried on every route, so the browser's lists move once the
-     network returns. `#/h/` has no topic and re-reads on every tick, signed out
-     too. */
+     owner's topic is not joined; a failed first read is retried on every route.
+     `#/h/` has no topic and re-reads on every tick, signed out too. */
   #pollLists(): void {
     this.now = Date.now();
     this.#refreshShared(false);
@@ -1020,8 +1014,12 @@ export class AppState {
     const shown =
       (r.kind === 'section' && r.section === 'lists') ||
       (r.kind === 'storedList' && lists.get(r.listId) !== undefined);
-    const retry = lists.status === 'error' || this.legacyMove?.status === 'failed';
-    if ((shown && !lists.live) || retry) void lists.refresh().then(() => this.#listsReady());
+    const retry = lists.status === 'error';
+    if ((shown && !lists.live) || retry) {
+      void lists.refresh().then(() => {
+        this.#runPending();
+      });
+    }
     if (shown && !lists.live) void this.ownerRequests?.read();
     const homebrew = this.homebrew;
     if (
@@ -1083,8 +1081,8 @@ export class AppState {
       } else if (r.kind === 'share') {
         const shown = snapshotRecords(this.sharedView?.shared).find((x) => x.id === id);
         if (shown) return shown;
-      } else if (this.openList) {
-        const linked = this.cloudLists?.get(this.openList)?.linked?.[id];
+      } else if (r.kind === 'storedList') {
+        const linked = this.cloudLists?.get(r.listId)?.linked?.[id];
         if (linked) return linked;
       }
     }
@@ -1354,12 +1352,13 @@ export class AppState {
   }
 
   /**
-   * Where a list made now goes: `local` in a build with no sign-in, `wait`
-   * while the session is unknown (nothing is drawn, so a signed-in reader
-   * never sees the prompt flash), `prompt` signed out, `cloud` signed in.
+   * Where a list made now goes: `none` in a build with no sign-in (it has no lists and
+   * draws no add-to-list control), `wait` while the session is unknown (nothing is drawn,
+   * so a signed-in reader never sees the prompt flash), `prompt` signed out, `cloud`
+   * signed in.
    */
-  get newListTarget(): 'local' | 'cloud' | 'prompt' | 'wait' {
-    if (!this.cloudLists) return 'local';
+  get newListTarget(): 'none' | 'wait' | 'prompt' | 'cloud' {
+    if (!this.cloudLists) return 'none';
     if (this.user === undefined) return 'wait';
     return this.user ? 'cloud' : 'prompt';
   }
@@ -1460,11 +1459,6 @@ export class AppState {
     return { ok: true, set: readPrintSet(r.set, (k) => this.index?.byId.has(k) ?? false) };
   }
 
-  /** The store that holds `listId`: the account's, or this browser's. */
-  storeFor(listId: string): ListModel {
-    return this.cloudLists?.get(listId) ? this.cloudLists : this.lists;
-  }
-
   /** A prompt's «Войти»: remembers the page and the action, then opens `#/account`. */
   askSignIn(after: SignInAfter): void {
     this.signInFor = after;
@@ -1477,7 +1471,6 @@ export class AppState {
 
   #forgetPending(): void {
     this.#pending = null;
-    this.pendingListName = null;
     this.saveItemFor = null;
   }
 
@@ -1521,16 +1514,11 @@ export class AppState {
     return cloud.auth.signOut(scope);
   }
 
-  /* Waits for a user and the account's lists, and for a packed `#/l/`
-     address to expand. */
+  /* Waits for a user and the account's lists. */
   #runPending(): void {
     const action = this.#pending;
     const lists = this.cloudLists;
     if (!action || !this.user || lists?.status !== 'ready') return;
-    /* The move settles first - it has not run yet (`idle`) or runs now -
-       and `#listsReady` runs this again when it ends. */
-    const move = this.legacyMove?.status;
-    if (move === 'idle' || move === 'moving') return;
     if (action.do === 'addToList') {
       this.#pending = null;
       /* Only the bar's menu acts on the ticks; a card's acts on its record. */
@@ -1539,7 +1527,6 @@ export class AppState {
         for (const id of action.ids) this.sel.add(id);
         for (const [id, n] of Object.entries(action.picked ?? {})) this.picked.set(id, n);
       }
-      this.pendingListName = action.name ?? null;
       this.menuFor = action.key;
       return;
     }
@@ -1554,17 +1541,11 @@ export class AppState {
       void this.#makePrint(action.entries, action.cut ?? 0);
       return;
     }
+    /* `saveList` saves the open share link's list; on any other page, an old `#/l/` one
+       among them, nothing is saved. */
     const r = this.route;
-    if (r.kind === 'sharedList' && r.packed) return;
     this.#pending = null;
-    if (r.kind === 'share') {
-      void this.saveShareCopy(r.token);
-      return;
-    }
-    /* After the cutoff a `#/l/` address draws the retired page: nothing to save. */
-    if (r.kind !== 'sharedList' || !this.legacyWritable) return;
-    const d = decodeList(r.payload, (id) => this.catalog?.byId.has(id) ?? false);
-    if (d) this.saveCopyOf(d);
+    if (r.kind === 'share') void this.saveShareCopy(r.token);
   }
 
   /** Says the list limit and answers true when the account is at it: an optimistic create
@@ -1575,17 +1556,6 @@ export class AppState {
     const limit = lists.listLimit;
     this.say((t) => limitText('lists_per_owner', limit, t), { error: true });
     return true;
-  }
-
-  /** Saves a shared list into the account and opens it. */
-  saveCopyOf(d: DecodedList): void {
-    const lists = this.cloudLists;
-    if (!lists) return;
-    if (this.listsFull()) return;
-    const l = lists.create(d.name, copyInit(d));
-    const name = l.name;
-    this.say((t) => t.listCreated.replace('%s', name));
-    this.go(storedListHash(l.id));
   }
 
   /** Saves the share link's list into the account and opens the copy, while the reader
@@ -1615,8 +1585,6 @@ export class AppState {
       await lists.load();
     } finally {
       this.cloning = false;
-      /* A move skipped for the copy runs now. */
-      void this.#listsReady();
     }
     const name = lists.get(id)?.name ?? this.sharedView?.shared?.list.name ?? '';
     this.say((t) => t.listCreated.replace('%s', name || t.untitled));
@@ -1645,6 +1613,7 @@ export class AppState {
   #applyPrefs(p: Prefs): void {
     if (p.lang) {
       this.lang = p.lang;
+      this.env.router.relang(this.lang);
       this.env.storage.set(LANG_KEY, p.lang);
     }
     const pin = p.home === undefined ? null : pinOf(p.home);
@@ -1704,19 +1673,17 @@ export class AppState {
     if (this.user) return;
     const lang = readLang(this.env);
     const home = homeOf(this.env.storage.get(HOME_KEY));
-    const warn = this.env.storage.get(WARN_KEY) === '1';
     const local = readLocalPrefs(this.env);
     const moved =
       lang !== this.lang ||
       home !== this.#home ||
-      warn !== this.#warnHidden ||
       local.view !== this.#tablesView ||
       local.printBw !== this.#printBW ||
       local.printCompact !== this.#printCompact;
     if (!moved) return;
     this.lang = lang;
+    this.env.router.relang(this.lang);
     this.#home = home;
-    this.#warnHidden = warn;
     this.#tablesView = local.view;
     this.#printBW = local.printBw;
     this.#printCompact = local.printCompact;
@@ -1741,10 +1708,10 @@ export class AppState {
   stop(): void {
     this.#stopRouter?.();
     this.#stopRouter = null;
+    this.#stopLinks?.();
+    this.#stopLinks = null;
     if (this.#listPoll !== null) clearInterval(this.#listPoll);
     this.#listPoll = null;
-    this.#stopListWatch?.();
-    this.#stopListWatch = null;
     this.#stopAuth?.();
     this.#stopAuth = null;
     this.#stopHidden?.();
@@ -1755,9 +1722,11 @@ export class AppState {
     this.ownerRequests?.clear();
     this.homebrew?.clear();
     /* A timer left running past the listeners it would otherwise update is a
-       leak of the same kind `#stopRouter`/`#stopListWatch` already guard
+       leak of the same kind `#stopRouter`/`#stopSettings` already guard
        against. */
     this.#waiting = null;
+    this.#arrival = null;
+    this.#arrivalHeld = false;
     this.hideToast();
   }
 
@@ -1766,20 +1735,41 @@ export class AppState {
    * app.js. Plain notices last 1600ms, an error 2600ms and `role="alert"`,
    * and one with an action 7000ms. A second call replaces the first and
    * restarts the clock, except a plain notice said while an error or an action
-   * toast shows: it waits and shows when that toast ends (docs/specs/FEATURES.md,
-   * "Chrome").
+   * toast shows: it waits and shows when that toast ends. The arrival toast
+   * (`arrival`) is the lowest: it waits behind any other toast, a plain one too,
+   * displaces nothing, and any later toast replaces it or takes its waiting slot
+   * (docs/specs/FEATURES.md, "Chrome").
    */
   say(
     msg: Msg,
-    opts: { error?: boolean | undefined; action?: ToastAction | undefined } = {}
+    opts: {
+      error?: boolean | undefined;
+      action?: ToastAction | undefined;
+      arrival?: true | undefined;
+    } = {}
   ): void {
     const mode: Toast['mode'] = opts.action ? 'act' : opts.error ? 'err' : '';
-    if (mode === '' && this.#said && this.#said.mode !== '') {
-      this.#waiting = msg;
-      return;
+    const said: Said = { msg, mode, action: opts.action, arrival: opts.arrival };
+    const shown = this.#said;
+    /* The arrival waits behind any other toast, a plain one too; a plain toast waits
+       behind an error or an action toast but never behind the arrival. */
+    const blocks = !!shown && !shown.arrival && (!!opts.arrival || shown.mode !== '');
+    if (opts.arrival) {
+      if (blocks) {
+        if (!this.#waiting || this.#waiting.arrival) this.#waiting = said;
+        else this.#arrival = null;
+        return;
+      }
+    } else {
+      if (mode === '' && blocks) {
+        if (this.#waiting?.arrival) this.#arrival = null;
+        this.#waiting = said;
+        return;
+      }
+      if (shown?.arrival) this.#arrival = null;
     }
     const ms = opts.action ? 7000 : opts.error ? 2600 : 1600;
-    this.#said = { msg, mode, action: opts.action };
+    this.#said = said;
     if (this.#toastTimer) clearTimeout(this.#toastTimer);
     this.#toastTimer = null;
     this.#toastLeft = null;
@@ -1828,8 +1818,10 @@ export class AppState {
   }
 
   /** Ends the shown toast - its timer, its close or its action - and shows a waiting
-   *  plain message with its own 1600ms. */
+   *  toast with its own clock. */
   hideToast(): void {
+    /* An arrival held for a hidden tab outlives the toast that ran unseen. */
+    if (this.#said?.arrival && !this.#arrivalHeld) this.#arrival = null;
     this.#said = null;
     this.#toastLeft = null;
     if (this.#toastTimer) {
@@ -1838,7 +1830,99 @@ export class AppState {
     }
     const next = this.#waiting;
     this.#waiting = null;
-    if (next) this.say(next);
+    if (next?.arrival && !this.env.page.visible()) {
+      this.#arrivalHeld = true;
+      return;
+    }
+    if (next) {
+      this.say(next.msg, {
+        error: next.mode === 'err',
+        action: next.action,
+        arrival: next.arrival
+      });
+    }
+  }
+
+  /* New purchase requests, one list id each, after the first heads read of the page. */
+  #arrive(ids: string[]): void {
+    this.#arrival = [...(this.#arrival ?? []), ...ids];
+    this.#arrivalLast = this.#arrival;
+    if (!this.env.page.visible()) {
+      this.#arrivalHeld = true;
+      return;
+    }
+    this.#sayArrival();
+  }
+
+  /* Shows the arrival toast, or restarts its clock when it shows; a waiting one only
+     redraws its text. A held clock (pointer or focus inside) stays held with the full time. */
+  #sayArrival(): void {
+    const ids = this.#arrival;
+    if (!ids?.length || this.#waiting?.arrival) return;
+    if (this.#said?.arrival && this.#toastLeft !== null) {
+      this.#toastLeft = ARRIVAL_MS;
+      return;
+    }
+    /* Read at draw time: an arrival while the toast shows or waits changes the text. The
+       action runs after `hideToast()` has dropped the ids, so it reads the last ones. */
+    const held = (): string[] => this.#arrival ?? this.#arrivalLast;
+    this.say(
+      (t) => {
+        const n = held().length;
+        const one = oneList(held());
+        if (one === null) return t.requestsNewN.replace('%n', String(n));
+        const name = this.cloudLists?.get(one)?.name || t.untitled;
+        return n === 1
+          ? t.requestArrived.replace('%s', () => name)
+          : t.requestsArrivedList.replace('%n', String(n)).replace('%s', () => name);
+      },
+      {
+        arrival: true,
+        action: {
+          label: (t) => {
+            const r = this.route;
+            return r.kind === 'storedList' && r.listId === oneList(held())
+              ? t.arrivalShow
+              : t.arrivalOpen;
+          },
+          go: () => {
+            this.openRequests(oneList(held()));
+          }
+        }
+      }
+    );
+  }
+
+  /* Signed out or another user: the arrival toast and what it holds go. */
+  #dropArrival(): void {
+    if (this.#waiting?.arrival) this.#waiting = null;
+    if (this.#said?.arrival) this.hideToast();
+    this.#arrival = null;
+    this.#arrivalHeld = false;
+    this.requestsFocus = null;
+  }
+
+  /**
+   * The arrival toast's action: opens the list's page, or `#/lists` for several lists,
+   * unless the route is already there. With a list, the panel takes the focus
+   * (`requestsFocus`) once the route is that list; a navigation refused by unsaved edits
+   * sets nothing. The toast moves a focus left on `body` to `#main` (`Toast.svelte`).
+   */
+  openRequests(listId: string | null): void {
+    const there = (): boolean => {
+      const r = this.route;
+      return listId
+        ? r.kind === 'storedList' && r.listId === listId
+        : r.kind === 'section' && r.section === 'lists';
+    };
+    if (!there()) this.go(listId ? storedListHash(listId) : sectionHash('lists'));
+    if (listId && there()) this.requestsFocus = listId;
+  }
+
+  /* A route away from the flagged list drops the panel's focus flag. */
+  #forgetRequestsFocus(): void {
+    const r = this.route;
+    if (r.kind !== 'storedList' || r.listId !== this.requestsFocus) this.requestsFocus = null;
   }
 
   #applySource(): void {
@@ -1846,29 +1930,28 @@ export class AppState {
     if (legacy) this.source = legacy;
   }
 
-  /** Where this page is, as the link builders in lib/hash.ts want it. */
+  /** The app root, as the link builders in lib/hash.ts want it. */
   get site(): Site {
     return { base: this.env.router.base() };
   }
 
   /** An address to hand somebody else, in the language on screen, so a messenger
-   *  builds its preview in that language. A card family (an item, a share link, a
-   *  print set, a catalog table) goes through the preview host, so a messenger draws
-   *  its own card; `v` is that card's version. Any other address, and every address in
-   *  a build with no preview host, is the app's own. */
+   *  builds its preview in that language: the path form the bar shows, on the preview
+   *  host's origin when the build names one (`||`: an unset one is empty); `v` is the
+   *  card's version. */
   linkTo(hash: string, v?: string): string {
-    const card = this.env.preview ? previewUrl(this.env.preview, hash, this.lang, v) : null;
-    return card ?? appUrl(this.site, hash, this.lang);
+    return appUrl({ base: this.env.preview || this.site.base }, hash, this.lang, v);
   }
 
   /** A record's address to hand somebody else, in the language on screen: a homebrew item's
    *  preview link, versioned by the record (its `#/h/` address in a build with no preview
-   *  host), else the record's stub page. Every record with a `hid` is saved. */
+   *  host), else the record's stub page, versioned by the build's card map when it holds
+   *  the record. Every record with a `hid` is saved. */
   linkToRecord(it: Record_): string {
     const hid = isHomebrewRecord(it) ? it.hid : undefined;
     return typeof hid === 'string'
       ? this.linkTo(itemHash(hid), cardVersion(it))
-      : recordUrl(this.site, it.id, this.lang);
+      : recordUrl(this.site, it.id, this.lang, this.env.data.cardVersion(it.id));
   }
 
   /* Art that failed to load, remembered for the session only: a missing file
@@ -1892,7 +1975,7 @@ export class AppState {
    *  the footer and the account page's consent line link the copy of the
    *  language on screen. */
   get pagesDir(): string {
-    return this.lang === 'en' ? 'pages/en/' : 'pages/';
+    return this.lang === 'en' ? '/pages/en/' : '/pages/';
   }
 
   /** `$derived` rather than a getter: `Shell`, `App` and every page
@@ -1901,7 +1984,7 @@ export class AppState {
   route: Route = $derived.by(() => parseHash(this.hash));
 
   /** Which tab is lit. Nothing is lit on a record, a list page or a print
-   *  sheet - the live `renderTabs` (app.js 3667-3673) compares against the
+   *  sheet - the live `renderTabs` (`git show 23c00a6^:app.js`) compares against the
    *  raw route string, and a list route is never that string. */
   section: Section | null = $derived.by(() => {
     const r = this.route;
@@ -1912,6 +1995,7 @@ export class AppState {
 
   setLang(lang: Lang): void {
     this.lang = lang;
+    this.env.router.relang(this.lang);
     this.env.storage.set(LANG_KEY, lang);
     this.#changed();
   }
@@ -2010,7 +2094,7 @@ export class AppState {
        Back/Forward landing on exactly that hash was then swallowed by the
        `h === this.#expectHash` guard above, instead of being processed. */
     if (hash !== this.env.router.hash()) this.#expectHash = hash;
-    this.env.router.navigate(hash);
+    this.env.router.navigate(hash, this.lang, this.#barVersion(hash));
     /* `go()`'s callers all build a hash from this file's own writers,
        so this is defence rather than a reachable bug - but the router's own
        `onChange` handler already resolves a bad hash through `#fallback`
@@ -2021,11 +2105,11 @@ export class AppState {
     this.hash = this.#fallback(hash);
     this.#forgetSignIn();
     this.#forgetPending();
+    this.#forgetRequestsFocus();
     this.navigations++;
     this.menuFor = '';
     this.#clearTicksOnLeave(from);
     this.#applySource();
-    this.#expand();
   }
 
   /** Clears the selection and folds its menu - the live `clearSel` action. */
@@ -2074,99 +2158,15 @@ export class AppState {
   }
 
   /**
-   * Expands a packed shared-list address in place - the live `expandHash`
-   * (app.js 3589-3603). Runs at the same three moments the live app calls it:
-   * the constructor (after the first route is settled), every navigation the
-   * router announces, and every `go()`. Never from `replace()` - the
-   * expansion's own `replace` below would re-enter this.
-   *
-   * The live shape replaced the address unconditionally,
-   * which meant a slow unpack resolving after the reader had already moved on
-   * sent them back to the shared list. `stillHere()` re-reads `this.route`
-   * at resolve time and both branches below drop the result unless the route
-   * is still the exact packed payload this call started from.
-   *
-   * `unpack` hands back a payload still starting with `PACK_MARK` when the
-   * port cannot decompress at all (the test env's `plainCompress`, and a
-   * browser without `DecompressionStream` inside the real port's own catch) -
-   * that is the same failure as a rejected promise. Both used to land on
-   * `#/l/zzzz`, replacing the address the reader actually has; now both keep
-   * it and record the failure in `expandFailed` instead, so `ListPage` can
-   * draw the bad-link state without the address itself moving.
-   */
-  #expand(): void {
-    const r = this.route;
-    /* After the cutoff a packed link is never unpacked: it draws the retired page. */
-    if (r.kind !== 'sharedList' || !r.packed || !this.legacyWritable) return;
-    const { payload } = r;
-    const stillHere = (): boolean => {
-      const cur = this.route;
-      return cur.kind === 'sharedList' && cur.packed && cur.payload === payload;
-    };
-    void this.env.compress
-      .unpack(payload)
-      .then((plain) => {
-        if (!stillHere()) return;
-        if (plain.startsWith(PACK_MARK)) {
-          this.expandFailed = payload;
-        } else {
-          this.expandFailed = '';
-          this.replace(sharedListHash(plain));
-          this.#runPending();
-        }
-      })
-      .catch(() => {
-        if (!stillHere()) return;
-        this.expandFailed = payload;
-      });
-  }
-
-  /**
    * Rewrites the address in place - a filter pick, not a step. Keeps `hash` in
    * step with what `replaceState` just wrote, the way `go()` does for
    * `navigate`, but adds no history entry and does not count as a navigation:
    * see `navigations` above.
    */
   replace(hash: string): void {
-    this.env.router.replace(hash);
+    this.env.router.replace(hash, this.lang, this.#barVersion(hash) ?? null);
     this.hash = hash;
     this.#applySource();
-  }
-
-  /**
-   * Rewrites the address to the list's players' payload, in place - the live
-   * `syncListUrl` (app.js 1596-1598). `replace` uses `replaceState`, which
-   * fires no navigation, so this never re-enters the router's own `onChange`:
-   * after it runs, the route's payload equals `urlPayload` and the same list
-   * resolves, so the hash already matches and the effect that calls this
-   * does not loop.
-   */
-  syncListUrl(l: StoredList): void {
-    const want = this.#claimList(l);
-    if (this.hash !== want) this.replace(want);
-  }
-
-  /**
-   * Opens a list this tab just made (a restored or saved copy) at its
-   * players' address, claimed by id as `syncListUrl` leaves it: matched by
-   * content alone, a second copy of one link could open an older copy.
-   */
-  openNewList(l: StoredList): void {
-    this.go(this.#claimList(l));
-  }
-
-  #claimList(l: StoredList): string {
-    const payload = encodeList(l, true);
-    this.openList = l.id;
-    this.urlPayload = payload;
-    return sharedListHash(payload);
-  }
-
-  /** The live app clears `S.openList`/`S.urlPayload` on every route that is
-   *  not a list page. */
-  clearOpenList(): void {
-    this.openList = '';
-    this.urlPayload = '';
   }
 
   get home(): string {
@@ -2211,18 +2211,5 @@ export class AppState {
     }
     this.#changed();
     return true;
-  }
-
-  /** Whether the "lists live in this browser only" notice has been dismissed. */
-  get warnHidden(): boolean {
-    return this.#warnHidden;
-  }
-
-  /** Dismisses the notice for good - the live `hideWarn`, which ignores a
-   *  refused write the same way: storage refusing means the page is drawing
-   *  the other, undismissable warning anyway. */
-  hideWarn(): void {
-    this.env.storage.set(WARN_KEY, '1');
-    this.#warnHidden = true;
   }
 }

@@ -2,20 +2,18 @@
 
    A fixture is a file, not whatever the code happens to do today: a link
    someone pasted into a chat six months ago has to keep opening after the app
-   is rewritten. So everything here is compared with what is on disk, and the
-   base64 and checksum work is done by a second implementation - one that cannot
-   agree with the app in an error.
+   is rewritten. So everything here is compared with what is on disk, read by a
+   walk of its own - one that cannot agree with the app in an error.
 
    This is also where the thing nobody was checking lives: the filter group
    names. A group a table does not offer is ignored silently and the table stays
    whole, which is how `f_rg-melee` from llms.txt spent a year looking like a
    working filter while selecting nothing.
 
-   This file covers only its fs-only half - the list-encoding
-   check, the docs-name check, the lists file import-v1, import-v2 and import-v3 and the
-   homebrew files homebrew-v1 and homebrew-v2 (their schemas, fixtures, llms.txt sections and
-   the data zip). The browser half (the link against a real
-   app, the address grammar, the stat line, the filter-group probe) moved to
+   This file covers only its fs-only half - the docs-name check, the lists file
+   import-v1, import-v2 and import-v3 and the homebrew files homebrew-v1 and homebrew-v2
+   (their schemas, fixtures, llms.txt sections and the data zip). The browser half (an old
+   list link, the address grammar, the stat line, the filter-group probe) moved to
    `tests/app/contracts.js`, which reads the rewrite instead of the live app;
    `docs/specs/COVERAGE.md`'s `contracts` row says where each assertion went. */
 const fs = require('fs');
@@ -25,68 +23,7 @@ const { ok, failed } = require('./ok.js');
 
 const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
 
-/* A separate implementation of the encoding - that is the whole point */
-const b64url = (s) =>
-  Buffer.from(s, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-/* FNV-1a, as in the app, but written again here */
-function stampOf(parts) {
-  const body = parts.join(',');
-  let h = 2166136261;
-  for (let i = 0; i < body.length; i++) {
-    h ^= body.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
-}
-
-const N_REC = '\x1e',
-  N_SEP = '\x1f';
-
 (async () => {
-  /* ---------- list fixtures: the pure half ---------- */
-  console.log('list encoding');
-  const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter((f) => f.endsWith('.json'));
-  ok(listFiles.length >= 6, 'fewer than six list fixtures: ' + listFiles.length);
-  const lists = listFiles.map((f) =>
-    JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8'))
-  );
-
-  lists.forEach(function (fx) {
-    ['player', 'gm'].forEach(function (who) {
-      const side = fx[who];
-      ok(
-        b64url(side.raw) === side.payload,
-        fx.id + '/' + who + ': payload is not base64url(utf8(raw))'
-      );
-      /* The items line starts with the checksum, and it has to match the body */
-      const itemsLine = side.raw.split('\n')[1] || '';
-      const cut = itemsLine.indexOf('~');
-      ok(cut > 0, fx.id + '/' + who + ': no checksum on the items line');
-      const parts = itemsLine.slice(cut + 1).split(',');
-      ok(
-        stampOf(parts) === itemsLine.slice(0, cut + 1),
-        fx.id + '/' + who + ': the checksum does not match the items'
-      );
-      ok(
-        parts.length === fx.list.ids.length,
-        fx.id + '/' + who + ': the link holds a different number of entries than the list'
-      );
-    });
-    /* The player link carries no unmarked note */
-    const hidden = fx.player.raw
-      .split(N_REC)
-      .slice(1)
-      .filter(function (rec) {
-        const id = rec.slice(0, rec.indexOf(N_SEP));
-        return id.charAt(0) !== '+' && id !== '$';
-      });
-    ok(!hidden.length, fx.id + ': a GM note survived into the player link');
-  });
-
   /* ---------- filter group names ---------- */
   /* Every group named in llms.txt and in CONTRACTS.md has to select something
      on the rewrite; `tests/app/contracts.js` runs the probe itself. What
@@ -122,15 +59,14 @@ const N_REC = '\x1e',
   /* The English addresses are public paths too (CONTRACTS.md sections 3-5):
      an agent reads llms.txt to build them. */
   ok(
-    machine.includes('i/en/<id>.html'),
-    'llms.txt does not name the English stub i/en/<id>.html'
+    machine.includes('`i/en/<id>`') && machine.includes('i/<id>.html'),
+    'llms.txt does not name the English stub i/en/<id> and the older .html form'
   );
   ok(
-    machine.includes('daggerheart-loot/en/'),
-    'llms.txt does not name the English address daggerheart-loot/en/'
+    machine.includes('https://daggerheart-loot.pages.dev/en/'),
+    'llms.txt does not name the English address https://daggerheart-loot.pages.dev/en/'
   );
-  /* The account share link is a public address (CONTRACTS.md section 1), and
-     the old list links carry a published end date (section 3). */
+  /* The account share link is a public address (CONTRACTS.md section 1). */
   const routesDoc = fs.readFileSync(path.join(FIX, '..', 'specs', 'ROUTES.md'), 'utf8');
   const contractsText = fs.readFileSync(path.join(FIX, '..', 'specs', 'CONTRACTS.md'), 'utf8');
   [
@@ -138,12 +74,12 @@ const N_REC = '\x1e',
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/s/<token>'), name + ' does not name the share link #/s/<token>');
+    ok(text.includes('/s/<token>'), name + ' does not name the share link /s/<token>');
     ok(
-      text.includes('#/s/<token>/f_'),
-      name + " does not name the share link's filter #/s/<token>/f_"
+      text.includes('/s/<token>/f_'),
+      name + " does not name the share link's filter /s/<token>/f_"
     );
-    ok(text.includes('#/h/<uuid>'), name + ' does not name the item address #/h/<uuid>');
+    ok(text.includes('/h/<uuid>'), name + ' does not name the item address /h/<uuid>');
   });
   /* The URL ids follow the source products and the old ids still resolve
      (CONTRACTS.md section 1): an agent builds the new id and reads an old link. */
@@ -182,38 +118,34 @@ const N_REC = '\x1e',
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/homebrew'), name + ' does not name the homebrew page #/homebrew');
+    ok(text.includes('`/homebrew`'), name + ' does not name the homebrew page /homebrew');
     ok(
-      text.includes('#/tables/homebrew'),
-      name + ' does not name the homebrew table #/tables/homebrew'
+      text.includes('/tables/homebrew'),
+      name + ' does not name the homebrew table /tables/homebrew'
     );
     ok(text.includes('hb_'), name + ' does not name the reserved key prefix hb_');
-    for (const tab of ['#/homebrew/sources', '#/homebrew/sets', '#/homebrew/rules']) {
+    for (const tab of ['/homebrew/sources', '/homebrew/sets', '/homebrew/rules']) {
       ok(text.includes(tab), name + ' does not name the «Мои предметы» tab ' + tab);
     }
+    /* The Items tab's filter address, where `src` is a facet of any number of values. */
+    ok(
+      text.includes('/homebrew/f_<filter>'),
+      name + ' does not name the Items tab filter address /homebrew/f_<filter>'
+    );
     /* The meaning of `src` on the homebrew table: one value, the source chip. */
     ok(
       /On `homebrew`, `src` holds one value and picks the\s+source chip/.test(text),
       name + ' does not say that `src` on `homebrew` holds one value and picks the source chip'
     );
   });
-  [
-    ['llms.txt', machine],
-    ['CONTRACTS.md', contractsText]
-  ].forEach(function ([name, text]) {
-    ok(
-      text.includes('2026-10-26'),
-      name + ' does not name the date #/l/ links stop, 2026-10-26'
-    );
-  });
-  /* Every print is a stored set at #/p/<id>, and the long print links are retired
+  /* Every print is a stored set at /p/<id>, and the long print links are retired
      (CONTRACTS.md section 1): an agent must find the date and build no print address. */
   [
     ['llms.txt', machine],
     ['CONTRACTS.md', contractsText],
     ['ROUTES.md', routesDoc]
   ].forEach(function ([name, text]) {
-    ok(text.includes('#/p/<id>'), name + ' does not name the print set address #/p/<id>');
+    ok(text.includes('/p/<id>'), name + ' does not name the print set address /p/<id>');
   });
   [
     ['llms.txt', machine],
@@ -221,12 +153,14 @@ const N_REC = '\x1e',
   ].forEach(function ([name, text]) {
     ok(
       text.includes('2026-10-08'),
-      name + ' does not name the date the #/print/ links were retired, 2026-10-08'
+      name + ' does not name the date the print links were retired, 2026-10-08'
     );
   });
   ok(
-    !machine.includes('#/print/<id>') && !machine.includes('#/print/ci1*3-q1'),
-    'llms.txt still teaches a #/print/ address'
+    !machine.includes('#/print/<id>') &&
+      !machine.includes('#/print/ci1*3-q1') &&
+      !machine.includes('`/print/<id>`'),
+    'llms.txt still teaches a print address'
   );
 
   /* Record text is Markdown subset source and the csv is plain text (CONTRACTS.md
@@ -280,7 +214,6 @@ const N_REC = '\x1e',
   const preview = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'preview.json'), 'utf8'));
   ok(preview.origin === PREVIEW_ORIGIN, 'preview.json names another origin: ' + preview.origin);
   for (const c of preview.build) {
-    if (c.url === null) continue;
     ok(
       c.url.startsWith(PREVIEW_ORIGIN + '/'),
       'preview.json build url off the origin: ' + c.url
@@ -292,6 +225,151 @@ const N_REC = '\x1e',
       /^https:\/\/[a-z0-9]+\.daggerheart-loot\.pages\.dev\//.test(offOrigin[0].url),
     'preview.json serves a url off the origin other than the one deployment-host case'
   );
+  /* The site and the card families share one host since the move to Cloudflare Pages;
+     Pages routes only the families to the worker (CONTRACTS.md section 5). */
+  ok(preview.site === PREVIEW_ORIGIN + '/', 'preview.json names another site: ' + preview.site);
+  const routesFile = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'preview', 'public', '_routes.json'), 'utf8')
+  );
+  ok(
+    JSON.stringify(preview.routes) === JSON.stringify(routesFile.include),
+    "preview.json's routes are not preview/public/_routes.json's include list"
+  );
+  const routed = (p) => preview.routes.some((r) => p.startsWith(r.slice(0, -1)));
+  for (const c of preview.serve) {
+    const p = new URL(c.url).pathname;
+    ok(
+      c.static ? !routed(p) : routed(p),
+      'preview.json ' + c.url + (c.static ? ' is static but routed' : ' is not routed')
+    );
+  }
+  ok(
+    !preview.routes.some((r) => /^\/(en\/)?mcp/.test(r)),
+    'a route names /mcp, which is reserved for the ai-mcp task'
+  );
+
+  console.log('record links');
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/record\.json/m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/urls/record.json"
+  );
+  const record = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'record.json'), 'utf8'));
+  ok(record.site === PREVIEW_ORIGIN + '/', 'record.json names another site: ' + record.site);
+  for (const c of record.build) {
+    ok(
+      c.url.startsWith(PREVIEW_ORIGIN + '/i/') && !c.url.includes('.html'),
+      'record.json url is not an extensionless stub on the site: ' + c.url
+    );
+    ok(
+      c.url.includes('?v=') === Boolean(c.v) && (!c.v || c.url.endsWith('?v=' + c.v)),
+      'record.json url carries ?v= other than exactly when its row has v: ' + c.url
+    );
+  }
+  /* The two forms of one address (CONTRACTS.md section 1, ROUTES.md "Path form"):
+     the fixture's shape, and the host answering every route the app parses in
+     both languages - a route the app reads but the host misses would answer 404
+     on a reload. */
+  console.log('path forms');
+  ok(
+    /^Fixtures:[^\n]*(\n[^\n]+)*docs\/fixtures\/urls\/paths\.json/m.test(contractsText),
+    "CONTRACTS.md's fixture list does not name docs/fixtures/urls/paths.json"
+  );
+  const paths = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'paths.json'), 'utf8'));
+  const LANG = (v) => v === 'ru' || v === 'en';
+  ok(
+    Array.isArray(paths.parse) &&
+      paths.parse.length > 0 &&
+      paths.parse.every(
+        (c) =>
+          typeof c.path === 'string' &&
+          c.path.startsWith('/') &&
+          typeof c.fragment === 'string' &&
+          typeof c.hash === 'string' &&
+          c.hash.startsWith('#/') &&
+          (c.lang === null || LANG(c.lang)) &&
+          typeof c.why === 'string' &&
+          c.why.length > 0
+      ),
+    'paths.json parse rows are not { path, fragment, hash, lang, why }'
+  );
+  ok(
+    Array.isArray(paths.build) &&
+      paths.build.length > 0 &&
+      paths.build.every(
+        (c) =>
+          typeof c.hash === 'string' &&
+          LANG(c.lang) &&
+          typeof c.path === 'string' &&
+          c.path.startsWith('/') &&
+          typeof c.why === 'string' &&
+          c.why.length > 0
+      ),
+    'paths.json build rows are not { hash, lang, path, why }'
+  );
+  const { pathOf } = require('../app/src/lib/address.ts');
+  const PUB = path.join(__dirname, '..', 'preview', 'public');
+  const pattern = (from) =>
+    from.endsWith('*') ? (p) => p.startsWith(from.slice(0, -1)) : (p) => p === from;
+  const rewrites = fs
+    .readFileSync(path.join(PUB, '_redirects'), 'utf8')
+    .split('\n')
+    .map((l) => l.trim().split(/\s+/))
+    .filter((w) => w[0] && !w[0].startsWith('#'))
+    .map(([from, , status]) => ({ match: pattern(from), status: Number(status) }));
+  /* Pages routes `/x/*` to the worker for the bare `/x` too (measured 2026-10-28 with
+     wrangler pages dev); `exclude` wins over `include`. */
+  const routePattern = (from) =>
+    from.endsWith('/*')
+      ? (p) => p === from.slice(0, -2) || p.startsWith(from.slice(0, -1))
+      : (p) => p === from;
+  const excluded = (routesFile.exclude || []).map(routePattern);
+  const workerPaths = routesFile.include
+    .map(routePattern)
+    .map((m) => (p) => m(p) && !excluded.some((x) => x(p)));
+  const ROOT_DIR = path.join(__dirname, '..');
+  /* A static page the site publishes: the two roots and a record's i/ page. */
+  const staticPage = (p) => {
+    if (p === '/' || p === '/en/') return true;
+    const rec = /^\/i\/(en\/)?([\w-]+)$/.exec(p);
+    return !!rec && fs.existsSync(path.join(ROOT_DIR, 'i', rec[1] || '', rec[2] + '.html'));
+  };
+  const answers = (p) =>
+    staticPage(p) ||
+    workerPaths.some((m) => m(p)) ||
+    rewrites.some((r) => r.status === 200 && r.match(p));
+  const routeRows = JSON.parse(fs.readFileSync(path.join(FIX, 'urls', 'routes.json'), 'utf8'));
+  for (const row of routeRows) {
+    /* A row the app answers with the home section names no page of its own. */
+    if (row.resolves.hash !== row.hash) continue;
+    for (const lang of ['ru', 'en']) {
+      const p = pathOf(row.hash, lang);
+      ok(answers(p), 'the host answers ' + p + ' (' + row.hash + ') with no app document');
+      /* The worker answers a path it does not parse with a 302 home. */
+      ok(
+        !(
+          workerPaths.some((m) => m(p)) && rewrites.some((r) => r.status === 200 && r.match(p))
+        ),
+        'the worker takes ' + p + ' from its _redirects rewrite; add it to _routes.json exclude'
+      );
+    }
+  }
+  /* A hand-typed trailing slash on the bare tables page reaches the app, not the worker
+     (docs/specs/CONTRACTS.md section 1). */
+  for (const p of ['/tables/', '/en/tables/']) {
+    ok(
+      rewrites.some((r) => r.status === 200 && r.match(p)) && !workerPaths.some((m) => m(p)),
+      'the host does not answer ' + p + ' with the app document'
+    );
+  }
+  ok(
+    rewrites.some((r) => r.status === 301 && r.match('/en/i/ci1')),
+    '_redirects does not send /en/i/<id> to /i/en/<id>'
+  );
+  ok(
+    !rewrites.some((r) => r.match('/mcp') || r.match('/en/mcp')),
+    '_redirects names /mcp, which is reserved for the ai-mcp task'
+  );
+
   const ciText = fs.readFileSync(
     path.join(__dirname, '..', '.github', 'workflows', 'ci.yml'),
     'utf8'

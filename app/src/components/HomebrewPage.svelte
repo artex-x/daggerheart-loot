@@ -2,8 +2,9 @@
   /* `#/homebrew`, «Мои предметы» (m02, m03, m15, m24 in the homebrew mocks): the head with
      the home button and «?» on every tab and state (one pin, `#/homebrew`), «Импорт из
      файла» above the tab row, then one of four tabs at its own address. The Items tab: «Новый
-     предмет», the search and the filter strip from the eighth item, the count, and the own
-     items under one heading per source and section. A row opens the editor; its tick feeds
+     предмет», the search and the filter strip from the eighth item or a value in force (the
+     picked values are the address `#/homebrew/f_...`), the count, and the own items under
+     one heading per source and section. A row opens the editor; its tick feeds
      the frame's selection bar, and the strip above the rows moves, downloads and deletes the
      ticked items that the search and the filter draw (docs/specs/FEATURES.md, "Homebrew").
      The import loads as a lazy chunk on its first open and stays open across a tab press. */
@@ -28,7 +29,13 @@
   import type HomebrewImport from './HomebrewImport.svelte';
   import { plainFacets } from '../lib/data.js';
   import { homebrewFacetRows, narrowRows } from '../lib/facets.js';
-  import { chosenCount, groupsFor, passes, type FilterState } from '../lib/filters.js';
+  import {
+    chosenCount,
+    encodeFilter,
+    groupsFor,
+    passes,
+    type FilterState
+  } from '../lib/filters.js';
   import {
     HOMEBREW_HASH,
     homebrewItemHash,
@@ -65,31 +72,44 @@
     { tab: 'rules', label: 'hbRefs' }
   ];
 
-  /* The Items tab's search and filter: page memory, empty each time the tab opens, never in
-     the address (docs/specs/STATE.md, the UI row). */
-  let findQ = $state('');
-  let picked = $state<FilterState>({});
-  let filterOpen = $state(false);
-  $effect(() => {
-    if (tab !== 'items') {
-      findQ = '';
-      picked = {};
-      filterOpen = false;
-    }
-  });
-  const filtering = $derived(store.records.length >= LIST_SEARCH_AT);
-  const found = $derived(filtering ? matchRecords(store.records, findQ) : store.records);
+  /* The Items tab's filter: the picked values are the address (`#/homebrew/f_...`); the
+     query and the panel's fold are page memory, empty each time the tab opens. A segment
+     this page did not write (a filter address, Back, «Предметы» pressed) opens the panel, as on
+     the tables and shared pages (docs/specs/ROUTES.md, "Homebrew"; docs/specs/STATE.md). */
   const HB_GROUPS = groupsFor('homebrew');
+  let findQ = $state('');
+  let filterOpen = $state(false);
+  let seenSeg = $state('');
+  /* Whether the search box and the strip are drawn: from the eighth item or a value in
+     force, latched until the tab is left, so dropping the last pill never removes the
+     control that has the focus. */
+  let finding = $state(false);
+  const picked = $derived<FilterState>(app.route.kind === 'homebrew' ? app.route.filter : {});
+  $effect(() => {
+    const route = app.route;
+    const on = tab;
+    untrack(() => {
+      if (on !== 'items') {
+        findQ = '';
+        filterOpen = false;
+        seenSeg = '';
+        finding = false;
+        return;
+      }
+      const seg = route.kind === 'homebrew' ? encodeFilter(route.filter, HB_GROUPS) : '';
+      if (seg !== seenSeg) filterOpen = true;
+      seenSeg = seg;
+    });
+  });
+  const found = $derived(finding ? matchRecords(store.records, findQ) : store.records);
   const facetOf = (it: Record_, g: string): string => plainFacets(it)[g] ?? '';
   const facRows = $derived(
-    filtering
-      ? narrowRows(
-          homebrewFacetRows(found, t, app.lang, picked['src'] ?? []),
-          found,
-          facetOf,
-          picked
-        )
-      : []
+    narrowRows(
+      homebrewFacetRows(found, t, app.lang, picked['src'] ?? []),
+      found,
+      facetOf,
+      picked
+    )
   );
   /* A picked value no row offers is not in force: a re-read that drops a source or a
      section, or a source pick that leaves another source's section. */
@@ -105,6 +125,20 @@
   const drawn = $derived(
     found.filter((it) => passes(inForce, HB_GROUPS, (g) => facetOf(it, g)))
   );
+  $effect(() => {
+    if (
+      tab === 'items' &&
+      !finding &&
+      (store.records.length >= LIST_SEARCH_AT || chosenCount(inForce, HB_GROUPS) > 0)
+    )
+      finding = true;
+  });
+
+  /** Writes a filter into the address, marked as this page's own edit. */
+  function applyFilter(next: FilterState): void {
+    seenSeg = encodeFilter(next, HB_GROUPS);
+    app.replace(homebrewTabHash('items', null, next));
+  }
 
   function pickFacet(group: string, value: string): void {
     const order = facRows.find((r) => r.group === group)?.values.map((v) => v.value) ?? [];
@@ -112,7 +146,7 @@
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
       : order.filter((v) => current.includes(v) || v === value);
-    picked = { ...inForce, [group]: next };
+    applyFilter({ ...inForce, [group]: next });
   }
 
   /* Rule 20 (docs/specs/FEATURES.md): the control that removed itself hands focus on. */
@@ -125,7 +159,7 @@
   const newItemLink = (): HTMLElement | null => newRow?.querySelector('a') ?? null;
 
   async function resetFromEmpty(): Promise<void> {
-    picked = {};
+    applyFilter({});
     await tick();
     focusOr(filterToggle);
   }
@@ -330,7 +364,11 @@
       <nav aria-label={t.myItems}>
         <ChipRow>
           {#each TABS as x (x.tab)}
-            <Chip label={t[x.label]} on={x.tab === tab} href={homebrewTabHash(x.tab)} />
+            <Chip
+              label={t[x.label]}
+              on={x.tab === tab}
+              href={app.href(homebrewTabHash(x.tab))}
+            />
           {/each}
         </ChipRow>
       </nav>
@@ -342,13 +380,13 @@
         <HomebrewCards {app} {store} kind="ref" {openKey} />
       {:else}
         <div class="acts" bind:this={newRow}>
-          <Button variant="primary" href={homebrewItemHash(null)} sameTab
+          <Button variant="primary" href={app.href(homebrewItemHash(null))} sameTab
             ><Icon name="plus" />{t.hbNewItem}</Button
           >
         </div>
         <div>
           <StatusRegion text={deletingSaid} />
-          {#if filtering}
+          {#if finding}
             <div class="find">
               <SearchBox
                 value={findQ}
@@ -369,7 +407,7 @@
                 }}
                 onpick={pickFacet}
                 onreset={() => {
-                  picked = {};
+                  applyFilter({});
                 }}
                 bind:toggleEl={filterToggle}
               />

@@ -17,8 +17,8 @@
     /** Why pressing it will be refused, where it will be. */
     title?: string | undefined;
     /**
-     * The live app's own `data-val` on this control - `app.js:2217`'s source
-     * chips carry `"core"`/`"hnf"`, and nothing else in this component's
+     * The live app's own `data-val` on this control - the live source row's
+     * (`git show 23c00a6^:app.js`) chips carry `"core"`/`"hnf"`, and nothing else in this component's
      * three callers does. Optional because most chips are gripped by their
      * Russian label alone; `StdPanel`'s source row is the one place a test
      * needs to tell them apart without reading the language-dependent text.
@@ -35,8 +35,6 @@
     /** `sm` is the table nav's second row - a book's own sections, quieter
      *  than the row of books above them. */
     size?: 'md' | 'sm';
-    /** A choice that cannot change now: a browser list read-only after the cutoff. */
-    disabled?: boolean | undefined;
   }
 
   /* One or the other, never both: a chip that both navigates and handles a
@@ -48,8 +46,16 @@
           onclick?: never;
           /** The chip's text under 640 px; the label stays its accessible name. */
           short?: string | undefined;
+          busy?: never;
         }
-      | { href?: never; onclick: () => void; short?: never }
+      | {
+          href?: never;
+          onclick: () => void;
+          short?: never;
+          /** A choice whose read runs: dimmed, announced busy, and a press does nothing; the
+           *  focus stays on it. */
+          busy?: boolean | undefined;
+        }
     );
 
   const {
@@ -61,7 +67,7 @@
     href,
     onclick,
     value,
-    disabled,
+    busy,
     short
   }: Props = $props();
 </script>
@@ -88,9 +94,12 @@
     class:sm={size === 'sm'}
     aria-pressed={on}
     data-val={value}
+    aria-busy={busy ? 'true' : undefined}
+    aria-disabled={busy ? 'true' : undefined}
     {title}
-    {disabled}
-    {onclick}
+    onclick={() => {
+      if (!busy) onclick?.();
+    }}
     >{label}{#if sub}<small>{sub}</small>{/if}</button
   >
 {/if}
@@ -121,12 +130,12 @@
     letter-spacing: 0.02em;
   }
 
-  .chip:hover:not(:disabled) {
+  .chip:hover:not([aria-disabled='true']) {
     border-color: var(--gold);
     color: var(--txt);
   }
 
-  .chip:disabled {
+  .chip[aria-disabled='true'] {
     opacity: 0.5;
     cursor: default;
   }

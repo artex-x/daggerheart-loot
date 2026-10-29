@@ -4,22 +4,21 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew/new]
-  link "К содержимому" [url=index.html?as=gm1#main]
+RootWebArea "Новый предмет - Генератор лута Daggerheart" [url=/homebrew/new?as=gm1]
+  link "К содержимому" [url=/homebrew/new?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
-      link "Поиск" [url=index.html?as=gm1#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Новый предмет" [level=1]
     StaticText "Хоумбрю"
@@ -66,7 +65,7 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
       textbox "Порог Тяжёлого урона" [multiline=false readonly=false required=true]
       DisclosureTriangle "Связи" [expanded=false]
       button "Сохранить"
-      link "К моим предметам" [url=index.html?as=gm1#/homebrew]
+      link "К моим предметам" [url=/homebrew]
     button "На экране" [pressed=true]
     button "На печати" [pressed=false]
     button "Страница"
@@ -75,9 +74,9 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
     heading "Новый предмет" [level=2]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -126,7 +125,6 @@ daggerheart.com
 Расходник
 Снаряжение
 Сохранить
-Списки
 Список
 Страница
 Таблица
@@ -138,22 +136,21 @@ daggerheart.com
 ХоумбрюМастерская Ольхи+ Новый источник...
 
 ## en :: tree
-RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew/new]
-  link "Skip to content" [url=index.html?as=gm1#main]
+RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1]
+  link "Skip to content" [url=/en/homebrew/new?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm1#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
-      link "Search" [url=index.html?as=gm1#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "New item" [level=1]
     StaticText "Homebrew"
@@ -200,7 +197,7 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
       textbox "Severe threshold" [multiline=false readonly=false required=true]
       DisclosureTriangle "Relations" [expanded=false]
       button "Save"
-      link "To my items" [url=index.html?as=gm1#/homebrew]
+      link "To my items" [url=/en/homebrew]
     button "On screen" [pressed=true]
     button "In print" [pressed=false]
     button "Страница"
@@ -209,9 +206,9 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
     heading "Новый предмет" [level=2]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -243,7 +240,6 @@ In print
 Install as an app
 Italic
 Item
-Lists
 Made from
 New line
 New rule card

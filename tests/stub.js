@@ -1,5 +1,6 @@
 /* The standalone generated pages - a share stub in each language, the English
- * entry document and a site page in each language. Each has its own
+ * entry document, a site page in each language and the old host's forwarding
+ * root (old-host/index.html). Each has its own
  * stylesheet and no app around it, so it is neither `dist/`
  * (`tests/app/sweep.js`'s own header says it walks `dist/`) nor the live app.
  * `tests/app/lib.js` is reused only for its browser/context plumbing -
@@ -18,7 +19,8 @@ const FILES = [
   'i/en/w3.html',
   'en/index.html',
   'pages/install.html',
-  'pages/en/install.html'
+  'pages/en/install.html',
+  'old-host/index.html'
 ];
 
 (async () => {

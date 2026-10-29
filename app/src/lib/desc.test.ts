@@ -53,15 +53,15 @@ describe('escaping', () => {
 
 describe('where a picture lives', () => {
   it('draws the 640 px file by default, and its placeholder when missing or broken', () => {
-    expect(artSrc('a.webp')).toBe('img/a.webp');
-    expect(artSrc('')).toBe('img/_none.webp');
-    expect(artSrc('a.webp', true)).toBe('img/_none.webp');
+    expect(artSrc('a.webp')).toBe('/img/a.webp');
+    expect(artSrc('')).toBe('/img/_none.webp');
+    expect(artSrc('a.webp', true)).toBe('/img/_none.webp');
   });
 
   it('draws the 160 px thumbnail for a row, and the thumbnail placeholder', () => {
-    expect(artSrc('a.webp', false, 'thumb')).toBe('img/thumb/a.webp');
-    expect(artSrc(undefined, false, 'thumb')).toBe('img/thumb/_none.webp');
-    expect(artSrc('a.webp', true, 'thumb')).toBe('img/thumb/_none.webp');
+    expect(artSrc('a.webp', false, 'thumb')).toBe('/img/thumb/a.webp');
+    expect(artSrc(undefined, false, 'thumb')).toBe('/img/thumb/_none.webp');
+    expect(artSrc('a.webp', true, 'thumb')).toBe('/img/thumb/_none.webp');
   });
 });
 
@@ -76,7 +76,7 @@ describe('where an own picture lives', () => {
   it('passes an unsaved crop through at both sizes, and draws the placeholder when it fails', () => {
     expect(artSrc('blob:http://x/1')).toBe('blob:http://x/1');
     expect(artSrc('blob:http://x/1', false, 'thumb')).toBe('blob:http://x/1');
-    expect(artSrc(own, true)).toBe('img/_none.webp');
-    expect(artSrc(own, true, 'thumb')).toBe('img/thumb/_none.webp');
+    expect(artSrc(own, true)).toBe('/img/_none.webp');
+    expect(artSrc(own, true, 'thumb')).toBe('/img/thumb/_none.webp');
   });
 });

@@ -230,7 +230,7 @@ function voaTierName(tier: VoaTier, t: Dict): string {
  * The band's own label - which fact it was read off: a rank for equipment, a
  * rarity for loot the alternate tables know, a Vault of Ages tier where
  * there is one, or a plain admission that none of those apply. The live
- * `guessWhy` (app.js 831-842).
+ * `guessWhy` (`git show 23c00a6^:app.js`).
  */
 export function guessWhy(
   it: Record_,

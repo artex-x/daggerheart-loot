@@ -1,10 +1,7 @@
 <script lang="ts">
-  /* The frame every route sits in: brand, tabs and language, and the move's
-     one-time notice under them. The storage notice moved to the lists index,
-     where the live app draws it. */
+  /* The frame every route sits in: brand, tabs and language. */
   import AccountMenu from './AccountMenu.svelte';
   import Icon from './Icon.svelte';
-  import MoveNotice from './MoveNotice.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -59,13 +56,23 @@
     const to = e.relatedTarget;
     if (to instanceof Node && !e.currentTarget.contains(to)) menuOpen = false;
   }
-  const moveState = $derived(
+  /* On an account list's page, once the account is read, the open list's entries decide. */
+  const openListState = $derived.by(() => {
+    const r = app.route;
+    const cloud = app.cloudLists;
+    if (r.kind !== 'storedList' || cloud?.status !== 'ready' || !cloud.get(r.listId)) {
+      return cloud?.status;
+    }
+    const d = cloud.detailOf(r.listId);
+    return d === 'ready' || d === 'error' ? d : 'loading';
+  });
+  const listsState = $derived(
     !app.env.cloud
       ? undefined
       : app.user === undefined
         ? 'pending'
-        : app.user && app.legacyMove
-          ? app.legacyMove.status
+        : app.user
+          ? openListState
           : undefined
   );
 
@@ -76,18 +83,12 @@
    * moved goldens a batch was not allowed to re-record; landed with the
    * re-record.
    *
-   * A browser list is keyed off `app.openList` rather than
-   * `route.kind === 'storedList'`: `ListPage`'s own mount effect rewrites a
-   * `#/lists/<id>` address to the players' payload (`#/l/<payload>`) before
-   * anything downstream, this effect included, can see the original
-   * `storedList` kind - `openList` is what survives that rewrite. An account
-   * list keeps its address, so it is read from the store, and a rename
-   * retitles the tab.
+   * An account list is read from the store, so a rename retitles the tab. A
+   * build with no sign-in keeps the plain title on `#/lists`, its not-found page.
    */
   $effect(() => {
     document.documentElement.lang = app.lang;
     const route = app.route;
-    const own = app.openList ? app.lists.get(app.openList) : undefined;
     const named =
       route.kind === 'record'
         ? app.index?.byId.get(route.id)
@@ -96,22 +97,24 @@
           : undefined;
     const name = named
       ? nameOf(named, app.lang)
-      : own
-        ? own.name
-        : route.kind === 'storedList' && app.cloudLists?.get(route.listId)
-          ? app.cloudLists.get(route.listId)?.name
-          : app.section
-            ? sectionLabel(app.section, app.t, app.legacyWritable)
-            : !app.env.cloud
-              ? undefined
-              : route.kind === 'account'
-                ? app.t.account
-                : route.kind === 'homebrew'
-                  ? app.t.myItems
-                  : route.kind === 'homebrewItem'
-                    ? homebrewTitle(route.key)
-                    : undefined;
-    document.title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
+      : route.kind === 'storedList' && app.cloudLists?.get(route.listId)
+        ? app.cloudLists.get(route.listId)?.name
+        : app.section && (app.section !== 'lists' || app.cloudLists)
+          ? sectionLabel(app.section, app.t)
+          : !app.env.cloud
+            ? undefined
+            : route.kind === 'account'
+              ? app.t.account
+              : route.kind === 'homebrew'
+                ? app.t.myItems
+                : route.kind === 'homebrewItem'
+                  ? homebrewTitle(route.key)
+                  : undefined;
+    /* The owner's unread purchase requests count before the page's name (docs/specs/FEATURES.md,
+       "Purchase requests: the owner"). */
+    const unread = app.ownerRequests?.unreadCount(app.now) ?? 0;
+    const title = name ? `${name} - ${app.t.docTitle}` : app.t.docTitle;
+    document.title = unread > 0 ? `(${String(unread)}) ${title}` : title;
   });
 
   /* The editor's tab: the item's stored name, or «Новый предмет». */
@@ -122,12 +125,11 @@
   }
 
   /** The skip link's own activation, off `#skip` in the live stylesheet's
-   *  overlay shape - `href="#main"` stays for a client with no script,
-   *  but the SPA's own hash means a browser fragment jump would also route
-   *  the app itself: `parseHash('#main')` reads as `unknown` and the app
-   *  would replace it with the home section, clearing whatever the person
-   *  had selected. Handled here instead: move focus to `#main` directly
-   *  and never let the browser touch the address bar at all. */
+   *  overlay shape - `href="#main"` stays for a client with no script, but a
+   *  browser fragment jump would add `#main` to the address and a history
+   *  entry. Handled here instead: move focus to `#main` directly and never let
+   *  the browser touch the address bar at all; the router passes a click
+   *  already prevented. */
   function skip(e: MouseEvent): void {
     e.preventDefault();
     document.getElementById('main')?.focus();
@@ -138,7 +140,7 @@
 
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="#/roll/std">
+    <a class="brand" href={app.href('#/roll/std')}>
       <svg class="brand-ico" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z" />
       </svg>
@@ -194,7 +196,7 @@
             class="acct"
             class:on={onAccount}
             bind:this={signInLink}
-            href={ACCOUNT_HASH}
+            href={app.href(ACCOUNT_HASH)}
             aria-current={onAccount ? 'page' : undefined}
             ><Icon name="user" /><span class="t">{app.t.signIn}</span></a
           >
@@ -202,27 +204,20 @@
       {/if}
     </div>
   </div>
-  <TabBar
-    t={app.t}
-    current={app.section}
-    label={app.t.sectionsLabel}
-    lists={app.legacyWritable}
-  />
+  <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} lang={app.lang} />
 </header>
 
-{#if app.env.cloud}
-  <MoveNotice {app} />
-{/if}
-
-<!-- `data-move` and `data-homebrew` are what the browser suites wait on before a
-     capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session is
-     unknown, the move's status once signed in, none signed out; the homebrew
-     store's status signed in. -->
+<!-- `data-lists`, `data-homebrew` and `data-requests` are what the browser suites wait on
+     before a capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session
+     is unknown, the account lists' status once signed in (on an account list's page the
+     read of that list's entries), none signed out or with no sign-in; the homebrew
+     store's status signed in; the owner's requests read status signed in. -->
 <main
   id="main"
   tabindex="-1"
-  data-move={moveState}
+  data-lists={listsState}
   data-homebrew={app.user ? app.homebrew?.status : undefined}
+  data-requests={app.user ? app.ownerRequests?.status : undefined}
 >
   {@render children()}
 </main>
@@ -424,6 +419,7 @@
       width: 44px;
     }
 
+    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
     .acct .t {
       position: absolute;
       width: 1px;
@@ -477,7 +473,7 @@
     outline-offset: -2px;
   }
 
-  /* off the `@media print` block in style.css (1397-1414) - this component's
+  /* off the `@media print` block in `git show 23c00a6^:style.css` - this component's
      own share: the chrome it owns and `main`'s frame. `.tabs` (`TabBar`),
      `.printbar`, `.psheet`, `.pcard` and the two `.noprint` siblings
      (`SelBar`, `Toast`) each carry their own share of the same block; the page

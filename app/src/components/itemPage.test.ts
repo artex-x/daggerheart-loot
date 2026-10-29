@@ -132,6 +132,15 @@ describe('the item page', () => {
     await expectNoA11yViolations(container);
   });
 
+  it("writes the item's card version into the bar once read", async () => {
+    const { router } = page('#/h/' + ROLL_B, 'gm2');
+    expect(router.bar()).toBe('/h/' + ROLL_B);
+    await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
+    await waitFor(() => {
+      expect(router.bar()).toMatch(new RegExp('^/h/' + ROLL_B + '\\?v=[0-9a-z]+$'));
+    });
+  });
+
   it('draws the three relation lines and the set bonus, every link an item address', async () => {
     const { container } = page('#/h/' + ROLL_B, 'gm2');
     await screen.findByRole('heading', { level: 1, name: 'Скатка следопыта' });
@@ -141,7 +150,7 @@ describe('the item page', () => {
     expect(craft.textContent).toContain(t.setLabel);
     expect(craft.textContent).toContain('Два предмета комплекта');
     const hrefs = [...craft.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs.sort()).toEqual([661, 663, 664, 665].map((n) => '#/h/' + uuid(n)).sort());
+    expect(hrefs.sort()).toEqual([661, 663, 664, 665].map((n) => '/h/' + uuid(n)).sort());
     expect(
       within(container.querySelector('.cardpick') as HTMLElement).getByText(t.saveItemNote)
     ).toBeInTheDocument();
@@ -154,14 +163,14 @@ describe('the item page', () => {
     await waitFor(() => {
       expect(screen.getByRole('link', { name: t.edit })).toHaveAttribute(
         'href',
-        '#/homebrew/hb_rangerrollaaaaaa'
+        '/homebrew/hb_rangerrollaaaaaa'
       );
     });
     expect(sub().includes(t.itemFrom)).toBe(false);
     expect(screen.getByRole('button', { name: t.print })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.showInTable })).toHaveAttribute(
       'href',
-      '#/tables/homebrew/hb_rangerrollaaaaaa'
+      '/tables/homebrew/hb_rangerrollaaaaaa'
     );
     expect(screen.queryByRole('button', { name: t.saveItem })).toBeNull();
     await expectNoA11yViolations(container);

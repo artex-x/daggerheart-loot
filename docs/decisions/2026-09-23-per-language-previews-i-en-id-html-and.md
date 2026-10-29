@@ -1,5 +1,6 @@
 # 2026-09-23 - Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language
 
+- Superseded in part by "The site moves to Cloudflare Pages and the old host mirrors its files" (2026-10-28): the refresher's state.
 - Task: `64`; the owner settled `i/en/<id>.html`, the seed-when-absent rule,
   the English root, two re-rendered cards and one copy per static page.
 - Decision: `i/<id>.html` and the root stay Russian and frozen; `i/en/<id>.html`

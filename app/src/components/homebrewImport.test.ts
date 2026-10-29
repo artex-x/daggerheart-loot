@@ -48,13 +48,13 @@ describe('the import panel', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Выбрать файл...' })).toBeInTheDocument();
     const schema = screen.getByRole('link', { name: 'схеме homebrew-v2' });
-    expect(schema).toHaveAttribute('href', 'schema/homebrew-v2.json');
+    expect(schema).toHaveAttribute('href', '/schema/homebrew-v2.json');
     expect(schema).toHaveAttribute('target', '_blank');
     expect(schema).toHaveAttribute('rel', 'noopener');
-    expect(container.querySelector('a[href="schema/homebrew-v1.json"]')).toBeNull();
+    expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
     expect(screen.getByRole('link', { name: 'описание для ИИ-помощников' })).toHaveAttribute(
       'href',
-      'llms.txt'
+      '/llms.txt'
     );
     expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
       'Файл, сохранённый кнопкой «Скачать JSON» или собранный по схеме homebrew-v2 (описание для ИИ-помощников), или архив ZIP из «Скачать мои данные». Предметы, которые уже есть, можно пропустить или обновить.'
@@ -464,10 +464,10 @@ describe("a card's book items on «Обновить»", () => {
       await userEvent.click(screen.getByRole('button', { name: 'EN' }));
       await screen.findByText('Import items from a JSON file');
       const schema = screen.getByRole('link', { name: 'homebrew-v2 schema' });
-      expect(schema).toHaveAttribute('href', 'schema/homebrew-v2.json');
+      expect(schema).toHaveAttribute('href', '/schema/homebrew-v2.json');
       expect(schema).toHaveAttribute('target', '_blank');
       expect(schema).toHaveAttribute('rel', 'noopener');
-      expect(container.querySelector('a[href="schema/homebrew-v1.json"]')).toBeNull();
+      expect(container.querySelector('a[href="/schema/homebrew-v1.json"]')).toBeNull();
       expect(container.querySelector('.hint')?.textContent.replace(/\s+/g, ' ').trim()).toBe(
         'A file saved with "Download JSON" or written to the homebrew-v2 schema (a description for AI assistants), or the ZIP archive from "Download my data". Items you already hold can be skipped or updated.'
       );

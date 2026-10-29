@@ -4,10 +4,10 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Обычные правила - Генератор лута Daggerheart" [url=index.html?as=gm1#/roll/std]
-  link "К содержимому" [url=index.html?as=gm1#main]
+RootWebArea "Обычные правила - Генератор лута Daggerheart" [url=/roll/std?as=gm1]
+  link "К содержимому" [url=/roll/std?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
@@ -19,12 +19,11 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       menuitem "Мои предметы"
       menuitem "Выйти"
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
-      link "Поиск" [url=index.html?as=gm1#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Обычные правила" [level=1]
     button "Открывается при запуске" [description=Открывается при запуске pressed=true]
@@ -51,27 +50,27 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       StaticText "1"
       StaticText "ПРЕДМЕТ"
       ... StaticText x16 of 20 same-shape siblings elided
-      link "Первоклассный Спальный Мешок" [description=Страница url=index.html?as=gm1#/i/ci1]
+      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       button "Отправить"
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       ... button x4 of 8 same-shape siblings elided
-      link "Зелье Быстрого Шага" [description=Страница url=index.html?as=gm1#/i/cc1]
+      link "Зелье Быстрого Шага" [description=Страница url=/i/cc1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
-      link "Большое Зелье Быстрого Шага" [url=index.html?as=gm1#/i/cc25]
+      link "Большое Зелье Быстрого Шага" [url=/i/cc25]
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
-      link "Шипы" [description=Страница url=index.html?as=gm1#/i/hi1]
+      link "Шипы" [description=Страница url=/i/hi1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       button "Скопировать изображение" [description=Скопировать изображение]
       button "Скопировать текст" [description=Скопировать текст]
       button "Страница"
       StaticText "HOPE & FEAR"
-      link "Оберегающая Свеча" [description=Страница url=index.html?as=gm1#/i/hc1]
+      link "Оберегающая Свеча" [description=Страница url=/i/hc1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "Зажгите эту свечу, и в пределах Средней дистанции разольётся оре..." [namelen=186 namehash=62be8214]
@@ -80,9 +79,9 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -125,7 +124,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Страница
 Таблицы
 Условия использования
@@ -133,22 +131,21 @@ daggerheart.com
 Шипы
 
 ## en :: tree
-RootWebArea "Standard rules - Daggerheart Loot Generator" [url=index.html?as=gm1#/roll/std]
-  link "Skip to content" [url=index.html?as=gm1#main]
+RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=gm1]
+  link "Skip to content" [url=/en/roll/std?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm1#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
-      link "Search" [url=index.html?as=gm1#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Standard rules" [level=1]
     button "Opens on start" [description=Opens on start pressed=true]
@@ -175,27 +172,27 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=index.html?as=gm1
       StaticText "1"
       StaticText "ITEM"
       ... StaticText x16 of 20 same-shape siblings elided
-      link "Premium Bedroll" [description=Page url=index.html?as=gm1#/i/ci1]
+      link "Premium Bedroll" [description=Page url=/i/en/ci1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       button "Share"
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       ... button x4 of 8 same-shape siblings elided
-      link "Stride Potion" [description=Page url=index.html?as=gm1#/i/cc1]
+      link "Stride Potion" [description=Page url=/i/en/cc1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
-      link "Major Stride Potion" [url=index.html?as=gm1#/i/cc25]
+      link "Major Stride Potion" [url=/i/en/cc25]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
-      link "Caltrops" [description=Page url=index.html?as=gm1#/i/hi1]
+      link "Caltrops" [description=Page url=/i/en/hi1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       button "Copy image" [description=Copy image]
       button "Copy text" [description=Copy text]
       button "Page"
       StaticText "HOPE & FEAR"
-      link "Warding Candle" [description=Page url=index.html?as=gm1#/i/hc1]
+      link "Warding Candle" [description=Page url=/i/en/hc1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "You can light this candle to fill an area within Close range wit..." [namelen=208 namehash=88ca1325]
@@ -204,9 +201,9 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=index.html?as=gm1
       button "Copy text" [description=Copy text]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -229,7 +226,6 @@ Hope & Fear
 How this works
 Install as an app
 Items
-Lists
 Major Stride Potion
 One higher
 One lower

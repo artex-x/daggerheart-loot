@@ -69,7 +69,7 @@
 
 <style>
   /* off `.batch`, `.batch.on`, `.batch-all`, `.batch.on .batch-all`
-     (style.css:1050-1058); the index's strip stands alone, the list page's
+     (`git show 23c00a6^:style.css`); the index's strip stands alone, the list page's
      joins the rows under it */
   .batch {
     display: flex;
@@ -129,7 +129,7 @@
     white-space: nowrap;
   }
 
-  /* off `.batch-acts` (style.css:1059) */
+  /* off `.batch-acts` (`git show 23c00a6^:style.css`) */
   .batch-acts {
     display: flex;
     align-items: center;
@@ -138,7 +138,7 @@
     margin-left: auto;
   }
 
-  /* off `.batch .btn.sm` (style.css:1081) */
+  /* off `.batch .btn.sm` (`git show 23c00a6^:style.css`) */
   .batch :global(.btn.sm) {
     height: 32px;
     padding: 0 12px;

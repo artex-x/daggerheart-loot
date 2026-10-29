@@ -1,20 +1,34 @@
-/* Stored lists: what survives a reload, and what happens when two tabs disagree.
+/* A list's shape and the pure edits the account store makes to it: finding, ordering,
+ * entry meta, notes, money and moves (docs/specs/FEATURES.md, "Lists").
  *
- * Storage itself is not here - this module is given arrays and returns arrays,
- * so the merge can be tested without a browser. The rules it encodes are in
- * docs/specs/STATE.md.
- *
- * Pure module: no localStorage, no DOM. */
+ * Pure module: no storage, no DOM. */
 
-import {
-  decodeList,
-  type DecodedList,
-  type KnowsId,
-  type ListEntryMeta,
-  type MoneyMode
-} from './listLink.js';
-import { MONEY_DEFAULT } from './money.js';
+import { MONEY_DEFAULT, type MoneyMode } from './money.js';
 import { foldQuery } from './search.js';
+
+/** The list quantity field's own `max`: a quantity read from any file or row is clamped to it. */
+export const QTY_MAX = 99;
+
+/** One entry: everything optional, older lists knew none of these fields. */
+export interface ListEntryMeta {
+  qty?: number;
+  gold?: number;
+  /** The note that goes to the players. */
+  note?: string;
+  /** The note that stays with the GM. */
+  hnote?: string;
+  /** «Только для мастера», an account list's entry only. */
+  gmOnly?: true;
+}
+
+export interface ListShape {
+  name: string;
+  ids: string[];
+  money?: MoneyMode;
+  note?: string;
+  hnote?: string;
+  meta?: Record<string, ListEntryMeta>;
+}
 
 /** The count from which a search box is drawn: lists in the add-to-list menu and on the
  *  lists index, own items, sets and rule cards on «Мои предметы». */
@@ -32,107 +46,6 @@ export interface StoredList {
   note?: string;
   hnote?: string;
   meta?: Record<string, ListEntryMeta>;
-}
-
-/** Returns the `ListStore.create` init for an own copy of a decoded list:
- *  its ids, every entry's meta, the money mode and both list notes. Fresh
- *  arrays and objects, so a reactive proxy is never stored. */
-export function copyInit(d: DecodedList): Partial<Omit<StoredList, 'id' | 'name' | 'created'>> {
-  const init: Partial<Omit<StoredList, 'id' | 'name' | 'created'>> = { ids: [...d.ids] };
-  if (d.money) init.money = d.money;
-  if (d.note) init.note = d.note;
-  if (d.hnote) init.hnote = d.hnote;
-  if (d.meta && Object.keys(d.meta).length) {
-    const meta: Record<string, ListEntryMeta> = {};
-    for (const id of Object.keys(d.meta)) {
-      const m = d.meta[id];
-      if (m) meta[id] = { ...m };
-    }
-    init.meta = meta;
-  }
-  return init;
-}
-
-/** The shape before the note split. Kept because v1 data is still read once. */
-export interface LegacyList {
-  id: string;
-  name: string;
-  ids: string[];
-  created?: number;
-  note?: string;
-  noteShow?: boolean;
-  meta?: Record<string, { qty?: number; gold?: number; note?: string; noteShow?: boolean }>;
-  [k: string]: unknown;
-}
-
-/**
- * Anything that is not a list is dropped rather than crashing the app.
- *
- * Storage is read as untrusted data: it may have been written by an older
- * build, edited by hand, or corrupted. One bad entry must not cost the rest.
- */
-export function keepLists(arr: unknown): StoredList[] {
-  if (!Array.isArray(arr)) return [];
-  return arr.filter(
-    (l): l is StoredList =>
-      !!l &&
-      typeof l === 'object' &&
-      typeof (l as StoredList).id === 'string' &&
-      !!(l as StoredList).id &&
-      Array.isArray((l as StoredList).ids)
-  );
-}
-
-/**
- * One flagged note becomes two named ones.
- *
- * The old `noteShow` meant "copy this along with the item", which is precisely
- * the note meant for players - so the split is read off the data rather than
- * guessed. Applied to the list and to every entry.
- */
-export function liftNotes(l: LegacyList): StoredList {
-  const lift = <T extends { note?: string; noteShow?: boolean; hnote?: string }>(o: T): T => {
-    if (o.note && !o.noteShow) {
-      o.hnote = o.note;
-      delete o.note;
-    }
-    delete o.noteShow;
-    return o;
-  };
-  const out = lift({ ...l }) as unknown as StoredList;
-  if (out.meta) {
-    const meta: Record<string, ListEntryMeta> = {};
-    for (const id of Object.keys(out.meta)) {
-      const entry = out.meta[id];
-      if (entry) meta[id] = lift({ ...entry });
-    }
-    out.meta = meta;
-  }
-  return out;
-}
-
-/**
- * Merge this tab's lists with what is in storage right now.
- *
- * Every write used to stamp this tab's whole array over the key, so two tabs
- * open at once destroyed each other's lists: the one that saved last won
- * outright, silently, with no server and no export to recover from.
- *
- * - lists this tab knows about win, in this tab's order, because that is the
- *   order the person is looking at
- * - lists only the other tab has are appended, not discarded
- * - a list deleted here is in neither `mine` nor storage-as-this-tab-sees-it,
- *   so `deleted` is what tells "I removed it" apart from "I never had it" and
- *   stops the merge resurrecting it from the other tab's copy
- */
-export function mergeLists(
-  mine: readonly StoredList[],
-  stored: readonly StoredList[],
-  deleted: Readonly<Record<string, boolean>> = {}
-): StoredList[] {
-  const seen = new Set(mine.map((l) => l.id));
-  const theirs = stored.filter((l) => !seen.has(l.id) && !deleted[l.id]);
-  return [...mine, ...theirs];
 }
 
 /* ---------- finding a list (docs/specs/FEATURES.md, "Lists") ---------- */
@@ -332,41 +245,4 @@ export function moveEntry(ids: readonly string[], from: number, to: number): str
   if (moved === undefined) return [...ids];
   out.splice(Math.max(0, Math.min(to, out.length)), 0, moved);
   return out;
-}
-
-/**
- * Which of the person's own lists an `#/l/<payload>` address is showing.
- *
- * Comparing encoded payloads is brittle: a list has two flavours (with the
- * GM's notes and without), links made before the checksum look different
- * again, and any future change to the encoding would break recognition once
- * more. So the payload is decoded and the contents compared instead: same
- * name, same entries in the same order, and nothing the link carries that
- * contradicts what is stored - a players' link simply has no GM notes, which
- * is not a disagreement (app.js 1551-1574).
- */
-export function findListByPayload(
-  lists: readonly StoredList[],
-  payload: string,
-  knows: KnowsId
-): StoredList | null {
-  const want = decodeList(payload, knows);
-  if (!want) return null;
-  const fields = ['qty', 'gold', 'note', 'hnote'] as const;
-  for (const l of lists) {
-    if (l.name !== want.name || l.ids.length !== want.ids.length) continue;
-    if (l.ids.some((id, k) => id !== want.ids[k])) continue;
-    const meta = want.meta ?? {};
-    const clash = Object.keys(meta).some((id) => {
-      const wm = meta[id];
-      if (!wm) return false;
-      const mine = itemMeta(l, id);
-      return fields.some((f) => wm[f] !== undefined && wm[f] !== mine[f]);
-    });
-    if (clash) continue;
-    if (want.note !== undefined && want.note !== l.note) continue;
-    if (want.hnote !== undefined && want.hnote !== l.hnote) continue;
-    return l;
-  }
-  return null;
 }

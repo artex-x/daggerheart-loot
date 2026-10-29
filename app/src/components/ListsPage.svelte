@@ -1,9 +1,7 @@
 <script lang="ts">
-  /* The lists index, `#/lists` - off `renderLists` (app.js 2909-2931). Two
-   * groups: the signed-in owner's account lists, newest edit first, then
-   * this browser's lists with the storage notice at their head. The browser
-   * group is one block, so the release that retires local lists deletes it
-   * whole (docs/specs/FEATURES.md, "Lists"). */
+  /* The lists index, `#/lists` - off `renderLists` (`git show 23c00a6^:app.js`). One
+   * group: the signed-in owner's account lists, newest edit first
+   * (docs/specs/FEATURES.md, "Lists"). */
   import { tick, untrack } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import Actions from './Actions.svelte';
@@ -11,27 +9,23 @@
   import Button from './Button.svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
-  import Icon from './Icon.svelte';
   import ImportPanel from './ImportPanel.svelte';
   import ListCard from './ListCard.svelte';
   import LoadState from './LoadState.svelte';
-  import MoveStatus from './MoveStatus.svelte';
   import NoData from './NoData.svelte';
   import NumRow from './NumRow.svelte';
   import PageHead from './PageHead.svelte';
   import Panel from './Panel.svelte';
   import SearchBox from './SearchBox.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import StorageNotice from './StorageNotice.svelte';
   import SyncSaid from './SyncSaid.svelte';
   import SyncStatus from './SyncStatus.svelte';
   import TextInput from './TextInput.svelte';
   import { agoText } from '../lib/ago.js';
   import { linkedOf, NAME_MAX, type CloudList } from '../lib/cloudLists.js';
-  import { sharedListHash, storedListHash } from '../lib/hash.js';
+  import { storedListHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import { fewNames } from '../lib/i18n.js';
-  import { encodeList, encodeListRaw } from '../lib/listLink.js';
   import { LIST_PAGE, LIST_SEARCH_AT, matchLists, type StoredList } from '../lib/lists.js';
   import { countOf, plural } from '../lib/plural.js';
   import type { Record_ } from '../lib/types.js';
@@ -48,21 +42,14 @@
   const target = $derived(app.newListTarget);
   const cloud = $derived(app.cloudLists);
   const signedIn = $derived(target === 'cloud');
-  const local = $derived(app.lists.lists);
   const account = $derived<CloudList[]>(
     signedIn && cloud?.status === 'ready' ? cloud.lists : []
-  );
-  /* Drawn with no sign-in configured, and otherwise only while it has
-     something to say. */
-  const browserGroup = $derived(
-    !cloud || local.length > 0 || !app.storageWorks || app.lists.unreadable
   );
 
   let draft = $state('');
   let nameInput = $state<HTMLInputElement | undefined>(undefined);
   let allBox = $state<HTMLInputElement | undefined>(undefined);
   let accountGrid = $state<HTMLDivElement | undefined>(undefined);
-  let localGrid = $state<HTMLDivElement | undefined>(undefined);
 
   /* Rule 20 (docs/specs/FEATURES.md): a delete removed the pressed control, so focus goes
      to the control now in its place, else the one before it, else the «Новый список» field,
@@ -80,25 +67,17 @@
     focusOr(dels[at], dels[at - 1], nameInput);
   }
 
-  /* The name filter and the fold run over the account lists, then the
-     browser's, as one sequence (docs/specs/FEATURES.md, "Lists"). The query
+  /* The name filter and the fold run over the account lists
+     (docs/specs/FEATURES.md, "Lists"). The query
      is page memory and starts empty on a return; the drawn count is
      `app.listsShown`, kept for the session. */
   let findQ = $state('');
   let groups = $state<HTMLDivElement | undefined>(undefined);
-  const filtering = $derived(account.length + local.length >= LIST_SEARCH_AT);
+  const filtering = $derived(account.length >= LIST_SEARCH_AT);
   const foundAccount = $derived(filtering ? matchLists(account, findQ) : account);
-  const foundLocal = $derived(filtering ? matchLists(local, findQ) : local);
   const drawnAccount = $derived(foundAccount.slice(0, app.listsShown));
-  const drawnLocal = $derived(
-    foundLocal.slice(0, Math.max(0, app.listsShown - foundAccount.length))
-  );
-  const hidden = $derived(
-    foundAccount.length + foundLocal.length - drawnAccount.length - drawnLocal.length
-  );
-  const nothing = $derived(
-    account.length + local.length > 0 && foundAccount.length + foundLocal.length === 0
-  );
+  const hidden = $derived(foundAccount.length - drawnAccount.length);
+  const nothing = $derived(account.length > 0 && foundAccount.length === 0);
 
   /* The ticked account lists: page memory, always a subset of the drawn
      cards, so «Удалить (N)» and «Скачать JSON (N)» never act on a list out of
@@ -128,6 +107,14 @@
     importing = false;
     await tick();
     importRow?.querySelector('button')?.focus();
+  }
+
+  /* «Скачать JSON (N)» while the ticked lists' entries are read and the file is made. */
+  let exporting = $state(false);
+  async function exportTicked(): Promise<void> {
+    exporting = true;
+    await app.exportLists(ticked.map((l) => l.id));
+    exporting = false;
   }
 
   function pickAllCards(on: boolean): void {
@@ -178,7 +165,7 @@
   /* Focus goes to the first card the press revealed, so a keyboard user
      continues there and is not lost when the button goes. */
   async function showMore(): Promise<void> {
-    const from = drawnAccount.length + drawnLocal.length;
+    const from = drawnAccount.length;
     app.listsShown = from + LIST_PAGE;
     await tick();
     groups?.querySelectorAll<HTMLElement>('.listcard-main')[from]?.focus();
@@ -200,50 +187,14 @@
       nameInput?.focus();
       return;
     }
-    if (signedIn && app.listsFull()) return;
-    const store = signedIn && cloud ? cloud : app.lists;
-    const l = store.create(draft);
+    if (!cloud || app.listsFull()) return;
+    const l = cloud.create(draft);
     draft = '';
     if (findQ) setQuery('');
-    /* `ListStore.save()` has already toasted `saveFailed` on a refusal - a
-       "created" on top of it would bury the one message that matters. */
+    /* A refused write has already said why: a "created" on top of it would bury the one
+       message that matters. */
     const name = l.name;
-    if (store.saved) app.say((t) => t.listCreated.replace('%s', name));
-  }
-
-  async function share(l: StoredList): Promise<void> {
-    if (!l.ids.length) {
-      app.say((t) => t.listEmpty);
-      return;
-    }
-    const payload = await app.env.compress.pack(encodeListRaw(l, true));
-    await app.copied(
-      () => app.env.clipboard.writeText(app.linkTo(sharedListHash(payload))),
-      (t) => t.playersLinkCopied
-    );
-  }
-
-  function del(l: StoredList, at: number): void {
-    const name = l.name;
-    if (!app.env.dialog.confirm(t.deleteConfirm.replace('%s', l.name))) return;
-    void focusAfterCard(localGrid, at);
-    /* After the cutoff the only browser writes are removals: no undo. */
-    if (!app.legacyWritable) {
-      if (app.lists.removeMany([l.id])) app.say((t) => t.listDeleted.replace('%s', name));
-      return;
-    }
-    const removed = app.lists.remove(l.id);
-    /* Delete gets an undo, like every other destructive action here. */
-    if (removed) {
-      app.say((t) => t.listDeleted.replace('%s', name), {
-        action: {
-          label: (t) => t.undo,
-          run: () => {
-            app.lists.restoreList(removed.list, removed.index);
-          }
-        }
-      });
-    }
+    if (cloud.saved) app.say((t) => t.listCreated.replace('%s', name));
   }
 
   /* An account list goes for good: the confirm names its share links, and
@@ -260,10 +211,9 @@
 <PageHead {app} title={t.menuLists} sub={t.subLists} help={helpFor('lists', app.lang)} />
 
 {#if !index}
-  <StorageNotice {app} />
   <NoData>{t.noData}</NoData>
 {:else}
-  {#if target === 'local' || target === 'cloud'}
+  {#if target === 'cloud'}
     <Panel style="margin-top:16px">
       <Field label={t.newList}>
         <NumRow>
@@ -350,7 +300,7 @@
               bind:allBox
             >
               {#snippet actions()}
-                <Button size="sm" onclick={() => void app.exportLists(ticked.map((l) => l.id))}
+                <Button size="sm" disabled={exporting} onclick={() => void exportTicked()}
                   >{`${t.exportJson} (${String(ticked.length)})`}</Button
                 >
                 <Button size="sm" variant="danger" onclick={() => void delPicked()}
@@ -363,7 +313,7 @@
                 <ListCard
                   {app}
                   list={l}
-                  href={storedListHash(l.id)}
+                  href={app.href(storedListHash(l.id))}
                   items={knownItems(l)}
                   edited={agoText(l.updated, app.now, app.lang, t)}
                   requests={waiting(l.id)}
@@ -385,52 +335,6 @@
                 </ListCard>
               {/each}
             </div>
-          {/if}
-        </Field>
-      </div>
-    {/if}
-    {#if browserGroup}
-      <div class="group" class:first={!signedIn}>
-        <Field label={signedIn ? t.groupBrowser : undefined} heading>
-          {#if app.user && app.legacyMove && !app.legacyMove.foreign}
-            <MoveStatus {app} />
-          {:else}
-            <StorageNotice {app} />
-          {/if}
-          {#if drawnLocal.length}
-            <div class="listgrid" bind:this={localGrid}>
-              {#each drawnLocal as l, i (l.id)}
-                <!-- Read-only, a card opens the list at its own address:
-                     after the cutoff `#/l/` draws the retired page. -->
-                <ListCard
-                  {app}
-                  list={l}
-                  href={app.localWritable
-                    ? sharedListHash(encodeList(l, false))
-                    : storedListHash(l.id)}
-                  items={knownItems(l)}
-                >
-                  {#snippet actions()}
-                    {#if app.localWritable}
-                      <Button size="sm" onclick={() => void share(l)}
-                        ><Icon name="link" />{t.share}</Button
-                      >
-                    {/if}
-                    {#if !app.moveDue}
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onclick={() => {
-                          del(l, i);
-                        }}>{t.del}</Button
-                      >
-                    {/if}
-                  {/snippet}
-                </ListCard>
-              {/each}
-            </div>
-          {:else if !cloud && !local.length}
-            <Empty>{t.noLists}</Empty>
           {/if}
         </Field>
       </div>
@@ -463,11 +367,6 @@
   /* A group sits the panel's own gap below what comes before it. */
   .group {
     margin-top: 22px;
-  }
-
-  /* With no heading, the browser group keeps the grid's own 18px. */
-  .group.first {
-    margin-top: 18px;
   }
 
   .grouptext {

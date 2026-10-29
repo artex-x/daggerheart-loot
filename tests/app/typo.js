@@ -27,6 +27,9 @@ const MONO = 'ui-monospace';
 /* every size the design actually uses, largest first */
 const SCALE = [23, 20, 19, 18, 17, 16, 15.5, 14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5, 9.5];
 
+/* The account list `accountLists` makes first (`n: 1`): `uuid(8001)`. */
+const LIST = '#/lists/00000000-0000-4000-8000-000000008001';
+
 const PAGES = [
   '#/roll/std',
   '#/roll/alt',
@@ -41,39 +44,29 @@ const PAGES = [
   '#/tables/community_items',
   '#/tables/many_worlds_tavern',
   '#/lists',
-  '#/lists/a',
+  LIST,
   '#/i/w1',
   '#/i/q1',
   '#/search',
   '#/account'
 ];
 
-const STORAGE = {
-  'dhloot.lists.v2': JSON.stringify(
-    [
-      {
-        id: 'a',
-        name: 'Клад дракона',
-        ids: ['ci1', 'cc1', 'q1', 'q313'],
-        created: 1,
-        /* Neither note's text is the word "Заметка"/"Note" itself - the
-           list note is a real <textarea> whose content NAME_FN falls back
-           to, and a literal match would collide with the per-row note
-           toggle's own accessible name and send the "Заметка" grip below
-           at the wrong control. */
-        note: 'Общая заметка про весь клад',
-        meta: { ci1: { note: 'Под прилавком' } }
-      }
-    ].concat(
-      Array.from({ length: 11 }, (_, i) => ({
-        id: 'x' + String(i),
-        name: 'Лавка №' + String(i + 1),
-        ids: [],
-        created: 10 + i
-      }))
-    )
-  )
-};
+/* The twelve index cards, made through the driver once a page signed in as gm4 is open.
+   Neither note's text is the word "Заметка"/"Note" itself - the list note is a real
+   <textarea> whose content NAME_FN falls back to, and a literal match would collide with
+   the per-row note toggle's own accessible name and send the "Заметка" grip below at the
+   wrong control. */
+const SPECS = [
+  {
+    n: 1,
+    name: 'Клад дракона',
+    ids: ['ci1', 'cc1', 'q1', 'q313'],
+    note: 'Общая заметка про весь клад',
+    meta: { ci1: { note: 'Под прилавком' } }
+  }
+].concat(
+  Array.from({ length: 11 }, (_, i) => ({ n: i + 2, name: 'Лавка №' + String(i + 1), ids: [] }))
+);
 
 /* Which of the five grips each page actually offers - read off the
  * components, not assumed: `FilterBar.svelte` draws nothing at all where a
@@ -101,7 +94,7 @@ const EXPECTED = {
   '#/tables/community_items': ['filters', 'help'],
   '#/tables/many_worlds_tavern': ['filters', 'help'],
   '#/lists': ['help'],
-  '#/lists/a': ['note', 'listNote'],
+  [LIST]: ['note', 'listNote'],
   '#/i/w1': ['addToList'],
   '#/i/q1': ['addToList'],
   '#/search': [],
@@ -155,10 +148,17 @@ async function softClick(d, name) {
 
 (async () => {
   for (const lang of ['ru', 'en']) {
-    const { ctx, page, d } = await fresh({ width: 1180, height: 1000, lang, storage: STORAGE });
+    const { ctx, page, d } = await fresh({ width: 1180, height: 1000, lang });
 
     for (const hash of PAGES) {
-      await d.open(hash);
+      if (hash === '#/lists' || hash === LIST) {
+        await d.open('#/lists', { as: 'gm4', lang });
+        await d.settled(hash + ' ' + lang);
+        await d.accountLists(SPECS);
+        if (hash === LIST) await d.go(hash);
+      } else {
+        await d.open(hash);
+      }
 
       const found = {
         filters: await softClick(d, LABELS.filters[lang]),

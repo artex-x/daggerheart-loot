@@ -7,10 +7,13 @@ any of them without the owner saying so.
 
 `<meta name="robots" content="noindex, nofollow">` is in `app/index.html` -
 the rewrite's entry document, which is what `dist/index.html` is built from -
-and in every generated page: the stubs in `i/` and `i/en/` and the English
-entry document `en/index.html` (`tools/build-share-pages.js`), and the
-static pages in `pages/` and `pages/en/` (`tools/build-pages.js`,
-section 9). This is a personal
+and in every generated page: the site's record and English-root app
+documents, which keep the shell's head outside the card block
+(`tools/app-documents.js`), the mirror's stubs in `i/` and `i/en/` and its
+English entry document `en/index.html` (`tools/build-share-pages.js`), and
+the static pages in `pages/` and `pages/en/` (`tools/build-pages.js`,
+section 9). The worker's app document carries it too, and the header
+`X-Robots-Tag: noindex, nofollow`. This is a personal
 tool and is meant to stay out of search results. Do not remove it to improve
 SEO.
 
@@ -22,8 +25,9 @@ the preview card needs - title, description, robots, colour scheme, viewport,
 every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
 `app/index.html`'s head against the now-deleted root `index.html`'s; that
 second document is gone, so the check is a single-document read now. The
-English entry document `en/index.html` gets the same read, less the two PWA
-tags (it is a redirect page, never the installed app's document). The
+mirror's English entry document `en/index.html` gets the same read, less the
+two PWA tags (it is a redirect page, never the installed app's document); the
+site's `dist/en/index.html` is the app document with the English card. The
 published pages are checked again after a deploy by `tools/check-site.mjs`.
 
 ## 2. Crawling is allowed on purpose
@@ -33,14 +37,17 @@ crawler that is not allowed to fetch a page never reads the `noindex` on it, and
 can still list the bare URL it found elsewhere. Letting it fetch and then telling
 it `noindex` is what actually keeps the page out.
 
-Link previews in messengers (Telegram, Discord, Slack) fetch the stub pages too,
-so a blanket `Disallow` would break those as well.
+Link previews in messengers (Telegram, Discord, Slack) fetch the card paths
+too, so a blanket `Disallow` would break those as well.
 
-A preview card has one language. `app/index.html` (the site root, and so
-every `#/...` link, since the fragment never reaches a crawler) and
-`i/<id>.html` carry the Russian card; `en/index.html`, published at
-`<site>en/`, and `i/en/<id>.html` carry the English one, with its own
-picture `og/_share_en.jpg` for the root (`docs/specs/I18N.md`).
+A preview card has one language. `app/index.html` (the site root, every
+non-card route path, and every old `#/...` link, since the fragment never
+reaches a crawler) and the record path `i/<id>` carry the Russian card;
+`<site>en/`, every `/en/` non-card route path and `i/en/<id>` carry the
+English one, with its own picture `og/_share_en.jpg` for the root
+(`docs/specs/I18N.md`). Each card path answers the app document with its card
+in the head (`CONTRACTS.md` section 5), so a pasted address-bar link draws the
+same card as the copy button's.
 
 The preview host's cards (`CONTRACTS.md` section 5), probed by the owner on
 2026-10-14 in Telegram Desktop:
@@ -76,17 +83,20 @@ so for the eight named tokens the `Disallow: /` wins over the signal;
 `Google-Extended` keeps Gemini grounding refused. A crawler that does not
 know the line ignores it, and compliance is the vendor's.
 
-A crawler reads robots.txt only at a host root. The preview host's copy
-(`preview/public/robots.txt`, the same directive lines) is at the root of
-`daggerheart-loot.pages.dev` and is read now. The site's copy sits under
-`/daggerheart-loot/` and `https://artex-x.github.io/robots.txt` answers
-404, so the site's training block and signal take effect on the new host
-when the site moves to a host root; the old host keeps its frozen copies,
-unread (owner, 2026-10-15: no root file for `artex-x.github.io`). The text files (`llms.txt`, `data.json`,
-`catalog.csv`, `catalog-index.csv`, `names.json`, `schema/*.json`) carry no
-`noindex` until the host sends `X-Robots-Tag`. Both are `DEBT.md` D104.
+A crawler reads robots.txt only at a host root. Since the site moved to
+`daggerheart-loot.pages.dev` (task `cloudflare-pages`, 2026-10-28), the
+site's own `robots.txt` is that host's root file and is read. The old host
+keeps a copy under `/daggerheart-loot/`, which no crawler reads
+(`https://artex-x.github.io/robots.txt` answers 404; owner, 2026-10-15: no
+root file for `artex-x.github.io`). The text files (`llms.txt`, `data.json`,
+`catalog.csv`, `catalog-index.csv`, `names.json`, `schema/*.json`) carry
+`X-Robots-Tag: noindex` on the site's host through
+`preview/public/_headers`, which Pages applies to static files only; the old
+host cannot send a header, so its copies carry none (an accepted trade-off of
+the mirror). `tools/check-site.mjs --preview` asserts the root file and the
+header after each deploy.
 
-## 3. Lists live in the account, and in the browser until the cutoff
+## 3. Lists live in the account
 
 The no-backend law was superseded on 2026-09-24 (`docs/DECISIONS.md`). A
 Supabase backend (Auth and Postgres, EU West) is the only server that
@@ -102,20 +112,10 @@ again; a link opens the list as it is now, read-only. A nightly job backs the da
 encrypted to the owner's key, and each copy is kept 30 days; a copy holds no sign-in
 session, so a restore signs each restored reader out once
 (`.claude/README.md`, "Backups and restore"). A nightly job reports the
-free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). A signed-in reader's browser
-lists move into the account by themselves; browser lists stay editable
-until the legacy write cutoff, 2026-10-26, and are read-only from then
-(`FEATURES.md`, "Account and browser lists"). An old shared list is still
-its address, with deliberate consequences:
-
-- a `#/l/` link cannot be revoked, and it stays readable until the legacy
-  write cutoff, 2026-10-26 (`LEGACY_WRITE_UNTIL`), when its decoder retires:
-  from then the app writes no `#/l/` address and draws the retired page for
-  one
-- a link is as long as its contents, hence the checksum and the short form
-- a browser list is in `localStorage` and can be lost; the app says so over
-  the browser lists, and **Your own link** (`shareGm`) doubles as its backup
-- a build with no sign-in configured keeps making browser lists
+free-plan usage to the owner (`.claude/README.md`, "Usage monitoring"). Browser lists, their
+move into the account and the `#/l/` link left the app at R10 (`FEATURES.md`, "Account and
+browser lists"): an old `#/l/` link draws the not-found page, and a build with no sign-in
+configured has no lists.
 
 Live updates reach an open shared page and the owner's other tabs and
 devices only through Supabase Realtime private channels, sent by the
@@ -186,8 +186,7 @@ now, and an item deleted since is left out and counted (`docs/decisions/`,
 open").
 
 Homebrew items, their sources and sections, and the author's set and rule
-cards live in the account only: never in the browser's storage, and never
-in a `#/l/` link. They leave it only as the reader's own file: a homebrew
+cards live in the account only: never in the browser's storage. They leave it only as the reader's own file: a homebrew
 file, the data zip's `homebrew.json`, or a lists file's version 2 entry with
 its snapshot (`FEATURES.md`, "Homebrew"). Any homebrew item opens for
 anyone who holds its id, through two definer functions,
@@ -269,9 +268,18 @@ folder does not start, because Chrome blocks modules over `file://`.
 
 What stays:
 
-- `base: './'`: relative paths serve from Pages, `vite preview` and the
-  test server at any path. The `base: '/daggerheart-loot/'` of the issue
-  47 plan stays rejected.
+- `base: '/'`: every URL starts at the host root (`/data.js`,
+  `/assets/...`, `/img/`, `/card/`, `/pages/`, `/schema/`, `/sw.js`), so
+  the app runs at every route path (`ROUTES.md`, "Path form"); it runs only
+  at a host root - the site's host, `vite preview` and the test server
+  (owner, 2026-10-28). Rejected: a `<base href="/">` element, which breaks a
+  fragment-only `url(#...)` of the print page's inline SVG in some engines
+  and sends the skip link `#main` off the document; relative paths at every
+  depth, which only a worker could answer, so a quota burn would reach the
+  whole site. CSS `url()` stays relative to its stylesheet, and the
+  manifest's `./` values resolve against `/manifest.webmanifest`. The
+  `base: '/daggerheart-loot/'` of the issue 47 plan stays rejected
+  (`docs/decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md`).
 - `data.js` stays a classic script that assigns `window.LOOT` before the
   module runs (`CONTRACTS.md` section 4).
 - The `<noscript>` links resolve through the build: `vite.config.mts`'s
@@ -296,7 +304,10 @@ First load, measured live 2026-09-17 on the IIFE build, enforced by nothing
 `assets/app.js` 92,033 B + `data.js` 148,860 B = 243,013 B gzip, ~973 kB to
 parse; `data.js` re-eval 32.1 ms in Node (a mid-range phone 4-6x that);
 `buildIndex`'s `byId` pass 1.27 ms. The number to quote at any proposal to
-grow `data.js`.
+grow `data.js`. Since the task `cloudflare-pages` the published `data.js`
+also carries `window.LOOT_V`, the record links' card versions: about 26 KB
+raw and 12 KB gzip at 1459 records (`tests/derived.js` prints it), about
+45 KB gzip at three times the catalog.
 
 ## 5. Never infer an equipment tier from its stats
 
@@ -326,10 +337,11 @@ Kept on the owner's instruction over the review's recommendation to skip it.
 
 `404.html` is authored and tracked at the repository root (it carries no
 data, so nothing generates it) and published by `.github/workflows/ci.yml`'s
-collect step alongside `llms.txt`/`robots.txt`. GitHub Pages serves it
-verbatim, with a 404 status, for any request under this site that does not
-match a real path - a share link truncated by a chat client, a hand-typed
-record id, a stub whose record a data change dropped. Before this page
+collect step alongside `llms.txt`/`robots.txt`, to both hosts. Each host serves
+it verbatim, with a 404 status, for any request that does not match a real
+path - a share link truncated by a chat client, a hand-typed record id
+(`/i/zzzz`), a record path whose record a data change dropped, `/mcp` until the task `ai-mcp`, and
+on the old host the install guide (section 9, "The old host"). Before this page
 existed, every one of those landed on GitHub's own generic 404, with no
 route back to the app in either language (verified live on `i/zzzz.html`
 before this page shipped).
@@ -343,46 +355,47 @@ so a variant could only be a script that picks a language from the path
 (`/en/` or `/i/en/`). That was rejected: the page is script-free by design,
 a dead end reads at a glance in either language, and its value is having no
 logic that can fail.
-Its two links are root-anchored (`/daggerheart-loot/#/roll/std` and
-`/daggerheart-loot/#/search`) rather than relative, unlike every other page
-in this repository: it can be served while the browser still shows an
-arbitrary, possibly nested bad path, and a relative link would resolve
-against that path's own directory, not against this file's real location.
-It exists only as a Pages serving fallback, so section 4's relative-base
-rule does not apply to it. `tools/check-site.lib.mjs`'s `checks()` proves the
-fallback on every deploy, against the local `_site/` build before
-publishing and against the live URL after
-(`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`).
+Its links are absolute URLs of the site's host
+(`https://daggerheart-loot.pages.dev/#/roll/std` and `.../#/search`; the
+English half `.../en/#/roll/std` and `.../en/#/search`) rather than
+relative, unlike every other page in this repository: it can be served
+while the browser still shows an arbitrary, possibly nested bad path, and a
+relative link would resolve against that path's own directory, not against
+this file's real location. One file serves both hosts, and the old host's
+root only forwards, so the links name the site's host itself. It exists only
+as a serving fallback, so the relative links of the static pages
+(section 9) are not its rule. `tools/check-site.lib.mjs`'s `checks()` proves the
+fallback on every deploy and on every CI run outside `main`
+(`deploy-replay`), against the local `_site/` build before publishing, and
+on every deploy against the live URL after
+(`tools/check-site.mjs --dir _site` / `tools/check-site.mjs <url>`), and
+`mirrorChecks()` does the same for the old host (`--mirror`).
 
-## 8. Link previews are cached by Telegram until pushed
+## 8. Link previews are cached by Telegram, so a changed card is a new URL
 
 Telegram keys a link's unfurl preview on the URL, with no TTL, and ignores
 everything the origin serves - a changed `Cache-Control`, a changed
-`og:image` byte, a redeploy. Rewriting `og/<id>.jpg` bytes under an unchanged
-URL (an artwork refresh, for instance) therefore needs a refresh pushed to
-`@WebpageBot`, or every messenger preview of that record stays on the old
-picture indefinitely. Nothing at the app level can fix this; see
-`docs/tg-preview.md` for the tool that does it and why the fix has to be
-pushed rather than served. A plain send to `@WebpageBot` only refreshes the
-page's title and description and keeps the cached picture when `og:image`
-still points at the same URL - this site's exact case; only the bot's
-"Update with content" button re-downloads the image. `@WebpageBot` also
-throttles update attempts per user, independently of Telegram's flood
-control, and refuses further attempts of either kind - presses and sends -
-with "Sorry, too many attempts. Please try again in `<N>` seconds."
+`og:image` byte, a redeploy. Nothing at the app level refreshes a cached
+preview, and nothing pushes one: the Telegram preview refresher was removed
+(owner, 2026-10-28, task `cloudflare-pages`).
 
-The English URLs (`i/en/<id>.html`, `<site>en/`) entered the refresher's
-state with `run.mjs --adopt` at issue 64 and were never pushed: Telegram had
-no preview of them to correct. From then on a change to their `og:*` text or
-picture is stale by the normal rule and pushed. `--adopt` refuses the
-Russian root and the Russian stubs.
+Instead every link the app hands out for a card carries a version in its
+URL. A record link is `<site>i/<id>?v=<v>` (`i/en/<id>` in English), where
+`<v>` comes from the build's map of each record's card text and picture
+bytes in both languages (`card-versions.json`, appended to the published
+`data.js` as `window.LOOT_V`; `CONTRACTS.md` sections 4 and 5). A link of
+`/h/` or `/s/` carries `?v=<v>`, a version of what its card draws. So a
+changed card, an artwork refresh included, is a new URL to Telegram's cache.
+A link shared before a change keeps its old card for good (owner,
+2026-10-28). `/p/` and `/tables/` links carry none: a print card never
+changes, and a table card changes only with a data deploy, so an old
+message keeps the old count. The record cards' `og:url`, the site root and `en/`
+carry no version: a cached card of the site itself stays as it is.
 
-A preview host link of `/h/` or `/s/` carries `?v=<v>`, a version of what
-its card draws, so a changed card is a new URL to Telegram's cache and needs
-no push; `/p/` and `/tables/` links carry none: a print card never changes,
-and a table card changes only with a data deploy, so an old message keeps
-the old count. `tools/tg-preview`
-never pushes a preview host link.
+The address bar carries the same version (owner, 2026-10-28): on a record at
+once, and on `/h/` and `/s/` once the page has read its card, so a link
+copied from the bar draws the same card as the copy button's link. A
+navigation drops it.
 
 ## 9. Installable app (PWA)
 
@@ -399,8 +412,8 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
   `name` equals `og:site_name`. `short_name` is "Лут DH": Android launchers
   truncate past about 12 characters, and "Лут Daggerheart" is 15.
 - `id`, `start_url` and `scope` are `./`, relative to the manifest, so they
-  resolve to `/daggerheart-loot/` on Pages. An absolute base changes
-  nothing here.
+  resolve to the host root `/` on the site's host (`/daggerheart-loot/` on the
+  old host before the move). An absolute base changes nothing here.
 - `theme_color`, `background_color`, the `theme-color` in `app/index.html`'s
   head and in every static page's head are all `--bg` from `tokens.css`;
   `tests/derived.js` pins them to one value.
@@ -443,7 +456,8 @@ and the label either way.
 
 `app/public/sw.js`, hand-written plain JS, copied verbatim, outside the
 bundle and the TypeScript project. `app/src/main.ts` registers it at every
-boot through `PwaPort`, as `./sw.js`, so its scope is the site folder. It
+boot through `PwaPort`, as `/sw.js` with the scope `/`, so a deep route path
+(`/i/ci1`) registers the same worker at the host root. It
 stays registered: it keeps the site an installable app, and it caches
 pictures and hashed build files. It holds no offline shell (2026-09-24,
 `docs/DECISIONS.md`).
@@ -463,10 +477,12 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
   refetched on every visit past `max-age`).
 - Rejected as well: a worker that unregisters itself. With no worker at all
   the install prompt is at risk; the owner needs installability.
-- There is no version stamp: the document and `data.js` always come from
-  the network, and a hashed name is immutable. The browser reinstalls the
-  worker only when `sw.js` changes; the cache names carry a hand-bumped
-  `v1` for the day their layout changes.
+- The worker has no version stamp: the document and `data.js` always come
+  from the network, and a hashed name is immutable. The browser reinstalls
+  the worker only when `sw.js` changes; the cache names carry a hand-bumped
+  `v1` for the day their layout changes. The published `data.js` carries the
+  record links' version map (`window.LOOT_V`), which an artwork refresh
+  changes, so a reader downloads `data.js` again after such a deploy.
 - Updates are silent: `skipWaiting()` on install; on activate, every
   `dhloot-*` cache that is not one of the three current names is deleted
   (the issue 69 worker's `dhloot-shell-v1` among them), navigation preload
@@ -478,11 +494,12 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
   tab keeps best-effort storage. Chrome grants an installed app without a
   prompt; other browsers are not measured here.
 - Revalidation on every hit replaces a manual cache bump after an artwork
-  refresh. The background fetch goes through the browser's HTTP cache
-  (Pages sends `max-age=600` and an `ETag`), so a picture replaced at the
-  same path shows from the second view after that entry expires, at most
-  about ten minutes after the deploy. Online, a view past the `max-age`
-  costs one conditional request, usually a 304 (not measured on a device).
+  refresh. The background fetch goes through the browser's HTTP cache.
+  Cloudflare Pages sends `Cache-Control: public, max-age=0, must-revalidate`
+  and an `ETag` (GitHub Pages sent `max-age=600`), so each view of a cached
+  picture costs one conditional request, usually a 304, and a picture
+  replaced at the same path shows from its second view (not measured on a
+  device).
 - Thumbnails and full pictures have separate caches. At 1500 the thumbnail
   cache holds every row picture of every table (about 2 KB each), so no
   table scroll evicts a row's own picture, and the 300 full pictures a GM
@@ -497,6 +514,39 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
 - The URL `sw.js` is stable: a registered worker keeps polling its own URL,
   so a rename or a deletion leaves every installed copy on the old worker.
   To retire it, ship a worker that unregisters itself at the same URL.
+
+### The old host
+
+Since the task `cloudflare-pages` (2026-10-28) the site's host is
+`https://daggerheart-loot.pages.dev/`. GitHub Pages stays on as the old host
+`https://artex-x.github.io/daggerheart-loot/`, and each deploy publishes a
+mirror there: the site's files without `assets/`, `data.js`,
+`pages/install.html` and `pages/en/install.html`, with two files replaced.
+
+- `index.html` is `old-host/index.html`: `noindex`, the site card of
+  `app/index.html`, and one script that forwards to the site's host with the
+  fragment, to `<site>en/` when the old origin's `dhloot.lang.v1` is `en` (the
+  language is the one preference that follows, `STATE.md`, "The site's
+  origin"). The query is dropped: a stale sign-in callback's verifier is on
+  the old origin. The script stores the time of its forward in the old
+  origin's `sessionStorage` (`dhloot.moved.at`) and shows the bilingual text
+  with the link instead of a second forward within 10 s, so two hosts that
+  send a tab to each other stop at the second hop. In an installed app
+  (`display-mode: standalone`) it shows the text and the link and does not
+  forward: one tap opens the new host, and the reader installs again from
+  there. Without a script, a `<noscript>` meta refresh opens the new root.
+- `sw.js` is `old-host/sw.js`: on install `skipWaiting()`, on activate it
+  deletes every `dhloot-*` cache and calls `registration.unregister()`; it
+  has no fetch listener. The rejection above ("a worker that unregisters
+  itself") still holds for the site's worker; the old host is exempt
+  because nothing installs from it any more.
+- The install guide is left out, so `404.html` answers it with its links to
+  the site's host: it would guide a reader to install an origin that only
+  forwards. The privacy and terms URLs that the Google console holds stay
+  current, and the stubs, `en/`, the data files, `schema/`, `img/`, `og/`,
+  `card/`, `robots.txt`, the manifest and `icons/` keep answering.
+- A cached pre-move document on the old host fails to load its module, as a
+  cached document fails after any deploy, and a reload forwards.
 
 ### Static pages
 
@@ -529,17 +579,18 @@ JavaScript and without a hash route (the route grammar is frozen,
   browser installs the app from any static page; the manifest's
   `start_url` opens the app root.
 - The template owns the back links and the language link because their
-  depth differs: the Russian page links `en/<id>.html` and `../`, the
-  English one `../<id>.html` and `../../`. A relative link inside a
-  fragment would resolve on one output only, so a fragment links the app
-  only through `%APP%`, which the template replaces with that page's own
-  back link.
+  depth and language differ: the Russian page links `en/<id>.html` and the
+  app root `../`, the English one `../<id>.html` and the English app root
+  `../../en/`. A relative link inside a fragment would resolve on one output
+  only, so a fragment links the app only through `%APP%<route>`, which the
+  template replaces with that page's app root (`%APP%account` opens
+  `/account` or `/en/account`).
 - The back link reads «Назад к генератору» on the Russian page and "Back
   to the generator" on the English one, with `data-back`. A small inline
-  script calls `history.back()` instead when the referrer is the app
-  document (same origin; below the app root that the link's own `href`
-  names, the path is empty or `index.html`) and the tab has history, so
-  the reader returns to the exact hash route. A direct visit, a new tab, no
+  script calls `history.back()` instead when the referrer is a page of the
+  app (same origin and not under `/pages/`, whatever its language: an English
+  record is `/i/en/<id>`, outside `/en/`) and the tab has history, so the
+  reader returns to the exact route with its scroll. A direct visit, a new tab, no
   JavaScript, or a referrer that is the other language's copy opens the app
   root. The script is the page's only one and stores nothing, so an English
   page does not store the language preference the way an English stub does
@@ -566,16 +617,17 @@ JavaScript and without a hash route (the route grammar is frozen,
 - The policy pages exist because the Google OAuth console publishes an app
   only with a privacy policy link. Their URLs are frozen once submitted:
   `https://artex-x.github.io/daggerheart-loot/pages/privacy.html` and
-  `.../pages/terms.html`. `app/index.html`'s `<noscript>` block links both
+  `.../pages/terms.html`, which the old host's mirror keeps current; the same
+  pages answer on the site's host. `app/index.html`'s `<noscript>` block links both
   Russian pages too, so a reviewer without JavaScript finds them;
   `noindex, nofollow` stays on them. `privacy` names the operator `artex-x`
   and the contact `daggerheart.loot@gmail.com`, and describes the account
   service as it is, in general terms. It links the account page through
   `%APP%`, which `tools/build-pages.js` replaces with the page's own back
   link (`../` or `../../`) - the one way a fragment links an app route.
-- The pages stay outside `tools/tg-preview`'s manifest: a Telegram preview
-  of one stays cached until a hand push (section 8), which a text card with
-  no picture and a rare text change does not justify.
+- A Telegram preview of a page stays cached for good (section 8); a text
+  card with no picture and a rare text change do not justify a versioned
+  link.
 
 One more page, in order:
 
@@ -600,5 +652,5 @@ every `pages/*.html` and `pages/en/*.html`.
 - iOS has no install prompt: a site goes to the home screen only through
   Safari's Share sheet, "Add to Home Screen". An iOS home-screen web app
   keeps its own storage, separate from Safari's tabs, so lists saved in
-  Safari do not show in the installed app; a list link carries a list
+  Safari do not show in the installed app; a share link opens a list
   across. These are platform facts, not measured here.

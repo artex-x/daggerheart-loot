@@ -1,15 +1,12 @@
 /* The account's own cards at three times the card limit, each holding the most book items,
  * in the `timed` project: the bound is a time (vite.config.mts, `timed`). */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import { CARD_ITEMS_MAX, recordOf, withRecords, type CardRef } from './homebrew.js';
+import { readLoot } from '../test/loot.js';
 
-const loot = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const loot = readLoot();
 const catalog = buildIndex(loot);
 const ids = [...catalog.byId.keys()];
 

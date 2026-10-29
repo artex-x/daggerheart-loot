@@ -67,10 +67,10 @@ describe('#/homebrew', () => {
     const nav = screen.getByRole('navigation', { name: t.myItems });
     const links = within(nav).getAllByRole('link');
     expect(links.map((a) => [a.textContent, a.getAttribute('href')])).toEqual([
-      ['Предметы', '#/homebrew'],
-      ['Источники', '#/homebrew/sources'],
-      ['Комплекты', '#/homebrew/sets'],
-      ['Карты правил', '#/homebrew/rules']
+      ['Предметы', '/homebrew'],
+      ['Источники', '/homebrew/sources'],
+      ['Комплекты', '/homebrew/sets'],
+      ['Карты правил', '/homebrew/rules']
     ]);
     expect(links.map((a) => a.getAttribute('aria-current'))).toEqual([
       'page',
@@ -96,7 +96,7 @@ describe('#/homebrew', () => {
     expect(screen.queryByRole('searchbox')).toBeNull();
     expect(screen.getByRole('link', { name: /Новый предмет/ })).toHaveAttribute(
       'href',
-      '#/homebrew/new'
+      '/homebrew/new'
     );
     expect(screen.getByText('Мастерская Ольхи (HB)')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -122,8 +122,8 @@ describe('#/homebrew', () => {
     expect(order.slice(0, 3)).toEqual([t.hbNewSource, '1 источник из 20', 'Мастерская Ольхи']);
     const names = [...panel.querySelectorAll('.books > li > .head > .name')];
     expect(names.map((a) => [a.textContent.trim(), a.getAttribute('href')])).toEqual([
-      ['Мастерская Ольхи', '#/tables/homebrew/f_src-hb_alderworkshopaaa'],
-      ['Хоумбрю', '#/tables/homebrew/f_src-hb']
+      ['Мастерская Ольхи', '/tables/homebrew/f_src-hb_alderworkshopaaa'],
+      ['Хоумбрю', '/tables/homebrew/f_src-hb']
     ]);
     await expectNoA11yViolations(container);
   });
@@ -666,7 +666,7 @@ describe('the Sets and Rules tabs', () => {
     expect(body).toHaveTextContent('Два предмета комплекта: +1 к Уклонению.');
     const field = within(body!).getByRole('combobox', { name: t.hbAddMember });
     const link = within(body!).getByRole('link', { name: 'Кольцо с гравировкой' });
-    expect(link).toHaveAttribute('href', '#/h/' + uuid(514));
+    expect(link).toHaveAttribute('href', '/h/' + uuid(514));
     expect(field.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(
       within(body!).getByRole('button', { name: 'Убрать: Кольцо с гравировкой' })
@@ -1234,7 +1234,7 @@ describe('book items in a set or rule card', () => {
     expect(await screen.findByText('Сохранено: «Длинный палаш»')).toBeInTheDocument();
     expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
     const link = await within(panel).findByRole('link', { name: 'Длинный палаш' });
-    expect(link).toHaveAttribute('href', '#/i/q2');
+    expect(link).toHaveAttribute('href', '/i/q2');
     expect(link.nextElementSibling).toHaveTextContent('Core');
     expect(within(panel).getByText('1 предмет · Мастерская Ольхи')).toBeInTheDocument();
     await expectNoA11yViolations(container);
@@ -1260,7 +1260,7 @@ describe('book items in a set or rule card', () => {
     await userEvent.click(screen.getByRole('button', { name: t.undo }));
     expect(await within(panel).findByRole('link', { name: 'Длинный палаш' })).toHaveAttribute(
       'href',
-      '#/i/q2'
+      '/i/q2'
     );
     expect((await cardOf(cloud, uuid(521)))?.content.items).toEqual(['q2']);
   });
@@ -1632,10 +1632,15 @@ describe('the Items tab search', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
     expect(dialog.asked).toHaveLength(1);
     expect(await screen.findByText('Удалено предметов: 1')).toBeInTheDocument();
-    /* Seven items left: the box goes and every row is drawn again, the hidden tick dropped. */
-    expect(screen.queryByRole('searchbox')).toBeNull();
+    /* Seven items left: the box stays with its query until the tab is left (it has been in
+       use); cleared, every row is drawn again, the hidden tick dropped. */
+    expect(screen.getByRole('searchbox')).toHaveValue('кольцо');
+    await userEvent.clear(screen.getByRole('searchbox'));
     expect(screen.getByRole('checkbox', { name: 'Настой кузнеца' })).not.toBeChecked();
     expect(screen.getByText('7 предметов из 8')).toBeInTheDocument();
+    await sources();
+    await items();
+    expect(screen.queryByRole('searchbox')).toBeNull();
   });
 
   it('starts the query empty after a tab press and back', async () => {
@@ -1929,6 +1934,11 @@ const rowNames = (): string[] =>
   );
 const resetStrip = (): Promise<void> =>
   userEvent.click(document.querySelector('.fbar .fclear') as HTMLElement);
+/* «Фильтры», with the count of picked values after it once one is in force. */
+const filtersBtn = (): HTMLElement =>
+  screen.getByRole('button', {
+    name: new RegExp('^' + t.filters + String.raw`(?: \(\d+\))?$`)
+  });
 const pills = (): string[] =>
   [...document.querySelectorAll('.fpill')].map((p) => p.textContent.replace('×', '').trim());
 
@@ -1983,7 +1993,7 @@ describe('the Items tab filter', () => {
   });
 
   it('draws «Ничего не найдено» with «Сбросить всё» for a pick that draws no row, the count kept', async () => {
-    const { container } = twelve();
+    const { container, router } = twelve();
     await screen.findByText('12 предметов из 12');
     await userEvent.click(screen.getByRole('button', { name: t.filters }));
     await pickIn(t.kindF, t.fEquip);
@@ -1993,6 +2003,7 @@ describe('the Items tab filter', () => {
     expect(screen.queryByRole('checkbox', { name: t.pickAll })).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(within(empty).getByRole('button', { name: t.resetAll }));
+    expect(router.hash()).toBe('#/homebrew');
     expect(rowNames()).toHaveLength(12);
     await waitFor(() => {
       expect(screen.getByRole('button', { name: t.filters })).toHaveFocus();
@@ -2027,19 +2038,176 @@ describe('the Items tab filter', () => {
   });
 
   it('starts empty each time the tab opens', async () => {
-    twelve();
+    const { router } = twelve();
     await screen.findByText('12 предметов из 12');
     await userEvent.click(screen.getByRole('button', { name: t.filters }));
     await pickIn(t.kindF, t.fEquip);
     expect(pills()).toEqual([t.fEquip]);
     await sources();
+    expect(router.hash()).toBe('#/homebrew/sources');
     await items();
+    expect(router.hash()).toBe('#/homebrew');
     expect(pills()).toEqual([]);
     expect(screen.getByRole('button', { name: t.filters })).toHaveAttribute(
       'aria-expanded',
       'false'
     );
     expect(rowNames()).toHaveLength(12);
+  });
+
+  it('writes a pick into the address in place, the ticks kept', async () => {
+    const { container, router } = twelve();
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Настой кузнеца' }));
+    await userEvent.click(filtersBtn());
+    await pickIn(t.kindF, t.fCons);
+    expect(router.hash()).toBe('#/homebrew/f_kind-consumable');
+    expect(router.stack).toHaveLength(1);
+    expect(screen.getByRole('checkbox', { name: 'Настой кузнеца' })).toBeChecked();
+    await pickIn(t.source, t.srcHomebrew);
+    expect(router.hash()).toBe('#/homebrew/f_kind-consumable.src-hb');
+    expect(router.stack).toHaveLength(1);
+    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
+    await expectNoA11yViolations(container);
+  });
+
+  it('opens the panel on a filter address and draws its pills; a fold then a pill drop stays folded', async () => {
+    const { container, router } = page('gm1', {
+      fake: { fillItems: 12 },
+      route: '#/homebrew/f_src-hb_alderworkshopaaa'
+    });
+    await screen.findByText('12 предметов из 12');
+    const toggle = filtersBtn();
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(pills()).toEqual(['Мастерская Ольхи']);
+    expect(rowNames()).toHaveLength(7);
+    expect(container.querySelector('.fcount')).toHaveTextContent('7 из 12');
+    await expectNoA11yViolations(container);
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(container.querySelector('.fpill') as HTMLElement);
+    expect(router.hash()).toBe('#/homebrew');
+    expect(pills()).toEqual([]);
+    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'false');
+    expect(rowNames()).toHaveLength(12);
+  });
+
+  it('draws no pill and narrows nothing for an address value no row offers; the next pick writes the values in force', async () => {
+    const { router } = page('gm1', {
+      fake: { fillItems: 12 },
+      route: '#/homebrew/f_kind-item.src-hb_otheraccountaaaa'
+    });
+    await screen.findByText('12 предметов из 12');
+    expect(pills()).toEqual([t.fItems]);
+    expect(router.hash()).toBe('#/homebrew/f_kind-item.src-hb_otheraccountaaaa');
+    expect(rowNames().length).toBeLessThan(12);
+    await pickIn(t.source, t.srcHomebrew);
+    expect(router.hash()).toBe('#/homebrew/f_kind-item.src-hb');
+  });
+
+  it('draws the strip and narrows on a filter address with four items, and no strip without one', async () => {
+    const { container } = page('gm1', { route: '#/homebrew/f_src-hb' });
+    await screen.findByText('4 предмета из 100');
+    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
+    expect(pills()).toEqual([t.srcHomebrew]);
+    expect(rowNames()).toHaveLength(3);
+    await expectNoA11yViolations(container);
+    /* The strip stays after its last pill goes: it holds the focus. */
+    await resetStrip();
+    expect(rowNames()).toHaveLength(4);
+    expect(filtersBtn()).toBeInTheDocument();
+    cleanup();
+    page('gm1');
+    await screen.findByText('4 предмета из 100');
+    expect(screen.queryByRole('button', { name: t.filters })).toBeNull();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+  });
+
+  it('steps to the bare #/homebrew on «Предметы» with a filter in force: no pill, the panel open', async () => {
+    const { router } = page('gm1', {
+      fake: { fillItems: 12 },
+      route: '#/homebrew/f_kind-equip'
+    });
+    await screen.findByText('12 предметов из 12');
+    await userEvent.click(filtersBtn());
+    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'false');
+    await items();
+    expect(router.hash()).toBe('#/homebrew');
+    expect(pills()).toEqual([]);
+    expect(rowNames()).toHaveLength(12);
+    expect(filtersBtn()).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('pins #/homebrew from a filter address and reads it pressed', async () => {
+    const storage = memoryStorage();
+    const { container } = page('gm1', { route: '#/homebrew/f_kind-item', env: { storage } });
+    await screen.findByText('4 предмета из 100');
+    await userEvent.click(screen.getByRole('button', { name: t.homeHint }));
+    expect(storage.get('dhloot.home.v1')).toBe('#/homebrew');
+    expect(screen.getByRole('button', { name: t.homeOn })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await expectNoA11yViolations(container);
+  });
+
+  it('writes nothing while the items load or after a failed read, the address kept', async () => {
+    /* The boot writes the address it read once (its path form); after the first render the
+       page writes nothing: a write here would drop the value no row offers yet. */
+    const route = '#/homebrew/f_kind-item';
+    const HOMEBREW = '#/homebrew';
+    const settle = (): Promise<void> => new Promise((done) => setTimeout(done, 50));
+    const loading = fakeCloud(SEED, 'gm1');
+    loading.homebrew.load = () => new Promise(() => undefined);
+    const slow = memoryRouter(route);
+    const slowReplace = vi.spyOn(slow, 'replace');
+    page('gm1', { cloud: loading, env: { router: slow } });
+    await screen.findByRole('heading', { level: 1, name: t.myItems });
+    const slowCalls = slowReplace.mock.calls.length;
+    await settle();
+    expect(slowReplace).toHaveBeenCalledTimes(slowCalls);
+    expect(slowReplace.mock.calls.map((c) => c[0])).not.toContain(HOMEBREW);
+    expect(slow.hash()).toBe(route);
+    cleanup();
+    const failed = memoryRouter(route);
+    const failedReplace = vi.spyOn(failed, 'replace');
+    const { container } = page('gm1', {
+      cloud: fakeCloud(SEED, 'gm1', { offline: true }),
+      env: { router: failed }
+    });
+    await screen.findByRole('heading', { level: 1, name: t.myItems });
+    const failedCalls = failedReplace.mock.calls.length;
+    expect(await screen.findByText(t.hbLoadFailed)).toBeInTheDocument();
+    await settle();
+    expect(failedReplace).toHaveBeenCalledTimes(failedCalls);
+    expect(failedReplace.mock.calls.map((c) => c[0])).not.toContain(HOMEBREW);
+    expect(failed.hash()).toBe(route);
+    await expectNoA11yViolations(container);
+  });
+
+  it('returns a sign-in from a filter address to that address', async () => {
+    const app = new AppState(
+      fakeEnv({
+        cloud: fakeCloud(SEED),
+        router: memoryRouter('#/homebrew/f_kind-item.src-hb'),
+        storage: memoryStorage()
+      })
+    );
+    app.start();
+    await waitFor(() => {
+      expect(app.user).toBeNull();
+    });
+    if (!app.homebrew) throw new Error('The configured build has no homebrew store.');
+    const { container } = render(HomebrewPage, {
+      app,
+      store: app.homebrew,
+      tab: 'items',
+      openKey: null
+    });
+    await expectNoA11yViolations(container);
+    await userEvent.click(screen.getByRole('button', { name: t.signIn }));
+    expect(app.signInFor).toEqual({ hash: '#/homebrew/f_kind-item.src-hb' });
+    app.stop();
   });
 
   it('folds a section row of 22 values after 10', async () => {

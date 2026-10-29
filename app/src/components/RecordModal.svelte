@@ -211,7 +211,7 @@
   }
 
   /* The live app hid `#modal` unconditionally under print
-     media (style.css:1397-1415); this component carried no equivalent rule
+     media (`git show 23c00a6^:style.css`); this component carried no equivalent rule
      at all, so a page printed while a record was open printed the dialog
      over it. `!important` for the same reason Toast.svelte's rule needs
      it - nothing here guarantees this is always the highest-specificity

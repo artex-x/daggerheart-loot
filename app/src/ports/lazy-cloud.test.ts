@@ -109,11 +109,6 @@ describe('lazyCloud', () => {
     ).toEqual({ ok: true, results: [{ ok: true }, { ok: true }] });
     const read = await lists.list();
     expect(read.ok && read.lists.map((l) => l.name)).toEqual(['Список второго ГМа', 'К']);
-    expect(await lists.move(uuid(7002), '{"ids":[],"name":"Перенос"}')).toEqual({
-      ok: true,
-      id: uuid(7002),
-      inserted: true
-    });
     expect(
       await lists.import([{ list: { ...row, id: uuid(7003), name: 'Импорт' }, entries: [] }])
     ).toEqual({ ok: true });
@@ -125,6 +120,8 @@ describe('lazyCloud', () => {
     const again = await lists.list(known);
     expect(again.ok && again.lists).toEqual([]);
     expect(again.ok && again.kept).toHaveLength(Object.keys(known).length);
+    const whole = await lists.rows([uuid(7000)]);
+    expect(whole.ok && whole.lists.map((l) => l.list_entries.length)).toEqual([1]);
     const items = await lists.items([uuid(511)]);
     expect(items.ok && items.items.map((i) => i.hid)).toEqual([uuid(511)]);
     expect(load).toHaveBeenCalledOnce();
@@ -289,9 +286,9 @@ describe('lazyCloud', () => {
     expect(await prefs.load()).toEqual({ ok: false });
     expect(await prefs.save({ view: 'grid' })).toBe(false);
     expect(await lists.list()).toEqual({ ok: false });
+    expect(await lists.rows([uuid(101)])).toEqual({ ok: false });
     const unsent = { ok: false, error: 'network' };
     expect(await lists.apply([{ op: 'remove', id: 'x' }])).toEqual(unsent);
-    expect(await lists.move('x', '{}')).toEqual(unsent);
     expect(await lists.import([])).toEqual(unsent);
     expect(await lists.items(['x'])).toEqual({ ok: false });
     expect(await shares.list('x')).toEqual({ ok: false });

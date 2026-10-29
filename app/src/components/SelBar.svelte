@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The selection bar - ticking any row on a table raises it at the bottom of
      the window: a count, on a list page a total, a cross that clears
-     everything, and three actions on the right. Reproduced from `renderSelBar` (app.js 3706-3721)
+     everything, and three actions on the right. Reproduced from `renderSelBar` (`git show 23c00a6^:app.js`)
      and `#selBar` in index.html, right after `</footer>` and before the
      modal - `Shell.svelte` keeps that order.
 
@@ -16,7 +16,7 @@
   import Button from './Button.svelte';
   import Icon from './Icon.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
-  import type { ListEntryMeta } from '../lib/listLink.js';
+  import type { ListEntryMeta } from '../lib/lists.js';
   import { selCountText } from '../lib/i18n.js';
   import { takenQty, takenTotal } from '../lib/lists.js';
   import { moneyMode, totalParts } from '../lib/money.js';
@@ -70,6 +70,9 @@
   const sender = $derived(app.requestSender);
   const lines = $derived(ids.map((id) => ({ item: id, qty: takenOf(id) })));
   const sent = $derived(token !== null && !!sender && sender.isSent(token, lines));
+  /* What was sent and how long it waits, or the owner's decision, while the sent mark
+     holds; plain text, not a live region: the toasts say the send and the decision. */
+  const sentLine = $derived(token !== null && sender ? sender.lineFor(token, lines) : null);
   const asking = $derived(
     sender?.asking && token !== null && sender.asking.token === token ? sender.asking : null
   );
@@ -133,7 +136,7 @@
 
 {#if n || shared}
   <!-- A labelled region: the bar sits after the footer, outside every other landmark. -->
-  <section class="selbarwrap" class:idle={!n} aria-label={t.selRegion}>
+  <section class="selbarwrap" class:idle={!n} class:vh={!n} aria-label={t.selRegion}>
     <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}
         >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
@@ -210,6 +213,9 @@
               >
             {/if}
           </div>
+          {#if sentLine}
+            <p class="sentline">{sentLine(t, app.lang)}</p>
+          {/if}
         {/if}{/if}
     </div>
   </section>
@@ -232,16 +238,7 @@
     -webkit-backdrop-filter: blur(12px);
   }
 
-  .selbarwrap.idle {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
-  /* off `.selbar` plus `.wrap` (style.css 52-53) - the rewrite has no global
+  /* off `.selbar` plus `.wrap` (`git show 23c00a6^:style.css`) - the rewrite has no global
      `.wrap` class; every frame element composes the same four properties off
      `--wrap` instead, as `Shell.svelte`'s `.foot` and `TabBar` already do. */
   .selbar {
@@ -308,7 +305,7 @@
   }
 
   /* P12: 26px of paint, 44px of target - the same `PageHead.svelte`
-     `.homebtn::after` shape, off `PageHead.svelte:133-141`. */
+     `.homebtn::after` shape. */
   .selx::after {
     content: '';
     position: absolute;
@@ -328,6 +325,15 @@
 
   .notify {
     display: flex;
+  }
+
+  /* Information under the action row, not a warning (rule 19). */
+  .sentline {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+    overflow-wrap: anywhere;
   }
 
   /* The print sign-in prompt takes the action row's place, as the question does. */
@@ -403,7 +409,7 @@
     }
   }
 
-  /* off `#selBar` in the live `@media print` block (style.css:1409) */
+  /* off `#selBar` in the live `@media print` block (`git show 23c00a6^:style.css`) */
   @media print {
     .selbarwrap {
       display: none;

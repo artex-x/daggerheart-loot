@@ -160,10 +160,9 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
  * rule `app/src/test/a11y.ts` cannot answer honestly in jsdom, and the whole
  * reason this suite exists rather than another vitest case.
  *
- * No per-call rule disabling: `#/lists`/`#/lists/a` used to need one for
- * `nested-interactive` (`StorageNotice.svelte`'s dismiss button sat inside
- * its own `<summary>`); paid off, and it turned out
- * the parameter that carried it had gone unused by
+ * No per-call rule disabling: the lists pages once needed one for
+ * `nested-interactive` (a dismiss button nested in a `<summary>`); paid off,
+ * and the parameter that carried it had gone unused by
  * every caller - `app/src/test/a11y.ts`'s own comment already argues that a
  * parameter with no caller is a maintained shape for nothing, so this suite
  * does not keep one either. A future live-shared defect that needs one adds

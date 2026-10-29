@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The add-to-list control: a button and the menu it opens, off
-     `addToListBtn`/`listMenuHTML` in app.js (1879-1891, 1831-1859) and
-     `.seldrop`/`.dropmenu` in style.css.
+     `addToListBtn`/`listMenuHTML` in `git show 23c00a6^:app.js` and
+     `.seldrop`/`.dropmenu` in `git show 23c00a6^:style.css`.
 
      One component, menu included - `listMenuHTML` has one caller, and a
      separate `ListMenu.svelte` would be an abstraction ahead of need. `key`
@@ -16,7 +16,7 @@
   import type { Msg } from '../lib/dict.js';
   import { recordHref } from '../lib/hash.js';
   import { isHomebrewKey } from '../lib/homebrew.js';
-  import type { ListEntryMeta } from '../lib/listLink.js';
+  import type { ListEntryMeta } from '../lib/lists.js';
   import {
     itemMeta,
     LIST_SEARCH_AT,
@@ -53,15 +53,10 @@
   const one = $derived(ids.length === 1 ? ids[0] : undefined);
   const label = $derived(one !== undefined ? t.inLists : t.addTo);
 
-  /* One plain list: the account's lists, once read, and this browser's -
-     only while a browser list may be written (not after the cutoff, nor
-     while the move is due). */
+  /* The account's lists, once read; none signed out or before the session is known. */
   const target = $derived(app.newListTarget);
-  const browser = $derived(app.localWritable ? app.lists.lists : []);
   const all = $derived<StoredList[]>(
-    app.cloudLists?.status === 'ready' && target === 'cloud'
-      ? [...app.cloudLists.lists, ...browser]
-      : browser
+    app.cloudLists?.status === 'ready' && target === 'cloud' ? app.cloudLists.lists : []
   );
 
   /* Taken when the menu opens, so a pressed chip keeps its place until the
@@ -109,12 +104,6 @@
         held = new Set(
           record === undefined ? [] : all.filter((l) => l.ids.includes(record)).map((l) => l.id)
         );
-        /* A sign-in hands back the name typed before it. */
-        if (app.pendingListName !== null) {
-          newListFor = true;
-          draft = app.pendingListName;
-          app.pendingListName = null;
-        }
       });
     }
     wasOpen = isOpen;
@@ -125,36 +114,25 @@
     newListFor = false;
   }
 
-  /* `ListStore.save()` already says `saveFailed` itself on a refusal - a
-     success message must not be shown on top of it, or the two would race
-     for the same toast and the failure would never be seen. app.js's own
-     `addIdsTo` shows both unconditionally, one after the other on the same
-     tick, which means the success message always wins there and a refusal
-     is never actually seen - not reproduced here, since the acceptance this
-     batch is held to is that a refusal is seen. */
+  /* A store that refused the write says why itself (`saved` false): a success message
+     on top of it would race for the same toast and hide the failure. */
   const knows = (id: string): boolean => app.knows(id);
 
   /* An add that wrote nothing because a homebrew key was refused says why, not
-     «Добавлено»: an account list waits for the account's items, a browser list never
-     holds one. */
-  function refusedText(cloud: boolean): Msg {
+     «Добавлено»: the list waits for the account's items. */
+  function refusedText(): Msg {
     const status = app.homebrew?.status;
-    if (cloud && status === 'error') return (t) => t.hbLoadFailed;
-    if (cloud && status !== 'ready') return (t) => t.hbNotReady;
+    if (status === 'error') return (t) => t.hbLoadFailed;
+    if (status !== 'ready') return (t) => t.hbNotReady;
     return (t) => t.hbNotAdded;
   }
 
   /* After an add from the bar on a share link, signed in and not its owner: flow b
      asks whether to tell the owner, or sends, or not, by the remembered answer. A
      card's own menu never asks. */
-  function added(
-    name: string,
-    fresh: readonly string[],
-    held: readonly string[],
-    cloud: boolean
-  ): void {
+  function added(name: string, fresh: readonly string[], held: readonly string[]): void {
     if (!fresh.length && ids.some((id) => isHomebrewKey(id) && !held.includes(id))) {
-      app.say(refusedText(cloud), { error: true });
+      app.say(refusedText(), { error: true });
       return;
     }
     const count = ids.length > 1 ? fresh.length : null;
@@ -167,31 +145,59 @@
     app.requestSender?.afterAdd(token, lines, text);
   }
 
-  function pick(l: StoredList): void {
-    const store = app.storeFor(l.id);
-    if (one !== undefined && inList(l)) {
-      const entryId = one;
-      const at = l.ids.indexOf(entryId);
-      const meta = { ...itemMeta(l, entryId) };
-      store.removeEntry(l.id, entryId);
-      if (store.saved) {
-        /* Every other destructive action here offers an undo -
-           `restoreEntry` is the same one the list page's own row-remove
-           cross already uses. */
-        const name = l.name;
-        app.say((t) => t.removedFrom.replace('%s', name), {
-          action: {
-            label: (t) => t.undo,
-            run: () => {
-              store.restoreEntry(l.id, entryId, at, meta);
-            }
-          }
-        });
+  /* The list whose entries a remove waits for: its chip draws busy. */
+  let busyId = $state<string | null>(null);
+
+  /* Every other destructive action here offers an undo - `restoreEntry` is the same one the
+     list page's own row-remove cross already uses. */
+  function removeFrom(
+    store: NonNullable<AppState['cloudLists']>,
+    l: StoredList,
+    entryId: string
+  ) {
+    const at = l.ids.indexOf(entryId);
+    const meta = { ...itemMeta(l, entryId) };
+    store.removeEntry(l.id, entryId);
+    if (!store.saved) return;
+    const name = l.name;
+    const listId = l.id;
+    app.say((t) => t.removedFrom.replace('%s', name), {
+      action: {
+        label: (t) => t.undo,
+        run: () => {
+          store.restoreEntry(listId, entryId, at, meta);
+        }
       }
+    });
+  }
+
+  async function pick(l: StoredList): Promise<void> {
+    const store = app.cloudLists;
+    if (!store) return;
+    if (one !== undefined && inList(l)) {
+      /* Taken before the read: the bar's `ids` follow its ticks and can change meanwhile. */
+      const entryId = one;
+      const listId = l.id;
+      if (store.detailOf(listId) === 'ready') {
+        removeFrom(store, l, entryId);
+        return;
+      }
+      /* The undo writes back the entry's details, so they are read first. */
+      busyId = listId;
+      const ok = await store.detail([listId]);
+      /* A press on another unread list meanwhile moved the mark: that read still runs. */
+      if (busyId === listId) busyId = null;
+      if (app.cloudLists !== store || store.status !== 'ready') return;
+      if (!ok) {
+        if (store.get(listId)) app.say((t) => t.cloudLoadFailed, { error: true });
+        return;
+      }
+      const now = store.get(listId);
+      if (now?.ids.includes(entryId)) removeFrom(store, now, entryId);
       return;
     }
     const fresh = store.add(l.id, ids, knows, carried);
-    if (store.saved) added(l.name, fresh, l.ids, store === app.cloudLists);
+    if (store.saved) added(l.name, fresh, l.ids);
   }
 
   /* The search already holds the name a person looked for and did not find. */
@@ -201,7 +207,7 @@
   }
 
   /* Signed out, the create slot is the sign-in prompt; the return reopens
-     this menu with the same rows and the name already typed. */
+     this menu with the same rows. */
   const signInAfter = $derived.by(() => {
     const counts = Object.fromEntries(
       ids.flatMap((id) => {
@@ -215,8 +221,7 @@
         do: 'addToList' as const,
         key,
         ids: [...ids],
-        ...(Object.keys(counts).length ? { picked: counts } : {}),
-        ...(draft.trim() ? { name: draft.trim() } : {})
+        ...(Object.keys(counts).length ? { picked: counts } : {})
       }
     };
   });
@@ -233,11 +238,11 @@
       newInput?.focus();
       return;
     }
-    if (target === 'cloud' && app.listsFull()) return;
-    const store = target === 'cloud' && app.cloudLists ? app.cloudLists : app.lists;
+    const store = app.cloudLists;
+    if (!store || app.listsFull()) return;
     const l = store.create(draft);
     const fresh = store.add(l.id, ids, knows, carried);
-    if (store.saved) added(l.name, fresh, [], store === app.cloudLists);
+    if (store.saved) added(l.name, fresh, []);
     newListFor = false;
     draft = '';
     pickQ = '';
@@ -365,75 +370,83 @@
 <svelte:document onclick={onDocumentClick} />
 <svelte:window onkeydown={onKeydown} />
 
-<div class="seldrop" bind:this={root}>
-  <Button
-    size="sm"
-    variant={primary ? 'primary' : 'plain'}
-    on={open}
-    expanded={open}
-    caret
-    onclick={toggle}><Icon name="plus" />{t.addToList}</Button
-  >
-  {#if open}
-    <div class="dropmenu" class:long={showSearch} class:up>
-      <span class="lbl">{label}</span>
-      {#if showSearch}
-        <input
-          type="search"
-          class="pickq"
-          value={pickQ}
-          placeholder={t.findList}
-          aria-label={t.findList}
-          oninput={(e) => {
-            pickQ = e.currentTarget.value;
-          }}
-        />
-      {/if}
-      <div class="pickchips">
-        {#if shown.length}
-          {#each shown as l (l.id)}
-            <Chip
-              label={l.name}
-              on={inList(l)}
-              onclick={() => {
-                pick(l);
-              }}
-            />
-          {/each}
-        {:else}
-          <span class="picker-none">{t.nothing}</span>
+{#if target !== 'none'}
+  <div class="seldrop" bind:this={root}>
+    <Button
+      size="sm"
+      variant={primary ? 'primary' : 'plain'}
+      on={open}
+      expanded={open}
+      caret
+      onclick={toggle}><Icon name="plus" />{t.addToList}</Button
+    >
+    {#if open}
+      <div class="dropmenu" class:long={showSearch} class:up>
+        <!-- Signed out the reader holds no list: the menu is the create slot alone. -->
+        {#if target !== 'prompt'}
+          <span class="lbl">{label}</span>
         {/if}
-      </div>
-      {#if newListFor && target === 'prompt'}
-        <SignInPrompt
-          {app}
-          lead={t.signInToCreateShort}
-          after={signInAfter}
-          compact
-          oncancel={cancelNew}
-        />
-      {:else if newListFor}
-        <span class="picker-new">
+        {#if showSearch}
           <input
-            type="text"
-            bind:this={newInput}
-            value={draft}
-            placeholder={t.listNamePh}
-            maxlength={NAME_MAX}
-            aria-label={t.newList}
+            type="search"
+            class="pickq"
+            value={pickQ}
+            placeholder={t.findList}
+            aria-label={t.findList}
             oninput={(e) => {
-              draft = e.currentTarget.value;
+              pickQ = e.currentTarget.value;
             }}
           />
-          <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>
-          <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
-        </span>
-      {:else if target !== 'wait'}
-        <Chip label={'+ ' + t.newList} on={false} onclick={openNew} />
-      {/if}
-    </div>
-  {/if}
-</div>
+        {/if}
+        {#if target !== 'prompt'}
+          <div class="pickchips">
+            {#if shown.length}
+              {#each shown as l (l.id)}
+                <Chip
+                  label={l.name}
+                  on={inList(l)}
+                  busy={busyId === l.id}
+                  onclick={() => {
+                    void pick(l);
+                  }}
+                />
+              {/each}
+            {:else}
+              <span class="picker-none">{t.nothing}</span>
+            {/if}
+          </div>
+        {/if}
+        {#if newListFor && target === 'prompt'}
+          <SignInPrompt
+            {app}
+            lead={t.signInToCreateShort}
+            after={signInAfter}
+            compact
+            oncancel={cancelNew}
+          />
+        {:else if newListFor}
+          <span class="picker-new">
+            <input
+              type="text"
+              bind:this={newInput}
+              value={draft}
+              placeholder={t.listNamePh}
+              maxlength={NAME_MAX}
+              aria-label={t.newList}
+              oninput={(e) => {
+                draft = e.currentTarget.value;
+              }}
+            />
+            <Button size="sm" variant="primary" onclick={createNew}>{t.create}</Button>
+            <Button size="sm" variant="ghost" onclick={cancelNew}>{t.cancel}</Button>
+          </span>
+        {:else if target !== 'wait'}
+          <Chip label={'+ ' + t.newList} on={false} onclick={openNew} />
+        {/if}
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style>
   /* off `.seldrop`/`.dropmenu` in style.css - the add-to-list menu, shared by

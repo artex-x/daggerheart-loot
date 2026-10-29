@@ -94,9 +94,8 @@ Do not distort aspect ratio, overwrite the approval sources, rename public asset
    "Determinism is per-run"). Confirm shared mappings resolve to the one
    asset policy intends; the tool's `sharedWith` report is the source of
    truth for that, not a byte comparison across records.
-2. When a before/after `--stale-list` pair exists, run
-   `node tools/artwork/run.mjs verify-previews --before before.json --after after.json --report install.json`
-   (`docs/artwork.md` has the exact two-`--stale-list`-runs sequence).
+2. Run `node tools/build.js`: a changed `og/` picture changes its records' card
+   versions (`docs/artwork.md`, "The replacement command sequence, end to end").
 3. Inspect the final git diff and verify that only intended `img/` (with `img/thumb/`), `og/`, and explicitly requested workflow documentation changed in this task. Keep pre-existing changes separate in the report.
 4. Run focused repository gates first:
    - `node tests/run-all.js dataint,noart`
@@ -110,7 +109,7 @@ Only perform this section when the human asks and a compatible local skill/cache
 
 1. Read the discovered skill's current instructions and cache builder before mutation.
 2. Back up or stage the existing cache if its update is not naturally atomic.
-3. Synchronize the repository's current `data.json` and complete `img/` set into the cache using paths discovered in this environment.
+3. Run `node tools/build.js` first (`data.json` is not committed), then synchronize the repository's current `data.json` and complete `img/` set into the cache using paths discovered in this environment.
 4. Run the skill's own index/contact-sheet rebuild command with the current repository commit plus an explicit note that artwork bytes may include uncommitted task changes.
 5. Query representative changed IDs and affected subtypes; verify image paths, index counts, and contact sheets.
 6. If the skill is unavailable on this machine, report the optional refresh as skipped; do not add absolute fallback paths to repository docs.

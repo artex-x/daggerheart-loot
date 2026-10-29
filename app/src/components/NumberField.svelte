@@ -23,7 +23,7 @@
      */
     tone?: 'hope' | 'fear';
     /**
-     * The live #16 rule (`numBox`, app.js 2096-2107, comment): a value below
+     * The live #16 rule (`numBox` in `git show 23c00a6^:app.js`, its comment): a value below
      * `min` means "no roll yet" and draws as an empty field rather than as
      * the number. On the list page this also changes how the field commits -
      * every keystroke applies at once, an emptied field commits `0` rather
@@ -74,7 +74,7 @@
     el.value = next.value;
     el.setSelectionRange(next.caret, next.caret);
     /* The live list page applies every keystroke rather than waiting for
-       `change` (app.js 4315-4331): an emptied field commits 0 at once, and a
+       `change` (`git show 23c00a6^:app.js`): an emptied field commits 0 at once, and a
        digit commits clamped into range at once. A roll page passes no
        `empty` and keeps the old `change`-only commit below. */
     if (empty) onchange(next.value === '' ? 0 : committed(next.value, min, max));
@@ -100,7 +100,7 @@
     /* An empty field starts counting at 0, not at `min` - the live
        `(parseInt('') || 0) + by`, so a first `+` or `-` both land on `min`.
        The stepper is the one place that clamps a negative-range field
-       (app.js 3916) - `committed` itself no longer does, since typing past
+       (`git show 23c00a6^:app.js`) - `committed` itself no longer does, since typing past
        the reprice field's own range is not clamped live (numField.ts). */
     const current = empty && text.trim() === '' ? 0 : committed(text, min, max);
     const n = clamp(current + by, min, max);

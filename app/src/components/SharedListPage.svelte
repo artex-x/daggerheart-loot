@@ -1,16 +1,13 @@
 <script lang="ts">
-  /* A list somebody shared, read-only: `#/l/<payload>` for a payload that is
-     nobody's own list (off `renderSharedList`, app.js 3130-3170; mounted by
-     `ListPage.svelte`'s `{:else if route.kind === 'sharedList' && !own}`
-     branch), or `#/s/<token>`, an account list's share link, read through
-     `app.sharedView` (mounted by `App.svelte`). Both are mounted only once
-     `app.index` is confirmed non-null. docs/specs/FEATURES.md, "Lists" and
-     "Account and browser lists".
+  /* A list somebody shared, read-only: `#/s/<token>`, an account list's share link, read
+     through `app.sharedView` (off `renderSharedList` in `git show 23c00a6^:app.js`; mounted by
+     `App.svelte` once `app.index` is confirmed non-null). docs/specs/FEATURES.md, "Lists"
+     and "Account and browser lists".
 
      From 8 drawn entries, or once a query or a filter value is set, the page
      draws the tables' search box and filter strip over the entries it draws;
-     on `#/s/` the filter lives in the address (`#/s/<token>/f_<filter>`), on
-     `#/l/` in page memory (docs/specs/FEATURES.md, "Lists"). */
+     the filter lives in the address (`#/s/<token>/f_<filter>`; docs/specs/FEATURES.md,
+     "Lists"). */
   import { onDestroy, tick, untrack } from 'svelte';
   import Actions from './Actions.svelte';
   import Button from './Button.svelte';
@@ -41,58 +38,69 @@
   import { cardVersion, sectionHash, shareHash, storedListHash } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
   import { plural } from '../lib/plural.js';
-  import { decodeList, type ListEntryMeta } from '../lib/listLink.js';
-  import { copyInit, gmOnlyCount, itemMeta, LIST_SEARCH_AT, takenQty } from '../lib/lists.js';
+  import {
+    gmOnlyCount,
+    itemMeta,
+    LIST_SEARCH_AT,
+    takenQty,
+    type ListEntryMeta
+  } from '../lib/lists.js';
   import { moneyMode, priceText } from '../lib/money.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import type { Record_ } from '../lib/types.js';
   import type { AppState } from '../state/app.svelte.js';
 
-  /* Exactly one of `payload` and `token`. */
   interface Props {
     app: AppState;
     index: Index;
-    payload?: string;
-    token?: string;
+    token: string;
   }
 
-  const { app, index: base, payload, token }: Props = $props();
+  const { app, index: base, token }: Props = $props();
 
   const t = $derived(app.t);
 
-  const view = $derived(token === undefined ? null : app.sharedView);
+  const view = $derived(app.sharedView);
   /* A share link's frozen copies, and its owner's items for a reader who is not the owner,
-     join this page's index; the reader's own items stay live (`withRecords`). A `#/l/` link
-     holds catalog ids only. */
-  const index = $derived(
-    token === undefined ? base : withRecords(base, [], snapshotRecords(view?.shared))
-  );
+     join this page's index; the reader's own items stay live (`withRecords`). */
+  const index = $derived(withRecords(base, [], snapshotRecords(view?.shared)));
   const knows = (id: string): boolean => index.byId.has(id);
   /* Keyed on the token and the session only: `open` reads and writes the
      view's own state, which must not re-run this. */
   $effect(() => {
-    if (token === undefined) return;
+    const at = token;
     const user = app.user;
     const v = view;
     untrack(() => {
-      void v?.open(token, user === undefined ? undefined : (user?.userId ?? null));
+      void v?.open(at, user === undefined ? undefined : (user?.userId ?? null));
     });
   });
   onDestroy(() => {
     view?.close();
   });
-  const shared = $derived(
-    token === undefined
-      ? /* A `#/l/` link holds catalog ids only: a crafted payload never decodes an own key. */
-        decodeList(payload ?? '', (id) => app.catalog?.byId.has(id) ?? false)
-      : view?.status === 'ready' && view.shared
-        ? sharedListOf(view.shared, knows)
-        : null
-  );
-  /* The key the dropped-entries toast is told once for. */
-  const shownFor = $derived(token ?? payload ?? '');
 
-  /* `decodeList` has already dropped every id the data does not know, so this
+  /* The share panel's version: a players' projection holds no GM-only entry and a GM's
+     holds every entry, so its length is the count the token's card shows. */
+  function shareVersion(s: NonNullable<NonNullable<typeof view>['shared']>): string {
+    return cardVersion([s.list.name, s.list.player_note, s.entries.length]);
+  }
+  /* The bar carries the version the copy hands out once the list is read
+     (docs/specs/CONTRACTS.md section 5), on the address this page is drawn for; a
+     filter pick rewrites the address, and this writes the version again. */
+  $effect(() => {
+    const s = view?.status === 'ready' ? view.shared : null;
+    const hash = app.hash;
+    const route = app.route;
+    if (!s || route.kind !== 'share' || route.token !== token) return;
+    untrack(() => {
+      app.setBarVersion(hash, shareVersion(s));
+    });
+  });
+  const shared = $derived(
+    view?.status === 'ready' && view.shared ? sharedListOf(view.shared, knows) : null
+  );
+
+  /* `sharedListOf` has already dropped every id the data does not know, so this
      never filters anything out in practice - the guard is only what keeps
      `byId`'s possible `undefined` out of the array's type. */
   const byId = (id: string): Record_ | undefined => index.byId.get(id);
@@ -117,7 +125,6 @@
      players' link never offers a GM-only entry's value. A picked value no row offers
      is not in force: no pill, no narrowing (docs/specs/ROUTES.md, "Filter grammar"). */
   let q = $state('');
-  let memPicked = $state<FilterState>({});
   let filterOpen = $state(false);
   let seenSeg = $state('');
   let seenList = $state<string | null>(null);
@@ -128,9 +135,7 @@
      last pill, clearing the query or a re-read that shrinks the list never removes
      the control that has the focus. */
   let finding = $state(false);
-  const picked = $derived<FilterState>(
-    token === undefined ? memPicked : app.route.kind === 'share' ? app.route.filter : {}
-  );
+  const picked = $derived<FilterState>(app.route.kind === 'share' ? app.route.filter : {});
   const facRows = $derived(listFacetRows(items, t, app.lang));
   const inForce = $derived.by<FilterState>(() => {
     const out: FilterState = {};
@@ -142,22 +147,20 @@
     return out;
   });
 
-  /* Another list starts unfiltered; on `#/s/` a segment this page did not write (a
-     filter link) opens the panel, as `TablesPage`'s does. */
+  /* Another list starts unfiltered; a segment this page did not write (a filter link)
+     opens the panel, as `TablesPage`'s does. */
   $effect(() => {
-    const list = shownFor;
+    const list = token;
     const route = app.route;
     untrack(() => {
       if (seenList !== list) {
         seenList = list;
         q = '';
-        memPicked = {};
         seenSeg = '';
         filterOpen = false;
         finding = false;
         readyFor = null;
       }
-      if (token === undefined) return;
       const seg = route.kind === 'share' ? encodeFilter(route.filter, LIST_GROUPS) : '';
       if (seg !== seenSeg) filterOpen = true;
       seenSeg = seg;
@@ -165,11 +168,10 @@
   });
 
   $effect(() => {
-    if (token !== undefined && view?.status === 'ready' && view.token === token)
-      readyFor = token;
+    if (view?.status === 'ready' && view.token === token) readyFor = token;
   });
   const revoked = $derived(
-    token !== undefined && view?.status === 'gone' && view.token === token && readyFor === token
+    view?.status === 'gone' && view.token === token && readyFor === token
   );
 
   $effect(() => {
@@ -180,13 +182,8 @@
       finding = true;
   });
 
-  /** Writes a filter: the address on `#/s/`, marked as this page's own edit; page
-   *  memory on `#/l/`, whose payload cannot carry a segment. */
+  /** Writes a filter into the address, marked as this page's own edit. */
   function applyFilter(next: FilterState): void {
-    if (token === undefined) {
-      memPicked = next;
-      return;
-    }
     seenSeg = encodeFilter(next, LIST_GROUPS);
     app.replace(shareHash(token, { filter: next }));
   }
@@ -217,9 +214,7 @@
   async function copyFilterLink(at: string): Promise<void> {
     const s = view?.shared;
     const gm = s?.audience === 'gm';
-    /* The share panel's version: a players' projection holds no GM-only entry and a GM's
-       holds every entry, so its length is the count the token's card shows. */
-    const v = s ? cardVersion([s.list.name, s.list.player_note, s.entries.length]) : undefined;
+    const v = s ? shareVersion(s) : undefined;
     const link = app.linkTo(shareHash(at, { filter: inForce }), v);
     await app.copied(
       () => app.env.clipboard.writeText(link),
@@ -246,19 +241,34 @@
     })
   );
   /* The owner on the own players' link: how many entries the link leaves out.
-     0 until the account list is read. */
+     0 until that list's entries are read, and after a failed read (the count is a hint). */
   const hiddenN = $derived.by((): number => {
     const mine = view?.mine;
-    if (!mine || view.shared?.audience !== 'player') return 0;
-    const l = app.cloudLists?.get(mine);
+    const cloud = app.cloudLists;
+    if (!mine || view.shared?.audience !== 'player' || cloud?.detailOf(mine) !== 'ready') {
+      return 0;
+    }
+    const l = cloud.get(mine);
     return l ? gmOnlyCount(l.ids, (id) => itemMeta(l, id)) : 0;
+  });
+  $effect(() => {
+    const mine = view?.mine;
+    const cloud = app.cloudLists;
+    if (
+      mine &&
+      view.shared?.audience === 'player' &&
+      cloud?.status === 'ready' &&
+      cloud.get(mine) &&
+      cloud.detailOf(mine) === 'absent'
+    ) {
+      void cloud.detail([mine]);
+    }
   });
   const sub = $derived(`${t.sharedList} · ${plural(items.length, t.itemsN, app.lang)}`);
 
-  /* The live `S.shared` (app.js 51, 3140-3141): every add-to-list menu on
-     this page - the bar's, a card's - reads its meta from it. The same
-     two-part shape `ListPage.svelte` uses for `syncListUrl`/`clearOpenList`,
-     for the same reason. */
+  /* The live `S.shared` (`git show 23c00a6^:app.js`): every add-to-list menu on
+     this page - the bar's, a card's - reads its meta from it. Cleared in
+     `onDestroy`, not in an effect cleanup, which runs before every re-run. */
   $effect(() => {
     app.shared = shared;
     /* An entry the list no longer holds leaves the selection, so the bar counts only drawn rows. */
@@ -281,31 +291,18 @@
     const s = shared;
     if (!s) return;
     const target = app.newListTarget;
-    if (target === 'cloud') {
-      if (token === undefined) app.saveCopyOf(s);
-      else void app.saveShareCopy(token);
-      return;
-    }
-    if (target === 'prompt') {
-      prompting = !prompting;
-      return;
-    }
-    if (target === 'wait') return;
-    const l = app.lists.create(s.name, copyInit(s));
-    /* `ListStore.save()` has already toasted `saveFailed` on a refusal. */
-    const name = l.name;
-    if (app.lists.saved) app.say((t) => t.listCreated.replace('%s', name));
-    app.openNewList(l);
+    if (target === 'cloud') void app.saveShareCopy(token);
+    else if (target === 'prompt') prompting = !prompting;
   }
 
-  /* Toasted once per distinct payload, not once per component instance -
-     this page is never remounted between two plain shared-list addresses,
-     so a component-lifetime flag would miss every payload after the first. */
+  /* Toasted once per distinct token, not once per component instance -
+     this page is never remounted between two share links, so a
+     component-lifetime flag would miss every token after the first. */
   let toldFor = $state('');
   $effect(() => {
     const s = shared;
-    if (s && s.dropped > 0 && toldFor !== shownFor) {
-      toldFor = shownFor;
+    if (s && s.dropped > 0 && toldFor !== token) {
+      toldFor = token;
       const n = s.dropped;
       app.say((t, lang) => plural(n, t.droppedItems, lang));
     }
@@ -314,24 +311,23 @@
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
-    {#if token !== undefined && (!view || view.status === 'gone')}
+    {#if !view || view.status === 'gone'}
       <PageTitle title={t.shareGone} sub={t.shareGoneSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
-    {:else if token !== undefined && view?.status === 'error'}
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{t.toStart}</Button
+      >
+    {:else if view.status === 'error'}
       <PageTitle title={t.sharedFailed} sub={t.sharedFailedSub} />
       <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
-    {:else if token !== undefined && !shared}
-      <!-- The first read: no heading, which is the list's name. -->
-      <LoadState {t} failed={false} text={t.sharedFailed} onretry={() => void view?.retry()} />
     {:else if !shared}
-      <PageTitle title={t.notFound} sub={t.badShare} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+      <!-- The first read: no heading, which is the list's name. -->
+      <LoadState {t} failed={false} text={t.sharedFailed} onretry={() => void view.retry()} />
     {:else}
       {#if view?.mine}
         <p class="ownline">
           {t.ownList}
           {#if hiddenN > 0}{`${t.ownGmOnly.replace('%n', String(hiddenN))} `}{/if}<a
-            href={storedListHash(view.mine)}>{t.ownListEdit}</a
+            href={app.href(storedListHash(view.mine))}>{t.ownListEdit}</a
           >
         </p>
       {/if}
@@ -347,7 +343,7 @@
           variant="primary"
           on={prompting}
           expanded={prompting || undefined}
-          disabled={app.cloning || app.legacyMove?.status === 'moving'}
+          disabled={app.cloning}
           onclick={saveShared}><Icon name="plus" />{t.saveShared}</Button
         >
       </Actions>
@@ -358,9 +354,6 @@
           after={{ hash: app.hash, action: { do: 'saveList' } }}
           boxed
         />
-      {/if}
-      {#if token === undefined}
-        <p class="legacy">{t.legacyLinks}</p>
       {/if}
       {#if shared.note || shared.hnote}
         <div class="notes">
@@ -389,11 +382,9 @@
             }}
             onpick={pickFacet}
             onreset={resetFacets}
-            oncopylink={token === undefined
-              ? undefined
-              : () => {
-                  void copyFilterLink(token);
-                }}
+            oncopylink={() => {
+              void copyFilterLink(token);
+            }}
             bind:toggleEl={filterToggle}
           />
         </div>
@@ -458,18 +449,16 @@
         </TableRows>
       {/if}
     {/if}
-    {#if token !== undefined}
-      <!-- Mounted across every branch, so a revoke of a drawn link is said once
-           (docs/specs/FEATURES.md, "Account and browser lists"). Says a re-read
-           changed what the page draws; keyed, so a second change is announced
-           again. `data-live` marks a joined topic for the hosted E2E and draws
-           nothing. -->
-      <StatusRegion
-        text={revoked ? t.shareGone : view?.changes ? t.listUpdated : ''}
-        key={revoked ? -1 : view?.changes}
-        live={view?.live}
-      />
-    {/if}
+    <!-- Mounted across every branch, so a revoke of a drawn link is said once
+         (docs/specs/FEATURES.md, "Account and browser lists"). Says a re-read
+         changed what the page draws; keyed, so a second change is announced
+         again. `data-live` marks a joined topic for the hosted E2E and draws
+         nothing. -->
+    <StatusRegion
+      text={revoked ? t.shareGone : view?.changes ? t.listUpdated : ''}
+      key={revoked ? -1 : view?.changes}
+      live={view?.live}
+    />
   {/snippet}
 </RecordHost>
 
@@ -490,13 +479,6 @@
 
   .lfind :global(.fbar) {
     margin-top: 12px;
-  }
-
-  .legacy {
-    margin: 0 0 18px;
-    font-size: 12.5px;
-    color: var(--muted2);
-    max-width: 70ch;
   }
 
   .ownline {

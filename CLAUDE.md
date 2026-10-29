@@ -102,7 +102,7 @@ in the same commit. Behaviour changes update their specs in the same commit.
 - Shared UI belongs in `app/src/components/`; expose only differences real callers need.
 - `app/src/styles/tokens.css` owns global colours, spacing, radii, and type steps. `DESIGN.md` records the visual system those tokens express; the code wins any conflict with it.
   Components compose tokens; they do not invent near-duplicate values.
-- Preserve relative asset paths and the classic-script `data.js` adapter (cached apart from the bundle, no async bootstrap); do not use runtime `fetch()` for local data.
+- Keep URLs root-absolute (`/`; the app runs at a host root, owner 2026-10-28) and the classic-script `data.js` adapter (cached apart from the bundle, no async bootstrap); do not use runtime `fetch()` for local data.
 
 ## Data and published artefacts
 

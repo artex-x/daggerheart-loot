@@ -39,21 +39,23 @@ describe('collapse', () => {
 });
 
 describe('normUrl', () => {
-  it('cuts a served app url down to its hash, whatever the port', () => {
-    assert.equal(
-      normUrl('http://127.0.0.1:51234/index.html#/tables/eq_weapon'),
-      '#/tables/eq_weapon'
-    );
-    assert.equal(normUrl('http://127.0.0.1:7/#/lists'), '#/lists');
+  it('cuts a served app url down to its path, whatever the port', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/tables/eq_weapon'), '/tables/eq_weapon');
+    assert.equal(normUrl('http://127.0.0.1:7/en/lists?as=gm1'), '/en/lists?as=gm1');
   });
 
-  it('cuts a served site page down to its relative path', () => {
-    assert.equal(normUrl('http://127.0.0.1:51234/pages/privacy.html'), 'pages/privacy.html');
-    assert.equal(normUrl('http://127.0.0.1:51234/en/#/lists'), 'en/#/lists');
+  it('cuts a served site page down to its path', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/pages/privacy.html'), '/pages/privacy.html');
+  });
+
+  it('prints a card version as <v>, so a golden does not follow card-versions.json', () => {
+    assert.equal(normUrl('http://127.0.0.1:51234/i/ci1?v=k3x9a1'), '/i/ci1?v=<v>');
+    assert.equal(normUrl('http://127.0.0.1:51234/s/t?as=gm1&v=0'), '/s/t?as=gm1&v=<v>');
   });
 
   it('leaves a real outbound link whole - no test server origin to cut', () => {
     assert.equal(normUrl('https://daggerheart.com/'), 'https://daggerheart.com/');
+    assert.equal(normUrl('https://e.test/x?v=k3'), 'https://e.test/x?v=k3');
   });
 });
 
@@ -199,37 +201,6 @@ describe('signed-in states - the `as` field and the id suffix agree', () => {
   });
 });
 
-describe('dated states - the `today` field and the golden header agree', () => {
-  /* The test build is pinned before the legacy write cutoff (ports/clock.ts);
-     a state after it says so with `today`, and its golden says `# today:`. */
-  const cutoff = /LEGACY_WRITE_UNTIL = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2})\)/.exec(
-    readFileSync(path.join(HERE, '..', '..', 'app', 'src', 'lib', 'legacy.ts'), 'utf8')
-  );
-  const pinned = /TEST_NOW = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2}), (\d{1,2})\)/.exec(
-    readFileSync(path.join(HERE, '..', '..', 'app', 'src', 'ports', 'clock.ts'), 'utf8')
-  );
-
-  it('pins the test build before the cutoff', () => {
-    assert.ok(cutoff && pinned, 'LEGACY_WRITE_UNTIL or TEST_NOW is not a Date.UTC literal');
-    const [, y, m, d] = cutoff.map(Number);
-    const [, py, pm, pd, ph] = pinned.map(Number);
-    assert.ok(Date.UTC(py, pm, pd, ph) < Date.UTC(y, m, d));
-  });
-
-  it('writes `# today:` exactly for a state with `today`, a YYYY-MM-DD day', () => {
-    for (const s of STATES) {
-      const text = readFileSync(path.join(HERE, 'snapshots', slugOf(s.id) + '.txt'), 'utf8');
-      const header = headerOf(text);
-      if (s.today) {
-        assert.match(s.today, /^\d{4}-\d{2}-\d{2}$/, `"${s.id}": today is not YYYY-MM-DD`);
-        assert.ok(header.includes('# today: ' + s.today), `"${s.id}": no # today: line`);
-      } else {
-        assert.ok(!header.some((l) => l.startsWith('# today:')), `"${s.id}": a # today: line`);
-      }
-    }
-  });
-});
-
 describe('held states - the `hold` field and the golden header agree', () => {
   it('writes `# hold:` exactly for a state with `hold`, pairs of a read and a mode', () => {
     for (const s of STATES) {
@@ -238,8 +209,8 @@ describe('held states - the `hold` field and the golden header agree', () => {
       if (s.hold) {
         assert.match(
           s.hold,
-          /^(lines|items):(stall|fail)(,(lines|items):(stall|fail))*$/,
-          `"${s.id}": hold is not <lines|items>:<stall|fail>`
+          /^(lines|items|rows):(stall|fail)(,(lines|items|rows):(stall|fail))*$/,
+          `"${s.id}": hold is not <lines|items|rows>:<stall|fail>`
         );
         assert.ok(header.includes('# hold: ' + s.hold), `"${s.id}": no # hold: line`);
       } else {
@@ -375,56 +346,6 @@ describe('addressSettled() call sites', () => {
       3,
       'expected three `await d.addressSettled()` call sites in golden.js (two in the ' +
         'ordinary branch, one in the timed branch) - one was removed'
-    );
-  });
-});
-
-describe("URL_DEBOUNCE_MS - coupled to ListPage.svelte's own debounce", () => {
-  /* driver.js's addressSettled() waits `URL_DEBOUNCE_MS + 100ms` of address
-   * quiet before a golden capture, so it stays a real wait rather than a
-   * guess only while the two numbers agree. tests/derived.js parsing
-   * ci.yml for the shard/divisor coupling is the precedent for reading a
-   * file as text to assert two numbers that could
-   * silently drift apart never do. */
-  it('agrees with the 150ms trailing debounce scheduleUrlSync actually sets', () => {
-    const listPage = readFileSync(
-      path.join(HERE, '..', '..', 'app', 'src', 'components', 'ListPage.svelte'),
-      'utf8'
-    );
-    /* Bounded to the function's own body (up to its closing brace at the
-     * 2-space indent the function itself sits at) rather than an unbounded
-     * [\s\S]*? that would walk past it: an unbounded match still matches
-     * something after a Prettier reflow splits the call across lines (fails
-     * loudly, fine), but if the `150` literal is ever replaced by a named
-     * constant it walks on to the next `}, <digits>);` anywhere later in the
-     * file - silently wrong - and a second setTimeout earlier in this same
-     * function would take the first match - also silently wrong. The
-     * setTimeout-count assertion below closes the second case; the bound
-     * closes the first. */
-    const bodyMatch = listPage.match(/function scheduleUrlSync[\s\S]*?\n {2}\}/);
-    assert.ok(
-      bodyMatch,
-      "could not find scheduleUrlSync's own function body in ListPage.svelte"
-    );
-    const body = bodyMatch[0];
-    assert.equal(
-      body.split('setTimeout').length - 1,
-      1,
-      'scheduleUrlSync has more than one timer - which one is the debounce?'
-    );
-    const fnMatch = body.match(/\}, (\d+)\);/);
-    assert.ok(fnMatch, "could not find scheduleUrlSync's own setTimeout call inside its body");
-    const debounceMs = Number(fnMatch[1]);
-
-    const driverSrc = readFileSync(path.join(HERE, 'driver.js'), 'utf8');
-    const constMatch = driverSrc.match(/const URL_DEBOUNCE_MS = (\d+);/);
-    assert.ok(constMatch, 'could not find URL_DEBOUNCE_MS in driver.js');
-    const urlDebounceMs = Number(constMatch[1]);
-
-    assert.equal(
-      urlDebounceMs,
-      debounceMs,
-      'the debounce moved - update URL_DEBOUNCE_MS and re-run all four golden shards'
     );
   });
 });

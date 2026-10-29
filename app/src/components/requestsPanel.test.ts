@@ -89,6 +89,14 @@ const panel = async (): Promise<HTMLElement> =>
 const requestsOf = (p: HTMLElement): HTMLElement[] => [
   ...p.querySelectorAll<HTMLElement>('.req')
 ];
+/* The list page waits for its entries, so the panel can draw the notices before its
+   own lines read lands: the requests come with that read. */
+const requestsDrawn = (p: HTMLElement): Promise<HTMLElement[]> =>
+  waitFor(() => {
+    const got = requestsOf(p);
+    expect(got.length).toBeGreaterThan(0);
+    return got;
+  });
 const cells = (req: HTMLElement): string[] =>
   [...req.querySelectorAll('td')].map((td) => td.textContent.trim());
 
@@ -270,39 +278,107 @@ describe('the requests panel', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('announces a request that arrives while the page is open', async () => {
+  it('says a request that arrives while the page is open in its toast, not in the panel', async () => {
     const { cloud, container } = openShop((c) => {
       c.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
     });
     const p = await panel();
-    const before = regions(container);
-    expect(before.map((r) => r.textContent.trim())).not.toContain('Новый запрос');
     cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
     await waitFor(() => {
       expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
         'Новое в списке (2)'
       );
     });
-    expect(before).toContain(saying(container, 'Новый запрос'));
+    expect(await screen.findByRole('button', { name: 'Показать' })).toBeInTheDocument();
+    expect(container.querySelector('.toast')).toHaveTextContent(
+      'Новый запрос по списку «Лавка кузнеца»'
+    );
+    expect(regions(container).map((r) => r.textContent.trim())).not.toContain('Новый запрос');
     await expectNoA11yViolations(container);
   });
 
-  it('announces the first request in a status region that was there before it', async () => {
-    const { cloud, container } = openShop();
-    await screen.findByRole('textbox', { name: 'Название списка' });
-    /* The first read of the requests starts beside the owner topic's join; once the
-       page draws the join, that read has landed, and what comes now is an arrival. */
-    await waitFor(() => {
-      expect(container.querySelector('.said[data-live="live"]')).toBeInTheDocument();
+  it("«Открыть» on another page opens the list and focuses the panel's head once drawn", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = render(App, {
+      env: fakeEnv({ router: memoryRouter('#/lists'), data: fakeData(LOOT), cloud })
     });
-    const before = regions(container);
-    expect(before.map((r) => r.textContent.trim())).not.toContain('Новый запрос');
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
     cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
-    await panel();
+    await userEvent.click(await screen.findByRole('button', { name: 'Открыть' }));
+    const head = await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 });
     await waitFor(() => {
-      expect(saying(container, 'Новый запрос')).not.toBeUndefined();
+      expect(head).toHaveFocus();
     });
-    expect(before).toContain(saying(container, 'Новый запрос'));
+    /* The flag is cleared: a later redraw of the panel leaves the focus where it went. */
+    const name = await screen.findByRole('textbox', { name: 'Название списка' });
+    name.focus();
+    cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+    await waitFor(() => {
+      expect(head).toHaveTextContent('Новое в списке (2)');
+    });
+    expect(name).toHaveFocus();
+    await expectNoA11yViolations(container);
+  });
+
+  it('«Показать» inside the record dialog closes it and focuses the panel head', async () => {
+    const { cloud, container } = openShop((c) => {
+      c.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    });
+    const head = await screen.findByRole('heading', { name: /^Новое в списке/, level: 2 });
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
+    await userEvent.click(screen.getByRole('button', { name: /^Спальный мешок/ }));
+    const dialog = screen.getByRole('dialog');
+    cloud.request('gm-token-1', [{ item: 'cc1', qty: 1 }]);
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Показать' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(head).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('«Открыть» for several lists inside the record dialog closes it and focuses the main landmark', async () => {
+    const { cloud, container } = openShop();
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
+    const made = await cloud.as('gm1').shares.create(uuid(103), 'player');
+    await userEvent.click(await screen.findByRole('button', { name: /^Спальный мешок/ }));
+    const dialog = screen.getByRole('dialog');
+    cloud.request(made.ok ? made.token : '', [{ item: 'q1', qty: 1 }]);
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Открыть' }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(document.getElementById('main'));
+    });
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Мои списки');
+  });
+
+  it('hands the focus to the main landmark when the request is gone before «Показать»', async () => {
+    const { cloud, container } = openShop();
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
+    const id = cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    const show = await screen.findByRole('button', { name: 'Показать' });
+    await panel();
+    cloud.decide(id ?? '', 'declined');
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /^Новое в списке/ })).toBeNull();
+    });
+    await userEvent.click(show);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(document.getElementById('main'));
+    });
     await expectNoA11yViolations(container);
   });
 
@@ -404,7 +480,7 @@ describe('homebrew lines', () => {
       env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
     });
     const p = await panel();
-    const [req] = requestsOf(p);
+    const [req] = await requestsDrawn(p);
     expect(cells(req as HTMLElement)[0]).toBe('Топор Тлеющих Углей');
     await userEvent.click(
       within(req as HTMLElement).getByRole('button', { name: 'Отклонить' })
@@ -436,7 +512,7 @@ describe('homebrew lines', () => {
       env: fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), cloud })
     });
     const p = await panel();
-    const req = requestsOf(p)[0] as HTMLElement;
+    const req = (await requestsDrawn(p))[0] as HTMLElement;
     expect(cells(req)).toEqual([AXE, 'нет в списке', '-']);
     expect(req.querySelector('.short')).toHaveTextContent('нет в списке');
     await expectNoA11yViolations(container);
@@ -627,9 +703,11 @@ describe('the change log in the panel', () => {
       if (made.ok) w.request(made.token, [{ item: 'q23', qty: 1 }]);
     });
     const p = await inbox();
-    expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
-      'Новое в списке (3)'
-    );
+    await waitFor(() => {
+      expect(within(p).getByRole('heading', { level: 2 })).toHaveTextContent(
+        'Новое в списке (3)'
+      );
+    });
     const rows = noticeRows(p);
     expect(rows.map((r) => textOf(r.querySelector('.ntext') as Element))).toEqual([
       'новое Автор изменил «Топор Тлеющих Углей». Открыть',
@@ -640,7 +718,7 @@ describe('the change log in the panel', () => {
     );
     expect(
       within(rows[0] as HTMLElement).getByRole('link', { name: 'Открыть' })
-    ).toHaveAttribute('href', '#/h/' + AXE_ID);
+    ).toHaveAttribute('href', '/h/' + AXE_ID);
     await waitFor(async () => {
       const read = await cloud.requests.notices(GM2_LIST);
       expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);
@@ -740,8 +818,16 @@ describe('the change log in the panel', () => {
       const read = await cloud.requests.notices(GM2_LIST);
       expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);
     });
-    await new Promise((done) => setTimeout(done, 20));
+    /* The read after the mark lands before the change: wait until no notices read starts
+       for 150 ms (the list page's own entries read moves when it ends). */
+    const reads = vi.spyOn(cloud.requests, 'notices');
+    for (let seen = -1; seen !== reads.mock.calls.length;) {
+      seen = reads.mock.calls.length;
+      await new Promise((done) => setTimeout(done, 150));
+    }
+    reads.mockRestore();
     const cap = SEED.homebrew.gm1.items.find((i) => i.id === CAP_ID);
+    const hide = within(p).getByRole('button', { name: 'Скрыть изменения' });
     await world.homebrew.updateItem(
       CAP_ID,
       {
@@ -750,12 +836,51 @@ describe('the change log in the panel', () => {
       },
       null
     );
-    await userEvent.click(within(p).getByRole('button', { name: 'Скрыть изменения' }));
+    /* The change's `notice` message re-reads the panel after COALESCE_MS (250 ms); a press
+       that a loaded host delays past it hides the new notice as drawn, which is correct, so
+       the press goes in the same turn, before that re-read. */
+    void fireEvent.click(hide);
     const left = await cloud.requests.notices(GM2_LIST);
     expect(left.ok && left.notices.map((n) => n.item_key)).toEqual(['hb_whispercapaaaaaa']);
     expect(
       await screen.findByText('Автор изменил «Whispering Hat».', { exact: false })
     ).toBeInTheDocument();
+  });
+
+  it("says a notice that arrives in the panel's status region, with no toast", async () => {
+    const { world, cloud, container } = await openGm2();
+    const p = await inbox();
+    await waitFor(() => {
+      expect(noticeRows(p)).toHaveLength(2);
+    });
+    await waitFor(async () => {
+      const read = await cloud.requests.notices(GM2_LIST);
+      expect(read.ok && read.notices.every((n) => n.read_at !== null)).toBe(true);
+    });
+    const reads = vi.spyOn(cloud.requests, 'notices');
+    for (let seen = -1; seen !== reads.mock.calls.length;) {
+      seen = reads.mock.calls.length;
+      await new Promise((done) => setTimeout(done, 150));
+    }
+    reads.mockRestore();
+    const before = regions(container);
+    /* The axe is on the list, so its change refreshes the list's notice of it. */
+    vi.setSystemTime(T0 + 60_000);
+    const axe = SEED.homebrew.gm1.items.find((i) => i.id === AXE_ID);
+    await world.homebrew.updateItem(
+      AXE_ID,
+      {
+        content: { ...(axe?.content ?? { kind: 'item' }), en: 'Ember Axe' },
+        book_id: null
+      },
+      null
+    );
+    await waitFor(() => {
+      expect(saying(container, 'Предмет в списке изменился')).not.toBeUndefined();
+    });
+    expect(before).toContain(saying(container, 'Предмет в списке изменился'));
+    expect(container.querySelector('.toast')?.textContent.trim()).toBe('');
+    await expectNoA11yViolations(container);
   });
 
   it('says a failed hide and draws the notice again', async () => {

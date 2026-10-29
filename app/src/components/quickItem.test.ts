@@ -101,7 +101,7 @@ describe('the own-item panel', () => {
     const made = create.mock.calls[0]?.[0];
     /* The toast links the new item's editor in a new tab and leaves focus in the name. */
     const edit = screen.getByRole('link', { name: 'Изменить' });
-    expect(edit).toHaveAttribute('href', '#/homebrew/' + (made?.key ?? ''));
+    expect(edit).toHaveAttribute('href', '/homebrew/' + (made?.key ?? ''));
     expect(edit).toHaveAttribute('target', '_blank');
     expect(edit).toHaveAttribute('rel', 'noopener');
     expect(edit.closest('.toast')).not.toBeNull();

@@ -254,10 +254,10 @@ describe('#/tables/homebrew', () => {
   it('keeps kind and drops sect in a chip link', async () => {
     page('#/tables/homebrew/f_kind-equip.sect-hb_sectbladesaaaaaa');
     await screen.findByText('Топор Тлеющих Углей');
-    expect(chip('Хоумбрю')).toHaveAttribute('href', '#/tables/homebrew/f_kind-equip.src-hb');
+    expect(chip('Хоумбрю')).toHaveAttribute('href', '/tables/homebrew/f_kind-equip.src-hb');
     expect(chip('Мастерская Ольхи')).toHaveAttribute(
       'href',
-      '#/tables/homebrew/f_kind-equip.src-hb_alderworkshopaaa'
+      '/tables/homebrew/f_kind-equip.src-hb_alderworkshopaaa'
     );
   });
 
@@ -344,7 +344,7 @@ describe('#/tables/homebrew', () => {
     expect(document.querySelector('.ffilter')).toBeNull();
     await userEvent.click(pill());
     expect(document.querySelector('.ffilter')).toBeNull();
-    router.navigate(chip('Хоумбрю').getAttribute('href') ?? '');
+    router.click(chip('Хоумбрю').getAttribute('href') ?? '');
     await waitFor(() => {
       expect(chipOn()).toBe('Хоумбрю');
     });
@@ -361,11 +361,11 @@ describe('#/tables/homebrew', () => {
     ];
     await userEvent.click(boxes()[0] as HTMLElement);
     await userEvent.click(boxes()[1] as HTMLElement);
-    router.navigate(chip('Мастерская Ольхи').getAttribute('href') ?? '');
+    router.click(chip('Мастерская Ольхи').getAttribute('href') ?? '');
     await waitFor(() => {
       expect(rowIds()).toEqual([AXE]);
     });
-    router.navigate(chip('Хоумбрю').getAttribute('href') ?? '');
+    router.click(chip('Хоумбрю').getAttribute('href') ?? '');
     await waitFor(() => {
       expect(rowIds()).toHaveLength(3);
     });
@@ -610,7 +610,7 @@ describe('#/tables/homebrew', () => {
     expect(await screen.findByText(t.hbEmptyTable)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.hbNewItem })).toHaveAttribute(
       'href',
-      '#/homebrew/new'
+      '/homebrew/new'
     );
     await expectNoA11yViolations(container);
   });

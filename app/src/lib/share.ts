@@ -22,14 +22,14 @@ import { isHomebrewRecord } from './homebrew.js';
 import { descOf, eqLine, nameOf } from './i18n.js';
 import { markupHtml, markupText } from './markup.js';
 import { FOLD_OWN, foldOwn, relName, relOrder, relText, setFolds } from './label.js';
-import type { ListEntryMeta, ListShape } from './listLink.js';
+import type { ListEntryMeta, ListShape } from './lists.js';
 import { takenTotal } from './lists.js';
 import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
 /** An attached paragraph: a plain heading and a body. The body is plain text, or
- *  formatted-text source when `md` is set; `lead` is plain text written before
- *  the body, then a colon. */
+ *  formatted-text source when `md` is set; `lead` is written before the body, then a
+ *  colon: plain in the text, bold italic in the HTML, as a feature name. */
 export interface ShareBlock {
   head: string;
   body: string;
@@ -139,7 +139,7 @@ function statLine(it: Record_, lang: Lang): string {
 }
 
 /** A record's name, safe to use as a downloaded or shared file's name - the
- *  live `safeFileName` (app.js 1713-1715): strip the characters Windows and
+ *  live `safeFileName` (`git show 23c00a6^:app.js`): strip the characters Windows and
  *  macOS both refuse in a filename, keep everything else. The bare name, not
  *  `shareName`'s consumable suffix - live's own `safeFileName` calls `nameOf`
  *  directly, not `nameForShare`. */
@@ -162,7 +162,7 @@ export function imageFileName(it: Record_, lang: Lang): string {
  * what a list is.
  *
  * `suffix` is appended to the name itself, inside the bold run - the live
- * `itemLine` (app.js 1313-1318) is one bold run of name plus quantity plus
+ * `itemLine` (`git show 23c00a6^:app.js`) is one bold run of name plus quantity plus
  * price, not a name followed by separate runs.
  */
 export function share(
@@ -207,7 +207,7 @@ function blockText(b: ShareBlock): string {
 /** Returns a block's body as flat HTML: a formatted body with its bold and italics. */
 function blockHtml(b: ShareBlock): string {
   return (
-    (b.lead !== undefined ? esc(b.lead) + ': ' : '') +
+    (b.lead !== undefined ? '<b><i>' + esc(b.lead) + ':</i></b> ' : '') +
     (b.md ? markupHtml(b.body) : esc(b.body).replace(/\n/g, '<br>'))
   );
 }
@@ -236,8 +236,7 @@ export function shareRoll(
 }
 
 /**
- * A ticked selection as one message - `selAsText`/`selAsHtml` in app.js
- * (1961-1966).
+ * A ticked selection as one message - `selAsText`/`selAsHtml` in `git show 23c00a6^:app.js`.
  *
  * A set, not alternatives: unlike `shareRoll`, there is no `skip` and no OR
  * between entries. A roll offers options a player picks one of; a selection
@@ -288,7 +287,7 @@ export function shareSelection(
 }
 
 /**
- * The one block `contextNote` attaches (app.js 568-573): while a list is
+ * The one block `contextNote` attaches (`git show 23c00a6^:app.js`): while a list is
  * open, copying one of its entries appends the players' note it carries
  * there. The GM's own note never travels - it stays with the list. Lives
  * here, not on the list page, so the roll card and the record modal can pass

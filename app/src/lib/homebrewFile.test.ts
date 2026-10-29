@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ID_PATTERN } from './bundle.js';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import {
   BOOK_NAME_MAX,
   CARD_ITEMS_MAX,
@@ -65,14 +65,15 @@ import {
   type ImportIds,
   type Target
 } from './homebrewFile.js';
+import { readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
 const read = (...path: string[]): string => readFileSync(join(ROOT, ...path), 'utf8');
 const fixture = (name: string): string => read('docs', 'fixtures', 'homebrew-file', name);
 
-const index = buildIndex(JSON.parse(read('data.json')) as Loot);
+const index = buildIndex(readLoot());
 
-/* The catalog of data.json and an account that holds `items` and `cards`. */
+/* The real catalog and an account that holds `items` and `cards`. */
 function contextOf(
   items: Record<string, EqType | null> = {},
   cards: Record<string, CardKind> = {}

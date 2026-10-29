@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildIndex,
@@ -9,8 +7,7 @@ import {
   otherTableRows,
   plainFacets,
   srcOf,
-  type Index,
-  type Loot
+  type Index
 } from './data.js';
 import { dict } from './dict.js';
 import {
@@ -32,6 +29,7 @@ import {
   type Record_,
   type TableId
 } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const row = (over: Partial<Record_>): Record_ => ({
   id: over.id ?? 'x',
@@ -528,9 +526,7 @@ describe('the own items', () => {
 });
 
 describe("a share link's facet rows", () => {
-  const LOOT = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const LOOT = readLoot();
   const catalog = buildIndex(LOOT);
   const byId = (id: string): Record_ => catalog.byId.get(id) as Record_;
   const ALDER = {
@@ -893,9 +889,7 @@ describe('the offer rule', () => {
   });
 
   describe('on the catalog tables', () => {
-    const LOOT = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const LOOT = readLoot();
     const catalog = buildIndex(LOOT);
     const EQ: Partial<Record<TableId, EquipKind>> = {
       eq_weapon: 'weapon',

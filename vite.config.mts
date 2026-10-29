@@ -1,11 +1,5 @@
-import {
-  copyFileSync,
-  createReadStream,
-  existsSync,
-  readFileSync,
-  statSync,
-  symlinkSync
-} from 'node:fs';
+import { copyFileSync, createReadStream, existsSync, statSync, symlinkSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
@@ -70,10 +64,33 @@ function noscriptData(out: string): Plugin {
   };
 }
 
+/* The record and English-root app documents, from the built index.html: the
+   site publishes these files; the old host's mirror publishes the redirect pages
+   (docs/specs/CONTRACTS.md section 5). Required inside closeBundle, never at plugin
+   creation: vitest builds every plugin, and data.js must not load there. */
+function appDocuments(out: string): Plugin {
+  return {
+    name: 'dhloot-app-documents',
+    apply: 'build',
+    closeBundle() {
+      const { writeAppDocuments } = createRequire(import.meta.url)(
+        './tools/app-documents.js'
+      ) as {
+        writeAppDocuments: (outDir: string) => number;
+      };
+      writeAppDocuments(join(ROOT, out));
+    }
+  };
+}
+
 /* The data beside the bundle: `data.js` stays a classic script that assigns
    `window.LOOT`, cached apart from the hashed modules and read without an
-   async bootstrap. docs/specs/CONTRACTS.md section 4. */
+   async bootstrap; the build appends `window.LOOT_V`, the record links' card
+   versions. docs/specs/CONTRACTS.md section 4. */
 function dataScript(): Plugin {
+  const { builtDataScript } = createRequire(import.meta.url)('./tools/data-script.js') as {
+    builtDataScript: (root: string) => Buffer;
+  };
   return {
     name: 'dhloot-data-script',
     apply: 'build',
@@ -81,7 +98,7 @@ function dataScript(): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'data.js',
-        source: readFileSync(new URL('./data.js', import.meta.url), 'utf8')
+        source: builtDataScript(ROOT)
       });
     }
   };
@@ -156,10 +173,18 @@ export default defineConfig(({ command, mode }) => {
     /* The manifest, the service worker and the icons, copied verbatim: the
        worker must not pass through the bundle (docs/specs/META.md section 9). */
     publicDir: 'public',
-    /* A relative base, not '/daggerheart-loot/': the same build serves from
-       Pages, `vite preview` and the test server at any path. */
-    base: './',
-    plugins: [svelte(), dataScript(), artwork(OUT), noscriptData(OUT), rootFiles()],
+    /* The root: the app runs at every route path of a host root (Pages, `vite
+       preview`, the test server), so a URL relative to the page would name a
+       folder under the route (docs/specs/META.md section 4). */
+    base: '/',
+    plugins: [
+      svelte(),
+      dataScript(),
+      artwork(OUT),
+      noscriptData(OUT),
+      appDocuments(OUT),
+      rootFiles()
+    ],
     /* JSON literals, so a branch of main.ts a build does not take - the
        fake's in `dist/`, the Supabase client's in an unconfigured build -
        is dead code, and its chunk is never emitted. */

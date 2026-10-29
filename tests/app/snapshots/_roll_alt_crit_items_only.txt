@@ -3,22 +3,21 @@
 # why: the crit box with a single table to open
 
 ## ru :: tree
-RootWebArea "Альт. таблицы - Генератор лута Daggerheart" [url=#/roll/alt]
-  link "К содержимому" [url=#main]
+RootWebArea "Альт. таблицы - Генератор лута Daggerheart" [url=/roll/alt]
+  link "К содержимому" [url=/roll/alt#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Альтернативные таблицы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -45,11 +44,11 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
     status ""
       StaticText "Критический успех!"
       StaticText "Игрок берёт любую позицию из таблицы этой редкости. Мастер может..." [namelen=101 namehash=dce9aa7a]
-      link "Открыть таблицу" [url=#/tables/alt_item/common]
+      link "Открыть таблицу" [url=/tables/alt_item/common]
       button "Поднять до Необычной"
       button "Страница"
       ... StaticText x9 of 13 same-shape siblings elided
-      link "Первоклассный Спальный Мешок" [description=Страница url=#/i/ci1]
+      link "Первоклассный Спальный Мешок" [description=Страница url=/i/ci1]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       button "Отправить"
@@ -57,7 +56,7 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
       button "Скопировать текст" [description=Скопировать текст]
       button "Страница"
       StaticText "HOPE & FEAR"
-      link "Металлические Шарики" [description=Страница url=#/i/hi3]
+      link "Металлические Шарики" [description=Страница url=/i/hi3]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "В этом мешочке лежат идеально гладкие металлические шарики."
@@ -66,9 +65,9 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -109,29 +108,27 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Страница
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
-  link "Skip to content" [url=#main]
+RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
+  link "Skip to content" [url=/en/roll/alt#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Alternate tables" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -158,11 +155,11 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
     status ""
       StaticText "Critical success!"
       StaticText "The player takes any entry from this rarity table. The GM may al..." [namelen=90 namehash=b03eb0f9]
-      link "Open table" [url=#/tables/alt_item/common]
+      link "Open table" [url=/en/tables/alt_item/common]
       button "Bump to Uncommon"
       button "Page"
       ... StaticText x9 of 13 same-shape siblings elided
-      link "Premium Bedroll" [description=Page url=#/i/ci1]
+      link "Premium Bedroll" [description=Page url=/i/en/ci1]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       button "Share"
@@ -170,7 +167,7 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
       button "Copy text" [description=Copy text]
       button "Page"
       StaticText "HOPE & FEAR"
-      link "Ball Bearings" [description=Page url=#/i/hi3]
+      link "Ball Bearings" [description=Page url=/i/en/hi3]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "This pouch contains perfectly smooth metal spheres."
@@ -179,9 +176,9 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=#/roll/alt]
       button "Copy text" [description=Copy text]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -206,7 +203,6 @@ How this works
 Install as an app
 Items
 LegendaryTier 3–4
-Lists
 Open table
 Open this section on start
 Page

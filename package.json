@@ -27,7 +27,6 @@
     "check:built": "npm run build && npm run build:test && npm run smoke && npm run budget && node tools/no-fake-in-prod.mjs",
     "check:db": "node tests/db/run.mjs",
     "smoke": "node tools/smoke-http.mjs",
-    "previews": "node tools/tg-preview/run.mjs",
     "review:images": "node tools/artwork/run.mjs review --open",
     "config:diff": "node tools/supabase/config.mjs diff",
     "config:push": "node tools/supabase/config.mjs push",
@@ -50,7 +49,7 @@
     "@testing-library/svelte": "^5.4.2",
     "@testing-library/user-event": "^14.6.6",
     "@types/node": "^26.4.0",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "age-encryption": "0.3.1",
     "axe-core": "^4.13.0",
     "eslint": "^10.9.1",
@@ -70,6 +69,6 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
     "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   }
 }

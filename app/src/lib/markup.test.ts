@@ -1,8 +1,6 @@
 /* The formatted-text grammar (docs/specs/FEATURES.md, "Records", "Formatted text"):
  * one case per rule, then one catalog record in the catalog style. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   afterLead,
@@ -13,11 +11,9 @@ import {
   parseMarkup,
   type MarkupInline
 } from './markup.js';
-import type { Loot } from './data.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 
 describe('inline markup', () => {
   it('rendersBoldAndItalicAndBoth', () => {

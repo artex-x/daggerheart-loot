@@ -5,10 +5,8 @@
  * land in a table, because a record that lands nowhere loses its "show in the
  * table" link and nobody notices until somebody looks for it. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import { recordOf, type BookRef } from './homebrew.js';
 import {
   FOLD_OWN,
@@ -25,10 +23,9 @@ import {
   whereFrom
 } from './label.js';
 import type { Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 const rec = (over: Partial<Record_>): Record_ => ({

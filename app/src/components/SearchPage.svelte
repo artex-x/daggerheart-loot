@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* Search, `#/search` - reproduced from `renderSearch` (app.js 2841-2859).
+  /* Search, `#/search` - reproduced from `renderSearch` (`git show 23c00a6^:app.js`).
      Both languages at once, over loot and gear together: the head, one panel
      holding the box (focused on arrival) and the three kind chips, then the
      hint, up to 300 rows ranked best first, or "nothing found". A signed-in

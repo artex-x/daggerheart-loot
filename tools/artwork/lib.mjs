@@ -6,12 +6,10 @@
   docs/specs/COVERAGE.md's `tools/artwork/lib.test.mjs` paragraph for the
   design.
 
-  Boundary drawn exactly as tools/tg-preview/lib.mjs draws it (the pure-module
-  contract docs/specs/COVERAGE.md documents): this module holds every rule
-  that can be stated over data - name normalisation, matching, destination resolution,
-  shared-asset grouping, collision and duplicate detection, the
-  affected-stub-URL set, the stale-set algebra, the thumbnail destination
-  and the thumbnail set. It also holds the SVG template of the two site
+  The pure-module contract docs/specs/COVERAGE.md documents: this module
+  holds every rule that can be stated over data - name normalisation,
+  matching, destination resolution, shared-asset grouping, collision and
+  duplicate detection, the thumbnail destination and the thumbnail set. It also holds the SVG template of the two site
   share cards, which cards.mjs renders.
 */
 
@@ -215,54 +213,6 @@ export function planInstall({ sources, records, map }) {
     collisions,
     duplicateSources,
     counts: { acceptedArtwork: pairs.length, assetPairs: pairs.length, recordLinks }
-  };
-}
-
-// Sorted unique stub URLs for every matched record and every sharedWith
-// record - the set a byte change is expected to invalidate. Both languages:
-// i/en/<id>.html shows the same og/ picture as i/<id>.html (CONTRACTS.md
-// section 5), so a byte change invalidates both. Same URL shape as
-// tools/tg-preview/lib.mjs's `urls()`; not a second URL builder.
-export function affectedStubUrls(pairs, site) {
-  const ids = new Set();
-  for (const p of pairs) {
-    ids.add(p.recordId);
-    for (const id of p.sharedWith) ids.add(id);
-  }
-  return Array.from(ids)
-    .flatMap((id) => [site + 'i/' + id + '.html', site + 'i/en/' + id + '.html'])
-    .sort();
-}
-
-// { newlyStale, alreadyStale, missing, extra, disappeared, ok }. `before` and
-// `after` are the `stale` arrays from two tg-preview --stale-list files;
-// `expected` is affectedStubUrls(...) for the change just installed.
-// `missing` = expected but never went stale - the change did not actually
-// invalidate what it should have. `extra` = went stale but was not expected -
-// something else changed too, or the expected set is wrong. `disappeared` =
-// stale before, not stale after, and not part of the expected change -
-// worth a look, never itself a failure. `ok` is true only when `missing` and
-// `extra` are both empty.
-export function staleDelta({ before, after, expected }) {
-  const beforeSet = new Set(before);
-  const afterSet = new Set(after);
-  const expectedSet = new Set(expected);
-
-  const newlyStale = after.filter((u) => !beforeSet.has(u));
-  const alreadyStale = after.filter((u) => beforeSet.has(u));
-  const newlyStaleSet = new Set(newlyStale);
-
-  const missing = expected.filter((u) => !newlyStaleSet.has(u));
-  const extra = newlyStale.filter((u) => !expectedSet.has(u));
-  const disappeared = before.filter((u) => !afterSet.has(u) && !expectedSet.has(u));
-
-  return {
-    newlyStale: newlyStale.slice().sort(),
-    alreadyStale: alreadyStale.slice().sort(),
-    missing: missing.slice().sort(),
-    extra: extra.slice().sort(),
-    disappeared: disappeared.slice().sort(),
-    ok: missing.length === 0 && extra.length === 0
   };
 }
 

@@ -3,22 +3,21 @@
 # why: signed out: «Скатка следопыта», the sub «Предмет другого игрока · Хоумбрю», «Получается из» «Скатка путника», «Улучшается до» «Скатка стража», «Комплект» «Походный плед», «Подушка из мха», «Скатка следопыта» (current), the bonus «Сон под звёздами»; «Добавить в список» and «Сохранить себе» with its note, no «Печать», no «Изменить», no table link
 
 ## ru :: tree
-RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=#/h/00000000-0000-4000-8000-000000000662]
-  link "К содержимому" [url=#main]
+RootWebArea "Скатка следопыта - Генератор лута Daggerheart" [url=/h/00000000-0000-4000-8000-000000000662?v=<v>]
+  link "К содержимому" [url=/h/00000000-0000-4000-8000-000000000662?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Скатка следопыта" [level=1]
     StaticText "Предмет другого игрока · Хоумбрю"
@@ -27,10 +26,10 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
     ... StaticText x11 of 15 same-shape siblings elided
     button "Скопировать название" [description=Скопировать название]
     button "Скопировать ссылку" [description=Скопировать ссылку]
-    link "Скатка путника (HB)" [url=#/h/00000000-0000-4000-8000-000000000661]
-    link "Скатка стража (HB)" [url=#/h/00000000-0000-4000-8000-000000000663]
-    link "Подушка из мха (HB)" [url=#/h/00000000-0000-4000-8000-000000000664]
-    link "Походный плед (HB)" [url=#/h/00000000-0000-4000-8000-000000000665]
+    link "Скатка путника (HB)" [url=/h/00000000-0000-4000-8000-000000000661]
+    link "Скатка стража (HB)" [url=/h/00000000-0000-4000-8000-000000000663]
+    link "Подушка из мха (HB)" [url=/h/00000000-0000-4000-8000-000000000664]
+    link "Походный плед (HB)" [url=/h/00000000-0000-4000-8000-000000000665]
     StaticText " Два предмета комплекта: вы просыпаетесь отдохнувшим даже на гол..." [namelen=73 namehash=d14a4e49]
     button "Отправить"
     button "Скопировать изображение" [description=Скопировать изображение]
@@ -42,9 +41,9 @@ RootWebArea "Скатка следопыта - Генератор лута Dagge
     status ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -71,29 +70,27 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=#/h/00000000-0000-4000-8000-000000000662]
-  link "Skip to content" [url=#main]
+RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=/en/h/00000000-0000-4000-8000-000000000662?v=<v>]
+  link "Skip to content" [url=/en/h/00000000-0000-4000-8000-000000000662?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Ranger's Roll" [level=1]
     StaticText "Another player's item · Homebrew"
@@ -102,10 +99,10 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=#/h/00000000-0000-
     ... StaticText x11 of 15 same-shape siblings elided
     button "Copy name" [description=Copy name]
     button "Copy link" [description=Copy link]
-    link "Traveller's Roll (HB)" [url=#/h/00000000-0000-4000-8000-000000000661]
-    link "Sentry's Roll (HB)" [url=#/h/00000000-0000-4000-8000-000000000663]
-    link "Camp Blanket (HB)" [url=#/h/00000000-0000-4000-8000-000000000665]
-    link "Moss Pillow (HB)" [url=#/h/00000000-0000-4000-8000-000000000664]
+    link "Traveller's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000661]
+    link "Sentry's Roll (HB)" [url=/en/h/00000000-0000-4000-8000-000000000663]
+    link "Camp Blanket (HB)" [url=/en/h/00000000-0000-4000-8000-000000000665]
+    link "Moss Pillow (HB)" [url=/en/h/00000000-0000-4000-8000-000000000664]
     StaticText " Two pieces of the set: you wake rested even on bare ground."
     button "Share"
     button "Copy image" [description=Copy image]
@@ -117,9 +114,9 @@ RootWebArea "Ranger's Roll - Daggerheart Loot Generator" [url=#/h/00000000-0000-
     status ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -132,7 +129,6 @@ Copy name
 Copy text
 EN
 Install as an app
-Lists
 Moss Pillow (HB)
 Page
 Print

@@ -1,15 +1,17 @@
 /* The list behind the open share link `#/s/<token>`: its read status, the
  * projection the link's audience sees, and whether the reader owns the
- * list. While the page is drawn it watches the share's Realtime topic and
- * re-reads on a message; the poll and the shown-again signal re-read it
- * through `refresh()`, a failed first read included (docs/specs/FEATURES.md,
- * "Account and browser lists"). */
+ * list. While the page is drawn it watches the share's Realtime topic,
+ * re-reads on a revision message and passes a purchase request's decision
+ * on; the poll and the shown-again signal re-read it through `refresh()`, a
+ * failed first read included (docs/specs/FEATURES.md, "Account and browser
+ * lists"). */
 
 import { heldSnapshots, sameProjection, type SharedRow } from '../lib/cloudLists.js';
-import { COALESCE_MS, readShareMessage } from '../lib/live.js';
+import { COALESCE_MS, readShareMessage, readShareRequestMessage } from '../lib/live.js';
 import type { Random } from '../lib/roll.js';
 import type { EventsPort, ShareRepository } from '../ports/index.js';
 import { LiveFeed } from './liveFeed.svelte.js';
+import type { Decision } from './requestSender.svelte.js';
 
 export class SharedView {
   /** The open link's token, or null when no share page is open. */
@@ -34,8 +36,16 @@ export class SharedView {
   #readSeq = 0;
   #appliedSeq = 0;
 
-  constructor(repo: ShareRepository, live?: { events: EventsPort; random: Random }) {
+  /* The share topic's decision message, passed on with no re-read: an apply's own
+     revision message re-reads the list. */
+  readonly #decided: ((m: Decision) => void) | undefined;
+
+  constructor(
+    repo: ShareRepository,
+    live?: { events: EventsPort; random: Random; request?: (m: Decision) => void }
+  ) {
     this.#repo = repo;
+    this.#decided = live?.request;
     this.#feed = live
       ? new LiveFeed(live.events, live.random, {
           message: (event, payload) => {
@@ -154,6 +164,11 @@ export class SharedView {
   }
 
   #message(event: string, payload: unknown): void {
+    const d = readShareRequestMessage(event, payload);
+    if (d) {
+      this.#decided?.(d);
+      return;
+    }
     const m = readShareMessage(event, payload);
     if (!m) return;
     if (m.revision === null) {

@@ -1,6 +1,6 @@
-/* The list page, `#/lists/<id>` and `#/l/<payload>` - off `renderOneList` and
+/* The list page, `#/lists/<id>` - off `renderOneList` and
  * everything it draws. Through `App`, the way `listsPage.test.ts` reaches the
- * index: the address rewrite, the tab bar and the modal all live above this
+ * index: the address, the tab bar and the modal all live above this
  * component. */
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
@@ -10,12 +10,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
-import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
-import { encodeList } from '../lib/listLink.js';
 import type { Loot } from '../lib/data.js';
 import { priceText } from '../lib/money.js';
 import { share, shareList } from '../lib/share.js';
-import type { StoredList } from '../lib/lists.js';
 import {
   fakeClipboard,
   fakeData,
@@ -24,17 +21,16 @@ import {
   fakeEnv,
   fakeImage,
   fakePage,
-  fixedClock,
   memoryRouter,
   memoryStorage,
-  noData,
-  plainCompress
+  noData
 } from '../ports/index.js';
-import type { CloudPort, CompressPort, Env, ListWrites } from '../ports/index.js';
-import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED, uuid } from '../ports/fake-cloud-seed.js';
+import type { CloudPort, Env, ListWrites } from '../ports/index.js';
+import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
+import { SEED, uuid, type SeedList } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
-import { filled, SHOP, sub, withStandins } from '../test/accountList.js';
+import { filled, readList, SHOP, sub, withStandins } from '../test/accountList.js';
+import { listOf, seedWith } from '../test/seed.js';
 
 afterEach(cleanup);
 
@@ -93,155 +89,122 @@ const LOOT: Loot = {
   refs: {}
 };
 
-/** Three known ids and one the data does not know, priced/counted/noted on
- *  one entry, a list note both public and hidden - the "noted" shape. */
-const listA: StoredList = {
-  id: 'a',
-  name: 'Тайник',
-  ids: ['ci1', 'cc1', 'q1'],
-  created: 1,
-  note: 'Лавка закрыта до утра',
-  hnote: 'Не для игроков',
-  meta: {
-    cc1: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' }
-  }
-};
-
 const at = (hash: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), ...over });
 
-const withA = (hash = '#/lists/a', over: Partial<Env> = {}): Env =>
-  at(hash, { storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) }), ...over });
-
-const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
-  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
-
-/** listA's rows in order (each row checkbox is now named after its own
- *  record, not the generic "Выбрать позицию"). */
+/** A_LIST's rows in order (each row checkbox is named after its own record). */
 const ROW_NAMES = ['Спальный мешок', 'Зелье', 'Меч'];
 
+/** The account list the page cases run on, held by gm4: three known records, one of them
+ *  priced, counted and noted, and a list note both public and hidden. */
+const A_ENTRIES = [
+  { key: 'ci1' },
+  { key: 'cc1', qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' },
+  { key: 'q1' }
+];
+const A_LIST = listOf(801, 'Тайник', A_ENTRIES, {
+  note: 'Лавка закрыта до утра',
+  hnote: 'Не для игроков'
+});
+const A_ID = uuid(801);
+const A_HASH = '#/lists/' + A_ID;
+
+/* `page.fireHidden()` sends the account's write buffer at once, as a
+   hidden tab does, so a test reads the fake without the 2 s wait. */
+const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
+  const router = memoryRouter(hash);
+  const dialog = fakeDialog();
+  const page = fakePage();
+  const view = render(App, { env: at(hash, { router, dialog, cloud, page, ...over }) });
+  return { ...view, router, dialog, page };
+};
+
+/** Renders `hash` signed in as gm4, who holds `A_LIST` and `more`, and waits for the page. */
+async function openA(over: Partial<Env> = {}, hash = A_HASH, more: SeedList[] = []) {
+  const cloud = fakeCloud(seedWith({ gm4: [A_LIST, ...more] }), 'gm4');
+  const view = openAs(cloud, hash, over);
+  await screen.findByRole('textbox', { name: /^(Название списка|List name)$/ });
+  return { ...view, cloud };
+}
+
 describe('the address', () => {
-  it('rewrites #/lists/<id> to the players’ payload on mount', async () => {
-    /* The rewrite is debounced 150ms trailing, so this now waits
-       for it rather than reading `router.hash()` straight away. */
-    const router = memoryRouter('#/lists/a');
-    render(App, { env: withA('#/lists/a', { router }) });
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
-    });
-  });
-
-  it('draws the same page for #/l/<payload of a>', () => {
-    render(App, { env: withA('#/l/' + encodeList(listA, true)) });
-    expect(screen.getByDisplayValue('Тайник')).toBeInTheDocument();
-  });
-
-  it('draws the shared page for a payload that is nobody’s', () => {
-    const other: StoredList = { id: 'z', name: 'Другой', ids: ['ci1'] };
-    const payload = encodeList(other, true);
-    render(App, { env: withA('#/l/' + payload) });
-    /* The `h1` reads the payload's own name, not a title input - this is the
-       shared page, not the own-list page with a rename box. */
-    expect(screen.getByRole('heading', { level: 1, name: 'Другой' })).toBeInTheDocument();
-    expect(screen.queryByRole('textbox', { name: 'Название списка' })).not.toBeInTheDocument();
-  });
-
-  it('draws only the frame while a packed address expands, then the shared page once it lands', async () => {
-    const other: StoredList = { id: 'z', name: 'Другой', ids: ['ci1'] };
-    const payload = encodeList(other, true);
-    const compress: CompressPort = {
-      available: () => true,
-      pack: (raw) => Promise.resolve(raw),
-      unpack: (p) => Promise.resolve(p.slice(1))
-    };
-    render(App, { env: withA('#/l/~' + payload, { compress }) });
-    const main = screen.getByRole('main');
-    expect(within(main).queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(within(main).getByRole('heading', { level: 1 })).toHaveTextContent('Другой');
-    });
-  });
-
-  it('draws the bad-link page and leaves the address alone when the port cannot expand a packed address', async () => {
-    const payload = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
-    const router = memoryRouter('#/l/~' + payload);
-    render(App, { env: withA('#/l/~' + payload, { router }) });
-
-    await waitFor(() => {
+  it('draws the not-found page for an old list link and keeps the address', async () => {
+    for (const hash of [
+      '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg',
+      '#/l/~AAAA'
+    ]) {
+      const router = memoryRouter(hash);
+      const { container } = render(App, {
+        env: at(hash, { router, cloud: fakeCloud(SEED) })
+      });
       expect(
         screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
       ).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
+        'href',
+        '/roll/std'
+      );
+      expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
+      expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
+      expect(container.querySelector('[aria-current="page"]')).toBeNull();
+      expect(document.title).toBe('Генератор лута Daggerheart');
+      await new Promise((r) => setTimeout(r, 200));
+      expect(router.hash()).toBe(hash);
+      await expectNoA11yViolations(container);
+      cleanup();
+    }
+  });
+});
+
+describe("the list's entries read", () => {
+  it('draws «Загружаем...» and no heading until the rows answer, then the page; one rows read', async () => {
+    const cloud = fakeCloud(seedWith({ gm4: [A_LIST] }), 'gm4');
+    let answer: (() => void) | null = null;
+    const real = cloud.lists.rows.bind(cloud.lists);
+    const rows = vi.fn(
+      (ids: readonly string[]) =>
+        new Promise<Awaited<ReturnType<typeof real>>>((r) => {
+          answer = () => {
+            r(real(ids));
+          };
+        })
+    );
+    cloud.lists.rows = rows;
+    openAs(cloud, A_HASH);
+    await waitFor(() => {
+      expect(answer).not.toBeNull();
     });
-    expect(
-      screen.getByText('Ссылка повреждена или собрана в другой версии данных.')
-    ).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '#/roll/std');
-    /* The address itself is left where it was, unlike a plain #/l/zzzz
-       link, which has nowhere to keep and never had one to keep it from. */
-    expect(router.hash()).toBe('#/l/~' + payload);
+    expect(screen.getByRole('status')).toHaveTextContent('Загружаем...');
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
+    answer!();
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Тайник'
+    );
+    expect(rows).toHaveBeenCalledOnce();
   });
 
-  it('draws "Список не найден" for an unknown id, and never rewrites', () => {
-    const router = memoryRouter('#/lists/nope');
-    render(App, { env: withA('#/lists/nope', { router }) });
+  it('draws the failure with a primary «Повторить» when the rows read fails, and a retry draws the page', async () => {
+    const cloud = fakeCloud(seedWith({ gm4: [A_LIST] }), 'gm4');
+    const real = cloud.lists.rows.bind(cloud.lists);
+    let fail = true;
+    cloud.lists.rows = (ids) => (fail ? Promise.resolve({ ok: false }) : real(ids));
+    const { container } = openAs(cloud, A_HASH);
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Список не найден' })
+      await screen.findByRole('heading', { level: 1, name: 'Список не загрузился' })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText('Возможно, он удалён или открыт в другом браузере.')
-    ).toBeInTheDocument();
-    /* Two links share the name: the tab bar's own "Списки" and this button. */
-    const links = screen.getAllByRole('link', { name: 'Списки' });
-    expect(
-      links.some((l) => l.getAttribute('href') === '#/lists' && l.className.includes('btn'))
-    ).toBe(true);
-    expect(router.hash()).toBe('#/lists/nope');
+    expect(screen.getByText('Не получилось загрузить списки аккаунта.')).toBeInTheDocument();
+    const retry = screen.getByRole('button', { name: 'Повторить' });
+    expect(retry).toHaveClass('primary');
+    await expectNoA11yViolations(container);
+    fail = false;
+    await userEvent.click(retry);
+    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
+      'Тайник'
+    );
   });
 });
 
 describe('the heading and the action row', () => {
-  it('holds the name, renames on input, and rewrites the address', () => {
-    const router = memoryRouter('#/lists/a');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { router, storage }) });
-    const input = screen.getByRole('textbox', { name: 'Название списка' });
-    expect(input).toHaveValue('Тайник');
-  });
-
-  it('counts known records in the sub, dropping the unknown id', () => {
-    render(App, { env: withA() });
-    expect(screen.getByText('3 позиции')).toBeInTheDocument();
-  });
-
-  it('shows four actions and no print with no sign-in configured', () => {
-    render(App, { env: withA() });
-    expect(screen.getByRole('button', { name: 'Ссылка игрокам' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ссылка себе' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
-    expect(
-      screen.queryByTitle('Собрать карточки для печати: девять на лист A4')
-    ).not.toBeInTheDocument();
-  });
-
-  it('opens the sign-in prompt under the toolbar signed out, and a second press closes it', async () => {
-    const { container } = render(App, { env: withA('#/lists/a', { cloud: fakeCloud(SEED) }) });
-    const print = screen.getByTitle('Собрать карточки для печати: девять на лист A4');
-    await waitFor(() => {
-      expect(print).toBeEnabled();
-    });
-    expect(print).toHaveAttribute('aria-expanded', 'false');
-    await userEvent.click(print);
-    expect(print).toHaveAttribute('aria-expanded', 'true');
-    const lead = screen.getByText('Войдите, чтобы печатать карточки.');
-    expect(lead.closest('.signin')).toHaveClass('boxed');
-    await expectNoA11yViolations(container);
-    await userEvent.click(print);
-    expect(screen.queryByText('Войдите, чтобы печатать карточки.')).toBeNull();
-  });
-
   it("stores the list's counts in the set signed in, and opens it", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const router = memoryRouter('#/lists/' + uuid(101));
@@ -263,66 +226,21 @@ describe('the heading and the action row', () => {
     ]);
   });
 
-  it('has no print control on an empty list', () => {
-    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [] };
-    render(App, {
-      env: at('#/lists/e', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) }),
-        cloud: fakeCloud(SEED)
-      })
-    });
+  it('has no print control on an empty list', async () => {
+    render(App, { env: at('#/lists/' + uuid(102), { cloud: fakeCloud(SEED, 'gm1') }) });
+    await screen.findByRole('textbox', { name: 'Название списка' });
     expect(
       screen.queryByTitle('Собрать карточки для печати: девять на лист A4')
     ).not.toBeInTheDocument();
   });
 });
 
-describe('the storage notice', () => {
-  it('draws on the list page too, and Скрыть dismisses it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
-    expect(screen.getByText('Списки живут только в этом браузере.')).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Скрыть' }));
-    expect(screen.queryByText('Списки живут только в этом браузере.')).not.toBeInTheDocument();
-    expect(storage.get('dhloot.warn.v1')).toBe('1');
-  });
-
-  it('sits under the heading and above the rows, on both routes ListPage draws', () => {
-    /* ListPage.svelte handles both app.route.kind === 'storedList'
-       (#/lists/<id>) and 'sharedList' (#/l/<payload>) - App.svelte:73-74. */
-    const own = render(App, { env: withA('#/lists/a') });
-    const heading = own.container.querySelector('h1');
-    const notice = own.container.querySelector('.warn');
-    const rows = own.container.querySelector('.lrows');
-    expect(heading && notice && rows).toBeTruthy();
-    expect(
-      heading!.compareDocumentPosition(notice!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    expect(
-      notice!.compareDocumentPosition(rows!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    cleanup();
-
-    const shared = render(App, { env: withA('#/l/' + encodeList(listA, true)) });
-    const sHeading = shared.container.querySelector('h1');
-    const sNotice = shared.container.querySelector('.warn');
-    const sRows = shared.container.querySelector('.lrows');
-    expect(sHeading && sNotice && sRows).toBeTruthy();
-    expect(
-      sHeading!.compareDocumentPosition(sNotice!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    expect(
-      sNotice!.compareDocumentPosition(sRows!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-  });
-});
-
 describe('the money picker', () => {
-  it('marks the selected mode with aria-pressed, like every other chip', () => {
+  it('marks the selected mode with aria-pressed, like every other chip', async () => {
     /* Owner ruling, 2026-09-16: kept as aria-pressed on both modes rather
        than restored to the live app's own aria-current on the selected one
        alone - nothing measured the money picker as a special case. */
-    render(App, { env: withA() });
+    await openA();
     expect(screen.getByRole('button', { name: 'Как в книге' })).toHaveAttribute(
       'aria-pressed',
       'true'
@@ -333,43 +251,34 @@ describe('the money picker', () => {
     );
   });
 
-  it('draws only when some entry has a price', () => {
-    render(App, { env: withA() });
+  it('draws only when some entry has a price', async () => {
+    await openA();
     expect(screen.getByRole('button', { name: 'Как в книге' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Монетами' })).toBeInTheDocument();
   });
 
-  it('is absent on a list with no price at all', () => {
-    const plain: StoredList = { id: 'p', name: 'Без цен', ids: ['ci1'] };
-    render(App, {
-      env: at('#/lists/p', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([plain]) })
-      })
-    });
+  it('is absent on a list with no price at all', async () => {
+    await openA({}, '#/lists/' + uuid(803), [listOf(803, 'Без цен', [{ key: 'ci1' }])]);
     expect(screen.queryByRole('button', { name: 'Монетами' })).not.toBeInTheDocument();
   });
 
-  it('stores coin mode and rewrites the address; removes the gold hint', async () => {
-    const router = memoryRouter('#/lists/a');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { router, storage }) });
+  it('stores coin mode and keeps the address; removes the gold hint', async () => {
+    const { router, cloud, page } = await openA();
     expect(screen.getByRole('button', { name: 'Подсказка: Цена' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
-    expect(readLists(storage)[0]?.money).toBe('coin');
-    // The address rewrite is now debounced 150ms trailing.
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, money: 'coin' }, true));
-    });
+    expect((await readList(cloud, page, A_ID))?.money).toBe('coin');
+    await new Promise((r) => setTimeout(r, 200));
+    expect(router.hash()).toBe(A_HASH);
     expect(screen.queryByRole('button', { name: 'Подсказка: Цена' })).toBeNull();
     expect(screen.queryByText('7 мешков 5 горстей')).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Как в книге' }));
-    expect(readLists(storage)[0]?.money).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.money).toBeUndefined();
   });
 
   it('names the price «Цена» and opens its conversion from a «?» by click and by keyboard', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     /* One «?», the priced row's: a row with no price has nothing to convert. */
     expect(screen.getAllByRole('spinbutton', { name: 'Цена' })).toHaveLength(3);
     const help = screen.getByRole('button', { name: 'Подсказка: Цена' });
@@ -393,7 +302,7 @@ describe('the money picker', () => {
   });
 
   it('follows a price typed while the conversion is open', async () => {
-    render(App, { env: withA() });
+    await openA();
     await userEvent.click(screen.getByRole('button', { name: 'Подсказка: Цена' }));
     const gold = screen.getAllByRole('spinbutton', { name: 'Цена' })[1] as HTMLElement;
     await userEvent.clear(gold);
@@ -405,7 +314,7 @@ describe('the money picker', () => {
   });
 
   it('opens the help with five bold runs on its own "?"', async () => {
-    render(App, { env: withA() });
+    await openA();
     const help = screen.getByRole('button', { name: 'Как это работает' });
     expect(help).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(help);
@@ -416,86 +325,46 @@ describe('the money picker', () => {
 });
 
 describe('the list note', () => {
-  it('opens when a note exists, folds when neither does', () => {
-    const { container } = render(App, { env: withA() });
+  it('opens when a note exists, folds when neither does', async () => {
+    const { container } = await openA();
     expect(container.querySelector('details.lnote')).toHaveProperty('open', true);
     cleanup();
 
-    const bare: StoredList = { id: 'b', name: 'Без заметок', ids: ['ci1'] };
-    const { container: c2 } = render(App, {
-      env: at('#/lists/b', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([bare]) })
-      })
-    });
+    const { container: c2 } = await openA({}, '#/lists/' + uuid(805), [
+      listOf(805, 'Без заметок', [{ key: 'ci1' }])
+    ]);
     expect(c2.querySelector('details.lnote')).toHaveProperty('open', false);
   });
 
   it('stores what is typed and deletes the key when it is blanked', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     const pub = screen.getByPlaceholderText('Например: лавка закрыта до утра');
     await userEvent.clear(pub);
     await userEvent.type(pub, 'Новая запись');
-    expect(readLists(storage)[0]?.note).toBe('Новая запись');
+    expect((await readList(cloud, page, A_ID))?.note).toBe('Новая запись');
 
     await userEvent.clear(pub);
-    expect(readLists(storage)[0]?.note).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.note).toBeUndefined();
   });
 
-  it('debounces twenty rapid keystrokes into one address rewrite', async () => {
-    const router = memoryRouter('#/lists/a');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { router, storage }) });
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
-    });
+  it('writes no address for a typed note, nor when the page is hidden', async () => {
+    const { router, cloud, page } = await openA();
     const replaceSpy = vi.spyOn(router, 'replace');
 
     const pub = screen.getByPlaceholderText('Например: лавка закрыта до утра');
     await userEvent.clear(pub);
     await userEvent.type(pub, '12345678901234567890', { delay: null });
-
-    // the storage side stays synchronous, on every keystroke
-    expect(readLists(storage)[0]?.note).toBe('12345678901234567890');
-    expect(replaceSpy).not.toHaveBeenCalled();
-
-    await waitFor(() => {
-      expect(replaceSpy).toHaveBeenCalledTimes(1);
-    });
-    expect(router.hash()).toBe(
-      '#/l/' + encodeList({ ...listA, note: '12345678901234567890' }, true)
-    );
-  });
-
-  it('flushes a pending edit on visibilitychange, once, even if pagehide also fires', async () => {
-    /* pagehide alone missed the mobile-Safari case where a hidden tab is
-       discarded with no pagehide at all; visibilitychange is the more
-       reliable last callback there. Both firing for the same teardown must
-       not write the address twice. */
-    const router = memoryRouter('#/lists/a');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { router, storage }) });
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
-    });
-    const replaceSpy = vi.spyOn(router, 'replace');
-
-    const pub = screen.getByPlaceholderText('Например: лавка закрыта до утра');
-    await userEvent.clear(pub);
-    await userEvent.type(pub, 'flushed', { delay: null });
-    expect(replaceSpy).not.toHaveBeenCalled(); // still inside the 150ms debounce
+    expect((await readList(cloud, page, A_ID))?.note).toBe('12345678901234567890');
 
     Object.defineProperty(document, 'visibilityState', {
       value: 'hidden',
       configurable: true
     });
     document.dispatchEvent(new Event('visibilitychange'));
-    expect(replaceSpy).toHaveBeenCalledTimes(1); // flushed synchronously, no wait
-    expect(router.hash()).toBe('#/l/' + encodeList({ ...listA, note: 'flushed' }, true));
-
-    // pagehide firing right after must find nothing left to flush
     window.dispatchEvent(new Event('pagehide'));
-    expect(replaceSpy).toHaveBeenCalledTimes(1);
+    await new Promise((r) => setTimeout(r, 200));
+    expect(replaceSpy).not.toHaveBeenCalled();
+    expect(router.hash()).toBe(A_HASH);
 
     Object.defineProperty(document, 'visibilityState', {
       value: 'visible',
@@ -505,22 +374,17 @@ describe('the list note', () => {
 });
 
 describe('the roll panel', () => {
-  it('is absent with one known entry, folded with more than one', () => {
-    render(App, { env: withA() });
+  it('is absent with one known entry, folded with more than one', async () => {
+    await openA();
     expect(screen.getByText('Бросок по списку')).toBeInTheDocument();
     cleanup();
 
-    const one: StoredList = { id: 'o', name: 'Одна позиция', ids: ['ci1'] };
-    render(App, {
-      env: at('#/lists/o', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([one]) })
-      })
-    });
+    await openA({}, '#/lists/' + uuid(804), [listOf(804, 'Одна позиция', [{ key: 'ci1' }])]);
     expect(screen.queryByText('Бросок по списку')).not.toBeInTheDocument();
   });
 
   it('shows an entry’s compact card, badged, with both hitnotes, on a typed number', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await userEvent.click(screen.getByText('Бросок по списку'));
     const field = screen.getByRole('textbox', { name: 'Результат броска' });
     await userEvent.clear(field);
@@ -538,7 +402,7 @@ describe('the roll panel', () => {
   });
 
   it('rolls entry 1 with a fixed random source, and Сбросить empties the field without folding', async () => {
-    const { container } = render(App, { env: withA('#/lists/a', { random: () => 0 }) });
+    const { container } = await openA({ random: () => 0 });
     await userEvent.click(screen.getByText('Бросок по списку'));
     await userEvent.click(screen.getByRole('button', { name: /Случайно/ }));
     expect(screen.getAllByText('Спальный мешок').length).toBeGreaterThanOrEqual(2);
@@ -553,7 +417,7 @@ describe('the roll panel', () => {
   });
 
   it('shows 1 from an empty field on the first "+"', async () => {
-    render(App, { env: withA() });
+    await openA();
     await userEvent.click(screen.getByText('Бросок по списку'));
     const field = screen.getByRole('textbox', { name: 'Результат броска' });
     expect(field).toHaveValue('');
@@ -564,7 +428,7 @@ describe('the roll panel', () => {
 
 describe('select-all', () => {
   it('ticks every row and reads the count; one row reads 1; none reads "select all"', async () => {
-    render(App, { env: withA() });
+    await openA();
     expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
 
     const rows = ROW_NAMES.map((name) => screen.getByRole('checkbox', { name }));
@@ -581,35 +445,28 @@ describe('select-all', () => {
   });
 
   it('clears when history moves to a different list, not just a different page', async () => {
-    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
-    const router = memoryRouter('#/lists/a');
-    render(App, {
-      env: at('#/lists/a', {
-        router,
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
-      })
-    });
+    const { router } = await openA({}, A_HASH, [listOf(802, 'Другой', [{ key: 'q1' }])]);
 
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[0]! }));
     expect(screen.getByText('Выбрана 1 позиция')).toBeInTheDocument();
 
-    router.navigate('#/lists/b');
+    router.navigate('#/lists/' + uuid(802));
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     });
     expect(screen.queryByText(/Выбрано/)).not.toBeInTheDocument();
-    expect(screen.getByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: 'Выбрать все' })).toBeInTheDocument();
   });
 });
 
 describe('the actions under a ticked selection', () => {
-  /* listA's rows in order: ci1 (unpriced), cc1 (750 gold), q1 (unpriced). */
+  /* A_LIST's rows in order: ci1 (unpriced), cc1 (750 gold), q1 (unpriced). */
   const tickRow = async (n: number): Promise<void> => {
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
 
   it('shows Цены and Удалить (N) once a row is ticked, and hides them again', async () => {
-    render(App, { env: withA() });
+    await openA();
     expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
 
     await tickRow(0);
@@ -621,11 +478,11 @@ describe('the actions under a ticked selection', () => {
     expect(screen.queryByRole('button', { name: /Удалить \(/ })).not.toBeInTheDocument();
   });
 
-  it('holds exactly three buttons in the batch bar, with no percentage widget', async () => {
+  it('holds four buttons in the batch bar, with no percentage widget', async () => {
     /* Ported from tests/lists2.js's own batch-bar shape check: the reprice
        percentage field lives in the separate .guess panel, not in
        .batch-acts alongside Цены/Скопировать/Удалить. */
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(0);
     const bar = container.querySelector('.batch-acts');
     expect(bar).toBeInTheDocument();
@@ -633,20 +490,12 @@ describe('the actions under a ticked selection', () => {
       within(bar as HTMLElement)
         .getAllByRole('button')
         .map((b) => b.textContent)
-    ).toEqual(['Цены', 'Скопировать', 'Удалить (1)']);
+    ).toEqual(['Цены', 'Скопировать', 'Скрыть от игроков (1)', 'Удалить (1)']);
     expect((bar as HTMLElement).querySelector('input')).toBeNull();
   });
 
-  it('draws no GM-only eye on a browser list', () => {
-    const { container } = render(App, { env: withA() });
-    expect(
-      screen.queryByRole('button', { name: /^Только для мастера/ })
-    ).not.toBeInTheDocument();
-    expect(container.querySelector('.lrow-gm')).toBeNull();
-  });
-
   it('opens the panel on Цены and flips aria-expanded', async () => {
-    render(App, { env: withA() });
+    await openA();
     await tickRow(0);
     const btn = screen.getByRole('button', { name: 'Цены' });
     expect(btn).toHaveAttribute('aria-expanded', 'false');
@@ -658,7 +507,7 @@ describe('the actions under a ticked selection', () => {
   });
 
   it('shows the reprice row and the clear-price button only once a ticked row is priced', async () => {
-    render(App, { env: withA() });
+    await openA();
     await tickRow(0); // ci1, unpriced
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
     expect(screen.queryByText('Изменить на, %')).not.toBeInTheDocument();
@@ -671,7 +520,7 @@ describe('the actions under a ticked selection', () => {
   });
 
   it('flips the reprice button’s label as the percentage’s own sign flips', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(1); // cc1, priced
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
     const panel = within(container.querySelector('.guess') as HTMLElement);
@@ -684,66 +533,62 @@ describe('the actions under a ticked selection', () => {
   });
 
   it('applies the guessed price, toasts, folds the panel, and undoes it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(0); // ci1: no eq, no rarity, no tier - the uncommon band, 150-250
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
     await userEvent.click(screen.getByRole('button', { name: 'Проставить эти цены' }));
 
     expect(screen.getByText('Цены проставлены (1)')).toBeInTheDocument();
     expect(screen.queryByText(/^В книге цен нет/)).not.toBeInTheDocument(); // the panel folded
-    expect(readLists(storage)[0]?.meta?.['ci1']?.gold).toBe(200);
+    expect((await readList(cloud, page, A_ID))?.meta?.['ci1']?.gold).toBe(200);
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.meta?.['ci1']?.gold).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.meta?.['ci1']?.gold).toBeUndefined();
   });
 
   it('reprices a ticked, priced row at -20% and undoes it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(1); // cc1, 750 gold
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
     await userEvent.click(screen.getByRole('button', { name: 'Сделать скидку' }));
 
     expect(screen.getByText('Цены пересчитаны (-20%, 1)')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(600);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(600);
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(750);
   });
 
   it('clears the price on a ticked, priced row and undoes it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(1); // cc1, 750 gold
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
     await userEvent.click(screen.getByRole('button', { name: 'Убрать цену (1)' }));
 
     expect(screen.getByText('Убрать цену')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBeUndefined();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(750);
   });
 
   it('batch-deletes the ticked rows, clears the ticks, and undoes both back into place', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(0); // ci1
     await tickRow(2); // q1 (cc1, index 1, stays)
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
 
     expect(screen.getByText('Убрано из списка (2)')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual(['cc1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['cc1']);
     expect(screen.queryByRole('button', { name: 'Цены' })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(750);
   });
 
   it('has no violations with the money panel open and both a priced and an unpriced row ticked', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(0);
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Цены' }));
@@ -752,7 +597,7 @@ describe('the actions under a ticked selection', () => {
 });
 
 describe('the taken count, the total and a partial removal', () => {
-  /* listA's rows in order: ci1 (unpriced), cc1 (x2 at 750 gold), q1 (unpriced). */
+  /* A_LIST's rows in order: ci1 (unpriced), cc1 (x2 at 750 gold), q1 (unpriced). */
   const tickRow = async (n: number): Promise<void> => {
     await userEvent.click(screen.getByRole('checkbox', { name: ROW_NAMES[n]! }));
   };
@@ -763,7 +608,7 @@ describe('the taken count, the total and a partial removal', () => {
   };
 
   it('draws the count field at the stock under a ticked row over 1, and the total beside the count', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(0);
     expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
     expect(container.querySelector('.batch-total')).not.toBeInTheDocument();
@@ -782,7 +627,7 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('draws the take line inside the ticked row with its stock and line sum, and styles the row', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(1);
     const row = container.querySelectorAll('.lrow')[1];
     expect(row).toHaveClass('sel');
@@ -795,7 +640,7 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('shows the mixed select-all box and names entries and pieces apart in a live region', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     const all = screen.getByRole('checkbox', { name: 'Выбрать все' });
     await tickRow(1);
     expect(all).toHaveProperty('indeterminate', true);
@@ -814,13 +659,12 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('lowers a partly taken row, and one undo gives the stock back', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(1);
     await takeOne();
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
 
-    const [l] = readLists(storage);
+    const l = await readList(cloud, page, A_ID);
     expect(l?.ids).toEqual(['ci1', 'cc1', 'q1']);
     expect(l?.meta?.['cc1']).toEqual({
       gold: 750,
@@ -830,42 +674,45 @@ describe('the taken count, the total and a partial removal', () => {
     expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBe(2);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBe(2);
   });
 
   it('takes one piece of a ticked entry with «Мин»', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container, cloud, page } = await openA();
     await tickRow(1);
     await userEvent.click(screen.getByRole('button', { name: 'Мин, взять 1: Зелье' }));
     expect(container.querySelector('.batch-summ')).toHaveTextContent(
       'Выбрана 1 позиция Итого: 7 мешков 5 горстей'
     );
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (1)' }));
-    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1', 'q1']);
     await expectNoA11yViolations(container);
   });
 
   it('removes a whole row and lowers a partial one in one step, and undoes both into place', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     await tickRow(0);
     await tickRow(1);
     await takeOne();
     await userEvent.click(screen.getByRole('button', { name: 'Удалить (2)' }));
 
     expect(screen.getByText('Убрано из списка (2)')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual(['cc1', 'q1']);
-    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['cc1', 'q1']);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBeUndefined();
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]).toEqual(listA);
+    expect(await readList(cloud, page, A_ID)).toMatchObject({
+      ids: ['ci1', 'cc1', 'q1'],
+      meta: { cc1: { qty: 2, gold: 750, note: 'Светится в темноте', hnote: 'Проклят' } },
+      note: 'Лавка закрыта до утра',
+      hnote: 'Не для игроков'
+    });
   });
 
   it('copies the ticked rows with their taken counts and the total', async () => {
     const clip = fakeClipboard();
-    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
+    await openA({ clipboard: clip });
     await tickRow(1);
     await tickRow(2);
     await takeOne();
@@ -884,7 +731,7 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('forgets the count when its row is unticked', async () => {
-    render(App, { env: withA() });
+    await openA();
     await tickRow(1);
     await takeOne();
     await tickRow(1);
@@ -893,22 +740,15 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('forgets the count on a navigation to another list and back, and when select-all clears', async () => {
-    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
-    const router = memoryRouter('#/lists/a');
-    render(App, {
-      env: at('#/lists/a', {
-        router,
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
-      })
-    });
+    const { router } = await openA({}, A_HASH, [listOf(802, 'Другой', [{ key: 'q1' }])]);
     await tickRow(1);
     await takeOne();
 
-    router.navigate('#/lists/b');
+    router.navigate('#/lists/' + uuid(802));
     await waitFor(() => {
       expect(screen.queryByRole('checkbox', { name: ROW_NAMES[1]! })).not.toBeInTheDocument();
     });
-    router.navigate('#/lists/a');
+    router.navigate(A_HASH);
     await waitFor(() => {
       expect(screen.getByRole('checkbox', { name: ROW_NAMES[1]! })).toBeInTheDocument();
     });
@@ -923,7 +763,7 @@ describe('the taken count, the total and a partial removal', () => {
   });
 
   it('has no violations with the count field and the total on screen', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await tickRow(0);
     await tickRow(1);
     await takeOne();
@@ -933,8 +773,7 @@ describe('the taken count, the total and a partial removal', () => {
 
 describe('a row', () => {
   it('moves on a committed position and resets on an out-of-range one', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     const pos = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });
     expect(pos).toHaveLength(3);
 
@@ -942,7 +781,7 @@ describe('a row', () => {
     await userEvent.clear(pos[2] as HTMLElement);
     await userEvent.type(pos[2] as HTMLElement, '1');
     await userEvent.tab();
-    expect(readLists(storage)[0]?.ids).toEqual(['q1', 'ci1', 'cc1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['q1', 'ci1', 'cc1']);
 
     const posAfter = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });
     await userEvent.click(posAfter[0] as HTMLElement);
@@ -950,12 +789,11 @@ describe('a row', () => {
     await userEvent.type(posAfter[0] as HTMLElement, '99');
     await userEvent.tab();
     expect((posAfter[0] as HTMLInputElement).value).toBe('1');
-    expect(readLists(storage)[0]?.ids).toEqual(['q1', 'ci1', 'cc1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['q1', 'ci1', 'cc1']);
   });
 
   it('stores qty and gold on input; the gold hint follows the price and vanishes in coin mode', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
 
     expect(screen.getByText('7 мешков 5 горстей')).toBeInTheDocument();
 
@@ -963,49 +801,43 @@ describe('a row', () => {
     const goldForCc1 = golds[1] as HTMLElement; // ci1, cc1, q1 in that order
     await userEvent.clear(goldForCc1);
     await userEvent.type(goldForCc1, '231');
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(231);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(231);
 
     await userEvent.click(screen.getByRole('button', { name: 'Монетами' }));
     expect(screen.queryByText(/мешк/)).not.toBeInTheDocument();
   });
 
-  it('holds a typed quantity to the most a list link carries', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+  it('holds a typed quantity to 99', async () => {
+    const { cloud, page } = await openA();
     const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[0] as HTMLElement;
     await userEvent.type(qty, '150');
-    expect(readLists(storage)[0]?.meta?.['ci1']?.qty).toBe(99);
+    expect((await readList(cloud, page, A_ID))?.meta?.['ci1']?.qty).toBe(99);
     expect(qty).toHaveValue(99);
   });
 
   it('draws the held quantity back into the field when a key after 99 changes nothing stored', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[0] as HTMLElement;
     await userEvent.type(qty, '99');
     await userEvent.type(qty, '0');
-    expect(readLists(storage)[0]?.meta?.['ci1']?.qty).toBe(99);
+    expect((await readList(cloud, page, A_ID))?.meta?.['ci1']?.qty).toBe(99);
     expect(qty).toHaveValue(99);
   });
 
   it('holds a negative quantity at none and empties the field', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     const qty = screen.getAllByRole('spinbutton', { name: 'Кол-во' })[1] as HTMLElement;
     await fireEvent.input(qty, { target: { value: '-5' } });
-    expect(readLists(storage)[0]?.meta?.['cc1']?.qty).toBeUndefined();
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.qty).toBeUndefined();
     expect(qty).toHaveValue(null);
   });
 });
 
 describe('a row’s note', () => {
   it('opens on "Заметка", focuses the first textarea, and follows has-note', async () => {
-    const bare: StoredList = { id: 'n', name: 'Без заметок', ids: ['ci1'] };
-    const { container } = render(App, {
-      env: at('#/lists/n', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([bare]) })
-      })
-    });
+    const { container } = await openA({}, '#/lists/' + uuid(805), [
+      listOf(805, 'Без заметок', [{ key: 'ci1' }])
+    ]);
     const toggle = screen.getByRole('button', { name: 'Заметка' });
     expect(container.querySelector('.lrow')).not.toHaveClass('has-note');
 
@@ -1021,9 +853,9 @@ describe('a row’s note', () => {
   });
 
   it('clears the box on the cross, toasts with an undo, and puts the text back', async () => {
-    render(App, { env: withA() });
+    await openA();
     // cc1's own row, its public note field specifically (not the list's own).
-    const rowMain = screen.getByRole('button', { name: /Зелье/ });
+    const rowMain = screen.getByRole('button', { name: /^Зелье/ });
     const row = rowMain.closest('.lrow') as HTMLElement;
     const pubField = row.querySelector('.n-pub') as HTMLElement;
     const clear = within(pubField).getByRole('button', { name: 'Очистить заметку' });
@@ -1037,9 +869,9 @@ describe('a row’s note', () => {
   });
 
   it('draws a note box only on a row that has a note or was opened', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     expect(container.querySelectorAll('.rnote')).toHaveLength(1);
-    const bedroll = screen.getByRole('button', { name: /Спальный мешок/ }).closest('.lrow');
+    const bedroll = screen.getByRole('button', { name: /^Спальный мешок/ }).closest('.lrow');
     const toggle = within(bedroll as HTMLElement).getByRole('button', { name: 'Заметка' });
     await userEvent.click(toggle);
     expect(container.querySelectorAll('.rnote')).toHaveLength(2);
@@ -1048,49 +880,36 @@ describe('a row’s note', () => {
   });
 
   it('puts a cleared note back on undo when its box went with it', async () => {
-    const pub: StoredList = {
-      id: 'p',
-      name: 'Одна заметка',
-      ids: ['ci1'],
-      created: 1,
-      meta: { ci1: { note: 'Под половицей' } }
-    };
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([pub]) });
-    const { container } = render(App, { env: at('#/lists/p', { storage }) });
+    const { container, cloud, page } = await openA({}, '#/lists/' + uuid(806), [
+      listOf(806, 'Одна заметка', [{ key: 'ci1', note: 'Под половицей' }])
+    ]);
     const row = container.querySelector('.lrow') as HTMLElement;
     const pubField = row.querySelector('.n-pub') as HTMLElement;
     await userEvent.click(within(pubField).getByRole('button', { name: 'Очистить заметку' }));
     expect(row.querySelector('.rnote')).toBeNull();
-    expect(readLists(storage)[0]?.meta?.['ci1']?.note).toBeUndefined();
+    expect((await readList(cloud, page, uuid(806)))?.meta?.['ci1']?.note).toBeUndefined();
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
     expect(within(row).getByDisplayValue('Под половицей')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.meta?.['ci1']?.note).toBe('Под половицей');
+    expect((await readList(cloud, page, uuid(806)))?.meta?.['ci1']?.note).toBe('Под половицей');
   });
 
   it('writes no note back on undo when another tab removed the entry', async () => {
-    const two: StoredList = {
-      id: 'p',
-      name: 'Две позиции',
-      ids: ['ci1', 'cc1'],
-      created: 1,
-      meta: { ci1: { note: 'Под половицей' } }
-    };
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([two]) });
-    const { container } = render(App, { env: at('#/lists/p', { storage }) });
+    const { container, cloud, page } = await openA({}, '#/lists/' + uuid(807), [
+      listOf(807, 'Две позиции', [{ key: 'ci1', note: 'Под половицей' }, { key: 'cc1' }])
+    ]);
     const row = container.querySelector('.lrow') as HTMLElement;
     const pubField = row.querySelector('.n-pub') as HTMLElement;
     await userEvent.click(within(pubField).getByRole('button', { name: 'Очистить заметку' }));
-    storage.set('dhloot.lists.v2', JSON.stringify([{ ...two, ids: ['cc1'], meta: {} }]));
-    storage.fireExternalChange('dhloot.lists.v2');
+    cloud.playRemove(uuid(807), 'ci1');
     await waitFor(() => {
       expect(container.querySelectorAll('.lrow')).toHaveLength(1);
     });
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.meta?.['ci1']).toBeUndefined();
+    expect((await readList(cloud, page, uuid(807)))?.ids).not.toContain('ci1');
   });
 
   it('sizes no note box on a keystroke in another field', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     /* Past the boxes' own sizing at mount and the open fold's first `toggle` event. */
     await new Promise((r) => setTimeout(r, 0));
     const read = vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get');
@@ -1107,83 +926,30 @@ describe('a row’s note', () => {
 
 describe('removing and undoing', () => {
   it('removes the row, toasts with the name and an undo, and restores order and meta', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud, page } = await openA();
     const removes = screen.getAllByRole('button', { name: 'Убрать из списка' });
     await userEvent.click(removes[1] as HTMLElement); // cc1, the priced/noted one
 
     expect(screen.getByText('Убрано из списка: «Зелье»')).toBeInTheDocument();
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'q1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'q1']);
 
     await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
-    expect(readLists(storage)[0]?.meta?.['cc1']?.gold).toBe(750);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['ci1', 'cc1', 'q1']);
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.gold).toBe(750);
   });
 });
 
 describe('copying and sharing', () => {
   it('copies the list export written by shareList', async () => {
     const clip = fakeClipboard();
-    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
+    const { cloud, page } = await openA({ clipboard: clip });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
     expect(screen.getByText('Список скопирован')).toBeInTheDocument();
 
     const index = buildIndex(LOOT);
-    const { text } = shareList(listA, index, 'ru', dict('ru'));
+    const stored = await readList(cloud, page, A_ID);
+    const { text } = shareList(stored!, index, 'ru', dict('ru'));
     expect(clip.last.text).toBe(text);
-  });
-
-  it('writes packed players’/GM payloads under plainCompress, and toasts each', async () => {
-    const clip = fakeClipboard();
-    render(App, {
-      env: withA('#/lists/a', { clipboard: clip, compress: plainCompress() })
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Ссылка игрокам' }));
-    expect(screen.getByText(/Ссылка для игроков скопирована/)).toBeInTheDocument();
-    const playersLink = clip.last.text ?? '';
-
-    await userEvent.click(screen.getByRole('button', { name: 'Ссылка себе' }));
-    expect(screen.getByText(/Ссылка со всеми заметками скопирована/)).toBeInTheDocument();
-    const gmLink = clip.last.text ?? '';
-
-    expect(playersLink).not.toBe(gmLink);
-  });
-
-  it('toasts listEmpty for both links on an empty list', async () => {
-    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [] };
-    render(App, {
-      env: at('#/lists/e', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) })
-      })
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Ссылка игрокам' }));
-    expect(screen.getByText('Список пуст')).toBeInTheDocument();
-  });
-});
-
-describe('deleting', () => {
-  it('asks, and on accept removes the list, goes to #/lists, and toasts with an undo', async () => {
-    const router = memoryRouter('#/lists/a');
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const dialog = fakeDialog(true);
-    render(App, { env: at('#/lists/a', { router, storage, dialog }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
-    expect(dialog.asked[0]).toBe('Удалить список «Тайник»? Отменить удаление нельзя.');
-    expect(router.stack[router.stack.length - 1]).toBe('#/lists');
-    expect(readLists(storage)).toEqual([]);
-    expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
-
-    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    expect(readLists(storage)).toEqual([listA]);
-  });
-
-  it('declines without asking again, and removes nothing', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const dialog = fakeDialog(false);
-    render(App, { env: at('#/lists/a', { storage, dialog }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
-    expect(readLists(storage)).toEqual([listA]);
-    expect(screen.queryByText('Список «Тайник» удалён')).not.toBeInTheDocument();
   });
 });
 
@@ -1193,20 +959,14 @@ describe("another tab's write, while this page is mounted", () => {
      already existed for `state/lists.test.ts`. Closes it directly here;
      `listsPage.test.ts` closes it for the general reload trigger. */
   it('re-seeds an unfocused note field with another tab’s edit', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud } = await openA();
 
-    const rowMain = screen.getByRole('button', { name: /Зелье/ });
+    const rowMain = screen.getByRole('button', { name: /^Зелье/ });
     const row = rowMain.closest('.lrow') as HTMLElement;
     const pubField = within(row).getByPlaceholderText('Как предмет выглядит, что о нём знают');
     expect(pubField).toHaveValue('Светится в темноте');
 
-    const other: StoredList = {
-      ...listA,
-      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note: 'Правка из другой вкладки' } }
-    };
-    storage.set('dhloot.lists.v2', JSON.stringify([other]));
-    storage.fireExternalChange('dhloot.lists.v2');
+    otherWrite(cloud, 'Правка из другой вкладки');
 
     await waitFor(() => {
       expect(pubField).toHaveValue('Правка из другой вкладки');
@@ -1214,55 +974,44 @@ describe("another tab's write, while this page is mounted", () => {
   });
 
   it('leaves a focused field alone even though the store changed under it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    const { cloud } = await openA();
 
-    const rowMain = screen.getByRole('button', { name: /Зелье/ });
+    const rowMain = screen.getByRole('button', { name: /^Зелье/ });
     const row = rowMain.closest('.lrow') as HTMLElement;
     const pubField = within(row).getByPlaceholderText('Как предмет выглядит, что о нём знают');
     pubField.focus();
 
-    const other: StoredList = {
-      ...listA,
-      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note: 'Правка из другой вкладки' } }
-    };
-    storage.set('dhloot.lists.v2', JSON.stringify([other]));
-    storage.fireExternalChange('dhloot.lists.v2');
+    otherWrite(cloud, 'Правка из другой вкладки');
     await tick();
 
     expect(pubField).toHaveValue('Светится в темноте');
   });
 
-  const otherWrite = (storage: ReturnType<typeof memoryStorage>, note: string): void => {
-    const other: StoredList = {
-      ...listA,
-      meta: { ...listA.meta, cc1: { ...listA.meta!['cc1'], note } }
-    };
-    storage.set('dhloot.lists.v2', JSON.stringify([other]));
-    storage.fireExternalChange('dhloot.lists.v2');
+  const otherWrite = (cloud: FakeCloud, note: string): void => {
+    cloud.playEntry(A_ID, 'cc1', { player_note: note });
   };
 
   it('keeps the typed text in a focused box when another tab writes', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container, cloud } = await openA();
     const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
     box.focus();
     box.setSelectionRange(18, 18);
     await userEvent.keyboard(' и ');
-    otherWrite(storage, 'Правка из другой вкладки');
+    otherWrite(cloud, 'Правка из другой вкладки');
     await tick();
     await tick();
     expect(box).toHaveValue('Светится в темноте и ');
   });
 
   it("shows another tab's note when the focused box loses focus", async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container, cloud, page } = await openA();
     const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
     box.focus();
     box.setSelectionRange(18, 18);
     await userEvent.keyboard(' и ');
-    otherWrite(storage, 'Правка из другой вкладки');
+    /* The typed text is saved first: an unsent edit of the same field outlasts a later write. */
+    await readList(cloud, page, A_ID);
+    otherWrite(cloud, 'Правка из другой вкладки');
     await tick();
     expect(box).toHaveValue('Светится в темноте и ');
     box.blur();
@@ -1272,8 +1021,7 @@ describe("another tab's write, while this page is mounted", () => {
   });
 
   it('keeps the typed text in a box that loses focus with no other write', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container } = await openA();
     const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
     box.focus();
     box.setSelectionRange(18, 18);
@@ -1284,14 +1032,14 @@ describe("another tab's write, while this page is mounted", () => {
   });
 
   it('shows another tab’s note in a box without focus', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container, cloud, page } = await openA();
     const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
     box.focus();
     box.setSelectionRange(18, 18);
     await userEvent.keyboard(' и ');
     box.blur();
-    otherWrite(storage, 'Правка из другой вкладки');
+    await readList(cloud, page, A_ID);
+    otherWrite(cloud, 'Правка из другой вкладки');
     await waitFor(() => {
       expect(box).toHaveValue('Правка из другой вкладки');
     });
@@ -1301,8 +1049,8 @@ describe("another tab's write, while this page is mounted", () => {
 describe('a row’s modal', () => {
   it('opens on the row body, and its copy text carries the entry’s players’ note', async () => {
     const clip = fakeClipboard();
-    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
-    await userEvent.click(screen.getByRole('button', { name: /Зелье/ }));
+    await openA({ clipboard: clip });
+    await userEvent.click(screen.getByRole('button', { name: /^Зелье/ }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
     await userEvent.click(
@@ -1316,8 +1064,8 @@ describe('a row’s modal', () => {
        level - this is the wiring proof, through the real modal, with cc1's
        full meta (qty 2, gold 750, a GM note) in play. */
     const clip = fakeClipboard();
-    render(App, { env: withA('#/lists/a', { clipboard: clip }) });
-    await userEvent.click(screen.getByRole('button', { name: /Зелье/ }));
+    await openA({ clipboard: clip });
+    await userEvent.click(screen.getByRole('button', { name: /^Зелье/ }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Скопировать текст' })
     );
@@ -1329,24 +1077,21 @@ describe('a row’s modal', () => {
 });
 
 describe('drag', () => {
-  it('moves an entry through the port’s onDrop', () => {
+  it('moves an entry through the port’s onDrop', async () => {
     const drag = fakeDrag();
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage, drag }) });
+    const { cloud, page } = await openA({ drag });
     drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
-    expect(readLists(storage)[0]?.ids).toEqual(['cc1', 'q1', 'ci1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['cc1', 'q1', 'ci1']);
   });
 
   it('moves the entry the drag started with, even after another tab rewrote the list', async () => {
     const drag = fakeDrag();
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage, drag }) });
+    const { container, cloud, page } = await openA({ drag });
     const bound = drag.handlers;
     drag.handlers?.onDrag?.(1);
 
-    storage.set('dhloot.lists.v2', JSON.stringify([{ ...listA, ids: ['cc1', 'q1'] }]));
-    storage.fireExternalChange('dhloot.lists.v2');
+    cloud.playRemove(A_ID, 'ci1');
     await waitFor(() => {
       expect(container.querySelectorAll('.lrow')).toHaveLength(2);
     });
@@ -1356,18 +1101,18 @@ describe('drag', () => {
     expect(within(dragging as HTMLElement).getByText('Зелье')).toBeInTheDocument();
 
     drag.handlers?.onDrop(1, 1);
-    expect(readLists(storage)[0]?.ids).toEqual(['q1', 'cc1']);
+    expect((await readList(cloud, page, A_ID))?.ids).toEqual(['q1', 'cc1']);
     await expectNoA11yViolations(container);
   });
 
-  it('marks the grip draggable, so the browser actually fires dragstart', () => {
-    const { container } = render(App, { env: withA() });
+  it('marks the grip draggable, so the browser actually fires dragstart', async () => {
+    const { container } = await openA();
     expect(container.querySelector('.lrow-grip')).toHaveAttribute('draggable', 'true');
   });
 
   it('follows the port’s onDrag/onOver/onEnd with the dragging/drop-before/drop-after classes, both sides of the gap', async () => {
     const drag = fakeDrag();
-    const { container } = render(App, { env: withA('#/lists/a', { drag }) });
+    const { container } = await openA({ drag });
     const rowAt = (i: number): HTMLElement =>
       container.querySelectorAll('.lrow')[i] as HTMLElement;
 
@@ -1434,13 +1179,18 @@ describe('drag', () => {
 });
 
 describe('announcing a reorder', () => {
+  /* The account page draws a second status region after this one, for the save state. */
+  const reorderRegion = (): HTMLElement =>
+    screen
+      .getAllByRole('status')
+      .find((el) => el.nextElementSibling?.getAttribute('role') === 'status') as HTMLElement;
+
   /* Both movers funnel through store.move(), which answers "did anything
      move" - the live region fires on true and stays silent on false. */
   it('announces a drag that lands an entry elsewhere, and stays silent for a no-op drop', async () => {
     const drag = fakeDrag();
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage, drag }) });
-    const region = screen.getByRole('status');
+    const { container } = await openA({ drag });
+    const region = reorderRegion();
     expect(region).toHaveTextContent('');
 
     drag.handlers?.onDrag?.(0);
@@ -1457,33 +1207,26 @@ describe('announcing a reorder', () => {
   });
 
   it('clears the announcement when history moves to a different list', async () => {
-    const listB: StoredList = { id: 'b', name: 'Другой', ids: ['q1'], created: 2 };
     const drag = fakeDrag();
-    const router = memoryRouter('#/lists/a');
-    render(App, {
-      env: at('#/lists/a', {
-        router,
-        drag,
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA, listB]) })
-      })
-    });
+    const { router, container } = await openA({ drag }, A_HASH, [
+      listOf(802, 'Другой', [{ key: 'q1' }])
+    ]);
 
     drag.handlers?.onDrag?.(0);
     drag.handlers?.onDrop(0, 2);
     await tick();
-    expect(screen.getByRole('status')).toHaveTextContent('позиция 3 из 3');
+    expect(reorderRegion()).toHaveTextContent('позиция 3 из 3');
 
-    router.navigate('#/lists/b');
+    router.navigate('#/lists/' + uuid(802));
     await waitFor(() => {
-      expect(screen.getByText('1 позиция')).toBeInTheDocument();
+      expect(sub(container)).toMatch(/^1 позиция/);
     });
-    expect(screen.getByRole('status')).toHaveTextContent('');
+    expect(reorderRegion()).toHaveTextContent('');
   });
 
   it('announces a committed position that moves a row, and stays silent when the position is its own', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
-    const region = screen.getByRole('status');
+    await openA();
+    const region = reorderRegion();
 
     const pos = screen.getAllByRole('spinbutton', { name: 'Позиция в списке' });
     await userEvent.click(pos[0] as HTMLElement);
@@ -1501,12 +1244,8 @@ describe('announcing a reorder', () => {
   });
 
   it('announces the same typed move in English under dhloot.lang.v1: en', async () => {
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([listA]),
-      'dhloot.lang.v1': 'en'
-    });
-    render(App, { env: at('#/lists/a', { storage }) });
-    const region = screen.getByRole('status');
+    await openA({ storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) });
+    const region = reorderRegion();
 
     const pos = screen.getAllByRole('spinbutton', { name: 'Position in the list' });
     await userEvent.click(pos[2] as HTMLElement);
@@ -1518,9 +1257,18 @@ describe('announcing a reorder', () => {
 });
 
 describe('no data', () => {
-  it('draws the paragraph rather than a broken page', () => {
-    render(App, { env: at('#/lists/a', { data: noData() }) });
+  it('draws the paragraph, signed in, rather than the list or a broken page', async () => {
+    render(App, {
+      env: fakeEnv({
+        router: memoryRouter('#/lists/' + uuid(101)),
+        data: noData(),
+        cloud: fakeCloud(SEED, 'gm1')
+      })
+    });
+    await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     expect(screen.getByText('Данные не загрузились. Обновите страницу.')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
+    expect(document.querySelectorAll('.lrow')).toHaveLength(0);
   });
 });
 
@@ -1528,8 +1276,8 @@ describe('the note boxes', () => {
   const pubOf = (container: HTMLElement): HTMLElement =>
     container.querySelector('.lnote .n-pub') as HTMLElement;
 
-  it('names each note box by its label and its line', () => {
-    render(App, { env: withA() });
+  it('names each note box by its label and its line', async () => {
+    await openA();
     const pub = screen.getAllByRole('textbox', { name: 'Для игроков' });
     const hid = screen.getAllByRole('textbox', { name: 'Только для мастера' });
     /* The list's pair and the noted entry's pair. */
@@ -1544,10 +1292,9 @@ describe('the note boxes', () => {
   });
 
   it('draws the toolbar, «Просмотр» and the «?» on each note box', async () => {
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([{ ...listA, note: '**Лавка** закрыта' }])
-    });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container } = await openA({}, '#/lists/' + uuid(808), [
+      listOf(808, 'Тайник', A_ENTRIES, { note: '**Лавка** закрыта', hnote: 'Не для игроков' })
+    ]);
     for (const name of ['Для игроков', 'Только для мастера']) {
       expect(screen.getAllByRole('toolbar', { name: `Оформление: ${name}` })).toHaveLength(2);
       expect(screen.getAllByRole('button', { name: `Подсказка: ${name}` })).toHaveLength(2);
@@ -1565,7 +1312,7 @@ describe('the note boxes', () => {
   });
 
   it('opens the note hint under its label', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     const pub = pubOf(container);
     const help = within(pub).getByRole('button', { name: 'Подсказка: Для игроков' });
     const hint = pub.querySelector('#note-list-note-help') as HTMLElement;
@@ -1581,26 +1328,27 @@ describe('the note boxes', () => {
   });
 
   it('keeps a typed trailing space in the box while the store trims it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const { container } = render(App, { env: at('#/lists/a', { storage }) });
+    const { container, cloud, page } = await openA();
     const box = container.querySelector('#note-cc1-note') as HTMLTextAreaElement;
     box.focus();
     box.setSelectionRange(18, 18);
     await userEvent.keyboard(' и ');
     expect(box).toHaveFocus();
     expect(box).toHaveValue('Светится в темноте и ');
-    expect(readLists(storage)[0]?.meta?.['cc1']?.note).toBe('Светится в темноте и');
+    expect((await readList(cloud, page, A_ID))?.meta?.['cc1']?.note).toBe(
+      'Светится в темноте и'
+    );
   });
 });
 
 describe('accessibility', () => {
   it('has no violations on the page as it stands, priced and noted', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await expectNoA11yViolations(container);
   });
 
   it('has no violations with the roll panel open and a hit shown', async () => {
-    const { container } = render(App, { env: withA() });
+    const { container } = await openA();
     await userEvent.click(screen.getByText('Бросок по списку'));
     await userEvent.click(screen.getByRole('button', { name: 'На единицу больше' }));
     await expectNoA11yViolations(container);
@@ -1608,16 +1356,6 @@ describe('accessibility', () => {
 });
 
 describe('an account list', () => {
-  /* `page.fireHidden()` sends the account's write buffer at once, as a
-     hidden tab does, so a test reads the fake without the 2 s wait. */
-  const openAs = (cloud: CloudPort, hash = SHOP, over: Partial<Env> = {}) => {
-    const router = memoryRouter(hash);
-    const dialog = fakeDialog();
-    const page = fakePage();
-    const view = render(App, { env: at(hash, { router, dialog, cloud, page, ...over }) });
-    return { ...view, router, dialog, page };
-  };
-
   it('counts its entries against the entry limit, and bare when the limit read failed', async () => {
     const { container } = openAs(fakeCloud(SEED, 'gm1', { limits: { entries: 4 } }));
     await screen.findByRole('textbox', { name: 'Название списка' });
@@ -1652,7 +1390,7 @@ describe('an account list', () => {
 
   /* gm1's shop as LOOT knows it: ci1, q1, cc1 and the homebrew axe. */
   const gmOnlyOf = async (cloud: CloudPort, key: string): Promise<boolean | undefined> => {
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([uuid(101)]);
     const shop = read.ok ? read.lists.find((l) => l.id === uuid(101)) : undefined;
     return shop?.list_entries.find((e) => e.item_key === key)?.gm_only;
   };
@@ -1823,7 +1561,7 @@ describe('an account list', () => {
     await expectNoA11yViolations(down.container);
   });
 
-  it('draws Поделиться on an account list only, and folds its panel', async () => {
+  it('draws Поделиться and folds its panel', async () => {
     const clipboard = fakeClipboard();
     const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { clipboard });
     const share = await screen.findByRole('button', { name: 'Поделиться' });
@@ -1840,12 +1578,9 @@ describe('an account list', () => {
     await expectNoA11yViolations(container);
     await userEvent.click(share);
     expect(screen.queryByText('Ссылка для игроков')).not.toBeInTheDocument();
-    cleanup();
-    render(App, { env: withA('#/lists/a') });
-    expect(screen.queryByRole('button', { name: 'Поделиться' })).not.toBeInTheDocument();
   });
 
-  it('downloads an account list as its own file from «Скачать JSON», after «Скопировать текст»; none on a browser list', async () => {
+  it('downloads an account list as its own file from «Скачать JSON», after «Скопировать текст»', async () => {
     const image = fakeImage();
     const { container } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { image });
     const button = await screen.findByRole('button', { name: 'Скачать JSON' });
@@ -1860,15 +1595,9 @@ describe('an account list', () => {
       (JSON.parse(text) as { lists: { name: string }[] }).lists.map((l) => l.name)
     ).toEqual(['Лавка кузнеца']);
     await expectNoA11yViolations(container);
-    cleanup();
-    render(App, { env: withA('#/lists/a') });
-    expect(screen.queryByRole('button', { name: 'Скачать JSON' })).not.toBeInTheDocument();
   });
 
-  it('draws the requests panel after the action row and an open share panel, before the money row; none on a browser list', async () => {
-    render(App, { env: withA('#/lists/a') });
-    expect(screen.queryByRole('heading', { name: /^Новое в списке/ })).not.toBeInTheDocument();
-    cleanup();
+  it('draws the requests panel after the action row and an open share panel, before the money row', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
     const { container } = openAs(cloud);
@@ -1960,30 +1689,6 @@ describe('an account list', () => {
     });
   });
 
-  it('puts a removed row back into the account list when the undo runs on a browser list', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    /* Another account's browser list: it stays in the browser, writable. */
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([listA]),
-      'dhloot.migrated.v1': JSON.stringify({ owner: 'another-account', lists: {} })
-    });
-    const { router, page } = openAs(cloud, SHOP, { storage });
-    await screen.findByRole('textbox', { name: 'Название списка' });
-    await userEvent.click(screen.getAllByRole('button', { name: 'Убрать из списка' })[0]!);
-    router.navigate('#/lists/a');
-    expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
-      'Тайник'
-    );
-    await userEvent.click(screen.getByRole('button', { name: 'Вернуть' }));
-    page.fireHidden();
-    await waitFor(async () => {
-      const read = await cloud.lists.list();
-      const shop = read.ok ? read.lists.find((l) => l.name === 'Лавка кузнеца') : undefined;
-      expect(shop?.list_entries.map((e) => e.item_key)[0]).toBe('ci1');
-    });
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'cc1', 'q1']);
-  });
-
   it('keeps the list when the delete is refused', async () => {
     const { router } = openAs(fakeCloud(SEED, 'gm1'), SHOP, { dialog: fakeDialog(false) });
     await screen.findByRole('textbox', { name: 'Название списка' });
@@ -2036,235 +1741,9 @@ describe('an account list', () => {
   });
 });
 
-describe('a browser list after the cutoff, and while the move is due', () => {
-  const AFTER = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
-  const signedOut = () => fakeCloud(SEED);
-  const buttonNames = (): string[] =>
-    screen.getAllByRole('button').map((b) => b.getAttribute('aria-label') ?? b.textContent);
-
-  it('draws every write control before the cutoff', () => {
-    const { container } = render(App, { env: withA('#/lists/a', { cloud: signedOut() }) });
-    expect(screen.getByRole('textbox', { name: 'Название списка' })).not.toHaveAttribute(
-      'readonly'
-    );
-    expect(screen.getByRole('button', { name: 'Ссылка игрокам' })).toBeInTheDocument();
-    expect(container.querySelectorAll('.lrow-grip')).toHaveLength(3);
-    expect(screen.getAllByRole('button', { name: 'Убрать из списка' })).toHaveLength(3);
-  });
-
-  it('is read-only after it: no link buttons, grip or cross, fields read-only, chips off', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const router = memoryRouter('#/lists/a');
-    const { container } = render(App, {
-      env: at('#/lists/a', { storage, router, cloud: signedOut(), ...AFTER })
-    });
-    const title = screen.getByRole('textbox', { name: 'Название списка' });
-    expect(title).toHaveAttribute('readonly');
-    expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Ссылка себе' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Скопировать текст' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
-    expect(container.querySelectorAll('.lrow-grip')).toHaveLength(0);
-    expect(screen.queryByRole('button', { name: 'Убрать из списка' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Очистить заметку' })).toBeNull();
-    for (const f of container.querySelectorAll('input[data-qty], input[data-gold], .lrow-n'))
-      expect(f).toHaveAttribute('readonly');
-    for (const ta of container.querySelectorAll('textarea'))
-      expect(ta).toHaveAttribute('readonly');
-    /* A note box keeps only «Просмотр»: no format button and no «?». */
-    for (const bar of container.querySelectorAll('.npair [role="toolbar"]'))
-      expect([...bar.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
-        'Просмотр'
-      ]);
-    expect(container.querySelectorAll('.npair [role="toolbar"]').length).toBeGreaterThan(0);
-    /* The price «?» stays: the conversion is information, not an edit. */
-    expect(screen.queryByRole('button', { name: /^Подсказка: (?!Цена$)/ })).toBeNull();
-    for (const chip of screen.getAllByRole('button', { name: /Мешками|Монетами/ }))
-      expect(chip).toBeDisabled();
-    expect(
-      screen.getByText('Списки в этом браузере только для чтения с 26 октября 2026 года.')
-    ).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Зелье' }));
-    expect(buttonNames()).toContain('Скопировать');
-    expect(screen.queryByRole('button', { name: 'Цены' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Удалить (1)' })).toBeNull();
-    await expectNoA11yViolations(container);
-
-    /* A typed name, quantity, price, note or position writes nothing. */
-    const before = storage.get('dhloot.lists.v2');
-    await fireEvent.input(title, { target: { value: 'Другое' } });
-    const qty = container.querySelector('input[data-qty]') as HTMLInputElement;
-    await fireEvent.input(qty, { target: { value: '9' } });
-    const gold = container.querySelector('input[data-gold]') as HTMLInputElement;
-    await fireEvent.input(gold, { target: { value: '9' } });
-    await fireEvent.input(container.querySelector('textarea') as HTMLTextAreaElement, {
-      target: { value: 'x' }
-    });
-    await fireEvent.change(container.querySelector('.lrow-n') as HTMLInputElement, {
-      target: { value: '3' }
-    });
-    await new Promise((r) => setTimeout(r, 200));
-    expect(storage.get('dhloot.lists.v2')).toBe(before);
-    expect(router.hash()).toBe('#/lists/a');
-  });
-
-  it('deletes after the cutoff with the confirm and no undo', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    const router = memoryRouter('#/lists/a');
-    const dialog = fakeDialog(true);
-    render(App, {
-      env: at('#/lists/a', { storage, router, dialog, cloud: signedOut(), ...AFTER })
-    });
-    await userEvent.click(screen.getByRole('button', { name: 'Удалить' }));
-    expect(dialog.asked).toEqual(['Удалить список «Тайник»? Отменить удаление нельзя.']);
-    expect(router.hash()).toBe('#/lists');
-    expect(readLists(storage)).toEqual([]);
-    expect(screen.getByText('Список «Тайник» удалён')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Вернуть' })).toBeNull();
-  });
-
-  it('draws the retired page for a plain, a packed and an own #/l/ address, decoding nothing', async () => {
-    const other = encodeList({ name: 'Другой', ids: ['ci1'] }, true);
-    const unpack = vi.fn((p: string) => Promise.resolve(p.slice(1)));
-    const compress: CompressPort = {
-      available: () => true,
-      pack: (raw) => Promise.resolve(raw),
-      unpack
-    };
-    for (const hash of ['#/l/' + other, '#/l/~' + other, '#/l/' + encodeList(listA, true)]) {
-      const router = memoryRouter(hash);
-      const { container } = render(App, {
-        env: withA(hash, { router, compress, cloud: signedOut(), ...AFTER })
-      });
-      expect(
-        screen.getByRole('heading', {
-          level: 1,
-          name: 'Ссылки такого вида перестали открываться 26 октября 2026 года.'
-        })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          'Попросите у отправителя новую ссылку или войдите, чтобы собрать список.'
-        )
-      ).toBeInTheDocument();
-      const links = screen.getAllByRole('link', { name: 'Мои списки' });
-      expect(links.some((l) => l.className.includes('btn'))).toBe(true);
-      expect(screen.queryByRole('textbox', { name: 'Название списка' })).toBeNull();
-      expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
-      await new Promise((r) => setTimeout(r, 200));
-      expect(router.hash()).toBe(hash);
-      await expectNoA11yViolations(container);
-      cleanup();
-    }
-    expect(unpack).not.toHaveBeenCalled();
-  });
-
-  it('keeps an account list and its «Поделиться» as they are after the cutoff', async () => {
-    render(App, {
-      env: at('#/lists/00000000-0000-4000-8000-000000000101', {
-        cloud: fakeCloud(SEED, 'gm1'),
-        ...AFTER
-      })
-    });
-    const title = await screen.findByRole('textbox', { name: 'Название списка' });
-    expect(title).not.toHaveAttribute('readonly');
-    expect(screen.getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Убрать из списка' }).length).toBeGreaterThan(
-      0
-    );
-  });
-
-  it('follows its own #/l/ page to the account address, and writes the old one no more', async () => {
-    const hash = '#/l/' + encodeList(listA, true);
-    const router = memoryRouter(hash);
-    render(App, { env: withA(hash, { router, cloud: fakeCloud(SEED, 'gm1') }) });
-    const title = await screen.findByRole('textbox', { name: 'Название списка' });
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
-    });
-    await new Promise((r) => setTimeout(r, 200));
-    expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
-    expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveValue(
-      (title as HTMLInputElement).value
-    );
-    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).toBeNull();
-  });
-
-  it("opens a moved list's old address as the account list it moved into", async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const storage = memoryStorage({
-      'dhloot.lists.v2': '[]',
-      'dhloot.migrated.v1': JSON.stringify({
-        owner: SEED.users.gm1.id,
-        lists: { a: '00000000-0000-4000-8000-000000000101' }
-      })
-    });
-    const router = memoryRouter('#/lists/a');
-    render(App, { env: at('#/lists/a', { cloud, storage, router }) });
-    const title = await screen.findByRole('textbox', { name: 'Название списка' });
-    expect(title).toHaveValue('Лавка кузнеца');
-    expect(screen.getByRole('button', { name: 'Поделиться' })).toBeInTheDocument();
-  });
-
-  it('is read-only with no «Удалить» while the move is due, and editable once it is done', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const foreign = JSON.stringify({ owner: 'another-account', lists: {} });
-    let release = (): void => undefined;
-    const gate = new Promise<void>((r) => {
-      release = r;
-    });
-    const list = cloud.lists.list.bind(cloud.lists);
-    cloud.lists.list = async () => {
-      await gate;
-      return list();
-    };
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([listA]),
-      'dhloot.migrated.v1': foreign
-    });
-    const router = memoryRouter('#/lists/a');
-    render(App, { env: at('#/lists/a', { cloud, storage, router }) });
-    await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
-    expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveAttribute(
-      'readonly'
-    );
-    expect(screen.queryByRole('button', { name: 'Удалить' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Ссылка игрокам' })).toBeNull();
-    await new Promise((r) => setTimeout(r, 200));
-    expect(router.hash()).toBe('#/lists/a');
-    release();
-    await waitFor(() => {
-      expect(screen.getByRole('textbox', { name: 'Название списка' })).not.toHaveAttribute(
-        'readonly'
-      );
-    });
-    expect(screen.getByRole('button', { name: 'Удалить' })).toBeInTheDocument();
-    await waitFor(() => {
-      expect(router.hash()).toBe('#/l/' + encodeList(listA, true));
-    });
-  });
-
-  it("says the move's status in the notice's slot for the account that owns the lists", async () => {
-    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
-    const router = memoryRouter('#/lists/a');
-    render(App, { env: withA('#/lists/a', { cloud, router }) });
-    /* The box draws it, and the status region mounted before the box says it. */
-    expect(
-      await screen.findAllByText(
-        'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
-      )
-    ).toHaveLength(2);
-    expect(document.querySelector('.slot .box.warn')).toHaveTextContent(
-      'Не все списки перенесены: нет связи. Попробуем при следующем открытии.'
-    );
-    expect(screen.queryByText('Списки живут только в этом браузере.')).toBeNull();
-  });
-});
-
 describe('a toast and a language switch', () => {
   it('redraws the removed row toast in the language switched to, with the record name in it', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/lists/a', { storage }) });
+    await openA();
     const removes = screen.getAllByRole('button', { name: 'Убрать из списка' });
     await userEvent.click(removes[1] as HTMLElement);
     expect(screen.getByText('Убрано из списка: «Зелье»')).toBeInTheDocument();
@@ -2292,7 +1771,7 @@ describe('homebrew entries', () => {
   };
   /* The list's entries as the server holds them. */
   async function entries(cloud: CloudPort, id: string) {
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([id]);
     return (read.ok ? read.lists.find((l) => l.id === id) : undefined)?.list_entries ?? [];
   }
   const axeRow = (): HTMLElement =>
@@ -2320,7 +1799,7 @@ describe('homebrew entries', () => {
   it("draws the picture of another account's linked item on its row", async () => {
     open(fakeCloud(SEED, 'gm2'), GM2_ID);
     await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
-    expect(axeRow().querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+    expect(axeRow().querySelector('img')?.getAttribute('src')).toBe('/img/thumb/ci1.webp');
   });
 
   it("offers «Изменить» in the modal for an own item, and not for another account's", async () => {
@@ -2328,7 +1807,7 @@ describe('homebrew entries', () => {
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
     expect(
       within(screen.getByRole('dialog')).getByRole('link', { name: 'Изменить' })
-    ).toHaveAttribute('href', '#/homebrew/' + AXE);
+    ).toHaveAttribute('href', '/homebrew/' + AXE);
     cleanup();
     const { container } = open(fakeCloud(SEED, 'gm2'), GM2_ID);
     await userEvent.click(await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ }));
@@ -2391,23 +1870,13 @@ describe('homebrew entries', () => {
     });
   });
 
-  it('draws «Свой предмет» on an account list only, and the empty hint points at it', async () => {
+  it('draws «Свой предмет» and the empty hint points at it', async () => {
     const { container } = open(fakeCloud(SEED, 'gm1'), '00000000-0000-4000-8000-000000000102');
     const row = await screen.findByRole('button', { name: 'Свой предмет' });
     expect(row).toHaveAttribute('aria-expanded', 'false');
     const hint = screen.getByText(/Свой предмет можно создать здесь же, кнопкой ниже\./);
     expect(hint.compareDocumentPosition(row) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await expectNoA11yViolations(container);
-    cleanup();
-    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [], created: 1 };
-    render(App, {
-      env: at('#/lists/e', {
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([empty]) })
-      })
-    });
-    expect(await screen.findByText(/Пока пусто/)).toBeInTheDocument();
-    expect(screen.queryByText(/Свой предмет можно создать/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
   });
 
   it('draws «Свой предмет» as a row after the last entry, not among the actions', async () => {
@@ -2434,12 +1903,6 @@ describe('homebrew entries', () => {
     expect(after.length).toBe(rows.length + 1);
     expect(after[after.length - 1]?.contains(made)).toBe(true);
     await expectNoA11yViolations(container);
-  });
-
-  it('draws no «Свой предмет» on a browser list, signed in or read-only', async () => {
-    render(App, { env: withA('#/lists/a', { cloud: fakeCloud(SEED, 'gm1') }) });
-    await screen.findByRole('textbox', { name: 'Название списка' });
-    expect(screen.queryByRole('button', { name: 'Свой предмет' })).not.toBeInTheDocument();
   });
 });
 

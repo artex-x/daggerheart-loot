@@ -1,1 +1,14 @@
-{ "version": 1, "include": ["/*"], "exclude": ["/robots.txt"] }
+{
+  "version": 1,
+  "include": [
+    "/h/*",
+    "/s/*",
+    "/p/*",
+    "/tables/*",
+    "/en/h/*",
+    "/en/s/*",
+    "/en/p/*",
+    "/en/tables/*"
+  ],
+  "exclude": ["/tables", "/tables/", "/en/tables", "/en/tables/"]
+}

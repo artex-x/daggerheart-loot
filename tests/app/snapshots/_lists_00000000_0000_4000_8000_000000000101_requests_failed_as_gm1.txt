@@ -1,26 +1,25 @@
 # #/lists/00000000-0000-4000-8000-000000000101 ~ requests failed as gm1
 # route: #/lists/00000000-0000-4000-8000-000000000101
-# why: the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel
+# why: the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the requests arrived on the index); the tab title «(2) Лавка кузнеца - ...» (unread: no lines drawn)
 # as: gm1
 # hold: lines:fail
 
 ## ru :: tree
-RootWebArea "Лавка кузнеца - Генератор лута Daggerheart" [url=index.html?as=gm1&hold=lines%3Afail#/lists/00000000-0000-4000-8000-000000000101]
-  link "К содержимому" [url=index.html?as=gm1&hold=lines%3Afail#main]
+RootWebArea "(2) Лавка кузнеца - Генератор лута Daggerheart" [url=/lists/00000000-0000-4000-8000-000000000101?as=gm1&hold=lines%3Afail]
+  link "К содержимому" [url=/lists/00000000-0000-4000-8000-000000000101?as=gm1&hold=lines%3Afail#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1&hold=lines%3Afail#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm1&hold=lines%3Afail#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm1&hold=lines%3Afail#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1&hold=lines%3Afail#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm1&hold=lines%3Afail#/tables]
-      link "Списки" [url=index.html?as=gm1&hold=lines%3Afail#/lists]
-      link "Поиск" [url=index.html?as=gm1&hold=lines%3Afail#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     StaticText "Лавка кузнеца"
     textbox "Название списка" [value=Лавка кузнеца multiline=false readonly=false required=false]
@@ -34,7 +33,6 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     alert ""
       StaticText "Не получилось загрузить запросы."
     status ""
-      StaticText "Новый запрос"
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
     button "Как это работает" [expanded=false]
@@ -133,10 +131,13 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     status ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+  status ""
+    StaticText "Новых запросов по списку «Лавка кузнеца»: 2"
+    button "Показать"
 
 ## ru :: controls
 EN
@@ -183,6 +184,7 @@ daggerheart.com
 Подсказка: Только для мастера
 Позиция в списке
 Поиск
+Показать
 Просмотр
 Результат броска
 Свой предмет
@@ -190,7 +192,6 @@ daggerheart.com
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать текст
-Списки
 Список
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
@@ -214,22 +215,21 @@ daggerheart.com
 Цена
 
 ## en :: tree
-RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=index.html?as=gm1&hold=lines%3Afail#/lists/00000000-0000-4000-8000-000000000101]
-  link "Skip to content" [url=index.html?as=gm1&hold=lines%3Afail#main]
+RootWebArea "(2) Лавка кузнеца - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1&hold=lines%3Afail]
+  link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1&hold=lines%3Afail#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1&hold=lines%3Afail#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm1&hold=lines%3Afail#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm1&hold=lines%3Afail#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1&hold=lines%3Afail#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm1&hold=lines%3Afail#/tables]
-      link "Lists" [url=index.html?as=gm1&hold=lines%3Afail#/lists]
-      link "Search" [url=index.html?as=gm1&hold=lines%3Afail#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     StaticText "Лавка кузнеца"
     textbox "List name" [value=Лавка кузнеца multiline=false readonly=false required=false]
@@ -243,7 +243,6 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=index.
     alert ""
       StaticText "Could not load the requests."
     status ""
-      StaticText "New request"
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
     button "How this works" [expanded=false]
@@ -342,10 +341,13 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=index.
     status ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+  status ""
+    StaticText "New requests for the list "Лавка кузнеца": 2"
+    button "Show"
 
 ## en :: controls
 Account: gm1@example.test
@@ -387,7 +389,6 @@ Italic
 Leviathan Harpoon
 Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=354 namehash=5d62421d]
 List name
-Lists
 Note
 Numbered list
 One higher
@@ -410,6 +411,7 @@ ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namele
 Search
 Select all
 Share
+Show
 Skip to content
 Standard rules
 Stride Potion

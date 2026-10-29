@@ -1,6 +1,16 @@
 {
   "origin": "https://daggerheart-loot.pages.dev",
-  "site": "https://artex-x.github.io/daggerheart-loot/",
+  "site": "https://daggerheart-loot.pages.dev/",
+  "routes": [
+    "/h/*",
+    "/s/*",
+    "/p/*",
+    "/tables/*",
+    "/en/h/*",
+    "/en/s/*",
+    "/en/p/*",
+    "/en/tables/*"
+  ],
   "build": [
     {
       "hash": "#/h/00000000-0000-4000-8000-000000000511",
@@ -63,38 +73,38 @@
     {
       "hash": "#/tables/homebrew",
       "lang": "ru",
-      "url": null,
-      "why": "the homebrew table is never a preview link"
+      "url": "https://daggerheart-loot.pages.dev/tables/homebrew",
+      "why": "the homebrew table: the path form; the worker answers it with the site card"
     },
     {
       "hash": "#/tables/homebrew/f_src-hb_alderworkshopaaa",
       "lang": "en",
-      "url": null,
-      "why": "nor its filter"
+      "url": "https://daggerheart-loot.pages.dev/en/tables/homebrew/f_src-hb_alderworkshopaaa",
+      "why": "its filter in English keeps the segment"
     },
     {
       "hash": "#/l/ABC",
       "lang": "ru",
-      "url": null,
-      "why": "a browser list's link stays in the app"
+      "url": "https://daggerheart-loot.pages.dev/l/ABC",
+      "why": "an old list link: the path form; the rewrite answers the site card"
     },
     {
       "hash": "#/i/ci1",
       "lang": "ru",
-      "url": null,
-      "why": "a catalog record keeps its i/ stub"
+      "url": "https://daggerheart-loot.pages.dev/i/ci1",
+      "why": "a catalog record: its app document; this row has no v"
     },
     {
       "hash": "#/lists",
       "lang": "ru",
-      "url": null,
-      "why": "a section is not a card family"
+      "url": "https://daggerheart-loot.pages.dev/lists",
+      "why": "a section: the path form; the rewrite answers the site card"
     },
     {
       "hash": "#/tables",
       "lang": "ru",
-      "url": null,
-      "why": "the tables page with no table"
+      "url": "https://daggerheart-loot.pages.dev/tables",
+      "why": "the tables page with no table: the path form; the rewrite answers the site card"
     }
   ],
   "serve": [
@@ -102,7 +112,7 @@
       "url": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511",
       "answer": "item",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/h/00000000-0000-4000-8000-000000000511",
+      "app": "https://daggerheart-loot.pages.dev/#/h/00000000-0000-4000-8000-000000000511",
       "ogUrl": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511",
       "why": "a found item"
     },
@@ -110,7 +120,7 @@
       "url": "https://daggerheart-loot.pages.dev/en/h/00000000-0000-4000-8000-000000000511?v=x",
       "answer": "item",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/en/#/h/00000000-0000-4000-8000-000000000511",
+      "app": "https://daggerheart-loot.pages.dev/en/#/h/00000000-0000-4000-8000-000000000511",
       "ogUrl": "https://daggerheart-loot.pages.dev/en/h/00000000-0000-4000-8000-000000000511",
       "why": "the English card; the query is ignored"
     },
@@ -118,7 +128,7 @@
       "url": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511.",
       "answer": "item",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/h/00000000-0000-4000-8000-000000000511",
+      "app": "https://daggerheart-loot.pages.dev/#/h/00000000-0000-4000-8000-000000000511",
       "ogUrl": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511",
       "why": "a stray character after the id is dropped"
     },
@@ -126,20 +136,20 @@
       "url": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511",
       "answer": "null",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/h/00000000-0000-4000-8000-000000000511",
+      "app": "https://daggerheart-loot.pages.dev/#/h/00000000-0000-4000-8000-000000000511",
       "why": "a read that answers null"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/h/not-a-uuid",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/",
+      "app": "https://daggerheart-loot.pages.dev/",
       "why": "a malformed id: no read, home"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "answer": "list",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
+      "app": "https://daggerheart-loot.pages.dev/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "ogUrl": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "why": "a found share link"
     },
@@ -147,7 +157,7 @@
       "url": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_tier-A",
       "answer": "list",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_tier-A",
+      "app": "https://daggerheart-loot.pages.dev/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_tier-A",
       "ogUrl": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "why": "the filter stays in the redirect, not in og:url"
     },
@@ -155,161 +165,161 @@
       "url": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM.",
       "answer": "list",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
+      "app": "https://daggerheart-loot.pages.dev/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "why": "a stray character after the token is dropped"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_range-melee)",
       "answer": "list",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_range-melee",
+      "app": "https://daggerheart-loot.pages.dev/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_range-melee",
       "why": "a stray character after the filter is dropped"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/en/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "answer": "null",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/en/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
+      "app": "https://daggerheart-loot.pages.dev/en/#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "why": "an unknown or revoked token"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/s/x",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/s/x",
+      "app": "https://daggerheart-loot.pages.dev/#/s/x",
       "why": "a malformed token: no read"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/p/AbCdEf123456",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/p/AbCdEf123456",
+      "app": "https://daggerheart-loot.pages.dev/#/p/AbCdEf123456",
       "ogUrl": "https://daggerheart-loot.pages.dev/p/AbCdEf123456",
       "why": "a print set: the generic card, no read"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/en/p/AbCdEf123456?v=1",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/en/#/p/AbCdEf123456",
+      "app": "https://daggerheart-loot.pages.dev/en/#/p/AbCdEf123456",
       "ogUrl": "https://daggerheart-loot.pages.dev/en/p/AbCdEf123456",
       "why": "the query is ignored"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/p/x",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/p/x",
+      "app": "https://daggerheart-loot.pages.dev/#/p/x",
       "why": "a print id of another length"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/core_item",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/core_item",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/core_item",
       "ogUrl": "https://daggerheart-loot.pages.dev/tables/core_item",
       "why": "a catalog table"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/en/tables/core_item",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/en/#/tables/core_item",
+      "app": "https://daggerheart-loot.pages.dev/en/#/tables/core_item",
       "ogUrl": "https://daggerheart-loot.pages.dev/en/tables/core_item",
       "why": "a catalog table in English"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/core_item)",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/core_item",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/core_item",
       "why": "a stray character after the table is dropped"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/community_items/Highborne",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community_items/Highborne",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/community_items/Highborne",
       "ogUrl": "https://daggerheart-loot.pages.dev/tables/community_items/Highborne",
       "why": "og:url keeps the anchor"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/community_items/f_comm-Loreborne-Orderborne",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/community_items/f_comm-Loreborne-Orderborne",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/community_items/f_comm-Loreborne-Orderborne",
       "why": "a community filter"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/frames",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/frames",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/frames",
       "ogUrl": "https://daggerheart-loot.pages.dev/tables/frames",
       "why": "the alias stays as written"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/frames/f_frame-beast_feast-colossus",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/frames/f_frame-beast_feast-colossus",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/frames/f_frame-beast_feast-colossus",
       "why": "a frame filter on the alias"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/other_frames/f_kind-armor_frame-colossus",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/other_frames/f_kind-armor_frame-colossus",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/other_frames/f_kind-armor_frame-colossus",
       "why": "the older group separator"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/warrens",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/warrens",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/many_worlds_tavern/warrens",
       "ogUrl": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/warrens",
       "why": "a realm block"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/f_realm-warrens",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/f_realm-warrens",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/many_worlds_tavern/f_realm-warrens",
       "why": "a realm filter"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/many_worlds_tavern/f_realm-drome",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/many_worlds_tavern/f_realm-drome",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/many_worlds_tavern/f_realm-drome",
       "why": "the sixth realm's filter"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/dread",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/dread",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/dread",
       "ogUrl": "https://daggerheart-loot.pages.dev/tables/dread",
       "why": "an old table id opens the card of its URL id and stays as written"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/homebrew",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/homebrew",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/homebrew",
       "why": "the homebrew table: the site's text, the redirect kept"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/nosuch",
       "status": 404,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/nosuch",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/nosuch",
       "why": "an unknown table"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/tables/core_item/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "status": 200,
-      "app": "https://artex-x.github.io/daggerheart-loot/#/tables/core_item",
+      "app": "https://daggerheart-loot.pages.dev/#/tables/core_item",
       "why": "a tail past 2048 characters is dropped"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/x",
-      "status": 302,
-      "location": "https://artex-x.github.io/daggerheart-loot/",
-      "why": "another path goes home"
+      "static": true,
+      "status": 404,
+      "why": "another path is a static file or the 404 page, not the worker"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/en/x",
-      "status": 302,
-      "location": "https://artex-x.github.io/daggerheart-loot/en/",
-      "why": "another path under /en/ goes to the English home"
+      "static": true,
+      "status": 404,
+      "why": "another path under /en/ is the 404 page too"
     },
     {
       "url": "https://daggerheart-loot.pages.dev/probe/webp",
-      "status": 302,
-      "location": "https://artex-x.github.io/daggerheart-loot/",
+      "static": true,
+      "status": 404,
       "why": "the probe routes are gone"
     },
     {
@@ -323,6 +333,30 @@
       "status": 301,
       "location": "https://daggerheart-loot.pages.dev/h/00000000-0000-4000-8000-000000000511?v=1",
       "why": "a deployment host goes to the production host"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/",
+      "static": true,
+      "status": 200,
+      "why": "the app at the root"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/en/",
+      "static": true,
+      "status": 200,
+      "why": "the English entry document"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/robots.txt",
+      "static": true,
+      "status": 200,
+      "why": "the site's own robots.txt at the host root"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/mcp",
+      "static": true,
+      "status": 404,
+      "why": "reserved for the ai-mcp task; the 404 page until then"
     }
   ]
 }

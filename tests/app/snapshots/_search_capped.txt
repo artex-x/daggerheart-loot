@@ -3,22 +3,21 @@
 # why: the 300 cap: "Выбрать все (300)" over the first 300, and the new "300 из <n>" line above it
 
 ## ru :: tree
-RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search]
-  link "К содержимому" [url=#main]
+RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
+  link "К содержимому" [url=/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -42,9 +41,9 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=#/search
     button "63 Согревающие Пирожки Корзина содержит 1d4 пирожков. Когда вы с..." [namelen=185 namehash=705f115c]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -610,9 +609,8 @@ daggerheart.com
 Согревающие Пирожки
 Сок Солнечного Древа
 Сосуд Западного Ветра
-Списки
 Стальная Алебарда
-Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
+Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=164 namehash=19b541b5]
 Сфера Лунного Света
 Сфера Солнечного Света
 Табакерка Драконьей Пыли
@@ -669,22 +667,21 @@ daggerheart.com
 Яйцо Катартоида
 
 ## en :: tree
-RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
-  link "Skip to content" [url=#main]
+RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
+  link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -708,9 +705,9 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=#/search]
     button "63 Pastries of Warmth A basket contains 1d4 pastries. When you c..." [namelen=194 namehash=81808f7b]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -1210,7 +1207,6 @@ Leviathan Harpoon
 Life Force Beacon
 Lightning Scarab
 Lionheart Tonic
-Lists
 Lorekeeper
 Lyrebird Lozenge
 Magic-User's Malison

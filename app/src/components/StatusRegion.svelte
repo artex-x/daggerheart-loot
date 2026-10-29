@@ -12,17 +12,6 @@
   const { text, key, live }: Props = $props();
 </script>
 
-<div class="said" role="status" data-live={live ? 'live' : undefined}>
+<div class="said vh" role="status" data-live={live ? 'live' : undefined}>
   {#key key}{#if text}<span>{text}</span>{/if}{/key}
 </div>
-
-<style>
-  .said {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-</style>

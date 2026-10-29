@@ -12,12 +12,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import { esc } from './desc.js';
 import { markupHtml, markupText } from './markup.js';
 import { dict } from './dict.js';
 import { withRecords, type HomebrewRecord } from './homebrew.js';
-import type { ListShape } from './listLink.js';
+import type { ListShape } from './lists.js';
 import {
   entryNoteBlock,
   qtySuffix,
@@ -29,9 +29,10 @@ import {
   shareSelection
 } from './share.js';
 import type { Lang, Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 interface Captured {
@@ -238,7 +239,7 @@ describe('what travels with a record', () => {
       md: true
     });
     const html = share(ember, index, 'en').html;
-    expect(html).toContain(`<br>${esc(bonus.en)}: ${markupHtml(bonus.ende)}`);
+    expect(html).toContain(`<br><b><i>${esc(bonus.en)}:</i></b> ${markupHtml(bonus.ende)}`);
     /* Symmetric: Spark's own block names Ember back, in the same order. */
     expect(shareBlocks(spark, index, 'ru').at(-1)).toEqual({
       head: `Комплект: ${ember.ru}, ${spark.ru}`,
@@ -297,7 +298,7 @@ describe('what travels with a record', () => {
     );
     expect(
       ru.html.endsWith(
-        '<br><br><i>Комплект: Уголёк, Искра</i><br>Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает <i>Пылать</i>. Пока она <i>Пылает</i>, она должна отметить 1 Рану во время своей активации.'
+        '<br><br><i>Комплект: Уголёк, Искра</i><br><b><i>Пылающие близнецы:</i></b> При критическом успехе на Броске Атаки цель временно начинает <i>Пылать</i>. Пока она <i>Пылает</i>, она должна отметить 1 Рану во время своей активации.'
       )
     ).toBe(true);
     const en = share(rec('dve19'), index, 'en');
@@ -310,7 +311,7 @@ describe('what travels with a record', () => {
     );
     expect(
       en.html.endsWith(
-        '<br><br><i>Set: Ember, Spark</i><br>Blazing Twins: When you critically succeed on an attack roll, set the target temporarily <i>Ablaze</i>. While <i>Ablaze</i>, they must mark 1 HP when spotlighted.'
+        '<br><br><i>Set: Ember, Spark</i><br><b><i>Blazing Twins:</i></b> When you critically succeed on an attack roll, set the target temporarily <i>Ablaze</i>. While <i>Ablaze</i>, they must mark 1 HP when spotlighted.'
       )
     ).toBe(true);
   });
@@ -498,7 +499,7 @@ describe('a list selection, with its taken counts and total', () => {
   });
 });
 
-describe('entryNoteBlock, the one contextNote block (app.js 568-573)', () => {
+describe('entryNoteBlock, the one contextNote block (`git show 23c00a6^:app.js`)', () => {
   it('is a single block off the players’ note, never the GM one', () => {
     const t = dict('ru');
     expect(entryNoteBlock({ note: 'Светится в темноте', hnote: 'Проклят' }, t)).toEqual([
@@ -533,7 +534,7 @@ describe('qtySuffix, the count after a name in copied text and on a print card',
   });
 });
 
-describe('shareList, off listAsText/listAsHtml in app.js (1609-1647)', () => {
+describe('shareList, off listAsText/listAsHtml of the live app', () => {
   const list = (): ListShape => ({
     name: 'Клад дракона',
     ids: ['ci1', 'ci2'],

@@ -17,33 +17,49 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
-import { fakeData, fakeEnv, fixedClock, memoryRouter, memoryStorage } from '../ports/index.js';
+import { SEED, uuid } from '../ports/fake-cloud-seed.js';
+import { fakeData, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { listOf, seedWith, TWO_LISTS } from '../test/seed.js';
 import type { Loot } from '../lib/data.js';
 import type { Record_ } from '../lib/types.js';
 
-/** A list from another player, both notes and a noted entry - read the same
- *  way `listLink.test.ts` reads every fixture. `ci1` and `cc1` are both in
- *  this file's own `LOOT` below. */
-const NOTES_BOTH_KINDS_GM_PAYLOAD: string = (
-  JSON.parse(
-    readFileSync(
-      join(
-        import.meta.dirname,
-        '..',
-        '..',
-        '..',
-        'docs',
-        'fixtures',
-        'lists',
-        'notes-both-kinds.json'
-      ),
-      'utf8'
-    )
-  ) as { gm: { payload: string } }
-).gm.payload;
+/** A list from another player, both notes and a noted entry, behind gm4's GM link
+ *  `gm-token-91`. `ci1` and `cc1` are both in this file's own `LOOT` below. */
+const NOTED_SHARED = seedWith(
+  {
+    gm4: [
+      {
+        id: uuid(901),
+        name: 'Тайник',
+        note: 'Лавка закрыта до утра',
+        hnote: 'Хозяин - контрабандист',
+        entries: [
+          {
+            id: uuid(9011),
+            itemKey: 'ci1',
+            position: 0,
+            note: 'Видно игрокам',
+            hnote: 'Подделка'
+          },
+          { id: uuid(9012), itemKey: 'cc1', position: 1 }
+        ],
+        createdAgoMs: 4 * 86_400_000,
+        editedAgoMs: 2 * 86_400_000
+      }
+    ]
+  },
+  [
+    {
+      id: uuid(913),
+      listId: uuid(901),
+      audience: 'gm',
+      token: 'gm-token-91',
+      topicKey: uuid(914)
+    }
+  ]
+);
 
 afterEach(cleanup);
 
@@ -144,10 +160,7 @@ async function chooseImport(name: string): Promise<void> {
 const STATES: {
   what: string;
   route: string;
-  storage?: Record<string, string>;
   cloud?: () => CloudPort;
-  /** The day the page opens on, for a state after the legacy write cutoff. */
-  today?: number;
   enter?: (() => Promise<void>) | undefined;
 }[] = [
   {
@@ -158,13 +171,12 @@ const STATES: {
   {
     what: 'the add-to-list menu, with two lists to choose from',
     route: '#/i/ci1',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-      ])
-    },
-    enter: () => press('Добавить в список')
+    cloud: () => fakeCloud(seedWith({ gm4: TWO_LISTS }), 'gm4'),
+    enter: async () => {
+      await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+      await press('Добавить в список');
+      await screen.findByRole('button', { name: 'Клад дракона' });
+    }
   },
   {
     what: 'the help panel, unfolded',
@@ -251,74 +263,64 @@ const STATES: {
   {
     what: 'the selection bar with its menu open',
     route: '#/tables',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-      ])
-    },
+    cloud: () => fakeCloud(seedWith({ gm4: TWO_LISTS }), 'gm4'),
     /* `press` grips buttons; the row checkbox is reached by role instead -
        it is named after its own record rather than the generic "Выбрано",
        so the first one is found by excluding select-all's own (named
        "Выбрать все (N)" by its wrapping `<label>`). */
     enter: async () => {
+      await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
       await userEvent.click(
         screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'))[0] as HTMLElement
       );
       await press('Добавить в список');
+      await screen.findByRole('button', { name: 'Клад дракона' });
     }
   },
   {
-    what: 'the lists index with its notice unfolded and two lists',
-    route: '#/lists',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-        { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-      ])
-    },
-    /* `press` grips buttons; "подробнее" sits in an `<i>` inside the
-       disclosure's `<summary>`, which jsdom toggles open the same way a
-       browser does on a click. */
-    enter: () => userEvent.click(screen.getByText('подробнее'))
-  },
-  {
     what: 'a list page with a priced, noted entry and the roll panel open',
-    route: '#/lists/a',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        {
-          id: 'a',
-          name: 'Тайник',
-          ids: ['ci1', 'cc1'],
-          meta: {
-            ci1: {
-              qty: 2,
-              gold: 100,
-              note: 'Заметка для игроков',
-              hnote: 'Только для мастера'
-            }
-          }
-        }
-      ])
-    },
+    route: '#/lists/' + uuid(861),
+    cloud: () =>
+      fakeCloud(
+        seedWith({
+          gm4: [
+            listOf(861, 'Тайник', [
+              {
+                key: 'ci1',
+                qty: 2,
+                gold: 100,
+                note: 'Заметка для игроков',
+                hnote: 'Только для мастера'
+              },
+              { key: 'cc1' }
+            ])
+          ]
+        }),
+        'gm4'
+      ),
     /* `press` grips buttons; the roll panel folds open on its `<summary>`,
-       which jsdom does not expose as role "button" the way a browser does -
-       the same reason the lists index's own disclosure above is clicked by
-       its text. */
-    enter: () => userEvent.click(screen.getByText('Бросок по списку'))
+       which jsdom does not expose as role "button" the way a browser does, so it
+       is clicked by its text. */
+    enter: async () => {
+      await userEvent.click(await screen.findByText('Бросок по списку'));
+    }
   },
   {
     what: "a list page with a row's note box open",
-    route: '#/lists/a',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
-    },
-    enter: () => press('Заметка')
+    route: '#/lists/' + uuid(862),
+    cloud: () => fakeCloud(seedWith({ gm4: [listOf(862, 'Тайник', [{ key: 'ci1' }])] }), 'gm4'),
+    enter: async () => {
+      await screen.findByRole('textbox', { name: 'Название списка' });
+      await press('Заметка');
+    }
   },
   {
     what: 'a list from another player, with both notes and a noted entry',
-    route: '#/l/' + NOTES_BOTH_KINDS_GM_PAYLOAD
+    route: '#/s/gm-token-91',
+    cloud: () => fakeCloud(NOTED_SHARED),
+    enter: async () => {
+      await screen.findByRole('heading', { level: 1, name: 'Тайник' });
+    }
   },
   {
     /* "вещь" is the word this file's own LOOT gives w1 ("Первая вещь") and
@@ -356,54 +358,12 @@ const STATES: {
     }
   },
   {
-    what: 'the notice under the header after a sign-in moved two browser lists',
-    route: '#/lists',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Тайник', ids: ['ci1'] },
-        { id: 'b', name: 'Лавка', ids: [] }
-      ])
-    },
-    cloud: () => fakeCloud(SEED, 'gm1'),
-    enter: async () => {
-      await screen.findByText(
-        'Списки из этого браузера перенесены в ваш аккаунт: «Тайник», «Лавка».'
-      );
-    }
-  },
-  {
-    what: 'a browser list page read-only after the legacy write cutoff, a row ticked',
-    route: '#/lists/a',
-    storage: {
-      'dhloot.lists.v2': JSON.stringify([
-        { id: 'a', name: 'Тайник', ids: ['ci1', 'cc1'], meta: { ci1: { qty: 2, gold: 100 } } }
-      ])
-    },
-    cloud: () => fakeCloud(SEED),
-    today: Date.UTC(2026, 9, 26),
-    enter: async () => {
-      await screen.findByText(
-        'Списки в этом браузере только для чтения с 26 октября 2026 года.'
-      );
-      await userEvent.click(screen.getByRole('checkbox', { name: 'Предмет корника' }));
-    }
-  },
-  {
     what: 'the account page with the delete confirmation open',
     route: '#/account',
     cloud: () => fakeCloud(SEED, 'gm1'),
     enter: async () => {
       await userEvent.click(await screen.findByRole('button', { name: 'Удалить аккаунт...' }));
       await userEvent.type(screen.getByRole('textbox'), 'удалить');
-    }
-  },
-  {
-    what: 'the move banner under the header, signed out with a browser list',
-    route: '#/roll/std',
-    storage: { 'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }]) },
-    cloud: () => fakeCloud(SEED),
-    enter: async () => {
-      await screen.findByRole('button', { name: 'Войти и перенести списки' });
     }
   },
   {
@@ -569,20 +529,13 @@ const STATES: {
 ];
 
 describe('states reached by pressing something', () => {
-  it.each(STATES)(
-    'has no axe violations on $what',
-    async ({ route, storage, cloud, today, enter }) => {
-      const { container } = render(App, {
-        env: at(route, {
-          ...(storage ? { storage: memoryStorage(storage) } : {}),
-          ...(cloud ? { cloud: cloud() } : {}),
-          ...(today === undefined ? {} : { clock: fixedClock(today) })
-        })
-      });
-      await enter?.();
-      await expectNoA11yViolations(container);
-    }
-  );
+  it.each(STATES)('has no axe violations on $what', async ({ route, cloud, enter }) => {
+    const { container } = render(App, {
+      env: at(route, cloud ? { cloud: cloud() } : {})
+    });
+    await enter?.();
+    await expectNoA11yViolations(container);
+  });
 });
 
 /**
@@ -661,12 +614,9 @@ const COVERED: Record<string, string> = {
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LoadState.svelte':
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',
-  'MoveNotice.svelte': 'moveNotice.test.ts in every form, and the moved-lists state above',
-  'MoveStatus.svelte': 'moveStatus.test.ts in every form, and listsPage.test.ts',
-  'NoticeBox.svelte':
-    'through MoveNotice and MoveStatus, in their tests and the state above; the editor and print page clip warnings',
+  'NoticeBox.svelte': 'the editor and print page clip warnings',
   'StatusRegion.svelte':
-    'itemPage, sharedListPage, listPage, requestsPanel, moveStatus, homebrewEditor, printPage and homebrewPage tests, each with axe',
+    'itemPage, sharedListPage, listPage, requestsPanel, homebrewEditor, printPage and homebrewPage tests, each with axe',
   'CardVector.svelte':
     "printPage.test.ts's axe cases of both layouts and sizes, the 180-weapon sheet, and homebrewPrintPreview.test.ts",
   'NoData.svelte': "record.test.ts's no-data case, and every page test's own",
@@ -722,7 +672,6 @@ const COVERED: Record<string, string> = {
   'SignInPrompt.svelte':
     'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
-  'StorageNotice.svelte': 'the lists index state above, and the list page below',
   'SupplementNav.svelte':
     'supplementNav.test.ts on each supplement section, and Vault of Ages and communities (sections.test.ts)',
   'Switch.svelte':

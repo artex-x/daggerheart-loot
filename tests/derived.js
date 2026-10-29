@@ -1,9 +1,8 @@
-/* data.json and catalog.csv are generated from data.js and live beside it.
-   Inside `npm run check` they are already rebuilt by `npm run data` right
-   before this check, so here the generator is compared against itself, not
-   against the committed copy. A rebuild skipped before commit is caught by a
-   separate CI step (`git diff --exit-code` after `npm run check`), not by
-   this file. The last section checks the decisions registry: the index
+/* data.json and catalog.csv are generated from data.js and live beside it,
+   not committed. Inside `npm run check` they are already rebuilt by
+   `npm run data` right before this check, so here the generator is compared
+   with its own fresh output; no file is committed, so no CI step compares a
+   commit. The last section checks the decisions registry: the index
    docs/DECISIONS.md against tools/decisions.js and every quoted citation. */
 const fs = require('fs');
 const path = require('path');
@@ -128,8 +127,8 @@ ok(
   "can't pick a blacksmith's stock from the catalog: found " + smith.length
 );
 ok(
-  parsed.every((r) => !r[idx.id] || /^https:\/\/artex-x\.github\.io\//.test(r[idx.url])),
-  'the catalog has a broken link to a record page'
+  parsed.every((r) => !r[idx.id] || r[idx.url] === D.SITE + 'i/' + r[idx.id]),
+  'the catalog has a record link that is not <site>i/<id>, extensionless and without ?v'
 );
 
 console.log('stubs match the generator');
@@ -173,8 +172,20 @@ ok(
   const html = page(x, 'en');
   ok(html.includes('<html lang="en">'), 'stub i/en/' + x.id + ': <html lang> is not en');
   ok(
-    html.includes('<meta property="og:url" content="' + D.SITE + 'i/en/' + x.id + '.html">'),
-    'stub i/en/' + x.id + ': og:url is not its own English address'
+    html.includes('<meta property="og:url" content="' + D.SITE + 'i/en/' + x.id + '">'),
+    'stub i/en/' + x.id + ': og:url is not its own extensionless English address'
+  );
+  ok(
+    html.includes('<link rel="canonical" href="' + D.SITE + 'i/en/' + x.id + '">'),
+    'stub i/en/' + x.id + ': canonical is not its own extensionless English address'
+  );
+  ok(
+    html.includes('location.replace(' + JSON.stringify(D.SITE + 'i/en/' + x.id) + ')'),
+    'stub i/en/' + x.id + ': the app link is not <site>i/en/<id>'
+  );
+  ok(
+    page(x, 'ru').includes('location.replace(' + JSON.stringify(D.SITE + 'i/' + x.id) + ')'),
+    'stub i/' + x.id + ': the app link is not <site>i/<id>'
   );
   ok(
     html.includes('<meta property="og:locale" content="en_US">'),
@@ -290,7 +301,10 @@ ok(!!BG, 'tokens.css has no --bg colour to compare against');
    for English. */
 const PAGE_DIR = { ru: '', en: 'en/' };
 const SIBLING_HREF = { ru: (id) => 'en/' + id + '.html', en: (id) => '../' + id + '.html' };
-const BACK_HREF = { ru: '../', en: '../../' };
+/* The app root of the page's language, which the back links and %APP% name, and the
+   site root, which the manifest and the icon name. */
+const BACK_HREF = { ru: '../', en: '../../en/' };
+const ROOT_HREF = { ru: '../', en: '../../' };
 SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
   ok(
     !!(desc && desc.ru && desc.en),
@@ -346,22 +360,22 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
     ok(
       html.split('<link rel="manifest"').length - 1 === 1 &&
         html.includes(
-          '<link rel="manifest" href="' + BACK_HREF[lang] + 'manifest.webmanifest">'
+          '<link rel="manifest" href="' + ROOT_HREF[lang] + 'manifest.webmanifest">'
         ),
       'pages/' +
         rel +
         ' does not link the app manifest at its own depth ("' +
-        BACK_HREF[lang] +
+        ROOT_HREF[lang] +
         'manifest.webmanifest")'
     );
     ok(
       html.includes(
-        '<link rel="apple-touch-icon" href="' + BACK_HREF[lang] + 'icons/apple-touch-icon.png">'
+        '<link rel="apple-touch-icon" href="' + ROOT_HREF[lang] + 'icons/apple-touch-icon.png">'
       ),
       'pages/' +
         rel +
         ' does not link the iOS icon ("' +
-        BACK_HREF[lang] +
+        ROOT_HREF[lang] +
         'icons/apple-touch-icon.png")'
     );
     const shortName = manifest && manifest.short_name;
@@ -396,7 +410,7 @@ SITE_PAGES.PAGES.forEach(function ({ id, desc }) {
     ok(!html.includes('%APP%'), 'pages/' + rel + ' still holds %APP%; page() replaces it');
     if (id === 'privacy') {
       ok(
-        html.includes('href="' + BACK_HREF[lang] + '#/account"'),
+        html.includes('href="' + BACK_HREF[lang] + 'account"'),
         'pages/' + rel + ' does not link the account page at its own depth'
       );
       /* The owner's sentences, word for word: the item address (owner, 2026-10-07) and
@@ -528,21 +542,21 @@ if (manifest) {
   );
 }
 const indexHtml = fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8');
-const TOUCH = /<link\s+rel="apple-touch-icon"\s+href="\.\/([^"]*)"/i;
+const TOUCH = /<link\s+rel="apple-touch-icon"\s+href="\/([^"]*)"/i;
 const touch = (TOUCH.exec(indexHtml) || [])[1];
 ok(
   !!touch && fs.existsSync(path.join(APP_PUBLIC, touch)),
-  'app/index.html has no relative apple-touch-icon link to a file in app/public/'
+  'app/index.html has no root-absolute apple-touch-icon link to a file in app/public/'
 );
 /* The app links the manifest with a static tag (docs/specs/META.md section 9). */
 ok(
   indexHtml.split('<link rel="manifest"').length - 1 === 1 &&
-    indexHtml.includes('<link rel="manifest" href="./manifest.webmanifest">'),
-  'app/index.html does not carry exactly one static manifest link to ./manifest.webmanifest'
+    indexHtml.includes('<link rel="manifest" href="/manifest.webmanifest">'),
+  'app/index.html does not carry exactly one static manifest link to /manifest.webmanifest'
 );
 /* A reviewer without JavaScript finds the policy pages too (docs/specs/META.md
    section 9, "Static pages"). */
-['pages/privacy.html', 'pages/terms.html'].forEach(function (href) {
+['/pages/privacy.html', '/pages/terms.html'].forEach(function (href) {
   const noscript = (/<noscript>([\s\S]*?)<\/noscript>/i.exec(indexHtml) || ['', ''])[1];
   ok(noscript.includes('href="' + href + '"'), 'the <noscript> block does not link ' + href);
 });
@@ -562,7 +576,7 @@ console.log('og facts are absolute values');
 /* This block used to pin only what index.html and app/index.html agreed on -
    a generator change that shifted both pages the same wrong way would still
    pass. Now one page is checked against absolute values directly. */
-const SITE = 'https://artex-x.github.io/daggerheart-loot/';
+const SITE = 'https://daggerheart-loot.pages.dev/';
 ok(
   shareFacts['og:image'] === SITE + 'og/_share.jpg',
   "og:image is not the site's shared picture, but something else: " + shareFacts['og:image']
@@ -646,27 +660,231 @@ ok(
 const enRootHtml = rootPage();
 ok(
   !/http-equiv="refresh"/i.test(enRootHtml),
-  'en/index.html has a meta refresh, which drops the fragment of a list link'
+  'en/index.html has a meta refresh, which drops the fragment of a link'
 );
 ok(
-  enRootHtml.includes("location.replace('../' + location.hash)"),
-  'en/index.html does not redirect to the app with the fragment kept'
+  enRootHtml.includes('location.replace(' + JSON.stringify(SITE + 'en/') + ' + location.hash)'),
+  "en/index.html does not redirect to the site's en/ with the fragment kept"
 );
 ['../catalog.csv', '../data.json', '../llms.txt', '../'].forEach(function (href) {
   ok(enRootHtml.includes('href="' + href + '"'), 'en/index.html does not link ' + href);
 });
 
-/* `/daggerheart-loot/` is hardcoded in 404.html's two way-home links too
-   (tools/derived.js and tools/build-share-pages.js already read SITE, and
-   llms.txt carries the same literal) - a repo rename or an apex CNAME would
-   break all of them with every other gate green. One assertion against the
-   pathname SITE already carries closes 404.html's own copy. */
-ok(
-  fs.readFileSync(path.join(ROOT, '404.html'), 'utf8').includes(new URL(SITE).pathname),
-  '404.html no longer contains ' +
-    new URL(SITE).pathname +
-    ' - a repo rename or an apex CNAME would silently break its way-home links'
-);
+console.log('the app documents');
+/* The site answers a record path and en/ with the app document and the stub's
+   card fields (docs/specs/CONTRACTS.md section 5). Read from the source shell:
+   the build writes the same text from the built one (vite.config.mts). */
+{
+  const { documentsOf } = require(path.join(ROOT, 'tools', 'app-documents.js'));
+  const { appDocument } = require(path.join(ROOT, 'tools', 'share-card.mjs'));
+  const { headOf } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const MODULE_SCRIPT = '<script type="module" src="./src/main.ts"></script>';
+  const docs = documentsOf(indexHtml);
+  ok(
+    docs.size === 2 * ALL.length + 1,
+    'the app documents number ' + docs.size + ', not ' + (2 * ALL.length + 1)
+  );
+  [ALL.find((x) => x.craft), ALL.find((x) => x.eq && x.frame)].forEach(function (x) {
+    [
+      ['ru', 'i/'],
+      ['en', 'i/en/']
+    ].forEach(function ([lang, dir]) {
+      const where = dir + x.id + '.html';
+      const doc = docs.get(where) || '';
+      const head = headOf(x, lang);
+      ok(
+        doc.includes('\n' + head + '\n'),
+        where + ': the app document does not hold the card fields'
+      );
+      ok(
+        page(x, lang).includes('\n' + head + '\n'),
+        where + ': the stub does not hold the card fields'
+      );
+      ok(doc.includes('<html lang="' + lang + '">'), where + ': <html lang> is not ' + lang);
+      ok(doc.includes(MODULE_SCRIPT), where + ': the app document has no module script');
+      ok(doc.includes('<div id="app">'), where + ': the app document has no <div id="app">');
+      ok(
+        doc.includes('<meta property="og:url" content="' + D.SITE + dir + x.id + '">'),
+        where + ': og:url is not ' + D.SITE + dir + x.id
+      );
+      ok(
+        !doc.includes('location.replace') && !/http-equiv="refresh"/i.test(doc),
+        where + ': the app document redirects'
+      );
+    });
+  });
+  /* Every record's document carries its readable text for a reader without
+     JavaScript (owner, 2026-10-15 and 2026-10-28; llms.txt, "Data"). */
+  const { esc, descHtml } = require(path.join(ROOT, 'tools', 'share-card.mjs'));
+  const { bodyOf } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const unreadable = [];
+  for (const x of ALL) {
+    for (const [lang, dir, name, text] of [
+      ['ru', 'i/', x.ru || x.en, x.rud || x.ende],
+      ['en', 'i/en/', x.en, x.ende]
+    ]) {
+      const doc = docs.get(dir + x.id + '.html') || '';
+      const block = (/<noscript>\n<article[^>]*>([\s\S]*?)<\/article>\n<\/noscript>/.exec(
+        doc
+      ) || ['', ''])[1];
+      const first = descHtml(markupText(text || '')).split('\n')[0];
+      if (
+        !doc.includes('<div id="app"></div>\n' + bodyOf(x, lang)) ||
+        !block.includes('<h1>' + esc(name) + '</h1>') ||
+        !block.includes(first)
+      )
+        unreadable.push(dir + x.id);
+    }
+  }
+  ok(
+    unreadable.length === 0,
+    unreadable.length +
+      ' app documents lack the record text in <noscript>, for example ' +
+      unreadable.slice(0, 3).join(', ')
+  );
+  const en = docs.get('en/index.html') || '';
+  ok(
+    en.includes('<meta property="og:title" content="Daggerheart Loot Generator">') &&
+      en.includes('<meta property="og:url" content="' + D.SITE + 'en/">') &&
+      en.includes('<html lang="en">') &&
+      en.includes('<meta name="theme-color"') &&
+      en.includes(MODULE_SCRIPT),
+    'en/index.html: the English app document lacks its card, <html lang="en">, theme-color or the module script'
+  );
+  let threw = '';
+  try {
+    appDocument('<html lang="ru"><head></head></html>', '<title>x</title>', 'en');
+  } catch (e) {
+    threw = e.message;
+  }
+  ok(
+    threw ===
+      'The app document has no card block. Keep <!-- card --> and <!-- /card --> in app/index.html',
+    'appDocument on a shell with no card markers does not throw the expected message: ' + threw
+  );
+}
+
+/* 404.html serves both hosts, and the old host's root only forwards, so its
+   way-home links name the site's host itself (docs/specs/META.md section 7). */
+{
+  const html404 = fs.readFileSync(path.join(ROOT, '404.html'), 'utf8');
+  ok(
+    html404.includes('href="' + SITE + 'roll/std"') &&
+      html404.includes('href="' + SITE + 'search"'),
+    '404.html does not link ' + SITE + 'roll/std and ' + SITE + 'search'
+  );
+  ok(
+    html404.includes('href="' + SITE + 'en/roll/std"') &&
+      html404.includes('href="' + SITE + 'en/search"'),
+    '404.html does not link ' + SITE + 'en/roll/std and en/search in its English half'
+  );
+  ok(!html404.includes(SITE + '#/'), '404.html links an address in the fragment form');
+  ok(!html404.includes('/daggerheart-loot/#'), '404.html still links a path of the old host');
+}
+
+console.log('the old host forwards to the site');
+/* old-host/index.html replaces the app's index.html on the old host
+   (docs/specs/META.md section 9, "The old host"). Each line is one state. */
+{
+  const OLD = fs.readFileSync(path.join(ROOT, 'old-host', 'index.html'), 'utf8');
+  const script = (/<script>([\s\S]*?)<\/script>/.exec(OLD) || ['', ''])[1];
+  ok(NOINDEX.test(OLD), 'old-host/index.html has no noindex');
+  ok(OLD.includes('id="app-moved"'), 'old-host/index.html lost its id="app-moved" text');
+  ok(OLD.includes('<div lang="en">'), 'old-host/index.html has no English half');
+  ok(!OLD.includes('type="module"'), 'old-host/index.html loads the app');
+  ok(
+    script.includes("var NEW = '" + SITE + "'") && script.includes('location.replace(NEW'),
+    'old root, no fragment and no stored language: it does not forward to ' + SITE
+  );
+  ok(
+    script.includes('+ location.hash)'),
+    'old root with a fragment: the forward does not keep location.hash'
+  );
+  ok(
+    script.includes("localStorage.getItem('dhloot.lang.v1') === 'en'") &&
+      script.includes("(en ? 'en/' : '')"),
+    'old root with dhloot.lang.v1 = en: it does not forward to <site>en/'
+  );
+  ok(
+    (script.match(/try \{/g) || []).length === 2 &&
+      (script.match(/catch \(e\) \{\}/g) || []).length === 2,
+    'old root, storage throws: a storage read is outside its try block'
+  );
+  ok(
+    script.includes("sessionStorage.getItem('dhloot.moved.at')") &&
+      script.includes('now - last < 10000') &&
+      script.includes("sessionStorage.setItem('dhloot.moved.at'"),
+    'old root, a second forward within 10 s: the loop guard on dhloot.moved.at is gone'
+  );
+  ok(
+    script.includes("matchMedia('(display-mode: standalone)').matches) return"),
+    'old root in an installed app: the page forwards instead of showing the text'
+  );
+  ok(
+    OLD.includes(
+      '<noscript><meta http-equiv="refresh" content="0; url=' + SITE + '"></noscript>'
+    ) && OLD.includes('<a href="' + SITE + '">'),
+    'old root without a script: no meta refresh or link to ' + SITE
+  );
+  const oldFacts = headFacts('old-host/index.html');
+  Object.keys(shareFacts)
+    .filter((k) => k === '<title>' || /^(og|twitter):/.test(k))
+    .forEach(function (key) {
+      ok(
+        oldFacts[key] === shareFacts[key],
+        'old-host/index.html ' + key + " is not app/index.html's: " + oldFacts[key]
+      );
+    });
+}
+
+console.log('the card version map is current');
+/* tools/build.js writes card-versions.json; the build appends it to data.js
+   as window.LOOT_V (docs/specs/META.md section 8). */
+{
+  const { cardVersions } = require(path.join(ROOT, 'tools', 'build-share-pages.js'));
+  const file = path.join(ROOT, 'card-versions.json');
+  const onDisk = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+  const fresh = JSON.stringify(cardVersions()) + '\n';
+  ok(onDisk === fresh, 'card-versions.json is missing or stale - run node tools/build.js');
+  const map = JSON.parse(fresh);
+  ok(
+    ALL.every((x) => /^[0-9a-z]{1,8}$/.test(map[x.id] || '')),
+    'card-versions.json lacks a record id or holds a malformed version'
+  );
+  const gz = require('zlib').gzipSync('window.LOOT_V = ' + JSON.stringify(map) + ';').length;
+  console.log('  window.LOOT_V: ' + Math.round(gz / 1024) + ' KB gzip');
+
+  /* The property the refresher's removal rests on: a changed card is a new
+     version - other picture bytes under the same name, or other text in
+     either language (docs/specs/META.md section 8). */
+  const os = require('os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'card-versions-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'og'));
+    const rec = Object.assign(
+      {},
+      ALL.find((x) => x.img && x.ende && x.rud)
+    );
+    const jpg = path.join(tmp, 'og', rec.img.replace(/\.webp$/, '.jpg'));
+    const v = (r) => cardVersions([r], tmp)[r.id];
+    fs.writeFileSync(jpg, 'picture one');
+    const base = v(rec);
+    ok(base === v(rec), 'cardVersions gives the same card two values');
+    fs.writeFileSync(jpg, 'picture two');
+    ok(v(rec) !== base, 'cardVersions keeps the version when the og picture bytes change');
+    fs.writeFileSync(jpg, 'picture one');
+    ok(
+      v(Object.assign({}, rec, { ende: rec.ende + ' Changed.' })) !== base,
+      'cardVersions keeps the version when the English text changes'
+    );
+    ok(
+      v(Object.assign({}, rec, { rud: rec.rud + ' Изменено.' })) !== base,
+      'cardVersions keeps the version when the Russian text changes'
+    );
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+}
 
 /* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
    own "summary_large_image" - one record with art, one built with its art
@@ -701,7 +919,7 @@ const llms = fs.readFileSync(path.join(ROOT, 'llms.txt'), 'utf8');
 [
   'catalog.csv',
   'data.json',
-  '#/l/',
+  '/l/',
   '10 handfuls = 1 bag',
   'Player note',
   'GM note',
@@ -1141,48 +1359,6 @@ COUNT_BEARING_FILES.forEach(function (file) {
   ok(m && +m[1] === N.all, file + ': the record count is not ' + N.all + ' - ' + (m && m[1]));
 });
 
-console.log('legacy write cutoff');
-/* The cutoff date lives in one constant, `LEGACY_WRITE_UNTIL`; the app's texts
-   read it, and every document that spells it out is named here. Moving the
-   date is one edit in legacy.ts, then the edits this check names. */
-const legacyTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'legacy.ts'), 'utf8');
-const cutoff = /LEGACY_WRITE_UNTIL = Date\.UTC\((\d{4}), (\d{1,2}), (\d{1,2})\)/.exec(legacyTs);
-ok(cutoff, 'app/src/lib/legacy.ts: no "LEGACY_WRITE_UNTIL = Date.UTC(y, m, d)"');
-if (cutoff) {
-  const at = new Date(Date.UTC(+cutoff[1], +cutoff[2], +cutoff[3]));
-  const iso = at.toISOString().slice(0, 10);
-  const utc = { timeZone: 'UTC' };
-  const ru =
-    new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', ...utc }).format(at) +
-    ' ' +
-    String(at.getUTCFullYear());
-  const en = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    ...utc
-  }).format(at);
-  const LEGACY_DATE_FILES = [
-    ['llms.txt', [iso]],
-    ['docs/specs/CONTRACTS.md', [iso]],
-    ['docs/specs/FEATURES.md', [iso]],
-    ['docs/specs/META.md', [iso]],
-    ['docs/specs/STATE.md', [iso]],
-    ['docs/specs/ROUTES.md', [iso]],
-    ['tests/contracts.js', [iso]],
-    ['app/src/lib/help.ts', [ru, en]]
-  ];
-  LEGACY_DATE_FILES.forEach(function ([file, wants]) {
-    const text = fs.readFileSync(path.join(ROOT, file), 'utf8');
-    wants.forEach(function (want) {
-      ok(
-        text.includes(want),
-        file + ': the legacy write cutoff «' + want + '» went unmentioned'
-      );
-    });
-  });
-}
-
 /* Dice drawn on buttons use the same paths that print on the card. The
    paths are written out in dice.ts, so a button draws with no request, and
    this is where they are checked against the actual files. Otherwise an edit to a vector in `card/` would
@@ -1583,6 +1759,66 @@ ok(
   workflow.indexOf('applied-check.mjs') < 0,
   'ci.yml: applied-check.mjs is gone; the database is the applied record'
 );
+
+/* `deploy-replay` is `deploy` before its first secret, on every run outside
+   `main` (docs/decisions/, 2026-10-29, "A run outside main replays the
+   deploy's steps before its first secret"). */
+{
+  const replay = jobOf('deploy-replay');
+  ok(replay, 'deploy-replay: the job is missing from ci.yml');
+  const normal = function (step) {
+    return step
+      .split(/\r?\n/)
+      .filter(function (line) {
+        return !/^\s*#/.test(line) && line.trim() !== '';
+      })
+      .map(function (line) {
+        return line.trimEnd();
+      })
+      .join('\n');
+  };
+  const deploySteps = stepsOf(deploy).map(normal);
+  const cut = deploySteps.findIndex(function (step) {
+    return /\bsecrets\b/.test(step);
+  });
+  ok(cut > 0, 'deploy-replay: deploy has no step that reads a secret');
+  const replaySteps = stepsOf(replay).map(normal);
+  const want = deploySteps.slice(0, cut);
+  let differs = -1;
+  for (let i = 0; i < Math.max(want.length, replaySteps.length); i++) {
+    if (want[i] !== replaySteps[i]) {
+      differs = i;
+      break;
+    }
+  }
+  ok(
+    JSON.stringify(replaySteps) === JSON.stringify(want),
+    "deploy-replay: its steps must equal deploy's before its first secret (first difference at step " +
+      differs +
+      ': ' +
+      JSON.stringify(replaySteps[differs]) +
+      ' vs ' +
+      JSON.stringify(want[differs]) +
+      ')'
+  );
+  const body = replay ? normal(replay[1]) : '';
+  ok(!/\bsecrets\b/.test(body), 'deploy-replay: the job must read no secret');
+  ok(
+    !/^ {4}continue-on-error:/m.test(body),
+    'deploy-replay: the job must not continue on error'
+  );
+  ok(!/^ {4}environment:/m.test(body), 'deploy-replay: the job must declare no environment');
+  ok(!/^ {4}permissions:/m.test(body), 'deploy-replay: the job must declare no permissions');
+  ok(
+    replay && /^ {4}if:\s*\$\{\{ github\.ref != 'refs\/heads\/main' \}\}\s*$/m.test(replay[1]),
+    "deploy-replay: its job-level if: must be exactly ${{ github.ref != 'refs/heads/main' }}"
+  );
+  ok(
+    body.indexOf('node tools/check-site.mjs --dir _site') >= 0 &&
+      body.indexOf('node tools/check-site.mjs --mirror --dir _old') >= 0,
+    'deploy-replay: the job must run both check-site --dir commands'
+  );
+}
 
 /** The jobs of a workflow text, one `{ name, body }` per job under `jobs:`. */
 function jobsOf(code) {
@@ -2040,7 +2276,8 @@ if (shardList && shardRun) {
 /* The CI credit (.claude/hooks/ci-credit.mjs) arms the gates only when each
    job of REQUIRED_JOBS succeeded, so that list must be every gate job of
    ci.yml, one `browser (n)` per shard; migrate-prod and deploy run on main
-   only. */
+   only, and deploy-replay runs on every run outside main, which is the run
+   the credit reads. */
 {
   const creditText = fs.readFileSync(
     path.join(ROOT, '.claude', 'hooks', 'ci-credit.mjs'),
@@ -2490,9 +2727,21 @@ ok(
   REG.render([]).replace(/\s+/g, ' ').includes(RECORD_RULE),
   REG.INDEX + ': the header lacks the what-to-record rule'
 );
+const { execFileSync } = require('child_process');
+/* The build writes these; a tracked copy would go stale unseen
+   (docs/decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md). */
+const UNTRACKED = ['data.json', 'catalog.csv', '.nojekyll'];
+const tracked = execFileSync('git', ['ls-files', '--', ...UNTRACKED], {
+  cwd: ROOT,
+  encoding: 'utf8'
+}).trim();
+ok(
+  tracked === '',
+  'data.json, catalog.csv and .nojekyll are not committed; run git rm --cached ' +
+    tracked.split('\n').join(' ')
+);
 /* A citation quotes a title prefix after the file name; a title never
    changes, so every quoted prefix must still name one. */
-const { execFileSync } = require('child_process');
 let citeLines = '';
 try {
   citeLines = execFileSync(

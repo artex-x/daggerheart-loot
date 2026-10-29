@@ -1,12 +1,46 @@
-# Routes and hash grammar
+# Routes and address grammar
 
-Everything after `#` is the route. The app never asks a server for it, so the
-grammar below is the whole router. Golden fixtures for these shapes are in
-`docs/fixtures/urls/routes.json`; `app/src/lib/hash.test.ts` (the parser)
-and `tests/app/contracts.js` (the built app) replay them.
+The address is a path: `/tables/eq_weapon` on the site's host. The grammar
+below names each route by its route key, the `#/...` string the app parses,
+builds and stores; "Path form" says how a key and a path convert. The host
+answers every route path with the app, so the grammar below is the whole
+router. Golden fixtures for these shapes are in
+`docs/fixtures/urls/routes.json` and `docs/fixtures/urls/paths.json`;
+`app/src/lib/hash.test.ts` and `app/src/lib/address.test.ts` (the parser and
+the conversion) and `tests/app/contracts.js` (the built app) replay them.
 
 The implementation is `parseHash()` in `app/src/lib/hash.ts`, plus
-`TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it.
+`TABLES_RE`, `legacySource()` and `TABLE_ALIASES` beside it, and `pathOf()`
+and `addressOf()` in `app/src/lib/address.ts`.
+
+## Path form
+
+A route key `#/<rest>` is the path `/<rest>` in Russian and `/en/<rest>` in
+English, for example `/tables/eq_weapon` and `/en/tables/eq_weapon`, `/lists`,
+`/account` and `/homebrew`. A record keeps the English form of its card,
+`/i/en/<id>`; `/en/i/<id>` is not written and the host answers it with a 301
+to `/i/en/<id>`. The bare key is `/` or `/en/`; `/index.html` and
+`/en/index.html` read as the bare key. One trailing `/` is dropped where the
+path without it parses and the path with it does not (`/roll/std/` reads as
+`/roll/std`; `/s/` keeps its slash and its not-found page).
+
+The address bar and every in-app link show the path form, in the language on
+screen; the app's router writes it with `pushState` for a step and
+`replaceState` for a filter pick (`app/src/ports/router.ts`). A stored
+language wins over the address's (`I18N.md`). A record, an item (`/h/`) and a
+share link (`/s/`) carry the card version `?v=<v>` in the bar
+(`CONTRACTS.md` section 5); a navigation drops it.
+
+The old form `#/<rest>` after any path keeps working: a fragment that starts
+with `#/` wins over the path, its language comes from an English root path
+(`/en/#/...`, else none), and the app writes the path form in the same history
+entry at boot, and on a typed or pasted fragment (owner, 2026-10-28). A
+fragment that does not start with `#/` (`#main`) is not an address. The
+rewrite of a typed fragment of the route on screen takes its language from
+the path, which the last write set to the language on screen. After a
+history write that threw (WebKit past 100 calls in 30 s), the path can name
+an older language; the bar then keeps that language until the next write,
+and the screen stays right.
 
 ## Sections
 
@@ -46,17 +80,14 @@ old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
 An old id still opens the same page, with its anchor or filter tail; the
 address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
 
-The tab bar draws six tabs over them: Core rules, the alternate tables, one
-«Дополнения» / "Supplements" tab for the seven supplement sections
+The tab bar draws five tabs over them in every build: Core rules, the alternate
+tables, one «Дополнения» / "Supplements" tab for the seven supplement sections
 (`roll/wondrous_environments` to `roll/many_worlds_tavern`, `app/src/lib/nav.ts`),
-Tables, Lists and Search. The supplements tab links to
+Tables and Search. The supplements tab links to
 `#/roll/wondrous_environments`; every supplement address stays its
-own section (`FEATURES.md`, "Chrome").
-
-From the legacy write cutoff (2026-10-26) a build with sign-in draws five
-tabs, without `#/lists`; `#/lists` stays a section route,
-reached from the account menu's «Мои списки», a bookmark or a pin
-(`FEATURES.md`, "Chrome").
+own section (`FEATURES.md`, "Chrome"). `#/lists` has no tab: it stays a section
+route, reached from the account menu's «Мои списки», a bookmark or a pin. A build
+with no sign-in configured draws the not-found page for it, the address kept.
 
 ## Legacy section names
 
@@ -126,6 +157,7 @@ Group keys, by table:
 | `community` | `comm` |
 | `mwt` | `kind`, `realm` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
+| `#/homebrew/f_` (the Items tab) | `kind`, `src` (any number of values, OR'd), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 | `#/s/<token>` | `kind`, `src`, `tier`, `cls`, `trait`, `range`, `burden`, `line` |
 
@@ -158,6 +190,14 @@ applies again if an entry that answers it comes back before that change. The
 copied filter link holds only the values in force, so it can differ from the
 address bar.
 
+The Items tab of «Мои предметы» (`#/homebrew/f_<filter>`, "Homebrew" below)
+reads the `homebrew` groups with the share link's offer rule: a value no drawn
+item answers draws no pill and narrows nothing, the address keeps it until the
+next pick, and that pick writes only the values in force. There `src` is a
+facet: its values are OR'd. A pick rewrites the address in place; the panel
+opens when the page reads a filter it did not write (a filter address, Back, a
+reload, a press on «Предметы»), and its fold is page memory.
+
 On `homebrew`, `src` holds one value and picks the source chip ("Homebrew"
 below): it is not a facet, and values of two sources do not combine there.
 With two or more sources a second `src` value, a value that names no held
@@ -173,7 +213,7 @@ Unframed starting inventory is not part of this table - it is `other_starting`.
 
 An empty group means "any", so an untouched filter contributes nothing and a
 plain table link carries no `f_` part at all. Values inside a group are OR'd
-(except `src` on `homebrew`, above); groups narrow each other.
+(except `src` on the `homebrew` table, above); groups narrow each other.
 
 A group a table does not offer is ignored, and the table stays whole. This is
 silent, which is why the key names above are a contract: `f_rg-melee` on
@@ -186,11 +226,10 @@ silent, which is why the key names above are a contract: `f_rg-melee` on
 | `#/i/<id>` | one record |
 | `#/p/<id>` | a stored print set, for a signed-in reader; the id is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept), and only a 12-character run is read; a malformed id (any other length) draws the "set not found" print page, signed in or out, with no read; a 12-character id signed out draws the print page's sign-in state; an unknown or expired id draws the "set not found" print page; a build with no sign-in configured draws the not-found page; the address is kept in every case, never home. `#/p` with no slash is an unreadable address |
 | `#/print/<anything>` | retired on 2026-10-08 (owner): the retired print page, in every build, the address kept, nothing read from it; `#/print` with no slash is an unreadable address |
-| `#/lists/<listId>` | a browser list, by its local id, or an account list, by its UUID (an account list's address is never rewritten to `#/l/`; a browser list's is not either after 2026-10-26, nor while the move into the account is due); the local id of a list that moved into the account opens that account list |
+| `#/lists/<listId>` | an account list, by its UUID; its address is never rewritten; any other id, a local id an older build made among them, draws the list page's not-found state; a build with no sign-in configured draws the not-found page, the address kept |
 | `#/h/<uuid>` | one homebrew item by its id, for everyone, signed out too, with the author's relation lines; the id is read as the leading run of `[0-9A-Fa-f-]`, lowercased (a stray character after it is dropped, the address kept); only a uuid is read; a malformed or unknown id, or a build with no sign-in configured, draws the record page's not-found page, never home |
 | `#/s/<token>` | an account list shared by its owner, read-only, with an optional filter (below); the token is read as the leading run of `[A-Za-z0-9_-]` (a stray character after it is dropped, the address kept); a stopped, deleted, unknown or empty token draws one "no longer available" page, never home; with no sign-in configured that page too |
-| `#/l/<payload>` | a shared list, encoded in full (see `CONTRACTS.md`), until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then, in a build with sign-in configured, the retired page, the address kept and the payload never decoded |
-| `#/l/~<payload>` | the same, deflate-compressed; expanded and rewritten to the plain form on open, until 2026-10-26 (`LEGACY_WRITE_UNTIL`); from then the retired page, never unpacked |
+| `#/l/...` | an old list link, retired on 2026-10-26: the not-found page in every build, the address kept, the payload never read |
 
 ```
 #/s/<token>
@@ -202,22 +241,11 @@ link's groups, read and written as on a table: a pick rewrites the address in
 place, and a filter link opens the panel. When `/f_` does not follow the token,
 anything after it is dropped and the address kept; a stray character after the
 segment is dropped the same way. A build before the filter reads the token and
-ignores the segment, so a filter link opens the whole list there. `#/l/` carries
-no segment: its payload is read as written, so a segment would become part of
-the payload and every earlier bundle would draw the bad-link page; its filter
-is page memory.
-
-The payload after `l/` is read as written, whatever it contains - R5. A stray
-character a chat client left behind (a truncated link's trailing full stop is
-the reachable case) used to fail a stricter character class and fall to
-`unknown`, sending the reader home; now it still reaches the shared-list page,
-which draws its own "not found" state for a payload that will not decode
-rather than silently leaving for a different page.
+ignores the segment, so a filter link opens the whole list there.
 
 A print set is stored in its maker's account, so the address does not grow with
 its cards: `<site>#/p/` and 12 characters. The cards and their counts live in
-the set (`FEATURES.md`, "Print"); the list link's `id*qty` spelling stays in
-`CONTRACTS.md` section 3. The long print addresses `#/print/<ids>` were retired
+the set (`FEATURES.md`, "Print"). The long print addresses `#/print/<ids>` were retired
 on 2026-10-08 (`docs/decisions/2026-10-08-every-print-is-a-stored-set-long-print.md`).
 
 The preview host's path grammar is `CONTRACTS.md` section 5: its paths
@@ -237,7 +265,8 @@ address as it is, and never sends it home (`FEATURES.md`, "Account").
 A provider's sign-in or linking redirect returns to
 `?auth-callback=1` on the page, with a `code` or the error parameters. That
 query is read and removed before the app mounts, and the address is put
-back to the page the reader left (`#/account` when none was recorded), so
+back to the page the reader left (`#/account` when none was recorded), under
+`/en/` when the reader left an English address, so
 the router never sees it (`STATE.md`, `dhloot.auth.return`).
 
 ## Homebrew
@@ -245,17 +274,22 @@ the router never sees it (`STATE.md`, `dhloot.auth.return`).
 | Hash | Meaning |
 |---|---|
 | `#/homebrew` | «Мои предметы», the Items tab: the signed-in author's own items |
+| `#/homebrew/f_<filter>` | the Items tab with its filter: `kind`, `src` (any number of values, OR'd; the source chip is `#/tables/homebrew`'s only), `sect` ("Filter grammar" above) |
 | `#/homebrew/sources` | the Sources tab: the sources and their sections |
 | `#/homebrew/sets`, `#/homebrew/sets/<key>` | the Sets tab; with a key, that set's fold open and scrolled to |
 | `#/homebrew/rules`, `#/homebrew/rules/<key>` | the Rules tab; with a key, that rule card's fold open and scrolled to |
 | `#/homebrew/new` | the editor of a new own item |
 | `#/homebrew/<key>` | the editor of one own item; `<key>` is `hb_` and 16 of `a-z2-7` |
 
-Exactly these seven shapes; `#/homebrew/`, `#/homebrew/items`,
-`#/homebrew/pistols`, `#/homebrew/sources/<key>`, `#/homebrew/sets/<not a
-key>` and any other key are unreadable addresses (`Fallback` below). A
-well-formed key the account does not hold, or a key of the other card kind,
-draws the tab with nothing open and keeps the address. The routes are read
+Exactly these eight shapes; `#/homebrew/`, `#/homebrew/items`,
+`#/homebrew/pistols`, `#/homebrew/f_x/y`, `#/homebrew/sources/f_<filter>`,
+`#/homebrew/sources/<key>`, `#/homebrew/sets/<not a key>` and any other key
+are unreadable addresses (`Fallback` below). The filter segment is strict: a
+character outside `[A-Za-z0-9_.-]` or anything after it makes the address
+unreadable, and `#/homebrew/f_` reads as the Items tab with no filter, the
+address kept. A build before the segment reads it as unreadable and opens the
+home section. A well-formed key the account does not hold, or a key of the
+other card kind, draws the tab with nothing open and keeps the address. The routes are read
 in every build, as `#/account` is: signed out they draw the sign-in prompt,
 and a build with no sign-in configured draws the not-found page and keeps
 the address. No tab reads current on them, and a pin may not hold them.
@@ -287,16 +321,16 @@ so an agent cannot build one (`FEATURES.md`, "Homebrew").
 An address that matches nothing readable - at boot or on navigation - is
 replaced, via `replaceState`, so it does not accumulate in history, with the
 pinned starting section, or `#/roll/std` if none is pinned. An address that
-resolved to something is left alone, so a link someone shared still reads back
-as they wrote it.
+resolved to something keeps its route key, so a link someone shared still
+reads back as they wrote it, in its path form.
 
-A bare address (`''`, `#` or `#/`) is a third case, and boot and navigation
-answer it differently:
+A bare address (`/`, `/en/`, or an old `''`, `#` or `#/`) is a third case,
+and boot and navigation answer it differently:
 
-- At boot, it draws the pinned starting section and leaves the address bar as
-  it found it - unless a section other than the default is pinned, in which
-  case it navigates there instead (a real history entry, so Back leaves the
-  bare address behind rather than returning to it).
+- At boot, it draws the pinned starting section and writes the bare path of
+  the language on screen (`/` or `/en/`) - unless a section other than the
+  default is pinned, in which case it navigates there instead (a real history
+  entry, so Back leaves the bare address behind rather than returning to it).
 - Any subsequent navigation to a bare address - away and back, or a typed
   `#/` - draws `#/roll/std` - the default, never the pinned section - and
   writes nothing to the bar.

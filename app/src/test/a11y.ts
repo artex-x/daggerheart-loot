@@ -16,16 +16,11 @@ import axe from 'axe-core';
 
 /** Rules jsdom cannot answer honestly. Anything else, we want to hear about.
  *
- * `nested-interactive` used to sit here too, disabled for the whole suite -
- * the lists index's storage notice (`StorageNotice.svelte`) put a dismiss
- * button inside its own `<summary>`, and that was the only shape in the app
- * the rule ever fired on. A suite-wide disable hid it from every *other*
- * component as well, which is more than the one shape earned, so it was
- * narrowed to an `allow` parameter naming the call sites that actually
- * rendered the notice. D3, paid off: the button moved to a sibling instead
- * (`StorageNotice.svelte`), so nothing in the app trips the rule any more and
- * `allow` went with it - a parameter with no caller is a maintained shape for
- * nothing, the same reason an unused dictionary key does not stay either. */
+ * `nested-interactive` used to sit here too, disabled for the whole suite:
+ * it fired once, on a dismiss button nested in a `<summary>`. The button moved
+ * to a sibling, nothing in the app trips the rule any more, and the disable
+ * went with it - a parameter with no caller is a maintained shape for nothing,
+ * the same reason an unused dictionary key does not stay either. */
 const OFF = {
   'color-contrast': { enabled: false }
 } satisfies axe.RuleObject;

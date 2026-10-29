@@ -14,9 +14,8 @@ import {
   type HomebrewKind,
   type HomebrewRecord
 } from './homebrew.js';
-import type { DecodedList, ListEntryMeta, MoneyMode } from './listLink.js';
-import { QTY_MAX } from './listLink.js';
-import type { StoredList } from './lists.js';
+import { QTY_MAX, type ListEntryMeta, type StoredList } from './lists.js';
+import type { MoneyMode } from './money.js';
 import type { Record_ } from './types.js';
 
 /** The most coins a price holds (`list_entries.price_coins`). */
@@ -61,11 +60,13 @@ export interface ListRow {
   updated_at: string;
   /** Bumped by every change of the list or of one of its entries. */
   revision: number;
-  /** The SHA-256 of the canonical text a moved browser list was made from; null for
-   *  every other list. */
-  legacy_fingerprint: string | null;
   list_entries: EntryRow[];
 }
+
+/** An entry as the first read sends it: its identity and place, no details. */
+export type EntryHead = Pick<EntryRow, 'id' | 'item_key' | 'source' | 'hb_item' | 'position'>;
+/** A list as the first read sends it: its own columns and its entries' identities. */
+export type ListHead = Omit<ListRow, 'list_entries'> & { list_entries: EntryHead[] };
 
 export type NewListRow = Pick<
   ListRow,
@@ -320,7 +321,7 @@ export function isCloudId(id: string): boolean {
 }
 
 /** Returns the rows in list order: by position, then by id. */
-export function entryOrder(a: EntryRow, b: EntryRow): number {
+export function entryOrder(a: EntryHead, b: EntryHead): number {
   return a.position - b.position || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 }
 
@@ -342,17 +343,14 @@ export function entryMetaOf(e: {
   return m;
 }
 
-/** Returns the list page's shape of an account list; a key is set only when it holds
- *  something, as the local store keeps it. */
-export function toCloudList(row: ListRow): CloudList {
+/** Returns an account list with its entries' identities and no entry details; a key is set
+ *  only when it holds something. */
+export function toCloudHead(row: ListHead): CloudList {
   const entries = [...row.list_entries].sort(entryOrder);
-  const meta: Record<string, ListEntryMeta> = {};
   const entryIds: Record<string, string> = {};
   const links: Record<string, string> = {};
   for (const e of entries) {
     entryIds[e.item_key] = e.id;
-    const m = entryMetaOf(e);
-    if (Object.keys(m).length) meta[e.item_key] = m;
     if (e.source === 'homebrew' && e.hb_item) links[e.item_key] = e.hb_item;
   }
   const l: CloudList = {
@@ -366,8 +364,20 @@ export function toCloudList(row: ListRow): CloudList {
   if (row.money_mode === 'coin') l.money = 'coin';
   if (row.player_note) l.note = row.player_note;
   if (row.gm_note) l.hnote = row.gm_note;
-  if (Object.keys(meta).length) l.meta = meta;
   if (Object.keys(links).length) l.links = links;
+  return l;
+}
+
+/** Returns the list page's shape of an account list, its entries' details included; a key
+ *  is set only when it holds something. */
+export function toCloudList(row: ListRow): CloudList {
+  const l = toCloudHead(row);
+  const meta: Record<string, ListEntryMeta> = {};
+  for (const e of row.list_entries) {
+    const m = entryMetaOf(e);
+    if (Object.keys(m).length) meta[e.item_key] = m;
+  }
+  if (Object.keys(meta).length) l.meta = meta;
   return l;
 }
 
@@ -456,9 +466,21 @@ export function sameProjection(a: SharedRow, b: SharedRow): boolean {
   );
 }
 
-/** Returns the shared page's shape of a share link's list, as a `#/l/` payload decodes:
- *  the entries in their order, an entry the data does not know dropped and counted. */
-export function sharedListOf(row: SharedRow, knows: (id: string) => boolean): DecodedList {
+/** The shared page's shape of a share link's list. */
+export interface SharedList {
+  name: string;
+  ids: string[];
+  money?: MoneyMode;
+  note?: string;
+  hnote?: string;
+  meta?: Record<string, ListEntryMeta>;
+  /** How many entries the projection held that the reader's index does not know. */
+  dropped: number;
+}
+
+/** Returns the shared page's shape of a share link's list: the entries in their order, an
+ *  entry the data does not know dropped and counted. */
+export function sharedListOf(row: SharedRow, knows: (id: string) => boolean): SharedList {
   const ids: string[] = [];
   const meta: Record<string, ListEntryMeta> = {};
   let dropped = 0;
@@ -471,7 +493,7 @@ export function sharedListOf(row: SharedRow, knows: (id: string) => boolean): De
     const m = entryMetaOf(e);
     if (Object.keys(m).length) meta[e.item_key] = m;
   }
-  const d: DecodedList = { name: row.list.name, ids, dropped };
+  const d: SharedList = { name: row.list.name, ids, dropped };
   if (row.list.money_mode === 'coin') d.money = 'coin';
   if (row.list.player_note) d.note = row.list.player_note;
   if (row.list.gm_note) d.hnote = row.list.gm_note;

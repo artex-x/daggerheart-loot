@@ -29,7 +29,7 @@
     index: Index;
     it: Record_;
     row: ActionRow;
-    /** The live `contextNote` (app.js 568-573): while a list is open, copying
+    /** The live `contextNote` (`git show 23c00a6^:app.js`): while a list is open, copying
      *  one of its entries appends the players' note it carries there. Passed
      *  in rather than looked up here - this component does not know what a
      *  list is. */

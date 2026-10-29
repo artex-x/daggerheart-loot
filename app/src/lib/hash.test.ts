@@ -11,7 +11,6 @@ import {
   canonicalHash,
   cardVersion,
   HOMEBREW_HASH,
-  previewUrl,
   homebrewItemHash,
   homebrewTabHash,
   itemHash,
@@ -22,7 +21,6 @@ import {
   recordHash,
   recordHref,
   sectionHash,
-  sharedListHash,
   shareHash,
   storedListHash,
   recordUrl,
@@ -324,7 +322,12 @@ describe('the account page', () => {
 
 describe('the homebrew pages', () => {
   it('reads `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`', () => {
-    expect(parseHash(HOMEBREW_HASH)).toEqual({ kind: 'homebrew', tab: 'items', key: null });
+    expect(parseHash(HOMEBREW_HASH)).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: {}
+    });
     expect(parseHash('#/homebrew/new')).toEqual({ kind: 'homebrewItem', key: null });
     expect(parseHash('#/homebrew/hb_emberaxeaaaaaaaa')).toEqual({
       kind: 'homebrewItem',
@@ -336,23 +339,32 @@ describe('the homebrew pages', () => {
     expect(parseHash('#/homebrew/sources')).toEqual({
       kind: 'homebrew',
       tab: 'sources',
-      key: null
+      key: null,
+      filter: {}
     });
-    expect(parseHash('#/homebrew/sets')).toEqual({ kind: 'homebrew', tab: 'sets', key: null });
+    expect(parseHash('#/homebrew/sets')).toEqual({
+      kind: 'homebrew',
+      tab: 'sets',
+      key: null,
+      filter: {}
+    });
     expect(parseHash('#/homebrew/rules')).toEqual({
       kind: 'homebrew',
       tab: 'rules',
-      key: null
+      key: null,
+      filter: {}
     });
     expect(parseHash('#/homebrew/sets/hb_aldersetaaaaaaaa')).toEqual({
       kind: 'homebrew',
       tab: 'sets',
-      key: 'hb_aldersetaaaaaaaa'
+      key: 'hb_aldersetaaaaaaaa',
+      filter: {}
     });
     expect(parseHash('#/homebrew/rules/hb_alderrulecardaaa')).toEqual({
       kind: 'homebrew',
       tab: 'rules',
-      key: 'hb_alderrulecardaaa'
+      key: 'hb_alderrulecardaaa',
+      filter: {}
     });
   });
 
@@ -371,12 +383,52 @@ describe('the homebrew pages', () => {
       ['rules', null],
       ['rules', 'hb_alderrulecardaaa']
     ] as const) {
-      expect(parseHash(homebrewTabHash(tab, key))).toEqual({ kind: 'homebrew', tab, key });
+      expect(parseHash(homebrewTabHash(tab, key))).toEqual({
+        kind: 'homebrew',
+        tab,
+        key,
+        filter: {}
+      });
     }
+  });
+
+  it('reads the Items tab filter, any number of sources among its values', () => {
+    expect(parseHash('#/homebrew/f_kind-item.src-hb-hb_alderworkshopaaa')).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: { kind: ['item'], src: ['hb', 'hb_alderworkshopaaa'] }
+    });
+    expect(parseHash('#/homebrew/f_')).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: {}
+    });
+  });
+
+  it('builds the Items tab filter address and reads it back, with nothing for no value', () => {
+    for (const filter of [
+      { kind: ['consumable'] },
+      { src: ['hb', 'hb_alderworkshopaaa'] },
+      { kind: ['item', 'equip'], src: ['hb_alderworkshopaaa'], sect: ['hb_sectbladesaaaaaa'] }
+    ]) {
+      const hash = homebrewTabHash('items', null, filter);
+      expect(hash).toMatch(/^#\/homebrew\/f_/);
+      expect(parseHash(hash)).toEqual({ kind: 'homebrew', tab: 'items', key: null, filter });
+    }
+    expect(homebrewTabHash('items', null, {})).toBe('#/homebrew');
+    expect(homebrewTabHash('items', null, { kind: [] })).toBe('#/homebrew');
+    expect(homebrewTabHash('items', null, { tier: ['1'] })).toBe('#/homebrew');
+    expect(homebrewTabHash('sets', null, { kind: ['item'] })).toBe('#/homebrew/sets');
   });
 
   it('reads any other homebrew address as unreadable', () => {
     for (const h of [
+      '#/homebrew/f_kind-item/x',
+      '#/homebrew/f_kind-item%',
+      '#/homebrew/sources/f_kind-item',
+      '#/homebrew/sets/f_kind-item',
       '#/homebrew/',
       '#/homebrew/items',
       '#/homebrew/sources/hb_aldersetaaaaaaaa',
@@ -429,17 +481,16 @@ describe('the homebrew pages', () => {
   });
 });
 
-describe('a shared-list payload with a stray trailing character (R5)', () => {
-  it('still routes to the shared-list page rather than falling to unknown', () => {
-    /* A chat client swallowing a trailing full stop is the reachable case:
-       the old character-class regex rejected the whole address and sent it
-       home; the payload is read as written and decoding it is decodeList's
-       job, not the router's. */
-    expect(parseHash('#/l/ABC.')).toEqual({
-      kind: 'sharedList',
-      payload: 'ABC.',
-      packed: false
-    });
+describe('an old list link', () => {
+  it('reads every #/l/ address as retired, plain, packed, empty or with a stray character', () => {
+    for (const h of ['#/l/x', '#/l/~x', '#/l/', '#/l/ABC.']) {
+      expect(parseHash(h), h).toEqual({ kind: 'listRetired' });
+    }
+  });
+
+  it('leaves an address that only starts like one unknown', () => {
+    expect(parseHash('#/lx')).toEqual({ kind: 'unknown' });
+    expect(parseHash('#/list')).toEqual({ kind: 'unknown' });
   });
 });
 
@@ -685,21 +736,9 @@ describe('writing an address', () => {
     }
   });
 
-  it('round-trips a record, a stored list and a shared list', () => {
+  it('round-trips a record and a stored list', () => {
     expect(parseHash(recordHash('w12'))).toEqual({ kind: 'record', id: 'w12' });
     expect(parseHash(storedListHash('abc'))).toEqual({ kind: 'storedList', listId: 'abc' });
-    /* The writer only ever produces the plain form; `packed` is set by the `~`
-       prefix, which the compressor adds. */
-    expect(parseHash(sharedListHash('eyJhIjoxfQ'))).toEqual({
-      kind: 'sharedList',
-      payload: 'eyJhIjoxfQ',
-      packed: false
-    });
-    expect(parseHash(sharedListHash('~abc'))).toEqual({
-      kind: 'sharedList',
-      payload: '~abc',
-      packed: true
-    });
   });
 
   it('writes a table with a filter that reads back as the same filter', () => {
@@ -738,68 +777,54 @@ describe('writing an address', () => {
 });
 
 describe('a link to hand somebody else', () => {
-  const host = { base: 'https://e.test/loot/' };
+  const host = { base: 'https://e.test/' };
 
-  it('leaves index.html off, because the server serves the directory', () => {
-    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+  it('writes the path form from the app root', () => {
+    expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/lists');
+    expect(appUrl({ base: 'https://e.test' }, '#/lists', 'ru')).toBe('https://e.test/lists');
   });
 
-  it('sends a record to its stub page', () => {
-    /* The stub carries the record's Open Graph tags, which is what makes a
+  it('sends a record to its card path, extensionless', () => {
+    /* The host answers it with the record's Open Graph tags, which is what makes a
        pasted link unfurl in Telegram or Discord with the picture and the name. */
-    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/loot/i/w1.html');
+    expect(recordUrl(host, 'w1', 'ru')).toBe('https://e.test/i/w1');
   });
 
-  it('sends an English record to its English stub', () => {
-    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/loot/i/en/w1.html');
+  it('sends an English record to its English card path', () => {
+    expect(recordUrl(host, 'w1', 'en')).toBe('https://e.test/i/en/w1');
   });
 
-  it('sends an English address through the English entry document', () => {
-    expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/loot/en/#/lists');
-    expect(appUrl(host, '#/lists', 'ru')).toBe('https://e.test/loot/#/lists');
-    expect(appUrl(host, '#/lists')).toBe('https://e.test/loot/#/lists');
+  it('puts /en/ before an English address and adds v when given', () => {
+    expect(appUrl(host, '#/lists', 'en')).toBe('https://e.test/en/lists');
+    expect(appUrl(host, '#/p/AbCdEf123456', 'ru', 'k3')).toBe(
+      'https://e.test/p/AbCdEf123456?v=k3'
+    );
   });
 
   it('lands on an address the app can read back', () => {
-    const r = parseHash(appUrl(host, recordHash('w1')).split('/loot/')[1] ?? '');
+    const r = parseHash('#' + new URL(appUrl(host, recordHash('w1'), 'ru')).pathname);
     expect(r).toEqual({ kind: 'record', id: 'w1' });
   });
 });
 
-interface PreviewFixture {
-  origin: string;
-  build: { hash: string; lang: 'ru' | 'en'; v?: string; url: string | null; why: string }[];
+interface RecordFixture {
+  site: string;
+  build: { id: string; lang: 'ru' | 'en'; v?: string; url: string; why: string }[];
 }
 
-const PREVIEW = JSON.parse(
+const RECORD = JSON.parse(
   readFileSync(
-    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'urls', 'preview.json'),
+    join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'urls', 'record.json'),
     'utf8'
   )
-) as PreviewFixture;
+) as RecordFixture;
 
-describe('a preview link, docs/fixtures/urls/preview.json', () => {
-  for (const c of PREVIEW.build) {
-    it(`${c.hash} (${c.lang}) - ${c.why}`, () => {
-      expect(previewUrl(PREVIEW.origin, c.hash, c.lang, c.v)).toBe(c.url);
+describe('a record link, docs/fixtures/urls/record.json', () => {
+  for (const c of RECORD.build) {
+    it(`${c.id} (${c.lang}, ${c.v ? 'with' : 'without'} a version) - ${c.why}`, () => {
+      expect(recordUrl({ base: RECORD.site }, c.id, c.lang, c.v)).toBe(c.url);
     });
   }
-
-  it('adds no v when none is given, and every link reads back as the hash', () => {
-    expect(previewUrl(PREVIEW.origin, printSetHash('AbCdEf123456'), 'ru')).toBe(
-      PREVIEW.origin + '/p/AbCdEf123456'
-    );
-    for (const c of PREVIEW.build) {
-      if (c.url === null) continue;
-      const path = new URL(c.url).pathname.replace(/^\/en\//, '/');
-      expect(parseHash('#' + path)).toEqual(parseHash(c.hash));
-    }
-  });
-
-  it('answers null for a family with nothing after it', () => {
-    for (const hash of ['#/h/', '#/s/', '#/p/', '#/tables/'])
-      expect(previewUrl(PREVIEW.origin, hash, 'ru')).toBeNull();
-  });
 });
 
 describe('cardVersion', () => {
@@ -817,6 +842,8 @@ describe('keepsTicks', () => {
 
   it('keeps the ticks between two «Мои предметы» tabs', () => {
     expect(keepsTicks(at('#/homebrew'), at('#/homebrew/sources'))).toBe(true);
+    expect(keepsTicks(at('#/homebrew'), at('#/homebrew/f_kind-item'))).toBe(true);
+    expect(keepsTicks(at('#/homebrew/f_kind-item'), at('#/homebrew/sets'))).toBe(true);
   });
 
   it('keeps the ticks between two #/tables/homebrew addresses', () => {

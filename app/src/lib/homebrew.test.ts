@@ -50,13 +50,12 @@ import {
   NAME_MAX,
   ownKeyFor
 } from './homebrew.js';
-import { buildIndex, madeFrom, setOf, upgradesTo, type Loot } from './data.js';
+import { buildIndex, madeFrom, setOf, upgradesTo } from './data.js';
 import type { Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'homebrew');
-const CATALOG = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const CATALOG = readLoot();
 const read = (name: string): unknown => JSON.parse(readFileSync(join(DIR, name), 'utf8'));
 
 interface Cases {

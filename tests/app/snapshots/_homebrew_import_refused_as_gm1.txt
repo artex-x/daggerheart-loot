@@ -4,22 +4,21 @@
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=index.html?as=gm1#/homebrew]
-  link "К содержимому" [url=index.html?as=gm1#main]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=/homebrew?as=gm1]
+  link "К содержимому" [url=/homebrew?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=index.html?as=gm1#/roll/std]
-      link "Альт. таблицы" [url=index.html?as=gm1#/roll/alt]
-      link "Дополнения" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Таблицы" [url=index.html?as=gm1#/tables]
-      link "Списки" [url=index.html?as=gm1#/lists]
-      link "Поиск" [url=index.html?as=gm1#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
@@ -36,14 +35,14 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
       StaticText "refs - больше 3 элементов "
       StaticText "items[11].refs"
     button "Отмена"
-    link "схеме homebrew-v2" [url=schema/homebrew-v2.json]
-    link "описание для ИИ-помощников" [url=llms.txt]
+    link "схеме homebrew-v2" [url=/schema/homebrew-v2.json]
+    link "описание для ИИ-помощников" [url=/llms.txt]
     navigation "Мои предметы"
-      link "Предметы" [url=index.html?as=gm1#/homebrew]
-      link "Источники" [url=index.html?as=gm1#/homebrew/sources]
-      link "Комплекты" [url=index.html?as=gm1#/homebrew/sets]
-      link "Карты правил" [url=index.html?as=gm1#/homebrew/rules]
-    link "Новый предмет" [url=index.html?as=gm1#/homebrew/new]
+      link "Предметы" [url=/homebrew]
+      link "Источники" [url=/homebrew/sources]
+      link "Комплекты" [url=/homebrew/sets]
+      link "Карты правил" [url=/homebrew/rules]
+    link "Новый предмет" [url=/homebrew/new]
     status ""
     StaticText "4 предмета из 100"
     checkbox "Выбрать все" [checked=false]
@@ -60,9 +59,9 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -94,7 +93,6 @@ daggerheart.com
 Отмена
 Поиск
 Предметы
-Списки
 Таблицы
 Топор Тлеющих Углей
 Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
@@ -104,22 +102,21 @@ daggerheart.com
 схеме homebrew-v2
 
 ## en :: tree
-RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/homebrew]
-  link "Skip to content" [url=index.html?as=gm1#main]
+RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
+  link "Skip to content" [url=/en/homebrew?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=index.html?as=gm1#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=index.html?as=gm1#/roll/std]
-      link "Alt. tables" [url=index.html?as=gm1#/roll/alt]
-      link "Supplements" [url=index.html?as=gm1#/roll/wondrous_environments]
-      link "Tables" [url=index.html?as=gm1#/tables]
-      link "Lists" [url=index.html?as=gm1#/lists]
-      link "Search" [url=index.html?as=gm1#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
@@ -136,14 +133,14 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
       StaticText "refs - more than 3 values "
       StaticText "items[11].refs"
     button "Cancel"
-    link "homebrew-v2 schema" [url=schema/homebrew-v2.json]
-    link "a description for AI assistants" [url=llms.txt]
+    link "homebrew-v2 schema" [url=/schema/homebrew-v2.json]
+    link "a description for AI assistants" [url=/llms.txt]
     navigation "My items"
-      link "Items" [url=index.html?as=gm1#/homebrew]
-      link "Sources" [url=index.html?as=gm1#/homebrew/sources]
-      link "Sets" [url=index.html?as=gm1#/homebrew/sets]
-      link "Rule cards" [url=index.html?as=gm1#/homebrew/rules]
-    link "New item" [url=index.html?as=gm1#/homebrew/new]
+      link "Items" [url=/en/homebrew]
+      link "Sources" [url=/en/homebrew/sources]
+      link "Sets" [url=/en/homebrew/sets]
+      link "Rule cards" [url=/en/homebrew/rules]
+    link "New item" [url=/en/homebrew/new]
     status ""
     StaticText "4 items of 100"
     checkbox "Select all" [checked=false]
@@ -160,9 +157,9 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=index.html?as=gm1#/home
     button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -177,7 +174,6 @@ How this works
 Import from file
 Install as an app
 Items
-Lists
 New item
 Open this section on start
 Privacy

@@ -3,26 +3,25 @@
 # why: a frame-equipment record, catching the source-badge fix
 
 ## ru :: tree
-RootWebArea "Тесак - Генератор лута Daggerheart" [url=#/i/f1]
-  link "К содержимому" [url=#main]
+RootWebArea "Тесак - Генератор лута Daggerheart" [url=/i/f1?v=<v>]
+  link "К содержимому" [url=/i/f1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Тесак" [level=1]
     StaticText "Прочее · Сеттинги · Пир зверей · Ранг 1 "
-    link "показать в таблице" [url=#/tables/other_frames/f1]
+    link "показать в таблице" [url=/tables/other_frames/f1]
     button "Страница"
     StaticText "ОСНОВНОЕ ОРУЖИЕ"
     ... StaticText x10 of 14 same-shape siblings elided
@@ -38,9 +37,9 @@ RootWebArea "Тесак - Генератор лута Daggerheart" [url=#/i/f1]
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -63,7 +62,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Условия использования
@@ -71,26 +69,25 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Cleaver - Daggerheart Loot Generator" [url=#/i/f1]
-  link "Skip to content" [url=#main]
+RootWebArea "Cleaver - Daggerheart Loot Generator" [url=/i/en/f1?v=<v>]
+  link "Skip to content" [url=/i/en/f1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Cleaver" [level=1]
     StaticText "Other · Frames · Beast Feast · Tier 1 "
-    link "show in the table" [url=#/tables/other_frames/f1]
+    link "show in the table" [url=/en/tables/other_frames/f1]
     button "Page"
     StaticText "PRIMARY WEAPON"
     ... StaticText x10 of 14 same-shape siblings elided
@@ -106,9 +103,9 @@ RootWebArea "Cleaver - Daggerheart Loot Generator" [url=#/i/f1]
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -120,7 +117,6 @@ Copy name
 Copy text
 EN
 Install as an app
-Lists
 Page
 Print
 Privacy

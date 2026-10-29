@@ -207,7 +207,7 @@
     cursor: pointer;
   }
 
-  /* off `style.css:1013`. The row clips everything past its edge, so an
+  /* off the row rule of `git show 23c00a6^:style.css`. The row clips everything past its edge, so an
      outside ring would only ever show one sliver of itself - a gold streak
      along the checkbox. It also fired from the mouse: `:focus-within` does
      not know how a control was reached. This rule keeps the ring inside and

@@ -8,8 +8,6 @@
  * refusal is reported rather than swallowed, and that the markup is one a
  * screen reader can follow. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
@@ -31,11 +29,14 @@ import {
   memoryStorage,
   noData
 } from '../ports/index.js';
-import type { Env } from '../ports/index.js';
+import type { CloudPort, Env } from '../ports/index.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { listOf, seedWith } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -170,7 +171,7 @@ const LOOT: Loot = {
         }
       }
     ],
-    /* Vault of Ages carries the tier word `app.js:3237` prints but the
+    /* Vault of Ages carries the tier word the live print card (`git show 23c00a6^:app.js`) prints but the
        Svelte rewrite dropped - an artifact and a cursed object, the two
        shapes the word takes. */
     voa: [
@@ -371,7 +372,7 @@ describe('a record on its own page', () => {
     render(App, { env: at('ci1') });
     expect(screen.getByRole('link', { name: 'Зелье выносливости' })).toHaveAttribute(
       'href',
-      '#/i/cc1'
+      '/i/cc1'
     );
 
     cleanup();
@@ -379,7 +380,7 @@ describe('a record on its own page', () => {
     /* The reverse direction is derived, not stored - see buildIndex. */
     expect(screen.getByRole('link', { name: 'Спальный мешок' })).toHaveAttribute(
       'href',
-      '#/i/ci1'
+      '/i/ci1'
     );
   });
 
@@ -446,13 +447,13 @@ describe('a record on its own page', () => {
     render(App, { env: at('ci1') });
     expect(screen.getByRole('link', { name: /показать в таблице/ })).toHaveAttribute(
       'href',
-      '#/tables/core_item/ci1'
+      '/tables/core_item/ci1'
     );
   });
 
   it('shows the placeholder for a record with no art', () => {
     render(App, { env: at('ci2') });
-    expect(screen.getByRole('presentation')).toHaveAttribute('src', 'img/_none.webp');
+    expect(screen.getByRole('presentation')).toHaveAttribute('src', '/img/_none.webp');
   });
 
   it('falls back to the placeholder when the file fails to load', async () => {
@@ -460,11 +461,11 @@ describe('a record on its own page', () => {
        not shift, so the failure lands on the same placeholder. */
     const { container } = render(App, { env: at('ci1') });
     const img = container.querySelector('img');
-    expect(img).toHaveAttribute('src', 'img/ci1.webp');
+    expect(img).toHaveAttribute('src', '/img/ci1.webp');
 
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
   });
 
   it('offers no copy-image button for a record with no art at all', () => {
@@ -500,13 +501,13 @@ describe('a record on its own page', () => {
     const { container } = render(App, { env });
     container.querySelector('img')?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
 
-    env.router.navigate('#/i/cc1');
+    env.router.navigate('#/i/cc1', 'ru');
     await tick();
-    env.router.navigate('#/i/ci1');
+    env.router.navigate('#/i/ci1', 'ru');
     await tick();
-    expect(container.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
   });
 });
 
@@ -581,7 +582,7 @@ describe('a link that no longer resolves', () => {
     );
     expect(container.querySelector('.miss')).toBeNull();
     const link = screen.getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '#/roll/std');
+    expect(link).toHaveAttribute('href', '/roll/std');
     expect(link.className).toContain('btn');
     expect(link.className).toContain('primary');
     await expectNoA11yViolations(container);
@@ -619,18 +620,28 @@ describe('taking a record somewhere else', () => {
     const { env, clip } = withClip();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
+  });
+
+  it("copies the stub link with the record's card version when the build's map holds it", async () => {
+    const clip = fakeClipboard();
+    render(App, {
+      env: at('cc1', { clipboard: clip, data: fakeData(LOOT, { cc1: 'k3x9a1' }) })
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
+    expect(clip.last.text).toBe('https://example.test/i/cc1?v=k3x9a1');
   });
 
   it('copies the English stub in English', async () => {
     const clip = fakeClipboard();
     const env = at('cc1', {
       clipboard: clip,
-      storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+      storage: memoryStorage({ 'dhloot.lang.v1': 'en' }),
+      data: fakeData(LOOT, { cc1: 'k3x9a1' })
     });
     const { container } = render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Copy link' }));
-    expect(clip.last.text).toBe('https://example.test/i/en/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/en/cc1?v=k3x9a1');
     await expectNoA11yViolations(container);
   });
 
@@ -658,7 +669,7 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { share: fakeShare({ available: false }), clipboard: clip })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
   it('shares the full text, not just the name', async () => {
@@ -745,7 +756,7 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { share: fakeShare({ result: 'failed' }), clipboard: clip })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
   });
 
   it('keeps the stub link of a catalog record in a build with a preview host', async () => {
@@ -755,9 +766,9 @@ describe('taking a record somewhere else', () => {
       env: at('cc1', { clipboard: clip, share, preview: 'https://daggerheart-loot.pages.dev' })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать ссылку' }));
-    expect(clip.last.text).toBe('https://example.test/i/cc1.html');
+    expect(clip.last.text).toBe('https://example.test/i/cc1');
     await userEvent.click(screen.getByRole('button', { name: 'Отправить' }));
-    expect(share.last.url).toBe('https://example.test/i/cc1.html');
+    expect(share.last.url).toBe('https://example.test/i/cc1');
   });
 });
 
@@ -827,12 +838,12 @@ describe('the tier ladder', () => {
     /* Without `app.menuFor = ''` on every close path, the card's add-to-list
        menu, left open when a modal closes, is still `open` the next time the
        same record's modal is shown - `aria-expanded="true"`, menu drawn. */
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
     );
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -843,16 +854,16 @@ describe('the tier ladder', () => {
       'aria-expanded',
       'false'
     );
-    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
   });
 
   it('folds the same menu when the modal closes through the backdrop', async () => {
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     await userEvent.click(
       within(screen.getByRole('dialog')).getByRole('button', { name: 'Добавить в список' })
     );
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole('dialog'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -883,16 +894,16 @@ describe('the tier ladder', () => {
   });
 
   it('closes the add-to-list menu on Escape and returns focus to its toggle, leaving the modal open', async () => {
-    render(App, { env: at('q1') });
+    render(App, { env: at('q1', { cloud: fakeCloud(SEED) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const toggle = within(screen.getByRole('dialog')).getByRole('button', {
       name: 'Добавить в список'
     });
     await userEvent.click(toggle);
-    expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+ Новый список' })).toBeInTheDocument();
 
     await userEvent.keyboard('{Escape}');
-    expect(screen.queryByText('Лежит в списках')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '+ Новый список' })).not.toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the
@@ -904,28 +915,29 @@ describe('the tier ladder', () => {
 describe('the undo toast while the record dialog is open', () => {
   /* A modal dialog makes everything outside it inert, so the toast an action
      inside it raises is drawn inside it (docs/DECISIONS.md, 2026-09-24). */
-  const inList = (): Env =>
-    at('q1', {
-      storage: memoryStorage({
-        'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Клад', ids: ['q2'], created: 1 }])
-      })
-    });
+  const inList = () => {
+    const cloud = fakeCloud(seedWith({ gm4: [listOf(851, 'Клад', [{ key: 'q2' }])] }), 'gm4');
+    const page = fakePage();
+    return { env: at('q1', { cloud, page }), cloud, page };
+  };
   const removeFromList = async (): Promise<HTMLElement> => {
+    await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
     await userEvent.click(screen.getByRole('button', { name: 'Улучшенный Палаш' }));
     const dialog = screen.getByRole('dialog');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Клад' }));
+    await userEvent.click(await within(dialog).findByRole('button', { name: 'Клад' }));
     return dialog;
   };
-  const stored = (env: Env): string[] =>
-    (JSON.parse(env.storage.get('dhloot.lists.v2') ?? '[]') as { ids: string[] }[])[0]?.ids ??
-    [];
+  const stored = async (x: {
+    cloud: CloudPort;
+    page: { fireHidden(): void };
+  }): Promise<string[]> => (await readList(x.cloud, x.page, uuid(851)))?.ids ?? [];
 
   it('draws the undo toast inside the open dialog, focused, and runs the undo', async () => {
-    const env = inList();
-    render(App, { env });
+    const held = inList();
+    render(App, { env: held.env });
     const dialog = await removeFromList();
-    expect(stored(env)).toEqual([]);
+    expect(await stored(held)).toEqual([]);
 
     const status = within(dialog).getByRole('status');
     const undo = within(status).getByRole('button', { name: 'Вернуть' });
@@ -934,12 +946,12 @@ describe('the undo toast while the record dialog is open', () => {
     await expectNoA11yViolations(dialog);
 
     await userEvent.click(undo);
-    expect(stored(env)).toEqual(['q2']);
+    expect(await stored(held)).toEqual(['q2']);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it("returns focus to the dialog's close button when the element it came from is gone", async () => {
-    render(App, { env: inList() });
+    render(App, { env: inList().env });
     const dialog = await removeFromList();
     const undo = within(dialog).getByRole('button', { name: 'Вернуть' });
     await vi.waitFor(() => {
@@ -955,7 +967,7 @@ describe('the undo toast while the record dialog is open', () => {
   });
 
   it("hands the toast to the page's own copy when the dialog closes", async () => {
-    render(App, { env: inList() });
+    render(App, { env: inList().env });
     const dialog = await removeFromList();
     await userEvent.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -973,9 +985,7 @@ describe('the undo toast while the record dialog is open', () => {
 describe('a craft chain that runs through the record', () => {
   /* Frostwyrd (Awakened) from the real data: made from Dormant, upgrades to
      Exalted, and a named weapon rather than a rung of a tier ladder. */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const awakened = (): Env =>
     fakeEnv({ router: memoryRouter('#/i/dve25'), data: fakeData(REAL) });
 
@@ -994,11 +1004,11 @@ describe('a craft chain that runs through the record', () => {
     expect(fromPath).not.toBe(intoPath);
     expect(within(into).getByRole('link', { name: 'Фроствирд (Возвышенный)' })).toHaveAttribute(
       'href',
-      '#/i/dve26'
+      '/i/dve26'
     );
     expect(within(from).getByRole('link', { name: 'Фроствирд (Дремлющий)' })).toHaveAttribute(
       'href',
-      '#/i/dve24'
+      '/i/dve24'
     );
     expect(screen.getByText('Уникальное')).toBeInTheDocument();
     expect(container.querySelector('.step')).toBeNull();
@@ -1025,7 +1035,7 @@ describe('a craft chain that runs through the record', () => {
       within(into)
         .getAllByRole('link')
         .map((a) => a.getAttribute('href'))
-    ).toEqual(['#/i/ci2', '#/i/cc1']);
+    ).toEqual(['/i/ci2', '/i/cc1']);
     expect(into).toHaveTextContent('Улучшается до Мел, Зелье выносливости');
     await expectNoA11yViolations(container);
   });
@@ -1034,9 +1044,7 @@ describe('a craft chain that runs through the record', () => {
 describe('a feature an item grants an adversary', () => {
   /* Nightshroud from the real data: its text stops where the book's does, and
      Slow travels as a folded referenced card (I18N.md, "Rules"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const nightshroud = (): Env =>
     fakeEnv({ router: memoryRouter('#/i/dve66'), data: fakeData(REAL) });
 
@@ -1070,9 +1078,7 @@ describe('a consumable artifact', () => {
   /* Narvik Contract from the real data: the book prints it among the
      artifacts, so its section names it, with its roll inside that section. */
   it('names the Artifacts section and its roll in the path line', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/voa4_a2'), data: fakeData(REAL) })
     });
@@ -1094,7 +1100,7 @@ describe('the set line', () => {
     expect(own).toHaveAttribute('aria-current', 'true');
     expect(within(line).getByRole('link', { name: 'Второй клинок' })).toHaveAttribute(
       'href',
-      '#/i/s2'
+      '/i/s2'
     );
     /* Svelte's whitespace collapsing at a tag boundary can eat the space
        after the comma, so the test reads the whole line's text. */
@@ -1113,7 +1119,7 @@ describe('the set line', () => {
     expect(within(line).getByText('Второй клинок')).toHaveAttribute('aria-current', 'true');
     expect(within(line).getByRole('link', { name: 'Первый клинок' })).toHaveAttribute(
       'href',
-      '#/i/s1'
+      '/i/s1'
     );
   });
 
@@ -1121,6 +1127,9 @@ describe('the set line', () => {
     for (const id of ['s1', 's2']) {
       render(App, { env: at(id) });
       const label = screen.getByText('Двойное лезвие:');
+      /* The set name leads the bonus as a feature name: bold italic. */
+      expect(label.tagName).toBe('I');
+      expect(label.parentElement?.tagName).toBe('B');
       const line = label.closest('.set-bonus');
       expect(line?.previousElementSibling?.textContent).toContain('Комплект');
       expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe(
@@ -1130,15 +1139,23 @@ describe('the set line', () => {
     }
   });
 
+  it('draws the set name in bold italic in English too', async () => {
+    const { container } = render(App, {
+      env: at('s1', { storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
+    });
+    const label = screen.getByText('Twin Edge:');
+    expect(label.tagName).toBe('I');
+    expect(label.parentElement?.tagName).toBe('B');
+    await expectNoA11yViolations(container);
+  });
+
   it('draws no set line for a record outside any set', () => {
     render(App, { env: at('q1') });
     expect(screen.queryByText('Комплект')).not.toBeInTheDocument();
   });
 
   it('draws the real Ember and Spark bonus on Ember', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/i/dve19'), data: fakeData(REAL) })
     });
@@ -1196,11 +1213,11 @@ describe('an own homebrew item', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'показать в таблице' })).toHaveAttribute(
       'href',
-      '#/tables/homebrew/' + AXE
+      '/tables/homebrew/' + AXE
     );
     expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
       'href',
-      '#/homebrew/' + AXE
+      '/homebrew/' + AXE
     );
     expect(screen.getByRole('button', { name: 'Скопировать ссылку' })).toBeInTheDocument();
     /* The seeded axe carries the catalog picture ci1.webp. */
@@ -1238,7 +1255,7 @@ describe('an own homebrew item', () => {
       props: { ...props, artBroken: true, onartfail: failed }
     });
     expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
-      'img/_none.webp'
+      '/img/_none.webp'
     );
   });
 
@@ -1313,11 +1330,11 @@ describe('an own homebrew item', () => {
     const { container } = render(App, { env: own({ cloud }) });
     expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
       'href',
-      '#/homebrew/rules/hb_alderrulecardaaa'
+      '/homebrew/rules/hb_alderrulecardaaa'
     );
     await expectNoA11yViolations(container);
   });
@@ -1346,7 +1363,7 @@ describe('an own homebrew item', () => {
     const view = render(RecordModal, { app, index, it: ring, onclose: () => {} });
     expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     view.unmount();
     render(RecordModal, {
@@ -1360,17 +1377,19 @@ describe('an own homebrew item', () => {
   });
 
   it('sends its item address, and with no share sheet copies that address', async () => {
-    const ITEM_URL = 'https://example.test/#/h/00000000-0000-4000-8000-000000000511';
+    /* The item's path on the app's own origin, versioned by its card. */
+    const ITEM_URL =
+      /^https:\/\/example\.test\/h\/00000000-0000-4000-8000-000000000511\?v=[0-9a-z]+$/;
     const share = fakeShare();
     render(App, { env: own({ share }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(share.last.url).toBe(ITEM_URL);
+    expect(share.last.url).toMatch(ITEM_URL);
     expect(share.last.text).toContain('Топор Тлеющих Углей');
     cleanup();
     const clip = fakeClipboard();
     render(App, { env: own({ share: fakeShare({ available: false }), clipboard: clip }) });
     await userEvent.click(await screen.findByRole('button', { name: 'Отправить' }));
-    expect(clip.last.text).toBe(ITEM_URL);
+    expect(clip.last.text).toMatch(ITEM_URL);
   });
 
   it("hands out the preview link with the record's version from «Отправить» and the link button", async () => {
@@ -1464,7 +1483,7 @@ describe('an own homebrew item', () => {
     render(RecordModal, { app, index, it: axe, onclose: () => {} });
     expect(screen.getByRole('link', { name: 'Изменить' })).toHaveAttribute(
       'href',
-      '#/homebrew/' + AXE
+      '/homebrew/' + AXE
     );
     cleanup();
     const ci1 = index.byId.get('ci1');
@@ -1516,7 +1535,7 @@ describe('an own homebrew item', () => {
       within(plain)
         .getAllByRole('link')
         .map((a) => a.getAttribute('href'))
-    ).toEqual(['#/homebrew/rules/' + bare]);
+    ).toEqual(['/homebrew/rules/' + bare]);
     await expectNoA11yViolations(container);
   });
 });
@@ -1524,9 +1543,7 @@ describe('an own homebrew item', () => {
 describe("the author's own relations on a catalog card", () => {
   /* The real catalog with gm3's 34 seeded items: 15 made from ci1, 15 in q1's line and
      4 in saints-ensemble (docs/specs/FEATURES.md, "Records"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const catalog = buildIndex(REAL);
   const gm3 = SEED.homebrew.gm3.items.map((i) => recordOf(i.key, i.content, null));
   const index = withRecords(catalog, gm3, []);
@@ -1716,11 +1733,15 @@ describe("the author's own relations on a catalog card", () => {
     const { container } = draw(true);
     expect(screen.getByRole('link', { name: 'Свой комплект' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/hb_ownsetaaaaaaaaaa'
+      '/homebrew/sets/hb_ownsetaaaaaaaaaa'
     );
+    /* The own set's link stays inside the bold-italic lead. */
+    expect(
+      screen.getByRole('link', { name: 'Свой комплект' }).closest('.set-bonus b > i')
+    ).not.toBeNull();
     const manageLinks = screen.getAllByRole('link', { name: 'Открыть в «Мои предметы»' });
     expect(manageLinks.map((a) => a.getAttribute('href'))).toEqual([
-      '#/homebrew/rules/hb_ownrulecardaaaaa'
+      '/homebrew/rules/hb_ownrulecardaaaaa'
     ]);
     await expectNoA11yViolations(container);
     cleanup();
@@ -1742,7 +1763,7 @@ describe("the author's own relations on a catalog card", () => {
       }
     });
     expect(screen.queryByRole('link', { name: 'Открыть в «Мои предметы»' })).toBeNull();
-    expect(document.querySelector('a[href^="#/homebrew/sets/"]')).toBeNull();
+    expect(document.querySelector('a[href^="/homebrew/sets/"]')).toBeNull();
   });
 
   it('draws no mark and no fold for a reader with no own items', async () => {
@@ -1761,9 +1782,7 @@ describe("the author's own relations on a catalog card", () => {
 describe("the account's own card on a book item", () => {
   /* The real catalog; gm1's seeded set card and rule card hold book items in `items`
      (docs/specs/FEATURES.md, "Homebrew", "Cards"). */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const catalog = buildIndex(REAL);
   const SET = 'hb_aldersetaaaaaaaa';
   const RULE = 'hb_alderrulecardaaa';
@@ -1810,14 +1829,14 @@ describe("the account's own card on a book item", () => {
     });
     expect(await screen.findByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     const line = setLine(container);
     expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe('Комплект Палаш, Длинный Меч');
     expect(screen.getByText('Клеймо Ольхи')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Открыть в «Мои предметы»' })).toHaveAttribute(
       'href',
-      '#/homebrew/rules/' + RULE
+      '/homebrew/rules/' + RULE
     );
     await expectNoA11yViolations(container);
     cleanup();
@@ -1925,7 +1944,7 @@ describe("the account's own card on a book item", () => {
     const more = within(line).getByRole('button', { name: 'и ещё 96' });
     expect(screen.getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/' + SET
+      '/homebrew/sets/' + SET
     );
     await userEvent.click(more);
     expect(line.querySelectorAll('a')).toHaveLength(99);

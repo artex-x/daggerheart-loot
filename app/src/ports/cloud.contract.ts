@@ -7,16 +7,18 @@
  * port does belongs here; what depends on the fake's seed stays in its own
  * tests (docs/specs/COVERAGE.md, "Test layers"). Each release appends the
  * cases for the port member it adds: A-F the account, G the lists, H the
- * share links, I the move of a browser list, J the live topics, K the purchase
+ * share links, J the live topics, K the purchase
  * requests, L the import of a lists file, M the homebrew rows, N the homebrew cards, O the
  * import of a homebrew file and the bulk move, P the GM-only entries, R the live links
- * across accounts, S the print sets, Q the own pictures of homebrew items. */
+ * across accounts, S the print sets, Q the own pictures of homebrew items. I (the move of a
+ * browser list) was retired at R10 and its letter is not reused. */
 
 import { newArtName, thumbOf } from '../lib/art.js';
 import {
   heldSnapshots,
   type EntryRow,
   type ImportRow,
+  type ListHead,
   type ListRow,
   type SharedRow
 } from '../lib/cloudLists.js';
@@ -31,7 +33,12 @@ import {
   type HomebrewContent
 } from '../lib/homebrew.js';
 import type { HomebrewImportRows } from '../lib/homebrewFile.js';
-import { readOwnerMessage, readRequestMessage, readShareMessage } from '../lib/live.js';
+import {
+  readOwnerMessage,
+  readRequestMessage,
+  readShareMessage,
+  readShareRequestMessage
+} from '../lib/live.js';
 import type { Prefs } from '../lib/prefs.js';
 import type { NoticeRow } from '../lib/requests.js';
 import type { CloudPort, ListWrites, LiveStatus, Session } from './types.js';
@@ -85,23 +92,27 @@ async function listsOf(
   port: CloudPort,
   assert: Assert,
   when: string
-): Promise<ListRow[] | null> {
+): Promise<ListHead[] | null> {
   const read = await port.lists.list();
   assert(read.ok, 'lists: ' + when + ', list() is not ok');
   return read.ok ? read.lists : null;
 }
 
-/** The one list with `id`, or null when there is not exactly one. */
+/** The one list with `id` read whole (`rows`), or null when there is not exactly one. */
 async function theList(
   port: CloudPort,
   id: string,
   assert: Assert,
   when: string
 ): Promise<ListRow | null> {
-  const found = ((await listsOf(port, assert, when)) ?? []).filter((l) => l.id === id);
+  const read = await port.lists.rows([id]);
+  assert(read.ok, 'lists: ' + when + ', rows() is not ok');
+  const found = (read.ok ? read.lists : []).filter((l) => l.id === id);
   assert(found.length === 1, 'lists: ' + when + ', not exactly one list with the id');
   return found[0] ?? null;
 }
+
+const HEAD_KEYS = 'hb_item,id,item_key,position,source';
 
 const view = (e: EntryRow): string =>
   [e.item_key, e.quantity, e.price_coins, e.player_note, e.gm_note].join('|');
@@ -141,6 +152,52 @@ async function listCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(
     got?.list_entries.map(view).join(';') === 'ci1|2|150|a|;q1|1|||b',
     'lists: the entries do not read back in order'
+  );
+  /* The first read carries each entry's identity and place only: no note, quantity, price
+     or GM-only flag (docs/decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md). */
+  const heads = ((await listsOf(port, assert, 'after create')) ?? []).find((l) => l.id === id);
+  assert(
+    !!heads &&
+      heads.list_entries.length === 2 &&
+      heads.list_entries.every((e) => Object.keys(e).sort().join(',') === HEAD_KEYS),
+    'lists: an entry of the first read does not carry exactly ' +
+      HEAD_KEYS +
+      ': ' +
+      JSON.stringify(heads?.list_entries[0] ?? null)
+  );
+  const other = lists.newId();
+  const otherEntry = lists.newId();
+  assert(
+    answered(
+      await lists.apply([
+        {
+          op: 'create',
+          list: { id: other, name: 'Второй', money_mode: 'bag', player_note: '', gm_note: '' },
+          entries: [entryOf(otherEntry, 'ci2', 0, { player_note: 'x' })]
+        }
+      ])
+    ) === 'ok',
+    'lists: the second create was refused'
+  );
+  const both = await lists.rows([id, other, lists.newId()]);
+  const byId = new Map((both.ok ? both.lists : []).map((l) => [l.id, l]));
+  assert(
+    both.ok &&
+      both.lists.length === 2 &&
+      byId.get(id)?.list_entries.map(view).join(';') === 'ci1|2|150|a|;q1|1|||b' &&
+      byId.get(other)?.list_entries.map(view).join(';') === 'ci2|1||x|',
+    'lists: rows() of two lists and an unknown id does not answer both whole and nothing else'
+  );
+  const none = await lists.rows([]);
+  assert(none.ok && none.lists.length === 0, 'lists: rows() of no ids is not ok and empty');
+  assert(
+    answered(await lists.apply([{ op: 'remove', id: other }])) === 'ok',
+    'lists: a removal of the second list was refused'
+  );
+  const removedRows = await lists.rows([other]);
+  assert(
+    removedRows.ok && removedRows.lists.length === 0,
+    'lists: rows() of a removed list answers it'
   );
 
   const edits = await lists.apply([
@@ -417,68 +474,6 @@ async function shareCases(port: CloudPort, assert: Assert): Promise<void> {
   assert(!nobody.ok && nobody.error === 'refused', 'shares: a share of no list was made');
 }
 
-/* The most a catalog-size move may take, client wall clock with the upload and PostgREST;
-   the `authenticated` role's 8 s statement timeout bounds only the database's part. */
-const MOVE_MS = 6000;
-
-async function moveCases(
-  port: CloudPort,
-  assert: Assert,
-  log: (msg: string) => void
-): Promise<void> {
-  const { lists } = port;
-  const text = JSON.stringify({
-    hnote: 'g',
-    ids: ['ci1', 'q1', 'zz_unknown'],
-    meta: { ci1: { gold: 150, note: 'a', qty: 2 }, q1: { hnote: 'b' } },
-    money: 'coin',
-    name: 'Перенос',
-    note: 'p'
-  });
-  const id = lists.newId();
-  const first = await lists.move(id, text);
-  assert(
-    first.ok && first.id === id && first.inserted,
-    'move: the first move answered ' + JSON.stringify(first)
-  );
-  const again = await lists.move(lists.newId(), text);
-  assert(
-    again.ok && again.id === id && !again.inserted,
-    'move: the same text again answered ' + JSON.stringify(again)
-  );
-  const got = await theList(port, id, assert, 'after the move');
-  assert(
-    /^[0-9a-f]{64}$/.test(got?.legacy_fingerprint ?? ''),
-    'move: the row has no 64-hex fingerprint'
-  );
-  assert(
-    got?.name === 'Перенос' &&
-      got.money_mode === 'coin' &&
-      got.player_note === 'p' &&
-      got.gm_note === 'g',
-    'move: the list does not read back as moved'
-  );
-  assert(
-    got?.list_entries.map(view).join(';') === 'ci1|2|150|a|;q1|1|||b;zz_unknown|1|||',
-    'move: the entries do not read back in order'
-  );
-  const bad = await lists.move(lists.newId(), '{"ids":["a b"]}');
-  assert(!bad.ok && bad.error === 'refused', 'move: a text that is not a list was taken');
-
-  /* A catalog-size list: the move is one statement pair, timed at the client with the upload;
-     the 8 s statement timeout bounds only the database's part. */
-  const ids = Array.from({ length: 1300 }, (_, i) => 'r' + String(i).padStart(4, '0'));
-  const meta = Object.fromEntries(
-    ids.filter((_, i) => i % 10 === 0).map((k) => [k, { note: 'n ' + k }])
-  );
-  const started = Date.now();
-  const big = await lists.move(lists.newId(), JSON.stringify({ ids, meta, name: 'e2e 1300' }));
-  const ms = Date.now() - started;
-  log('move of 1300 entries: ' + String(ms) + ' ms');
-  assert(big.ok && big.inserted, 'move: 1300 entries answered ' + JSON.stringify(big));
-  assert(ms < MOVE_MS, 'move: 1300 entries took ' + String(ms) + ' ms');
-}
-
 /** A message a joined topic delivered. */
 export interface Delivered {
   topic: string;
@@ -615,7 +610,9 @@ async function liveCases(
    as stale, over the rate and for a link or a request that is not there. */
 async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
   const got: Delivered[] = [];
+  const gotShare: Delivered[] = [];
   let leave: (() => void) | null = null;
+  let leaveShare: (() => void) | null = null;
   const { lists, shares, requests } = port;
   const id = lists.newId();
   try {
@@ -639,6 +636,18 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     leave = await joinLive(port, 'owner:' + userId, got);
     assert(leave !== null, 'requests: the owner topic was refused three times');
     if (!leave) return;
+    /* The share's own topic hears each decision of a request sent through it. */
+    const opened0 = await shares.read(share.token);
+    const topicKey = opened0.ok && opened0.shared ? opened0.shared.topic_key : '';
+    leaveShare = await joinLive(port, 'share:' + topicKey, gotShare);
+    assert(leaveShare !== null, 'requests: the share topic was refused three times');
+    const heard = (want: { id: string; status: string; partial: boolean }): Promise<boolean> =>
+      waitFor(() =>
+        gotShare.some((m) => {
+          const r = readShareRequestMessage(m.event, m.payload);
+          return r?.id === want.id && r.status === want.status && r.partial === want.partial;
+        })
+      );
     const saw = (by: (b: string | null) => boolean): Promise<boolean> =>
       waitFor(() =>
         got.some((m) => {
@@ -737,11 +746,19 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
         .join(';') === 'ci1|4|0',
       'requests: the apply did not lower ci1 and delete cc1'
     );
+    assert(
+      await heard({ id: r2, status: 'applied', partial: true }),
+      'requests: the share topic did not hear the clamped apply as partial'
+    );
 
     assert((await requests.decline(r1)).ok, 'requests: the decline was refused');
     assert(
       await saw((b) => b === port.events.tab),
       "requests: no request message with this port's tab"
+    );
+    assert(
+      await heard({ id: r1, status: 'declined', partial: false }),
+      'requests: the share topic did not hear the decline'
     );
     const twice = await requests.decline(r1);
     assert(
@@ -787,6 +804,7 @@ async function requestCases(port: CloudPort, assert: Assert): Promise<void> {
     );
   } finally {
     leave?.();
+    leaveShare?.();
     await lists.apply([{ op: 'remove', id }]);
   }
 }
@@ -2211,6 +2229,10 @@ export async function runCloudContract(
     'prefs: signed out, save() was taken'
   );
   assert(!(await signedOut.lists.list()).ok, 'lists: signed out, list() is not { ok: false }');
+  assert(
+    !(await signedOut.lists.rows([signedOut.lists.newId()])).ok,
+    'lists: signed out, rows() is not { ok: false }'
+  );
   const nothing = await signedOut.shares.read('nonsense');
   assert(nothing.ok && nothing.shared === null, 'shares: an unknown token does not read null');
   assert(
@@ -2227,11 +2249,6 @@ export async function runCloudContract(
   assert(
     answered(outApply) === 'call:network',
     'lists: signed out, apply() answered ' + answered(outApply)
-  );
-  const outMove = await signedOut.lists.move(signedOut.lists.newId(), '{"ids":[]}');
-  assert(
-    !outMove.ok && outMove.error === 'network',
-    'move: signed out, move() does not answer network'
   );
   assert(
     !(await signedOut.homebrew.load()).ok,
@@ -2315,10 +2332,6 @@ export async function runCloudContract(
   /* H. share links made, read, deleted, made again and copied, on the doomed
      user; the account's deletion takes them with it. */
   await shareCases(doomedPort, assert);
-
-  /* I. browser lists moved into the account, once per text, on the doomed
-     user; the account's deletion takes the rows with it. */
-  await moveCases(doomedPort, assert, log);
 
   /* J. the live topics, on a fresh member port; the list it makes is removed. */
   await liveCases(await make(member.as), await make(), member.userId, assert);

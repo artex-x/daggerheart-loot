@@ -1,0 +1,54 @@
+{
+  "site": "https://daggerheart-loot.pages.dev/",
+  "build": [
+    {
+      "id": "w1",
+      "lang": "ru",
+      "v": "k3x9a1",
+      "url": "https://daggerheart-loot.pages.dev/i/w1?v=k3x9a1",
+      "why": "a record in Russian: the extensionless record path with its card version"
+    },
+    {
+      "id": "w1",
+      "lang": "en",
+      "v": "k3x9a1",
+      "url": "https://daggerheart-loot.pages.dev/i/en/w1?v=k3x9a1",
+      "why": "a record in English: the English record path with the same version"
+    },
+    {
+      "id": "w1",
+      "lang": "ru",
+      "url": "https://daggerheart-loot.pages.dev/i/w1",
+      "why": "no version in the map: the record path without ?v"
+    },
+    {
+      "id": "w1",
+      "lang": "en",
+      "url": "https://daggerheart-loot.pages.dev/i/en/w1",
+      "why": "no version in the map, in English"
+    }
+  ],
+  "serve": [
+    {
+      "url": "https://daggerheart-loot.pages.dev/i/w1",
+      "status": 200,
+      "why": "the record's app document answers at its extensionless path"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/i/w1?v=x",
+      "status": 200,
+      "why": "the host ignores the query of a static file"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/i/w1.html",
+      "status": 308,
+      "location": "/i/w1",
+      "why": "a frozen .html link answers through one redirect to the app document"
+    },
+    {
+      "url": "https://daggerheart-loot.pages.dev/i/en/w1",
+      "status": 200,
+      "why": "the English app document at its extensionless path"
+    }
+  ]
+}

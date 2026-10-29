@@ -6,7 +6,6 @@
 
 import { browserClipboard, fakeClipboard } from './clipboard.js';
 import { browserClock, fixedClock, TEST_NOW } from './clock.js';
-import { browserCompress, plainCompress } from './compress.js';
 import { browserData, fakeData } from './data.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { browserImage, fakeImage } from './image.js';
@@ -15,7 +14,7 @@ import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
 import { browserPage, fakePage } from './page.js';
 import { browserPwa, fakePwa } from './pwa.js';
-import { hashRouter, memoryRouter } from './router.js';
+import { memoryRouter, pathRouter } from './router.js';
 import { browserShare, fakeShare } from './share.js';
 import { browserStorage, memoryStorage } from './storage.js';
 import type { Env } from './types.js';
@@ -23,7 +22,6 @@ import type { Env } from './types.js';
 export * from './types.js';
 export { browserClipboard, fakeClipboard } from './clipboard.js';
 export { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
-export { browserCompress, plainCompress } from './compress.js';
 export { browserData, fakeData, noData } from './data.js';
 export { browserDialog, fakeDialog } from './dialog.js';
 export { browserImage, fakeImage } from './image.js';
@@ -33,7 +31,8 @@ export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
 export { browserPage, fakePage } from './page.js';
 export { browserPwa, fakePwa, registerWith } from './pwa.js';
-export { hashRouter, memoryRouter } from './router.js';
+export { memoryRouter, pathRouter } from './router.js';
+export type { MemoryRouter } from './router.js';
 export { browserShare, fakeShare } from './share.js';
 export { brokenStorage, browserStorage, memoryStorage } from './storage.js';
 export type { FakeStoragePort } from './storage.js';
@@ -51,8 +50,7 @@ export function browserEnv(): Env {
     storage: browserStorage(),
     clipboard: browserClipboard(),
     share: browserShare(),
-    router: hashRouter(),
-    compress: browserCompress(),
+    router: pathRouter(),
     drag: nativeDrag(),
     dialog: browserDialog(),
     pwa: browserPwa(),
@@ -78,7 +76,6 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     clipboard: fakeClipboard(),
     share: fakeShare(),
     router: memoryRouter(),
-    compress: plainCompress(),
     drag: noDrag(),
     dialog: fakeDialog(),
     pwa: fakePwa(),

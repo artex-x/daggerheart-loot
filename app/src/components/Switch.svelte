@@ -15,6 +15,7 @@
 
 <label class="switch" class:on>
   <input
+    class="vh"
     type="checkbox"
     role="switch"
     checked={on}
@@ -40,17 +41,6 @@
 
   .switch.on {
     color: var(--txt);
-  }
-
-  /* The clip pattern of `TablesPage.svelte`'s `.btn-lbl`. */
-  input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   .track {

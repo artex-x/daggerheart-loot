@@ -86,11 +86,15 @@
   tabindex="-1"
   bind:this={menu}
 >
-  <a role="menuitem" tabindex="-1" href={ACCOUNT_HASH} onclick={onclose}>{t.account}</a>
-  <a role="menuitem" tabindex="-1" href={sectionHash('lists')} onclick={onclose}
+  <a role="menuitem" tabindex="-1" href={app.href(ACCOUNT_HASH)} onclick={onclose}
+    >{t.account}</a
+  >
+  <a role="menuitem" tabindex="-1" href={app.href(sectionHash('lists'))} onclick={onclose}
     >{t.menuLists}</a
   >
-  <a role="menuitem" tabindex="-1" href={HOMEBREW_HASH} onclick={onclose}>{t.myItems}</a>
+  <a role="menuitem" tabindex="-1" href={app.href(HOMEBREW_HASH)} onclick={onclose}
+    >{t.myItems}</a
+  >
   <button type="button" role="menuitem" tabindex="-1" class="out" onclick={signOut}
     >{t.signOut}</button
   >

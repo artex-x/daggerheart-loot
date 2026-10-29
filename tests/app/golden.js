@@ -90,14 +90,14 @@ const KEEP_KEYS = [
 
 const collapse = (s) => (s || '').replace(/\s+/g, ' ');
 
-/** Cuts the test server's `http://127.0.0.1:<port>/` off a url, and a
- *  leading `index.html` with it, so a golden survives a new port: the app
- *  itself becomes its hash, a site page its relative path. Any other url -
- *  a real outbound link like daggerheart.com - is content worth seeing
- *  change, and is kept whole. */
+/** Cuts the test server's `http://127.0.0.1:<port>` off a url, so a golden
+ *  survives a new port: an app address or a site page becomes its path from
+ *  `/`, and its card version `?v=<value>` prints as `?v=<v>`, so a golden does
+ *  not follow `card-versions.json`. Any other url - a real outbound link like
+ *  daggerheart.com - is content worth seeing change, and is kept whole. */
 function normUrl(u) {
-  const m = /^http:\/\/127\.0\.0\.1:\d+\/(?:index\.html(?=#|$))?/.exec(u);
-  return m ? u.slice(m[0].length) : u;
+  const m = /^http:\/\/127\.0\.0\.1:\d+(?=\/)/.exec(u);
+  return m ? u.slice(m[0].length).replace(/([?&])v=[0-9a-z]+/, '$1v=<v>') : u;
 }
 
 /**
@@ -248,8 +248,7 @@ function serializeTree(n, depth, out) {
 
 /** The lines before the first `## ` heading - `render()`'s `# <id>`,
  *  `# route:`, `# why:` and, on a signed-in state only, `# as:` lines, and
- *  `# today:` on a state that sets the test build's day, and `# hold:` on a state
- *  that holds a read of the fake.
+ *  `# hold:` on a state that holds a read of the fake.
  *  `sectionsOf` only ever collects lines after a `## ` heading, so without
  *  this the header is never compared and an `inventory.js` route/why edit
  *  made without `--update` leaves a golden whose header silently disagrees
@@ -401,7 +400,6 @@ if (require.main === module) {
       '# route: ' + state.route,
       '# why: ' + state.why,
       ...(state.as ? ['# as: ' + state.as] : []),
-      ...(state.today ? ['# today: ' + state.today] : []),
       ...(state.hold ? ['# hold: ' + state.hold] : []),
       '',
       '## ru :: tree',
@@ -436,16 +434,15 @@ if (require.main === module) {
       try {
         await d.open(state.route, {
           as: state.as,
-          today: state.today,
           items: state.items,
           sections: state.sections,
           sources: state.sources,
           hold: state.hold
         });
         if (state.enter) await state.enter(d);
-        /* Every capture waits for the move of browser lists to settle; a
-           state with no move passes at once. */
-        await d.moveSettled(state.id);
+        /* Every capture waits for the account lists to settle; a signed-out state
+           passes at once. */
+        await d.settled(state.id);
         await d.addressSettled();
         const ru = await captureLang(page, d);
         await d.click('EN');
@@ -468,7 +465,6 @@ if (require.main === module) {
            takes to arrive (docs/decisions/2026-09-30-a-timed-golden-holds-its-toast-until-the.md). */
         await d.open(state.route, {
           as: state.as,
-          today: state.today,
           holdToasts: true,
           items: state.items,
           sections: state.sections,
@@ -476,7 +472,7 @@ if (require.main === module) {
           hold: state.hold
         });
         if (state.enter) await state.enter(d);
-        await d.moveSettled(state.id);
+        await d.settled(state.id);
         if (lang !== 'ru') await d.click('EN');
         await waitForToast(page, state.id, lang);
         /* `addressSettled()` runs unconditionally here too (see the ordinary

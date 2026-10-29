@@ -433,16 +433,8 @@ export const STYLE = `<style>
   a{color:#d8ab5e}
 </style>`;
 
-/**
- * Returns one card page. `ctx`: `title` (the heading, `og:title`), `url` (the
- * card's own address), `app` (the redirect target), `img` (absolute
- * `og:image`), `imgSrc` (the visible picture, none when absent), `subtitle`,
- * `desc` (the start of the meta description), `body` (the visible text, line
- * breaks kept), `craft` and `set` (lines), `seed` (store English first),
- * `large` (the site picture, 1200x630), `caps` (`{ meta }` in escaped UTF-8
- * bytes; absent for the catalog).
- */
-export function card(lang, ctx) {
+/* The card fields of a page: the text that the card page and an app document share. */
+function cardText(lang, ctx) {
   const t = TEXT[lang];
   if (!t) throw new Error('No share page text for language "' + lang + '". Use ru or en');
   const name = ctx.title;
@@ -455,9 +447,13 @@ export function card(lang, ctx) {
     (set.length ? ' ' + set.join('. ') : '');
   const desc = ctx.caps ? fit(joined, ctx.caps.meta) : joined;
   const docTitle = name === t.site ? t.site : `${esc(name)} — ${t.site}`;
-  // An address that holds `</script>` or `<!--` cannot end the script.
-  const target = JSON.stringify(ctx.app).replace(/</g, '\\u003c');
-  const script = (ctx.seed ? SEED_EN : '') + 'location.replace(' + target + ');';
+  return { t, name, craft, set, desc, docTitle };
+}
+
+/** Returns the card fields of `card()` for `ctx`: the lines from `<title>` to
+ *  `twitter:image`, with no line break at either end. `ctx` as for `card()`. */
+export function cardHead(lang, ctx) {
+  const { t, name, desc, docTitle } = cardText(lang, ctx);
   const size = ctx.large
     ? `<meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">`
@@ -467,16 +463,7 @@ export function card(lang, ctx) {
     ? `<meta name="twitter:card" content="summary_large_image">`
     : `<!-- the artwork is square, and a large-summary card would letterbox it -->
 <meta name="twitter:card" content="summary">`;
-  const picture = ctx.imgSrc ? `    <img src="${esc(ctx.imgSrc)}" alt="${esc(name)}">\n` : '';
-  const sub = ctx.subtitle ? `    <p class="s">${esc(ctx.subtitle)}</p>\n` : '';
-  return `<!DOCTYPE html>
-<html lang="${lang}">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- kept out of search results; see robots.txt for why crawling is allowed -->
-<meta name="robots" content="noindex, nofollow">
-<title>${docTitle}</title>
+  return `<title>${docTitle}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${esc(ctx.url)}">
 
@@ -492,7 +479,87 @@ ${size}
 ${twitterCard}
 <meta name="twitter:title" content="${esc(name)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${esc(ctx.img)}">
+<meta name="twitter:image" content="${esc(ctx.img)}">`;
+}
+
+/** Returns the record's readable text for an app document's body: a `<noscript>`
+ *  block with the name, the subtitle, the text and the craft and set lines of
+ *  `ctx`, the same fields as the card page's body. A reader without JavaScript
+ *  and an agent's fetch tool read it (llms.txt, "Data"). */
+export function recordNoscript(ctx) {
+  const sub = ctx.subtitle ? `<p>${esc(ctx.subtitle)}</p>\n` : '';
+  const lines = (ctx.craft || [])
+    .concat(ctx.set || [])
+    .map((c) => `<p>${esc(c)}</p>\n`)
+    .join('');
+  return `<noscript>
+<article style="padding:24px 0">
+<h1>${esc(ctx.title)}</h1>
+${sub}${descHtml(ctx.body)}
+${lines}</article>
+</noscript>`;
+}
+
+/* The markers around the card fields of app/index.html. */
+export const CARD_OPEN = '<!-- card -->';
+export const CARD_CLOSE = '<!-- /card -->';
+
+/* The app's mount point in app/index.html, after which a record's text goes. */
+const APP_MOUNT = '<div id="app"></div>';
+
+/** Returns the app document `shell` with the lines between its card markers
+ *  replaced by `head`, `<html lang>` set to `lang`, and `body` (a record's
+ *  `recordNoscript`) after the app's mount point. Throws when the shell has no
+ *  card block, or no mount point for a `body`. */
+export function appDocument(shell, head, lang, body = '') {
+  const open = shell.indexOf(CARD_OPEN);
+  const close = open < 0 ? -1 : shell.indexOf(CARD_CLOSE, open + CARD_OPEN.length);
+  if (open < 0 || close < 0)
+    throw new Error(
+      'The app document has no card block. Keep <!-- card --> and <!-- /card --> in app/index.html'
+    );
+  // Slices, not String.replace with a string: record text can hold `$&` or `$1`.
+  let doc = shell.slice(0, open + CARD_OPEN.length) + '\n' + head + '\n' + shell.slice(close);
+  if (body) {
+    const at = doc.indexOf(APP_MOUNT);
+    if (at < 0)
+      throw new Error('The app document has no ' + APP_MOUNT + '. Keep it in app/index.html');
+    const end = at + APP_MOUNT.length;
+    doc = doc.slice(0, end) + '\n' + body + doc.slice(end);
+  }
+  const tag = /<html\b[^>]*>/i.exec(doc);
+  if (!tag) return doc;
+  const attr = /\slang="[^"]*"/;
+  const html = attr.test(tag[0])
+    ? tag[0].replace(attr, () => ' lang="' + lang + '"')
+    : tag[0].slice(0, 5) + ' lang="' + lang + '"' + tag[0].slice(5);
+  return doc.slice(0, tag.index) + html + doc.slice(tag.index + tag[0].length);
+}
+
+/**
+ * Returns one card page. `ctx`: `title` (the heading, `og:title`), `url` (the
+ * card's own address), `app` (the redirect target), `img` (absolute
+ * `og:image`), `imgSrc` (the visible picture, none when absent), `subtitle`,
+ * `desc` (the start of the meta description), `body` (the visible text, line
+ * breaks kept), `craft` and `set` (lines), `seed` (store English first),
+ * `large` (the site picture, 1200x630), `caps` (`{ meta }` in escaped UTF-8
+ * bytes; absent for the catalog).
+ */
+export function card(lang, ctx) {
+  const { t, name, craft, set } = cardText(lang, ctx);
+  // An address that holds `</script>` or `<!--` cannot end the script.
+  const target = JSON.stringify(ctx.app).replace(/</g, '\\u003c');
+  const script = (ctx.seed ? SEED_EN : '') + 'location.replace(' + target + ');';
+  const picture = ctx.imgSrc ? `    <img src="${esc(ctx.imgSrc)}" alt="${esc(name)}">\n` : '';
+  const sub = ctx.subtitle ? `    <p class="s">${esc(ctx.subtitle)}</p>\n` : '';
+  return `<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- kept out of search results; see robots.txt for why crawling is allowed -->
+<meta name="robots" content="noindex, nofollow">
+${cardHead(lang, ctx)}
 
 <meta http-equiv="refresh" content="0; url=${esc(ctx.app)}">
 ${STYLE}

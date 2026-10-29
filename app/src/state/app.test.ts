@@ -33,16 +33,15 @@ import {
 } from '../lib/homebrewFile.js';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
-import { cardVersion, sharedListHash } from '../lib/hash.js';
-import { encodeList } from '../lib/listLink.js';
-import type { StoredList } from '../lib/lists.js';
+import { cardVersion } from '../lib/hash.js';
+import { COALESCE_MS } from '../lib/live.js';
 import { LOOT_KINDS } from '../lib/std.js';
 import { readDataZip } from '../lib/zip.js';
 import type { Prefs } from '../lib/prefs.js';
 import { KINDS, type Record_ } from '../lib/types.js';
-import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import {
   brokenStorage,
+  fakeData,
   fakeDialog,
   fakeEnv,
   fakePage,
@@ -52,16 +51,11 @@ import {
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
-import type {
-  CloudPort,
-  CompressPort,
-  Env,
-  FakeStoragePort,
-  RouterPort,
-  Session
-} from '../ports/index.js';
+import type { CloudPort, Env, FakeStoragePort, RouterPort, Session } from '../ports/index.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid, type Seed } from '../ports/fake-cloud-seed.js';
+import { seedWith } from '../test/seed.js';
+import type { CloudList } from '../lib/cloudLists.js';
 import { AppState, LIST_POLL_MS, SIGN_OUT_WAIT_MS } from './app.svelte.js';
 
 const LANG_KEY = 'dhloot.lang.v1';
@@ -86,6 +80,11 @@ function quirkyRouter(start: string): RouterPort & { fire: (h: string) => void }
   const listeners = new Set<(h: string) => void>();
   return {
     hash: () => hash,
+    lang: () => null,
+    relang() {
+      /* The bar's language is not this double's concern. */
+    },
+    onLink: () => () => undefined,
     navigate(h) {
       if (h === hash) return;
       hash = h;
@@ -158,7 +157,7 @@ describe('settings are read as untrusted data', () => {
   });
 
   it('accepts a bare #/tables too, the one shape the app itself no longer writes', () => {
-    /* Live's own homeAllows (app.js 1124-1130) keeps this - `tables` is one
+    /* Live's own homeAllows (`git show 23c00a6^:app.js`) keeps this - `tables` is one
        of the section tabs its own list checks, not only a specific table
        name (that list was `TAB_LIST`, an identifier that lived in app.js
        alone and has no equivalent anywhere in this rewrite, so it is named
@@ -184,7 +183,7 @@ describe('the address on the way in', () => {
   });
 
   it('opens the default at boot and leaves the bare bar untouched when nothing is pinned', () => {
-    /* Live's own boot check (app.js 4610-4614) never assigns `location.hash`
+    /* Live's own boot check (`git show 23c00a6^:app.js`) never assigns `location.hash`
        when the pinned home is already the default - there is nothing to add
        - so a bare address stays bare while the default section draws. */
     const router = memoryRouter('#/');
@@ -195,17 +194,17 @@ describe('the address on the way in', () => {
 
   it('pushes a pinned section at boot, so Back leaves the bare address behind', () => {
     /* Live's boot check is a plain assignment, not a replaceState
-       (app.js 4610-4614), so a non-default pin is a real history entry -
+       (`git show 23c00a6^:app.js`), so a non-default pin is a real history entry -
        unlike the unreadable-address case below, which replaces. */
     const router = memoryRouter('');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
     expect(app.hash).toBe('#/search');
-    expect(router.stack).toEqual(['', '#/search']);
+    expect(router.stack, 'the bare address is written as the root').toEqual(['#/', '#/search']);
     expect(router.canGoBack()).toBe(true);
   });
 
   it('replaces an unreadable address at boot with the pinned section', () => {
-    /* The live `currentRoute` fallback (app.js 3638-3647) answers an
+    /* The live `currentRoute` fallback (`git show 23c00a6^:app.js`) answers an
        unknown address the same way whether it is met at boot or on
        navigation; see 'navigation' below for the navigation half. */
     const router = memoryRouter('#/nonsense');
@@ -222,7 +221,7 @@ describe('the address on the way in', () => {
         at('', { cloud, storage: stored({ [HOME_KEY]: '#/homebrew' }) })
       );
       expect(app.hash).toBe('#/homebrew');
-      expect(app.route).toEqual({ kind: 'homebrew', tab: 'items', key: null });
+      expect(app.route).toEqual({ kind: 'homebrew', tab: 'items', key: null, filter: {} });
       /* With no sign-in configured there is no homebrew store: `App.svelte` draws not found. */
       expect(app.homebrew === null).toBe(cloud === null);
       app.stop();
@@ -517,13 +516,6 @@ describe('a page switch lasts the visit', () => {
   });
 });
 
-describe('whether storage works, read once at construction', () => {
-  it('is true for storage that works, false for storage that refuses', () => {
-    expect(new AppState(at('#/lists')).storageWorks).toBe(true);
-    expect(new AppState(at('#/lists', { storage: brokenStorage() })).storageWorks).toBe(false);
-  });
-});
-
 describe('the install link', () => {
   it('is offered where the app is not installed', () => {
     expect(new AppState(at('#/roll/std')).showInstall).toBe(true);
@@ -541,20 +533,36 @@ const HID = '00000000-0000-4000-8000-000000000511';
 describe('links to hand somebody else', () => {
   it('follow the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/lists');
     app.setLang('en');
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1.html');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/en/#/lists');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/en/w1');
+    expect(app.linkTo('#/lists')).toBe('https://example.test/en/lists');
+  });
+
+  it("carry the record's card version when the build's map holds it", () => {
+    const app = new AppState(
+      at('#/roll/std', { data: fakeData({ items: {} }, { w1: 'k3x9a1' }) })
+    );
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe(
+      'https://example.test/i/w1?v=k3x9a1'
+    );
+    expect(app.linkToRecord({ id: 'w2' } as Record_)).toBe('https://example.test/i/w2');
+    app.setLang('en');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe(
+      'https://example.test/i/en/w1?v=k3x9a1'
+    );
   });
 
   it('keep the app address for every card family in a build with no preview host', () => {
     const app = new AppState(at('#/roll/std'));
     const hb = { id: 'hb_emberaxeaaaaaaaa', src: 'homebrew', hid: HID } as unknown as Record_;
-    expect(app.linkToRecord(hb)).toBe('https://example.test/#/h/' + HID);
-    expect(app.linkTo('#/s/tok', 'v1')).toBe('https://example.test/#/s/tok');
-    expect(app.linkTo('#/p/AbCdEf123456')).toBe('https://example.test/#/p/AbCdEf123456');
-    expect(app.linkTo('#/tables/core_item')).toBe('https://example.test/#/tables/core_item');
+    expect(app.linkToRecord(hb)).toBe(
+      'https://example.test/h/' + HID + '?v=' + cardVersion(hb)
+    );
+    expect(app.linkTo('#/s/tok', 'v1')).toBe('https://example.test/s/tok?v=v1');
+    expect(app.linkTo('#/p/AbCdEf123456')).toBe('https://example.test/p/AbCdEf123456');
+    expect(app.linkTo('#/tables/core_item')).toBe('https://example.test/tables/core_item');
   });
 });
 
@@ -581,14 +589,14 @@ describe('links through the preview host', () => {
     expect(app.linkToRecord(hb())).toBe(`${ORIGIN}/en/h/${HID}?v=${v}`);
   });
 
-  it('keep a catalog record on its stub and every other address in the app', () => {
+  it('keep a catalog record on the app root and hand out every other address on the host', () => {
+    /* On the site's host the app and the card host are one origin: every path is the app. */
     const app = new AppState(at('#/roll/std', { preview: ORIGIN }));
-    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1.html');
-    expect(app.linkTo('#/lists')).toBe('https://example.test/#/lists');
-    expect(app.linkTo('#/l/ABC')).toBe('https://example.test/#/l/ABC');
-    expect(app.linkTo('#/tables/homebrew')).toBe('https://example.test/#/tables/homebrew');
+    expect(app.linkToRecord({ id: 'w1' } as Record_)).toBe('https://example.test/i/w1');
+    expect(app.linkTo('#/lists')).toBe(ORIGIN + '/lists');
+    expect(app.linkTo('#/l/ABC')).toBe(ORIGIN + '/l/ABC');
     expect(app.linkTo('#/tables/homebrew/f_src-hb_alderworkshopaaa')).toBe(
-      'https://example.test/#/tables/homebrew/f_src-hb_alderworkshopaaa'
+      ORIGIN + '/tables/homebrew/f_src-hb_alderworkshopaaa'
     );
   });
 
@@ -600,34 +608,6 @@ describe('links through the preview host', () => {
   });
 });
 
-describe('the storage notice', () => {
-  const WARN_KEY = 'dhloot.warn.v1';
-
-  it('is hidden with the flag stored, and shown otherwise', () => {
-    expect(
-      new AppState(at('#/lists', { storage: stored({ [WARN_KEY]: '1' }) })).warnHidden
-    ).toBe(true);
-    expect(new AppState(at('#/lists')).warnHidden).toBe(false);
-  });
-
-  it('dismisses for good, writing the flag', () => {
-    const env = at('#/lists');
-    const app = new AppState(env);
-    app.hideWarn();
-    expect(app.warnHidden).toBe(true);
-    expect(env.storage.get(WARN_KEY)).toBe('1');
-  });
-
-  it('sets the flag in memory even when storage refuses the write', () => {
-    /* The live `hideWarn` ignores the write's result too: with storage
-       refusing, the page draws the undismissable warning instead, so the
-       flag reaching storage does not matter. */
-    const app = new AppState(at('#/lists', { storage: brokenStorage() }));
-    app.hideWarn();
-    expect(app.warnHidden).toBe(true);
-  });
-});
-
 describe('which tab is lit', () => {
   it('lights the section a route belongs to', () => {
     /* A section id carries its prefix - see SECTIONS in lib/types.ts */
@@ -636,60 +616,13 @@ describe('which tab is lit', () => {
   });
 
   it('lights nothing on a record, a list page or a print sheet', () => {
-    /* The live `renderTabs` (app.js 3667-3673) compares against the raw route
+    /* The live `renderTabs` (`git show 23c00a6^:app.js`) compares against the raw route
        string, and a list route - `l/...` or `lists/...` - is never that string,
        so no tab is lit there either, Lists included. */
     expect(new AppState(at('#/i/w12')).section).toBe(null);
     expect(new AppState(at('#/p/set-twocards')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
-  });
-});
-
-describe('the list page address', () => {
-  const list: StoredList = { id: 'a', name: 'Клад', ids: ['w1', 'w2'] };
-
-  it('rewrites the address to the players’ payload and remembers both', () => {
-    const app = new AppState(at('#/lists/a'));
-    app.syncListUrl(list);
-    const payload = encodeList(list, true);
-    expect(app.hash).toBe(sharedListHash(payload));
-    expect(app.openList).toBe('a');
-    expect(app.urlPayload).toBe(payload);
-  });
-
-  it('leaves an address that already matches the payload alone', () => {
-    const payload = encodeList(list, true);
-    const app = new AppState(at(sharedListHash(payload)));
-    const before = app.hash;
-    app.syncListUrl(list);
-    expect(app.hash).toBe(before);
-  });
-
-  it('rewrites again after an edit changes the payload', () => {
-    const app = new AppState(at('#/lists/a'));
-    app.syncListUrl(list);
-    const first = app.hash;
-    app.syncListUrl({ ...list, name: 'Другое имя' });
-    expect(app.hash).not.toBe(first);
-  });
-
-  it('opens a new list at its payload, claimed by id even when it has no entry', () => {
-    const empty: StoredList = { id: 'e', name: 'Пусто', ids: [] };
-    const app = new AppState(at('#/lists'));
-    app.openNewList(empty);
-    const payload = encodeList(empty, true);
-    expect(app.hash).toBe(sharedListHash(payload));
-    expect(app.openList).toBe('e');
-    expect(app.urlPayload).toBe(payload);
-  });
-
-  it('clears both on clearOpenList, as every other route does', () => {
-    const app = new AppState(at('#/lists/a'));
-    app.syncListUrl(list);
-    app.clearOpenList();
-    expect(app.openList).toBe('');
-    expect(app.urlPayload).toBe('');
   });
 });
 
@@ -778,7 +711,7 @@ describe('navigation', () => {
   it('reaching a bare address by navigating draws the default, not the pinned section, and leaves the bar bare', () => {
     /* Unlike boot (above), a bare address met after the app is already
        running never consults the pinned home - live's own home check runs
-       once at boot only, app.js 4610-4614 - so it always lands on
+       once at boot only (`git show 23c00a6^:app.js`) - so it always lands on
        `#/roll/std`. */
     const router = memoryRouter('#/tables');
     const app = new AppState(fakeEnv({ router, storage: stored({ [HOME_KEY]: '#/search' }) }));
@@ -847,6 +780,158 @@ describe('replace vs navigate', () => {
 
     router.fire('#/lists'); // a genuine Back/Forward landing on that address
     expect(app.navigations).toBe(3);
+  });
+});
+
+describe('the address bar in its path form', () => {
+  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+  const withMap = (router: ReturnType<typeof memoryRouter>, over: Partial<Env> = {}): Env =>
+    fakeEnv({ router, data: fakeData({ items: {} }, { w1: 'k3x9a1' }), ...over });
+
+  it('pushes the path form on go() and counts one navigation', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/lists');
+    expect(router.stack).toEqual(['#/roll/std', '#/lists']);
+    expect(router.bar()).toBe('/lists');
+    expect(app.navigations).toBe(1);
+    app.stop();
+  });
+
+  it('adds no entry for the address already showing, and still counts one navigation', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.go('#/roll/std');
+    expect(router.stack).toEqual(['#/roll/std']);
+    expect(app.navigations).toBe(1);
+    app.stop();
+  });
+
+  it('takes a link click through go()', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    expect(router.click('/lists')).toBe(true);
+    expect(app.hash).toBe('#/lists');
+    expect(router.bar()).toBe('/lists');
+    app.stop();
+    expect(router.click('/search'), 'stop() removes the link listener').toBe(false);
+  });
+
+  it('opens an English address in English with nothing stored, and stores it', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const storage = memoryStorage();
+    const app = new AppState(fakeEnv({ router, storage }));
+    expect(app.lang).toBe('en');
+    expect(storage.get(LANG_KEY)).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+  });
+
+  it('opens an English address in English when the storage refuses the language', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const app = new AppState(fakeEnv({ router, storage: brokenStorage() }));
+    expect(app.lang).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+  });
+
+  it('keeps a stored language over the address, and the bar follows the screen', () => {
+    const router = memoryRouter('#/lists', 'en');
+    const app = new AppState(fakeEnv({ router, storage: stored({ [LANG_KEY]: 'ru' }) }));
+    expect(app.lang).toBe('ru');
+    expect(router.bar()).toBe('/lists');
+  });
+
+  it('rewrites the bar in place on a language switch', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.setLang('en');
+    expect(router.bar()).toBe('/en/roll/std');
+    expect(router.stack).toHaveLength(1);
+  });
+
+  it("rewrites the bar to the account's language after a sign-in", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    await cloud.prefs.save({ lang: 'en' });
+    const router = memoryRouter('#/lists');
+    const app = new AppState(fakeEnv({ router, cloud }));
+    app.start();
+    await flush();
+    expect(app.lang).toBe('en');
+    expect(router.bar()).toBe('/en/lists');
+    app.stop();
+  });
+
+  it("rewrites the bar to another tab's language", () => {
+    const storage = memoryStorage();
+    const router = memoryRouter('#/lists');
+    const app = new AppState(fakeEnv({ router, storage }));
+    app.start();
+    storage.set(LANG_KEY, 'en');
+    storage.fireExternalChange(LANG_KEY);
+    expect(router.bar()).toBe('/en/lists');
+    app.stop();
+  });
+
+  it("carries a catalog record's card version at once, and a navigation drops it", () => {
+    const router = memoryRouter('#/i/w1');
+    const app = new AppState(withMap(router));
+    app.start();
+    expect(router.bar()).toBe('/i/w1?v=k3x9a1');
+    app.go('#/lists');
+    expect(router.bar()).toBe('/lists');
+    router.back();
+    expect(app.hash).toBe('#/i/w1');
+    expect(router.bar(), 'Back to a record').toBe('/i/w1?v=k3x9a1');
+    app.go('#/i/hb_emberaxeaaaaaaaa');
+    expect(router.bar(), 'an own item has no card version').toBe('/i/hb_emberaxeaaaaaaaa');
+    app.stop();
+  });
+
+  it('writes a typed old address in its path form, in the same entry', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(withMap(router));
+    app.start();
+    router.navigate('#/i/w1');
+    expect(app.hash).toBe('#/i/w1');
+    expect(router.stack).toEqual(['#/roll/std', '#/i/w1']);
+    expect(router.bar()).toBe('/i/w1?v=k3x9a1');
+    app.stop();
+  });
+
+  it('writes a page version only for the address still showing', () => {
+    const router = memoryRouter('#/s/tok');
+    const app = new AppState(fakeEnv({ router }));
+    app.setBarVersion('#/s/tok', 'v1');
+    expect(router.bar()).toBe('/s/tok?v=v1');
+    app.go('#/lists');
+    app.setBarVersion('#/s/tok', 'v2');
+    expect(router.bar()).toBe('/lists');
+    app.setBarVersion('#/lists', undefined);
+    expect(router.bar()).toBe('/lists');
+  });
+
+  it('hands out the bar as the link of every card family, with or without a preview host', () => {
+    for (const preview of ['', 'https://example.test']) {
+      for (const lang of ['ru', 'en'] as const) {
+        const router = memoryRouter('#/roll/std');
+        const app = new AppState(fakeEnv({ router, preview }));
+        app.setLang(lang);
+        for (const [hash, v] of [
+          ['#/h/' + HID, 'v1'],
+          ['#/s/tok', 'v2'],
+          ['#/p/AbCdEf123456', undefined],
+          ['#/tables/core_item', undefined]
+        ] as const) {
+          app.go(hash);
+          app.setBarVersion(hash, v);
+          expect(app.linkTo(hash, v), hash + ' ' + lang).toBe(
+            'https://example.test' + router.bar()
+          );
+        }
+      }
+    }
   });
 });
 
@@ -1059,83 +1144,26 @@ describe('the kind filter', () => {
   });
 });
 
-describe('a packed address', () => {
-  /** The shape `listsPage.test.ts` (302-314) already uses: no real deflate,
-   *  only that `unpack` runs before the payload is read as plain. */
-  const stub = (
-    unpack: CompressPort['unpack'] = (p) => Promise.resolve(p.slice(1))
-  ): CompressPort => ({
-    available: () => true,
-    pack: (raw) => Promise.resolve(raw),
-    unpack
+describe('an old list link', () => {
+  it('keeps a plain and a packed #/l/ address at construction, read as retired', () => {
+    for (const hash of ['#/l/abc', '#/l/~abc']) {
+      const router = memoryRouter(hash);
+      const app = new AppState(fakeEnv({ router }));
+      expect(app.route).toEqual({ kind: 'listRetired' });
+      expect(app.hash).toBe(hash);
+      expect(router.hash()).toBe(hash);
+    }
   });
 
-  it('expands at construction - a replace, not a step', async () => {
-    const router = memoryRouter('#/l/~abc');
-    const app = new AppState(fakeEnv({ router, compress: stub() }));
-    await vi.waitFor(() => {
-      expect(app.hash).toBe('#/l/abc');
-    });
-    expect(router.hash()).toBe('#/l/abc');
-    expect(router.stack).toHaveLength(1);
-    expect(app.navigations).toBe(0);
-  });
-
-  it('keeps the address and remembers the failure when the port cannot unpack, and does not loop', async () => {
-    /* Was "lands on #/l/zzzz" - the live shape, since replaced:
-       the address itself is left alone; `expandFailed` is what a page reads
-       to draw the bad-link state instead. */
-    const router = memoryRouter('#/l/~abc');
-    const unpack = vi.fn((p: string) => Promise.resolve(p));
-    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
-    await vi.waitFor(() => {
-      expect(app.expandFailed).toBe('~abc');
-    });
-    expect(app.hash).toBe('#/l/~abc');
-    expect(router.hash()).toBe('#/l/~abc');
-    expect(unpack).toHaveBeenCalledTimes(1);
-  });
-
-  it('keeps the address and remembers the failure when unpack rejects', async () => {
-    const router = memoryRouter('#/l/~abc');
-    const unpack = () => Promise.reject(new Error('no DecompressionStream'));
-    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
-    await vi.waitFor(() => {
-      expect(app.expandFailed).toBe('~abc');
-    });
-    expect(app.hash).toBe('#/l/~abc');
-  });
-
-  it('drops a stale failure once the reader has moved to a different route, so an old payload cannot be mistaken for the new one', async () => {
-    const router = memoryRouter('#/l/~abc');
-    const unpack = () => Promise.reject(new Error('no DecompressionStream'));
-    const app = new AppState(fakeEnv({ router, compress: stub(unpack) }));
-    await vi.waitFor(() => {
-      expect(app.expandFailed).toBe('~abc');
-    });
-    app.go('#/tables');
-    expect(app.expandFailed).toBe('~abc');
-    /* Stale, but harmless: the bad-link check also requires `route.packed`
-       and a matching payload, neither of which `#/tables` has. */
-    expect(app.route.kind).toBe('tables');
-  });
-
-  it('expands a packed hash the router announces after start()', async () => {
+  it('keeps the address the router announces after start(), and one go() writes', () => {
     const router = memoryRouter('#/tables');
-    const app = new AppState(fakeEnv({ router, compress: stub() }));
+    const app = new AppState(fakeEnv({ router }));
     app.start();
     router.navigate('#/l/~abc');
-    await vi.waitFor(() => {
-      expect(app.hash).toBe('#/l/abc');
-    });
-  });
-
-  it('expands through go()', async () => {
-    const app = new AppState(fakeEnv({ router: memoryRouter('#/tables'), compress: stub() }));
-    app.go('#/l/~abc');
-    await vi.waitFor(() => {
-      expect(app.hash).toBe('#/l/abc');
-    });
+    expect(app.hash).toBe('#/l/~abc');
+    app.go('#/l/abc');
+    expect(app.hash).toBe('#/l/abc');
+    expect(router.hash()).toBe('#/l/abc');
   });
 });
 
@@ -1573,9 +1601,9 @@ describe('the account session', () => {
 
   it('names the static pages of the language on screen', () => {
     const app = new AppState(at('#/roll/std'));
-    expect(app.pagesDir).toBe('pages/');
+    expect(app.pagesDir).toBe('/pages/');
     app.setLang('en');
-    expect(app.pagesDir).toBe('pages/en/');
+    expect(app.pagesDir).toBe('/pages/en/');
   });
 });
 
@@ -2000,14 +2028,14 @@ describe('account lists', () => {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
     const app = new AppState(
-      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage, cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router, storage };
   }
 
-  it('creates where the reader can: locally with no sign-in, waits, prompts, or the account', async () => {
-    expect(started(null, '#/lists').app.newListTarget).toBe('local');
+  it('creates where the reader can: nowhere with no sign-in, waits, prompts, or the account', async () => {
+    expect(started(null, '#/lists').app.newListTarget).toBe('none');
     const cloud = fakeCloud(SEED);
     const { app } = started(cloud, '#/lists');
     expect(app.newListTarget).toBe('wait');
@@ -2018,7 +2046,7 @@ describe('account lists', () => {
     app.stop();
   });
 
-  it("loads the account's lists on sign-in and names the store that holds a list", async () => {
+  it("loads the account's lists on sign-in", async () => {
     const { app } = started(fakeCloud(SEED, 'gm1'), '#/lists');
     await flush();
     expect(app.cloudLists?.status).toBe('ready');
@@ -2027,8 +2055,6 @@ describe('account lists', () => {
       'Лавка кузнеца',
       'Трофеи'
     ]);
-    expect(app.storeFor(SHOP)).toBe(app.cloudLists);
-    expect(app.storeFor('l1')).toBe(app.lists);
     app.stop();
   });
 
@@ -2118,73 +2144,24 @@ describe('account lists', () => {
     app.stop();
   });
 
-  it('saves an old shared link into the account and opens the copy', async () => {
-    const shared = encodeList({ name: 'Лавка', ids: ['ci1', 'q1'] }, true);
-    const { app } = started(fakeCloud(SEED), sharedListHash(shared));
-    await flush();
-    app.askSignIn({ hash: app.hash, action: { do: 'saveList' } });
-    await app.signIn('google');
-    await flush();
-    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
-    expect(app.cloudLists?.get('00000000-0000-4000-8000-000000005000')).toMatchObject({
-      name: 'Лавка',
-      ids: ['ci1', 'q1']
-    });
-    expect(app.toast?.msg).toBe('Список «Лавка» создан');
-    app.stop();
-  });
-
-  it('waits for a packed link to expand before it saves it', async () => {
-    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
-    let expand: (plain: string) => void = () => undefined;
-    const compress: CompressPort = {
-      available: () => true,
-      pack: (raw) => Promise.resolve(raw),
-      unpack: () =>
-        new Promise((r) => {
-          expand = r;
-        })
-    };
+  it('drops a save an older build left for an old #/l/ address, and makes no list', async () => {
     const action = { do: 'saveList' as const };
     const cloud = fakeCloud(SEED, 'gm1', {
       returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
     });
-    const { app } = started(cloud, '#/l/~packed', { compress });
+    const hash = '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg';
+    const { app } = started(cloud, hash);
     await flush();
-    expect(app.hash).toBe('#/l/~packed');
-    expand(shared);
     await flush();
-    expect(app.hash).toBe('#/lists/00000000-0000-4000-8000-000000005000');
-    app.stop();
-  });
-
-  it('forgets a waiting save when the reader moves to another shared link', async () => {
-    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
-    let expand: (plain: string) => void = () => undefined;
-    const compress: CompressPort = {
-      available: () => true,
-      pack: (raw) => Promise.resolve(raw),
-      unpack: () =>
-        new Promise((r) => {
-          expand = r;
-        })
-    };
-    const action = { do: 'saveList' as const };
-    const cloud = fakeCloud(SEED, 'gm1', {
-      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
-    });
-    const { app, router } = started(cloud, '#/l/~packed', { compress });
-    await flush();
-    router.navigate('#/l/~other');
-    expand(shared);
-    await flush();
-    expect(app.route.kind).toBe('sharedList');
+    expect(app.hash).toBe(hash);
+    expect(app.route.kind).toBe('listRetired');
     expect(app.cloudLists?.lists).toHaveLength(3);
+    expect(app.toast).toBeNull();
     app.stop();
   });
 
-  it('forgets a waiting action and its typed name on sign-out', async () => {
-    const action = { do: 'addToList' as const, key: 'sel', ids: ['ci1'], name: 'Клад' };
+  it('forgets a waiting action on sign-out', async () => {
+    const action = { do: 'addToList' as const, key: 'sel', ids: ['ci1'] };
     const cloud = fakeCloud(SEED, 'gm1', {
       returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
     });
@@ -2206,7 +2183,6 @@ describe('account lists', () => {
     expect(app.cloudLists?.status).toBe('ready');
     expect(app.menuFor).toBe('');
     expect(app.sel.size).toBe(0);
-    expect(app.pendingListName).toBeNull();
     app.stop();
   });
 
@@ -2330,7 +2306,7 @@ describe('account lists', () => {
     await flush();
     expect(read).toHaveBeenCalledOnce();
     expect(app.now).toBeGreaterThan(0);
-    storage.fireExternalChange('dhloot.lists.v1');
+    storage.fireExternalChange('other.key');
     await flush();
     expect(read).toHaveBeenCalledOnce();
     app.stop();
@@ -2630,358 +2606,6 @@ describe("the account's write buffer", () => {
     app.stop();
     app.cloudLists?.clear();
   });
-
-  it('makes no list for an old link over the entry limit, and names the limit', async () => {
-    const keys = Array.from({ length: 101 }, (_, i) => 'r' + String(i));
-    const loot: Loot = {
-      items: {
-        core_item: keys.map((id, i) => ({
-          id,
-          src: 'core',
-          kind: 'item',
-          en: id,
-          ende: '',
-          ru: id,
-          rud: '',
-          roll: i + 1
-        }))
-      }
-    };
-    const shared = encodeList({ name: 'Сто одна', ids: keys }, true);
-    const cloud = fakeCloud(SEED, 'gm2');
-    const { app } = started(cloud, sharedListHash(shared), { data: { load: () => loot } });
-    await flush();
-    app.saveCopyOf({ name: 'Сто одна', ids: keys, dropped: 0 });
-    expect(await app.cloudLists?.flushNow()).toBe(true);
-    await flush();
-    expect(app.toast?.msg).toBe(
-      'Достигнут предел позиций в списке: 100. Нужно больше - напишите на daggerheart.loot@gmail.com.'
-    );
-    const read = await cloud.lists.list();
-    expect(read.ok && read.lists.map((l) => l.name)).not.toContain('Сто одна');
-    expect(app.cloudLists?.lists.map((l) => l.name)).not.toContain('Сто одна');
-    app.stop();
-  });
-
-  it('makes no copy at the list limit: it says the limit and stays on the link', async () => {
-    const cloud = fakeCloud(SEED, 'gm2', { limits: { lists: 1 } });
-    const shared = encodeList({ name: 'Копия', ids: ['ci1'] }, true);
-    const { app } = started(cloud, sharedListHash(shared));
-    await flush();
-    expect(app.cloudLists?.full()).toBe(true);
-    const before = app.hash;
-    app.saveCopyOf({ name: 'Копия', ids: ['ci1'], dropped: 0 });
-    expect(app.toast).toMatchObject({
-      msg: 'Достигнут предел списков в аккаунте: 1. Нужно больше - напишите на daggerheart.loot@gmail.com.',
-      mode: 'err'
-    });
-    expect(app.cloudLists?.lists.map((l) => l.name)).not.toContain('Копия');
-    expect(app.hash).toBe(before);
-    app.stop();
-  });
-});
-
-describe('the move of browser lists and the cutoff', () => {
-  const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
-  /* The move chains several answers after the list read. */
-  const settled = async (): Promise<void> => {
-    for (let i = 0; i < 4; i++) await flush();
-  };
-  const loot: Loot = {
-    items: {
-      core_item: [
-        { id: 'ci1', src: 'core', kind: 'item', en: 'A', ende: '', ru: 'А', rud: '', roll: 1 },
-        { id: 'q1', src: 'core', kind: 'item', en: 'B', ende: '', ru: 'Б', rud: '', roll: 2 }
-      ]
-    }
-  };
-  const A: StoredList = { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 };
-  const B: StoredList = { id: 'b', name: 'Лавка в порту', ids: [], created: 2 };
-  const TWO = { 'dhloot.lists.v2': JSON.stringify([A, B]) };
-  const MOVED_A = '00000000-0000-4000-8000-000000005000';
-  const idsIn = (storage: FakeStoragePort): string[] =>
-    (JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string }[]).map((l) => l.id);
-
-  function started(
-    cloud: CloudPort | null,
-    hash: string,
-    initial: Record<string, string> = TWO,
-    over: Partial<Env> = {}
-  ) {
-    const router = memoryRouter(hash);
-    const storage = memoryStorage(initial);
-    const app = new AppState(
-      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
-    );
-    app.start();
-    return { app, router, storage };
-  }
-
-  /* Holds every read of the account until `open()`. */
-  function gated(cloud: CloudPort): () => void {
-    let open = (): void => undefined;
-    const gate = new Promise<void>((r) => {
-      open = r;
-    });
-    const list = cloud.lists.list.bind(cloud.lists);
-    cloud.lists.list = async () => {
-      await gate;
-      return list();
-    };
-    return open;
-  }
-
-  it('moves the browser lists after a sign-in, and is due until then', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const open = gated(cloud);
-    const { app, storage } = started(cloud, '#/lists');
-    expect(app.moveDue).toBe(false);
-    await flush();
-    expect(app.moveDue).toBe(true);
-    expect(app.localWritable).toBe(false);
-    open();
-    await settled();
-    expect(app.legacyMove?.status).toBe('done');
-    expect(app.moveDue).toBe(false);
-    expect(app.localWritable).toBe(true);
-    expect(idsIn(storage)).toEqual([]);
-    expect(app.cloudLists?.get(MOVED_A)?.name).toBe('Клад дракона');
-    app.stop();
-  });
-
-  it('makes no move without browser lists, and none signed out', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const move = vi.spyOn(cloud.lists, 'move');
-    const { app } = started(cloud, '#/lists', {});
-    await settled();
-    expect(app.legacyMove?.status).toBe('done');
-    const out = fakeCloud(SEED);
-    const outMove = vi.spyOn(out.lists, 'move');
-    const signedOut = started(out, '#/lists');
-    await settled();
-    expect(signedOut.app.moveDue).toBe(false);
-    expect(signedOut.app.localWritable).toBe(true);
-    expect(move).not.toHaveBeenCalled();
-    expect(outMove).not.toHaveBeenCalled();
-    app.stop();
-    signedOut.app.stop();
-  });
-
-  it('is never due for another account, and leaves its lists writable', async () => {
-    const { app, storage } = started(fakeCloud(SEED, 'gm1'), '#/lists', {
-      ...TWO,
-      'dhloot.migrated.v1': JSON.stringify({ owner: 'someone', lists: {} })
-    });
-    await settled();
-    expect(app.legacyMove?.foreign).toBe(true);
-    expect(app.moveDue).toBe(false);
-    expect(idsIn(storage)).toEqual(['a', 'b']);
-    app.stop();
-  });
-
-  it('moves an offline sign-in once the network returns, on the shown signal, with no reload', async () => {
-    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
-    const { app, storage } = started(cloud, '#/lists');
-    await settled();
-    expect(app.cloudLists?.status).toBe('error');
-    expect(app.legacyMove?.status).toBe('failed');
-    expect(app.moveDue).toBe(true);
-    cloud.setOffline(false);
-    storage.fireExternalChange(null);
-    await settled();
-    expect(app.cloudLists?.status).toBe('ready');
-    expect(idsIn(storage)).toEqual([]);
-    expect(app.moveDue).toBe(false);
-    app.stop();
-  });
-
-  it('moves an offline sign-in on the 45 s poll on any route', async () => {
-    vi.useFakeTimers();
-    try {
-      const cloud = fakeCloud(SEED, 'gm1', { offline: true });
-      const { app, storage } = started(cloud, '#/i/ci1');
-      await vi.advanceTimersByTimeAsync(0);
-      expect(app.legacyMove?.status).toBe('failed');
-      cloud.setOffline(false);
-      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
-      expect(app.cloudLists?.status).toBe('ready');
-      expect(idsIn(storage)).toEqual([]);
-      expect(app.moveDue).toBe(false);
-      app.stop();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('retries a move the network stopped on the 45 s poll, on a browser list page', async () => {
-    vi.useFakeTimers();
-    try {
-      const cloud = fakeCloud(SEED, 'gm1');
-      const move = cloud.lists.move.bind(cloud.lists);
-      let calls = 0;
-      cloud.lists.move = (id, text) =>
-        ++calls === 2 ? Promise.resolve({ ok: false, error: 'network' }) : move(id, text);
-      const { app, storage } = started(cloud, '#/lists/b');
-      await vi.advanceTimersByTimeAsync(0);
-      expect(app.legacyMove?.status).toBe('failed');
-      expect(app.cloudLists?.status).toBe('ready');
-      expect(idsIn(storage)).toEqual(['b']);
-      await vi.advanceTimersByTimeAsync(LIST_POLL_MS);
-      expect(idsIn(storage)).toEqual([]);
-      expect(app.legacyMove?.status).toBe('done');
-      app.stop();
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('runs the move at once on «Повторить»', async () => {
-    const cloud = fakeCloud(SEED, 'gm1', { offline: true });
-    const { app, storage } = started(cloud, '#/lists');
-    await settled();
-    cloud.setOffline(false);
-    await app.retryLists();
-    expect(app.legacyMove?.status).toBe('done');
-    expect(idsIn(storage)).toEqual([]);
-    app.stop();
-  });
-
-  it('runs a move skipped for a share copy once the copy lands', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const open = gated(cloud);
-    const order: string[] = [];
-    const move = cloud.lists.move.bind(cloud.lists);
-    cloud.lists.move = (id, text) => {
-      order.push('move');
-      return move(id, text);
-    };
-    const clone = cloud.shares.clone.bind(cloud.shares);
-    cloud.shares.clone = (token, id) => {
-      order.push('clone');
-      return clone(token, id);
-    };
-    const { app, storage } = started(cloud, '#/s/player-token-1');
-    await flush();
-    /* The first read is held: the copy starts while the move waits for it. */
-    const copying = app.saveShareCopy('player-token-1');
-    open();
-    await copying;
-    await settled();
-    expect(order).toEqual(['clone', 'move', 'move']);
-    expect(app.legacyMove?.status).toBe('done');
-    expect(idsIn(storage)).toEqual([]);
-    expect(app.cloudLists?.lists.map((l) => l.name)).toEqual(
-      expect.arrayContaining(['Клад дракона', 'Лавка в порту', 'Лавка кузнеца'])
-    );
-    app.stop();
-  });
-
-  it('makes a remembered share copy only after the move read the account back', async () => {
-    const action = { do: 'saveList' as const };
-    const cloud = fakeCloud(SEED, 'gm2', {
-      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
-    });
-    const order: string[] = [];
-    const list = cloud.lists.list.bind(cloud.lists);
-    cloud.lists.list = () => {
-      order.push('list');
-      return list();
-    };
-    const clone = cloud.shares.clone.bind(cloud.shares);
-    cloud.shares.clone = (token, id) => {
-      order.push('clone');
-      return clone(token, id);
-    };
-    const move = cloud.lists.move.bind(cloud.lists);
-    cloud.lists.move = (id, text) => {
-      order.push('move');
-      return move(id, text);
-    };
-    const { app, storage } = started(cloud, '#/s/player-token-1');
-    await settled();
-    await settled();
-    expect(order.indexOf('clone')).toBeGreaterThan(order.lastIndexOf('move') + 1);
-    expect(order.slice(0, 4)).toEqual(['list', 'move', 'move', 'list']);
-    expect(idsIn(storage)).toEqual([]);
-    expect(app.cloudLists?.lists.map((l) => l.name)).toEqual(
-      expect.arrayContaining(['Клад дракона', 'Лавка в порту', 'Лавка кузнеца'])
-    );
-    app.stop();
-  });
-
-  it("follows a moved list's page to its account address, keeping a waiting action", async () => {
-    const action = { do: 'addToList' as const, key: 'ci1', ids: ['ci1'] };
-    const cloud = fakeCloud(SEED, 'gm1', {
-      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
-    });
-    const { app, router } = started(cloud, '#/lists/a');
-    await settled();
-    expect(app.hash).toBe('#/lists/' + MOVED_A);
-    expect(router.hash()).toBe('#/lists/' + MOVED_A);
-    expect(app.menuFor).toBe('ci1');
-    app.stop();
-  });
-
-  it('follows an own #/l/ page that no list claimed, the OAuth return with openList empty', async () => {
-    const { app } = started(fakeCloud(SEED, 'gm1'), sharedListHash(encodeList(A, false)));
-    expect(app.openList).toBe('');
-    await settled();
-    expect(app.hash).toBe('#/lists/' + MOVED_A);
-    app.stop();
-  });
-
-  it('follows the open page when another tab moved its list', async () => {
-    const { app, storage } = started(fakeCloud(SEED), '#/lists/a');
-    await settled();
-    storage.set('dhloot.migrated.v1', JSON.stringify({ owner: 'x', lists: { a: MOVED_A } }));
-    storage.fireExternalChange('dhloot.migrated.v1');
-    expect(app.hash).toBe('#/lists/' + MOVED_A);
-    expect(app.lists.lists.map((l) => l.id)).toEqual(['b']);
-    app.stop();
-  });
-
-  it('leaves a page that is not a moved list where it is', () => {
-    const { app } = started(fakeCloud(SEED, 'gm1'), '#/lists/zz');
-    app.followMoved([]);
-    app.followMoved([{ list: B, accountId: MOVED_A }]);
-    expect(app.hash).toBe('#/lists/zz');
-    app.stop();
-  });
-
-  it('reads the cutoff once, only in a build with a cloud', () => {
-    const after = { clock: fixedClock(LEGACY_WRITE_UNTIL) };
-    const before = { clock: fixedClock(LEGACY_WRITE_UNTIL - 1) };
-    const cloud = fakeCloud(SEED);
-    expect(new AppState(at('#/lists', { cloud, ...after })).legacyWritable).toBe(false);
-    expect(new AppState(at('#/lists', { cloud, ...before })).legacyWritable).toBe(true);
-    expect(new AppState(at('#/lists', after)).legacyWritable).toBe(true);
-  });
-
-  it('never unpacks a packed link after the cutoff, and saves no #/l/ copy then', async () => {
-    const unpack = vi.fn(() => Promise.resolve('x'));
-    const compress: CompressPort = {
-      available: () => true,
-      pack: (raw) => Promise.resolve(raw),
-      unpack
-    };
-    const clock = fixedClock(LEGACY_WRITE_UNTIL);
-    const packed = started(fakeCloud(SEED), '#/l/~packed', {}, { compress, clock });
-    await settled();
-    expect(unpack).not.toHaveBeenCalled();
-    expect(packed.app.expandFailed).toBe('');
-    packed.app.stop();
-
-    const shared = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
-    const action = { do: 'saveList' as const };
-    const cloud = fakeCloud(SEED, 'gm2', {
-      returned: { kind: 'signIn', provider: 'google', result: { ok: true }, action }
-    });
-    const { app } = started(cloud, sharedListHash(shared), {}, { clock });
-    await settled();
-    expect(app.hash).toBe(sharedListHash(shared));
-    expect(app.cloudLists?.lists).toHaveLength(1);
-    app.stop();
-  });
 });
 
 describe('purchase requests', () => {
@@ -3115,6 +2739,287 @@ describe('purchase requests', () => {
   });
 });
 
+describe('the new-request toast', () => {
+  const SHOP = uuid(101);
+  const TROPHIES = uuid(103);
+  const ONE = [{ item: 'ci1', qty: 1 }];
+  const undo = { label: () => 'Вернуть', run: vi.fn() };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /* gm1 signed in, the lists and the first heads read done. */
+  async function owner(hash = '#/roll/std', dialog = fakeDialog(true)) {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const storage = memoryStorage();
+    const page = fakePage();
+    const app = new AppState(
+      fakeEnv({ router: memoryRouter(hash), storage, cloud, page, dialog })
+    );
+    app.start();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.ownerRequests?.status).toBe('ready');
+    return { app, cloud, storage, page, dialog };
+  }
+
+  /* A request sent now, heard on the owner topic and read. */
+  async function arrive(cloud: FakeCloud, token = 'player-token-1'): Promise<string | null> {
+    const id = cloud.request(token, ONE);
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 50);
+    return id;
+  }
+
+  async function trophiesToken(cloud: FakeCloud): Promise<string> {
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    return made.ok ? made.token : '';
+  }
+
+  it('says one request on another page with «Открыть», for 7000 ms, and nothing on the first read', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', ONE);
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/roll/std'), cloud }));
+    app.start();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.ownerRequests?.status).toBe('ready');
+    expect(app.toast).toBeNull();
+    await arrive(cloud);
+    expect(app.toast).toMatchObject({
+      msg: 'Новый запрос по списку «Лавка кузнеца»',
+      mode: 'act',
+      action: { label: 'Открыть' }
+    });
+    await vi.advanceTimersByTimeAsync(7000 - COALESCE_MS - 51);
+    expect(app.toast).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 60);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it("reads «Показать» on that list's page and in English", async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    await arrive(cloud);
+    expect(app.toast?.action?.label).toBe('Показать');
+    app.setLang('en');
+    expect(app.toast?.msg).toBe('New request for the list "Лавка кузнеца"');
+    expect(app.toast?.action?.label).toBe('Show');
+    app.go('#/roll/std');
+    expect(app.toast?.action?.label).toBe('Open');
+    app.stop();
+  });
+
+  it('keeps a list name of 200 characters whole', async () => {
+    const { app, cloud } = await owner();
+    const long = 'Я'.repeat(200);
+    app.cloudLists?.rename(SHOP, long);
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe(`Новый запрос по списку «${long}»`);
+    app.stop();
+  });
+
+  it('counts a second arrival while it shows and restarts its 7000 ms', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    await vi.advanceTimersByTimeAsync(5000);
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('counts requests on two lists, and «Открыть» goes to the lists page with no focus flag', async () => {
+    const { app, cloud } = await owner();
+    const token = await trophiesToken(cloud);
+    cloud.request(token, [{ item: 'q1', qty: 1 }]);
+    cloud.request('player-token-1', ONE);
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов: 3');
+    expect(app.toast?.action?.label).toBe('Открыть');
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(app.route).toEqual({ kind: 'section', section: 'lists' });
+    expect(app.requestsFocus).toBeNull();
+    app.stop();
+  });
+
+  it('«Открыть» opens the list and flags its panel; leaving the list drops the flag', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(app.route).toEqual({ kind: 'storedList', listId: SHOP });
+    expect(app.requestsFocus).toBe(SHOP);
+    app.go('#/tables/eq_weapon');
+    expect(app.requestsFocus).toBeNull();
+    app.stop();
+  });
+
+  it('sets no flag when unsaved edits refuse the navigation', async () => {
+    const dialog = fakeDialog(false);
+    const { app, cloud } = await owner('#/homebrew/new', dialog);
+    const release = app.guardLeave(() => true);
+    await arrive(cloud);
+    const go = app.toast?.action?.go;
+    app.hideToast();
+    go?.();
+    expect(dialog.asked).toHaveLength(1);
+    expect(app.hash).toBe('#/homebrew/new');
+    expect(app.requestsFocus).toBeNull();
+    release();
+    app.stop();
+  });
+
+  it('waits behind an undo toast and an error toast, and shows after them', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe('убрано');
+    app.say(() => 'ошибка', { error: true });
+    expect(app.toast?.msg).toBe('ошибка');
+    await vi.advanceTimersByTimeAsync(2600);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('a plain toast replaces a shown arrival and drops it; the title count keeps it', async () => {
+    const { app, cloud } = await owner();
+    await arrive(cloud);
+    app.say(() => 'скопировано');
+    expect(app.toast?.msg).toBe('скопировано');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(1);
+    app.stop();
+  });
+
+  it('a plain toast said while an arrival waits takes the slot and drops the arrival', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    app.say(() => 'потом');
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast?.msg).toBe('потом');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('an arrival never takes the slot from a waiting plain toast', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    app.say(() => 'потом');
+    await arrive(cloud);
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast?.msg).toBe('потом');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it("the owner's decline toast replaces a shown arrival", async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    const id = await arrive(cloud);
+    expect(app.toast?.mode).toBe('act');
+    await app.ownerRequests?.decline(id ?? '');
+    expect(app.toast?.msg).toBe('Запрос отклонён');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+
+  it('holds the arrival in a hidden tab until it is shown again', async () => {
+    const { app, cloud, page, storage } = await owner();
+    page.fireHidden();
+    await arrive(cloud);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('an arrival waits behind a plain toast and shows after it', async () => {
+    const { app, cloud } = await owner();
+    app.say(() => 'Запрос принят');
+    const id = cloud.request('player-token-1', ONE);
+    expect(id).not.toBeNull();
+    await vi.advanceTimersByTimeAsync(COALESCE_MS + 50);
+    expect(app.toast?.msg).toBe('Запрос принят');
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('keeps a list name with replacement patterns and «%n» as written', async () => {
+    const { app, cloud } = await owner();
+    app.cloudLists?.rename(SHOP, 'a$&b%n');
+    await arrive(cloud);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «a$&b%n»');
+    await arrive(cloud, 'gm-token-1');
+    expect(app.toast?.msg).toBe('Новых запросов по списку «a$&b%n»: 2');
+    app.stop();
+  });
+
+  it('keeps an arrival heard in a hidden tab after the shown arrival toast ran out unseen', async () => {
+    const { app, cloud, page, storage } = await owner();
+    await arrive(cloud);
+    page.fireHidden();
+    await arrive(cloud, 'gm-token-1');
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новых запросов по списку «Лавка кузнеца»: 2');
+    app.stop();
+  });
+
+  it('holds a waiting arrival whose blocking toast ends while the tab is hidden', async () => {
+    const { app, cloud, page, storage } = await owner();
+    app.say(() => 'убрано', { action: undo });
+    await arrive(cloud);
+    page.fireHidden();
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(app.toast).toBeNull();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast?.msg).toBe('Новый запрос по списку «Лавка кузнеца»');
+    app.stop();
+  });
+
+  it('a sign-out hides a shown arrival, clears the focus flag and the unread count', async () => {
+    const { app, cloud } = await owner('#/lists/' + SHOP);
+    await arrive(cloud);
+    expect(app.toast?.mode).toBe('act');
+    app.openRequests(SHOP);
+    expect(app.requestsFocus).toBe(SHOP);
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(1);
+    await cloud.auth.signOut();
+    expect(app.toast).toBeNull();
+    expect(app.requestsFocus).toBeNull();
+    expect(app.ownerRequests?.unreadCount(Date.now())).toBe(0);
+    app.stop();
+  });
+
+  it('drops a held arrival on sign-out', async () => {
+    const { app, cloud, page, storage } = await owner();
+    page.fireHidden();
+    await arrive(cloud);
+    await cloud.auth.signOut();
+    page.fireShown();
+    storage.fireExternalChange(null);
+    expect(app.toast).toBeNull();
+    app.stop();
+  });
+});
+
 describe('the exports', () => {
   const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
   const loot: Loot = {
@@ -3146,7 +3051,7 @@ describe('the exports', () => {
         router: memoryRouter('#/lists'),
         storage: memoryStorage(),
         cloud: fakeCloud(seed, as, { limits }),
-        data: { load: () => loot },
+        data: fakeData(loot),
         clock: fixedClock(NOW),
         image
       })
@@ -3233,7 +3138,10 @@ describe('the exports', () => {
 
   it('counts an own item the account no longer holds, left out of the file', async () => {
     const { app, image } = await signedIn();
-    /* Deleted on another device, before this tab read its lists again. */
+    const store = app.cloudLists!;
+    await store.detail(store.lists.map((l) => l.id));
+    /* Deleted on another device, after this tab read its lists and before it read them
+       again. */
     app.homebrew!.items = app.homebrew!.items.filter((i) => i.key !== AXE);
     await app.exportLists();
     const text = await image.downloaded[0]!.blob.text();
@@ -3242,6 +3150,139 @@ describe('the exports', () => {
       msg: '1 свой предмет не попал в файл: его больше нет в аккаунте.',
       mode: ''
     });
+    app.stop();
+  });
+
+  /* gm1 with 50 more lists of one entry: 53 lists, so a download reads two chunks. */
+  const MANY: Seed = {
+    ...SEED,
+    lists: {
+      ...SEED.lists,
+      gm1: [
+        ...SEED.lists.gm1,
+        ...Array.from({ length: 50 }, (_, i) => ({
+          id: uuid(30000 + i),
+          name: 'Добавка ' + String(i),
+          entries: [{ id: uuid(31000 + i), itemKey: 'ci1', position: 0, qty: 2 }],
+          createdAgoMs: 5000,
+          editedAgoMs: 5000
+        }))
+      ]
+    }
+  };
+
+  it('reads the entries of every list with heads only in one rows call before a download (the port chunks it)', async () => {
+    const { app, image } = await signedIn(fakeImage(), {}, 'gm1', MANY);
+    const store = app.cloudLists!;
+    expect(store.lists.every((l) => store.detailOf(l.id) === 'absent')).toBe(true);
+    const rows = vi.spyOn(app.env.cloud!.lists, 'rows');
+    await app.exportLists();
+    expect(rows.mock.calls.map(([ids]) => ids.length)).toEqual([53]);
+    const doc = JSON.parse(await image.downloaded[0]!.blob.text()) as {
+      lists: { name: string; entries: Record<string, unknown>[] }[];
+    };
+    const shop = doc.lists.find((l) => l.name === 'Лавка кузнеца');
+    expect(shop?.entries[0]).toMatchObject({ id: 'ci1', quantity: 2, price_coins: 150 });
+    expect(shop?.entries[1]).toMatchObject({ player_note: 'Последний в наличии.' });
+    expect(doc.lists.find((l) => l.name === 'Добавка 0')?.entries[0]).toMatchObject({
+      quantity: 2
+    });
+    app.stop();
+  });
+
+  it('downloads nothing and says so when the entries read fails, for both downloads', async () => {
+    const { app, image } = await signedIn();
+    const rows = vi.spyOn(app.env.cloud!.lists, 'rows');
+    rows.mockResolvedValue({ ok: false });
+    await app.exportLists([SHOP]);
+    expect(image.downloaded).toHaveLength(0);
+    expect(app.toast).toMatchObject({
+      msg: 'Не получилось. Проверьте соединение и попробуйте ещё раз.',
+      mode: 'err'
+    });
+    app.toast = null;
+    await app.exportData();
+    expect(image.downloaded).toHaveLength(0);
+    expect(app.toast).toMatchObject({
+      msg: 'Не получилось. Проверьте соединение и попробуйте ещё раз.'
+    });
+    app.stop();
+  });
+
+  it('writes the lists of the press only when a re-read brings a list during the entries read', async () => {
+    for (const run of ['lists', 'data'] as const) {
+      const { app, image } = await signedIn();
+      const cloud = app.env.cloud!;
+      const store = app.cloudLists!;
+      const before = store.lists.map((l) => l.name).sort();
+      const real = cloud.lists.rows.bind(cloud.lists);
+      vi.spyOn(cloud.lists, 'rows').mockImplementationOnce(async (ids) => {
+        /* Another device makes a list; this tab reads it as a head while the read runs. */
+        await cloud.lists.apply([
+          {
+            op: 'create',
+            list: {
+              id: uuid(9700),
+              name: 'Сделан в другом окне',
+              money_mode: 'bag',
+              player_note: '',
+              gm_note: ''
+            },
+            entries: [
+              {
+                id: uuid(9701),
+                item_key: 'ci1',
+                source: 'official',
+                hb_item: null,
+                position: 0,
+                quantity: 4,
+                price_coins: null,
+                player_note: '',
+                gm_note: ''
+              }
+            ]
+          }
+        ]);
+        void store.refresh();
+        await flush();
+        expect(store.get(uuid(9700))).toBeDefined();
+        return real(ids);
+      });
+      if (run === 'lists') await app.exportLists();
+      else await app.exportData();
+      expect(image.downloaded).toHaveLength(1);
+      const blob = image.downloaded[0]!.blob;
+      let text: string;
+      if (run === 'lists') text = await blob.text();
+      else {
+        /* A store-only zip holds `lists.json` as plain bytes. */
+        const bytes = new Uint8Array(await blob.arrayBuffer());
+        const raw = new TextDecoder().decode(bytes);
+        /* The first file is `lists.json`; the next local header ends it. */
+        const start = raw.indexOf('{');
+        const next = raw.indexOf('PK\u0003\u0004', start);
+        const part = raw.slice(start, next < 0 ? raw.length : next);
+        text = part.slice(0, part.lastIndexOf('}') + 1);
+      }
+      const doc = JSON.parse(text) as {
+        lists: { name: string; entries: Record<string, unknown>[] }[];
+      };
+      expect(doc.lists.map((l) => l.name).sort()).toEqual(before);
+      expect(doc.lists.find((l) => l.name === 'Лавка кузнеца')?.entries[0]).toMatchObject({
+        id: 'ci1',
+        quantity: 2,
+        price_coins: 150
+      });
+      app.stop();
+    }
+  });
+
+  it('reads the entries before the data download too', async () => {
+    const { app, image } = await signedIn();
+    const rows = vi.spyOn(app.env.cloud!.lists, 'rows');
+    await app.exportData();
+    expect(rows).toHaveBeenCalledOnce();
+    expect(image.downloaded).toHaveLength(1);
     app.stop();
   });
 
@@ -3332,7 +3373,7 @@ describe('the exports', () => {
         router: memoryRouter('#/lists'),
         storage: memoryStorage(),
         cloud: fakeCloud(SEED, 'gm2'),
-        data: { load: () => loot },
+        data: fakeData(loot),
         clock: fixedClock(NOW),
         image
       })
@@ -3729,7 +3770,7 @@ describe('homebrew', () => {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
     const app = new AppState(
-      fakeEnv({ router, storage, cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage, cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router, storage };
@@ -4006,20 +4047,6 @@ describe('homebrew', () => {
       app.stop();
     });
   });
-
-  it('decodes a #/l/ link with catalog ids only, own keys dropped', async () => {
-    const cloud = fakeCloud(SEED, 'gm1');
-    const payload = encodeList({ name: 'С топором', ids: ['ci1', AXE] }, true);
-    const { app } = started(cloud, sharedListHash(payload));
-    await flush();
-    expect(app.index?.byId.has(AXE)).toBe(true);
-    app.askSignIn({ hash: sharedListHash(payload), action: { do: 'saveList' } });
-    await app.signIn('google');
-    await flush();
-    const made = app.cloudLists?.lists.find((l) => l.name === 'С топором');
-    expect(made?.ids).toEqual(['ci1']);
-    app.stop();
-  });
 });
 
 describe('the item page and «Сохранить себе»', () => {
@@ -4054,14 +4081,14 @@ describe('the item page and «Сохранить себе»', () => {
   function started(cloud: CloudPort, hash: string) {
     const router = memoryRouter(hash);
     const storage = memoryStorage();
-    const app = new AppState(fakeEnv({ router, storage, cloud, data: { load: () => loot } }));
+    const app = new AppState(fakeEnv({ router, storage, cloud, data: fakeData(loot) }));
     app.start();
     return { app, router, storage };
   }
 
   /* The server's rows of a list: what a relink must keep, and what it moves. */
   async function rows(cloud: CloudPort, id: string) {
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([id]);
     const l = read.ok ? read.lists.find((x) => x.id === id) : undefined;
     return l?.list_entries.map((e) => ({ ...e }));
   }
@@ -4171,8 +4198,21 @@ describe('the item page and «Сохранить себе»', () => {
     expect(record?.hid).toBe(AXE_ID);
     expect(app.isForeignItem(record!)).toBe(true);
     expect(app.relinkTargets(record!).sort()).toEqual([GM2_LIST, SECOND].sort());
+    /* The relink runs on heads: the server keeps each row's details. */
+    expect([GM2_LIST, SECOND].map((id) => app.cloudLists?.detailOf(id))).toEqual([
+      'absent',
+      'absent'
+    ]);
+    const read = vi.spyOn(cloud.lists, 'rows');
+    const relinked = vi.spyOn(cloud.lists, 'apply');
     await app.saveItem(record!);
     await app.cloudLists?.flushNow();
+    expect(read).not.toHaveBeenCalled();
+    expect(
+      relinked.mock.calls.flatMap(([ops]) => ops.filter((o) => o.op === 'relink'))
+    ).toHaveLength(2);
+    read.mockRestore();
+    relinked.mockRestore();
     const [COPY] = await ownKeys(cloud);
     if (!COPY) throw new Error('no copy');
     expect(COPY).toMatch(HOMEBREW_KEY);
@@ -4862,7 +4902,7 @@ describe('printing', () => {
   function started(cloud: CloudPort | null, hash: string, over: Partial<Env> = {}) {
     const router = memoryRouter(hash);
     const app = new AppState(
-      fakeEnv({ router, storage: memoryStorage(), cloud, data: { load: () => loot }, ...over })
+      fakeEnv({ router, storage: memoryStorage(), cloud, data: fakeData(loot), ...over })
     );
     app.start();
     return { app, router };
@@ -5043,6 +5083,45 @@ describe('printing', () => {
     app.stop();
   });
 
+  it("resolves a key two of the reader's lists link from two accounts to the open list's record", async () => {
+    /* gm2's seeded list links gm1's axe; a second list links gm3's item of the same key. */
+    const OTHER_AXE = uuid(9701);
+    const second = {
+      id: uuid(9702),
+      name: 'Второй топор',
+      entries: [
+        {
+          id: uuid(9703),
+          itemKey: AXE,
+          position: 0,
+          source: 'homebrew' as const,
+          hbItem: OTHER_AXE
+        }
+      ],
+      createdAgoMs: 3_600_000,
+      editedAgoMs: 60_000
+    };
+    const cloud = fakeCloud(seedWith({ gm2: [second] }), 'gm2');
+    const made = await cloud.as('gm3').homebrew.createItem({
+      id: OTHER_AXE,
+      key: AXE,
+      book_id: null,
+      content: { kind: 'item', ru: 'Другой топор' }
+    });
+    expect(made.ok).toBe(true);
+    const { app } = started(cloud, '#/lists');
+    await flush();
+    await flush();
+    const linking = (app.cloudLists?.lists ?? []).filter((l) => l.linked?.[AXE]);
+    expect(linking).toHaveLength(2);
+    const [before, open] = linking as [CloudList, CloudList];
+    expect(before.linked?.[AXE]?.hid).not.toBe(open.linked?.[AXE]?.hid);
+    app.go('#/lists/' + open.id);
+    expect(app.pageRecordFor(AXE)).toBe(open.linked?.[AXE]);
+    expect(app.printEntriesOf([AXE]).entries).toEqual([{ h: open.linked?.[AXE]?.hid }]);
+    app.stop();
+  });
+
   it('makes the set a signed-out press left once the sign-in has read the lists', async () => {
     const { app } = started(fakeCloud(SEED), '#/i/ci1');
     await flush();
@@ -5091,7 +5170,6 @@ describe('printing', () => {
 
 describe("another tab's settings", () => {
   const flush = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
-  const WARN_KEY = 'dhloot.warn.v1';
   const PREFS_KEY = 'dhloot.prefs.v1';
 
   const signedOut = (cloud: CloudPort | null) => {
@@ -5104,7 +5182,7 @@ describe("another tab's settings", () => {
   it.each([
     ['with no cloud', null],
     ['with a cloud, signed out', 'cloud']
-  ] as const)('follows the language, start, warning and display defaults %s', async (_, c) => {
+  ] as const)('follows the language, start and display defaults %s', async (_, c) => {
     const { app, storage } = signedOut(c === null ? null : fakeCloud(SEED));
     await flush();
     app.showPrintBW(true);
@@ -5114,9 +5192,6 @@ describe("another tab's settings", () => {
     storage.set(HOME_KEY, '#/tables/other_frames');
     storage.fireExternalChange(HOME_KEY);
     expect(app.home).toBe('#/tables/other_frames');
-    storage.set(WARN_KEY, '1');
-    storage.fireExternalChange(WARN_KEY);
-    expect(app.warnHidden).toBe(true);
     storage.set(PREFS_KEY, '{"view":"grid","printBw":false,"printCompact":true}');
     storage.fireExternalChange(null);
     expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', false, true]);
@@ -5162,7 +5237,7 @@ describe("another tab's settings", () => {
     app.stop();
     const out = signedOut(null);
     out.storage.set(LANG_KEY, 'en');
-    out.storage.fireExternalChange('dhloot.lists.v2');
+    out.storage.fireExternalChange('other.key');
     expect(out.app.lang).toBe('ru');
     out.app.stop();
   });

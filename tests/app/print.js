@@ -563,10 +563,17 @@ const { ok } = rep;
   ok(/Близко/i.test(emberStrips[1] || ''), 'Ember second strip: ' + emberStrips[1]);
   const emberDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(emberDice.join() === 'd8,d12', 'Ember dice: ' + emberDice.join());
-  /* The set lead is the italic run that names the set; the bonus after it may hold an
-     italic condition of its own (FEATURES.md, "Records", "Catalog style"). */
-  const setLead = (e) => e.map((x) => x.textContent).find((t) => t.includes('(Комплект:'));
-  const emberLast = await page.$$eval('.pc-text i', setLead);
+  /* The set lead: the name in bold italic, then the members in italics (FEATURES.md,
+     "Print"); the bonus after it may hold an italic condition of its own. */
+  const setLead = (e) =>
+    e
+      .map((b) =>
+        b.firstElementChild?.tagName === 'I' && b.nextElementSibling?.tagName === 'I'
+          ? b.textContent + b.nextElementSibling.textContent
+          : ''
+      )
+      .find((t) => t.includes('(Комплект:'));
+  const emberLast = await page.$$eval('.pc-text b.pc-set', setLead);
   ok(
     emberLast === 'Пылающие близнецы (Комплект: Уголёк, Искра):',
     'Ember set line label: ' + emberLast
@@ -581,7 +588,7 @@ const { ok } = rep;
     'Spark carries the bonus other than once, in the set line: ' + sparkText
   );
   await openPrint(d, 'voa4_t3d');
-  const guardLast = await page.$$eval('.pc-text i', setLead);
+  const guardLast = await page.$$eval('.pc-text b.pc-set', setLead);
   ok(
     guardLast === 'Убранство Святого (Комплект: Святой Щит, Святой Клинок, Святое Облачение):',
     'Saintly Guard set line label: ' + guardLast
@@ -1633,19 +1640,6 @@ const { ok } = rep;
     'the list does not print its entries with their counts: ' + counted.join(', ')
   );
 
-  /* Signed out, a browser list's «Печать» asks for a sign-in in its slot. */
-  await d.seed({
-    'dhloot.lists.v2': JSON.stringify([
-      { id: 'p', name: 'Печать', ids: ['ci1', 'q1'], created: 1 }
-    ])
-  });
-  await d.open('#/lists/p');
-  await d.click(PRINT);
-  ok(
-    (await d.text()).includes('Войдите, чтобы печатать карточки.'),
-    'a signed-out list print does not ask for a sign-in'
-  );
-
   /* Garbage must not drop the page - only say there is nothing to print. */
   await openPrint(d, 'nosuchid');
   ok(!(await page.$('.psheet')), 'a set of a made-up id assembled a sheet');
@@ -2611,17 +2605,7 @@ const { ok } = rep;
     await d.media(undefined);
   }
 
-  /* `seed()` registers an `evaluateOnNewDocument` handler that survives every
-     later `d.open()` on this page, not only the next one - there is no
-     unseed. Harmless here because everything below reads a print route,
-     which shows no lists; a case appended later that opens a list-bearing
-     route on this same `d` would silently inherit list `a`. If that
-     ever matters, open a fresh driver for the later case rather than fight
-     this one's residual seed. */
-  await d.seed({
-    'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: ['ci1'] }])
-  });
-  await d.open('#/lists/a');
+  await d.open('#/lists/00000000-0000-4000-8000-000000000101', { as: 'gm1' });
   await d.click('Убрать из списка');
   await d.media('print');
   try {
@@ -2640,26 +2624,25 @@ const { ok } = rep;
   }
 
   /* ---------- the print link, copied (`copiedPrintLink`) ----------
-     The set-link button, copied - only the hash is compared, the way the
-     deleted parity harness's `copiedPrintLink` spec read it. Russian-only
-     above, English added below - the link text changes, the hash
-     it carries does not. */
+     The set-link button, copied - only the path is compared, the way the
+     deleted parity harness's `copiedPrintLink` spec read the hash. Russian-only
+     above, English added below - the link carries `/en` before the same path. */
   console.log('the set link, copied');
   const setId = await openPrint(d, 'ci1-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clip = await d.clipboard();
-  const hash = clip.text ? clip.text.slice(clip.text.indexOf('#')) : null;
-  ok(hash === '#/p/' + setId, "the copied set link is not the page's own: " + hash);
+  const hash = clip.text ? new URL(clip.text).pathname : null;
+  ok(hash === '/p/' + setId, "the copied set link is not the page's own: " + hash);
 
   console.log('the set link, copied with a count');
   const countedId = await openPrint(d, 'ci1*3-q1');
   await d.resetClipboard();
   await d.click('Ссылка на набор');
   const clipQty = await d.clipboard();
-  const hashQty = clipQty.text ? clipQty.text.slice(clipQty.text.indexOf('#')) : null;
+  const hashQty = clipQty.text ? new URL(clipQty.text).pathname : null;
   ok(
-    hashQty === '#/p/' + countedId,
+    hashQty === '/p/' + countedId,
     'the copied set link of a counted set is wrong: ' + hashQty
   );
 
@@ -2668,12 +2651,8 @@ const { ok } = rep;
   await dEn.resetClipboard();
   await dEn.click('Link to this set');
   const clipEn = await dEn.clipboard();
-  const hashEn = clipEn.text ? clipEn.text.slice(clipEn.text.indexOf('#')) : null;
-  ok(hashEn === '#/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
-  ok(
-    !!clipEn.text && clipEn.text.includes('en/#/p/'),
-    'the English set link does not go through en/: ' + clipEn.text
-  );
+  const hashEn = clipEn.text ? new URL(clipEn.text).pathname : null;
+  ok(hashEn === '/en/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
 
   /* An own item's picture: the colour card draws it as a catalog picture, the
      black-and-white card draws none. The seed gives gm1's axe the catalog's
@@ -2693,7 +2672,7 @@ const { ok } = rep;
     }));
   });
   ok(
-    ownArt.every((a) => a.src === 'img/ci1.webp' && a.loaded),
+    ownArt.every((a) => a.src === '/img/ci1.webp' && a.loaded),
     "the own item's colour card does not draw its picture: " + JSON.stringify(ownArt)
   );
   await bw();
@@ -2853,7 +2832,7 @@ const { ok } = rep;
                 ? '-bw'
                 : '') +
             '.svg';
-          const text = await (await fetch('card/' + file)).text();
+          const text = await (await fetch('/card/' + file)).text();
           const tag = 'pvf' + String(n++) + '-';
           const own = text
             .replace(/id="([^"]+)"/g, 'id="' + tag + '$1"')

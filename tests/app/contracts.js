@@ -1,149 +1,39 @@
 /* Public contracts against the golden fixtures, re-pointed at dist-test/ - the
- * browser half of tests/contracts.js. The pure half (the second
- * implementation of the codec) and the llms.txt/CONTRACTS.md/ROUTES.md name
- * greps need no browser and stay there for now. Nothing here edits a
- * fixture: a divergence is root-caused and reported, per CLAUDE.md,
- * "Public contracts default to no change". */
+ * browser half of tests/contracts.js. The llms.txt/CONTRACTS.md/ROUTES.md name
+ * greps need no browser and stay there. Nothing here edits a fixture: a
+ * divergence is root-caused and reported, per CLAUDE.md, "Public contracts
+ * default to no change". */
 const fs = require('fs');
 const path = require('path');
 const { fresh, reporter, closeBrowser } = require('./lib.js');
+/* The app's own conversion, so the bar is compared in the form the app writes. */
+const { pathOf } = require('../../app/src/lib/address.ts');
 
 const FIX = path.join(__dirname, '..', '..', 'docs', 'fixtures');
 const rep = reporter();
 const { ok } = rep;
 
-const b64url = (s) =>
-  Buffer.from(s, 'utf8')
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-function stampOf(parts) {
-  const body = parts.join(',');
-  let h = 2166136261;
-  for (let i = 0; i < body.length; i++) {
-    h ^= body.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return parts.length.toString(36) + '.' + (h >>> 0).toString(36).slice(-4) + '~';
-}
-
 (async () => {
-  const listFiles = fs.readdirSync(path.join(FIX, 'lists')).filter((f) => f.endsWith('.json'));
-  const lists = listFiles.map((f) =>
-    JSON.parse(fs.readFileSync(path.join(FIX, 'lists', f), 'utf8'))
-  );
-
-  console.log('the link the app writes');
-  for (const fx of lists) {
-    const { ctx, page, d } = await fresh({
-      width: 1280,
-      height: 900,
-      storage: { 'dhloot.lists.v2': JSON.stringify([fx.list]) }
-    });
-    await d.open('#/lists/' + fx.list.id);
-    /* The owned-list address is debounce-written (ListPage.svelte),
-       so reading location.hash right after open() rests on ready()'s own
-       wait happening to already exceed the 150ms debounce, not on anything
-       here asserting settlement - addressSettled() makes that explicit. */
-    await d.addressSettled();
-    const inBar = (await page.evaluate(() => location.hash)).replace('#/l/', '');
-    ok(
-      inBar === fx.player.payload,
-      fx.id + ': the address bar does not hold the link from the fixture'
-    );
-    await ctx.close();
-  }
-
-  console.log('the link the app reads');
-  for (const fx of lists) {
-    const notes = [fx.list.note, fx.list.hnote]
-      .concat(
-        Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].note),
-        Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].hnote)
-      )
-      .filter(Boolean);
-    const forPlayers = [fx.list.note]
-      .concat(Object.keys(fx.list.meta || {}).map((id) => fx.list.meta[id].note))
-      .filter(Boolean);
-    const gmOnly = notes.filter((n) => forPlayers.indexOf(n) < 0);
-
-    const a = await fresh({ width: 1280, height: 900 });
-    await a.d.open('#/l/' + fx.player.payload);
-    const seenPlayer = await a.page.evaluate(() => document.body.innerText);
-    ok(seenPlayer.indexOf(fx.list.name) >= 0, fx.id + ': the player link did not open');
-    forPlayers.forEach((n) =>
-      ok(seenPlayer.indexOf(n) >= 0, fx.id + ': a player note is missing from the player link')
-    );
-    gmOnly.forEach((n) =>
-      ok(seenPlayer.indexOf(n) < 0, fx.id + ': a GM note is visible through the player link')
-    );
-    await a.ctx.close();
-
-    const b = await fresh({ width: 1280, height: 900 });
-    await b.d.open('#/l/' + fx.gm.payload);
-    const seenGm = await b.page.evaluate(() => document.body.innerText);
-    notes.forEach((n) =>
-      ok(seenGm.indexOf(n) >= 0, fx.id + ': a note is missing from the GM link')
-    );
-    await b.ctx.close();
-  }
-
-  console.log('a truncated link');
-  const big = lists.filter((f) => f.list.ids.length > 1)[0];
-  const cutRaw = big.gm.raw.slice(0, big.gm.raw.lastIndexOf(','));
-  const c = await fresh({ width: 1280, height: 900 });
-  await c.d.open('#/l/' + b64url(cutRaw));
-  const seenCut = await c.page.evaluate(() => document.body.innerText);
-  ok(
-    /повреждена|damaged/i.test(seenCut),
-    'a truncated link opened as a list instead of a broken-link page'
-  );
-  await c.ctx.close();
-
-  /* ---------- a link assembled purely from the documented format ----------
-   * Moved here from tests/lists2.js: the format is frozen until the codec is
-   * removed (docs/specs/CONTRACTS.md section 3; llms.txt no longer teaches it),
-   * and that promise is only as good as this - a link built by a second
-   * implementation, not by the app's own encoder, opening correctly. */
-  console.log("a link assembled from CONTRACTS.md's description");
+  /* An old list link stopped opening on 2026-10-26 (docs/specs/ROUTES.md): a plain one that
+     opened a list before, a packed one, and one with a stray character all draw the
+     not-found page with the address kept. */
+  console.log('an old list link');
   {
-    const parts = ['q26*1*30', 'q313*2', 'ci1'];
-    const raw =
-      'Лавка кузнеца\n' +
-      stampOf(parts) +
-      parts.join(',') +
-      '\n\x1e+~\x1fТовар лежит навалом.' +
-      '\x1e~\x1fКузнец сбывает краденое.' +
-      '\x1e+q26\x1fНа клинке зазубрина.';
-    const payload = b64url(raw);
     const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
-    await d.open('#/l/' + payload);
-    const text = await page.evaluate(() => document.body.innerText);
-    ok(/Лавка кузнеца/.test(text), 'the assembled link did not open as a list');
-    ok(
-      /Катана/.test(text) && /Стеганый Доспех/.test(text) && /Спальный Мешок/.test(text),
-      'the assembled list is missing entries: ' + text.slice(0, 120)
-    );
-    ok(
-      /3 горсти/.test(text),
-      'the price from the assembled link is not shown: ' + text.slice(0, 160)
-    );
-    ok(/×2|x2/.test(text), 'the quantity from the assembled link is not shown');
-    ok(
-      /Товар лежит навалом/.test(text) && /Кузнец сбывает краденое/.test(text),
-      'the notes from the assembled link are not shown'
-    );
-    ok(/На клинке зазубрина/.test(text), "an entry's note is not shown");
+    for (const hash of [
+      '#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg',
+      '#/l/~AAAA',
+      '#/l/ABC.'
+    ]) {
+      await d.open(hash);
+      const seen = await page.evaluate(() => ({
+        h1: document.querySelector('main h1')?.textContent?.trim() ?? null,
+        bar: location.pathname + location.hash
+      }));
+      ok(seen.h1 === 'Предмет не найден', hash + ': the heading is ' + JSON.stringify(seen.h1));
+      ok(seen.bar === pathOf(hash, 'ru'), hash + ': the address became ' + seen.bar);
+    }
     await ctx.close();
-
-    const brokenRaw = raw.replace(stampOf(parts), stampOf(parts.slice(0, 2)));
-    const broken = b64url(brokenRaw);
-    const { ctx: c2, page: p2, d: d2 } = await fresh({ width: 1280, height: 900 });
-    await d2.open('#/l/' + broken);
-    const seenBroken = await p2.evaluate(() => document.body.innerText);
-    ok(!/Катана/.test(seenBroken), 'a link with a wrong checksum opened anyway');
-    await c2.close();
   }
 
   console.log('the address grammar');
@@ -156,14 +46,19 @@ function stampOf(parts) {
    * ~1.8s-per-context floor (tests/app/golden.js's measured cost) once per fixture. */
   const { ctx: rCtx, page: rPage, d: rD } = await fresh({ width: 1280, height: 900 });
   for (const fx of routes) {
-    await rD.open(fx.hash);
+    /* A route the app answers with the home section names no page the host
+       serves at its path (`/nonsense` answers 404.html), so it opens by its old
+       fragment form, which the app reads at the root. */
+    await rD.open(fx.resolves.hash === fx.hash ? fx.hash : '/' + fx.hash);
     const seen = await rPage.evaluate(() => {
       const on = document.querySelector('nav.tabs a[aria-current="page"]');
       /* `.chip[data-val]` is StdPanel's source row and only it - the `value`
          prop on Chip.svelte has no other caller. */
       const srcBtns = [...document.querySelectorAll('.chip[data-val]')];
       return {
-        hash: location.hash,
+        /* The card version is the states suite's (case 81); the route is this one's. */
+        bar:
+          location.pathname + location.search.replace(/[?&]v=[0-9a-z]+$/, '') + location.hash,
         tab: on ? on.getAttribute('href') : null,
         rows: document.querySelectorAll('.rows .row[data-row]').length,
         printCards: document.querySelectorAll('.pcard:not(.blank)').length,
@@ -219,8 +114,11 @@ function stampOf(parts) {
         fx.hash + ': sub ' + JSON.stringify(sub) + ', the fixture says ' + want.sub
       );
     }
-    ok(seen.hash === want.hash, fx.hash + ': became ' + seen.hash + ', not ' + want.hash);
-    ok(seen.tab === want.tab, fx.hash + ': highlighted ' + seen.tab + ', not ' + want.tab);
+    /* Opened by its path form, the bar keeps the path form of the route it resolves to. */
+    const wantBar = pathOf(want.hash, 'ru');
+    const wantTab = want.tab === null ? null : pathOf(want.tab, 'ru');
+    ok(seen.bar === wantBar, fx.hash + ': became ' + seen.bar + ', not ' + wantBar);
+    ok(seen.tab === wantTab, fx.hash + ': highlighted ' + seen.tab + ', not ' + wantTab);
     ok(
       seen.rows === want.rows,
       fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows
@@ -256,6 +154,66 @@ function stampOf(parts) {
   }
   await rCtx.close();
 
+  /* An old `#/` address opens its page and the bar becomes the path form in one step,
+     with no extra history entry (docs/specs/ROUTES.md, "Path form"). */
+  console.log('an old address becomes its path');
+  {
+    const { ctx, page, d } = await fresh({ width: 1280, height: 900 });
+    /* The entries a load itself makes, read before the app boots. */
+    await page.evaluateOnNewDocument(() => {
+      window.__entries = history.length;
+    });
+    const bar = () =>
+      page.evaluate(() => ({
+        bar: location.pathname + location.search + location.hash,
+        lang: document.documentElement.lang,
+        stored: localStorage.getItem('dhloot.lang.v1'),
+        added: history.length - window.__entries
+      }));
+    for (const [old, want, why] of [
+      ['#/i/ci1', '/i/ci1', 'a record'],
+      [
+        '#/s/player-token-1/f_kind-weapon.tier-1',
+        '/s/player-token-1/f_kind-weapon.tier-1',
+        'a share link with a filter'
+      ],
+      ['/roll/std#/i/ci1', '/i/ci1', 'a fragment over a path']
+    ]) {
+      await d.open(old);
+      await d.addressSettled();
+      const seen = await bar();
+      ok(seen.bar.split('?')[0] === want, why + ': ' + old + ' became ' + seen.bar);
+      ok(seen.added === 0, why + ': the conversion added ' + seen.added + ' history entries');
+    }
+    /* An old English link with nothing stored: English, stored, the English path. */
+    await d.open('en/#/tables/eq_weapon');
+    await d.addressSettled();
+    const en = await bar();
+    ok(en.bar === '/en/tables/eq_weapon', 'en/#/tables/eq_weapon became ' + en.bar);
+    ok(
+      en.lang === 'en' && en.stored === 'en',
+      'en/#/ drew ' + en.lang + ', stored ' + en.stored
+    );
+    ok(en.added === 0, 'en/#/: the conversion added ' + en.added + ' history entries');
+    /* An English path with nothing stored draws English. */
+    await d.open('/en/tables/eq_weapon');
+    const enPath = await bar();
+    ok(
+      enPath.bar === '/en/tables/eq_weapon' && enPath.lang === 'en',
+      '/en/tables/eq_weapon drew ' + enPath.lang + ' at ' + enPath.bar
+    );
+    /* A typed old address on an open page: the same page, its path form, in place. */
+    await d.open('#/roll/std');
+    await d.go('#/i/ci1');
+    await d.addressSettled();
+    const typed = await bar();
+    ok(
+      typed.bar.split('?')[0] === '/i/ci1' && typed.added === 1,
+      'a typed #/i/ci1 became ' + typed.bar + ' with ' + typed.added + ' entries'
+    );
+    await ctx.close();
+  }
+
   console.log('every relation link on an item page opens its item');
   /* `#/h/<uuid>` signed out: each relation line's link is an item address, and each one
      draws a card headed by the name the link carries (docs/specs/FEATURES.md, "Records"). */
@@ -270,7 +228,7 @@ function stampOf(parts) {
     );
     ok(links.length === 4, 'the item page draws ' + links.length + ' relation links, not 4');
     for (const link of links) {
-      ok(/^#\/h\/[0-9a-f-]{36}$/.test(link.href), link.text + ': links ' + link.href);
+      ok(/^\/h\/[0-9a-f-]{36}$/.test(link.href), link.text + ': links ' + link.href);
       await hD.open(link.href);
       const heading = await hPage.evaluate(
         () => document.querySelector('h1')?.textContent.trim() ?? ''
@@ -426,7 +384,7 @@ function stampOf(parts) {
   const { ctx: oCtx, page: oPage, d: oD } = await fresh({ width: 1280, height: 900 });
   const ownRowsAt = async (hash) => {
     await oD.open(hash, { as: 'gm1' });
-    await oD.moveSettled();
+    await oD.settled();
     return oPage.evaluate(() => document.querySelectorAll('[data-row]').length);
   };
   const CHIP_PROBE = [
@@ -435,7 +393,16 @@ function stampOf(parts) {
     ['#/tables/homebrew/f_src-hb_alderworkshopaaa', 1],
     ['#/tables/homebrew/f_kind-item.src-hb', 2]
   ];
-  for (const [hash, want] of CHIP_PROBE) {
+  /* The Items tab of «Мои предметы» reads the same groups, but `src` there is a facet: its
+     values are OR'd, so two sources draw both, where the table's chip draws one. */
+  const ITEMS_PROBE = [
+    ['#/homebrew', 4],
+    ['#/homebrew/f_src-hb', 3],
+    ['#/homebrew/f_src-hb_alderworkshopaaa', 1],
+    ['#/homebrew/f_src-hb-hb_alderworkshopaaa', 4],
+    ['#/homebrew/f_kind-item.src-hb', 2]
+  ];
+  for (const [hash, want] of [...CHIP_PROBE, ...ITEMS_PROBE]) {
     const n = await ownRowsAt(hash);
     ok(n === want, hash + ' as gm1: ' + n + ' rows, want ' + want);
   }

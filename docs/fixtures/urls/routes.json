@@ -437,7 +437,7 @@
     "why": "lists index",
     "resolves": {
       "hash": "#/lists",
-      "tab": "#/lists",
+      "tab": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -549,9 +549,31 @@
   },
   {
     "hash": "#/l/ABC.",
-    "why": "a shared-list payload with a stray trailing character opens the shared-list page instead of falling back home (R5)",
+    "why": "an old list link with a stray character draws the not-found page, the address kept, never home",
     "resolves": {
       "hash": "#/l/ABC.",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/l/~AAAA",
+    "why": "a packed old list link: the not-found page, the address kept",
+    "resolves": {
+      "hash": "#/l/~AAAA",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg",
+    "why": "an old list link that opened a list before 2026-10-26: the not-found page, the address kept",
+    "resolves": {
+      "hash": "#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg",
       "tab": null,
       "rows": 0,
       "printCards": 0,
@@ -707,6 +729,43 @@
       "rows": 0,
       "printCards": 0,
       "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/f_kind-item.src-hb",
+    "why": "the Items tab of «Мои предметы» with its filter; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
+    "resolves": {
+      "hash": "#/homebrew/f_kind-item.src-hb",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa",
+    "why": "on the Items tab src holds any number of values, OR'd (the table's source chip holds one); a value no row offers is not in force; address kept",
+    "resolves": {
+      "hash": "#/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/f_kind-item/x",
+    "why": "anything after the Items tab filter is an unreadable address and is replaced by the home section",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
     }
   },
   {

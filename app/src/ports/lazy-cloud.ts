@@ -15,6 +15,7 @@ import type {
   HomebrewRead,
   HomebrewRepository,
   ListRepository,
+  ListRowsRead,
   ListsRead,
   ListWrite,
   PreferencesPort,
@@ -31,6 +32,7 @@ import type {
 const FAILED: AuthResult = { ok: false, error: 'failed' };
 const UNREAD: PrefsRead = { ok: false };
 const UNLISTED: ListsRead = { ok: false };
+const UNROWED: ListRowsRead = { ok: false };
 const NO_ITEMS = { ok: false } as const;
 /* A chunk that never arrived sent nothing, so the write may be sent again. */
 const UNSENT: Extract<ListWrite, { error: 'network' }> = { ok: false, error: 'network' };
@@ -87,8 +89,8 @@ export function lazyCloud(load: () => Promise<CloudPort>): CloudPort {
       if (!p) return UNLISTED;
       return known === undefined ? p.lists.list() : p.lists.list(known);
     },
+    rows: async (ids) => (await port())?.lists.rows(ids) ?? UNROWED,
     apply: async (ops) => (await port())?.lists.apply(ops) ?? UNSENT,
-    move: async (id, canonical) => (await port())?.lists.move(id, canonical) ?? UNSENT,
     import: async (rows) => (await port())?.lists.import(rows) ?? UNSENT,
     items: async (ids) => (await port())?.lists.items(ids) ?? NO_ITEMS,
     item: async (id) => (await port())?.lists.item(id) ?? NO_ITEMS

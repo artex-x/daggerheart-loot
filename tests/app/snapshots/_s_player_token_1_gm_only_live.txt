@@ -3,22 +3,21 @@
 # why: signed out, after another device marked «Брошюра по Истории Искусства» GM only while the share topic was joined: the row gone with no reload, one entry fewer in the sub, and the hidden status «Список обновлён»
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
-  link "К содержимому" [url=#main]
+RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<v>]
+  link "К содержимому" [url=/s/player-token-1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Лавка кузнеца" [level=1]
     StaticText "Список от другого игрока · 9 позиций"
@@ -44,9 +43,9 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-1]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -76,7 +75,6 @@ daggerheart.com
 Скипетр
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Сохранить себе
-Списки
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
@@ -87,22 +85,21 @@ daggerheart.com
 Фильтры
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
-  link "Skip to content" [url=#main]
+RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
+  link "Skip to content" [url=/en/s/player-token-1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Лавка кузнеца" [level=1]
     StaticText "A list from another player · 9 items"
@@ -128,9 +125,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-1]
     generic ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -151,7 +148,6 @@ Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Install as an app
 Leviathan Harpoon
-Lists
 Premium Bedroll
 Privacy
 RU

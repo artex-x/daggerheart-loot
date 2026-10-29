@@ -13,7 +13,7 @@
     lang: Lang;
     open: boolean;
     onclick: () => void;
-    /** `.helpbtn.sm` (style.css:696) - 22x22 at every width, the class
+    /** `.helpbtn.sm` (`git show 23c00a6^:style.css`) - 22x22 at every width, the class
      *  specificity keeping it there even inside the 600px override. */
     size?: 'sm';
     /** The name; a field's «?» names its field. */
@@ -76,7 +76,7 @@
     transform: translate(-50%, -50%);
   }
 
-  /* style.css:696 - a higher-specificity rule that keeps the small variant at
+  /* `.helpbtn.sm` in `git show 23c00a6^:style.css` - a higher-specificity rule that keeps the small variant at
      22x22 even inside the 600px block below. */
   .helpbtn.sm {
     width: 22px;

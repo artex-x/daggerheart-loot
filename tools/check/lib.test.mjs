@@ -366,7 +366,6 @@ describe('the stage table', () => {
         'derived',
         'dataint',
         'selftest',
-        'test:tg-preview',
         'test:preview',
         'test:artwork',
         'test:desc-style',
@@ -652,12 +651,10 @@ describe('G1: vitest reads only paths VITEST selects', () => {
 
   it('finds the reads it knows of, so a broken extractor cannot pass', () => {
     for (const p of [
-      'data.json',
-      'catalog.csv',
       'llms.txt',
       'schema/import-v1.json',
       'supabase/config.toml',
-      'docs/fixtures/lists',
+      'docs/fixtures/homebrew',
       'docs/fixtures/homebrew-file/export.json',
       'tools/build-share-pages.js',
       'tools/share-card.mjs',
@@ -666,6 +663,14 @@ describe('G1: vitest reads only paths VITEST selects', () => {
     ]) {
       assert.ok(reads.has(p), `G1 no longer finds ${p}`);
     }
+  });
+
+  it('no vitest file reads data.json or catalog.csv', () => {
+    assert.ok(
+      !reads.has('data.json') && !reads.has('catalog.csv'),
+      `${reads.get('data.json') ?? reads.get('catalog.csv')} reads a file the build writes; ` +
+        'read the catalog through app/src/test/loot.ts'
+    );
   });
 
   it('selects every path a vitest file reads', () => {

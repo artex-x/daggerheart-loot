@@ -1,16 +1,13 @@
 /* The alternate tables, against the real data rather than an invented pair of
    columns: what the panel draws is what these tables hold, and a fixture that
    agreed with the code would prove nothing about either. */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { RARITIES, RARITY_TIERS, altPicks, altTables, bumpUp } from './alt.js';
-import { buildIndex, kindOf, type Loot } from './data.js';
+import { buildIndex, kindOf } from './data.js';
 import { isCrit, nextRarity } from './roll.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 
 const index = buildIndex(LOOT);
 const both = { item: true, consumable: true };

@@ -29,7 +29,7 @@ function boot(withCloud: Env): void {
 if (import.meta.env.VITE_CLOUD_FAKE) {
   void import('./ports/fake-cloud.js')
     .then((m) => {
-      /* The test build's day is pinned before the cutoff; `?today=` moves it. */
+      /* The test build's clock is fixed, so export names and relative times are known. */
       const clock = queryClock(window.location.search, TEST_NOW);
       boot({ ...env, clock, cloud: m.installFakeCloud() });
     })

@@ -1,4 +1,4 @@
-/* The print sheet's own small helpers, off app.js 3235-3266, 3282-3331,
+/* The print sheet's own small helpers, off `git show 23c00a6^:app.js`,
  * 3520-3522.
  *
  * Everything a card draws that is not text is a vector exported into `card/`
@@ -17,7 +17,7 @@ import type { Lang, Record_, Trait } from './types.js';
 
 /** Where the exported vectors live, junctioned into `dist/` alongside `img/`
  *  and `og/` - CONTRACTS.md section 5 freezes this as a public asset path. */
-export const CARD_DIR = 'card/';
+export const CARD_DIR = '/card/';
 
 /** Cards on the opt-in compact sheet: 4x4 of 44x63 mm - FEATURES.md, "Print". */
 export const COMPACT_PER_SHEET = 16;
@@ -57,7 +57,7 @@ export function sheetScale(width: number): number {
 }
 
 /**
- * A vector's file name, off `cardArt` (app.js 3282-3291), for the pairs whose two files
+ * A vector's file name, off `cardArt` (`git show 23c00a6^:app.js`), for the pairs whose two files
  * differ in shape (`shield`, `burden-1`, `burden-2`): they stay two files drawn by `<img>`.
  * The folded vectors are drawn inline by `CardVector.svelte`.
  */
@@ -65,8 +65,8 @@ export function cardArt(name: string, bw: boolean): string {
   return CARD_DIR + name + (bw ? '-bw' : '') + '.svg';
 }
 
-/** A damage string split into its die and its bonus - off `dmgStripHTML`
- *  (app.js 3299) and `dieHTML` (3321). No match leaves the whole string as
+/** A damage string split into its die and its bonus - off `dmgStripHTML` and `dieHTML`
+ *  (`git show 23c00a6^:app.js`). No match leaves the whole string as
  *  the "die" rather than inventing one. */
 export function dmgParts(dmg: string | undefined): { die: string; bonus: string } {
   const m = /^(d\d+)(.*)$/.exec(dmg ?? '');
@@ -75,7 +75,7 @@ export function dmgParts(dmg: string | undefined): { die: string; bonus: string 
 
 /**
  * The deck cut into sheets of `per` cards, blanks counted for the last one -
- * off `renderPrint` (app.js 3514-3522). Empty input makes no sheets at all:
+ * off `renderPrint` (`git show 23c00a6^:app.js`). Empty input makes no sheets at all:
  * there is nothing to pad a page that does not exist.
  */
 export function pages<T>(items: readonly T[], per = 9): { pages: T[][]; blanks: number } {
@@ -98,23 +98,25 @@ export function printTrait(tr: Trait | undefined, lang: Lang): string {
   return short ? short[lang === 'ru' ? 0 : 1] : eqWord(EQ_TRAIT, tr, lang);
 }
 
-/** A set's shared bonus as a card's last text line. The label names the
- *  members, folded as the card folds them, so a card read alone still says the
- *  bonus needs the others; a frozen copy with no other member names none. */
+/** A set's shared bonus as a card's last text line. The card prints the name in bold
+ *  italic and `members` in italics: ` (<Комплект>: <names>)`, folded as the card folds
+ *  them, so a card read alone still says the bonus needs the others; a frozen copy
+ *  with no other member names none (`''`). */
 export function setLineOf(
   index: Index,
   it: Record_,
   lang: Lang
-): { label: string; body: string } | undefined {
+): { name: string; members: string; body: string } | undefined {
   const bonus = setBonusOf(index, it);
   if (!bonus) return undefined;
   const ru = lang === 'ru';
   const name = ru ? bonus.ru : bonus.en;
   const members = setOf(index, it);
   return {
-    label: members.length
-      ? `${name} (${dict(lang).setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
-      : name,
+    name,
+    members: members.length
+      ? ` (${dict(lang).setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
+      : '',
     body: ru ? bonus.rud : bonus.ende
   };
 }

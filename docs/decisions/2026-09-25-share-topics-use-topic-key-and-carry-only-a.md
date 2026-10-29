@@ -1,5 +1,6 @@
 # 2026-09-25 - Share topics use topic_key and carry only a revision; the page refetches
 
+- Amended by "A sender hears a decision while the page stays open" (2026-10-29): a share topic also carries a decision of a request sent through it.
 - Task: `persist-3-realtime` (planner, 2026-09-25).
 - Decision: a deferred constraint trigger on `lists` sends one Broadcast
   per list per transaction, with the final revision, through

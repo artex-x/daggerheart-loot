@@ -14,6 +14,21 @@ deleted.
 
 ## Index
 
+- 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
+- 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)
+- 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
+- 2026-10-29 - [A sign-in return keeps the language of the address left](decisions/2026-10-29-a-sign-in-return-keeps-the-language-of-the-address-left.md)
+- 2026-10-29 - [The Items tab filter lives in the address](decisions/2026-10-29-the-items-tab-filter-lives-in-the-address.md)
+- 2026-10-29 - [The Scary rule keeps one Russian body](decisions/2026-10-29-the-scary-rule-keeps-one-russian-body.md)
+- 2026-10-29 - [The set name before a set bonus is bold italic](decisions/2026-10-29-the-set-name-before-a-set-bonus-is-bold-italic.md)
+- 2026-10-29 - [The tables strip cap follows its measured layout](decisions/2026-10-29-the-tables-strip-cap-follows-its-measured-layout.md)
+- 2026-10-28 - [Addresses are paths, with the language prefix and `?v` in the bar](decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md)
+- 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
+- 2026-10-28 - [`data.json` and `catalog.csv` leave git; the build writes both](decisions/2026-10-28-data-json-and-catalog-csv-leave-git-the-build.md)
+- 2026-10-28 - [R10 deletes the date gates; a build with no sign-in has no lists](decisions/2026-10-28-r10-deletes-the-date-gates-a-build-with-no-sign-in-has-no-lists.md)
+- 2026-10-28 - [R10 drops the move function and the fingerprint column](decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md)
+- 2026-10-28 - [The account's first read takes list heads; a list's details load when needed](decisions/2026-10-28-the-accounts-first-read-takes-list-heads.md)
+- 2026-10-28 - [The site moves to Cloudflare Pages and the old host mirrors its files](decisions/2026-10-28-the-site-moves-to-cloudflare-pages-and-the-old-host-mirrors.md) - superseded in part
 - 2026-10-22 - [A bulk delete of own items goes in chunks of 50](decisions/2026-10-22-a-bulk-delete-of-own-items-goes-in-chunks-of-50.md)
 - 2026-10-22 - [A bulk delete of own items is one invoker call](decisions/2026-10-22-a-bulk-delete-of-own-items-is-one-invoker-call.md) - superseded in part
 - 2026-10-22 - [A deleted item's id may be taken again by another account](decisions/2026-10-22-a-deleted-items-id-may-be-taken-again.md)
@@ -56,7 +71,7 @@ deleted.
 - 2026-10-15 - [Formatted text is typed as Markdown in a box with a toolbar](decisions/2026-10-15-formatted-text-is-typed-as-markdown-in-a-box-with-a-toolbar.md)
 - 2026-10-15 - [The editor previews the print with the print card at its printed size](decisions/2026-10-15-the-editor-previews-the-print-with-the-print.md) - superseded in part
 - 2026-10-14 - [A link preview reads a lean projection](decisions/2026-10-14-a-link-preview-reads-a-lean-projection.md)
-- 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md)
+- 2026-10-14 - [Link previews come from a stateless worker](decisions/2026-10-14-link-previews-come-from-a-stateless-worker.md) - superseded in part
 - 2026-10-14 - [Own pictures are random-named files the database deletes](decisions/2026-10-14-own-pictures-are-random-named-files-the-database-deletes.md)
 - 2026-10-14 - [The configured bundle ceiling rises to 350 kB](decisions/2026-10-14-the-configured-bundle-ceiling-rises-to-350-kb.md)
 - 2026-10-10 - [A key the account does not hold becomes a derived key](decisions/2026-10-10-a-key-the-account-does-not-hold-becomes-a-derived-key.md) - superseded in part
@@ -128,7 +143,7 @@ deleted.
 - 2026-09-28 - [The account's data file is a store-only zip with one JSON file per kind](decisions/2026-09-28-the-accounts-data-file-is-a-store-only-zip.md)
 - 2026-09-27 - [A green check arms the commit gate by its own exit, not a host-wide lock](decisions/2026-09-27-a-green-check-arms-the-commit-gate-by.md)
 - 2026-09-27 - [A plan that changes schema, contracts, stored data or sync is reviewed first](decisions/2026-09-27-a-plan-that-changes-schema-contracts-stored-data.md)
-- 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md)
+- 2026-09-27 - [A requester sees no request status; the send toast is the only answer](decisions/2026-09-27-a-requester-sees-no-request-status-the-send-toast.md) - superseded in part
 - 2026-09-27 - [A signed-out reader with browser lists sees a move banner until the cutoff](decisions/2026-09-27-a-signed-out-reader-with-browser-lists-sees-a-move-banner.md)
 - 2026-09-27 - [A stale reorder keeps the given order and puts the other entries after it](decisions/2026-09-27-a-stale-reorder-keeps-the-given-order-and-puts-the.md)
 - 2026-09-27 - [Agents read no .env file; the program loads it with `--env-file`](decisions/2026-09-27-agents-read-no-env-file-the-program-loads.md)
@@ -139,7 +154,7 @@ deleted.
 - 2026-09-27 - [The Read and Grep tools are denied `.env` files by a hook, not only by settings](decisions/2026-09-27-the-read-and-grep-tools-are-denied-env.md)
 - 2026-09-27 - [The reviewer writes its report to `issues/<id>/reviews/` and nowhere else](decisions/2026-09-27-the-reviewer-writes-its-report-to-issues-id.md)
 - 2026-09-27 - [The Supabase scripts take the local stack lock themselves](decisions/2026-09-27-the-supabase-scripts-take-the-local-stack-lock.md)
-- 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md)
+- 2026-09-26 - [A browser list moves through one RPC that hashes its canonical text](decisions/2026-09-26-a-browser-list-moves-into-the-account-through-one-rpc.md) - superseded in part
 - 2026-09-26 - [Homebrew in the owner's lists is a live reference; a copy that leaves is frozen](decisions/2026-09-26-a-homebrew-entry-in-the-owners-lists-is.md) - superseded in part
 - 2026-09-26 - [A request the database fails three times is halved; a lone write is dropped](decisions/2026-09-26-a-request-the-database-fails-three-times-is-halved.md)
 - 2026-09-26 - [A requester reads the status by a key kept in the tab's sessionStorage](decisions/2026-09-26-a-requester-reads-the-status-by-a-key.md) - superseded
@@ -148,7 +163,7 @@ deleted.
 - 2026-09-26 - [After the cutoff a browser list is written only by the move and a delete](decisions/2026-09-26-after-the-cutoff-a-browser-list-is-written-only-by-the-move.md) - superseded in part
 - 2026-09-26 - [An import is one `import_lists()` transaction: every list or none](decisions/2026-09-26-an-import-is-one-import-lists-transaction.md)
 - 2026-09-26 - [An over-stock request is refused whole; Apply available clamps; zero removes](decisions/2026-09-26-an-over-stock-request-is-refused-whole-apply.md)
-- 2026-09-26 - [Browser lists are read-only while the move is due](decisions/2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md)
+- 2026-09-26 - [Browser lists are read-only while the move is due](decisions/2026-09-26-browser-lists-are-read-only-while-the-move-is-due.md) - superseded
 - 2026-09-26 - [Homebrew is reached from the account menu, not from a tab](decisions/2026-09-26-homebrew-is-reached-from-the-account-menu.md)
 - 2026-09-26 - [Import validation is the client's; the count limits are the database's](decisions/2026-09-26-import-validation-is-the-clients-count-limits-the-databases.md) - superseded in part
 - 2026-09-26 - [Production restore is an owner-run command gated by a same-backup drill](decisions/2026-09-26-production-restore-is-an-owner-run-command-gated.md)
@@ -162,7 +177,7 @@ deleted.
 - 2026-09-26 - [The list file `import-v1` is a strict JSON Schema; import makes new ids](decisions/2026-09-26-the-list-file-import-v1-is-a-strict-json-schema.md)
 - 2026-09-26 - [The owner's devices subscribe to a private owner topic](decisions/2026-09-26-the-owners-devices-subscribe-to-a-private-owner-topic.md)
 - 2026-09-26 - [The restore drill loads the newest backup into the local stack only](decisions/2026-09-26-the-restore-drill-loads-the-newest-backup-into.md)
-- 2026-09-26 - [The test build's clock is pinned before the cutoff, and `?today=` moves it](decisions/2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md)
+- 2026-09-26 - [The test build's clock is pinned before the cutoff, and `?today=` moves it](decisions/2026-09-26-the-test-builds-clock-is-pinned-before-the-cutoff.md) - superseded in part
 - 2026-09-26 - [The write buffer goes to the server as one invoker RPC with a result per write](decisions/2026-09-26-the-write-buffer-goes-to-the-server-as.md)
 - 2026-09-26 - [While Realtime is live, a safety re-read runs every 5 minutes](decisions/2026-09-26-while-realtime-is-live-a-safety-re-read-runs-every.md)
 - 2026-09-25 - [A blocker fix pass also carries the batch's local nits](decisions/2026-09-25-a-blocker-fix-pass-also-carries-the-batchs.md)
@@ -232,7 +247,7 @@ deleted.
 - 2026-09-23 - [Many lists: the index shows 24 cards at a time; a record's own lists lead its menu](decisions/2026-09-23-many-lists-the-index-shows-24-cards-at.md)
 - 2026-09-23 - [Navigations take the navigation preload response](decisions/2026-09-23-navigations-take-the-navigation-preload-response.md) - superseded
 - 2026-09-23 - [One plural() over Intl.PluralRules counts every number beside a word](decisions/2026-09-23-one-plural-over-intl-pluralrules-counts-every-number.md)
-- 2026-09-23 - [Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language](decisions/2026-09-23-per-language-previews-i-en-id-html-and.md)
+- 2026-09-23 - [Per-language previews: `i/en/<id>.html` and `en/`, seeded into the refresher's state; site cards rendered from one template; a static page is a page per language](decisions/2026-09-23-per-language-previews-i-en-id-html-and.md) - superseded in part
 - 2026-09-23 - [Pictures revalidate on every cache hit; an unchanged ETag writes nothing](decisions/2026-09-23-pictures-revalidate-on-every-cache-hit-an-unchanged.md)
 - 2026-09-23 - [Print card small text keeps the ribbon and gets one paper floor in every view](decisions/2026-09-23-print-card-small-text-keeps-the-ribbon-and.md)
 - 2026-09-23 - [PWA registration is a boot concern in `main.ts` behind `PwaPort`](decisions/2026-09-23-pwa-registration-is-a-boot-concern-in-main.md) - superseded in part
@@ -272,7 +287,7 @@ deleted.
 - 2026-09-19 - [The drop-gap mark is made instant by narrowing `.row`'s transition, not by overriding the drop classes](decisions/2026-09-19-the-drop-gap-mark-is-made-instant-by.md)
 - 2026-09-19 - [The product link lives in the roll tab's help box](decisions/2026-09-19-the-product-link-lives-in-the-roll-tabs.md)
 - 2026-09-18 - [A batch whose whole scope is other reviews' findings runs with no reviewer](decisions/2026-09-18-a-batch-whose-whole-scope-is-other-reviews.md)
-- 2026-09-18 - [`data.json`/`catalog.csv` staying tracked was not solved by a pretest step](decisions/2026-09-18-data-json-catalog-csv-staying-tracked-was-not.md)
+- 2026-09-18 - [`data.json`/`catalog.csv` staying tracked was not solved by a pretest step](decisions/2026-09-18-data-json-catalog-csv-staying-tracked-was-not.md) - superseded
 - 2026-09-18 - [Decisions live in one `docs/DECISIONS.md`, not a `docs/decisions/` folder](decisions/2026-09-18-decisions-live-in-one-docs-decisions-md-not.md) - superseded
 - 2026-09-18 - [Durable knowledge is written to its home the batch that makes it, never parked](decisions/2026-09-18-durable-knowledge-is-written-to-its-home-the.md)
 - 2026-09-18 - [One commit per task, amend freely, push once - replaces the per-batch push rule](decisions/2026-09-18-one-commit-per-task-amend-freely-push-once.md) - superseded

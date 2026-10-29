@@ -49,5 +49,5 @@ export function artSrc(
     if (img.startsWith('blob:')) return img;
     if (isOwnArt(img)) return ART_BASE + (size === 'thumb' ? thumbOf(img) : img);
   }
-  return (size === 'thumb' ? 'img/thumb/' : 'img/') + (img && !broken ? img : NO_ART);
+  return (size === 'thumb' ? '/img/thumb/' : '/img/') + (img && !broken ? img : NO_ART);
 }

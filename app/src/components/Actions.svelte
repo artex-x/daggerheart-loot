@@ -1,10 +1,10 @@
 <script lang="ts">
-  /* The shared card-actions row - off `.card-acts` in style.css (405).
+  /* The shared card-actions row - off `.card-acts` in `git show 23c00a6^:style.css`.
    *
    * Extracted because `RecordCard`, `ListPage`, `PrintPage` and
    * `SharedListPage` each carried an identical copy of these six
    * declarations. The live app writes each caller's own margin as an inline
-   * `style=` attribute, never a rule (`app.js` 2972, 3154) - so this
+   * `style=` attribute, never a rule (`git show 23c00a6^:app.js`) - so this
    * component takes `style?: string` and emits it the same way, rather than
    * folding a caller's margin into a rule of its own. */
   import type { Snippet } from 'svelte';

@@ -20,6 +20,7 @@
   import Markup from './Markup.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
+  import { pathOf } from '../lib/address.js';
   import { homebrewTabHash, recordHref } from '../lib/hash.js';
   import {
     FOLD_OWN,
@@ -56,6 +57,9 @@
     it: Record_;
     index: Index;
     lang: Lang;
+    /** The language the card's links open in, where it differs from the card's: the
+     *  editor's preview of the other language. Defaults to `lang`. */
+    linkLang?: Lang;
     /** Whether the picture failed to load earlier in this session. */
     artBroken: boolean;
     /**
@@ -93,6 +97,7 @@
     it,
     index,
     lang,
+    linkLang,
     artBroken,
     rollLabel,
     col,
@@ -104,6 +109,7 @@
     manage = false
   }: Props = $props();
 
+  const hrefLang = $derived(linkLang ?? lang);
   const t = $derived(dict(lang));
   const name = $derived(nameOf(it, lang));
   /* Chips rather than a sentence, as the live app draws them, and without the
@@ -250,7 +256,7 @@
     <h2 class="card-name">
       {#if variant === 'compact'}
         <!-- A link, because from a result the name is the way to the page. -->
-        <a href={recordHref(it)} title={t.openPage}>{name}</a>
+        <a href={pathOf(recordHref(it), hrefLang)} title={t.openPage}>{name}</a>
       {:else}
         <span>{name}</span>
       {/if}
@@ -317,8 +323,8 @@
             <Icon name="craftFrom" />
             <span class="craft-l">{t.craftFrom}</span>
             <span
-              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
-                  >{relName(r, lang)}</a
+              >{#each fromFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
                 >{/each}{#if fromFold.more}{' '}{@render moreButton(
                   'from',
                   fromFold.more
@@ -331,8 +337,8 @@
             <Icon name="craft" />
             <span class="craft-l">{t.craftInto}</span>
             <span
-              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a href={recordHref(r)}
-                  >{relName(r, lang)}</a
+              >{#each intoFold.shown as r, i (r.id)}{i > 0 ? ', ' : ''}<a
+                  href={pathOf(recordHref(r), hrefLang)}>{relName(r, lang)}</a
                 >{/each}{#if intoFold.more}{' '}{@render moreButton(
                   'into',
                   intoFold.more
@@ -355,7 +361,8 @@
                   ? ', '
                   : ''}{#if member.id === it.id}<span aria-current="true"
                     >{relName(member, lang)}</span
-                  >{:else}<a href={recordHref(member)}>{relName(member, lang)}</a
+                  >{:else}<a href={pathOf(recordHref(member), hrefLang)}
+                    >{relName(member, lang)}</a
                   >{/if}{/each}{#if setFold.more}{' '}{@render moreButton(
                   'set',
                   setFold.more
@@ -364,18 +371,21 @@
           </p>
         {/if}
         {#if setBonus}
-          <!-- The name leads the first paragraph of the bonus text. A frozen copy
-               alone in its set draws the bonus with no set line. -->
+          <!-- The name leads the first paragraph of the bonus text in bold italic, as a
+               feature name. A frozen copy alone in its set draws the bonus with no
+               set line. -->
           {@const bonus = setBonus}
           {#if bonus.lang}
             <p class="text-lang">{bonus.lang === 'en' ? t.textEnOnly : t.textRuOnly}</p>
           {/if}
           <div class="set-bonus mdtext" lang={bonus.lang}>
             <Markup blocks={bonus.blocks}>
-              {#snippet lead()}<i
-                  >{#if ownSet && setKey}<a href={homebrewTabHash('sets', setKey)}
-                      >{bonus.name}</a
-                    >:{:else}{bonus.name}:{/if}</i
+              {#snippet lead()}<b
+                  ><i
+                    >{#if ownSet && setKey}<a
+                        href={pathOf(homebrewTabHash('sets', setKey), hrefLang)}>{bonus.name}</a
+                      >:{:else}{bonus.name}:{/if}</i
+                  ></b
                 >{/snippet}
             </Markup>
           </div>
@@ -414,7 +424,7 @@
               <a href={r.url} target="_blank" rel="noopener">{hostOf(r.url)}</a>
             {/if}
             {#if ownRef(key)}
-              <a href={homebrewTabHash('rules', key)}>{t.hbCardManage}</a>
+              <a href={pathOf(homebrewTabHash('rules', key), hrefLang)}>{t.hbCardManage}</a>
             {/if}
           </details>
         {/each}
@@ -791,7 +801,7 @@
     background: rgb(255 255 255 / 2%);
   }
 
-  /* off style.css:400 - measured live, closed: offsetParent false, display
+  /* off `git show 23c00a6^:style.css` - measured live, closed: offsetParent false, display
      none. The `<a>` below sets its own `display: inline-block`, an author
      rule that beats the browser's own closed-<details> default, so without
      this line the link (and the referenced text) stayed hittable and in the
@@ -888,7 +898,8 @@
 
     /* Room is tight, so the wording goes and the icons stay - the button
        keeps its name through aria-label. `:has` rather than a blanket rule
-       because the list toolbar sits in the same row and keeps its words. */
+       because the list toolbar sits in the same row and keeps its words. The `.vh`
+       rule of `styles/tokens.css`, under a media query a class cannot carry. */
     .card :global(.card-acts .btn-lbl) {
       position: absolute;
       width: 1px;

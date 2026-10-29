@@ -46,7 +46,8 @@ function owner(flushed = true) {
     say: (msg: Msg, error?: boolean) => {
       said.push([msg(t, 'ru'), error]);
     },
-    tab: () => cloud.events.tab
+    tab: () => cloud.events.tab,
+    arrived: vi.fn<(ids: string[]) => void>()
   };
   const real = cloud.requests.apply.bind(cloud.requests);
   const apply = vi.spyOn(cloud.requests, 'apply').mockImplementation((id, clamp) => {
@@ -690,6 +691,63 @@ describe("the heads read and the focused list's lines", () => {
     cloud.request('gm-token-1', TWO);
     await o.read();
     expect(o.arrived).toBe(0);
+  });
+
+  it('hands one list id per new request to the arrival hook, from the second read on', async () => {
+    const { cloud, o, hooks } = owner();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    expect(hooks.arrived).not.toHaveBeenCalled();
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    const token = made.ok ? made.token : '';
+    cloud.request(token, [{ item: 'q1', qty: 1 }]);
+    cloud.request('gm-token-1', TWO);
+    await o.read();
+    expect(hooks.arrived).toHaveBeenCalledOnce();
+    expect([...(hooks.arrived.mock.calls[0]?.[0] ?? [])].sort()).toEqual(
+      [SHOP, TROPHIES].sort()
+    );
+    await o.read();
+    expect(hooks.arrived).toHaveBeenCalledOnce();
+    o.clear();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    expect(hooks.arrived).toHaveBeenCalledOnce();
+    cloud.request('player-token-1', TWO);
+    await o.read();
+    expect(hooks.arrived).toHaveBeenLastCalledWith([SHOP]);
+  });
+
+  it('counts the unread requests of every list that have not expired', async () => {
+    const { cloud, o } = owner();
+    expect(o.unreadCount(Date.now())).toBe(0);
+    cloud.request('player-token-1', TWO);
+    cloud.request('gm-token-1', TWO);
+    const made = await cloud.shares.create(TROPHIES, 'player');
+    cloud.request(made.ok ? made.token : '', [{ item: 'q1', qty: 1 }]);
+    await open(o);
+    expect(o.unreadCount(Date.now())).toBe(3);
+    await o.markRead(SHOP);
+    expect(o.unreadCount(Date.now())).toBe(1);
+    const DAY = 24 * 3_600_000;
+    expect(o.unreadCount(NOW + 30 * DAY)).toBe(0);
+  });
+
+  it('counts the unread requests at the limits and at three times them', () => {
+    const { o } = owner();
+    const heads = (lists: number, each: number) =>
+      Array.from({ length: lists * each }, (_, i) => ({
+        id: uuid(20_000 + i),
+        listId: uuid(30_000 + Math.floor(i / each)),
+        audience: 'player' as const,
+        createdAt: new Date(NOW).toISOString(),
+        readAt: null,
+        expiresAt: new Date(NOW + 3_600_000).toISOString()
+      }));
+    o.heads = heads(50, 10);
+    expect(o.unreadCount(NOW)).toBe(500);
+    o.heads = heads(150, 30);
+    expect(o.unreadCount(NOW)).toBe(4500);
   });
 
   it('marks nothing while a request of the list has no lines', async () => {

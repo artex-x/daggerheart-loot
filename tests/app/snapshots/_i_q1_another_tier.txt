@@ -3,7 +3,7 @@
 # why: the card a rung of the tier ladder opens
 
 ## ru :: tree
-RootWebArea "Палаш - Генератор лута Daggerheart" [url=#/i/q1]
+RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?v=<v>]
   dialog "Улучшенный Палаш" [modal=true]
     button "Закрыть" [description=Закрыть focused=true]
     button "Страница"
@@ -48,7 +48,6 @@ daggerheart.com
 Скопировать ссылку
 Скопировать текст
 Сохранить себе
-Списки
 Страница
 Таблицы
 Улучшенный Палаш
@@ -57,7 +56,7 @@ daggerheart.com
 показать в таблице
 
 ## en :: tree
-RootWebArea "Broadsword - Daggerheart Loot Generator" [url=#/i/q1]
+RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?v=<v>]
   dialog "Improved Broadsword" [modal=true]
     button "Close" [description=Close focused=true]
     button "Page"
@@ -92,7 +91,6 @@ EN
 Improved Broadsword
 Install as an app
 Legendary Broadsword
-Lists
 Page
 Print
 Privacy

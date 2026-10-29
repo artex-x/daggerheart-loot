@@ -44,6 +44,8 @@ export interface OwnerHooks {
   say: (msg: Msg, error?: boolean) => void;
   /** This page load's tab id: a message with it is this tab's own. */
   tab: () => string;
+  /** Requests not seen before arrived, after the first heads read: one list id each. */
+  arrived?: (listIds: string[]) => void;
 }
 
 /** A request decided on this page load. */
@@ -138,6 +140,13 @@ export class OwnerRequests {
   pendingCount(listId: string, now: number): number {
     let n = 0;
     for (const h of this.heads) if (h.listId === listId && !expired(h, now)) n++;
+    return n;
+  }
+
+  /** The count of the unread requests of every list that have not expired at `now`. */
+  unreadCount(now: number): number {
+    let n = 0;
+    for (const h of this.heads) if (h.readAt === null && !expired(h, now)) n++;
     return n;
   }
 
@@ -306,6 +315,7 @@ export class OwnerRequests {
       this.arrivedList = newest.listId;
       this.arrivedKind = 'request';
       this.arrived++;
+      this.#hooks.arrived?.(fresh.map((h) => h.listId));
     }
     this.#first = false;
     const moved =

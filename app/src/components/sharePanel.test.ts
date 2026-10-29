@@ -10,7 +10,6 @@ import App from '../App.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { cardVersion } from '../lib/hash.js';
-import { encodeList } from '../lib/listLink.js';
 import { fakeClipboard, fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud, type FakeCloud } from '../ports/fake-cloud.js';
@@ -83,9 +82,9 @@ describe('the share panel', () => {
     const button = await pressShare();
     expect(button).toHaveAttribute('aria-expanded', 'true');
     const players = await row(ru.shareLinkPlayers);
-    expect(within(players).getByRole('link', { name: '#/s/player-token-1' })).toHaveAttribute(
+    expect(within(players).getByRole('link', { name: '/s/player-token-1' })).toHaveAttribute(
       'href',
-      '#/s/player-token-1'
+      '/s/player-token-1'
     );
     expect(
       within(players)
@@ -93,7 +92,7 @@ describe('the share panel', () => {
         .map((b) => b.textContent)
     ).toEqual([ru.shareCopy, ru.shareDelete]);
     const gm = await row(ru.shareLinkGm);
-    expect(within(gm).getByRole('link', { name: '#/s/gm-token-1' })).toBeInTheDocument();
+    expect(within(gm).getByRole('link', { name: '/s/gm-token-1' })).toBeInTheDocument();
     expect(screen.getByText(ru.shareHint)).toBeInTheDocument();
     expect(create).not.toHaveBeenCalled();
     await expectNoA11yViolations(container);
@@ -106,10 +105,10 @@ describe('the share panel', () => {
     openShare(TROPHIES);
     await pressShare();
     expect(
-      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '#/s/share-token-1' })
+      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(
-      within(await row(ru.shareLinkGm)).getByRole('link', { name: '#/s/share-token-2' })
+      within(await row(ru.shareLinkGm)).getByRole('link', { name: '/s/share-token-2' })
     ).toBeInTheDocument();
   });
 
@@ -137,7 +136,7 @@ describe('the share panel', () => {
     await expectNoA11yViolations(container);
     await userEvent.click(within(gm).getByRole('button', { name: ru.shareCreate }));
     expect(
-      await within(gm).findByRole('link', { name: '#/s/share-token-1' })
+      await within(gm).findByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(screen.getByText(ru.shareCreated)).toBeInTheDocument();
     expect(create).toHaveBeenCalledWith(SHOP, 'gm');
@@ -171,7 +170,9 @@ describe('the share panel', () => {
     await userEvent.click(
       within(await row(ru.shareLinkPlayers)).getByRole('button', { name: ru.shareCopy })
     );
-    expect(clipboard.last.text).toBe('https://example.test/#/s/player-token-1');
+    expect(clipboard.last.text).toMatch(
+      /^https:\/\/example\.test\/s\/player-token-1\?v=[0-9a-z]+$/
+    );
     expect(
       screen.getByText(
         'Ссылка для игроков скопирована - заметок и позиций «Только для мастера» в ней нет'
@@ -180,7 +181,9 @@ describe('the share panel', () => {
     await userEvent.click(
       within(await row(ru.shareLinkGm)).getByRole('button', { name: ru.shareCopy })
     );
-    expect(clipboard.last.text).toBe('https://example.test/#/s/gm-token-1');
+    expect(clipboard.last.text).toMatch(
+      /^https:\/\/example\.test\/s\/gm-token-1\?v=[0-9a-z]+$/
+    );
     expect(
       screen.getByText(
         'Ссылка для мастера скопирована - в ней есть заметки и позиции «Только для мастера»'
@@ -228,9 +231,9 @@ describe('the share panel', () => {
     const { clipboard } = openShare(SHOP, fakeCloud(seed, 'gm1'), { preview: ORIGIN });
     await pressShare();
     const players = await row(ru.shareLinkPlayers);
-    expect(within(players).getByRole('link', { name: '#/s/player-token-1' })).toHaveAttribute(
+    expect(within(players).getByRole('link', { name: '/s/player-token-1' })).toHaveAttribute(
       'href',
-      '#/s/player-token-1'
+      '/s/player-token-1'
     );
     const v = (n: number) => cardVersion([shop.name, shop.note, n]);
     await userEvent.click(within(players).getByRole('button', { name: ru.shareCopy }));
@@ -255,7 +258,7 @@ describe('the share panel', () => {
     await userEvent.click(within(players).getByRole('button', { name: ru.shareDelete }));
     expect(await screen.findByText(ru.shareFailed)).toBeInTheDocument();
     expect(
-      within(players).getByRole('link', { name: '#/s/player-token-1' })
+      within(players).getByRole('link', { name: '/s/player-token-1' })
     ).toBeInTheDocument();
   });
 
@@ -336,14 +339,15 @@ describe('a list made a moment ago', () => {
       return real(ops);
     });
     cloud.lists.apply = apply;
-    const payload = encodeList({ name: 'Лавка', ids: ['ci1'] }, true);
-    const router = memoryRouter('#/l/' + payload);
+    const router = memoryRouter('#/lists');
     const { container } = render(App, {
       env: fakeEnv({ router, data: fakeData(LOOT), cloud })
     });
     await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Сохранить себе' }));
-    expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    await screen.findByText('Лавка кузнеца');
+    await userEvent.type(screen.getByPlaceholderText(ru.listNamePh), 'Лавка');
+    await userEvent.click(screen.getByRole('button', { name: ru.create }));
+    router.navigate('#/lists/' + uuid(5000));
     await pressShare();
     await waitFor(() => {
       expect(apply).toHaveBeenCalledOnce();
@@ -351,10 +355,10 @@ describe('a list made a moment ago', () => {
     expect(apply.mock.calls[0]?.[0].map((o) => o.op)).toEqual(['create']);
     release();
     expect(
-      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '#/s/share-token-1' })
+      within(await row(ru.shareLinkPlayers)).getByRole('link', { name: '/s/share-token-1' })
     ).toBeInTheDocument();
     expect(
-      within(await row(ru.shareLinkGm)).getByRole('link', { name: '#/s/share-token-2' })
+      within(await row(ru.shareLinkGm)).getByRole('link', { name: '/s/share-token-2' })
     ).toBeInTheDocument();
     expect(screen.queryByText('Не получилось загрузить ссылки.')).not.toBeInTheDocument();
     await expectNoA11yViolations(container);

@@ -64,7 +64,6 @@ import type {
   ListWrite,
   ListWrites,
   LiveStatus,
-  MoveWrite,
   PreferencesPort,
   PrintSetEntry,
   PrintSetMade,
@@ -116,9 +115,10 @@ export interface FakeCloudOptions {
    *  stored preferences keeps none. */
   lang?: Lang;
   /** A read of this repository never answers (`stall`), or answers `{ ok: false }`
-   *  (`fail`): the requests' lines and the linked homebrew items. The test build's
-   *  `?hold=lines:fail`, a loading or failed state that a golden can capture. */
-  hold?: { lines?: HoldMode; items?: HoldMode };
+   *  (`fail`): the requests' lines, the linked homebrew items and the lists read whole
+   *  (`rows`). The test build's `?hold=lines:fail`, a loading or failed state that a golden
+   *  can capture. */
+  hold?: { lines?: HoldMode; items?: HoldMode; rows?: HoldMode };
 }
 
 /** How `FakeCloudOptions.hold` holds a read. */
@@ -151,12 +151,18 @@ export type FakeCloud = CloudPort & {
   /** Edits one entry of any user's list as another device would, with its messages;
    *  false for an unknown list or key. */
   playEntry(listId: string, itemKey: string, patch: EntryPatch): boolean;
+  /** Removes one entry of any user's list as another device would, with its messages;
+   *  false for an unknown list or key. */
+  playRemove(listId: string, itemKey: string): boolean;
   /** Sends a purchase request as another reader of the link would, with its message;
    *  answers the new request's id, or null when the send rules refuse it. */
   request(token: string, lines: { item: string; qty: number }[]): string | null;
   /** Applies (taking what is there) or declines any user's pending request as the owner's
    *  other device would, with its messages; false for an unknown or decided request. */
   decide(id: string, verdict: 'applied' | 'declined'): boolean;
+  /** `decide` on the newest pending request sent through the link `token`; false when it
+   *  has none. */
+  decideNewest(token: string, verdict: 'applied' | 'declined'): boolean;
   /** A port of the same world signed in as `user`, or signed out without one: what one
    *  account writes another reads, as on the real project. */
   as(user?: string): CloudPort;
@@ -199,8 +205,7 @@ function seedLists(lists: readonly SeedList[], boot: number): Held[] {
       gm_note: l.hnote ?? '',
       created_at: iso(boot - l.createdAgoMs),
       updated_at: iso(boot - l.editedAgoMs),
-      revision: 1,
-      legacy_fingerprint: null
+      revision: 1
     },
     entries: l.entries.map((e) => ({
       id: e.id,
@@ -348,69 +353,9 @@ function fillHomebrew(
   }
 }
 
-/** A moved list's text as `move_legacy_list` reads it. */
-interface Canonical {
-  name?: string;
-  ids: string[];
-  meta?: Record<string, { qty?: number; gold?: number; note?: string; hnote?: string }>;
-  money?: 'bag' | 'coin';
-  note?: string;
-  hnote?: string;
-}
-
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
-const chars = (s: string): number => Array.from(s).length;
-const textUpTo = (v: unknown, max: number): boolean => typeof v === 'string' && chars(v) <= max;
 const whole = (v: unknown, lo: number, hi: number): boolean =>
   typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
-
-/* The checks `move_legacy_list` makes; null where it raises `22023`. */
-function canonicalOf(text: string): Canonical | null {
-  let v: unknown;
-  try {
-    v = JSON.parse(text);
-  } catch {
-    return null;
-  }
-  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
-  const o = v as Record<string, unknown>;
-  const keys = ['name', 'ids', 'meta', 'money', 'note', 'hnote'];
-  if (Object.keys(o).some((k) => !keys.includes(k))) return null;
-  if ('name' in o && !textUpTo(o['name'], 200)) return null;
-  if ('money' in o && o['money'] !== 'bag' && o['money'] !== 'coin') return null;
-  if ('note' in o && !textUpTo(o['note'], 4000)) return null;
-  if ('hnote' in o && !textUpTo(o['hnote'], 4000)) return null;
-  const ids = o['ids'];
-  if (!Array.isArray(ids) || ids.length > 5000) return null;
-  if (!ids.every((id) => typeof id === 'string' && ID.test(id))) return null;
-  if (new Set(ids).size !== ids.length) return null;
-  const meta = o['meta'];
-  if ('meta' in o) {
-    if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return null;
-    for (const [key, m] of Object.entries(meta)) {
-      if (!ids.includes(key) || !m || typeof m !== 'object' || Array.isArray(m)) return null;
-      const e = m as Record<string, unknown>;
-      if (Object.keys(e).some((k) => !['qty', 'gold', 'note', 'hnote'].includes(k)))
-        return null;
-      if ('qty' in e && !whole(e['qty'], 1, 99)) return null;
-      if ('gold' in e && !whole(e['gold'], 1, 99999)) return null;
-      if ('note' in e && !textUpTo(e['note'], 4000)) return null;
-      if ('hnote' in e && !textUpTo(e['hnote'], 4000)) return null;
-    }
-  }
-  return o as unknown as Canonical;
-}
-
-/* FNV-1a over the text, repeated to the 64 hex characters of a SHA-256: the
-   fake never meets the database, so its fingerprint only has to be stable. */
-function fingerprint(text: string): string {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0).toString(16).padStart(8, '0').repeat(8);
-}
 
 /** A share as the fake holds it: the row, its list and its live topic's key. */
 interface HeldShare extends ShareRow {
@@ -1002,7 +947,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (mine.length >= maxLists) return limited('lists_per_owner', maxLists);
     const at = stamp();
     const made: Held = {
-      row: { ...list, created_at: at, updated_at: at, revision: 1, legacy_fingerprint: null },
+      row: { ...list, created_at: at, updated_at: at, revision: 1 },
       entries: []
     };
     const r = insertEntries(made, entries);
@@ -1103,48 +1048,6 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     }
   };
 
-  /* `move_legacy_list`: an entry id from its own counter, so the list ids
-     `newId()` hands out stay `uuid(5000)`, `uuid(5001)`, ... whatever the
-     entry counts. */
-  let movedEntries = 0;
-  const moveList = (mine: Held[], id: string, canonical: string): MoveWrite => {
-    const v = canonicalOf(canonical);
-    if (!v) return REFUSED;
-    const fp = fingerprint(canonical);
-    const had = mine.find((h) => h.row.legacy_fingerprint === fp);
-    if (had) return { ok: true, id: had.row.id, inserted: false };
-    if (anyList(id)) return REFUSED;
-    const at = stamp();
-    mine.push({
-      row: {
-        id,
-        name: v.name ?? '',
-        money_mode: v.money ?? 'bag',
-        player_note: v.note ?? '',
-        gm_note: v.hnote ?? '',
-        created_at: at,
-        updated_at: at,
-        revision: 1,
-        legacy_fingerprint: fp
-      },
-      entries: v.ids.map((key, i) => {
-        const m = v.meta?.[key] ?? {};
-        return {
-          id: uuid(7000 + movedEntries++),
-          item_key: key,
-          source: 'official',
-          hb_item: null,
-          position: i,
-          quantity: m.qty ?? 1,
-          price_coins: m.gold ?? null,
-          player_note: m.note ?? '',
-          gm_note: m.hnote ?? ''
-        };
-      })
-    });
-    return { ok: true, id, inserted: true };
-  };
-
   const listRepo: ListRepository = {
     newId: () => uuid(made++),
     /* With `known`, a list at the revision held answers in `kept`; an id the owner does not
@@ -1160,11 +1063,36 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
           .filter((h) => !kept.includes(h))
           .map((h) => ({
             ...h.row,
-            list_entries: h.entries.map((e) => ({ ...e })).sort(entryOrder)
+            list_entries: h.entries
+              .map(({ id, item_key, source, hb_item, position }) => ({
+                id,
+                item_key,
+                source,
+                hb_item,
+                position
+              }))
+              .sort(entryOrder)
           })),
         ...(held ? { kept: kept.map((h) => h.row.id) } : {}),
         listLimit: maxLists,
         entryLimit: maxEntries
+      });
+    },
+    /* The owner's named lists whole, in the fake's own order; another user's id answers
+       nothing. */
+    rows(ids) {
+      const held = heldAnswer(options.hold?.rows);
+      if (held) return held;
+      const mine = offline ? null : own();
+      if (!mine) return Promise.resolve({ ok: false });
+      return Promise.resolve({
+        ok: true,
+        lists: mine
+          .filter((h) => ids.includes(h.row.id))
+          .map((h) => ({
+            ...h.row,
+            list_entries: h.entries.map((e) => ({ ...e })).sort(entryOrder)
+          }))
       });
     },
     apply(ops) {
@@ -1181,16 +1109,6 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       const results = ops.map((op) => applyOne(mine, op));
       announce(was, TAB);
       return Promise.resolve({ ok: true, results });
-    },
-    /* Offline and signed out answer `network`, as the real port reads `28000`;
-       the count limits are skipped, as the RPC skips them. */
-    move(id, canonical) {
-      const mine = offline ? null : own();
-      if (!mine) return Promise.resolve(NETWORK);
-      const was = before();
-      const moved = moveList(mine, id, canonical);
-      announce(was, TAB);
-      return Promise.resolve(moved);
     },
     /* `import_lists`: each row as a create, on a copy of the owner's lists that replaces
        them only when every row landed - one transaction, every list or none. */
@@ -1405,8 +1323,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
             gm_note: p.list.gm_note ?? '',
             created_at: at,
             updated_at: at,
-            revision: 1,
-            legacy_fingerprint: null
+            revision: 1
           },
           entries: copied
         });
@@ -1459,6 +1376,17 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by: null });
     return OK;
   };
+  /* The decision on the request's own active share topic (`purchase_requests_broadcast`):
+     its row trigger runs at the status update, before an apply's deferred revision. */
+  const tellShare = (r: HeldRequest): void => {
+    const sh = shareRows.find((x) => x.id === r.shareId && x.revoked_at === null);
+    if (!sh || (r.status !== 'applied' && r.status !== 'declined')) return;
+    send('share:' + sh.topic_key, 'request', {
+      request: r.id,
+      status: r.status,
+      partial: r.lines.some((l) => l.applied !== null && l.applied < l.qty)
+    });
+  };
   /* `apply_purchase_request` after its checks: stock by item, short, clamp, an entry
      taken to zero deleted and the list renumbered. */
   const applyHeld = (r: HeldRequest, h: Held, clamp: boolean, by: string): RequestApplied => {
@@ -1487,6 +1415,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     if (emptied.size) reorder([h], h.row.id, []);
     else touch(h);
     r.status = 'applied';
+    tellShare(r);
     announce(was, by);
     const owner = userIdOf(h);
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
@@ -1496,6 +1425,7 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
     r.status = 'declined';
     const owner = userIdOf(h);
     if (owner) send('owner:' + owner, 'request', { list: h.row.id, by });
+    tellShare(r);
   };
   /* A request's first read, by a draw or a decision: an hour left at most from now. */
   const markHeld = (r: HeldRequest, now: number): void => {
@@ -2284,6 +2214,15 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
       announce(was, 'other-device');
       return true;
     },
+    playRemove(listId, itemKey) {
+      const h = anyList(listId);
+      const entry = h ? h.entries.find((e) => e.item_key === itemKey) : undefined;
+      if (!h || !entry) return false;
+      const was = before();
+      removeEntries([h], [entry.id]);
+      announce(was, 'other-device');
+      return true;
+    },
     request(token, lines) {
       const id = uuid(6000 + asked);
       if (!requestSend(id, token, lines).ok) return null;
@@ -2301,6 +2240,15 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
         return true;
       }
       return applyHeld(r, h, true, 'other-device').ok;
+    },
+    decideNewest(token, verdict) {
+      const sh = shareRows.find((x) => x.token === token);
+      let newest: HeldRequest | null = null;
+      for (const x of purchases) {
+        if (!sh || x.shareId !== sh.id || x.status !== 'pending') continue;
+        if (!newest || x.createdAt >= newest.createdAt) newest = x;
+      }
+      return newest ? this.decide(newest.id, verdict) : false;
     },
     setOffline(on) {
       offline = on;
@@ -2353,8 +2301,8 @@ export function fakeCloud(seed: Seed, as?: string, options: FakeCloudOptions = {
 /** Builds the port from `?as=<user>` (signed out without it), `?items=<n>` (1-1000,
  *  `fillItems`), `?sections=<n>` (1-30, `fillSections`, with `items` only),
  *  `?sources=<n>` (1-20, `fillSources`, with `items` only),
- *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines` or `items`,
- *  `stall` or `fail`) and exposes it
+ *  `?lang=<ru|en>` (`lang`) and `?hold=<name>:<mode>,...` (`hold`: `lines`, `items` or
+ *  `rows`, `stall` or `fail`) and exposes it
  *  as `window.__dhlootFake` for the browser suites. The query stays in the
  *  address, so a reload keeps the session. */
 export function installFakeCloud(search: string = window.location.search): FakeCloud {
@@ -2367,7 +2315,10 @@ export function installFakeCloud(search: string = window.location.search): FakeC
   const hold: NonNullable<FakeCloudOptions['hold']> = {};
   for (const pair of (query.get('hold') ?? '').split(',')) {
     const [name, mode] = pair.split(':');
-    if ((name === 'lines' || name === 'items') && (mode === 'stall' || mode === 'fail')) {
+    if (
+      (name === 'lines' || name === 'items' || name === 'rows') &&
+      (mode === 'stall' || mode === 'fail')
+    ) {
       hold[name] = mode;
     }
   }
@@ -2381,7 +2332,7 @@ export function installFakeCloud(search: string = window.location.search): FakeC
       ? { fillSources: sources }
       : {}),
     ...(lang === 'ru' || lang === 'en' ? { lang } : {}),
-    ...(hold.lines || hold.items ? { hold } : {})
+    ...(hold.lines || hold.items || hold.rows ? { hold } : {})
   });
   window.__dhlootFake = { marker: MARKER, ...port };
   return port;

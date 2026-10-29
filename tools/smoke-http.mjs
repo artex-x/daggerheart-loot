@@ -43,7 +43,7 @@ page.on('console', (m) => {
   if (m.type() === 'error') errors.push('console error: ' + m.text());
 });
 
-await page.goto(root + 'index.html#/roll/std', { waitUntil: 'load' });
+await page.goto(root + 'roll/std', { waitUntil: 'load' });
 const ready = await page.evaluate(() =>
   Promise.race([
     navigator.serviceWorker.ready.then(() => true),
@@ -57,25 +57,23 @@ const seen = await page.evaluate(() => {
   return {
     mounted: !!document.querySelector('#app')?.childElementCount,
     data: typeof window.LOOT === 'object' && window.LOOT !== null,
-    /* An absolute base would break exactly this: paths would start at the server root */
+    /* Root-absolute: the app runs at every route path (docs/specs/META.md section 4). */
     srcs: scripts.map((s) => s.getAttribute('src')),
     modules: scripts.filter((s) => s.type === 'module').map((s) => s.getAttribute('src')),
-    dataModule: scripts.some(
-      (s) => s.getAttribute('src') === './data.js' && s.type === 'module'
-    )
+    dataModule: scripts.some((s) => s.getAttribute('src') === '/data.js' && s.type === 'module')
   };
 });
 
 ok(seen.mounted, 'the app did not render over HTTP');
 ok(seen.data, 'the data did not arrive: window.LOOT is empty');
 ok(
-  seen.modules.length === 1 && /^\.\/assets\/index-[\w-]+\.js$/.test(seen.modules[0] ?? ''),
+  seen.modules.length === 1 && /^\/assets\/index-[\w-]+\.js$/.test(seen.modules[0] ?? ''),
   'the entry is not one hashed module under assets/: ' + JSON.stringify(seen.modules)
 );
 ok(!seen.dataModule, 'data.js became a module - it must stay a classic script');
 ok(
-  seen.srcs.every((s) => s.startsWith('./')),
-  'a script path is not relative: ' + seen.srcs.join(', ')
+  seen.srcs.every((s) => s.startsWith('/') && !s.startsWith('//')),
+  'a script path is not root-absolute: ' + seen.srcs.join(', ')
 );
 
 await page.reload({ waitUntil: 'load' });
@@ -88,28 +86,65 @@ ok(after.registrations === 1, 'not one worker registration: ' + String(after.reg
 ok(after.controlled, 'the worker does not control the page after one reload');
 ok(after.mounted, 'the app did not render on the controlled reload');
 
+/* A deep path: the host answers it with the app document, every URL resolves from
+   the root, and the worker registered from `/sw.js` controls it with the scope `/`. */
+await page.goto(root + 'i/ci1', { waitUntil: 'load' });
+await page.waitForFunction(() => !!document.querySelector('#app h1'));
+const deep = await page.evaluate(async () => ({
+  path: location.pathname,
+  scope: (await navigator.serviceWorker.getRegistration())?.scope ?? '',
+  controlled: navigator.serviceWorker.controller !== null,
+  data: typeof window.LOOT === 'object' && window.LOOT !== null
+}));
+ok(deep.path === '/i/ci1', 'the record path moved to ' + deep.path);
+ok(deep.scope === root, 'the worker scope is not the root: ' + deep.scope);
+ok(deep.controlled, 'the worker does not control a deep path');
+ok(deep.data, 'the data did not arrive on a deep path');
+
+/* A record path is the app document with the record's card in its head, in the
+   language of the path (docs/specs/CONTRACTS.md section 5). */
+const share = createRequire(import.meta.url)('./build-share-pages.js');
+const ci1 = share.records().find((it) => it.id === 'ci1');
+for (const [path, lang] of [
+  ['i/ci1', 'ru'],
+  ['i/en/ci1', 'en']
+]) {
+  const text = await (await fetch(root + path)).text();
+  const name = lang === 'ru' ? ci1.ru : ci1.en;
+  ok(
+    text.includes('<meta property="og:title" content="' + name + '">'),
+    path + ' does not carry the og:title ' + name
+  );
+  ok(text.includes('\n' + share.headOf(ci1, lang) + '\n'), path + ' does not carry its card');
+  ok(
+    text.includes(share.bodyOf(ci1, lang)),
+    path + ' does not carry the record text in <noscript>'
+  );
+  ok(text.includes('<html lang="' + lang + '">'), path + ' is not <html lang="' + lang + '">');
+}
+
 /* A build with no sign-in configured - what `npm run build` makes unless the
    two VITE_SUPABASE_* values are in its environment - draws no account
-   control, and `#/account` is the not-found page at the same address
+   control, and `/account` is the not-found page at the same address
    (docs/specs/FEATURES.md, "Account"). */
 if (!process.env.VITE_SUPABASE_URL) {
   const control = await page.evaluate(
-    () => !!document.querySelector('header a[href="#/account"]')
+    () => !!document.querySelector('header a[href="/account"]')
   );
   ok(!control, 'an unconfigured build draws the account control');
-  await page.goto(root + 'index.html#/account', { waitUntil: 'load' });
+  await page.goto(root + 'account', { waitUntil: 'load' });
   await page.waitForFunction(() => !!document.querySelector('#app h1'));
   const account = await page.evaluate(() => ({
     heading: document.querySelector('#app h1')?.textContent ?? '',
-    hash: location.hash,
-    control: !!document.querySelector('header a[href="#/account"]')
+    path: location.pathname,
+    control: !!document.querySelector('header a[href="/account"]')
   }));
   ok(
     account.heading === 'Предмет не найден',
-    'an unconfigured #/account does not draw the not-found page: ' + account.heading
+    'an unconfigured /account does not draw the not-found page: ' + account.heading
   );
-  ok(account.hash === '#/account', 'an unconfigured #/account moved to ' + account.hash);
-  ok(!account.control, 'an unconfigured #/account draws the account control');
+  ok(account.path === '/account', 'an unconfigured /account moved to ' + account.path);
+  ok(!account.control, 'an unconfigured /account draws the account control');
 }
 ok(!errors.length, 'the page complains over HTTP: ' + errors.join('; '));
 

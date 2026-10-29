@@ -5,8 +5,6 @@
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
@@ -25,11 +23,14 @@ import {
   memoryStorage,
   noData
 } from '../ports/index.js';
+import { fakePage } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type SeedList } from '../ports/fake-cloud-seed.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { DAY, listOf, seedWith, TWO_LISTS } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
@@ -37,6 +38,7 @@ import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import { tablesHash } from '../lib/hash.js';
 import type { Record_, TableId } from '../lib/types.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -366,10 +368,10 @@ describe('the view switch', () => {
   it('draws the thumbnail in a row and the full picture on a tile', async () => {
     const { container } = render(App, { env: at() });
     const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
-    expect(rowEl?.querySelector('img')).toHaveAttribute('src', 'img/thumb/_none.webp');
+    expect(rowEl?.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
-    expect(tile?.querySelector('img')).toHaveAttribute('src', 'img/_none.webp');
+    expect(tile?.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
     await expectNoA11yViolations(container);
   });
 
@@ -391,7 +393,7 @@ describe('the view switch', () => {
     );
     expect(screen.getByRole('link', { name: 'настройках аккаунта' })).toHaveAttribute(
       'href',
-      '#/account'
+      '/account'
     );
     await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Списком' }));
@@ -434,25 +436,30 @@ describe('selection', () => {
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     expect(box).toBeChecked();
-    env.router.navigate('#/tables/hnf_item');
+    env.router.navigate('#/tables/hnf_item', 'ru');
     await tick();
-    env.router.navigate('#/tables');
+    env.router.navigate('#/tables', 'ru');
     await tick();
     const again = rowCheckboxes()[0] as HTMLElement;
     expect(again).not.toBeChecked();
   });
 });
 
-const TWO_LISTS = JSON.stringify([
-  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-]);
+/** Renders the tables as gm4, who holds `lists`, and waits for the account. */
+async function openBar(lists: SeedList[] = TWO_LISTS) {
+  Element.prototype.scrollIntoView = vi.fn();
+  const cloud = fakeCloud(seedWith({ gm4: lists }), 'gm4');
+  const page = fakePage();
+  const view = render(App, { env: at({ cloud, page }) });
+  await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+  return { ...view, cloud, page };
+}
 
-/** Typed, so a read-back assertion is not an unsafe member access on `any`. */
-const readLists = (storage: {
-  get: (k: string) => string | null;
-}): { id: string; ids: string[] }[] =>
-  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as { id: string; ids: string[] }[];
+/** Presses «Добавить в список» and waits for the menu's newest chip. */
+async function openBarMenu(first = 'Лавка в порту'): Promise<void> {
+  await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+  await screen.findByRole('button', { name: first });
+}
 
 describe('the selection bar', () => {
   it('draws nothing until something is ticked', () => {
@@ -545,52 +552,47 @@ describe('the selection bar', () => {
   });
 
   it('the menu names a single ticked record "лежит в списках"', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     expect(screen.getByText('Лежит в списках')).toBeInTheDocument();
   });
 
   it('the menu names two or more ticked records "Добавить в"', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) }) });
+    await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     expect(screen.getByText('Добавить в')).toBeInTheDocument();
   });
 
   it('keeps the menu newest first for two ticked records, even where a list holds one of them', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const holding = JSON.stringify([
-      { id: 'a', name: 'Клад дракона', ids: ['ci1'], created: 1 },
-      { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-    ]);
-    render(App, { env: at({ storage: memoryStorage({ 'dhloot.lists.v2': holding }) }) });
+    const holding = listOf(811, 'Клад дракона', [{ key: 'ci1' }], {
+      createdAgoMs: 2 * DAY,
+      editedAgoMs: 2 * DAY
+    });
+    await openBar([holding, TWO_LISTS[1] as SeedList]);
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     const chips = screen.getAllByRole('button', { name: /Клад дракона|Лавка в порту/ });
     expect(chips.map((c) => c.textContent)).toEqual(['Лавка в порту', 'Клад дракона']);
   });
 
   it('a chip adds every ticked id in one press, keeps the ticks, and toasts the count', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const storage = memoryStorage({ 'dhloot.lists.v2': TWO_LISTS });
-    render(App, { env: at({ storage }) });
+    const { cloud, page } = await openBar();
     const boxes = rowCheckboxes();
     await userEvent.click(boxes[0] as HTMLElement);
     await userEvent.click(boxes[1] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     await userEvent.click(screen.getByRole('button', { name: 'Клад дракона' }));
 
     expect(screen.getByText('Добавлено в «Клад дракона»: 2')).toBeInTheDocument();
     expect(boxes[0]).toBeChecked();
     expect(boxes[1]).toBeChecked();
-    expect(readLists(storage)[0]?.ids).toEqual(['ci1', 'ci2']);
+    expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['ci1', 'ci2']);
   });
 
   it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
@@ -631,12 +633,9 @@ describe('the selection bar', () => {
   });
 
   it('has no axe violations with the bar up and its menu open', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const { container } = render(App, {
-      env: at({ storage: memoryStorage({ 'dhloot.lists.v2': TWO_LISTS }) })
-    });
+    const { container } = await openBar();
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    await userEvent.click(screen.getByRole('button', { name: 'Добавить в список' }));
+    await openBarMenu();
     await expectNoA11yViolations(container);
   });
 });
@@ -655,7 +654,7 @@ describe('the table link', () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на таблицу' }));
-    expect(clip.last.text).toBe('https://example.test/#/tables/core_item');
+    expect(clip.last.text).toBe('https://example.test/tables/core_item');
     expect(screen.getByText('Ссылка на таблицу скопирована')).toBeInTheDocument();
   });
 
@@ -665,7 +664,7 @@ describe('the table link', () => {
       env: at({ clipboard: clip, storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
     });
     await userEvent.click(screen.getByRole('button', { name: 'Link to this table' }));
-    expect(clip.last.text).toBe('https://example.test/en/#/tables/core_item');
+    expect(clip.last.text).toBe('https://example.test/en/tables/core_item');
     await expectNoA11yViolations(container);
   });
 
@@ -884,7 +883,7 @@ describe('the filter', () => {
       data: fakeData(LOOT)
     });
     render(App, { env });
-    env.router.navigate('#/tables/dread');
+    env.router.navigate('#/tables/dread', 'ru');
     await tick();
     expect(screen.getByRole('button', { name: 'Фильтры' })).toHaveAttribute(
       'aria-expanded',
@@ -905,7 +904,7 @@ describe('the filter', () => {
     expect(rowCheckboxes()[0]).toBeChecked();
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
 
-    env.router.navigate('#/tables/wondrous');
+    env.router.navigate('#/tables/wondrous', 'ru');
     await tick();
     expect(rowCheckboxes()[0]).not.toBeChecked();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
@@ -920,7 +919,7 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Фильтры' }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-    env.router.navigate('#/tables/wondrous');
+    env.router.navigate('#/tables/dread', 'ru');
     await tick();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
@@ -938,7 +937,7 @@ describe('the filter', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Предметы' }));
     await userEvent.click(screen.getByRole('button', { name: 'Ссылка на фильтры' }));
     expect(clip.last.text).toBe(
-      'https://example.test/#/tables/wondrous_environments/f_kind-item'
+      'https://example.test/tables/wondrous_environments/f_kind-item'
     );
     expect(screen.getByText('Ссылка на фильтры скопирована')).toBeInTheDocument();
   });
@@ -1302,6 +1301,34 @@ describe('the chip nav', () => {
     ]);
   });
 
+  it.each(['many_worlds_tavern', 'core_item'])(
+    'holds the group and book chips of %s in one navigation landmark named by the tab',
+    async (table) => {
+      const { container } = render(App, {
+        env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
+      });
+      const navs = screen.getAllByRole('navigation', { name: 'Таблицы' });
+      expect(navs).toHaveLength(1);
+      expect(navs[0]).toHaveClass('tablenav');
+      expect(
+        within(navs[0] as HTMLElement).getByRole('link', { name: 'Core' })
+      ).toBeInTheDocument();
+      if (table === 'many_worlds_tavern') {
+        expect(navs[0]).toContainElement(bookRow());
+      }
+      await expectNoA11yViolations(container);
+      cleanup();
+      render(App, {
+        env: fakeEnv({
+          router: memoryRouter(`#/tables/${table}`),
+          data: fakeData(LOOT),
+          storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+        })
+      });
+      expect(screen.getAllByRole('navigation', { name: 'Tables' })).toHaveLength(1);
+    }
+  );
+
   it('draws a seventh, Homebrew, signed in', async () => {
     render(App, {
       env: fakeEnv({
@@ -1324,7 +1351,7 @@ describe('the chip nav', () => {
       const tablenav = document.querySelector('.tablenav') as HTMLElement;
       const group = within(tablenav).getByRole('link', { name: 'Дополнения' });
       expect(group).toHaveAttribute('aria-current', 'page');
-      expect(group).toHaveAttribute('href', '#/tables/wondrous_environments');
+      expect(group).toHaveAttribute('href', '/tables/wondrous_environments');
       const row = bookRow() as HTMLElement;
       const books = within(row).getAllByRole('link');
       const names = [
@@ -1354,7 +1381,7 @@ describe('the chip nav', () => {
         books
           .filter((a) => a.getAttribute('aria-current') === 'page')
           .map((a) => a.getAttribute('href'))
-      ).toEqual([tablesHash(table as TableId)]);
+      ).toEqual([tablesHash(table as TableId).slice(1)]);
       if (table === 'voa') await expectNoA11yViolations(container);
     }
   );
@@ -1402,7 +1429,7 @@ describe('a sectioned body: Vault of Ages by tier', () => {
       name: 'Скопировать ссылку на этот раздел'
     });
     await userEvent.click(artifactSection as HTMLElement);
-    expect(clip.last.text).toBe('https://example.test/#/tables/vault_of_ages/tA');
+    expect(clip.last.text).toBe('https://example.test/tables/vault_of_ages/tA');
     expect(screen.getByText('Ссылка на раздел скопирована')).toBeInTheDocument();
   });
 
@@ -1638,7 +1665,7 @@ describe('the row and section anchor', () => {
        hashchange, which `memoryRouter` does not fire - so the fake
        router is driven directly, the file's own pattern (see "belongs
        to the table it was made on: a hash change drops it"). */
-    env.router.navigate('#/tables/hnf_item');
+    env.router.navigate('#/tables/hnf_item', 'ru');
     await tick();
     expect(document.querySelector('.flash')).not.toBeInTheDocument();
   });
@@ -1689,9 +1716,7 @@ describe('accessibility', () => {
 
 describe("a row with the author's own relations", () => {
   it("draws a row's catalog names, the first homebrew name with (HB) and «и ещё 14»", async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const names = Array.from(
       { length: 15 },
       (_, i) => `Зелье ${String.fromCharCode(1103 - i)}`
@@ -1746,14 +1771,12 @@ describe("a row with the author's own relations", () => {
     drawn.unmount();
     const broken = render(RowMain, { props: { ...props, artBroken: () => true } });
     expect(broken.container.querySelector('img')?.getAttribute('src')).toBe(
-      'img/thumb/_none.webp'
+      '/img/thumb/_none.webp'
     );
   });
 
   it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {
-    const REAL = JSON.parse(
-      readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-    ) as Loot;
+    const REAL = readLoot();
     const index = buildIndex(REAL);
     const it = index.byId.get('ci18');
     if (!it) throw new Error('The catalog lacks ci18');

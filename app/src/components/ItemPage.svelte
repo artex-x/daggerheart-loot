@@ -18,7 +18,7 @@
   import TableLink from './TableLink.svelte';
   import UpdatedLine from './UpdatedLine.svelte';
   import { isCloudId } from '../lib/cloudLists.js';
-  import { itemHash, sectionHash, tablesHash } from '../lib/hash.js';
+  import { cardVersion, itemHash, sectionHash, tablesHash } from '../lib/hash.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
   import { nameOf } from '../lib/i18n.js';
   import { tableOf, whereFrom } from '../lib/label.js';
@@ -66,6 +66,17 @@
     if (view?.status === 'ready' && view.id === ownId) wasReady = true;
   });
   const lost = $derived(wasReady && view?.status === 'gone' && view.id === ownId);
+  /* The bar carries the version the copy hands out once the item is read
+     (docs/specs/CONTRACTS.md section 5), on the address this page was drawn for. */
+  $effect(() => {
+    const r = it;
+    const hash = app.hash;
+    const route = app.route;
+    if (!r || route.kind !== 'item' || route.id !== ownId) return;
+    untrack(() => {
+      app.setBarVersion(hash, cardVersion(r));
+    });
+  });
   const index = $derived(view?.index ?? null);
   const table = $derived(it && view?.mine ? tableOf(it) : null);
   const where = $derived.by(() => {
@@ -95,7 +106,9 @@
       <NoData>{t.noData}</NoData>
     {:else if !readable || view?.status === 'gone'}
       <PageTitle title={t.notFound} sub={t.notFoundSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{t.toStart}</Button>
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{t.toStart}</Button
+      >
     {:else if view?.status === 'error'}
       <PageTitle title={t.itemFailed} sub={t.sharedFailedSub} />
       <Button variant="primary" onclick={() => void view.retry()}>{t.retry}</Button>
@@ -105,7 +118,10 @@
       {#snippet sub()}
         {where}
         {#if table}
-          <TableLink href={tablesHash(table, { anchor: it.id })} label={t.showInTable} />
+          <TableLink
+            href={app.href(tablesHash(table, { anchor: it.id }))}
+            label={t.showInTable}
+          />
         {/if}
       {/snippet}
       <PageTitle title={nameOf(it, app.lang)} {sub} />

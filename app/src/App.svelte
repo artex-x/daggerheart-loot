@@ -142,8 +142,12 @@
             rowsOf={(id: string) => (app.index ? pr.rows(app.index, id) : [])}
           />
         {/key}
-      {:else if app.route.section === 'lists'}
+      {:else if app.route.section === 'lists' && app.cloudLists}
         <ListsPage {app} />
+      {:else if app.route.section === 'lists'}
+        <!-- A build with no sign-in has no lists (docs/specs/ROUTES.md). -->
+        <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+        {@render notFound()}
       {:else if app.route.section === 'search'}
         <SearchPage {app} />
       {/if}
@@ -157,7 +161,7 @@
     {:else if app.route.kind === 'tables' && (app.route.table !== 'homebrew' || app.homebrew)}
       <!-- With no sign-in configured `#/tables/homebrew` is not found, address kept. -->
       <TablesPage {app} />
-    {:else if app.route.kind === 'storedList' || app.route.kind === 'sharedList'}
+    {:else if app.route.kind === 'storedList' && app.cloudLists}
       <ListPage {app} />
     {:else if app.route.kind === 'share'}
       {#if app.index}
@@ -174,7 +178,9 @@
       <!-- Every `#/print/...` address since 2026-10-08: nothing is read from it
            (docs/specs/ROUTES.md). -->
       <PageTitle title={app.t.printLinkRetired} sub={app.t.printLinkRetiredSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{app.t.toStart}</Button>
+      <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+        >{app.t.toStart}</Button
+      >
     {:else if app.route.kind === 'account' && app.env.cloud}
       <AccountPage {app} />
     {:else if app.route.kind === 'homebrew' && app.homebrew}
@@ -186,14 +192,8 @@
         <HomebrewEditor {app} store={app.homebrew} key={app.route.key} />
       {/key}
     {:else}
-      <!-- R7: `#fallback` keeps `app.hash` readable at boot and on every
-           navigation, so a route kind with no branch above should not be
-           reachable - but "should not" is not "cannot", and the live
-           consequence of a route falling through silently was a blank
-           middle under a working tab bar. Same block the record route
-           draws for an id the data does not know. -->
-      <PageTitle title={app.t.notFound} sub={app.t.notFoundSub} />
-      <Button variant="primary" href={sectionHash('roll/std')} sameTab>{app.t.toStart}</Button>
+      <!-- eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -->
+      {@render notFound()}
     {/if}
     {#snippet failed(error, reset)}
       <PageTitle
@@ -204,3 +204,13 @@
     {/snippet}
   </svelte:boundary>
 </Shell>
+
+<!-- The not-found page for an address this build reads but has no page for: an old list
+     link (`listRetired`), and a route that needs sign-in in a build without it
+     (docs/specs/ROUTES.md). The address is kept. -->
+{#snippet notFound()}
+  <PageTitle title={app.t.notFound} sub={app.t.notFoundSub} />
+  <Button variant="primary" href={app.href(sectionHash('roll/std'))} sameTab
+    >{app.t.toStart}</Button
+  >
+{/snippet}

@@ -1,7 +1,8 @@
 /* The reader's purchase request: each answer's toast, the sent mark a success
  * leaves on its lines, the request id kept for a replay after `network` only,
- * and flow b's question and remembered answer. docs/specs/FEATURES.md, "Account and
- * browser lists". */
+ * flow b's question and remembered answer, the sent line under the bar's actions,
+ * and the owner's decision heard for this page load's own requests.
+ * docs/specs/FEATURES.md, "Purchase requests: the send". */
 
 import { describe, expect, it, vi } from 'vitest';
 import { dict, type Msg } from '../lib/dict.js';
@@ -9,7 +10,7 @@ import type { NotifyGm } from '../lib/prefs.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import type { RequestRepository, RequestSent } from '../ports/index.js';
-import { RequestSender } from './requestSender.svelte.js';
+import { RequestSender, sentSummary } from './requestSender.svelte.js';
 
 const ONE = [{ item: 'ci1', qty: 1 }];
 const t = dict('ru');
@@ -287,5 +288,123 @@ describe('RequestSender storage', () => {
     });
     expect(setItem).not.toHaveBeenCalled();
     setItem.mockRestore();
+  });
+});
+
+describe('the sent line and the decision', () => {
+  const TWO = [
+    { item: 'ci1', qty: 1 },
+    { item: 'cc1', qty: 3 }
+  ];
+  const lineOf = (s: RequestSender, lines = TWO): string | null =>
+    s.lineFor('tok', lines)?.(t, 'ru') ?? null;
+
+  it('draws what was sent and how long it waits while the sent mark holds', async () => {
+    const { s } = sender();
+    expect(lineOf(s)).toBeNull();
+    await s.send('tok', TWO);
+    expect(lineOf(s)).toBe(
+      'Запрос (2 позиции · 4 шт.) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.'
+    );
+    expect(lineOf(s, [{ item: 'ci1', qty: 1 }])).toBeNull();
+    expect(s.lineFor('tok', TWO)?.(dict('en'), 'en')).toBe(
+      "The request (2 items · 4 pcs) waits up to 30 days for the owner's answer. If the owner applies it, what you took comes off this list."
+    );
+    s.dismiss();
+    expect(lineOf(s)).toBeNull();
+  });
+
+  it('names one line, and a hundred lines of 99 pieces and three hundred alike', () => {
+    expect(sentSummary(ONE)(t, 'ru')).toBe('1 позиция');
+    const many = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ item: 'i' + String(i), qty: 99 }));
+    expect(sentSummary(many(100))(t, 'ru')).toBe('100 позиций · 9900 шт.');
+    expect(sentSummary(many(300))(t, 'ru')).toBe('300 позиций · 29700 шт.');
+  });
+
+  it('toasts a decision of a request this page load sent, once, and takes the line', async () => {
+    const { s, said } = sender();
+    await s.send('tok', TWO);
+    said.length = 0;
+    s.decided({ id: 'id-1', status: 'declined', partial: false });
+    expect(said).toEqual([['Владелец отклонил ваш запрос.', undefined]]);
+    expect(lineOf(s)).toBe('Владелец отклонил запрос.');
+    expect(s.isSent('tok', TWO)).toBe(true);
+    s.decided({ id: 'id-1', status: 'declined', partial: false });
+    expect(said).toHaveLength(1);
+  });
+
+  it('says nothing for an id it did not send', async () => {
+    const { s, said } = sender();
+    await s.send('tok', TWO);
+    said.length = 0;
+    s.decided({ id: 'someone-else', status: 'applied', partial: false });
+    expect(said).toEqual([]);
+    expect(lineOf(s)).toContain('ждёт ответа');
+  });
+
+  it('says the applied and the partial texts', async () => {
+    const { s, said } = sender();
+    await s.send('tok', TWO);
+    await s.send('tok', ONE);
+    said.length = 0;
+    s.decided({ id: 'id-1', status: 'applied', partial: true });
+    s.decided({ id: 'id-2', status: 'applied', partial: false });
+    expect(said.map((x) => x[0])).toEqual([
+      'Владелец принял ваш запрос частично: взял не всё.',
+      'Владелец принял ваш запрос.'
+    ]);
+    expect(lineOf(s, ONE)).toBe('Владелец принял запрос.');
+    expect(lineOf(s)).toBeNull();
+  });
+
+  it('draws the partial line while the sent mark holds the decided request', async () => {
+    const { s } = sender();
+    await s.send('tok', TWO);
+    s.decided({ id: 'id-1', status: 'applied', partial: true });
+    expect(lineOf(s)).toBe('Владелец принял запрос частично.');
+  });
+
+  it('toasts a decision after the ticks changed, and draws no line', async () => {
+    const { s, said } = sender();
+    await s.send('tok', TWO);
+    said.length = 0;
+    const changed = [{ item: 'ci1', qty: 1 }];
+    expect(lineOf(s, changed)).toBeNull();
+    s.decided({ id: 'id-1', status: 'declined', partial: false });
+    expect(said).toHaveLength(1);
+    expect(lineOf(s, changed)).toBeNull();
+  });
+
+  it('an apply followed by a tick change toasts once and leaves no line', async () => {
+    const { s, said } = sender();
+    await s.send('tok', TWO);
+    said.length = 0;
+    s.decided({ id: 'id-1', status: 'applied', partial: false });
+    /* The revision re-read lowers the stock and clamps the taken count: the ticks change. */
+    const clamped = [
+      { item: 'ci1', qty: 1 },
+      { item: 'cc1', qty: 2 }
+    ];
+    expect(lineOf(s, clamped)).toBeNull();
+    expect(said).toHaveLength(1);
+  });
+
+  it('keeps the newest 20 sent ids', async () => {
+    const { s, said } = sender();
+    for (let i = 0; i < 21; i++) await s.send('tok', [{ item: 'ci1', qty: i + 1 }]);
+    said.length = 0;
+    s.decided({ id: 'id-1', status: 'declined', partial: false });
+    expect(said).toEqual([]);
+    s.decided({ id: 'id-2', status: 'declined', partial: false });
+    expect(said).toHaveLength(1);
+  });
+
+  it('a new send clears the decision', async () => {
+    const { s } = sender();
+    await s.send('tok', TWO);
+    s.decided({ id: 'id-1', status: 'declined', partial: false });
+    await s.send('tok', ONE);
+    expect(lineOf(s, ONE)).toContain('ждёт ответа');
   });
 });

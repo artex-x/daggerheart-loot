@@ -4,8 +4,6 @@
  * shrug - a roll test that can only check that something appeared is the test
  * that lets a wrong table through. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, render, screen, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -24,6 +22,7 @@ import type { Loot } from '../lib/data.js';
 import { sectionHash } from '../lib/hash.js';
 import { SUPPLEMENTS } from '../lib/nav.js';
 import type { Record_ } from '../lib/types.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -175,9 +174,7 @@ describe('choosing the number by hand', () => {
 describe("The Dragon's Vault over the real data", () => {
   /* The book's equipment rolls after its loot, 78-145, and keeps its stat
      block in the result card. */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const field = (): HTMLInputElement =>
     screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
   const typed = async (n: string): Promise<void> => {
@@ -210,9 +207,7 @@ describe("The Dragon's Vault over the real data", () => {
 describe("Arazo's Artifacts over the real data", () => {
   /* An upgrade line's rungs roll as their own rows, right after the head,
      and keep their stat block in the result card. */
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const field = (): HTMLInputElement =>
     screen.getByRole<HTMLInputElement>('textbox', { name: 'Результат броска' });
   const typed = async (n: string): Promise<void> => {
@@ -395,7 +390,7 @@ describe('the supplements panel', () => {
       links
         .filter((a) => a.getAttribute('aria-current') === 'page')
         .map((a) => a.getAttribute('href'))
-    ).toEqual([sectionHash(s)]);
+    ).toEqual([sectionHash(s).slice(1)]);
   });
 
   it.each(['#/roll/std', '#/roll/alt'])('draws no panel on %s', (hash) => {

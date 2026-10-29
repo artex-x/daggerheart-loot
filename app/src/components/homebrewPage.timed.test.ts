@@ -4,16 +4,14 @@
    runs in the `timed` vitest project, one file at a time after the parallel files
    (vite.config.mts), so another worker's load does not decide it.
    docs/specs/FEATURES.md, "Homebrew". */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Loot } from '../lib/data.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
 import { fakeData } from '../ports/index.js';
 import { page, t, tab } from '../test/homebrewPage.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -29,9 +27,7 @@ const keyN = (n: number): string =>
   'aaaaaaaaaaaa';
 
 /* The first 100 catalog records of no book set: the book items the card holds. */
-const loot = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const loot = readLoot();
 const BOOK_ITEMS = Object.values(loot.items)
   .flat()
   .filter((r) => !r.set)

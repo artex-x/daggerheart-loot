@@ -554,7 +554,7 @@
                   <ul class="members">
                     {#each memberFold.rows as m, mi (m.id)}
                       <li>
-                        {#if m.record}<a href={recordHref(m.record)}>{m.name}</a
+                        {#if m.record}<a href={app.href(recordHref(m.record))}>{m.name}</a
                           >{#if m.book}<span class="src">{srcLabel(m.record, lang)}</span
                             >{/if}{:else}<span>{m.name}</span>{/if}
                         <Button

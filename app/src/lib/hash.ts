@@ -14,11 +14,9 @@ import {
   LIST_GROUPS,
   type FilterState
 } from './filters.js';
+import { pathOf } from './address.js';
 import { canonJson, fnv1a128 } from './homebrew.js';
 import { isSection, isTableId, type Lang, type Section, type TableId } from './types.js';
-
-/** A packed link is marked with "~": base64url has no tilde and never can. */
-export const PACK_MARK = '~';
 
 /** More than this and the browser stalls. Twenty sheets of nine. */
 export const PRINT_MAX = 180;
@@ -44,7 +42,9 @@ export type Route =
   /** Any address under `#/print/`: the retired print page, nothing read from it. */
   | { kind: 'printRetired' }
   | { kind: 'storedList'; listId: string }
-  | { kind: 'sharedList'; payload: string; packed: boolean }
+  /** An old list link (`#/l/...`): the not-found page, the address kept
+   *  (docs/specs/ROUTES.md). */
+  | { kind: 'listRetired' }
   /** An account list's share link; `token` is the leading run of `[A-Za-z0-9_-]`,
    *  empty for a bare `#/s/`, and `filter` the optional `/f_` segment after it
    *  (docs/specs/ROUTES.md). */
@@ -53,8 +53,9 @@ export type Route =
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
   /** The author's own items, one tab; like `account`, in every build. `key` opens one
-   *  card and is only read on `sets` and `rules`. */
-  | { kind: 'homebrew'; tab: HomebrewTab; key: string | null }
+   *  card and is only read on `sets` and `rules`; `filter` is the Items tab's `/f_`
+   *  segment, `{}` on every other tab (docs/specs/ROUTES.md, "Homebrew"). */
+  | { kind: 'homebrew'; tab: HomebrewTab; key: string | null; filter: FilterState }
   /** The editor of one own item; `key` null is a new item. */
   | { kind: 'homebrewItem'; key: string | null }
   /** Nothing could be read - the caller replaces it with the home section. */
@@ -140,9 +141,7 @@ export function legacySource(hash: string): { core: boolean; hnf: boolean } | nu
 export function parseHash(hash: string): Route {
   const h = stripHash(hash);
 
-  if (h.startsWith('l/' + PACK_MARK)) {
-    return { kind: 'sharedList', payload: h.slice(2), packed: true };
-  }
+  if (/^l\//.test(h)) return { kind: 'listRetired' };
   if (/^i\/[\w-]+$/.test(h)) return { kind: 'record', id: h.slice(2) };
   if (/^print\//.test(h)) return { kind: 'printRetired' };
   if (/^lists\/[\w-]+$/.test(h)) return { kind: 'storedList', listId: h.slice(6) };
@@ -164,25 +163,24 @@ export function parseHash(hash: string): Route {
     return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
   }
   if (h === 'account') return { kind: 'account' };
-  if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null };
+  if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null, filter: {} };
+  const own = /^homebrew\/(f_[A-Za-z0-9_.-]*)$/.exec(h);
+  if (own) {
+    return {
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: decodeFilter(own[1] ?? '', groupsFor('homebrew'))
+    };
+  }
   const tab = /^homebrew\/(?:(sources)|(sets|rules)(?:\/(hb_[a-z2-7]{16}))?)$/.exec(h);
   if (tab) {
     return tab[1]
-      ? { kind: 'homebrew', tab: 'sources', key: null }
-      : { kind: 'homebrew', tab: tab[2] as HomebrewTab, key: tab[3] ?? null };
+      ? { kind: 'homebrew', tab: 'sources', key: null, filter: {} }
+      : { kind: 'homebrew', tab: tab[2] as HomebrewTab, key: tab[3] ?? null, filter: {} };
   }
   const hb = /^homebrew\/(new|hb_[a-z2-7]{16})$/.exec(h);
   if (hb) return { kind: 'homebrewItem', key: hb[1] === 'new' ? null : (hb[1] ?? null) };
-  /* Was `/^l\/[A-Za-z0-9_-]+$/`: a stray character after the payload - a chat
-     client swallowing a trailing full stop is the reachable case (R5) - used
-     to fail the character class and fall through to `unknown`, which sent the
-     whole address home instead of to the shared-list page's own "not found"
-     screen. The payload itself is read as written, valid or not; decoding it
-     is `decodeList`'s job, not the router's. */
-  if (/^l\//.test(h)) {
-    return { kind: 'sharedList', payload: h.slice(2), packed: false };
-  }
-
   /* Old names lead to the same section; the source is read by legacySource() */
   if (LEGACY[h]) return { kind: 'section', section: 'roll/std' };
 
@@ -260,13 +258,17 @@ export function homebrewItemHash(key: string | null): string {
   return HOMEBREW_HASH + '/' + (key ?? 'new');
 }
 
-/** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and `rules`. */
-export function homebrewTabHash(tab: HomebrewTab, key: string | null = null): string {
-  return tab === 'items' ? HOMEBREW_HASH : HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
-}
-
-export function sharedListHash(payload: string): string {
-  return '#/l/' + payload;
+/** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and
+ *  `rules`, and a filter with a value adds the Items tab's `/f_` segment
+ *  (docs/specs/ROUTES.md, "Homebrew"). */
+export function homebrewTabHash(
+  tab: HomebrewTab,
+  key: string | null = null,
+  filter: FilterState = {}
+): string {
+  if (tab !== 'items') return HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
+  const seg = encodeFilter(filter, groupsFor('homebrew'));
+  return HOMEBREW_HASH + (seg ? '/' + seg : '');
 }
 
 export function storedListHash(listId: string): string {
@@ -295,50 +297,29 @@ export function tablesHash(
 
 /* ---------- links to hand somebody else ---------- */
 
-/** Where the page itself is. */
+/** Where the app is: the origin with a trailing `/`. */
 export interface Site {
   base: string;
 }
 
 /**
- * The address of the app itself.
- *
- * A web server serves `index.html` for the bare directory, so the file is not
- * named. With `lang` `en` the address goes through the English entry document
- * `en/`, which carries the English preview and redirects to the app
- * (docs/specs/I18N.md); without a language it is the app itself.
+ * The address of `hash` on `site` in `lang`, in the path form the address bar shows
+ * (docs/specs/ROUTES.md, "Path form"), with `?v=<v>` when `v` is given: a changed
+ * card is a new URL to a messenger's cache (docs/specs/CONTRACTS.md section 5).
  */
-export function appUrl(site: Site, hash: string, lang?: Lang): string {
-  return site.base + (lang === 'en' ? 'en/' : '') + hash;
+export function appUrl(site: Site, hash: string, lang: Lang, v?: string): string {
+  return site.base.replace(/\/$/, '') + pathOf(hash, lang) + (v ? '?v=' + v : '');
 }
 
 /**
- * The address of one record: the static stub in `i/`, not the app.
+ * The address of one record: `i/<id>` Russian, `i/en/<id>` English.
  *
- * The stub carries per-record Open Graph tags, so Telegram and Discord unfurl
- * the picture, the name and the description without anyone opening anything.
- * The stub of the language on screen: `i/<id>.html` Russian, `i/en/<id>.html`
- * English.
+ * The host answers it with the record's Open Graph tags, so Telegram and Discord
+ * unfurl the picture, the name and the description without anyone opening
+ * anything. `v` is the card's version from the build's map.
  */
-export function recordUrl(site: Site, id: string, lang: Lang): string {
-  return site.base + (lang === 'en' ? 'i/en/' : 'i/') + id + '.html';
-}
-
-/* ---------- the preview host ---------- */
-
-const CARD_FAMILY = /^#\/(?:(?:h|s|p)\/.|tables\/[a-z_])/;
-const HOMEBREW_TABLE = /^#\/tables\/homebrew(?:\/|$)/;
-
-/** Returns the preview host's address of `hash` in `lang`, with `?v=<v>` when `v` is
- *  given, or null when `hash` is not a card family (`docs/specs/CONTRACTS.md` section 5). */
-export function previewUrl(
-  origin: string,
-  hash: string,
-  lang: Lang,
-  v?: string
-): string | null {
-  if (!CARD_FAMILY.test(hash) || HOMEBREW_TABLE.test(hash)) return null;
-  return origin + (lang === 'en' ? '/en' : '') + hash.slice(1) + (v ? '?v=' + v : '');
+export function recordUrl(site: Site, id: string, lang: Lang, v?: string): string {
+  return appUrl(site, recordHash(id), lang, v);
 }
 
 /** Returns the `v` of a preview link: 40 bits of the FNV-1a hash of `drawn`'s canonical

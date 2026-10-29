@@ -7,9 +7,8 @@ import { isHomebrewKey } from './homebrew.js';
 import { printEntriesValid, type PrintSetEntry } from './printSet.js';
 
 /** An action a signed-out reader started and a sign-in finishes: reopen the add-to-list
- *  menu of `key` with `ids` ticked (and their taken counts) and, when the reader had typed
- *  one, a new list's `name` in its create slot; save the open shared list (`#/l/` or
- *  `#/s/`); save a copy of the homebrew item `hid` or of the catalog record `id`
+ *  menu of `key` with `ids` ticked (and their taken counts); save the open share link's list
+ *  (`#/s/` only); save a copy of the homebrew item `hid` or of the catalog record `id`
  *  («Сохранить себе»); or make a print set of `entries` (`print`; `cut` counts the records
  *  past the 180-card cap). */
 export type PendingAction =
@@ -18,7 +17,6 @@ export type PendingAction =
       key: string;
       ids: string[];
       picked?: Record<string, number>;
-      name?: string;
     }
   | { do: 'saveList' }
   | { do: 'saveItem'; hid: string }
@@ -37,8 +35,6 @@ const ID = /^[A-Za-z0-9_-]{1,64}$/;
 /** The most rows a page can tick: a table's whole body. */
 const IDS_MAX = 180;
 const QTY_MAX = 99;
-/** A list name's bound (`lists.name`). */
-const NAME_MAX = 200;
 /** The most records a print press cuts: past this the action is not one this app writes. */
 const CUT_MAX = 9999;
 
@@ -91,16 +87,12 @@ export function readPending(v: unknown): PendingAction | null {
       : null;
   }
   if (r['do'] !== 'addToList') return null;
-  const { key, ids, picked, name } = r;
+  const { key, ids, picked } = r;
   if (typeof key !== 'string' || !KEY.test(key)) return null;
   if (!Array.isArray(ids) || ids.length < 1 || ids.length > IDS_MAX) return null;
   if (!ids.every((id): id is string => typeof id === 'string' && ID.test(id))) return null;
   if (new Set(ids).size !== ids.length) return null;
-  if (name !== undefined && (typeof name !== 'string' || !name || name.length > NAME_MAX)) {
-    return null;
-  }
   const action: PendingAction = { do: 'addToList', key, ids: [...ids] };
-  if (name !== undefined) action.name = name;
   if (picked !== undefined) {
     const counts = readPicked(picked, ids);
     if (!counts) return null;

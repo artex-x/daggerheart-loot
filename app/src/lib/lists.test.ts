@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { encodeList, type DecodedList } from './listLink.js';
 import {
-  copyInit,
-  findListByPayload,
   gmOnlyCount,
   itemMeta,
-  keepLists,
-  liftNotes,
   matchLists,
-  mergeLists,
   moveEntry,
   pickerOrder,
   stockLeft,
@@ -16,107 +10,10 @@ import {
   takenTotal,
   withIds,
   withMeta,
-  type LegacyList,
   type StoredList
 } from './lists.js';
 
 const list = (id: string, ids: string[] = ['ci1']): StoredList => ({ id, name: id, ids });
-
-describe('reading storage', () => {
-  it('keeps what looks like a list', () => {
-    expect(keepLists([list('a'), list('b')])).toHaveLength(2);
-  });
-
-  it('drops what does not, instead of throwing', () => {
-    /* Storage may have been written by an older build, edited by hand, or
-       corrupted. One bad entry must not cost the rest. */
-    const mixed = [list('a'), null, {}, { id: 'b' }, { ids: [] }, 'nope', list('c')];
-    expect(keepLists(mixed).map((l) => l.id)).toEqual(['a', 'c']);
-  });
-
-  it('treats anything that is not an array as empty', () => {
-    for (const bad of [null, undefined, {}, 'x', 7]) expect(keepLists(bad)).toEqual([]);
-  });
-});
-
-describe('the note split, applied to lists written before it', () => {
-  const old = (): LegacyList => ({
-    id: 'old',
-    name: 'Shop',
-    ids: ['ci1', 'cc1'],
-    note: 'Visible to players',
-    noteShow: true,
-    meta: {
-      ci1: { qty: 2, note: 'Also visible', noteShow: true },
-      cc1: { note: "The GM's own" }
-    }
-  });
-
-  it('reads the split off the flag rather than guessing', () => {
-    /* `noteShow` meant "copy this along with the item", which is precisely the
-       note meant for players */
-    const moved = liftNotes(old());
-    expect(moved.note).toBe('Visible to players');
-    expect(moved.hnote).toBeUndefined();
-  });
-
-  it('applies the same rule to every entry', () => {
-    const moved = liftNotes(old());
-    expect(moved.meta?.['ci1']?.note).toBe('Also visible');
-    expect(moved.meta?.['ci1']?.hnote).toBeUndefined();
-    expect(moved.meta?.['cc1']?.hnote).toBe("The GM's own");
-    expect(moved.meta?.['cc1']?.note).toBeUndefined();
-  });
-
-  it('keeps everything else about an entry', () => {
-    expect(liftNotes(old()).meta?.['ci1']?.qty).toBe(2);
-  });
-
-  it('leaves no flag behind', () => {
-    const moved = liftNotes(old()) as unknown as Record<string, unknown>;
-    expect('noteShow' in moved).toBe(false);
-    expect(JSON.stringify(moved)).not.toContain('noteShow');
-  });
-
-  it('does not touch the list it was given', () => {
-    const before = old();
-    liftNotes(before);
-    expect(before.note).toBe('Visible to players');
-  });
-});
-
-describe('two tabs', () => {
-  it('keep this tab order, and this tab wins on a shared id', () => {
-    const mine = [list('b'), list('a')];
-    const stored = [list('a', ['zzz']), list('c')];
-    const out = mergeLists(mine, stored);
-    expect(out.map((l) => l.id)).toEqual(['b', 'a', 'c']);
-    expect(out[1]?.ids).toEqual(['ci1']);
-  });
-
-  it('keep a list only the other tab has', () => {
-    /* Before the merge existed, saving here destroyed it silently, with no
-       server and no export to recover from */
-    expect(mergeLists([list('a')], [list('b')]).map((l) => l.id)).toEqual(['a', 'b']);
-  });
-
-  it('do not resurrect one this tab deleted', () => {
-    /* Deleted here means absent from `mine` - the same as never having had it.
-       Only `deleted` tells the two apart. */
-    expect(mergeLists([list('a')], [list('b')], { b: true }).map((l) => l.id)).toEqual(['a']);
-  });
-
-  it('still take back a list the other tab created after the delete', () => {
-    expect(
-      mergeLists([list('a')], [list('b'), list('c')], { b: true }).map((l) => l.id)
-    ).toEqual(['a', 'c']);
-  });
-
-  it('survive empty storage', () => {
-    expect(mergeLists([list('a')], []).map((l) => l.id)).toEqual(['a']);
-    expect(mergeLists([], [list('a')]).map((l) => l.id)).toEqual(['a']);
-  });
-});
 
 describe('reordering', () => {
   const ids = ['a', 'b', 'c', 'd', 'e'];
@@ -160,86 +57,6 @@ describe('entry meta', () => {
       q1: { gmOnly: true }
     });
     expect(added.meta).toEqual({ ci1: { qty: 2 } });
-  });
-
-  it('never writes the GM-only mark into a #/l/ payload', () => {
-    const l: StoredList = { ...list('a'), meta: { ci1: { gmOnly: true, note: 'n' } } };
-    expect(encodeList(l, false)).toBe(
-      encodeList({ ...list('a'), meta: { ci1: { note: 'n' } } }, false)
-    );
-  });
-});
-
-describe('findListByPayload', () => {
-  const knows = (id: string): boolean => ['ci1', 'ci2'].includes(id);
-
-  const stored: StoredList = {
-    id: 'a',
-    name: 'Тайник',
-    ids: ['ci1', 'ci2'],
-    hnote: 'Только для мастера'
-  };
-
-  it('recognises its own players’ payload even though it carries no GM note', () => {
-    const payload = encodeList(stored, true);
-    expect(findListByPayload([stored], payload, knows)).toBe(stored);
-  });
-
-  it('recognises its own GM payload', () => {
-    const payload = encodeList(stored, false);
-    expect(findListByPayload([stored], payload, knows)).toBe(stored);
-  });
-
-  it('does not match a renamed list', () => {
-    const payload = encodeList(stored, true);
-    const renamed: StoredList = { ...stored, name: 'Другое имя' };
-    expect(findListByPayload([renamed], payload, knows)).toBeNull();
-  });
-
-  it('does not match a reordered list', () => {
-    const payload = encodeList(stored, true);
-    const reordered: StoredList = { ...stored, ids: ['ci2', 'ci1'] };
-    expect(findListByPayload([reordered], payload, knows)).toBeNull();
-  });
-
-  it('does not match when the payload carries a price the store does not have', () => {
-    const priced: StoredList = { ...stored, meta: { ci1: { gold: 100 } } };
-    const payload = encodeList(priced, true);
-    expect(findListByPayload([stored], payload, knows)).toBeNull();
-  });
-
-  it('is null for a payload that will not decode', () => {
-    expect(findListByPayload([stored], 'not-a-real-payload', knows)).toBeNull();
-  });
-});
-
-describe('copyInit', () => {
-  it('copiesIdsMetaMoneyAndBothNotes', () => {
-    const meta = { ci1: { qty: 5, gold: 50, note: 'Видно игрокам' } };
-    const decoded: DecodedList = {
-      name: 'Тайник',
-      ids: ['ci1', 'ci2'],
-      money: 'coin',
-      note: 'Видно игрокам',
-      hnote: 'Только для ГМ',
-      meta,
-      dropped: 0
-    };
-    const init = copyInit(decoded);
-    expect(init).toEqual({
-      ids: ['ci1', 'ci2'],
-      money: 'coin',
-      note: 'Видно игрокам',
-      hnote: 'Только для ГМ',
-      meta
-    });
-    expect(init.meta?.['ci1']).not.toBe(meta.ci1);
-    expect(init.ids).not.toBe(decoded.ids);
-  });
-
-  it('leavesOutWhatTheLinkDoesNotCarry', () => {
-    const decoded: DecodedList = { name: 'X', ids: ['ci1'], dropped: 0 };
-    expect(copyInit(decoded)).toEqual({ ids: ['ci1'] });
   });
 });
 

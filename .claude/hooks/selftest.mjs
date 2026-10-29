@@ -4639,6 +4639,7 @@ function greenRun(sha) {
       'e2e',
       'audit',
       'secrets',
+      'deploy-replay',
       'deploy'
     ].map((name) => ({
       name,
@@ -4658,8 +4659,8 @@ async function testCiCredit() {
     verifyRun(...Object.values(greenRun(sha)), sha).length === 0
   );
   check(
-    '#333 REQUIRED_JOBS has eleven jobs',
-    REQUIRED_JOBS.length === 11,
+    '#333 REQUIRED_JOBS has twelve jobs',
+    REQUIRED_JOBS.length === 12,
     JSON.stringify(REQUIRED_JOBS)
   );
   const broken = [
@@ -4679,6 +4680,11 @@ async function testCiCredit() {
       'browser (1) concluded failure'
     ],
     ['a skipped e2e', (g) => (jobOf(g, 'e2e').conclusion = 'skipped'), 'e2e concluded skipped'],
+    [
+      'a skipped deploy-replay',
+      (g) => (jobOf(g, 'deploy-replay').conclusion = 'skipped'),
+      'deploy-replay concluded skipped'
+    ],
     [
       'a missing job',
       (g) => (g.jobs = g.jobs.filter((j) => j.name !== 'secrets')),

@@ -17,6 +17,7 @@ import {
   sharedListOf,
   shareOf,
   snapshotRecords,
+  toCloudHead,
   toCloudList,
   withSnapshots,
   type EntryRow,
@@ -51,7 +52,6 @@ const row = (over: Partial<ListRow> = {}): ListRow => ({
   created_at: '2026-09-20T10:00:00.000Z',
   updated_at: '2026-09-22T10:00:00.000Z',
   revision: 1,
-  legacy_fingerprint: null,
   list_entries: [],
   ...over
 });
@@ -63,6 +63,28 @@ describe('isCloudId', () => {
     expect(isCloudId('l1a2b3c4')).toBe(false);
     expect(isCloudId('a')).toBe(false);
     expect(isCloudId('9B2F4C1E-8D3A-4F6B-A1C2-3D4E5F6A7B8C')).toBe(false);
+  });
+});
+
+describe('toCloudHead', () => {
+  it('gives the ids in list order, the row ids and the links, and no meta', () => {
+    const l = toCloudHead({
+      ...row(),
+      list_entries: [
+        { id: 'c', item_key: 'q3', source: 'official', hb_item: null, position: 1 },
+        {
+          id: 'b',
+          item_key: 'hb_emberaxeaaaaaaaa',
+          source: 'homebrew',
+          hb_item: '00000000-0000-4000-8000-000000000511',
+          position: 0
+        }
+      ]
+    });
+    expect(l.ids).toEqual(['hb_emberaxeaaaaaaaa', 'q3']);
+    expect(l.entryIds).toEqual({ hb_emberaxeaaaaaaaa: 'b', q3: 'c' });
+    expect(l.links).toEqual({ hb_emberaxeaaaaaaaa: '00000000-0000-4000-8000-000000000511' });
+    expect(l).not.toHaveProperty('meta');
   });
 });
 

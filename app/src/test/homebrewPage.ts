@@ -11,14 +11,14 @@ import {
   fakeEnv,
   fakePage,
   memoryRouter,
+  type MemoryRouter,
   memoryStorage,
-  type CloudPort,
-  type RouterPort
+  type CloudPort
 } from '../ports/index.js';
 
 export const t = dict('ru');
 
-let router: RouterPort | null = null;
+let router: MemoryRouter | null = null;
 
 /** What `page` returns: the render of the app, its cloud, router, dialog and page port. */
 type Paged = RenderResult<typeof App> & {
@@ -69,11 +69,11 @@ export function page(
 export async function tab(label: string): Promise<HTMLElement> {
   const link = await screen.findByRole('link', { name: label });
   const href = link.getAttribute('href') ?? '';
-  router?.navigate(href);
+  router?.click(href);
   return waitFor(() => {
     const on = screen.getByRole('link', { name: label });
     const root =
-      href === '#/homebrew'
+      href === '/homebrew'
         ? document.querySelector<HTMLElement>('main')
         : document.querySelector<HTMLElement>('.hbtab');
     if (on.getAttribute('aria-current') !== 'page' || !root) {

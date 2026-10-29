@@ -25,8 +25,7 @@
      the same table's own address. It is rejected anyway: `app.hash` also
      changes on a table-to-table move made through a filter pick
      (`replace()`), which must not close the modal, so the address alone
-     cannot tell the two kinds of move apart. `app.navigations` (`app.svelte.ts`
-     :136-145) is what already makes exactly that distinction - `go()`
+     cannot tell the two kinds of move apart. `app.navigations` (`AppState`) is what already makes exactly that distinction - `go()`
      counts, `replace()` does not - which is why the effect watches it
      instead of the address. */
   import { untrack } from 'svelte';

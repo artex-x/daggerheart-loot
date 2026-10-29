@@ -303,7 +303,9 @@
           {:else}
             <div class="head">
               {#if mine.length}
-                <a class="name" href={tablesHash('homebrew', { filter: { src: [book.key] } })}
+                <a
+                  class="name"
+                  href={app.href(tablesHash('homebrew', { filter: { src: [book.key] } }))}
                   >{named(book.content)}</a
                 >
               {:else}
@@ -447,7 +449,9 @@
         <li class="book">
           <div class="head">
             {#if defaultCount}
-              <a class="name" href={tablesHash('homebrew', { filter: { src: ['hb'] } })}
+              <a
+                class="name"
+                href={app.href(tablesHash('homebrew', { filter: { src: ['hb'] } }))}
                 >{t.srcHomebrew}</a
               >
             {:else}

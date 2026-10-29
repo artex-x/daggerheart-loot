@@ -6,9 +6,6 @@
 
 import type { StoragePort } from './types.js';
 
-/** A key nobody stores anything under - written and removed to test the water. */
-const PROBE = 'dhloot.probe';
-
 export function browserStorage(win: Window = window): StoragePort {
   const ls = (): Storage | null => {
     try {
@@ -30,13 +27,13 @@ export function browserStorage(win: Window = window): StoragePort {
       try {
         const s = ls();
         /* No storage at all is a failed write, not a quiet success: the caller
-           has to be able to tell the person their lists were not saved. */
+           has to be able to tell the person the value was not saved. */
         if (!s) return false;
         s.setItem(key, value);
         return true;
       } catch {
         /* Out of quota, or storage refused outright. The caller tells the
-           person their lists were not saved rather than pretending. */
+           person the value was not saved rather than pretending. */
         return false;
       }
     },
@@ -47,29 +44,10 @@ export function browserStorage(win: Window = window): StoragePort {
         /* Nothing to do about it, and nothing worth saying */
       }
     },
-    works() {
-      try {
-        const s = ls();
-        if (!s) return false;
-        s.setItem(PROBE, '1');
-        s.removeItem(PROBE);
-        return true;
-      } catch {
-        return false;
-      }
-    },
     onExternalChange(fn) {
-      /* Fires only for other tabs, which is exactly the case `watch()`
-         (`state/lists.svelte.ts`) exists for: this tab already knows what it
-         wrote. A `null` key - `localStorage.clear()` - used to be dropped
-         here; R2 treats it the same as a named key. `watch()` itself does no
-         merge for either shape - a matched key or `null` both call `load()`
-         plain, which reads storage fresh and replaces `this.lists` wholesale
-         (`mergeLists` is `save()`'s own, reconciling this tab's unsaved edits
-         against whatever storage holds, a different question from "what did
-         another tab just write"). A cleared key reads back as `null` from
-         `#readCurrent`, and `load()` answers that the same way a genuinely
-         empty key does: no stored lists. */
+      /* Fires only for other tabs: this tab already knows what it wrote. A `null`
+         key - `localStorage.clear()` - is passed on as `null` (R2): the
+         listener re-reads every key it follows. */
       const handler = (e: StorageEvent): void => {
         fn(e.key);
       };
@@ -130,7 +108,6 @@ export function memoryStorage(initial: Record<string, string> = {}): FakeStorage
     remove(k) {
       map.delete(k);
     },
-    works: () => true,
     onExternalChange(fn) {
       listeners.add(fn);
       return () => {
@@ -149,7 +126,6 @@ export function brokenStorage(): StoragePort {
     get: () => null,
     set: () => false,
     remove: () => undefined,
-    works: () => false,
     onExternalChange: () => () => undefined
   };
 }

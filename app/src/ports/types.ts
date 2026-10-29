@@ -7,9 +7,8 @@
  *
  * - every one of these can fail in a way that is not a bug. Storage throws in a
  *   private window, the clipboard is refused outside a secure context, the
- *   share sheet is dismissed by the person using it, compression does not exist
- *   in an older browser. Each port says so in its type, so a caller cannot
- *   forget the case;
+ *   share sheet is dismissed by the person using it. Each port says so in its
+ *   type, so a caller cannot forget the case;
  * - none of them can be exercised in a unit test as a global. As an argument
  *   they can, which is the difference between testing the behaviour and testing
  *   that a browser exists.
@@ -32,6 +31,7 @@ import type {
   ImportRow,
   LinkedRow,
   ListOp,
+  ListHead,
   ListRow,
   ShareAudience,
   SharedHeld,
@@ -57,22 +57,20 @@ import type { Prefs } from '../lib/prefs.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
 import type { NoticeRow, OwnerRequest, RequestHead, ShortLine } from '../lib/requests.js';
 import type { Random } from '../lib/roll.js';
+import type { Lang } from '../lib/types.js';
 
 export interface StoragePort {
   get(key: string): string | null;
   set(key: string, value: string): boolean;
   remove(key: string): void;
-  /** Whether storage works at all - what the warning in the lists section asks. */
-  works(): boolean;
   /**
    * Another tab wrote to a key, or - `null` - this tab has reason to believe
-   * it might have missed one (R2). The whole two-tab merge hangs off this,
-   * so it is part of the port rather than something a component wires up
-   * itself. `null` covers `localStorage.clear()`, which fires a `storage`
-   * event with no key at all, and the two moments a backgrounded tab is
-   * given no `storage` event for anyway - becoming visible again, and a
-   * back-forward-cache restore - both of which a caller answers the same
-   * way it answers a named key: reload and merge.
+   * it might have missed one (R2). `AppState` listens: signed out it follows
+   * another tab's settings keys, and the `null` signal re-reads the account and
+   * the open share link (`STATE.md`, "Two tabs"). `null` covers
+   * `localStorage.clear()`, which fires a `storage` event with no key at all,
+   * and the two moments a backgrounded tab is given no `storage` event for
+   * anyway - becoming visible again, and a back-forward-cache restore.
    */
   onExternalChange(fn: (key: string | null) => void): () => void;
 }
@@ -128,43 +126,37 @@ export interface SharePort {
 /* ---------- the address ---------- */
 
 /**
- * Reading and writing the hash.
+ * Reading and writing the address.
  *
- * `replace` exists separately from `navigate` because the difference is
- * load-bearing: the filter segment is rewritten on every click and must not
- * fill the back button, while opening a list is a step a person expects to be
- * able to undo.
+ * The app speaks the `#/...` route key; the bar shows its path form
+ * (docs/specs/ROUTES.md, "Path form"). `replace` exists separately from
+ * `navigate` because the difference is load-bearing: the filter segment is
+ * rewritten on every click and must not fill the back button, while opening a
+ * list is a step a person expects to be able to undo. The router holds no
+ * language: every write takes the one on screen.
  */
 export interface RouterPort {
+  /** The route key the address names; an old `#/` fragment wins over the path. */
   hash(): string;
-  navigate(hash: string): void;
-  replace(hash: string): void;
+  /** The language the address names, or null when it names none. */
+  lang(): Lang | null;
+  /** One history step to `hash`, with `?v=<v>` when given, and the change listeners
+   *  told at once; the address already showing is no step and tells nobody. */
+  navigate(hash: string, lang: Lang, v?: string): void;
+  /** Rewrites the address in place and tells nobody. `v` undefined keeps the current
+   *  `v`, null drops it. */
+  replace(hash: string, lang: Lang, v?: string | null): void;
+  /** Rewrites the current address in place in `lang`'s form, `v` kept. */
+  relang(lang: Lang): void;
+  /** Back, Forward, or a typed old `#/` address. */
   onChange(fn: (hash: string) => void): () => void;
-  /**
-   * Where the page itself lives, with any hash stripped and `index.html` off
-   * the end - a web server serves the directory, so naming the file is noise.
-   */
+  /** A plain click on a link to an address the app answers; the click is prevented. */
+  onLink(fn: (hash: string) => void): () => void;
+  /** The app root: the origin with a trailing `/`. */
   base(): string;
   /** How many entries back there are, so a print page knows whether to offer one. */
   canGoBack(): boolean;
   back(): void;
-}
-
-/* ---------- short links ---------- */
-
-/**
- * Compressing a list payload.
- *
- * Optional in the strict sense: `CompressionStream` may be absent, and the
- * plain form has to keep working when it is. `pack` therefore returns whichever
- * came out shorter - for a list of three entries with no notes, compression
- * only adds length.
- */
-export interface CompressPort {
-  available(): boolean;
-  pack(raw: string): Promise<string>;
-  /** Accepts either form; the marker on the front says which it is. */
-  unpack(payload: string): Promise<string>;
 }
 
 /* ---------- confirming ---------- */
@@ -229,6 +221,9 @@ export interface DragPort {
  */
 export interface DataPort {
   load(): Loot | null;
+  /** The record link's card version from `window.LOOT_V`, which the build appends to
+   *  `data.js`; `undefined` when the map is absent, malformed or lacks the id. */
+  cardVersion(id: string): string | undefined;
 }
 
 /**
@@ -243,7 +238,7 @@ export type Registration = 'registered' | 'unsupported' | 'failed';
 export type Persistence = 'persisted' | 'denied' | 'skipped';
 
 export interface PwaPort {
-  /** Registers `./sw.js`. */
+  /** Registers `/sw.js` with the scope `/`. */
   register(): Promise<Registration>;
   /** Whether the page runs as an installed app (standalone display mode). */
   standalone(): boolean;
@@ -269,11 +264,13 @@ export interface PagePort {
   /** Asks the browser's own prompt before the page closes while `dirty()` answers true.
    *  Returns the removal. */
   guardUnload(dirty: () => boolean): () => void;
+  /** Whether the page is in sight now. */
+  visible(): boolean;
 }
 
 /**
- * The time of day the app reads for the legacy write cutoff. A test build pins it
- * (`?today=`), so its states stay on one side of the date whatever day they run.
+ * The time the app reads for export names and relative times. A test build pins it, so
+ * its states read the same moment whatever day they run.
  */
 export interface ClockPort {
   now(): number;
@@ -374,12 +371,15 @@ export type ListWrite =
 export type ListsRead =
   | {
       ok: true;
-      lists: ListRow[];
+      lists: ListHead[];
       kept?: readonly string[];
       listLimit: number | null | undefined;
       entryLimit: number | null | undefined;
     }
   | { ok: false };
+
+/** The named lists whole; `{ ok: false }` is signed out or a read that failed. */
+export type ListRowsRead = { ok: true; lists: ListRow[] } | { ok: false };
 
 /** One write's answer inside an `apply` call: never `network`; `gone` when the row it
  *  edits was deleted or is not the caller's (`P0002`). */
@@ -398,33 +398,23 @@ export type ListWrites =
   /** The call was refused whole: every write in it is dropped. */
   | { ok: false; error: 'refused' };
 
-/** A browser list's move: the account row, and whether this call made it (false: the
- *  owner moved the same text before, and the answer is that first row). */
-export type MoveWrite =
-  | { ok: true; id: string; inserted: boolean }
-  /** No answer, a lapsed session or a row deleted during the move: the next load moves
-   *  it again. */
-  | { ok: false; error: 'network' }
-  /** The text is not a list the database takes. */
-  | { ok: false; error: 'refused' };
-
 /** The signed-in owner's lists (docs/specs/FEATURES.md, "Lists"). Every write is
  *  idempotent on the client-made ids, so a retry cannot duplicate a row. */
 export interface ListRepository {
   /** A fresh list or entry id. */
   newId(): string;
-  /** The owner's lists, each with its entries in list order; the real port orders them
-   *  newest first, the fake in its own order. `known` maps a list id to the revision the
-   *  caller holds: a list still at that revision answers in
-   *  `kept`, not in `lists`. */
+  /** The owner's lists, each with its entries' identities in list order (no note,
+   *  quantity, price or GM-only flag); the real port orders them newest first, the fake in
+   *  its own order. `known` maps a list id to the revision the caller holds: a list still
+   *  at that revision answers in `kept`, not in `lists`. */
   list(known?: Readonly<Record<string, number>>): Promise<ListsRead>;
+  /** The named lists whole, each with its entries in list order; an id the owner does not
+   *  hold answers nothing, and no ids make no request. `{ ok: false }` is signed out or a
+   *  read that failed. */
+  rows(ids: readonly string[]): Promise<ListRowsRead>;
   /** Applies the writes in order in one request (`apply_list_writes`), each on its own:
    *  a refused write rolls back alone. */
   apply(ops: ListOp[]): Promise<ListWrites>;
-  /** Moves one browser list, as its canonical text, into the account as the list `id`
-   *  (`move_legacy_list`); idempotent per owner on the text. Exempt from the count
-   *  limits (docs/specs/FEATURES.md, "Account and browser lists"). */
-  move(id: string, canonical: string): Promise<MoveWrite>;
   /** Inserts every list and entry in one transaction (`import_lists`), or nothing; a list
    *  id already the caller's is a retry and adds only its missing entries. */
   import(lists: ImportRow[]): Promise<ListWrite>;
@@ -712,7 +702,6 @@ export interface Env {
   clipboard: ClipboardPort;
   share: SharePort;
   router: RouterPort;
-  compress: CompressPort;
   drag: DragPort;
   dialog: DialogPort;
   pwa: PwaPort;

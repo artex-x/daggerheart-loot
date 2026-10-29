@@ -401,7 +401,7 @@
   );
 
   /* The equipment tables' own tier sections, off `renderEquipTable`
-     (app.js 2735-2761): `voa`'s tier body without cursed objects (`t1`-`t4`,
+     (`git show 23c00a6^:app.js`): `voa`'s tier body without cursed objects (`t1`-`t4`,
      then `tA` for artifact equipment) and a different source field
      (`it.eq.tier`, not `it.tier`). */
   const EQ_SECTIONS = [1, 2, 3, 4, 'A'] as const;
@@ -489,10 +489,10 @@
      re-render - a search or a filter pick must not re-trigger the scroll a
      link already played once, but the live app *does* re-play the scroll and
      the flash on a language switch (`render()` re-parses the anchor and runs
-     the scroll-and-flash block on every call, `app.js:3632-3634`/`3832-3845`),
+     the scroll-and-flash block on every call, `git show 23c00a6^:app.js`),
      so this is keyed on `app.lang` as well as `app.navigations`. The live app
      also re-plays on every other `render()` with the anchor still in the
-     address - a tables search keystroke included (`app.js:4435`: `S.tables.q
+     address - a tables search keystroke included (`git show 23c00a6^:app.js`: `S.tables.q
      = el.value; render()`) - which would drag the reader back to the anchor
      on every keystroke. That is a live defect, not reproduced here: no parity
      state types or ticks with an anchor in the address, so nothing keys it
@@ -600,11 +600,12 @@
     <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus
          this screen's own margin-free nav row. Svelte scopes this
          component's rule to its own elements, so a `class` prop on `Panel`
-         would have to be `:global()` here - kept inline. -->
-    <div class="panel tablenav">
+         would have to be `:global()` here - kept inline. It is the page's navigation
+         landmark, named by its tab's word as the supplements panel is. -->
+    <nav class="panel tablenav" aria-label={t.tables}>
       <ChipRow>
         {#each TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
-          <Chip label={t[g.label]} on={g.id === group.id} href={tablesHash(g.top)} />
+          <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
         {/each}
       </ChipRow>
       {#if table === 'homebrew' && hbSources.length > 1}
@@ -621,12 +622,14 @@
               size="sm"
               label={s.label}
               on={s.key === hbSource}
-              href={tablesHash('homebrew', {
-                filter: {
-                  ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
-                  src: [s.key]
-                }
-              })}
+              href={app.href(
+                tablesHash('homebrew', {
+                  filter: {
+                    ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
+                    src: [s.key]
+                  }
+                })
+              )}
             />
           {/each}
           {#if hbSources.length > CHIP_FOLD_AT}
@@ -648,12 +651,12 @@
               label={t[navSubLabel(sub)]}
               short={shortOf(sub)}
               on={sub === table}
-              href={tablesHash(sub)}
+              href={app.href(tablesHash(sub))}
             />
           {/each}
         </ChipRow>
       {/if}
-    </div>
+    </nav>
 
     {#if !index}
       <NoData>{t.noData}</NoData>
@@ -677,7 +680,7 @@
     {:else if table === 'homebrew' && !rows.length}
       <Empty>
         {t.hbEmptyTable}
-        <Button href={homebrewItemHash(null)} sameTab>{t.hbNewItem}</Button>
+        <Button href={app.href(homebrewItemHash(null))} sameTab>{t.hbNewItem}</Button>
       </Empty>
     {:else}
       <div class="toolbar">
@@ -882,6 +885,7 @@
   }
 
   @media (max-width: 900px) {
+    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
     .toolbar :global(.btn-lbl) {
       position: absolute;
       width: 1px;
@@ -896,7 +900,7 @@
     }
   }
 
-  /* off `.tsection` and its flash keyframes - style.css:536-544. The heading
+  /* off `.tsection` and its flash keyframes - `git show 23c00a6^:style.css`. The heading
      itself (`.tsec-head`, `.tsec-link`) is `SectionHead.svelte`'s own; the
      row/tile anchor's outline (`.row.flash`, `.tilewrap.flash`) is
      `TableRows.svelte`'s. This is only the section anchor's. */

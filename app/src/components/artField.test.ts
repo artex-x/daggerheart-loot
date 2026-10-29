@@ -4,12 +4,9 @@
    (docs/specs/FEATURES.md, "Homebrew"). */
 import { cleanup, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ArtField from './ArtField.svelte';
 import { ART_SOURCE_MAX } from '../lib/art.js';
-import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
@@ -17,6 +14,7 @@ import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeEnv, fakeMedia, fakePicture, type FakeMedia } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
@@ -35,9 +33,7 @@ vi.mock('./CropDialog.svelte', async (importOriginal) => {
 const t = dict('ru');
 const AXE = 'hb_emberaxeaaaaaaaa';
 const POTION = 'hb_smithpotionaaaaa';
-const REAL = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const REAL = readLoot();
 
 /* Another account's item with a picture, as a list page's index holds it. */
 const FOREIGN = recordOf(
@@ -123,7 +119,7 @@ describe('the crop chunk', () => {
 describe('the states of m40', () => {
   it('draws no picture with «Выбрать файл» and «Выбрать из предметов»', async () => {
     const { container } = await field();
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     expect(button(t.hbArtChoose)).toBeInTheDocument();
     expect(button(t.hbArtFromItems)).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('button', { name: t.hbArtRemove })).toBeNull();
@@ -133,7 +129,7 @@ describe('the states of m40', () => {
 
   it('draws a saved picture with «Заменить» and «Убрать картинку», and no «Обрезать заново»', async () => {
     const { container } = await field({ saved: 'ci1.webp' });
-    expect(thumb().src).toContain('img/thumb/ci1.webp');
+    expect(thumb().src).toContain('/img/thumb/ci1.webp');
     expect(button(t.hbArtReplace)).toBeInTheDocument();
     expect(button(t.hbArtRemove)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
@@ -159,7 +155,7 @@ describe('the states of m40', () => {
   it('removes a saved picture, and keeps none for a crop over no saved picture', async () => {
     await field({ saved: 'ci1.webp' });
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     await waitFor(() => {
       expect(button(t.hbArtChoose)).toHaveFocus();
     });
@@ -167,7 +163,7 @@ describe('the states of m40', () => {
     const { media } = await field();
     await crop();
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
     expect(media.released).toContain('blob:fake-2');
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
   });
@@ -176,7 +172,7 @@ describe('the states of m40', () => {
     await field({ saved: 'ci1.webp' });
     thumb().dispatchEvent(new Event('error'));
     await waitFor(() => {
-      expect(thumb().src).toContain('img/thumb/_none.webp');
+      expect(thumb().src).toContain('/img/thumb/_none.webp');
     });
   });
 
@@ -232,7 +228,7 @@ describe('refusals', () => {
     await waitFor(() => {
       expect(button(t.hbArtReplace)).toHaveFocus();
     });
-    expect(thumb().src).toContain('img/thumb/ci1.webp');
+    expect(thumb().src).toContain('/img/thumb/ci1.webp');
     expect(screen.queryByRole('button', { name: t.hbArtRecrop })).toBeNull();
   });
 });
@@ -288,7 +284,7 @@ describe('«Выбрать из предметов»', () => {
     expect(screen.queryByRole('combobox')).toBeNull();
     /* No saved picture: a removal goes back to none. */
     await userEvent.click(button(t.hbArtRemove));
-    expect(thumb().src).toContain('img/thumb/_none.webp');
+    expect(thumb().src).toContain('/img/thumb/_none.webp');
   });
 
   it('closes on a second press', async () => {

@@ -1,5 +1,7 @@
-/* The set-up that listPage.test.ts and listPage.timed.test.ts share: gm1's shop
-   «Лавка кузнеца» filled past its seed with stand-in records, and the reader of its sub. */
+/* The set-up the list page tests share: gm1's shop «Лавка кузнеца» filled past its seed
+   with stand-in records, the reader of an account list's sub, and `readList`, which reads
+   a list back from the fake cloud. */
+import { toCloudList, type CloudList } from '../lib/cloudLists.js';
 import type { Loot } from '../lib/data.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -67,3 +69,17 @@ export async function filled(
 /** Returns an account list page's sub line, its whitespace folded. */
 export const sub = (container: HTMLElement): string =>
   container.querySelector('.page-sub')?.textContent.replace(/\s+/g, ' ').trim() ?? '';
+
+/** Hides the page so the account buffer sends, lets the write settle, and answers the stored
+ *  list `id` of the fake cloud, or undefined when the account holds none. */
+export async function readList(
+  cloud: CloudPort,
+  page: { fireHidden(): void },
+  id: string
+): Promise<CloudList | undefined> {
+  page.fireHidden();
+  for (let i = 0; i < 40; i++) await Promise.resolve();
+  const read = await cloud.lists.rows([id]);
+  const row = read.ok ? read.lists.find((l) => l.id === id) : undefined;
+  return row ? toCloudList(row) : undefined;
+}

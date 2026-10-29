@@ -3,22 +3,21 @@
 # why: gm3's «Склад», 8 entries: the source at the 80-code-point name picked; its chip and its pill wrap inside the strip at 360 px; one row, gm4's «Фляга туманов»
 
 ## ru :: tree
-RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
-  link "К содержимому" [url=#main]
+RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>]
+  link "К содержимому" [url=/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Склад" [level=1]
     StaticText "Список от другого игрока · 8 позиций"
@@ -46,9 +45,9 @@ RootWebArea "Генератор лута Daggerheart" [url=#/s/player-token-3/f_
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -83,7 +82,6 @@ daggerheart.com
 Расходники
 Сбросить всё
 Сохранить себе
-Списки
 Ссылка на фильтры
 Таблицы
 Улучшаемые
@@ -97,22 +95,21 @@ daggerheart.com
 Хоумбрю
 
 ## en :: tree
-RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longsourceaaaaaa]
-  link "Skip to content" [url=#main]
+RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>]
+  link "Skip to content" [url=/en/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Склад" [level=1]
     StaticText "A list from another player · 8 items"
@@ -140,9 +137,9 @@ RootWebArea "Daggerheart Loot Generator" [url=#/s/player-token-3/f_src-hb_longso
     generic ""
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -161,7 +158,6 @@ Finesse
 Homebrew
 Install as an app
 Items
-Lists
 Magic
 Melee
 Mist Flask

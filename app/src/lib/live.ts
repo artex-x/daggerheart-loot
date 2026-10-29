@@ -106,6 +106,23 @@ export function readShareMessage(
   return revision === undefined ? null : { revision };
 }
 
+/** Returns a share topic's decision message - a purchase request applied or declined - or
+ *  null for any other shape; a missing `partial` reads as false, other keys (Realtime's own
+ *  `id`) are ignored. The request id is under `request`: Realtime writes `id` itself. */
+export function readShareRequestMessage(
+  event: string,
+  payload: unknown
+): { id: string; status: 'applied' | 'declined'; partial: boolean } | null {
+  if (event !== 'request' || !isRecord(payload)) return null;
+  const id = payload['request'];
+  const status = payload['status'];
+  const partial = payload['partial'] ?? false;
+  if (typeof id !== 'string' || !isCloudId(id)) return null;
+  if (status !== 'applied' && status !== 'declined') return null;
+  if (typeof partial !== 'boolean') return null;
+  return { id, status, partial };
+}
+
 /** Returns an owner topic's message, or null for any other shape; a missing `by` reads as
  *  null, other keys are ignored. */
 export function readOwnerMessage(

@@ -3,35 +3,34 @@
 # why: the fourth realm, Godsvale
 
 ## ru :: tree
-RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=#/roll/many_worlds_tavern]
-  link "К содержимому" [url=#main]
+RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=/roll/many_worlds_tavern]
+  link "К содержимому" [url=/roll/many_worlds_tavern#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=true]
     button "EN" [pressed=false]
-    link "Войти" [url=#/account]
+    link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=#/roll/std]
-      link "Альт. таблицы" [url=#/roll/alt]
-      link "Дополнения" [url=#/roll/wondrous_environments]
-      link "Таблицы" [url=#/tables]
-      link "Списки" [url=#/lists]
-      link "Поиск" [url=#/search]
+      link "Обычные правила" [url=/roll/std]
+      link "Альт. таблицы" [url=/roll/alt]
+      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [expanded=false]
     StaticText "Выберите мир и бросьте кость по нему."
     navigation "Дополнения"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Предметы сообществ" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
+      link "Предметы сообществ" [url=/roll/community_items]
+      link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
     StaticText "МИР"
     button "Спорополис" [pressed=false]
     button "Лес Пари" [pressed=false]
@@ -49,7 +48,7 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       StaticText "1"
       StaticText "ОСНОВНОЕ ОРУЖИЕ"
       ... StaticText x10 of 14 same-shape siblings elided
-      link "Искатель Врагов" [description=Страница url=#/i/mw62]
+      link "Искатель Врагов" [description=Страница url=/i/mw62]
       button "Скопировать название" [description=Скопировать название]
       button "Скопировать ссылку" [description=Скопировать ссылку]
       StaticText "отметьте Стресс"
@@ -59,9 +58,9 @@ RootWebArea "Many Worlds Tavern - Генератор лута Daggerheart" [url=
       button "Скопировать текст" [description=Скопировать текст]
   contentinfo ""
     navigation "Страницы сайта"
-      link "Установить как приложение" [url=pages/install.html]
-      link "Конфиденциальность" [url=pages/privacy.html]
-      link "Условия использования" [url=pages/terms.html]
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
@@ -100,7 +99,6 @@ daggerheart.com
 Скопировать название
 Скопировать ссылку
 Скопировать текст
-Списки
 Спорополис
 Страница
 Таблицы
@@ -108,35 +106,34 @@ daggerheart.com
 Установить как приложение
 
 ## en :: tree
-RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_worlds_tavern]
-  link "Skip to content" [url=#main]
+RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=/en/roll/many_worlds_tavern]
+  link "Skip to content" [url=/en/roll/many_worlds_tavern#main]
   banner ""
-    link "Лут DAGGERHEART" [url=#/roll/std]
+    link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
-    link "Sign in" [url=#/account]
+    link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=#/roll/std]
-      link "Alt. tables" [url=#/roll/alt]
-      link "Supplements" [url=#/roll/wondrous_environments]
-      link "Tables" [url=#/tables]
-      link "Lists" [url=#/lists]
-      link "Search" [url=#/search]
+      link "Standard rules" [url=/en/roll/std]
+      link "Alt. tables" [url=/en/roll/alt]
+      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
   main ""
     heading "Many Worlds Tavern" [level=1]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=false]
     StaticText "Pick a realm and roll within it."
     navigation "Supplements"
-      link "Wondrous Environments" [url=#/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=#/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=#/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=#/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=#/roll/arazos_artifacts]
-      link "Community items" [url=#/roll/community_items]
-      link "Many Worlds Tavern" [url=#/roll/many_worlds_tavern]
+      link "Wondrous Environments" [url=/en/roll/wondrous_environments]
+      link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
+      link "Vault of Ages" [url=/en/roll/vault_of_ages]
+      link "The Dragon's Vault" [url=/en/roll/dragons_vault]
+      link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
+      link "Community items" [url=/en/roll/community_items]
+      link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
     StaticText "REALM"
     button "Sporopolis" [pressed=false]
     button "Wagerwood" [pressed=false]
@@ -154,7 +151,7 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_w
       StaticText "1"
       StaticText "PRIMARY WEAPON"
       ... StaticText x10 of 14 same-shape siblings elided
-      link "Foeseeker" [description=Page url=#/i/mw62]
+      link "Foeseeker" [description=Page url=/i/en/mw62]
       button "Copy name" [description=Copy name]
       button "Copy link" [description=Copy link]
       StaticText "Mark a Stress"
@@ -164,9 +161,9 @@ RootWebArea "Many Worlds Tavern - Daggerheart Loot Generator" [url=#/roll/many_w
       button "Copy text" [description=Copy text]
   contentinfo ""
     navigation "Site pages"
-      link "Install as an app" [url=pages/en/install.html]
-      link "Privacy" [url=pages/en/privacy.html]
-      link "Terms of use" [url=pages/en/terms.html]
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
 
 ## en :: controls
@@ -184,7 +181,6 @@ Godsvale
 Hornet Hold
 How this works
 Install as an app
-Lists
 Many Worlds Tavern
 One higher
 One lower

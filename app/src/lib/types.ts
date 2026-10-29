@@ -70,7 +70,7 @@ export function isTableId(v: string): v is TableId {
   return (TABLE_IDS as readonly string[]).includes(v);
 }
 
-/** The twelve sections: what may be pinned as the start. The tab bar draws six tabs
+/** The twelve sections: what may be pinned as the start. The tab bar draws five tabs
  *  over them; the supplements share one (`nav.ts`). */
 export const SECTIONS = [
   'roll/std',

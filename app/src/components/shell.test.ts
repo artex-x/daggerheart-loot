@@ -9,21 +9,17 @@ import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import Toast from './Toast.svelte';
-import { encodeList } from '../lib/listLink.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import {
   brokenStorage,
   fakeData,
   fakeEnv,
   fakePwa,
-  fixedClock,
   memoryRouter,
   memoryStorage
 } from '../ports/index.js';
 import type { Env } from '../ports/index.js';
 import type { Loot } from '../lib/data.js';
-import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
-import type { StoredList } from '../lib/lists.js';
 import { AppState } from '../state/app.svelte.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
@@ -52,8 +48,6 @@ const LOOT: Loot = {
   refs: {}
 };
 
-const listA: StoredList = { id: 'a', name: 'Тайник', ids: ['ci1'], created: 1 };
-
 describe('the tab title', () => {
   it("titles a record page with the record's own name", () => {
     render(App, { env: at('#/i/ci1', { data: fakeData(LOOT) }) });
@@ -65,20 +59,6 @@ describe('the tab title', () => {
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
-  it("titles an owned list page with the list's own name", async () => {
-    render(App, {
-      env: at('#/lists/a', {
-        data: fakeData(LOOT),
-        storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) })
-      })
-    });
-    /* `app.openList` is only set once ListPage's own debounced
-       URL sync runs, 150ms after mount. */
-    await waitFor(() => {
-      expect(document.title).toBe('Тайник - Генератор лута Daggerheart');
-    });
-  });
-
   it('titles an account list with its name, and a rename retitles the tab', async () => {
     render(App, {
       env: at('#/lists/' + uuid(101), { data: fakeData(LOOT), cloud: fakeCloud(SEED, 'gm1') })
@@ -86,7 +66,7 @@ describe('the tab title', () => {
     await waitFor(() => {
       expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
     });
-    const name = screen.getByRole('textbox', { name: 'Название списка' });
+    const name = await screen.findByRole('textbox', { name: 'Название списка' });
     await userEvent.clear(name);
     await userEvent.type(name, 'Кузня');
     await waitFor(() => {
@@ -101,16 +81,13 @@ describe('the tab title', () => {
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
-  it('shows a shared list’s name on screen but keeps the plain tab title', () => {
-    /* `#/l/<payload>` is `SharedListPage`'s route, not `ListPage`'s - the
-       visitor opening someone else's link has no entry in `app.lists`, so
-       `app.openList` (what Shell's title effect keys off, see its own
-       comment above) never fires for it, even though the heading on screen
-       does draw the list's own name. Deliberate: documented in
-       `docs/specs/FEATURES.md` as the one route left titled plainly. */
-    const payload = encodeList({ name: 'Тайник', ids: ['ci1'] }, true);
-    render(App, { env: at('#/l/' + payload, { data: fakeData(LOOT) }) });
-    expect(screen.getByRole('heading', { level: 1, name: 'Тайник' })).toBeInTheDocument();
+  it('shows a share link’s name on screen but keeps the plain tab title', async () => {
+    render(App, {
+      env: at('#/s/player-token-1', { data: fakeData(LOOT), cloud: fakeCloud(SEED) })
+    });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' })
+    ).toBeInTheDocument();
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
 });
@@ -164,7 +141,7 @@ describe('the footer nav', () => {
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const link = screen.getByRole('link', { name: INSTALL });
     expect(nav).toContainElement(link);
-    expect(link).toHaveAttribute('href', 'pages/install.html');
+    expect(link).toHaveAttribute('href', '/pages/install.html');
   });
 
   it('names the link in English and links the English page', async () => {
@@ -172,7 +149,7 @@ describe('the footer nav', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'Install as an app' })).toHaveAttribute(
       'href',
-      'pages/en/install.html'
+      '/pages/en/install.html'
     );
   });
 
@@ -180,7 +157,7 @@ describe('the footer nav', () => {
     render(App, { env: at('#/roll/std') });
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['pages/install.html', 'pages/privacy.html', 'pages/terms.html']);
+    expect(hrefs).toEqual(['/pages/install.html', '/pages/privacy.html', '/pages/terms.html']);
     expect(screen.getByRole('link', { name: 'Конфиденциальность' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Условия использования' })).toBeInTheDocument();
   });
@@ -190,11 +167,11 @@ describe('the footer nav', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute(
       'href',
-      'pages/en/privacy.html'
+      '/pages/en/privacy.html'
     );
     expect(screen.getByRole('link', { name: 'Terms of use' })).toHaveAttribute(
       'href',
-      'pages/en/terms.html'
+      '/pages/en/terms.html'
     );
   });
 
@@ -232,7 +209,7 @@ describe('the footer nav', () => {
     expect(screen.queryByRole('link', { name: INSTALL })).toBeNull();
     const nav = screen.getByRole('navigation', { name: 'Страницы сайта' });
     const hrefs = [...nav.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-    expect(hrefs).toEqual(['pages/privacy.html', 'pages/terms.html']);
+    expect(hrefs).toEqual(['/pages/privacy.html', '/pages/terms.html']);
   });
 });
 
@@ -253,7 +230,7 @@ describe('the language', () => {
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(screen.getByRole('link', { name: 'ЛутDaggerheart' })).toHaveAttribute(
       'href',
-      '#/roll/std'
+      '/en/roll/std'
     );
   });
 
@@ -304,7 +281,7 @@ describe('which tab is lit', () => {
   });
 
   it('lights Tables for a table, and nothing for a list', () => {
-    /* The live `renderTabs` (app.js 3667-3673) compares against the raw route
+    /* The live `renderTabs` (`git show 23c00a6^:app.js`) compares against the raw route
        string, and a list route - `l/…` or `lists/…` - is never that string,
        so Lists stays unlit on its own pages, same as a record or a print
        sheet. */
@@ -640,7 +617,7 @@ describe('the toast component, directly', () => {
       action: { label: (t) => t.edit, href: '#/homebrew/hb_flask' }
     });
     const link = await screen.findByRole('link', { name: 'Изменить' });
-    expect(link).toHaveAttribute('href', '#/homebrew/hb_flask');
+    expect(link).toHaveAttribute('href', '/homebrew/hb_flask');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener');
     expect(link).toHaveClass('toast-act');
@@ -769,13 +746,143 @@ describe('the toast component, directly', () => {
     expect(elsewhere).toHaveFocus();
     await expectNoA11yViolations(container);
   });
+
+  it('leaves focus where it is for a move to another page', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const from = add(document.createElement('input'));
+    from.focus();
+    app.say(() => 'Новый запрос по списку «Клад»', {
+      action: { label: (t) => t.arrivalOpen, go: vi.fn() }
+    });
+    await screen.findByRole('button', { name: 'Открыть' });
+    await tick();
+    await tick();
+    expect(from).toHaveFocus();
+    await expectNoA11yViolations(container);
+  });
+
+  it('pauses a move toast while the pointer is over it', async () => {
+    vi.useFakeTimers();
+    try {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      app.say(() => 'Новый запрос по списку «Клад»', {
+        action: { label: (t) => t.arrivalOpen, go: vi.fn() }
+      });
+      await tick();
+      const box = container.querySelector('.toast') as HTMLElement;
+      await fireEvent.pointerEnter(box);
+      vi.advanceTimersByTime(60_000);
+      expect(app.toast).not.toBeNull();
+      await fireEvent.pointerLeave(box);
+      vi.advanceTimersByTime(7000);
+      expect(app.toast).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hides the toast, then moves, and hands a focus left on the page to the main landmark', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    const { container } = render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const order: string[] = [];
+    const go = vi.fn(() => {
+      order.push(app.toast ? 'shown' : 'hidden');
+    });
+    app.say(() => 'Новых запросов: 3', { action: { label: (t) => t.arrivalOpen, go } });
+    await userEvent.click(await screen.findByRole('button', { name: 'Открыть' }));
+    expect(go).toHaveBeenCalledOnce();
+    expect(order).toEqual(['hidden']);
+    expect(app.toast).toBeNull();
+    await waitFor(() => {
+      expect(main).toHaveFocus();
+    });
+    await expectNoA11yViolations(container);
+  });
+
+  it('leaves a focus the move gave to the page where it is', async () => {
+    const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+    render(Toast, { app });
+    const main = add(document.createElement('main'));
+    main.id = 'main';
+    main.tabIndex = -1;
+    const head = add(document.createElement('h2'), 'Новое в списке (1)');
+    head.tabIndex = -1;
+    app.say(() => 'Новый запрос по списку «Клад»', {
+      action: {
+        label: (t) => t.arrivalShow,
+        go: () => {
+          head.focus();
+        }
+      }
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'Показать' }));
+    await tick();
+    await tick();
+    expect(head).toHaveFocus();
+  });
+});
+
+describe('the unread requests count in the tab title', () => {
+  const two = () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.request('player-token-1', [{ item: 'ci1', qty: 1 }]);
+    cloud.request('gm-token-1', [{ item: 'ci1', qty: 1 }]);
+    return cloud;
+  };
+
+  it('prefixes the count of unread requests, and none once they are read', async () => {
+    const router = memoryRouter('#/lists');
+    const { container } = render(App, {
+      env: fakeEnv({ router, data: fakeData(LOOT), cloud: two() })
+    });
+    await waitFor(() => {
+      expect(document.title).toBe('(2) Мои списки - Генератор лута Daggerheart');
+    });
+    await expectNoA11yViolations(container);
+    router.navigate('#/lists/' + uuid(101));
+    await waitFor(() => {
+      expect(document.title).toBe('Лавка кузнеца - Генератор лута Daggerheart');
+    });
+  });
+
+  it('drops the count once the requests expired', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const storage = memoryStorage();
+      render(App, { env: at('#/roll/std', { data: fakeData(LOOT), cloud: two(), storage }) });
+      await waitFor(() => {
+        expect(document.title).toBe('(2) Обычные правила - Генератор лута Daggerheart');
+      });
+      vi.setSystemTime(Date.now() + 31 * 24 * 3_600_000);
+      storage.fireExternalChange(null);
+      await waitFor(() => {
+        expect(document.title).toBe('Обычные правила - Генератор лута Daggerheart');
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps the plain title with no unread request', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    const { container } = render(App, { env: at('#/lists', { data: fakeData(LOOT), cloud }) });
+    await waitFor(() => {
+      expect(container.querySelector('main')?.dataset['requests']).toBe('ready');
+    });
+    expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
+  });
 });
 
 describe('the account control', () => {
   it('is not drawn in a build with no sign-in configured', () => {
     render(App, { env: at('#/roll/std') });
     expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
-    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('a[href="/account"]')).toBeNull();
   });
 
   it('draws the not-found page on #/account there, and keeps the address', () => {
@@ -789,7 +896,7 @@ describe('the account control', () => {
   it('says «Войти» signed out and leads to #/account', async () => {
     const { container } = render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
     const link = await screen.findByRole('link', { name: 'Войти' });
-    expect(link).toHaveAttribute('href', '#/account');
+    expect(link).toHaveAttribute('href', '/account');
     expect(link).not.toHaveAttribute('aria-current');
     await expectNoA11yViolations(container);
   });
@@ -804,7 +911,7 @@ describe('the account control', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(button).not.toHaveAttribute('aria-controls');
     expect(screen.queryByRole('link', { name: 'Войти' })).not.toBeInTheDocument();
-    expect(document.querySelector('header a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('header a[href="/account"]')).toBeNull();
     await expectNoA11yViolations(container);
   });
 
@@ -830,7 +937,7 @@ describe('the account control', () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' })
     );
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    env.router.navigate('#/search');
+    env.router.navigate('#/search', 'ru');
     await tick();
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
@@ -847,7 +954,7 @@ describe('the account control', () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.auth.session = () => new Promise(() => undefined);
     render(App, { env: at('#/roll/std', { cloud }) });
-    expect(document.querySelector('a[href="#/account"]')).toBeNull();
+    expect(document.querySelector('a[href="/account"]')).toBeNull();
     expect(document.querySelector('[aria-haspopup]')).toBeNull();
   });
 
@@ -905,54 +1012,43 @@ describe('the account control', () => {
   });
 });
 
-describe('the Lists tab and the cutoff', () => {
+describe('the five tabs and the lists in every build', () => {
   const tabLinks = (): string[] =>
     [...screen.getByRole('navigation', { name: 'Разделы' }).querySelectorAll('a')].map(
       (a) => a.getAttribute('href') ?? ''
     );
 
-  it('draws five tabs and no Lists tab from the cutoff, in a build with sign-in', () => {
-    render(App, {
-      env: at('#/roll/std', {
-        cloud: fakeCloud(SEED),
-        clock: fixedClock(LEGACY_WRITE_UNTIL)
-      })
-    });
-    expect(tabLinks()).toHaveLength(5);
-    expect(tabLinks()).not.toContain('#/lists');
+  it('draws five tabs and no Lists tab signed out, signed in and with no sign-in', async () => {
+    for (const cloud of [fakeCloud(SEED), fakeCloud(SEED, 'gm1'), null]) {
+      render(App, { env: at('#/roll/std', { cloud }) });
+      await waitFor(() => {
+        expect(tabLinks()).toHaveLength(5);
+      });
+      expect(tabLinks()).not.toContain('#/lists');
+      cleanup();
+    }
   });
 
-  it('draws six tabs the moment before the cutoff', () => {
-    render(App, {
-      env: at('#/roll/std', {
-        cloud: fakeCloud(SEED),
-        clock: fixedClock(LEGACY_WRITE_UNTIL - 1)
-      })
-    });
-    expect(tabLinks()).toHaveLength(6);
-    expect(tabLinks()).toContain('#/lists');
-  });
-
-  it('keeps six tabs after the cutoff in a build with no sign-in', () => {
-    render(App, { env: at('#/roll/std', { clock: fixedClock(LEGACY_WRITE_UNTIL) }) });
-    expect(tabLinks()).toHaveLength(6);
-  });
-
-  it('titles #/lists «Мои списки» from the cutoff and «Списки» the moment before', async () => {
-    render(App, {
-      env: at('#/lists', { cloud: fakeCloud(SEED), clock: fixedClock(LEGACY_WRITE_UNTIL) })
-    });
+  it('titles #/lists «Мои списки» and "My lists"', async () => {
+    render(App, { env: at('#/lists', { cloud: fakeCloud(SEED) }) });
     expect(document.title).toBe('Мои списки - Генератор лута Daggerheart');
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     expect(document.title).toBe('My lists - Daggerheart Loot Generator');
-    cleanup();
-    render(App, {
-      env: at('#/lists', { cloud: fakeCloud(SEED), clock: fixedClock(LEGACY_WRITE_UNTIL - 1) })
-    });
-    expect(document.title).toBe('Списки - Генератор лута Daggerheart');
-    await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(document.title).toBe('Lists - Daggerheart Loot Generator');
   });
+
+  it.each(['#/lists', '#/lists/' + uuid(101), '#/l/abc'])(
+    'draws the not-found page on %s with no sign-in, keeps the address and the plain title',
+    (hash) => {
+      const env = at(hash, { data: fakeData(LOOT) });
+      render(App, { env });
+      expect(
+        screen.getByRole('heading', { name: 'Предмет не найден', level: 1 })
+      ).toBeVisible();
+      expect(screen.getByRole('link', { name: 'На главную' })).toBeVisible();
+      expect(env.router.hash()).toBe(hash);
+      expect(document.title).toBe('Генератор лута Daggerheart');
+    }
+  );
 });
 
 describe('accessibility', () => {
@@ -977,16 +1073,16 @@ describe('accessibility', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('has no axe violations while warning that storage is off', async () => {
-    const { container } = render(App, { env: at('#/lists', { storage: brokenStorage() }) });
+  it('has no axe violations with storage that refuses every write', async () => {
+    const { container } = render(App, { env: at('#/roll/std', { storage: brokenStorage() }) });
     await expectNoA11yViolations(container);
   });
 });
 
-describe("the move's mark on the page and its notice", () => {
+describe("the account lists' mark on the page", () => {
   const main = (container: HTMLElement): HTMLElement | null => container.querySelector('main');
 
-  it('marks the page pending while the session is unknown, then the move status', async () => {
+  it('marks the page pending while the session is unknown, then the lists status', async () => {
     let answer: (
       s: { userId: string; email: string; provider: 'google' } | null
     ) => void = () => undefined;
@@ -995,54 +1091,75 @@ describe("the move's mark on the page and its notice", () => {
       new Promise((r) => {
         answer = r;
       });
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: [] }])
-    });
     const { container } = render(App, {
-      env: at('#/i/ci1', { cloud, storage, data: fakeData(LOOT) })
+      env: at('#/i/ci1', { cloud, data: fakeData(LOOT) })
     });
-    expect(main(container)?.dataset['move']).toBe('pending');
+    expect(main(container)?.dataset['lists']).toBe('pending');
     answer({ userId: SEED.users.gm1.id, email: SEED.users.gm1.email, provider: 'google' });
     await waitFor(() => {
-      expect(main(container)?.dataset['move']).toBe('done');
+      expect(main(container)?.dataset['lists']).toBe('ready');
     });
-    /* The notice sits between the header and the page, on a record page too. */
-    const notice = container.querySelector('.movenotice');
-    expect(notice?.previousElementSibling?.tagName).toBe('HEADER');
-    expect(notice?.nextElementSibling?.tagName).toBe('MAIN');
-    expect(notice?.textContent).toContain('«Тайник»');
     await expectNoA11yViolations(container);
   });
 
-  it('holds the mark at idle until the first read of the account answers', async () => {
+  it('holds the mark at loading until the first read of the account answers', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     cloud.lists.list = () => new Promise(() => undefined);
     const { container } = render(App, { env: at('#/roll/std', { cloud }) });
     await waitFor(() => {
-      expect(main(container)?.dataset['move']).toBe('idle');
+      expect(main(container)?.dataset['lists']).toBe('loading');
     });
   });
 
-  it('draws the move banner signed out between the header and the page, and none with no sign-in', async () => {
-    const storage = (): ReturnType<typeof memoryStorage> =>
-      memoryStorage({ 'dhloot.lists.v2': JSON.stringify([listA]) });
-    render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED), storage: storage() }) });
-    const signIn = await screen.findByRole('button', { name: 'Войти и перенести списки' });
-    const box = signIn.closest('.movenotice');
-    expect(box?.previousElementSibling?.tagName).toBe('HEADER');
-    expect(box?.nextElementSibling?.tagName).toBe('MAIN');
-    cleanup();
-    const bare = render(App, { env: at('#/roll/std', { storage: storage() }) });
-    expect(bare.container.querySelector('.movenotice')).toBeNull();
+  it('marks a failed first read as error', async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.lists.list = () => Promise.resolve({ ok: false });
+    const { container } = render(App, { env: at('#/roll/std', { cloud }) });
+    await waitFor(() => {
+      expect(main(container)?.dataset['lists']).toBe('error');
+    });
+  });
+
+  it("follows the open account list's entries read on its page: loading, then ready", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    let answer: (() => void) | null = null;
+    const real = cloud.lists.rows.bind(cloud.lists);
+    cloud.lists.rows = (ids) =>
+      new Promise((r) => {
+        answer = () => {
+          r(real(ids));
+        };
+      });
+    const { container } = render(App, {
+      env: at('#/lists/' + uuid(101), { cloud, data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(answer).not.toBeNull();
+    });
+    expect(main(container)?.dataset['lists']).toBe('loading');
+    answer!();
+    await waitFor(() => {
+      expect(main(container)?.dataset['lists']).toBe('ready');
+    });
+  });
+
+  it("marks the open account list's failed entries read as error", async () => {
+    const cloud = fakeCloud(SEED, 'gm1');
+    cloud.lists.rows = () => Promise.resolve({ ok: false });
+    const { container } = render(App, {
+      env: at('#/lists/' + uuid(101), { cloud, data: fakeData(LOOT) })
+    });
+    await waitFor(() => {
+      expect(main(container)?.dataset['lists']).toBe('error');
+    });
   });
 
   it('draws no mark signed out, nor in a build with no sign-in', async () => {
     const { container } = render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
     await screen.findByRole('link', { name: 'Войти' });
-    expect(main(container)?.hasAttribute('data-move')).toBe(false);
+    expect(main(container)?.hasAttribute('data-lists')).toBe(false);
     cleanup();
     const bare = render(App, { env: at('#/roll/std') });
-    expect(main(bare.container)?.hasAttribute('data-move')).toBe(false);
-    expect(bare.container.querySelector('.movenotice')).toBeNull();
+    expect(main(bare.container)?.hasAttribute('data-lists')).toBe(false);
   });
 });

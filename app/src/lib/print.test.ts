@@ -30,13 +30,13 @@ describe("the trait cell's word", () => {
 
 describe('a vector file name', () => {
   it('is plain in colour', () => {
-    expect(cardArt('shield', false)).toBe('card/shield.svg');
+    expect(cardArt('shield', false)).toBe('/card/shield.svg');
   });
 
   it('takes -bw in black and white for each pair drawn as two files', () => {
-    expect(cardArt('shield', true)).toBe('card/shield-bw.svg');
-    expect(cardArt('burden-1', true)).toBe('card/burden-1-bw.svg');
-    expect(cardArt('burden-2', true)).toBe('card/burden-2-bw.svg');
+    expect(cardArt('shield', true)).toBe('/card/shield-bw.svg');
+    expect(cardArt('burden-1', true)).toBe('/card/burden-1-bw.svg');
+    expect(cardArt('burden-2', true)).toBe('/card/burden-2-bw.svg');
   });
 });
 
@@ -193,11 +193,13 @@ describe("a card's set line", () => {
 
   it('names the set and its members, then the bonus, in each language', () => {
     expect(setLineOf(index, a, 'ru')).toEqual({
-      label: 'Пара (Комплект: Вещь x1, Вещь x2)',
+      name: 'Пара',
+      members: ' (Комплект: Вещь x1, Вещь x2)',
       body: 'Оба вместе.'
     });
     expect(setLineOf(index, a, 'en')).toEqual({
-      label: 'Pair (Set: Thing x1, Thing x2)',
+      name: 'Pair',
+      members: ' (Set: Thing x1, Thing x2)',
       body: 'Both together.'
     });
   });
@@ -211,6 +213,10 @@ describe("a card's set line", () => {
       cards: { sets: { hb_ownsetaaaaaaaaaa: card } }
     };
     const ix = withRecords(index, [], [copy]);
-    expect(setLineOf(ix, copy, 'en')).toEqual({ label: 'Own Set', body: 'A bonus.' });
+    expect(setLineOf(ix, copy, 'en')).toEqual({
+      name: 'Own Set',
+      members: '',
+      body: 'A bonus.'
+    });
   });
 });

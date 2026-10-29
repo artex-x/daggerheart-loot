@@ -28,7 +28,7 @@
     <ChipRow>
       {#each SUPPLEMENTS as s (s)}
         <Chip
-          href={sectionHash(s)}
+          href={app.href(sectionHash(s))}
           label={t[SECTION_LABEL[s]]}
           short={shortOf(s)}
           on={s === app.section}

@@ -1,9 +1,6 @@
-/* The shared page, `#/l/<payload>` for a payload that is nobody's own list -
- * off `renderSharedList` (app.js 3130-3170). Through `App`, the way
- * `listPage.test.ts` reaches the index. */
+/* The shared page, `#/s/<token>`: an account list's share link - off `renderSharedList`
+ * (`git show 23c00a6^:app.js`). Through `App`, the way `listPage.test.ts` reaches the index. */
 
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { flushSync } from 'svelte';
@@ -13,10 +10,8 @@ import type { Loot } from '../lib/data.js';
 import { buildIndex } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
 import { cardVersion } from '../lib/hash.js';
-import { encodeList, toBase64Url } from '../lib/listLink.js';
 import { priceText } from '../lib/money.js';
 import { plural } from '../lib/plural.js';
-import type { StoredList } from '../lib/lists.js';
 import { share } from '../lib/share.js';
 import {
   fakeClipboard,
@@ -28,26 +23,15 @@ import {
 } from '../ports/index.js';
 import type { CloudPort, Env } from '../ports/index.js';
 import { fakeCloud } from '../ports/fake-cloud.js';
-import { SEED, uuid } from '../ports/fake-cloud-seed.js';
+import { SEED, uuid, type SeedList, type SeedShare } from '../ports/fake-cloud-seed.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { readList } from '../test/accountList.js';
+import { listOf, seedWith, TWO_LISTS } from '../test/seed.js';
+import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
 
 Element.prototype.scrollIntoView = () => {};
-
-interface Fixture {
-  list: { id: string; name: string; ids: string[] };
-  player: { payload: string };
-  gm: { payload: string };
-}
-
-const DIR = join(import.meta.dirname, '..', '..', '..', 'docs', 'fixtures', 'lists');
-const readFixture = (name: string): Fixture =>
-  JSON.parse(readFileSync(join(DIR, name), 'utf8')) as Fixture;
-
-const NOTES_BOTH_KINDS = readFixture('notes-both-kinds.json');
-const QTY_AND_PRICE = readFixture('qty-and-price.json');
-const MONEY_COIN_MODE = readFixture('money-coin-mode.json');
 
 /* Four plain records, known by id - names are what the assertions read, not
    the source book. */
@@ -103,16 +87,74 @@ const LOOT: Loot = {
   refs: {}
 };
 
-const TWO: StoredList[] = [
-  { id: 'a', name: 'Клад дракона', ids: [], created: 1 },
-  { id: 'b', name: 'Лавка в порту', ids: [], created: 2 }
-];
+/** Returns the players' and the GM's share of list `n`: `player-token-<k>`, `gm-token-<k>`
+ *  with `k` the list's last two digits, ids and topic keys from `uuid(911)` up. */
+function sharesOf(n: number): SeedShare[] {
+  const k = n - 900;
+  const base = 911 + (k - 1) * 4;
+  return [
+    {
+      id: uuid(base),
+      listId: uuid(n),
+      audience: 'player',
+      token: 'player-token-9' + String(k),
+      topicKey: uuid(base + 1)
+    },
+    {
+      id: uuid(base + 2),
+      listId: uuid(n),
+      audience: 'gm',
+      token: 'gm-token-9' + String(k),
+      topicKey: uuid(base + 3)
+    }
+  ];
+}
+
+/* The three shared lists the page's cases read: both notes on the list and on one entry; a
+   quantity, a quantity with a price and a bare price; coin mode. */
+const NOTED = listOf(
+  901,
+  'Тайник',
+  [{ key: 'ci1', note: 'Видно игрокам', hnote: 'Подделка' }, { key: 'cc1' }],
+  { note: 'Лавка закрыта до утра', hnote: 'Хозяин - контрабандист' }
+);
+const PRICED = listOf(902, 'Лавка', [
+  { key: 'ci1', qty: 2 },
+  { key: 'cc21', qty: 5, gold: 50 },
+  { key: 'q337', gold: 12 }
+]);
+const COINS = listOf(903, 'Монеты', [{ key: 'ci1', gold: 750 }], { money: 'coin' });
+const SHARED = seedWith({ gm4: [NOTED, PRICED, COINS] }, [901, 902, 903].flatMap(sharesOf));
+const NOTED_GM = '#/s/gm-token-91';
+const PRICED_PLAYERS = '#/s/player-token-92';
+const COINS_PLAYERS = '#/s/player-token-93';
+
+/** Returns a seed with one more gm4 list, 904, shared to the players as `player-token-94`. */
+const oneShared = (l: SeedList) => seedWith({ gm4: [l] }, sharesOf(904).slice(0, 1));
+const ONE = '#/s/player-token-94';
+
+/* The same shared lists, read by gm2, who holds the two lists of `TWO_LISTS` to add to. */
+const SHARED_GM2 = seedWith(
+  { gm2: TWO_LISTS, gm4: [NOTED, PRICED, COINS] },
+  [901, 902, 903].flatMap(sharesOf)
+);
+const DRAGON = uuid(811);
 
 const at = (hash: string, over: Partial<Env> = {}): Env =>
   fakeEnv({ router: memoryRouter(hash), data: fakeData(LOOT), ...over });
 
-const withTwo = (hash: string, over: Partial<Env> = {}): Env =>
-  at(hash, { storage: memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) }), ...over });
+/** Renders `hash` signed out (or as `cloud`'s user) and waits for the heading `name`. */
+async function openShared(
+  hash: string,
+  name: string,
+  over: Partial<Env> = {},
+  cloud: CloudPort = fakeCloud(SHARED)
+) {
+  const router = memoryRouter(hash);
+  const r = render(App, { env: at(hash, { router, cloud, ...over }) });
+  await screen.findByRole('heading', { level: 1, name });
+  return { ...r, router, cloud };
+}
 
 /** Every row's own tick checkbox, in document order - each one is named
  *  after its own record instead of the generic "Выбрано", so the group is
@@ -121,15 +163,18 @@ const withTwo = (hash: string, over: Partial<Env> = {}): Env =>
 const rowCheckboxes = (): HTMLElement[] =>
   screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
 
-const readLists = (storage: { get: (k: string) => string | null }): StoredList[] =>
-  JSON.parse(storage.get('dhloot.lists.v2') ?? '[]') as StoredList[];
+/** Renders `hash` as gm2, who owns the lists of `TWO_LISTS`, and waits for the account. */
+async function openAsGm2(hash: string, name: string, over: Partial<Env> = {}) {
+  const cloud = fakeCloud(SHARED_GM2, 'gm2');
+  const page = fakePage();
+  const r = await openShared(hash, name, { page, ...over }, cloud);
+  await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
+  return { ...r, page };
+}
 
 describe('heading and sub', () => {
-  it('draws the name, the sub as one text node, the save button and a way to select every row', () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
-    expect(screen.getByRole('heading', { level: 1, name: 'Тайник' })).toBeInTheDocument();
+  it('draws the name, the sub as one text node, the save button and a way to select every row', async () => {
+    const { container } = await openShared(NOTED_GM, 'Тайник');
 
     const sub = container.querySelector('.page-sub');
     expect(sub).toHaveTextContent('Список от другого игрока · 2 позиции');
@@ -148,7 +193,7 @@ describe('heading and sub', () => {
   });
 
   it('ticks every row from select-all', async () => {
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    await openShared(NOTED_GM, 'Тайник');
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
     expect(screen.getByText('Выбрано 2 позиции')).toBeInTheDocument();
   });
@@ -156,9 +201,7 @@ describe('heading and sub', () => {
 
 describe('with a row ticked', () => {
   it('shows one add-to-list control, in the bar, and the save button above', async () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
@@ -173,9 +216,13 @@ describe('with a row ticked', () => {
 });
 
 describe('a dropped entry (P9)', () => {
-  it('toasts the count once, without hiding the rows that did survive', () => {
-    const payload = encodeList({ name: 'X', ids: ['ci1', 'nope999'] }, true);
-    render(App, { env: at('#/l/' + payload) });
+  it('toasts the count once, without hiding the rows that did survive', async () => {
+    await openShared(
+      ONE,
+      'X',
+      {},
+      fakeCloud(oneShared(listOf(904, 'X', [{ key: 'ci1' }, { key: 'nope999' }])))
+    );
     expect(
       screen.getByText('Пропущено позиций, которых больше нет в данных: 1')
     ).toBeInTheDocument();
@@ -184,11 +231,9 @@ describe('a dropped entry (P9)', () => {
 });
 
 describe('every entry gone from the data', () => {
-  it('opens as the list with no rows and the dropped-entries toast, not as a damaged link', async () => {
-    /* A legacy unstamped payload: no checksum, so it needs no stamp. */
-    const payload = toBase64Url('Пропавшее\nzzz1,zzz2');
-    const { container } = render(App, { env: at('#/l/' + payload) });
-    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
+  it('opens as the list with no rows and the dropped-entries toast', async () => {
+    const gone = listOf(904, 'Пропавшее', [{ key: 'zzz1' }, { key: 'zzz2' }]);
+    const { container } = await openShared(ONE, 'Пропавшее', {}, fakeCloud(oneShared(gone)));
     expect(container.querySelector('.page-sub')).toHaveTextContent(
       'Список от другого игрока · 0 позиций'
     );
@@ -196,35 +241,24 @@ describe('every entry gone from the data', () => {
     expect(container.querySelectorAll('[data-row]')).toHaveLength(0);
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.getAllByText(plural(2, dict('ru').droppedItems, 'ru'))).toHaveLength(1);
-    expect(screen.queryByText(dict('ru').badShare)).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
-  });
-
-  it('saves the empty copy and opens it as an own list, not as a damaged link', async () => {
-    const storage = memoryStorage();
-    render(App, { env: at('#/l/' + toBase64Url('Пропавшее\nzzz1,zzz2'), { storage }) });
-    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-    expect(readLists(storage)).toMatchObject([{ name: 'Пропавшее', ids: [] }]);
-    expect(screen.getByRole('heading', { level: 1, name: 'Пропавшее' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).not.toBeInTheDocument();
-    expect(screen.queryByText(dict('ru').badShare)).not.toBeInTheDocument();
-    await expectNoA11yViolations(document.body);
   });
 });
 
 describe('untitled', () => {
-  it('falls back to "Без названия" for a nameless list', () => {
-    const payload = encodeList({ name: '', ids: ['ci1'] }, true);
-    render(App, { env: at('#/l/' + payload) });
-    expect(screen.getByRole('heading', { level: 1, name: 'Без названия' })).toBeInTheDocument();
+  it('falls back to "Без названия" for a nameless list', async () => {
+    await openShared(
+      ONE,
+      'Без названия',
+      {},
+      fakeCloud(oneShared(listOf(904, '', [{ key: 'ci1' }])))
+    );
   });
 });
 
 describe('the notes', () => {
   it("draws both list notes above the rows, and each entry's own inside its row", async () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     const notes = container.querySelectorAll('.hitnote');
     expect(notes[0]).toHaveTextContent('Для игроков');
     expect(notes[0]).toHaveTextContent('Лавка закрыта до утра');
@@ -245,11 +279,8 @@ describe('the notes', () => {
   });
 
   it('draws the notes before the take line of a ticked row', async () => {
-    const payload = encodeList(
-      { name: 'X', ids: ['ci1'], meta: { ci1: { qty: 2, note: 'Видно игрокам' } } },
-      true
-    );
-    const { container } = render(App, { env: at('#/l/' + payload) });
+    const l = listOf(904, 'X', [{ key: 'ci1', qty: 2, note: 'Видно игрокам' }]);
+    const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
     const row = container.querySelector('[data-row="ci1"]');
     await userEvent.click(row?.querySelector('input[type="checkbox"]') as HTMLElement);
     const notes = row?.querySelector(':scope > .rnotes');
@@ -258,9 +289,9 @@ describe('the notes', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws each line of a note as its own paragraph', () => {
-    const payload = encodeList({ name: 'X', ids: ['ci1'], note: 'Первая\nВторая' }, true);
-    const { container } = render(App, { env: at('#/l/' + payload) });
+  it('draws each line of a note as its own paragraph', async () => {
+    const l = listOf(904, 'X', [{ key: 'ci1' }], { note: 'Первая\nВторая' });
+    const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
     const note = container.querySelector('.hitnote .htext');
     expect([...(note?.querySelectorAll('p') ?? [])].map((p) => p.textContent)).toEqual([
       'Первая',
@@ -270,11 +301,8 @@ describe('the notes', () => {
 
   it('draws a list note and an entry note as formatted text, the label first', async () => {
     const text = '**x** и *y*\n- пункт';
-    const payload = encodeList(
-      { name: 'X', ids: ['ci1'], note: text, meta: { ci1: { note: text } } },
-      true
-    );
-    const { container } = render(App, { env: at('#/l/' + payload) });
+    const l = listOf(904, 'X', [{ key: 'ci1', note: text }], { note: text });
+    const { container } = await openShared(ONE, 'X', {}, fakeCloud(oneShared(l)));
     const notes = [...container.querySelectorAll('.hitnote .htext')];
     expect(notes).toHaveLength(2);
     for (const note of notes) {
@@ -290,10 +318,8 @@ describe('the notes', () => {
 });
 
 describe('the tails', () => {
-  it('reads a bare quantity, a quantity with a price, and a bare price', () => {
-    const { container } = render(App, {
-      env: at('#/l/' + QTY_AND_PRICE.player.payload)
-    });
+  it('reads a bare quantity, a quantity with a price, and a bare price', async () => {
+    const { container } = await openShared(PRICED_PLAYERS, 'Лавка');
     expect(container.querySelector('[data-row="ci1"] .rtail')).toHaveTextContent('×2');
     expect(container.querySelector('[data-row="cc21"] .rtail')).toHaveTextContent(
       '×5 · ' + priceText(50, 'bag', 'ru')
@@ -303,17 +329,13 @@ describe('the tails', () => {
     );
   });
 
-  it('draws no tail at all on a payload with no qty or price', () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+  it('draws no tail at all on a list with no qty or price', async () => {
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     expect(container.querySelectorAll('.rtail')).toHaveLength(0);
   });
 
-  it('reads coin mode when the payload carries it', () => {
-    const { container } = render(App, {
-      env: at('#/l/' + MONEY_COIN_MODE.player.payload)
-    });
+  it('reads coin mode when the list carries it', async () => {
+    const { container } = await openShared(COINS_PLAYERS, 'Монеты');
     expect(container.querySelector('[data-row="ci1"] .rtail')).toHaveTextContent(
       priceText(750, 'coin', 'ru')
     );
@@ -322,9 +344,7 @@ describe('the tails', () => {
 
 describe('selection', () => {
   it('ticks a row and raises the bar; a second tick clears both', async () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
 
@@ -339,8 +359,7 @@ describe('selection', () => {
 
 describe('adding to an existing list', () => {
   it('the bar carries the shared meta for a ticked entry', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+    const { cloud, page } = await openAsGm2(PRICED_PLAYERS, 'Лавка');
 
     const rowCheckbox = document
       .querySelector('[data-row="cc21"]')
@@ -349,23 +368,23 @@ describe('adding to an existing list', () => {
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
-    const [a, b] = readLists(storage);
+    const a = await readList(cloud, page, DRAGON);
+    const b = await readList(cloud, page, uuid(812));
     expect(a).toMatchObject({ ids: ['cc21'], meta: { cc21: { qty: 5, gold: 50 } } });
     expect(b?.ids).toEqual([]);
   });
 
   it('a chip pours the whole list with its meta, no note or hnote', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+    const { cloud, page } = await openAsGm2(PRICED_PLAYERS, 'Лавка');
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (3)' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
-    const [a] = readLists(storage);
+    const a = await readList(cloud, page, DRAGON);
     expect(a?.ids).toEqual(['ci1', 'cc21', 'q337']);
     expect(a?.meta).toEqual({
       ci1: { qty: 2 },
@@ -375,31 +394,34 @@ describe('adding to an existing list', () => {
     expect(a?.note).toBeUndefined();
     expect(a?.hnote).toBeUndefined();
     expect(screen.getByText('Добавлено в «Клад дракона»: 3')).toBeInTheDocument();
-    /* The chip poured the list without closing the menu it came from. */
-    expect(within(bar).getByRole('button', { name: 'Добавить в список' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    );
+    /* A signed-in reader who took items is asked whether to tell the list's owner; that
+       question stands in the bar where the menu was. */
+    expect(
+      within(bar).getByRole('group', {
+        name: 'Сообщить владельцу списка, что вы взяли эти предметы?'
+      })
+    ).toBeInTheDocument();
   });
 
   it("leaves the GM's own note behind", async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload, { storage }) });
+    const { cloud, page } = await openAsGm2(NOTED_GM, 'Тайник');
 
     await userEvent.click(screen.getByRole('checkbox', { name: 'Выбрать все (2)' }));
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
-    const [a] = readLists(storage);
+    const a = await readList(cloud, page, DRAGON);
     expect(a?.meta).toEqual({ ci1: { note: 'Видно игрокам' } });
     expect(a?.note).toBeUndefined();
     expect(a?.hnote).toBeUndefined();
   });
 
   it("the bar's new list carries the shared meta too", async () => {
-    const storage = memoryStorage();
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+    const cloud = fakeCloud(SHARED, 'gm2');
+    const page = fakePage();
+    await openShared(PRICED_PLAYERS, 'Лавка', { page }, cloud);
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
 
     const rowCheckbox = document
       .querySelector('[data-row="cc21"]')
@@ -408,24 +430,28 @@ describe('adding to an existing list', () => {
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
 
     const input = screen.getByPlaceholderText('Например: клад дракона');
     await userEvent.clear(input);
     await userEvent.type(input, 'Сундук');
     await userEvent.click(within(bar).getByRole('button', { name: 'Создать' }));
 
-    const [l] = readLists(storage);
-    expect(l).toMatchObject({
-      name: 'Сундук',
-      ids: ['cc21'],
-      meta: { cc21: { qty: 5, gold: 50 } }
+    page.fireHidden();
+    await waitFor(async () => {
+      const heads = await cloud.lists.list();
+      const id = heads.ok ? heads.lists.find((l) => l.name === 'Сундук')?.id : undefined;
+      const read = await cloud.lists.rows(id ? [id] : []);
+      const made = read.ok ? read.lists[0] : undefined;
+      expect(made?.list_entries).toMatchObject([
+        { item_key: 'cc21', quantity: 5, price_coins: 50 }
+      ]);
     });
   });
 });
 
 describe('the taken count and the total', () => {
-  /* qty-and-price.json: ci1 x2 unpriced, cc21 x5 at 50, q337 at 12. */
+  /* PRICED: ci1 x2 unpriced, cc21 x5 at 50, q337 at 12. */
   const tick = async (id: string): Promise<void> => {
     const box = document
       .querySelector(`[data-row="${id}"]`)
@@ -445,9 +471,11 @@ describe('the taken count and the total', () => {
     await tick('q337');
     await setCount('Эликсир ярости', '2');
   };
+  const priced = (over: Partial<Env> = {}, cloud?: CloudPort) =>
+    openShared(PRICED_PLAYERS, 'Лавка', over, cloud);
 
   it('draws a count field at the whole quantity only under a ticked entry over 1', async () => {
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await priced();
     expect(screen.queryByRole('spinbutton', { name: /^Взять/ })).not.toBeInTheDocument();
 
     await tick('ci1');
@@ -457,7 +485,7 @@ describe('the taken count and the total', () => {
   });
 
   it('shows the total beside the selected count, with the unpriced count', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     await tick('ci1');
     expect(container.querySelector('.seltotal')).not.toBeInTheDocument();
 
@@ -470,7 +498,7 @@ describe('the taken count and the total', () => {
   });
 
   it('draws the take line inside the ticked row, with the stock and the line sum', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     await tick('cc21');
     await setCount('Эликсир ярости', '2');
     const line = container.querySelector('[data-row="cc21"] .pickrow');
@@ -480,7 +508,7 @@ describe('the taken count and the total', () => {
   });
 
   it('draws «Мин», the count and «Макс» as one control', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     await tick('cc21');
     const group = container.querySelector('[data-row="cc21"] .qgroup');
     expect(group?.children).toHaveLength(3);
@@ -495,7 +523,7 @@ describe('the taken count and the total', () => {
   });
 
   it('sets the count to one and to the stock with «Мин» and «Макс», each disabled at its end', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     await tick('cc21');
     const min = screen.getByRole('button', { name: 'Мин, взять 1: Эликсир ярости' });
     const max = screen.getByRole('button', { name: 'Макс, взять все: Эликсир ярости' });
@@ -515,7 +543,7 @@ describe('the taken count and the total', () => {
   });
 
   it('mounts the empty live region before the first tick, so the first tick is announced', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     const summ = container.querySelector('.selsumm');
     expect(summ).toHaveAttribute('aria-live', 'polite');
     expect(summ).toBeEmptyDOMElement();
@@ -528,9 +556,8 @@ describe('the taken count and the total', () => {
   });
 
   it('names entries and pieces apart in a live region, and prints the taken counts', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const env = at('#/l/' + QTY_AND_PRICE.player.payload, { cloud });
-    const { container } = render(App, { env });
+    const cloud = fakeCloud(SHARED, 'gm2');
+    const { container, router } = await priced({}, cloud);
     await tickAllAndTakeTwo();
     const summ = container.querySelector('.selsumm');
     expect(summ).toHaveAttribute('aria-live', 'polite');
@@ -544,9 +571,9 @@ describe('the taken count and the total', () => {
     });
     await userEvent.click(print);
     await waitFor(() => {
-      expect(env.router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+      expect(router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
     });
-    const read = await cloud.prints.read(env.router.hash().slice(4));
+    const read = await cloud.prints.read(router.hash().slice(4));
     expect(read).toMatchObject({
       ok: true,
       set: { entries: [{ k: 'ci1', q: 2 }, { k: 'cc21', q: 2 }, { k: 'q337' }] }
@@ -554,9 +581,8 @@ describe('the taken count and the total', () => {
   });
 
   it('keeps the taken counts in the print a signed-out press leaves for the sign-in', async () => {
-    const cloud = fakeCloud(SEED);
-    const env = at('#/l/' + QTY_AND_PRICE.player.payload, { cloud });
-    const { container } = render(App, { env });
+    const cloud = fakeCloud(SHARED);
+    const { container, router } = await priced({}, cloud);
     await tickAllAndTakeTwo();
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     const print = within(bar).getByRole('button', { name: 'Печать' });
@@ -568,12 +594,12 @@ describe('the taken count and the total', () => {
     expect(container.querySelector('.selacts')).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(within(bar).getByRole('button', { name: 'Войти' }));
-    expect(env.router.hash()).toBe('#/account');
+    expect(router.hash()).toBe('#/account');
     await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
     await waitFor(() => {
-      expect(env.router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
+      expect(router.hash()).toMatch(/^#\/p\/[A-Za-z0-9_-]{12}$/);
     });
-    const read = await cloud.prints.read(env.router.hash().slice(4));
+    const read = await cloud.prints.read(router.hash().slice(4));
     expect(read).toMatchObject({
       ok: true,
       set: { entries: [{ k: 'ci1', q: 2 }, { k: 'cc21', q: 2 }, { k: 'q337' }] }
@@ -581,7 +607,7 @@ describe('the taken count and the total', () => {
   });
 
   it('holds a typed count to the quantity, and puts the value back on an emptied commit', async () => {
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    await priced();
     await tick('cc21');
     await setCount('Эликсир ярости', '9');
     expect(countOf('Эликсир ярости')).toHaveValue(5);
@@ -593,15 +619,17 @@ describe('the taken count and the total', () => {
   });
 
   it('adds the taken count to a list, with the price and no count of 1', async () => {
-    const storage = memoryStorage({ 'dhloot.lists.v2': JSON.stringify(TWO) });
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { storage }) });
+    const cloud = fakeCloud(SHARED_GM2, 'gm2');
+    const page = fakePage();
+    await priced({ page }, cloud);
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     await tickAllAndTakeTwo();
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: 'Клад дракона' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: 'Клад дракона' }));
 
-    const [a] = readLists(storage);
+    const a = await readList(cloud, page, DRAGON);
     expect(a?.meta).toEqual({
       ci1: { qty: 2 },
       cc21: { qty: 2, gold: 50 },
@@ -611,7 +639,7 @@ describe('the taken count and the total', () => {
 
   it('copies each taken count and unit price, then the total line', async () => {
     const clip = fakeClipboard();
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { clipboard: clip }) });
+    await priced({ clipboard: clip });
     await tickAllAndTakeTwo();
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
@@ -631,108 +659,34 @@ describe('the taken count and the total', () => {
   });
 
   it('forgets the count on a navigation', async () => {
-    const router = memoryRouter('#/l/' + QTY_AND_PRICE.player.payload);
-    render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload, { router }) });
+    const { router } = await priced();
     await tick('cc21');
     await setCount('Эликсир ярости', '2');
 
     router.navigate('#/lists');
-    router.navigate('#/l/' + QTY_AND_PRICE.player.payload);
+    router.navigate(PRICED_PLAYERS);
     flushSync();
+    await screen.findByRole('heading', { level: 1, name: 'Лавка' });
     await tick('cc21');
     expect(countOf('Эликсир ярости')).toHaveValue(5);
   });
 
   it('has no violations with the count fields and the total on screen', async () => {
-    const { container } = render(App, { env: at('#/l/' + QTY_AND_PRICE.player.payload) });
+    const { container } = await priced();
     await tickAllAndTakeTwo();
     await expectNoA11yViolations(container);
   });
 });
 
-describe('saving the whole list', () => {
-  it('creates a new list with the name, ids, both notes and the entry meta', async () => {
-    const storage = memoryStorage();
-    const router = memoryRouter('#/l/' + NOTES_BOTH_KINDS.gm.payload);
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload, { storage, router }) });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-
-    const [l] = readLists(storage);
-    expect(l).toMatchObject({
-      name: 'Тайник',
-      ids: ['ci1', 'cc1'],
-      note: 'Лавка закрыта до утра',
-      hnote: 'Хозяин - контрабандист',
-      meta: { ci1: { note: 'Видно игрокам', hnote: 'Подделка' } }
-    });
-    expect(screen.getByText('Список «Тайник» создан')).toBeInTheDocument();
-    expect(router.hash()).toBe('#/l/' + NOTES_BOTH_KINDS.player.payload);
-
-    /* The own list page now, not the shared one - a title input, no
-       "Список от другого игрока". */
-    expect(screen.getByRole('textbox', { name: 'Название списка' })).toHaveValue('Тайник');
-    expect(screen.queryByText('Список от другого игрока')).not.toBeInTheDocument();
-  });
-
-  it('keeps the money mode', async () => {
-    const storage = memoryStorage();
-    render(App, { env: at('#/l/' + MONEY_COIN_MODE.player.payload, { storage }) });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-
-    const [l] = readLists(storage);
-    expect(l?.name).toBe('Монеты');
-    expect(l?.money).toBe('coin');
-  });
-
-  it('saves a nameless list as Без названия', async () => {
-    const storage = memoryStorage();
-    const payload = encodeList({ name: '', ids: ['ci1'] }, true);
-    render(App, { env: at('#/l/' + payload, { storage }) });
-
-    await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-
-    const [l] = readLists(storage);
-    expect(l?.name).toBe('Без названия');
-  });
-});
-
 describe('a row opened', () => {
   it('opens the record over the page', async () => {
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    await openShared(NOTED_GM, 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: /Спальный мешок/ }));
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText('Спальный мешок')).toBeInTheDocument();
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Закрыть' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-});
-
-describe('the bad link', () => {
-  it('draws "Предмет не найден", the sub and the home button, with no add control', () => {
-    render(App, { env: at('#/l/zzzz') });
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Предмет не найден' })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText('Ссылка повреждена или собрана в другой версии данных.')
-    ).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'На главную' });
-    expect(link).toHaveAttribute('href', '#/roll/std');
-    expect(screen.queryByRole('button', { name: 'Добавить в список' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Сохранить себе' })).not.toBeInTheDocument();
-  });
-});
-
-describe('the legacy announcement', () => {
-  it('names the date on a link that decodes, and not on the bad-link page', () => {
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
-    expect(screen.getByText(dict('ru').legacyLinks)).toBeInTheDocument();
-    cleanup();
-    render(App, { env: at('#/l/zzzz') });
-    expect(screen.queryByText(dict('ru').legacyLinks)).not.toBeInTheDocument();
   });
 });
 
@@ -754,14 +708,13 @@ describe('a share link', () => {
     expect(screen.getByText('Открыта с рассвета до заката.')).toBeInTheDocument();
     expect(screen.queryByText(/Кузнец торгуется/)).not.toBeInTheDocument();
     expect(screen.queryByText(ru.ownList)).not.toBeInTheDocument();
-    expect(screen.queryByText(ru.legacyLinks)).not.toBeInTheDocument();
   });
 
   it("draws a homebrew entry's picture on its row, signed out", async () => {
     open('#/s/player-token-1');
     const name = await screen.findByRole('button', { name: /^Топор Тлеющих Углей/ });
     const row = name.closest('.lrow') ?? name.closest('li') ?? name.parentElement;
-    expect(row?.querySelector('img')?.getAttribute('src')).toBe('img/thumb/ci1.webp');
+    expect(row?.querySelector('img')?.getAttribute('src')).toBe('/img/thumb/ci1.webp');
   });
 
   it('draws «Загружаем...» while the link reads, then the list', async () => {
@@ -805,7 +758,7 @@ describe('a share link', () => {
   it('tells the owner it is their list, with a link to its page', async () => {
     open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
     const edit = await screen.findByRole('link', { name: ru.ownListEdit });
-    expect(edit).toHaveAttribute('href', '#/lists/' + uuid(101));
+    expect(edit).toHaveAttribute('href', '/lists/' + uuid(101));
     expect(screen.getByText(ru.ownList, { exact: false })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeInTheDocument();
   });
@@ -853,6 +806,25 @@ describe('a share link', () => {
       await expectNoA11yViolations(container);
     });
 
+    it("reads the owner's list entries once for the count, and draws the line without it after a failed read", async () => {
+      const cloud = marked('gm1');
+      const rows = vi.spyOn(cloud.lists, 'rows');
+      const first = open('#/s/player-token-1', cloud);
+      await waitFor(() => {
+        expect(ownLine(first.container)).toContain('Только для мастера: 1');
+      });
+      expect(rows).toHaveBeenCalledOnce();
+      expect(rows).toHaveBeenCalledWith([uuid(101)]);
+      cleanup();
+      const failing = marked('gm1');
+      failing.lists.rows = () => Promise.resolve({ ok: false });
+      const second = open('#/s/player-token-1', failing);
+      await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+      await new Promise((r) => setTimeout(r, 50));
+      expect(ownLine(second.container)).toBe('Это ваш список. Открыть для правки');
+      expect(screen.queryByText('Не получилось загрузить списки аккаунта.')).toBeNull();
+    });
+
     it('says nothing more to the owner with no GM-only entry, or on the GM link', async () => {
       const plain = open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
       await screen.findByRole('link', { name: ru.ownListEdit });
@@ -867,32 +839,6 @@ describe('a share link', () => {
       });
       expect(ownLine(gm.container)).toBe('Это ваш список. Открыть для правки');
       await expectNoA11yViolations(gm.container);
-    });
-  });
-
-  it('disables «Сохранить себе» while the browser lists move into the account', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    let release = (): void => undefined;
-    const gate = new Promise<void>((r) => {
-      release = r;
-    });
-    const move = cloud.lists.move.bind(cloud.lists);
-    cloud.lists.move = async (id, text) => {
-      await gate;
-      return move(id, text);
-    };
-    const storage = memoryStorage({
-      'dhloot.lists.v2': JSON.stringify([{ id: 'a', name: 'Тайник', ids: [] }])
-    });
-    const { container } = open('#/s/player-token-1', cloud, { storage });
-    await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeDisabled();
-    });
-    await expectNoA11yViolations(container);
-    release();
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Сохранить себе' })).toBeEnabled();
     });
   });
 
@@ -915,7 +861,7 @@ describe('a share link', () => {
       expect(screen.getByText(ru.shareGoneSub)).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute(
         'href',
-        '#/roll/std'
+        '/roll/std'
       );
       expect(router.hash()).toBe(hash);
     });
@@ -1083,12 +1029,6 @@ describe('a share link', () => {
       expect(region()).toHaveTextContent('');
       expect(next.router.hash()).toBe('#/s/unknown-token');
     });
-
-    it('draws no region on a #/l/ page', async () => {
-      const { container } = render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
-      expect(region()).toBeNull();
-      await expectNoA11yViolations(container);
-    });
   });
 
   it("has no violations on the players' view, the owner's view and the gone page", async () => {
@@ -1108,7 +1048,7 @@ describe('a share link', () => {
 
 describe('English', () => {
   it('reads the sub, the note labels and the save button in English', async () => {
-    render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
+    await openShared(NOTED_GM, 'Тайник');
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
 
     expect(screen.getByText('A list from another player · 2 items')).toBeInTheDocument();
@@ -1121,33 +1061,24 @@ describe('English', () => {
 
 describe('accessibility', () => {
   it('has no violations on the noted page as drawn', async () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
-    await expectNoA11yViolations(container);
-  });
-
-  it('has no violations on the bad-link page', async () => {
-    const { container } = render(App, { env: at('#/l/zzzz') });
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     await expectNoA11yViolations(container);
   });
 
   it('has no violations with the menu open and the new-list form showing', async () => {
-    const { container } = render(App, {
-      env: withTwo('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+    const { container } = await openShared(NOTED_GM, 'Тайник', {}, fakeCloud(SHARED, 'gm2'));
+    await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     const bar = container.querySelector('.selbarwrap') as HTMLElement;
     await userEvent.click(within(bar).getByRole('button', { name: 'Добавить в список' }));
-    await userEvent.click(within(bar).getByRole('button', { name: '+ Новый список' }));
+    await userEvent.click(await within(bar).findByRole('button', { name: '+ Новый список' }));
+    expect(screen.getByPlaceholderText('Например: клад дракона')).toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
 
   it('has no violations with a row ticked and the bar showing', async () => {
-    const { container } = render(App, {
-      env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload)
-    });
+    const { container } = await openShared(NOTED_GM, 'Тайник');
     const box = rowCheckboxes()[0] as HTMLElement;
     await userEvent.click(box);
     await expectNoA11yViolations(container);
@@ -1155,36 +1086,27 @@ describe('accessibility', () => {
 });
 
 describe('saving with sign-in configured', () => {
-  const PAYLOAD = encodeList({ name: 'Лавка', ids: ['ci1', 'cc1'], money: 'coin' }, true);
-
   it('saves into the account signed in, and opens the copy', async () => {
-    const cloud = fakeCloud(SEED, 'gm2');
-    const router = memoryRouter('#/l/' + PAYLOAD);
-    const storage = memoryStorage();
+    const cloud = fakeCloud(SHARED, 'gm2');
     const page = fakePage();
-    render(App, { env: at('#/l/' + PAYLOAD, { router, storage, cloud, page }) });
+    const { router } = await openShared(COINS_PLAYERS, 'Монеты', { page }, cloud);
     await screen.findByRole('button', { name: 'Аккаунт: gm2@example.test' });
-    await new Promise((r) => setTimeout(r, 0));
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-    expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
-    expect(screen.getByText('Список «Лавка» создан')).toBeInTheDocument();
-    expect(readLists(storage)).toEqual([]);
-    /* The create waits in the account's write buffer until the tab is hidden. */
+    await waitFor(() => {
+      expect(router.hash()).toBe('#/lists/' + uuid(5000));
+    });
+    expect(await screen.findByText('Список «Монеты» создан')).toBeInTheDocument();
     page.fireHidden();
     await waitFor(async () => {
       const read = await cloud.lists.list();
-      const made = read.ok ? read.lists.find((l) => l.name === 'Лавка') : undefined;
+      const made = read.ok ? read.lists.find((l) => l.name === 'Монеты') : undefined;
       expect(made?.money_mode).toBe('coin');
-      expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1', 'cc1']);
+      expect(made?.list_entries.map((e) => e.item_key)).toEqual(['ci1']);
     });
   });
 
   it('opens the prompt under the pressed button signed out, and a second press folds it', async () => {
-    const router = memoryRouter('#/l/' + PAYLOAD);
-    const storage = memoryStorage();
-    const { container } = render(App, {
-      env: at('#/l/' + PAYLOAD, { router, storage, cloud: fakeCloud(SEED) })
-    });
+    const { container, router } = await openShared(COINS_PLAYERS, 'Монеты');
     await screen.findByRole('link', { name: 'Войти' });
     const save = screen.getByRole('button', { name: 'Сохранить себе' });
     expect(save).not.toHaveAttribute('aria-expanded');
@@ -1192,7 +1114,6 @@ describe('saving with sign-in configured', () => {
     expect(screen.getByText('Войдите, и список сохранится в ваш аккаунт.')).toBeInTheDocument();
     expect(save).toHaveClass('on');
     expect(save).toHaveAttribute('aria-expanded', 'true');
-    expect(readLists(storage)).toEqual([]);
     await expectNoA11yViolations(container);
     await userEvent.click(save);
     expect(
@@ -1204,21 +1125,19 @@ describe('saving with sign-in configured', () => {
     expect(router.hash()).toBe('#/account');
     await userEvent.click(await screen.findByRole('button', { name: 'Войти через Google' }));
     await waitFor(() => {
-      expect(router.hash()).toBe('#/lists/00000000-0000-4000-8000-000000005000');
+      expect(router.hash()).toBe('#/lists/' + uuid(5000));
     });
     expect(await screen.findByRole('textbox', { name: 'Название списка' })).toHaveValue(
-      'Лавка'
+      'Монеты'
     );
-    expect(readLists(storage)).toEqual([]);
   });
 
   it('does nothing while the session is unknown', async () => {
-    const cloud = fakeCloud(SEED);
+    const cloud = fakeCloud(SHARED);
     cloud.auth.session = () => new Promise(() => undefined);
-    const router = memoryRouter('#/l/' + PAYLOAD);
-    render(App, { env: at('#/l/' + PAYLOAD, { router, cloud }) });
+    const { router } = await openShared(COINS_PLAYERS, 'Монеты', {}, cloud);
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить себе' }));
-    expect(router.hash()).toBe('#/l/' + PAYLOAD);
+    expect(router.hash()).toBe(COINS_PLAYERS);
     expect(screen.queryByText(/Войдите/)).not.toBeInTheDocument();
   });
 });
@@ -1257,6 +1176,33 @@ describe('a purchase request', () => {
     await expectNoA11yViolations(signed.container);
   });
 
+  it('draws the sent line, takes the decision into it with a toast, and drops it with the ticks', async () => {
+    const { cloud, container } = open('#/s/player-token-1');
+    await tickFirst();
+    await waitFor(() => {
+      expect(document.querySelector('.said[role="status"]')).toHaveAttribute(
+        'data-live',
+        'live'
+      );
+    });
+    await userEvent.click(notify() as HTMLElement);
+    await screen.findByText('Запрос отправлен владельцу списка.');
+    const line = (): HTMLElement | null => bar().querySelector('.sentline');
+    expect(line()).toHaveTextContent(
+      'Запрос (1 позиция · 2 шт.) ждёт ответа владельца до 30 дней. Если владелец его примет, взятое спишут из этого списка.'
+    );
+    expect(line()).not.toHaveAttribute('role');
+    expect(cloud.decide(uuid(5000), 'declined')).toBe(true);
+    expect(await screen.findByText('Владелец отклонил ваш запрос.')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(line()).toHaveTextContent('Владелец отклонил запрос.');
+    });
+    expect(within(bar()).getByRole('button', { name: 'Запрос отправлен' })).toBeDisabled();
+    await expectNoA11yViolations(container);
+    await userEvent.click(within(bar()).getByRole('button', { name: 'Снять выделение' }));
+    expect(line()).toBeNull();
+  });
+
   it('enables «Сообщить владельцу» again after a changed count', async () => {
     const { cloud, container } = open('#/s/player-token-1');
     const send = vi.spyOn(cloud.requests, 'send');
@@ -1291,14 +1237,10 @@ describe('a purchase request', () => {
     await expectNoA11yViolations(container);
   });
 
-  it("is not offered to the list's owner, nor on a #/l/ page", async () => {
-    open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
+  it("is not offered to the list's owner", async () => {
+    const { container } = open('#/s/player-token-1', fakeCloud(SEED, 'gm1'));
     await screen.findByRole('link', { name: dict('ru').ownListEdit });
     await tickFirst();
-    expect(notify()).not.toBeInTheDocument();
-    cleanup();
-    const { container } = render(App, { env: at('#/l/' + NOTES_BOTH_KINDS.gm.payload) });
-    await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     expect(notify()).not.toBeInTheDocument();
     await expectNoA11yViolations(container);
   });
@@ -1489,7 +1431,7 @@ describe('homebrew entries on a share link', () => {
     return { ...r, router, page };
   };
   async function saved(cloud: CloudPort, id: string) {
-    const read = await cloud.lists.list();
+    const read = await cloud.lists.rows([id]);
     return (read.ok ? read.lists.find((l) => l.id === id) : undefined)?.list_entries.find(
       (e) => e.item_key === AXE
     );
@@ -1545,9 +1487,7 @@ describe('homebrew entries on a share link', () => {
    data, so the seeded share draws its 10 entries. */
 describe('the filter', () => {
   const ru = dict('ru');
-  const REAL = JSON.parse(
-    readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-  ) as Loot;
+  const REAL = readLoot();
   const SHOP = uuid(101);
   const real = (hash: string, over: Partial<Env> = {}): Env =>
     fakeEnv({ router: memoryRouter(hash), data: fakeData(REAL), ...over });
@@ -1591,24 +1531,33 @@ describe('the filter', () => {
     };
   };
   const EIGHT = ['ci1', 'cc1', 'q1', 'q313', 'q23', 'w51', 'q35', 'di11'];
-  const LEGACY_EIGHT = encodeList({ name: 'Склад', ids: EIGHT }, true);
-
-  it("encodes the 8-entry #/l/ list byte for byte as the inventory's `#/l/ ~ filtered` writes it", () => {
-    expect(LEGACY_EIGHT).toBe(
-      '0KHQutC70LDQtAo4LjRxZTh-Y2kxLGNjMSxxMSxxMzEzLHEyMyx3NTEscTM1LGRpMTE'
+  /* gm4's lists of 7, 8 and 3 entries, each shared to the players. */
+  const keyed = (keys: string[]) => keys.map((key) => ({ key }));
+  const sized = (): CloudPort =>
+    fakeCloud(
+      seedWith(
+        {
+          gm4: [
+            listOf(905, 'Семь', keyed(EIGHT.slice(0, 7))),
+            listOf(906, 'Склад', keyed(EIGHT)),
+            listOf(907, 'Три', keyed(['ci1', 'q1', 'cc1']))
+          ]
+        },
+        [905, 906, 907].flatMap((n) => sharesOf(n).slice(0, 1))
+      )
     );
-  });
 
   describe('the threshold', () => {
     it('draws no search box below 8 entries, and the box and the strip at 8', async () => {
-      render(App, {
-        env: real('#/l/' + encodeList({ name: 'Семь', ids: EIGHT.slice(0, 7) }, true))
-      });
-      expect(screen.getByRole('heading', { level: 1, name: 'Семь' })).toBeInTheDocument();
+      open('#/s/player-token-95', sized());
+      expect(
+        await screen.findByRole('heading', { level: 1, name: 'Семь' })
+      ).toBeInTheDocument();
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: ru.filters })).not.toBeInTheDocument();
       cleanup();
-      const { container } = render(App, { env: real('#/l/' + LEGACY_EIGHT) });
+      const { container } = open('#/s/player-token-96', sized());
+      await screen.findByRole('heading', { level: 1, name: 'Склад' });
       expect(screen.getByRole('searchbox')).toHaveAttribute('placeholder', ru.searchPh);
       expect(screen.getByRole('button', { name: ru.filters })).toHaveAttribute(
         'aria-expanded',
@@ -1655,18 +1604,16 @@ describe('the filter', () => {
     });
 
     it('starts unfiltered, folded and without the box on another list', async () => {
-      const env = real('#/l/' + LEGACY_EIGHT);
-      const { container } = render(App, { env });
+      const { container, router } = open('#/s/player-token-96', sized());
+      await screen.findByRole('heading', { level: 1, name: 'Склад' });
       await userEvent.click(screen.getByRole('button', { name: ru.filters }));
       await userEvent.click(chip('Оружие'));
       await userEvent.type(screen.getByRole('searchbox'), 'посох');
-      env.router.navigate(
-        '#/l/' + encodeList({ name: 'Три', ids: ['ci1', 'q1', 'cc1'] }, true)
-      );
+      router.navigate('#/s/player-token-97');
       await screen.findByRole('heading', { level: 1, name: 'Три' });
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
       expect(rowsOf(container)).toEqual(['ci1', 'q1', 'cc1']);
-      env.router.navigate('#/l/' + LEGACY_EIGHT);
+      router.navigate('#/s/player-token-96');
       await screen.findByRole('heading', { level: 1, name: 'Склад' });
       expect(screen.getByRole('searchbox')).toHaveValue('');
       expect(screen.getByRole('button', { name: ru.filters })).toHaveAttribute(
@@ -1746,11 +1693,13 @@ describe('the filter', () => {
       expect(screen.queryByRole('button', { name: 'Броня' })).not.toBeInTheDocument();
     });
 
-    it('copies the filter link and toasts; the English link goes through en/', async () => {
+    it('copies the filter link and toasts; the English link carries /en/', async () => {
       const { clip } = open('#/s/player-token-1/f_kind-weapon');
       await shopReady();
       await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
-      expect(clip.last.text).toBe('https://example.test/#/s/player-token-1/f_kind-weapon');
+      expect(clip.last.text).toMatch(
+        /^https:\/\/example\.test\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
+      );
       expect(screen.getByText(ru.filterLinkCopied)).toBeInTheDocument();
       cleanup();
       const en = open('#/s/player-token-1/f_kind-weapon', fakeCloud(SEED), {
@@ -1758,17 +1707,33 @@ describe('the filter', () => {
       });
       await screen.findByRole('heading', { level: 1, name: 'Лавка кузнеца' });
       await userEvent.click(screen.getByRole('button', { name: dict('en').filterLink }));
-      expect(en.clip.last.text).toBe(
-        'https://example.test/en/#/s/player-token-1/f_kind-weapon'
+      expect(en.clip.last.text).toMatch(
+        /^https:\/\/example\.test\/en\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
       );
       expect(screen.getByText('Filter link copied')).toBeInTheDocument();
+    });
+
+    it("writes the copy's version into the bar once read, and again on another filter", async () => {
+      const { clip, router } = open('#/s/player-token-1');
+      await shopReady();
+      await waitFor(() => {
+        expect(router.bar()).toMatch(/^\/s\/player-token-1\?v=[0-9a-z]+$/);
+      });
+      router.navigate('#/s/player-token-1/f_kind-weapon');
+      await waitFor(() => {
+        expect(router.bar()).toMatch(/^\/s\/player-token-1\/f_kind-weapon\?v=[0-9a-z]+$/);
+      });
+      await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
+      expect(clip.last.text).toBe('https://example.test' + router.bar());
     });
 
     it('copies only the values in force, and toasts the GM warning on a GM link', async () => {
       const { clip, container } = open('#/s/gm-token-1/f_kind-weapon.range-veryfar');
       await shopReady();
       await userEvent.click(screen.getByRole('button', { name: ru.filterLink }));
-      expect(clip.last.text).toBe('https://example.test/#/s/gm-token-1/f_kind-weapon');
+      expect(clip.last.text).toMatch(
+        /^https:\/\/example\.test\/s\/gm-token-1\/f_kind-weapon\?v=[0-9a-z]+$/
+      );
       expect(screen.getByText(ru.gmFilterLinkCopied)).toBeInTheDocument();
       await expectNoA11yViolations(container);
     });
@@ -1895,23 +1860,6 @@ describe('the filter', () => {
     });
   });
 
-  describe('on a #/l/ link', () => {
-    it('narrows in page memory: the address stays and no link button is drawn', async () => {
-      const env = real('#/l/' + LEGACY_EIGHT);
-      const { container } = render(App, { env });
-      expect(screen.getByText(ru.legacyLinks)).toBeInTheDocument();
-      await userEvent.click(screen.getByRole('button', { name: ru.filters }));
-      await userEvent.click(chip('Оружие'));
-      expect(rowsOf(container)).toEqual(['q1', 'q23', 'w51', 'q35']);
-      expect(count(container)).toBe('4 из 8');
-      expect(pills(container)).toEqual(['kind:weapon']);
-      expect(screen.getByRole('button', { name: ru.resetAll })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: ru.filterLink })).not.toBeInTheDocument();
-      expect(env.router.hash()).toBe('#/l/' + LEGACY_EIGHT);
-      await expectNoA11yViolations(container);
-    });
-  });
-
   it("draws the owner's own set on a book item of its own link, and none signed out", async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const held = await cloud.homebrew.load();
@@ -1928,7 +1876,7 @@ describe('the filter', () => {
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('link', { name: 'Комплект Ольхи' })).toHaveAttribute(
       'href',
-      '#/homebrew/sets/hb_aldersetaaaaaaaa'
+      '/homebrew/sets/hb_aldersetaaaaaaaa'
     );
     await expectNoA11yViolations(container);
     cleanup();

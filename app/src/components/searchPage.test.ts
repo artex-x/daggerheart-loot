@@ -290,7 +290,7 @@ describe('the filter is shared across pages', () => {
     const env = at();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Расходники' }));
-    env.router.navigate('#/roll/std');
+    env.router.navigate('#/roll/std', 'ru');
     expect(screen.getByRole('button', { name: 'Расходники' })).toHaveAttribute(
       'aria-pressed',
       'false'
@@ -312,7 +312,7 @@ describe('selection', () => {
     await type('Ветра');
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
     expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
-    env.router.navigate('#/tables');
+    env.router.navigate('#/tables', 'ru');
     await tick();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();
   });

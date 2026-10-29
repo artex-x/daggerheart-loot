@@ -36,7 +36,7 @@ Orientation
 1. Read `CLAUDE.md`
 2. Read `<TASK_DIR>/context.md` if it exists. Prefer captured facts over re-reading the same source material; refresh only when facts are missing, stale, or superseded by new human input.
 3. Read relevant `docs/specs/` (CONTRACTS, FEATURES, ROUTES, I18N, and anything else this source may touch)
-4. Inspect existing similar sources in `data.js` / `data.json` / `catalog.csv`
+4. Inspect existing similar sources in `data.js` / `data.json` / `catalog.csv` (the last two after `node tools/build.js`: they are not committed)
 5. Inspect roll/table/filter patterns in `app/src/lib/` and `app/src/components/`
 6. Inspect id prefixes, `craft`, `refs`, equipment (`eq`) fields, image and `i/` stub conventions
 7. Inspect `tools/build.js` and tests that pin counts, images, stubs, routes, i18n

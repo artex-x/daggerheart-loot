@@ -219,8 +219,9 @@ export async function collect(db, now) {
       where ns.nspname = 'public' and c.relname = ${tablename}`;
     tables.push({ name: tablename, rows: num(t.n), bytes: num(t.size) });
   }
-  // A null limit is no limit and never counts; move_legacy_list can pass a
-  // limit (docs/specs/DEBT.md D62), so the part above 100 % is counted too.
+  // A null limit is no limit and never counts. Lists moved in before R10 can sit
+  // above a limit, so the part above 100 % is counted too
+  // (docs/decisions/2026-10-28-r10-drops-the-move-function-and-the-fingerprint-column.md).
   const [near] = await db`
     with per_owner as (
       select count(*) as n, public.effective_limit(owner_id, 'lists_per_owner') as lim

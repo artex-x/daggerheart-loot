@@ -1,10 +1,11 @@
-# The preview host: Cloudflare Pages project daggerheart-loot, Functions in
-# advanced mode (public/_worker.js). .claude/README.md, "Preview host".
+# The site's host: Cloudflare Pages project daggerheart-loot. Pages serves the
+# site's files; Functions in advanced mode (public/_worker.js) answer the card
+# families of public/_routes.json. .claude/README.md, "Preview host".
 # SUPABASE_URL and SUPABASE_KEY are Pages secrets, never written here.
 name = "daggerheart-loot"
 pages_build_output_dir = "public"
 compatibility_date = "2026-09-01"
 
 [vars]
-SITE = "https://artex-x.github.io/daggerheart-loot/"
+SITE = "https://daggerheart-loot.pages.dev/"
 PAGES_HOST = "daggerheart-loot.pages.dev"

@@ -826,9 +826,9 @@
   {/if}
 
   <p class="hint">
-    {t.hbImportHintBefore}<a href="schema/homebrew-v2.json" target="_blank" rel="noopener"
+    {t.hbImportHintBefore}<a href="/schema/homebrew-v2.json" target="_blank" rel="noopener"
       >{t.hbImportSchema}</a
-    >{t.importHintMid}<a href="llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
+    >{t.importHintMid}<a href="/llms.txt" target="_blank" rel="noopener">{t.importLlms}</a
     >{t.hbImportHintAfter}
   </p>
 </Field>

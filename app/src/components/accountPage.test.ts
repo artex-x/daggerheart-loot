@@ -8,7 +8,6 @@ import App from '../App.svelte';
 import AccountPage from './AccountPage.svelte';
 import { fakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
-import { LEGACY_WRITE_UNTIL } from '../lib/legacy.js';
 import { fakeEnv, fakeImage, fixedClock, memoryRouter, memoryStorage } from '../ports/index.js';
 import type { AuthResult, CloudPort } from '../ports/index.js';
 import { AppState } from '../state/app.svelte.js';
@@ -49,11 +48,11 @@ describe('signed out', () => {
     expect(screen.getByRole('button', { name: 'Войти через Discord' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'условия' })).toHaveAttribute(
       'href',
-      'pages/terms.html'
+      '/pages/terms.html'
     );
     expect(screen.getByRole('link', { name: 'политику конфиденциальности' })).toHaveAttribute(
       'href',
-      'pages/privacy.html'
+      '/pages/privacy.html'
     );
     await expectNoA11yViolations(container);
   });
@@ -63,11 +62,11 @@ describe('signed out', () => {
     expect(await screen.findByRole('button', { name: 'Sign in with Discord' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'terms' })).toHaveAttribute(
       'href',
-      'pages/en/terms.html'
+      '/pages/en/terms.html'
     );
     expect(screen.getByRole('link', { name: 'privacy policy' })).toHaveAttribute(
       'href',
-      'pages/en/privacy.html'
+      '/pages/en/privacy.html'
     );
     await expectNoA11yViolations(container);
   });
@@ -738,12 +737,11 @@ describe('the account delete while it runs', () => {
 });
 
 describe('the start-section option of the lists', () => {
-  const optionOf = async (at: number, lang?: 'en'): Promise<string> => {
+  const optionOf = async (lang?: 'en'): Promise<string> => {
     render(App, {
       env: fakeEnv({
         cloud: as('gm1'),
         router: memoryRouter('#/account'),
-        clock: fixedClock(at),
         ...(lang ? { storage: memoryStorage({ 'dhloot.lang.v1': lang }) } : {})
       })
     });
@@ -755,10 +753,8 @@ describe('the start-section option of the lists', () => {
     return text;
   };
 
-  it('reads «Мои списки» from the cutoff and «Списки» the moment before', async () => {
-    expect(await optionOf(LEGACY_WRITE_UNTIL)).toBe('Мои списки');
-    expect(await optionOf(LEGACY_WRITE_UNTIL - 1)).toBe('Списки');
-    expect(await optionOf(LEGACY_WRITE_UNTIL, 'en')).toBe('My lists');
-    expect(await optionOf(LEGACY_WRITE_UNTIL - 1, 'en')).toBe('Lists');
+  it('reads «Мои списки» and "My lists"', async () => {
+    expect(await optionOf()).toBe('Мои списки');
+    expect(await optionOf('en')).toBe('My lists');
   });
 });

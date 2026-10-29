@@ -1,22 +1,21 @@
 <script lang="ts">
-  /* The box the move of browser lists speaks in: the one-time notice under
-     the header and the status in the storage notice's slot
-     (docs/specs/FEATURES.md, "Account and browser lists"). Gold for news,
-     the warning tint for a list that did not move. The caller places it. It has no
+  /* The warning box (docs/specs/FEATURES.md, rule 19): the editor's conflict and gone
+     banners and the two print clip warnings. The caller places it. It has no
      `role="status"`: a box inserted with its text is not said, so a page that shows it
-     while open says its fact through `StatusRegion` (docs/specs/FEATURES.md, rule 19). */
+     while open says its fact through `StatusRegion`. */
   import type { Snippet } from 'svelte';
 
   interface Props {
-    warn?: boolean;
     children: Snippet;
     actions?: Snippet | undefined;
   }
 
-  const { warn = false, children, actions }: Props = $props();
+  const { children, actions }: Props = $props();
 </script>
 
-<div class="box" class:warn>
+<!-- `warn` stays a static class: the browser suites and two unit files find the box by
+     `.box.warn`. -->
+<div class="box warn">
   <div class="lead">{@render children()}</div>
   {#if actions}{@render actions()}{/if}
 </div>
@@ -28,9 +27,10 @@
     align-items: center;
     flex-wrap: wrap;
     padding: 11px 14px;
-    border: 1px solid rgb(var(--gold-rgb) / 45%);
+    border: 1px solid var(--warn-line);
     border-radius: var(--r-sm);
-    background: rgb(var(--gold-rgb) / 6%);
+    background: var(--warn-bg);
+    color: var(--warn-text);
     font-size: 13px;
     line-height: 1.5;
   }
@@ -38,11 +38,5 @@
   .lead {
     flex: 1 1 320px;
     min-width: 0;
-  }
-
-  .box.warn {
-    border-color: var(--warn-line);
-    background: var(--warn-bg);
-    color: var(--warn-text);
   }
 </style>

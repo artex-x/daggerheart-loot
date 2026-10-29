@@ -1,9 +1,7 @@
 /* Against the real catalogue, because the point of search is that it finds
    things in it. */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildIndex, type Loot } from './data.js';
+import { buildIndex } from './data.js';
 import { dict } from './dict.js';
 import { eqLine } from './i18n.js';
 import { isFrameRecord } from './label.js';
@@ -17,10 +15,9 @@ import {
   statLineFor
 } from './search.js';
 import type { Record_ } from './types.js';
+import { readLoot } from '../test/loot.js';
 
-const LOOT = JSON.parse(
-  readFileSync(join(import.meta.dirname, '..', '..', '..', 'data.json'), 'utf8')
-) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 const LABELS = {

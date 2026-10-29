@@ -6,18 +6,18 @@ import { join } from 'node:path';
 import { fireEvent, render, screen, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import App from '../App.svelte';
-import type { Loot } from '../lib/data.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED } from '../ports/fake-cloud-seed.js';
 import { fakeData, fakeDialog, fakeEnv, memoryRouter } from '../ports/index.js';
 import { memoryStorage, type FakeStoragePort } from '../ports/storage.js';
+import { readLoot } from './loot.js';
 
 /** What `opened` returns: the render of the app, its fake cloud and its storage, whose
  *  `fireExternalChange(null)` is the tab shown again. */
 type Opened = RenderResult<typeof App> & { cloud: FakeCloud; storage: FakeStoragePort };
 
 export const ROOT = join(import.meta.dirname, '..', '..', '..');
-export const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
+export const LOOT = readLoot();
 export const fixture = (name: string): Uint8Array =>
   new Uint8Array(readFileSync(join(ROOT, 'docs', 'fixtures', 'import', name)));
 export const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);

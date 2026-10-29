@@ -1,5 +1,4 @@
-/* The account list store over the fake cloud: the same writers as the local
- * store, a write buffer sent as one request two seconds after the last edit,
+/* The account list store over the fake cloud: its writers, a write buffer sent as one request two seconds after the last edit,
  * a lost network kept and retried, a row deleted elsewhere dropped quietly, a
  * request the database keeps failing halved, and re-reads that redraw only
  * what changed. docs/specs/FEATURES.md, "Account and browser lists". */
@@ -10,21 +9,23 @@ import {
   BATCH_BYTES,
   entrySource,
   toCloudList,
-  type CloudList,
   type EntrySource,
   type ListOp
 } from '../lib/cloudLists.js';
 import { dict, type Msg } from '../lib/dict.js';
 import { recordOf } from '../lib/homebrew.js';
-import type { StoredList } from '../lib/lists.js';
 import { countOf } from '../lib/plural.js';
 import { fakeCloud, type FakeCloud, type FakeCloudOptions } from '../ports/fake-cloud.js';
 import { SEED, uuid } from '../ports/fake-cloud-seed.js';
-import { fakeEnv, memoryStorage } from '../ports/index.js';
 import type { ListRepository, ListWrites } from '../ports/index.js';
 import { COALESCE_MS } from '../lib/live.js';
-import { CloudLists, FAULT_LIMIT, QUIET_MS, RETRY_MS } from './cloudLists.svelte.js';
-import { ListStore } from './lists.svelte.js';
+import {
+  CloudLists,
+  DETAIL_READS,
+  FAULT_LIMIT,
+  QUIET_MS,
+  RETRY_MS
+} from './cloudLists.svelte.js';
 
 const t = () => dict('ru');
 const said: { msg: string; error?: boolean | undefined }[] = [];
@@ -57,10 +58,13 @@ const CI1_ROW = uuid(1101);
 const AXE = 'hb_emberaxeaaaaaaaa';
 const AXE_ID = uuid(511);
 
-async function loaded(options: FakeCloudOptions = {}, as = 'gm1') {
+/* The store after its first read; every list's entries read too unless `heads`, so a case
+   of a writer starts from a list a page has opened. */
+async function loaded(options: FakeCloudOptions = {}, as = 'gm1', heads = false) {
   const cloud = fakeCloud(SEED, as, options);
   const store = new CloudLists(cloud.lists, say, t);
   await store.load();
+  if (!heads) await store.detail(store.lists.map((l) => l.id));
   /* The fake's own `apply`, for a test that wraps the spy's answer. */
   const real = cloud.lists.apply.bind(cloud.lists);
   const apply = vi.spyOn(cloud.lists, 'apply');
@@ -79,7 +83,7 @@ const rowsOf = (cloud: FakeCloud, lists: readonly ImportList[]) =>
   }).rows;
 
 async function serverList(repo: ListRepository, id: string) {
-  const read = await repo.list();
+  const read = await repo.rows([id]);
   if (!read.ok) throw new Error('the read failed');
   return read.lists.find((l) => l.id === id);
 }
@@ -109,17 +113,6 @@ function holdNext(apply: MockInstance<Apply>, real: Apply, answer?: ListWrites) 
   return { release: open };
 }
 
-/** The local store's shape of an account list. */
-const plain = (l: CloudList | undefined): StoredList | undefined => {
-  if (!l) return undefined;
-  const copy: Partial<CloudList> = { ...l };
-  delete copy.updated;
-  delete copy.entryIds;
-  delete copy.links;
-  delete copy.linked;
-  return copy as StoredList;
-};
-
 beforeEach(() => {
   said.length = 0;
   vi.useFakeTimers();
@@ -129,7 +122,7 @@ afterEach(() => {
 });
 
 describe('reading the account', () => {
-  it('loads the lists newest edit first, in the local store shape', async () => {
+  it('loads the lists newest edit first', async () => {
     const cloud = fakeCloud(SEED, 'gm1');
     const store = new CloudLists(cloud.lists, say, t);
     expect(store.status).toBe('idle');
@@ -142,6 +135,7 @@ describe('reading the account', () => {
       'Лавка кузнеца',
       'Трофеи'
     ]);
+    expect(await store.detail([SHOP])).toBe(true);
     const shop = store.get(SHOP);
     expect(shop?.money).toBe('coin');
     expect(shop?.note).toBe('Открыта с рассвета до заката.');
@@ -357,6 +351,277 @@ describe('reading the account', () => {
   });
 });
 
+describe("reading a list's entries", () => {
+  /* The store after its first read alone, with spies on both reads. */
+  async function heads() {
+    const got = await loaded({}, 'gm1', true);
+    const realRows = got.cloud.lists.rows.bind(got.cloud.lists);
+    const list = vi.spyOn(got.cloud.lists, 'list');
+    const rows = vi.spyOn(got.cloud.lists, 'rows');
+    return { ...got, list, rows, realRows };
+  }
+  /* Holds the next `rows` call until `release()`; the fake answers it then. */
+  function holdRows(rows: MockInstance<ListRepository['rows']>, real: ListRepository['rows']) {
+    let open: () => void = () => undefined;
+    const gate = new Promise<void>((r) => {
+      open = r;
+    });
+    rows.mockImplementationOnce(async (ids) => {
+      await gate;
+      return real(ids);
+    });
+    return { release: open };
+  }
+
+  it('loads each list with its ids, row ids and links, and no meta; every state absent', async () => {
+    const { store } = await heads();
+    const shop = store.get(SHOP);
+    expect(shop?.ids).toHaveLength(10);
+    expect(shop?.entryIds['ci1']).toBe(CI1_ROW);
+    expect(shop?.links).toEqual({ [AXE]: AXE_ID });
+    expect(store.lists.every((l) => !('meta' in l))).toBe(true);
+    expect(store.lists.map((l) => store.detailOf(l.id))).toEqual([
+      'absent',
+      'absent',
+      'absent'
+    ]);
+  });
+
+  it('reads a list once with one rows call, and joins two calls at once', async () => {
+    const { store, rows } = await heads();
+    const a = store.detail([SHOP]);
+    expect(store.detailOf(SHOP)).toBe('loading');
+    const b = store.detail([SHOP]);
+    expect(await Promise.all([a, b])).toEqual([true, true]);
+    expect(rows).toHaveBeenCalledOnce();
+    expect(rows).toHaveBeenCalledWith([SHOP]);
+    expect(store.detailOf(SHOP)).toBe('ready');
+    expect(store.get(SHOP)?.meta?.['ci1']).toEqual({ qty: 2, gold: 150 });
+    expect(await store.detail([SHOP])).toBe(true);
+    expect(rows).toHaveBeenCalledOnce();
+  });
+
+  it('says error and keeps the heads when the rows read fails; the next call reads', async () => {
+    const { store, rows } = await heads();
+    const shop = store.get(SHOP);
+    rows.mockResolvedValueOnce({ ok: false });
+    expect(await store.detail([SHOP])).toBe(false);
+    expect(store.detailOf(SHOP)).toBe('error');
+    expect(store.get(SHOP)).toBe(shop);
+    expect(await store.detail([SHOP])).toBe(true);
+    expect(rows).toHaveBeenCalledTimes(2);
+  });
+
+  it('answers false at once before the account is read', async () => {
+    const store = new CloudLists(fakeCloud(SEED, 'gm1').lists, say, t);
+    expect(await store.detail([SHOP])).toBe(false);
+  });
+
+  it('sends an add before the rows read, and the answer holds the added row', async () => {
+    const { cloud, store, rows, apply } = await heads();
+    store.add(EMPTY, ['w1'], () => true);
+    expect(await store.detail([EMPTY])).toBe(true);
+    expect(apply.mock.invocationCallOrder[0]).toBeLessThan(
+      rows.mock.invocationCallOrder[0] ?? 0
+    );
+    expect(store.get(EMPTY)?.ids).toEqual(['w1']);
+    expect((await serverList(cloud.lists, EMPTY))?.list_entries.map((e) => e.item_key)).toEqual(
+      ['w1']
+    );
+  });
+
+  it('reads again after an edit of the list while its rows read runs, keeping the edit', async () => {
+    const { store, rows, realRows } = await heads();
+    const held = holdRows(rows, realRows);
+    const reading = store.detail([EMPTY]);
+    await settle();
+    store.add(EMPTY, ['w1'], () => true);
+    held.release();
+    expect(await reading).toBe(true);
+    expect(rows).toHaveBeenCalledTimes(2);
+    expect(store.get(EMPTY)?.ids).toEqual(['w1']);
+  });
+
+  it('keeps the answer after an edit of another list while the rows read runs', async () => {
+    const { store, rows, realRows } = await heads();
+    const held = holdRows(rows, realRows);
+    const reading = store.detail([SHOP]);
+    await settle();
+    store.rename(EMPTY, 'Другое');
+    held.release();
+    expect(await reading).toBe(true);
+    expect(rows).toHaveBeenCalledOnce();
+    expect(store.detailOf(SHOP)).toBe('ready');
+  });
+
+  it('says error after DETAIL_READS reads that each overlapped an edit of the list', async () => {
+    const { store, rows, realRows } = await heads();
+    rows.mockImplementation(async (ids) => {
+      store.rename(EMPTY, 'Снова ' + String(rows.mock.calls.length));
+      return realRows(ids);
+    });
+    expect(await store.detail([EMPTY])).toBe(false);
+    expect(rows).toHaveBeenCalledTimes(DETAIL_READS);
+    expect(store.detailOf(EMPTY)).toBe('error');
+  });
+
+  it('reads on after an edit of another list made during its flush', async () => {
+    const { store, rows, apply, real } = await heads();
+    store.rename(EMPTY, 'Первое');
+    const flush = holdNext(apply, real);
+    const reading = store.detail([SHOP]);
+    await settle();
+    store.rename(EMPTY, 'Второе');
+    flush.release();
+    expect(await reading).toBe(true);
+    expect(rows).toHaveBeenCalledOnce();
+    expect(store.detailOf(SHOP)).toBe('ready');
+  });
+
+  it('says error when the flush before the read finds no network, and reads once back online', async () => {
+    const { cloud, store, rows } = await heads();
+    store.rename(EMPTY, 'Офлайн');
+    cloud.setOffline(true);
+    expect(await store.detail([SHOP])).toBe(false);
+    expect(store.detailOf(SHOP)).toBe('error');
+    expect(store.sync).toBe('failed');
+    expect(rows).not.toHaveBeenCalled();
+    cloud.setOffline(false);
+    expect(await store.detail([SHOP])).toBe(true);
+    expect(rows).toHaveBeenCalledOnce();
+  });
+
+  it('keeps a list held whole when the re-read rows answer is older than its head, then reads it again', async () => {
+    const { cloud, store, list, rows, realRows } = await heads();
+    await store.detail([SHOP]);
+    const old = await realRows([SHOP]);
+    const shop = store.get(SHOP);
+    rows.mockClear();
+    await cloud.lists.apply([{ op: 'update_entry', id: CI1_ROW, patch: { quantity: 7 } }]);
+    rows.mockResolvedValueOnce(old);
+    await store.refresh();
+    await settle();
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(rows).toHaveBeenCalledTimes(2);
+    expect(store.get(SHOP)).not.toBe(shop);
+    expect(store.get(SHOP)?.meta?.['ci1']).toEqual({ qty: 7, gold: 150 });
+    expect(store.detailOf(SHOP)).toBe('ready');
+  });
+
+  it('makes a created list ready with no rows read', async () => {
+    const { store, rows } = await heads();
+    const l = store.create('Новый', { ids: ['ci1'], meta: { ci1: { qty: 2 } } });
+    expect(store.detailOf(l.id)).toBe('ready');
+    expect(await store.detail([l.id])).toBe(true);
+    expect(rows).not.toHaveBeenCalled();
+  });
+
+  it("re-reads another device's edit of a list held whole with one head read and one rows read", async () => {
+    const { cloud, store, list, rows } = await heads();
+    await store.detail([SHOP]);
+    rows.mockClear();
+    await cloud.lists.apply([
+      { op: 'update_entry', id: CI1_ROW, patch: { quantity: 5, player_note: 'чужое' } }
+    ]);
+    await store.refresh();
+    expect(list).toHaveBeenCalledOnce();
+    expect(rows).toHaveBeenCalledOnce();
+    expect(rows).toHaveBeenCalledWith([SHOP]);
+    expect(store.get(SHOP)?.meta?.['ci1']).toEqual({ qty: 5, gold: 150, note: 'чужое' });
+    expect(store.detailOf(SHOP)).toBe('ready');
+  });
+
+  it('keeps a list held whole, its meta and revision, when the re-read rows read fails; the next re-read reads it', async () => {
+    const { cloud, store, list, rows } = await heads();
+    await store.detail([SHOP]);
+    const shop = store.get(SHOP);
+    rows.mockClear();
+    await cloud.lists.apply([{ op: 'update_entry', id: CI1_ROW, patch: { quantity: 5 } }]);
+    rows.mockResolvedValueOnce({ ok: false });
+    await store.refresh();
+    expect(store.get(SHOP)).toBe(shop);
+    expect(store.status).toBe('ready');
+    await store.refresh();
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(rows).toHaveBeenCalledTimes(2);
+    expect(store.get(SHOP)?.meta?.['ci1']).toEqual({ qty: 5, gold: 150 });
+  });
+
+  it('writes meta for the added keys only on a list with heads only, and keeps it absent', async () => {
+    const { store, rows } = await heads();
+    store.add(SHOP, ['w1'], () => true, { w1: { qty: 3 } });
+    expect(store.get(SHOP)?.meta).toEqual({ w1: { qty: 3 } });
+    expect(store.detailOf(SHOP)).toBe('absent');
+    expect(rows).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing for a restore on a list with heads only', async () => {
+    const { store, apply } = await heads();
+    store.removeEntry(SHOP, 'q1');
+    await quiet();
+    apply.mockClear();
+    store.restoreEntry(SHOP, 'q1', 1, { qty: 2 });
+    await quiet();
+    expect(apply).not.toHaveBeenCalled();
+    expect(store.get(SHOP)?.ids).not.toContain('q1');
+  });
+
+  it('reads again for a rows answer older than the head it holds', async () => {
+    const { store, rows, realRows } = await heads();
+    const real = await realRows([SHOP]);
+    if (!real.ok || !real.lists[0]) throw new Error('the read failed');
+    rows.mockResolvedValueOnce({ ok: true, lists: [{ ...real.lists[0], revision: 0 }] });
+    expect(await store.detail([SHOP])).toBe(true);
+    expect(rows).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops a rows answer that clear() overtook, and a clear() during the flush sets nothing', async () => {
+    const { store, rows, apply, real, realRows } = await heads();
+    const held = holdRows(rows, realRows);
+    const reading = store.detail([SHOP]);
+    await settle();
+    store.clear();
+    held.release();
+    expect(await reading).toBe(false);
+    expect(store.lists).toEqual([]);
+    expect(store.detailOf(SHOP)).toBe('absent');
+
+    await store.load();
+    store.rename(SHOP, 'В пути');
+    const flush = holdNext(apply, real);
+    const second = store.detail([SHOP, EMPTY]);
+    await settle();
+    store.clear();
+    flush.release();
+    expect(await second).toBe(false);
+    expect([store.detailOf(SHOP), store.detailOf(EMPTY)]).toEqual(['absent', 'absent']);
+    expect(rows).toHaveBeenCalledOnce();
+  });
+
+  it('drops a list deleted elsewhere while its entries load, and reads the account again', async () => {
+    const { cloud, store, list, rows, realRows } = await heads();
+    const held = holdRows(rows, realRows);
+    const reading = store.detail([TROPHIES]);
+    await settle();
+    await cloud.lists.apply([{ op: 'remove', id: TROPHIES }]);
+    held.release();
+    expect(await reading).toBe(true);
+    await settle();
+    expect(store.get(TROPHIES)).toBeUndefined();
+    expect(store.detailOf(TROPHIES)).toBe('absent');
+    expect(list).toHaveBeenCalledOnce();
+  });
+
+  it('relinks an entry of a list with heads only with one write and no rows read', async () => {
+    const { store, rows, apply } = await heads();
+    expect(store.relinkAs(SHOP, AXE, AXE, uuid(9100))).toBe(true);
+    await quiet();
+    expect(kinds(apply)).toEqual([['relink']]);
+    expect(rows).not.toHaveBeenCalled();
+    expect(store.detailOf(SHOP)).toBe('absent');
+  });
+});
+
 describe('the writers', () => {
   it('is full at the list limit, a list not yet sent counted, and never with no limit known', async () => {
     const none = new CloudLists(fakeCloud(SEED, 'gm1').lists, say, t);
@@ -371,12 +636,10 @@ describe('the writers', () => {
     expect(at.store.full()).toBe(true);
   });
 
-  it("change a list the way the local store's writers change it", async () => {
+  it('changes a list through every writer and sends the result', async () => {
     const { cloud, store } = await loaded();
-    const local = new ListStore(fakeEnv({ storage: memoryStorage() }), say, t);
-    local.lists = [plain(store.get(SHOP)) as StoredList];
     const knows = (id: string): boolean => id !== 'ghost';
-    const steps: [string, (s: CloudLists | ListStore) => unknown][] = [
+    const steps: [string, (s: CloudLists) => unknown][] = [
       [
         'rename',
         (s) => {
@@ -459,15 +722,35 @@ describe('the writers', () => {
       ],
       ['add', (s) => s.add(SHOP, ['q2', 'ci1', 'ghost'], knows, { q2: { qty: 4, hnote: 'h' } })]
     ];
-    for (const [name, run] of steps) {
-      expect(run(store), name).toEqual(run(local));
-      expect(plain(store.get(SHOP)), name).toEqual(local.get(SHOP));
-    }
+    /* Only `move` and `add` answer: a move that happened, a move to the same place, and the
+       ids an add wrote (`ci1` was there, `ghost` is unknown). */
+    const ANSWERS = [
+      ...Array<undefined>(8).fill(undefined),
+      true,
+      false,
+      ...Array<undefined>(5).fill(undefined),
+      ['q2']
+    ];
+    const IDS = [
+      'di11',
+      'q1',
+      'ci1',
+      'q313',
+      'cc1',
+      'voa2_a3',
+      'q23',
+      'w51',
+      'hb_emberaxeaaaaaaaa',
+      'q35',
+      'q2'
+    ];
+    expect(steps.map(([, run]) => run(store))).toEqual(ANSWERS);
+    expect(store.get(SHOP)?.ids).toEqual(IDS);
     await quiet();
     expect(store.sync).toBe('saved');
     const row = await serverList(cloud.lists, SHOP);
     const got = row && toCloudList(row);
-    expect(got?.ids).toEqual(local.get(SHOP)?.ids);
+    expect(got?.ids).toEqual(IDS);
     expect(got?.name).toBe('  Лавка  ');
     expect(got?.note).toBe('Закрыто');
     expect(got?.hnote).toBeUndefined();
@@ -1432,6 +1715,7 @@ describe('the owner topic', () => {
     };
     const store = new CloudLists(cloud.lists, say, t, { events, random: () => 0.5 });
     await store.load();
+    await store.detail(store.lists.map((l) => l.id));
     store.watch(SEED.users.gm1.id);
     await later(COALESCE_MS);
     const real = cloud.lists.apply.bind(cloud.lists);
@@ -1487,6 +1771,19 @@ describe('the owner topic', () => {
     await quiet();
     expect(list).toHaveBeenCalledOnce();
     expect(store.get(SHOP)).toMatchObject({ name: 'Лавка у моста', note: 'моё' });
+  });
+
+  it('keeps an unsent local edit of a field when another device writes the same field', async () => {
+    const { cloud, store, list } = await watching();
+    store.setMeta(SHOP, 'q1', 'note', 'моё');
+    cloud.playEntry(SHOP, 'q1', { player_note: 'чужое' });
+    await later(COALESCE_MS);
+    expect(list).not.toHaveBeenCalled();
+    await quiet();
+    expect(list).toHaveBeenCalledOnce();
+    expect(store.get(SHOP)?.meta?.['q1']?.note).toBe('моё');
+    const row = await serverList(cloud.lists, SHOP);
+    expect(row?.list_entries.find((e) => e.item_key === 'q1')?.player_note).toBe('моё');
   });
 
   it('re-reads only once the request in flight has landed, for a message meanwhile', async () => {
@@ -1590,6 +1887,9 @@ describe('an import', () => {
     expect(statuses).toEqual(['ready']);
     expect(store.status).toBe('ready');
     expect(store.get(made.id)).toBeDefined();
+    /* The import's re-read takes heads; the entries come with the list's own read. */
+    expect(store.detailOf(rows[0]?.list.id ?? '')).toBe('absent');
+    expect(await store.detail([rows[0]?.list.id ?? ''])).toBe(true);
     expect(store.get(rows[0]?.list.id ?? '')?.meta?.['ci1']).toEqual({ qty: 2, gold: 150 });
     expect(store.get(rows[1]?.list.id ?? '')?.ids).toEqual([]);
     expect(said).toEqual([]);
@@ -1728,6 +2028,7 @@ describe('homebrew entries', () => {
       sourceOf
     );
     await store.load();
+    await store.detail(store.lists.map((l) => l.id));
     await settle();
     const apply = vi.spyOn(port.lists, 'apply');
     return { cloud, port, store, apply, items };

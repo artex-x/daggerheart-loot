@@ -7,7 +7,7 @@ on any of the published loot tables, browse them in full, collect what you rolle
 into a list, hand that list to your players as a single link, or print it as
 cards.
 
-**Open it: https://artex-x.github.io/daggerheart-loot/**
+**Open it: https://daggerheart-loot.pages.dev/**
 
 The site installs as an app on a phone or a desktop; the guide is at
 `pages/install.html` (Russian) and `pages/en/install.html` (English), linked
@@ -22,12 +22,12 @@ you reaches a server.
 > **For AI agents.** The app renders on the client, and a list lives in the URL
 > fragment, which never reaches the server: fetching `index.html` gives you an
 > empty page. The readable data is separate -
-> [`catalog-index.csv`](https://artex-x.github.io/daggerheart-loot/catalog-index.csv)
+> [`catalog-index.csv`](https://daggerheart-loot.pages.dev/catalog-index.csv)
 > for selection,
-> [`catalog.csv`](https://artex-x.github.io/daggerheart-loot/catalog.csv) with
-> the text, [`data.json`](https://artex-x.github.io/daggerheart-loot/data.json)
+> [`catalog.csv`](https://daggerheart-loot.pages.dev/catalog.csv) with
+> the text, [`data.json`](https://daggerheart-loot.pages.dev/data.json)
 > for full text, and
-> [`llms.txt`](https://artex-x.github.io/daggerheart-loot/llms.txt) for the URL
+> [`llms.txt`](https://daggerheart-loot.pages.dev/llms.txt) for the URL
 > grammar, the lists import file, and guidance on which set to draw from.
 
 ## Rolling
@@ -64,10 +64,10 @@ descriptions and stat lines, in both languages.
 Sections are addressable, and every heading has a copy-link button:
 
 ```
-#/tables/alt_item            the alternate item table
-#/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
-#/tables/community_items/Seaborne  Seaborne items
-#/tables/other_frames/dark_heart  Frame items: equipment for the Dark Heart setting
+/tables/alt_item            the alternate item table
+/tables/alt_item/rare       the same, at the "Rare - Tier 2-3" block
+/tables/community_items/Seaborne  Seaborne items
+/tables/other_frames/dark_heart  Frame items: equipment for the Dark Heart setting
 ```
 
 Every table has a filter panel; where there is nothing to filter by, there is no
@@ -82,7 +82,7 @@ The selection lives in the address rather than in storage, so a filtered view ca
 be copied straight out of the browser bar:
 
 ```
-#/tables/eq_weapon/f_tier-2.cls-mag
+/tables/eq_weapon/f_tier-2.cls-mag
 ```
 
 ## Lists
@@ -124,40 +124,29 @@ A list, and every entry in it, carries two notes:
 
 | | Goes into |
 |---|---|
-| **For players** | the copied text, **Players' link**, **Your own link** |
-| **GM only** | **Your own link** |
+| **For players** | the copied text, the players' link |
+| **GM only** | the GM's link |
 
-Hence two share buttons. **Players' link** is what you drop in the party chat.
-**Your own link** is a full snapshot including the GM notes, and doubles as a backup
-from which the list can be restored on another device. The address in the browser
-bar is always the Players' link.
+An account list is shared with **Share**, which holds both links.
 
-### The link format
+### Share links
 
-A list needs no server - the whole thing is encoded in the address:
+A share link opens an account list as it is now, read-only:
 
 ```
-https://artex-x.github.io/daggerheart-loot/#/l/0JrQu9Cw0LQg...
+https://daggerheart-loot.pages.dev/s/<token>
 ```
 
-Only the name, the entry ids, any hand-typed quantity and price, and the two
-notes are stored; text and images come from `data.js` at render time, so fixing
-the data fixes every list and link that points at it. The payload starts with the
-entry count and four characters of hash (`3.k7f2~q1,cc21*5*50,q337`), which turns
-a link truncated by a messenger into a "broken link" page rather than a shorter
-list that looks complete. The format is frozen in `docs/specs/CONTRACTS.md`
-section 3 and is backward compatible.
+The token is opaque: only the list's owner makes one, one per audience, and
+**Delete link** ends access through it. Text and images come from `data.js` at
+render time, so fixing the data fixes every list that points at it. An old
+`/l/` link stopped opening on 26 October 2026 and draws the not-found page.
 
 ### Where lists live
 
-**In this browser's `localStorage`, and nowhere else.** There is no server and no
-sync. Clearing site data, a private window or a different browser means no lists.
-To keep one, press **Your own link** and save the address: it restores the list whole,
-both notes included.
-
-Two open tabs do not overwrite each other: a save re-reads storage and merges by
-`id`, a list deleted in one tab is tombstoned for the session, and the `storage`
-event redraws the other tab.
+**In the account.** Sign in, and every list is kept in the account: it saves itself
+and opens on any device. Signed out, the app asks you to sign in where a list would
+be made.
 
 ## Printing
 
@@ -165,8 +154,8 @@ event redraws the other tab.
 of a playing card, so sleeves and card boxes fit. Up to 180 cards, twenty sheets,
 at a time. The button appears wherever a set of records exists: an item page, a
 list, a table selection. Printing needs an account: the press stores the sheet in
-the account and opens its short address `#/p/<id>`, which another signed-in person
-can open. A set is deleted 90 days after it was last opened. Old `#/print/` links
+the account and opens its short address `/p/<id>`, which another signed-in person
+can open. A set is deleted 90 days after it was last opened. Old `/print/` links
 no longer open. An opt-in compact sheet prints sixteen 44x63 mm cards per page, in
 either layout.
 
@@ -196,11 +185,13 @@ badge is not visible.
 
 ## Item links
 
-The link icon beside a name gives a static page with Open Graph markup that
-redirects into the app, so Telegram, Discord and the rest unfold it into a card:
+The link icon beside a name gives the record's address. The site answers it
+with the app and the record's Open Graph card in the page head, so Telegram,
+Discord and the rest unfold it into a card, and an address copied from the
+browser's bar unfolds the same way:
 
 ```
-https://artex-x.github.io/daggerheart-loot/i/ci15.html
+https://daggerheart-loot.pages.dev/i/ci15?v=<version>
 ```
 
 `og/` holds JPEG copies of the artwork for exactly this - some Telegram clients
@@ -227,10 +218,13 @@ release order: Sporopolis `mw1`-`mw20`, Wagerwood `mw21`-`mw40`, Warrin' Warrens
 `mw93`-`mw109`. Hornet Hold and The Drome print no card number, so inside each
 the order is kind, then name.
 
-A homebrew item link, a share link, a print set link and a table link go
-through the preview host `daggerheart-loot.pages.dev`: it shows a card to a
-messenger and sends a person on to the app. A catalog record keeps its `i/`
-stub page. The link families are in `docs/specs/CONTRACTS.md` section 5.
+A homebrew item link, a share link, a print set link and a table link are
+link cards on the same host `daggerheart-loot.pages.dev`: each address answers
+the app with the link's card in the page head, so a messenger shows the card
+and a person stays at the same address. A record link carries `?v=<version>`, which changes with the card,
+so a messenger draws a changed card afresh. The old address
+`https://artex-x.github.io/daggerheart-loot/` forwards here. The link families
+are in `docs/specs/CONTRACTS.md` section 5.
 
 ## What the app remembers
 
@@ -240,11 +234,11 @@ they follow the reader to every device.
 
 | Key | Holds |
 |---|---|
-| `dhloot.lists.v2` | lists with their contents and notes |
 | `dhloot.lang.v1` | interface language |
 | `dhloot.home.v1` | starting section |
 | `dhloot.prefs.v1` | table view (list or grid) and print layout (colour or black and white, standard or compact) |
-| `dhloot.warn.v1` | that the storage warning has been dismissed |
+
+The app no longer reads the list keys an older build left in the browser.
 
 The line is drawn where the interface draws it: **how** a page looks is
 remembered, **what** was asked on it is not. Filters, rarity, community, the
@@ -294,8 +288,8 @@ project: run `npm run build` before serving `dist/` again.
 
 ```
 app/src/lib/         pure logic: roll modes, filters, hash grammar, i18n
-app/src/ports/        browser adapters: storage, clipboard, compression, drag
-app/src/state/        app-wide state (AppState, ListStore)
+app/src/ports/        browser adapters: storage, clipboard, drag, the account cloud
+app/src/state/        app-wide state (AppState, CloudLists)
 app/src/components/   Svelte components
 app/src/styles/       tokens.css and shared styles
 app/index.html        entry document, built into dist/index.html
@@ -305,26 +299,29 @@ img/*.webp            1193 pictures, 640x640, ~35 MB
 img/thumb/*.webp      one 160x160 thumbnail per picture, drawn in rows
 og/*.jpg              the same pictures as JPEG for link previews, ~37 MB
 i/*.html              1459 stub pages per language with Open Graph markup: i/ Russian,
-                      i/en/ English; generated, not committed
+                      i/en/ English; the old host's mirror publishes them, the site
+                      publishes the app with the same card (dist/i/); generated,
+                      not committed
 en/index.html         the English entry document (the site's English preview card),
-                      generated, not committed
+                      the mirror's; the site's is dist/en/; generated, not committed
 pages/src/*.html      the site pages (install guide, privacy, terms), authored, Russian; pages/src/en/ English
 pages/*.html          the site pages, generated from pages/src/, not committed: Russian,
                       and pages/en/ English
-data.json             the same data as plain JSON, for outside readers
+data.json             the same data as plain JSON, for outside readers; generated, not committed
 names.json            catalog names for the preview host; generated, not committed
-catalog.csv           one row per record, with stat lines
+catalog.csv           one row per record, with stat lines; generated, not committed
 catalog-index.csv     catalog.csv without the text, for one fetch; generated, not committed
 llms.txt              what the site is, URL grammar, the lists import file
 schema/import-v1.json the JSON Schema of the lists import file
 robots.txt            crawling allowed, training scrapers excluded
 tools/build.js              rebuilds every derived file
 tools/build-share-pages.js  generates i/, i/en/ and en/ from data.js
-tools/share-card.mjs        the card renderer of the stubs and the preview host
+tools/share-card.mjs        the card renderer of the stubs, the app documents and the preview host
+tools/app-documents.js      writes the record and English-root app documents into dist/
 tools/build-pages.js        generates pages/ from pages/src/
 tools/derived.js            how the derived files are assembled
-tools/tg-preview/           Telegram link-preview refresh; see docs/tg-preview.md
-preview/                    the preview host: link cards for messengers (Cloudflare Pages)
+preview/                    the site host's worker: link cards for messengers (Cloudflare Pages)
+old-host/                   the old address's forwarding root and its unregistering sw.js
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner
 docs/specs/           behaviour and frozen contracts, for maintainers
@@ -332,7 +329,7 @@ docs/fixtures/        golden fixtures the contract suite replays
 ```
 
 `docs/specs/CONTRACTS.md` is the one to read before changing anything public -
-the hash grammar, the list link format, record ids and the generated artefacts
+the hash grammar, record ids and the generated artefacts
 are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 `CLAUDE.md` is the entry point for AI-assisted maintenance.
 
@@ -342,16 +339,14 @@ are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 change to the data, run `node tools/build.js`. `npm run check` runs that
 build itself, immediately before `tests/derived.js` compares the generator
 against its own output - so forgetting to run it by hand costs nothing
-inside that same check. What that check does not catch is a stale *commit*
-(data.js edited and committed without a rebuild): a CI step after
-`npm run check` is what catches that. Artwork and previews are outside that
+inside that same check. Artwork and previews are outside that
 script - they are made from the source files by hand, and `tests/dataint.js`
 checks that both files exist for every record that has a picture.
 
-`i/` itself is not in the repository - only `data.json` and `catalog.csv` are
-committed. On a fresh clone `node tests/run-all.js` runs `node tools/build.js`
-itself when `i/` is missing; running `node tests/derived.js` (or `dataint`,
-`craft`, `stub`) directly needs that build first.
+`i/`, `data.json` and `catalog.csv` are not in the repository. On a fresh
+clone `node tests/run-all.js` runs `node tools/build.js` itself when `i/`,
+`data.json` or `catalog.csv` is missing; running `node tests/derived.js` (or
+`contracts`, `dataint`, `craft`, `stub`) directly needs that build first.
 
 ### Tests
 
@@ -389,7 +384,7 @@ chosen language leaks between suites.
 
 ### Machine readability and search
 
-A fetcher sees an empty page and a list link looks like nonsense, so the data
+A fetcher sees an empty page and a share link carries no list, so the data
 lives separately: `catalog-index.csv` for selection in one fetch, the record
 pages `i/<id>.html` for one record's text, `catalog.csv` for the full table,
 `data.json` for full parsing, `llms.txt` for the URL grammar, the lists

@@ -33,15 +33,17 @@ import {
   eqWord,
   fewNames,
   selCountText,
+  countPiecesText,
   nameOf,
   type StatLabels
 } from './i18n.js';
 import { FRAME_ORDER, frameName } from './frames.js';
 import { REALM_ORDER, realmName } from './realms.js';
 import { TABLE_IDS, type Lang, type Record_, type Section, type TableId } from './types.js';
+import { readLoot } from '../test/loot.js';
 
 const ROOT = join(import.meta.dirname, '..', '..', '..');
-const LOOT = JSON.parse(readFileSync(join(ROOT, 'data.json'), 'utf8')) as Loot;
+const LOOT = readLoot();
 const index = buildIndex(LOOT);
 
 const FIXTURE = JSON.parse(
@@ -161,17 +163,16 @@ describe('the interface words', () => {
     expect(dict('ru').providers).toBe('Способы входа');
   });
 
-  it('names each section by its label, and the lists «Мои списки» from the cutoff', () => {
+  it('names each section by its label, and the lists «Мои списки»', () => {
     for (const lang of ['ru', 'en'] as const) {
       const t = dict(lang);
       for (const [s, key] of Object.entries(SECTION_LABEL) as [Section, keyof typeof t][]) {
-        expect(sectionLabel(s, t, true)).toBe(t[key]);
-        expect(sectionLabel(s, t, false)).toBe(s === 'lists' ? t.menuLists : t[key]);
+        expect(sectionLabel(s, t)).toBe(t[key]);
       }
     }
     expect(Object.keys(SECTION_LABEL)).toHaveLength(12);
-    expect(sectionLabel('lists', dict('ru'), false)).toBe('Мои списки');
-    expect(sectionLabel('lists', dict('en'), true)).toBe('Lists');
+    expect(sectionLabel('lists', dict('ru'))).toBe('Мои списки');
+    expect(sectionLabel('lists', dict('en'))).toBe('My lists');
   });
 
   it('holds no ellipsis character in either language', () => {
@@ -318,6 +319,18 @@ describe('selCountText', () => {
     expect(selCountText(1, 3, 'en', en)).toBe('Selected 1 item · 3 pcs');
     expect(selCountText(4, 9, 'en', en)).toBe('Selected 4 items · 9 pcs');
     expect(selCountText(21, 21, 'en', en)).toBe('Selected 21 items');
+  });
+});
+
+describe('countPiecesText', () => {
+  it('counts the entries in the given plural set and adds the pieces only when they differ', () => {
+    const ru = dict('ru');
+    const en = dict('en');
+    expect(countPiecesText(1, 1, ru.itemsN, 'ru', ru)).toBe('1 позиция');
+    expect(countPiecesText(2, 7, ru.itemsN, 'ru', ru)).toBe('2 позиции · 7 шт.');
+    expect(countPiecesText(100, 9900, ru.itemsN, 'ru', ru)).toBe('100 позиций · 9900 шт.');
+    expect(countPiecesText(2, 7, en.itemsN, 'en', en)).toBe('2 items · 7 pcs');
+    expect(countPiecesText(4, 9, ru.selectedN, 'ru', ru)).toBe(selCountText(4, 9, 'ru', ru));
   });
 });
 
