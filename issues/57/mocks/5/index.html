@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 5 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 5 mock: roller pages and the card face on results</h1>
+      <p class="lead">
+        This page shows the batch 5 mock for the owner to confirm: the two-pane roller, the roll
+        results drawn as the card face, the alternate tables with a critical success, the Many
+        Worlds Tavern realm row, and the owner question on the /roll/std help panel (C38).
+      </p>
+
+      <h2>First-screen rule (plan section 14)</h2>
+      <p class="lead">
+        The top of the primary content below the top of the header, at scroll 0, in px, measured
+        on the rendered mock with the planner's <code>measure.mjs</code>. The assert is 40% of
+        the height (256 at 360x640, 288 at 1180x720); the design target is 240 and 270 (plan
+        review plan-1-3 R2), a margin for the Source Sans 3 line boxes. Measured at scroll 0.
+      </p>
+      <table>
+        <tr>
+          <th>State</th>
+          <th>Primary content</th>
+          <th>360x640 RU</th>
+          <th>360x640 EN</th>
+          <th>1180x720 RU</th>
+          <th>1180x720 EN</th>
+          <th>Assert (40%)</th>
+          <th>Target (240 / 270)</th>
+        </tr>
+        <tr>
+          <td><code>roller (A, labels)</code></td>
+          <td>first roll result</td>
+          <td>325 / 256</td>
+          <td>325 / 256</td>
+          <td>234 / 288</td>
+          <td>234 / 288</td>
+          <td>fail</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-b (B, no labels)</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>234 / 288</td>
+          <td>234 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-narrowed (A)</code></td>
+          <td>first roll result</td>
+          <td>325 / 256</td>
+          <td>325 / 256</td>
+          <td>234 / 288</td>
+          <td>234 / 288</td>
+          <td>fail</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-alt</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>234 / 288</td>
+          <td>234 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-alt-crit</code></td>
+          <td>the critical-success plate</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>234 / 288</td>
+          <td>234 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-wond</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-dread</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-voa</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-dv</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-arazo</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-comm</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+        <tr>
+          <td><code>roller-mwt</code></td>
+          <td>first roll result</td>
+          <td>247 / 256</td>
+          <td>247 / 256</td>
+          <td>231 / 288</td>
+          <td>231 / 288</td>
+          <td>pass</td>
+          <td>missed</td>
+        </tr>
+      </table>
+      <p>
+        All nine roll modes share one layout (M5-5). Eight of them pass the 40% assert at 360 at
+        247 px and miss the 240 px design target by 7 px: the results line «Бросок N» with
+        «Настроить ▾» is a 28 px control row where the earlier heading was a 20 px text line.
+        Variant A of <code>/roll/std</code> (the rarity labels) fails the assert at 325 px; the
+        question above asks the owner. On a critical success the primary content is the critical
+        plate (the roll result). No page of this batch has a user-named H1.
+      </p>
+      <h3>New labels, RU and EN</h3>
+      <table>
+        <tr>
+          <th>RU</th>
+          <th>EN</th>
+          <th>Where</th>
+        </tr>
+        <tr>
+          <td>«Бросок 1» · «Настроить ▾»</td>
+          <td>"Roll 1" · "Set up ▾"</td>
+          <td>the results line, every roll page at 360</td>
+        </tr>
+        <tr>
+          <td>«Настроить · Расходники»</td>
+          <td>"Set up · Consumables"</td>
+          <td>the closed control when the roll is narrowed</td>
+        </tr>
+        <tr>
+          <td>«Редкость» / «Обычная» (выбор)</td>
+          <td>"Rarity" / "Common" (picker)</td>
+          <td>/roll/alt at 360</td>
+        </tr>
+        <tr>
+          <td>«Бросить кости»</td>
+          <td>"Roll the dice"</td>
+          <td>/roll/alt at 360 (1180 keeps «Бросить Кости Дуальности»)</td>
+        </tr>
+        <tr>
+          <td>«Предметы: Обычная», «Расходники: Обычная»</td>
+          <td>"Items: Common", "Consumables: Common"</td>
+          <td>the two table links of a critical success with both kinds on</td>
+        </tr>
+        <tr>
+          <td>«Случайно 1-119» и т. п.</td>
+          <td>"Random 1-119" etc.</td>
+          <td>the supplement modes</td>
+        </tr>
+        <tr>
+          <td>«Раздел» / «Сообщество» / «Мир» (выбор)</td>
+          <td>"Section" / "Community" / "Realm" (picker)</td>
+          <td>/roll/vault_of_ages, community_items, many_worlds_tavern</td>
+        </tr>
+      </table>
+      <h2>Owner questions</h2>
+      <section class="q">
+        <h2>The dice at 360: the rarity labels or the 240 px target (M5-3)</h2>
+        <p class="lead">
+          FEATURES.md "Rolling": each die button names the rarities it covers. With the labels
+          the dice take two rows (3 + 2) and the first result starts at 325 px at 360, past the
+          256 px limit; without them the dice take one row and the first result starts at 247
+          px.
+        </p>
+        <div class="opts">
+          <div class="opt rec">
+            <h4>A: two rows with the rarity labels</h4>
+            <p>
+              The spec label on each die; the first result at 325 px at 360. The first-screen
+              rule gets a named exception for <code>/roll/std</code> at 360.
+            </p>
+            <p>
+              <b>Trade-off:</b> The first result starts at about 51% of a 640 px screen; the
+              compact card still shows its art and name.
+            </p>
+            <p>
+              <b>Why:</b> A GM picks a die by rarity before the roll; the badge on each result
+              names the rarity only after it.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>B: one row, no rarity labels</h4>
+            <p>
+              The dice read 1d12 to 5d12; the rarity shows on each result; the first result at
+              247 px.
+            </p>
+            <p>
+              <b>Trade-off:</b> A spec change (FEATURES.md "Rolling"); the rarity is not visible
+              before the roll at 360.
+            </p>
+          </div>
+        </div>
+        <h3>A: the rarity labels (two rows)</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="roller__360__ru.png"
+              ><img src="roller__360__ru.png" alt="roller, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="roller__360__en.png"
+              ><img src="roller__360__en.png" alt="roller, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="roller__1180__ru.png"
+              ><img src="roller__1180__ru.png" alt="roller, 1180 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="roller__1180__en.png"
+              ><img src="roller__1180__en.png" alt="roller, 1180 px, EN" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>B: one row, no labels</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="roller-b__360__ru.png"
+              ><img src="roller-b__360__ru.png" alt="roller-b, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="roller-b__360__en.png"
+              ><img src="roller-b__360__en.png" alt="roller-b, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="roller-b__1180__ru.png"
+              ><img src="roller-b__1180__ru.png" alt="roller-b, 1180 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="roller-b__1180__en.png"
+              ><img src="roller-b__1180__en.png" alt="roller-b, 1180 px, EN" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+      </section>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="roller">
+        /roll/std, variant A (rarity labels) · <a href="state.html?s=roller">ru</a> ·
+        <a href="state.html?s=roller&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller__360__ru.png"
+            ><img src="roller__360__ru.png" alt="roller, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller__360__en.png"
+            ><img src="roller__360__en.png" alt="roller, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller__1180__ru.png"
+            ><img src="roller__1180__ru.png" alt="roller, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller__1180__en.png"
+            ><img src="roller__1180__en.png" alt="roller, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-b">
+        /roll/std, variant B (no labels) · <a href="state.html?s=roller-b">ru</a> ·
+        <a href="state.html?s=roller-b&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-b__360__ru.png"
+            ><img src="roller-b__360__ru.png" alt="roller-b, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-b__360__en.png"
+            ><img src="roller-b__360__en.png" alt="roller-b, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-b__1180__ru.png"
+            ><img src="roller-b__1180__ru.png" alt="roller-b, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-b__1180__en.png"
+            ><img src="roller-b__1180__en.png" alt="roller-b, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-config">
+        «Настроить» open (360) · <a href="state.html?s=roller-config">ru</a> ·
+        <a href="state.html?s=roller-config&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        Above the results: the manual entry, Источник, Тип, «Скопировать все четыре», the pin
+        and «Где какая редкость» (M5-1, M5-2).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-config__360__ru.png"
+            ><img
+              src="roller-config__360__ru.png"
+              alt="roller-config, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-config__360__en.png"
+            ><img
+              src="roller-config__360__en.png"
+              alt="roller-config, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-config__1180__ru.png"
+            ><img
+              src="roller-config__1180__ru.png"
+              alt="roller-config, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-config__1180__en.png"
+            ><img
+              src="roller-config__1180__en.png"
+              alt="roller-config, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-narrowed">
+        A narrowed roll (consumables only) · <a href="state.html?s=roller-narrowed">ru</a> ·
+        <a href="state.html?s=roller-narrowed&lang=en">en</a>
+      </h3>
+      <p class="lead">The closed control names the choice and is lit (M5-6).</p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-narrowed__360__ru.png"
+            ><img
+              src="roller-narrowed__360__ru.png"
+              alt="roller-narrowed, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-narrowed__360__en.png"
+            ><img
+              src="roller-narrowed__360__en.png"
+              alt="roller-narrowed, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-narrowed__1180__ru.png"
+            ><img
+              src="roller-narrowed__1180__ru.png"
+              alt="roller-narrowed, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-narrowed__1180__en.png"
+            ><img
+              src="roller-narrowed__1180__en.png"
+              alt="roller-narrowed, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-alt">
+        /roll/alt · <a href="state.html?s=roller-alt">ru</a> ·
+        <a href="state.html?s=roller-alt&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-alt__360__ru.png"
+            ><img src="roller-alt__360__ru.png" alt="roller-alt, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-alt__360__en.png"
+            ><img src="roller-alt__360__en.png" alt="roller-alt, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-alt__1180__ru.png"
+            ><img src="roller-alt__1180__ru.png" alt="roller-alt, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-alt__1180__en.png"
+            ><img src="roller-alt__1180__en.png" alt="roller-alt, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-alt-crit">
+        /roll/alt, a critical success · <a href="state.html?s=roller-alt-crit">ru</a> ·
+        <a href="state.html?s=roller-alt-crit&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        Both kinds on: two links, each names its table, and «Поднять до Необычной» (M5-4).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-alt-crit__360__ru.png"
+            ><img
+              src="roller-alt-crit__360__ru.png"
+              alt="roller-alt-crit, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-alt-crit__360__en.png"
+            ><img
+              src="roller-alt-crit__360__en.png"
+              alt="roller-alt-crit, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-alt-crit__1180__ru.png"
+            ><img
+              src="roller-alt-crit__1180__ru.png"
+              alt="roller-alt-crit, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-alt-crit__1180__en.png"
+            ><img
+              src="roller-alt-crit__1180__en.png"
+              alt="roller-alt-crit, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-wond">
+        /roll/wondrous_environments · <a href="state.html?s=roller-wond">ru</a> ·
+        <a href="state.html?s=roller-wond&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-wond__360__ru.png"
+            ><img src="roller-wond__360__ru.png" alt="roller-wond, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-wond__360__en.png"
+            ><img src="roller-wond__360__en.png" alt="roller-wond, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-wond__1180__ru.png"
+            ><img src="roller-wond__1180__ru.png" alt="roller-wond, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-wond__1180__en.png"
+            ><img src="roller-wond__1180__en.png" alt="roller-wond, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-dread">
+        /roll/dread_gm_toolbox · <a href="state.html?s=roller-dread">ru</a> ·
+        <a href="state.html?s=roller-dread&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-dread__360__ru.png"
+            ><img src="roller-dread__360__ru.png" alt="roller-dread, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-dread__360__en.png"
+            ><img src="roller-dread__360__en.png" alt="roller-dread, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-dread__1180__ru.png"
+            ><img
+              src="roller-dread__1180__ru.png"
+              alt="roller-dread, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-dread__1180__en.png"
+            ><img
+              src="roller-dread__1180__en.png"
+              alt="roller-dread, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-voa">
+        /roll/vault_of_ages · <a href="state.html?s=roller-voa">ru</a> ·
+        <a href="state.html?s=roller-voa&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-voa__360__ru.png"
+            ><img src="roller-voa__360__ru.png" alt="roller-voa, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-voa__360__en.png"
+            ><img src="roller-voa__360__en.png" alt="roller-voa, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-voa__1180__ru.png"
+            ><img src="roller-voa__1180__ru.png" alt="roller-voa, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-voa__1180__en.png"
+            ><img src="roller-voa__1180__en.png" alt="roller-voa, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-dv">
+        /roll/dragons_vault · <a href="state.html?s=roller-dv">ru</a> ·
+        <a href="state.html?s=roller-dv&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-dv__360__ru.png"
+            ><img src="roller-dv__360__ru.png" alt="roller-dv, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-dv__360__en.png"
+            ><img src="roller-dv__360__en.png" alt="roller-dv, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-dv__1180__ru.png"
+            ><img src="roller-dv__1180__ru.png" alt="roller-dv, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-dv__1180__en.png"
+            ><img src="roller-dv__1180__en.png" alt="roller-dv, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-arazo">
+        /roll/arazos_artifacts · <a href="state.html?s=roller-arazo">ru</a> ·
+        <a href="state.html?s=roller-arazo&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-arazo__360__ru.png"
+            ><img src="roller-arazo__360__ru.png" alt="roller-arazo, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-arazo__360__en.png"
+            ><img src="roller-arazo__360__en.png" alt="roller-arazo, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-arazo__1180__ru.png"
+            ><img
+              src="roller-arazo__1180__ru.png"
+              alt="roller-arazo, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-arazo__1180__en.png"
+            ><img
+              src="roller-arazo__1180__en.png"
+              alt="roller-arazo, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-comm">
+        /roll/community_items · <a href="state.html?s=roller-comm">ru</a> ·
+        <a href="state.html?s=roller-comm&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-comm__360__ru.png"
+            ><img src="roller-comm__360__ru.png" alt="roller-comm, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-comm__360__en.png"
+            ><img src="roller-comm__360__en.png" alt="roller-comm, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-comm__1180__ru.png"
+            ><img src="roller-comm__1180__ru.png" alt="roller-comm, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-comm__1180__en.png"
+            ><img src="roller-comm__1180__en.png" alt="roller-comm, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-mwt">
+        /roll/many_worlds_tavern · <a href="state.html?s=roller-mwt">ru</a> ·
+        <a href="state.html?s=roller-mwt&lang=en">en</a>
+      </h3>
+      <p class="lead">The result names its realm («Спорополис»), not the book (M5-10).</p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-mwt__360__ru.png"
+            ><img src="roller-mwt__360__ru.png" alt="roller-mwt, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-mwt__360__en.png"
+            ><img src="roller-mwt__360__en.png" alt="roller-mwt, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-mwt__1180__ru.png"
+            ><img src="roller-mwt__1180__ru.png" alt="roller-mwt, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-mwt__1180__en.png"
+            ><img src="roller-mwt__1180__en.png" alt="roller-mwt, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 5 (<code>mocks/5/</code>): the card face on roll results, the two-pane roller.
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          One layout for the nine roll modes (M5-5). At 360: the H1 is visually hidden (the lit
+          mode control names the page); the mode's roll controls (the dice, or a picker beside
+          the roll button); the results line «Бросок N» with «Настроить ▾» at its end (M5-1),
+          which opens the settings above the results; compact result cards (a 96 px art beside
+          the text) under 600 px, the full card face from 600 px (M5-7, owner). At 1180: two
+          panes, every control in the left pane, the pin and the help by the H1.
+        </li>
+        <li>
+          The settings panel holds the manual entry, Источник and Тип (std), the Hope and Fear
+          fields (alt), «Скопировать все четыре», the pin and the help button (M5-2).
+          «Настроить» takes a settings icon, not the filter funnel (M5-9).
+        </li>
+        <li>
+          The rarity moves onto each result card as a badge on /roll/std; the result heading is
+          «Бросок N» on every roll page, with no instruction in it (M5-8).
+        </li>
+        <li>
+          The compact card hides the roll-number badge at 360: the results line names the roll.
+        </li>
+        <li>
+          The mode row of mock 2 at 360 takes 6 px above and below with 40 px chips; the dice
+          and the chips stay above the 24 px target size of WCAG 2.5.8.
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          Variant A keeps the spec label and costs 78 px at 360; variant B meets the 40% rule.
+          The owner chooses (question above).
+        </li>
+        <li>
+          Eight modes miss the 240 px target by 7 px; the assert passes with 9 px to spare.
+        </li>
+        <li>
+          Clarity Rule: the pickers name what they pick («Раздел», «Сообщество», «Мир»,
+          «Редкость») over the value; «Настроить · Расходники» says why the results are
+          narrowed.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 4 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 4 mock: record card, actions, item page, dialog, /h/</h1>
+      <p class="lead">
+        This page shows the batch 4 mock for the owner to confirm: the dossier item page, one
+        action vocabulary with «Ещё» at every width, the record dialog as a bottom sheet with a
+        fixed bar at 360, the /h/ page signed in and signed out, and the error-page pattern.
+      </p>
+
+      <h2>First-screen rule (plan section 14)</h2>
+      <p class="lead">
+        The top of the primary content below the top of the header, at scroll 0, in px, measured
+        on the rendered mock with the planner's <code>measure.mjs</code>. The assert is 40% of
+        the height (256 at 360x640, 288 at 1180x720); the design target is 240 and 270 (plan
+        review plan-1-3 R2), a margin for the Source Sans 3 line boxes. Measured at scroll 0.
+      </p>
+      <table>
+        <tr>
+          <th>State</th>
+          <th>Primary content</th>
+          <th>360x640 RU</th>
+          <th>360x640 EN</th>
+          <th>1180x720 RU</th>
+          <th>1180x720 EN</th>
+          <th>Assert (40%)</th>
+          <th>Target (240 / 270)</th>
+        </tr>
+        <tr>
+          <td><code>item</code></td>
+          <td>the item</td>
+          <td>133 / 256</td>
+          <td>133 / 256</td>
+          <td>85 / 288</td>
+          <td>85 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+        <tr>
+          <td><code>h-item</code></td>
+          <td>the item</td>
+          <td>133 / 256</td>
+          <td>133 / 256</td>
+          <td>85 / 288</td>
+          <td>85 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+      </table>
+      <p>No question for the owner in this batch.</p>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="item">
+        The item page /i/ci1 · <a href="state.html?s=item">ru</a> ·
+        <a href="state.html?s=item&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="item__360__ru.png"
+            ><img src="item__360__ru.png" alt="item, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="item__360__en.png"
+            ><img src="item__360__en.png" alt="item, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="item__1180__ru.png"
+            ><img src="item__1180__ru.png" alt="item, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="item__1180__en.png"
+            ><img src="item__1180__en.png" alt="item, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="item-more">
+        «Ещё» open · <a href="state.html?s=item-more">ru</a> ·
+        <a href="state.html?s=item-more&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 360 a bottom sheet; from 760 px a menu aligned to the button's right edge, inside the
+        window (M4-1).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="item-more__360__ru.png"
+            ><img src="item-more__360__ru.png" alt="item-more, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="item-more__360__en.png"
+            ><img src="item-more__360__en.png" alt="item-more, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="item-more__1180__ru.png"
+            ><img src="item-more__1180__ru.png" alt="item-more, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="item-more__1180__en.png"
+            ><img src="item-more__1180__en.png" alt="item-more, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="item-save-signedout">
+        «Ещё» open, signed out · <a href="state.html?s=item-save-signedout">ru</a> ·
+        <a href="state.html?s=item-save-signedout&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The same label «Сохранить себе» / "Save to My items"; its second line says it signs in
+        first.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="item-save-signedout__360__ru.png"
+            ><img
+              src="item-save-signedout__360__ru.png"
+              alt="item-save-signedout, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="item-save-signedout__360__en.png"
+            ><img
+              src="item-save-signedout__360__en.png"
+              alt="item-save-signedout, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="item-save-signedout__1180__ru.png"
+            ><img
+              src="item-save-signedout__1180__ru.png"
+              alt="item-save-signedout, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="item-save-signedout__1180__en.png"
+            ><img
+              src="item-save-signedout__1180__en.png"
+              alt="item-save-signedout, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="item-dialog">
+        The record dialog · <a href="state.html?s=item-dialog">ru</a> ·
+        <a href="state.html?s=item-dialog&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="item-dialog__360__ru.png"
+            ><img src="item-dialog__360__ru.png" alt="item-dialog, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="item-dialog__360__en.png"
+            ><img src="item-dialog__360__en.png" alt="item-dialog, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="item-dialog__1180__ru.png"
+            ><img src="item-dialog__1180__ru.png" alt="item-dialog, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="item-dialog__1180__en.png"
+            ><img src="item-dialog__1180__en.png" alt="item-dialog, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="item-nope">
+        /i/nope: the error page · <a href="state.html?s=item-nope">ru</a> ·
+        <a href="state.html?s=item-nope&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="item-nope__360__ru.png"
+            ><img src="item-nope__360__ru.png" alt="item-nope, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="item-nope__360__en.png"
+            ><img src="item-nope__360__en.png" alt="item-nope, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="item-nope__1180__ru.png"
+            ><img src="item-nope__1180__ru.png" alt="item-nope, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="item-nope__1180__en.png"
+            ><img src="item-nope__1180__en.png" alt="item-nope, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="own-item">
+        The author's own item /i/&lt;key&gt; · <a href="state.html?s=own-item">ru</a> ·
+        <a href="state.html?s=own-item&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        «Изменить» after «Печать», «показать в таблице», the path «Хоумбрю · Мастерская Ольхи ·
+        Холодное оружие» (FEATURES.md "Records").
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="own-item__360__ru.png"
+            ><img src="own-item__360__ru.png" alt="own-item, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="own-item__360__en.png"
+            ><img src="own-item__360__en.png" alt="own-item, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="own-item__1180__ru.png"
+            ><img src="own-item__1180__ru.png" alt="own-item, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="own-item__1180__en.png"
+            ><img src="own-item__1180__en.png" alt="own-item, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="own-item-failed">
+        /i/&lt;key&gt;: the author's items did not load ·
+        <a href="state.html?s=own-item-failed">ru</a> ·
+        <a href="state.html?s=own-item-failed&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        «Не получилось загрузить ваши предметы» with a primary «Повторить», not «Предмет не
+        найден».
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="own-item-failed__360__ru.png"
+            ><img
+              src="own-item-failed__360__ru.png"
+              alt="own-item-failed, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="own-item-failed__360__en.png"
+            ><img
+              src="own-item-failed__360__en.png"
+              alt="own-item-failed, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="own-item-failed__1180__ru.png"
+            ><img
+              src="own-item-failed__1180__ru.png"
+              alt="own-item-failed, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="own-item-failed__1180__en.png"
+            ><img
+              src="own-item-failed__1180__en.png"
+              alt="own-item-failed, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="h-item">
+        Another player's item /h/&lt;uuid&gt; · <a href="state.html?s=h-item">ru</a> ·
+        <a href="state.html?s=h-item&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        A list of the reader links this item, so «Сохранить себе» carries its relink line as the
+        second line (M4-2).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="h-item__360__ru.png"
+            ><img src="h-item__360__ru.png" alt="h-item, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="h-item__360__en.png"
+            ><img src="h-item__360__en.png" alt="h-item, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="h-item__1180__ru.png"
+            ><img src="h-item__1180__ru.png" alt="h-item, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="h-item__1180__en.png"
+            ><img src="h-item__1180__en.png" alt="h-item, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="h-item-signedout">
+        /h/ signed out · <a href="state.html?s=h-item-signedout">ru</a> ·
+        <a href="state.html?s=h-item-signedout&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="h-item-signedout__360__ru.png"
+            ><img
+              src="h-item-signedout__360__ru.png"
+              alt="h-item-signedout, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="h-item-signedout__360__en.png"
+            ><img
+              src="h-item-signedout__360__en.png"
+              alt="h-item-signedout, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="h-item-signedout__1180__ru.png"
+            ><img
+              src="h-item-signedout__1180__ru.png"
+              alt="h-item-signedout, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="h-item-signedout__1180__en.png"
+            ><img
+              src="h-item-signedout__1180__en.png"
+              alt="h-item-signedout, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="h-item-loading">
+        /h/ loading · <a href="state.html?s=h-item-loading">ru</a> ·
+        <a href="state.html?s=h-item-loading&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="h-item-loading__360__ru.png"
+            ><img
+              src="h-item-loading__360__ru.png"
+              alt="h-item-loading, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="h-item-loading__360__en.png"
+            ><img
+              src="h-item-loading__360__en.png"
+              alt="h-item-loading, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="h-item-loading__1180__ru.png"
+            ><img
+              src="h-item-loading__1180__ru.png"
+              alt="h-item-loading, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="h-item-loading__1180__en.png"
+            ><img
+              src="h-item-loading__1180__en.png"
+              alt="h-item-loading, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="h-item-failed">
+        /h/ failed read · <a href="state.html?s=h-item-failed">ru</a> ·
+        <a href="state.html?s=h-item-failed&lang=en">en</a>
+      </h3>
+      <p class="lead">«Предмет не загрузился» with a primary «Повторить».</p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="h-item-failed__360__ru.png"
+            ><img
+              src="h-item-failed__360__ru.png"
+              alt="h-item-failed, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="h-item-failed__360__en.png"
+            ><img
+              src="h-item-failed__360__en.png"
+              alt="h-item-failed, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="h-item-failed__1180__ru.png"
+            ><img
+              src="h-item-failed__1180__ru.png"
+              alt="h-item-failed, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="h-item-failed__1180__en.png"
+            ><img
+              src="h-item-failed__1180__en.png"
+              alt="h-item-failed, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="pattern-error">
+        The error-page pattern · <a href="state.html?s=pattern-error">ru</a> ·
+        <a href="state.html?s=pattern-error&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="pattern-error__360__ru.png"
+            ><img
+              src="pattern-error__360__ru.png"
+              alt="pattern-error, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="pattern-error__360__en.png"
+            ><img
+              src="pattern-error__360__en.png"
+              alt="pattern-error, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="pattern-error__1180__ru.png"
+            ><img
+              src="pattern-error__1180__ru.png"
+              alt="pattern-error, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="pattern-error__1180__en.png"
+            ><img
+              src="pattern-error__1180__en.png"
+              alt="pattern-error, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 4 (<code>mocks/4/</code>): the action vocabulary and the «Ещё» menu, the record
+          dialog and the bottom sheet with its fixed bar, the error-page pattern.
+        </li>
+        <li>
+          The error-page pattern is applied in batch 7 (print, search) and batch 8 (lists).
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          The item page at 360 is a page: the art on top, the actions after the text, the
+          primary on its own line. R drew the item page at 360 as the dialog's sheet over the
+          tables.
+        </li>
+        <li>
+          The sheet's fixed bar holds «В список» on its own line and «Поделиться» with «Ещё»
+          under it, so no label is cut at 360.
+        </li>
+        <li>
+          Signed out, the menu item reads «Войти и сохранить копию в «Мои предметы»» and its
+          note goes (C19, the clarity inventory); /h/ shows the same words on its button in
+          place of the «Войдите, и копия...» box.
+        </li>
+        <li>
+          The error page shows the path form of the address (<code>/i/nope</code>,
+          <code>/en/i/nope</code>).
+        </li>
+        <li>The catalog behind the dialog at 1180 shows the batch 3 first-screen layout.</li>
+        <li>
+          Review mocks-1: M4-1 - «Ещё» opens as a bottom sheet at 360. M4-2 - one label,
+          «Сохранить себе» / "Save to My items", on every page and in every state (it replaces
+          «Копия в мои предметы» and the signed-out «Войти и сохранить копию...»); «Мои
+          предметы» is capitalised; the relink line is the item's second line when a list of the
+          reader links the item, and the plain note «Копия попадёт в «Хоумбрю» и больше не будет
+          меняться...» goes (owner). M4-3 - the states /h/ loading, /h/ failed read,
+          /i/&lt;key&gt; failed read and the own item with «Изменить» are drawn. Spec change to
+          name in FEATURES.md "Records" (batch 4): the not-found title «Предмет не найден»
+          becomes «Предмета по этому адресу нет» / "No item at this address", which says the
+          cause. M4-4 - the item page, the dialog and the roll cards crop the square art to 4:3
+          on screen; batch 4 names that crop window in DESIGN.md "Shapes".
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          The fixed bar at 360 clipped «Ещё» in the first render; fixed by the two-line bar
+          above.
+        </li>
+        <li>
+          The dossier at 1180 holds the art and the text side by side; the actions sit under the
+          text, the gold primary first (rule 9).
+        </li>
+        <li>
+          Clarity Rule: no note is left beside an action; every action has a text label at every
+          width.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

@@ -5,7 +5,8 @@
 - Task status: in_progress (the second plan review is applied; batch 1 may
   start after its mock step; mock 1 is approved)
 - Last agent: planner (second plan review pass)
-- NEEDS_HUMAN_CONFIRMATION: no
+- NEEDS_HUMAN_CONFIRMATION: yes, for batch P only (QP.1, QP.6, QP.7, QP.8 at mock P);
+  batches 1 and 1b do not wait
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `9112c4ed` (the merge of `main` `c8243ba6`)
 - Pushed: no
@@ -76,8 +77,9 @@
   fontsource package lacks the Cyrillic italic.
 
 ## Blockers
-- None for batch 1. The print audit and its batch after 1b follow in the next
-  planner commit (`context.md` "Print review").
+- None for batch 1. Batch P (print, after 1b; `plan.md` section 15) waits for
+  the owner's answers to QP.1, QP.6, QP.7 and QP.8 at mock P (QP.2-QP.5 answered) (NEEDS_HUMAN_CONFIRMATION for
+  batch P only; recommended options in section 13).
 
 ## Deferred
 - R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a
@@ -97,6 +99,21 @@
 - Screenshot findings: the mocks' first-screen offsets, `plan.md` section 14.
 - Cleanup performed / retained artifacts: `issues/57/mocks/measure.mjs` is
   the measure script (N6); the closeout deletes it with the task directory.
+- Print audit (planner, 2026-10-29): `audit.md`, "Print audit (2026-10-29)",
+  PR1-PR12; evidence in `C:\Users\Ignat\.dhloot\notes\57\print-evidence\`
+  (real Chrome print PDFs and 300 dpi rasters of both sheets, both layouts,
+  RU and EN; the catalog fit measure and three trials; the `/p/` first
+  screen); the scripts in `issues/57/mocks/P/tools/` (absolute paths to this
+  worktree; uncommitted until the orchestrator commits the mocks).
+- Mock P (2026-10-29, owner: drawn now): `issues/57/mocks/P/index.html`, from
+  the pre-batch-1 build of `13ffd5e4` in the detached worktree
+  `C:\Users\Ignat\.dhloot\notes\57\p-build` (node_modules is a junction to the
+  main checkout's; remove the worktree with `git worktree remove` when batch P
+  no longer needs it). PDFs in
+  `C:\Users\Ignat\.dhloot\notes\57\print-evidence\mockp\`. Overpass is not
+  drawn: its two files need the owner's yes to download; `mockp.cjs proposed
+  overpass <out>` adds it once they are in
+  `C:\Users\Ignat\.dhloot\notes\57\fonts\overpass\`.
 - Session end partial progress (if any): none.
 - Durable items written to their homes this batch (file, section): none; the
   rules land with batches 1, 1b, 2 and 10.

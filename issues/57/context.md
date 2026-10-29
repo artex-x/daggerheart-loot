@@ -265,6 +265,73 @@
     "Positioning" paragraph (lists are account lists since R10); `DESIGN.md`
     gets a phone-first rule beside the first-screen rule. Every later mock
     and batch review checks 360x640 first.
+  - Mock round 3 answers, unit B (owner, 2026-10-29, interactive): the
+    `/homebrew` primary marker is the first group head (group heads stay
+    at 360); on `/s/` at 360 «Печать» moves into «Выбрать» (one more step
+    on a phone), it stays on the row at 1180; a 200-character list name is
+    cut to one line at 360; a homebrew filter in force is a lit «Фильтры ·
+    1» at 360; at 50 of 50 lists «Новый список» stays on and explains the
+    limit, the count turns red.
+  - Mock round 3 answers, unit A (owner, 2026-10-29, interactive): the
+    roller's mode-row chips and dice buttons are 40 px tall at 360 (above
+    the WCAG 2.5.8 minimum; the first result reaches the 240 px target);
+    mocks 6, 8 and 9 align to mock 3's list head (search row ending with
+    «Выбрать» at every width, the «Список» / «Сетка» switch its own
+    control) once mock 3 is confirmed. The 1b print well values are
+    checked against Figma node 714-42387 through the owner's own Chrome
+    (Claude in Chrome), where the owner is signed in to Figma.
+  - Mock review answers (owner, 2026-10-29, interactive, `reviews/mocks-1.md`):
+    - M1b-1: the colour print card with no picture prints the light well
+      with the glyph (`#ebe7f0` / `#3a3350` in mock 1b), a named departure
+      from Figma node 714-42387 (which leaves the art area blank). Correct
+      FEATURES "Print" (it says the node draws "an outline per kind") and
+      the mock's claim that option B was exported from the node.
+    - M5-3: the dice at 360 keep their rarity labels, in two rows (3 + 2),
+      with the heading merged (M5-1); measure; if the first result passes
+      256 px, the owner chooses between the labels and the 240 px target.
+    - M5-7: a compact roll result card at 360 (96 px art beside the text);
+      the full card face from 600 px.
+    - M4-2: one label per action on every page and state («Сохранить
+      себе»), «Мои предметы» capitalised, the relink line kept as the menu
+      item's second line. M9-1: on `/lists/<uuid>` «Печать» stays on the
+      action row (the «Выбрать» move is `/s/` only); the inline rename in
+      the `h1` stays.
+  - Print batch answers (owner, 2026-10-29, interactive): mock P is drawn
+    now from the current build with the proposals injected (only the
+    no-picture well waits for 1b). QP.4: rules text 4.0cqw standard
+    (7.1 pt) and 4.6cqw compact (5.7 pt). QP.2: standard card 63.5x88.9
+    mm (nine still fit on A4). QP.3: compact stays 44x63 mm. QP.5: keep
+    the Figma node's left-aligned name and pill tags. QP.1 open: the owner
+    asked which font Daggerheart uses; the Core Set PDF embeds Questa Sans,
+    Questa Slab, Overpass, Eveleth Clean, Capitana (and minor faces) - not
+    known which are on the card pages, nor whether Questa and Eveleth
+    allow self-hosting or carry full Cyrillic. Mock P compares today's
+    stack, Source Sans 3, Overpass (SIL OFL) and Questa or Eveleth only if
+    licence and Cyrillic pass, at real size with fit-ladder results.
+  - Roller dice at 360 (owner, 2026-10-29, interactive): variant A - each
+    die keeps the rarities it covers (two rows, 3 + 2); `/roll/std` at 360
+    is a named exception to the first-screen rule (first result at about
+    325 px); every other roll mode keeps the rule (about 247 px).
+  - Mock round 4 (2026-10-29): units A and B applied `reviews/mocks-1.md`
+    and mock 3's "List head pattern" (no pill row at 360 on any list
+    page). Measured offsets are on each `mocks/<N>/index.html`. Open for
+    the round 2 blind review before batch 2: the `/homebrew` first item
+    row at 255 px (its marker is the first group head, 223 px), several
+    360 states at 241-254 px (inside the limit, past the target).
+  - Mock P answers (owner, 2026-10-29, interactive): QP.1 print face is
+    Source Sans 3 (the Core Set card pages use Questa Sans and Eveleth
+    Clean; both fail self-hosting and Cyrillic; Overpass not compared).
+    QP.6: `/p/` at 360 shows one card per row. QP.7: short switch labels
+    «Цвет» / «Ч/б» and «63×88» / «44×63». QP.8: a card whose picture
+    gives way keeps the ladder order and drops the blank paper band above
+    the text. `plan.md` section 13 still lists QP.1 and QP.6-QP.8 as
+    open; batch P's dispatch refresh marks them answered.
+  - Figma fact (checked 2026-10-29 in the owner's Chrome, view only: the
+    file opened as a signed-out viewer, so no inspect values): on node
+    714-42387 a colour card with no picture («Возвращающийся клинок»,
+    «Скипетр») leaves the art area as blank paper - no outline, no glyph,
+    no tone; the text block keeps its place below it. Hex values need a
+    signed-in inspect.
   - First-screen rule (owner, 2026-10-29, chat): at 360x640 and 1180x720
     each page's primary content (roll results, first table rows, first
     list entry, the item) starts inside the first screen, and the controls
@@ -346,6 +413,11 @@
   decision 2026-10-22 allows a raise to the measured total under 270 / 350.
 - `PrintCard.svelte` sets its text in `var(--ui)`: a `--ui` change reaches
   the print cards unless the card keeps its own token.
+- Print face on this host (2026-10-29, CDP `getPlatformFontsForNode`): Segoe
+  UI; Inter is not installed, so every print figure in `FEATURES.md` holds for
+  Segoe UI only (`audit.md`, "Print audit", PR3).
+- Card text sizes (2026-10-29): 1cqw is 0.622 mm on the 63x88 card and 0.432
+  mm on the 44x63 card; the 3.5cqw rules text is 6.2 pt and 4.3 pt.
 - The detector flags Inter, Lato, Open Sans and Roboto as overused; it does
   not flag Source Sans, PT Sans, IBM Plex Sans, Golos Text or Onest.
 
@@ -365,9 +437,11 @@
   Order (owner, 2026-10-23): every batch, batch 1 included, starts only
   after R10 and `cloudflare-pages` have shipped; the batch 1 dispatch
   refresh re-reads both landings.
-- Contracts: routes, ids, links, asset paths stay. Print layouts (63x88 mm
-  nine per sheet, 44x63 mm sixteen, colour and black-and-white, Figma
-  nodes) are product law: a redesign does not touch them.
+- Contracts: routes, ids, links, asset paths stay. Print (63x88 mm nine per
+  sheet, 44x63 mm sixteen, colour and black-and-white, browser-measured fit)
+  is product law; inside the card, batch P may change fonts, sizes, spacing,
+  art and stat blocks with each Figma departure named for the owner's yes
+  ("Print review" above; `plan.md` section 15).
 - RU/EN parity in every finding and mock; Russian terms from the
   `daggerheart-ru-terms` skill.
 - A new state: an `inventory.js` entry and a re-seeded golden, same change.

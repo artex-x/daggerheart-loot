@@ -1,0 +1,9 @@
+[
+  { "s": "header", "name": "header" },
+  { "s": "mode-long", "name": "mode-long" },
+  { "s": "roll-target", "name": "roll-target" },
+  { "s": "shell-signed-out", "name": "shell-signed-out" },
+  { "s": "shell-account-menu", "name": "shell-account-menu" },
+  { "s": "roller-supmenu", "name": "roller-supmenu" },
+  { "s": "toasts", "name": "toasts" }
+]

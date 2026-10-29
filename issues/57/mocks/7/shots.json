@@ -1,0 +1,38 @@
+[
+  {
+    "s": "search-empty",
+    "name": "search-empty"
+  },
+  {
+    "s": "search-results",
+    "name": "search-results"
+  },
+  {
+    "s": "search-kind",
+    "name": "search-kind"
+  },
+  {
+    "s": "search-nothing",
+    "name": "search-nothing"
+  },
+  {
+    "s": "account-settings",
+    "name": "account-settings"
+  },
+  {
+    "s": "account-delete",
+    "name": "account-delete"
+  },
+  {
+    "s": "print-preview",
+    "name": "print-preview"
+  },
+  {
+    "s": "print-settings",
+    "name": "print-settings"
+  },
+  {
+    "s": "print-nope",
+    "name": "print-nope"
+  }
+]

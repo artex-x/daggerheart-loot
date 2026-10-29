@@ -203,7 +203,7 @@
   function filterGroups(o = {}) {
     const g = (lbl, opts, any = true) =>
       `<div class="fgrp"><span class="lbl">${lbl}</span><div class="opts">${allChip(any)}${opts}</div></div>`;
-    return `${g(t('tier'), ['1', '2', '3', '4'].map((n, i) => chip(n, i === 0)).join('') + chip(t('artifacts')), false)}
+    return `${g(t('tier'), ['1', '2', '3', '4'].map((n, i) => chip(n, o.tier1 && i === 0)).join('') + chip(t('artifacts')), !o.tier1)}
       ${g(t('source'), ['Core', 'Hope & Fear', 'Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages', "The Dragon's Vault", "Arazo's Artifacts", 'Many Worlds Tavern'].map((s) => chip(s)).join(''))}
       ${g(t('cls'), chip(t('phy')) + chip(t('mag')))}
       ${g(
@@ -237,15 +237,22 @@
           `<a href="#" class="chip" ${k === 'gEq' ? 'aria-current="page"' : ''}>${t(k)}</a>`
       )
       .join('');
-    const nf = o.filtered ? 2 : 1;
+    const filt = !!(o.filtered || o.nothing);
+    const nf = filt ? 2 : 0;
     const shown = o.nothing
       ? E('Показано 0 из 458', '0 of 458 shown')
       : o.q
         ? E(`Показано ${ids.length} из 458`, `${ids.length} of 458 shown`)
         : o.filtered
           ? E('Показано 23 из 458', '23 of 458 shown')
-          : t('shown');
-    const pills = `<span class="pill">${t('tier1')}${ic('x')}</span>${o.filtered || o.nothing ? `<span class="pill">${E('Вплотную', 'Melee')}${ic('x')}</span>` : ''}${o.filtered || o.nothing ? btn(t('reset'), { sm: true, cls: 'ghost' }) : ''}`;
+          : '';
+    /* the reset and the filter link (rule 17, M3-1) sit where the filters are
+       set: the filter column head at 1180, the filter sheet head at 360 */
+    const flink = btn(E('Ссылка на фильтры', 'Link to these filters'), {
+      sm: true,
+      cls: 'ghost',
+      i: 'link'
+    });
     const tr = ids
       .map((id, i) => {
         const r = R[id];
@@ -286,12 +293,12 @@
     } else if (o.grid) {
       body = `<div class="ggrid">${grid}</div>`;
     } else {
-      body = `<div class="secth"><h2>${t('tier1')}</h2><span class="count n360">${shown.replace('Показано ', '').replace(' shown', '')}</span>${btn(E('Ссылка на раздел', 'Link to this section'), { sm: true, cls: 'ghost', i: 'link' })}</div>
+      body = `<div class="secth"><h2>${t('tier1')}</h2>${shown ? `<span class="count n360">${shown.replace('Показано ', '').replace(' shown', '')}</span>` : ''}${btn(E('Ссылка на раздел', 'Link to this section'), { sm: true, cls: 'ghost', i: 'link' })}</div>
         <table class="ct"><thead><tr>${o.sel ? '<th></th>' : ''}<th>${t('name')}</th><th>${t('trait')}</th><th>${t('range')}</th><th>${t('dmg')}</th><th>${t('burden')}</th></tr></thead><tbody>${tr}</tbody></table>
         <div class="rows360">${rows}</div>`;
     }
     const selbar = o.sel
-      ? `<div class="selbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><b>${E('Выбрано: 1', '1 selected')}</b>${btn(t('addList'), { sm: true, i: 'plus' })}${btn(E('Скопировать текст', 'Copy text'), { sm: true, i: 'copy' })}${btn(E('Готово', 'Done'), { sm: true, cls: 'ghost' })}</div>`
+      ? `<div class="selbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><b>${E('Выбрано: 1', '1 selected')}</b>${btn(t('addList'), { sm: true, i: 'plus' })}${btn(E('Скопировать текст', 'Copy text'), { sm: true, i: 'copy' })}${btn(E('Снять выделение', 'Clear the selection'), { sm: true, cls: 'ghost' })}</div>`
       : '';
     /* First-screen layout (plan section 14, batch 3; plan review plan-1-3 R3).
        One list head on every list page: the search row ends with «Выбрать»;
@@ -309,9 +316,9 @@
     const picker = `<div class="pickrow n360"><h1 class="picker"><button class="pick" aria-haspopup="dialog" aria-expanded="${!!o.pickerOpen}"><span>${t('tWeapon')}</span>${ic('chev')}</button></h1><span class="n360">${view}</span>${more360}</div>`;
     const main = `<main class="wrap fs">${picker}<div class="headrow w1180">${head}<nav class="groups">${groups}</nav></div>${o.afterHead || ''}
       <nav class="sub w1180">${sub}</nav>
-      <div class="cat"><aside class="panel fside" aria-label="${t('filters')}"><div class="fh"><b>${t('filters')} · ${nf}</b>${btn(t('reset'), { sm: true, cls: 'ghost' })}</div>${filterGroups({ melee: o.filtered || o.nothing })}</aside>
-      <div><div class="fsbar"><label class="field">${ic('search')}<input placeholder="${t('tblSearch')}" value="${o.nothing ? E('кракен', 'kraken') : o.q ? E('меч', 'sword') : ''}"></label>${btn(`${t('filters')} · ${nf}`, { sm: true, cls: 'fbtn', i: 'filter' })}<span class="count w1180">${shown}</span><span class="w1180">${view}</span><span class="w1180">${btn(t('tableLink'), { sm: true, i: 'link' })}</span>${o.sel ? '' : btn(t('select'), { sm: true, i: 'check', cls: 'selbtn' })}</div>${o.filtered || o.nothing ? `<div class="frow n360">${pills}</div>` : ''}${o.underToolbar || ''}
-        ${body}${selbar}</div></div></main>`;
+      <div class="cat"><aside class="panel fside" aria-label="${t('filters')}"><div class="fh"><b>${t('filters')}${nf ? ` · ${nf}` : ''}</b>${nf ? `<span class="wb">${btn(t('reset'), { sm: true, cls: 'ghost' })}${flink}</span>` : ''}</div>${filterGroups({ melee: filt, tier1: filt })}</aside>
+      <div><div class="fsbar"><label class="field">${ic('search')}<input placeholder="${E('Поиск', 'Search')}" value="${o.nothing ? E('кракен', 'kraken') : o.q ? E('меч', 'sword') : ''}"></label>${btn(nf ? `${t('filters')} · ${nf}` : t('filters'), { sm: true, cls: `fbtn ${nf ? 'on' : ''}` })}${shown ? `<span class="count w1180">${shown}</span>` : ''}<span class="w1180">${view}</span><span class="w1180">${btn(t('tableLink'), { sm: true, i: 'link' })}</span>${o.sel ? '' : btn(t('select'), { sm: true, cls: 'selbtn' })}</div>${o.underToolbar || ''}
+        <div class="${o.sel ? 'selon' : ''}">${body}</div>${selbar}</div></div></main>`;
     const pg = rpage({ job: 'tables' }, main);
     if (o.pickerOpen && N) {
       const subChips = [t('tWeapon'), t('tSecondary'), t('tArmor')]
@@ -325,8 +332,8 @@
     }
     if (o.sheet && N) {
       return `<div class="ov">${pg}<div class="scrim"></div><section class="sheet" role="dialog" aria-label="${t('filters')}"><div class="grab"></div>
-        <div class="sh" style="justify-content:space-between;padding:2px 16px 8px"><b style="font-size:18px">${t('filters')} · 1</b>${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>
-        <div class="fbody">${filterGroups()}</div><div class="dock2">${btn(t('reset'))}${btn(E('Показать 91', 'Show 91'), { cls: 'primary' })}</div></section></div>`;
+        <div class="sh" style="justify-content:space-between;padding:2px 16px 8px"><b style="font-size:18px">${t('filters')}${nf ? ` · ${nf}` : ''}</b><span class="wb">${nf ? flink : ''}${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</span></div>
+        <div class="fbody">${filterGroups({ melee: filt, tier1: filt })}</div><div class="dock2">${btn(t('reset'))}${btn(nf ? E('Показать 23', 'Show 23') : E('Показать 458', 'Show 458'), { cls: 'primary' })}</div></section></div>`;
     }
     return pg;
   }
@@ -470,7 +477,9 @@
     /* First-screen layout (plan section 14, batch 7): the H1 and the count
        share one line; at 360 the type chips are one «Вид: все ▾» control
        beside the field. */
-    const count = o.state ? '' : `<span class="count2">${E('Найдено: 3', '3 found')}</span>`;
+    /* no count under the 300 cap: the results on screen are the whole answer
+       (FEATURES.md "Tables and search"; mocks-1 M7-2) */
+    const count = '';
     const kinds = [
       t('all'),
       t('items'),
@@ -803,7 +812,7 @@
     const sign = `<section class="panel setp"><h2>${E('Вход', 'Sign-in')}</h2>
       <div class="setr"><span><b>Google</b> · gm1@example.test <span class="badge">${E('сейчас', 'now')}</span></span>${btn(E('Отключить', 'Disconnect'), { sm: true })}</div>
       <div class="setr"><span><b>Discord</b> · gm1.discord@example.test</span>${btn(E('Отключить', 'Disconnect'), { sm: true })}</div></section>`;
-    const data = `<section class="panel setp"><h2>${E('Ваши данные', 'Your data')}</h2><p style="margin:0;font-size:15px;color:var(--muted)">${E('Списки и свои предметы одним архивом ZIP, без картинок.', 'Your lists and items in one ZIP, without pictures.')}</p><div>${btn(E('Скачать мои данные (ZIP)', 'Download my data (ZIP)'), { i: 'copy' })}</div></section>`;
+    const data = `<section class="panel setp"><h2>${E('Ваши данные', 'Your data')}</h2><p style="margin:0;font-size:15px;color:var(--muted)">${E('Списки и свои предметы одним архивом ZIP, без картинок.', 'Your lists and items in one ZIP, without pictures.')}</p><div><button class="btn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>${E('Скачать мои данные (ZIP)', 'Download my data (ZIP)')}</button></div></section>`;
     const out = `<section class="panel setp"><h2>${E('Выход', 'Sign-out')}</h2><div class="wb">${btn(t('signOut'))}${btn(E('Выйти на всех устройствах', 'Sign out on every device'))}</div></section>`;
     const del = `<section class="panel setp"><h2>${E('Удаление аккаунта', 'Delete the account')}</h2><div>${btn(E('Удалить аккаунт', 'Delete the account'), { cls: 'danger' })}</div></section>`;
     const main = `<main class="wrap">${pageHead(t('account'), { pin: false, help: false })}<div class="acc"><div class="col">${disp}${data}</div><div class="col">${sign}${out}${del}</div></div></main>`;
@@ -837,7 +846,7 @@
     const main = `<main class="wrap pfs"><div class="phead"><a class="back" href="#">← ${E('Назад', 'Back')}</a><h1>${E('Печать карточек', 'Print cards')}</h1></div><div class="lead2 w1180" style="margin:4px 0 12px">${lead}</div>
       <div class="prow">${btn(E('Напечатать', 'Print'), { cls: 'primary', i: 'print' })}<span class="w1180">${colour}</span><span class="w1180">${size}</span><span class="w1180">${link}</span>${set360}</div>
       <div class="count2 w1180">${hint}</div>
-      <img class="sheetimg" src="../shared/print-sheet-twocards.png" alt="${E('Лист A4 с двумя карточками', 'An A4 sheet with two cards')}"><div class="n360 punder"><div class="lead2">${lead}</div><div class="count2">${hint}</div></div></main>`;
+      <img class="sheetimg w1180" src="../shared/print-sheet-twocards.png" alt="${E('Лист A4 с двумя карточками', 'An A4 sheet with two cards')}"><div class="n360 pcards">${btn(E('Весь лист', 'Whole sheet'), { sm: true })}<img src="../shared/printcard-ci1${LANG === 'en' ? '-en' : ''}.png" alt="${E('Первоклассный Спальный Мешок', 'Premium Bedroll')}"><img src="../shared/printcard-q1${LANG === 'en' ? '-en' : ''}.png" alt="${E('Палаш', 'Broadsword')}"></div><div class="n360 punder"><div class="lead2">${lead}</div><div class="count2">${hint}</div></div></main>`;
     return rpage({ job: null, signedIn: true }, main);
   }
 

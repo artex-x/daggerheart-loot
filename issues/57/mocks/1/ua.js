@@ -66,12 +66,12 @@
       opts.pin === false
         ? ''
         : opts.pinned
-          ? `<button class="btn sm pressed" aria-pressed="true">${FI('check')}${E('Открывается при запуске', 'Opens on start')}</button>`
-          : `<button class="btn sm" aria-pressed="false">${ic('home')}${E('Открывать при запуске', 'Open on start')}</button>`;
+          ? `<button class="btn sm pressed pinb" aria-pressed="true">${FI('check')}${E('Открывается при запуске', 'Opens on start')}</button>`
+          : `<button class="btn sm pinb" aria-pressed="false">${ic('home')}${E('Открывать при запуске', 'Open on start')}</button>`;
     const help =
       opts.help === false
         ? ''
-        : `<button class="btn sm ghost ${opts.helpOpen ? 'open' : ''}" aria-expanded="${!!opts.helpOpen}">${ic('help')}${opts.helpLabel || t('help')}${opts.helpOpen ? ic('chev') : ''}</button>`;
+        : `<button class="btn sm ghost helpb ${opts.helpOpen ? 'open' : ''}" aria-expanded="${!!opts.helpOpen}">${ic('help')}${opts.helpLabel || t('help')}${opts.helpOpen ? ic('chev') : ''}</button>`;
     return `<div class="ph"><h1>${title}</h1>${pin}${help}</div>`;
   };
 

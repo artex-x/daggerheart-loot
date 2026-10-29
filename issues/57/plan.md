@@ -10,11 +10,20 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: eleven batches (1, 1b, 2-10; section 7). Batch 1 is implement-ready after its
-  mock step (section 10). Batches 1b and 2-10 are outlines; each one's refresh
+- Phase 3: twelve batches (1, 1b, P, 2-10; section 7). Batch 1 is implement-ready after its
+  mock step (section 10). Batches 1b, P and 2-10 are outlines; each one's refresh
   expands it.
 - Mocks: every batch mock from 1 to 9 is drawn ahead (section 9); the owner
-  confirms each one before its implementer starts.
+  confirms each one before its implementer starts. Mock P is drawn (2026-10-29,
+  owner) from the pre-batch-1 build; its no-picture well follows mock 1b.
+- Print review (owner, 2026-10-29, `context.md` "Print review", "Print feel"):
+  the print audit is `audit.md`, "Print audit (2026-10-29)"; batch P (section
+  15) follows 1b and takes the `/p/` page rows C29, C30 and C31 from batch 7.
+  Batch P fires no plan-review trigger: it changes no public contract
+  (`card/*.svg` stay published as they are; a card size change is a
+  `FEATURES.md` product rule, not a `CONTRACTS.md` one), no stored data or
+  key and no write protocol. If mock P makes it delete or rename a `card/`
+  file, its refresh writes a `required` line before P.
 - Plan review: required before 1 (trigger: public contract changes in batch 1b - the no-picture asset paths of CONTRACTS.md - and in batch 2 - routes.json tab, llms.txt)
 - Plan review findings applied: reviews/plan-1-3.md
   - B1, sections 7 (batch 1b) and 8: the README pair 1193 to 1192 with the `tests/derived.js` comment, the two `COVERAGE.md` rows, the `set-longsrc1` inventory `why` and its golden header, the `tools/artwork/lib.mjs` comments; the 1b gates add `app/states`, `derived` and both lints; row 1b gains 5 min.
@@ -74,9 +83,10 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   (batch 9), the position field and drag grip kept (batch 9), one page ground
   (section 10), R's `.rl.sel` side-tab not built (batch 3), three labelled
   controls in the item sheet bar (batch 4).
-- NEEDS_HUMAN_CONFIRMATION: no - every section 13 question is answered
-  (owner, 2026-10-29), Q1b.1 included ("Print answers"). The print review
-  (`context.md` "Print review") adds its batch after 1b in a separate pass.
+- NEEDS_HUMAN_CONFIRMATION: yes, for batch P only - QP.1, QP.6, QP.7 and QP.8 (section 13)
+  are asked at mock P, each with a recommendation; batches 1 and 1b do not
+  wait for them. Every other section 13 question is answered (owner,
+  2026-10-29), Q1b.1 included ("Print answers").
 
 Earlier plan review: `reviews/plan-1.md` (fix-then-continue) was applied to
 the plan of 2026-10-23 (`git show 69f2178:issues/57/plan.md` and the commit
@@ -144,9 +154,14 @@ Theme decisions (from `audit.md`, "Systemic themes"):
 - In scope: every row of `audit.md` (section 7 places each), every UI/UX
   entry of `docs/specs/DEBT.md` (section 6), every Impeccable exception
   (section 5), both languages, 360 to 1600 px, the two site share cards.
-- Not in scope: print card layouts and sheets (product law), except the art
-  area of a colour card with no picture, which batch 1b changes with the
-  owner's yes (2026-10-29); new features
+- Print: the sheet counts, the colour and black-and-white split and the
+  browser-measured fit stay (product law). Inside the card, batch 1b changes
+  the art area of a colour card with no picture, and batch P changes fonts,
+  type sizes, spacing, art and stat blocks, each departure from the Figma
+  nodes named for the owner's yes (owner, 2026-10-29, "Print review"; this
+  replaces "print layouts stay" for task 57 only). The card sizes stay unless
+  the owner says yes to a named proposal at mock P (QP.2, QP.3).
+- Not in scope: new features
   (so no counts in the account menu, R3); the per-item `og/<id>.jpg` (art
   only); the wording of the frozen `schema/*.json` files (`CONTRACTS.md`
   section 4: "the frozen schemas' descriptions keep their published
@@ -188,7 +203,8 @@ Inter from `tools/artwork/fonts/`.
 Loading: `@fontsource-variable/source-sans-3` (owner, 2026-10-23), woff2
 from the build's own origin, `font-display: swap`, no font service. The family
 name comes from the installed package CSS (expected `'Source Sans 3
-Variable'`). Print keeps today's stack through `--print-ui` The share cards
+Variable'`). Print keeps today's stack through `--print-ui` in batches 1 and
+1b; batch P decides the print face at its mock (QP.1, section 15). The share cards
 take static Source Sans 3 TTF faces in `tools/artwork/fonts/` (fontconfig
 renders TTF; Q1).
 
@@ -232,6 +248,7 @@ that writes its rule; a row with no rule is a local fix in its batch
 | The art well and the kind glyph ("Cards") | 1 (screen), 1b (print, the placeholder files gone; "Signature component: the print card") | theme 7: C55, C11, A10, A38 (the pedestal leaves rows; owner, 2026-10-29: the pedestal file goes too) |
 | The First-Screen Rule ("Layout"): primary content starts within 40% of the height at 360x640 and 1180x720 | 1 (rule and check), each batch for its routes | owner, 2026-10-29; section 14 |
 | The Phone-First Rule ("Layout"): the player surfaces (the shared list, the list page, the item, search, `/lists`) are designed at 360x640 first; the GM surfaces (the roller, the tables, homebrew, print) keep both widths and pass the First-Screen Rule on a phone | 1 | owner, 2026-10-29, "Devices during play" |
+| The print card: the paper floors, the rules-text base and grow rungs, the print face, the list marker ("Signature component: the print card"), and "Overview" no longer claiming an identical print on every machine until it is true | P | `audit.md` "Print audit" PR1-PR7; section 15 |
 | Navigation: three jobs, the mode row, the account control, the wordmark «Лут» / «Loot» (replaces "never translated"); The Two Breakpoints Rule takes the measured header | 2 | theme 4: C6, C27, C48, C52, A28, A35, A36, A37, P9, D10, D11 |
 | The Same Label Rule: a label does not change with the width; the pin and «Справка» are labelled | 2 | theme 3: C27, A36, C37, A27 |
 | Toast: its fill, its place over a fixed bar | 2 | C34, C47, A15 |
@@ -316,12 +333,13 @@ EN, from `npm run build:test`, into `issues/57/mocks/<N>/built/`.
 |---|---|---|---|---|---|
 | 1 | Foundation: font, ten-step ramp, tokens, neutral pressed default, badges, footer links, art well and kind glyph, share cards, clarity rule | C2 (type), C9, C11, C28, C33, C50, C55, C64, A10, A26, A39, N5, E1, E3 | all of `R/*` for type; `R/catalog` («Все»), `R/homebrew-items` (glyph); the share cards are new | none: the type, the ramp and the glyph are R's own; the share cards are new pictures | a review that cannot be held in one pass: it moves the text metrics of every route; layout work on top would hide its regressions |
 | 1b | No-picture placeholder retired: the kind glyph on the colour print card, the three placeholder files deleted, every reader moved, the link card of a no-picture record | C55 (print), A38 (owner, 2026-10-29) | the colour print card of a no-picture record (new); the link card of a no-picture item | none: mock 1's glyph is approved; mock 1b draws the print card and the link card | a public contract change (`CONTRACTS.md` asset paths) and a print change (product law), with its own gates (`app/print`, `contracts,dataint`, the preview Worker and deploy tooling) and a review frame apart from batch 1's type sweep; it needs a batch review |
+| P | Print: the card's rules-text base, floors and markers, the print face and its fit, the line pitch, the card size if the owner says yes; the `/p/` page (bar, switches, notes, the preview at 360, the first screen) | PR1-PR10, PR12 (`audit.md`, "Print audit"), C29, C30, C31 (from batch 7) | `R/print-preview` (screen); the print card has no R state, so mock P draws it at print resolution | 1b: mock P draws the light well as the owner confirmed it at mock 1b | split from 1b by 1b's public contract change (`CONTRACTS.md` asset paths), which P does not carry. Merged into P: the `/p/` rows of batch 7, because they share `PrintPage.svelte`, its seed sets and the `app/print` gate (`CLAUDE.md`, "merge work that shares a component, seed and filter") |
 | 2 | Shell: header, three jobs with icons, the mode row and the supplements menu, the account control, the wordmark, the pin and «Справка» labels, the toast; the American-spelling sweep across the repository (owner: no batch 2b) | C6, C27, C34 (verify), C37, C47, C48, C52, A15 (verify), A27 (icons), A35, A36, A37, P7, P9, D9, D10, D11, N4, D121 | `R/header`, `R/shell-*`, `R/roller-supmenu` | none: R draws the header; the refresh adds the request toast and `/en/` | public contract changes (`routes.json` `tab`, `llms.txt`) and public spec changes (`ROUTES.md`, `FEATURES.md` "Chrome", `I18N.md`); it needs a batch review (contracts, `.claude/hooks/`, prompts and agents changed) |
 | 3 | Catalog tables and filters | C1 (panel renamed «Об этих данных»), C2 («Все»), C3, C4, C5, C7, C8, C10, C12 (verify), C53, C54, C56, C57, C58, C59, A25, A40 (tables), P1, P13, P14, P15 | `R/catalog`, `R/catalog-*`, `R/pattern-empty` | none | a different route and filter set (`/tables/*`) |
 | 4 | Record card, actions, item page, dialog, `/h/` | C17, C18, C19, C20, C21, C22, C40, C44 (verify), C45, C46, C63 (artefact, close), A23, A24, P4, P5, P6 | `R/item`, `R/item-dialog`, `R/item-nope`, `R/item-save-signedout`, `R/h-item`, `R/pattern-error` | none | a different component group and route (`/i/`, `/h/`, the dialog) |
 | 5 | Roller pages and the card face on results | C23, C24, C25, C26, C36, C38 (panel renamed «Где какая редкость»), C39, C41, C43, C49, P10, P11, N2 | `R/roller`, `R/roller-alt-crit`, `R/roller-mwt` | none: the mode row in the mock is R's; batch 2 ships it | a different route and filter set (`/roll/*`) |
 | 6 | Homebrew editor, homebrew pages and imports (old 5 + 6, owner merge) | A6, A7, A8, A9 (verify), A11 (artefact, close), A12, A13, A27 (panel removed, Q6.1), A28, A29, A30, A38, A40 (homebrew), D5, D14 (verify), D15, D16, editor clarity rows | `R/editor*`, `R/homebrew-*` | none: the refresh adds the Items-tab filter strip of `f74eae09` to `R/homebrew-items` | a different route and filter set (`/homebrew`, `/homebrew/<id>`) |
-| 7 | Search, account, print preview, empty and error states | C13, C14, C15, C16, C29, C30, C31, C32, C60, A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/print-preview`, `R/pattern-*` | none | different routes (`/search`, `/account`, `/p/`, the error pages) |
+| 7 | Search, account, empty and error states | C13, C14, C15, C16, C32, C60, A31, A32, A33, A34, D7, D8 (verify) | `R/search-*`, `R/account-*`, `R/pattern-*` | none | different routes (`/search`, `/account`, the error pages) |
 | 8 | Lists page `/lists`, list cards, lists import, add-to-list menu | A14, A16, A18, C35, C61, C62, D6, D20, D116 | `R/lists-*`, `R/item-listmenu` | none | a different route and filter set (`/lists`, and the add-to-list menu that the item pages open) |
 | 9 | Account list page `/lists/<uuid>` and shared list page `/s/<token>` (old 9a + 10, owner merge) | A1, A2, A3, A4, A5, A19, A20, A21, A22, A40 (list rows, `/s/`), A41, A42, D2, N1, E2 (the drop mark), E4, list clarity rows | `R/list`, `R/list-*`, `R/shared-*` | none | a review that cannot be held in one pass is accepted by the owner's merge; split from 8 by a different route and filter set |
 | 10 | Lock: DESIGN.md "Notes", detector at zero, `design.json`, re-audit, closeout | E5, E6, E8, E9 (record), E7, E11, N3 (rest), every row re-checked | none | no mock | docs and closeout, unless the re-audit finds a defect |
@@ -480,6 +498,27 @@ Batch 1b (owner, 2026-10-29, "Mock answers"; mock step: `mocks/1b/`):
 - States: a no-picture record and a broken picture on the colour print sheet
   (nine and sixteen per page), in the editor's print preview, and its link
   card in RU and EN.
+
+Batch P (owner, 2026-10-29, "Print review" and "Print feel"; outline and
+acceptance in section 15; mock step `mocks/P/`):
+
+- The print audit rows PR1-PR10 and PR12 (`audit.md`, "Print audit
+  (2026-10-29)"), each with its outcome.
+- C29 (from batch 7): the print bar holds fewer rows; the A4, orientation and
+  margin sentence goes (`@page` sets them); at most the background-graphics
+  hint stays, under the sheet.
+- C30 (from batch 7): the screen preview at 360 can be read (section 15, "The
+  `/p/` page").
+- C31 (from batch 7, Q3.2 answered): the print switches are a choice for the
+  visit in their own controls, with no `KeepNote` under the print bar.
+- The `/p/` row of `FIRST_SCREEN` moves from logged to asserted at 360x640 and
+  1180x720, RU and EN (section 14).
+- Each departure from the Figma nodes `714-42387` and `3773-90792` that the
+  owner said yes to at mock P is named in `FEATURES.md` "Print" with the date.
+- The lines of "Each of batches 2-9" below apply to batch P too (new states,
+  the owner's mock notes, `polish` and `harden`, the detector, American
+  spelling in new prose, `FIRST_SCREEN`, the screenshot set, here at print
+  resolution in `issues/57/mocks/P/built/`).
 
 Batch 2:
 
@@ -652,8 +691,9 @@ Batch 3:
   button reads «Об этих данных» / "About this data" (plan review R3).
 - Q3.2 (owner): the grid/table view choice is temporary, lives in its own
   control for the visit and carries no note («Только до перезагрузки...»
-  goes); it covers the `/p/` compact-sheet note (C31) too, which batch 7
-  applies.
+  goes); it covers the `/p/` compact-sheet note (C31) too, which batch P applies
+  first (`KeepNote` then serves the tables toolbar until this batch removes
+  it there).
 - New states: the filter sheet open at 360 (its height with the on-screen
   keyboard open) and the selection mode («Выбрать»).
 - P15: the grid name order is checked in EN.
@@ -706,17 +746,15 @@ Batch 6:
 
 Batch 7:
 
-- The batch 3 C57 decision is applied to the `/p/` compact-sheet note (C31).
+- The `/p/` page rows (C29, C30, C31) and its first-screen row moved to
+  batch P (same component, seed sets and gate).
 - The batch 4 error-page pattern is applied to `/i/nope`, `/h/` gone and the
   other error pages.
 - Clarity inventory, account: the settings scope sentence, the notify
   question, the ZIP manual (A33) and the «Выйти везде» note become labels that
   say it (plan review N11).
-- C30, the print preview at 360: the sheet stays scaled to about 313 px and
-  its cards are unreadable. Print layouts are product law, so only the screen
-  preview may change. Open screen-only question for the batch 7 refresh
-  (mock unit A, 2026-10-29); the refresh names the options and asks the
-  owner at mock 7.
+- The error-page pattern reaches the `/p/` not-found and retired-link pages
+  (`print-nope` in `mocks/7/`); batch P leaves their wording to this batch.
 
 Batch 8:
 
@@ -836,13 +874,15 @@ code batch.
 | 1 | `node tests/run-all.js app/print,app/typo,app/hues,stub,app/states` (about 9; `app/states` with the new first-screen case), `npm run check:built` (about 1), `npm run lint:untyped`, `npm run lint:typed`, `node --test tools/artwork/lib.test.mjs` (the `test:artwork` stage) (about 2), `node tools/artwork/cards.mjs --check` (about 1) | 13 |
 | 2 | `node tests/run-all.js contracts,dataint` and `app/contracts` (6-7); `npm run check:built` (1); `node tools/build.js` and `node tools/decisions.js` (1); `npm run lint:untyped` and `npm run lint:typed` (2, comments in `.mjs` and `.ts` files); `derived` (about 1); the hook selftest once on its own after the hook edits (434-563 s: 7-9.5; plan review B3); `npm run check:db` for the `tests/db/` comments (about 13); the longer review of the spelling diff in its fix cycle (about 5-10); the goldens: every golden moves (the header, `footSummary`), so the batch takes CI's golden text (CI credit), or pays the four shards locally (4 x 3-4 = 12-16) | 36-61 |
 | 1b | `node tests/run-all.js app/print,app/states,contracts,dataint,derived,stub` (12-14), `npm run check:built` (1), `npm run lint:untyped` and `npm run lint:typed` (2), `node --test preview/worker.test.mjs tools/check-site.test.mjs tools/artwork/lib.test.mjs` (1); CI runs deploy-replay (about 2-3 inside the CI run) | 15-17 |
+| P | `node tests/run-all.js app/print,app/states,stub` (6-8); `npm run check:built` (1); the catalog fit measure for the `FEATURES.md` figures (`issues/57/mocks/P/tools/print-measure.cjs` and `print-analyse.cjs`, RU and EN, four layouts, about 12); the print-resolution screenshot set (about 5); the batch review of the Figma departures in its fix cycle (about 5) | 25-30 |
 | 3-9 | `npm run check:built` where `dist` assets change (1) | 1 each |
 | 10 | docs only: one `check:fast` and one docs-only CI run (no `e2e`) | about 20 in all |
 
-Total: ten code batches (1, 1b, 2-9) at 45-60 min (450-600), plus 71-98 min
-of extra gates (batch 1: 13; batch 1b: 15-17; batch 2: 36-61; batches 3-9: 7),
-plus batch 10 at about 20: about 541-718 min, so about 9.0-12.0 hours of
-gates. If batch 10 takes code, add 25-35 min. The owner's merges saved two
+Total: eleven code batches (1, 1b, P, 2-9) at 45-60 min (495-660), plus
+96-128 min of extra gates (batch 1: 13; batch 1b: 15-17; batch P: 25-30;
+batch 2: 36-61; batches 3-9: 7), plus batch 10 at about 20: about 611-808
+min, so about 10.2-13.5 hours of gates. Batch P adds 70-90 min; taking the
+`/p/` rows from batch 7 saves that batch no gate (its `check:built` stays). If batch 10 takes code, add 25-35 min. The owner's merges saved two
 batches (about 90-120 min); keeping the spelling sweep in batch 2 instead of a
 batch 2b saves one CI run and one review (about 30 min); batch 1b costs one
 batch (45-72 min) because its contract and print change splits from batch 1.
@@ -901,6 +941,9 @@ Plan review additions to the units (the orchestrator sends them):
   glyph (plan review R1); the mock step writes the node's paper and ink
   values into the batch 1b line; the black-and-white card stays as it is
   (Q1b.1 answered). Mock depends on: none (mock 1's glyph is approved).
+- Mock P (section 15, "Mock spec"): drawn on 2026-10-29 from the pre-batch-1
+  build (owner); the no-picture well follows mock 1b. It replaces
+  `mocks/7/print-preview` for the `/p/` page.
 - Every mock step measures with `issues/57/mocks/measure.mjs` (plan review
   N6).
 - Mock-unit follow-ups (2026-10-29): unit B's folders 6, 8 and 9 use the
@@ -916,7 +959,7 @@ Plan review additions to the units (the orchestrator sends them):
 | A (catalog side) | `mocks/1/`, `mocks/2/`, `mocks/3/`, `mocks/4/`, `mocks/5/`, `mocks/7/` | 1: both share cards (1200x630, RU and EN; no width set), a type and pressed-default specimen, the glyph on a card, a row, a tile, a list cover and the editor thumbnail. 2: `header`, `shell-signed-out`, `shell-account-menu`, `roller-supmenu`, the request toast with the (N) title. 3: `catalog`, `catalog-filtered`, `catalog-filters`, `catalog-grid`, `catalog-nothing`, `catalog-selection`, `pattern-empty`, and the help panel question. 4: `item`, `item-dialog`, `item-nope`, `item-save-signedout`, `h-item`, `pattern-error`. 5: `roller`, `roller-alt-crit`, `roller-mwt`, and the help panel question. 7: `search-empty`, `search-nothing`, `search-results`, `account-settings`, `account-delete`, `print-preview` | about 2 cards + 30 states x 4 = 122 | 2-3 hours |
 | B (account side) | `mocks/6/`, `mocks/8/`, `mocks/9/` | 6: `editor`, `editor-errors`, `editor-crop`, `editor-conflict`, `homebrew-items` (with the filter strip), `homebrew-sources`, `homebrew-sets`, `homebrew-rules`, `homebrew-import`, and the help panel question. 8: `lists-index`, `lists-nope`, `lists-import`, `item-listmenu`. 9: `list`, `list-note`, `list-picked`, `list-prices`, `list-prices-none`, `list-prices-panel`, `list-requests`, `list-roll`, `list-selected`, `list-share`, `list-sold`, `shared-gm`, `shared-player` | 26 states x 4 = 104 | 2-3 hours |
 
-Order to show them to the owner: 1, 1b, 2, 3, 4, 5, 6, 7, 8, 9 - batch order,
+Order to show them to the owner: 1, 1b, P, 2, 3, 4, 5, 6, 7, 8, 9 - batch order,
 because each earlier mock fixes a rule that later ones reuse (the type and the
 gold budget in 1, the header in 2, the row and the selection mode in 3, the
 action vocabulary and the dialog in 4). Unit A's folders arrive first in that
@@ -1323,7 +1366,7 @@ Standing checks for batch 1:
    pressed `Seg` (a component case only; `aria-pressed` is unchanged, so no
    inventory state); batch 2, the «Дополнения ▾» menu and the account menu
    with its chevron and its lit state; batch 3, the neutral pressed `Chip`
-   («Все»), the filter sheet and the selection mode; batch 4, the «Ещё» menu and the bottom sheet; batch 8, the
+   («Все»), the filter sheet and the selection mode; batch 4, the «Ещё» menu and the bottom sheet; batch P, the `/p/` «Ещё» menu and the one-card-per-row preview at 360 (QP.6); batch 8, the
    add-to-list menu; batch 9, the note switch, the list «Ещё» menu and the
    `/s/` selection mode.
 
@@ -1341,9 +1384,16 @@ Standing checks for batch 1:
   filter set adds a batch.
 - Risk: the task branch lives for ten batches before one squash; each dispatch
   merges `main` first.
-- Deferred: a print font change (owner's yes, own batch); the link-preview
+- Deferred: the link-preview
   Worker's card images (`tools/share-card.mjs`); a Golos Text trial; the EN
   `<title>`, manifest name and `en/index.html` wordmark.
+- Risk: batch P moves every print measurement that `tests/app/print.js` and
+  `FEATURES.md` "Print" pin; with QP.2 the sheet geometry moves too. Its
+  refresh lists each pinned figure with its new value from the catalog
+  measure, and its batch review reads the figures against the PDFs.
+- Risk: a self-hosted print face makes the fit depend on a font load (QP.1);
+  the fit after `document.fonts.ready` and the waiting print button are the
+  guard, and an offline tab prints in the fallback with its clip count.
 - Risk: batch 2 is now the widest diff (the shell code plus the spelling sweep
   over about 530 files); its refresh orders the review (the shell code first,
   then the contract set, then the prose) and keeps the goldens to CI's text.
@@ -1392,8 +1442,46 @@ review answers" and "Mock answers"):
   the dark well (batch 1b).
 - Q1.1 confirmed: today's share card text, with "armor".
 
-Open for the batch 7 refresh: C30, the print preview at 360 (screen only;
-section 7, batch 7).
+Batch P (`mocks/P/index.html`; batches 1 and 1b do not wait):
+
+- Answered (owner, 2026-10-29, `context.md` "Print batch answers"): QP.2 the
+  standard card is 63.5 x 88.9 mm (nine on A4, 7.75 mm side and 13.15 mm top
+  and bottom margins); QP.3 the compact card stays 44 x 63 mm (sleeves, mock
+  P: it fits Mini European sleeves with about 5 mm spare in length, not Mini
+  American ones); QP.4 the rules text starts at 4.0cqw standard (7.1 pt) and
+  4.6cqw compact (5.7 pt); QP.5 the Figma node's left-aligned name and pill
+  tags stay.
+- QP.1 - The print face. Open. The card pages of the Core Set PDF (PDF pages
+  27 and 330) embed Questa Sans Light, Bold and Light Italic for the text and
+  Eveleth Clean Regular for the name and the banner. Questa Sans fails: only
+  its Regular cut is free, a self-hosted web licence is bought from The Questa
+  Project, and no official listing shows Cyrillic. Eveleth Clean fails:
+  commercial, no Cyrillic listed. Overpass passes (SIL OFL, Cyrillic since
+  2021) but is not on the card pages, and its files need the owner's yes to
+  download. Recommended: Source Sans 3, the humanist face closest to Questa
+  Sans among the free candidates and the UI face of batch 1, so a sheet prints
+  the same on every machine. Measured over the catalog at the proposed sizes
+  (RU, standard colour): today's stack 11 cards below the base, art median 63%, 10 without art, 11 names on three lines; Source Sans 3 10, 66%, 10, 4. Trade-off: the sheet fits again when the
+  face has loaded, and a tab offline with no cached face prints in the
+  fallback. Alternatives: today's stack; Overpass after its download.
+- QP.6 - The `/p/` preview at 360 (C30, screen only). Open. Recommended: one
+  card per row at the column width, «Лист N из M» / "Sheet N of M" before each
+  later sheet; print output does not change. Trade-off: a phone does not show
+  the 3 x 3 arrangement. Alternative: today's scaled sheet (cards 94 px wide).
+- QP.7 - The print switch labels. Open. Recommended: «Цвет» / «Ч/б» and
+  «63×88» / «44×63» (EN "Colour" / "B&W", "63×88" / "44×63"), on `/p/`, in the
+  editor's print view and in the account defaults (rule 4): both switches fit
+  one row at 360, so the first card starts at 248 px (limit 256). Alternative:
+  today's labels, two rows at 360, about 44 px lower, past the limit.
+- QP.8 - Colour cards whose picture gives way. Open. With the larger text the
+  longest colour texts hide the picture: in Source Sans 3, 10 RU and 1 EN standard cards, 17 RU and 8 EN compact cards. Today 2 RU standard and
+  3 RU compact cards do so and keep a blank paper band where the art padding
+  was. Recommended (drawn in mock P): keep the ladder order, and a card whose
+  picture gives way drops that band (the padding takes the black-and-white
+  5.8cqw) and fits its text again from the base in the whole card. Reason: the
+  players read the text at the table; the card prints no empty band.
+  Alternative: an art floor of a quarter of the card, with those cards' text
+  smaller (towards the 2.6cqw floor).
 
 Settled, not asked again: the batch 9 merge is 9a + 10 (section 7, the
 evidence); the shell is batch 2 (foundations first); D121 is batch 2 and D116
@@ -1493,7 +1581,7 @@ RU / EN; limit 256 at 640 and 288 at 720):
 | 6 / `editor` | first form field | fail at the margin, 264 / 264 | pass, 220 / 220 | The back link joins the H1 row as a breadcrumb. About 234. (6) |
 | 7 / `search-results` | first result | fail, 343 / 343 | pass, 254 / 254 | At 360 the H1 and the count share one line, and the type chips become one «Вид: все ▾» / "Kind: all ▾" control beside the field (a menu of the five). About 225. (7) |
 | 7 / `account-settings` | first settings panel | pass, 177 / 177 | pass, 129 / 129 | - (7) |
-| 7 / `print-preview` | the sheet | fail, 455 / 409 | pass, 267 / 267 | At 360 «Назад» and the H1 share one row; the primary «Отправить на печать» and one «Настройки листа ▾» / "Sheet settings ▾" (colour or black-and-white, the sheet size, the link) share the next; the lead and the background-graphics hint go under the sheet. About 221. Screen only (C30). (7) |
+| 7 / `print-preview` (moves to `mocks/P/`) | the sheet | fail, 455 / 409 | pass, 267 / 267 | Mock 7 drew «Назад» and the H1 on one row, then the primary «Отправить на печать» and one «Настройки листа ▾» / "Sheet settings ▾" menu; batch P keeps the two switches visible instead (Q3.2, plan review R3) and moves «Ссылка на набор» into «Ещё»; the lead and the background-graphics hint go under the sheet; at 360 one card per row (QP.6). Re-measured at mock P against the 240 / 270 target. Today's built page: 529 / 529 at 360, 350 / 350 at 1180 (`audit.md`, PR4). (P) |
 | 8 / `lists-index` | first list card | fail, 469 / 469 | fail, 343 / 343 | «Новый список» becomes a primary button in the head row that opens the name field in place (rule 8: «Новый <noun>» opens a create form); «Импорт из файла» goes into «Ещё»; the collection head holds the count and «Выбрать» / "Select" (R3). About 211 at 360, 155 at 1180. (8) |
 | 9 / `list` | first entry | fail, 514 / 514 | pass, 159 / 159 | At 360 the side column becomes a head: the name, «Поделиться» and «Ещё» (Печать, notes, delete) on one row, the meta line, one row with «Бросить по списку» / "Roll from the list"; the entries' head holds the count and «Выбрать» (R3); the price switch and the list notes move under the entries. About 256 before the R3 places, at the limit; re-folded at mock 9 to the 240 target (R2). (9) |
 | 9 / `shared-player` | first entry | fail, 413 / 413 | pass, 287 / 287 | At 360 «Копия в мои списки» / "Copy to my lists" keeps its own row; the entries' head holds the count and «Выбрать» (R3); the player note becomes a «Заметка для игроков ▾» / "Note for players ▾" link on the lead line that opens it in place. About 247 before the R3 places; re-measured at mock 9 against the 240 target. At 1180 it passes by 1 px; the same fold gives margin. (9) |
@@ -1502,9 +1590,223 @@ The estimates are sums of the mocks' own row heights and gaps; each batch
 mock re-renders with its fix and is measured again before the owner sees it.
 The re-renders that follow from this table: `mocks/3/` (`catalog` and its
 states), `mocks/5/` (`roller`), `mocks/6/` (`homebrew-items`, `editor`),
-`mocks/7/` (`search-results`, `print-preview`), `mocks/8/` (`lists-index`),
+`mocks/7/` (`search-results`), `mocks/P/` (`print-preview`), `mocks/8/` (`lists-index`),
 `mocks/9/` (`list`, `shared-player`).
 
 FIRST_SCREEN batches: roll pages 5 (the header part 2), tables 3, item 4,
-search, account and print 7, homebrew and the editor 6, `/lists` 8,
+search and account 7, print P, homebrew and the editor 6, `/lists` 8,
 `/lists/<uuid>` and `/s/` 9.
+
+## 15. Batch P - Print (outline)
+
+Owner, 2026-10-29 (`context.md`, "Print review" and "Print feel"): a print
+audit, then a print mock the owner confirms, then this batch after 1b with
+the print checks. The product law holds: nine cards on A4 or sixteen on the
+compact sheet, colour and black-and-white as two layouts, the fit measured in
+the browser. Inside the card, fonts, type sizes, spacing, art and stat blocks
+may change; each departure from the Figma nodes is named for the owner's yes.
+The cards keep the feeling of Daggerheart cards; the Core Set PDF is a style
+reference only (hierarchy, type feel, banners, stat blocks, density), and
+nothing from it enters the repository or a mock.
+
+Owner answers (2026-10-29, `context.md` "Print batch answers"): QP.2 the
+standard card is 63.5 x 88.9 mm; QP.3 the compact card stays 44 x 63 mm;
+QP.4 the rules text starts at 4.0cqw on the standard card (7.1 pt) and at
+4.6cqw on the compact card (5.7 pt); QP.5 the Figma node's left-aligned name
+and pill tags stay. Mock P is drawn now from the pre-batch-1 build; only the
+no-picture well waits for batch 1b.
+
+Open design question: QP.1 (the print face), QP.6 (the `/p/` preview at
+360), QP.7 (short print switch labels) and QP.8 (cards whose art gives way),
+section 13, asked at mock P (`issues/57/mocks/P/index.html`).
+
+Findings (`audit.md`, "Print audit (2026-10-29)"): PR1 (compact colour text
+4.3 pt), PR2 (standard colour text 6.2 pt under the reference's 7 pt, art 66%
+against 49%), PR3 (the print face depends on the machine), PR4 (`/p/` fails
+the First-Screen Rule; C29, C30), PR5 (the tier word at 4 pt), PR6 (list
+markers), PR7 (line pitch, verify), PR8 (art on long texts: keep the ladder
+order), PR9 (card size), PR10 (the name and tags: keep), PR12 (the bar notes;
+C29, C31). PR11 is batch 1b's.
+
+What may change, by part of the card (recommended options):
+
+| Part | Today | Proposed | Departure from the Figma nodes |
+|---|---|---|---|
+| Face | `var(--ui)`, the reader's installed face (Segoe UI on this host) | Source Sans 3, the self-hosted UI face; `--print-ui` goes and the card reads `--ui` again (one token, no near-duplicate), QP.1 | yes: the nodes are set in their own face; named |
+| Rules-text base | 3.5cqw on both sheets (6.2 / 4.3 pt) | 4.0cqw standard (7.1 pt), 4.6cqw compact (5.7 pt) (owner, QP.4); black and white grows from the same base to today's 5cqw cap | yes: the node's text size; named |
+| Ladder | 3.5 to 3.0cqw, the padding 23 to 8cqw (colour) or 5.8 to 3cqw (black and white), then to 2.6cqw | unchanged below the base: base to 3.0cqw, the padding, then to 2.6cqw | no |
+| Paper floors | labels 4.5 pt, values 5 pt, the tier word 4 pt | the tier word takes the 4.5 pt label floor (PR5); the others stay; the named compact shortfalls are re-measured in the new face | yes for the tier word; named |
+| List marker | the default disc (a speck at 6.2 pt) | an en dash in black (mock P), PR6 | no: the node has no list |
+| Line pitch | PR7: measured in mock P, the line pitch is even (10.41 px on `voa2_a3`); each list item adds the 1 px `li` margin, and the jitter in the 300 dpi rasters is raster rounding (32.5 device px a line) | unchanged; PR7 closes with no code change | no |
+| Art | the square art region; the text takes what it needs, the art the rest; a card whose art gives way keeps a blank band of paper at the top | the ladder order stays; a colour card whose art gives way drops the band (padding 5.8cqw) and fits its text again from the base (QP.8, recommended, drawn in mock P) | no: the node has no card without art |
+| Name and tags | left, 5.8cqw 900 capitals; pill tags | unchanged (owner, QP.5) | no |
+| Card size | 63 x 88 and 44 x 63 mm | 63.5 x 88.9 on A4 with 7.75 mm side and 13.15 mm top margins (owner, QP.2); 44 x 63 kept (owner, QP.3) | yes for 63.5 x 88.9; named |
+| Black and white | top-aligned, no art block, text grows to 5cqw | unchanged apart from the base, the face and the floors (owner, Q1b.1) | no |
+
+The fit with a self-hosted face (QP.1): `fit()` runs synchronously after
+render and never awaits a font. With Source Sans 3 the sheet fits again when
+the face has loaded: `PrintPage.svelte` (and `PrintPreview.svelte`) re-run the
+fit of every card once `document.fonts.ready` settles after the page opens,
+and `/p/` preloads the face. «Отправить на печать» / "Print" waits for that
+fit (disabled with its existing busy state until then). The browser suite
+waits for the fit as it waits for the sheet today. A tab opened offline with
+no cached face fits and prints in the fallback; the clip count says what it
+cuts, as today.
+
+The `/p/` page (C29, C30, C31, PR4, PR12; the First-Screen Rule):
+
+- Primary content: the first sheet (or, at 360 with QP.6, the first card).
+  Design target 240 px at 640 and 270 px at 720 (section 14); today 529 and
+  350.
+- The bar (mock P): «Назад» / "Back" and the H1 on one row; the two switches
+  stay visible controls for the visit (Q3.2, plan review R3), never inside a
+  menu, on one row with short labels (QP.7: «Цвет» / «Ч/б», «63×88» /
+  «44×63»; EN "Colour" / "B&W"); at 1180 the primary «Отправить на печать» /
+  "Send to printer" leads that row and «Ещё» / "More" (holding «Ссылка на
+  набор») ends it; at 360 the primary and «Ещё» sit in a fixed bottom bar,
+  as the item sheet's (batch 4). The sub line (cards, sheets, size) moves
+  under the sheets, and each sheet from the second has «Лист N из M» /
+  "Sheet N of M" above it (at 1180 every sheet). `mocks/7/`'s «Настройки
+  листа ▾» menu is not built, because it hides the temporary choice.
+- First screen, measured in mock P (`mocks/P/first-screen.jsonl`): today the
+  sheet starts at 529 px at 360x640 and at 350 px at 1180x720 (RU and EN);
+  proposed, 248 at 360 (limit 256, 8 over the 240 target) and 271 at 1180
+  (limit 288, 1 over the 270 target). The batch reaches the target by the
+  page's top padding or the batch 2 header, and names the outcome.
+- The A4, orientation and margin sentence goes (`@page` sets them); the
+  background-graphics hint moves under the sheet. `KeepNote` leaves the print
+  bar (C31); the switches show the visit's choice themselves.
+- At 360 (QP.6, recommended): one card per row at the column width, with «Лист
+  N из M» / "Sheet N of M" between sheets; print media and every width from
+  600 px draw the sheets as today.
+- The not-found and retired-link pages keep their wording for batch 7's
+  error pattern.
+
+Mock spec (`issues/57/mocks/P/`; drawn on 2026-10-29, owner; the refresh
+shows it again only where batch 1b or the owner's answers change it):
+
+- Source: the pre-batch-1 build of `13ffd5e4` in a detached worktree outside
+  the checkout (`C:UsersIgnat.dhloot
+otes/p-build`, its own server),
+  never the task worktree's `dist-test/` while an implementer runs there.
+  Proposed renders inject a stylesheet (the card size, the face, the tier
+  floor, the marker) and a port of `fit()` that starts at the base
+  (`mocks/P/tools/mockp.cjs`); no app code changes. The `/p/` page is a DOM
+  rearrangement of the built page (`mockp-page.cjs`). The no-picture card
+  shows today's placeholder until mock 1b's light well is drawn in. Each render is the real print
+  output: Chrome's PDF under print media (`printBackground`, the CSS page
+  size), rasterised at 300 dpi with `pdftoppm`, plus single cards cropped at
+  real size.
+- States, current beside proposed: both sheets (nine at 63 x 88, sixteen at
+  44 x 63), colour and black-and-white, RU and EN: 8 sheet pairs. Sets: the
+  audit's nine and sixteen (short and long text, a physical, a magic, a
+  two-strip and an artifact weapon, armour, loot, a consumable, a long name,
+  the no-picture homebrew on the light well, the long-text homebrew that
+  clips). With QP.2: the 63.5 x 88.9 sheet beside 63 x 88. With QP.3's
+  alternative: one 44 x 68 sheet.
+- The face (QP.1): today's stack (Segoe UI on this host) beside Source Sans 3
+  and Overpass (when its files are on the host) at real size, on the same
+  cards, with the catalog measure for each (`mockp.cjs`, `mockp-analyse.cjs`): cards at the base, shrunk, at
+  the padding rung, at the floor, clipped; the art median and p10; the names
+  on three lines; the smallest rendered text and where; both languages, all
+  four layouts.
+- The `/p/` page at 360x640 and 1180x720, RU and EN, today beside proposed,
+  measured with `issues/57/mocks/measure.mjs` against the 240 and 270 px
+  target; the QP.6 options at 360.
+- The reference check: the `index.html` names the Core Set PDF pages used
+  (PDF page 27, printed page 26; PDF page 330, printed page 329) and states,
+  for each proposal, the hierarchy, the type feel, the density and the
+  proportion of art to text against them in words and numbers. It shows no
+  page, art, frame, icon or text from the book.
+- `index.html`: the open questions (QP.1, QP.6, QP.7, QP.8) first, each with the recommendation,
+  the trade-off and the PNGs that show it; then the list of Figma departures
+  for the owner's yes; the Impeccable `critique` outcome with the Clarity
+  Rule; the First-Screen offsets. The owner is told to print one A4 page of
+  each sheet at 100% scale for the real-size check (the PDFs are in the
+  folder).
+
+Files expected (outline; the refresh names every edit): `PrintCard.svelte`
+(the face, the base and grow start per sheet, the tier floor, the marker, the
+line pitch); `PrintPage.svelte` and `PrintPreview.svelte` (the fit after the
+face loads, the bar, the notes, the 360 preview); `PrintSwitches.svelte` if
+the switches change form; `KeepNote.svelte` callers; `tokens.css` (the
+`--print-ui` token goes with QP.1); `app/src/lib/print.ts` (`sheetScale` and
+the sheet geometry with QP.2); `dict.ts` (the bar sentence, the subtitle with
+QP.2, «Лист N из M», the switch labels with QP.7; both languages);
+`AccountPage.svelte` (the default switches take the QP.7 labels); `FEATURES.md` "Print" (every figure and
+each departure with its date); DESIGN.md "Signature component: the print
+card" and "Overview" (the identical-print sentence becomes true); a
+`docs/decisions/` file that amends the 2026-09-23 decisions ("Print card small
+text ..." and "The compact sheet ..."), then `node tools/decisions.js`;
+`tests/app/print.js` (the measured figures, the face wait, the geometry with
+QP.2, the marker and pitch checks); `printPage.test.ts`; `tests/app/states.js`
+(the `/p/` `FIRST_SCREEN` row asserted); the `/p/` inventory states and their
+goldens (the bar's text moves; CI's golden text or the shard).
+
+Acceptance (outline; each a line of the expanded batch):
+
+- Each of PR1-PR10 and PR12 has its outcome: fixed as the owner chose at mock
+  P, or kept with the owner's answer.
+- C29, C30 and C31 (from batch 7) are fixed as section 7, "Batch P" states.
+- The catalog measure, run on the built batch in both languages and all four
+  layouts, gives the figures that `FEATURES.md` "Print" states, and the
+  handoff records them.
+- No catalog card is clipped; the smallest rendered text is at its floor or a
+  named shortfall.
+- The print card is set in the face the owner chose, on every machine the
+  suite runs on, and the fit runs after the face has loaded.
+- The `/p/` row of `FIRST_SCREEN` is asserted and passes at 360x640 and
+  1180x720, RU and EN.
+- `FEATURES.md` "Print" names each Figma departure with its date; DESIGN.md
+  and the decision file match.
+- `tests/app/print.js` passes; `card/*.svg` are unchanged (`CONTRACTS.md`
+  section 5).
+
+Standing checks:
+
+1. Scale. States:
+
+   | State | Shows | Proof |
+   |---|---|---|
+   | empty set, one card, nine, sixteen, 180 (the cap), 181 pressed (the refusal toast) | the sheets, or the "nothing to print" page; the cap toast unchanged | `tests/app/print.js` (`MAX`), `printPage.test.ts` |
+   | the longest rules text (`voa2_a3`, 847 RU characters) and the clipping fixture | the ladder from the new base; the clip count names the fixture | print suite, catalog measure |
+   | the longest names (`cm26`, `f60`, `hi62`, `ci81`, with ` ×99`) | at most three lines (`FEATURES.md` cap) | `nameLines` in the print suite |
+   | a no-picture record and a broken picture | the light well with the glyph (batch 1b) | print suite |
+   | `/p/` at 360 and at 1180, RU and EN | the first sheet or card inside the first screen | `FIRST_SCREEN`, `sweep.js 360` and `1180` |
+
+   No collection or cap changes. At 360 the primary action «Отправить на
+   печать» is first in the row under the head; no sticky region grows.
+2. Error scenarios: the face fails to load - the fallback face, the fit of the
+   fallback, the clip count as today; a failed set read, a deleted homebrew
+   card, an expired set - unchanged pages and notes (`FEATURES.md` "Print");
+   offline - the cached face or the fallback; a stale tab - the old bundle
+   prints with its old sizes; a revert - the previous card returns, nothing
+   is stored (the switches are visit memory, the defaults in
+   `dhloot.prefs.v1` keep their shape). No stored data or key changes.
+3. Consistency: rule 9 (the primary action first) on the bar; rule 19 (the
+   warning box) for the clip note; the temporary choice where it is made
+   (Q3.2); one name for the print action across the pick row, the selection
+   bar and the list toolbar (rule 4), unchanged. Departures: the compact card
+   is no longer the standard card at 70% (QP.4), named.
+4. RU/EN parity: every changed string in both languages with the same facts
+   (the subtitle, «Лист N из M» / "Sheet N of M", the bar's labels); the
+   catalog measure runs in both languages; the EN `printColor` is "Color"
+   after batch 2's spelling sweep, and batch P, which ships before batch 2,
+   keeps the batch 1 string.
+
+Gates: `rtk npm run check:fast`; `node tests/run-all.js
+app/print,app/states,stub`; `npm run check:built`; the catalog measure;
+push and CI credit; a batch review (the Figma departures, the print figures).
+Cost: section 8, row P.
+
+Risks and do-nots:
+
+- Do not change the sheet counts, the colour and black-and-white split or
+  the browser-measured fit (product law).
+- Do not copy anything from the Core Set PDF into the repository or a mock.
+- Do not delete, rename or re-export a `card/*.svg` (`CONTRACTS.md` section
+  5); a new vector is an addition with its own file.
+- `tests/app/print.js` pins many measured values; change each to the new
+  measurement with its reason, never loosen a check to pass.
+- The editor's print preview (batch 6's surface) follows the card
+  automatically; batch P checks it renders the same card and fit.

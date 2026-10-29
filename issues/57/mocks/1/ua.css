@@ -882,3 +882,406 @@ main.fs {
   display: block;
   width: 40%;
 }
+
+/* ---------- batch 3: the list head pattern, final (mocks-1 review M3-*) ---------- */
+/* a ticked row: a lit ground and the check, no side stripe (M3-6) */
+.rl.sel {
+  box-shadow: none;
+  background: rgb(255 255 255 / 5%);
+}
+/* the selection bar sits at the bottom; the list keeps room under its last
+   row so the bar never covers it (M3-5, C12) */
+.selon {
+  padding-bottom: 64px;
+}
+.selbar {
+  bottom: 12px;
+}
+/* «Фильтры · N» is lit while a filter holds a value (DESIGN.md "Toggle") */
+.fsbar .fbtn.on {
+  border-color: rgb(var(--gold-rgb) / 45%);
+  color: var(--gold-soft);
+}
+.fside .fh .wb {
+  gap: 2px;
+}
+.fside .fh .wb .btn {
+  padding: 0 6px;
+}
+@media (max-width: 760px) {
+  .fs .fsbar .fbtn,
+  .fs .fsbar .selbtn {
+    padding: 0 9px;
+  }
+  .fs .frow.n360 {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+/* ---------- batch 5: one layout for the nine roll modes (mocks-1 M5-*) ---------- */
+.rfs .reshead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rfs .reshead h2 {
+  margin-right: auto;
+}
+.rfs .hand2.one {
+  grid-template-columns: minmax(0, 380px);
+}
+.rfs .rrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rfs .pickb {
+  justify-content: space-between;
+}
+.rfs .pickb .pk {
+  color: var(--muted);
+  font-weight: 400;
+}
+.rfs .cfgbtn.on {
+  border-color: rgb(var(--gold-rgb) / 45%);
+  color: var(--gold-soft);
+}
+.rfs .rarseg button {
+  padding: 6px 10px;
+}
+@media (max-width: 760px) {
+  .rfs .dice.two3 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .rfs .dice.two3 .die {
+    grid-column: span 2;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    min-height: 50px;
+    padding: 4px 2px;
+  }
+  .rfs .dice.two3 .die:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+  .rfs .dice.two3 .die .r {
+    display: block;
+    font-size: var(--t-label);
+    line-height: 1.2;
+    text-align: center;
+  }
+  .rfs .dice.two3 .die .d {
+    font-size: 15px;
+  }
+  .rfs .reshead {
+    margin: 2px 0 8px;
+  }
+  .rfs .reshead h2 {
+    font-size: var(--t-title);
+    font-weight: 700;
+    color: var(--txt);
+    line-height: 1.2;
+  }
+  .rfs .rrow > * {
+    flex: 1 1 auto;
+  }
+  .rfs .cfgbody {
+    display: grid !important;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .rfs .rarseg {
+    border-radius: var(--r);
+  }
+  .rfs .ctrl > .btn.primary {
+    width: 100%;
+  }
+}
+/* the compact result card under 600 px: a 96 px art beside the text (M5-7) */
+@media (max-width: 600px) {
+  .rfs .scard {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0 12px;
+    padding: 10px;
+    align-items: start;
+  }
+  .rfs .scard .art,
+  .rfs .dealt .scard .art {
+    width: 96px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rfs .scard .body {
+    margin-top: 0;
+    padding: 0;
+    gap: 4px;
+  }
+  .rfs .scard .rno {
+    display: none;
+  }
+  .rfs .scard .nm {
+    font-size: var(--t-control);
+  }
+  .rfs .cardacts {
+    margin-top: 6px;
+  }
+  .rfs .hand2 {
+    gap: 10px;
+  }
+}
+/* the pickers of the roll pages: the name over the value, one 40 px control */
+.rfs .pickb {
+  min-height: 40px;
+  padding: 2px 10px 2px 12px;
+  text-align: left;
+}
+.rfs .pkv {
+  display: grid;
+  line-height: 1.15;
+}
+.rfs .pickb .pk {
+  font-size: var(--t-label);
+  color: var(--muted2);
+  font-weight: 600;
+}
+.rfs .pickb .pv {
+  font-size: var(--t-control);
+}
+@media (max-width: 760px) {
+  main.rfs {
+    padding-top: 0;
+  }
+  .rfs .two {
+    gap: 0;
+  }
+  .rfs .ctrl {
+    margin-top: 6px;
+  }
+  .rfs .reshead {
+    margin: 6px 0 6px;
+    min-height: 30px;
+  }
+  .rfs .reshead .cfgbtn {
+    min-height: 30px;
+    padding: 0 8px;
+  }
+  .rfs .rrow.n360 {
+    display: flex !important;
+    flex-wrap: nowrap;
+  }
+  .rfs .rrow .pickb {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .rfs .rrow .btn.primary {
+    flex: none;
+  }
+}
+@media (max-width: 760px) {
+  .rfs .ctrl {
+    margin-top: 4px;
+  }
+  .rfs .reshead {
+    margin: 4px 0;
+    min-height: 28px;
+  }
+  .rfs .reshead .cfgbtn {
+    min-height: 28px;
+  }
+}
+/* the filter head (column at 1180, sheet at 360): the title on its line, the
+   reset and the filter link under it */
+.fside .fh {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.fside .fh b,
+.sheet .sh b {
+  white-space: nowrap;
+}
+.fside .fh .wb {
+  flex-basis: 100%;
+  margin-left: -6px;
+}
+.sheet .sh {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.sheet .sh .wb {
+  gap: 2px;
+}
+
+/* ---------- batch 4: «Ещё», «Сохранить себе», record states (mocks-1 M4-*) ---------- */
+.mi .mit {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.mi .mit small {
+  font-size: var(--t-data);
+  color: var(--muted);
+  line-height: 1.35;
+  max-width: 34ch;
+}
+.pop .mi {
+  align-items: flex-start;
+}
+.pop .mi svg {
+  margin-top: 2px;
+}
+.msheet {
+  padding: 0 8px 14px;
+  display: grid;
+}
+.msheet .mi {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--txt);
+  font-size: var(--t-body);
+  text-align: left;
+}
+.msheet .mi svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+.msheet hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+  width: 100%;
+}
+/* «Сохранить себе» and its second line: one group on a line of its own
+   under the other actions (FEATURES.md "Records") */
+.acts .savegrp {
+  order: 9;
+  flex-basis: 100%;
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+.savegrp small {
+  font-size: var(--t-data);
+  color: var(--muted);
+  line-height: 1.35;
+  max-width: 52ch;
+}
+.art.skel {
+  background: linear-gradient(90deg, var(--surface), var(--surface2), var(--surface));
+}
+
+/* ---------- batch 7 (mocks-1 M7-1, M7-4) ---------- */
+/* «Назад» is a 44 px target */
+.pfs .back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+/* the print preview under 760 px, screen only: the cards one per row at their
+   real 63 mm width, «Весь лист» shows the scaled sheet */
+@media (max-width: 760px) {
+  .pfs .pcards {
+    display: grid !important;
+    justify-items: center;
+    gap: 12px;
+  }
+  .pfs .pcards .btn {
+    justify-self: end;
+  }
+  .pfs .pcards img {
+    width: 238px;
+    height: auto;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 50%),
+      0 14px 40px rgb(0 0 0 / 45%);
+  }
+}
+
+/* ---------- batch 1b (mocks-1 M1b-2, M1b-4) ---------- */
+.pcm .pcm-art {
+  height: 69.5%;
+  background-image: none;
+}
+.pcm.en .pcm-art {
+  height: 77%;
+}
+.pcm .pcm-art.light {
+  background: linear-gradient(180deg, #ebe7f0 0, #ebe7f0 86%, #fff 100%);
+}
+.pcm .pcm-art.dark {
+  background: linear-gradient(180deg, #0e0c15 0, #0e0c15 86%, #fff 100%);
+}
+.pcm .pcm-art.blank {
+  background: #fff;
+}
+/* the editor preview: an own item's text drawn over the capture's text */
+.pcm-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 69.5%;
+  background: #fff;
+  color: #000;
+  padding: 3% 7% 4%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--ui);
+}
+.pcm.en .pcm-text {
+  top: 77%;
+}
+.pcm-text .pb {
+  align-self: flex-start;
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #f0d091;
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.pcm-text b {
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.pcm-text p {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.3;
+}
+.pcm-text .pf {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7px;
+}
+.pcenter {
+  display: grid;
+  justify-items: center;
+}
+
+/* ---------- batch 2: one pin rule (mocks-1 M2-2) ---------- */
+/* the pin and the help button sit by the H1 from 760 px; at 360 they are in
+   «Ещё» on list pages and in «Настроить» on roll pages */
+@media (max-width: 760px) {
+  .ph .pinb,
+  .ph .helpb {
+    display: none;
+  }
+}

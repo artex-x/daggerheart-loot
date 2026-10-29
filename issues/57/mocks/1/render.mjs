@@ -1,6 +1,6 @@
 /* Renders the unit A batch mocks to PNG: node issues/57/mocks/1/render.mjs 1 3
    reads mocks/<N>/shots.json and writes <name>__<width>__<lang>.png next to
-   it. A shot with `size: [w, h]` is one exact viewport (the share cards)
+   it. A shot with `screen: true` is the first screen only (360x640, 1180x720). A shot with `size: [w, h]` is one exact viewport (the share cards)
    and is named <name>__<lang>.png. Needs the puppeteer devDependency. */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -27,7 +27,10 @@ try {
             console.error(`${b}/${shot.name} ${lang} ${w}: ${e.message}`)
           );
           page.on('requestfailed', (r) => console.error(`${b}/${shot.name}: no ${r.url()}`));
-          await page.setViewport({ width: w, height: shot.size ? shot.size[1] : 900 });
+          await page.setViewport({
+            width: w,
+            height: shot.size ? shot.size[1] : shot.screen ? (w < 760 ? 640 : 720) : 900
+          });
           const q = new URLSearchParams({ ...(shot.q || {}), lang });
           if (shot.s) q.set('s', shot.s);
           await page.goto(`${pathToFileURL(join(dir, shot.page || 'state.html')).href}?${q}`, {
@@ -46,7 +49,7 @@ try {
           const out = shot.size
             ? `${shot.name}__${lang}.png`
             : `${shot.name}__${w}__${lang}.png`;
-          await page.screenshot({ path: join(dir, out), fullPage: !shot.size });
+          await page.screenshot({ path: join(dir, out), fullPage: !shot.size && !shot.screen });
           await page.close();
           count++;
         }

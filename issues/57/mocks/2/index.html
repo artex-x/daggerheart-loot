@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 2 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 2 mock: shell</h1>
+      <p class="lead">
+        This page shows the batch 2 mock for the owner to confirm: the header with the three
+        jobs and their icons, the three-control mode row and the supplements menu, the account
+        control and its menu, the labelled pin and «Справка», the EN wordmark «Loot», and the
+        toast. Each frame names the path it stands for (main's path addresses,
+        <code>/en/</code> before every English one).
+      </p>
+
+      <h2>First-screen rule (plan section 14)</h2>
+      <p class="lead">
+        The top of the primary content below the top of the header, at scroll 0, in px, measured
+        on the rendered mock with the planner's <code>measure.mjs</code>. The assert is 40% of
+        the height (256 at 360x640, 288 at 1180x720); the design target is 240 and 270 (plan
+        review plan-1-3 R2), a margin for the Source Sans 3 line boxes. Measured at scroll 0.
+      </p>
+      <table>
+        <tr>
+          <th>State</th>
+          <th>Primary content</th>
+          <th>360x640 RU</th>
+          <th>360x640 EN</th>
+          <th>1180x720 RU</th>
+          <th>1180x720 EN</th>
+          <th>Assert (40%)</th>
+          <th>Target (240 / 270)</th>
+        </tr>
+        <tr>
+          <td><code>header</code></td>
+          <td>content under the header and the mode row</td>
+          <td>166 / 256</td>
+          <td>166 / 256</td>
+          <td>116 / 288</td>
+          <td>116 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+      </table>
+      <p>
+        At 360 the mode row now takes 6 px above and below and 40 px chips (two lines of 14 px
+        fit), so the roller meets its 240 px target. No page of this batch has a user-named H1,
+        so the longest-name row (R2) does not apply here.
+      </p>
+      <h2>Owner questions</h2>
+      <section class="q">
+        <h2>
+          «Бросок» with no roll yet in this tab (plan review R7) - chosen (owner, 2026-10-29)
+        </h2>
+        <p class="lead">
+          Plan: «Бросок» opens the last roll section of this tab, else <code>/roll/std</code>. A
+          reader who pinned <code>/roll/voa</code> and arrives on a table from a link then gets
+          <code>/roll/std</code>.
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>Open the start section</h4>
+            <p>
+              The last roll section of this tab; else the start section when it is a roll
+              section; else <code>/roll/std</code>.
+            </p>
+            <p>
+              <b>Trade-off:</b> One more rule to test (<code>state/app.test.ts</code>) and to
+              state in <code>STATE.md</code>.
+            </p>
+            <p>
+              <b>Why:</b> The pin means "open the app here", so a reader who chose Vault of Ages
+              expects Roll to go there.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Always /roll/std</h4>
+            <p>With no roll in this tab, «Бросок» opens the standard rules.</p>
+            <p><b>Trade-off:</b> A pinned supplement is ignored by the job that names it.</p>
+          </div>
+        </div>
+        <h3>Both outcomes, one frame each</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="roll-target__360__ru.png"
+              ><img src="roll-target__360__ru.png" alt="roll-target, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="roll-target__360__en.png"
+              ><img src="roll-target__360__en.png" alt="roll-target, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="roll-target__1180__ru.png"
+              ><img
+                src="roll-target__1180__ru.png"
+                alt="roll-target, 1180 px, RU"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="roll-target__1180__en.png"
+              ><img
+                src="roll-target__1180__en.png"
+                alt="roll-target, 1180 px, EN"
+                loading="lazy"
+            /></a>
+          </figure>
+        </div>
+      </section>
+      <section class="q">
+        <h2>The account menu (plan review R3) - chosen (owner, 2026-10-29)</h2>
+        <p class="lead">
+          FEATURES.md "Chrome": «Аккаунт», «Мои списки», «Мои предметы», a rule, «Выйти», with
+          no counts. R drew counts, a «Вы вошли как» line and another order.
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>The FEATURES.md menu</h4>
+            <p>
+              Four items in the spec order, no counts, no email line. The email stays in the
+              control's accessible name.
+            </p>
+            <p><b>Trade-off:</b> The menu does not show how many lists and items there are.</p>
+            <p>
+              <b>Why:</b> The counts are a new feature: two reads on every page with their own
+              loading, failure and limit states, and a departure from consistency rule 1. Issue
+              57 adds no feature unless a fix needs it.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>R's menu</h4>
+            <p>
+              Counts beside «Мои списки» and «Мои предметы», the email line on top, «Аккаунт»
+              third.
+            </p>
+            <p>
+              <b>Trade-off:</b> A new feature with new read and failure states, and a rule 1
+              departure.
+            </p>
+          </div>
+        </div>
+        <h3>Recommended (top frame) and R's menu (bottom frame)</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="shell-account-menu__360__ru.png"
+              ><img
+                src="shell-account-menu__360__ru.png"
+                alt="shell-account-menu, 360 px, RU"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="shell-account-menu__360__en.png"
+              ><img
+                src="shell-account-menu__360__en.png"
+                alt="shell-account-menu, 360 px, EN"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="shell-account-menu__1180__ru.png"
+              ><img
+                src="shell-account-menu__1180__ru.png"
+                alt="shell-account-menu, 1180 px, RU"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="shell-account-menu__1180__en.png"
+              ><img
+                src="shell-account-menu__1180__en.png"
+                alt="shell-account-menu, 1180 px, EN"
+                loading="lazy"
+            /></a>
+          </figure>
+        </div>
+      </section>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="header">
+        Header by address · <a href="state.html?s=header">ru</a> ·
+        <a href="state.html?s=header&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        /roll/std signed out; /roll/hnf (an old address) lights «Обычные правила» and the pinned
+        state of the pin; /roll/voa shows the supplement on the chip; /lists lights the account
+        control and no job; /i/ci1 lights nothing.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="header__360__ru.png"
+            ><img src="header__360__ru.png" alt="header, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="header__360__en.png"
+            ><img src="header__360__en.png" alt="header, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="header__1180__ru.png"
+            ><img src="header__1180__ru.png" alt="header, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="header__1180__en.png"
+            ><img src="header__1180__en.png" alt="header, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="mode-long">
+        The longest supplement names on the chip (plan review N5) ·
+        <a href="state.html?s=mode-long">ru</a> ·
+        <a href="state.html?s=mode-long&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 360 each name holds two lines inside the chip, as the owner allowed; the supplement
+        chip takes a slightly wider column for it.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="mode-long__360__ru.png"
+            ><img src="mode-long__360__ru.png" alt="mode-long, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="mode-long__360__en.png"
+            ><img src="mode-long__360__en.png" alt="mode-long, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="mode-long__1180__ru.png"
+            ><img src="mode-long__1180__ru.png" alt="mode-long, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="mode-long__1180__en.png"
+            ><img src="mode-long__1180__en.png" alt="mode-long, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="shell-signed-out">
+        Signed out: «Войти» keeps its label at 360 ·
+        <a href="state.html?s=shell-signed-out">ru</a> ·
+        <a href="state.html?s=shell-signed-out&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="shell-signed-out__360__ru.png"
+            ><img
+              src="shell-signed-out__360__ru.png"
+              alt="shell-signed-out, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="shell-signed-out__360__en.png"
+            ><img
+              src="shell-signed-out__360__en.png"
+              alt="shell-signed-out, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="shell-signed-out__1180__ru.png"
+            ><img
+              src="shell-signed-out__1180__ru.png"
+              alt="shell-signed-out, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="shell-signed-out__1180__en.png"
+            ><img
+              src="shell-signed-out__1180__en.png"
+              alt="shell-signed-out, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="roller-supmenu">
+        The supplements menu open · <a href="state.html?s=roller-supmenu">ru</a> ·
+        <a href="state.html?s=roller-supmenu&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-supmenu__360__ru.png"
+            ><img
+              src="roller-supmenu__360__ru.png"
+              alt="roller-supmenu, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-supmenu__360__en.png"
+            ><img
+              src="roller-supmenu__360__en.png"
+              alt="roller-supmenu, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-supmenu__1180__ru.png"
+            ><img
+              src="roller-supmenu__1180__ru.png"
+              alt="roller-supmenu, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-supmenu__1180__en.png"
+            ><img
+              src="roller-supmenu__1180__en.png"
+              alt="roller-supmenu, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="toasts">
+        The toast family · <a href="state.html?s=toasts">ru</a> ·
+        <a href="state.html?s=toasts&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        A new request: the count in the tab title and the lowest-priority action toast; an undo
+        toast that holds the focus (D121 returns it); the error toast.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="toasts__360__ru.png"
+            ><img src="toasts__360__ru.png" alt="toasts, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="toasts__360__en.png"
+            ><img src="toasts__360__en.png" alt="toasts, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="toasts__1180__ru.png"
+            ><img src="toasts__1180__ru.png" alt="toasts, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="toasts__1180__en.png"
+            ><img src="toasts__1180__en.png" alt="toasts, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 2 (<code>mocks/2/</code>): the header, the three jobs, the mode row and the
+          supplements menu, the account control and its menu, the page head (the pin and
+          «Справка»), the toast.
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          Pin labels (plan review N4): unpinned «Открывать при запуске» / "Open on start",
+          pinned «Открывается при запуске» / "Opens on start" with the neutral pressed check. R
+          had «Стартовый раздел» with no state change in EN. The shipped pair (<code
+            >homeHint</code
+          >
+          / <code>homeOn</code>) gives the same facts.
+        </li>
+        <li>
+          The account control takes the gold ring on its own pages (<code>/account</code>,
+          <code>/lists</code>, <code>/lists/&lt;uuid&gt;</code>, <code>/homebrew</code>) and
+          while its menu is open, as FEATURES.md "Chrome" says (plan review N6). R drew a
+          neutral border for the open menu; the spec wins.
+        </li>
+        <li>
+          The toast is a plate (surface, seam border, the Float shadow), never gold; the error
+          toast takes the alarm fill with dark ink (about 6:1) instead of white text (A15). R
+          drew the plate; the error flavour is new here.
+        </li>
+        <li>
+          At 360 the mode row takes 0.9 / 0.9 / 1.2 of the width, so "Many Worlds Tavern" and
+          «Предметы сообществ» hold two lines, not three.
+        </li>
+        <li>The language switch shows the batch 1 check.</li>
+        <li>
+          The button by the H1 takes the name of the panel it opens (plan review plan-1-3 R3,
+          rule 4): «Об этих данных» on /tables, «Где какая редкость» on /roll/std, «Об этих
+          таблицах» on /roll/alt; «Справка» stays only where the panel keeps that name.
+        </li>
+        <li>
+          Review mocks-1: M2-1 - no «Справка» on <code>/lists</code> (the owner removed that
+          panel). M2-2 - one pin label pair everywhere («Открывать при запуске» / «Открывается
+          при запуске», "Open on start" / "Opens on start") and one placement rule: by the H1
+          from 760 px; at 360 in «Ещё» on list pages and in «Настроить» on roll pages, so the
+          360 frames show the H1 alone. M2-3 - the frames use the address names of ROUTES.md
+          (<code>/roll/vault_of_ages</code>, <code>/roll/many_worlds_tavern</code>,
+          <code>/roll/community_items</code>, <code>/roll/wondrous_environments</code>); the
+          mode row at 360 takes 6 px above and below with 40 px chips. M2-4 - the toast as a
+          plate and the error toast with dark ink on the alarm fill change DESIGN.md "Toast" (a
+          gold pill with white error text today); batch 2 writes that change.
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          At 360 the pin and «Справка» wrap under the H1 on a page with a long title; the head
+          grows about 40 px. Accepted: both labels say what they do.
+        </li>
+        <li>
+          The sticky part at 360 (brand row and job row) is about 108 px in the render, under
+          the 112 px limit of plan batch 2. The mode row scrolls with the page.
+        </li>
+        <li>
+          Clarity Rule: every header control names its job; the account control shows an initial
+          and a chevron, which reads as a menu. No finding.
+        </li>
+        <li>
+          The tab strip in the toast frame is mock chrome that shows the document title; it is
+          cut at 360, as a real browser cuts it.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>
