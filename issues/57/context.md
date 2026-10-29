@@ -201,7 +201,38 @@
     (/homebrew «Справка» panel), Q6.2 (the eight editor field «?»
     buttons), Q8.1 (/lists «Справка» panel) and Q9.1 (the list page's
     inline «?» buttons) take option A: remove. This is the owner's yes to
-    remove those visible features (Constraints, clarity rule).
+    remove those visible features (Constraints, clarity rule). Q6.1 is the
+    /homebrew help panel (A27).
+  - Mock answers (owner, 2026-10-29, chat, interactive):
+    - No-picture state: the kind glyph everywhere, print included (colour
+      and black-and-white), and delete `img/_none.webp`,
+      `img/thumb/_none.webp` and `og/_none.jpg`. The owner accepts the
+      public contract change (asset paths) and the print change; every
+      reader moves (preview worker, share stub pages, check-site,
+      collect-site.sh, dataint, the offline thumbnail fallback, FEATURES.md,
+      META.md, CONTRACTS.md). Home: the specs named, written by the batch
+      that ships it.
+    - C1 and C38 help panels: rename, not remove - «Об этих данных» with
+      three data notes (C1), «Где какая редкость» with the book's four
+      placement lines (C38).
+    - Every other mock row takes the recommendation: share card text kept
+      with "armor" (Q1.1); the linear page ground
+      `linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)` in place of
+      the radial washes, share cards included; R7 «Бросок» opens the start
+      section; R3 the account menu in `FEATURES.md` order with no counts;
+      C57 a temporary grid/table choice with no note.
+    - Mock 1 approved (batch 1 may start once the plan review allows it).
+  - First-screen rule (owner, 2026-10-29, chat): at 360x640 and 1180x720
+    each page's primary content (roll results, first table rows, first
+    list entry, the item) starts inside the first screen, and the controls
+    above it take at most about 40% of the height. Every mock and batch
+    review checks it; the planners re-check all nine mocks and name each
+    failure. How each page meets it (folded controls, compact cards, a
+    scroll, another order) is the planner's recommendation per page and
+    width; the owner does not pre-judge it. Trigger: the roller at 360
+    (`mocks/2/roller-supmenu__360__ru.png`): the first result starts about
+    880 px down, and each result card is about 450 px tall. Home:
+    `DESIGN.md` (batch 1) and a measured check in the browser suite.
 - Open questions: none.
 
 ## Screenshot / attachment findings
