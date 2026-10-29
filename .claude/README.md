@@ -208,6 +208,71 @@ do not replace":
   `main`'s copy is the live one - check `git branch --show-current` before
   trusting anything read under `issues/`.
 
+## Usage guards
+
+The rule and the wrap-up message are in `prompts/orchestrate.prompt.md`,
+"Session ending", "Usage guards"; the decision is `docs/decisions/`,
+2026-10-29, "The orchestrator reads the plan limits and winds work down
+before a cut". Facts from 2026-10-29 on the Windows desktop app, Max plan:
+
+- `mcp__ccd_session_mgmt__get_usage` returns `plan.status` (`ok`,
+  `not_applicable`, `unavailable`); `plan.windows[]` with `label` (`5-hour
+  limit`, then the weekly window for all models and the one for Fable),
+  `percentUsed` (an integer), `resetsAt` (ISO) and `resetsIn`; and `context`
+  (the calling session's context-window fill). It is deferred: load it with
+  `ToolSearch select:mcp__ccd_session_mgmt__get_usage`.
+- A subagent can call it after the same `ToolSearch` and reads the same plan
+  numbers (a `haiku` `general-purpose` probe).
+- A `SendMessage` to a running subagent answers "queued for delivery ... at
+  its next tool round". A `haiku` probe in 10 s foreground calls read it
+  after call 1 and stopped, so a subagent inside one long foreground call
+  reads a message only when that call ends.
+- A one-shot `CronCreate` job fired in the main session while a background
+  subagent showed `running` in `ListAgents`; its prompt arrives as a user
+  turn of the idle main session. A cron job lives only in its session, fires
+  only while the session is idle, fires up to 50 % of its period late when
+  it recurs, and expires after 7 days. `ScheduleWakeup` works only in
+  `/loop` mode.
+- A command hook cannot call an MCP tool: it gets stdin JSON only. Whether a
+  `PostToolUse` hook sees an MCP call's `tool_response` is unmeasured.
+  `Monitor` streams a shell command's output, and a shell command cannot
+  call an MCP tool either.
+- A main-session turn that ends with no visible output gets an automatic
+  "Your previous response had no visible output. Please continue" turn
+  (measured 2026-10-29 at two ticks). A tick below both thresholds therefore
+  ends with one status line.
+- `ListAgents` lists every peer session of the account, most of them
+  offline: 37 at 19:48 UTC, about 2.5k tokens a call (2026-10-29). A tick
+  below both thresholds does not call it.
+- Burn: the 5-hour window read 25 % at 19:18 UTC and 36 % at 19:52 UTC on
+  2026-10-29, about 19 % an hour, with the main session and up to two
+  subagents. This sets the 75 % switch to the 5-minute tick.
+- Prompt-cache lifetime: the `ScheduleWakeup` tool description on this host
+  (read 2026-10-29) says that the main session's requests use a 1-hour
+  cache TTL, which falls to 5 minutes only in usage overage. A 15-minute
+  idle gap therefore reads the cached context at about 0.1x. Measured the
+  same day: after a 773 s idle gap the main session's next request read
+  155k tokens from the cache and wrote 2.9k, so the lifetime is longer than
+  5 minutes. The lifetime of a subagent's cache is unmeasured.
+- The dry run with forced thresholds (2026-10-29, 19:56-20:07 UTC, with
+  the prompt of commit `58f78581`): a `*/5` tick fired
+  at 20:01:04 and 20:05:50 UTC, 4-5 minutes apart. A status-line tick got no
+  "Please continue" turn and grew the context by about 0.9k tokens. At the
+  forced 5-hour threshold the tick sent the wrap-up at 20:05:51 to a
+  `haiku` stand-in worker; it stopped at its next tool round (step 20 of
+  40), wrote "Session end partial progress", committed and reverted
+  nothing, and reported `uncommitted 1 paths` by 20:06:29, under 1 minute.
+  At the forced weekly threshold a dispatch and a resume were both refused
+  after one `get_usage` reading, and `ListAgents` showed no new agent.
+- A reviewer that gets the wrap-up writes `Verdict: incomplete`. `lib.mjs`'s
+  `VERDICT_RE` accepts only `approve`, `fix-then-continue` and `replan`, so
+  the head parses as no verdict, which every guard treats as not passed. A
+  change that widens `VERDICT_RE` must keep that result.
+- A terminal session without the ccd tools reads the window only through
+  the `statusLine` command; the guard that read it (`git show 60172d3`) was
+  removed because the desktop app never invokes that command (measured
+  2026-09-09: zero invocations while hooks fired nine times).
+
 ## Hooks
 
 Deterministic enforcement lives in `.claude/hooks/*.mjs`, registered in
@@ -3795,7 +3860,7 @@ not changed.
 | 21 | Enforce the per-file coverage threshold | `PostToolUse(Write)` | **reject** | Already enforced by `vite.config.mts` at the real moment. A second copy would say nothing new. |
 | 22 | Inject the active task on every prompt | `UserPromptSubmit` | **reject** | Duplicates `SessionStart` on every single turn. The definition of the noise the human warned against. |
 | 23 | Preserve a handoff pointer across compaction | `PreCompact` | **reject** | `Stop` and `SessionStart` already bracket the session; a third copy of the same pointer earns nothing. |
-| 24 | Anything reading the five-hour usage window | any | **reject** | Measured impossible on this host (`79e26c9`). Explicitly out of scope. Also rejected: an autonomous usage guard summing `message.usage` from the transcript - it measures the session's own spend, not the account's shared five-hour window, so it cannot stand in for the thing being asked about. |
+| 24 | Anything reading the five-hour usage window | any | **reject; superseded on the desktop app 2026-10-29** | Measured impossible on this host in 2026-09 (`79e26c9`). On the desktop app `get_usage` now reads the window, and the guard is prose in the orchestrate prompt ("Usage guards"). Still rejected: an autonomous usage guard summing `message.usage` from the transcript - it measures the session's own spend, not the account's shared five-hour window. |
 | 25 | Block edits to `docs/fixtures/**` as "generated" | `PreToolUse(Edit\|Write)` | **reject** | They look generated but CLAUDE.md requires updating them by hand in the same commit as a contract change. Blocking them would block the correct fix. Listed here because it is the tempting mistake in hook 4. |
 | 26 | `SessionEnd` bookkeeping | `SessionEnd` | **reject** | Cannot influence the model or the human in time. `Stop` already covers the moment that matters. |
 | 27 | Block `npm run check` launched with `run_in_background` | `PreToolUse(Bash)` | **adopt** | Three workers on issue 47 backgrounded the check, the third with three paragraphs of dispatch warning against it; prose is exhausted. False-positive-free: `check-observer.mjs` refuses a backgrounded run by design, so one can never satisfy the gate, and blocking it forbids nothing that works. Scoped to the gate-feeding check only - `check:built`, parity and run-all can legitimately run detached from a main session, and the reminder already covers them. Matched per segment, because the recorded shapes were piped, chained, `cd`-prefixed and file-redirected. The message names the replacement in one line, including the Bash timeout. Measured 2026-09-10: `PreToolUse(Bash)` fires for a backgrounded call and denies it (probe A); `tool_input.run_in_background` reaches the hook as `true`. **Narrowed to a subagent at `process-guards`** (2026-09-27): a backgrounded check now arms the gate by its own exit (`docs/decisions/`, 2026-09-27, "A green check arms the commit gate by its own exit, not a host-wide lock"), so only a subagent's run, which dies with its turn, is denied. |
@@ -3831,5 +3896,5 @@ not built. |
 | 46 | Deny a `npm run check`/`check:built` inside a pipe or redirected to a file, and have `check-observer.mjs` state the verdict | `PreToolUse(Bash)` (rule 2k), `PostToolUse(Bash)` (observer) | **adopt** (owner decision, 2026-09-18) | Measured over this project's 65 session transcripts: of 71 real check invocations, **61 were piped** into `tail`/`grep`, 9 redirected to a file, and exactly **one** was the canonical `rtk npm run check` that candidate 45 established. A pipe hands the Bash tool the last stage's exit status - `tail` always exits 0 - so a failed check is indistinguishable from a passing one; the recorded recovery is a second ~165s run, or an `echo $?` on a later line that reports the echo's own status. A redirect keeps the status but hides the stdout the observer needs, so the gate never arms and the file has to be read back. Candidate 10's reminder has said "no pipe needed" since 45 and fires once per session; those 61 runs are what a reminder is worth against a habit the docs themselves taught for months. The deny forbids nothing that works, and the paired verdict line removes the remaining inference: the observer already knows the failure markers and whether it armed, so it says `PASS` / `FAIL` / passed-but-unattributable in one line, and speaks only for a real foreground check invocation. Arming is unchanged and just as strict - the line states, it does not gate. **Two host facts, probed live rather than assumed, bound what that line can carry**, both on this Windows desktop build: no exit-code field reaches a `PostToolUse` hook at all here (a successful Bash call arrives as `{stdout, stderr, interrupted, isImage, noOutputExpected}`, whatever the hooks reference lists), so the pass/fail split rests on the stdout markers and the ` (exit n)` suffix stays empty; and on a *failed* Bash call the hook does not speak at all - the result comes back as a plain string, `"Exit code 1\n..."`, rather than that object, verified with a check deliberately failed at its prettier stage. Neither weakens the fix: unpiped, a failure opens with `Exit code 1` on the result's first line and a pass ends with the observer's own. The FAIL branch is kept for a host that does deliver the call, and for the case that genuinely reaches here - a run that exits 0 while printing failure markers. Covers `check:built` too (same family, same blindness) though only `check` feeds the gate; `check:fast` is out of scope, as it is everywhere else. Boundary caught while implementing: the `2>&1` strip has to run **before** the list split, because `LIST_SPLIT_RE` treats that `&` as a list operator and a later strip reads the leftover `2>` as a file redirect - `check-observer.mjs` had the order right already. Selftest #154-#171; #119 retargeted, since it asserted the now-denied shape. |
 | 47 | Name LSP and ast-grep where agents actually read | `.claude/README.md`, the three code-facing worker prompts | **adopt** (owner decision, 2026-09-18); **withdrawn** 2026-09-30, both tools removed ("Code navigation") | Measured over the same 65 transcripts: `Grep` 109 calls, `rtk grep` 90, `git grep` 55, **LSP 16** - all in the three sessions that installed it, and only `hover`/`documentSymbol` - and **`ast-grep` 1**, that one being `--version`. `git grep` over `.claude`, `CLAUDE.md` and `docs/` found exactly one mention of either tool, `agents/reviewer.md`'s `tools:` list, which grants LSP without saying what it is for. The guidance existed only in the human's global `~/.claude/CLAUDE.md`, while every worker is told to follow a prompt file exactly - so the prompts, not a doc line, are the lever. Two live traps found while probing and written down rather than left to be rediscovered: `workspaceSymbol` returns `No symbols found in workspace` on this host for any query, so the operation the old guidance led with is the one that fails first; and an `ast-grep` pattern that does not match exits 1 with no output, which reads as "no such code" (`function $N($$$A) { $$$B }` finds nothing in `app/src/lib/search.ts` only because those functions carry return type annotations). `findReferences` works and is the reason to bother - 11 references to `foldQuery` across two files in one call. No hook: a nudge toward a tool is not a deterministic property, and candidate 43's history is what happens when a guard denies a shape that already worked. |
 | 48 | Deny or fail on a comment citing a batch id, a review finding id or an `issues/<id>/` path | `tests/` grep or `PreToolUse(Edit)` | **reject for now** | The rule is new (`CLAUDE.md`, "Comments", 2026-09-18) and the sweep that applied it found ~95 files, all written before the rule existed - no recorded failure of the written rule yet (row 29's bar). Rule 2i already denies the one that does damage (an `issues/<id>/` citation, at retirement). Cheapest form if it recurs: a `tests/derived.js`-style check that greps comments in `app/src`, `tools`, `tests`, `.claude/hooks` for `issues/[^<]` without a sha prefix and for `\bB\d+(\.\d+)?[a-z]?-[NR]\d+\b`. |
-| 49 | A wrap-up nudge off the five-hour usage window | `Stop` / `PreToolUse` | **withdrawn, do not rebuild** | Built, measured and withdrawn at `79e26c9`: the five-hour window is not readable on this host. The hook input's `effort` is an object `{ level }`, and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`. Full finding: `git show b2eec64:.claude/improvements.md`, Finding 4. |
+| 49 | A wrap-up nudge off the five-hour usage window | `Stop` / `PreToolUse` | **withdrawn, do not rebuild as a hook** | Built, measured and withdrawn at `79e26c9`: a hook cannot read the five-hour window, because it cannot call an MCP tool. The orchestrator reads it with `get_usage` and winds work down in prose ("Usage guards"). The hook input's `effort` is an object `{ level }`, and the same level reaches a worker's Bash tool as `$CLAUDE_EFFORT`. Full finding: `git show b2eec64:.claude/improvements.md`, Finding 4. |
 | 50 | Re-measure the configuration audit baseline | none (a manual pass) | **dated: 2026-10-15** | Same commands, same Windows host as the 2026-09-15 baseline (`rtk gain`, `rtk discover`, `wc -c` of the always-loaded markdown, the skill-listing sum); `grep -n` and `tail -c` should be near zero in `rtk discover`, and `CLAUDE.md` under 181 lines. A regression is a new row here. Baseline table and method: `git show b2eec64:.claude/improvements.md`, Finding 7. |

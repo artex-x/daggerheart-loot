@@ -205,7 +205,8 @@ both agents `running` on one tree. Verify, then act:
 
 A resume is a dispatch: it makes the agent live again, so it gets the
 spawn's preflight - `ListAgents` shows no other writer `running`, HEAD
-re-read and named. Only the orchestrator resumes a writer; the reviewer
+re-read and named, and the usage read below both thresholds ("Usage
+guards"). Only the orchestrator resumes a writer; the reviewer
 returns findings and sends nothing. Within a batch, resume its own
 implementer for a lost check, the review's blockers, an uncommitted change
 at closeout, or a question you can answer, inside the cache lifetime (below) -
@@ -452,7 +453,7 @@ feed, an import).
 2. If no usable plan/handoff for TASK -> run planner
 2b. If `plan.md` Status reads `Plan review: required before <batch>` and the newest `reviews/plan-<batch>*.md` neither approves nor is a fix-then-continue that a `Plan review findings applied:` line names -> run the reviewer with that scope (after the planner for a replan), or the planner alone for an unapplied fix-then-continue, first (**Plan review**, above)
 3. HARD STOP: if planner reports NEEDS_HUMAN_CONFIRMATION: yes, stop and ask the human. Do NOT dispatch implementer until answered and planner/handoff updated
-4. Run implementer for the next batch only (after tree preflight)
+4. Run implementer for the next batch only (after tree preflight and the usage check, "Usage guards")
 5. Run reviewer when required by the risk rules above
 6. Apply **After review** (max one remediation cycle) below
 7. If approved and more batches remain -> go to 4; else stop when done, blocked, or human stops
@@ -535,17 +536,94 @@ queued behind it is mid-plan, whatever its size.
 
 ## Session ending
 
-**Usage is the human's call, and only the human can see it.** The five-hour
-window is not machine-readable here: it reaches only the `statusLine` command,
-which the desktop app never invokes (measured 2026-09-09 - a probe recorded
-zero invocations while hooks fired nine times), and it appears nowhere else -
-not in the transcripts, not under `~/.claude`, not from any CLI. An automated
-guard was built, wired, and removed again for exactly this reason; see
-`git show 60172d3` if it is ever worth reviving in a terminal session. So do
-not infer remaining budget, and do not claim a session is safe to continue
-because nothing has warned you. Take the human's figure when offered, act on
-it, and otherwise keep every batch at a committed boundary with the handoff
-current - which is the behaviour that made the guard unnecessary anyway.
+### Usage guards
+
+On the desktop app the orchestrator reads the plan limits with
+`mcp__ccd_session_mgmt__get_usage` (deferred: load it once with `ToolSearch
+select:mcp__ccd_session_mgmt__get_usage`). In `plan.windows[]`, read
+`percentUsed` and `resetsAt` of the window `5-hour limit` and of the window
+whose `label` ends in `all models` (`.claude/README.md`, "Usage guards";
+`docs/decisions/`, 2026-10-29, "The orchestrator reads the plan limits and
+winds work down before a cut").
+
+Read the usage at each of these wakes; a reading from the same turn counts:
+
+- immediately before each dispatch and each resume, in every procedure;
+- at each task notification;
+- at each usage tick (below).
+
+Act on the reading:
+
+- **5-hour at 90 % or more:** dispatch and resume nothing. Send the wrap-up
+  message (below) to each subagent that `ListAgents` shows `running`; an
+  agent that ended its turn gets nothing, because a message would resume
+  it. Send it once per agent; the chat line `wrap-up sent to <agent> at
+  HH:MM` is the record. Write nothing into a running agent's files. When
+  the last one ends its turn, report to the human: the TASK id, the handoff
+  path, each agent's last line, `resetsAt` and the next step.
+- **Weekly (all models) at 95 % or more:** dispatch and resume nothing, for
+  every role, a review, a fix pass and a CI fix included. A running agent
+  finishes its turn. A background shell command (the CI credit) continues;
+  it costs no usage. Report to the human: the reading, `resetsAt` and what
+  waits. Report a crossing once; later ticks give only the status line.
+- A `fable` dispatch also reads the Fable weekly window: at 95 % or more,
+  plan on `opus`.
+- Below both thresholds, continue.
+
+After a reset, the next dispatch is a fresh agent ("Past the cache
+lifetime, spawn"). Its brief says that the worktree can hold uncommitted
+edits, which the handoff names.
+
+**The usage tick.** When a subagent starts and `CronList` shows no usage
+tick, create one recurring job with `CronCreate` (deferred; load
+`CronCreate`, `CronList` and `CronDelete` with one `ToolSearch`), prompt:
+
+    USAGE TICK: read the usage and act on it (orchestrate.prompt.md, "Usage guards"). If your record (dispatches, resumes, task notifications) shows no subagent of yours running, delete this job. Below both thresholds, end the turn with one line: `usage <5-hour> % / <weekly> % at HH:MM UTC`.
+
+The period follows the latest 5-hour reading:
+
+- below 75 %: cron `7,22,37,52 * * * *` (every 15 minutes);
+- at 75 % or more: delete that job and create the same prompt with cron
+  `*/5 * * * *`. When the wrap-up is sent, delete the 5-minute job; the
+  task notifications are the wakes from then on.
+
+A tick below both thresholds calls no `ListAgents`: your record of
+dispatches, resumes and task notifications (the "<agent> ended its turn at
+HH:MM" lines) says which subagent runs. Call `ListAgents` only when a
+reading reaches a threshold, to pick the wrap-up recipients, or when the
+record is missing (after a compaction or in a new session).
+
+Keep one such job per session (`CronList` before you create one); delete it
+with `CronDelete` when no subagent of yours runs. A job fires only while
+this session is idle and up to half its period late: 15-minute ticks arrive
+at most about 22 minutes apart, 5-minute ticks at most about 8. From 75 %,
+15 points remain before the wrap-up, more than one long gap at twice the
+burn measured on 2026-10-29 (`.claude/README.md`, "Usage guards"). The main
+session's prompt cache lives 1 hour, so a 15-minute gap still reads the
+cached context.
+
+**The wrap-up message**, word for word; fill `<P>`, `<time>` (`resetsAt` as
+`HH:MM` UTC) and `<id>`:
+
+    USAGE WRAP-UP: the 5-hour limit is at <P> % (resets <time> UTC). Start no new step and dispatch nothing.
+    1. If a check is running, wait for its exit.
+    2. If the batch's gates passed and only the commit or the push remains, do it.
+    3. Otherwise commit nothing and revert nothing: your edits stay in the worktree.
+    4. In issues/<id>/handoff.md, write "Session end partial progress": the steps done, the count of `git status --short` paths, and the exact next step. A planner writes plan.md and handoff.md as far as they are. A reviewer writes its report as far as it is, with the line `Verdict: incomplete`.
+    5. End your turn with one line: `committed <sha>` or `uncommitted <n> paths`, and the handoff path.
+
+A subagent reads a message at its next tool round, so an agent inside one
+long foreground check reads the wrap-up when that check ends. The check
+spends wall clock, not usage.
+
+**Without the tool.** If `get_usage` is absent, or `plan.status` is not
+`ok`, say so once in chat and continue without the guard. Do not infer the
+remaining budget, and do not call a session safe because nothing warned
+you. A terminal session without the ccd tools reads the window only through
+the `statusLine` command; the guard that read it (`git show 60172d3`) was
+removed because the desktop app never invokes that command (measured
+2026-09-09). Without a reading, take the human's figure, act on it, and
+keep every batch at a committed boundary with the handoff current.
 
 If the human says the session is ending (or usage is exhausted):
 - do not start a new batch

@@ -20,6 +20,7 @@ deleted.
 - 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
 - 2026-10-29 - [A sign-in return keeps the language of the address left](decisions/2026-10-29-a-sign-in-return-keeps-the-language-of-the-address-left.md)
 - 2026-10-29 - [The Items tab filter lives in the address](decisions/2026-10-29-the-items-tab-filter-lives-in-the-address.md)
+- 2026-10-29 - [The orchestrator reads the plan limits and winds work down before a cut](decisions/2026-10-29-the-orchestrator-reads-the-plan-limits-and-winds.md)
 - 2026-10-29 - [The Scary rule keeps one Russian body](decisions/2026-10-29-the-scary-rule-keeps-one-russian-body.md)
 - 2026-10-29 - [The set name before a set bonus is bold italic](decisions/2026-10-29-the-set-name-before-a-set-bonus-is-bold-italic.md)
 - 2026-10-29 - [The tables strip cap follows its measured layout](decisions/2026-10-29-the-tables-strip-cap-follows-its-measured-layout.md)

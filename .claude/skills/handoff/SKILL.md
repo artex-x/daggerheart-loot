@@ -25,6 +25,11 @@ is the human's. `CLAUDE.md`, "Task and session protocol", points here.
    amend of a pushed commit), green on its gates, and push it.
 6. The squash onto `main` happens only when the task is finished (below).
 
+A `USAGE WRAP-UP` message (`.claude/prompts/orchestrate.prompt.md`, "Usage
+guards") replaces steps 2-5 for a worker: it commits only a batch whose
+gates passed, reverts nothing, and its handoff stays uncommitted in the
+worktree until the next session.
+
 ## Finishing a task
 
 1. Start no new work; code at a committed boundary.
