@@ -210,10 +210,12 @@ do not replace":
 
 ## Usage guards
 
-The rule and the wrap-up message are in `prompts/orchestrate.prompt.md`,
-"Session ending", "Usage guards"; the decision is `docs/decisions/`,
-2026-10-29, "The orchestrator reads the plan limits and winds work down
-before a cut". Facts from 2026-10-29 on the Windows desktop app, Max plan:
+The rules and the wrap-up message are in `prompts/orchestrate.prompt.md`,
+"Session ending", "Usage guards" and "A fresh session at half context"; the
+decisions are `docs/decisions/`, 2026-10-29, "The orchestrator reads the
+plan limits and winds work down before a cut" and "Usage guards park work,
+never change a tier, and resume AFK work after a reset". Facts from
+2026-10-29 on the Windows desktop app, Max plan:
 
 - `mcp__ccd_session_mgmt__get_usage` returns `plan.status` (`ok`,
   `not_applicable`, `unavailable`); `plan.windows[]` with `label` (`5-hour
@@ -264,6 +266,16 @@ before a cut". Facts from 2026-10-29 on the Windows desktop app, Max plan:
   nothing, and reported `uncommitted 1 paths` by 20:06:29, under 1 minute.
   At the forced weekly threshold a dispatch and a resume were both refused
   after one `get_usage` reading, and `ListAgents` showed no new agent.
+- The second dry run (2026-10-29, 21:00-21:05 UTC, with the prompt of
+  commit `7a60c009`): at a forced weekly wrap-up the tick appended
+  `2026-10-29T21:01Z,58,84,27` under the header of the usage log, sent the
+  weekly wrap-up and deleted itself; the `haiku` stand-in stopped after
+  step 11, committed nothing and reported within 2 minutes; no resume was
+  armed. A one-shot `CronCreate` pinned by the conversion one-liner to
+  22:05 local fired at 21:05:04 UTC, 4 s late; the woken session read the
+  usage, compared the handoff's count (none, read as 0) with `git status
+  --short` (0) and dispatched nothing, because the next step waited for the
+  owner.
 - A reviewer that gets the wrap-up writes `Verdict: incomplete`. `lib.mjs`'s
   `VERDICT_RE` accepts only `approve`, `fix-then-continue` and `replan`, so
   the head parses as no verdict, which every guard treats as not passed. A
@@ -272,6 +284,24 @@ before a cut". Facts from 2026-10-29 on the Windows desktop app, Max plan:
   the `statusLine` command; the guard that read it (`git show 60172d3`) was
   removed because the desktop app never invokes that command (measured
   2026-09-09: zero invocations while hooks fired nine times).
+- Cron reads the user's local time zone: a one-shot pinned at 20:23 local
+  fired at 19:23 UTC (UTC+1). The resume one-shot takes its fields from a
+  Node conversion of `resetsAt`, which pins the day and the month.
+- `mcp__ccd_session__start_session` (tool description, read 2026-10-29):
+  `initiation: "user_asked"` starts at once, `own_initiative` waits as a
+  card for the owner, up to a week; `context: "fresh"` needs `prompt` and a
+  `background` of 80 characters or more; `use_worktree: false` shares the
+  worktree; the app continues the calling session when the new one ends its
+  turn, whether or not `wake_when_done` is set. `hand_off_to_session` forks
+  the conversation. The desktop app's session rules refuse `user_asked` on
+  a turn that a task notification, a cron tick or another session's message
+  started. How often the app continues the calling session is unmeasured.
+  Whether `ListAgents` shows a started card as a session that is not
+  offline is unmeasured; the first real crossing records it.
+- The usage log `C:\Users\Ignat\.dhloot\notes\usage-log.csv` has the header
+  `utc,five_hour_pct,weekly_pct,context_pct` and closes on 2026-11-05.
+  A Node one-liner appends one row in one Bash call and writes the header
+  when the file is missing; the Write tool replaces the whole file.
 
 ## Hooks
 
