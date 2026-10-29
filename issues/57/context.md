@@ -137,6 +137,32 @@
     to the next whole kB, with the reason in the same commit, under the 270
     and 350 kB ceilings. Home: `tools/bundle-budget.mjs` and its decision
     file, written by batch 1.
+  - Site share cards (owner, 2026-10-29, chat: "Yes, batch 1"): batch 1
+    re-renders both cards in the new system with the font change. Home:
+    `docs/artwork.md`, "The site share cards", written by batch 1. Facts:
+    `og/_share.jpg` and
+    `og/_share_en.jpg` are rendered by `tools/artwork/cards.mjs` from
+    `shareCardSvg()` in `tools/artwork/lib.mjs`, set in Inter
+    (`CARD_FONT`, faces in `tools/artwork/fonts/`), with the old violet
+    and blue grounds and a gold star and gold «DAGGERHEART». `docs/artwork.md`,
+    "The site share cards", says the text uses the first family of `--ui`,
+    so batch 1's font change makes that sentence false. The paths are a
+    contract (`CONTRACTS.md` section 5); the bytes are not. Scope: Source
+    Sans 3 faces, R's ground and gold budget, `CARD_FONT`, the font files,
+    hashes and text in `docs/artwork.md`, then `cards.mjs` and `--check`.
+    Per-item `og/<id>.jpg` are
+    art only and stay.
+  - DESIGN.md timing (owner, 2026-10-29, chat): each DESIGN.md rule is
+    written by the batch that ships it (plan section 5); the clarity rule
+    moves from the lock batch to batch 1. The refresh adds a table that maps
+    every `audit.md` finding and systemic theme to the batch that writes its
+    DESIGN.md rule. Home: `DESIGN.md`, batch 1 (clarity rule).
+  - Batch merges (owner, 2026-10-29, chat): the refresh merges batches 5
+    and 6 (homebrew editor with homebrew pages and imports) and batches 9b
+    and 10 (lists page with the shared list page), 12 batches to 10, to save
+    gate cycles. The planner may pair 10 with 9a instead when the shared
+    page reuses more of `ListPage.svelte` than of the lists page; it names
+    the evidence. Home: `plan.md` only (scratch).
 - Open questions: none.
 
 ## Screenshot / attachment findings
