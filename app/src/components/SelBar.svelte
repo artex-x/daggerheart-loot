@@ -136,7 +136,7 @@
 
 {#if n || shared}
   <!-- A labelled region: the bar sits after the footer, outside every other landmark. -->
-  <section class="selbarwrap" class:idle={!n} aria-label={t.selRegion}>
+  <section class="selbarwrap" class:idle={!n} class:vh={!n} aria-label={t.selRegion}>
     <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}
         >{#if n}<span class="selcount">{countText}</span>&#32;{#if total}<span class="seltotal"
@@ -236,15 +236,6 @@
     border-top: 1px solid rgb(216 171 94 / 35%);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-  }
-
-  .selbarwrap.idle {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   /* off `.selbar` plus `.wrap` (`git show 23c00a6^:style.css`) - the rewrite has no global

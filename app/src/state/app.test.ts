@@ -221,7 +221,7 @@ describe('the address on the way in', () => {
         at('', { cloud, storage: stored({ [HOME_KEY]: '#/homebrew' }) })
       );
       expect(app.hash).toBe('#/homebrew');
-      expect(app.route).toEqual({ kind: 'homebrew', tab: 'items', key: null });
+      expect(app.route).toEqual({ kind: 'homebrew', tab: 'items', key: null, filter: {} });
       /* With no sign-in configured there is no homebrew store: `App.svelte` draws not found. */
       expect(app.homebrew === null).toBe(cloud === null);
       app.stop();

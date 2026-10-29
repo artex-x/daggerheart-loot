@@ -475,6 +475,12 @@ async function landedUnderHeader(page, id) {
   }, id);
 }
 
+/** Returns the tables strip's height cap at `width` (docs/specs/FEATURES.md, "Rolling";
+ *  the bands follow the layout measured 2026-10-28). */
+function stripCap(width) {
+  return width < 500 ? 300 : width < 768 ? 210 : width < 1000 ? 150 : 130;
+}
+
 (async () => {
   for (const width of WIDTHS) {
     for (const lang of LANGS) {
@@ -644,7 +650,7 @@ async function landedUnderHeader(page, id) {
           });
           /* Six group chips, seven signed in, and a second row of seven books: 283, 118 and
              79 px at 360, 768 and 1180 (2026-10-21); docs/specs/FEATURES.md, "Rolling". */
-          const cap = width < 500 ? 300 : width < 1000 ? 150 : 130;
+          const cap = stripCap(width);
           ok(strip <= cap, where + ': section strip ' + strip + 'px, cap ' + cap);
         }
 
@@ -727,6 +733,34 @@ async function landedUnderHeader(page, id) {
             where + ': ' + full + ' shows "' + chip.text + '", not "' + want + '"'
           );
         }
+      }
+      /* The strip at the mid widths no run width reaches, as gm2 (the seventh group chip
+         drawn, the worst case); each height printed. Measured 2026-10-28: 201 px at 500,
+         162 px to about 700; docs/specs/FEATURES.md, "Rolling". */
+      if (width === 768) {
+        for (const w of [500, 600, 700]) {
+          await d.viewport(w, 900);
+          for (const t of ['many_worlds_tavern', 'core_item', 'eq_weapon']) {
+            const where = 'полоса таблиц #/tables/' + t + ' @' + w + ' ' + lang;
+            await d.open('#/tables/' + t, { as: 'gm2', lang });
+            await d.settled(where);
+            const strip = await page.evaluate(() =>
+              Math.round(
+                [...document.querySelectorAll('.tablenav .chips')].reduce(
+                  (h, x) => h + x.getBoundingClientRect().height,
+                  0
+                )
+              )
+            );
+            console.log('  strip ' + t + ' @' + w + ' ' + lang + ': ' + strip + ' px');
+            ok(strip > 0, where + ': no section strip');
+            ok(
+              strip <= stripCap(w),
+              where + ': section strip ' + strip + 'px, cap ' + stripCap(w)
+            );
+          }
+        }
+        await d.viewport(768, 900);
       }
       await ctx.close();
     }

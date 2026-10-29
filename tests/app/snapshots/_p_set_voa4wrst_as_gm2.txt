@@ -31,7 +31,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-voa4wrst?as=gm
     button "Ссылка на набор"
     status ""
     StaticText "В окне печати выберите A4, книжную ориентацию и поля «нет». Лист..." [namelen=147 namehash=0731b4fd]
-    ... StaticText x179 of 183 same-shape siblings elided
+    ... StaticText x182 of 186 same-shape siblings elided
     heading "КЛЯТВА РАВНОВЕСИЯ" [level=2]
     LineBreak " "
     LineBreak " "
@@ -102,7 +102,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-voa4wrst?as=gm2]
     button "Link to this set"
     status ""
     StaticText "In the print dialog pick A4, portrait, and margins "none". The s..." [namelen=161 namehash=6a7c87df]
-    ... StaticText x180 of 184 same-shape siblings elided
+    ... StaticText x183 of 187 same-shape siblings elided
     heading "OATH OF BALANCE" [level=2]
     LineBreak " "
     LineBreak " "

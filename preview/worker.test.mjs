@@ -1050,12 +1050,12 @@ describe('the Pages control files', () => {
 
   it('routes only the card families to the worker', () => {
     const routes = JSON.parse(readFileSync(pub('_routes.json'), 'utf8'));
-    /* The bare /tables is the static rewrite's: Pages matches /tables/* to /tables too
-       (measured 2026-10-28 with wrangler pages dev). */
+    /* The bare /tables, with or without its slash, is the static rewrite's: Pages matches
+       /tables/* to /tables too (measured 2026-10-28 with wrangler pages dev). */
     assert.deepEqual(routes, {
       version: 1,
       include: FIXTURE.routes,
-      exclude: ['/tables', '/en/tables']
+      exclude: ['/tables', '/tables/', '/en/tables', '/en/tables/']
     });
     assert.ok(!FIXTURE.routes.some((r) => r.startsWith('/mcp') || r.startsWith('/en/mcp')));
   });

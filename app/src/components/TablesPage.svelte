@@ -600,8 +600,9 @@
     <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus
          this screen's own margin-free nav row. Svelte scopes this
          component's rule to its own elements, so a `class` prop on `Panel`
-         would have to be `:global()` here - kept inline. -->
-    <div class="panel tablenav">
+         would have to be `:global()` here - kept inline. It is the page's navigation
+         landmark, named by its tab's word as the supplements panel is. -->
+    <nav class="panel tablenav" aria-label={t.tables}>
       <ChipRow>
         {#each TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
           <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
@@ -655,7 +656,7 @@
           {/each}
         </ChipRow>
       {/if}
-    </div>
+    </nav>
 
     {#if !index}
       <NoData>{t.noData}</NoData>
@@ -884,6 +885,7 @@
   }
 
   @media (max-width: 900px) {
+    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
     .toolbar :global(.btn-lbl) {
       position: absolute;
       width: 1px;

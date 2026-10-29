@@ -393,7 +393,16 @@ const { ok } = rep;
     ['#/tables/homebrew/f_src-hb_alderworkshopaaa', 1],
     ['#/tables/homebrew/f_kind-item.src-hb', 2]
   ];
-  for (const [hash, want] of CHIP_PROBE) {
+  /* The Items tab of «Мои предметы» reads the same groups, but `src` there is a facet: its
+     values are OR'd, so two sources draw both, where the table's chip draws one. */
+  const ITEMS_PROBE = [
+    ['#/homebrew', 4],
+    ['#/homebrew/f_src-hb', 3],
+    ['#/homebrew/f_src-hb_alderworkshopaaa', 1],
+    ['#/homebrew/f_src-hb-hb_alderworkshopaaa', 4],
+    ['#/homebrew/f_kind-item.src-hb', 2]
+  ];
+  for (const [hash, want] of [...CHIP_PROBE, ...ITEMS_PROBE]) {
     const n = await ownRowsAt(hash);
     ok(n === want, hash + ' as gm1: ' + n + ' rows, want ' + want);
   }

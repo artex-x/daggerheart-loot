@@ -563,10 +563,17 @@ const { ok } = rep;
   ok(/Близко/i.test(emberStrips[1] || ''), 'Ember second strip: ' + emberStrips[1]);
   const emberDice = await page.$$eval('.pc-die', (e) => e.map((x) => x.textContent.trim()));
   ok(emberDice.join() === 'd8,d12', 'Ember dice: ' + emberDice.join());
-  /* The set lead is the italic run that names the set; the bonus after it may hold an
-     italic condition of its own (FEATURES.md, "Records", "Catalog style"). */
-  const setLead = (e) => e.map((x) => x.textContent).find((t) => t.includes('(Комплект:'));
-  const emberLast = await page.$$eval('.pc-text i', setLead);
+  /* The set lead: the name in bold italic, then the members in italics (FEATURES.md,
+     "Print"); the bonus after it may hold an italic condition of its own. */
+  const setLead = (e) =>
+    e
+      .map((b) =>
+        b.firstElementChild?.tagName === 'I' && b.nextElementSibling?.tagName === 'I'
+          ? b.textContent + b.nextElementSibling.textContent
+          : ''
+      )
+      .find((t) => t.includes('(Комплект:'));
+  const emberLast = await page.$$eval('.pc-text b.pc-set', setLead);
   ok(
     emberLast === 'Пылающие близнецы (Комплект: Уголёк, Искра):',
     'Ember set line label: ' + emberLast
@@ -581,7 +588,7 @@ const { ok } = rep;
     'Spark carries the bonus other than once, in the set line: ' + sparkText
   );
   await openPrint(d, 'voa4_t3d');
-  const guardLast = await page.$$eval('.pc-text i', setLead);
+  const guardLast = await page.$$eval('.pc-text b.pc-set', setLead);
   ok(
     guardLast === 'Убранство Святого (Комплект: Святой Щит, Святой Клинок, Святое Облачение):',
     'Saintly Guard set line label: ' + guardLast

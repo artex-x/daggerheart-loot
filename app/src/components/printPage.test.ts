@@ -509,15 +509,27 @@ describe('the print frame', () => {
   });
 });
 
+/* The set lead of a print card: the set name in `b > i`, then the members' `i`, if any. */
+function setLead(id: string): string | undefined {
+  const name = document.querySelector(`.pcard[data-pid="${id}"] .pc-text b.pc-set`);
+  if (!name) return undefined;
+  const next = name.nextElementSibling;
+  return name.textContent + (next?.tagName === 'I' ? next.textContent : '');
+}
+
 describe('a set member', () => {
   it("draws the set's shared bonus as the last text line, labelled with the members", async () => {
     const { container } = render(App, { env: await atSet('st1-st2') });
     await opened();
     for (const id of ['st1', 'st2']) {
-      const labels = document.querySelectorAll(`.pcard[data-pid="${id}"] .pc-text i`);
-      const last = labels[labels.length - 1];
-      expect(last?.textContent, id).toBe(
+      expect(setLead(id), id).toBe(
         'Двойное пламя (Комплект: Угольный Клинок, Искристый Клинок):'
+      );
+      /* The name bold italic, the member list italic only, apart from the name. */
+      const name = document.querySelector(`.pcard[data-pid="${id}"] .pc-text b.pc-set > i`);
+      expect(name?.textContent, id).toBe('Двойное пламя');
+      expect(name?.parentElement?.nextElementSibling?.textContent, id).toBe(
+        ' (Комплект: Угольный Клинок, Искристый Клинок):'
       );
       expect(
         document
@@ -1824,10 +1836,7 @@ describe('homebrew cards', () => {
 });
 
 describe("the author's own set members", () => {
-  const label = (id: string): string | null | undefined => {
-    const labels = document.querySelectorAll(`.pcard[data-pid="${id}"] .pc-text i`);
-    return labels[labels.length - 1]?.textContent;
-  };
+  const label = setLead;
 
   it('names the homebrew set members with (HB) and folds them past the third', async () => {
     const pieces = ['Г', 'В', 'Б', 'А'].map((ru, i) => ({
@@ -1943,6 +1952,12 @@ describe("the author's own set members", () => {
     await waitFor(() => {
       expect(label(KEY)).toBe('Чужой комплект:');
     });
+    /* No members: the name and its colon in bold italic, no members' italics after it. */
+    const lead = document.querySelector(`.pcard[data-pid="${KEY}"] .pc-text b.pc-set`);
+    expect([...(lead?.children ?? [])].map((c) => c.tagName + ':' + c.textContent)).toEqual([
+      'I:Чужой комплект:'
+    ]);
+    expect(lead?.nextElementSibling?.tagName).not.toBe('I');
     expect(
       document
         .querySelector(`.pcard[data-pid="${KEY}"] .pc-text`)

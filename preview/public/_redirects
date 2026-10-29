@@ -2,6 +2,7 @@
 /en/i/* /i/en/:splat 301
 /roll/* / 200
 /tables / 200
+/tables/ / 200
 /search / 200
 /lists / 200
 /lists/* / 200
@@ -14,6 +15,7 @@
 /i/en/hb_* /en/ 200
 /en/roll/* /en/ 200
 /en/tables /en/ 200
+/en/tables/ /en/ 200
 /en/search /en/ 200
 /en/lists /en/ 200
 /en/lists/* /en/ 200

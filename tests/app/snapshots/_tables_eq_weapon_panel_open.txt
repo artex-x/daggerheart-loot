@@ -23,15 +23,16 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
     button "Как это работает" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
-    link "Core" [url=/tables/core_item]
-    link "Hope & Fear" [url=/tables/hope_and_fear_item]
-    link "Альт. таблицы" [url=/tables/alt_item]
-    link "Дополнения" [url=/tables/wondrous_environments]
-    link "Снаряжение" [url=/tables/eq_weapon]
-    link "Прочее" [url=/tables/other_starting]
-    link "Оружие" [url=/tables/eq_weapon]
-    link "Вторичное" [url=/tables/eq_secondary]
-    link "Броня" [url=/tables/eq_armor]
+    navigation "Таблицы"
+      link "Core" [url=/tables/core_item]
+      link "Hope & Fear" [url=/tables/hope_and_fear_item]
+      link "Альт. таблицы" [url=/tables/alt_item]
+      link "Дополнения" [url=/tables/wondrous_environments]
+      link "Снаряжение" [url=/tables/eq_weapon]
+      link "Прочее" [url=/tables/other_starting]
+      link "Оружие" [url=/tables/eq_weapon]
+      link "Вторичное" [url=/tables/eq_secondary]
+      link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -667,7 +668,7 @@ daggerheart.com
 Поглощающие Рукавицы
 Поглощающие РукавицыРанг 4 · Магическое · Влияние · Вплотную · d... [namelen=201 namehash=6cb71293]
 Пожирающий Кинжал
-Пожирающий КинжалРанг 2 · Магическое · Искусность · Вплотную · d... [namelen=181 namehash=a0edc0b8]
+Пожирающий КинжалРанг 2 · Магическое · Искусность · Вплотную · d... [namelen=173 namehash=ec3cca18]
 Позолоченный Лук
 Позолоченный ЛукРанг 3 · Магическое · Искусность · Далеко · d6+7... [namelen=198 namehash=42ef54e0]
 Позолоченный Фальшион
@@ -858,7 +859,7 @@ daggerheart.com
 Скалка
 СкалкаРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Одно... [namelen=105 namehash=5920ae62]
 Скальпель Хирурга
-Скальпель ХирургаРанг 2 · Физическое · Знание · Вплотную · d8+3 ... [namelen=184 namehash=d1dca341]
+Скальпель ХирургаРанг 2 · Физическое · Знание · Вплотную · d8+3 ... [namelen=176 namehash=37a57bce]
 Скимитар
 СкимитарРанг 1 · Физическое · Влияние · Вплотную · d8+1 физ · Од... [namelen=98 namehash=3d8f7eb6]
 Скипетр
@@ -878,7 +879,7 @@ daggerheart.com
 Средне
 Ссылка на таблицу
 Стальная Алебарда
-Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=172 namehash=f15728dc]
+Стальная АлебардаРанг 2 · Физическое · Сила · Близко · d8+4 физ ... [namelen=164 namehash=19b541b5]
 Стихийный Длинный Лук
 Студенистый Молот
 Сумеречное Крыло
@@ -1064,15 +1065,16 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     button "Open this section on start" [description=Open this section on start pressed=false]
     button "How this works" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
-    link "Core" [url=/en/tables/core_item]
-    link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
-    link "Alt. tables" [url=/en/tables/alt_item]
-    link "Supplements" [url=/en/tables/wondrous_environments]
-    link "Equipment" [url=/en/tables/eq_weapon]
-    link "Other" [url=/en/tables/other_starting]
-    link "Weapons" [url=/en/tables/eq_weapon]
-    link "Secondary" [url=/en/tables/eq_secondary]
-    link "Armor" [url=/en/tables/eq_armor]
+    navigation "Tables"
+      link "Core" [url=/en/tables/core_item]
+      link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+      link "Alt. tables" [url=/en/tables/alt_item]
+      link "Supplements" [url=/en/tables/wondrous_environments]
+      link "Equipment" [url=/en/tables/eq_weapon]
+      link "Other" [url=/en/tables/other_starting]
+      link "Weapons" [url=/en/tables/eq_weapon]
+      link "Secondary" [url=/en/tables/eq_secondary]
+      link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]

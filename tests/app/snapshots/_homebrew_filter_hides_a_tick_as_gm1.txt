@@ -1,11 +1,11 @@
 # #/homebrew ~ filter hides a tick as gm1
 # route: #/homebrew
-# why: «Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked
+# why: «Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked; the pick wrote the address #/homebrew/f_src-hb_alderworkshopaaa
 # as: gm1
 
 ## ru :: tree
-RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=/homebrew?as=gm1&items=12]
-  link "К содержимому" [url=/homebrew?as=gm1&items=12#main]
+RootWebArea "Мои предметы - Генератор лута Daggerheart" [url=/homebrew/f_src-hb_alderworkshopaaa?as=gm1&items=12]
+  link "К содержимому" [url=/homebrew/f_src-hb_alderworkshopaaa?as=gm1&items=12#main]
   banner ""
     link "Лут DAGGERHEART" [url=/roll/std]
       StaticText "Лут"
@@ -115,8 +115,8 @@ daggerheart.com
 Хоумбрю
 
 ## en :: tree
-RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&items=12]
-  link "Skip to content" [url=/en/homebrew?as=gm1&items=12#main]
+RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/f_src-hb_alderworkshopaaa?as=gm1&items=12]
+  link "Skip to content" [url=/en/homebrew/f_src-hb_alderworkshopaaa?as=gm1&items=12#main]
   banner ""
     link "Лут DAGGERHEART" [url=/en/roll/std]
       StaticText "Лут"

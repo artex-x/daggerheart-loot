@@ -419,6 +419,7 @@
       width: 44px;
     }
 
+    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
     .acct .t {
       position: absolute;
       width: 1px;

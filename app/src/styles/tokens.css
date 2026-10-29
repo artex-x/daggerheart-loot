@@ -170,6 +170,18 @@ textarea::placeholder {
   border-radius: var(--r-sm);
 }
 
+/* Visually hidden: out of sight, still read by assistive technology. `!important`
+   lets the class win over a component's own scoped rule on the same element. */
+.vh {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
 /* D1, paid off: the real policy the comment above used to point at as owed.
    `0.01ms`/`0s` rather than `transition: none`/`animation: none` - a zero
    duration still applies the end state synchronously, on the same frame,

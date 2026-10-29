@@ -1,0 +1,6 @@
+# 2026-10-29 - The tables strip cap follows its measured layout
+
+- Task: `catalog-filter-links` (owner, 2026-10-28, Q4 = A).
+- Decision: the tables strip keeps its layout, and its height cap gains a band for 500 to 767 px: 300 px under 500 px, 210 px from 500 to 767 px, 150 px from 768 to 999 px, 130 px from 1000 px. The 210 px is the 201 px measured at 500 px (Russian, `many_worlds_tavern`, signed out and as gm2, 2026-10-28) plus a margin. `tests/app/sweep.js` measures the strip at 500, 600 and 700 px in its 768 run, in both languages, as gm2 (the seventh group chip drawn), and prints each height. A height over 210 px on CI goes to the owner; the band is not raised by an implementer. Homes: `docs/specs/FEATURES.md`, "Rolling"; `tests/app/sweep.js`.
+- Rejected: B, a layout change under 768 px (smaller group chips, the short book names up to 767 px): it still measures about 142-181 px at 500 px, and it repeats what "Rolling" rejected before (shrinking type, reducing spacing).
+- Accepted trade-off: from 500 to 767 px the strip stays up to about a quarter of a phone-landscape screen; nothing on screen changes. The band rests on one host's system fonts: CI's Linux Chrome can wrap one more chip line.

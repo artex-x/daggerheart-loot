@@ -322,7 +322,12 @@ describe('the account page', () => {
 
 describe('the homebrew pages', () => {
   it('reads `#/homebrew`, `#/homebrew/new` and `#/homebrew/<key>`', () => {
-    expect(parseHash(HOMEBREW_HASH)).toEqual({ kind: 'homebrew', tab: 'items', key: null });
+    expect(parseHash(HOMEBREW_HASH)).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: {}
+    });
     expect(parseHash('#/homebrew/new')).toEqual({ kind: 'homebrewItem', key: null });
     expect(parseHash('#/homebrew/hb_emberaxeaaaaaaaa')).toEqual({
       kind: 'homebrewItem',
@@ -334,23 +339,32 @@ describe('the homebrew pages', () => {
     expect(parseHash('#/homebrew/sources')).toEqual({
       kind: 'homebrew',
       tab: 'sources',
-      key: null
+      key: null,
+      filter: {}
     });
-    expect(parseHash('#/homebrew/sets')).toEqual({ kind: 'homebrew', tab: 'sets', key: null });
+    expect(parseHash('#/homebrew/sets')).toEqual({
+      kind: 'homebrew',
+      tab: 'sets',
+      key: null,
+      filter: {}
+    });
     expect(parseHash('#/homebrew/rules')).toEqual({
       kind: 'homebrew',
       tab: 'rules',
-      key: null
+      key: null,
+      filter: {}
     });
     expect(parseHash('#/homebrew/sets/hb_aldersetaaaaaaaa')).toEqual({
       kind: 'homebrew',
       tab: 'sets',
-      key: 'hb_aldersetaaaaaaaa'
+      key: 'hb_aldersetaaaaaaaa',
+      filter: {}
     });
     expect(parseHash('#/homebrew/rules/hb_alderrulecardaaa')).toEqual({
       kind: 'homebrew',
       tab: 'rules',
-      key: 'hb_alderrulecardaaa'
+      key: 'hb_alderrulecardaaa',
+      filter: {}
     });
   });
 
@@ -369,12 +383,52 @@ describe('the homebrew pages', () => {
       ['rules', null],
       ['rules', 'hb_alderrulecardaaa']
     ] as const) {
-      expect(parseHash(homebrewTabHash(tab, key))).toEqual({ kind: 'homebrew', tab, key });
+      expect(parseHash(homebrewTabHash(tab, key))).toEqual({
+        kind: 'homebrew',
+        tab,
+        key,
+        filter: {}
+      });
     }
+  });
+
+  it('reads the Items tab filter, any number of sources among its values', () => {
+    expect(parseHash('#/homebrew/f_kind-item.src-hb-hb_alderworkshopaaa')).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: { kind: ['item'], src: ['hb', 'hb_alderworkshopaaa'] }
+    });
+    expect(parseHash('#/homebrew/f_')).toEqual({
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: {}
+    });
+  });
+
+  it('builds the Items tab filter address and reads it back, with nothing for no value', () => {
+    for (const filter of [
+      { kind: ['consumable'] },
+      { src: ['hb', 'hb_alderworkshopaaa'] },
+      { kind: ['item', 'equip'], src: ['hb_alderworkshopaaa'], sect: ['hb_sectbladesaaaaaa'] }
+    ]) {
+      const hash = homebrewTabHash('items', null, filter);
+      expect(hash).toMatch(/^#\/homebrew\/f_/);
+      expect(parseHash(hash)).toEqual({ kind: 'homebrew', tab: 'items', key: null, filter });
+    }
+    expect(homebrewTabHash('items', null, {})).toBe('#/homebrew');
+    expect(homebrewTabHash('items', null, { kind: [] })).toBe('#/homebrew');
+    expect(homebrewTabHash('items', null, { tier: ['1'] })).toBe('#/homebrew');
+    expect(homebrewTabHash('sets', null, { kind: ['item'] })).toBe('#/homebrew/sets');
   });
 
   it('reads any other homebrew address as unreadable', () => {
     for (const h of [
+      '#/homebrew/f_kind-item/x',
+      '#/homebrew/f_kind-item%',
+      '#/homebrew/sources/f_kind-item',
+      '#/homebrew/sets/f_kind-item',
       '#/homebrew/',
       '#/homebrew/items',
       '#/homebrew/sources/hb_aldersetaaaaaaaa',
@@ -788,6 +842,8 @@ describe('keepsTicks', () => {
 
   it('keeps the ticks between two «Мои предметы» tabs', () => {
     expect(keepsTicks(at('#/homebrew'), at('#/homebrew/sources'))).toBe(true);
+    expect(keepsTicks(at('#/homebrew'), at('#/homebrew/f_kind-item'))).toBe(true);
+    expect(keepsTicks(at('#/homebrew/f_kind-item'), at('#/homebrew/sets'))).toBe(true);
   });
 
   it('keeps the ticks between two #/tables/homebrew addresses', () => {

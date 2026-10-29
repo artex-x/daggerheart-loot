@@ -732,6 +732,43 @@
     }
   },
   {
+    "hash": "#/homebrew/f_kind-item.src-hb",
+    "why": "the Items tab of «Мои предметы» with its filter; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
+    "resolves": {
+      "hash": "#/homebrew/f_kind-item.src-hb",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa",
+    "why": "on the Items tab src holds any number of values, OR'd (the table's source chip holds one); a value no row offers is not in force; address kept",
+    "resolves": {
+      "hash": "#/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa",
+      "tab": null,
+      "rows": 0,
+      "printCards": 0,
+      "picked": []
+    }
+  },
+  {
+    "hash": "#/homebrew/f_kind-item/x",
+    "why": "anything after the Items tab filter is an unreadable address and is replaced by the home section",
+    "resolves": {
+      "hash": "#/roll/std",
+      "tab": "#/roll/std",
+      "rows": 0,
+      "printCards": 0,
+      "picked": [],
+      "source": [
+        "core:on",
+        "hnf:on"
+      ]
+    }
+  },
+  {
     "hash": "#/tables/homebrew",
     "why": "the signed-in author's own items as a table; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
     "resolves": {

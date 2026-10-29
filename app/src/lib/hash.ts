@@ -53,8 +53,9 @@ export type Route =
    *  so the address never falls home (docs/specs/ROUTES.md, "Account"). */
   | { kind: 'account' }
   /** The author's own items, one tab; like `account`, in every build. `key` opens one
-   *  card and is only read on `sets` and `rules`. */
-  | { kind: 'homebrew'; tab: HomebrewTab; key: string | null }
+   *  card and is only read on `sets` and `rules`; `filter` is the Items tab's `/f_`
+   *  segment, `{}` on every other tab (docs/specs/ROUTES.md, "Homebrew"). */
+  | { kind: 'homebrew'; tab: HomebrewTab; key: string | null; filter: FilterState }
   /** The editor of one own item; `key` null is a new item. */
   | { kind: 'homebrewItem'; key: string | null }
   /** Nothing could be read - the caller replaces it with the home section. */
@@ -162,12 +163,21 @@ export function parseHash(hash: string): Route {
     return { kind: 'item', id: (/^[0-9A-Fa-f-]*/.exec(h.slice(2))?.[0] ?? '').toLowerCase() };
   }
   if (h === 'account') return { kind: 'account' };
-  if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null };
+  if (h === 'homebrew') return { kind: 'homebrew', tab: 'items', key: null, filter: {} };
+  const own = /^homebrew\/(f_[A-Za-z0-9_.-]*)$/.exec(h);
+  if (own) {
+    return {
+      kind: 'homebrew',
+      tab: 'items',
+      key: null,
+      filter: decodeFilter(own[1] ?? '', groupsFor('homebrew'))
+    };
+  }
   const tab = /^homebrew\/(?:(sources)|(sets|rules)(?:\/(hb_[a-z2-7]{16}))?)$/.exec(h);
   if (tab) {
     return tab[1]
-      ? { kind: 'homebrew', tab: 'sources', key: null }
-      : { kind: 'homebrew', tab: tab[2] as HomebrewTab, key: tab[3] ?? null };
+      ? { kind: 'homebrew', tab: 'sources', key: null, filter: {} }
+      : { kind: 'homebrew', tab: tab[2] as HomebrewTab, key: tab[3] ?? null, filter: {} };
   }
   const hb = /^homebrew\/(new|hb_[a-z2-7]{16})$/.exec(h);
   if (hb) return { kind: 'homebrewItem', key: hb[1] === 'new' ? null : (hb[1] ?? null) };
@@ -248,9 +258,17 @@ export function homebrewItemHash(key: string | null): string {
   return HOMEBREW_HASH + '/' + (key ?? 'new');
 }
 
-/** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and `rules`. */
-export function homebrewTabHash(tab: HomebrewTab, key: string | null = null): string {
-  return tab === 'items' ? HOMEBREW_HASH : HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
+/** Returns the address of one «Мои предметы» tab; `key` opens one card on `sets` and
+ *  `rules`, and a filter with a value adds the Items tab's `/f_` segment
+ *  (docs/specs/ROUTES.md, "Homebrew"). */
+export function homebrewTabHash(
+  tab: HomebrewTab,
+  key: string | null = null,
+  filter: FilterState = {}
+): string {
+  if (tab !== 'items') return HOMEBREW_HASH + '/' + tab + (key ? '/' + key : '');
+  const seg = encodeFilter(filter, groupsFor('homebrew'));
+  return HOMEBREW_HASH + (seg ? '/' + seg : '');
 }
 
 export function storedListHash(listId: string): string {

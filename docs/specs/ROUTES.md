@@ -152,6 +152,7 @@ Group keys, by table:
 | `community` | `comm` |
 | `mwt` | `kind`, `realm` |
 | `homebrew` | `kind`, `src` (one value: the source chip), `sect` |
+| `#/homebrew/f_` (the Items tab) | `kind`, `src` (any number of values, OR'd), `sect` |
 | `core_item` and the other loot tables | `kind` where the table holds more than one kind |
 | `#/s/<token>` | `kind`, `src`, `tier`, `cls`, `trait`, `range`, `burden`, `line` |
 
@@ -184,6 +185,14 @@ applies again if an entry that answers it comes back before that change. The
 copied filter link holds only the values in force, so it can differ from the
 address bar.
 
+The Items tab of «Мои предметы» (`#/homebrew/f_<filter>`, "Homebrew" below)
+reads the `homebrew` groups with the share link's offer rule: a value no drawn
+item answers draws no pill and narrows nothing, the address keeps it until the
+next pick, and that pick writes only the values in force. There `src` is a
+facet: its values are OR'd. A pick rewrites the address in place; the panel
+opens when the page reads a filter it did not write (a filter address, Back, a
+reload, a press on «Предметы»), and its fold is page memory.
+
 On `homebrew`, `src` holds one value and picks the source chip ("Homebrew"
 below): it is not a facet, and values of two sources do not combine there.
 With two or more sources a second `src` value, a value that names no held
@@ -199,7 +208,7 @@ Unframed starting inventory is not part of this table - it is `other_starting`.
 
 An empty group means "any", so an untouched filter contributes nothing and a
 plain table link carries no `f_` part at all. Values inside a group are OR'd
-(except `src` on `homebrew`, above); groups narrow each other.
+(except `src` on the `homebrew` table, above); groups narrow each other.
 
 A group a table does not offer is ignored, and the table stays whole. This is
 silent, which is why the key names above are a contract: `f_rg-melee` on
@@ -259,17 +268,22 @@ the router never sees it (`STATE.md`, `dhloot.auth.return`).
 | Hash | Meaning |
 |---|---|
 | `#/homebrew` | «Мои предметы», the Items tab: the signed-in author's own items |
+| `#/homebrew/f_<filter>` | the Items tab with its filter: `kind`, `src` (any number of values, OR'd; the source chip is `#/tables/homebrew`'s only), `sect` ("Filter grammar" above) |
 | `#/homebrew/sources` | the Sources tab: the sources and their sections |
 | `#/homebrew/sets`, `#/homebrew/sets/<key>` | the Sets tab; with a key, that set's fold open and scrolled to |
 | `#/homebrew/rules`, `#/homebrew/rules/<key>` | the Rules tab; with a key, that rule card's fold open and scrolled to |
 | `#/homebrew/new` | the editor of a new own item |
 | `#/homebrew/<key>` | the editor of one own item; `<key>` is `hb_` and 16 of `a-z2-7` |
 
-Exactly these seven shapes; `#/homebrew/`, `#/homebrew/items`,
-`#/homebrew/pistols`, `#/homebrew/sources/<key>`, `#/homebrew/sets/<not a
-key>` and any other key are unreadable addresses (`Fallback` below). A
-well-formed key the account does not hold, or a key of the other card kind,
-draws the tab with nothing open and keeps the address. The routes are read
+Exactly these eight shapes; `#/homebrew/`, `#/homebrew/items`,
+`#/homebrew/pistols`, `#/homebrew/f_x/y`, `#/homebrew/sources/f_<filter>`,
+`#/homebrew/sources/<key>`, `#/homebrew/sets/<not a key>` and any other key
+are unreadable addresses (`Fallback` below). The filter segment is strict: a
+character outside `[A-Za-z0-9_.-]` or anything after it makes the address
+unreadable, and `#/homebrew/f_` reads as the Items tab with no filter, the
+address kept. A build before the segment reads it as unreadable and opens the
+home section. A well-formed key the account does not hold, or a key of the
+other card kind, draws the tab with nothing open and keeps the address. The routes are read
 in every build, as `#/account` is: signed out they draw the sign-in prompt,
 and a build with no sign-in configured draws the not-found page and keeps
 the address. No tab reads current on them, and a pin may not hold them.

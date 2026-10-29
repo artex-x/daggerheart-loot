@@ -4937,6 +4937,69 @@ async function addressBarPathForm() {
   }
 }
 
+/** 82: the Items tab filter of «Мои предметы» lives in the address (docs/specs/ROUTES.md,
+ *  "Homebrew"): a pick replaces the address in place, Back from the editor and a reload
+ *  draw the same filter with the panel open, and a tab press and back clears it. */
+async function homebrewItemsFilterAddress() {
+  const at = '82 (the Items tab filter address): ';
+  const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
+  const view = () =>
+    page.evaluate(() => ({
+      path: location.pathname,
+      n: history.length,
+      open: document
+        .querySelector('.fbar button[aria-expanded]')
+        ?.getAttribute('aria-expanded'),
+      pills: [...document.querySelectorAll('.fpill')].map((p) =>
+        p.textContent.replace('×', '').trim()
+      ),
+      count: document.querySelector('.fcount')?.textContent.trim() ?? '',
+      rows: document.querySelectorAll('[data-row]').length
+    }));
+  const FILTERED = '/homebrew/f_src-hb_alderworkshopaaa';
+  const isFiltered = (v) =>
+    v.path === FILTERED &&
+    v.open === 'true' &&
+    JSON.stringify(v.pills) === JSON.stringify(['Мастерская Ольхи']) &&
+    v.count.includes('7 из 12') &&
+    v.rows === 7;
+  try {
+    await d.open('#/homebrew', { as: 'gm1', items: 12 });
+    await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
+    const start = await view();
+    await d.press('Фильтры');
+    await d.press('Мастерская Ольхи');
+    const picked = await view();
+    ok(
+      isFiltered(picked) && picked.n === start.n,
+      at + 'a pick is not an in-place write of the filter - ' + JSON.stringify(picked)
+    );
+    await page.click('[data-row="hb_emberaxeaaaaaaaa"] .rt');
+    ok(
+      await waitIn(page, () => location.pathname === '/homebrew/hb_emberaxeaaaaaaaa'),
+      at + 'a row did not open the editor'
+    );
+    await page.goBack();
+    await waitIn(page, () => document.querySelectorAll('[data-row]').length === 7);
+    const back = await view();
+    ok(isFiltered(back), at + 'Back did not draw the filter - ' + JSON.stringify(back));
+    await page.reload({ waitUntil: 'load' });
+    await waitIn(page, () => document.querySelectorAll('[data-row]').length === 7);
+    const reloaded = await view();
+    ok(isFiltered(reloaded), at + 'a reload lost the filter - ' + JSON.stringify(reloaded));
+    await d.press('Источники');
+    await d.press('Предметы');
+    await waitIn(page, () => document.querySelectorAll('[data-row]').length === 12);
+    const cleared = await view();
+    ok(
+      cleared.path === '/homebrew' && cleared.open === 'false' && cleared.pills.length === 0,
+      at + 'a tab press and back kept the filter - ' + JSON.stringify(cleared)
+    );
+  } finally {
+    await ctx.close();
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5011,7 +5074,8 @@ const CASES = [
   ['78 (a copy per press of a catalog record)', catalogCopyPerPress],
   ['79 (a picker list stays above the on-screen keyboard)', pickerAboveKeyboard],
   ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
-  ['81 (the address bar)', addressBarPathForm]
+  ['81 (the address bar)', addressBarPathForm],
+  ['82 (the Items tab filter address)', homebrewItemsFilterAddress]
 ];
 
 (async () => {

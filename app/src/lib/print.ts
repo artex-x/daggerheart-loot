@@ -98,23 +98,25 @@ export function printTrait(tr: Trait | undefined, lang: Lang): string {
   return short ? short[lang === 'ru' ? 0 : 1] : eqWord(EQ_TRAIT, tr, lang);
 }
 
-/** A set's shared bonus as a card's last text line. The label names the
- *  members, folded as the card folds them, so a card read alone still says the
- *  bonus needs the others; a frozen copy with no other member names none. */
+/** A set's shared bonus as a card's last text line. The card prints the name in bold
+ *  italic and `members` in italics: ` (<Комплект>: <names>)`, folded as the card folds
+ *  them, so a card read alone still says the bonus needs the others; a frozen copy
+ *  with no other member names none (`''`). */
 export function setLineOf(
   index: Index,
   it: Record_,
   lang: Lang
-): { label: string; body: string } | undefined {
+): { name: string; members: string; body: string } | undefined {
   const bonus = setBonusOf(index, it);
   if (!bonus) return undefined;
   const ru = lang === 'ru';
   const name = ru ? bonus.ru : bonus.en;
   const members = setOf(index, it);
   return {
-    label: members.length
-      ? `${name} (${dict(lang).setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
-      : name,
+    name,
+    members: members.length
+      ? ` (${dict(lang).setLabel}: ${relText(members, lang, FOLD_OWN, it.id, setFolds(setKeyOf(index, it)))})`
+      : '',
     body: ru ? bonus.rud : bonus.ende
   };
 }

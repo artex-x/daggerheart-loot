@@ -27,14 +27,15 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     ... StaticText x15 of 19 same-shape siblings elided
     link "daggerheart.su" [url=https://ru.daggerheart.su/]
     StaticText ", для Hope & Fear - таблица сообщества. Значения даны с учётом э..." [namelen=70 namehash=52485741]
-    link "Core" [url=/tables/core_item]
-    link "Hope & Fear" [url=/tables/hope_and_fear_item]
-    link "Альт. таблицы" [url=/tables/alt_item]
-    link "Дополнения" [url=/tables/wondrous_environments]
-    link "Снаряжение" [url=/tables/eq_weapon]
-    link "Прочее" [url=/tables/other_starting]
-    link "Предметы" [url=/tables/core_item]
-    link "Расходники" [url=/tables/core_consumable]
+    navigation "Таблицы"
+      link "Core" [url=/tables/core_item]
+      link "Hope & Fear" [url=/tables/hope_and_fear_item]
+      link "Альт. таблицы" [url=/tables/alt_item]
+      link "Дополнения" [url=/tables/wondrous_environments]
+      link "Снаряжение" [url=/tables/eq_weapon]
+      link "Прочее" [url=/tables/other_starting]
+      link "Предметы" [url=/tables/core_item]
+      link "Расходники" [url=/tables/core_consumable]
     searchbox "Поиск по названию или описанию..."
     button "Ссылка на таблицу"
     button "Списком" [pressed=true]
@@ -228,14 +229,15 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
     StaticText "Every table in full. The top row holds the core set, Hope & Fear..." [namelen=791 namehash=21ef1ddc]
     ... StaticText x14 of 18 same-shape siblings elided
     StaticText "Sources: the Daggerheart Core Set and Hope & Fear, with the erra..." [namelen=75 namehash=35eaebfd]
-    link "Core" [url=/en/tables/core_item]
-    link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
-    link "Alt. tables" [url=/en/tables/alt_item]
-    link "Supplements" [url=/en/tables/wondrous_environments]
-    link "Equipment" [url=/en/tables/eq_weapon]
-    link "Other" [url=/en/tables/other_starting]
-    link "Items" [url=/en/tables/core_item]
-    link "Consumables" [url=/en/tables/core_consumable]
+    navigation "Tables"
+      link "Core" [url=/en/tables/core_item]
+      link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
+      link "Alt. tables" [url=/en/tables/alt_item]
+      link "Supplements" [url=/en/tables/wondrous_environments]
+      link "Equipment" [url=/en/tables/eq_weapon]
+      link "Other" [url=/en/tables/other_starting]
+      link "Items" [url=/en/tables/core_item]
+      link "Consumables" [url=/en/tables/core_consumable]
     searchbox "Search by name or description..."
     button "Link to this table"
     button "List" [pressed=true]

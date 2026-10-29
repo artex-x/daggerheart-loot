@@ -71,7 +71,7 @@
   <span class="rt"
     ><b
       >{#if num}<span class="rnum">{num}</span>{/if}{nameOf(it, lang)}{#if gmOnly}<span
-          class="gmstate">{', ' + t.noteHid}</span
+          class="gmstate vh">{', ' + t.noteHid}</span
         >{/if}{#if tail}<i class="rtail">{tail}</i>{/if}</b
     >{#if it.eq}<span class="rstats {eqClass(it.eq)}"
         >{eqLine(
@@ -212,18 +212,6 @@
     margin-top: 3px;
     font: 600 11.5px/1.4 var(--mono);
     color: var(--muted);
-  }
-
-  /* Visually hidden, as `StatusRegion.svelte`: no text marks a GM-only row on screen
-     (docs/specs/FEATURES.md, "Account and browser lists"). */
-  .row-main .rt .gmstate {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   .row-main .rm {

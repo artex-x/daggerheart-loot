@@ -1,6 +1,6 @@
 # #/homebrew ~ filters open as gm1
 # route: #/homebrew
-# why: «Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие), page memory
+# why: «Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие); the fold is page memory, a pick writes the address
 # as: gm1
 
 ## ru :: tree

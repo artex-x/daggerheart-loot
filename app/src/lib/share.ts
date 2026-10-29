@@ -28,8 +28,8 @@ import { moneyMode, priceText, totalText, type MoneyMode } from './money.js';
 import type { Lang, Record_ } from './types.js';
 
 /** An attached paragraph: a plain heading and a body. The body is plain text, or
- *  formatted-text source when `md` is set; `lead` is plain text written before
- *  the body, then a colon. */
+ *  formatted-text source when `md` is set; `lead` is written before the body, then a
+ *  colon: plain in the text, bold italic in the HTML, as a feature name. */
 export interface ShareBlock {
   head: string;
   body: string;
@@ -207,7 +207,7 @@ function blockText(b: ShareBlock): string {
 /** Returns a block's body as flat HTML: a formatted body with its bold and italics. */
 function blockHtml(b: ShareBlock): string {
   return (
-    (b.lead !== undefined ? esc(b.lead) + ': ' : '') +
+    (b.lead !== undefined ? '<b><i>' + esc(b.lead) + ':</i></b> ' : '') +
     (b.md ? markupHtml(b.body) : esc(b.body).replace(/\n/g, '<br>'))
   );
 }

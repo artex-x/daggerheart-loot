@@ -2769,7 +2769,7 @@ const STATES = [
     route: '#/homebrew',
     as: 'gm1',
     items: 12,
-    why: '«Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие), page memory',
+    why: '«Фильтры» pressed: the panel with «Тип» (Предметы, Расходники, Снаряжение), «Источник» (Хоумбрю, Мастерская Ольхи) and «Раздел» (Пистоли, Холодное оружие); the fold is page memory, a pick writes the address',
     enter: async (d) => {
       await d.click('Фильтры');
     }
@@ -2779,12 +2779,19 @@ const STATES = [
     route: '#/homebrew',
     as: 'gm1',
     items: 12,
-    why: '«Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked',
+    why: '«Кольцо с гравировкой» of «Хоумбрю» ticked, then «Мастерская Ольхи» picked: the pill, «7 из 12», only the source rows drawn, the tick dropped and the strip unticked; the pick wrote the address #/homebrew/f_src-hb_alderworkshopaaa',
     enter: async (d) => {
       await d.tick('Кольцо с гравировкой');
       await d.click('Фильтры');
       await d.click('Мастерская Ольхи');
     }
+  },
+  {
+    id: '#/homebrew/f_src-hb_alderworkshopaaa as gm1',
+    route: '#/homebrew/f_src-hb_alderworkshopaaa',
+    as: 'gm1',
+    items: 12,
+    why: 'the Items tab at a filter address: the panel open because the page did not write the address, the pill «Мастерская Ольхи», «7 из 12», only the source rows drawn'
   },
   {
     id: '#/homebrew ~ section fold as gm1',

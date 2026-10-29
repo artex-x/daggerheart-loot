@@ -1127,6 +1127,9 @@ describe('the set line', () => {
     for (const id of ['s1', 's2']) {
       render(App, { env: at(id) });
       const label = screen.getByText('Двойное лезвие:');
+      /* The set name leads the bonus as a feature name: bold italic. */
+      expect(label.tagName).toBe('I');
+      expect(label.parentElement?.tagName).toBe('B');
       const line = label.closest('.set-bonus');
       expect(line?.previousElementSibling?.textContent).toContain('Комплект');
       expect(line?.textContent.replace(/\s+/g, ' ').trim()).toBe(
@@ -1134,6 +1137,16 @@ describe('the set line', () => {
       );
       cleanup();
     }
+  });
+
+  it('draws the set name in bold italic in English too', async () => {
+    const { container } = render(App, {
+      env: at('s1', { storage: memoryStorage({ 'dhloot.lang.v1': 'en' }) })
+    });
+    const label = screen.getByText('Twin Edge:');
+    expect(label.tagName).toBe('I');
+    expect(label.parentElement?.tagName).toBe('B');
+    await expectNoA11yViolations(container);
   });
 
   it('draws no set line for a record outside any set', () => {
@@ -1722,6 +1735,10 @@ describe("the author's own relations on a catalog card", () => {
       'href',
       '/homebrew/sets/hb_ownsetaaaaaaaaaa'
     );
+    /* The own set's link stays inside the bold-italic lead. */
+    expect(
+      screen.getByRole('link', { name: 'Свой комплект' }).closest('.set-bonus b > i')
+    ).not.toBeNull();
     const manageLinks = screen.getAllByRole('link', { name: 'Открыть в «Мои предметы»' });
     expect(manageLinks.map((a) => a.getAttribute('href'))).toEqual([
       '/homebrew/rules/hb_ownrulecardaaaaa'

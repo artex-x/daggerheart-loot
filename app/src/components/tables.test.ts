@@ -1301,6 +1301,34 @@ describe('the chip nav', () => {
     ]);
   });
 
+  it.each(['many_worlds_tavern', 'core_item'])(
+    'holds the group and book chips of %s in one navigation landmark named by the tab',
+    async (table) => {
+      const { container } = render(App, {
+        env: fakeEnv({ router: memoryRouter(`#/tables/${table}`), data: fakeData(LOOT) })
+      });
+      const navs = screen.getAllByRole('navigation', { name: 'Таблицы' });
+      expect(navs).toHaveLength(1);
+      expect(navs[0]).toHaveClass('tablenav');
+      expect(
+        within(navs[0] as HTMLElement).getByRole('link', { name: 'Core' })
+      ).toBeInTheDocument();
+      if (table === 'many_worlds_tavern') {
+        expect(navs[0]).toContainElement(bookRow());
+      }
+      await expectNoA11yViolations(container);
+      cleanup();
+      render(App, {
+        env: fakeEnv({
+          router: memoryRouter(`#/tables/${table}`),
+          data: fakeData(LOOT),
+          storage: memoryStorage({ 'dhloot.lang.v1': 'en' })
+        })
+      });
+      expect(screen.getAllByRole('navigation', { name: 'Tables' })).toHaveLength(1);
+    }
+  );
+
   it('draws a seventh, Homebrew, signed in', async () => {
     render(App, {
       env: fakeEnv({

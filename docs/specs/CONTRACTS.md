@@ -35,7 +35,8 @@ answers every route path in both forms with the app: the worker's families
 the rewrites of `preview/public/_redirects` for every other route, which also
 answers `/en/i/<id>` with a 301 to `/i/en/<id>`. Pages routes `/tables/*` to the
 worker for the bare `/tables` too, so `_routes.json` excludes `/tables` and
-`/en/tables`, which the rewrite answers. `tests/contracts.js` checks that each
+`/en/tables`, and their slash forms `/tables/` and `/en/tables/`, which the
+rewrite answers. `tests/contracts.js` checks that each
 route of `routes.json` is covered and that the worker takes no rewritten path. In particular:
 
 - the twelve section names, and the three legacy ones that fold into `roll/std`
@@ -63,6 +64,10 @@ route of `routes.json` is covered and that the worker takes no rewritten path. I
   `#/homebrew/sets[/<key>]` and `#/homebrew/rules[/<key>]` (a key opens that
   card), read in every build as `#/account` is; an own item also opens at
   `#/i/<key>`, for its author only
+- `#/homebrew/f_<filter>`, the Items tab with its filter: the groups `kind`,
+  `src` (any number of values, OR'd) and `sect` of the `homebrew` table; a
+  pick rewrites the address in place; an earlier build reads it as
+  unreadable and opens the home section (`ROUTES.md`, "Homebrew")
 - `#/tables/homebrew`, the author's own items as a table, read in every build
   as `#/account` is; its filter group `sect`, and the `src` values `hb` and
   `hb_<16>` on it and on the equipment tables (values that live in one

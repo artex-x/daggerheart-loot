@@ -127,6 +127,11 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
     for (const tab of ['/homebrew/sources', '/homebrew/sets', '/homebrew/rules']) {
       ok(text.includes(tab), name + ' does not name the «Мои предметы» tab ' + tab);
     }
+    /* The Items tab's filter address, where `src` is a facet of any number of values. */
+    ok(
+      text.includes('/homebrew/f_<filter>'),
+      name + ' does not name the Items tab filter address /homebrew/f_<filter>'
+    );
     /* The meaning of `src` on the homebrew table: one value, the source chip. */
     ok(
       /On `homebrew`, `src` holds one value and picks the\s+source chip/.test(text),
@@ -347,6 +352,14 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
         'the worker takes ' + p + ' from its _redirects rewrite; add it to _routes.json exclude'
       );
     }
+  }
+  /* A hand-typed trailing slash on the bare tables page reaches the app, not the worker
+     (docs/specs/CONTRACTS.md section 1). */
+  for (const p of ['/tables/', '/en/tables/']) {
+    ok(
+      rewrites.some((r) => r.status === 200 && r.match(p)) && !workerPaths.some((m) => m(p)),
+      'the host does not answer ' + p + ' with the app document'
+    );
   }
   ok(
     rewrites.some((r) => r.status === 301 && r.match('/en/i/ci1')),

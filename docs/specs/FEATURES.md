@@ -41,7 +41,10 @@ across.
   subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
   truncating, horizontal scroll and any other layout change were rejected -
   the short wording is the fix. The tables strip has a cap of 300 px under
-  500 px wide, 150 px under 1000 px and 130 px above (`tests/app/sweep.js`).
+  500 px wide, 210 px from 500 to 767 px, 150 px from 768 to 999 px and 130 px
+  from 1000 px (`tests/app/sweep.js`; the 210 px band follows the layout
+  measured 2026-10-28: 201 px at 500 px, 162 px to about 700 px and 118 px from
+  767 px on a seven-book row, Russian, as gm2; owner, 2026-10-28).
   Six group chips (seven signed in, with Homebrew) and the second row of
   seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
   1180 in Russian signed out, and 283 / 244 px at 360 signed in, Russian /
@@ -1378,7 +1381,10 @@ address kept, and no add-to-list control is drawn.
   shared bonus (`LOOT.sets[key]`) is drawn under the set line on every
   member and travels into copied text (the set block's body), the print card
   (the last text line, `<name> (<Set>: <members>): <text>`), the share stub
-  and `catalog.csv`; a set with no bonus copies its line alone, with no blank
+  and `catalog.csv`. The set name leads the bonus in bold italic, as a feature
+  name (catalog style S1), on the card, the print card (the name only) and the
+  copied HTML; the plain-text copy, the share stub and `catalog.csv` keep it
+  plain; a set with no bonus copies its line alone, with no blank
   line after it. The set is derived by grouping at load, never stored as a
   sibling list, and a set of one is not a set. No set filter and no set page
   exist yet (`docs/DECISIONS.md`, 2026-09-23, "The second set").
@@ -1469,8 +1475,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   a source chip press on `#/tables/homebrew` keeps them too; every other
   navigation clears the ticks. Each tab's create button is the
   first control under the tab row.
-- **The Items tab** (`#/homebrew`): «Новый предмет» (to `#/homebrew/new`), then
-  from the eighth own item the search box «Найти предмет» / "Find an item"
+- **The Items tab** (`#/homebrew`, `#/homebrew/f_<filter>` with a filter): «Новый
+  предмет» (to `#/homebrew/new`), then from the eighth own item, or when a
+  filter value is in force, the search box «Найти предмет» / "Find an item"
   (either language of the name holds the query as search folds it; page
   memory, empty each time the tab opens) and, 12 px under it, the filter strip
   of the shared list page: «Фильтры» with the rows «Тип» (Предметы,
@@ -1478,11 +1485,20 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   and «Раздел» (the sections of the picked sources, every source's with none
   picked; two sections of one name each take their source's name in
   brackets), by the offer rule over the search's matches, the count «N из M»
-  of the matches, and no link button: the filter is page memory, empty each
-  time the tab opens, never the address. A picked value no row offers (a
-  section of a source no longer picked, a source a re-read removed) leaves
-  force. A pick that draws no row: «Ничего не найдено» with a small «Сбросить
-  всё», the count kept and no selection strip. Then the count «3 предмета из 100» /
+  of the matches, and no link button. The box and the strip, once drawn, stay
+  until the tab is left (the shared page's latch). The picked values are the
+  address (`ROUTES.md`, "Homebrew"): a pick or a pill drop rewrites it in
+  place, and Back, Forward and a reload keep the filter; a filter the page did
+  not write (a filter address, Back from the editor, a press on «Предметы»)
+  opens the panel; a tab press clears the filter, and so do the editor's own
+  ways back - «К моим предметам», the delete and the not-found page - which
+  open the bare `#/homebrew`, where the browser's Back keeps it. The panel's
+  fold is page memory. A picked value no row offers (a section of a source no
+  longer picked, a source a re-read removed, another account's key) leaves
+  force: no pill and no narrowing; the address keeps it until the next pick,
+  which writes only the values in force. A pick that draws no row: «Ничего не
+  найдено» with a small «Сбросить всё», the count kept and no selection strip.
+  Then the count «3 предмета из 100» /
   "3 items of 100" (every item, not the matches; the limit from the database,
   an override's own number; «3 предмета» when the limit read failed), then the
   items as table rows under one heading per source and section: each named
@@ -2124,7 +2140,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   text block with fixed columns, 0.2 mm black cell borders in both layouts and
   words broken anywhere, so it is never wider than the card. The fit ladder
   below measures a table with the rest of the text, and clips what still does
-  not fit. A set bonus's label leads the first paragraph of its text.
+  not fit. A set bonus's label leads the first paragraph of its text: its set
+  name in bold italic, the member list in italics.
 - A card that still cuts off text after the last rung is counted: the bar
   draws «Текст не помещается на карточки при печати: N. Конец текста на них
   не напечатается.» in the warning box (rule 19) after the red deleted note
@@ -2646,7 +2663,7 @@ Each rule keeps its number: a review cites it by number.
   record keeps its record path, `i/<id>?v=<v>`, whose app document carries the record's card. Excluded, each with its reason: a
   homebrew copy with no id (nothing to link); `#/tables/homebrew`, which draws
   no table, filter or section link (each reader sees only their own items); the
-  Items tab's filter (page memory).
+  Items tab's filter (its values are one account's keys; the address is the link).
   Departure: the share panel shows the path `/s/<token>` and copies the
   preview link.
   A page-level copy hands out the address bar, `?v` included (owner,

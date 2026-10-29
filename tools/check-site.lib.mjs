@@ -460,15 +460,17 @@ export function previewChecks() {
         `i/w1?v=x returned ${meta.status}, or not the record's app document with its og:image`
     },
     /* A path that _redirects rewrites to the app document (docs/specs/CONTRACTS.md
-     * section 1): a splat after a fixed prefix, an English one, and the bare /tables
-     * that _routes.json excludes from the worker's /tables/*. */
+     * section 1): a splat after a fixed prefix, an English one, and the bare /tables,
+     * with and without its slash, that _routes.json excludes from the worker's /tables/*. */
     ...[
       ['roll/std'],
       ['tables'],
+      ['tables/'],
       ['lists/x'],
       ['i/hb_aaaaaaaaaaaaaaaa'],
       ['en/search', true],
       ['en/tables', true],
+      ['en/tables/', true],
       ['i/en/hb_aaaaaaaaaaaaaaaa', true]
     ].flatMap(([path, en]) =>
       /* Not following a redirect: a 302 home would read as the root's app document. */

@@ -193,11 +193,13 @@ describe("a card's set line", () => {
 
   it('names the set and its members, then the bonus, in each language', () => {
     expect(setLineOf(index, a, 'ru')).toEqual({
-      label: 'Пара (Комплект: Вещь x1, Вещь x2)',
+      name: 'Пара',
+      members: ' (Комплект: Вещь x1, Вещь x2)',
       body: 'Оба вместе.'
     });
     expect(setLineOf(index, a, 'en')).toEqual({
-      label: 'Pair (Set: Thing x1, Thing x2)',
+      name: 'Pair',
+      members: ' (Set: Thing x1, Thing x2)',
       body: 'Both together.'
     });
   });
@@ -211,6 +213,10 @@ describe("a card's set line", () => {
       cards: { sets: { hb_ownsetaaaaaaaaaa: card } }
     };
     const ix = withRecords(index, [], [copy]);
-    expect(setLineOf(ix, copy, 'en')).toEqual({ label: 'Own Set', body: 'A bonus.' });
+    expect(setLineOf(ix, copy, 'en')).toEqual({
+      name: 'Own Set',
+      members: '',
+      body: 'A bonus.'
+    });
   });
 });

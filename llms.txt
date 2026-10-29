@@ -291,6 +291,12 @@ new links as paths.
   `/homebrew/rules/<key>` open one card); a key (`hb_` and 16 of `a-z2-7`)
   lives in one account, so you cannot build one, and `/i/<key>` opens only
   for its author
+- `/homebrew/f_<filter>` - the Items tab of «Мои предметы» with its filter:
+  the groups `kind` (`item`, `consumable`, `equip`), `src` (any number of
+  values, OR'd) and `sect`, as in the table filter above; the `src` values
+  `hb_<16>` and every `sect` value are one account's keys, so you cannot
+  build them, but `/homebrew/f_kind-item` and `/homebrew/f_src-hb` work for
+  any signed-in GM
 
 The English interface is https://daggerheart-loot.pages.dev/en/
 followed by the same path.

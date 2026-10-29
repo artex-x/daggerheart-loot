@@ -31,7 +31,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-dragonvt?as=gm
     button "Ссылка на набор"
     StaticText "Только до перезагрузки. Чтобы сохранить, измените в "
     link "настройках аккаунта" [url=/account]
-    ... StaticText x155 of 159 same-shape siblings elided
+    ... StaticText x157 of 161 same-shape siblings elided
     status ""
     heading "УГОЛЁК" [level=2]
     LineBreak " "
@@ -104,7 +104,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-dragonvt?as=gm2]
     button "Link to this set"
     StaticText "Only until the page reloads. To keep it, change it in "
     link "your account settings" [url=/en/account]
-    ... StaticText x155 of 159 same-shape siblings elided
+    ... StaticText x157 of 161 same-shape siblings elided
     status ""
     heading "EMBER" [level=2]
     LineBreak " "

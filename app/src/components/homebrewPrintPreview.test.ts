@@ -297,5 +297,11 @@ describe('the drafts a print card draws', () => {
     expect(printText().indexOf('Лезвие тлеет')).toBeLessThan(
       printText().indexOf('Пылающие близнецы')
     );
+    /* The set name in bold italic; the member list after it in italics only. */
+    const name = text?.querySelector('b.pc-set > i');
+    expect(name).toHaveTextContent(/^Пылающие близнецы$/);
+    const members = name?.parentElement?.nextElementSibling;
+    expect(members?.tagName).toBe('I');
+    expect(members?.textContent).toMatch(/^ \(Комплект: .*\):$/);
   });
 });

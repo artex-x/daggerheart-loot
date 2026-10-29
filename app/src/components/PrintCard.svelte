@@ -36,9 +36,10 @@
     onartfail: (id: string) => void;
     /** The list's count for this card - FEATURES.md, Print. */
     qty?: number | undefined;
-    /** A set's shared bonus, drawn after the text: the label in italics, then the
-     *  bonus text, formatted. `PrintPage` builds it: the card has no index. */
-    setLine?: { label: string; body: string } | undefined;
+    /** A set's shared bonus, drawn after the text: the set name in bold italic, the
+     *  member list in italics, then the bonus text, formatted. `PrintPage` builds it:
+     *  the card has no index. */
+    setLine?: { name: string; members: string; body: string } | undefined;
     /** Told after each fit whether the card still cuts off text: the text box down or
      *  across, the name and the bottom line across, the content box down (FEATURES.md,
      *  "Print"). */
@@ -99,19 +100,22 @@
   const magFrame = $derived(eq?.cls === 'mag');
   const tag2 = $derived(eq && eq.t !== 'armor' && eq.cls ? eqWord(EQ_CLS, eq.cls, lang) : '');
   /* The text's blocks, then the set bonus: its label leads its first paragraph. */
-  const blocks = $derived.by<{ b: MarkupBlock; lead?: string }[]>(() => {
-    const own = descBlocks(it, lang).map((b) => ({ b }));
-    if (!setLine) return own;
-    const [first, ...rest] = parseMarkup(setLine.body);
-    const head =
-      first?.t === 'p'
-        ? [{ b: { t: 'p' as const, c: afterLead(first.c) }, lead: setLine.label }]
-        : [
-            { b: { t: 'p' as const, c: afterLead([]) }, lead: setLine.label },
-            ...(first ? [{ b: first }] : [])
-          ];
-    return [...own, ...head, ...rest.map((b) => ({ b }))];
-  });
+  const blocks = $derived.by<{ b: MarkupBlock; lead?: { name: string; members: string } }[]>(
+    () => {
+      const own = descBlocks(it, lang).map((b) => ({ b }));
+      if (!setLine) return own;
+      const [first, ...rest] = parseMarkup(setLine.body);
+      const lead = { name: setLine.name, members: setLine.members };
+      const head =
+        first?.t === 'p'
+          ? [{ b: { t: 'p' as const, c: afterLead(first.c) }, lead }]
+          : [
+              { b: { t: 'p' as const, c: afterLead([]) }, lead },
+              ...(first ? [{ b: first }] : [])
+            ];
+      return [...own, ...head, ...rest.map((b) => ({ b }))];
+    }
+  );
   const src = $derived(printSrc(it, lang));
   /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`, as
      every page does: the owner's departure from Figma node 714-42387 (FEATURES.md, "Print"). */
@@ -443,7 +447,8 @@
           ><thead><tr>{#each b.head as cell, k (k)}<th scope="col"><MarkupInline c={cell} /></th>{/each}</tr></thead
           ><tbody>{#each b.rows as row, k (k)}<tr>{#each row as cell, m (m)}<td><MarkupInline c={cell} /></td>{/each}</tr>{/each}</tbody
         ></table>{:else}{#if i > 0 && blocks[i - 1]?.b.t === 'p'}<br
-          />{/if}{#if lead}<i>{lead}:</i>{/if}<MarkupInline c={b.c} />{/if}{/each}</div
+          />{/if}{#if lead?.members}<b class="pc-set"><i>{lead.name}</i></b><i>{lead.members}:</i
+            >{:else if lead}<b class="pc-set"><i>{lead.name}:</i></b>{/if}<MarkupInline c={b.c} />{/if}{/each}</div
     ><div class="pc-bottom"><span class="pc-game">Daggerheart</span><span class="pc-src">{src}</span></div></div
   ></article
 >

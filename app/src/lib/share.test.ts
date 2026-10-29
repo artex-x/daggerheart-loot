@@ -239,7 +239,7 @@ describe('what travels with a record', () => {
       md: true
     });
     const html = share(ember, index, 'en').html;
-    expect(html).toContain(`<br>${esc(bonus.en)}: ${markupHtml(bonus.ende)}`);
+    expect(html).toContain(`<br><b><i>${esc(bonus.en)}:</i></b> ${markupHtml(bonus.ende)}`);
     /* Symmetric: Spark's own block names Ember back, in the same order. */
     expect(shareBlocks(spark, index, 'ru').at(-1)).toEqual({
       head: `Комплект: ${ember.ru}, ${spark.ru}`,
@@ -298,7 +298,7 @@ describe('what travels with a record', () => {
     );
     expect(
       ru.html.endsWith(
-        '<br><br><i>Комплект: Уголёк, Искра</i><br>Пылающие близнецы: При критическом успехе на Броске Атаки цель временно начинает <i>Пылать</i>. Пока она <i>Пылает</i>, она должна отметить 1 Рану во время своей активации.'
+        '<br><br><i>Комплект: Уголёк, Искра</i><br><b><i>Пылающие близнецы:</i></b> При критическом успехе на Броске Атаки цель временно начинает <i>Пылать</i>. Пока она <i>Пылает</i>, она должна отметить 1 Рану во время своей активации.'
       )
     ).toBe(true);
     const en = share(rec('dve19'), index, 'en');
@@ -311,7 +311,7 @@ describe('what travels with a record', () => {
     );
     expect(
       en.html.endsWith(
-        '<br><br><i>Set: Ember, Spark</i><br>Blazing Twins: When you critically succeed on an attack roll, set the target temporarily <i>Ablaze</i>. While <i>Ablaze</i>, they must mark 1 HP when spotlighted.'
+        '<br><br><i>Set: Ember, Spark</i><br><b><i>Blazing Twins:</i></b> When you critically succeed on an attack roll, set the target temporarily <i>Ablaze</i>. While <i>Ablaze</i>, they must mark 1 HP when spotlighted.'
       )
     ).toBe(true);
   });

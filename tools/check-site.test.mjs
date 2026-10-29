@@ -554,8 +554,8 @@ describe('previewChecks() against the preview host', () => {
   const TOKEN = 's/' + 'A'.repeat(43);
   const ITEM = 'h/00000000-0000-4000-8000-000000000000';
   /* The route paths that _redirects answers with the app document. */
-  const ROUTES = ['roll/std', 'tables', 'lists/x', 'i/hb_aaaaaaaaaaaaaaaa'];
-  const EN_ROUTES = ['en/search', 'en/tables', 'i/en/hb_aaaaaaaaaaaaaaaa'];
+  const ROUTES = ['roll/std', 'tables', 'tables/', 'lists/x', 'i/hb_aaaaaaaaaaaaaaaa'];
+  const EN_ROUTES = ['en/search', 'en/tables', 'en/tables/', 'i/en/hb_aaaaaaaaaaaaaaaa'];
   /* A host that answers as the preview host does; `over` replaces one path's answer. */
   const host = (over = {}) => {
     const files = {
@@ -694,7 +694,7 @@ describe('previewChecks() against the preview host', () => {
 
   it('is the exact set of preview paths', () => {
     const list = previewChecks();
-    assert.equal(list.length, 52);
+    assert.equal(list.length, 59);
     assert.deepEqual(
       [...new Set(list.map((c) => c.path))].sort(),
       [

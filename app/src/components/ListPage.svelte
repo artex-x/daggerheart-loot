@@ -1833,17 +1833,6 @@
     border-top-right-radius: 0;
   }
 
-  /* The list's name in the heading, for the page's outline: the rename input shows it
-     (docs/specs/FEATURES.md, rule 16). The same rule as `StatusRegion`. */
-  .vh {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-
   /* A stored entry whose record the page has not read: the key and «Предмет не загружен»
      in `RowMain`'s box. */
   .unk {
