@@ -66,6 +66,7 @@ Session rules:
 * A schema batch (a change under `supabase/migrations/`) stops after `rtk npm run check:fast`, `npm run check:db` and the commit: it does not push before the review approves (rule 2r denies the push, which starts CI's `migrate-test` on the test project); the orchestrator resumes you for the push
 * If primary approach fails: stop; present named fallback only with human confirmation; else report blocker + recommendation
 * If human ends session mid-batch: stop coding, do not commit a half-batch, update handoff partial progress and exact next step
+* A message that starts with `USAGE WRAP-UP` is the same stop, sent by the orchestrator before a plan limit cuts the session: follow its steps exactly. Commit only a batch whose gates passed, and revert nothing.
 * Write a durable fact or decision to its permanent home in this batch (`CLAUDE.md`, "Task and session protocol"); a comment follows `CLAUDE.md`, "Comments"
 
 For the current batch:
