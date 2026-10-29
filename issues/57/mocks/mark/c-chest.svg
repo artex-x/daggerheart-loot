@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Candidate C, the chest: a domed lid over a box, two straps and a lock
+       plate in the lighter gold. The far corner (406, 386) is 198.5 from the
+       centre, inside the 204.8 safe zone. Seams and the keyhole are a mask. -->
+  <defs>
+    <mask id="cuts" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <g fill="none" stroke="#000">
+        <path d="M80 232 H432" stroke-width="16"/>
+        <path d="M170 110 V410 M342 110 V410" stroke-width="14"/>
+      </g>
+      <rect x="220" y="204" width="72" height="88" rx="12" fill="#fff"/>
+      <rect x="220" y="204" width="72" height="88" rx="12" fill="none" stroke="#000" stroke-width="14"/>
+      <circle cx="256" cy="240" r="12" fill="#000"/>
+      <path d="M250 246 L245 272 H267 L262 246 Z" fill="#000"/>
+    </mask>
+  </defs>
+  <g mask="url(#cuts)">
+    <path fill="#d8ab5e" d="M106 232 V204 C106 160 172 132 256 132 C340 132 406 160 406 204 V232 H106 Z"/>
+    <path fill="#d8ab5e" d="M106 232 H406 V370 Q406 386 390 386 H122 Q106 386 106 370 Z"/>
+    <rect fill="#f0d091" x="220" y="204" width="72" height="88" rx="12"/>
+  </g>
+</svg>

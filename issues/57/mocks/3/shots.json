@@ -24,6 +24,14 @@
     "name": "catalog-filters-set"
   },
   {
+    "s": "catalog-own",
+    "name": "catalog-own"
+  },
+  {
+    "s": "catalog-own-filters",
+    "name": "catalog-own-filters"
+  },
+  {
     "s": "catalog-grid",
     "name": "catalog-grid"
   },
@@ -42,6 +50,15 @@
   {
     "s": "catalog-selection",
     "name": "catalog-selection-screen",
+    "screen": true
+  },
+  {
+    "s": "catalog-selection-zero",
+    "name": "catalog-selection-zero"
+  },
+  {
+    "s": "catalog-selection-zero",
+    "name": "catalog-selection-zero-screen",
     "screen": true
   },
   {

@@ -56,15 +56,15 @@
 
   const helpRec = () =>
     at(
-      RA.catalog({
+      PAT.catalog({
         headOpts: { helpLabel: E('Об этих данных', 'About this data'), helpOpen: true },
         afterHead: panel(NOTES)
       })
     );
-  const helpRemove = () => at(RA.catalog({ headOpts: { help: false } }));
+  const helpRemove = () => at(PAT.catalog({ headOpts: { help: false } }));
   const helpToday = () =>
     at(
-      RA.catalog({
+      PAT.catalog({
         headOpts: { helpOpen: true, helpToday: true },
         afterHead: panel(
           TODAY,
@@ -75,42 +75,50 @@
 
   /* C57: the list/grid switch changes the view until a reload; the default
      lives in the account's Display section. */
-  const viewRec = () => at(RA.catalog({ grid: true }));
+  const viewRec = () => at(PAT.catalog({ grid: true }));
   const viewSave = () => {
     const N = innerWidth <= 760;
-    return `<div class="ov" style="height:${N ? 1500 : 1100}px">${at(RA.catalog({ grid: true }))}<div class="toast3" role="status">${E('Вид «Сеткой» сохранён в аккаунте', 'The "Grid" view is saved to the account')}</div></div>`;
+    return `<div class="ov" style="height:${N ? 1500 : 1100}px">${at(PAT.catalog({ grid: true }))}<div class="toast3" role="status">${E('Вид «Сеткой» сохранён в аккаунте', 'The "Grid" view is saved to the account')}</div></div>`;
   };
   const viewButton = () =>
     at(
-      RA.catalog({
+      PAT.catalog({
         grid: true,
         underToolbar: `<div class="wb" style="margin:-4px 0 12px">${btn(E('Открывать таблицы сеткой', 'Open tables as a grid'), { sm: true, i: 'check' })}</div>`
       })
     );
   const viewToday = () =>
     at(
-      RA.catalog({
+      PAT.catalog({
         grid: true,
         underToolbar: `<p class="count2" style="margin:-4px 0 12px">${E('Только до перезагрузки. Чтобы сохранить, измените в <a href="#">настройках аккаунта</a>.', 'Until you reload only. To keep it, change it in the <a href="#">account settings</a>.')}</p>`
       })
     );
 
   window.XS = {
-    catalog: () => at(RA.catalog()),
+    catalog: () => at(PAT.catalog()),
     'catalog-picker': () =>
-      `${cap('360: заголовок - выбор таблицы, он открывает лист с группами и таблицами группы (C7); на 1180 группы и таблицы видны в шапке', '360: the heading is the table picker; it opens a sheet with the groups and the tables of the group (C7); at 1180 both rows show in the head')}${at(RA.catalog({ pickerOpen: true }))}`,
+      `${cap('360: заголовок - выбор таблицы, он открывает лист с группами и таблицами группы (C7); имя страницы «Таблицы» остаётся h1 и читается, а кнопка называется «Таблица: Оружие»; на 1180 группы и таблицы видны в шапке', '360: the heading is the table picker; it opens a sheet with the groups and the tables of the group (C7); the page name "Tables" stays the h1 and is read, and the button is named "Table: Weapons"; at 1180 both rows show in the head')}${at(PAT.catalog({ pickerOpen: true }))}`,
     'catalog-more': () =>
-      `${cap('360: «Ещё» открыто - ссылка на таблицу, закрепление и «Об этих данных»; вид и «Выбрать» всегда на виду; на 1180 всё это видно в строке поиска и в шапке', '360: "More" open - the table link, the pin and About this data; the view switch and Select always show; at 1180 they all show in the search row and the head')}${at(RA.catalog({ moreOpen: true }))}`,
-    'catalog-filtered': () => at(ST['catalog-filtered'](), path + '/f_tier-1.range-melee'),
+      `${cap('360: «··· Ещё» открыто - ссылка на таблицу, закрепление и «Об этих данных»; вид и «Выбрать» всегда на виду; на 1180 всё это видно в строке поиска и в шапке', '360: "··· More" open - the table link, the pin and About this data; the view switch and Select always show; at 1180 they all show in the search row and the head')}${at(PAT.catalog({ moreOpen: true }))}`,
+    'catalog-filtered': () =>
+      `${cap('360: нет ряда плашек - выбранные значения названы текстом в строке счёта («Ранг 1, Вплотную · Показано 4 из 458»); на 1180 они видны в колонке фильтров', '360: no pill row - the chosen values are named in text in the count line ("Tier 1, Melee · 4 of 458 shown"); at 1180 they show in the filter column')}${at(PAT.catalog({ filtered: true }), path + '/f_tier-1.range-melee')}`,
     'catalog-filters': () =>
-      `${cap('на 360 фильтры открываются листом снизу; на 1180 они - колонка слева', 'at 360 the filters open as a bottom sheet; at 1180 they are the left column')}${at(ST['catalog-filters']())}`,
+      `${cap('на 360 фильтры открываются листом снизу; на 1180 они - колонка слева', 'at 360 the filters open as a bottom sheet; at 1180 they are the left column')}${at(PAT.catalog({ sheet: true }))}`,
     'catalog-filters-set': () =>
-      `${cap('360: фильтр задан - в шапке листа «Фильтры · 2», «Ссылка на фильтры» и «Закрыть», внизу «Сбросить»; на 1180 то же в шапке колонки', '360: a filter is set - the sheet head holds "Filters · 2", "Link to these filters" and "Close", the foot "Reset"; at 1180 the same sits in the column head')}${at(RA.catalog({ sheet: true, filtered: true }), path + '/f_tier-1.range-melee')}`,
-    'catalog-grid': () => at(ST['catalog-grid']()),
-    'catalog-nothing': () => at(ST['catalog-nothing'](), path + '/f_tier-1.range-melee'),
+      `${cap('360: фильтр задан - в шапке листа «Фильтры · 2», «Ссылка на фильтры» и «Закрыть», внизу «Сбросить»; на 1180 то же в шапке колонки', '360: a filter is set - the sheet head holds "Filters · 2", "Link to these filters" and "Close", the foot "Reset"; at 1180 the same sits in the column head')}${at(PAT.catalog({ sheet: true, filtered: true }), path + '/f_tier-1.range-melee')}`,
+    'catalog-own': () =>
+      `${cap('вошли, есть свои предметы (R3-3): переключатель «Свои предметы» после переключателя вида в строке поиска на 1180; на 360 он в листе фильтров; свой предмет в таблице отмечен «Хоумбрю»', 'signed in with own items (R3-3): the "Own items" switch after the view switch in the search row at 1180; at 360 it is in the filter sheet; an own item in the table carries "Homebrew"')}${at(PAT.catalog({ own: true }))}`,
+    'catalog-own-filters': () =>
+      `${cap('360: лист фильтров со строкой «Свои предметы» первой; на 1180 переключатель в строке поиска (снимок «catalog-own»)', '360: the filter sheet with the "Own items" row first; at 1180 the switch is in the search row (the "catalog-own" render)')}${at(PAT.catalog({ own: true, sheet: true }))}`,
+    'catalog-grid': () => at(PAT.catalog({ grid: true })),
+    'catalog-nothing': () => at(PAT.catalog({ nothing: true }), path + '/f_tier-1.range-melee'),
     'catalog-searched': () =>
-      `${cap('совпадение в названии подсвечено (C59)', 'the match in the name is highlighted (C59)')}${at(RA.catalog({ q: true }))}`,
-    'catalog-selection': () => at(ST['catalog-selection']()),
+      `${cap('совпадение в названии подсвечено (C59)', 'the match in the name is highlighted (C59)')}${at(PAT.catalog({ q: true }))}`,
+    'catalog-selection': () =>
+      `${cap('режим выбора, отмечена одна строка: «Все» (тире, подпись видна), «Выбрано: 1», «В список», «Печать», «Скопировать текст», «Снять выделение» последним', 'selection mode, one row ticked: "All" (dash, label visible), "1 selected", "Add to list", "Print", "Copy text", "Clear the selection" last')}${at(PAT.catalog({ sel: true, ticked: [1] }))}`,
+    'catalog-selection-zero': () =>
+      `${cap('режим выбора, ни одной отметки: «Выбрано: 0», действия выключены, «Снять выделение» включена: она выходит из режима и возвращает «Выбрать»', 'selection mode, no tick: "0 selected", the actions are off, "Clear the selection" is on: it leaves the mode and brings back "Select"')}${at(PAT.catalog({ sel: true, ticked: [] }))}`,
     'pattern-empty': () => ST['pattern-empty'](),
     'help-rec': helpRec,
     'help-remove': helpRemove,

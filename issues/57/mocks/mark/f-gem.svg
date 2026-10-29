@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Candidate F, the gem: a brilliant cut seen from the side - table,
+       crown, girdle and pavilion - lit from the upper left. The girdle tips
+       (72 and 440, 206) are 191 from the centre. Facet edges are a mask. -->
+  <defs>
+    <mask id="facets" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <g fill="none" stroke="#000" stroke-width="16" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M40 206 H472"/>
+        <path d="M176 124 L164 206 M176 124 L256 206 L336 124 M336 124 L348 206"/>
+        <path d="M164 206 L256 420 M348 206 L256 420 M256 206 V420"/>
+      </g>
+    </mask>
+  </defs>
+  <g mask="url(#facets)">
+    <path fill="#d8ab5e" d="M176 124 H336 L440 206 L256 420 L72 206 Z"/>
+    <path fill="#f0d091" d="M176 124 L164 206 H256 Z"/>
+    <path fill="#f0d091" d="M72 206 L176 124 L164 206 Z"/>
+    <path fill="#f0d091" d="M164 206 H256 V420 Z"/>
+  </g>
+</svg>

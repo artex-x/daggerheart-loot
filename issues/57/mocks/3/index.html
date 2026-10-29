@@ -16,7 +16,7 @@
         mode, the empty state, the search highlight, and two owner questions: the tables help
         panel (C1) and where the view choice lives (C57).
       </p>
-      <h2>List head pattern (final, 2026-10-29)</h2>
+      <h2>List head pattern (final, round 5)</h2>
       <p>
         One head for every list page: the catalog (<code>/tables/*</code>), the Items tab of
         <code>/homebrew</code>, <code>/lists</code>, <code>/lists/&lt;uuid&gt;</code> and
@@ -68,38 +68,70 @@
           <td>
             On the title row at 360; it holds the page's rare actions (the table link, the pin,
             the data panel). At 1180 they show in the head and the search row. The pin is always
-            «Открывать при запуске» / «Открывается при запуске».
+            «Открывать при запуске» / «Открывается при запуске». One form on every page and
+            every card (R0-1): the three-dot icon and the word, no chevron, never the icon
+            alone.
           </td>
-          <td>«Ещё» / "More"</td>
+          <td>«··· Ещё» / "··· More"</td>
         </tr>
         <tr>
           <td>Count</td>
           <td>
-            Once, and only while the view is narrowed: in the section head at 360, in the search
-            row at 1180 (as search says nothing under its cap).
+            Once, and only while the view is narrowed: on its own line under the search row at
+            360, in the search row at 1180 (as search says nothing under its cap). At 360 the
+            line names the chosen values in text, cut to one line, and the count is never cut
+            (R3-1, N3-1).
           </td>
-          <td>«Показано 23 из 458» / "23 of 458 shown"</td>
+          <td>«Ранг 1, Вплотную · Показано 4 из 458» / "Tier 1, Melee · 4 of 458 shown"</td>
         </tr>
         <tr>
           <td>Filter-active state</td>
           <td>
-            One state on every list page: «Фильтры · N» lit and the count «Показано 23 из 458».
+            One state on every list page: «Фильтры · N» lit and the count «Показано 4 из 458».
             The reset and the filter link (rule 17) sit where the filters are set: the filter
             column head at 1180, the filter sheet head at 360 (the sheet foot keeps «Сбросить»).
-            No pill row at 360 (as on <code>/homebrew</code>): with it the first row of a
-            filtered table started at 325 px at 360, past the 256 px limit.
+            No pill row at 360 (as on <code>/homebrew</code>; owner, round 2 review R3-1): the
+            count line names the chosen values in text instead. With a pill row the first row of
+            a filtered table started at 325 px at 360, past the 256 px limit.
           </td>
           <td>«Сбросить» / "Reset", «Ссылка на фильтры» / "Link to these filters"</td>
         </tr>
         <tr>
           <td>Selection bar</td>
           <td>
-            One bar, sticky at the bottom of the list, on every list page: the count, the page's
-            batch actions, «Снять выделение» last. The list keeps a bottom padding equal to the
-            bar height, so the bar never covers its last row. A ticked row shows a lit ground
-            and the check, with no side stripe.
+            One bar on every list page (owner-accepted shape, round 6): «Все» (a tri-state box:
+            empty, dash, check; the label stays visible while rows are ticked), «Выбрано: N»
+            plus the page's facts, the page's actions, «Снять выделение» last. At 360 the head
+            (box, summary, clear) takes its own row and the bar is pinned to the bottom of the
+            screen; a page with more than three actions folds the rare ones into «··· Ещё». The
+            list keeps a bottom padding equal to the bar height. A ticked row shows a lit ground
+            and the check, with no side stripe. Zero ticks: «Выбрано: 0», the actions off,
+            «Снять выделение» on; it leaves the mode and brings «Выбрать» back. Tables, search
+            and «Мои предметы» draw «В список», «Печать», «Скопировать текст» (FEATURES "Print":
+            «Печать» is one of the three print controls).
           </td>
-          <td>«Выбрано: 1» / "1 selected", «Снять выделение» / "Clear the selection"</td>
+          <td>
+            «Все» / "All", «Выбрано: 1» / "1 selected", «Снять выделение» / "Clear the
+            selection"
+          </td>
+        </tr>
+        <tr>
+          <td>Page name</td>
+          <td>
+            The page name is the h1 at every width (R0-3): «Таблицы» / "Tables". At 360 it is
+            read and not drawn, and the picker is a button named «Таблица: Оружие» / "Table:
+            Weapons". The same on <code>/homebrew</code> («Мои предметы»).
+          </td>
+          <td>«Таблица: Оружие» / "Table: Weapons"</td>
+        </tr>
+        <tr>
+          <td>Own items</td>
+          <td>
+            Signed in with own items (FEATURES "Tables and search"): the switch «Свои предметы»
+            / "Own items" after the view switch in the search row at 1180, first in the filter
+            sheet at 360 (R3-3). On <code>/search</code> see mock 7.
+          </td>
+          <td>«Свои предметы» / "Own items"</td>
         </tr>
       </table>
       <p>
@@ -129,8 +161,8 @@
         <tr>
           <td><code>catalog</code></td>
           <td>first table row</td>
-          <td>239 / 256</td>
-          <td>239 / 256</td>
+          <td>233 / 256</td>
+          <td>233 / 256</td>
           <td>269 / 288</td>
           <td>269 / 288</td>
           <td>pass</td>
@@ -139,18 +171,21 @@
         <tr>
           <td><code>catalog-filtered</code></td>
           <td>first table row</td>
-          <td>239 / 256</td>
-          <td>239 / 256</td>
+          <td>249 / 256</td>
+          <td>249 / 256</td>
           <td>269 / 288</td>
           <td>269 / 288</td>
           <td>pass</td>
-          <td>met</td>
+          <td>
+            360: 9 over the target, inside the limit (the count line adds one line); 1180 met
+          </td>
         </tr>
       </table>
       <p>
         Before: 632 / 586 at 360 and 399 / 399 at 1180; the first fix of this round gave 248 and
-        281 (assert passed, target missed). No page of this batch has a user-named H1, so the
-        longest-name row (R2) does not apply here.
+        281 (assert passed, target missed). Round 5: the unfiltered table starts at 233 at 360
+        (the section link is a 28 px target); the filtered table adds the count line. No page of
+        this batch has a user-named H1, so the longest-name row (R2) does not apply here.
       </p>
       <h3>New labels, RU and EN</h3>
       <table>
@@ -160,8 +195,13 @@
           <th>Where</th>
         </tr>
         <tr>
-          <td>«Оружие ▾» (заголовок - выбор таблицы)</td>
-          <td>"Weapons ▾" (the heading is the table picker)</td>
+          <td>
+            «Оружие ▾» (кнопка выбора таблицы «Таблица: Оружие»; h1 «Таблицы» не рисуется)
+          </td>
+          <td>
+            "Weapons ▾" (the table picker button, "Table: Weapons"; the h1 "Tables" is not
+            drawn)
+          </td>
           <td>360</td>
         </tr>
         <tr>
@@ -170,11 +210,19 @@
           <td>the view switch, every width; it replaces «Списком» / «Сеткой»</td>
         </tr>
         <tr>
-          <td>«Ещё»: «Ссылка на таблицу», «Открывать при запуске», «Об этих данных»</td>
-          <td>"More": "Link to this table", "Open on start", "About this data"</td>
+          <td>«··· Ещё»: «Ссылка на таблицу», «Открывать при запуске», «Об этих данных»</td>
+          <td>"··· More": "Link to this table", "Open on start", "About this data"</td>
           <td>360</td>
         </tr>
       </table>
+      <h2>Owner answers applied (round 2 review)</h2>
+      <ul>
+        <li>
+          R3-1: no pill row at 360 on the catalog either; the count line names the chosen values
+          in text (drawn in <code>catalog-filtered</code>).
+        </li>
+        <li>R3-2: three taps at 360 to a table in another group, accepted.</li>
+      </ul>
       <h2>Owner questions</h2>
       <section class="q">
         <h2>The tables help panel (C1) - chosen: «Об этих данных» (owner, 2026-10-29)</h2>
@@ -689,6 +737,86 @@
           /></a>
         </figure>
       </div>
+      <h3 id="catalog-own">
+        Signed in with own items · <a href="state.html?s=catalog-own">ru</a> ·
+        <a href="state.html?s=catalog-own&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The «Свои предметы» switch (R3-3): after the view switch in the search row at 1180; at
+        360 in the filter sheet (next state). An own item carries «Хоумбрю».
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-own__360__ru.png"
+            ><img src="catalog-own__360__ru.png" alt="catalog-own, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-own__360__en.png"
+            ><img src="catalog-own__360__en.png" alt="catalog-own, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-own__1180__ru.png"
+            ><img src="catalog-own__1180__ru.png" alt="catalog-own, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-own__1180__en.png"
+            ><img src="catalog-own__1180__en.png" alt="catalog-own, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-own-filters">
+        The filter sheet with the own-items switch (360) ·
+        <a href="state.html?s=catalog-own-filters">ru</a> ·
+        <a href="state.html?s=catalog-own-filters&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 1180 the switch is in the search row, so the 1180 render shows the page.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-own-filters__360__ru.png"
+            ><img
+              src="catalog-own-filters__360__ru.png"
+              alt="catalog-own-filters, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-own-filters__360__en.png"
+            ><img
+              src="catalog-own-filters__360__en.png"
+              alt="catalog-own-filters, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-own-filters__1180__ru.png"
+            ><img
+              src="catalog-own-filters__1180__ru.png"
+              alt="catalog-own-filters, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-own-filters__1180__en.png"
+            ><img
+              src="catalog-own-filters__1180__en.png"
+              alt="catalog-own-filters, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
       <h3 id="catalog-grid">
         The grid · <a href="state.html?s=catalog-grid">ru</a> ·
         <a href="state.html?s=catalog-grid&lang=en">en</a>
@@ -814,8 +942,10 @@
         <a href="state.html?s=catalog-selection&lang=en">en</a>
       </h3>
       <p class="lead">
-        The full-page PNGs show the sticky bar where it stands at the bottom of a 900 px window.
-        The first-screen PNGs below show it as a person sees it at 360x640 and 1180x720.
+        One row ticked: «Все» (dash), «Выбрано: 1», «В список», «Печать», «Скопировать текст»,
+        «Снять выделение» last (B3-1, R0-2). The full-page PNGs show the sticky bar where it
+        stands at the bottom of a 900 px window; the first-screen PNGs below show it as a person
+        sees it at 360x640 and 1180x720.
       </p>
       <div class="shots">
         <figure>
@@ -898,6 +1028,95 @@
           /></a>
         </figure>
       </div>
+      <h3 id="catalog-selection-zero">
+        The selection mode, no tick · <a href="state.html?s=catalog-selection-zero">ru</a> ·
+        <a href="state.html?s=catalog-selection-zero&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        Zero ticks (R0-2): «Выбрано: 0», the three actions off, «Снять выделение» on; it leaves
+        the mode and brings «Выбрать» back.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection-zero__360__ru.png"
+            ><img
+              src="catalog-selection-zero__360__ru.png"
+              alt="catalog-selection-zero, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection-zero__360__en.png"
+            ><img
+              src="catalog-selection-zero__360__en.png"
+              alt="catalog-selection-zero, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection-zero__1180__ru.png"
+            ><img
+              src="catalog-selection-zero__1180__ru.png"
+              alt="catalog-selection-zero, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection-zero__1180__en.png"
+            ><img
+              src="catalog-selection-zero__1180__en.png"
+              alt="catalog-selection-zero, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-selection-zero-screen">
+        The selection mode, no tick, first screen only ·
+        <a href="state.html?s=catalog-selection-zero">ru</a> ·
+        <a href="state.html?s=catalog-selection-zero&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection-zero-screen__360__ru.png"
+            ><img
+              src="catalog-selection-zero-screen__360__ru.png"
+              alt="catalog-selection-zero-screen, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection-zero-screen__360__en.png"
+            ><img
+              src="catalog-selection-zero-screen__360__en.png"
+              alt="catalog-selection-zero-screen, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection-zero-screen__1180__ru.png"
+            ><img
+              src="catalog-selection-zero-screen__1180__ru.png"
+              alt="catalog-selection-zero-screen, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection-zero-screen__1180__en.png"
+            ><img
+              src="catalog-selection-zero-screen__1180__en.png"
+              alt="catalog-selection-zero-screen, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
       <h3 id="pattern-empty">
         The empty-state pattern · <a href="state.html?s=pattern-empty">ru</a> ·
         <a href="state.html?s=pattern-empty&lang=en">en</a>
@@ -952,6 +1171,20 @@
           <code>_none</code> files are deleted (owner, 2026-10-29).
         </li>
       </ul>
+      <h2>Round 5 (review mocks-2): findings fixed</h2>
+      <ul>
+        <li>
+          B3-1: the selection bar has «Печать» (and the state with no tick, R0-2). R0-2: one bar
+          shape, the owner-accepted one (see the pattern table). R0-3: the h1 «Таблицы» at every
+          width, the picker named «Таблица: Оружие». R3-1 (owner): the count line names the
+          chosen values at 360. R3-3: the own-items switch (states <code>catalog-own</code>,
+          <code>catalog-own-filters</code>). N3-1: the count reads «Показано 4 из 458» on its
+          own line (the mock now draws the 4 rows it counts). N3-2: the grid keeps the section
+          head and its link. N3-3: a meta separator stays with the value before it. N0-3: a
+          sheet has no grab handle (it closes with «Закрыть», the scrim or Escape). R0-1: «···
+          Ещё» is one labelled form.
+        </li>
+      </ul>
       <h2>Changes from direction R and from plan.md</h2>
       <ul>
         <li>
@@ -1003,9 +1236,10 @@
       <h2>Impeccable critique (Clarity Rule)</h2>
       <ul>
         <li>
-          At 360 the first row starts at 239 px (target 240). The search field is narrow (about
-          110 px), so its placeholder is cut; the typed query stays readable. The picker hides
-          the sub-tables behind one press; its sheet shows both chip levels with labels.
+          At 360 the first row starts at 233 px (target 240; 249 when filtered). The search
+          field is narrow (about 110 px), so its placeholder is cut; the typed query stays
+          readable. The picker hides the sub-tables behind one press; its sheet shows both chip
+          levels with labels.
         </li>
         <li>
           Clarity Rule: the filter rows need no «любое»: «Все» is pressed. The help question

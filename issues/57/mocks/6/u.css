@@ -119,7 +119,7 @@
 }
 .lhead3 {
   display: grid;
-  grid-template-columns: 52px 48px minmax(0, 1fr) 60px 92px 150px;
+  grid-template-columns: 52px 48px minmax(0, 1fr) 60px 92px 190px;
   gap: 12px;
   padding: 0 0 6px;
 }
@@ -136,14 +136,14 @@
 }
 .lrow {
   display: grid;
-  grid-template-columns: 52px 48px minmax(0, 1fr) 60px 92px 150px;
+  grid-template-columns: 52px 48px minmax(0, 1fr) 60px 92px 190px;
   gap: 4px 12px;
   align-items: start;
   padding: 10px 0;
   border-bottom: 1px solid var(--line);
 }
 .lrow.ck {
-  grid-template-columns: 22px 48px minmax(0, 1fr) 60px 92px 150px;
+  grid-template-columns: 22px 48px minmax(0, 1fr) 60px 92px 190px;
 }
 .lrow .art {
   width: 48px;
@@ -1330,4 +1330,220 @@ a.badge.req {
 
 .srow360 {
   gap: 4px;
+}
+
+/* round 6 (reviews/mocks-2.md): the one selection bar, the «···» label form, the compact
+   roll card, no grab handle (N0-3: a handle promises a swipe the mock does not build) */
+.grab,
+.sheet2 .grab {
+  display: none;
+}
+.selbar {
+  gap: 8px 12px;
+}
+.selbar .bhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.selbar .bhead b {
+  margin-right: auto;
+  min-width: 0;
+}
+.selbar .bacts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.selbar .bline2 {
+  flex: 1 1 100%;
+}
+.selbar .bacts .anchor {
+  position: relative;
+}
+@media (max-width: 760px) {
+  .selbar .bhead,
+  .selbar .bacts {
+    flex: 1 1 100%;
+  }
+}
+.cb.tri {
+  cursor: pointer;
+}
+.cb.tri i svg {
+  color: var(--txt);
+}
+.cb.tri[aria-checked='true'] i,
+.cb.tri[aria-checked='mixed'] i {
+  background: var(--surface2);
+  border-color: var(--txt);
+}
+.pinbar {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  z-index: 5;
+}
+.pinbar .selbar.bbar {
+  position: relative;
+  bottom: auto;
+  margin: 0;
+}
+.ov .selbar .pop {
+  z-index: 12;
+}
+
+/* the page title at 360 is a labelled picker; the h1 keeps the page's name (R0-3) */
+.h1pick {
+  font-size: var(--t-page);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* a list row at 360: the quantity and the price on one line, the two labelled actions under them */
+@media (max-width: 760px) {
+  .lrow .ra {
+    flex: 1 1 100%;
+    margin-left: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .lrow .ra .anchor {
+    display: block;
+  }
+  .lrow .ra .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* the list roll's result: under 600 px the compact card (96 px art beside the text), from 600 px the full face */
+@media (max-width: 600px) {
+  .rollres .scard {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0 12px;
+    padding: 10px;
+    align-items: start;
+  }
+  .rollres .scard .art {
+    width: 96px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rollres .scard .body {
+    margin-top: 0;
+    padding: 0;
+    gap: 4px;
+  }
+  .rollres .scard .rno {
+    display: none;
+  }
+  .rollres .scard .nm {
+    font-size: var(--t-control);
+  }
+}
+
+/* the «Новое в списке» chip on the lists page: neutral (review N8-1) */
+.lcard .badge.req,
+a.badge.req {
+  color: var(--txt);
+  border-color: var(--muted2);
+}
+.stat .si .dot {
+  padding: 0 5px;
+}
+
+/* the homebrew move form: a sheet at 360, a popover over the bar's button at 1180 */
+.mvform {
+  display: grid;
+  gap: 10px;
+  padding: 8px 10px 4px;
+}
+.mvl {
+  display: grid;
+  gap: 4px;
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.mvl.muted {
+  color: var(--muted);
+}
+.mvl.muted .field {
+  opacity: 0.6;
+}
+.mvl .field {
+  min-width: 200px;
+}
+.mvform .fcap {
+  margin: 0;
+}
+.mvact {
+  display: flex;
+  padding: 6px 10px 8px;
+}
+.sheet .mvform {
+  padding: 0;
+}
+
+/* the requests panel folded at 360: its head and one «Открыть» (owner, 2026-10-29, R9-1) */
+.reqfold {
+  padding: 6px 8px 6px 14px;
+  margin: 0 0 8px;
+}
+.reqfold .wb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.reqfold b {
+  font-size: var(--t-title);
+}
+
+/* the lists head at 360: «Мои списки», «+ Новый список» and «··· Ещё» fit one row in RU */
+@media (max-width: 760px) {
+  .ph.one h1 {
+    margin-right: 0;
+  }
+  .ph.one .phr {
+    gap: 4px;
+  }
+  .ph.one .phr .btn.sm {
+    padding: 0 8px;
+    gap: 4px;
+  }
+}
+
+/* the new-list field carries its visible label (rule 15a) */
+.newl .rowf.nlr {
+  align-items: end;
+}
+.newl .rowf .mvl {
+  flex: 1 1 auto;
+}
+.newl .rowf .mvl .field {
+  min-width: 0;
+}
+@media (max-width: 760px) {
+  .newl .rowf.nlr {
+    align-items: stretch;
+  }
+}
+
+/* the folded requests panel is one short line */
+.reqfold {
+  padding: 2px 6px 2px 12px;
+  margin: 0 0 4px;
+}
+.reqfold b {
+  font-size: var(--t-control);
 }

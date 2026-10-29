@@ -10,9 +10,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
 - Refresh against `main` (2026-10-29): done. `claude/57` merged `main` at
   `9112c4ed`; every `audit.md` row is re-checked (`audit.md`, "Re-check
   against main"); every address in this plan is a path.
-- Phase 3: twelve batches (1, 1b, P, 2-10; section 7). Batch 1 is implement-ready after its
-  mock step (section 10). Batches 1b, P and 2-10 are outlines; each one's refresh
-  expands it.
+- Phase 3: twelve batches (1, 1b, P, 2-10; section 7). Batch 1 is done
+  (2026-10-29; `handoff.md`, Completed). Batch 1b is next; batches 1b, P and
+  2-10 are outlines; each one's refresh expands it.
 - Mocks: every batch mock from 1 to 9 is drawn ahead (section 9); the owner
   confirms each one before its implementer starts. Mock P is drawn (2026-10-29,
   owner) from the pre-batch-1 build; its no-picture well follows mock 1b.

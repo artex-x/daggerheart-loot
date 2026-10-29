@@ -50,7 +50,7 @@
     return rpage({ job: null, signedIn: true }, main);
   }
 
-  /* An A4 sheet: nine 63x88 mm cards (8.5 mm side and 14.5 mm top margins)
+  /* An A4 sheet (today's margins; QP.2 changes them in batch P): nine 63x88 mm cards (8.5 mm side and 14.5 mm top margins)
      or sixteen 44x63 mm cards (14 mm and 19.5 mm), 2 mm gutters. Positions are
      in per cent of the sheet so the sheet scales with its box. */
   function sheet(compact) {
@@ -70,7 +70,7 @@
   function printSheets() {
     const main = `<main class="wrap"><div class="spec">
       <h1>${E('Листы печати', 'Print sheets')}</h1>
-      ${cap('каждая третья карточка - запись без картинки; лист и поля не меняются (закон продукта)', 'every third card is a record with no picture; the sheet and its margins do not change (product law)')}
+      ${cap('каждая третья карточка - запись без картинки; закон продукта - число карточек на листе и их раскладки, поля сегодняшние (QP.2 меняет их в батче P)', 'every third card is a record with no picture; the product law is the card count per sheet and the layouts, the margins are those of today (QP.2 changes them in batch P)')}
       <div class="grid2">
         <section class="panel box"><h3>${E('Девять на листе, 63×88 мм', 'Nine per sheet, 63x88 mm')}</h3>${sheet(false)}</section>
         <section class="panel box"><h3>${E('Шестнадцать на листе, 44×63 мм', 'Sixteen per sheet, 44x63 mm')}</h3>${sheet(true)}

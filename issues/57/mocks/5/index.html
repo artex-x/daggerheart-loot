@@ -37,131 +37,132 @@
         <tr>
           <td><code>roller (A, labels)</code></td>
           <td>first roll result</td>
-          <td>325 / 256</td>
-          <td>325 / 256</td>
+          <td>323 / 256</td>
+          <td>323 / 256</td>
           <td>234 / 288</td>
           <td>234 / 288</td>
           <td>fail</td>
-          <td>missed</td>
+          <td>missed (named exception, owner)</td>
         </tr>
         <tr>
           <td><code>roller-b (B, no labels)</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>245 / 256</td>
+          <td>245 / 256</td>
           <td>234 / 288</td>
           <td>234 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 5</td>
         </tr>
         <tr>
           <td><code>roller-narrowed (A)</code></td>
           <td>first roll result</td>
-          <td>325 / 256</td>
-          <td>325 / 256</td>
+          <td>323 / 256</td>
+          <td>323 / 256</td>
           <td>234 / 288</td>
           <td>234 / 288</td>
           <td>fail</td>
-          <td>missed</td>
+          <td>missed (named exception, owner)</td>
         </tr>
         <tr>
           <td><code>roller-alt</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>245 / 256</td>
+          <td>245 / 256</td>
           <td>234 / 288</td>
           <td>234 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 5</td>
         </tr>
         <tr>
           <td><code>roller-alt-crit</code></td>
           <td>the critical-success plate</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>245 / 256</td>
+          <td>245 / 256</td>
           <td>234 / 288</td>
           <td>234 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 5</td>
         </tr>
         <tr>
           <td><code>roller-wond</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
         <tr>
           <td><code>roller-dread</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
         <tr>
           <td><code>roller-voa</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>245 / 256</td>
+          <td>245 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 5</td>
         </tr>
         <tr>
           <td><code>roller-dv</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
         <tr>
           <td><code>roller-arazo</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
         <tr>
           <td><code>roller-comm</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
         <tr>
           <td><code>roller-mwt</code></td>
           <td>first roll result</td>
-          <td>247 / 256</td>
-          <td>247 / 256</td>
+          <td>246 / 256</td>
+          <td>246 / 256</td>
           <td>231 / 288</td>
           <td>231 / 288</td>
           <td>pass</td>
-          <td>missed</td>
+          <td>missed by 6</td>
         </tr>
       </table>
       <p>
         All nine roll modes share one layout (M5-5). Eight of them pass the 40% assert at 360 at
-        247 px and miss the 240 px design target by 7 px: the results line «Бросок N» with
-        «Настроить ▾» is a 28 px control row where the earlier heading was a 20 px text line.
-        Variant A of <code>/roll/std</code> (the rarity labels) fails the assert at 325 px; the
-        question above asks the owner. On a critical success the primary content is the critical
-        plate (the roll result). No page of this batch has a user-named H1.
+        245-246 px and miss the 240 px design target by 5-6 px: the results line «Бросок N» with
+        «Настроить» and «··· Ещё» is a 28 px control row where the earlier heading was a 20 px
+        text line. <code>/roll/std</code> at 360 keeps the rarity labels on the dice (variant A,
+        owner, 2026-10-29): a named exception, 323 px (about 325 before the round 5 changes);
+        every other roll mode keeps the rule. On a critical success the primary content is the
+        critical plate (the roll result). No page of this batch has a user-named H1.
       </p>
       <h3>New labels, RU and EN</h3>
       <table>
@@ -176,9 +177,24 @@
           <td>the results line, every roll page at 360</td>
         </tr>
         <tr>
-          <td>«Настроить · Расходники»</td>
-          <td>"Set up · Consumables"</td>
-          <td>the closed control when the roll is narrowed</td>
+          <td>«··· Ещё»: «Скопировать все четыре», «Открывать при запуске», справка</td>
+          <td>"··· More": "Copy all four", "Open on start", the help</td>
+          <td>the results line, every roll page at 360 (R5-1)</td>
+        </tr>
+        <tr>
+          <td>«Об этой книге», «Об этой таблице», «Об этих предметах»</td>
+          <td>"About this book", "About this table", "About these items"</td>
+          <td>
+            the supplement help buttons, named after their panels (N2-2); «Альтернативные
+            таблицы» chip (B5-2)
+          </td>
+        </tr>
+        <tr>
+          <td>«Расходники» (подсвечено)</td>
+          <td>"Consumables" (lit)</td>
+          <td>
+            the closed settings control when the roll is narrowed, so «··· Ещё» keeps its place
+          </td>
         </tr>
         <tr>
           <td>«Редкость» / «Обычная» (выбор)</td>
@@ -188,7 +204,10 @@
         <tr>
           <td>«Бросить кости»</td>
           <td>"Roll the dice"</td>
-          <td>/roll/alt at 360 (1180 keeps «Бросить Кости Дуальности»)</td>
+          <td>
+            /roll/alt at every width (B5-1: one label per action; «Бросить Кости Дуальности» is
+            gone)
+          </td>
         </tr>
         <tr>
           <td>«Предметы: Обычная», «Расходники: Обычная»</td>
@@ -196,8 +215,8 @@
           <td>the two table links of a critical success with both kinds on</td>
         </tr>
         <tr>
-          <td>«Случайно 1-119» и т. п.</td>
-          <td>"Random 1-119" etc.</td>
+          <td>«Бросить 1-119» и т. п.</td>
+          <td>"Roll 1-119" etc.</td>
           <td>the supplement modes</td>
         </tr>
         <tr>
@@ -208,7 +227,10 @@
       </table>
       <h2>Owner questions</h2>
       <section class="q">
-        <h2>The dice at 360: the rarity labels or the 240 px target (M5-3)</h2>
+        <h2>
+          The dice at 360: the rarity labels or the 240 px target (M5-3) - chosen: variant A
+          (owner, 2026-10-29)
+        </h2>
         <p class="lead">
           FEATURES.md "Rolling": each die button names the rarities it covers. With the labels
           the dice take two rows (3 + 2) and the first result starts at 325 px at 360, past the
@@ -216,7 +238,7 @@
           px.
         </p>
         <div class="opts">
-          <div class="opt rec">
+          <div class="opt rec chosen">
             <h4>A: two rows with the rarity labels</h4>
             <p>
               The spec label on each die; the first result at 325 px at 360. The first-screen
@@ -363,13 +385,48 @@
           /></a>
         </figure>
       </div>
+      <h3 id="roller-more">
+        «··· Ещё» open (360) · <a href="state.html?s=roller-more">ru</a> ·
+        <a href="state.html?s=roller-more&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        On the results line beside «Настроить»: «Скопировать все четыре», «Открывать при
+        запуске» and the help button named after its panel (R5-1). At 1180 they sit in the page
+        head and over the results.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="roller-more__360__ru.png"
+            ><img src="roller-more__360__ru.png" alt="roller-more, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="roller-more__360__en.png"
+            ><img src="roller-more__360__en.png" alt="roller-more, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="roller-more__1180__ru.png"
+            ><img src="roller-more__1180__ru.png" alt="roller-more, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="roller-more__1180__en.png"
+            ><img src="roller-more__1180__en.png" alt="roller-more, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
       <h3 id="roller-config">
         «Настроить» open (360) · <a href="state.html?s=roller-config">ru</a> ·
         <a href="state.html?s=roller-config&lang=en">en</a>
       </h3>
       <p class="lead">
-        Above the results: the manual entry, Источник, Тип, «Скопировать все четыре», the pin
-        and «Где какая редкость» (M5-1, M5-2).
+        Above the results: the manual entry, Источник and Тип (M5-1, M5-2). «Скопировать все
+        четыре», the pin and the help moved to «··· Ещё» (state <code>roller-more</code>, R5-1).
       </p>
       <div class="shots">
         <figure>
@@ -756,6 +813,21 @@
           Batch 5 (<code>mocks/5/</code>): the card face on roll results, the two-pane roller.
         </li>
       </ul>
+      <h2>Round 5 (review mocks-2): findings fixed</h2>
+      <ul>
+        <li>
+          B5-1: «Бросить кости» / "Roll the dice" at every width on /roll/alt. B5-2: the mode
+          chip reads «Альтернативные таблицы» / "Alternate tables" (mock 2's mode row; two lines
+          at 360). R0-1: every result card carries «··· Ещё», no icon-only control. R5-1:
+          «Настроить» keeps the roll inputs (manual entry, Источник, Тип); «Скопировать все
+          четыре», the pin and the help are in «··· Ещё» on the results line. N5-1: the dice
+          letters are «Н» / «С» in RU. N5-2: «Бросить 1-30» / "Roll 1-30". N5-3: the rarity row
+          at 1180 is a chip row with the neutral pressed state. N2-2: the supplement help
+          buttons name their panels. N0-3: a sheet has no grab handle. The mode row at 360
+          shares its width 0.75 / 1.15 / 1.15 at 13 px so «Альтернативные таблицы» and "The
+          Dragon's Vault" hold two lines.
+        </li>
+      </ul>
       <h2>Changes from direction R and from plan.md</h2>
       <ul>
         <li>
@@ -768,8 +840,8 @@
         </li>
         <li>
           The settings panel holds the manual entry, Источник and Тип (std), the Hope and Fear
-          fields (alt), «Скопировать все четыре», the pin and the help button (M5-2).
-          «Настроить» takes a settings icon, not the filter funnel (M5-9).
+          fields (alt) (M5-2, narrowed by R5-1: the copy, the pin and the help are in «···
+          Ещё»). «Настроить» takes a settings icon, not the filter funnel (M5-9).
         </li>
         <li>
           The rarity moves onto each result card as a badge on /roll/std; the result heading is
@@ -787,15 +859,14 @@
       <ul>
         <li>
           Variant A keeps the spec label and costs 78 px at 360; variant B meets the 40% rule.
-          The owner chooses (question above).
+          The owner chose A (2026-10-29): <code>/roll/std</code> at 360 is the named exception.
         </li>
         <li>
-          Eight modes miss the 240 px target by 7 px; the assert passes with 9 px to spare.
+          Eight modes miss the 240 px target by 5-6 px; the assert passes with 10 px to spare.
         </li>
         <li>
           Clarity Rule: the pickers name what they pick («Раздел», «Сообщество», «Мир»,
-          «Редкость») over the value; «Настроить · Расходники» says why the results are
-          narrowed.
+          «Редкость») over the value; «Расходники» (lit) says why the results are narrowed.
         </li>
       </ul>
     </main>

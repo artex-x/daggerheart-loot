@@ -19,10 +19,13 @@
     upload: '<path d="M12 20V9M7 13.5l5-5 5 5"/><path d="M5 4h14"/>',
     refresh: '<path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 5v6h-6"/>',
     back: '<path d="M14.5 6l-6 6 6 6"/>',
-    open: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>'
+    open: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>',
+    minus: '<path d="M6 12h12"/>'
   };
   const icx = (n) =>
-    EXTRA[n] ? `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${EXTRA[n]}</svg>` : ic(n);
+    EXTRA[n]
+      ? `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${EXTRA[n]}</svg>`
+      : ic(n);
 
   /* Extra records: the homebrew Items tab past its search threshold. Pictures are
      real files from img/ standing in for the author's uploads. */
@@ -35,7 +38,10 @@
       img: 'q5',
       ru: 'Молот Горна',
       en: 'Forge Hammer',
-      d: ['Ударом по наковальне будит огонь в горне.', 'A blow on the anvil wakes the fire in the forge.'],
+      d: [
+        'Ударом по наковальне будит огонь в горне.',
+        'A blow on the anvil wakes the fire in the forge.'
+      ],
       tr: 'strength',
       rg: 'melee',
       dmg: 'd8+2',
@@ -136,18 +142,27 @@
       .replace(/harbour/g, 'harbor')
       /* batch 1 and 2 shell (review X-3, M6-3, M2-2): a pressed segment shows a check
          before its label; the footer keeps its DPCGL fold; the pin reads as mock 2 */
-      .replace(/<button aria-pressed="true">(?!<svg)/g, `<button aria-pressed="true">${ic('check')}`)
+      .replace(
+        /<button aria-pressed="true">(?!<svg)/g,
+        `<button aria-pressed="true">${ic('check')}`
+      )
       .replace(
         'Daggerheart © Darrington Press - DPCGL</div></footer>',
         `Daggerheart © Darrington Press - DPCGL - <button class="lnkb foldb">${E('Источники и лицензия', 'Sources and license')}${ic('chev')}</button></div></footer>`
       )
       .replace(/Стартовый раздел/g, 'Открывать при запуске')
-      .replace(/Start section/g, 'Open on start');
+      .replace(/Start section/g, 'Open on start')
+      /* N3-3: a meta separator stays with the value before it, so no line starts with "·" */
+      .replace(
+        /<span class="si">([^<]*)<\/span><span class="dot">·<\/span>/g,
+        '<span class="si">$1<span class="dot">·</span></span>'
+      );
 
   const cap = (ru, en) => `<div class="cap">${E(ru, en)}</div>`;
   const allChip = (p = true) =>
     `<button class="chip all" aria-pressed="${p}">${p ? ic('check') : ''}${t('all')}</button>`;
-  const chip = (l, p, x = '') => `<button class="chip" aria-pressed="${!!p}" ${x}>${l}</button>`;
+  const chip = (l, p, x = '') =>
+    `<button class="chip" aria-pressed="${!!p}" ${x}>${l}</button>`;
   const btn = (label, o = {}) =>
     `<button class="btn ${o.sm ? 'sm' : ''} ${o.cls || ''}" ${o.attr || ''} ${o.dis ? 'disabled' : ''}>${o.i ? icx(o.i) : ''}${label}${o.chev ? ic('chev') : ''}</button>`;
   const seg = (opts, on, cls = 'quiet') =>
@@ -200,8 +215,32 @@
   const anchor = (b, menu) => `<span class="anchor">${b}${menu}</span>`;
   const rpage = (o, main) => window.RX.rpage(o, main);
   /* An overlay frame: the page behind, the scrim, and the layer on top. */
-  const ov = (page, layer, h) =>
-    `<div class="ov" style="height:${h || (N ? 820 : 900)}px">${page}<div class="scrim"></div>${layer}</div>`;
+  const ov = (page, layer, h) => {
+    const bar = U.pinned ? `<div class="pinbar">${U.pinned}</div>` : '';
+    const ht = h || (U.pinned ? 640 : N ? 820 : 900);
+    U.pinned = '';
+    return `<div class="ov" style="height:${ht}px">${page}${bar}<div class="scrim"></div>${layer}</div>`;
+  };
+  /* A menu that opens upward: the sticky bar sits at the bottom of the screen. */
+  const popUp = (items, o = {}) =>
+    pop(items, o).replace('top:calc(100% + 6px)', 'bottom:calc(100% + 6px)');
+
+  /* The one selection bar (mock 3's pattern, review R0-2): «Все» (three states), «Выбрано: N»
+     with the page's facts, the page's actions, «Снять выделение» last. The head takes its own
+     row at 360; at 360 the bar is pinned to the bottom of the 640 px frame, as on a phone.
+     o.state: none | some | all; o.head: the count and facts; o.acts: action buttons;
+     o.more: the «Ещё» anchor (360); o.line: a last row (the page's extra action). */
+  const cbAll = (state) =>
+    `<span class="cb tri" role="checkbox" aria-checked="${state === 'all' ? 'true' : state === 'some' ? 'mixed' : 'false'}" aria-label="${E('Выбрать все', 'Select all')}"><i>${state === 'all' ? ic('check') : state === 'some' ? icx('minus') : ''}</i>${E('Все', 'All')}</span>`;
+  const selBar = (o) => {
+    const html = `<div class="selbar bbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><div class="bhead">${cbAll(o.state)}<b>${o.head}</b></div><div class="bacts">${o.acts}${btn(E('Снять выделение', 'Clear the selection'), { sm: true, cls: 'ghost' })}</div>${o.line ? `<div class="bline2">${o.line}</div>` : ''}</div>`;
+    if (N && !o.inline) {
+      U.pinned = html;
+      return '';
+    }
+    return html;
+  };
+  const selState = (n, total) => (n === 0 ? 'none' : n >= total ? 'all' : 'some');
   const sheet360 = (title, body, dock, o = {}) =>
     `<section class="sheet" role="dialog" aria-label="${title}"><div class="grab"></div>
       <div class="sh" style="justify-content:space-between;padding:2px 16px 8px"><b style="font-size:18px">${title}</b>${o.headExtra || ''}${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>
@@ -265,6 +304,11 @@
     anchor,
     rpage,
     ov,
+    popUp,
+    cbAll,
+    selBar,
+    selState,
+    pinned: '',
     sheet360,
     plural,
     money

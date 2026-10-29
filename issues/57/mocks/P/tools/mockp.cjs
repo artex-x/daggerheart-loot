@@ -9,7 +9,10 @@
  *                    and the fit run again after the face has loaded
  *   face: today | ss3 | overpass (ss3 and overpass inject the face as the card's --ui)
  *   out:  a folder; writes <mode>-<face>-<sheet>-<layout>-<lang>.pdf and fit-<mode>-<face>.json
- * Env: MEASURE=0 skips the catalog measure, PDF=0 skips the PDFs.
+ * Env: MEASURE=0 skips the catalog measure, PDF=0 skips the PDFs, ONLY_COMPACT=1 runs
+ * the 44x63 layouts only (the round 5 floor pass, RP-2). The proposed fit now also
+ * holds the paper floor: the compact rules text stops at FLOOR.compact (3.7cqw = 4.5 pt
+ * on the 44 mm card) and the damage label beside the modifier stops at 4.5 pt.
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,6 +29,7 @@ if (
 )
   throw new Error('usage: node mockp.cjs <current|proposed> <today|ss3|overpass> <out>');
 const BASE = { std: 4.0, compact: 4.6 };
+const FLOOR = { std: 2.6, compact: Number(process.env.FLOOR_COMPACT || 3.7) };
 
 const b64 = (f) => fs.readFileSync(f).toString('base64');
 function faceCss() {
@@ -67,23 +71,25 @@ const CSS = faceCss() + (mode === 'proposed' ? PROPOSED_CSS : '');
 
 /* PrintCard.svelte's fit(), ported for the mock at screen scale 1 and card scale 1, with the
    rules text starting from `base` instead of 3.5cqw (QP.4). */
-function refitAll(bases) {
+function refitAll(bases, floors) {
   const GROW_CAP = 5;
   for (const el of document.querySelectorAll('.pcard[data-pid]')) {
     const bw = el.classList.contains('bw');
-    const base = el.closest('.psheet')?.classList.contains('compact')
-      ? bases.compact
-      : bases.std;
+    const isCompact = !!el.closest('.psheet')?.classList.contains('compact');
+    const base = isCompact ? bases.compact : bases.std;
+    const fl = isCompact ? floors.compact : floors.std;
+    /* the label floor, 4.5 pt, in tenths of cqw on this card */
+    const labZ = Math.ceil(4500 / (el.clientWidth * 0.75));
     const text = el.querySelector('.pc-text');
     const art = el.querySelector('.pc-art');
     const box = el.querySelector('.pc-content');
     const cq = (px) => (px / el.clientWidth) * 100;
     const rng = document.createRange();
-    const shrink = (e, over) => {
+    const shrink = (e, over, minZ = 22) => {
       e.style.fontSize = '';
       const px = parseFloat(getComputedStyle(e).fontSize);
       let z = el.clientWidth > 0 && Number.isFinite(px) ? Math.round(cq(px) * 10) : 30;
-      while (over() && z > 22) {
+      while (over() && z > minZ) {
         z -= 1;
         e.style.fontSize = (z / 10).toFixed(1) + 'cqw';
       }
@@ -122,10 +128,14 @@ function refitAll(bases) {
       }
       const lab = strip.querySelector('.pc-c1.wbonus .pc-box small');
       if (lab)
-        shrink(lab, () => {
-          rng.selectNodeContents(lab);
-          return rng.getBoundingClientRect().width > lab.clientWidth;
-        });
+        shrink(
+          lab,
+          () => {
+            rng.selectNodeContents(lab);
+            return rng.getBoundingClientRect().width > lab.clientWidth;
+          },
+          labZ
+        );
       strip.style.height = '';
       const band = strip.querySelector('.pc-cells');
       let tall = 0;
@@ -149,7 +159,7 @@ function refitAll(bases) {
         text.style.fontSize = pct.toFixed(1) + 'cqw';
       }
     }
-    while (tight() && pct > 3) {
+    while (tight() && pct > Math.max(3, fl) + 0.05) {
       pct -= 0.1;
       text.style.fontSize = pct.toFixed(1) + 'cqw';
     }
@@ -158,7 +168,7 @@ function refitAll(bases) {
       pad -= 1.5;
       if (box) box.style.setProperty('--pcpad', `${String(pad)}cqw`);
     }
-    while (tight() && pct > 2.6) {
+    while (tight() && pct > fl + 0.05) {
       pct -= 0.1;
       text.style.fontSize = pct.toFixed(1) + 'cqw';
     }
@@ -174,7 +184,7 @@ function refitAll(bases) {
         box.style.setProperty('--pcpad', '5.8cqw');
         pct = base;
         text.style.fontSize = pct.toFixed(1) + 'cqw';
-        while (tight() && pct > 2.6) {
+        while (tight() && pct > fl + 0.05) {
           pct -= 0.1;
           text.style.fontSize = pct.toFixed(1) + 'cqw';
         }
@@ -284,18 +294,53 @@ async function layout(d, page, N, bw, compact) {
   await new Promise((r) => setTimeout(r, 300));
   if (mode === 'proposed' || face !== 'today') {
     const bases = mode === 'proposed' ? BASE : { std: 3.5, compact: 3.5 };
-    await page.evaluate(refitAll, bases);
+    await page.evaluate(refitAll, bases, FLOOR);
   }
 }
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
+  /* SHOT_IDS=di2,di3 [SHOT_LANG=en]: screenshots of those cards on the compact sheet (colour and
+     black and white) and the damage label's width against its box, then stop. */
+  if (process.env.SHOT_IDS) {
+    const lang = process.env.SHOT_LANG || 'en';
+    const { ctx, page, d } = await fresh({ width: 1180, height: 950, lang });
+    const ids = process.env.SHOT_IDS.split(',');
+    await openSet(d, page, lang, k(...ids));
+    for (const bw of [false, true]) {
+      await layout(d, page, NAMES[lang], bw, true);
+      for (const id of ids) {
+        const el = await page.$(`.pcard[data-pid="${id}"]`);
+        if (!el) continue;
+        const info = await el.evaluate((c) => {
+          const lab = c.querySelector('.pc-c1.wbonus .pc-box small');
+          if (!lab) return null;
+          const r = document.createRange();
+          r.selectNodeContents(lab);
+          return {
+            pt: parseFloat(getComputedStyle(lab).fontSize) * 0.75,
+            textW: r.getBoundingClientRect().width,
+            boxW: lab.clientWidth
+          };
+        });
+        console.log(JSON.stringify({ id, bw, info }));
+        await page.setViewport({ width: 1180, height: 950, deviceScaleFactor: 4 });
+        await el.screenshot({
+          path: path.join(OUT, `shot-${id}-${bw ? 'bw' : 'colour'}-${lang}.png`)
+        });
+        await page.setViewport({ width: 1180, height: 950, deviceScaleFactor: 1 });
+      }
+    }
+    await ctx.close();
+    await closeBrowser();
+    return;
+  }
   const result = [];
   for (const lang of ['ru', 'en']) {
     const { ctx, page, d } = await fresh({ width: 1180, height: 950, lang });
     const N = NAMES[lang];
     if (process.env.PDF !== '0') {
-      for (const compact of [false, true]) {
+      for (const compact of process.env.ONLY_COMPACT ? [true] : [false, true]) {
         await openSet(d, page, lang, compact ? SIXTEEN : NINE);
         for (const bw of [false, true]) {
           await layout(d, page, N, bw, compact);
@@ -333,7 +378,7 @@ async function layout(d, page, N, bw, compact) {
           [false, true],
           [true, true],
           [true, false]
-        ]) {
+        ].filter(([, c]) => c || !process.env.ONLY_COMPACT)) {
           await layout(d, page, N, bw, compact);
           result.push({ lang, bw, compact, chunk: c, cards: await page.evaluate(measure) });
         }

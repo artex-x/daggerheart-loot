@@ -1,0 +1,409 @@
+/* Round 5 shared patterns for the mocks 2, 3, 4, 5, 7 and P (task 57, reviews/mocks-2.md).
+   Mock 3 owns them: the list head, the one selection bar, the «···» label,
+   the own-items switch, the count line. Loaded after ua.css. */
+
+/* N0-3: a sheet closes with «Закрыть», the scrim or Escape; a grab handle with
+   no swipe behind it is a false affordance */
+.sheet .grab {
+  display: none;
+}
+
+/* N2-1: every menu item is a 44 px target, as the account menu's */
+.pop a,
+.pop button.mi,
+.menu a,
+.supmenu a {
+  min-height: 44px;
+}
+
+/* N3-3: the separator stays with the value before it, so a wrapped line never
+   starts with a dot */
+.stat .dot {
+  display: none;
+}
+.stat .si:not(:last-child)::after {
+  content: '\00b7';
+  color: var(--line2);
+  padding: 0 5px;
+}
+
+/* N2-3: the toast plate reads against dark rows */
+.toast3:not(.err) {
+  border-color: var(--muted2);
+}
+
+/* a disabled control: no press, a dimmed face */
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* R0-2: the one selection bar. 360: the head row (tick-all, summary, clear),
+   then the actions; from 761 px one row, the clear control last. */
+.sb2 {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+}
+.sb2 .sb-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.sb2 .sb-top .sbn {
+  margin: 0 auto 0 0;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.sb2 .sb-top .sbn small {
+  display: block;
+  font-size: var(--t-data);
+  font-weight: 400;
+  color: var(--muted);
+}
+.sb2 .sb-top .clr {
+  flex: none;
+  margin-right: -4px;
+}
+.sb2 .sb-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sb2 .sb-acts .btn {
+  flex: 1 1 auto;
+}
+.sb2 .allbtn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: -6px 0 -6px -8px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--txt);
+  font-size: 15px;
+  font-weight: 600;
+}
+.sb2 .allbtn .ck2 {
+  margin-top: 0;
+}
+.ck2.tri.mixed svg {
+  width: 14px;
+  height: 14px;
+}
+@media (min-width: 761px) {
+  .sb2 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .sb2 .sb-top,
+  .sb2 .sb-acts {
+    display: contents;
+  }
+  .sb2 .sb-top .sbn {
+    order: 1;
+  }
+  .sb2 .allbtn {
+    order: 0;
+  }
+  .sb2 .sb-acts .btn {
+    order: 2;
+    flex: 0 0 auto;
+  }
+  .sb2 .sb-top .clr {
+    order: 3;
+    margin-right: 0;
+  }
+}
+
+/* the own-items switch (FEATURES.md "Tables and search"): a labelled switch,
+   neutral, never gold */
+.sw {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--txt);
+  white-space: nowrap;
+}
+.sw input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.sw .trk {
+  position: relative;
+  flex: none;
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid var(--muted2);
+  background: var(--bg2);
+}
+.sw .trk i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted2);
+}
+.sw input:checked + .trk {
+  background: var(--surface2);
+  border-color: var(--txt);
+}
+.sw input:checked + .trk i {
+  left: 19px;
+  background: var(--txt);
+}
+.sw.row {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row-reverse;
+  padding: 2px 0;
+}
+
+/* R3-1 and N3-1: the count line under the search row at 360, the chosen values
+   in text, the count never cut */
+.cline2 {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 4px;
+  font-size: var(--t-data);
+  line-height: 1.25;
+  color: var(--muted);
+}
+.cline2 .vals {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--txt);
+}
+.cline2 .cnt {
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* R0-3: the page name stays the h1 at every width; at 360 it is read, not drawn */
+.fs .h1sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* R7-1 (mock-only): an on-screen keyboard, drawn under a sheet that docks above it */
+.kbd {
+  position: absolute;
+  z-index: 8;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 270px;
+  background: #1b1b1f;
+  border-top: 1px solid #34343a;
+  display: grid;
+  grid-template-rows: repeat(4, 1fr);
+  gap: 8px;
+  padding: 10px 4px 14px;
+}
+.kbd .kr {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.kbd .kr span {
+  flex: 1 1 0;
+  max-width: 32px;
+  border-radius: 6px;
+  background: #303036;
+  display: grid;
+  place-items: center;
+  color: #c8c8d0;
+  font:
+    500 17px/1 system-ui,
+    sans-serif;
+}
+.kbd .kr span.w {
+  flex: 3 1 0;
+  max-width: 96px;
+}
+.kbd .kr span.sp {
+  flex: 6 1 0;
+  max-width: 190px;
+}
+.sheet.kdock {
+  max-height: none;
+}
+.sheet .kfield {
+  display: grid;
+  gap: 6px;
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.sheet .field.focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.sheet .dock3 {
+  border-top: 1px solid var(--line);
+  padding: 10px 16px 14px;
+  display: grid;
+  gap: 10px;
+}
+.sheet .dock3 .wb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sheet .dock3 .wb .btn {
+  flex: 1 1 auto;
+}
+.sheet .kscroll {
+  padding: 0 16px 10px;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* the table picker is a button, no longer inside the h1 */
+.fs .pickrow .picker {
+  margin: 0 auto 0 0;
+}
+.fs .pickrow .pick {
+  font-size: var(--t-page);
+  line-height: 1.15;
+}
+@media (max-width: 760px) {
+  .cline2.n360 {
+    display: flex !important;
+  }
+}
+@media (max-width: 760px) {
+  .cline2.n360 {
+    margin: -2px 0 2px;
+    line-height: 1.2;
+  }
+  .fs .secth .btn {
+    min-height: 28px;
+  }
+}
+
+/* R5-1: «Настроить» and «··· Ещё» share the results line at 360 */
+@media (max-width: 760px) {
+  .rtools.n360 {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* B5-2: the chip carries the page heading's words, «Альтернативные таблицы»;
+   at 360 the three mode controls share the row by their label length */
+@media (max-width: 760px) {
+  .modes.r3 {
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.15fr) minmax(0, 1.15fr);
+    gap: 6px;
+  }
+  .modes.r3 .chip {
+    padding: 0 6px;
+    font-size: 13px;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+  }
+  .modes.r3 .chip.sup {
+    gap: 4px;
+  }
+}
+
+/* R2-1: a roll page draws no h1 at 360 */
+@media (max-width: 760px) {
+  main.mh .ph {
+    margin: 0;
+  }
+  main.mh .ph h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+/* B4-1: the dialog's fixed bar at 360, two rows of two */
+.sheet .dock4 {
+  border-top: 1px solid var(--line);
+  padding: 10px 16px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sheet .dock4 .btn,
+.sheet .dock4 .anchor {
+  width: 100%;
+}
+.sheet .dock4 .anchor {
+  display: block;
+}
+
+/* B7-2: the search row of /search ends with «Выбрать»; the kind control keeps
+   the field at least 140 px wide at 360 (the list head pattern) */
+.sfs .sbar .field {
+  min-width: 0;
+}
+.sfs .sbar .selbtn,
+.sfs .sbar .kbtn {
+  flex: none;
+}
+@media (max-width: 760px) {
+  .sfs .sbar .field {
+    flex: 1 1 140px;
+  }
+  .sfs .sbar .kbtn,
+  .sfs .sbar .selbtn {
+    padding: 0 9px;
+  }
+  .sfs .sbar .field input::placeholder {
+    font-size: var(--t-small);
+  }
+}
+.kindrow .ownsw {
+  margin-left: auto;
+}
+.sfs .selon {
+  padding-bottom: 160px;
+}
+@media (min-width: 761px) {
+  .sfs .selon {
+    padding-bottom: 72px;
+  }
+}
+
+/* N7-3: a skeleton block while a page loads */
+.skelp {
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: linear-gradient(90deg, var(--surface), var(--surface2), var(--surface));
+}
+
+/* QP.6: /p/ at 360 draws one card per row at the column width (owner, mock P) */
+@media (max-width: 760px) {
+  .pfs .pcards img {
+    width: 100%;
+  }
+}

@@ -51,8 +51,8 @@
         outside the checkout. The proposals are injected into the built page (the card size, the
         face, the text base, the tier word floor, the list marker, a port of the fit that starts
         at the new base); no app code changed. Not drawn yet: the light no-picture well (it
-        follows mock 1b, so the ninth card still shows today's "?" placeholder) and batch 1's
-        neutral pressed switches (the switches are still gold here).
+        follows mock 1b, so the ninth card still shows today's "?" placeholder). The /p/ page
+        frames below are not taken from that build: round 5 draws them on mock 7's shell.
       </p>
 
       <h2>Owner answers already in the plan</h2>
@@ -203,8 +203,8 @@
               lines 11; smallest 4.1 pt
             </td>
             <td>
-              text 5.7 pt (min 4.2); below the base 29; art median 60%, art gone 17; names on 3
-              lines 4; smallest 4.2 pt
+              text 5.7 pt (min 4.7); below the base 29; art median 60%, art gone 20; names on 3
+              lines 4; smallest 4.5 pt
             </td>
           </tr>
           <tr>
@@ -219,7 +219,7 @@
             </td>
             <td>
               text 5.7 pt (min 4.7); below the base 11; art median 63%, art gone 8; names on 3
-              lines 0; smallest 3.9 pt
+              lines 0; smallest 4.5 pt
             </td>
           </tr>
           <tr>
@@ -267,10 +267,31 @@
               text 6.2 pt (min 4.7); below the base 15; names on 3 lines 0; smallest 3.2 pt
             </td>
             <td>
-              text 6.2 pt (min 4.9); below the base 11; names on 3 lines 0; smallest 3.9 pt
+              text 6.2 pt (min 4.9); below the base 11; names on 3 lines 0; smallest 4.5 pt
             </td>
           </tr>
         </table>
+        <h3>The paper floor on the compact card (RP-2)</h3>
+        <p>
+          Before round 5 the smallest compact text was 3.9 pt (EN) and 4.2 pt (RU), under
+          DESIGN.md's paper floor of 4.5 pt for labels. Two elements went under it, found in the
+          catalog run (1459 records): (1) the damage label in the strip, on the 70 EN compact
+          cards that carry a modifier beside the label (for example Dread GM Toolbox weapons):
+          the ribbon fit shrank that one label to 2.2cqw (3.9 pt) and ignored the floor; (2) the
+          rules text of three RU colour compact cards with a long text (<code>voa2_a1</code>,
+          <code>voa4_a3</code>, <code>dv14</code>), which the ladder took down to 3.4cqw
+          (4.2-4.4 pt). The fix drawn in the compact rows above: the label shrink stops at 4.5
+          pt (3.7cqw on the 44 mm card), and the compact ladder's floor rises from 2.6cqw to
+          3.7cqw (4.55 pt); the standard card's floor stays 2.6cqw (4.7 pt on 63.5 mm).
+          Measured: the smallest text of every compact layout is now 4.5 pt; the smallest rules
+          text is 4.7 pt RU colour, 4.6 pt RU black and white, 4.7 pt EN colour, 4.9 pt EN black
+          and white; no catalog card clips. The cost: 3 more RU colour compact cards lose their
+          picture (20, from 17); the EN counts do not change. Open for batch P: at 4.5 pt the
+          word "DAMAGE" (21.6 px) is 2.6 px wider than its box, so it touches the modifier and
+          the ribbon notch on those 70 EN cards; the strip needs 3 px more room for that label
+          (a narrower modifier badge), or the batch names a shorter label. No Figma node draws
+          this case.
+        </p>
         <h3>The same cards at real size</h3>
         <p>
           Each card is a 300 dpi crop of the printed PDF, shown at its printed width on a screen
@@ -513,7 +534,7 @@
         <h2>QP.8 - Cards whose picture gives way</h2>
         <p>
           With the larger text, the longest colour texts take the whole card and the picture is
-          hidden: 10 RU and 1 EN standard cards, 17 RU and 8 EN compact cards in Source Sans 3.
+          hidden: 10 RU and 1 EN standard cards, 20 RU and 8 EN compact cards in Source Sans 3.
           Today the same happens to 2 RU standard cards and 3 RU compact cards, and those cards
           keep a blank band of paper at the top, where the art padding was (about a quarter of
           the card). The Core Set cards always keep about half the card for the art.
@@ -719,32 +740,36 @@
       <section class="q">
         <h2>The print page (<code>/p/</code>)</h2>
         <p>
-          The bar keeps «Назад» / "Back" beside the heading, the two switches as visible
-          controls for this visit (no note under them), and «Ещё» / "More" with «Ссылка на
-          набор» / "Link to this set". The sentence about A4, orientation and margins goes,
-          because the page sets them. The sub line (cards, sheets, size) moves under the sheets.
+          One design of <code>/p/</code>, drawn once in mock 7 and used here (RP-1): the new
+          shell (three jobs, the «Loot» wordmark on EN), the neutral switches «Цвет» / «Ч/б» and
+          «63×88» / «44×63» (EN "Color" / "B&amp;W"), «Напечатать» / "Print" as the one primary
+          label (the owner's answer RP-1), «Настройки листа» with the sheet settings at 360, one
+          card per row at the column width at 360 (QP.6). The cards are this mock's proposed
+          cards (63.5 x 88.9 mm, Source Sans 3). The sentence about A4, orientation and margins
+          is gone, because the page sets them. «Today» is the pre-batch-1 build, kept for the
+          numbers only: five tabs, «Лут» on EN, gold switches, the radial ground.
         </p>
         <table>
           <tr>
             <th>Viewport</th>
             <th>Today: top of the first sheet</th>
-            <th>Proposed</th>
+            <th>Proposed (mock 7's page)</th>
             <th>Limit (40%)</th>
             <th>Target</th>
           </tr>
           <tr>
             <td>360 x 640, RU and EN</td>
             <td>fail: 529 px; cards 94 px wide</td>
-            <td>pass: 248 px; one card 313 px wide</td>
+            <td>pass: the first card at 239 px, 328 px wide</td>
             <td>256</td>
-            <td>240 (8 over)</td>
+            <td>240 (met)</td>
           </tr>
           <tr>
             <td>1180 x 720, RU and EN</td>
             <td>fail: 350 px</td>
-            <td>pass: 271 px</td>
+            <td>pass: the sheet at 244 px</td>
             <td>288</td>
-            <td>270 (1 over)</td>
+            <td>270 (met)</td>
           </tr>
         </table>
         <div class="shots">
@@ -754,7 +779,7 @@
           </figure>
           <figure>
             <figcaption>360, RU, proposed</figcaption>
-            <img src="page-proposed__360x640__ru.png" alt="Print page at 360 px proposed, RU" />
+            <img src="page-proposed__360__ru.png" alt="Print page at 360 px proposed, RU" />
           </figure>
           <figure>
             <figcaption>1180, RU, today</figcaption>
@@ -762,10 +787,7 @@
           </figure>
           <figure>
             <figcaption>1180, RU, proposed</figcaption>
-            <img
-              src="page-proposed__1180x720__ru.png"
-              alt="Print page at 1180 px proposed, RU"
-            />
+            <img src="page-proposed__1180__ru.png" alt="Print page at 1180 px proposed, RU" />
           </figure>
           <figure>
             <figcaption>360, EN, today</figcaption>
@@ -773,7 +795,7 @@
           </figure>
           <figure>
             <figcaption>360, EN, proposed</figcaption>
-            <img src="page-proposed__360x640__en.png" alt="Print page at 360 px proposed, EN" />
+            <img src="page-proposed__360__en.png" alt="Print page at 360 px proposed, EN" />
           </figure>
           <figure>
             <figcaption>1180, EN, today</figcaption>
@@ -781,10 +803,7 @@
           </figure>
           <figure>
             <figcaption>1180, EN, proposed</figcaption>
-            <img
-              src="page-proposed__1180x720__en.png"
-              alt="Print page at 1180 px proposed, EN"
-            />
+            <img src="page-proposed__1180__en.png" alt="Print page at 1180 px proposed, EN" />
           </figure>
         </div>
         <h3>QP.6 - The preview at 360</h3>
@@ -792,10 +811,9 @@
           <div class="opt rec">
             <h4>One card per row</h4>
             <p>
-              Below 600 px the screen draws one card per row at the column width, with «Лист 2
-              из 2» / "Sheet 2 of 2" before each later sheet; print output does not change.
-              Trade-off: a phone no longer shows the 3 x 3 arrangement; the GM checks it on a
-              laptop.
+              Below 600 px the screen draws one card per row at the column width (328 px); print
+              output does not change. Trade-off: a phone no longer shows the 3 x 3 arrangement;
+              the GM checks it on a laptop.
             </p>
           </div>
           <div class="opt">
@@ -809,9 +827,8 @@
             <h4>«Цвет» / «Ч/б» and «63×88» / «44×63»</h4>
             <p>
               Both switches fit one row at 360, and the size switch names the size it prints.
-              EN: "Colour" / "B&amp;W", "63×88" / "44×63" ("Colour" becomes "Color" with batch
-              2). The account page's defaults and the editor's print view take the same labels
-              (one name, rule 4).
+              EN: "Color" / "B&amp;W", "63×88" / "44×63". The account page's defaults and the
+              editor's print view take the same labels (one name, rule 4).
             </p>
           </div>
           <div class="opt">
@@ -837,6 +854,10 @@
         </li>
         <li>The print face (QP.1): the nodes' face is not one of the candidates.</li>
         <li>The tier word («Ранг» / "Tier") takes the 4.5 pt label floor, not 4 pt.</li>
+        <li>
+          The compact card's text floor is 3.7cqw (4.5 pt), not 2.6cqw, and the damage label
+          stops at 4.5 pt (RP-2, measured above).
+        </li>
         <li>
           List items take an en dash in black instead of the default disc (the nodes have no
           list).

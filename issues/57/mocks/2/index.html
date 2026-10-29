@@ -39,8 +39,8 @@
         <tr>
           <td><code>header</code></td>
           <td>content under the header and the mode row</td>
-          <td>166 / 256</td>
-          <td>166 / 256</td>
+          <td>164 / 256</td>
+          <td>164 / 256</td>
           <td>116 / 288</td>
           <td>116 / 288</td>
           <td>pass</td>
@@ -392,6 +392,24 @@
           «Справка»), the toast.
         </li>
       </ul>
+      <h2>Round 5 (review mocks-2): findings fixed</h2>
+      <ul>
+        <li>
+          R2-1: the 360 roll frames (<code>header</code>, <code>mode-long</code>,
+          <code>roll-target</code>, <code>shell-signed-out</code>) draw no H1 under the mode
+          row, as mock 5. N2-1: <code>roller-supmenu</code> is drawn on a supplement page (Vault
+          of Ages), the open supplement carries a check, and the menu items are 44 px. N2-2
+          (owner): Vault of Ages keeps its panel, and its button is named after the panel, «Об
+          этой книге» / "About this book"; the same rule gives the other supplements «Об этой
+          книге» (Dread GM Toolbox, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern),
+          «Об этой таблице» / "About this table" (Wondrous Environments) and «Об этих предметах»
+          / "About these items" (Community items). N2-3: the plate toast has a
+          <code>--muted2</code> border. R0-1: the result card in <code>roller-supmenu</code>
+          carries «··· Ещё». B5-2: the second mode chip reads «Альтернативные таблицы» /
+          "Alternate tables", the page heading's words (two lines at 360). N0-3: a sheet has no
+          grab handle. N0-4: the sticky header is 111 px at 360, one number.
+        </li>
+      </ul>
       <h2>Changes from direction R and from plan.md</h2>
       <ul>
         <li>
@@ -414,14 +432,14 @@
           drew the plate; the error flavour is new here.
         </li>
         <li>
-          At 360 the mode row takes 0.9 / 0.9 / 1.2 of the width, so "Many Worlds Tavern" and
-          «Предметы сообществ» hold two lines, not three.
+          At 360 the mode row takes 0.8 / 1.25 / 1 of the width at 13 px, so «Альтернативные
+          таблицы», "Many Worlds Tavern" and «Предметы сообществ» hold two lines, not three.
         </li>
         <li>The language switch shows the batch 1 check.</li>
         <li>
           The button by the H1 takes the name of the panel it opens (plan review plan-1-3 R3,
           rule 4): «Об этих данных» on /tables, «Где какая редкость» on /roll/std, «Об этих
-          таблицах» on /roll/alt; «Справка» stays only where the panel keeps that name.
+          таблицах» on /roll/alt; «Справка» stays on no roll page after round 5.
         </li>
         <li>
           Review mocks-1: M2-1 - no «Справка» on <code>/lists</code> (the owner removed that
@@ -439,12 +457,14 @@
       <h2>Impeccable critique (Clarity Rule)</h2>
       <ul>
         <li>
-          At 360 the pin and «Справка» wrap under the H1 on a page with a long title; the head
-          grows about 40 px. Accepted: both labels say what they do.
+          At 360 a roll page draws no H1 (R2-1): the lit mode chip names the page, and the pin
+          and the help sit in «Настроить» and «··· Ещё» (mock 5). The 360 frames of the roll
+          pages show the header and the mode row alone.
         </li>
         <li>
-          The sticky part at 360 (brand row and job row) is about 108 px in the render, under
-          the 112 px limit of plan batch 2. The mode row scrolls with the page.
+          The sticky part at 360 (brand row and job row) is 111 px in the render (measured,
+          N0-4: one number), under the 112 px limit of plan batch 2. The mode row scrolls with
+          the page.
         </li>
         <li>
           Clarity Rule: every header control names its job; the account control shows an initial

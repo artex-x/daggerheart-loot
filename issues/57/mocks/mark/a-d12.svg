@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Candidate A, the d12: a dodecahedron seen face-on. The silhouette is a
+       regular decagon (circumradius 198, inside the 204.8 safe zone); the
+       front face is a pentagon at 1/phi of it (122). The edges are cut out of
+       the gold through a mask, so they show the ground the mark stands on. -->
+  <defs>
+    <mask id="edges" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <g fill="none" stroke="#000" stroke-width="18" stroke-linejoin="round">
+        <path d="M256 134 L372 218.3 L327.7 354.7 L184.3 354.7 L140 218.3 Z"/>
+        <path d="M256 134 V40 M372 218.3 L462 189 M327.7 354.7 L383 431 M184.3 354.7 L129 431 M140 218.3 L50 189"/>
+      </g>
+    </mask>
+  </defs>
+  <g mask="url(#edges)">
+    <path fill="#d8ab5e" d="M256 58 L372.4 95.8 L444.3 194.8 L444.3 317.2 L372.4 416.2 L256 454 L139.6 416.2 L67.7 317.2 L67.7 194.8 L139.6 95.8 Z"/>
+    <path fill="#f0d091" d="M256 134 L372 218.3 L327.7 354.7 L184.3 354.7 L140 218.3 Z"/>
+  </g>
+</svg>

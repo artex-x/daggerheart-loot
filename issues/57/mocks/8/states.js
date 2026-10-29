@@ -4,12 +4,44 @@
 (function () {
   const { t, R, nm, ic, art, badge, srcName, desc, LANG } = window.M;
   const U = window.U;
-  const { E, N, S, btn, ck, empty, errPage, loadErr, head, pop, mi, anchor, rpage, ov, icx } = U;
+  const {
+    E,
+    N,
+    S,
+    btn,
+    ck,
+    empty,
+    errPage,
+    loadErr,
+    head,
+    pop,
+    mi,
+    anchor,
+    rpage,
+    ov,
+    icx,
+    selBar,
+    selState
+  } = U;
 
   const LISTS = [
-    { name: t('listName'), m: E('10 позиций · изменён 3 дня назад', '10 entries · changed 3 days ago'), ids: ['ci1', 'q1', 'q313', 'cc1', 'voa', 'q23'], req: E('2 запроса', '2 requests'), notice: E('1 изменение', '1 change') },
-    { name: E('Трофеи', 'Trophies'), m: E('2 позиции · изменён в прошлом месяце', '2 entries · changed last month'), ids: ['q1', 'ci1'] },
-    { name: E('Пустой список', 'Empty list'), m: E('0 позиций · изменён 1 час назад', '0 entries · changed 1 hour ago'), ids: [] }
+    {
+      name: t('listName'),
+      m: E('10 позиций · изменён 3 дня назад', '10 entries · changed 3 days ago'),
+      ids: ['ci1', 'q1', 'q313', 'cc1', 'voa', 'q23'],
+      req: E('2 запроса', '2 requests'),
+      notice: E('1 изменение', '1 change')
+    },
+    {
+      name: E('Трофеи', 'Trophies'),
+      m: E('2 позиции · изменён в прошлом месяце', '2 entries · changed last month'),
+      ids: ['q1', 'ci1']
+    },
+    {
+      name: E('Пустой список', 'Empty list'),
+      m: E('0 позиций · изменён 1 час назад', '0 entries · changed 1 hour ago'),
+      ids: []
+    }
   ];
   const MORE_NAMES = [
     E('Лавка алхимика', "The alchemist's shop"),
@@ -43,7 +75,12 @@
     const more = o.sel
       ? ''
       : anchor(
-          btn(t('more'), { sm: true, cls: 'ghost', i: 'more', attr: `aria-label="${t('more')}: ${l.name}" aria-expanded="${!!o.menuOpen}"` }),
+          btn(t('more'), {
+            sm: true,
+            cls: 'ghost',
+            i: 'more',
+            attr: `aria-label="${t('more')}: ${l.name}" aria-expanded="${!!o.menuOpen}"`
+          }),
           menu
         );
     return `<article class="panel lcard ${o.sel ? 'selmode' : ''} ${o.on ? 'sel' : ''}">${o.sel ? ck(o.on) : ''}<h3><a href="#">${l.name}</a></h3><div class="m">${l.m}</div>${thumbs}<div class="foot3">${reqs || '<span></span>'}${more}</div></article>`;
@@ -53,7 +90,7 @@
      (plan.md section 14, rule 8). «Импорт из файла» sits in «Ещё» on the count line. */
   const newField = (o = {}) =>
     o.newOpen
-      ? `<section class="panel newl" aria-label="${E('Новый список', 'New list')}"><div class="rowf"><label class="field foc"><input placeholder="${E('Клад дракона', "Dragon's hoard")}"></label>${btn(E('Создать', 'Create'), { cls: 'primary' })}${btn(E('Отмена', 'Cancel'), { cls: 'ghost' })}</div></section>`
+      ? `<section class="panel newl" aria-label="${E('Новый список', 'New list')}"><div class="rowf nlr"><label class="mvl">${E('Название списка', 'List name')}<span class="field foc"><input placeholder="${E('Клад дракона', "Dragon's hoard")}"></span></label>${btn(E('Создать', 'Create'), { cls: 'primary' })}${btn(E('Отмена', 'Cancel'), { cls: 'ghost' })}</div></section>`
       : '';
   const limitNote = `<p class="limitnote" style="margin:0 0 12px">${icx('alert')}<span>${E('В аккаунте 50 списков из 50. Удалите ненужный или напишите на daggerheart.loot@gmail.com.', 'The account holds 50 lists of 50. Delete one you do not need or write to daggerheart.loot@gmail.com.')}</span></p>`;
 
@@ -67,13 +104,34 @@
       `${total} ${U.plural(total, ['список', 'списка', 'списков'])} из 50`,
       `${total} ${total === 1 ? 'list' : 'lists'} of 50`
     );
-    const moreMenu = o.moreOpen ? pop(mi(E('Импорт из файла', 'Import from file'), { i: 'upload' }), { r: true, w: 220 }) : '';
+    const moreMenu = o.moreOpen
+      ? pop(mi(E('Импорт из файла', 'Import from file'), { i: 'upload' }), { r: true, w: 220 })
+      : '';
     const more = anchor(
-      btn(t('more'), { sm: true, i: 'more', cls: `m-only ${o.importPanel ? 'on' : ''}`, attr: `aria-expanded="${!!o.moreOpen}"` }),
+      btn(t('more'), {
+        sm: true,
+        i: 'more',
+        cls: `m-only ${o.importPanel ? 'on' : ''}`,
+        attr: `aria-expanded="${!!o.moreOpen}"`
+      }),
       moreMenu
     );
     const tools = sel
-      ? `<div class="selbar bbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><span class="cb"><i></i>${E('Все', 'All')}</span><b>${E(`Выбрано: ${sel.length}`, `${sel.length} selected`)}</b>${btn(E(`Скачать JSON (${sel.length})`, `Download JSON (${sel.length})`), { sm: true, i: 'download' })}${btn(E(`Удалить (${sel.length})`, `Delete (${sel.length})`), { sm: true, cls: 'danger' })}${btn(E('Снять выделение', 'Clear the selection'), { sm: true, cls: 'ghost' })}</div>`
+      ? selBar({
+          state: selState(sel.length, lists.length),
+          head: E(`Выбрано: ${sel.length}`, `${sel.length} selected`),
+          acts:
+            btn(E(`Скачать JSON (${sel.length})`, `Download JSON (${sel.length})`), {
+              sm: true,
+              i: 'download',
+              dis: !sel.length
+            }) +
+            btn(E(`Удалить (${sel.length})`, `Delete (${sel.length})`), {
+              sm: true,
+              cls: 'danger',
+              dis: !sel.length
+            })
+        })
       : o.signedOut
         ? ''
         : o.find
@@ -84,14 +142,26 @@
       ? `<div class="cards3">${lists.map((l, i) => card(l, { sel: !!sel, on: sel && sel.includes(i), menuOpen: o.menuOpen && i === 0 })).join('')}</div>`
       : '';
     const fold = o.hidden
-      ? `<div style="display:flex;justify-content:center;margin-top:14px">${btn(E(`и ещё ${o.hidden} списков`, `and ${o.hidden} more lists`), { chev: true })}</div>`
+      ? `<div style="display:flex;justify-content:center;margin-top:14px">${btn(E(`Показать ещё (${o.hidden})`, `Show more (${o.hidden})`))}</div>`
       : '';
     const body = `${o.body || `${find}${cards}${fold}`}${sel ? tools : ''}`;
     const head2 = sel ? '' : tools;
     const primary = o.signedOut
       ? ''
-      : btn(E('Новый список', 'New list'), { cls: 'primary', i: N ? '' : 'plus', sm: N, attr: `aria-expanded="${!!o.newOpen}"` });
-    const imp = o.signedOut ? '' : btn(E('Импорт из файла', 'Import from file'), { sm: true, i: 'upload', cls: `d-only ${o.importPanel ? 'on' : ''}`, attr: `aria-expanded="${!!o.importPanel}"` });
+      : btn(E('Новый список', 'New list'), {
+          cls: 'primary',
+          i: 'plus',
+          sm: N,
+          attr: `aria-expanded="${!!o.newOpen}"`
+        });
+    const imp = o.signedOut
+      ? ''
+      : btn(E('Импорт из файла', 'Import from file'), {
+          sm: true,
+          i: 'upload',
+          cls: `d-only ${o.importPanel ? 'on' : ''}`,
+          attr: `aria-expanded="${!!o.importPanel}"`
+        });
     const h = `<div class="ph one"><h1>${t('menuLists')}</h1><div class="phr">${imp}${primary}${o.signedOut ? '' : more}</div></div>`;
     const main = `<main class="wrap">${h}${newField(o)}${o.importPanel || ''}${head2}<div class="${sel ? 'padbar' : ''}">${body}</div></main>`;
     return rpage({ job: null, signedIn: !o.signedOut, here: !o.signedOut }, main);
@@ -141,9 +211,33 @@
         `${i + 3} ${U.plural(i + 3, ['позиция', 'позиции', 'позиций'])} · изменён ${i + 4} ${U.plural(i + 4, ['день', 'дня', 'дней'])} назад`,
         `${i + 3} entries · changed ${i + 4} days ago`
       ),
-      ids: [['cc1', 'cc2', 'cc3'], ['q26', 'voa'], ['ci5'], ['hi2', 'ci3'], ['cc2'], ['q4', 'q10', 'q13'], ['hi1', 'hc1'], ['ci2', 'w1'], ['dv3']][i]
+      ids: [
+        ['cc1', 'cc2', 'cc3'],
+        ['q26', 'voa'],
+        ['ci5'],
+        ['hi2', 'ci3'],
+        ['cc2'],
+        ['q4', 'q10', 'q13'],
+        ['hi1', 'hc1'],
+        ['ci2', 'w1'],
+        ['dv3']
+      ][i]
     }));
-    return listsPage({ full: true, find: true, total: 50, lists: [...LISTS.slice(0, 3), ...extra], hidden: 38 });
+    const rest = Array.from({ length: 12 }, (_, i) => ({
+      name: E(`Сессия ${13 + i}`, `Session ${13 + i}`),
+      m: E(
+        `${i + 1} ${U.plural(i + 1, ['позиция', 'позиции', 'позиций'])} · изменён в прошлом месяце`,
+        `${i + 1} ${i ? 'entries' : 'entry'} · changed last month`
+      ),
+      ids: [['cc1'], ['q26', 'voa'], ['ci5'], ['hi2', 'ci3']][i % 4]
+    }));
+    return listsPage({
+      full: true,
+      find: true,
+      total: 50,
+      lists: [...LISTS.slice(0, 3), ...extra, ...rest],
+      hidden: 26
+    });
   }
 
   /* ---------- the lists import (A14, D6) ---------- */
@@ -170,7 +264,8 @@
             'Его удалили, или он сохранён в другом аккаунте. Вы вошли как gm1@example.test.',
             'It was deleted, or it is in another account. You are signed in as gm1@example.test.'
           ),
-          btn(t('menuLists'), { cls: 'primary', i: 'list' }) + btn(E('Открыть таблицы', 'Open the tables'), { i: 'table' })
+          btn(t('menuLists'), { cls: 'primary', i: 'list' }) +
+            btn(E('Открыть таблицы', 'Open the tables'), { i: 'table' })
         ]
       : [
           E('Список не открывается', 'This list does not open'),
@@ -178,9 +273,13 @@
             'Списки открываются только в аккаунте, где их создали. Войдите в него.',
             'A list opens only in the account where it was made. Sign in to that account.'
           ),
-          btn(t('signIn'), { cls: 'primary', i: 'user' }) + btn(E('Открыть таблицы', 'Open the tables'), { i: 'table' })
+          btn(t('signIn'), { cls: 'primary', i: 'user' }) +
+            btn(E('Открыть таблицы', 'Open the tables'), { i: 'table' })
         ];
-    return rpage({ job: null, signedIn, here: false }, `<main class="wrap">${errPage(...P)}</main>`);
+    return rpage(
+      { job: null, signedIn, here: false },
+      `<main class="wrap">${errPage(...P)}</main>`
+    );
   }
 
   /* ---------- the add-to-list menu (C61, C35, C62) ---------- */
@@ -212,7 +311,12 @@
     return `<div class="pop" role="menu" style="top:calc(100% + 6px);left:0;min-width:280px">${body}</div>`;
   }
   function itemListMenu(o = {}) {
-    const addBtn = btn(t('addList'), { cls: 'primary', i: 'plus', chev: true, attr: 'aria-expanded="true"' });
+    const addBtn = btn(t('addList'), {
+      cls: 'primary',
+      i: 'plus',
+      chev: true,
+      attr: 'aria-expanded="true"'
+    });
     if (!N) {
       const acts = `${anchor(addBtn, menuDesk(o.signedOut))}${btn(t('share'), { i: 'share' })}${btn(t('print'), { i: 'print' })}${btn(t('more'), { i: 'more', chev: true })}`;
       const main = `<main class="wrap"><article class="dossier">${art(r)}<div class="txt"><h1>${nm(r)}</h1>${meta}<p class="lead">${desc(r)}</p><div class="acts">${acts}</div>
@@ -221,7 +325,10 @@
     }
     /* 360: the item sheet, then the menu as a second sheet over it, so no list
        hides under the action bar (C62). */
-    const behind = rpage({ job: 'tables', signedIn: !o.signedOut }, `<main class="wrap">${head(t('tables'), {})}</main>`);
+    const behind = rpage(
+      { job: 'tables', signedIn: !o.signedOut },
+      `<main class="wrap">${head(t('tables'), {})}</main>`
+    );
     const item = `<section class="sheet" role="dialog" aria-label="${nm(r)}"><div class="grab"></div><div class="sh">${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>
       <div class="scroll">${art(r)}<h2>${nm(r)}</h2>${meta}</div>
       <div class="dock d3" style="position:relative">${btn(t('addList'), { cls: 'primary', i: 'plus', chev: true, attr: 'aria-expanded="true"' })}${btn(t('share'), { i: 'share' })}${btn(t('more'), { i: 'more' })}</div></section>`;
@@ -236,6 +343,7 @@
     'lists-more': () => listsPage({ moreOpen: true }),
     'lists-cardmenu': () => listsPage({ menuOpen: true }),
     'lists-selected': () => listsPage({ sel: [0, 2] }),
+    'lists-select-none': () => listsPage({ sel: [] }),
     'lists-empty': listsEmpty,
     'lists-signedout': listsSignedOut,
     'lists-error': listsError,
@@ -244,8 +352,15 @@
     'lists-nope': () => listsNope(false),
     'lists-nope-signedin': () => listsNope(true),
     'item-listmenu': () => itemListMenu(),
-    'item-listmenu-signedout': () => itemListMenu({ signedOut: true }),
+    'item-listmenu-signedout': () => itemListMenu({ signedOut: true })
   };
   window.RSTATES = Object.keys(STATES);
-  window.RSTATE = () => U.fix((STATES[S] || STATES['lists-index'])());
+  window.RSTATE = () => {
+    U.pinned = '';
+    let h = (STATES[S] || STATES['lists-index'])();
+    if (U.pinned)
+      h = `<div class="ov" style="height:640px">${h}<div class="pinbar">${U.pinned}</div></div>`;
+    U.pinned = '';
+    return U.fix(h);
+  };
 })();

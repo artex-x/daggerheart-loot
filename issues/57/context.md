@@ -318,6 +318,100 @@
     the round 2 blind review before batch 2: the `/homebrew` first item
     row at 255 px (its marker is the first group head, 223 px), several
     360 states at 241-254 px (inside the limit, past the target).
+  - One mark (owner, 2026-10-29, chat): today the app shows three marks -
+    a gold key on the home-screen icons (`app/public/icons/`, source
+    `icon.svg`), an OS emoji key as the tab favicon (inline data URI in
+    `app/index.html`), and a gold star in the header and the share cards.
+    One drawn mark replaces all of them: header, favicon (a real SVG file,
+    no emoji), the app icons (192, 512, maskable, apple-touch 180) and both
+    share cards. The owner chooses from several candidates with one marked
+    as recommended, each shown at every size it ships at (16, 32, 48 tab;
+    180, 192, 512, maskable with its safe zone; the header size; the share
+    card), on dark and light browser chrome. Home: `docs/artwork.md` and
+    `META.md` (icons), written by the batch that ships it (batch 2, shell;
+    the share cards are re-rendered there).
+    Chosen (owner, 2026-10-29, chat): candidate B, the vault die -
+    `issues/57/mocks/mark/b-vault-die.svg`: a d12 (decagon outline, lighter
+    pentagon face) with a keyhole cut through the front face, gold
+    `#d8ab5e` / `#f0d091`, cuts as a mask. The rendering of the other
+    candidates was stopped; batch 2 renders B at every size (16, 32, 48
+    favicon; 180, 192, 512, maskable with the safe zone; header; both share
+    cards) and checks it reads at 16 px.
+  - Burden hands (owner, 2026-10-29, interactive): `card/burden-1.svg`,
+    `burden-2.svg` and their `-bw` pair draw mittens (no finger gaps); the
+    Figma print nodes draw hands with fingers. Batch P replaces the four
+    files with the node's vectors, keeping the file names (public asset
+    paths). Source: export from Figma (88Hhc89oY9Orcbvd2ok1Hx, nodes
+    714-42387 colour and 3773-90792 black-and-white) through the owner's
+    Chrome (Claude in Chrome); if that export is not possible, redraw the
+    fingers to match the node, as a named exception to "export vectors, do
+    not redraw them". The print checks run after the swap.
+    Probe (2026-10-29, owner signed in to Figma in Chrome): export works.
+    On node 714-42387, Палаш card, `Equipment-card-v2 > Burden` (groups
+    `Left`, `Right`, each `Inner` + `Outer`, plus the «ХВАТ» label):
+    right-click > Copy/Paste as > Copy as SVG puts a 62x48 SVG on the
+    clipboard (12728 chars); `Get-Clipboard -Raw` saves it. The export
+    draws fingers. Saved at
+    `C:\Users\Ignat\.dhloot\notes\57\figma\burden-1-colour.svg` (+ a 600
+    dpi PNG). The panel's "Export Burden" button produced no file in
+    Downloads; use Copy as SVG. Batch P exports the hands only (without the
+    label), one- and two-hand, colour and black-and-white (node
+    3773-90792).
+  - Card bottom line (owner, 2026-10-29, interactive): the screen record
+    card drops «Daggerheart» from its bottom line and keeps only the source
+    (Core, Hope & Fear, a homebrew author) - batch 4 (record card), and
+    the roll cards of batch 5 and the list rows that reuse it. The printed
+    card drops it too (owner, same day): it was added only to echo the art
+    credit line on official Daggerheart cards, not as a licence notice.
+    Batch P removes it from both print layouts and both sheets, keeps the
+    source line, and gives the freed width to the source (a long homebrew
+    source no longer wraps beside it); FEATURES "Print" loses the
+    «Daggerheart» sentence.
+  - Release in three waves (owner, 2026-10-29, interactive): wave 1 =
+    batches 1, 1b, 2 (system, no-picture, mark, shell, spelling); wave 2 =
+    batches 3-7 (pages); wave 3 = batches 8, 9, P, 10 (lists, print,
+    lock). Each wave: the owner's screenshot review, a squash of the
+    branch tip onto `main` (closeout step 8 of `orchestrate.prompt.md`,
+    but the task directory stays until wave 3), then the post-release
+    live check below. Exception to "a task branch squash-merges onto
+    `main` as the task's one commit" - home: a decision file under
+    `docs/decisions/`, written by batch 2 (the last batch of wave 1).
+    After each wave, `claude/57` merges `origin/main` and carries on.
+    Reviews (owner, 2026-10-29, chat): no owner screenshot review before a
+    wave's squash - waves 1 and 2 land after their batch reviews and green
+    CI; the owner checks everything on the live site after release. One
+    post-release live check runs, after wave 3, covering all three waves
+    (not one per wave). This replaces "no batch lands on `main` until the
+    owner has seen it" and the per-batch screenshot sets as a gate; the
+    batches still save their 360 and 1180 screenshots as evidence.
+  - Post-release review (owner, 2026-10-29, chat): after the squash onto
+    `main` and a green deploy, a fresh blind reviewer checks production
+    only: Source Sans 3 loads from the site (no fallback face); the
+    first-screen and phone-first rules on the live site at 360 and 1180,
+    RU and EN; Impeccable audit and detector on production; axe on the
+    main routes; the PWA install icon and the favicon (the new mark); link
+    previews in Telegram and Discord (cached old cards expected for a
+    while); one printed A4 sheet of each layout on paper (the owner
+    prints). Findings go to `docs/specs/DEBT.md` or a named follow-up
+    task. The plan adds it as a step after batch 10's squash; the task
+    directory is retired only after it.
+  - Mock round 6 answers (owner, 2026-10-29, interactive): the requests
+    panel on `/lists/<uuid>` folds to its head at every width; at 360 the
+    folded strip makes the page with requests a named first-screen
+    exception (about 292 px); without requests the page passes. On
+    `/homebrew` at 360 «Новый предмет» has no plus icon (it has one at
+    1180). The select-all box keeps «Все» visible while rows are ticked
+    (a named FEATURES change). One selection bar on every list page: «Все»
+    (tri-state), «Выбрано: N», the page's actions, «Снять выделение» last;
+    at 360 rare actions fold into «··· Ещё»; a zero-tick state.
+  - Round 2 review answers (owner, 2026-10-29, `reviews/mocks-2.md`):
+    R3-1 no pill row at 360 on the catalog either; the count line names
+    the chosen values in text. R9-1 the requests panel on `/lists/<uuid>`
+    at 360 folds to its head («Новое в списке (3)», «Открыть»). R3-2
+    accepted (three taps at 360 to another group's table). N2-2 Vault of
+    Ages keeps its panel, the button named after the panel. N9-2 at 360
+    «Цены» in «Ещё», «Заметки» on the meta line. RP-1 «Напечатать» /
+    "Print" (as QP.7's short labels).
   - Mock P answers (owner, 2026-10-29, interactive): QP.1 print face is
     Source Sans 3 (the Core Set card pages use Questa Sans and Eveleth
     Clean; both fail self-hosting and Cyrillic; Overpass not compared).

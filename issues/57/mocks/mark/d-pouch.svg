@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Candidate D, the coin pouch: a gathered sack with a tied neck and a
+       coin stamped on its face, both in the lighter gold. The widest points
+       (106, 340) and (178, 100) are 172 and 174 from the centre. -->
+  <defs>
+    <mask id="cuts" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <rect x="196" y="146" width="120" height="36" rx="14" fill="none" stroke="#000" stroke-width="14"/>
+      <circle cx="256" cy="318" r="56" fill="none" stroke="#000" stroke-width="14"/>
+      <circle cx="256" cy="318" r="28" fill="none" stroke="#000" stroke-width="12"/>
+    </mask>
+  </defs>
+  <g mask="url(#cuts)">
+    <path fill="#d8ab5e" d="M212 156 L178 100 C206 112 222 112 236 92 C246 108 266 108 276 92 C290 112 306 112 334 100 L300 156 Z"/>
+    <path fill="#d8ab5e" d="M214 176 C140 206 98 276 106 340 C114 404 176 430 256 430 C336 430 398 404 406 340 C414 276 372 206 298 176 Z"/>
+    <rect fill="#f0d091" x="196" y="146" width="120" height="36" rx="14"/>
+    <circle fill="#f0d091" cx="256" cy="318" r="56"/>
+  </g>
+</svg>

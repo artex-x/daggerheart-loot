@@ -1,10 +1,7 @@
 {
   "batch": 9,
   "title": "Batch 9 - account list page and shared list page",
-  "widths768": [
-    "list",
-    "list-prices"
-  ],
+  "widths768": ["list", "list-prices"],
   "states": [
     {
       "id": "list",
@@ -88,7 +85,13 @@
       "id": "list-selected",
       "addr": "/lists/<uuid>",
       "ids": "A40",
-      "what": "The selection mode: ticks replace the position column, the bar sticky at the bottom names count, pieces and total, «Снять выделение» last."
+      "what": "Open: two entries ticked. The one selection bar: «Все» (a dash while some are ticked), «Выбрано: 2 · 7 шт. · Итого: 400 зол.», «Цены», «Скопировать текст», «Удалить (2)», «Снять выделение» last. At 360 pinned to the bottom of the 640 px frame."
+    },
+    {
+      "id": "list-select-none",
+      "addr": "/lists/<uuid>",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick: «Все» empty, «Выбрано: 0», «Цены», «Скопировать текст» and «Удалить (0)» off, «Снять выделение» on."
     },
     {
       "id": "list-sold",
@@ -100,13 +103,19 @@
       "id": "list-roll",
       "addr": "/lists/<uuid>",
       "ids": "A42",
-      "what": "Open: «Бросить по списку» is a real button; the result is the card face with both notes and «Показать в списке»."
+      "what": "Open: «Бросить по списку» with a result. At 360 the compact card (96 px art beside the text); from 600 px the full card face. The rolled entry, the notes and «Показать в списке» under it."
     },
     {
       "id": "list-requests",
       "addr": "/lists/<uuid>",
       "ids": "requests, notices",
-      "what": "«Новое в списке (3)»: two requests with was / taken / becomes per entry and a short stock in words, one notice that an author changed an item; «Принять» is gold on the first request only (one primary per panel). Its primary content is the panel head."
+      "what": "Requests waiting. At 360 the panel is folded to its head, «Новое в списке (3)» and «Открыть» (owner, 2026-10-29), so the first entry stays in the first screen; at 1180 it is open above the entries. «Принять» is gold on the first request only."
+    },
+    {
+      "id": "list-requests-open",
+      "addr": "/lists/<uuid>",
+      "ids": "R9-1",
+      "what": "Open: «Открыть» pressed at 360. The panel takes the head row with «Свернуть»; the entries start below it. At 1180 the panel is always open, as list-requests."
     },
     {
       "id": "list-empty",
@@ -166,13 +175,19 @@
       "id": "shared-select",
       "addr": "/s/<token>",
       "ids": "A19, A40",
-      "what": "The `/s/` selection mode: ticks, «Взять 1 из 2», the bar with «В список», «Скопировать текст», «Печать», «Снять выделение» and «Сообщить владельцу» last (on its own line at 600 px or less, not gold: the head holds the one primary)."
+      "what": "Open: two entries ticked. The one selection bar: «Все», «Выбрано: 2 · 2 шт.», «В список», «Печать», «Скопировать текст», «Снять выделение» last; «Сообщить владельцу» on its own line under it, not gold."
+    },
+    {
+      "id": "shared-select-none",
+      "addr": "/s/<token>",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick on the shared page: «Все» empty, «Выбрано: 0», the actions and «Сообщить владельцу» off, «Снять выделение» on."
     },
     {
       "id": "shared-filters",
       "addr": "/s/<token>/f_<filter>",
       "ids": "A20",
-      "what": "Open: 13 entries draw the search and the filters (from the eighth, as today), only the groups that narrow this list; at 360 the filter sheet."
+      "what": "The filter sheet at 360 with one source picked: «Фильтры · 1» lit, the count «Показано 8 из 12» on the lead line, «Ссылка на фильтры» in the sheet head, «Сбросить» and «Показать 8» in its foot; at 1180 the column head carries «Сбросить» and the link."
     },
     {
       "id": "shared-gone",

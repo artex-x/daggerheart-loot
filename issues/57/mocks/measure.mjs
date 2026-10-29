@@ -30,15 +30,24 @@ for (const [folder, state, sel, what] of STATES) {
     for (const lang of ['ru', 'en']) {
       const page = await browser.newPage();
       await page.setViewport({ width: w, height: h });
-      await page.goto(pathToFileURL(base + folder + '/state.html').href + '?s=' + state + '&lang=' + lang, { waitUntil: 'load' });
+      await page.goto(
+        pathToFileURL(base + folder + '/state.html').href + '?s=' + state + '&lang=' + lang,
+        { waitUntil: 'load' }
+      );
       await page.evaluate(() => document.fonts.ready);
       const r = await page.evaluate((sel) => {
         const head = document.querySelector('header.top');
         const top0 = head ? head.getBoundingClientRect().top : 0;
-        const el = [...document.querySelectorAll(sel)].find((e) => e.getBoundingClientRect().height > 0);
+        const el = [...document.querySelectorAll(sel)].find(
+          (e) => e.getBoundingClientRect().height > 0
+        );
         if (!el) return null;
         const b = el.getBoundingClientRect();
-        return { top: Math.round(b.top - top0), height: Math.round(b.height), head: head ? Math.round(head.getBoundingClientRect().height) : 0 };
+        return {
+          top: Math.round(b.top - top0),
+          height: Math.round(b.height),
+          head: head ? Math.round(head.getBoundingClientRect().height) : 0
+        };
       }, sel);
       rows.push({ folder, state, what, w, h, lang, ...(r || { top: null }) });
       await page.close();
@@ -48,6 +57,25 @@ for (const [folder, state, sel, what] of STATES) {
 await browser.close();
 for (const x of rows) {
   const cap = Math.round(x.h * 0.4);
-  const verdict = x.top === null ? 'not found' : x.top <= cap ? 'pass' : x.top < x.h ? 'fail (in screen, controls > 40%)' : 'fail (below the fold)';
-  console.log([x.folder + '/' + x.state, x.what, x.w + 'x' + x.h, x.lang, x.top, cap, x.head, x.height, verdict].join(' | '));
+  const verdict =
+    x.top === null
+      ? 'not found'
+      : x.top <= cap
+        ? 'pass'
+        : x.top < x.h
+          ? 'fail (in screen, controls > 40%)'
+          : 'fail (below the fold)';
+  console.log(
+    [
+      x.folder + '/' + x.state,
+      x.what,
+      x.w + 'x' + x.h,
+      x.lang,
+      x.top,
+      cap,
+      x.head,
+      x.height,
+      verdict
+    ].join(' | ')
+  );
 }

@@ -5,7 +5,28 @@
 (function () {
   const { t, R, ic } = window.M;
   const U = window.U;
-  const { E, N, S, btn, seg, chip, allChip, row, empty, loadErr, pop, mi, anchor, rpage, ov, sheet360, icx } = U;
+  const {
+    E,
+    N,
+    S,
+    btn,
+    seg,
+    chip,
+    allChip,
+    row,
+    empty,
+    loadErr,
+    pop,
+    popUp,
+    mi,
+    anchor,
+    rpage,
+    ov,
+    sheet360,
+    icx,
+    selBar,
+    selState
+  } = U;
 
   const COUNTS = { items: 9, sources: 2, sets: 1, rules: 1 };
   const TABS = [
@@ -40,28 +61,49 @@
       `<button class="mi" role="menuitemcheckbox" aria-checked="false">${ic('home')}${t('home')}</button>`;
     const more = (wide) =>
       anchor(
-        btn(t('more'), { sm: !wide, i: 'more', cls: o.importPanel ? 'on' : '', attr: `aria-expanded="${!!o.moreOpen}"` }),
+        btn(t('more'), {
+          sm: !wide,
+          i: 'more',
+          cls: o.importPanel ? 'on' : '',
+          attr: `aria-expanded="${!!o.moreOpen}"`
+        }),
         o.moreOpen ? pop(items(), { r: true, w: 240 }) : ''
       );
-    const primary = (wide) => btn(NEW[tab], { cls: 'primary', i: wide ? 'plus' : '', sm: !wide });
+    const primary = (wide) =>
+      btn(NEW[tab], { cls: 'primary', i: wide ? 'plus' : '', sm: !wide });
     const pin = `<button class="btn sm" aria-pressed="false">${ic('home')}${t('home')}</button>`;
     const desk = `<div class="ph hbh d-only"><h1>${t('myItems')}</h1>${pin}${o.noTabs ? '' : `${nav}<div class="phr">${primary(true)}</div>`}</div>`;
-    const mob = `<div class="tphead m-only"><div><h1 class="h1w">${o.noTabs ? t('myItems') : `<button class="h1pick" aria-expanded="${!!o.tabsOpen}" aria-haspopup="dialog"><span class="sr">${t('myItems')}: </span>${cur}${ic('chev')}</button>`}</h1></div>${o.noTabs ? '' : `<div class="tpr">${primary(false)}${more(false)}</div>`}</div>`;
-    const main = `<main class="wrap">${desk}${mob}${o.importPanel || ''}${body.split('%%MORE%%').join('').split('%%IMPORT%%').join(btn(importLbl, { sm: true, i: 'upload', cls: o.importPanel ? 'on' : '', attr: `aria-expanded="${!!o.importPanel}"` }))}</main>`;
+    const mob = `<div class="tphead m-only"><div>${o.noTabs ? `<h1 class="h1w">${t('myItems')}</h1>` : `<h1 class="sr">${t('myItems')}</h1><button class="h1pick" aria-label="${t('myItems')}: ${cur}" aria-expanded="${!!o.tabsOpen}" aria-haspopup="dialog">${cur}${ic('chev')}</button>`}</div>${o.noTabs ? '' : `<div class="tpr">${primary(false)}${more(false)}</div>`}</div>`;
+    const main = `<main class="wrap">${desk}${mob}${o.importPanel || ''}${body
+      .split('%%MORE%%')
+      .join('')
+      .split('%%IMPORT%%')
+      .join(
+        btn(importLbl, {
+          sm: true,
+          i: 'upload',
+          cls: o.importPanel ? 'on' : '',
+          attr: `aria-expanded="${!!o.importPanel}"`
+        })
+      )}</main>`;
     const pg = rpage({ job: null, signedIn: true, here: true }, main);
     if (o.tabsOpen && N) {
       const rows = TABS.map(
         ([k, l]) =>
           `<a class="mi" href="#" ${k === tab ? 'aria-current="page"' : ''}>${k === tab ? ic('check') : '<span class="sp"></span>'}${l}<span class="nn">${n[k]}</span></a>`
       ).join('');
-      return `<div class="ov" style="height:640px">${pg}<div class="scrim2"></div><section class="sheet2" role="dialog" aria-label="${t('myItems')}"><div class="grab"></div><div class="sh2"><b>${t('myItems')}</b>${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>${rows}</section></div>`;
+      return `<div class="ov" style="height:640px">${pg}<div class="scrim2"></div><section class="sheet2" role="dialog" aria-label="${t('myItems')}"><div class="grab"></div><div class="sh2"><b>${t('myItems')}</b>${btn(t('close'), { sm: true, cls: 'ghost', i: 'x' })}</div>${rows}<p class="fcap" style="margin:6px 10px 0">${E(`${n.items} предметов из 100`, `${n.items} items of 100`)}</p></section></div>`;
     }
     return pg;
   }
 
   /* ---------- the Items tab ---------- */
   const GROUPS = [
-    [E('Мастерская Ольхи · Холодное оружие', "Olkha's workshop · Melee weapons"), ['hbA', 'hbM', 'hbK'], 'olkha'],
+    [
+      E('Мастерская Ольхи · Холодное оружие', "Olkha's workshop · Melee weapons"),
+      ['hbA', 'hbM', 'hbK'],
+      'olkha'
+    ],
     [E('Мастерская Ольхи · Броня', "Olkha's workshop · Armor"), ['hbP'], 'olkha'],
     [E('Мастерская Ольхи', "Olkha's workshop"), ['hbS'], 'olkha'],
     [E('Хоумбрю', 'Homebrew'), ['hbR', 'hbB', 'hbC', 'hbL'], 'home']
@@ -76,6 +118,10 @@
       ${g(E('Источник', 'Source'), chip(E('Мастерская Ольхи', "Olkha's workshop"), src, o.focus ? 'style="outline:2px solid var(--gold);outline-offset:2px"' : '') + chip(E('Хоумбрю', 'Homebrew')), !src)}
       ${g(E('Раздел', 'Section'), chip(E('Холодное оружие', 'Melee weapons')) + chip(E('Броня', 'Armor')))}`;
   }
+  const moveFields =
+    () => `<div class="mvform"><label class="mvl">${E('Источник', 'Source')}<span class="field sel"><span>${E('Хоумбрю', 'Homebrew')}</span>${ic('chev')}</span></label>
+        <label class="mvl muted">${E('Раздел', 'Section')}<span class="field sel"><span>${E('Без раздела', 'No section')}</span>${ic('chev')}</span></label>
+        <p class="fcap">${E('В «Хоумбрю» нет разделов: предметы лягут без раздела.', '"Homebrew" has no sections: the items go in with no section.')}</p></div>`;
   function itemsBody(o = {}) {
     const groups = o.src === 'olkha' ? GROUPS.filter((x) => x[2] === 'olkha') : GROUPS;
     const shown = groups.reduce((s, x) => s + x[1].length, 0);
@@ -85,30 +131,80 @@
       .map(
         ([lbl, ids]) =>
           `<div class="grp2">${o.src ? lbl.replace(/^(Мастерская Ольхи|Olkha's workshop)( · )?/, '') || E('Без раздела', 'No section') : lbl}<span class="n">${ids.length}</span>${o.src && lbl === groups[0][0] ? `<span class="n m-only" style="margin-left:auto">${E(`Показано ${shown} из 9`, `${shown} of 9 shown`)}</span>` : ''}</div>${ids
-            .map((id) => row(R[id], { noSrc: true, ck: selMode ? sel.includes(id) : undefined }))
+            .map((id) =>
+              row(R[id], { noSrc: true, ck: selMode ? sel.includes(id) : undefined })
+            )
             .join('')}`
       )
       .join('');
     const nf = o.src ? 1 : 0;
     const fl = `${t('filters')}${nf ? ` · ${nf}` : ''}`;
-    const mob = `<div class="hbtools m-only srow360">${search()}${btn(fl, { sm: true, cls: nf ? 'lit' : '' })}${selMode ? '' : btn(t('select'), { sm: true })}</div>`;
-    const desk = `<div class="hbtools d-only">${search()}<span class="count2">${o.src ? E(`Показано ${shown} из 9`, `${shown} of 9 shown`) : E('9 предметов из 100', '9 items of 100')}</span>%%IMPORT%%${selMode ? '' : btn(t('select'), { sm: true })}</div>`;
-    const move = o.moveOpen
-      ? `<div class="kv" style="width:100%;border-top:1px solid var(--line);margin-top:4px;padding-top:10px">
-          <div class="wb" style="grid-column:1/-1"><label style="display:grid;gap:4px;font-size:var(--t-small);font-weight:600">${E('Источник', 'Source')}<span class="field sel" style="min-width:210px"><span>${E('Хоумбрю', 'Homebrew')}</span>${ic('chev')}</span></label>
-          <label style="display:grid;gap:4px;font-size:var(--t-small);font-weight:600;color:var(--muted)">${E('Раздел', 'Section')}<span class="field sel" style="min-width:170px;opacity:.6"><span>${E('Без раздела', 'No section')}</span>${ic('chev')}</span></label>
-          <span style="align-self:end">${btn(E('Переместить 2 предмета', 'Move 2 items'), { cls: 'primary', i: 'move' })}</span></div>
-          <p class="fcap" style="grid-column:1/-1;margin:0">${E('В «Хоумбрю» нет разделов: предметы лягут без раздела.', '"Homebrew" has no sections: the items go in with no section.')}</p></div>`
-      : '';
+    const mob = `<div class="hbtools m-only srow360">${search()}${btn(fl, { sm: true, cls: nf ? 'lit' : '' })}${selMode ? '' : btn(t('select'), { sm: true })}</div>${o.limit100 ? `<p class="count2 full m-only" style="margin:-2px 0 4px">${E('100 предметов из 100', '100 items of 100')}</p>` : ''}`;
+    const desk = `<div class="hbtools d-only">${search()}<span class="count2 ${o.limit100 ? 'full' : ''}">${o.src ? E(`Показано ${shown} из 9`, `${shown} of 9 shown`) : o.limit100 ? E('100 предметов из 100', '100 items of 100') : E('9 предметов из 100', '9 items of 100')}</span>%%IMPORT%%${selMode ? '' : btn(t('select'), { sm: true })}</div>`;
+    const n = sel.length;
+    const dis = n === 0;
+    const moveLbl = E(`Переместить (${n})`, `Move (${n})`);
+    const moveBtn = btn(moveLbl, {
+      sm: true,
+      chev: true,
+      dis,
+      cls: o.moveOpen && !N ? 'on' : '',
+      attr: `aria-expanded="${!!o.moveOpen}"`
+    });
+    const movePop =
+      o.moveOpen && !N
+        ? popUp(
+            `${moveFields()}<div class="mvact">${btn(E(`Переместить ${n} предмета`, `Move ${n} items`), { cls: 'primary', sm: true, i: 'move' })}</div>`,
+            { w: 300 }
+          )
+        : '';
+    const moreItems =
+      mi(t('copyText'), { i: 'copy' }) +
+      mi(`${moveLbl}...`, { i: 'move' }) +
+      mi(E(`Скачать JSON (${n})`, `Download JSON (${n})`), { i: 'download' }) +
+      '<hr>' +
+      mi(E(`Удалить (${n})`, `Delete (${n})`), { i: 'trash', cls: 'danger' });
+    const barActs =
+      btn(t('addList'), { sm: true, i: 'plus', dis }) +
+      btn(t('print'), { sm: true, i: 'print', dis }) +
+      btn(t('copyText'), { sm: true, i: 'copy', dis, cls: 'd-only' }) +
+      `<span class="anchor d-only">${moveBtn}${movePop}</span>` +
+      btn(E(`Скачать JSON (${n})`, `Download JSON (${n})`), {
+        sm: true,
+        i: 'download',
+        dis,
+        cls: 'd-only'
+      }) +
+      btn(E(`Удалить (${n})`, `Delete (${n})`), { sm: true, dis, cls: 'danger d-only' }) +
+      `<span class="anchor m-only">${btn(t('more'), { sm: true, i: 'more', dis, cls: o.barMore ? 'on' : '', attr: `aria-expanded="${!!o.barMore}"` })}${o.barMore ? popUp(moreItems, { r: true, w: 250 }) : ''}</span>`;
     const bar = selMode
-      ? `<div class="selbar bbar" role="region" aria-label="${E('Выбранные', 'Selected')}"><span class="cb"><i></i>${E('Все', 'All')}</span><b>${E(`Выбрано: ${sel.length}`, `${sel.length} selected`)}</b>
-          ${btn(E(`Переместить (${sel.length})`, `Move (${sel.length})`), { sm: true, chev: true, cls: o.moveOpen ? 'on' : '', attr: `aria-expanded="${!!o.moveOpen}"` })}${btn(E(`Скачать JSON (${sel.length})`, `Download JSON (${sel.length})`), { sm: true, i: 'download' })}${btn(E(`Удалить (${sel.length})`, `Delete (${sel.length})`), { sm: true, cls: 'danger' })}${btn(E('Снять выделение', 'Clear the selection'), { sm: true, cls: 'ghost' })}${move}</div>`
+      ? selBar({
+          state: selState(n, shown),
+          head: E(`Выбрано: ${n}`, `${n} selected`),
+          acts: barActs
+        })
       : '';
     const fh = `<div class="fh"><b>${fl}</b>${nf ? btn(t('reset'), { sm: true, cls: 'ghost' }) : ''}</div>${nf ? `<div style="margin-top:-8px">${btn(E('Ссылка на фильтры', 'Link to these filters'), { sm: true, cls: 'ghost', i: 'link' })}</div>` : ''}`;
     return `${mob}<div class="hbcat"><aside class="panel fside" aria-label="${t('filters')}">${fh}${hbFilters(o)}</aside>
       <div data-primary-col class="${selMode ? 'padbar' : ''}">${desk}${rows}${bar}</div></div>`;
   }
   const hbItems = (o = {}) => hbPage('items', itemsBody(o), o);
+  const SEL2 = ['hbM', 'hbK'];
+
+  /* The move form: at 360 a sheet over the page (the bar stays two short rows), at 1180 a popover over the bar's button. */
+  function hbMove() {
+    if (!N) return hbItems({ sel: SEL2, moveOpen: true });
+    const page = hbItems({ sel: SEL2, moveOpen: true });
+    return ov(
+      page,
+      sheet360(
+        E('Переместить (2)', 'Move (2)'),
+        moveFields(),
+        btn(E('Отмена', 'Cancel')) +
+          btn(E('Переместить 2 предмета', 'Move 2 items'), { cls: 'primary', i: 'move' })
+      )
+    );
+  }
 
   /* The filter sheet at 360. */
   function hbFiltersSheet() {
@@ -119,7 +215,9 @@
         `${t('filters')} · 1`,
         hbFilters({ src: 'olkha', focus: true }),
         btn(t('reset')) + btn(E('Показать 5', 'Show 5'), { cls: 'primary' }),
-        { headExtra: `<span style="order:3;flex-basis:100%;margin:-4px 0 0 -10px">${btn(E('Ссылка на фильтры', 'Link to these filters'), { sm: true, cls: 'ghost', i: 'link' })}</span>` }
+        {
+          headExtra: `<span style="order:3;flex-basis:100%;margin:-4px 0 0 -10px">${btn(E('Ссылка на фильтры', 'Link to these filters'), { sm: true, cls: 'ghost', i: 'link' })}</span>`
+        }
       )
     );
   }
@@ -133,7 +231,10 @@
       ),
       ''
     )}`;
-    return hbPage('items', body, { counts: { items: 0, sources: 1, sets: 0, rules: 0 }, limit: E('0 из 100', '0 of 100') });
+    return hbPage('items', body, {
+      counts: { items: 0, sources: 1, sets: 0, rules: 0 },
+      limit: E('0 из 100', '0 of 100')
+    });
   }
   function hbError() {
     const body = loadErr(
@@ -188,7 +289,10 @@
         ),
         ''
       ),
-      { counts: { items: 9, sources: 2, sets: 0, rules: 1 }, limit: E('карт: 1 из 100', 'cards: 1 of 100') }
+      {
+        counts: { items: 9, sources: 2, sets: 0, rules: 1 },
+        limit: E('карт: 1 из 100', 'cards: 1 of 100')
+      }
     );
   }
   function hbRules() {
@@ -226,27 +330,66 @@
     'Топор Тлеющих Углей, выкованный в горне Ольхи из обломков упавшей звезды и закалённый в водах подземной реки',
     "Emberaxe, forged in Olkha's furnace from the shards of a fallen star and quenched in the waters of an underground river"
   );
+  const LANG_EN = window.M.LANG === 'en';
+  const RU_NAME = 'Топор Тлеющих Углей';
+  const LONG_RU =
+    'Топор Тлеющих Углей, выкованный в горне Ольхи из обломков упавшей звезды и закалённый в водах подземной реки';
   const crumb = (html, long) =>
     html
       .replace(
         `<a class="back" href="#">← ${t('myItems')}</a><div class="ph">`,
         `<div class="ph crumb"><a class="back" href="#">${icx('back')}${t('myItems')}</a>`
       )
-      .replace(`<h1>${E('Топор Тлеющих Углей', 'Emberaxe')}</h1><span class="badge">${E('Хоумбрю', 'Homebrew')}</span>`, `<h1 class="clamp" title="${long ? LONG : E('Топор Тлеющих Углей', 'Emberaxe')}">${long ? LONG : E('Топор Тлеющих Углей', 'Emberaxe')}</h1>`);
+      .replace(
+        `<h1>${E('Топор Тлеющих Углей', 'Emberaxe')}</h1><span class="badge">${E('Хоумбрю', 'Homebrew')}</span>`,
+        `<h1 class="clamp" title="${long ? LONG : E('Топор Тлеющих Углей', 'Emberaxe')}">${long ? LONG : E('Топор Тлеющих Углей', 'Emberaxe')}</h1>`
+      );
   function editorMain(o = {}) {
-    let ed = crumb(window.EDITOR('B'), o.long).replace('<div class="ebar">', `${rels(o)}<div class="ebar">`);
+    let ed = crumb(window.EDITOR('B'), o.long).replace(
+      '<div class="ebar">',
+      `${rels(o)}<div class="ebar">`
+    );
     ed = ed.replace(
       `<div class="ef  " id="src"><div class="el"><span>${E('Источник', 'Source')}</span></div><label class="field sel"><span>${E('Мастерская Ольхи', "Olkha's workshop")}</span>${ic('chev')}</label></div>`,
       `<div class="ef  " id="src"><div class="el"><span>${E('Источник', 'Source')}</span></div><label class="field sel"><span>${E('Мастерская Ольхи', "Olkha's workshop")}</span>${ic('chev')}</label><p class="fcap">${E('Без источника предмет лежит в «Хоумбрю».', 'With no source the item goes to Homebrew.')}</p></div>`
     );
-    ed = ed.replace(/<div class="dmg"><label class="field sel"><span>([^<]*)<\/span>([\s\S]*?)<\/label><span>\+<\/span><label class="field num2"><input value="2"[^>]*><\/label><\/div>/, (m, die, chev) =>
-      `<div class="dmg"><label class="dmgf"><span class="sl">${E('Кость урона', 'Damage die')}</span><span class="field sel"><span>${die}</span>${chev}</span></label><span class="plus">+</span><label class="dmgf"><span class="sl">${E('Бонус к урону', 'Damage bonus')}</span><span class="field num2"><input value="2"></span></label></div>`
+    ed = ed.replace(
+      /<div class="dmg"><label class="field sel"><span>([^<]*)<\/span>([\s\S]*?)<\/label><span>\+<\/span><label class="field num2"><input value="2"[^>]*><\/label><\/div>/,
+      (m, die, chev) =>
+        `<div class="dmg"><label class="dmgf"><span class="sl">${E('Кость урона', 'Damage die')}</span><span class="field sel"><span>${die}</span>${chev}</span></label><span class="plus">+</span><label class="dmgf"><span class="sl">${E('Бонус к урону', 'Damage bonus')}</span><span class="field num2"><input value="2"></span></label></div>`
     );
-    if (window.EDITOR_ERR) ed = ed.replace('<div class="esum"', '<div class="esum foc" tabindex="-1"');
+    /* N6-3: one language state in the frame. The author's text is Russian only; the page language
+       does not translate it, so the field, the title and the description show the Russian text on
+       both pages, RU is pressed, and a worded caption says that EN is empty. */
+    ed = ed.replace(
+      /<div class="langs"><div class="seg quiet lang2"[\s\S]*?<\/div><span class="lh">[^<]*<\/span><\/div>/,
+      `<div class="langs"><div class="seg quiet lang2" role="group"><button aria-pressed="true">RU</button><button aria-pressed="false">EN</button></div><span class="lh">${E('Текст на языке', 'Text in')}</span><span class="lh">${E('EN: пусто', 'EN: empty')}</span></div>`
+    );
+    if (o.long)
+      ed = ed.replace(
+        /(<input value=")[^"]*(" placeholder="[^"]*Например, Топор|" placeholder="For example, Emberaxe)/,
+        (m, a, b) => `${a}${LONG}${b}`
+      );
+    if (LANG_EN) {
+      ed = ed
+        .replace('placeholder="For example, Emberaxe"', 'placeholder="@@PH@@"')
+        .split(LONG)
+        .join(LONG_RU)
+        .split('Emberaxe')
+        .join(RU_NAME)
+        .replace('@@PH@@', 'For example, Emberaxe')
+        .replace(
+          'The blade smoulders and does not go out in the rain.',
+          'Лезвие тлеет и не гаснет под дождём.'
+        );
+    }
+    if (window.EDITOR_ERR)
+      ed = ed.replace('<div class="esum"', '<div class="esum foc" tabindex="-1"');
     return ed;
   }
   const editor = () => rpage({ job: null, signedIn: true, here: true }, editorMain());
-  const editorRels = () => rpage({ job: null, signedIn: true, here: true }, editorMain({ open: true }));
+  const editorRels = () =>
+    rpage({ job: null, signedIn: true, here: true }, editorMain({ open: true }));
   function editorCrop() {
     const dlg = `<section class="dlg sm" role="dialog" aria-label="${E('Обрезать картинку', 'Crop the picture')}"><h2>${E('Обрезать картинку', 'Crop the picture')}</h2>
       <div class="crop" style="margin:10px 0 12px"><img src="${window.M.IMG}q17.webp" alt=""><div class="fr"><i class="hd a"></i><i class="hd b"></i><i class="hd c"></i><i class="hd d"></i></div></div>
@@ -261,7 +404,10 @@
         `<div class="alertc" role="alert"><b>${E('Предмет изменили на другом устройстве', 'The item changed on another device')}</b><p>${E('Ваши правки не сохранены. Посмотрите новую версию, прежде чем сохранять.', 'Your edits are not saved. Look at the new version before you save.')}</p>
         <div class="wb">${btn(E('Показать новую версию', 'Show the new version'), { sm: true, cls: 'primary' })}${btn(E('Заменить её моей', 'Replace it with mine'), { sm: true, cls: 'danger' })}</div></div><section class="es">`
       )
-      .replace('<button class="btn primary">', '<button class="btn" disabled style="opacity:.55">');
+      .replace(
+        '<button class="btn primary">',
+        '<button class="btn" disabled style="opacity:.55">'
+      );
     return rpage({ job: null, signedIn: true, here: true }, ed);
   }
 
@@ -269,9 +415,15 @@
     'homebrew-items': () => hbItems(),
     'homebrew-tabs': () => hbItems({ tabsOpen: true }),
     'homebrew-more': () => hbItems({ moreOpen: true }),
-    'homebrew-filtered': () => hbItems({ src: 'olkha', limit: E('показано 5 из 9', '5 of 9 shown') }),
+    'homebrew-filtered': () =>
+      hbItems({ src: 'olkha', limit: E('показано 5 из 9', '5 of 9 shown') }),
     'homebrew-filters': hbFiltersSheet,
-    'homebrew-select': () => hbItems({ sel: ['hbM', 'hbK'], moveOpen: true }),
+    'homebrew-select': () => hbItems({ sel: SEL2 }),
+    'homebrew-select-none': () => hbItems({ sel: [] }),
+    'homebrew-select-more': () => hbItems({ sel: SEL2, barMore: true }),
+    'homebrew-select-move': hbMove,
+    'homebrew-limit': () =>
+      hbItems({ limit100: true, counts: { items: 100, sources: 2, sets: 1, rules: 1 } }),
     'homebrew-empty': hbEmpty,
     'homebrew-error': hbError,
     'homebrew-sources': () => hbSources({ menu: true }),
@@ -283,10 +435,18 @@
     editor,
     'editor-relations': editorRels,
     'editor-errors': editor,
-    'editor-longname': () => rpage({ job: null, signedIn: true, here: true }, editorMain({ long: true })),
+    'editor-longname': () =>
+      rpage({ job: null, signedIn: true, here: true }, editorMain({ long: true })),
     'editor-crop': editorCrop,
     'editor-conflict': editorConflict
   };
   window.RSTATES = Object.keys(STATES);
-  window.RSTATE = () => U.fix((STATES[S] || STATES['homebrew-items'])());
+  window.RSTATE = () => {
+    U.pinned = '';
+    let h = (STATES[S] || STATES['homebrew-items'])();
+    if (U.pinned)
+      h = `<div class="ov" style="height:640px">${h}<div class="pinbar">${U.pinned}</div></div>`;
+    U.pinned = '';
+    return U.fix(h);
+  };
 })();

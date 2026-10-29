@@ -7,10 +7,16 @@
      cards (96 px art beside the text).
    - 1180: two panes; the left pane holds every control; the page head shows
      the pin and the help; the full card face.
+   Round 5 (reviews/mocks-2.md): one label per action at every width (B5-1), the
+   chip carries the heading's words (B5-2, in pat.js), «··· Ещё» is a labelled
+   control (R0-1), «Настроить» keeps the roll inputs and the results line gets
+   «··· Ещё» for the copy, the pin and the help (R5-1), Cyrillic dice letters
+   (N5-1), «Бросить 1-30» (N5-2), the rarity row at 1180 is a chip row (N5-3),
+   and a supplement's help button is named after its panel (N2-2).
    Records are real data.js rows; img/ files are real. */
 (function () {
   const { t, R, ic, LANG } = window.M;
-  const { E, addr } = window.UA;
+  const { E, FI, addr } = window.UA;
   const RA = window.RA;
   const { cap, btn } = RA;
   const scard = window.CX.scard;
@@ -112,6 +118,7 @@
     wond: {
       path: '/roll/wondrous_environments',
       title: 'Wondrous Environments',
+      help: E('Об этой таблице', 'About this table'),
       hand: ['w12'],
       n: '12',
       range: 119
@@ -119,6 +126,7 @@
     dread: {
       path: '/roll/dread_gm_toolbox',
       title: 'Dread GM Toolbox',
+      help: E('Об этой книге', 'About this book'),
       hand: ['di12'],
       n: '12',
       range: 29
@@ -126,6 +134,7 @@
     voa: {
       path: '/roll/vault_of_ages',
       title: 'Vault of Ages',
+      help: E('Об этой книге', 'About this book'),
       hand: ['voa2_t1c'],
       n: '12',
       range: 30,
@@ -134,6 +143,7 @@
     dv: {
       path: '/roll/dragons_vault',
       title: "The Dragon's Vault",
+      help: E('Об этой книге', 'About this book'),
       hand: ['dv12'],
       n: '12',
       range: 145
@@ -141,6 +151,7 @@
     arazo: {
       path: '/roll/arazos_artifacts',
       title: "Arazo's Artifacts",
+      help: E('Об этой книге', 'About this book'),
       hand: ['aa9'],
       n: '9',
       range: 78
@@ -148,6 +159,7 @@
     comm: {
       path: '/roll/community_items',
       title: E('Предметы сообществ', 'Community items'),
+      help: E('Об этих предметах', 'About these items'),
       hand: ['cm4'],
       n: '4',
       range: 10,
@@ -157,6 +169,7 @@
     mwt: {
       path: '/roll/many_worlds_tavern',
       title: 'Many Worlds Tavern',
+      help: E('Об этой книге', 'About this book'),
       hand: ['mw9'],
       n: '9',
       range: 20,
@@ -198,20 +211,24 @@
         E('Легендарная', 'Legendary')
       ];
       /* 360: the rarity is a picker beside the roll; 1180: the segmented row */
-      ctrl = `<div class="rrow n360">${picker(t('rarity'), rar[0])}${btn(E('Бросить кости', 'Roll the dice'), { cls: 'primary', i: 'die' })}</div><div class="w1180 cfgw"><span class="lbl">${t('rarity')}</span><div class="seg full rarseg" role="group">${rar.map((r, i) => `<button aria-pressed="${i === 0}">${r}</button>`).join('')}</div>${btn(E('Бросить Кости Дуальности', 'Roll the Duality Dice'), { cls: 'primary', i: 'die' })}</div>`;
-      cfg = `<span class="lbl">${t('orEnter')}</span><div class="nums2"><label><span><span class="dv h" style="width:22px;height:22px;font-size:12px">H</span>${E('Кость Надежды', 'Hope die')}</span>${num(2, E('Кость Надежды', 'Hope die'))}</label><label><span><span class="dv f" style="width:22px;height:22px;font-size:12px">F</span>${E('Кость Страха', 'Fear die')}</span>${num(2, E('Кость Страха', 'Fear die'))}</label></div>
+      const rollAlt = btn(E('Бросить кости', 'Roll the dice'), { cls: 'primary', i: 'die' });
+      ctrl = `<div class="rrow n360">${picker(t('rarity'), rar[0])}${rollAlt}</div><div class="w1180 cfgw"><span class="lbl">${t('rarity')}</span><div class="fl" role="group" aria-label="${t('rarity')}">${rar.map((r, i) => `<button class="chip np" aria-pressed="${i === 0}">${i === 0 ? FI('check') : ''}${r}</button>`).join('')}</div>${rollAlt}</div>`;
+      cfg = `<span class="lbl">${t('orEnter')}</span><div class="nums2"><label><span><span class="dv h" style="width:22px;height:22px;font-size:12px">${E('Н', 'H')}</span>${E('Кость Надежды', 'Hope die')}</span>${num(2, E('Кость Надежды', 'Hope die'))}</label><label><span><span class="dv f" style="width:22px;height:22px;font-size:12px">${E('С', 'F')}</span>${E('Кость Страха', 'Fear die')}</span>${num(2, E('Кость Страха', 'Fear die'))}</label></div>
         <span class="lbl">${t('type')}</span><div class="fl">${allChip()}${chip(t('items'))}${chip(t('cons'))}</div>`;
     } else {
       const roll = m.die
         ? btn(`${E('Бросить', 'Roll')} ${m.die}`, { cls: 'primary', i: 'die' })
-        : btn(`${E('Случайно', 'Random')} 1-${m.range}`, { cls: 'primary', i: 'die' });
+        : btn(`${E('Бросить', 'Roll')} 1-${m.range}`, { cls: 'primary', i: 'die' });
       ctrl = `<div class="rrow">${m.pick ? picker(m.pick[0], m.pick[1]) : ''}${roll}</div>`;
       cfg = own(m.n, E('Номер в таблице', 'Table number'), `1-${m.range}`);
     }
-    const extra = `<div class="wb cfgx">${m.copy ? btn(t('copyAll'), { sm: true, i: 'copy' }) : ''}${btn(E('Открывать при запуске', 'Open on start'), { sm: true, i: 'home' })}${btn(m.help || t('help'), { sm: true, cls: 'ghost', i: 'help' })}</div>`;
-    const setLabel = narrowed
-      ? `${E('Настроить', 'Set up')} · ${t('cons')}`
-      : E('Настроить', 'Set up');
+    const moreMenu = o.moreOpen
+      ? `<div class="pop" style="top:calc(100% + 6px);right:0">${m.copy ? `<button class="mi">${ic('copy')}${t('copyAll')}</button><hr>` : ''}<button class="mi">${ic('home')}${E('Открывать при запуске', 'Open on start')}</button><button class="mi">${ic('help')}${m.help || t('help')}</button></div>`
+      : '';
+    const moreBtn = `<span class="anchor">${btn(t('more'), { sm: true, i: 'more', cls: 'cfgbtn', attr: `aria-expanded="${!!o.moreOpen}"` })}${moreMenu}</span>`;
+    /* narrowed, the closed control shows the choice itself, lit, so «··· Ещё» keeps its place
+       on the results line at 360 */
+    const setLabel = narrowed ? t('cons') : E('Настроить', 'Set up');
     const setBtn = `<button class="btn sm cfgbtn ${narrowed ? 'on' : ''}" aria-expanded="${!!o.cfgOpen}">${tune}${setLabel}${ic('chev')}</button>`;
     const crit =
       key === 'alt' && o.crit
@@ -227,14 +244,14 @@
     const hand = m.hand
       .map(
         (id) =>
-          `<div class="dealt">${scard(R[id]).replace('<div class="kind">', `<div class="kind">${rarity}${dieTag(id)}`)}<div class="cardacts">${btn(t('addList'), { sm: true, i: 'plus' })}${btn(t('share'), { sm: true, i: 'share' })}${btn('', { sm: true, i: 'more', attr: `aria-label="${t('more')}"` })}</div></div>`
+          `<div class="dealt">${scard(R[id]).replace('<div class="kind">', `<div class="kind">${rarity}${dieTag(id)}`)}<div class="cardacts">${btn(t('addList'), { sm: true, i: 'plus' })}${btn(t('share'), { sm: true, i: 'share' })}${btn(t('more'), { sm: true, i: 'more' })}</div></div>`
       )
       .join('');
     const head = window.SHELL.pageHead(m.title, { helpLabel: m.help || t('help') });
-    const panel = o.cfgOpen ? `<div class="panel cfgbody n360">${cfg}${extra}</div>` : '';
+    const panel = o.cfgOpen ? `<div class="panel cfgbody n360">${cfg}</div>` : '';
     const main = `<main class="wrap rfs">${head}<div class="two">
       <section class="panel ctrl">${ctrl}<div class="w1180 cfgw">${cfg}</div></section>
-      <section><div class="reshead"><h2>${E('Бросок', 'Roll')} ${m.n}</h2><span class="n360">${setBtn}</span>${m.copy ? `<span class="w1180">${btn(t('copyAll'), { sm: true, i: 'copy' })}</span>` : ''}</div>
+      <section><div class="reshead"><h2>${E('Бросок', 'Roll')} ${m.n}</h2><span class="n360 rtools">${setBtn}${moreBtn}</span>${m.copy ? `<span class="w1180">${btn(t('copyAll'), { sm: true, i: 'copy' })}</span>` : ''}</div>
         ${panel}${crit}<div class="hand2 ${m.hand.length === 1 ? 'one' : ''}">${hand}</div></section></div></main>`;
     const mode = {
       std: 'std',
@@ -247,17 +264,20 @@
       comm: 'comm',
       mwt: 'mwt'
     }[key];
-    return `${addr(m.path)}${window.RX.rpage({ job: 'roll', mode }, main)}`;
+    return `${addr(m.path)}${window.RX.rpage({ job: 'roll', mode, supOpen: !!o.supOpen }, main)}`;
   }
 
+  window.RP5 = { rollPage, MODES };
   window.XS = {
     roller: () => rollPage('std'),
+    'roller-more': () =>
+      `${cap('360: «··· Ещё» открыто - «Скопировать все четыре», «Открывать при запуске» и справка; «Настроить» держит только ввод броска и фильтры; на 1180 они в шапке страницы и над результатами', '360: "··· More" open - "Copy all four", "Open on start" and the help; "Set up" keeps only the roll inputs and the filters; at 1180 they sit in the page head and over the results')}${rollPage('std', { moreOpen: true })}`,
     'roller-b': () =>
       `${cap('вариант B: кубики одной строкой без редкости - первый результат на 240 px', 'variant B: the dice in one row with no rarity - the first result at 240 px')}${rollPage('std', { noRarity: true })}`,
     'roller-config': () =>
-      `${cap('«Настроить» открыто: панель над результатами (360); на 1180 всё в левой панели', '"Set up" open: the panel above the results (360); at 1180 everything is in the left pane')}${rollPage('std', { cfgOpen: true })}`,
+      `${cap('«Настроить» открыто: ввод броска, «Источник» и «Тип» над результатами (360); на 1180 всё в левой панели', '"Set up" open: the roll input, Source and Type above the results (360); at 1180 everything is in the left pane')}${rollPage('std', { cfgOpen: true })}`,
     'roller-narrowed': () =>
-      `${cap('выключены предметы: закрытая «Настроить» называет выбор и подсвечена', 'items switched off: the closed "Set up" names the choice and is lit')}${rollPage('std', { narrowed: true })}`,
+      `${cap('выключены предметы: закрытая кнопка настроек называет выбор («Расходники») и подсвечена', 'items switched off: the closed settings control names the choice ("Consumables") and is lit')}${rollPage('std', { narrowed: true })}`,
     'roller-alt': () => rollPage('alt'),
     'roller-alt-crit': () =>
       `${cap('критический успех при обоих видах: две ссылки, у каждой своя таблица', 'a critical success with both kinds on: two links, each names its table')}${rollPage('alt', { crit: true })}`,

@@ -1,32 +1,1110 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Batch 6 mock</title>
-<link rel="stylesheet" href="base.css"><style>
-.idx{width:min(1180px,100% - 32px);margin:0 auto;padding:26px 0 60px}
-.idx h1{margin:0 0 8px;font-size:30px}.idx h2{font-size:23px;margin:30px 0 10px}
-.idx p,.idx li{font-size:14px;color:var(--muted);max-width:90ch}.idx code{font:13px var(--mono);color:var(--txt)}
-.back2{display:inline-block;margin:0 0 14px;font-size:14px}
-.ans{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:12px;border:1px solid var(--line2);border-radius:14px;background:var(--surface);margin:0 0 10px}
-.ans img{width:100%;height:200px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--line)}.ans b{color:var(--txt)}.chosen{color:var(--ink-on-gold);background:var(--gold);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700;margin-left:6px}
-table.fs{width:100%;border-collapse:collapse;font-size:13px}table.fs th,table.fs td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
-table.fs th{color:var(--muted2);font-size:12px;text-transform:uppercase;letter-spacing:.06em}table.fs td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
-.ok{color:#9ec96a}.lim{color:var(--gold-soft)}.bad{color:var(--danger-text)}
-.st{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
-.st img{width:100%;border-radius:6px;border:1px solid var(--line)}.st b{color:var(--txt);font-size:16px}
-.lk a{margin-right:10px;font-size:14px}.meta3{font-size:13px;color:var(--muted2)}
-.tw{overflow-x:auto}
-@media(max-width:760px){.st{grid-template-columns:90px 1fr}.ans{grid-template-columns:80px 1fr}}</style></head><body><main class="idx">
-<a class="back2" href="../index.html">Back to all mocks</a>
-<h1>Batch 6 - homebrew editor, homebrew pages and imports</h1><p>This page shows the batch 6 mock (homebrew editor, the «Мои предметы» tabs and the import) for the owner to confirm before the implementer starts. Round 3 applies the owner's answers, the first-screen rule (plan.md section 14) and plan review plan-1-3 (R2, R3, N7).</p>
-<p>Open a state at <code>state.html?s=&lt;state&gt;&amp;lang=en</code>. Renders: <code>&lt;state&gt;__&lt;width&gt;__&lt;lang&gt;.png</code>, 80 PNGs at 360 and 1180 px, RU and EN. Shared code in <code>../direction/</code> is read-only; <code>u.js</code>, <code>u.css</code> and the copies <code>base.css</code>, <code>r.css</code> are this unit's.</p>
-<h2>Owner answers</h2><div class="ans"><a href="homebrew-sets-empty__360__ru.png"><img src="homebrew-sets-empty__360__ru.png" alt="homebrew-sets-empty at 360"></a><div><b>Question 6.1: The /homebrew «Справка» panel (A27)</b><span class="chosen">option A chosen</span><p>Removed (option A, owner, 2026-10-29). Each fact sits where it applies; the empty Sets tab says what a set is.</p><div class="lk"><a href="homebrew-sets-empty__360__ru.png">360 RU</a><a href="homebrew-sets-empty__360__en.png">360 EN</a><a href="homebrew-sets-empty__1180__ru.png">1180 RU</a><a href="homebrew-sets-empty__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-sets-empty">live RU</a><a href="state.html?s=homebrew-sets-empty&lang=en">live EN</a></div></div></div><div class="ans"><a href="editor-relations__360__ru.png"><img src="editor-relations__360__ru.png" alt="editor-relations at 360"></a><div><b>Question 6.2: The eight field «?» buttons in the editor</b><span class="chosen">option A chosen</span><p>Removed (option A, owner, 2026-10-29). Option names and one caption say it; the relation labels stay the item page's.</p><div class="lk"><a href="editor-relations__360__ru.png">360 RU</a><a href="editor-relations__360__en.png">360 EN</a><a href="editor-relations__1180__ru.png">1180 RU</a><a href="editor-relations__1180__en.png">1180 EN</a><a href="state.html?s=editor-relations">live RU</a><a href="state.html?s=editor-relations&lang=en">live EN</a></div></div></div>
-<h2>First screen</h2>
-<p>The top of the primary content below the top of the header, at scroll 0, at 360x640 and 1180x720 (<code>../measure.mjs</code>'s method; this unit's copy also measures the extra states). Design target 240 / 270 px; the assert stays at 40%: 256 / 288 px (plan.md section 14, plan review plan-1-3 R2). Green: at the target; gold: inside the limit, past the target; red: past the limit.</p>
-<div class="tw"><table class="fs"><thead><tr><th>State</th><th>Primary content (EN / RU)</th><th>Controls above it (RU / EN)</th><th>360 RU</th><th>360 EN</th><th>1180 RU</th><th>1180 EN</th><th>Verdict</th></tr></thead><tbody><tr><td><code>homebrew-items</code></td><td>first item row / «первая строка предмета»</td><td>«Предметы ▾» / "Items ▾", «Новый предмет» / "New item", «Фильтры» / "Filters", «Ещё» / "More"</td><td class="n lim">255</td><td class="n lim">255</td><td class="n ok">223</td><td class="n ok">223</td><td><span class="lim">limit only</span></td></tr><tr><td><code>homebrew-items</code></td><td>first group head / «заголовок первой группы»</td><td>«Предметы ▾» / "Items ▾", «Новый предмет» / "New item", «Фильтры» / "Filters", «Ещё» / "More"</td><td class="n ok">223</td><td class="n ok">223</td><td class="n ok">189</td><td class="n ok">189</td><td><span class="ok">target</span></td></tr><tr><td><code>homebrew-filtered</code></td><td>first item row / «первая строка предмета»</td><td>«Фильтры · 1» / "Filters · 1", as homebrew-items</td><td class="n lim">255</td><td class="n lim">255</td><td class="n ok">223</td><td class="n ok">223</td><td><span class="lim">limit only</span></td></tr><tr><td><code>homebrew-sources</code></td><td>first source row / «первая строка источника»</td><td>«Источники ▾» / "Sources ▾", «Новый источник» / "New source", «Ещё» / "More"</td><td class="n lim">241</td><td class="n ok">209</td><td class="n ok">185</td><td class="n ok">185</td><td><span class="lim">limit only</span></td></tr><tr><td><code>homebrew-sets</code></td><td>first set row / «первая строка комплекта»</td><td>«Комплекты ▾» / "Sets ▾", «Новый комплект» / "New set", «Ещё» / "More"</td><td class="n lim">241</td><td class="n ok">209</td><td class="n ok">185</td><td class="n ok">185</td><td><span class="lim">limit only</span></td></tr><tr><td><code>homebrew-rules</code></td><td>first rule card row / «первая строка карты правил»</td><td>«Карты правил ▾» / "Rule cards ▾", «Новая карта правил» / "New rule card", «Ещё» / "More"</td><td class="n lim">241</td><td class="n ok">209</td><td class="n ok">185</td><td class="n ok">185</td><td><span class="lim">limit only</span></td></tr><tr><td><code>editor</code></td><td>first form field / «первое поле формы»</td><td>«Мои предметы» / "My items" (breadcrumb), the item name</td><td class="n ok">228</td><td class="n ok">228</td><td class="n ok">187</td><td class="n ok">187</td><td><span class="ok">target</span></td></tr><tr><td><code>editor-longname</code></td><td>first form field, 120-character name / «первое поле, имя 120 знаков»</td><td>as editor, a 120-character name</td><td class="n ok">228</td><td class="n ok">228</td><td class="n ok">215</td><td class="n ok">215</td><td><span class="ok">target</span></td></tr></tbody></table></div>
-<h2>Changes in round 5 (mock 3's list head pattern)</h2><ul><li>Mock 3's final list head pattern: at 360 the title row is the tab picker, «Новый предмет» and «Ещё» (import, pin); the search row is «Поиск» (140 px or more), «Фильтры» (lit while N &gt; 0: a gold label on a 45% gold border) and «Выбрать» last, no icons (M3-2, M3-3, M3-4, M3-7, M6-2).</li><li>At 1180 the title row holds the title, the pin, the four tabs and «Новый предмет»; the search row holds the search, the count, «Импорт из файла» and «Выбрать» last.</li><li>One selection bar, sticky at the bottom of the list, with «Снять выделение» / "Clear the selection" last (M3-5).</li><li>The filter-active state is mock 3's corrected one: «Фильтры · 1» lit and «Показано 5 из 9» (in the first group head at 360, in the search row at 1180); no pill row at any width; «Сбросить» and «Ссылка на фильтры» in the filter column head at 1180 and the sheet head at 360 (the sheet foot keeps «Сбросить»). Under a source filter the group heads drop the source name («Холодное оружие»), so the count fits on the first one. The counter «9 предметов из 100» (FEATURES rule 1) sits in the 1180 search row and in the picker sheet at 360.</li></ul>
-<h2>Changes in round 4 (reviews/mocks-1.md)</h2><ul><li>Review mocks-1 (round 4): the pin reads «Открывать при запуске» / "Open on start" (M2-2): visible by the title at 1180, in «Ещё» at 360.</li><li>«Урон» labels its two inputs, «Кость урона» and «Бонус к урону» (M6-1, rule 15b).</li><li>A pressed segment shows a check before its label, the editor preview included (M6-3); the language switch too (X-3).</li><li>The footer keeps the DPCGL fold «Источники и лицензия ▾» (X-3).</li><li>The selection bar keeps the spec label «Снять выделение».</li></ul>
-<h2>Changes in round 3</h2><ul><li>The head follows the catalog (R3): at 1180 the title, the four tabs, «Новый предмет» and «Ещё» on one row; at 360 the title is the tab picker «Предметы ▾» with «Новый предмет» beside it, and one row holds the search, «Фильтры» and «Ещё».</li><li>«Импорт из файла» and the pin move into «Ещё» (plan.md section 14: rule 9's import departure is rewritten); at 360 «Ещё» also holds «Выбрать», as the catalog.</li><li>The picker shows no count (R3); the tab counts are in the picker sheet and the 1180 tabs, the item counts in the group heads.</li><li>The search placeholder is «Поиск» / "Search": «Найти предмет» did not fit the 360 search field.</li><li>The editor: the back link joins the title row; the title takes one line at 360 (the Name field holds the full name); the «Хоумбрю» badge goes, because every item in the editor is the author's own.</li><li>States removed: the question options (B and C) and «Справка»; added: <code>homebrew-tabs</code>, <code>homebrew-more</code>, <code>homebrew-sets-empty</code>, <code>editor-relations</code>, <code>editor-longname</code>.</li></ul>
-<h2>Differences from plan.md and from R</h2><ul><li>At 360 the first item row starts at 255 px: inside the 256 limit, 15 px past the 240 target. The first group head starts at 223. Recommendation: the <code>/homebrew</code> primary marker is the first group head, as <code>/tables</code> uses its first section head (plan.md section 14). Next option, if the row must meet 240: drop the group heads at 360.</li><li>At 360 in RU the Rule cards head takes two lines («Карты правил ▾» beside «Новая карта правил»): its first row starts at 242, inside the limit.</li><li>A filter is removed from the filter column or the sheet: no list page draws a pill row (mock 3).</li><li>The four tabs at 1180 sit in the title row (R: a row of their own).</li><li>Sources and Rule cards have no «Выбрать»: only the Items tab has bulk actions today.</li><li>A selected row has no side stripe (R <code>r.css</code> <code>.rl.sel</code>; detector <code>side-tab</code>); this folder's <code>r.css</code> copy drops it.</li></ul>
-<h2>Shared patterns and their owners</h2><ul><li>The empty-state pattern is batch 3 (<code>mocks/3/</code>), the error-page pattern batch 4 (<code>mocks/4/</code>), the toast, the header and the account control batch 2 (<code>mocks/2/</code>), the type, the chips and the pressed default batch 1 (<code>mocks/1/</code>), all unit A. The list-page head pattern (the picker title, the search with «Фильтры», «Выбрать» in «Ещё» at 360 and in the search row at 1180) is the catalog's (<code>mocks/3/</code>). A state that uses one is re-rendered after its owner mock is confirmed.</li><li>Ground: the linear page ground <code>linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)</code> (owner, 2026-10-29). The no-picture well is the kind glyph; the "?" pedestal is gone (owner, 2026-10-29).</li></ul>
-<h2>Impeccable critique</h2><ul><li>P2, 360: the search field is narrow (about 130 px) beside «Фильтры» and «Ещё», as in the catalog.</li><li>P2, clarity: two one-line captions stay in the editor («Одно снаряжение на рангах 1-4...», the set bonus). Each states a fact of the item.</li><li>P2, gold budget: gold on «Новый предмет», the lit tab, the picked filter chip and the lit account control only.</li><li>Detector (<code>impeccable detect</code>, this folder): 0 slop warnings; 4 <code>design-system-font</code> warnings (Source Sans 3 is not in DESIGN.md until batch 1 writes it) and advisories for literal sizes and colors from R's copied CSS.</li></ul>
-<h2>States</h2><div class="st"><a href="homebrew-items__360__ru.png"><img src="homebrew-items__360__ru.png" alt="homebrew-items at 360" loading="lazy"></a><div><b>homebrew-items</b> <span class="meta3"><code>/homebrew</code> · A28, A40, A10, D5, A27, first-screen rule</span><p>Items tab with 9 items, in the catalog's head pattern (plan review R3). 1180: the title, the four tabs with counts, «Новый предмет» and «Ещё» (import, pin) on one row; the search row (search, count, «Выбрать») beside the filter column (f74eae09). 360: the title is the tab picker «Предметы ▾» with «Новый предмет» beside it; one row holds the search, «Фильтры» and «Ещё» («Выбрать», import, pin). Rows have no checkbox column. No «Справка» (owner, 2026-10-29).</p><div class="lk"><a href="homebrew-items__360__ru.png">360 RU</a><a href="homebrew-items__360__en.png">360 EN</a><a href="homebrew-items__1180__ru.png">1180 RU</a><a href="homebrew-items__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-items">live RU</a><a href="state.html?s=homebrew-items&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-tabs__360__ru.png"><img src="homebrew-tabs__360__ru.png" alt="homebrew-tabs at 360" loading="lazy"></a><div><b>homebrew-tabs</b> <span class="meta3"><code>/homebrew</code> · A28, first-screen rule</span><p>Open at 360: the tab picker as a sheet with the four tabs and their counts. At 1180 the tabs are a row, so the page is as in homebrew-items.</p><div class="lk"><a href="homebrew-tabs__360__ru.png">360 RU</a><a href="homebrew-tabs__360__en.png">360 EN</a><a href="homebrew-tabs__1180__ru.png">1180 RU</a><a href="homebrew-tabs__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-tabs">live RU</a><a href="state.html?s=homebrew-tabs&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-more__360__ru.png"><img src="homebrew-more__360__ru.png" alt="homebrew-more at 360" loading="lazy"></a><div><b>homebrew-more</b> <span class="meta3"><code>/homebrew</code> · first-screen rule</span><p>Open: «Ещё»: at 1180 «Импорт из файла» and the pin («Стартовый раздел», a check when on); at 360 «Выбрать» first, as the catalog.</p><div class="lk"><a href="homebrew-more__360__ru.png">360 RU</a><a href="homebrew-more__360__en.png">360 EN</a><a href="homebrew-more__1180__ru.png">1180 RU</a><a href="homebrew-more__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-more">live RU</a><a href="state.html?s=homebrew-more&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-filtered__360__ru.png"><img src="homebrew-filtered__360__ru.png" alt="homebrew-filtered at 360" loading="lazy"></a><div><b>homebrew-filtered</b> <span class="meta3"><code>/homebrew/f_&lt;filter&gt;</code> · C2 pattern, f74eae09</span><p>A source picked (mock 3's filter-active state): the chip lit in gold, «Фильтры · 1» lit, «Показано 5 из 9» in the first group head at 360 and in the search row at 1180, no pill row; «Сбросить» and «Ссылка на фильтры» in the column head; the group heads drop the source name.</p><div class="lk"><a href="homebrew-filtered__360__ru.png">360 RU</a><a href="homebrew-filtered__360__en.png">360 EN</a><a href="homebrew-filtered__1180__ru.png">1180 RU</a><a href="homebrew-filtered__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-filtered">live RU</a><a href="state.html?s=homebrew-filtered&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-filters__360__ru.png"><img src="homebrew-filters__360__ru.png" alt="homebrew-filters at 360" loading="lazy"></a><div><b>homebrew-filters</b> <span class="meta3"><code>/homebrew/f_&lt;filter&gt;</code> · C3 pattern</span><p>Open: the filter sheet at 360, «Ссылка на фильтры» in its head and «Сбросить» with «Показать 5» in its foot; at 1180 the column is always open, shown with keyboard focus on the picked chip.</p><div class="lk"><a href="homebrew-filters__360__ru.png">360 RU</a><a href="homebrew-filters__360__en.png">360 EN</a><a href="homebrew-filters__1180__ru.png">1180 RU</a><a href="homebrew-filters__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-filters">live RU</a><a href="state.html?s=homebrew-filters&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-select__360__ru.png"><img src="homebrew-select__360__ru.png" alt="homebrew-select at 360" loading="lazy"></a><div><b>homebrew-select</b> <span class="meta3"><code>/homebrew</code> · A40</span><p>Open: the selection mode, 2 ticked: the bar sticky at the bottom of the list with «Переместить (2)» open (source, section, the move button and the one-line consequence), «Скачать JSON (2)», «Удалить (2)» and «Снять выделение» last; «Выбрать» is hidden.</p><div class="lk"><a href="homebrew-select__360__ru.png">360 RU</a><a href="homebrew-select__360__en.png">360 EN</a><a href="homebrew-select__1180__ru.png">1180 RU</a><a href="homebrew-select__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-select">live RU</a><a href="state.html?s=homebrew-select&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-empty__360__ru.png"><img src="homebrew-empty__360__ru.png" alt="homebrew-empty at 360" loading="lazy"></a><div><b>homebrew-empty</b> <span class="meta3"><code>/homebrew</code> · A38, theme 8</span><p>Empty: a new author. The empty-state pattern names what an own item does (the fact the help panel held) and one next step.</p><div class="lk"><a href="homebrew-empty__360__ru.png">360 RU</a><a href="homebrew-empty__360__en.png">360 EN</a><a href="homebrew-empty__1180__ru.png">1180 RU</a><a href="homebrew-empty__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-empty">live RU</a><a href="state.html?s=homebrew-empty&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-error__360__ru.png"><img src="homebrew-error__360__ru.png" alt="homebrew-error at 360" loading="lazy"></a><div><b>homebrew-error</b> <span class="meta3"><code>/homebrew</code> · theme 8</span><p>Error: the read failed. The cause and «Повторить»; no tabs and no import while nothing is read, as today.</p><div class="lk"><a href="homebrew-error__360__ru.png">360 RU</a><a href="homebrew-error__360__en.png">360 EN</a><a href="homebrew-error__1180__ru.png">1180 RU</a><a href="homebrew-error__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-error">live RU</a><a href="state.html?s=homebrew-error&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-sources__360__ru.png"><img src="homebrew-sources__360__ru.png" alt="homebrew-sources at 360" loading="lazy"></a><div><b>homebrew-sources</b> <span class="meta3"><code>/homebrew/sources</code> · A28, A29</span><p>Sources tab: limits in words, two controls per row («Разделы», «Ещё»), the source «Ещё» menu open; «Хоумбрю» says what goes there.</p><div class="lk"><a href="homebrew-sources__360__ru.png">360 RU</a><a href="homebrew-sources__360__en.png">360 EN</a><a href="homebrew-sources__1180__ru.png">1180 RU</a><a href="homebrew-sources__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-sources">live RU</a><a href="state.html?s=homebrew-sources&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-sections__360__ru.png"><img src="homebrew-sections__360__ru.png" alt="homebrew-sections at 360" loading="lazy"></a><div><b>homebrew-sections</b> <span class="meta3"><code>/homebrew/sources</code> · A29</span><p>Open: «Разделы» of one source: its sections with counts, rename and delete, a new-section field, the 30 limit.</p><div class="lk"><a href="homebrew-sections__360__ru.png">360 RU</a><a href="homebrew-sections__360__en.png">360 EN</a><a href="homebrew-sections__1180__ru.png">1180 RU</a><a href="homebrew-sections__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-sections">live RU</a><a href="state.html?s=homebrew-sections&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-sets__360__ru.png"><img src="homebrew-sets__360__ru.png" alt="homebrew-sets at 360" loading="lazy"></a><div><b>homebrew-sets</b> <span class="meta3"><code>/homebrew/sets</code> · A28, clarity</span><p>Sets tab: the set row shows its bonus and members, so a set needs no definition; the shared card limit is named.</p><div class="lk"><a href="homebrew-sets__360__ru.png">360 RU</a><a href="homebrew-sets__360__en.png">360 EN</a><a href="homebrew-sets__1180__ru.png">1180 RU</a><a href="homebrew-sets__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-sets">live RU</a><a href="state.html?s=homebrew-sets&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-sets-empty__360__ru.png"><img src="homebrew-sets-empty__360__ru.png" alt="homebrew-sets-empty at 360" loading="lazy"></a><div><b>homebrew-sets-empty</b> <span class="meta3"><code>/homebrew/sets</code> · A27 panel (removed), theme 8</span><p>Empty: the Sets tab says what a set is in its empty state - one of the facts the removed help panel held.</p><div class="lk"><a href="homebrew-sets-empty__360__ru.png">360 RU</a><a href="homebrew-sets-empty__360__en.png">360 EN</a><a href="homebrew-sets-empty__1180__ru.png">1180 RU</a><a href="homebrew-sets-empty__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-sets-empty">live RU</a><a href="state.html?s=homebrew-sets-empty&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-rules__360__ru.png"><img src="homebrew-rules__360__ru.png" alt="homebrew-rules at 360" loading="lazy"></a><div><b>homebrew-rules</b> <span class="meta3"><code>/homebrew/rules</code> · A28, clarity</span><p>Rule cards tab: the rule text on the row and how many items refer to it.</p><div class="lk"><a href="homebrew-rules__360__ru.png">360 RU</a><a href="homebrew-rules__360__en.png">360 EN</a><a href="homebrew-rules__1180__ru.png">1180 RU</a><a href="homebrew-rules__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-rules">live RU</a><a href="state.html?s=homebrew-rules&lang=en">live EN</a></div></div></div><div class="st"><a href="homebrew-import__360__ru.png"><img src="homebrew-import__360__ru.png" alt="homebrew-import at 360" loading="lazy"></a><div><b>homebrew-import</b> <span class="meta3"><code>/homebrew</code> · A13, D16</span><p>Open: «Ещё» &gt; «Импорт из файла» opens the panel under the head: one line on what files fit and a «Формат файла» link, one summary, a target per source, «Если уже есть:» with its consequence, one primary.</p><div class="lk"><a href="homebrew-import__360__ru.png">360 RU</a><a href="homebrew-import__360__en.png">360 EN</a><a href="homebrew-import__1180__ru.png">1180 RU</a><a href="homebrew-import__1180__en.png">1180 EN</a><a href="state.html?s=homebrew-import">live RU</a><a href="state.html?s=homebrew-import&lang=en">live EN</a></div></div></div><div class="st"><a href="editor__360__ru.png"><img src="editor__360__ru.png" alt="editor at 360" loading="lazy"></a><div><b>editor</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A6, A8, A12, D15, A11 (artefact), first-screen rule</span><p>The editor: the back link and the title share one row (a breadcrumb), the title on one line at 360 (the Name field holds it in full), no «Хоумбрю» badge (every item here is the author's own); short choices two to a row, optional fields marked, full words, no field «?» (owner, 2026-10-29); the preview beside the form (360: «Предпросмотр» in the fixed bar opens a sheet), «В списках: 1» as a link, «Связи · 3» folded. «Урон» labels its two inputs, «Кость урона» and «Бонус к урону» (rule 15b).</p><div class="lk"><a href="editor__360__ru.png">360 RU</a><a href="editor__360__en.png">360 EN</a><a href="editor__1180__ru.png">1180 RU</a><a href="editor__1180__en.png">1180 EN</a><a href="state.html?s=editor">live RU</a><a href="state.html?s=editor&lang=en">live EN</a></div></div></div><div class="st"><a href="editor-relations__360__ru.png"><img src="editor-relations__360__ru.png" alt="editor-relations at 360" loading="lazy"></a><div><b>editor-relations</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · editor clarity rows (removed «?»)</span><p>Open: «Связи» with no «?»: «Вне линии / Ступень линии / Начать линию» and one caption, «Улучшается до» and «Получается из» as on the item page, the set bonus under the set, «Карты правил, до 3».</p><div class="lk"><a href="editor-relations__360__ru.png">360 RU</a><a href="editor-relations__360__en.png">360 EN</a><a href="editor-relations__1180__ru.png">1180 RU</a><a href="editor-relations__1180__en.png">1180 EN</a><a href="state.html?s=editor-relations">live RU</a><a href="state.html?s=editor-relations&lang=en">live EN</a></div></div></div><div class="st"><a href="editor-errors__360__ru.png"><img src="editor-errors__360__ru.png" alt="editor-errors at 360" loading="lazy"></a><div><b>editor-errors</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A7</span><p>Error and focus: a failed save. The summary takes the focus (gold ring) and links each field; each field says its own message.</p><div class="lk"><a href="editor-errors__360__ru.png">360 RU</a><a href="editor-errors__360__en.png">360 EN</a><a href="editor-errors__1180__ru.png">1180 RU</a><a href="editor-errors__1180__en.png">1180 EN</a><a href="state.html?s=editor-errors">live RU</a><a href="state.html?s=editor-errors&lang=en">live EN</a></div></div></div><div class="st"><a href="editor-longname__360__ru.png"><img src="editor-longname__360__ru.png" alt="editor-longname at 360" loading="lazy"></a><div><b>editor-longname</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · plan review R2 (longest name)</span><p>Longest name: a 120-character item name; the title takes one line at 360 and three at 1180, the Name field holds it in full.</p><div class="lk"><a href="editor-longname__360__ru.png">360 RU</a><a href="editor-longname__360__en.png">360 EN</a><a href="editor-longname__1180__ru.png">1180 RU</a><a href="editor-longname__1180__en.png">1180 EN</a><a href="state.html?s=editor-longname">live RU</a><a href="state.html?s=editor-longname&lang=en">live EN</a></div></div></div><div class="st"><a href="editor-crop__360__ru.png"><img src="editor-crop__360__ru.png" alt="editor-crop at 360" loading="lazy"></a><div><b>editor-crop</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A9 (verify)</span><p>Open: the crop dialog with corner handles, a thirds grid and a 24 px zoom thumb; the keyboard text stays for assistive tech only.</p><div class="lk"><a href="editor-crop__360__ru.png">360 RU</a><a href="editor-crop__360__en.png">360 EN</a><a href="editor-crop__1180__ru.png">1180 RU</a><a href="editor-crop__1180__en.png">1180 EN</a><a href="state.html?s=editor-crop">live RU</a><a href="state.html?s=editor-crop&lang=en">live EN</a></div></div></div><div class="st"><a href="editor-conflict__360__ru.png"><img src="editor-conflict__360__ru.png" alt="editor-conflict at 360" loading="lazy"></a><div><b>editor-conflict</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A30</span><p>Conflict: another device saved first. The primary shows the new version; replacing it is the danger choice; «Сохранить» is off.</p><div class="lk"><a href="editor-conflict__360__ru.png">360 RU</a><a href="editor-conflict__360__en.png">360 EN</a><a href="editor-conflict__1180__ru.png">1180 RU</a><a href="editor-conflict__1180__en.png">1180 EN</a><a href="state.html?s=editor-conflict">live RU</a><a href="state.html?s=editor-conflict&lang=en">live EN</a></div></div></div>
-</main></body></html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 6 mock</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .idx {
+        width: min(1180px, 100% - 32px);
+        margin: 0 auto;
+        padding: 26px 0 60px;
+      }
+      .idx h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+      }
+      .idx h2 {
+        font-size: 23px;
+        margin: 30px 0 10px;
+      }
+      .idx p,
+      .idx li {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 90ch;
+      }
+      .idx code {
+        font: 13px var(--mono);
+        color: var(--txt);
+      }
+      .back2 {
+        display: inline-block;
+        margin: 0 0 14px;
+        font-size: 14px;
+      }
+      .ans {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--line2);
+        border-radius: 14px;
+        background: var(--surface);
+        margin: 0 0 10px;
+      }
+      .ans img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        object-position: top;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .ans b {
+        color: var(--txt);
+      }
+      .chosen {
+        color: var(--ink-on-gold);
+        background: var(--gold);
+        border-radius: 6px;
+        padding: 1px 7px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+      }
+      table.fs {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      table.fs th,
+      table.fs td {
+        border-bottom: 1px solid var(--line);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      table.fs th {
+        color: var(--muted2);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      table.fs td.n {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .ok {
+        color: #9ec96a;
+      }
+      .lim {
+        color: var(--gold-soft);
+      }
+      .bad {
+        color: var(--danger-text);
+      }
+      .st {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 14px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+      .st img {
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+      }
+      .st b {
+        color: var(--txt);
+        font-size: 16px;
+      }
+      .lk a {
+        margin-right: 10px;
+        font-size: 14px;
+      }
+      .meta3 {
+        font-size: 13px;
+        color: var(--muted2);
+      }
+      .tw {
+        overflow-x: auto;
+      }
+      @media (max-width: 760px) {
+        .st {
+          grid-template-columns: 90px 1fr;
+        }
+        .ans {
+          grid-template-columns: 80px 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="idx">
+      <a class="back2" href="../index.html">Back to all mocks</a>
+      <h1>Batch 6 - homebrew editor, homebrew pages and imports</h1>
+      <p>
+        This page shows the batch 6 mock (homebrew editor, the «Мои предметы» tabs and the
+        import) for the owner to confirm before the implementer starts. Round 3 applies the
+        owner's answers, the first-screen rule (plan.md section 14) and plan review plan-1-3
+        (R2, R3, N7).
+      </p>
+      <p>
+        Open a state at <code>state.html?s=&lt;state&gt;&amp;lang=en</code>. Renders:
+        <code>&lt;state&gt;__&lt;width&gt;__&lt;lang&gt;.png</code>, 96 PNGs at 360 and 1180 px,
+        RU and EN. Shared code in <code>../direction/</code> is read-only; <code>u.js</code>,
+        <code>u.css</code> and the copies <code>base.css</code>, <code>r.css</code> are this
+        unit's.
+      </p>
+      <h2>Owner answers</h2>
+      <div class="ans">
+        <a href="homebrew-sets-empty__360__ru.png"
+          ><img src="homebrew-sets-empty__360__ru.png" alt="homebrew-sets-empty at 360"
+        /></a>
+        <div>
+          <b>Question 6.1: The /homebrew «Справка» panel (A27)</b
+          ><span class="chosen">option A chosen</span>
+          <p>
+            Removed (option A, owner, 2026-10-29). Each fact sits where it applies; the empty
+            Sets tab says what a set is.
+          </p>
+          <div class="lk">
+            <a href="homebrew-sets-empty__360__ru.png">360 RU</a
+            ><a href="homebrew-sets-empty__360__en.png">360 EN</a
+            ><a href="homebrew-sets-empty__1180__ru.png">1180 RU</a
+            ><a href="homebrew-sets-empty__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-sets-empty">live RU</a
+            ><a href="state.html?s=homebrew-sets-empty&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="ans">
+        <a href="editor-relations__360__ru.png"
+          ><img src="editor-relations__360__ru.png" alt="editor-relations at 360"
+        /></a>
+        <div>
+          <b>Question 6.2: The eight field «?» buttons in the editor</b
+          ><span class="chosen">option A chosen</span>
+          <p>
+            Removed (option A, owner, 2026-10-29). Option names and one caption say it; the
+            relation labels stay the item page's.
+          </p>
+          <div class="lk">
+            <a href="editor-relations__360__ru.png">360 RU</a
+            ><a href="editor-relations__360__en.png">360 EN</a
+            ><a href="editor-relations__1180__ru.png">1180 RU</a
+            ><a href="editor-relations__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-relations">live RU</a
+            ><a href="state.html?s=editor-relations&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <h2>First screen</h2>
+      <p>
+        The top of the primary content below the top of the header, at scroll 0, at 360x640 and
+        1180x720 (<code>../measure.mjs</code>'s method; this unit's copy also measures the extra
+        states). Design target 240 / 270 px; the assert stays at 40%: 256 / 288 px (plan.md
+        section 14, plan review plan-1-3 R2). Green: at the target; gold: inside the limit, past
+        the target; red: past the limit.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>Primary content (EN / RU)</th>
+              <th>Controls above it (RU / EN)</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>1180 RU</th>
+              <th>1180 EN</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>homebrew-items</code></td>
+              <td>first item row / «первая строка предмета»</td>
+              <td>
+                «Предметы ▾» / "Items ▾", «Новый предмет» / "New item", «Фильтры» / "Filters",
+                «Ещё» / "More"
+              </td>
+              <td class="n lim">255</td>
+              <td class="n lim">255</td>
+              <td class="n ok">223</td>
+              <td class="n ok">223</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>homebrew-items</code></td>
+              <td>first group head / «заголовок первой группы»</td>
+              <td>
+                «Предметы ▾» / "Items ▾", «Новый предмет» / "New item", «Фильтры» / "Filters",
+                «Ещё» / "More"
+              </td>
+              <td class="n ok">223</td>
+              <td class="n ok">223</td>
+              <td class="n ok">189</td>
+              <td class="n ok">189</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+            <tr>
+              <td><code>homebrew-filtered</code></td>
+              <td>first item row / «первая строка предмета»</td>
+              <td>«Фильтры · 1» / "Filters · 1", as homebrew-items</td>
+              <td class="n lim">255</td>
+              <td class="n lim">255</td>
+              <td class="n ok">223</td>
+              <td class="n ok">223</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>homebrew-sources</code></td>
+              <td>first source row / «первая строка источника»</td>
+              <td>
+                «Источники ▾» / "Sources ▾", «Новый источник» / "New source", «Ещё» / "More"
+              </td>
+              <td class="n lim">242</td>
+              <td class="n ok">209</td>
+              <td class="n ok">185</td>
+              <td class="n ok">185</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>homebrew-sets</code></td>
+              <td>first set row / «первая строка комплекта»</td>
+              <td>«Комплекты ▾» / "Sets ▾", «Новый комплект» / "New set", «Ещё» / "More"</td>
+              <td class="n lim">242</td>
+              <td class="n ok">209</td>
+              <td class="n ok">185</td>
+              <td class="n ok">185</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>homebrew-rules</code></td>
+              <td>first rule card row / «первая строка карты правил»</td>
+              <td>
+                «Карты правил ▾» / "Rule cards ▾", «Новая карта правил» / "New rule card", «Ещё»
+                / "More"
+              </td>
+              <td class="n lim">242</td>
+              <td class="n ok">209</td>
+              <td class="n ok">185</td>
+              <td class="n ok">185</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>editor</code></td>
+              <td>first form field / «первое поле формы»</td>
+              <td>«Мои предметы» / "My items" (breadcrumb), the item name</td>
+              <td class="n ok">228</td>
+              <td class="n ok">228</td>
+              <td class="n ok">187</td>
+              <td class="n ok">187</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+            <tr>
+              <td><code>editor-longname</code></td>
+              <td>first form field, 120-character name / «первое поле, имя 120 знаков»</td>
+              <td>as editor, a 120-character name</td>
+              <td class="n ok">228</td>
+              <td class="n ok">228</td>
+              <td class="n ok">215</td>
+              <td class="n ok">215</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 6 (reviews/mocks-2.md)</h2>
+      <ul>
+        <li>
+          B6-1: the selection bar draws the actions of mock 3 («В список», «Печать»,
+          «Скопировать текст») and the strip's three («Переместить (N)», «Скачать JSON (N)»,
+          «Удалить (N)»); at 360 the strip's three and the copy move behind one «··· Ещё» that
+          opens upward, so the bar keeps «В список» and «Печать» (<code>homebrew-select</code>,
+          <code>homebrew-select-more</code>).
+        </li>
+        <li>
+          R6-1: the move form is a sheet over the page at 360 (source, section, the one-line
+          consequence, «Отмена», «Переместить 2 предмета») and a popover above the bar button at
+          1180 (<code>homebrew-select-move</code>); the bar keeps its own height with the form
+          open.
+        </li>
+        <li>
+          R0-2: the one selection bar (see its table): «Все» in three states, «Выбрано: N», the
+          page's actions, «Снять выделение» last. <code>homebrew-select-none</code> draws it
+          with no tick: the actions are off and «Снять выделение» (on at any count) clears the
+          ticks and ends the mode. At 360 the bar is pinned to the bottom of a 640 px frame.
+        </li>
+        <li>
+          R0-1: «··· Ещё» carries its label wherever it appears (head, bar, sources and sets
+          rows).
+        </li>
+        <li>
+          R0-3: the h1 is «Мои предметы» at every width; at 360 it is visually hidden and the
+          tab picker beside it is a button named «Мои предметы: Предметы» (it is no longer the
+          h1).
+        </li>
+        <li>
+          N6-1: «+ Новый ...» has the plus icon at 1180. At 360 the title row stays text-only:
+          with the icon RU «Предметы ▾», «Новый предмет» and «··· Ещё» need 342 of 328 px, so
+          the row would wrap and push the first group head to 256 px; the departure is named for
+          the owner. «+ Новый список» on /lists keeps its icon at every width. N6-2: the counter
+          «9 предметов из 100» shows in the 1180 search row and in the 360 picker sheet; a count
+          line under the search row would push the first group head past the 240 px target, so
+          it stays a departure, and at the limit the counter turns red under the search row
+          (<code>homebrew-limit</code>). N6-3: the editor draws one language state (RU pressed,
+          the Russian text in the field, the title and the description on both pages, the worded
+          caption «EN: пусто»). N3-3: a meta separator stays with the value before it. N0-3: no
+          grab handle on any sheet.
+        </li>
+        <li>
+          Not fixed here: the editor preview is a static Russian black-and-white capture in
+          <code>direction/shared</code> (read-only), so the EN frames show the Russian card too,
+          which now matches the Russian text in the field.
+        </li>
+        <li>
+          FEATURES change to name (owner, round 6): FEATURES "Lists" says the select-all box
+          drops its visible label while anything is ticked; the owner kept «Все» visible while
+          ticked, so batch 9 (and 6 and 8) writes that line as «Все» visible at every tick
+          count, mixed state while some are ticked, accessible name «Выбрать все».
+        </li>
+      </ul>
+      <h2>The selection bar at 360x640</h2>
+      <p>
+        The sticky bar, measured on the render (<code>measure-bar.mjs</code>): its height and
+        its share of the 640 px screen. The shape is the pattern of mock 3: «Все», «Выбрано: N»
+        with the facts of the page, the actions of the page, «Снять выделение» last; at 360 the
+        head takes its own row and the bar pins to the bottom of the frame.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>Share (RU)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>homebrew-select</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>homebrew-select-none</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>homebrew-select-more</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>homebrew-select-move</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 5 (mock 3's list head pattern)</h2>
+      <ul>
+        <li>
+          Mock 3's final list head pattern: at 360 the title row is the tab picker, «Новый
+          предмет» and «Ещё» (import, pin); the search row is «Поиск» (140 px or more),
+          «Фильтры» (lit while N &gt; 0: a gold label on a 45% gold border) and «Выбрать» last,
+          no icons (M3-2, M3-3, M3-4, M3-7, M6-2).
+        </li>
+        <li>
+          At 1180 the title row holds the title, the pin, the four tabs and «Новый предмет»; the
+          search row holds the search, the count, «Импорт из файла» and «Выбрать» last.
+        </li>
+        <li>
+          One selection bar, sticky at the bottom of the list, with «Снять выделение» / "Clear
+          the selection" last (M3-5).
+        </li>
+        <li>
+          The filter-active state is mock 3's corrected one: «Фильтры · 1» lit and «Показано 5
+          из 9» (in the first group head at 360, in the search row at 1180); no pill row at any
+          width; «Сбросить» and «Ссылка на фильтры» in the filter column head at 1180 and the
+          sheet head at 360 (the sheet foot keeps «Сбросить»). Under a source filter the group
+          heads drop the source name («Холодное оружие»), so the count fits on the first one.
+          The counter «9 предметов из 100» (FEATURES rule 1) sits in the 1180 search row and in
+          the picker sheet at 360.
+        </li>
+      </ul>
+      <h2>Changes in round 4 (reviews/mocks-1.md)</h2>
+      <ul>
+        <li>
+          Review mocks-1 (round 4): the pin reads «Открывать при запуске» / "Open on start"
+          (M2-2): visible by the title at 1180, in «Ещё» at 360.
+        </li>
+        <li>
+          «Урон» labels its two inputs, «Кость урона» and «Бонус к урону» (M6-1, rule 15b).
+        </li>
+        <li>
+          A pressed segment shows a check before its label, the editor preview included (M6-3);
+          the language switch too (X-3).
+        </li>
+        <li>The footer keeps the DPCGL fold «Источники и лицензия ▾» (X-3).</li>
+        <li>The selection bar keeps the spec label «Снять выделение».</li>
+      </ul>
+      <h2>Changes in round 3</h2>
+      <ul>
+        <li>
+          The head follows the catalog (R3): at 1180 the title, the four tabs, «Новый предмет»
+          and «Ещё» on one row; at 360 the title is the tab picker «Предметы ▾» with «Новый
+          предмет» beside it, and one row holds the search, «Фильтры» and «Ещё».
+        </li>
+        <li>
+          «Импорт из файла» and the pin move into «Ещё» (plan.md section 14: rule 9's import
+          departure is rewritten); at 360 «Ещё» also holds «Выбрать», as the catalog.
+        </li>
+        <li>
+          The picker shows no count (R3); the tab counts are in the picker sheet and the 1180
+          tabs, the item counts in the group heads.
+        </li>
+        <li>
+          The search placeholder is «Поиск» / "Search": «Найти предмет» did not fit the 360
+          search field.
+        </li>
+        <li>
+          The editor: the back link joins the title row; the title takes one line at 360 (the
+          Name field holds the full name); the «Хоумбрю» badge goes, because every item in the
+          editor is the author's own.
+        </li>
+        <li>
+          States removed: the question options (B and C) and «Справка»; added:
+          <code>homebrew-tabs</code>, <code>homebrew-more</code>,
+          <code>homebrew-sets-empty</code>, <code>editor-relations</code>,
+          <code>editor-longname</code>.
+        </li>
+      </ul>
+      <h2>Differences from plan.md and from R</h2>
+      <ul>
+        <li>
+          At 360 the first item row starts at 255 px: inside the 256 limit, 15 px past the 240
+          target. The first group head starts at 223. Recommendation: the
+          <code>/homebrew</code> primary marker is the first group head, as
+          <code>/tables</code> uses its first section head (plan.md section 14). Next option, if
+          the row must meet 240: drop the group heads at 360.
+        </li>
+        <li>
+          At 360 in RU the Rule cards head takes two lines («Карты правил ▾» beside «Новая карта
+          правил»): its first row starts at 242, inside the limit.
+        </li>
+        <li>
+          A filter is removed from the filter column or the sheet: no list page draws a pill row
+          (mock 3).
+        </li>
+        <li>The four tabs at 1180 sit in the title row (R: a row of their own).</li>
+        <li>
+          Sources and Rule cards have no «Выбрать»: only the Items tab has bulk actions today.
+        </li>
+        <li>
+          A selected row has no side stripe (R <code>r.css</code> <code>.rl.sel</code>; detector
+          <code>side-tab</code>); this folder's <code>r.css</code> copy drops it.
+        </li>
+      </ul>
+      <h2>Shared patterns and their owners</h2>
+      <ul>
+        <li>
+          The empty-state pattern is batch 3 (<code>mocks/3/</code>), the error-page pattern
+          batch 4 (<code>mocks/4/</code>), the toast, the header and the account control batch 2
+          (<code>mocks/2/</code>), the type, the chips and the pressed default batch 1
+          (<code>mocks/1/</code>), all unit A. The list-page head pattern (the picker title, the
+          search with «Фильтры», «Выбрать» in «Ещё» at 360 and in the search row at 1180) is the
+          catalog's (<code>mocks/3/</code>). A state that uses one is re-rendered after its
+          owner mock is confirmed.
+        </li>
+        <li>
+          Ground: the linear page ground
+          <code>linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)</code> (owner,
+          2026-10-29). The no-picture well is the kind glyph; the "?" pedestal is gone (owner,
+          2026-10-29).
+        </li>
+      </ul>
+      <h2>Impeccable critique</h2>
+      <ul>
+        <li>
+          P2, 360: the search field is narrow (about 130 px) beside «Фильтры» and «Ещё», as in
+          the catalog.
+        </li>
+        <li>
+          P2, clarity: two one-line captions stay in the editor («Одно снаряжение на рангах
+          1-4...», the set bonus). Each states a fact of the item.
+        </li>
+        <li>
+          P2, gold budget: gold on «Новый предмет», the lit tab, the picked filter chip and the
+          lit account control only.
+        </li>
+        <li>
+          Detector (<code>impeccable detect</code>, this folder): 0 slop warnings; 4
+          <code>design-system-font</code> warnings (Source Sans 3 is not in DESIGN.md until
+          batch 1 writes it) and advisories for literal sizes and colors from R's copied CSS.
+        </li>
+      </ul>
+      <h2>States</h2>
+      <div class="st">
+        <a href="homebrew-items__360__ru.png"
+          ><img src="homebrew-items__360__ru.png" alt="homebrew-items at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-items</b>
+          <span class="meta3"
+            ><code>/homebrew</code> · A28, A40, A10, D5, A27, first-screen rule</span
+          >
+          <p>
+            Items tab with 9 items, in the catalog's head pattern. 1180: the title, the pin, the
+            four tabs with counts, «+ Новый предмет» on one row; the search row (search, counter
+            «9 предметов из 100», «Импорт из файла», «Выбрать» last) beside the filter column.
+            360: the h1 «Мои предметы» is visually hidden and the tab picker «Предметы ▾» (a
+            button named «Мои предметы: Предметы») sits beside «+ Новый предмет» and «··· Ещё»
+            (import, pin); one row holds the search, «Фильтры» and «Выбрать» last. The counter
+            shows in the picker sheet at 360 (departure: the first screen has no room for a
+            count line; at the limit it turns red under the search row: homebrew-limit). Rows
+            have no checkbox column. No «Справка».
+          </p>
+          <div class="lk">
+            <a href="homebrew-items__360__ru.png">360 RU</a
+            ><a href="homebrew-items__360__en.png">360 EN</a
+            ><a href="homebrew-items__1180__ru.png">1180 RU</a
+            ><a href="homebrew-items__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-items">live RU</a
+            ><a href="state.html?s=homebrew-items&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-tabs__360__ru.png"
+          ><img src="homebrew-tabs__360__ru.png" alt="homebrew-tabs at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-tabs</b>
+          <span class="meta3"><code>/homebrew</code> · A28, first-screen rule</span>
+          <p>
+            Open at 360: the tab picker as a sheet with the four tabs and their counts. At 1180
+            the tabs are a row, so the page is as in homebrew-items.
+          </p>
+          <div class="lk">
+            <a href="homebrew-tabs__360__ru.png">360 RU</a
+            ><a href="homebrew-tabs__360__en.png">360 EN</a
+            ><a href="homebrew-tabs__1180__ru.png">1180 RU</a
+            ><a href="homebrew-tabs__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-tabs">live RU</a
+            ><a href="state.html?s=homebrew-tabs&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-more__360__ru.png"
+          ><img src="homebrew-more__360__ru.png" alt="homebrew-more at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-more</b>
+          <span class="meta3"><code>/homebrew</code> · first-screen rule</span>
+          <p>
+            Open: «Ещё»: at 1180 «Импорт из файла» and the pin («Стартовый раздел», a check when
+            on); at 360 «Выбрать» first, as the catalog.
+          </p>
+          <div class="lk">
+            <a href="homebrew-more__360__ru.png">360 RU</a
+            ><a href="homebrew-more__360__en.png">360 EN</a
+            ><a href="homebrew-more__1180__ru.png">1180 RU</a
+            ><a href="homebrew-more__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-more">live RU</a
+            ><a href="state.html?s=homebrew-more&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-filtered__360__ru.png"
+          ><img
+            src="homebrew-filtered__360__ru.png"
+            alt="homebrew-filtered at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-filtered</b>
+          <span class="meta3"
+            ><code>/homebrew/f_&lt;filter&gt;</code> · C2 pattern, f74eae09</span
+          >
+          <p>
+            A source picked (mock 3's filter-active state): the chip lit in gold, «Фильтры · 1»
+            lit, «Показано 5 из 9» in the first group head at 360 and in the search row at 1180,
+            no pill row; «Сбросить» and «Ссылка на фильтры» in the column head; the group heads
+            drop the source name.
+          </p>
+          <div class="lk">
+            <a href="homebrew-filtered__360__ru.png">360 RU</a
+            ><a href="homebrew-filtered__360__en.png">360 EN</a
+            ><a href="homebrew-filtered__1180__ru.png">1180 RU</a
+            ><a href="homebrew-filtered__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-filtered">live RU</a
+            ><a href="state.html?s=homebrew-filtered&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-filters__360__ru.png"
+          ><img
+            src="homebrew-filters__360__ru.png"
+            alt="homebrew-filters at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-filters</b>
+          <span class="meta3"><code>/homebrew/f_&lt;filter&gt;</code> · C3 pattern</span>
+          <p>
+            Open: the filter sheet at 360, «Ссылка на фильтры» in its head and «Сбросить» with
+            «Показать 5» in its foot; at 1180 the column is always open, shown with keyboard
+            focus on the picked chip.
+          </p>
+          <div class="lk">
+            <a href="homebrew-filters__360__ru.png">360 RU</a
+            ><a href="homebrew-filters__360__en.png">360 EN</a
+            ><a href="homebrew-filters__1180__ru.png">1180 RU</a
+            ><a href="homebrew-filters__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-filters">live RU</a
+            ><a href="state.html?s=homebrew-filters&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-select__360__ru.png"
+          ><img src="homebrew-select__360__ru.png" alt="homebrew-select at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-select</b> <span class="meta3"><code>/homebrew</code> · A40</span>
+          <p>
+            Open: the selection mode, 2 ticked (review B6-1, R0-2, R6-1). One bar, sticky at the
+            bottom of the list: «Все» (three states), «Выбрано: 2», «В список», «Печать»,
+            «Скопировать текст», «Переместить (2) ▾», «Скачать JSON (2)», «Удалить (2)», «Снять
+            выделение» last. At 1180 all in one or two rows. At 360 the bar is pinned to the
+            bottom of the 640 px frame: «Все» and the count on one row; «В список», «Печать» and
+            «··· Ещё» (copy, move, download, delete) on the second; «Снять выделение» on the
+            third. «Выбрать» is hidden.
+          </p>
+          <div class="lk">
+            <a href="homebrew-select__360__ru.png">360 RU</a
+            ><a href="homebrew-select__360__en.png">360 EN</a
+            ><a href="homebrew-select__1180__ru.png">1180 RU</a
+            ><a href="homebrew-select__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-select">live RU</a
+            ><a href="state.html?s=homebrew-select&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-select-none__360__ru.png"
+          ><img
+            src="homebrew-select-none__360__ru.png"
+            alt="homebrew-select-none at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-select-none</b> <span class="meta3"><code>/homebrew</code> · R0-2</span>
+          <p>
+            The selection mode with no tick: the same bar with «Все» empty, «Выбрано: 0», every
+            action off, and «Снять выделение» on. «Снять выделение» clears the ticks and ends
+            the mode at any count; the ticks stay when «Выбрать» is pressed again only if the
+            page is not left.
+          </p>
+          <div class="lk">
+            <a href="homebrew-select-none__360__ru.png">360 RU</a
+            ><a href="homebrew-select-none__360__en.png">360 EN</a
+            ><a href="homebrew-select-none__1180__ru.png">1180 RU</a
+            ><a href="homebrew-select-none__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-select-none">live RU</a
+            ><a href="state.html?s=homebrew-select-none&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-select-more__360__ru.png"
+          ><img
+            src="homebrew-select-more__360__ru.png"
+            alt="homebrew-select-more at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-select-more</b>
+          <span class="meta3"><code>/homebrew</code> · B6-1, R6-1</span>
+          <p>
+            Open at 360: «Ещё» in the bar opens upward with «Скопировать текст», «Переместить
+            (2)...», «Скачать JSON (2)» and, after a rule, «Удалить (2)» in the danger colour.
+            At 1180 the bar has these actions inline, so the frame is as homebrew-select.
+          </p>
+          <div class="lk">
+            <a href="homebrew-select-more__360__ru.png">360 RU</a
+            ><a href="homebrew-select-more__360__en.png">360 EN</a
+            ><a href="homebrew-select-more__1180__ru.png">1180 RU</a
+            ><a href="homebrew-select-more__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-select-more">live RU</a
+            ><a href="state.html?s=homebrew-select-more&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-select-move__360__ru.png"
+          ><img
+            src="homebrew-select-move__360__ru.png"
+            alt="homebrew-select-move at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-select-move</b> <span class="meta3"><code>/homebrew</code> · R6-1</span>
+          <p>
+            Open: «Переместить (2)». At 360 a sheet over the page (source, section, the one-line
+            consequence, «Отмена» and «Переместить 2 предмета»), so the sticky bar keeps its
+            three short rows (about 150 px of 640, not 390). At 1180 a popover above the bar
+            button holds the same form.
+          </p>
+          <div class="lk">
+            <a href="homebrew-select-move__360__ru.png">360 RU</a
+            ><a href="homebrew-select-move__360__en.png">360 EN</a
+            ><a href="homebrew-select-move__1180__ru.png">1180 RU</a
+            ><a href="homebrew-select-move__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-select-move">live RU</a
+            ><a href="state.html?s=homebrew-select-move&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-limit__360__ru.png"
+          ><img src="homebrew-limit__360__ru.png" alt="homebrew-limit at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-limit</b>
+          <span class="meta3"><code>/homebrew</code> · scale (at the limit), N6-2</span>
+          <p>
+            At the limit: the counter «100 предметов из 100» in red under the search row at 360
+            and in the search row at 1180; «Новый предмет» stays on (owner, 2026-10-29: the
+            lists limit rule). The first 9 of 100 rows are drawn.
+          </p>
+          <div class="lk">
+            <a href="homebrew-limit__360__ru.png">360 RU</a
+            ><a href="homebrew-limit__360__en.png">360 EN</a
+            ><a href="homebrew-limit__1180__ru.png">1180 RU</a
+            ><a href="homebrew-limit__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-limit">live RU</a
+            ><a href="state.html?s=homebrew-limit&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-empty__360__ru.png"
+          ><img src="homebrew-empty__360__ru.png" alt="homebrew-empty at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-empty</b> <span class="meta3"><code>/homebrew</code> · A38, theme 8</span>
+          <p>
+            Empty: a new author. The empty-state pattern names what an own item does (the fact
+            the help panel held) and one next step.
+          </p>
+          <div class="lk">
+            <a href="homebrew-empty__360__ru.png">360 RU</a
+            ><a href="homebrew-empty__360__en.png">360 EN</a
+            ><a href="homebrew-empty__1180__ru.png">1180 RU</a
+            ><a href="homebrew-empty__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-empty">live RU</a
+            ><a href="state.html?s=homebrew-empty&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-error__360__ru.png"
+          ><img src="homebrew-error__360__ru.png" alt="homebrew-error at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-error</b> <span class="meta3"><code>/homebrew</code> · theme 8</span>
+          <p>
+            Error: the read failed. The cause and «Повторить»; no tabs and no import while
+            nothing is read, as today.
+          </p>
+          <div class="lk">
+            <a href="homebrew-error__360__ru.png">360 RU</a
+            ><a href="homebrew-error__360__en.png">360 EN</a
+            ><a href="homebrew-error__1180__ru.png">1180 RU</a
+            ><a href="homebrew-error__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-error">live RU</a
+            ><a href="state.html?s=homebrew-error&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-sources__360__ru.png"
+          ><img
+            src="homebrew-sources__360__ru.png"
+            alt="homebrew-sources at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-sources</b>
+          <span class="meta3"><code>/homebrew/sources</code> · A28, A29</span>
+          <p>
+            Sources tab: limits in words, two controls per row («Разделы», «Ещё»), the source
+            «Ещё» menu open; «Хоумбрю» says what goes there.
+          </p>
+          <div class="lk">
+            <a href="homebrew-sources__360__ru.png">360 RU</a
+            ><a href="homebrew-sources__360__en.png">360 EN</a
+            ><a href="homebrew-sources__1180__ru.png">1180 RU</a
+            ><a href="homebrew-sources__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-sources">live RU</a
+            ><a href="state.html?s=homebrew-sources&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-sections__360__ru.png"
+          ><img
+            src="homebrew-sections__360__ru.png"
+            alt="homebrew-sections at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-sections</b>
+          <span class="meta3"><code>/homebrew/sources</code> · A29</span>
+          <p>
+            Open: «Разделы» of one source: its sections with counts, rename and delete, a
+            new-section field, the 30 limit.
+          </p>
+          <div class="lk">
+            <a href="homebrew-sections__360__ru.png">360 RU</a
+            ><a href="homebrew-sections__360__en.png">360 EN</a
+            ><a href="homebrew-sections__1180__ru.png">1180 RU</a
+            ><a href="homebrew-sections__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-sections">live RU</a
+            ><a href="state.html?s=homebrew-sections&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-sets__360__ru.png"
+          ><img src="homebrew-sets__360__ru.png" alt="homebrew-sets at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-sets</b>
+          <span class="meta3"><code>/homebrew/sets</code> · A28, clarity</span>
+          <p>
+            Sets tab: the set row shows its bonus and members, so a set needs no definition; the
+            shared card limit is named.
+          </p>
+          <div class="lk">
+            <a href="homebrew-sets__360__ru.png">360 RU</a
+            ><a href="homebrew-sets__360__en.png">360 EN</a
+            ><a href="homebrew-sets__1180__ru.png">1180 RU</a
+            ><a href="homebrew-sets__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-sets">live RU</a
+            ><a href="state.html?s=homebrew-sets&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-sets-empty__360__ru.png"
+          ><img
+            src="homebrew-sets-empty__360__ru.png"
+            alt="homebrew-sets-empty at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-sets-empty</b>
+          <span class="meta3"><code>/homebrew/sets</code> · A27 panel (removed), theme 8</span>
+          <p>
+            Empty: the Sets tab says what a set is in its empty state - one of the facts the
+            removed help panel held.
+          </p>
+          <div class="lk">
+            <a href="homebrew-sets-empty__360__ru.png">360 RU</a
+            ><a href="homebrew-sets-empty__360__en.png">360 EN</a
+            ><a href="homebrew-sets-empty__1180__ru.png">1180 RU</a
+            ><a href="homebrew-sets-empty__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-sets-empty">live RU</a
+            ><a href="state.html?s=homebrew-sets-empty&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-rules__360__ru.png"
+          ><img src="homebrew-rules__360__ru.png" alt="homebrew-rules at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-rules</b>
+          <span class="meta3"><code>/homebrew/rules</code> · A28, clarity</span>
+          <p>Rule cards tab: the rule text on the row and how many items refer to it.</p>
+          <div class="lk">
+            <a href="homebrew-rules__360__ru.png">360 RU</a
+            ><a href="homebrew-rules__360__en.png">360 EN</a
+            ><a href="homebrew-rules__1180__ru.png">1180 RU</a
+            ><a href="homebrew-rules__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-rules">live RU</a
+            ><a href="state.html?s=homebrew-rules&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="homebrew-import__360__ru.png"
+          ><img src="homebrew-import__360__ru.png" alt="homebrew-import at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>homebrew-import</b> <span class="meta3"><code>/homebrew</code> · A13, D16</span>
+          <p>
+            Open: «Ещё» &gt; «Импорт из файла» opens the panel under the head: one line on what
+            files fit and a «Формат файла» link, one summary, a target per source, «Если уже
+            есть:» with its consequence, one primary.
+          </p>
+          <div class="lk">
+            <a href="homebrew-import__360__ru.png">360 RU</a
+            ><a href="homebrew-import__360__en.png">360 EN</a
+            ><a href="homebrew-import__1180__ru.png">1180 RU</a
+            ><a href="homebrew-import__1180__en.png">1180 EN</a
+            ><a href="state.html?s=homebrew-import">live RU</a
+            ><a href="state.html?s=homebrew-import&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor__360__ru.png"
+          ><img src="editor__360__ru.png" alt="editor at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>editor</b>
+          <span class="meta3"
+            ><code>/homebrew/&lt;id&gt;</code> · A6, A8, A12, D15, A11 (artefact), first-screen
+            rule</span
+          >
+          <p>
+            The editor: the back link and the title share one row (a breadcrumb), the title on
+            one line at 360 (the Name field holds it in full), no «Хоумбрю» badge (every item
+            here is the author's own); short choices two to a row, optional fields marked, full
+            words, no field «?» (owner, 2026-10-29); the preview beside the form (360:
+            «Предпросмотр» in the fixed bar opens a sheet), «В списках: 1» as a link, «Связи ·
+            3» folded. «Урон» labels its two inputs, «Кость урона» and «Бонус к урону» (rule
+            15b).
+          </p>
+          <div class="lk">
+            <a href="editor__360__ru.png">360 RU</a><a href="editor__360__en.png">360 EN</a
+            ><a href="editor__1180__ru.png">1180 RU</a><a href="editor__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor">live RU</a
+            ><a href="state.html?s=editor&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor-relations__360__ru.png"
+          ><img
+            src="editor-relations__360__ru.png"
+            alt="editor-relations at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>editor-relations</b>
+          <span class="meta3"
+            ><code>/homebrew/&lt;id&gt;</code> · editor clarity rows (removed «?»)</span
+          >
+          <p>
+            Open: «Связи» with no «?»: «Вне линии / Ступень линии / Начать линию» and one
+            caption, «Улучшается до» and «Получается из» as on the item page, the set bonus
+            under the set, «Карты правил, до 3».
+          </p>
+          <div class="lk">
+            <a href="editor-relations__360__ru.png">360 RU</a
+            ><a href="editor-relations__360__en.png">360 EN</a
+            ><a href="editor-relations__1180__ru.png">1180 RU</a
+            ><a href="editor-relations__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-relations">live RU</a
+            ><a href="state.html?s=editor-relations&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor-errors__360__ru.png"
+          ><img src="editor-errors__360__ru.png" alt="editor-errors at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>editor-errors</b> <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A7</span>
+          <p>
+            Error and focus: a failed save. The summary takes the focus (gold ring) and links
+            each field; each field says its own message.
+          </p>
+          <div class="lk">
+            <a href="editor-errors__360__ru.png">360 RU</a
+            ><a href="editor-errors__360__en.png">360 EN</a
+            ><a href="editor-errors__1180__ru.png">1180 RU</a
+            ><a href="editor-errors__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-errors">live RU</a
+            ><a href="state.html?s=editor-errors&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor-longname__360__ru.png"
+          ><img src="editor-longname__360__ru.png" alt="editor-longname at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>editor-longname</b>
+          <span class="meta3"
+            ><code>/homebrew/&lt;id&gt;</code> · plan review R2 (longest name)</span
+          >
+          <p>
+            Longest name: a 120-character item name; the title takes one line at 360 and three
+            at 1180, the Name field holds it in full.
+          </p>
+          <div class="lk">
+            <a href="editor-longname__360__ru.png">360 RU</a
+            ><a href="editor-longname__360__en.png">360 EN</a
+            ><a href="editor-longname__1180__ru.png">1180 RU</a
+            ><a href="editor-longname__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-longname">live RU</a
+            ><a href="state.html?s=editor-longname&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor-crop__360__ru.png"
+          ><img src="editor-crop__360__ru.png" alt="editor-crop at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>editor-crop</b>
+          <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A9 (verify)</span>
+          <p>
+            Open: the crop dialog with corner handles, a thirds grid and a 24 px zoom thumb; the
+            keyboard text stays for assistive tech only.
+          </p>
+          <div class="lk">
+            <a href="editor-crop__360__ru.png">360 RU</a
+            ><a href="editor-crop__360__en.png">360 EN</a
+            ><a href="editor-crop__1180__ru.png">1180 RU</a
+            ><a href="editor-crop__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-crop">live RU</a
+            ><a href="state.html?s=editor-crop&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="editor-conflict__360__ru.png"
+          ><img src="editor-conflict__360__ru.png" alt="editor-conflict at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>editor-conflict</b>
+          <span class="meta3"><code>/homebrew/&lt;id&gt;</code> · A30</span>
+          <p>
+            Conflict: another device saved first. The primary shows the new version; replacing
+            it is the danger choice; «Сохранить» is off.
+          </p>
+          <div class="lk">
+            <a href="editor-conflict__360__ru.png">360 RU</a
+            ><a href="editor-conflict__360__en.png">360 EN</a
+            ><a href="editor-conflict__1180__ru.png">1180 RU</a
+            ><a href="editor-conflict__1180__en.png">1180 EN</a
+            ><a href="state.html?s=editor-conflict">live RU</a
+            ><a href="state.html?s=editor-conflict&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

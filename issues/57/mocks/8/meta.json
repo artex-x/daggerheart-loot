@@ -12,7 +12,7 @@
       "id": "lists-new",
       "addr": "/lists",
       "ids": "D20, rule 8",
-      "what": "Open and focus: «Новый список» opens the name field in place with a short example, «Создать» and «Отмена»."
+      "what": "Open: «Новый список» opens the name field in place, with the visible label «Название списка» (rule 15a), «Создать» and «Отмена»; the primary has the plus icon at every width."
     },
     {
       "id": "lists-more",
@@ -30,7 +30,13 @@
       "id": "lists-selected",
       "addr": "/lists",
       "ids": "A16, A40",
-      "what": "The selection mode: neutral ticks and a lit border (no gold), the bar sticky at the bottom with «Скачать JSON (2)», «Удалить (2)» and «Снять выделение» last."
+      "what": "Open: the selection mode, 2 cards ticked. The one selection bar (mock 3): «Все» (three states), «Выбрано: 2», «Скачать JSON (2)», «Удалить (2)», «Снять выделение» last. At 360 it is pinned to the bottom of the 640 px frame. The ticks and the selected cards are neutral."
+    },
+    {
+      "id": "lists-select-none",
+      "addr": "/lists",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick: the same bar, «Все» empty, «Выбрано: 0», «Скачать JSON (0)» and «Удалить (0)» off, «Снять выделение» on (it clears the ticks and ends the mode)."
     },
     {
       "id": "lists-empty",
@@ -54,7 +60,7 @@
       "id": "lists-limit",
       "addr": "/lists",
       "ids": "scale",
-      "what": "At the limit and many: 50 of 50 in red; «Новый список» stays on and its press says the limit and the next step (today's toast, batch 2); from the eighth list the search; the fold «и ещё 38 списков» (rule 12)."
+      "what": "At the limit: 50 of 50 lists. The count «50 списков из 50» in red at the head of the collection; «Новый список» stays on and says the limit when pressed; the first 24 cards, then «Показать ещё (26)» (FEATURES \"Lists\", 24 per page); a search from the eighth list."
     },
     {
       "id": "lists-import",
