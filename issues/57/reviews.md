@@ -48,6 +48,6 @@
 | 1-B1 | blocker | local | fixed 1-fix | `tests/sw.test.mjs` still expects asset cap 30; `ASSET_CAP` is 60 (CI `test:sw` red) |
 | 1-R1 | risk | local | fixed 1-fix | `RowMain.svelte` `.rnum` still gold text and border; Seal Rule says Chalk on a seam |
 | 1-R2 | risk | local | fixed 1-fix | `PrintSwitches.svelte` size switch still gold beside the neutral colour switch |
-| 1-R3 | risk | deferred-scope | deferred (batch 2 refresh) | Waves make plan sections 2, 10, 14 false; interim gold mix on production (owner: neutral chips in batch 2) |
+| 1-R3 | risk | deferred-scope | fixed plan (refresh of 2026-10-29) | Waves made plan sections 2, 10, 14 false; owner accepted the interim gold mix on production (chips turn neutral in their own batches, no extra work in batch 2) |
 | 1-N1..N5, N7 | nit | local | fixed 1-fix | See `reviews/1.md`, "Nits" |
-| 1-N6 | nit | deferred-scope | deferred (batch 1b) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |
+| 1-N6 | nit | deferred-scope | placed (batch 1b, plan section 10, an acceptance line) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |

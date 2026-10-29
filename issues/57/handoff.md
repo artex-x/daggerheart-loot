@@ -2,15 +2,16 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (batch 1 done; batch 1b next)
-- Last agent: implementer (batch 1, continued from an interrupted session)
-- NEEDS_HUMAN_CONFIRMATION: yes, for batch P only (QP.1, QP.6-QP.8 are
-  answered in `context.md`, "Mock P answers"; batch P's refresh marks them);
-  batch 1b does not wait
+- Task status: in_progress (batch 1 done with its fix pass; batch 1b next,
+  implement-ready)
+- Last agent: planner (the batch 1b refresh and the fold of the owner
+  decisions of 2026-10-29)
+- NEEDS_HUMAN_CONFIRMATION: no (Q-W1, `plan.md` section 13, has a
+  recommendation and blocks no batch; it applies at the wave 1 squash)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `9112c4ed` (the merge of `main` `c8243ba6`)
-- Pushed: yes, `claude/57` tip `a07f3e3d` (batch 1); the fix pass `1-fix`
-  follows it
+- Pushed: yes at `80872b35` (the batch 1 fix pass); this refresh's docs
+  commit is not pushed (the orchestrator pushes after CI on `80872b35`)
 
 ## Completed
 - Batch name/id: batch 1 - Foundation (mock 1 approved)
@@ -97,7 +98,9 @@
     border goes; the glyph is decorative and `aria-hidden`; the muted footer
     links and badges keep their measured contrast.
 - Review: required (trigger: changed UI), report `issues/57/reviews/1.md`
-  (fix-then-continue; one fix pass `1-fix`).
+  (fix-then-continue; one fix pass, `80872b35`: B1 the asset cap test at 60,
+  R1 the row roll number neutral, R2 the print size switch neutral, N1-N5 and
+  N7; R3 and N6 placed by the 2026-10-29 refresh).
 
 ## Verification
 - Commands run (exact) and results:
@@ -141,16 +144,38 @@
 - Gates: check:built, the browser suites above, check:fast; CI on the push.
 
 ## Next batch (implement-ready)
-- Name: batch 1b - the print glyph and the placeholder files
-- Objective, scope, steps, acceptance: `plan.md` section 7, batch 1b (an
-  outline; its dispatch refresh expands it with mock 1b).
-- Verification commands: as the 1b line in `plan.md` section 8 names them.
-- Risks / do-nots: public contract change (asset paths of `CONTRACTS.md`):
-  fixtures, `tests/contracts.js`, `CONTRACTS.md` and `llms.txt` move in the
-  same commit.
+- Name: batch 1b - No-picture placeholder retired (`plan.md` section 10)
+- Objective: the kind glyph on the colour print card (light well `#ebe7f0`,
+  glyph `#3a3350`, owner M1b-1), the three placeholder files deleted with
+  every reader, the no-picture link card on the large site card per language.
+- In scope: `artSrc` returns `null`; `PrintCard.svelte` (ArtWell in
+  `.pc-art`, the light-well override, N6 `var(--art-well)`);
+  `RecordActions.svelte` guard; the preview Worker and `pageCtx`; the deploy
+  and data checks (`collect-site.sh`, `check-site`, `dataint`, artwork lib);
+  `git rm` of `img/_none.webp`, `img/thumb/_none.webp`, `og/_none.jpg`; the
+  docs and README counts (1193 to 1192).
+- Out of scope: the black-and-white card, the screen well, every other print
+  change and the «Daggerheart» bottom line (batch P).
+- Files expected: `plan.md` section 10, "Files expected", items 1-25.
+- Steps: `plan.md` section 10, "Steps" 1-9 (step 1 waits for the green CI run
+  of `80872b35`).
+- Acceptance criteria: `plan.md` section 10, "Acceptance criteria".
+- Verification commands: `rtk npm run check:fast`; `node tests/run-all.js
+  app/print,app/states,contracts,dataint,derived,stub`; `npm run
+  check:built`; `npm run lint:untyped`; `npm run lint:typed`; `node --test
+  preview/worker.test.mjs tools/check-site.test.mjs
+  tools/artwork/lib.test.mjs`; `node tests/app/golden.js
+  --only=p/set-longsrc1`; `impeccable detect --json --no-inline-ignores
+  app/src`; push and CI credit (deploy-replay). A batch review follows.
+- Risks / do-nots: a public contract change (`CONTRACTS.md` section 5): the
+  commit states that `docs/fixtures/`, `tests/contracts.js` and `llms.txt`
+  hold no `_none` path. No change to `fit()`, `ArtWell.svelte` or the
+  black-and-white layout; no hand-edited golden.
+- Fallback (optional): none.
 
 ## Blockers
-- None for batch 1b.
+- Batch 1b starts after the green CI run of `80872b35` (in progress at this
+  refresh).
 
 ## Deferred
 - R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a
@@ -164,8 +189,6 @@
   surface batches: `.batch-all` (BatchBar), `.ordiv i` (OrGrid), `.altcol`
   (TablesPage), the ListPage summary labels (`.lnote`, `.lroll`,
   `.batch-lbl`, `.money-l`), HelpButton, `.steps-l` (RecordCard).
-- N6 of `reviews/1.md`: `PrintCard.svelte` keeps a literal `#0a0810` for its
-  art block; `--art-well` names it. Batch 1b takes it.
 
 ## Notes
 - Mocks path: `issues/57/mocks/<N>/`; batch 1 built screenshots in
@@ -176,7 +199,9 @@
   glyph well draw as mock 1; first-screen offsets as the table above.
 - Cleanup performed / retained artifacts: `issues/57/mocks/measure.mjs`
   stays until closeout. Print evidence and the mock P worktree as before
-  (`C:\Users\Ignat\.dhloot\notes\57\`).
+  (`C:\Users\Ignat\.dhloot\notes\57\`). The 2026-10-29 refresh collapsed
+  `plan.md` sections 7 (batch 1 lines), 9 (the done mock schedule) and 10
+  (the batch 1 brief); the last pre-collapse commit is `80872b35`.
 - Session end partial progress (if any): none.
 - Durable items written to their homes this batch (file, section):
   DESIGN.md (Overview, Colors, Typography, Layout, Shapes, Components, Do's

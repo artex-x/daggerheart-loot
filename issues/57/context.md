@@ -384,6 +384,23 @@
     (not one per wave). This replaces "no batch lands on `main` until the
     owner has seen it" and the per-batch screenshot sets as a gate; the
     batches still save their 360 and 1180 screenshots as evidence.
+    Run order since then: 1, 1b, 2, 3-7, 8, 9, P, 10 (P moved from after 1b
+    to wave 3). Facts for the squash (measured 2026-10-29): `issues/57/`
+    holds 1094 tracked files, 134 MB, mostly mock PNGs; the CI credit's tree
+    key skips `issues/` (`isExempt`, `.claude/hooks/lib.mjs`). Open: Q-W1
+    (`plan.md` section 13) - recommended, each wave's squash leaves
+    `issues/57/` out of `main`.
+  - Interim mix between waves (owner, 2026-10-29, chat, batch 1 review
+    R3): accepted. Production may show the neutral switches beside the
+    old gold default chips between waves 1 and 2; the chips turn neutral
+    in their own surface batches as planned (no extra work in batch 2).
+    Standing rule: an inconsistency between batches is fine when a
+    planned later batch removes it; take the option with less work and
+    name that batch; final consistency still matters. Home: the waves
+    decision file, batch 2. The plan lines the waves made false (sections
+    2, 10, 14) were fixed at the refresh of 2026-10-29; `80872b35` already
+    keyed `FIRST_SCREEN` by state with `shipped: false` and no batch id
+    (batch 2 re-checks it before wave 1 lands).
   - Post-release review (owner, 2026-10-29, chat): after the squash onto
     `main` and a green deploy, a fresh blind reviewer checks production
     only: Source Sans 3 loads from the site (no fallback face); the
@@ -418,8 +435,8 @@
     QP.6: `/p/` at 360 shows one card per row. QP.7: short switch labels
     «Цвет» / «Ч/б» and «63×88» / «44×63». QP.8: a card whose picture
     gives way keeps the ladder order and drops the blank paper band above
-    the text. `plan.md` section 13 still lists QP.1 and QP.6-QP.8 as
-    open; batch P's dispatch refresh marks them answered.
+    the text. `plan.md` section 13 marks QP.1 and QP.6-QP.8
+    answered (refresh of 2026-10-29).
   - Figma fact (checked 2026-10-29 in the owner's Chrome, view only: the
     file opened as a signed-out viewer, so no inspect values): on node
     714-42387 a colour card with no picture («Возвращающийся клинок»,
