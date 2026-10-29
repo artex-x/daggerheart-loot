@@ -23,3 +23,16 @@
 | plan-1-N6 | nit | local | fixed plan | Handoff "Pushed: no" is stale |
 | plan-1-N7 | nit | local | fixed plan | Batch 11 has no path for a re-audit defect |
 | plan-1-N8 | nit | deferred-scope | fixed plan | C31/C57 split between batches 2 and 8 |
+| plan-1-2-B1 | blocker | local | fixed plan | E3 and E5 conflict: without both ignores the hook cache files fail `format:check`; keep E5 (owner) |
+| plan-1-2-B2 | blocker | local | fixed plan | E2's `ListPage` side-tab is the drag-and-drop drop mark, not the notes; batch 9 redraws it, mock 9 adds a drag state |
+| plan-1-2-B3 | blocker | local | fixed plan | Q3 American spelling placed as UI-only; owner: the whole sweep in batch 2, British minimised |
+| plan-1-2-R1 | risk | local | fixed plan | Batch 2 contract set not provable: `tab`/`mode` shapes, DOM read, `CONTRACTS.md` sentence, `tabBar.test.ts` deletion |
+| plan-1-2-R2 | risk | local | fixed plan | A1 (P0) has no batch 9 acceptance line and no 768 px mock |
+| plan-1-2-R3 | risk | local | fixed plan | R's account menu adds counts and a new order (new feature) |
+| plan-1-2-R4 | risk | local | fixed plan | Batch 1 adds `Chip`/`Button` neutral variants with no caller |
+| plan-1-2-R5 | risk | local | fixed plan | "Reuse Impeccable" has no acceptance line (polish, harden, critique, audit, document) |
+| plan-1-2-R6 | risk | local | fixed plan | Inline `impeccable-disable` comments can hide an exception: E11, `--no-inline-ignores` |
+| plan-1-2-R7 | risk | local | fixed plan | «Бросок» ignores a roll start section; owner question at mock 2 |
+| plan-1-2-R8 | risk | local | fixed plan | E4 assumes only `ignore-value` rewrites `config.json` |
+| plan-1-2-R9 | risk | local | fixed plan | Shared patterns drawn by two mock units in parallel; name owners, re-render unit B after mocks 2-4 |
+| plan-1-2-N1..N17 | nit | local (N14 deferred-scope, applied: homes in section 5) | fixed plan | See `reviews/plan-1-2.md`, "Nits" |

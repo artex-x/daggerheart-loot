@@ -171,7 +171,38 @@
     mocks of every batch that does not depend on an earlier batch's
     implementation, ahead of time and in parallel where the host allows, so
     the owner confirms them before going away. Home: `plan.md` (scratch).
-- Open questions: `plan.md` section 13, Q1-Q4 (2026-10-29).
+  - Plan refresh answers (owner, 2026-10-29, chat, `plan.md` section 13):
+    - Q1: download `SourceSans3-Regular.ttf`, `SourceSans3-Semibold.ttf`
+      and the OFL `LICENSE.md` from github.com/adobe-fonts/source-sans,
+      release 3.052R, `TTF/`, into `tools/artwork/fonts/` (batch 1).
+    - Q2: share cards on the app's own ground, gold on the star only,
+      «DAGGERHEART» in the muted brand-line colour (batch 1).
+    - Q3: one English spelling everywhere: American. Not only the UI and
+      the share cards - also `llms.txt` (a public contract file: its
+      fixtures, `tests/contracts.js` and `CONTRACTS.md` move in the same
+      commit), the developer docs and the AI-facing files in the
+      repository (`.claude/` prompts, skills and agents, `CLAUDE.md`).
+      Record it as a decision file under `docs/decisions/`. Home: the
+      decision file and `I18N.md`, written by the batch that ships P7.
+    - Q4: keep E6, E8, E9, listed as kept exceptions (batch 10).
+  - Plan review answers (owner, 2026-10-29, chat, `reviews/plan-1-2.md`):
+    - B1: keep E5 (the two `.gitignore` lines for the hook cache files);
+      this replaces the "remove with proof" part of Q4.
+    - B3: the whole American-spelling sweep goes in batch 2 (no batch 2b);
+      the owner accepts the longer batch 2 review. Minimise British
+      spelling: respell code comments, test titles and `.claude/hooks/`
+      too. Keep only what cannot change without breaking data or a frozen
+      contract: identifiers and stored values (`VectorPaint 'colour'`,
+      fixture keys, golden ids, file names), the frozen `schema/*.json`
+      wording, and quotations and records (earlier decision bodies, commit
+      messages, DPCGL and source-book text). Each kept form is named in the
+      decision file.
+  - Mock questions (owner, 2026-10-29, chat: "Yes, remove all"): Q6.1
+    (/homebrew «Справка» panel), Q6.2 (the eight editor field «?»
+    buttons), Q8.1 (/lists «Справка» panel) and Q9.1 (the list page's
+    inline «?» buttons) take option A: remove. This is the owner's yes to
+    remove those visible features (Constraints, clarity rule).
+- Open questions: none.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
