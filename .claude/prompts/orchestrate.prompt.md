@@ -196,7 +196,8 @@ both agents `running` on one tree. Verify, then act:
    then dispatch.** Order matters - killing a worker's background run while the
    worker is still alive makes its next turn reason from a corpse.
 4. **Resume, do not replace** - the subsection below says when each is
-   right. Do not spend a fresh agent to avoid one message.
+   right. Inside the cache lifetime, do not spend a fresh agent to avoid one
+   message.
 5. Say "it stopped" until you have checked. "It died" is a claim about a status
    you have not read.
 
@@ -207,8 +208,9 @@ spawn's preflight - `ListAgents` shows no other writer `running`, HEAD
 re-read and named. Only the orchestrator resumes a writer; the reviewer
 returns findings and sends nothing. Within a batch, resume its own
 implementer for a lost check, the review's blockers, an uncommitted change
-at closeout, or a question you can answer - one message per occasion: the
-next action, HEAD, what is settled, the gates. Spawn instead when the agent
+at closeout, or a question you can answer, inside the cache lifetime (below) -
+one message per occasion: the next action, HEAD, what is settled, the gates.
+Spawn instead when the agent
 shows `killed` or the send fails, when its transcript is the problem (it
 reasoned from a corpse or holds a refuted belief), or when the tier must
 change - a resume carries no `model`. A new batch is a new worker: the
@@ -234,6 +236,23 @@ storage layer; resuming B6 meant waiting for B7's golden re-record to finish
 and then reloading a long-cold transcript, while the review itself already
 carried the traced sequence and the patch. A fresh worker was the cheaper and
 equally informed choice.
+
+**Past the cache lifetime, spawn.** A resume replays the whole transcript.
+Inside the prompt-cache lifetime the replay is read at about 0.1x the input
+price; after it, every token is written again at about 1.25-2x. The lifetime
+is 5 minutes by default and 1 hour with the extended TTL, counted from the
+agent's last request. The lifetime a subagent gets on this host is unmeasured,
+so an unknown age counts as expired. Before any resume, read when the agent's
+last turn ended. Past the lifetime, spawn a fresh agent with a brief that names
+the files to read. One exception: its reasoning cannot be written into a brief
+(a half-applied edit). Then state the cost in chat first (owner, 2026-10-29;
+`docs/decisions/`, 2026-10-29, "A resume past the prompt-cache lifetime ...").
+
+When a task notification for an agent arrives, run `date -u +%H:%M` once and
+state "<agent> ended its turn at HH:MM" in chat. That line is the age that a
+later resume checks. With no such line, the age is unknown and counts as
+expired. This rule covers every resume in this prompt: the implementer, the
+planner, the reviewer's second look and the schema-batch push.
 
 **Blockers do not go to a nit batch.** If the plan has a batch that collects
 nits, it collects nits. A blocker demoted into it ships the defect for every
