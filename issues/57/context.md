@@ -463,7 +463,14 @@
     (`mocks/2/roller-supmenu__360__ru.png`): the first result starts about
     880 px down, and each result card is about 450 px tall. Home:
     `DESIGN.md` (batch 1) and a measured check in the browser suite.
-- Open questions: none.
+- Open questions (batch 3 refresh, 2026-10-30; the owner is away and the
+  planner took the recommended default, logged in the owner-AFK decisions file):
+  Q3-S - the bar's «Все» ticks every drawn row of the catalog and the
+  per-section select-all strip goes; Q3-T - the 1180 px equipment column table
+  of mock 3 is not built (rows at every width). Detail: `plan.md` section 13.
+- Wave 1 landed (2026-10-30): batches 1, 1b and 2 are on `main` as `d83384b4`;
+  `claude/57` merged it as `51370bf8` (`-s ours`, equal trees). Wave 2 is
+  batches 3-7.
 
 ## Screenshot / attachment findings
 - None attached to the issue. Phase 1 makes the evidence set.
@@ -513,6 +520,35 @@
   `old-host/index.html`, `tools/build-pages.js` and
   `tools/build-share-pages.js` (`rootPage`); `404.html` and the old host link
   the site's host by absolute URL.
+
+## Facts measured at the batch 3 refresh (2026-10-30)
+- Golden width: `tests/app/golden.js` has one width (`WIDTH = 1100`), so a
+  state that needs another width (a 360 px sheet) needs a `width` field on its
+  inventory entry (batch 3, S11.4). `sweep.js` has its own page list and does
+  not read the inventory; case 83 of `states.js` reads two inventory states by
+  id and runs their `enter` at 360 and 1180.
+- Who reads what the catalog redesign changes: `FilterBar.svelte` (`TablesPage`,
+  `HomebrewPage`, `SharedListPage`); `TableRows.svelte` (`TablesPage`,
+  `SearchPage`, `SharedListPage`, `HomebrewPage`); `SelBar.svelte` (mounted by
+  `Shell`; tables, search, the shared page); `BatchBar.svelte` (`HomebrewPage`,
+  `ListsPage`, `ListPage`); `Chip.svelte` (nine components); `Empty.svelte`
+  (about eight pages); `SectionHead.svelte` (`TablesPage` only).
+- Tests that read the pills: 24 hits in `tables.test.ts`, 22 in
+  `sharedListPage.test.ts` (`.fpill`, `.fbar`, `.fcount`, `.selbarwrap`,
+  `.selcount`), 5 each in `homebrewPage.test.ts` and `homebrewCatalog.test.ts`,
+  12 in `tests/app/states.js`, one in `contracts.js` (the `picked` reader for
+  `routes.json`, which has 97 `picked` fields), one in `sweep.js`. About 74
+  literals of «Фильтры», the search placeholder, «Сеткой», «Списком», «Справка»
+  and «Выбрать все» in `tests/app/`.
+- The only width state in the app code today is CSS: no JS reads the viewport.
+  `MotionPort` is the one `matchMedia` user (`ports/motion.ts`).
+- `BOOK_NAME_MAX` is 80 (a source's name); `NAME_MAX` 120.
+- Mock 3 first-screen offsets (round 5): 233 unfiltered and 249 filtered at
+  360x640, 269 at 1180x720 (limits 256 and 288). Its equipment table at 1180 is
+  a real `<table>`; the app draws rows, which is decision D6 of the batch.
+- Impeccable skills cannot run from a subagent (`reviews/2.md` R1). The
+  orchestrator session has the Skill tool; `impeccable:impeccable-finish-reviewer`
+  is a read-only agent type that returns fixes.
 
 ## Command costs
 | Command | Wall clock | Fits one call? |
