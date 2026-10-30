@@ -13,15 +13,17 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/alt]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Альтернативные таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Бросок Костей Дуальности по объединённым таблицам обеих книг."
     StaticText "РЕДКОСТЬ"
     button "Обычная Ранг 1–2" [pressed=true]
@@ -82,17 +84,18 @@ RootWebArea "Альт. таблицы - Генератор лута Daggerheart"
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
+?Справка
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Альтернативные таблицы
 Большое Зелье Быстрого Шага
 Бросить кости
+Бросок
 Войти
 Дополнения
 Зелье Быстрого Шага
 К содержимому
-Как это работает
 Конфиденциальность
 Кость Надежды: На единицу больше
 Кость Надежды: На единицу меньше
@@ -107,7 +110,7 @@ daggerheart.com
 НеобычнаяРанг 1–2
 ОбычнаяРанг 1–2
 Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Отправить
 Очень редкаяРанг 3–4
 Поиск
@@ -129,22 +132,24 @@ daggerheart.com
 RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
   link "Skip to content" [url=/en/roll/alt#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/alt]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "Supplements" [expanded=false haspopup=menu]
   main ""
     heading "Alternate tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "A Duality Dice roll over both books merged into one set of table..." [namelen=66 namehash=f9462005]
     StaticText "RARITY"
     button "Common Tier 1–2" [pressed=true]
@@ -202,10 +207,11 @@ RootWebArea "Alt. tables - Daggerheart Loot Generator" [url=/en/roll/alt]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
+?Help
+Alternate tables
 Ball Bearings
 CommonTier 1–2
 Consumables
@@ -222,16 +228,17 @@ Grapnel
 Hope Die: One higher
 Hope Die: One lower
 Hope Die: Roll result
-How this works
 Install as an app
 Items
 LegendaryTier 3–4
+LootDaggerheart
 Major Stride Potion
-Open this section on start
+Open on start
 Page
 Privacy
 RU
 RareTier 2–3
+Roll
 Roll the dice
 Search
 Share
@@ -246,4 +253,3 @@ UncommonTier 1–2
 Verglasian Seed
 Very rareTier 3–4
 daggerheart.com
-ЛутDaggerheart

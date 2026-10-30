@@ -43,7 +43,7 @@ const ready = async (): Promise<void> => {
 };
 
 describe('decoding', () => {
-  it('shows the loading line, then the stage with the picture centred at the smallest zoom', async () => {
+  it('shows the loading line, then the stage with the picture centered at the smallest zoom', async () => {
     let go = (): void => undefined;
     const media = fakeMedia({ hold: new Promise((r) => (go = r)) });
     const { container } = open(fakePicture(1200, 800), media);
@@ -58,7 +58,7 @@ describe('decoding', () => {
       expect(stage()).toHaveFocus();
     });
     expect(screen.getByLabelText<HTMLInputElement>(t.hbArtZoom).value).toBe('1');
-    /* An 800 px square of a 1200 x 800 picture, centred: 200 px off the left edge. */
+    /* An 800 px square of a 1200 x 800 picture, centered: 200 px off the left edge. */
     expect(parseFloat(picture().style.left)).toBeCloseTo(-16, 5);
     expect(picture().style.top).toBe('6%');
     await expectNoA11yViolations(container);

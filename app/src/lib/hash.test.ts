@@ -40,6 +40,7 @@ interface RouteFixture {
   resolves: {
     hash: string;
     tab: string | null;
+    mode: string | null;
     rows: number;
     printCards: number;
     picked: string[];
@@ -63,10 +64,13 @@ describe('golden route fixtures', () => {
     it(fx.hash + ' - ' + fx.why, () => {
       const route = parseHash(fx.hash);
 
-      /* The fixture records which tab lit up, which for a supplement is the supplements
-         tab and not its own section (nav.ts `tabOf`); only the tables tab is read here. */
-      if (fx.resolves.tab === '#/tables') {
+      /* The fixture records the lit job and the lit mode (nav.ts `jobOf`, `modeOf`); only
+         the tables job is read here. */
+      if (fx.resolves.tab === 'tables') {
         expect(route.kind).toBe('tables');
+      }
+      if (route.kind === 'section' && route.section.startsWith('roll/')) {
+        expect(fx.resolves.mode).toBe(sectionHash(route.section));
       }
       if (fx.resolves.hash === ACCOUNT_HASH) expect(route).toEqual({ kind: 'account' });
       if (fx.resolves.hash.startsWith(HOMEBREW_HASH)) expect(route.kind).toMatch(/^homebrew/);

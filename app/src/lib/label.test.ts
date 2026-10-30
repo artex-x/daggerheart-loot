@@ -1,7 +1,7 @@
 /* The words a badge and the line under a heading carry.
  *
  * Held against the real data rather than invented records where it can be:
- * every source in the catalogue has to produce a label, and every record has to
+ * every source in the catalog has to produce a label, and every record has to
  * land in a table, because a record that lands nowhere loses its "show in the
  * table" link and nobody notices until somebody looks for it. */
 
@@ -40,7 +40,7 @@ const rec = (over: Partial<Record_>): Record_ => ({
   ...over
 });
 
-describe('which colour the chip takes', () => {
+describe('which color the chip takes', () => {
   it('is one of two, and equipment counts as a thing you have', () => {
     expect(badgeKind(rec({ kind: 'item' }))).toBe('item');
     expect(badgeKind(rec({ kind: 'consumable' }))).toBe('cons');

@@ -2,7 +2,7 @@
  * its helpers, `fitPrintCards` (`git show 23c00a6^:app.js`) and the four handlers
  * (`doPrint`/`printBack`/`printArt`/`printLink`, `git show 23c00a6^:app.js`).
  *
- * Held against a small fixture rather than the real catalogue, the same way
+ * Held against a small fixture rather than the real catalog, the same way
  * tables.test.ts and searchPage.test.ts are - what matters here is the
  * markup shape (both card layouts, both languages, the fit) rather than any
  * particular record. Equipment lives in `Loot.eq`, off the same records
@@ -321,7 +321,7 @@ const withoutAnchors = (html: string): string =>
 const vec = (e: Element | null | undefined): string | null =>
   e ? `${e.getAttribute('data-vector') ?? ''}:${e.getAttribute('data-paint') ?? ''}` : null;
 
-describe('arrival, colour', () => {
+describe('arrival, color', () => {
   it('draws the bar, the controls in order, and one sheet with the two cards and seven blanks', async () => {
     render(App, { env: await atSet('ci1-q1') });
     await opened();
@@ -331,9 +331,9 @@ describe('arrival, colour', () => {
         'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Справка' })).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /Открывать этот раздел/ })
+      screen.queryByRole('button', { name: /Открывать при запуске/ })
     ).not.toBeInTheDocument();
 
     const back = screen.getByRole('button', { name: 'Назад' });
@@ -440,7 +440,7 @@ describe('no art', () => {
 });
 
 describe('the weapon card', () => {
-  it('draws the tier, tags, burden, die, ribbon, cells and a labelled rule', async () => {
+  it('draws the tier, tags, burden, die, ribbon, cells and a labeled rule', async () => {
     render(App, { env: await atSet('q1') });
     await opened();
     const card = document.querySelector('.pcard[data-pid="q1"]');
@@ -524,7 +524,7 @@ function setLead(id: string): string | undefined {
 }
 
 describe('a set member', () => {
-  it("draws the set's shared bonus as the last text line, labelled with the members", async () => {
+  it("draws the set's shared bonus as the last text line, labeled with the members", async () => {
     const { container } = render(App, { env: await atSet('st1-st2') });
     await opened();
     for (const id of ['st1', 'st2']) {
@@ -569,7 +569,7 @@ describe('a damage bonus', () => {
   });
 });
 
-describe('the armour card', () => {
+describe('the armor card', () => {
   it('draws the shield, the threshold strip and one tag', async () => {
     render(App, { env: await atSet('a1') });
     await opened();
@@ -813,7 +813,7 @@ describe('compact', () => {
   const pressed = (name: string): string | null =>
     screen.getByRole('button', { name }).getAttribute('aria-pressed');
 
-  it('prints sixteen places to a sheet in either layout, independent of the colour switch', async () => {
+  it('prints sixteen places to a sheet in either layout, independent of the color switch', async () => {
     render(App, { env: await atSet('ci1-q1') });
     await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
@@ -1107,7 +1107,7 @@ describe('a count from a list', () => {
     ).toBeInTheDocument();
   };
 
-  it('follows the counted name and leaves an uncounted card bare, in colour', async () => {
+  it('follows the counted name and leaves an uncounted card bare, in color', async () => {
     const { container } = render(App, { env: await atSet('ci1*3-q1') });
     await opened();
     expectCounted();
@@ -1231,7 +1231,7 @@ describe('the fit is wired', () => {
     }
   });
 
-  it('grows short black-and-white text to the cap, and leaves colour alone', async () => {
+  it('grows short black-and-white text to the cap, and leaves color alone', async () => {
     const restore = fakeLayout(() => 50, 0);
     try {
       render(App, { env: await atSet('q1') });
@@ -1425,7 +1425,7 @@ describe('the clip warning', () => {
     }
   });
 
-  it('draws the red deleted note, then the warning, then the grey note', async () => {
+  it('draws the red deleted note, then the warning, then the gray note', async () => {
     const restore = tightOn('ci1');
     try {
       render(App, { env: at('#/p/set-missing1', { cloud: fakeCloud(SEED, 'gm2') }) });
@@ -1508,7 +1508,7 @@ describe('English', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send to printer' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Colour' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Color' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Black and white' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Standard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Compact' })).toBeInTheDocument();

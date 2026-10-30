@@ -2,12 +2,12 @@
   Pure logic for tools/artwork/: no fs, no sharp, no network. Everything that
   touches the outside world - reading upload bytes, hashing them, decoding
   geometry, encoding, writing atomically - lives in run.mjs. See
-  docs/artwork.md for the operator-facing behaviour this implements and
+  docs/artwork.md for the operator-facing behavior this implements and
   docs/specs/COVERAGE.md's `tools/artwork/lib.test.mjs` paragraph for the
   design.
 
   The pure-module contract docs/specs/COVERAGE.md documents: this module
-  holds every rule that can be stated over data - name normalisation,
+  holds every rule that can be stated over data - name normalization,
   matching, destination resolution, shared-asset grouping, collision and
   duplicate detection, the thumbnail destination and the thumbnail set. It also holds the SVG template of the two site
   share cards, which cards.mjs renders.
@@ -239,21 +239,49 @@ function escXml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// A five-point star centred on (cx, cy), point up.
-function starPath(cx, cy, outer, inner) {
-  const pts = [];
-  for (let i = 0; i < 10; i++) {
-    const r = i % 2 ? inner : outer;
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    pts.push((cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1));
+// The vault die (docs/artwork.md, "Icons"), on its 512-unit grid: the path data the
+// header (Shell.svelte), app/public/icons/icon.svg and favicon.svg draw too
+// (lib.test.mjs holds the four copies to one drawing). Every cut is a mask.
+export const MARK = {
+  face: 'M256 134 L372 218.3 L327.7 354.7 L184.3 354.7 L140 218.3 Z',
+  edges:
+    'M256 134 V40 M372 218.3 L462 189 M327.7 354.7 L383 431 M184.3 354.7 L129 431 M140 218.3 L50 189',
+  keyhole: 'M242 244 L232 302 H280 L270 244 Z',
+  decagon:
+    'M256 58 L372.4 95.8 L444.3 194.8 L444.3 317.2 L372.4 416.2 L256 454 L139.6 416.2 L67.7 317.2 L67.7 194.8 L139.6 95.8 Z',
+  // Returns the mark's mask, for a <defs> block, under the given id.
+  defs(id) {
+    return [
+      '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">',
+      '<rect width="512" height="512" fill="#fff"/>',
+      '<g fill="none" stroke="#000" stroke-width="18" stroke-linejoin="round">',
+      '<path d="' + this.face + '"/>',
+      '<path d="' + this.edges + '"/>',
+      '</g>',
+      '<circle cx="256" cy="232" r="27" fill="#000"/>',
+      '<path d="' + this.keyhole + '" fill="#000"/>',
+      '</mask>'
+    ].join('');
+  },
+  // Returns the mark's drawing, cut by the mask of the given id.
+  g(id) {
+    return (
+      '<g mask="url(#' +
+      id +
+      ')"><path fill="#d8ab5e" d="' +
+      this.decagon +
+      '"/><path fill="#f0d091" d="' +
+      this.face +
+      '"/></g>'
+    );
   }
-  return 'M' + pts.join(' L') + ' Z';
-}
+};
 
 // The 1200x630 SVG of one site share card. The layout is the one the
-// hand-made og/_share.jpg of 7fd046c carried; the ground, the text colours
+// hand-made og/_share.jpg of 7fd046c carried; the ground, the text colors
 // and the gold budget are the app's (app/src/styles/tokens.css: the page
-// ground, --txt, --muted, --muted2, and --gold on the star only).
+// ground, --txt, --muted, --muted2, and the gold of the mark only). The mark sits in an
+// 84 px box at (50, 258), the box of issues/57's mark stage.
 export function shareCardSvg(lang) {
   const text = CARD_TEXT[lang];
   if (!text) throw new Error('No share card text for language "' + lang + '". Use ru or en');
@@ -264,9 +292,10 @@ export function shareCardSvg(lang) {
     '<linearGradient id="bg" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">',
     '<stop offset="0" stop-color="#14111d"/><stop offset="1" stop-color="#0e0c15"/>',
     '</linearGradient>',
+    MARK.defs('mark-cut'),
     '</defs>',
     '<rect width="1200" height="630" fill="url(#bg)"/>',
-    '<path d="' + starPath(92, 301, 35, 15) + '" fill="#d8ab5e"/>',
+    '<g transform="translate(50 258) scale(0.1640625)">' + MARK.g('mark-cut') + '</g>',
     '<text x="150" y="321" ' +
       font +
       ' font-size="64" font-weight="600" fill="#ece8f6">' +

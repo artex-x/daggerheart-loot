@@ -109,7 +109,7 @@
     color: var(--ink-on-gold);
   }
 
-  /* The icon and the label share one centre (DESIGN.md, "Buttons"). */
+  /* The icon and the label share one center (DESIGN.md, "Buttons"). */
   .seg.neutral button {
     display: inline-flex;
     align-items: center;

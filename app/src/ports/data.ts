@@ -4,7 +4,7 @@
  * bundle, so the data is not imported and has to be picked up off the global
  * (docs/specs/CONTRACTS.md, section 4). That is a browser fact, which is why it lives behind
  * a port instead of in `lib` - and it is what lets a test hand the app a
- * two-record catalogue instead of the whole book. */
+ * two-record catalog instead of the whole book. */
 
 import type { Loot } from '../lib/data.js';
 import type { DataPort } from './types.js';
@@ -59,7 +59,7 @@ function versionOf(map: Record<string, unknown>, id: string): string | undefined
 }
 
 /**
- * Nothing loaded at all - which is not the same as an empty catalogue.
+ * Nothing loaded at all - which is not the same as an empty catalog.
  *
  * `data.js` missing from a deploy, or served as an HTML error page by a broken
  * one. The app has to be able to say "the data did not load" rather than

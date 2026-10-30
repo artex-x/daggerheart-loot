@@ -3,7 +3,7 @@
  * `state/cloudLists.test.ts` covers the store itself; this is what a person sees
  * and presses - the button, the menu, a chip's tick, the new-list form, and
  * the toast each of those raises. Off `listMenuHTML`/`addToListBtn` in
- * app.js and `listMemberFor(item)`'s own live behaviour. */
+ * app.js and `listMemberFor(item)`'s own live behavior. */
 
 import { cleanup, render, screen, waitFor, within } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';

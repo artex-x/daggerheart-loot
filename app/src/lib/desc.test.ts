@@ -19,7 +19,7 @@ const rec = (over: Partial<Record_>): Record_ => ({
 
 describe('the description', () => {
   it('draws a colon as prose on every record, homebrew too', () => {
-    /* The label rule once italicised an instruction in a homebrew consumable. */
+    /* The label rule once italicized an instruction in a homebrew consumable. */
     const text = 'Напишите на нём письмо: пергамент сложится в птицу.';
     const own = rec({ src: 'homebrew', kind: 'consumable', rud: text });
     expect(descHtml(own, 'ru')).toBe(text);

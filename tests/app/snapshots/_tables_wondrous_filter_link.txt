@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -116,6 +114,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 93Сумочка КассираКошель может вместить горсть золота. Когда вы и... [namelen=221 namehash=09be0e54]
 94ВремястеклоОдин раз за сессию вы можете смотреть в эту подзорн... [namelen=234 namehash=6c5d3a7c]
 97Рог ЧерепахиЕсли вы используете этот костяной фрагмент как нав... [namelen=265 namehash=1313472c]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -129,6 +128,7 @@ Wondrous Environments
 daggerheart.com
 Алконитовый Кристалл
 Альт. таблицы
+Бросок
 Войти
 Времястекло
 Гравитационная Привязь
@@ -141,7 +141,6 @@ daggerheart.com
 Искажённая Линза
 Искатель Духов
 К содержимому
-Как это работает
 Камень Сирены
 Капюшон Туманного Покрова
 Конфиденциальность
@@ -154,10 +153,9 @@ daggerheart.com
 Мел Заклинателя
 Мерцацвет
 Оберег Вянущего Корня
-Обычные правила
 Осколок Сновидца
 Отвадитель Жуков
-Открывать этот раздел при запуске
+Открывать при запуске
 Перо Памяти
 Перчатка Корнереза
 Плащ Зимнего Волка
@@ -206,22 +204,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_environments/f_kind-item]
   link "Skip to content" [url=/en/tables/wondrous_environments/f_kind-item#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -264,7 +260,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 102Twisted LensWhen you look through this lens, you can see into... [namelen=244 namehash=1cfbf84d]
@@ -316,6 +312,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
 93Ticket Master's PouchThe pouch can hold a handful of gold. Whe... [namelen=235 namehash=70871981]
 94TimeglassOnce per session, you can look through this spyglass ... [namelen=222 namehash=9d78142e]
 97Tortoise HornIf you use this bony fragment as a pommel for a w... [namelen=293 namehash=b5f1aa2c]
+?Help
 Aetherflower
 Alconite Crystal
 Alt. tables
@@ -345,7 +342,6 @@ Gravitic Tether
 Grid
 Hitcher's Towel
 Hope & Fear
-How this works
 Ice Gloves
 Incantor's Chalk
 Install as an app
@@ -356,10 +352,11 @@ Lantern of Shadows
 Lightning Scarab
 Link to this table
 List
+LootDaggerheart
 Lovebugs
 Many Worlds Tavern
 Mimicry Mask
-Open this section on start
+Open on start
 Other
 Pathfinder's Ledger
 Privacy
@@ -369,6 +366,7 @@ Quill of Memory
 RU
 Red Nose of Hope
 Reset all
+Roll
 Rootslicer Gauntlet
 Search
 Sign in
@@ -377,7 +375,6 @@ Skip to content
 Soul Torch
 Soulweave Cloak
 Spirit Seeker
-Standard rules
 Stingshield Robes
 Superior Alconite Crystal
 Supplements
@@ -400,4 +397,3 @@ Wondrous Environments
 Wraith Trap
 Yeti Coat
 daggerheart.com
-ЛутDaggerheart

@@ -73,7 +73,7 @@ describe('throwaway users', () => {
     assert.equal(throwawayEmail(EMAIL, 'abc', 2), 'owner+dhloot-e2e-abc-2@example.test');
   });
 
-  it('are recognised from any run, and nothing else is', () => {
+  it('are recognized from any run, and nothing else is', () => {
     assert.equal(isThrowaway(throwawayEmail(EMAIL, 'old', 1), EMAIL), true);
     assert.equal(isThrowaway('Owner+DHLOOT-E2E-x-1@Example.test', EMAIL), true);
     assert.equal(isThrowaway(EMAIL, EMAIL), false);

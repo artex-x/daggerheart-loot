@@ -1,12 +1,12 @@
-/* Badges that can share a screen have to be told apart by colour, not by
+/* Badges that can share a screen have to be told apart by color, not by
  * reading them - the same rule the live app's own suite, since deleted
  * (issue 47), enforced there. Distance in Lab was the wrong measure there; hue
  * is what the eye sorts by, so hue is what is checked.
  *
  * Rewritten, not ported: the original injected a bare `<span class="badge
- * item">` into the document and read its colour, which gave Svelte's
+ * item">` into the document and read its color, which gave Svelte's
  * scoped `.badge` rules nothing to match, and grepped `[data-act="roll"]`,
- * which does not exist here. This reads the computed colour off *rendered*
+ * which does not exist here. This reads the computed color off *rendered*
  * badges instead - one table route per badge class, taking the first
  * `.badge.<cls>` each draws - and finds the roll button by the real markup
  * every roll page shares. */
@@ -24,8 +24,8 @@ const ROUTES = {
   src: '#/tables/core_item'
 };
 
-const MIN_HUE = 40; // degrees between two colourful badges
-const MIN_SAT = 0.12; // below this a colour reads as grey and hue means nothing
+const MIN_HUE = 40; // degrees between two colorful badges
+const MIN_SAT = 0.12; // below this a color reads as gray and hue means nothing
 
 const rep = reporter();
 const { ok } = rep;
@@ -66,7 +66,7 @@ const gap = (a, b) => {
       const el = document.querySelector('.badge.' + cls);
       return el ? getComputedStyle(el).color : null;
     }, cls);
-    ok(!!c, route + ': no .badge.' + cls + ' drawn to read a colour off');
+    ok(!!c, route + ': no .badge.' + cls + ' drawn to read a color off');
     colours[cls] = c;
   }
 
@@ -153,7 +153,7 @@ const gap = (a, b) => {
   }
 
   /* Equipment's stat line keeps one tone everywhere across the three
-   * equipment tables - the kind is told by the badge, not by a second colour
+   * equipment tables - the kind is told by the badge, not by a second color
    * on the numbers, the same rule the legacy `eqtest.js` enforced. */
   console.log('equipment stats are one tone');
   const statColour = async (hash) => {
@@ -167,7 +167,7 @@ const gap = (a, b) => {
   const csa = await statColour('#/tables/eq_armor');
   ok(
     new Set([].concat(csw, css, csa)).size === 1,
-    'equipment stats are coloured differently: ' + [csw, css, csa].join(' | ')
+    'equipment stats are colored differently: ' + [csw, css, csa].join(' | ')
   );
 
   /* A selected tile has its own fill, read off the rendered page rather than
@@ -196,7 +196,7 @@ const gap = (a, b) => {
   console.log(
     rep.failed
       ? '\n' + rep.failed + ' FAILED'
-      : '\nbadge colours (dist-test/): all distinguishable by hue'
+      : '\nbadge colors (dist-test/): all distinguishable by hue'
   );
   process.exit(rep.failed ? 1 : 0);
 })();

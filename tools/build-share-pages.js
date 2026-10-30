@@ -64,13 +64,13 @@ const ROOT_TEXT = {
     n.loot +
     ' items and consumables, ' +
     n.eq +
-    " weapons and armour. Core, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, community items and alternative tables. Russian and English.",
+    " weapons and armor. Core, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, community items and alternative tables. Russian and English.",
   card: (n) =>
     n.all +
-    ' entries with pictures: loot, consumables, weapons and armour from Core, Hope & Fear, Wondrous Environments and community items. Russian and English.',
+    ' entries with pictures: loot, consumables, weapons and armor from Core, Hope & Fear, Wondrous Environments and community items. Russian and English.',
   short: (n) =>
     n.all +
-    ' entries with pictures: loot, consumables, weapons and armour. Russian and English.',
+    ' entries with pictures: loot, consumables, weapons and armor. Russian and English.',
   data: 'The data is also readable without JavaScript:',
   csv: 'one row per entry',
   json: 'the same, whole',
@@ -218,7 +218,7 @@ function rootPage() {
 <meta name="robots" content="noindex, nofollow">
 ${rootHead()}
 <meta name="color-scheme" content="dark">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="https://daggerheart-loot.pages.dev/icons/favicon.svg">
 ${STYLE}
 </head>
 <body>

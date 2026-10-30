@@ -32,8 +32,8 @@ describe('which groups a table offers', () => {
     expect(groupsFor('eq_armor')).toEqual(EQ_GROUPS.armor);
   });
 
-  it('leaves armour without class, trait, range or burden', () => {
-    /* Not an omission: no armour in either book carries any of the four. */
+  it('leaves armor without class, trait, range or burden', () => {
+    /* Not an omission: no armor in either book carries any of the four. */
     for (const absent of ['cls', 'trait', 'range', 'burden']) {
       expect(groupsFor('eq_armor'), absent).not.toContain(absent);
     }
@@ -191,7 +191,7 @@ describe('writing the address', () => {
 
   it('drops a group this table does not offer', () => {
     /* Otherwise a link copied from the weapon table would carry burden onto
-       armour, where nothing has it, and empty the page. */
+       armor, where nothing has it, and empty the page. */
     expect(encodeFilter({ burden: ['2'], tier: ['1'] }, groupsFor('eq_armor'))).toBe(
       'f_tier-1'
     );
@@ -248,7 +248,7 @@ describe('what the filter lets through', () => {
   });
 
   it('ignores a group carried in for a facet this table has not got', () => {
-    /* A link from the weapon table opened on armour must show armour, not an
+    /* A link from the weapon table opened on armor must show armor, not an
        empty page. */
     const row: Record<string, string> = { tier: '1' };
     const of = (g: string): string => row[g] ?? '';

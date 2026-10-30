@@ -13,14 +13,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [value=а focused=true]
     StaticText "ТИП"
@@ -333,7 +331,6 @@ daggerheart.com
 АлебардаРанг 1 · Физическое · Сила · Близко · d10+2 физ · Двуруч... [namelen=113 namehash=09db8fd0]
 Алконитовый Кристалл
 Альт Сказочника
-Альт. таблицы
 Амулет Бессонного
 Амулет Вацитоса
 Амулет Воздушного Клинка
@@ -368,6 +365,7 @@ daggerheart.com
 Большое Зелье Обаяния
 Браслет Тихого Шага
 Браслеты Отбрасывания
+Бросок
 Бутыль Цисканского Тумана
 Варево Берсерка
 Варенье из Грохотягод
@@ -386,7 +384,6 @@ daggerheart.com
 Грохотягода
 Двойная Фляга
 Диск Аннулирования
-Дополнения
 Доспешный Сшиватель
 Драконья Мантия
 Древний Рунный Камень
@@ -496,7 +493,6 @@ daggerheart.com
 Нестабильный Мистический Осколок
 Оберегающая Свеча
 Обсидиановая Табличка Даггинэ
-Обычные правила
 Оправа Горнила
 Оракул Именующего
 Осколок Арктицита
@@ -506,7 +502,7 @@ daggerheart.com
 Осколок Эмберита
 Ослепляющая Сфера
 Отвадитель Жуков
-Открывать этот раздел при запуске
+Открывать при запуске
 Ошибка Игрока
 Пакетик Космической Пыли
 Парашют
@@ -670,21 +666,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [value=а focused=true]
     StaticText "TYPE"
@@ -708,7 +702,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 108Hellfire SwordTier 4 · Magic · Strength · Melee · d10+12 mag ... [namelen=412 namehash=3f6405b5]
@@ -1009,7 +1003,6 @@ Airblade Charm
 Aku-Haptlek's Tooth
 Alconite Crystal
 Alistair's Torch
-Alt. tables
 Amulet of Righteous Fury
 Amulet of Vitality
 Amulet of the Bloody Hunter
@@ -1207,6 +1200,7 @@ Leviathan Harpoon
 Life Force Beacon
 Lightning Scarab
 Lionheart Tonic
+LootDaggerheart
 Lorekeeper
 Lyrebird Lozenge
 Magic-User's Malison
@@ -1240,7 +1234,7 @@ Nightmare Mead
 Nullification Disc
 Nursewood Sap
 Ogre Musk
-Open this section on start
+Open on start
 Packet of Space Dust
 Paragon's Chain
 Pastries of Warmth
@@ -1268,6 +1262,7 @@ Returning Ring
 Rings of Alliance
 Rings of Camaraderie
 Rings of Friendship
+Roll
 Salamander Salve
 Scarab Amulet
 Search
@@ -1288,7 +1283,6 @@ Staff of AugmaTier 3 · Magic · Instinct · Far · d6+7 mag · One-H... [namele
 Staff of Reversal
 Staff of the Whispering Archive
 Stake of Abjuration
-Standard rules
 Stardrop
 Steelforged Halberd
 Steelforged HalberdTier 2 · Physical · Strength · Very Close · d... [namelen=169 namehash=b902118d]
@@ -1299,7 +1293,6 @@ Stride Relic
 Sun Tree Sap
 Sunlight Orb
 Superior Alconite Crystal
-Supplements
 Sweet Moss
 Sword of Angels
 Tables
@@ -1328,4 +1321,3 @@ Woven Net
 Yakamel Milk
 Zephyr's Jar
 daggerheart.com
-ЛутDaggerheart

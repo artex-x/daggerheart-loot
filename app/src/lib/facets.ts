@@ -12,7 +12,7 @@
  *
  * The equipment tables (`eq_weapon`, `eq_secondary`, `eq_armor`) are a second
  * shape, not a plain table's fourth branch: they hold every piece of gear in
- * the catalogue, not one book's rows, and their groups come from `EQ_GROUPS`
+ * the catalog, not one book's rows, and their groups come from `EQ_GROUPS`
  * rather than `PLAIN_GROUPS`. `facetRows` dispatches to `eqFacetRows` for
  * those three and keeps the plain branches below for everything else.
  *
@@ -111,7 +111,7 @@ const LIST_KIND: readonly (readonly [string, keyof Dict])[] = [
   ['armor', 'subArmor']
 ];
 
-/* Every key of a word map, labelled in `lang`. */
+/* Every key of a word map, labeled in `lang`. */
 const words = (map: Record<string, readonly [string, string]>, lang: Lang): FacetValue[] =>
   Object.keys(map).map((k) => ({ value: k, label: eqWord(map, k, lang) }));
 
@@ -136,7 +136,7 @@ function homebrewSrcValues(records: readonly Record_[], t: Dict, lang: Lang): Fa
 }
 
 /* The `sect` values of the shown source's own items (`source`, or every own item when
-   null), each labelled by the section's name: the row holds one source's sections. */
+   null), each labeled by the section's name: the row holds one source's sections. */
 function homebrewSectValues(
   records: readonly Record_[],
   lang: Lang,

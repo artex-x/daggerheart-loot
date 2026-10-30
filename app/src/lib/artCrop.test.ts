@@ -10,7 +10,7 @@ describe('the crop square', () => {
   ];
 
   for (const [name, w, h] of cases) {
-    it(`keeps a ${name} square inside the picture at every zoom, centred and at each corner`, () => {
+    it(`keeps a ${name} square inside the picture at every zoom, centered and at each corner`, () => {
       const short = Math.min(w, h);
       for (const zoom of [1, 2, ZOOM_MAX]) {
         const side = short / zoom;

@@ -122,7 +122,7 @@
     };
   });
 
-  /* The centre stays where the clamped square puts it, so a move past an edge is not kept. */
+  /* The center stays where the clamped square puts it, so a move past an edge is not kept. */
   function moveTo(x: number, y: number, z = zoom): void {
     if (!image) return;
     zoom = Math.min(ZOOM_MAX, Math.max(1, Math.round(z * 100) / 100));

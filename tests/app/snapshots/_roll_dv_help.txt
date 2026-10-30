@@ -13,28 +13,22 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/dragons_vault]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "The Dragon's Vault" [expanded=false haspopup=menu]
   main ""
     heading "The Dragon's Vault" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=true]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=true]
     StaticText "Введите результат броска или получите случайную позицию."
     StaticText "В таблице 145 позиций - 68 предметов, 9 расходников и 68 единиц ..." [namelen=156 namehash=523ff9b1]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText "."
-    navigation "Дополнения"
-      link "Wondrous Environments" [url=/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
-      link "Предметы сообществ" [url=/roll/community_items]
-      link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–145)"
     button "На единицу меньше" [disabled=true]
     textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
@@ -60,29 +54,23 @@ RootWebArea "The Dragon's Vault - Генератор лута Daggerheart" [url=
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dread GM Toolbox
+?Справка
 EN
-Many Worlds Tavern
 RU
 The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com
-Альт. таблицы
+Альтернативные таблицы
+Бросок
 Войти
-Дополнения
 К содержимому
-Как это работает
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
 Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Отправить
 Поиск
-Предметы сообществ
 Результат броска
 Святилище Оградителя
 Скопировать изображение
@@ -99,35 +87,29 @@ daggerheart.com
 RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=/en/roll/dragons_vault]
   link "Skip to content" [url=/en/roll/dragons_vault#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/dragons_vault]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "The Dragon's Vault" [expanded=false haspopup=menu]
   main ""
     heading "The Dragon's Vault" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=true]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=true]
     StaticText "Enter your roll result, or pick a random entry."
     StaticText "The table holds 145 entries - 68 items, 9 consumables and 68 wea..." [namelen=145 namehash=52a67d55]
     ... StaticText x3 of 7 same-shape siblings elided
     link "The Dragon's Vault" [url=https://www.drivethrurpg.com/en/product/581246/the-dragon-s-vault]
     StaticText " supplement."
-    navigation "Supplements"
-      link "Wondrous Environments" [url=/en/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=/en/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=/en/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
-      link "Community items" [url=/en/roll/community_items]
-      link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
     StaticText "ROLL RESULT (1–145)"
     button "One lower" [disabled=true]
     textbox "Roll result" [value=1 multiline=false readonly=false required=false]
@@ -150,40 +132,34 @@ RootWebArea "The Dragon's Vault - Daggerheart Loot Generator" [url=/en/roll/drag
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+?Help
 Abjurer's Fane
-Alt. tables
-Arazo's Artifacts
-Community items
+Alternate tables
 Copy image
 Copy link
 Copy name
 Copy text
-Dread GM Toolbox
 EN
-How this works
 Install as an app
-Many Worlds Tavern
+LootDaggerheart
 One higher
 One lower
-Open this section on start
+Open on start
 Page
 Privacy
 RU
 Random 1–145
+Roll
 Roll result
 Search
 Share
 Sign in
 Skip to content
 Standard rules
-Supplements
 Tables
 Terms of use
 The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

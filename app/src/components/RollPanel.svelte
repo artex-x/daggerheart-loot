@@ -24,9 +24,7 @@
   import RecordActions from './RecordActions.svelte';
   import RecordCard from './RecordCard.svelte';
   import RecordHost from './RecordHost.svelte';
-  import SupplementNav from './SupplementNav.svelte';
   import { helpFor } from '../lib/help.js';
-  import { isSupplement } from '../lib/nav.js';
   import { pick, rollLabel as rollLabelFor } from '../lib/roll.js';
   import type { AppState } from '../state/app.svelte.js';
   import type { Record_ } from '../lib/types.js';
@@ -94,10 +92,6 @@
 </script>
 
 <PageHead {app} {title} {sub} {help} />
-
-{#if isSupplement(app.section)}
-  <SupplementNav {app} />
-{/if}
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}

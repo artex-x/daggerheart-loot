@@ -6,7 +6,7 @@
  * anything missing or renamed since the commit that seeded this file?" is a
  * question a pixel diff answers by accident and a text diff answers on
  * purpose - a renamed button or a dropped landmark is a line in `git diff`,
- * not a percentage. The normalisation rules and the format are implemented
+ * not a percentage. The normalization rules and the format are implemented
  * directly below (rule A, rule B) rather than repeated here.
  *
  * Usage:
@@ -55,7 +55,7 @@ const SHARD = shardArg
  *  own rule, so a state id and its golden's basename always agree by eye. */
 const slugOf = (id) => id.replace(/\W+/g, '_');
 
-/* ---------- normalisation ---------- */
+/* ---------- normalization ---------- */
 
 /* Kept, in this fixed order, after role and name. elementHandle,
  * backendNodeId and loaderId are poison - a per-run function/id/uuid that
@@ -326,7 +326,7 @@ function compareGolden(id, wantText, gotText, ok) {
 }
 
 /* ---------- exports ----------
- * Only the pure, DOM/browser-free half: normalisation, rule A/B, the
+ * Only the pure, DOM/browser-free half: normalization, rule A/B, the
  * header/section split and the comparison itself. `golden.test.mjs` runs
  * these under `node --test` against plain strings - no build, no puppeteer.
  * `require('./lib.js')` (which checks dist-test/ exists and requires puppeteer)

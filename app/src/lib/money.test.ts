@@ -109,7 +109,7 @@ describe('suggested prices', () => {
     expect(guessPrice(weapon(1), none)).toBe(25);
   });
 
-  it('give armour its own scale', () => {
+  it('give armor its own scale', () => {
     const armour: Record_ = {
       id: 'q2',
       src: 'core',

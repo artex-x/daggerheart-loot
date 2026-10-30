@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/bad]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -33,14 +31,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/bad]
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
-Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 На главную
-Обычные правила
 Поиск
 Таблицы
 Условия использования
@@ -50,16 +46,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/bad]
   link "Skip to content" [url=/en/p/bad#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -71,21 +65,19 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/bad]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
 EN
 Home
 Install as an app
+LootDaggerheart
 Privacy
 RU
+Roll
 Search
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

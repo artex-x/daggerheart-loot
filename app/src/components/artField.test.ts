@@ -65,7 +65,7 @@ async function field(
     expect(store.status).toBe('ready');
   });
   const catalog = app.catalog;
-  if (!catalog) throw new Error('The field needs the catalogue. Pass fakeData(REAL).');
+  if (!catalog) throw new Error('The field needs the catalog. Pass fakeData(REAL).');
   const index = withRecords(catalog, store.records, [FOREIGN], store.cardRefs);
   const host = {
     get t() {

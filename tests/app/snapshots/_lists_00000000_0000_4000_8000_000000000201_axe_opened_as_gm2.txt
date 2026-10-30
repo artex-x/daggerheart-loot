@@ -27,10 +27,9 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm2@example.test
-Альт. таблицы
+Бросок
 Выбрать все
 Добавить в список
-Дополнения
 Жирный
 Закрыть
 Заметка
@@ -42,7 +41,6 @@ daggerheart.com
 На единицу меньше
 Название списка
 Нумерованный список
-Обычные правила
 Открыть
 Отправить
 Печать
@@ -101,7 +99,6 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
 ## en :: controls
 Account: gm2@example.test
 Add to list
-Alt. tables
 Bold
 Bulleted list
 Close
@@ -124,6 +121,7 @@ Hide the change to "Ember Axe"
 Install as an app
 Italic
 List name
+LootDaggerheart
 Note
 Numbered list
 One higher
@@ -139,6 +137,7 @@ Privacy
 RU
 Random 1–2
 Remove from the list
+Roll
 Roll result
 Save to my items
 Scepter
@@ -147,9 +146,6 @@ Search
 Select all
 Share
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

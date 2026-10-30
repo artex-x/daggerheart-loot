@@ -1,7 +1,7 @@
 <script lang="ts">
   /* The lines of an import report, the first ten (or `shown`) and then «...и ещё N»: the lists import's
      and the homebrew import's, extracted on its second use (docs/specs/FEATURES.md,
-     "Lists" and "Homebrew"). The colour of the code comes from the caller's box. */
+     "Lists" and "Homebrew"). The color of the code comes from the caller's box. */
   import type { ReportLine as Line } from '../lib/types.js';
 
   interface Props {

@@ -3,7 +3,7 @@
      a numbered list, a table. A table with a head and no rows draws its head as one row
      of plain cells: header cells with no data mislead a screen reader. The list and
      table rules are global under `mdtext`, a class each caller puts on its wrapper; the
-     caller keeps its font, colour and box. The image review page reads these rules too
+     caller keeps its font, color and box. The image review page reads these rules too
      (tools/artwork/lib.test.mjs, `CARD_FILES`). */
   import MarkupInline from './MarkupInline.svelte';
   import { afterLead, type MarkupBlock } from '../lib/markup.js';

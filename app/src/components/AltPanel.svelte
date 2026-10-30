@@ -116,7 +116,7 @@
 
       <Field label={t.rollResult}>
         <NumRow>
-          <!-- Each die is labelled, because which one found a card is half of what
+          <!-- Each die is labeled, because which one found a card is half of what
            the card says. The label is above the field rather than beside it:
            two named fields side by side need the names to line up. -->
           <div class="dieblock">

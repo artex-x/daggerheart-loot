@@ -18,7 +18,7 @@ export const ZOOM_MAX = 4;
 
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
-/** Returns the square a `w` x `h` picture shows at `zoom` around the centre `(cx, cy)`:
+/** Returns the square a `w` x `h` picture shows at `zoom` around the center `(cx, cy)`:
  *  its side is the short side over the zoom, and the square stays inside the picture. */
 export function cropRect(w: number, h: number, zoom: number, cx: number, cy: number): ArtRect {
   const side = Math.min(w, h) / clamp(zoom, 1, ZOOM_MAX);

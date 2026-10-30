@@ -3,7 +3,7 @@
 
   These live here rather than inside the build script so that the test can
   regenerate them into memory and compare against what is on disk: a stale
-  catalogue is worse than no catalogue, because nothing about it looks wrong.
+  catalog is worse than no catalog, because nothing about it looks wrong.
 
   Run `node tools/build.js` after editing data.js.
 */
@@ -147,7 +147,7 @@ function csvOf(L, head) {
 }
 
 /* One row per record, every column an agent needs to answer "give me tier 1-2
-   physical armour and primary weapons" without parsing all of data.json. */
+   physical armor and primary weapons" without parsing all of data.json. */
 function catalogCsv(L) {
   return csvOf(L, CSV_HEAD);
 }

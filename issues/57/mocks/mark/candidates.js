@@ -43,5 +43,12 @@ window.MARKS = [
     name: 'F. The gem',
     why: 'A cut gem is treasure in one shape, and its facets read cleanly from 16 px to 512 px.',
     cost: "The side view of a brilliant is the Sketch app's logo shape; it reads as a design tool before it reads as loot."
+  },
+  {
+    id: 'shipped',
+    file: '../../../../app/public/icons/favicon.svg',
+    name: 'B as shipped (favicon.svg)',
+    why: 'Batch 2 evidence: the shipped favicon at every size it ships at.',
+    cost: 'Below 32 px the keyhole is a dot, as candidate B.'
   }
 ];

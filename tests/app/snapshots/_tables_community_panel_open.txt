@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -44,8 +42,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Фильтры" [expanded=true]
     StaticText "90"
     ... StaticText x18 of 22 same-shape siblings elided
-    button "Великородное" [pressed=false]
-    ... button x6 of 10 same-shape siblings elided
+    ... button x7 of 11 same-shape siblings elided
     button "Кочевое" [pressed=false]
     button "Лесное" [pressed=false]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
@@ -162,6 +159,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Сфера Пространственной ТюрьмыВы можете заключить существо разме... [namelen=172 namehash=a3635eee]
 9Тотем Горного ЗверяОдин раз за продолжительный отдых вы можете ... [namelen=247 namehash=f5dc74b8]
 9Шахматы АрхивариусаВо время отдыха вы можете использовать этот ... [namelen=175 namehash=f834f89b]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -179,6 +177,7 @@ daggerheart.com
 Банка Направляющего Света
 Биолюминесцентные Перчатки
 Браслет Воровского Перезвона
+Бросок
 Бутылка Ветра
 Великородное
 Венец Живых Лоз
@@ -197,7 +196,6 @@ daggerheart.com
 Зачарованные Ножны
 Инструменты Навигатора
 К содержимому
-Как это работает
 Клык Пещерного Паука
 Кодекс Догматичных Установлений
 Козьи Сапоги
@@ -231,8 +229,7 @@ daggerheart.com
 Оберег Удачного Рога
 Обученная Посыльная Птица
 Обученный Благородный Скакун
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Переносная Астролябия
 Переносной Мост
 Переулочная Окарина
@@ -298,22 +295,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/community_items]
   link "Skip to content" [url=/en/tables/community_items#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -336,8 +331,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/community_item
     button "Filters" [expanded=true]
     StaticText "90"
     ... StaticText x18 of 22 same-shape siblings elided
-    button "Highborne" [pressed=false]
-    ... button x6 of 10 same-shape siblings elided
+    ... button x7 of 11 same-shape siblings elided
     button "Wanderborne" [pressed=false]
     button "Wildborne" [pressed=false]
     button "Copy a link to this section" [description=Copy a link to this section]
@@ -361,7 +355,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/community_item
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Bufonidus' Crystal SphereBy spending 1 Hope, you may roll a d2... [namelen=117 namehash=480cd2fd]
@@ -454,6 +448,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/community_item
 9Mantle of the BackstreetsWhile wearing this mantle in an urban ... [namelen=239 namehash=01e0f932]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Totem of the Ridge BeastOnce per long rest, you may activate th... [namelen=237 namehash=f5f8099c]
+?Help
 Alleyway Ocarina
 Alt. tables
 Arazo's Artifacts
@@ -508,7 +503,6 @@ Highborne
 Hope & Fear
 Horn of Nobility
 Horned Helm
-How this works
 Install as an app
 Kraken's Call Flute
 Lantern of the Depths
@@ -518,6 +512,7 @@ List
 Little Forest Spirit
 Living Puppets
 Loaded Cards and Dice
+LootDaggerheart
 Loreborne
 Lover's Earrings
 Lucky Horn Charm
@@ -533,7 +528,7 @@ Menacing Standard
 Meteoric-Tipped Arrows and Bolts
 Moonseed Lantern
 Navigator's Tools
-Open this section on start
+Open on start
 Orderborne
 Orderborne Tabard
 Other
@@ -548,6 +543,7 @@ Returning Coin
 Ridgeborne
 Ring of Wild Beasts
 Ring of the Small Explorer
+Roll
 Royal Brooch
 Sage's Ink
 Sap Liquor
@@ -562,7 +558,6 @@ Skip to content
 Slyborne
 Sparrow's Compass
 Spider Silk Spool
-Standard rules
 Supplements
 Tables
 Terms of use
@@ -584,4 +579,3 @@ Whispering Skillet
 Wildborne
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

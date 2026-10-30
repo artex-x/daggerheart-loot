@@ -1681,7 +1681,7 @@ describe('/tables/: a catalog table', () => {
     assertRedirect(realm.body, SITE + '#/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
   });
 
-  it('draws the open line for a filter with no labelled group, and the plain card for an unlabelled anchor', async () => {
+  it('draws the open line for a filter with no labeled group, and the plain card for an unlabeled anchor', async () => {
     const f = await card('/tables/eq_weapon/f_tier-1');
     assert.equal(meta(f.body, 'og:description'), 'Открыть в генераторе лута');
     assertRedirect(f.body, SITE + '#/tables/eq_weapon/f_tier-1');

@@ -242,7 +242,7 @@ describe("Arazo's Artifacts over the real data", () => {
 });
 
 describe('pinning the section', () => {
-  const OFF = 'Открывать этот раздел при запуске';
+  const OFF = 'Открывать при запуске';
   const ON = 'Открывается при запуске';
   const pin = (name = OFF): HTMLElement => screen.getByRole('button', { name });
 
@@ -274,7 +274,7 @@ describe('pinning the section', () => {
 });
 
 describe('the help panel', () => {
-  const help = (): HTMLElement => screen.getByRole('button', { name: 'Как это работает' });
+  const help = (): HTMLElement => screen.getByRole('button', { name: 'Справка' });
 
   it('is folded until it is asked for', () => {
     render(App, { env: at('#/roll/wondrous') });
@@ -376,26 +376,24 @@ describe('the record over the page', () => {
   });
 });
 
-describe('the supplements panel', () => {
-  const panel = (): HTMLElement | null =>
-    screen.queryByRole('navigation', { name: 'Дополнения' });
+describe('the mode row on a roll page', () => {
+  const modes = (): HTMLElement | null =>
+    screen.queryByRole('navigation', { name: 'Режим броска' });
 
-  it.each(SUPPLEMENTS)('draws under the heading of %s, its own chip the current page', (s) => {
+  it.each(SUPPLEMENTS)('lights the supplements button on %s and draws no chip panel', (s) => {
     render(App, { env: at(`#/${s}`) });
-    const nav = panel();
+    const nav = modes();
     expect(nav).not.toBeNull();
-    const links = within(nav as HTMLElement).getAllByRole('link');
-    expect(links).toHaveLength(7);
-    expect(
-      links
-        .filter((a) => a.getAttribute('aria-current') === 'page')
-        .map((a) => a.getAttribute('href'))
-    ).toEqual([sectionHash(s).slice(1)]);
+    const lit = (nav as HTMLElement).querySelector('[aria-current="page"]');
+    expect(lit?.tagName).toBe('BUTTON');
+    expect(lit?.getAttribute('data-section')).toBe(sectionHash(s));
+    expect(screen.queryByRole('navigation', { name: 'Дополнения' })).toBeNull();
   });
 
-  it.each(['#/roll/std', '#/roll/alt'])('draws no panel on %s', (hash) => {
+  it.each(['#/roll/std', '#/roll/alt'])('lights its own link on %s', (hash) => {
     render(App, { env: at(hash) });
-    expect(panel()).toBeNull();
+    const lit = (modes() as HTMLElement).querySelector('[aria-current="page"]');
+    expect(lit?.getAttribute('href')).toBe(hash.slice(1));
   });
 });
 

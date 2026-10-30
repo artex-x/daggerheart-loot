@@ -123,7 +123,7 @@ describe('the fake cloud', () => {
     });
   });
 
-  /* The seed's own behaviour: on the test project a sign-in and a link are
+  /* The seed's own behavior: on the test project a sign-in and a link are
      provider redirects, its user holds no Google or Discord identity, and
      there is no second seeded user (docs/specs/COVERAGE.md, "Test layers"). */
   it('signs the default user in and notifies once', async () => {

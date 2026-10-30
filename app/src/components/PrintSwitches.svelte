@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* The two print switches, colour and size, of the print bar and the item editor's
+  /* The two print switches, color and size, of the print bar and the item editor's
      print view. Both write the visit's pick on `AppState`, so a pick in one is the
      pick in the other; the default is the Display section's (docs/specs/FEATURES.md,
      "Print"). */

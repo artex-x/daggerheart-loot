@@ -178,7 +178,7 @@ describe('a dataset that did not load', () => {
 describe('the help', () => {
   it('explains what the dice are for', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
     const main = screen.getByRole('main');
     expect(within(main).getAllByText(/d12/).length).toBeGreaterThan(0);
   });

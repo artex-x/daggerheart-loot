@@ -737,7 +737,7 @@ const PRINT_SETS: SeedPrintSet[] = [
   printSet('set-markup01', [{ h: MARKUP_ID }]),
   printSet('set-clipped1', [{ h: LONG_TEXT_ID }]),
   /* gm4's item whose source and section names are 80 code points each: the wrapped
-     source line, and a colour card with no picture. */
+     source line, and a color card with no picture. */
   printSet('set-longsrc1', [{ h: LONG_SRC_ITEM_ID }]),
   /* `uuid(598)` and `uuid(599)` name no item: a deleted one. */
   printSet('set-missing1', [{ k: 'ci1' }, { h: uuid(599) }]),

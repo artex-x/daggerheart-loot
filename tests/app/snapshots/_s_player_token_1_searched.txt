@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -45,15 +43,13 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
-Дополнения
 К содержимому
 Колдующий Кинжал
 Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
 Поиск
 Сохранить себе
 Таблицы
@@ -65,16 +61,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
   link "Skip to content" [url=/en/s/player-token-1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -98,24 +92,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
 Casting Dagger
 Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
 EN
 Filters
 Install as an app
+LootDaggerheart
 Privacy
 RU
+Roll
 Save to my lists
 Search
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

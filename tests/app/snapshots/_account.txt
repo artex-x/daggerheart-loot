@@ -13,9 +13,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -40,15 +38,13 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
 Войти через Discord
 Войти через Google
-Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
 Поиск
 Таблицы
 Условия использования
@@ -60,16 +56,14 @@ daggerheart.com
 RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account]
   link "Skip to content" [url=/en/account#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -88,24 +82,22 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
 EN
 Install as an app
+LootDaggerheart
 Privacy
 RU
+Roll
 Search
 Sign in
 Sign in with Discord
 Sign in with Google
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
 privacy policy
 terms
-ЛутDaggerheart

@@ -32,7 +32,7 @@ leaving the session. The players read and keep what they received.
 
 ## Positioning
 
-The catalogue, the rolls and the print layout run on the client. Lists are
+The catalog, the rolls and the print layout run on the client. Lists are
 account lists since R10 (`docs/decisions/`, 2026-10-28): a signed-in person
 keeps them in the one backend, and a share link (`/s/<token>`) opens a list for
 the players without an account and without tracking. The product carries every
@@ -50,7 +50,7 @@ generator cannot copy cheaply.
 | Session preparation | GM: laptop or desktop about 80%, phone about 20% | browses tables, filters, searches, builds a list, prints cards |
 | Live session | GM: laptop about 80%, phone about 20%; players: phone about 80% | the GM rolls a mode, reads the result, adds it to a list, shares the link; a player opens the link |
 | Play and after play | players: phone about 80%, laptop about 20% | opens a shared list, reads records, keeps the list as an inventory |
-| Table handout | paper | the players read printed cards at the table: nine 63x88 mm cards per A4 sheet, in colour or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
+| Table handout | paper | the players read printed cards at the table: nine 63x88 mm cards per A4 sheet, in color or in black and white, or sixteen 44x63 mm on the opt-in compact sheet |
 
 The app is served over HTTP only; running from `file://` was retired on
 2026-09-24 (`docs/DECISIONS.md`).
@@ -105,9 +105,9 @@ The app is served over HTTP only; running from `file://` was retired on
 
 - 1459 records, each with a name, a description, a stat line where it has one,
   and an illustration. 1078 items and consumables, 381 pieces of equipment.
-- Published machine-readable artefacts: `catalog-index.csv`, `catalog.csv`,
+- Published machine-readable artifacts: `catalog-index.csv`, `catalog.csv`,
   `data.json`, `llms.txt`, `schema/import-v1.json`.
-- Behaviour specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,
+- Behavior specifications in `docs/specs/`, decisions in `docs/DECISIONS.md`,
   artwork provenance in `docs/provenance/`.
 - Randomness is measured, not claimed: chi-square results and per-face skew are
   recorded in the README.

@@ -1,6 +1,6 @@
 # Generated data, not authored: node tools/build.js writes these, and
 # reformatting a machine-written file produces an unreadable diff for no
-# behaviour change.
+# behavior change.
 data.js
 data.json
 catalog.csv
@@ -15,7 +15,7 @@ card/
 # hand-authored, flat, no indentation, HTML5-style void elements with no
 # trailing slash. Prettier's HTML formatter would indent every line and add
 # a self-closing `/>` to every `<meta>`/`<link>` - a ~60-line diff for no
-# behaviour change, same reasoning as the generated files above even though
+# behavior change, same reasoning as the generated files above even though
 # neither of these two is generated.
 app/index.html
 404.html
@@ -69,5 +69,5 @@ supabase/.branches/
 .claude/worktrees/
 
 # Markdown is wrapped by hand: in the READMEs and specs a line break carries
-# meaning, and the licence notice has to stay on one line (tests/derived.js pins it).
+# meaning, and the license notice has to stay on one line (tests/derived.js pins it).
 *.md

@@ -14,14 +14,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "EN" [pressed=false]
     button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=fac0a146]
     searchbox "Поиск по названию или описанию..." [value=узоролист focused=true]
     StaticText "ТИП"
@@ -46,13 +44,11 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Альт. таблицы
-Дополнения
+Бросок
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Предметы
 Расходники
@@ -67,21 +63,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm4]
   link "Skip to content" [url=/en/search?as=gm4#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=764fdaa6]
     searchbox "Search by name or description..." [value=узоролист focused=true]
     StaticText "TYPE"
@@ -99,26 +93,24 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm4]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Account: gm4@example.test
-Alt. tables
 Consumables
 EN
 Equipment
 Install as an app
 Items
-Open this section on start
+LootDaggerheart
+Open on start
 Patternleaf Scroll
 Patternleaf ScrollOnce per rest: unroll the scroll, and the patt... [namelen=218 namehash=257bc437]
 Privacy
 RU
+Roll
 Search
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

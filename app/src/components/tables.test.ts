@@ -1,7 +1,7 @@
 /* The plain table: chip nav, the toolbar, rows and tiles, selection, and a row
  * opening the record modal.
  *
- * Held against a small fixture rather than the real catalogue: what matters
+ * Held against a small fixture rather than the real catalog: what matters
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
@@ -69,7 +69,7 @@ const LOOT: Loot = {
       row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: ['ci3'] }),
       row({ id: 'ci3', roll: 3, ru: 'Плащ Бездны' }),
       /* No roll: it is equipment, so it carries a stat line instead - and its
-         description is two blocks, a labelled line then a labelled list item,
+         description is two blocks, a labeled line then a labeled list item,
          to reach both shapes a row draws. */
       row({
         id: 'ci4',
@@ -119,7 +119,7 @@ const LOOT: Loot = {
     starting: [
       row({ id: 's1', src: 'core', kind: 'item', starting: true, ru: 'Стартовый предмет' })
     ],
-    /* One more frame-sourced record, an armour, so the equipment `src` facet
+    /* One more frame-sourced record, an armor, so the equipment `src` facet
        row has a frame to offer alongside the books - f1 and f2 stay as they
        were for the plain sectioned-body tests above. */
     frames: [
@@ -148,7 +148,7 @@ const LOOT: Loot = {
     ]
   },
   /* Weapons of all four tiers with both burdens and both classes, a
-     secondary weapon, and an armour - enough to exercise every facet row the
+     secondary weapon, and an armor - enough to exercise every facet row the
      equipment tables offer and every one of their four tier sections. */
   eq: [
     row({
@@ -263,7 +263,7 @@ describe('the index', () => {
     ).toBeNull();
   });
 
-  it('splits a labelled line and a labelled list item into a name and a body', () => {
+  it('splits a labeled line and a labeled list item into a name and a body', () => {
     render(App, { env: at() });
     expect(screen.getByText('Свойство:')).toBeInTheDocument();
     expect(screen.getByText('Хват:')).toBeInTheDocument();
@@ -992,7 +992,7 @@ describe('the equipment tables', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('drops a tier with no rows - armour has none in tier 3 or 4', () => {
+  it('drops a tier with no rows - armor has none in tier 3 or 4', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
     });
@@ -1006,13 +1006,13 @@ describe('the equipment tables', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    /* The pool is every weapon in the catalogue, not only `eq`: `ci4` under
+    /* The pool is every weapon in the catalog, not only `eq`: `ci4` under
        `core_item` carries a weapon stat block too, so the count is one more
        than `eq`'s own four weapon rows. */
     expect(container.querySelector('.fcount')).toHaveTextContent('5');
   });
 
-  it('draws only the fields the rows can narrow: six on weapons, two on armour, none on one secondary', async () => {
+  it('draws only the fields the rows can narrow: six on weapons, two on armor, none on one secondary', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
@@ -1165,7 +1165,7 @@ describe('the equipment tables', () => {
     expect(screen.getByRole('button', { name: /Фильтры \(1\)/ })).toBeInTheDocument();
   });
 
-  it('a group the table does not offer leaves it whole - burden on armour', () => {
+  it('a group the table does not offer leaves it whole - burden on armor', () => {
     render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_armor/f_burden-2'),
@@ -1684,7 +1684,7 @@ describe('a dataset that did not load', () => {
 describe('the help', () => {
   it('explains the two things that stand apart from the books', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
     expect(screen.getByText(/срезы через все книги сразу/)).toBeInTheDocument();
   });
 });

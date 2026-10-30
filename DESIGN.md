@@ -1,6 +1,6 @@
 ---
 name: Daggerheart Loot Generator
-description: A dark bilingual catalogue of 1459 Daggerheart records, with one gold accent that marks only what was chosen.
+description: A dark bilingual catalog of 1459 Daggerheart records, with one gold accent that marks only what was chosen.
 colors:
   seal-gold: "#d8ab5e"
   seal-gold-soft: "#f0d091"
@@ -193,14 +193,14 @@ ink, almost black, with one linear ground at the top of the page: Vault Ink
 Deep at the top edge that becomes Vault Ink 520px down and scrolls with the
 page. On that ground sit the index cards: panels, record cards and table rows,
 each one a slightly lighter violet plate inside a single hairline seam. Every
-artefact carries a coloured tag that says what kind of thing it is, and a
+artifact carries a colored tag that says what kind of thing it is, and a
 numbered seal in tabular figures that says where it stands in its book. Gold is
 the seal wax. It appears on the thing a person has chosen, and almost nowhere
 else.
 
 The mood is quiet, exact and solemn. Nothing here is staged: the type scale is
 small and even, the contrast values were measured rather than guessed, and the
-one accent is rationed. The catalogue holds 1459 records in two languages, so
+one accent is rationed. The catalog holds 1459 records in two languages, so
 density is a requirement, not a preference. The design earns its ceremony from
 the numbering and the tagging, which are real information, and never from
 ornament.
@@ -224,7 +224,7 @@ the two disagree, the code is right and this file is stale.
 
 **Key Characteristics:**
 
-- One accent colour, spent only on the chosen thing.
+- One accent color, spent only on the chosen thing.
 - A five-hue tag system that lives on badges alone.
 - Tonal depth from a four-step surface ramp, plus exactly one shadow.
 - One self-hosted UI face, Source Sans 3, with tabular figures.
@@ -239,7 +239,7 @@ the two disagree, the code is right and this file is stale.
 ## Colors
 
 A near-monochrome violet ground carrying one warm accent, five categorical tags,
-and a two-colour duality pair. Every colour outside the neutrals has one job.
+and a two-color duality pair. Every color outside the neutrals has one job.
 
 ### Primary
 
@@ -249,27 +249,27 @@ and a two-colour duality pair. Every colour outside the neutrals has one job.
 - **Seal Gold Soft** (`#f0d091`): gold as text. Links in prose, the lit tab
   label, a filter pill's label. It exists because a gold fill
   needs dark ink on it, while gold text needs to be lighter than that fill.
-- **Ink on Gold** (`#1a1206`): the only colour printed on a gold fill. Darker
+- **Ink on Gold** (`#1a1206`): the only color printed on a gold fill. Darker
   than any page surface, chosen against the gold specifically.
 
 ### Secondary
 
 The five kind tags. They sit roughly evenly around the wheel with at least 49
 degrees between any two, so no tag reads as a paler version of another.
-Lightness alone was tried and was not enough to tell steel armour from an
+Lightness alone was tried and was not enough to tell steel armor from an
 ordinary item.
 
 - **Relic Blue** (`#7a8ee0`): items.
 - **Philtre Green** (`#9ec96a`): consumables.
 - **Forge Copper** (`#d48e6a`): primary weapons.
 - **Sigil Rose** (`#cf7fa6`): secondary weapons.
-- **Patina Teal** (`#5ec9c4`): armour.
+- **Patina Teal** (`#5ec9c4`): armor.
 
 ### Tertiary
 
 - **Hope Amber** (`#e9b949`) and **Fear Violet** (`#8a72d6`): the two duality
-  dice. They colour the badge and the focus glow of the die they belong to, on
-  the alternate tables only. This is the one place where a colour other than
+  dice. They color the badge and the focus glow of the die they belong to, on
+  the alternate tables only. This is the one place where a color other than
   Seal Gold reaches a focus treatment, because the glow says which die the
   person is changing.
 - **Alarm Red** (`#e0685f`): destructive actions and the error toast.
@@ -308,11 +308,11 @@ are Ash Violet and underlined. The site share cards spend gold on the star
 alone.
 
 **The Tag Rule.** The five kind hues live on the badge and nowhere else. A stat
-line stays secondary text. A row does not take a kind colour, and neither does a
-card border. The tag is the only place a category becomes a colour.
+line stays secondary text. A row does not take a kind color, and neither does a
+card border. The tag is the only place a category becomes a color.
 
 **The Ink Rule.** Text on a gold fill is Ink on Gold (`#1a1206`), never a page
-surface colour and never white.
+surface color and never white.
 
 ## Typography
 
@@ -327,7 +327,7 @@ system stack), until the print batch decides it.
 **Character:** One neutral workhorse family does everything, and a monospace
 face is reserved for values a person types or counts. The pairing has no voice of its own on purpose. The
 record names and the artwork carry the setting; the interface type carries the
-catalogue.
+catalog.
 
 ### Hierarchy
 
@@ -378,13 +378,16 @@ font request outside `/assets/`. The print card keeps its local stack
 ## Layout
 
 One width governs everything: `--wrap: min(1180px, 100% - 32px)`. The header
-bar, the tab strip, `main` and the footer all take it, so the brand, the lit tab
-and the first word of the page share a left edge at every viewport. The 32px
+bar, the job row, the mode row, `main` and the footer all take it, so the brand,
+the first mode control and the first word of the page share a left edge at every
+viewport. The 32px
 subtraction is the gutter, and `viewport-fit=cover` plus `env(safe-area-inset-*)`
 keeps the selection bar clear of a display cutout.
 
 The page is a vertical stack: a sticky translucent header (`rgb(14 12 21 / 86%)`
-over a 14px backdrop blur), the tab strip, the content, then the footer. `main`
+over a 14px backdrop blur) that holds the brand row and the three jobs (63px from
+761px, 111px at 360px), the mode row on the nine roll pages (53px, scrolling with
+the page), the content, then the footer. `main`
 carries 26px of top padding, 48px of bottom padding, and a 60vh minimum so a
 short route does not collapse. `scrollbar-gutter: stable` on `html` reserves the
 scrollbar whether a route needs one or not; without it a short page after a long
@@ -400,14 +403,24 @@ so a one-field panel has no trailing gap.
 **The One Width Rule.** Anything that spans the page takes `var(--wrap)`. A new
 full-width element does not invent its own container or its own gutter.
 
-**The Two Breakpoints Rule.** The system has two. At 640px the tab strip stops
-wrapping and becomes a horizontal scroller that keeps the current tab centred.
-Above it the five tabs hold one row at 768px and 1180px in both languages (six tabs
-measured 607px in Russian before R10), so the header stays 106px.
-At 600px touch targets grow: segment padding to 8px 14px, the section copy-link
-button from about 20px to a 36px hit area, row actions onto their own line.
-Every other media query in the code belongs to one component and its own
-measured problem. Do not add a third system breakpoint.
+**The Two Breakpoints Rule.** The system has two, and a third step for the header.
+From 761px the brand, the three jobs, the language switch and the account
+control share one row, and the page head's pin and «Справка» show their labels;
+the sticky header is 63px. Up to 760px the jobs take a second row and the
+header is 111px at 360px in both languages (at most 112px). At 600px touch
+targets grow: segment padding to 8px 14px, the section copy-link button from
+about 20px to a 36px hit area, row actions onto their own line, the mode row's
+controls 40px tall. Every other media query in the code belongs to one
+component and its own measured problem. Do not add another system breakpoint.
+
+**The Same Label Rule.** A label does not change with the width, and a control
+is never only an icon where its label fits: the three jobs keep their labels at
+360px, the signed-out account control keeps «Войти» / "Sign in" at every width,
+and the pin and the help are labelled buttons («Открывать при запуске» /
+"Open on start", «Справка» / "Help"). The one interim exception: up to 760px
+the pin and the help stay round buttons with the same names until their page's
+batch moves them into «Ещё» or «Настроить» (the tables, the roller, homebrew,
+search and the account, and the lists).
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
@@ -463,7 +476,7 @@ number field, focus ring), 8px for a compact control (small button, filter pill,
 icon button), 6px for a tag, and 999px for anything that is one choice in a row
 (a chip, a segment, the toast).
 
-Borders are one pixel and a seam colour, except where a border states something:
+Borders are one pixel and a seam color, except where a border states something:
 a gold-tinted border marks a filter that has a value, a dashed border marks a
 property rather than a category (the unique tag), and a border at about 45 per
 cent alpha echoes its own tag's hue.
@@ -500,9 +513,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Icons:** every icon inside a button renders at 15px whatever its own
   attributes say. Dice are the single exception and keep their own silhouette,
   because squaring them makes a d4 look heavier than a d20.
-- **Icon and label:** an icon and its label share one centre: the control is
+- **Icon and label:** an icon and its label share one center: the control is
   `inline-flex` with `align-items: center`, the icon sits in one square box,
-  and one gap separates the two. The icon's centre is within 1px of the centre
+  and one gap separates the two. The icon's center is within 1px of the center
   of the label's first line box (`tests/app/typo.js` measures the three
   neutral switches at 360 and 1180).
 
@@ -519,6 +532,9 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Semantics:** a chip that navigates is an anchor carrying `aria-current`; a
   chip that toggles is a button carrying `aria-pressed`. Middle-click keeps
   working on the navigating kind.
+- **Mode row:** the roll pages' three mode controls take the chip's look; at
+  600px and below they share the row, 40px tall, and a long name takes two
+  lines.
 
 ### Segmented control
 
@@ -527,7 +543,7 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Chosen:** Seal Gold fill, Ink on Gold label, for a choice that narrows the
   view.
 - **Neutral pressed:** a mode toggle (the language switch, the tables list or
-  grid switch, the print colour or black-and-white switch) passes `neutral`:
+  grid switch, the print color or black-and-white switch) passes `neutral`:
   the pressed button takes the `check` icon before its label, a Vault Wall Lit
   fill, a Chalk label and a lit `--muted2` border, and no gold.
 - Every button carries `aria-pressed`, including the ones whose original did
@@ -547,7 +563,7 @@ means "a thing". Do not round a card to a pill or square a chip.
   technology. Armor is a shield, a weapon is crossed swords, a consumable is a
   flask, and any other item is a gem (`kindGlyph`). A record with no picture,
   or a broken one, shows the glyph alone; a picture that loads covers it. No
-  surface draws a placeholder picture; the colour print card draws the glyph
+  surface draws a placeholder picture; the color print card draws the glyph
   on a light well (`#ebe7f0`, glyph `#3a3350`).
 - **Entrance:** a 0.28s `pop` (10px up, 0.985 to 1) on
   `cubic-bezier(0.2, 0.8, 0.3, 1)`, cancelled under reduced motion.
@@ -571,29 +587,34 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Number field:** a 46px row holding a 74px monospace input at 19px weight 650
   between two 40px steppers.
 - **Focus:** border to Seal Gold plus a 3px gold glow at 14 per cent. On the
-  duality fields the glow takes that die's own colour instead.
+  duality fields the glow takes that die's own color instead.
 
 ### Navigation
 
-- **Tabs:** six real links (five from 2026-10-26 with sign-in) at 14px weight
-  560 in Ash Violet, each with a 2px transparent bottom border. The current
-  route turns that border gold and the label Seal Gold Soft. Rolling and
-  browsing are separated by `margin-left: auto`, not by a divider. One tab,
-  «Дополнения», stands for the seven supplement sections and is lit on each; the
-  page under it draws a panel of chips, one per supplement, the open one gold,
-  as the tables page draws its group chips. Below 640px three of those chips,
-  and the same three in the tables book row, show a short form of their source
-  name ("Wondrous", "Dread", "Dragon's Vault") with the full name as their
-  accessible name; no other breakpoint is added.
-- **Header:** sticky, translucent, blurred, with a one-pixel seam under it.
-- **Brand:** a gold star glyph with a 35 per cent gold drop shadow beside a
-  two-line wordmark. The wordmark is never translated.
+- **Jobs:** three real links, «Бросок» / "Roll", «Таблицы» / "Tables" and
+  «Поиск» / "Search", each with its icon before the label (the die, the table,
+  the magnifier), at 14px weight 560 in Ash Violet with a 2px transparent bottom
+  border. The lit job turns that border gold and the label Seal Gold Soft.
+  «Бросок» stands for the nine roll pages and opens the last one of the tab.
+- **Mode row:** under the sticky header on the nine roll pages only, scrolling
+  with the page: «Обычные правила», «Альтернативные таблицы» and the menu button
+  «Дополнения ▾», which shows the open supplement's name. The controls compose
+  the chip's tokens; the lit one takes the Seal Gold fill of the current place.
+  The menu under the button lists the seven supplements, 44px items, the open
+  one with a check; no sheet and no grab handle.
+- **Header:** sticky, translucent, blurred, with a one-pixel seam under it; 63px
+  from 761px, 111px at 360px.
+- **Brand:** the vault die - a d12 decagon in Seal Gold with a Seal Gold Soft
+  face and a keyhole cut through it, with a 35 per cent gold drop shadow -
+  beside a two-line wordmark: «Лут» in Russian, «Loot» in English, over
+  «DAGGERHEART». The wordmark follows the language in the header only; the tab
+  title and the manifest keep their names. The same mark is the favicon, the
+  app icon and the share cards' mark (`docs/artwork.md`, "Icons").
 - **Account control:** 8px after the language switch, on the switch's own
   track - a person glyph and «Войти» signed out, a gold-soft initial in a
-  38px circle signed in, with the gold ring on the account page, where no
-  tab is lit.
-- **Narrow:** below 640px the strip scrolls horizontally with the current tab
-  scrolled to centre, and its scrollbar is hidden.
+  circle with a chevron signed in, with the gold ring on the account pages
+  (the account, the lists and «Мои предметы»), where no job is lit, and while
+  its menu is open.
 
 ### Filter pills
 
@@ -604,9 +625,11 @@ means "a thing". Do not round a card to a pill or square a chip.
 
 ### Toast
 
-- **Style:** a fixed gold pill 26px off the bottom, centred, with the Float
-  shadow, entering on a 0.2s rise. The error flavour is Alarm Red with white
-  text. The action flavour holds a darkened inline button.
+- **Style:** a fixed plate 26px off the bottom, centered: Vault Wall fill, a
+  1px Ash Violet Low (`--muted2`) border, Chalk text, `--r` corners and the
+  Float shadow, entering on a 0.2s rise. No toast is gold. The error flavor is
+  the Alarm Red fill with Ink on Gold text (about 5.6:1). The action flavor
+  holds a Vault Wall Lit button with a Seam Lit border.
 - **Width:** as wide as its text, at most the window less 16px a side; a long
   name wraps inside it, so it stays a few lines high at 360px.
 - It is a `popover="manual"` element so it survives the inertness of a native
@@ -620,7 +643,7 @@ The second world. A print card is 63x88 mm of white paper inside a 0.4mm dashed
 every dimension is written in `cqw`, so the composition scales with the card
 rather than with the viewport. The artwork fills a square region at the top,
 masked to fade at both edges, over a blurred and darkened copy of itself. A
-colour card with no picture draws the kind glyph in dark ink on a light well,
+color card with no picture draws the kind glyph in dark ink on a light well,
 where Figma node `714-42387` leaves blank paper. The
 tier plate and the burden mark sit at fixed `cqw` offsets. Text is fitted by
 measuring the rendered box, which is why reduced motion sets transition duration
@@ -638,11 +661,11 @@ damage strip's cells sit between the ribbon's own dividers and ornament
 lines, so the ribbon frames every label and value instead of crossing it.
 Labels print in tracked capitals and values as the data writes them, so case
 tells the two apart. Each threshold arrow grows from its box's right notch:
-a dark arrow in a gold rim that continues the frame in colour, a solid black
+a dark arrow in a gold rim that continues the frame in color, a solid black
 arrow in black and white.
 
-Colour and black-and-white are two distinct layouts, not one layout with the
-colour removed. The vectors the two layouts share in shape (the tier banner, the
+Color and black-and-white are two distinct layouts, not one layout with the
+color removed. The vectors the two layouts share in shape (the tier banner, the
 threshold box, the ribbons, the dice) are drawn inline from the exported files'
 paths and take each layout's paints from `card-vectors.css`; the editor's
 preview draws the card larger by multiplying its `mm` and `pt` values, never by
@@ -671,17 +694,17 @@ a transform.
 ### Don't:
 
 - **Don't** drift toward a neon dark mode: no saturated purple or cyan glow, no
-  gradient text, no coloured drop shadow. The ground is violet, which makes this
+  gradient text, no colored drop shadow. The ground is violet, which makes this
   a short slide, and the palette's restraint is what keeps 1459 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
   rounded cards, no illustrated empty states, no marketing gradient. The density
   these tables need is the opposite of that language.
 - **Don't** add a second shadow step, a third system breakpoint, or a sixth
   radius.
-- **Don't** move a control on hover. Hover changes colour and border, never
+- **Don't** move a control on hover. Hover changes color and border, never
   position or scale.
 - **Don't** link a font service or load a font from another origin. The one
   UI face comes from the build's own `/assets/`.
-- **Don't** put a kind colour on a row, a card border, or body text.
-- **Don't** set white text on a gold fill. Ink on Gold is the only text colour
+- **Don't** put a kind color on a row, a card border, or body text.
+- **Don't** set white text on a gold fill. Ink on Gold is the only text color
   there.

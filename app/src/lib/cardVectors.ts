@@ -1,20 +1,20 @@
-/* The print card's vectors that the colour and the black-and-white layouts share one
+/* The print card's vectors that the color and the black-and-white layouts share one
  * geometry for (docs/specs/FEATURES.md, "Print"): each shape's `viewBox`, its paths and
  * the gradient line of each paint slot, read from the files Figma exported into `card/`
  * (nodes 714-42387 and 3773-90792). `CardVector.svelte` draws them inline and
- * `styles/card-vectors.css` colours each slot per layout, so one drawing serves both.
+ * `styles/card-vectors.css` colors each slot per layout, so one drawing serves both.
  *
- * Every `d` is the file's own, and `tests/derived.js` pins each shape to its colour, magic
+ * Every `d` is the file's own, and `tests/derived.js` pins each shape to its color, magic
  * and black-and-white files; the dice take their paths from `DIE_ART` (one copy). A pair
  * whose files differ in shape is not folded and stays two files drawn by `<img>`:
- * `shield`, `burden-1` and `burden-2` (docs/decisions, "The print card recolours its
+ * `shield`, `burden-1` and `burden-2` (docs/decisions, "The print card recolors its
  * exported vectors with CSS; the files stay published").
  *
  * Pure module: no DOM. */
 
 import { DIE_ART } from './dice.js';
 
-/** Which layout paints a shape: the colour card, a magic weapon's die on it, or black
+/** Which layout paints a shape: the color card, a magic weapon's die on it, or black
  *  and white. */
 export type VectorPaint = 'colour' | 'mag' | 'bw';
 
@@ -193,7 +193,7 @@ function die(faces: number): CardVectorShape {
   };
 }
 
-/** A folded shape, by the file name its colour layout exports. */
+/** A folded shape, by the file name its color layout exports. */
 export type VectorName = keyof typeof FLAT | `die-d${4 | 6 | 8 | 10 | 12 | 20}`;
 
 /** Every folded shape. */

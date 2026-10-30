@@ -583,7 +583,7 @@ export function fetchReader(root, timeoutMs = 15_000) {
  *  (the `--dir` steps of ci.yml's `deploy` and `deploy-replay`). Emulates
  *  only the one Pages rule this file's checks depend on: a path that is not
  *  on disk is served as 404.html's content with a 404 status - not GitHub
- *  Pages' missing-path behaviour in
+ *  Pages' missing-path behavior in
  *  general, which measurably diverges from this locally (an extensionless
  *  path is 200 live but 404 here; a directory path throws `EISDIR`; a
  *  case-insensitive filesystem 200s where Pages 404s). None of that matters

@@ -108,7 +108,7 @@ export interface Equip {
   /** Burden: 1 one-handed, 2 two-handed, 'any' either way (the book prints
    *  both; the print card draws the one-handed mark captioned `1/2`). */
   bu?: 1 | 2 | 'any';
-  /** Armour Score and base thresholds - armour only. */
+  /** Armor Score and base thresholds - armor only. */
   as?: number | null;
   /** Minor and major damage thresholds - the pair the data actually carries. */
   th?: readonly [number, number] | null;

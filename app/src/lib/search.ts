@@ -1,4 +1,4 @@
-/* Search across the whole catalogue.
+/* Search across the whole catalog.
  *
  * Both languages at once, deliberately: a table running in Russian still gets a
  * hit on the English name someone typed off a book, and the reverse. Names,
@@ -8,7 +8,7 @@
  * A query is words in any order: each word must hit one field of the record,
  * as typed (a substring, as before) or as another form of the same word. Word
  * forms come from the Snowball stemmers (`@orama/stemmers`), checked on both
- * sides: the catalogue word must start with the query's stem and reduce to
+ * sides: the catalog word must start with the query's stem and reduce to
  * the same stem, so «зелёный» (stem "зелен") never answers "зелье" (stem
  * "зел"). A phrase in quotes matches as typed, with no word forms.
  *
@@ -85,7 +85,7 @@ function foldLatinDiacritics(s: string): string {
  * `Ethereal Zweihänder`/`Möbius Orb` were shown unreachable by ordinary
  * typing), and the Unicode minus sign (U+2212, which 113 descriptions use)
  * reads as the ASCII `-` a keyboard types, so `-1` finds them. Applied to
- * both the query and the catalogue. Still no `й`/`и` merge - see
+ * both the query and the catalog. Still no `й`/`и` merge - see
  * `foldLatinDiacritics`'s comment.
  */
 export function foldQuery(s: string): string {
@@ -215,12 +215,12 @@ function partsOf(it: Record_, statLine: StatLine): HayParts {
 /**
  * Builds a per-record folded haystack, memoised by record.
  *
- * Folding is the expensive part: refolding the catalogue cost 2.74ms per
+ * Folding is the expensive part: refolding the catalog cost 2.74ms per
  * keystroke when the match was one substring, against 0.33ms with the folded
  * fields cached. With words, stems and ranking a warm query costs 1-6ms for
- * the catalogue and 300 own items in Node (measured 2026-10-02). `matches` without a
+ * the catalog and 300 own items in Node (measured 2026-10-02). `matches` without a
  * `hay` folds live for a caller with no index to cache against; this is for
- * the callers that filter the whole catalogue on every query.
+ * the callers that filter the whole catalog on every query.
  */
 export function hayFor(statLine: StatLine): Hay {
   /* Keyed by the record object, not its id: an edited own item is a new object under
@@ -288,7 +288,7 @@ function scoreOf(p: HayParts, terms: readonly Term[]): number {
  * Records answering the query, best first. Per term, a name at a word start
  * scores 8, a name inside a word 4, a description or stat line at a word
  * start 2, inside a word 1; a record scores the sum. The sort is stable, so
- * equal scores keep the order given: the catalogue first, then own items.
+ * equal scores keep the order given: the catalog first, then own items.
  */
 export function rankHits(
   records: readonly Record_[],
@@ -309,7 +309,7 @@ export function rankHits(
  * Records answering the query, in the order they were given.
  *
  * An empty query returns nothing rather than everything: the search page with
- * no query typed is an invitation, not a dump of the whole catalogue.
+ * no query typed is an invitation, not a dump of the whole catalog.
  */
 export function search(
   records: readonly Record_[],

@@ -87,7 +87,7 @@ guard() {
   # makes against the live URL, made here first against the local copy.
   for f in og/_share.jpg og/_share_en.jpg img/ci1.webp img/thumb/ci1.webp \
            card/die-d12-bw.svg i/w1.html i/en/w1.html en/index.html \
-           icons/maskable-512.png; do
+           icons/maskable-512.png icons/favicon.svg; do
     if [ ! -s "_site/$f" ]; then echo "::error::$f is missing or empty"; exit 1; fi
   done
   # `i/` and `i/en/` are built output (npm run build ->

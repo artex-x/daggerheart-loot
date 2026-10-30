@@ -18,7 +18,7 @@
      into sections and offer `tier`, `frame` or `comm` on top of `kind`. The
      three equipment tables (`eq_weapon`, `eq_secondary`, `eq_armor`) are a
      second shape entirely: their pool is every piece of gear in the
-     catalogue rather than one book's rows, split into four tier sections of
+     catalog rather than one book's rows, split into four tier sections of
      their own, with up to seven facet rows - `eqKind`, `eqFacetRows` and
      `equipOfKind`/`equipFacets` are what tell that shape apart from the
      plain one below. */

@@ -1,6 +1,6 @@
 <script lang="ts">
   /* The save status of the account lists in a sub line: «Сохранено», «Сохраняем...», or
-     «Не сохранено» in the danger colour with «Повторить», which sends the write buffer again
+     «Не сохранено» in the danger color with «Повторить», which sends the write buffer again
      (docs/specs/FEATURES.md, "Lists" and "Account and browser lists"). Its words are said
      through `SyncSaid`, which the page mounts with itself. */
   import type { AppState } from '../state/app.svelte.js';

@@ -17,18 +17,23 @@ import type { Lang, Section } from './types.js';
 
 const ru = {
   /* The chrome that has no text of its own, and so has no other place to be
-     named. Without these the tab bar and the language group are unlabelled to
+     named. Without these the tab bar and the language group are unlabeled to
      a screen reader. */
   docTitle: 'Генератор лута Daggerheart',
   skipToContent: 'К содержимому',
   sectionsLabel: 'Разделы',
+  /* The roll sections' row under the header (`ModeRow.svelte`). */
+  modesLabel: 'Режим броска',
   langLabel: 'Язык',
   close: 'Закрыть',
+  /* The header's wordmark. It follows the language in the header only; the tab
+     title, the manifest and the static pages keep their own names. */
+  brandWord: 'Лут',
+  /* The first job of the header: a group of nine roll pages with no heading of its own. */
+  jobRoll: 'Бросок',
 
-  /* The sections, in `SECTIONS` order; the tab bar draws five of these words
-     and `grpSupplements`. `wondrous`, `dread` and `dv` are also the short form of
-     their supplements chip under 640 px (`tables.ts` `CHIP_SHORT`). */
-  std: 'Обычные правила',
+  /* The sections, in `SECTIONS` order. `wondrous`, `dread` and `dv` are also the short
+     form of their book chip under 640 px (`tables.ts` `CHIP_SHORT`). */
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
   dread: 'Dread',
@@ -98,7 +103,7 @@ const ru = {
   stepDown: 'На единицу меньше',
   stepUp: 'На единицу больше',
 
-  /* The licence notice, in three parts so the link is an element rather than
+  /* The license notice, in three parts so the link is an element rather than
      markup in a string. The verbatim citation lives entirely in the first
      part - tests/derived.js pins it in app.js, and it must read the same here. */
   footBefore:
@@ -146,7 +151,7 @@ const ru = {
   subMwt: 'Выберите мир и бросьте кость по нему.',
 
   /* The alternate tables. Two dice with names instead of a sum, so each one
-     is labelled and the card says which of them found it. */
+     is labeled and the card says which of them found it. */
   pageAlt: 'Альтернативные таблицы',
   subAlt: 'Бросок Костей Дуальности по объединённым таблицам обеих книг.',
   rarity: 'Редкость',
@@ -179,11 +184,11 @@ const ru = {
   voaCursed1: 'Проклятый предмет',
   unique: 'Уникальное',
   uniqueHint: 'В книге стоит одним рангом - лестницы улучшений у этой вещи нет',
-  homeHint: 'Открывать этот раздел при запуске',
+  homeHint: 'Открывать при запуске',
   /* The same button once it is on: the live app renames it rather than only
      filling it in, so a screen reader hears the state and not just the offer. */
   homeOn: 'Открывается при запуске',
-  helpHint: 'Как это работает',
+  helpHint: 'Справка',
   fieldHelp: 'Подсказка: %s',
   rollLabelFor: 'Результат броска',
   /* Singular: the chip names the book, the label above the picker asks for
@@ -1116,10 +1121,12 @@ const en: Dict = {
   docTitle: 'Daggerheart Loot Generator',
   skipToContent: 'Skip to content',
   sectionsLabel: 'Sections',
+  modesLabel: 'Roll mode',
   langLabel: 'Language',
   close: 'Close',
+  brandWord: 'Loot',
+  jobRoll: 'Roll',
 
-  std: 'Standard rules',
   alt: 'Alt. tables',
   wondrous: 'Wondrous',
   dread: 'Dread',
@@ -1177,7 +1184,7 @@ const en: Dict = {
     "Data: Daggerheart Core Set, Hope & Fear, Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, The Guide to Arazo's Artifacts, Many Worlds Tavern: Sporopolis, Wagerwood, Warrin' Warrens, Godsvale, Hornet Hold, The Drome, Community Magic Items, Alternate Loot & Consumable Tables. Russian text: daggerheart.su and custom material. Daggerheart © Darrington Press. This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at ",
   footLink: 'daggerheart.com',
   footAfter: '. There are no previous modifications by others.',
-  footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and licence',
+  footSummary: 'Daggerheart © Darrington Press - DPCGL - Sources and license',
   footNavLabel: 'Site pages',
   installLink: 'Install as an app',
   privacyLink: 'Privacy',
@@ -1237,9 +1244,9 @@ const en: Dict = {
   voaCursed1: 'Cursed object',
   unique: 'Unique',
   uniqueHint: 'Printed at a single tier - this one has no upgrade ladder',
-  homeHint: 'Open this section on start',
+  homeHint: 'Open on start',
   homeOn: 'Opens on start',
-  helpHint: 'How this works',
+  helpHint: 'Help',
   fieldHelp: 'Help: %s',
   rollLabelFor: 'Roll result',
   communityLabel: 'Community',
@@ -1340,7 +1347,7 @@ const en: Dict = {
   toStart: 'Home',
   print: 'Print',
   printHint: 'Lay these out for printing: nine to an A4 sheet',
-  printColor: 'Colour',
+  printColor: 'Color',
   printBW: 'Black and white',
   printStd: 'Standard',
   printCompact: 'Compact',
@@ -2102,10 +2109,10 @@ export function dict(lang: Lang): Dict {
 
 /** Which dictionary key names a section, for the tab title
  *  (`<section label> - <docTitle>`), the start-section select and the
- *  supplements panel's chips. The exhaustive `Record<Section, ...>` makes a new
+ *  supplements menu. The exhaustive `Record<Section, ...>` makes a new
  *  section name its word here. */
 export const SECTION_LABEL: Record<Section, keyof Dict> = {
-  'roll/std': 'std',
+  'roll/std': 'pageStd',
   'roll/alt': 'alt',
   'roll/wondrous': 'pageWondrous',
   'roll/dread': 'pageDread',

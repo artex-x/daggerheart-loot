@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -206,6 +204,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 98Булава СкверныРанг 3 · Физическое · Сила · Вплотную · d8+6 физ... [namelen=408 namehash=048be5d4]
 99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=242 namehash=b7ee21ab]
 9Хвост Чёрного КотаОдин раз до следующего Продолжительного отдых... [namelen=222 namehash=e0d4604b]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -228,6 +227,7 @@ daggerheart.com
 Белый Плащ
 Боевой Посох Душевного Огня
 Браслет Приключенца
+Бросок
 Брошь Туманного Плетения
 Булава Скверны
 Войти
@@ -253,7 +253,6 @@ daggerheart.com
 Инфернальные Кастеты
 Искра
 К содержимому
-Как это работает
 Кинетическое Лезвие
 Кинжал Сангромантии
 Кирка Небесного Гнома
@@ -299,12 +298,11 @@ daggerheart.com
 Неугомонное Возмездие
 Ночной Покров
 Оберег Теней
-Обычные правила
 Одеяло от Призраков
 Ожерелье Мнимой Маскировки
 Осколок Призрака
 Ослепляющий Дротик
-Открывать этот раздел при запуске
+Открывать при запуске
 Падение Природы
 Паровые Рукавицы
 Переливающийся Амулет
@@ -387,22 +385,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dragons_vault]
   link "Skip to content" [url=/en/tables/dragons_vault#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -439,7 +435,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dragons_vault]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 100Friction WrapsTier 1 · Physical · Agility · Melee · d8 phy · ... [namelen=250 namehash=8230b7ea]
@@ -587,6 +583,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dragons_vault]
 98Filth MaceTier 3 · Physical · Strength · Melee · d8+6 phy · On... [namelen=397 namehash=e742dbeb]
 99Flash DartTier 1 · Physical · Finesse · Far · d4 phy · One-Han... [namelen=221 namehash=a79cd395]
 9Black Cat's TailOnce per long rest, when a creature within Clos... [namelen=175 namehash=d6190371]
+?Help
 A Thousand Cuts
 Abjurer's Fane
 Acid Edge
@@ -671,7 +668,6 @@ Hook Line 'N' Sinker
 Hope & Fear
 Horn of Bestial Cries
 Horn of Wrath
-How this works
 Hydra Blade
 Impervious Vestments
 Infernal Knuckles
@@ -680,6 +676,7 @@ Kinetic Edge
 Link to this table
 List
 Listening Coins
+LootDaggerheart
 Love Spoon
 Many Worlds Tavern
 Mistweave Brooch
@@ -689,7 +686,7 @@ Murderer's Gauntlets
 Nature's Fall
 Necklace of Perceived Disguise
 Nightshroud
-Open this section on start
+Open on start
 Ordo Draconis Scale
 Other
 Pelt of the Frost Bear
@@ -709,6 +706,7 @@ Ring of the Cinderbat
 Ring of the Phoenix
 Rod of Command
 Rod of Flaming Skulls
+Roll
 Roseblade
 Sampler
 Sangromancy Dagger
@@ -730,7 +728,6 @@ Spellblade
 Spider Queen's Protection
 Staff of Laethys
 Staff of the Damned
-Standard rules
 Star Lance
 Steampowered Gauntlets
 Storm Quiver
@@ -762,4 +759,3 @@ Wasp's Sting
 Wavecrest Javelin
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

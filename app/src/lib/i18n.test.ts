@@ -120,7 +120,7 @@ describe('the pieces of the line', () => {
     expect(eqLine(scalpel, 'en', LABELS.en)).toContain('Magic · Finesse');
   });
 
-  it('give armour thresholds and a score instead of trait and range', () => {
+  it('give armor thresholds and a score instead of trait and range', () => {
     const armour = index.byId.get('q337') as Record_;
     const parts = eqParts(armour, 'ru', LABELS.ru, { noType: true });
     expect(parts.some((p) => p.startsWith('Пороги'))).toBe(true);
@@ -241,8 +241,8 @@ describe('a stat block with gaps in it', () => {
     eq
   });
 
-  it('omits thresholds and armour score when the armour has neither', () => {
-    /* `noType` because the word for armour and the word for its score are the
+  it('omits thresholds and armor score when the armor has neither', () => {
+    /* `noType` because the word for armor and the word for its score are the
        same in Russian, and the type is not what is being asserted here. */
     const parts = eqParts(gear({ t: 'armor', tier: 1 }), 'ru', LABELS.ru, { noType: true });
     expect(parts.join(' ')).not.toContain(LABELS.ru.thresholds);
@@ -261,7 +261,7 @@ describe('a stat block with gaps in it', () => {
     expect(parts.join(' ')).not.toContain('undefined');
   });
 
-  it('keeps an armour score of zero', () => {
+  it('keeps an armor score of zero', () => {
     const parts = eqParts(gear({ t: 'armor', tier: 1, as: 0 }), 'ru', LABELS.ru, {
       noType: true
     });
@@ -533,7 +533,7 @@ describe('the preview card quotes the app', () => {
     }
   );
 
-  it('reads a filter as decodeFilter does on the three labelled tables', () => {
+  it('reads a filter as decodeFilter does on the three labeled tables', () => {
     const cases: [TableId, string][] = [
       ['community', 'f_comm-Loreborne-Orderborne'],
       ['community', 'f_comm-Highborne-Highborne'],

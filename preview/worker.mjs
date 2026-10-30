@@ -48,7 +48,7 @@ const READ_MS = 3000;
 const NAMES_MS = 2000;
 const NAMES_TTL_MS = 600000;
 const NAMES_MAX = 196608;
-/* Twice the answer size that tests/db/link-previews.test.mjs asserts: a defence in depth
+/* Twice the answer size that tests/db/link-previews.test.mjs asserts: a defense in depth
    behind the lean reads (.claude/README.md, "Preview host", "Quotas, recovery and failure"). */
 const ITEM_MAX = 65536;
 const LIST_MAX = 8192;

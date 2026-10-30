@@ -1,6 +1,6 @@
 /* #/p/<id> against dist-test/, each sheet made through the fake with `openPrint`
  * (tests/app/lib.js) as `gm2` - sheet grid, card size against the design,
- * versatile weapons, dice by class, armour, black and white, art
+ * versatile weapons, dice by class, armor, black and white, art
  * edges, text fitting, entry points.
  *
  * Transposed from tests/print.js (the live-app suite, `print`) onto
@@ -12,7 +12,7 @@
  * print sets. Every `[data-act="printArt"][data-val=...]` click becomes a
  * name-based `d.click()`: `dist/` renders no `data-act` attribute anywhere
  * (checked live against a built tree) - `PrintPage.svelte`
- * wires its colour/black-and-white switch and its "back" control through
+ * wires its color/black-and-white switch and its "back" control through
  * Svelte `onclick` handlers on plain buttons, not through attributes a CSS
  * selector can grip. This is the same fallback `tests/parity/specs.js` used
  * for the same buttons (`d.click('Чёрно-белая')`, `NAME[lang].printLink`),
@@ -40,7 +40,7 @@ const fs = require('fs');
 const path = require('path');
 const { fresh, reporter, closeBrowser, openPrint } = require('./lib.js');
 
-const MM = 96 / 25.4; // css pixels per millimetre
+const MM = 96 / 25.4; // css pixels per millimeter
 /* The two clip warnings' leading words, the editor's and the print bar's (dict.ts). */
 const CLIP_CARD = 'Текст не помещается на карточку при печати';
 const CLIP_SHEET = 'Текст не помещается на карточки при печати: %d.';
@@ -50,7 +50,7 @@ const LOOT = require('../../data.json');
 const svgFile = (src) => fs.readFileSync(path.join(CARD_DIR, src.replace(/^.*\//, '')), 'utf8');
 
 /* A folded vector (`CardVector.svelte`) as its shape and paint, read in the page, and the
-   file the `<img>` it replaced drew: a die's colour paint is its `-phy` file, black and
+   file the `<img>` it replaced drew: a die's color paint is its `-phy` file, black and
    white the shape's `-bw` file (docs/specs/FEATURES.md, "Print"). */
 const vecFile = ([shape, paint]) =>
   shape +
@@ -196,7 +196,7 @@ const { ok } = rep;
   const colour = () => d.click('Цветная');
   const compact = () => d.click('Компактная');
   /* Opens a route in the layout and sheet size a state names. `d.open`
-     reloads the page, so both switches start at colour and standard. */
+     reloads the page, so both switches start at color and standard. */
   const openAs = async (d2, route, isBw, isCompact, bwFn, compactFn) => {
     await openPrint(d2, route);
     if (isCompact) {
@@ -232,7 +232,7 @@ const { ok } = rep;
 
   /* ---------- card size ----------
      63x88 mm is a playing-card size: sleeves and boxes are sold to it, so it
-     is checked in millimetres, not "by eye off a picture". */
+     is checked in millimeters, not "by eye off a picture". */
   console.log('size and grid');
   await openPrint(d, 'ci1-ci2-ci3-w7-w1-q1-voa1_t1a-cc1-f1');
   const box = await page.$eval('.pcard', (e) => {
@@ -483,7 +483,7 @@ const { ok } = rep;
   );
 
   /* gm4's item in a source and section of 80 code points each: the source line wraps
-     inside the card on both sheets, in colour and in black and white, and
+     inside the card on both sheets, in color and in black and white, and
      «Daggerheart» keeps its one line (FEATURES.md, "Print"). */
   console.log('a long source line');
   for (const [isBw, isCompact] of [
@@ -644,7 +644,7 @@ const { ok } = rep;
     const trait = await page.$eval('.pc-c2 .pc-box b', (e) => e.textContent.trim());
     ok(
       trait === 'Хар. Заклинателя',
-      (isBw ? 'bw: ' : 'colour: ') + 'Spellblade trait: ' + trait
+      (isBw ? 'bw: ' : 'color: ') + 'Spellblade trait: ' + trait
     );
     const clipped = await page.$$eval('.pc-strip .pc-box b', (all) => {
       const rng = document.createRange();
@@ -657,7 +657,7 @@ const { ok } = rep;
     });
     ok(
       !clipped.length,
-      (isBw ? 'bw: ' : 'colour: ') + 'Spellblade strip text is clipped: ' + clipped.join(', ')
+      (isBw ? 'bw: ' : 'color: ') + 'Spellblade strip text is clipped: ' + clipped.join(', ')
     );
   }
   await colour();
@@ -700,7 +700,7 @@ const { ok } = rep;
     await d.settle();
   }
 
-  /* Each die has its own shape, and colour follows the weapon's class:
+  /* Each die has its own shape, and color follows the weapon's class:
      physical gold, magical blue-violet. */
   console.log('die by class');
   await openPrint(d, 'q1');
@@ -749,7 +749,7 @@ const { ok } = rep;
   );
   ok(!cut.length, 'a value in the strip is clipped: ' + cut.join(', '));
 
-  /* The longest trait/range/bonus combinations in the whole catalogue: if a
+  /* The longest trait/range/bonus combinations in the whole catalog: if a
      value is ever going to be cut, it is on these. Both sheet kinds are
      checked - black-and-white has its own size. "Did not fit" here means
      "part of the card's data is lost", not "looks bad". */
@@ -770,7 +770,7 @@ const { ok } = rep;
     });
     ok(
       !lost.length,
-      (isBw ? 'bw: ' : 'colour: ') + 'text is lost on the longest values: ' + lost.join(', ')
+      (isBw ? 'bw: ' : 'color: ') + 'text is lost on the longest values: ' + lost.join(', ')
     );
   }
   await openPrint(d, 'q1');
@@ -788,7 +788,7 @@ const { ok } = rep;
   });
   ok(seam < 0, 'the frame does not reach behind the die: gap ' + seam.toFixed(1));
   /* And the damage bonus sits inside the first cell, pressed against the die,
-     with the damage type beside it. With no bonus the type centres in the
+     with the damage type beside it. With no bonus the type centers in the
      cell: nothing to press it against then. */
   ok(await page.$('.pc-c1.wbonus .pc-bonus'), 'the damage bonus is outside the frame again');
   const spread = await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent);
@@ -797,31 +797,31 @@ const { ok } = rep;
   ok(!(await page.$('.pc-c1.wbonus')), 'a die with no bonus has spacing turned on');
   ok(
     (await page.$eval('.pc-c1', (e) => getComputedStyle(e).justifyContent)) === 'center',
-    'with no bonus the damage type is not centred in the cell'
+    'with no bonus the damage type is not centered in the cell'
   );
 
-  /* Armour is counted differently: instead of a grip mark, a shield with its
-     Armour Score; instead of damage, a threshold scale. */
-  console.log('armour');
+  /* Armor is counted differently: instead of a grip mark, a shield with its
+     Armor Score; instead of damage, a threshold scale. */
+  console.log('armor');
   await openPrint(d, 'q313');
-  ok(!(await page.$('.pc-burden')), 'armour grew burden-grip hands');
+  ok(!(await page.$('.pc-burden')), 'armor grew burden-grip hands');
   const shield = await page.$eval('.pc-shield', (e) => e.textContent.trim());
   ok(
     /^3/.test(shield),
     'the shield is missing the Armor Score ("Показатель Брони"): ' + shield
   );
   ok(/БРОНЯ/i.test(shield), 'the shield is missing the word: ' + shield);
-  /* The mark comes from the design: in colour it is a dark shield in a gold
+  /* The mark comes from the design: in color it is a dark shield in a gold
      halo with a white number, not an outline with a dark number - a
      different mark altogether. */
   const shieldFile = svgFile(await page.$eval('.pc-shield img', (e) => e.getAttribute('src')));
   ok(
     /fill="#18171C"/.test(shieldFile),
-    'the shield in colour is an outline again, with no dark fill'
+    'the shield in color is an outline again, with no dark fill'
   );
   const asInk = await page.$eval('.pc-shield b', (e) => getComputedStyle(e).color);
   ok(/255, 255, 255/.test(asInk), 'the number on the dark shield is not white: ' + asInk);
-  /* The number sits centred on the shield, the caption under it and not
+  /* The number sits centered on the shield, the caption under it and not
      flush: both offsets were computed from the mark's width, and the width
      later changed - so they drifted apart. */
   const mark = () =>
@@ -855,13 +855,13 @@ const { ok } = rep;
     const m = await mark();
     ok(
       Math.abs(m.off) < 1.5,
-      (isBw ? 'bw: ' : 'colour: ') +
-        'the number is offset from the shield centre by ' +
+      (isBw ? 'bw: ' : 'color: ') +
+        'the number is offset from the shield center by ' +
         m.off.toFixed(1)
     );
     ok(
       m.gap > 1.5,
-      (isBw ? 'bw: ' : 'colour: ') +
+      (isBw ? 'bw: ' : 'color: ') +
         'the caption is pressed against the shield: gap ' +
         m.gap.toFixed(1)
     );
@@ -914,7 +914,7 @@ const { ok } = rep;
   /* The cells overhang the frame top and bottom - as the design has it. */
   const thH = await page.$eval('.pc-th-box', (e) => e.getBoundingClientRect().height);
   ok(thH > frame.h, 'threshold cells do not overhang the frame: ' + thH + ' and ' + frame.h);
-  ok(!(await page.$('.pc-die')), 'armour grew a damage die');
+  ok(!(await page.$('.pc-die')), 'armor grew a damage die');
 
   /* Loot has neither. */
   await openPrint(d, 'ci1');
@@ -976,12 +976,12 @@ const { ok } = rep;
   ok(lum < 90, 'the name on the card is too light to print: ' + paint.name);
 
   /* ---------- black-and-white sheet ----------
-     Not "colour with no colour": there are no pictures at all, details are
+     Not "color with no color": there are no pictures at all, details are
      white with a dark outline, and the ribbon, the tag and the mark gather
      into a row above the name. */
   console.log('black-and-white sheet');
   await openPrint(d, 'q1');
-  ok(await page.$('.pc-img'), 'no picture in colour mode');
+  ok(await page.$('.pc-img'), 'no picture in color mode');
   await bw();
   await d.settle();
   ok(await page.$('.pcard.bw'), 'the button did not switch to the black-and-white sheet');
@@ -993,10 +993,7 @@ const { ok } = rep;
     (await page.$('.pc-head .pc-tier')) && (await page.$('.pc-head .pc-tags')),
     'in black-and-white the ribbon and tag did not gather into a row'
   );
-  ok(
-    /-bw\.svg$/.test(await vecOf(page, '.pc-tier svg')),
-    'black-and-white uses a colour asset'
-  );
+  ok(/-bw\.svg$/.test(await vecOf(page, '.pc-tier svg')), 'black-and-white uses a color asset');
   /* The rank ribbon hangs from the card's top edge - in the design it starts
      exactly on the border. Standing in the common row it used to drift down
      by the block's own padding. */
@@ -1037,7 +1034,7 @@ const { ok } = rep;
      from the facets. The facets were once simply removed, and the die
      stopped looking like a die. */
   const bwDie = await vecOf(page, '.pc-die svg');
-  ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a colour die: ' + bwDie);
+  ok(/-bw\.svg$/.test(bwDie), 'black-and-white uses a color die: ' + bwDie);
   const drawnDie = await page.$eval('.pc-die svg', (e) => ({
     paths: e.querySelectorAll('path').length,
     box: e.getAttribute('viewBox')
@@ -1081,13 +1078,13 @@ const { ok } = rep;
 
   /* A held grip in black-and-white used to paint almost black, with a dark
      outline round it - the fingers on the mark disappeared. In the design the
-     fill is mid-grey, the outline light, and the cuts between the fingers
+     fill is mid-gray, the outline light, and the cuts between the fingers
      read. */
   await openPrint(d, 'w51');
   await bw();
   await d.settle();
   const bwBurden = await page.$eval('.pc-burden img', (e) => e.getAttribute('src'));
-  ok(/-bw\.svg$/.test(bwBurden), 'black-and-white uses a colour grip mark: ' + bwBurden);
+  ok(/-bw\.svg$/.test(bwBurden), 'black-and-white uses a color grip mark: ' + bwBurden);
   const bwHand = svgFile(bwBurden);
   const ink = (h) =>
     parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
@@ -1108,14 +1105,14 @@ const { ok } = rep;
   const dieBw = await page.$eval('.pc-die', (e) => Math.round(e.getBoundingClientRect().width));
   ok(
     dieColour === dieBw,
-    'the die is a different size in colour vs black-and-white: ' + dieColour + ' and ' + dieBw
+    'the die is a different size in color vs black-and-white: ' + dieColour + ' and ' + dieBw
   );
 
   await colour();
   await d.settle();
-  ok(await page.$('.pc-img'), 'the button did not return to the colour sheet');
+  ok(await page.$('.pc-img'), 'the button did not return to the color sheet');
 
-  /* A magic weapon has its own frame - by picture and by colour. In
+  /* A magic weapon has its own frame - by picture and by color. In
      black-and-white the picture stays: it is its own there too, and the
      general "drop -mag in black-and-white" rule - which is about the dice -
      was standing in for it with the physical frame. */
@@ -1158,7 +1155,7 @@ const { ok } = rep;
       );
       return vecs.map(vecFile);
     };
-    const tag = isBw ? 'bw: ' : 'colour: ';
+    const tag = isBw ? 'bw: ' : 'color: ';
     const q33 = await frameOf('q33');
     ok(
       q33.length === 2 &&
@@ -1248,15 +1245,15 @@ const { ok } = rep;
   /* ---------- art edge at the cut line ----------
      The picture is square and narrower than the card, so a margin remains on
      either side of it, and the picture's own edges fade into that margin.
-     While the margin was one flat near-black colour everywhere the geometry
+     While the margin was one flat near-black color everywhere the geometry
      all lined up, but pictures with a light background - the knife, the
      sceptre, the bow - had their fade run into the black, and a dark band
      stood along the cut line. Neither the markup nor the sizes see it: it
-     exists only in colour. So the sheet is captured and taken apart pixel by
+     exists only in color. So the sheet is captured and taken apart pixel by
      pixel.
 
      The condition itself is not "no band" (its width cannot be measured) but
-     "the colour at the cut is taken from the picture": across nine different
+     "the color at the cut is taken from the picture": across nine different
      cards it has to differ. With a flat fill it was the same on all of them
      to within half a point. */
   {
@@ -1314,7 +1311,7 @@ const { ok } = rep;
       hi = Math.max.apply(null, edges);
     ok(
       hi - lo > 8,
-      'the colour at the cut line is the same on every card (' +
+      'the color at the cut line is the same on every card (' +
         lo.toFixed(1) +
         '..' +
         hi.toFixed(1) +
@@ -1325,7 +1322,7 @@ const { ok } = rep;
        reaches all the way to the cut. */
     ok(edges.filter((v) => v > 14).length >= 3, 'no light card has its picture reach the cut');
     /* The backing is the same file as the picture itself: otherwise it has
-       its own colour and the seam comes back, just somewhere else. */
+       its own color and the seam comes back, just somewhere else. */
     const same = await page.$$eval('.pcard:not(.blank)', (cards) =>
       cards.every((c) => {
         const b = c.querySelector('.pc-back'),
@@ -1347,9 +1344,9 @@ const { ok } = rep;
   const SPEC = {
     'tier ribbon left': ['.pc-tier', 'left', 24],
     'tier ribbon top': ['.pc-tier', 'top', 0],
-    'armour mark right': ['.pc-shield', 'right', 24],
-    'armour mark top': ['.pc-shield', 'top', 20],
-    'armour mark width': ['.pc-shield', 'width', 32],
+    'armor mark right': ['.pc-shield', 'right', 24],
+    'armor mark top': ['.pc-shield', 'top', 20],
+    'armor mark width': ['.pc-shield', 'width', 32],
     'burden mark right': ['.pc-burden', 'right', 24],
     'burden mark top': ['.pc-burden', 'top', 20],
     'burden mark width': ['.pc-burden', 'width', 62],
@@ -1443,7 +1440,7 @@ const { ok } = rep;
      picture itself. On this Windows host, 2026-09-16, this nine-card set
      never pushes the ladder past the font step - measured directly against
      the live app's own `index.html` on the same route (since deleted, issue
-     47), so it is text-metric variance between hosts, not catalogue content
+     47), so it is text-metric variance between hosts, not catalog content
      or a fit regression: ubuntu CI reaches the art rung on the same route
      (this suite's `print` job, CI run 35130947774, green on `98ddf52` before
      R0c (23c00a6) existed). A local result is advisory and may legitimately fail a
@@ -1487,7 +1484,7 @@ const { ok } = rep;
 
   /* The picture either takes a visible band or is gone entirely. There must
      be no middle: the white block is pinned to the card's bottom, and a long
-     rule used to leave a grey sliver of picture over the name - on paper that
+     rule used to leave a gray sliver of picture over the name - on paper that
      reads as dirt. */
   const slivers = await page.$$eval('.pcard', (e) =>
     e
@@ -1586,7 +1583,7 @@ const { ok } = rep;
       dvBw.map((t) => t.id + ' ' + t.size).join(', ')
   );
   for (const isCompact of [false, true]) {
-    const tag = isCompact ? 'NINE compact colour: ' : 'NINE colour: ';
+    const tag = isCompact ? 'NINE compact color: ' : 'NINE color: ';
     await openAs(d, NINE, false, isCompact, bw, compact);
     const nineColour = await grown();
     ok(
@@ -1971,7 +1968,7 @@ const { ok } = rep;
                       id + e.textContent + ' ' + n + ' lines at leading ' + lh.toFixed(2)
                     );
                   }
-                  /* 2A: values as written, the damage type capitalised. */
+                  /* 2A: values as written, the damage type capitalized. */
                   const want = e.closest('.pc-c1') ? 'capitalize' : 'none';
                   if (s.textTransform !== want)
                     out.push(id + e.textContent + ' case ' + s.textTransform);
@@ -2063,8 +2060,8 @@ const { ok } = rep;
                       out.push(id + word + ' leaves the band');
                     }
                   }
-                  /* The modifier sits against the die, on its centre; each
-                     label-value block is centred in the band. */
+                  /* The modifier sits against the die, on its center; each
+                     label-value block is centered in the band. */
                   const die = st.querySelector('.pc-die').getBoundingClientRect();
                   const mid = (x) => (x.top + x.bottom) / 2;
                   const bo = st.querySelector('.pc-bonus');
@@ -2073,13 +2070,13 @@ const { ok } = rep;
                     if (br.left - die.right > 1.5 * cqw)
                       out.push(id + 'the modifier is off the die');
                     if (Math.abs(mid(br) - mid(die)) > 0.1 * MM) {
-                      out.push(id + 'the modifier is off the die centre');
+                      out.push(id + 'the modifier is off the die center');
                     }
                   }
                   const band = st.querySelector('.pc-cells').getBoundingClientRect();
                   for (const b of st.querySelectorAll('.pc-box')) {
                     if (Math.abs(mid(b.getBoundingClientRect()) - mid(band)) > 0.25 * MM) {
-                      out.push(id + b.textContent + ' block is off the band centre');
+                      out.push(id + b.textContent + ' block is off the band center');
                     }
                   }
                   /* A value on two lines raises the strip, and the block
@@ -2130,7 +2127,7 @@ const { ok } = rep;
                   }
                   /* The arrow grows from the box's notch: the box's own
                      `::before`; the arrow image stays in the markup, hidden.
-                     Colour outlines it (a dark `::after` inside a gold rim),
+                     Color outlines it (a dark `::after` inside a gold rim),
                      black and white draws it solid. */
                   for (const a of th.querySelectorAll('.pc-th-arrow')) {
                     if (getComputedStyle(a).display !== 'none')
@@ -2155,11 +2152,11 @@ const { ok } = rep;
                       inner.display === 'none' ||
                       inner.backgroundColor !== 'rgb(24, 23, 28)'
                     ) {
-                      out.push(id + 'a colour arrow has no dark inside');
+                      out.push(id + 'a color arrow has no dark inside');
                     }
                   }
                 }
-                /* The burden and armour labels clear their marks; the line
+                /* The burden and armor labels clear their marks; the line
                    box starts above the ink, hence 0.2em. */
                 for (const m of c.querySelectorAll('.pc-burden, .pc-shield')) {
                   const img = m.querySelector('img').getBoundingClientRect();
@@ -2179,7 +2176,7 @@ const { ok } = rep;
       }
     }
     /* Vector text only: a compact black-and-white sheet prints no raster,
-       and neither does a colour sheet once its pictures and the gold tag's
+       and neither does a color sheet once its pictures and the gold tag's
        gradient are hidden - Chrome can tile that gradient as small images
        (measured 2026-09-23 on this host). The sheet with pictures goes
        last, as a proof that the count sees an image. */
@@ -2195,9 +2192,9 @@ const { ok } = rep;
         content:
           '.pc-art { display: none !important; } .pc-tag.on { background: none !important; }'
       });
-      ok((await images()) === 0, 'a colour sheet without pictures still prints a raster');
+      ok((await images()) === 0, 'a color sheet without pictures still prints a raster');
       await hide.evaluate((e) => e.remove());
-      ok((await images()) > 0, 'a colour sheet with pictures shows no image in its PDF');
+      ok((await images()) > 0, 'a color sheet with pictures shows no image in its PDF');
     }
   }
   await smallFields(d, page, '', bw, compact);
@@ -2207,7 +2204,7 @@ const { ok } = rep;
      that reads the *decision*, not its pixel consequence. The fit's written
      numbers are the same at every width, under the sheet's screen scale too:
      each state's values at 768 and 375 must equal its values at 1100. `.pc-art` renders only in
-     colour (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
+     color (`{#if !bw}` in `PrintCard.svelte`), and `.pc-head` only in
      black-and-white (`{#if bw}`) - so their counts flip with `s.bw` rather
      than both landing on `printed`.
      Run twice: once in Russian on the shared page above, once in
@@ -2245,7 +2242,7 @@ const { ok } = rep;
           if (!t.style['font-size']) return;
           const v = parseFloat(t.style['font-size']);
           /* The text ladder's floor is 2.6cqw, not the strip's 2.2; the top is
-             3.5cqw in colour and `GROW_CAP` (5cqw) in black and white. */
+             3.5cqw in color and `GROW_CAP` (5cqw) in black and white. */
           ok(
             v >= 2.6 && v <= (s.bw ? 5 : 3.5),
             tag + 'text size is off the ladder: ' + t.style['font-size']
@@ -2270,7 +2267,7 @@ const { ok } = rep;
         const art = await d2.eachAt('.pc-art', ['height', '--artw', 'display']);
         ok(
           art.length === (s.bw ? 0 : printed),
-          tag + 'the picture count does not match colour mode: ' + art.length
+          tag + 'the picture count does not match color mode: ' + art.length
         );
         art.forEach((a) => {
           ok(
@@ -2302,7 +2299,7 @@ const { ok } = rep;
             tag + 'pc-head is zero-sized'
           );
         } else {
-          ok(head.length === 0, tag + 'colour mode grew a pc-head: ' + head.length);
+          ok(head.length === 0, tag + 'color mode grew a pc-head: ' + head.length);
         }
 
         const written = [];
@@ -2348,7 +2345,7 @@ const { ok } = rep;
     d: dEn
   } = await fresh({ width: 1180, height: 950, lang: 'en' });
   const bwEn = () => dEn.click('Black and white');
-  const colourEn = () => dEn.click('Colour');
+  const colourEn = () => dEn.click('Color');
   const compactEn = () => dEn.click('Compact');
   const pageErrsEn = [];
   pageEn.on('pageerror', (e) => pageErrsEn.push(e.message));
@@ -2411,7 +2408,7 @@ const { ok } = rep;
 
   /* ---------- the sheet under print media (`printMedia`) ----------
      The chrome hidden, the page unshadowed and page-broken, the print
-     colours kept - `d.media('print')` is the only thing in the repository
+     colors kept - `d.media('print')` is the only thing in the repository
      that emulates print media, so it always restores the medium in a
      `finally`, or leaving it on would photograph the wrong medium for
      whatever runs next. */
@@ -2522,7 +2519,7 @@ const { ok } = rep;
         ok(
           card2['print-color-adjust'] === 'exact',
           s.label +
-            ": the card's print colours are not preserved: " +
+            ": the card's print colors are not preserved: " +
             card2['print-color-adjust']
         );
       }
@@ -2694,7 +2691,7 @@ const { ok } = rep;
   const hashEn = clipEn.text ? new URL(clipEn.text).pathname : null;
   ok(hashEn === '/en/p/' + enId, 'copied set link (en) is wrong: ' + hashEn);
 
-  /* An own item's picture: the colour card draws it as a catalog picture, the
+  /* An own item's picture: the color card draws it as a catalog picture, the
      black-and-white card draws none. The seed gives gm1's axe the catalog's
      ci1.webp (the test build has no bucket). */
   console.log("an own item's picture");
@@ -2713,7 +2710,7 @@ const { ok } = rep;
   });
   ok(
     ownArt.every((a) => a.src === '/img/ci1.webp' && a.loaded),
-    "the own item's colour card does not draw its picture: " + JSON.stringify(ownArt)
+    "the own item's color card does not draw its picture: " + JSON.stringify(ownArt)
   );
   await bw();
   await d.settle();
@@ -2802,7 +2799,7 @@ const { ok } = rep;
      physical and magic, both ribbons, the threshold box - is compared at device pixel
      ratio 2 with the file the card drew before the fold, put in its place in the box the
      `<img>` had (clipped to it; a die fitted as `object-fit: contain` fitted it): every
-     channel of every pixel within 8, in colour and in black and white, on both sheets (the
+     channel of every pixel within 8, in color and in black and white, on both sheets (the
      parity with Figma nodes 714-42387 and 3773-90792). The file is drawn as its own inline
      markup, ids made unique: an `<img>` snaps its box to device pixels, which moves an edge
      by up to half a pixel (measured 2026-10-21: up to 255 on a ribbon stroke, at most 3 with
@@ -3102,10 +3099,10 @@ const { ok } = rep;
       'a 3000-character text is not cut off and warned - ' + JSON.stringify(b)
     );
 
-    /* (e) The longest name in compact colour: counted when the head leaves the card. */
+    /* (e) The longest name in compact color: counted when the head leaves the card. */
     const name120 = 'Очень длинное название предмета '.repeat(4).slice(0, 120);
     const e = await editorCut(name120, '', ['Цветная', 'Компактная']);
-    console.log('  the 120-character name, compact colour: ' + JSON.stringify(e));
+    console.log('  the 120-character name, compact color: ' + JSON.stringify(e));
     ok(
       e.warned === (e.text || e.box),
       'the longest name is not counted by the content box - ' + JSON.stringify(e)

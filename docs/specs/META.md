@@ -21,7 +21,7 @@ SEO.
 rather than on a build: `npm run check` does not build, so a check that read
 `dist/index.html` would be reading whatever was built last. The same suite
 reads that document's `<head>` (`headFacts`) and asserts it carries every field
-the preview card needs - title, description, robots, colour scheme, viewport,
+the preview card needs - title, description, robots, color scheme, viewport,
 every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
 `app/index.html`'s head against the now-deleted root `index.html`'s; that
 second document is gone, so the check is a single-document read now. The
@@ -421,10 +421,13 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
   `tools/artwork/icons.mjs` rasterises it into `icon-192.png`,
   `icon-512.png`, `maskable-512.png` and `apple-touch-icon.png` (180 px),
   committed like `card/*.svg` (`docs/artwork.md`, "Icons"). The drawing
-  stays inside the maskable safe zone, a centred circle of radius 40% of
+  stays inside the maskable safe zone, a centered circle of radius 40% of
   the side, so the maskable icon is the same drawing. iOS reads the
   `apple-touch-icon` link in `app/index.html`, not the manifest, for the
-  home-screen icon. The tab favicon is unchanged.
+  home-screen icon. The tab favicon is `icons/favicon.svg`, the same mark on
+  a rounded dark tile, linked by every document that has an icon (the app,
+  the site pages, the record pages, `404.html` and the old host); the header
+  and both site share cards draw the same mark (`docs/artwork.md`, "Icons").
 - `app/index.html` also carries a static
   `<meta name="apple-mobile-web-app-title" content="Лут DH">`: iOS takes the
   home-screen label from it; whether iOS Safari reads the manifest's
@@ -603,7 +606,7 @@ JavaScript and without a hash route (the route grammar is frozen,
   serves both copies too.
 - `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`
   and `pages/en/*.html`; `tests/derived.js` compares each output with a
-  fresh render and checks its language, head, the theme colour, the manifest
+  fresh render and checks its language, head, the theme color, the manifest
   link and the two iOS tags, sibling link, both back links and the script;
   `tools/check-site.mjs` probes all six outputs; `tests/app/states.js`
   case 28 asks Chrome whether both guides are installable; case 29 follows the install guide's top back link

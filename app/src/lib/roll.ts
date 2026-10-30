@@ -29,7 +29,7 @@ export function die(n: number, rnd: Random = Math.random): number {
  * The Core roll: N twelve-sided dice against the same 1-60 table.
  *
  * Rarity only decides how many dice, which is why there is no rarity picker on
- * that screen - each button is labelled with the count and the rarities it
+ * that screen - each button is labeled with the count and the rarities it
  * covers. Five dice can reach 60 exactly; the clamp is for the input, not the
  * dice.
  */

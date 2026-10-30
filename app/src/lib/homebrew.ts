@@ -1117,7 +1117,7 @@ export interface SourceChip {
 }
 
 /** Returns the sources that hold at least one of `records`, in `groupsOf`'s order: the
- *  named sources by `created_at`, then the default source (`hb`, labelled `home`). */
+ *  named sources by `created_at`, then the default source (`hb`, labeled `home`). */
 export function sourcesOf(
   books: readonly BookRow[],
   records: readonly HomebrewRecord[],

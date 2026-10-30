@@ -28,16 +28,14 @@ RootWebArea "Палаш - Генератор лута Daggerheart" [url=/i/q1?v=
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
 Добавить в список
-Дополнения
 Закрыть
 К содержимому
 Конфиденциальность
 Легендарный Палаш
 ЛутDaggerheart
-Обычные правила
 Отправить
 Палаш
 Печать
@@ -80,7 +78,6 @@ RootWebArea "Broadsword - Daggerheart Loot Generator" [url=/i/en/q1?v=<v>]
 ## en :: controls
 Add to list
 Advanced Broadsword
-Alt. tables
 Broadsword
 Close
 Copy image
@@ -91,19 +88,18 @@ EN
 Improved Broadsword
 Install as an app
 Legendary Broadsword
+LootDaggerheart
 Page
 Print
 Privacy
 RU
+Roll
 Save to my items
 Search
 Share
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
 show in the table
-ЛутDaggerheart

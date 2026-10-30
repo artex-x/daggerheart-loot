@@ -14,9 +14,7 @@ RootWebArea "Новый предмет - Генератор лута Daggerheart
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -101,11 +99,10 @@ RU
 RU - пусто
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
 Без ранга
+Бросок
 Выбрать из предметов
 Выбрать файл
-Дополнения
 Жирный
 К моим предметам
 К содержимому
@@ -117,7 +114,6 @@ daggerheart.com
 На экране
 Новая карта правил
 Нумерованный список
-Обычные правила
 Отмена
 Подсказка: Бонус комплекта
 Подсказка: Источник
@@ -147,16 +143,14 @@ daggerheart.com
 RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1]
   link "Skip to content" [url=/en/homebrew/new?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -228,7 +222,7 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
@@ -236,7 +230,6 @@ RootWebArea "New item - Daggerheart Loot Generator" [url=/en/homebrew/new?as=gm1
 3
 4
 Account: gm1@example.test
-Alt. tables
 Bold
 Bulleted list
 Cancel
@@ -259,6 +252,7 @@ In print
 Install as an app
 Italic
 Item
+LootDaggerheart
 Made from
 New rule card
 No tier
@@ -268,17 +262,15 @@ Preview
 Privacy
 RU
 RU - empty
+Roll
 Rule cards
 Save
 Search
 Skip to content
-Standard rules
-Supplements
 Table
 Tables
 Terms of use
 To my items
 Upgrades to
 daggerheart.com
-ЛутDaggerheart
 Страница

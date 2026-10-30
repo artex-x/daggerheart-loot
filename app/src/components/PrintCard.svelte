@@ -1,6 +1,6 @@
 <script lang="ts">
   /* One print card, both layouts - off `printCardHTML`, `dmgStripHTML`, `dieHTML`,
-   * `thStripHTML` and `fitPrintCards` (`git show 23c00a6^:app.js`). The colour and the
+   * `thStripHTML` and `fitPrintCards` (`git show 23c00a6^:app.js`). The color and the
    * black-and-white layout are drawn from the same markup below, branching
    * exactly where the live code does - `class:bw` and the `{#if bw}`
    * branches, not two components: they share every helper and the fit.
@@ -118,11 +118,11 @@
     }
   );
   const src = $derived(printSrc(it, lang));
-  /* A colour card with no picture, or a broken one, draws the kind glyph on the light
+  /* A color card with no picture, or a broken one, draws the kind glyph on the light
      print well; the screen keeps the dark well (FEATURES.md, "Print"). */
   const artUrl = $derived(artSrc(it.img, artBroken));
   const glyph = $derived(kindGlyph(it.kind, it.eq?.t));
-  /* The folded vectors' paint: one geometry, the layout's colours (card-vectors.css). */
+  /* The folded vectors' paint: one geometry, the layout's colors (card-vectors.css). */
   const paint = $derived(bw ? 'bw' : 'colour');
   const pkClass = $derived(
     eq ? `pk-${eq.t}` : `pk-${it.kind === 'consumable' ? 'cons' : 'item'}`
@@ -272,7 +272,7 @@
 
     let pct = 3.5;
     /* Black and white only: the picture's space is blank paper there, so short
-       text grows until it would spill, under the name's 5.8cqw. Colour never
+       text grows until it would spill, under the name's 5.8cqw. Color never
        grows: the picture owns that space - FEATURES.md, "Print" (issue 61). */
     if (bw && !tight()) {
       while (!tight() && pct < GROW_CAP - 0.05) {
@@ -949,7 +949,7 @@
 
   /* The cells sit on the ribbon SVG's own geometry (275.5x47.9): its top
      ornament lines end at y 10.4 (22%), and the band is symmetric about the
-     die's centre, so it ends at 78% - above the lower lines (y 38.9, 81.2%)
+     die's center, so it ends at 78% - above the lower lines (y 38.9, 81.2%)
      and the diagonal at x 53.75-58.25 (y 36.9, 77%). The brackets span
      x 83.25-85.25 and 175.25-177.25, so the cells stop short of 30.2% and
      63.6%. `fit()` reads the 56% band. */

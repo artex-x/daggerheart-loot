@@ -37,7 +37,7 @@ const world = async (tx) => {
     values (${EB}, ${LB}, 'ci1', 0, 2)`;
 };
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
-/* postgres.js serialises a jsonb parameter itself (see list-writes.test.mjs). */
+/* postgres.js serializes a jsonb parameter itself (see list-writes.test.mjs). */
 const importAs = async (tx, lists) => {
   const [{ n }] = await tx`select public.import_lists(${
     lists === null ? null : tx.json(lists)

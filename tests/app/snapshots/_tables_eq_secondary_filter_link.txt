@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -43,8 +41,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     StaticText "26 из 135"
     ... StaticText x17 of 21 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x26 of 30 same-shape siblings elided
+    ... button x27 of 31 same-shape siblings elided
     button "Магическое" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -82,6 +79,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=210 namehash=c6b11936]
 87Пылающий БраслетРанг 1 · Магическое · Искусность · Далеко · d6... [namelen=267 namehash=0bd4aabe]
 97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=317 namehash=7badcb82]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -97,6 +95,7 @@ daggerheart.com
 Арканный Скальпель
 Близко
 Броня
+Бросок
 Влияние
 Войти
 Вплотную
@@ -110,7 +109,6 @@ daggerheart.com
 Искра
 Искусность
 К содержимому
-Как это работает
 Кинжал Сангромантии
 Клинок Эха
 Клинок ЭхаРанг 4 · Магическое · Влияние · Вплотную · d4+6 маг · ... [namelen=219 namehash=6ad1fa70]
@@ -125,11 +123,10 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Магическое×
-Обычные правила
 Оружие
 Осколок Ворпала
 Осколок ВорпалаРанг 3 · Магическое · Знание · Вплотную · d4 маг ... [namelen=220 namehash=1ea92790]
-Открывать этот раздел при запуске
+Открывать при запуске
 Очень далеко
 Пир зверей
 Плеть Душ
@@ -186,22 +183,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f_cls-mag]
   link "Skip to content" [url=/en/tables/eq_secondary/f_cls-mag#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -223,8 +218,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
     button "Filter link" [description=Filter link]
     StaticText "26 of 135"
     ... StaticText x17 of 21 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x26 of 30 same-shape siblings elided
+    ... button x27 of 31 same-shape siblings elided
     button "Magic" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -247,7 +241,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
@@ -262,6 +256,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
 7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=209 namehash=2b432800]
 87Burning BraceletTier 1 · Magic · Finesse · Far · d6 mag · One-... [namelen=229 namehash=26e514a5]
 97SparkTier 2 · Magic · Agility · Melee · d8+2 mag · One-HandedF... [namelen=303 namehash=3ffed9d7]
+?Help
 Advanced Focus Runes
 Advanced Focus RunesTier 3 · Magic · Instinct · Very Close · d6+... [namelen=180 namehash=0c28ce1b]
 Advanced Hallowed Shield
@@ -300,7 +295,6 @@ Grid
 Hallowed Shield
 Hallowed ShieldTier 1 · Magic · Instinct · Melee · d4 mag · One-... [namelen=203 namehash=232883cc]
 Hope & Fear
-How this works
 Improved Focus Runes
 Improved Focus RunesTier 2 · Magic · Instinct · Very Close · d6+... [namelen=180 namehash=12867c2f]
 Improved Hallowed Shield
@@ -318,13 +312,14 @@ Legendary Rune Shield
 Legendary Rune ShieldTier 4 · Magic · Knowledge · Melee · d4+6 m... [namelen=135 namehash=0d39a21e]
 Link to this table
 List
+LootDaggerheart
 Magic
 Magic×
 Many Worlds Tavern
 Melee
 Möbius Orb
 Möbius OrbTier 4 · Magic · Knowledge · Melee · d8+6 mag · One-Ha... [namelen=267 namehash=6e4115af]
-Open this section on start
+Open on start
 Other
 Physical
 Presence
@@ -332,6 +327,7 @@ Privacy
 RU
 Reset all
 Ritual Blade of Sekhmet
+Roll
 Rune Shield
 Rune ShieldTier 1 · Magic · Knowledge · Melee · d4 mag · One-Han... [namelen=123 namehash=c3344f29]
 Saintly Guard
@@ -344,7 +340,6 @@ Skip to content
 Soul Chain
 Soul ChainTier 3 · Magic · Presence · Very Close · d6+5 mag · On... [namelen=229 namehash=f3db1255]
 Spark
-Standard rules
 Strength
 Supplements
 Tables
@@ -360,4 +355,3 @@ Vorpal ShardTier 3 · Magic · Knowledge · Melee · d4 mag · One-Ha... [namele
 Weapons
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

@@ -46,7 +46,7 @@ you reaches a server.
 
 Core and Hope & Fear are the same Nd12 roll against the same 1-60 table, so they
 share one mode with a source switch. Rarity there only sets how many dice you
-roll, so each button is labelled with both the dice count and the rarities that
+roll, so each button is labeled with both the dice count and the rarities that
 count covers. Where a range is not a real die - 119 in Wondrous Environments, 29 in Dread GM Toolbox -
 the button reads "Random 1-N" instead of naming a die that does not exist.
 
@@ -57,7 +57,7 @@ next to rarities are a recommendation rather than a limit.
 ## Tables, search and filters
 
 **Tables** holds every table in full, including the alternate ones and the three
-equipment tables (weapons, secondary weapons, armour), each with its own search
+equipment tables (weapons, secondary weapons, armor), each with its own search
 box and a list/grid switch. **Search** covers all 1459 records at once - names,
 descriptions and stat lines, in both languages.
 
@@ -159,11 +159,11 @@ can open. A set is deleted 90 days after it was last opened. Old `/print/` links
 no longer open. An opt-in compact sheet prints sixteen 44x63 mm cards per page, in
 either layout.
 
-Two sheet styles. The colour sheet keeps the artwork, the tier banner, the burden
+Two sheet styles. The color sheet keeps the artwork, the tier banner, the burden
 hands and the gold stat strip. The black-and-white sheet drops the artwork and
-the gold and collects the banner, the type chip and the armour mark into a row
-above the name - dark backgrounds and gold eat toner and turn to grey mush on a
-mono printer. Anything the colour card tells apart by colour, the
+the gold and collects the banner, the type chip and the armor mark into a row
+above the name - dark backgrounds and gold eat toner and turn to gray mush on a
+mono printer. Anything the color card tells apart by color, the
 black-and-white card also tells apart by a word.
 
 ## Sending an item to a chat
@@ -236,7 +236,7 @@ they follow the reader to every device.
 |---|---|
 | `dhloot.lang.v1` | interface language |
 | `dhloot.home.v1` | starting section |
-| `dhloot.prefs.v1` | table view (list or grid) and print layout (colour or black and white, standard or compact) |
+| `dhloot.prefs.v1` | table view (list or grid) and print layout (color or black and white, standard or compact) |
 
 The app no longer reads the list keys an older build left in the browser.
 
@@ -324,12 +324,12 @@ preview/                    the site host's worker: link cards for messengers (C
 old-host/                   the old address's forwarding root and its unregistering sw.js
 tests/                tests/*.js (5 fs/node suites) plus tests/app/*.js
                       (7 real-Chrome suites against dist-test/) and the runner
-docs/specs/           behaviour and frozen contracts, for maintainers
+docs/specs/           behavior and frozen contracts, for maintainers
 docs/fixtures/        golden fixtures the contract suite replays
 ```
 
 `docs/specs/CONTRACTS.md` is the one to read before changing anything public -
-the hash grammar, record ids and the generated artefacts
+the hash grammar, record ids and the generated artifacts
 are frozen, and `tests/contracts.js` enforces that against fixtures on disk.
 `CLAUDE.md` is the entry point for AI-assisted maintenance.
 
@@ -452,7 +452,7 @@ shares, so a player gets everything in one message.
 
 ### Equipment
 
-Weapons and armour are not loot with a table number but things with stats, so
+Weapons and armor are not loot with a table number but things with stats, so
 they sit in `window.LOOT.eq` and carry an `eq` block:
 
 ```js
@@ -475,7 +475,7 @@ they sit in `window.LOOT.eq` and carry an `eq` block:
 | `rg` | range: `melee`, `veryclose`, `close`, `far`, `veryfar` |
 | `dmg` / `dt` | damage and its type: `phy`, `mag`, `any` |
 | `bu` | burden: 1 one-handed, 2 two-handed, `'any'` either way |
-| `as` / `th` | Armour Score and base thresholds, armour only |
+| `as` / `th` | Armor Score and base thresholds, armor only |
 | `line` | `id` of the first item in the upgrade line; empty on one-offs |
 | `alt` | optional: a second stat set (`tr`, `rg`, `dmg`, `dt`): Versatile weapons, Ember and the Steampowered Gauntlets; the print card draws it as a second strip |
 
@@ -492,20 +492,20 @@ it deals. They usually agree, but the Shadowblade and the Ghostblade are
 `cls:'mag'` with `dt:'any'`. The filter works on `cls`, and `any` lands in both.
 
 Equipment is not only in `eq`. Eleven Wondrous Environments records, all 68 of The
-Dragon's Vault's weapons and armour, all 68 of Arazo's Artifacts', all 35 of Many Worlds
+Dragon's Vault's weapons and armor, all 68 of Arazo's Artifacts', all 35 of Many Worlds
 Tavern's, and every campaign
 frame entry, plus some of Vault of Ages and Dread GM Toolbox, carry the same `eq` block
 while staying in `items`; campaign frames are not a roll table. The three equipment tables
-gather all of them: 458 weapons, 135 secondary weapons, 114 armour. The source
+gather all of them: 458 weapons, 135 secondary weapons, 114 armor. The source
 filter is what narrows those to the two books (239 / 73 / 69).
 
-## Category colours
+## Category colors
 
 Badges are told apart by hue rather than lightness, with at least 49 degrees
-between any two. The source badge (`Core`, `Hope & Fear`) is a neutral grey - it
-is a caption, not a category - and the stat line carries no colour of its own.
+between any two. The source badge (`Core`, `Hope & Fear`) is a neutral gray - it
+is a caption, not a category - and the stat line carries no color of its own.
 
-| Item | Consumable | Primary weapon | Secondary weapon | Armour |
+| Item | Consumable | Primary weapon | Secondary weapon | Armor |
 |---|---|---|---|---|
 | `#7a8ee0` | `#9ec96a` | `#d48e6a` | `#cf7fa6` | `#5ec9c4` |
 | indigo 228 | yellow-green 87 | terracotta 20 | rose 331 | turquoise 177 |
@@ -528,7 +528,7 @@ is a caption, not a category - and the stat line carries no colour of its own.
 | Campaign frames | 94 | Beast Feast, Colossus, Dark Heart, Motherboard | fan translation |
 | Weapons | 239 | Daggerheart SRD, Hope & Fear | Core from [daggerheart.su](https://ru.daggerheart.su/), H&F from a community sheet |
 | Secondary weapons | 73 | Daggerheart SRD, Hope & Fear | as above |
-| Armour | 69 | Daggerheart SRD, Hope & Fear | as above |
+| Armor | 69 | Daggerheart SRD, Hope & Fear | as above |
 | Alternate tables | 5 rarities x 4 columns x 12 | Alternate Loot & Consumable Tables | points at the records above |
 
 The alternate tables are by
@@ -562,14 +562,14 @@ play at the table:
 
 - **Core Rulebook** and **Hope & Fear** are used under the
   [Darrington Press Community Gaming License](https://darringtonpress.com/license/).
-  Version 2.0, issued 25 August 2026, recognises the
+  Version 2.0, issued 25 August 2026, recognizes the
   [Daggerheart SRD 2.0](https://daggerheart.com/srd) as Public Game Content and
-  adds Hope & Fear to the games the licence covers. SRD 1.0 remains in force for
+  adds Hope & Fear to the games the license covers. SRD 1.0 remains in force for
   material published before that.
 - **Wondrous Environments**, **Dread GM Toolbox**, **Vault of Ages**,
   **The Dragon's Vault**, **The Guide to Arazo's Artifacts**, the **Many Worlds Tavern** card sets,
   **Community Magic Items** and the **Alternate Loot &
-  Consumable Tables** fall outside that licence: they are paid and fan
+  Consumable Tables** fall outside that license: they are paid and fan
   supplements whose text belongs to their own authors.
 
 > This product includes materials from the Daggerheart System Reference Document 2.0, © Critical Role, LLC. under the terms of the Darrington Press Community Gaming (DPCGL) License. More information can be found at https://www.daggerheart.com. There are no previous modifications by others.

@@ -309,7 +309,7 @@ export default defineConfig(({ command, mode }) => {
            pay for a component nobody tested. The bars differ because the
            obligations differ: lib is pure and has no excuse, ports wrap browser
            APIs whose happy paths jsdom cannot reach, everything else is drawn on
-           screen and is checked through behaviour. `perFile` is the part that
+           screen and is checked through behavior. `perFile` is the part that
            matters - it is what makes a file with no test at all fail, without
            demanding a test file per source file. */
         thresholds: {

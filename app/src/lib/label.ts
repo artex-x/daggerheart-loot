@@ -15,7 +15,7 @@
  *
  * `badgeKind` is the class the badge takes, which is not the same vocabulary as
  * `kindOf` in data.ts: that answers "what does this count as when filtering",
- * and this answers "which of the two colours does the chip take". Equipment
+ * and this answers "which of the two colors does the chip take". Equipment
  * carries an item badge, because on a card it is a thing you have. */
 
 import { dict } from './dict.js';
@@ -48,7 +48,7 @@ export function kindGlyph(kind: Kind, t: EquipKind | undefined): IconName {
  *  D11, paid off: this used to guard six sites that hid a frame record's tier
  *  and switched its source label to a full path, on the strength of a comment
  *  ("presented as setting material") that turned out to assert intent with no
- *  evidence behind it - an identical piece of armour prints its tier when it
+ *  evidence behind it - an identical piece of armor prints its tier when it
  *  sits in `eq` and hides it when it sits in a frame table, and nothing a
  *  reader can see explains the difference. The owner settled on printing the
  *  tier like any other equipment (Q6); this predicate is kept for what still
@@ -60,7 +60,7 @@ export function isFrameRecord(it: Record_): boolean {
 }
 
 export interface Badge {
-  /** The modifier on `.badge` in style.css, which is what colours it. */
+  /** The modifier on `.badge` in style.css, which is what colors it. */
   cls: string;
   text: string;
   /** A hover explanation, where the live app gives one. */

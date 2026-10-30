@@ -13,14 +13,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [value=меч focused=true]
     StaticText "ТИП"
@@ -97,19 +95,18 @@ EN
 RU
 daggerheart.com
 Агатовый Паук
-Альт. таблицы
 Амулет Вацитоса
 Амулет Горнила
 Амулет Кровавого Охотника
 Амулет Праведной Ярости
 Амулет из Пальца Дьявола
+Бросок
 Бутыль с Духом
 Взгляд Ваэт
 Войти
 Временной Фитиль
 Динамит
 ДинамитВы можете поджечь эту динамитную шашку и бросить её в пре... [namelen=355 namehash=25334e3b]
-Дополнения
 Зелье Судного Дня
 К содержимому
 Камень Доблести
@@ -131,9 +128,8 @@ daggerheart.com
 Монета Палача
 Наручи Солнца и Луны
 Нектар Обетного Цветка
-Обычные правила
 Осколок Эмберита
-Открывать этот раздел при запуске
+Открывать при запуске
 Перчатка Ползучего Короля
 Перчатка Скорпиона
 Перчатки Расторопности
@@ -165,21 +161,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [value=меч focused=true]
     StaticText "TYPE"
@@ -202,7 +196,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 108Votive Bloom NectarYou clear 1d4 Stress, but the next time yo... [namelen=256 namehash=2fd6ee26]
@@ -253,7 +247,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
 9Pirate's Treasure MapThis enchanted map constantly redraws itse... [namelen=297 namehash=64e65874]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 Agate Spider
-Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
@@ -287,8 +280,9 @@ Items
 Keening Bone Flute
 Leaf of the Giant Tree
 Little Forest Spirit
+LootDaggerheart
 Mercurial Familiar
-Open this section on start
+Open on start
 Phaibos Mask
 Pirate's Treasure Map
 Poison-Colored Paint
@@ -298,14 +292,13 @@ Pythian Fork
 RU
 Ring of the Blood Matron
 Rings of Camaraderie
+Roll
 Scorpion Gauntlet
 Search
 Sign in
 Skip to content
 Sphere of Insanity
 Sprite Bottle
-Standard rules
-Supplements
 Tables
 Temporal Taper
 Terms of use
@@ -318,4 +311,3 @@ Vengeance Helm
 Votive Bloom Nectar
 White Talon Helm
 daggerheart.com
-ЛутDaggerheart

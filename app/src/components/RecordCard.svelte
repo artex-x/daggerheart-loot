@@ -72,7 +72,7 @@
      * which face found it, not where it sits in Core.
      */
     rollLabel?: number;
-    /** Which duality column found it, badged in that column's colour. */
+    /** Which duality column found it, badged in that column's color. */
     col?: AltCol;
     onartfail: (id: string) => void;
     /**
@@ -84,7 +84,7 @@
     onopen?: ((r: Record_) => void) | undefined;
     /** The two icon buttons beside the name: copy the name, copy the link. */
     nameActions?: Snippet;
-    /** The labelled row under the description: send, picture, text. */
+    /** The labeled row under the description: send, picture, text. */
     actions?: Snippet;
     /** The add-to-list control and the print link, off `listPicker` in app.js -
      *  only the full card draws it, the same as `actions`. */
@@ -353,7 +353,7 @@
           </p>
         {/if}
         {#if setMembers.length}
-          <!-- Every catalogue member in its order, then the own ones by name,
+          <!-- Every catalog member in its order, then the own ones by name,
                the record itself inert: the tier ladder's own rule for the rung you are on
                (`.step.on[aria-current]` above), reused here for the piece
                of the set you are looking at. One flex item holding the

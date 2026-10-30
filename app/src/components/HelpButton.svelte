@@ -20,24 +20,37 @@
     label?: string;
     /** The id of the hint this button shows. */
     controls?: string;
+    /** The page help beside an H1 (`PageHead.svelte`): its name is visible from 761 px. */
+    labeled?: boolean;
   }
 
-  const { lang, open, onclick, size, label, controls }: Props = $props();
+  const { lang, open, onclick, size, label, controls, labeled }: Props = $props();
 
   const t = $derived(dict(lang));
   const name = $derived(label ?? t.helpHint);
 </script>
 
-<button
-  type="button"
-  class="helpbtn"
-  class:sm={size === 'sm'}
-  class:on={open}
-  aria-label={name}
-  aria-expanded={open}
-  aria-controls={controls}
-  {onclick}>?</button
->
+{#if labeled}
+  <button
+    type="button"
+    class="helpbtn labeled"
+    class:on={open}
+    aria-expanded={open}
+    aria-controls={controls}
+    {onclick}><span class="q" aria-hidden="true">?</span><span class="txt">{name}</span></button
+  >
+{:else}
+  <button
+    type="button"
+    class="helpbtn"
+    class:sm={size === 'sm'}
+    class:on={open}
+    aria-label={name}
+    aria-expanded={open}
+    aria-controls={controls}
+    {onclick}>?</button
+  >
+{/if}
 
 <style>
   /* off `.helpbtn` in style.css */
@@ -89,6 +102,41 @@
       width: 34px;
       height: 34px;
       font-size: var(--t-body);
+    }
+  }
+
+  /* The `.vh` rule of `styles/tokens.css` up to 760 px, where the label stays the name. */
+  .txt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 761px) {
+    .labeled {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: auto;
+      height: 32px;
+      padding: 0 12px 0 10px;
+      border-radius: var(--r-sm);
+      font: 600 var(--t-data) / 1 var(--ui);
+    }
+
+    .labeled .q {
+      font: 700 var(--t-control) / 1 var(--mono);
+    }
+
+    .txt {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
     }
   }
 </style>

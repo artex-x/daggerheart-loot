@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -73,14 +71,13 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Брошюра по Истории Искусства
 Взять: Зелье Быстрого Шага
 Взять: Первоклассный Спальный Мешок
 Войти
 Гарпун Левиафана
 Добавить в список
-Дополнения
 Запрос отправлен
 Зелье Быстрого Шага
 К содержимому
@@ -93,7 +90,6 @@ daggerheart.com
 Макс, взять все: Первоклассный Спальный Мешок
 Мин, взять 1: Зелье Быстрого Шага
 Мин, взять 1: Первоклассный Спальный Мешок
-Обычные правила
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Первоклассный Спальный Мешок
@@ -117,16 +113,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
   link "Skip to content" [url=/en/s/player-token-1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -171,7 +165,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   status ""
     StaticText "The owner declined your request."
 
@@ -182,7 +176,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
 3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
 Add to list
-Alt. tables
 Art History Booklet
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
@@ -198,6 +191,7 @@ Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
 Install as an app
 Leviathan Harpoon
+LootDaggerheart
 Max, take all: Premium Bedroll
 Max, take all: Stride Potion
 Min, take 1: Premium Bedroll
@@ -207,19 +201,17 @@ Print
 Privacy
 RU
 Request sent
+Roll
 Save to my lists
 Scepter
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
 Search
 Sign in
 Skip to content
-Standard rules
 Stride Potion
-Supplements
 Tables
 Take: Premium Bedroll
 Take: Stride Potion
 Terms of use
 Twilight Deck
 daggerheart.com
-ЛутDaggerheart

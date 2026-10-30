@@ -3,7 +3,7 @@
   Russian from the body fragment pages/src/<id>.html, and pages/en/<id>.html
   in English from pages/src/en/<id>.html. One template for all of them: the
   head (with a text preview card from the PAGES entry's title and desc
-  pairs, the theme colour, and the manifest link and the two iOS tags at
+  pairs, the theme color, and the manifest link and the two iOS tags at
   the output's depth), the style, the <main id="app-page"> shell, the back link at the
   top and the bottom (its script returns to the screen the reader left) and
   the link to the page in the other language right under the top back link.
@@ -31,7 +31,7 @@ const OUT_EN = path.join(OUT, 'en');
 const SRC = path.join(OUT, 'src');
 const SRC_EN = path.join(SRC, 'en');
 
-/* The iOS home-screen label and the theme colour, from the one manifest the
+/* The iOS home-screen label and the theme color, from the one manifest the
    pages and the app share (docs/specs/META.md section 9). */
 const MANIFEST = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'app', 'public', 'manifest.webmanifest'), 'utf8')
@@ -63,7 +63,7 @@ const PAGES = [
     title: { ru: 'Условия использования', en: 'Terms of use' },
     desc: {
       ru: 'Правила пользования сайтом, отсутствие гарантий и лицензия на игровые материалы.',
-      en: 'Rules for using the site, no uptime promise, and the licence for the game content.'
+      en: 'Rules for using the site, no uptime promise, and the license for the game content.'
     }
   }
 ];
@@ -135,7 +135,7 @@ function page({ id, lang, title, desc, body }) {
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${esc(title[lang])}">
 <meta name="twitter:description" content="${esc(desc[lang])}">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%97%9D%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="${t.rootHref}icons/favicon.svg">
 <!-- the app's manifest, so the browser installs the app from this page too;
      static, since a page is served over HTTP only - docs/specs/META.md section 9 -->
 <link rel="manifest" href="${t.rootHref}manifest.webmanifest">

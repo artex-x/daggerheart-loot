@@ -52,7 +52,7 @@
     border-color: #9ec96a73;
   }
 
-  /* Gear names the kind of gear rather than "item"; the three colours are the
+  /* Gear names the kind of gear rather than "item"; the three colors are the
      ones the equipment tables and tiles already use. */
   .badge.eq-weapon {
     color: var(--eq-weapon);
@@ -83,7 +83,7 @@
   }
 
   /* Neutral on purpose: --muted carries a violet tint that put this badge in
-     the same family as the armour one. */
+     the same family as the armor one. */
   .badge.src {
     color: #9a9aa6;
   }
@@ -96,7 +96,7 @@
     border-color: var(--line2);
   }
 
-  /* The two duality columns, in the colours the dice are named for - the
+  /* The two duality columns, in the colors the dice are named for - the
      alternate tables' own use, not one of the three duplicated copies this
      component was extracted to replace, but the same base rule either way. */
   .badge.hope {

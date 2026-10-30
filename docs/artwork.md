@@ -125,7 +125,7 @@ The thumbnail is made from the 640 px WebP, never from the upload, so
 `thumbs` reproduces from the committed file the exact bytes `install` and
 `ingest` wrote (on the same encoder build), and `verify` checks it against
 the WebP it re-encodes. The cost is two lossy passes; at a 4x downscale the
-first pass's artefacts do not survive.
+first pass's artifacts do not survive.
 
 ## Determinism is per-run, not byte-identical with what is committed
 
@@ -245,10 +245,20 @@ orphan or non-160x160 thumbnail.
 ## Icons
 
 The installable app's icons (`docs/specs/META.md` section 9) are not item
-art, but they use the same encoder. `app/public/icons/icon.svg` is the
-source (a flat key, which the owner chose over an artwork-style render on
-2026-09-23); the four PNGs beside it are committed build inputs, like
-`card/*.svg`. After an edit to the SVG, run the one-time setup above, then:
+art, but they use the same encoder. The app has one mark, the vault die
+(owner, 2026-10-29): a d12 decagon in `--gold` (`#d8ab5e`) with a lighter
+pentagon face in `--gold-soft` (`#f0d091`), the edges and a keyhole through
+the face cut as a mask. It replaced the flat key of the home-screen icons,
+the emoji key of the tab favicon and the gold star of the header and the
+share cards. Four copies draw it from the same path data:
+`app/public/icons/icon.svg` (on the `--bg` square), `app/public/icons/favicon.svg`
+(on a `--bg` tile with a 96-unit corner radius), the header's inline SVG in
+`app/src/components/Shell.svelte`, and `MARK` in `tools/artwork/lib.mjs` for
+the share cards; `tools/artwork/lib.test.mjs` holds them to one drawing.
+Below 32 px the keyhole reads as a dark dot; the decagon and the lit face
+still read on a dark and a light tab strip. The four PNGs beside `icon.svg`
+are committed build inputs, like `card/*.svg`. After an edit to the SVG, run
+the one-time setup above, then:
 
 ```text
 node tools/artwork/icons.mjs
@@ -257,8 +267,8 @@ node tools/artwork/icons.mjs
 Expected result: one line per file - `icon-192.png`, `icon-512.png`,
 `maskable-512.png` and `apple-touch-icon.png` (180x180) with its byte size.
 The SVG renders at 384 dpi and each size is a Lanczos downsample to PNG. The
-drawing must stay inside the maskable safe zone, a centred circle of radius
-40% of the side (204.8 units of the 512 viewBox), because the maskable icon
+drawing must stay inside the maskable safe zone, a centered circle of radius
+40% of the side (204.8 units of the 512 viewBox; the decagon reaches 198), because the maskable icon
 is the same drawing. Commit the SVG and the four PNGs
 together.
 
@@ -275,7 +285,7 @@ inputs, like the icons: the deploy job never renders them.
 The text is set in Source Sans 3, the app's UI family (`--ui` in
 `app/src/styles/tokens.css`), as static faces: the app loads the variable
 face from `@fontsource-variable/source-sans-3`, and fontconfig renders TTF.
-`tools/artwork/fonts/` ships the two faces the template uses and the licence
+`tools/artwork/fonts/` ships the two faces the template uses and the license
 (SIL Open Font License 1.1), taken from the Adobe release 3.052R
 (`github.com/adobe-fonts/source-sans`, tag `3.052R`, `TTF/` and the root
 `LICENSE.md`):
@@ -289,8 +299,9 @@ face from `@fontsource-variable/source-sans-3`, and fontconfig renders TTF.
 The card stands on the app's page ground: a vertical gradient from `--bg2`
 (`#14111d`) at the top to `--bg` (`#0e0c15`) at 520 px. The title is
 `--txt`, «DAGGERHEART» is the header's muted brand line (`--muted2`, letter
-spacing 2), and the subtitle is `--muted`. Gold (`--gold`) is on the star
-only, as on the header's brand mark (DESIGN.md, "The Seal Rule").
+spacing 2), and the subtitle is `--muted`. The mark ("Icons" above) stands
+in an 84 px box at (50, 258) before the title. Gold is on the mark only, as
+in the header (DESIGN.md, "The Seal Rule").
 
 `tools/artwork/cards.mjs` writes a `fonts.conf` that lists only that
 directory, and runs itself again with `FONTCONFIG_PATH` and
@@ -485,4 +496,4 @@ Guards in `tools/artwork/lib.test.mjs`:
   buffer, and `verify` re-encodes from that same original; the originals
   live in untracked drop directories, so neither folder is recoverable from
   the other or from the repository - why both stay tracked whatever the
-  generated-artefact policy elsewhere says.
+  generated-artifact policy elsewhere says.

@@ -170,7 +170,7 @@ async function softClick(d, name) {
   return has;
 }
 
-/** Returns the icon's vertical centre against its label's first line box, for
+/** Returns the icon's vertical center against its label's first line box, for
  *  each button with an icon in the group of that accessible name. */
 async function iconCentres(page, groupName) {
   return page.evaluate((name) => {
@@ -306,7 +306,7 @@ async function iconCentres(page, groupName) {
     await ctx.close();
   }
 
-  /* The icon and the label share one centre on each neutral switch, at both widths. */
+  /* The icon and the label share one center on each neutral switch, at both widths. */
   for (const lang of ['ru', 'en']) {
     for (const width of [360, 1180]) {
       const { ctx, page, d } = await fresh({ width, height: 900, lang });

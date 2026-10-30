@@ -60,7 +60,7 @@ const world = async (tx) => {
       (${E3}, ${L}, 'cc1', 2, 1, null, '', ''), (${EB}, ${LB}, 'ci1', 0, 2, null, '', '')`;
 };
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
-/* postgres.js serialises a jsonb parameter itself: a JSON text passed here
+/* postgres.js serializes a jsonb parameter itself: a JSON text passed here
    would arrive as one JSON string, not as the array it holds. */
 const batch = async (tx, ops) => {
   const [{ r }] = await tx`select public.apply_list_writes(${

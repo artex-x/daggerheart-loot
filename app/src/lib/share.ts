@@ -69,7 +69,7 @@ export function shareBlocks(
   const t = dict(lang);
   const out: ShareBlock[] = [];
 
-  /* Lines compare as they read, so a plain line and its labelled twin are one line;
+  /* Lines compare as they read, so a plain line and its labeled twin are one line;
      a table line always stays, or a shared separator would break the target's table. */
   const own = new Set(descOf(it, lang).split('\n').map(markupText));
   const targets = relOrder(upgradesTo(index, it), lang).filter((r) => !skip.has(r.id));

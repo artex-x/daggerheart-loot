@@ -87,6 +87,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
+?Справка
 Core
 EN
 Hope & Fear
@@ -99,6 +100,7 @@ daggerheart.com
 Банка с Огнём
 Бездонная Сумка
 Ботинки Хождения по Воде
+Бросок
 Глиняный Спутник
 Двойная Фляга
 Добавить в список
@@ -107,7 +109,6 @@ daggerheart.com
 Заряжающий Колчан
 Исправляющий Дух
 К содержимому
-Как это работает
 Камень Доблести
 Камень Облика
 Клад дракона
@@ -126,9 +127,8 @@ daggerheart.com
 Мешочек Своенравного Песка
 Мистический Плащ
 Наручники
-Обычные правила
 Осколок Памяти
-Открывать этот раздел при запуске
+Открывать при запуске
 Отправить
 Парашют
 Первоклассный Спальный Мешок
@@ -266,6 +266,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables?as=gm4]
 7Arcane CloakA creature with a Spellcast trait wearing this cloa... [namelen=122 namehash=12599eee]
 8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=154 namehash=33eb11a6]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
+?Help
 Account: gm4@example.test
 Add to list
 Airblade Charm
@@ -317,19 +318,19 @@ Homing Compasses
 Honing Relic
 Hope & Fear
 Hopekeeper Locket
-How this works
 Infinite Bag
 Install as an app
 Items
 Lakestrider Boots
 Link to this table
 List
+LootDaggerheart
 Lorekeeper
 Manacles
 Minor Health Potion Recipe
 Minor Stamina Potion Recipe
 Mythic Dust Recipe
-Open this section on start
+Open on start
 Other
 Page
 Paragon's Chain
@@ -344,6 +345,7 @@ RU
 Ring of Resistance
 Ring of Silence
 Ring of Unbreakable Resolve
+Roll
 Save to my items
 Search
 Shard of Memory
@@ -351,7 +353,6 @@ Share
 Skeleton Key
 Skip to content
 Speaking Orbs
-Standard rules
 Stride Relic
 Supplements
 Suspended Rod
@@ -361,4 +362,3 @@ Valorstone
 Vial of Darksmoke Recipe
 Woven Net
 daggerheart.com
-ЛутDaggerheart

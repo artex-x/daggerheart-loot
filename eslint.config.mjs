@@ -18,7 +18,7 @@ export default ts.config(
       'coverage/**',
       'node_modules/**',
       /* Generated data, not authored - reformatting or linting a
-         machine-written file is noise for no behaviour change. */
+         machine-written file is noise for no behavior change. */
       'data.js',
       'i/**',
       /* Untracked artwork scratch, gitignored for the same reason (.gitignore). */

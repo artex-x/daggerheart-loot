@@ -936,7 +936,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      */
     metrics() {
       return page.evaluate(() => {
-        /* Typography and colour only. Position and size are deliberately not
+        /* Typography and color only. Position and size are deliberately not
            here: two layouts mid-port disagree about them by definition, and a
            metric that always differs teaches everyone to ignore the report.
            Geometry is what the pixel budget measures, and that number comes
@@ -1167,7 +1167,7 @@ async function prepare(page) {
      the pixel comparison") died along with the parity harness, since
      deleted. It stays for a better
      reason: `tokens.css`'s blanket reduced-motion kill is the app's
-     shipped behaviour for a visitor who asked for less motion, and only under
+     shipped behavior for a visitor who asked for less motion, and only under
      this emulation does every browser suite exercise that branch - drop it
      and the kill is covered by `states.js` case 24 alone. It also keeps every run
      deterministic and fast: without it, every `settle()` wait would be a real

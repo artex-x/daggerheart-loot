@@ -65,7 +65,7 @@ const SUITES = [
   ['app/golden', 'dist-test/: structural snapshots 4/4', 156, ['--shard=4/4']],
   ['app/golden', 'dist-test/: structural snapshots 2/4', 151.5, ['--shard=2/4']],
   ['app/typo', 'dist-test/: fonts and scale', 89.6],
-  ['app/hues', 'dist-test/: label colours', 77],
+  ['app/hues', 'dist-test/: label colors', 77],
   ['stub', 'stub pages i/', 4],
   ['derived', 'derived files and catalog', 1.8],
   ['dataint', 'data.js invariants', 0.4],

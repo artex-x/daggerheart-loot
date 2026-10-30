@@ -124,7 +124,7 @@ const NAME = {
     addToList: 'Добавить в список',
     stepDown: 'На единицу меньше',
     stepUp: 'На единицу больше',
-    pinSection: 'Открывать этот раздел при запуске',
+    pinSection: 'Открывать при запуске',
     filters: 'Фильтры',
     itemsChip: 'Предметы',
     resetFilter: 'Сбросить всё',
@@ -141,7 +141,7 @@ const NAME = {
     moneyCoin: 'Монетами',
     rename: 'Название списка',
     position: 'Позиция в списке',
-    whatIsThis: 'Как это работает',
+    whatIsThis: 'Справка',
     printHint: 'Собрать карточки для печати: девять на лист A4',
     printLink: 'Ссылка на набор',
     prices: 'Цены',
@@ -167,7 +167,7 @@ const NAME = {
     addToList: 'Add to list',
     stepDown: 'One lower',
     stepUp: 'One higher',
-    pinSection: 'Open this section on start',
+    pinSection: 'Open on start',
     filters: 'Filters',
     itemsChip: 'Items',
     resetFilter: 'Reset all',
@@ -186,7 +186,7 @@ const NAME = {
     moneyCoin: 'In coins',
     rename: 'List name',
     position: 'Position in the list',
-    whatIsThis: 'How this works',
+    whatIsThis: 'Help',
     printHint: 'Lay these out for printing: nine to an A4 sheet',
     printLink: 'Link to this set',
     prices: 'Prices',
@@ -466,7 +466,7 @@ const STATES = [
     route: '#/roll/wondrous_environments',
     why: 'the help panel, unfolded',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
 
@@ -492,7 +492,7 @@ const STATES = [
     route: '#/roll/wondrous_environments',
     why: 'the section pinned as the one to open on',
     enter: async (d) => {
-      await d.click('Открывать этот раздел при запуске');
+      await d.click('Открывать при запуске');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -619,7 +619,7 @@ const STATES = [
     route: '#/roll/std',
     why: 'the help panel with bold lines inside a paragraph',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
 
@@ -684,7 +684,7 @@ const STATES = [
     route: '#/roll/dragons_vault',
     why: 'the help panel, unfolded: why the table has no die, and where the equipment half lives',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   {
@@ -697,7 +697,7 @@ const STATES = [
     route: '#/roll/arazos_artifacts',
     why: 'the help panel, unfolded: Destiny instead of a roll table, and the four versions of every piece of equipment',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   { id: '#/roll/community', route: '#/roll/community_items', why: 'communities' },
@@ -777,7 +777,7 @@ const STATES = [
     route: '#/roll/many_worlds_tavern',
     why: 'the help panel, unfolded: the six decks, the die, no domain cards and no rarity, one link per realm',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   {
@@ -950,7 +950,7 @@ const STATES = [
     route: '#/tables',
     why: 'the help panel, which uses a bold word mid-sentence twice over, and the «Хоумбрю» group with its three filters',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   {
@@ -1150,7 +1150,7 @@ const STATES = [
   {
     id: '#/i/dve66',
     route: '#/i/dve66',
-    why: 'an armour record with a referenced adversary feature, folded'
+    why: 'an armor record with a referenced adversary feature, folded'
   },
   {
     id: '#/i/dve30',
@@ -1252,7 +1252,7 @@ const STATES = [
     route: '#/lists',
     why: 'the five paragraphs, the third with two bold runs and the fourth with one; the second says what signing in does, the fourth how an account list is shared, the fifth what ticked account lists and «Импорт из файла» do',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   {
@@ -1271,7 +1271,7 @@ const STATES = [
     id: '#/lists ~ not saved as gm2',
     route: '#/lists',
     as: 'gm2',
-    why: 'a create with no network: the new card first in «Ваш аккаунт», and the account count line ends «· Не сохранено» in the danger colour and «Повторить»',
+    why: 'a create with no network: the new card first in «Ваш аккаунт», and the account count line ends «· Не сохранено» in the danger color and «Повторить»',
     enter: async (d) => {
       for (let i = 0; i < 40 && !(await d.text()).includes('1 список из 50'); i++)
         await d.settle();
@@ -1632,7 +1632,7 @@ const STATES = [
     id: SHOP + ' ~ requests as gm1',
     route: SHOP,
     as: 'gm1',
-    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger colour, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»",
+    why: "the requests panel after the action row, before the money row: «Новое в списке (2)», the GM link's request first (cc1 «×9 из 5» in the danger color, 180 зол.; q1 «×1 из 1», «-»; «Итого: 180 зол. (без цены: 1)»), then the players' (ci1 «×1 из 2» 150 зол., cc1 «×3 из 5» 60 зол., «Итого: 210 зол.»), «Принять» and «Отклонить» under each; «только что» and, once the visible page has read them, «истечёт через 60 минут»; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать»",
     enter: async (d) => {
       await twoRequests(d);
       /* A drawn request is read at once in a visible tab; wait for that read. */
@@ -1663,7 +1663,7 @@ const STATES = [
     route: SHOP,
     as: 'gm1',
     hold: 'lines:fail',
-    why: 'the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger colour and a small «Повторить» in the panel slot, no panel; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the requests arrived on the index); the tab title «(2) Лавка кузнеца - ...» (unread: no lines drawn)',
+    why: 'the requests read whose lines fail: «Не получилось загрузить запросы.» in the danger color and a small «Повторить» in the panel slot, no panel; the toast «Новых запросов по списку «Лавка кузнеца»: 2» with «Показать» (the requests arrived on the index); the tab title «(2) Лавка кузнеца - ...» (unread: no lines drawn)',
     enter: async (d) => {
       await requestsOnIndex(d);
       for (
@@ -1749,7 +1749,7 @@ const STATES = [
     id: SHOP + ' ~ not saved as gm1',
     route: SHOP,
     as: 'gm1',
-    why: 'an edit with no network: «Не сохранено» in the danger colour and «Повторить» in the sub, the edit kept on screen, «Поделиться» folded',
+    why: 'an edit with no network: «Не сохранено» in the danger color and «Повторить» in the sub, the edit kept on screen, «Поделиться» folded',
     enter: async (d) => {
       await d.fake('setOffline', true);
       await d.type('Например: лавка закрыта до утра', 'Открыта с рассвета до полуночи.');
@@ -2370,7 +2370,7 @@ const STATES = [
     route: NINE,
     as: 'gm2',
     whole: true,
-    why: 'every card shape on one sheet: item, weapon, armour, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule',
+    why: 'every card shape on one sheet: item, weapon, armor, consumable, artifact, versatile magic, two-handed with a bonus, magic dagger, a long rule',
     enter: sheet
   },
   {
@@ -2389,7 +2389,7 @@ const STATES = [
     route: LONG,
     as: 'gm2',
     whole: true,
-    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalogue',
+    why: 'the fit ladder end to end: the font, then the padding, then the art gives way on the longest texts in the catalog',
     enter: sheet
   },
   {
@@ -2459,7 +2459,7 @@ const STATES = [
     id: TWO + ' ~ compact as gm2',
     route: TWO,
     as: 'gm2',
-    why: 'the compact sheet in colour: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
+    why: 'the compact sheet in color: the size switch pressed, the compact subtitle, sixteen places, fourteen blank; the note under the bar',
     enter: async (d) => {
       await sheet(d);
       await d.click('Компактная');
@@ -2481,7 +2481,7 @@ const STATES = [
     route: NINE,
     as: 'gm2',
     whole: true,
-    why: 'every card shape on the compact sheet, in colour; the note under the bar',
+    why: 'every card shape on the compact sheet, in color; the note under the bar',
     enter: async (d) => {
       await sheet(d);
       await d.click('Компактная');
@@ -2504,7 +2504,7 @@ const STATES = [
     route: LONG,
     as: 'gm2',
     whole: true,
-    why: 'the colour fit ladder at 44 mm on the longest texts; the note under the bar',
+    why: 'the color fit ladder at 44 mm on the longest texts; the note under the bar',
     enter: async (d) => {
       await sheet(d);
       await d.click('Компактная');
@@ -2594,6 +2594,17 @@ const STATES = [
   },
   /* The English half is captured after the EN press, an outside click that
      closes the menu, as it closes the add-to-list menu. */
+  /* The supplements menu of the mode row (FEATURES.md, "Chrome"), open on a supplement page:
+     the seven supplements with the open one checked. Its axe case is modeRow.test.ts. */
+  {
+    id: '#/roll/vault_of_ages ~ supplements menu',
+    route: '#/roll/vault_of_ages',
+    why: 'the supplements menu open on Vault of Ages: the caption, seven supplements in table order, Vault of Ages checked and current',
+    enter: async (d) => {
+      await d.press('Vault of Ages');
+    }
+  },
+
   {
     id: '#/roll/std ~ account menu as gm1',
     route: '#/roll/std',
@@ -2741,9 +2752,9 @@ const STATES = [
     id: '#/homebrew ~ help open as gm1',
     route: '#/homebrew',
     as: 'gm1',
-    why: 'the head «Мои предметы» with the home button and «Как это работает» pressed: the help under the head, five paragraphs with bold leads «Предметы.», «Источники.», «Комплекты.», «Карты правил.», «Импорт из файла.»',
+    why: 'the head «Мои предметы» with the home button and «Справка» pressed: the help under the head, five paragraphs with bold leads «Предметы.», «Источники.», «Комплекты.», «Карты правил.», «Импорт из файла.»',
     enter: async (d) => {
-      await d.click('Как это работает');
+      await d.click('Справка');
     }
   },
   {
@@ -2752,7 +2763,7 @@ const STATES = [
     as: 'gm1',
     why: 'the home button pressed: «Открывается при запуске» pressed, the toast «Приложение будет открываться на этом разделе»',
     enter: async (d) => {
-      await d.click('Открывать этот раздел при запуске');
+      await d.click('Открывать при запуске');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
@@ -3105,7 +3116,7 @@ const STATES = [
     id: '#/homebrew/new ~ armour as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: '«Снаряжение» and «Броня»: «Ранг» * 1-4, «Показатель брони» *, the caption «Пороги урона» * over two labelled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»',
+    why: '«Снаряжение» and «Броня»: «Ранг» * 1-4, «Показатель брони» *, the caption «Пороги урона» * over two labeled boxes «Порог Ощутимого урона» and «Порог Тяжёлого урона»',
     enter: async (d) => {
       await d.click('Снаряжение');
       await d.click('Броня');
@@ -3437,14 +3448,14 @@ const STATES = [
     id: TWO + ' as gm1',
     route: TWO,
     as: 'gm1',
-    why: "the account's print layout: black and white on the compact sheet, where gm2 reads colour on the standard sheet",
+    why: "the account's print layout: black and white on the compact sheet, where gm2 reads color on the standard sheet",
     enter: sheet
   },
   {
     id: TWO + ' ~ colour for this visit as gm1',
     route: TWO,
     as: 'gm1',
-    why: "a page pick away from the account's default: colour on the compact sheet; the note under the bar",
+    why: "a page pick away from the account's default: color on the compact sheet; the note under the bar",
     enter: async (d) => {
       await sheet(d);
       await d.click('Цветная');
@@ -3461,7 +3472,7 @@ const STATES = [
     id: '#/p/set-emberaxe ~ colour for this visit as gm1',
     route: '#/p/set-emberaxe',
     as: 'gm1',
-    why: "an own item's picture on print: the axe's colour card draws its picture (the catalog's ci1.webp, seeded), as print.js pins",
+    why: "an own item's picture on print: the axe's color card draws its picture (the catalog's ci1.webp, seeded), as print.js pins",
     enter: async (d) => {
       await sheet(d);
       await d.click('Цветная');
@@ -3471,7 +3482,7 @@ const STATES = [
     id: '#/p/set-ownitems ~ colour for this visit as gm1',
     route: '#/p/set-ownitems',
     as: 'gm1',
-    why: 'the same two own items in colour on the compact sheet; the note under the bar',
+    why: 'the same two own items in color on the compact sheet; the note under the bar',
     enter: async (d) => {
       await sheet(d);
       await d.click('Цветная');
@@ -3481,7 +3492,7 @@ const STATES = [
     id: '#/p/set-emberaxe as gm2',
     route: '#/p/set-emberaxe',
     as: 'gm2',
-    why: "gm1's axe in a set made by another account, read by gm2 on the standard colour sheet, its source line the path",
+    why: "gm1's axe in a set made by another account, read by gm2 on the standard color sheet, its source line the path",
     enter: sheet
   },
   /* gm4's «Свиток Узоролиста»: every construct of the formatted text
@@ -3505,7 +3516,7 @@ const STATES = [
     id: '#/p/set-clipped1 as gm2',
     route: '#/p/set-clipped1',
     as: 'gm2',
-    why: "gm4's item at the 3000-character text on the standard colour sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar before the grey note, «Отправить на печать» enabled",
+    why: "gm4's item at the 3000-character text on the standard color sheet: the card cut off, the warning box «Текст не помещается на карточки при печати: 1. ...» in the bar before the gray note, «Отправить на печать» enabled",
     enter: async (d) => {
       await sheet(d);
       for (let i = 0; i < 40 && !(await d.text()).includes('Текст не помещается'); i++)
@@ -3516,14 +3527,14 @@ const STATES = [
     id: '#/p/set-longsrc1 as gm2',
     route: '#/p/set-longsrc1',
     as: 'gm2',
-    why: "gm4's item with an 80-code-point source and section on the standard colour sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws the kind glyph on the light print well",
+    why: "gm4's item with an 80-code-point source and section on the standard color sheet: the source line wraps right-aligned beside «Daggerheart», the art block draws the kind glyph on the light print well",
     enter: sheet
   },
   {
     id: '#/p/set-longsrc1 ~ compact as gm2',
     route: '#/p/set-longsrc1',
     as: 'gm2',
-    why: 'the same card on the compact colour sheet: the source line still inside the card',
+    why: 'the same card on the compact color sheet: the source line still inside the card',
     enter: async (d) => {
       await sheet(d);
       await d.click('Компактная');
@@ -3533,7 +3544,7 @@ const STATES = [
     id: '#/p/set-markup01 as gm4',
     route: '#/p/set-markup01',
     as: 'gm4',
-    why: 'the formatted item on print: bold, italic, both lists as lists and the table inside the text block, on the standard colour sheet',
+    why: 'the formatted item on print: bold, italic, both lists as lists and the table inside the text block, on the standard color sheet',
     enter: sheet
   },
   /* The formatted text boxes and the two languages of a homebrew form
@@ -3575,7 +3586,7 @@ const STATES = [
     id: '#/homebrew/new ~ print preview clipped as gm1',
     route: '#/homebrew/new',
     as: 'gm1',
-    why: 'a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact colour print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
+    why: 'a name and a 3000-character «Описание», «На печати», then «Цветная»: the compact color print card cut off, the warning box «Текст не помещается на карточку при печати...» after «3000 / 3000», «Сохранить» enabled',
     enter: async (d) => {
       await d.type('Название*', 'Свиток долгой ночи');
       await d.type('Описание', CLIPPED_TEXT);

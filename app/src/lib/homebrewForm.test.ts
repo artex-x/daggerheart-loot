@@ -103,7 +103,7 @@ describe('draftOf and contentOf', () => {
   it.each([
     ['a weapon with a second set', AXE],
     ['an English-only loot item', CAP],
-    ['an armour artifact', COAT]
+    ['an armor artifact', COAT]
   ] as const)('writes back %s unchanged', (_name, r) => {
     expect(canonJson(contentOf(draftOf(r), opened(r)))).toBe(canonJson(r.content));
     expect(canonJson(contentOf(draftOf(r), null))).toBe(canonJson(r.content));
@@ -155,7 +155,7 @@ describe('draftOf and contentOf', () => {
     expect(c.eq['dmg']).toBe(dmg);
   });
 
-  it('writes the second set from its own pair and reads the numbers of an armour', () => {
+  it('writes the second set from its own pair and reads the numbers of an armor', () => {
     const c = contentOf(
       draft({ kind: 'equip', t: 'weapon', eqTier: '1', bu: 'any', altDmgDie: 'd6' }),
       null

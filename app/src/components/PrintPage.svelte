@@ -280,7 +280,7 @@
   }
 
   /* The opt-in compact sheet: 4x4 cards of 44x63 mm, the same 2 mm gutters,
-     182x258 mm of cards centred on A4 - FEATURES.md, "Print". */
+     182x258 mm of cards centered on A4 - FEATURES.md, "Print". */
   .psheet.compact {
     padding: 19.5mm 14mm;
     grid-template-columns: repeat(4, 44mm);
@@ -326,7 +326,7 @@
     }
 
     /* Chrome sometimes adds an empty page after the last block, exactly one
-       sheet tall - the extra millimetre below is that page. */
+       sheet tall - the extra millimeter below is that page. */
     .psheet:last-child {
       height: 296.9mm;
     }

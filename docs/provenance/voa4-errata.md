@@ -22,7 +22,7 @@ The audit is the external document `voa4-audit.md`; it is not in the repository.
 | R | A rule the book states two ways, or a rule that is hard to play | Edited only where the book contradicts itself; otherwise the printed rule |
 | B | Balance outside the core bands | Never changed; the author's call |
 
-A `-1` in a shipped cell is written with U+2212, the minus sign the catalogue uses in feature
+A `-1` in a shipped cell is written with U+2212, the minus sign the catalog uses in feature
 modifiers.
 
 ## Edits (the shipped text differs from the page)
@@ -91,7 +91,7 @@ modifiers.
 | voa4_t2f | `When you deal Major damage to an object` | Playable: the GM gives the object thresholds | R | 16 |
 | voa4_t3g | `a number of creatures equal to half your Agility` | No rounding printed; the table rounds | R | 19 |
 | voa4_t2f | `Damage: d8+5 physical`, One-Handed | Above the tier 2 one-handed band | B | 20 |
-| voa4_t4d | the core Channeling Armor line plus Thoughtbreaker | A strict upgrade of a core armour | B | 21 |
+| voa4_t4d | the core Channeling Armor line plus Thoughtbreaker | A strict upgrade of a core armor | B | 21 |
 | voa4_t4a | `equal to your current Spellcast trait` | Playable; no Spellcast trait gives no bonus | R | 22 |
 | voa4_t1b | `a living adversary with no more than 3 Hit Points`; a zombie whose Group Attack costs Fear | Playable; the `rotted-zombie` ref shows the stat block | R | 23 |
 | voa4_t2i | `On a success, clear a Stress.` | Playable as printed | R | 24 |

@@ -6,7 +6,7 @@
  * browser gives an empty range. `fit()`'s strip loop calls it on every card
  * with a `.pc-strip`, so without this every such render throws before the DOM
  * settles. A zero-width rect is what a real browser reports for an empty range
- * anyway, so this fills an environment gap and changes no behaviour.
+ * anyway, so this fills an environment gap and changes no behavior.
  * `getClientRects` has the same gap: an empty list is what a real browser gives
  * an empty range. */
 export function emptyRanges(): void {

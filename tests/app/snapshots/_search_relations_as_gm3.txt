@@ -14,14 +14,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "EN" [pressed=false]
     button "Аккаунт: gm3@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=113 namehash=d54a9164]
     searchbox "Поиск по названию или описанию..." [value=спальный мешок focused=true]
     StaticText "ТИП"
@@ -54,17 +52,15 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm3@example.test
-Альт. таблицы
 Базовые припасы
 Базовые припасыСтартовый предмет базовой книги. Палатка, спальны... [namelen=130 namehash=510c9b6d]
-Дополнения
+Бросок
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 Мешок спокойных снов
 Мешок спокойных сновСпальный мешок для долгой дороги.Получается ... [namelen=110 namehash=16461ca1]
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Первоклассный Спальный Мешок
 Поиск
 Предметы
@@ -106,21 +102,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
   link "Skip to content" [url=/en/search?as=gm3#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm3@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=116 namehash=bf571e43]
     searchbox "Search by name or description..." [value=спальный мешок focused=true]
     StaticText "TYPE"
@@ -145,12 +139,11 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm3]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1Premium BedrollDuring downtime, you automatically clear a Stres... [namelen=115 namehash=7ce280b8]
 Account: gm3@example.test
-Alt. tables
 Ash Bedroll
 Ash BedrollA bedroll for a long road.Made from: Premium BedrollI... [namelen=75 namehash=d39b7d20]
 Basic supplies
@@ -172,22 +165,22 @@ Hermit's Bedroll
 Hermit's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=bdd52709]
 Install as an app
 Items
+LootDaggerheart
 Nomad's Bedroll
 Nomad's BedrollA bedroll for a long road.Made from: Premium Bedr... [namelen=79 namehash=4876bc1f]
-Open this section on start
+Open on start
 Pilgrim's Bedroll
 Pilgrim's BedrollA bedroll for a long road.Made from: Premium Be... [namelen=81 namehash=c78e4b31]
 Premium Bedroll
 Privacy
 RU
+Roll
 Sack of Quiet Dreams
 Sack of Quiet DreamsA bedroll for a long road.Made from: Premium... [namelen=84 namehash=6ab1de57]
 Search
 Sentry's Bedroll
 Sentry's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 namehash=51ea9f63]
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 Tracker's Bedroll
@@ -199,4 +192,3 @@ Warden's BedrollA bedroll for a long road.Made from: Premium Bed... [namelen=80 
 Warm Bedroll
 Warm BedrollA bedroll for a long road.Made from: Premium Bedroll... [namelen=76 namehash=b328ce85]
 daggerheart.com
-ЛутDaggerheart

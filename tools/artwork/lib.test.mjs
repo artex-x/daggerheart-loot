@@ -18,6 +18,7 @@ import {
   shareCardSvg,
   CARD_TEXT,
   CARD_FONT,
+  MARK,
   catalogRecords,
   parseImageDates,
   parseReviewQuery,
@@ -356,11 +357,13 @@ describe('shareCardSvg', () => {
     for (const t of texts) assert.ok(t.includes('font-family="\'Source Sans 3\'"'), t);
   });
 
-  it('spends gold on the star only, on the linear page ground', () => {
+  it('spends gold on the mark only, on the linear page ground', () => {
     for (const lang of ['ru', 'en']) {
       const svg = shareCardSvg(lang);
       assert.equal(svg.match(/#d8ab5e/g).length, 1);
-      assert.match(svg, /<path d="[^"]+" fill="#d8ab5e"\/>/);
+      assert.equal(svg.match(/#f0d091/g).length, 1);
+      assert.ok(svg.includes('<g transform="translate(50 258) scale(0.1640625)">'));
+      assert.ok(svg.includes(MARK.g('mark-cut')));
       assert.ok(!svg.includes('radialGradient'));
       assert.match(svg, /<linearGradient id="bg" x1="0" y1="0" x2="0" y2="520"/);
       assert.match(svg, /stop-color="#14111d"\/><stop offset="1" stop-color="#0e0c15"/);
@@ -370,6 +373,21 @@ describe('shareCardSvg', () => {
 
   it('throws for an unknown language', () => {
     assert.throws(() => shareCardSvg('de'), /No share card text for language "de"/);
+  });
+
+  it('draws the mark of the header, the app icon and the favicon: four copies, one drawing', () => {
+    const files = [
+      'app/public/icons/icon.svg',
+      'app/public/icons/favicon.svg',
+      'app/src/components/Shell.svelte'
+    ];
+    for (const f of files) {
+      const text = readFileSync(join(ROOT, f), 'utf8');
+      for (const part of ['face', 'edges', 'keyhole', 'decagon']) {
+        assert.ok(text.includes('"' + MARK[part] + '"'), f + ' draws another ' + part);
+      }
+      assert.ok(text.includes('fill="#d8ab5e"') && text.includes('fill="#f0d091"'), f);
+    }
   });
 });
 

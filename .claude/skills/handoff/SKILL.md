@@ -39,7 +39,7 @@ worktree until the next session.
 3. Check every owner rule in `context.md`, "Decisions already settled",
    against its home: grep the home for a distinctive phrase; write a
    missing rule inside the home's budget (`.claude/README.md`, "Owner
-   insights"). A rule whose behaviour did not ship goes to `DEBT.md`;
+   insights"). A rule whose behavior did not ship goes to `DEBT.md`;
    name each missed write in the closeout summary.
 4. `git grep -n "issues/<id>" -- ':!issues/'`. Unslashed and scoped outside
    all of `issues/`, matching the boundary `bash-guard.mjs` rule 2i checks -
@@ -74,7 +74,7 @@ Exactly these classes, nothing else:
 
 1. **Decision** - still in force, with the alternatives rejected and the
    reason. Not already recorded in a permanent file (grep a distinctive
-   phrase first). Record it only when an alternative was rejected; behaviour
+   phrase first). Record it only when an alternative was rejected; behavior
    goes to the spec, tooling and hooks to `.claude/README.md`.
 2. **Fact** - measured, not re-derivable from the repository or git history
    (a wall clock, a probe outcome, a count used as evidence for a threshold),
@@ -82,9 +82,9 @@ Exactly these classes, nothing else:
 3. **Defect or owed work** - a defect knowingly kept, or work explicitly
    deferred and never closed. A defect -> `DEBT.md`; an idea -> named to the
    human, then dropped.
-4. **Quirk** - a host or tool behaviour with the symptom that identifies it.
+4. **Quirk** - a host or tool behavior with the symptom that identifies it.
 
-Homes: behaviour -> the spec that owns it; hook/harness/host ->
+Homes: behavior -> the spec that owns it; hook/harness/host ->
 `.claude/README.md` (a "Facts settled" list, a "Known limitations" bullet, a
 candidates row, or the section that owns the tool); other decisions ->
 `docs/decisions/` (one file from `.claude/templates/decision.template.md`;

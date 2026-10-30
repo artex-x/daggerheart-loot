@@ -41,7 +41,7 @@ const INK_DISTANCE = 96;
 const MIN_INK = 9000;
 // The title's rows: its baseline is y 321 at 64 px, the brand line's caps
 // start near y 346 (shareCardSvg). A pixel whose three channels all exceed
-// TITLE_BRIGHT is title ink (#ece8f6); the muted brand line and the grey
+// TITLE_BRIGHT is title ink (#ece8f6); the muted brand line and the gray
 // subtitle are darker in at least one channel.
 const TITLE_BAND = [260, 340];
 const TITLE_BRIGHT = 180;

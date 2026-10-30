@@ -6,7 +6,7 @@
 <script lang="ts">
   /* Everything a person does with one record, in the two rows the live app
      puts them in: two icon buttons beside the name - copy the name, copy the
-     link - and a labelled row under the description: send, picture, text.
+     link - and a labeled row under the description: send, picture, text.
 
      One component renders either row, because the handlers are shared and
      splitting them would mean two copies of the clipboard logic.

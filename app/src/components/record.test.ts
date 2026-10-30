@@ -1,6 +1,6 @@
 /* The record page, driven through fake ports.
  *
- * A small catalogue rather than the real one: five records shaped to cover what
+ * A small catalog rather than the real one: five records shaped to cover what
  * the card branches on - a plain item, a consumable, equipment with a stat line,
  * both ends of an upgrade chain, a referenced rulebook card, and a record with
  * no picture. The format the copy buttons produce is held to the live app in
@@ -917,7 +917,7 @@ describe('the tier ladder', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the
-       modal, the native <dialog> behaviour this must not fight. */
+       modal, the native <dialog> behavior this must not fight. */
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

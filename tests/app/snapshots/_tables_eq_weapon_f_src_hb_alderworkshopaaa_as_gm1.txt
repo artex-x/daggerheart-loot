@@ -14,15 +14,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -46,8 +44,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Сбросить всё"
     button "Ссылка на фильтры" [description=Ссылка на фильтры]
     ... StaticText x14 of 18 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x31 of 35 same-shape siblings elided
     button "Мастерская Ольхи" [pressed=true]
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
@@ -69,6 +66,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 3
 4
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -85,6 +83,7 @@ daggerheart.com
 Артефакты
 Близко
 Броня
+Бросок
 Влияние
 Вплотную
 Вторичное
@@ -95,17 +94,15 @@ daggerheart.com
 Инстинкт
 Искусность
 К содержимому
-Как это работает
 Колоссы Сухоземья
 Конфиденциальность
 ЛутDaggerheart
 Магическое
 Мастерская Ольхи
 Мастерская Ольхи×
-Обычные правила
 Одноручное
 Оружие
-Открывать этот раздел при запуске
+Открывать при запуске
 Очень далеко
 Пир зверей
 Поиск
@@ -136,22 +133,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_src-hb_alderworkshopaaa?as=gm1]
   link "Skip to content" [url=/en/tables/eq_weapon/f_src-hb_alderworkshopaaa?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -175,8 +170,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
     button "Reset all"
     button "Filter link" [description=Filter link]
     ... StaticText x14 of 18 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x31 of 35 same-shape siblings elided
     button "Alder Workshop" [pressed=true]
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
@@ -191,13 +185,14 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
 2
 3
 4
+?Help
 Account: gm1@example.test
 Agility
 Alder Workshop
@@ -223,27 +218,27 @@ Finesse
 Grid
 Homebrew
 Hope & Fear
-How this works
 Install as an app
 Instinct
 Knowledge
 Link to this table
 List
+LootDaggerheart
 Magic
 Many Worlds Tavern
 Melee
 One-Handed
-Open this section on start
+Open on start
 Other
 Physical
 Presence
 Privacy
 RU
 Reset all
+Roll
 Search
 Secondary
 Skip to content
-Standard rules
 Strength
 Supplements
 Tables
@@ -259,4 +254,3 @@ Very Far
 Weapons
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

@@ -14,8 +14,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   the waves of section 16 moved P from after 1b into wave 3). Batch 1 is done
   (`9a31aede`, review fix `80872b35`). Batch 1b is done (`fce4a9f8`, merge
   `3e5f6301`; `reviews/1b.md` approve, no finding; its CI run 40960103117 was
-  in progress at the refresh). Batch 2 is implement-ready (section 10, refresh
-  of 2026-10-29); then the wave 1 squash (section 16). Batches 3-10 and P are
+  in progress at the refresh). Batch 2 is implemented (section 10; the commit
+  `feat(ui): ship the shell, the vault-die mark and American spelling`, its
+  batch review `reviews/2.md` next); then the wave 1 squash (section 16). Batches 3-10 and P are
   outlines; each one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph): three waves - 1, 1b, 2; then 3-7; then 8, 9, P, 10 -

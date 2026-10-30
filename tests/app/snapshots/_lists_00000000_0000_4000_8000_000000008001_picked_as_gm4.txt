@@ -14,9 +14,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "EN" [pressed=false]
     button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -32,7 +30,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     status ""
     button "Как в книге" [pressed=true]
     button "Монетами" [pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Справка" [expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
     ... button x5 of 9 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
@@ -134,17 +132,15 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Альт. таблицы
+Бросок
 Взять: Пронзительная Свирель
 Выбрать все
-Дополнения
 Жирный
 Заметка
 Заряжающий Колчан
 Заряжающий КолчанКогда вы успешно наносите удар стрелой из этого... [namelen=145 namehash=1018b4bd]
 К содержимому
 Как в книге
-Как это работает
 Конфиденциальность
 Курсив
 ЛутDaggerheart
@@ -159,7 +155,6 @@ daggerheart.com
 Наручники
 НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
 Нумерованный список
-Обычные правила
 Очистить заметку
 Первоклассный Спальный Мешок
 Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
@@ -183,6 +178,7 @@ daggerheart.com
 Скрыть от игроков (1)
 Случайно 1–7
 Список
+Справка
 Таблицы
 Только для мастера: Заряжающий Колчан
 Только для мастера: Мистический Плащ
@@ -205,16 +201,14 @@ daggerheart.com
 RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -230,7 +224,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
     status ""
     button "As in the book" [pressed=true]
     button "In coins" [pressed=false]
-    button "How this works" [expanded=false]
+    button "Help" [expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
     ... button x5 of 9 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
@@ -325,13 +319,12 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Account: gm4@example.test
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
-Alt. tables
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 As in the book
@@ -353,15 +346,16 @@ GM only: Manacles
 GM only: Piper Whistle
 GM only: Premium Bedroll
 GM only: Speaking Orbs
+Help
 Help: For players
 Help: GM only
 Help: Price
 Hide from players (1)
-How this works
 In coins
 Install as an app
 Italic
 List name
+LootDaggerheart
 Manacles
 ManaclesThis pair of locking cuffs comes with a key.ItemCore
 Max, take all: Piper Whistle
@@ -384,6 +378,7 @@ Privacy
 RU
 Random 1–7
 Remove from the list
+Roll
 Roll result
 Search
 Select all
@@ -391,10 +386,7 @@ Share
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
-Standard rules
-Supplements
 Tables
 Take: Piper Whistle
 Terms of use
 daggerheart.com
-ЛутDaggerheart

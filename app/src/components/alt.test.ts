@@ -272,7 +272,7 @@ describe('a dataset that did not load', () => {
 describe('the help', () => {
   it('explains what the two columns mean', async () => {
     render(App, { env: at() });
-    await press('Как это работает');
+    await press('Справка');
     expect(screen.getByText(/по смыслу/)).toBeInTheDocument();
   });
 });

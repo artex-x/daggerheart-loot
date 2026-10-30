@@ -2,7 +2,7 @@
  *
  * The only global stylesheet. Everything else is scoped to a component, so a
  * value that more than one component needs has to be named here first - which
- * is the point: it makes "these two are the same colour on purpose" visible,
+ * is the point: it makes "these two are the same color on purpose" visible,
  * and it makes changing them one edit.
  *
  * The palette is the live site's, carried across unchanged. The contrast
@@ -38,7 +38,7 @@
   /* One hue per kind, used by the badge only; the stat line stays plain
      secondary text. The five sit roughly evenly around the wheel with at least
      49 degrees between any two, so no badge reads as a paler version of
-     another - lightness alone was not enough to tell steel armour from an
+     another - lightness alone was not enough to tell steel armor from an
      ordinary item. */
   --item: #7a8ee0;
   --cons: #9ec96a;
@@ -47,10 +47,10 @@
   --eq-armor: #5ec9c4;
 
   --danger: #e0685f;
-  /* The danger colour as text on the dark ground: a destructive button's
+  /* The danger color as text on the dark ground: a destructive button's
      label, an error line, an account list's failed save. */
   --danger-text: #f0a49d;
-  /* The warning box (`NoticeBox`): the danger colour at low tints. */
+  /* The warning box (`NoticeBox`): the danger color at low tints. */
   --warn-bg: rgb(224 104 95 / 9%);
   --warn-line: rgb(224 104 95 / 30%);
   --warn-text: #e0b6b1;
@@ -93,7 +93,7 @@
   --art-well: #0a0810;
 
   /* The page container, off `.wrap`: one width for the header and the content,
-     centred, keeping clear of a display cutout. */
+     centered, keeping clear of a display cutout. */
   --wrap: min(1180px, 100% - 32px);
 
   /* The page heading's weight and tracking; its size is `--t-page`. */
@@ -102,7 +102,7 @@
 
   --gap-sm: 6px;
 
-  /* The colour every gold-filled control prints its own text in - a button,
+  /* The color every gold-filled control prints its own text in - a button,
      a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
      either, chosen against `--gold` specifically. */
   --ink-on-gold: #1a1206;

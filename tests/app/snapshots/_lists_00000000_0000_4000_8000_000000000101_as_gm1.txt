@@ -14,9 +14,7 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -32,7 +30,7 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     status ""
     button "Как в книге" [pressed=false]
     button "Монетами" [pressed=true]
-    button "Как это работает" [expanded=false]
+    button "Справка" [expanded=false]
     DisclosureTriangle "ЗАМЕТКИ" [expanded=true]
     ... button x5 of 9 same-shape siblings elided
     button "Очистить заметку" [description=Очистить заметку]
@@ -138,21 +136,19 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
 Бросить d10
+Бросок
 Брошюра по Истории Искусства
 Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная брошю... [namelen=621 namehash=8e34be84]
 Выбрать все
 Гарпун Левиафана
 Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=372 namehash=18076c75]
-Дополнения
 Жирный
 Заметка
 Зелье Быстрого Шага
 Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=128 namehash=a50f77f6]
 К содержимому
 Как в книге
-Как это работает
 Колдующий Кинжал
 Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
 Колода Сумерек
@@ -165,7 +161,6 @@ daggerheart.com
 На единицу меньше
 Название списка
 Нумерованный список
-Обычные правила
 Очистить заметку
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
@@ -185,6 +180,7 @@ daggerheart.com
 СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
 Скопировать текст
 Список
+Справка
 Стеганый Доспех
 Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
 Таблицы
@@ -210,16 +206,14 @@ daggerheart.com
 RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000000101?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -235,7 +229,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     status ""
     button "As in the book" [pressed=false]
     button "In coins" [pressed=true]
-    button "How this works" [expanded=false]
+    button "Help" [expanded=false]
     DisclosureTriangle "NOTES" [expanded=true]
     ... button x5 of 9 same-shape siblings elided
     button "Clear the note" [description=Clear the note]
@@ -334,11 +328,10 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Account: gm1@example.test
-Alt. tables
 Art History Booklet
 Art History BookletThis is a finely illustrated booklet (donatio... [namelen=543 namehash=25f277dc]
 As in the book
@@ -367,15 +360,16 @@ GM only: Stride Potion
 GM only: Twilight Deck
 Gambeson Armor
 Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Help
 Help: For players
 Help: GM only
-How this works
 In coins
 Install as an app
 Italic
 Leviathan Harpoon
 Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=354 namehash=5d62421d]
 List name
+LootDaggerheart
 Note
 Numbered list
 One higher
@@ -390,6 +384,7 @@ Print
 Privacy
 RU
 Remove from the list
+Roll
 Roll d10
 Roll result
 Scepter
@@ -398,13 +393,10 @@ Search
 Select all
 Share
 Skip to content
-Standard rules
 Stride Potion
 Stride PotionYou gain a +1 bonus to your next Agility Roll.Upgra... [namelen=105 namehash=01e4c083]
-Supplements
 Tables
 Terms of use
 Twilight Deck
 Twilight DeckRecall Cost: 2This deck enhances fortunes with the ... [namelen=870 namehash=3e42d83e]
 daggerheart.com
-ЛутDaggerheart

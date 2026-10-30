@@ -192,7 +192,7 @@ describe('what travels with a record', () => {
     ]);
   });
 
-  it('copies a labelled upgrade line as plain text and as bold italics, never as stars', () => {
+  it('copies a labeled upgrade line as plain text and as bold italics, never as stars', () => {
     const blade = rec('dve24');
     const block = shareBlocks(blade, index, 'en')[0];
     expect(block?.body).toMatch(/^\*\*\*Overcome Adversity:\*\*\* /);

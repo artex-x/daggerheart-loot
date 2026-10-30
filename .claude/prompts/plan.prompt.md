@@ -80,14 +80,14 @@ Batch size preference (human):
 
 Design decisions - ask sparingly:
 - Default: decide from repo, issue, screenshots, specs, and existing patterns; do not ask the human to approve routine choices
-- Ask the human only when there are multiple materially different design options that affect UX, architecture, or public behaviour, and the repository does not clearly pick a winner
+- Ask the human only when there are multiple materially different design options that affect UX, architecture, or public behavior, and the repository does not clearly pick a winner
 - When asking, present 2-3 options max, state tradeoffs briefly, and give one clear recommendation with why
 - Do not overuse confirmation. If the human would reasonably not care, choose the recommended option and record it in the plan
 - Never block planning on minor naming, trivial structure, or other low-impact choices
 - If confirmation IS required, set in handoff and summary: `NEEDS_HUMAN_CONFIRMATION: yes` and list exact questions
 
 Owner rules:
-- When an owner answer settles a reusable rule, give its write into its home an acceptance line in a batch: the batch that changes that behaviour, else the next batch; write the batch into the rule's tag in `context.md`
+- When an owner answer settles a reusable rule, give its write into its home an acceptance line in a batch: the batch that changes that behavior, else the next batch; write the batch into the rule's tag in `context.md`
 - Keep the rule to one to three lines inside the home's budget (`.claude/README.md`, "Owner insights"); when the home is at its budget, name the older rule it replaces or merges
 
 UI / visual design - grounded mockups, not detached redesigns and not full implementation:
@@ -112,7 +112,7 @@ Each implement-ready batch must include:
 - Objective
 - In scope / out of scope
 - Expected files to create or edit
-- Behaviour/UI constraints from issue, screenshots, specs, and any approved mocks
+- Behavior/UI constraints from issue, screenshots, specs, and any approved mocks
 - Standing checks (below): each of the four answered, or `not applicable - <reason>`
 - Ordered implementation steps explicit enough for a smaller model
 - Acceptance criteria that are observable or testable
@@ -180,7 +180,7 @@ acceptance line.
 
 Verification gate matrix (pick what applies per batch):
 - Data-only (`data.js`, art mapping): data/image/stub checks + `node tools/build.js` + relevant tests
-- App/code behaviour: `npm run check`
+- App/code behavior: `npm run check`
 - Screen/output/`dist` assets may change: also `npm run check:built` when CLAUDE.md requires it
 - Contracts/routes/list links: contract tests + fixture updates in the same batch
 
@@ -188,9 +188,9 @@ Also cover in the overall design when mode A applies (and update as needed in mo
 - Current state and objective (issue and/or GOAL)
 - Screenshot evidence and design impact
 - Scope and explicit non-goals
-- Existing behaviour and relevant code paths
+- Existing behavior and relevant code paths
 - Architecture approach: where code lives, reuse vs new, boundaries, fit with current codebase
-- Contracts and behaviour that must remain stable
+- Contracts and behavior that must remain stable
 - Required tests, fixtures, documentation, and specification changes
 - Compatibility or migration considerations
 - Risks, assumptions, dependencies, unresolved questions

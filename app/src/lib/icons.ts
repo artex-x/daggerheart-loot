@@ -19,11 +19,6 @@ export interface IconDef {
 }
 
 export const ICONS = {
-  /* The brand star. Bigger than the rest and gold, so it carries its own size. */
-  star: {
-    d: 'M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z',
-    size: 26
-  },
   copy: {
     d: 'M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z',
     size: 15
@@ -132,6 +127,16 @@ export const ICONS = {
   user: {
     d: 'M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 2.1c-3.4 0-8.4 1.7-8.4 5v1.3h16.8v-1.3c0-3.3-5-5-8.4-5z',
     size: 15
+  },
+  /* Not in app.js: the search job (owner, 2026-10-23) and the menu buttons' chevron,
+     Material Icons search and expand_more (Apache 2.0). */
+  search: {
+    d: 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+    size: 18
+  },
+  chevron: {
+    d: 'M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z',
+    size: 16
   },
   /* Not in app.js: the neutral pressed state's mark (DESIGN.md, "Segmented
      control"), Material Icons check (Apache 2.0). */

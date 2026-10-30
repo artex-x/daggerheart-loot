@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -212,6 +210,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Седло Благословения ВетраЭто зачарованное седло подстраивается ... [namelen=183 namehash=0a962bca]
 9Сфера ОбнаруженияСовершите Бросок Заклинания (13). При успехе н... [namelen=266 namehash=eccc35f1]
 9Часы Хранителя ВремениСтоимость Призыва: 2Если у вас 6 Надежды,... [namelen=314 namehash=d64b7daf]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -230,6 +229,7 @@ daggerheart.com
 Бессмертное Сердце
 Благословенный Нож Шеф-Повара
 Бледное Стекло
+Бросок
 Брошь Нефритового Крыла
 Взгляд Ваэт
 Вилка Откровений
@@ -263,7 +263,6 @@ daggerheart.com
 Идол из Плавника
 Инееметатель
 К содержимому
-Как это работает
 Камень Псиона
 Камея Немедленности
 Карманные Часы Странника Времени
@@ -303,10 +302,9 @@ daggerheart.com
 Ноктюрнный Замок
 Оберег Демона
 Обсидиановое Подношение
-Обычные правила
 Одеяние Посланника
 Одеяния Повелителя Трупов
-Открывать этот раздел при запуске
+Открывать при запуске
 Ошейник Резака
 Панцирь Подземного Обитателя
 Пара Камней Связи
@@ -393,22 +391,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/vault_of_ages]
   link "Skip to content" [url=/en/tables/vault_of_ages#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -452,7 +448,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/vault_of_ages]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Mr.MushyRecall Cost: 0When you take a long rest with this squi... [namelen=133 namehash=45385ebb]
@@ -599,6 +595,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/vault_of_ages]
 9Timekeeper's WatchRecall Cost: 2If you have 6 Hope, you can sto... [namelen=263 namehash=753f1cc9]
 9Undying HeartRecall Cost: 2Spend 3 Hope to start the beating of... [namelen=284 namehash=fa126882]
 9Windblessed SaddleThis enchanted saddle will adjust its size to... [namelen=184 namehash=4455c13c]
+?Help
 Aetheric Perpetuator
 Aku-Haptlek's Tooth
 Alt. tables
@@ -663,7 +660,6 @@ Helm of Transference
 Herald's Will
 Hope & Fear
 Horrid Specimen
-How this works
 Hungry Fist Blade
 Install as an app
 Invocation of Ulrat
@@ -676,6 +672,7 @@ Last Stand
 Leviathan Scale
 Link to this table
 List
+LootDaggerheart
 Many Worlds Tavern
 Marvellous Ferrofluid
 Mastery Belt
@@ -695,7 +692,7 @@ Nocturne Padlock
 Nullification Disc
 Oath of Balance
 Obsidian Offering
-Open this section on start
+Open on start
 Other
 Perfect Vintage
 Phaibos Mask
@@ -711,6 +708,7 @@ Rimecaster
 Ring of Shapes
 Ring of the Blood Matron
 Ritual Blade of Sekhmet
+Roll
 Sacrament of Sages
 Saintly Blade
 Saintly Guard
@@ -732,7 +730,6 @@ Sleuth's Fedora
 Soulcall Taper
 Sphere of Detection
 Sphere of Insanity
-Standard rules
 Stoneskin Potion
 Supplements
 Synthra's Gorget
@@ -774,4 +771,3 @@ Witchspirit Whiskey
 Wondrous Environments
 Zanthak's Rage
 daggerheart.com
-ЛутDaggerheart

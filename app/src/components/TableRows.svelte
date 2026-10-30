@@ -294,7 +294,7 @@
   }
 
   /* The divider and the tick target run the row's full height; the subgrid
-     keeps the checkbox centred on the main line, not on the whole row. */
+     keeps the checkbox centered on the main line, not on the whole row. */
   .row > .selbox {
     grid-row: 1 / span 3;
     display: grid;

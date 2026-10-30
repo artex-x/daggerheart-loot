@@ -135,7 +135,7 @@
 </script>
 
 {#if n || shared}
-  <!-- A labelled region: the bar sits after the footer, outside every other landmark. -->
+  <!-- A labeled region: the bar sits after the footer, outside every other landmark. -->
   <section class="selbarwrap" class:idle={!n} class:vh={!n} aria-label={t.selRegion}>
     <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}

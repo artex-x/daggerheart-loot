@@ -707,7 +707,7 @@ describe("a share link's facet rows", () => {
     ]);
   });
 
-  it('draws the source and line rows for 8 tier 2 armours from five sources', () => {
+  it('draws the source and line rows for 8 tier 2 armors from five sources', () => {
     const SRC = ['core', 'hnf', 'wondrous', 'dread', 'voa'];
     const armours = Array.from({ length: 8 }, (_, i) =>
       gear('ar' + String(i), SRC[i % 5] ?? 'core', {

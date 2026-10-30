@@ -14,9 +14,7 @@ RootWebArea "Клад дракона - Генератор лута Daggerheart" 
     button "EN" [pressed=false]
     button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -91,11 +89,10 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Альт. таблицы
 Бросить d6
+Бросок
 Вернуть
 Выбрать все
-Дополнения
 Жирный
 Заметка
 Заряжающий Колчан
@@ -112,7 +109,6 @@ daggerheart.com
 Наручники
 НаручникиЭта пара наручников с замком поставляется с ключом.Пред... [namelen=71 namehash=de6825cb]
 Нумерованный список
-Обычные правила
 Печать
 Поделиться
 Подсказка: Для игроков
@@ -148,16 +144,14 @@ daggerheart.com
 RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000008001?as=gm4#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -222,7 +216,7 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   status ""
     StaticText ""Premium Bedroll" removed from the list"
     button "Undo" [focused=true]
@@ -231,7 +225,6 @@ RootWebArea "Клад дракона - Daggerheart Loot Generator" [url=/en/list
 Account: gm4@example.test
 Alistair's Torch
 Alistair's TorchYou can light this magic torch at will. The flam... [namelen=166 namehash=963dcc04]
-Alt. tables
 Arcane Cloak
 Arcane CloakA creature with a Spellcast trait wearing this cloak... [namelen=121 namehash=cdd85626]
 Bold
@@ -253,6 +246,7 @@ Help: GM only
 Install as an app
 Italic
 List name
+LootDaggerheart
 Manacles
 ManaclesThis pair of locking cuffs comes with a key.ItemCore
 Note
@@ -269,6 +263,7 @@ Print
 Privacy
 RU
 Remove from the list
+Roll
 Roll d6
 Roll result
 Search
@@ -277,10 +272,7 @@ Share
 Skip to content
 Speaking Orbs
 Speaking OrbsThis pair of orbs allows any creatures holding them... [namelen=124 namehash=d726691b]
-Standard rules
-Supplements
 Tables
 Terms of use
 Undo
 daggerheart.com
-ЛутDaggerheart

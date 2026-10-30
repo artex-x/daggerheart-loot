@@ -8,7 +8,7 @@
  * imports the other), and read both flavours back.
  *
  * The records below are chosen to cover the shape of the format rather than the
- * catalogue: a plain item, a consumable (which gains a suffix outside the app),
+ * catalog: a plain item, a consumable (which gains a suffix outside the app),
  * equipment (whose stat line is part of the heading), an upgrade chain (which
  * travels forward only), and a record with referenced Core cards.
  *

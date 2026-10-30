@@ -49,7 +49,7 @@ export async function editor(
     answer?: boolean;
     fake?: FakeCloudOptions;
     cloud?: FakeCloud;
-    /* The real catalogue, for the relations to catalog records. */
+    /* The real catalog, for the relations to catalog records. */
     real?: boolean;
     /* The picture field's decode and encode. */
     media?: FakeMedia;

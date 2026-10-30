@@ -52,6 +52,7 @@ const { ok } = rep;
     await rD.open(fx.resolves.hash === fx.hash ? fx.hash : '/' + fx.hash);
     const seen = await rPage.evaluate(() => {
       const on = document.querySelector('nav.tabs a[aria-current="page"]');
+      const mode = document.querySelector('nav.modes [aria-current="page"]');
       /* `.chip[data-val]` is StdPanel's source row and only it - the `value`
          prop on Chip.svelte has no other caller. */
       const srcBtns = [...document.querySelectorAll('.chip[data-val]')];
@@ -59,7 +60,8 @@ const { ok } = rep;
         /* The card version is the states suite's (case 81); the route is this one's. */
         bar:
           location.pathname + location.search.replace(/[?&]v=[0-9a-z]+$/, '') + location.hash,
-        tab: on ? on.getAttribute('href') : null,
+        tab: on ? on.getAttribute('data-job') : null,
+        mode: mode ? mode.getAttribute('data-section') : null,
         rows: document.querySelectorAll('.rows .row[data-row]').length,
         printCards: document.querySelectorAll('.pcard:not(.blank)').length,
         printQty: Object.fromEntries(
@@ -116,9 +118,10 @@ const { ok } = rep;
     }
     /* Opened by its path form, the bar keeps the path form of the route it resolves to. */
     const wantBar = pathOf(want.hash, 'ru');
-    const wantTab = want.tab === null ? null : pathOf(want.tab, 'ru');
     ok(seen.bar === wantBar, fx.hash + ': became ' + seen.bar + ', not ' + wantBar);
-    ok(seen.tab === wantTab, fx.hash + ': highlighted ' + seen.tab + ', not ' + wantTab);
+    /* Both sides are canonical keys: the job's name and the section's `sectionHash`. */
+    ok(seen.tab === want.tab, fx.hash + ': lit the job ' + seen.tab + ', not ' + want.tab);
+    ok(seen.mode === want.mode, fx.hash + ': lit the mode ' + seen.mode + ', not ' + want.mode);
     ok(
       seen.rows === want.rows,
       fx.hash + ': ' + seen.rows + ' rows, the fixture says ' + want.rows
@@ -151,6 +154,25 @@ const { ok } = rep;
         ', the fixture says ' +
         JSON.stringify(want.source)
     );
+  }
+  /* An English supplement address: the roll job, the supplement's mode, its English name. */
+  {
+    await rD.open('/en/roll/dread');
+    const en = await rPage.evaluate(() => {
+      const mode = document.querySelector('nav.modes [aria-current="page"]');
+      return {
+        lang: document.documentElement.lang,
+        job: document
+          .querySelector('nav.tabs a[aria-current="page"]')
+          ?.getAttribute('data-job'),
+        mode: mode?.getAttribute('data-section'),
+        text: mode?.textContent?.trim()
+      };
+    });
+    ok(en.lang === 'en', '/en/roll/dread drew ' + en.lang);
+    ok(en.job === 'roll', '/en/roll/dread lit the job ' + en.job);
+    ok(en.mode === '#/roll/dread_gm_toolbox', '/en/roll/dread lit the mode ' + en.mode);
+    ok(en.text === 'Dread GM Toolbox', '/en/roll/dread names the mode ' + en.text);
   }
   await rCtx.close();
 

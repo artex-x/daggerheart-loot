@@ -48,7 +48,7 @@ after(async () => {
 
 const users = (tx) => tx`insert into auth.users (id) values (${A}), (${B})`;
 const asA = (setup, fn) => asRole(sql, { role: 'authenticated', sub: A, setup }, fn);
-/* postgres.js serialises a jsonb parameter itself (see list-writes.test.mjs). */
+/* postgres.js serializes a jsonb parameter itself (see list-writes.test.mjs). */
 const json = (tx, v) => (v === null ? null : tx.json(v));
 const importAs = async (tx, books, cards, items, update = false) => {
   const [{ v }] = await tx`select public.import_homebrew(${json(tx, books)}::jsonb,

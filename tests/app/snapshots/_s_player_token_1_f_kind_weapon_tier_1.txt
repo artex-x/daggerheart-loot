@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -67,14 +65,13 @@ RU
 Vault of Ages
 Wondrous Environments
 daggerheart.com
-Альт. таблицы
 Броня
+Бросок
 Влияние
 Войти
 Вплотную
 Далеко
 Двуручное
-Дополнения
 Знание
 Инстинкт
 Искусность
@@ -85,7 +82,6 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Мастерская Ольхи
-Обычные правила
 Одноручное
 Оружие
 Оружие×
@@ -115,16 +111,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon.tier-1?v=<v>]
   link "Skip to content" [url=/en/s/player-token-1/f_kind-weapon.tier-1?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -163,14 +157,13 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
 2
 Agility
 Alder Workshop
-Alt. tables
 Armor
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
@@ -190,6 +183,7 @@ Install as an app
 Instinct
 Items
 Knowledge
+LootDaggerheart
 Magic
 Melee
 One-Handed
@@ -198,15 +192,14 @@ Presence
 Privacy
 RU
 Reset all
+Roll
 Save to my lists
 Scepter
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
 Search
 Sign in
 Skip to content
-Standard rules
 Strength
-Supplements
 Tables
 Terms of use
 Tier 1×
@@ -218,4 +211,3 @@ Weapons
 Weapons×
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

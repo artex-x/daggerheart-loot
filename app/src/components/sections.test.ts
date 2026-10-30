@@ -135,7 +135,7 @@ describe('Vault of Ages', () => {
 
   it('explains why the book has sections rather than one die', async () => {
     render(App, { env: at('#/roll/voa') });
-    await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
     expect(screen.getByText(/Своей таблицы броска у книги нет/)).toBeInTheDocument();
     /* All four volumes, not just the first. */
     expect(screen.getByRole('link', { name: 'Volume 4' })).toBeInTheDocument();
@@ -203,10 +203,10 @@ describe('Many Worlds Tavern', () => {
     expect(screen.getByRole('link', { name: 'Первый спорополисский' })).toBeInTheDocument();
   });
 
-  it('lights the supplements chip of its own section', () => {
+  it('names its own section on the lit supplements button', () => {
     render(App, { env: at('#/roll/mwt') });
-    const panel = screen.getByRole('navigation', { name: 'Дополнения' });
-    expect(within(panel).getByRole('link', { name: 'Many Worlds Tavern' })).toHaveAttribute(
+    const modes = screen.getByRole('navigation', { name: 'Режим броска' });
+    expect(within(modes).getByRole('button', { name: 'Many Worlds Tavern' })).toHaveAttribute(
       'aria-current',
       'page'
     );
@@ -268,7 +268,7 @@ describe('Many Worlds Tavern', () => {
 
 describe('a dataset that did not load', () => {
   /* data.js served as HTML by a broken deploy, or missing from one. Both
-     pages read the catalogue twice - once to build the picker, once to roll -
+     pages read the catalog twice - once to build the picker, once to roll -
      and both have to say so rather than draw an empty panel. */
   it.each([
     ['#/roll/voa', 'Vault of Ages'],

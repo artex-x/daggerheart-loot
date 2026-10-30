@@ -114,7 +114,7 @@ describe('the form', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws the armour fields and keeps the weapon values while another type is chosen', async () => {
+  it('draws the armor fields and keeps the weapon values while another type is chosen', async () => {
     const { container } = await editor(AXE);
     await press(t.hbType, 'Броня');
     expect(screen.getByLabelText(/^Показатель брони/)).toBeInTheDocument();
@@ -175,7 +175,7 @@ describe('the checks on «Сохранить»', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws each rule of a weapon and an armour', async () => {
+  it('draws each rule of a weapon and an armor', async () => {
     await editor(AXE);
     const bonus = bonusBox();
     await userEvent.clear(bonus);

@@ -1108,7 +1108,7 @@ async function buttonFocusSurvivesRerender() {
 }
 
 /** 22. The money help box measured against its container, and the pressed
- *  add-to-list button's own colour, ported from the legacy `lists2.js`. */
+ *  add-to-list button's own color, ported from the legacy `lists2.js`. */
 async function moneyHelpAndPressedPicker() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await openAccountList(
@@ -1116,7 +1116,7 @@ async function moneyHelpAndPressedPicker() {
     { n: 1, name: 'Клад', ids: ['ci1'], meta: { ci1: { gold: 70 } } },
     '22 (help and list pick)'
   );
-  await d.press('Как это работает');
+  await d.press('Справка');
   const helpBox = await page.evaluate(() => {
     const h = document.querySelector('.money-help');
     /* The rewrite has no global `.wrap` container (SelBar.svelte's own
@@ -1168,7 +1168,7 @@ async function moneyHelpAndPressedPicker() {
  *  card's entrance and the section outline's fade `RecordCard.svelte`/
  *  `TablesPage.svelte` killed by name. Explicit here even though `prepare()`
  *  already emulates the same media feature for every other case
- *  (`driver.js`'s own comment: the blanket kill is the app's shipped behaviour for a
+ *  (`driver.js`'s own comment: the blanket kill is the app's shipped behavior for a
  *  visitor who asked for less motion, and this is what makes every suite
  *  exercise that branch, not a timing convenience) - this is the one case
  *  whose whole point is proving the policy itself, not relying on it as a
@@ -1295,7 +1295,7 @@ async function listMenuKeepsItsControlsInView() {
     await d.settle();
 
     const m = await page.evaluate(() => {
-      /* `shown`: what a press at the centre reaches - a clipping ancestor
+      /* `shown`: what a press at the center reaches - a clipping ancestor
          can hide a box that still reads inside the menu and the window. */
       const box = (el) => {
         if (!el) return null;
@@ -1402,7 +1402,7 @@ async function minimalWorker() {
         'the footer does not link the install guide and the two policy pages - ' +
         JSON.stringify(footer)
     );
-    /* The folded licence notice opens from the keyboard, with the focus ring
+    /* The folded license notice opens from the keyboard, with the focus ring
        drawn on its summary (FEATURES.md, "Chrome"). */
     await page.focus('footer details > summary');
     await page.keyboard.press('Enter');
@@ -1417,7 +1417,7 @@ async function minimalWorker() {
     ok(
       licence.open && licence.ring,
       at +
-        'the licence notice does not open from the keyboard with a focus ring - ' +
+        'the license notice does not open from the keyboard with a focus ring - ' +
         JSON.stringify(licence)
     );
     for (const href of footer) {
@@ -1702,8 +1702,8 @@ async function guideBackLink() {
 }
 
 /** 30. The note clear button's 44px target yields to the formatting toolbar under
- *  it: a point just inside the toolbar's top edge, under the button's centre, hits a
- *  toolbar button; the button's own centre hits the button. */
+ *  it: a point just inside the toolbar's top edge, under the button's center, hits a
+ *  toolbar button; the button's own center hits the button. */
 async function noteClearTargetYieldsToTheToolbar() {
   const at = '30 (note clear target): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -1734,7 +1734,7 @@ async function noteClearTargetYieldsToTheToolbar() {
   if (hits) {
     ok(hits.overlap > 3, at + 'no overlap left to test - ' + hits.overlap);
     ok(hits.edgeIsTool, at + 'the toolbar edge under the button does not hit a toolbar button');
-    ok(hits.centreIsButton, at + 'the button centre does not hit the button');
+    ok(hits.centreIsButton, at + 'the button center does not hit the button');
     ok(hits.target === '44px', at + 'the target is not 44px - ' + hits.target);
   }
 
@@ -1743,12 +1743,12 @@ async function noteClearTargetYieldsToTheToolbar() {
 
 /** 31. The card image's focus ring is drawn, not clipped by the card, at
  *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own colour. At 600 px the full
- *  card scrolls the page, and the case asserts it, so the clip's scroll
- *  offset stays tested. */
+ *  focused `.card-media`, against the ring's own color. At 520 px the full
+ *  card scrolls the page under the 63 px header, and the case asserts it, so
+ *  the clip's scroll offset stays tested. */
 async function cardMediaRingVisible() {
   async function ringAt(route, selector, label, mustScroll) {
-    const { ctx, page, d } = await fresh({ width: 1180, height: 600 });
+    const { ctx, page, d } = await fresh({ width: 1180, height: 520 });
     await d.open(route);
     let reached = false;
     for (let i = 0; i < 80 && !reached; i++) {
@@ -1760,8 +1760,8 @@ async function cardMediaRingVisible() {
     }
     ok(reached, '31 (card image focus ring, ' + label + '): Tab never reached ' + selector);
     if (reached) {
-      /* `end`, not `center`: a 420 px card centred in 600 px starts under the
-         sticky top bar (about 106 px), which hides the ring's top edge. */
+      /* `end`, not `center`: a 420 px card centered in 520 px starts under the
+         sticky top bar (63 px), which hides the ring's top edge. */
       await page.evaluate(
         (sel) => document.querySelector(sel).scrollIntoView({ block: 'end' }),
         selector
@@ -1790,7 +1790,7 @@ async function cardMediaRingVisible() {
             '): the page did not scroll, so the clip offset is not tested'
         );
       }
-      ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline colour to match');
+      ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline color to match');
       if (!box.rgb) {
         await ctx.close();
         return;
@@ -1883,7 +1883,7 @@ async function undoToastInRecordDialog() {
     at + 'the shown toast is not the one inside the open dialog - ' + JSON.stringify(where)
   );
   ok(where.focused, at + '«Вернуть» is not focused');
-  ok(where.hit, at + '«Вернуть» is not what a point at its centre hits');
+  ok(where.hit, at + '«Вернуть» is not what a point at its center hits');
 
   const cdp = await page.createCDPSession();
   const { nodes } = await cdp.send('Accessibility.getFullAXTree');
@@ -2174,9 +2174,7 @@ async function accountPreferences() {
   seen = await sheet(c.page);
   ok(
     !seen.bw && seen.note === null,
-    at +
-      'c: a reload did not draw the colour default without the note - ' +
-      JSON.stringify(seen)
+    at + 'c: a reload did not draw the color default without the note - ' + JSON.stringify(seen)
   );
   await c.ctx.close();
 }
@@ -3822,7 +3820,7 @@ async function longListName() {
 }
 
 /** 67. The editor's field help and the threshold labels at 360x640 as `gm1`: the «?» of
- *  «Комплект» opens its hint under its label inside 0..360; an armour's two threshold
+ *  «Комплект» opens its hint under its label inside 0..360; an armor's two threshold
  *  labels and boxes lie inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md,
  *  "Consistency rules", rule 15). */
 async function fieldHelpAt360() {
@@ -3871,7 +3869,7 @@ async function fieldHelpAt360() {
   await d.click('Броня');
   ok(
     await waitIn(page, () => !!document.querySelector('#hb-th1')),
-    at + 'the armour fields did not draw'
+    at + 'the armor fields did not draw'
   );
   const boxes = await page.evaluate(() =>
     ['label[for="hb-th0"]', '#hb-th0', 'label[for="hb-th1"]', '#hb-th1'].map((sel) => {
@@ -3885,7 +3883,7 @@ async function fieldHelpAt360() {
       at + b.sel + ' lies outside 0..360 - ' + JSON.stringify(b)
     );
   }
-  ok(!(await sideways()), at + 'the armour form scrolls sideways');
+  ok(!(await sideways()), at + 'the armor form scrolls sideways');
   await ctx.close();
 }
 

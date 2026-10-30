@@ -14,9 +14,7 @@ RootWebArea "Трофеи - Генератор лута Daggerheart" [url=/lists
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -71,9 +69,8 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
+Бросок
 Выбрать все
-Дополнения
 Жирный
 Заметка
 К содержимому
@@ -84,7 +81,6 @@ daggerheart.com
 На единицу меньше
 Название списка
 Нумерованный список
-Обычные правила
 Палаш
 ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
 Первоклассный Спальный Мешок
@@ -117,16 +113,14 @@ daggerheart.com
 RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-0000-4000-8000-000000000103?as=gm1]
   link "Skip to content" [url=/en/lists/00000000-0000-4000-8000-000000000103?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -172,13 +166,12 @@ RootWebArea "Трофеи - Daggerheart Loot Generator" [url=/en/lists/00000000-
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 /en/s/share-token-1
 /en/s/share-token-2
 Account: gm1@example.test
-Alt. tables
 Bold
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
@@ -196,6 +189,7 @@ Help: GM only
 Install as an app
 Italic
 List name
+LootDaggerheart
 Note
 Numbered list
 One higher
@@ -211,14 +205,12 @@ Privacy
 RU
 Random 1–2
 Remove from the list
+Roll
 Roll result
 Search
 Select all
 Share
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

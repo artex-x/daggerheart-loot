@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -98,6 +96,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 90Клинок из Драконьей КостиРанг 1 · Физическое · Сила · Вплотную... [namelen=287 namehash=f6fa55e6]
 97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=317 namehash=7badcb82]
 99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=242 namehash=b7ee21ab]
+?Справка
 Core
 EN
 Hope & Fear
@@ -117,6 +116,7 @@ daggerheart.com
 Большая Вилка
 Большая ВилкаРанг 1 · Физическое · Проворность · Вплотную · d8 ф... [namelen=174 namehash=af9386ce]
 Броня
+Бросок
 Взыскательный Баклер
 Возвращающийся Топор
 Возвращающийся ТопорРанг 2 · Физическое · Проворность · Средне ·... [namelen=225 namehash=200c9c41]
@@ -138,7 +138,6 @@ daggerheart.com
 Игла ПустотыРанг 4 · Физическое · Искусность · Вплотную · d4+6 ф... [namelen=195 namehash=e07d172d]
 Искра
 К содержимому
-Как это работает
 Кандальные Болас
 Кинжал Сангромантии
 Клинок Резчика
@@ -212,14 +211,13 @@ daggerheart.com
 Нож Единорога
 Нож для Овощей
 Нож для ОвощейРанг 1 · Физическое · Искусность · Вплотную · d8 ф... [namelen=174 namehash=b7579c9a]
-Обычные правила
 Оружие
 Осколок Ворпала
 Осколок ВорпалаРанг 3 · Магическое · Знание · Вплотную · d4 маг ... [namelen=220 namehash=1ea92790]
 Осколок Основания
 Осколок ОснованияРанг 4 · Физическое · Инстинкт · Близко · d4 фи... [namelen=241 namehash=78f9bae9]
 Ослепляющий Дротик
-Открывать этот раздел при запуске
+Открывать при запуске
 Парирующий Кинжал
 Парирующий КинжалРанг 2 · Физическое · Искусность · Вплотную · d... [namelen=367 namehash=86f547aa]
 Плеть Душ
@@ -366,22 +364,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
   link "Skip to content" [url=/en/tables/eq_secondary#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -420,9 +416,10 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+?Help
 Advanced Offhand Brass Knuckles
 Advanced Offhand Brass KnucklesTier 3 · Physical · Strength · Me... [namelen=183 namehash=26c6b964]
 Alt. tables
@@ -434,7 +431,6 @@ Equipment
 Filters
 Grid
 Hope & Fear
-How this works
 Improved Offhand Brass Knuckles
 Improved Offhand Brass KnucklesTier 2 · Physical · Strength · Me... [namelen=183 namehash=740b51ad]
 Install as an app
@@ -442,20 +438,20 @@ Legendary Offhand Brass Knuckles
 Legendary Offhand Brass KnucklesTier 4 · Physical · Strength · M... [namelen=184 namehash=c2d0af43]
 Link to this table
 List
+LootDaggerheart
 Offhand Brass Knuckles
 Offhand Brass KnucklesTier 1 · Physical · Strength · Melee · d8 ... [namelen=172 namehash=04f3e20d]
-Open this section on start
+Open on start
 Other
 Privacy
 RU
+Roll
 Search
 Secondary
 Sign in
 Skip to content
-Standard rules
 Supplements
 Tables
 Terms of use
 Weapons
 daggerheart.com
-ЛутDaggerheart
