@@ -618,7 +618,7 @@ describe('taking a record somewhere else', () => {
     expect(clip.last.text).toBe('Зелье выносливости (расходник)');
   });
 
-  it('copies the text in both flavours', async () => {
+  it('copies the text in both flavors', async () => {
     const { env, clip } = withClip();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));

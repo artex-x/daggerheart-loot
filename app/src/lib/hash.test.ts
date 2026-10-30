@@ -733,7 +733,7 @@ describe('writing an address', () => {
     }
   });
 
-  it('lands every section on itself, not on a neighbour', () => {
+  it('lands every section on itself, not on a neighbor', () => {
     for (const s of SECTIONS) {
       const r = parseHash(sectionHash(s));
       if (r.kind === 'section') expect(r.section, s).toBe(s);

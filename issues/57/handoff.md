@@ -2,15 +2,13 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (batch 2 implemented and pushed; its batch review
-  next, then the wave 1 squash)
-- Last agent: implementer (batch 2)
+- Task status: in_progress (batch 2 approved, `reviews/2.md`; its fix pass
+  pushed; the wave 1 squash next, after a green CI run of the tip)
+- Last agent: implementer (batch 2 fix)
 - NEEDS_HUMAN_CONFIRMATION: no
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
 - Base / starting commit: `9112c4ed` (the merge of `main` `c8243ba6`)
-- Pushed: yes, batch 2 (`feat(ui): ship the shell, the vault-die mark and
-  American spelling`) on top of `da7a3354`; `origin/main` is still `eea84371`,
-  so no merge was needed.
+- Pushed: yes, batch 2 (`30de6bf5`) and its fix pass on top of it.
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35`.
@@ -108,6 +106,38 @@
     deviations).
   - Gates and CI: below; the CI credit of the pushed tip is the
     orchestrator's.
+- Batch 2 fix pass (CI run 40986280172 of `30de6bf5` and `reviews/2.md`).
+  Previous sha: `30de6bf5`.
+  - CI `app/sweep` at 768 and 1180: a linked table section landed 118 px
+    down under a 63 px header. Cause: the section, row and card anchors kept
+    `scroll-margin-top: 118px` (132 px up to 600 px), measured for the old
+    106 px header. Fix: one token `--anchor-top` in `tokens.css` (75 px,
+    118 px up to 760 px, 132 px up to 600 px) used by `TablesPage.svelte`
+    `.tsection`, `TableRows.svelte` `[data-row]` and `HomebrewCards.svelte`
+    `.cards > li`; DESIGN.md "The Two Breakpoints Rule" names it. Done.
+  - CI `secrets`: the gitleaks `generic-api-key` hit in `plan.md` S4 is
+    reworded (no identifier in backticks), no ignore added. Done.
+  - R2: the Verification line below. Done.
+  - N1: "labeled" in `FEATURES.md` "Chrome" and DESIGN.md "Layout". Done.
+  - N2: `flavour|neighbour|centring|maths|parallelis(e|ed|es|ing)|rasteris`
+    joined the word list (`plan.md` S10.1, so batch 10's re-run reads it) and
+    `tests/derived.js` "American spelling" (`parallelis` is bounded so
+    `fileParallelism` stays); 32 lines in 23 files respelled, 3 in
+    `llms.txt` (no fixture, `tests/contracts.js` or `CONTRACTS.md` line holds
+    them). Kept classes unchanged. Done.
+  - N3: `italicizesACapitalizedConditionOnly`; the seven `'colour'` message
+    labels in `tests/app/print.js` read `'color'` (the `VectorPaint` value and
+    the `colour()` helpers stay); the selftest scratch text `License: MIT.`.
+    Done.
+  - N4 (S12.2, C34 and A15 `verify`): not run on the live site in batch 2;
+    the batch took its toast evidence from the built app (the plain toast
+    shot, the error and the action toast in `shell.test.ts` with axe). What
+    the plate fixes: A15, the error toast is Alarm Red with Ink on Gold text
+    (5.57:1, computed), so the white-on-light fill the audit doubted is gone;
+    C34, the plate keeps its place 26 px off the bottom, so a toast still
+    covers the lowest action row while it shows (C47's pinned state on the
+    icon is the other half). The live-site check moves to the post-release
+    review with R1.
 - Deviations (for the review):
   - The spelling sweep, including the `CLAUDE.md` and `.claude/` respelling,
     ran through a one-off Python script (not committed), not the Edit tool, so
@@ -154,6 +184,23 @@
   - `npx impeccable detect --json --no-inline-ignores app/src`: 71 findings.
   - `node tests/app/golden.js --update --shard=n/4`, n = 1-4: 88, 88, 87 and
     87 states.
+  - R2 (how the batch 2 commit passed rule 2e): `.claude/.check-fast-pass.json`
+    holds key `547f09f4` at 2026-10-30T00:27:50Z, the last `check:fast`
+    exit 0; the commit is 62 minutes later and `commitKey(30de6bf5)` is
+    `9c46cf60`, so that pass did not cover the final tree. The record does
+    not show how 2e allowed the commit (not sure: `SKIP_CHECK_GATE=1` is the
+    likely path). CI run 40986280172 is the full gate of that exact tree; the
+    fix pass below ran `check:fast` last, on its final tree.
+- Batch 2 fix pass (exact commands and results):
+  - `npm run build:test`, then `node tests/app/sweep.js 768`, `1180` and
+    `360`: clean at each (ru, en). The 768 run used the build before the
+    comment-only respellings; the rebuild gave the same asset hashes.
+  - `node tests/run-all.js contracts,derived,stub`: all passed.
+  - `node .claude/hooks/selftest.mjs`: 1865 passed, 0 failed.
+  - `npm run lint:untyped`, `npm run lint:typed`: clean.
+  - `gitleaks detect --no-git --source issues/57/plan.md --config .gitleaks.toml --redact`:
+    no leaks found.
+  - `rtk npm run check:fast`: PASS (run last, after every edit).
 - First-screen offsets after batch 2 (case 83, RU, EN; logged, not asserted):
 
   | Route | 360x640 | 1180x720 | Batch |
@@ -175,15 +222,28 @@
   1180, RU and EN).
 
 ## Next batch (implement-ready)
-- Batch 2's batch review (`issues/57/reviews/2.md`; triggers: public
-  contracts, `.claude/hooks/`, prompts and agents; order: the shell code, the
-  contract set, the mark, the prose), then the wave 1 squash (`plan.md`
-  section 16, the orchestrator's). Batch 3's refresh after that.
+- The wave 1 squash (`plan.md` section 16, the orchestrator's) after a green
+  CI run of the fix pass's tip. Batch 3's refresh after that; it says what to
+  do when the Impeccable skill cannot run from a subagent (R1).
 
 ## Blockers
 - None.
 
 ## Deferred
+- 2-R1 (owner-AFK log, post-release review): an Impeccable `polish` and
+  `harden` run on the eight shell components, or the owner's acceptance of
+  the manual pass; with it the C34/A15 live-site toast check.
+- 2-R3 (batch 10 audit): from 761 px the header draws brand, jobs,
+  language, account, while the DOM order is brand, language, account, jobs
+  (WCAG 2.4.3). Recommended: name the trade-off in DESIGN.md "Navigation",
+  "Header", and let the audit decide.
+- 2-N5 (batch 5): `SECTION_LABEL['roll/alt']` is `alt` «Альт. таблицы», so
+  the `/roll/alt` tab title and its `/account` start-section option differ
+  from the heading «Альтернативные таблицы». Fix: `'roll/alt': 'pageAlt'`
+  and re-seed the `/roll/alt` and `/account` goldens; `alt` stays for the
+  tables group chip.
+- 2-N6 (batch 10): DESIGN.md "The Same Label Rule" and FEATURES.md "Chrome"
+  say "until their page's batch moves them"; batch 10's lock removes it.
 - R5 of `reviews/plan-1-3.md` (deferred-scope): `review.prompt.md` names a
   third look `<name>-2.md`, while `agent-guard.mjs` reads only
   `plan-<batch>-<n>.md`.

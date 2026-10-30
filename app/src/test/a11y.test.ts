@@ -1,4 +1,4 @@
-/* The lock a timed-out neighbour leaves behind.
+/* The lock a timed-out neighbor leaves behind.
  *
  * axe.run() sets a global `_running` flag when it starts and clears it only
  * when it finishes. A vitest timeout does not cancel that call - it just stops

@@ -908,16 +908,8 @@
      row/tile anchor's outline (`.row.flash`, `.tilewrap.flash`) is
      `TableRows.svelte`'s. This is only the section anchor's. */
   .tsection {
-    scroll-margin-top: 118px;
+    scroll-margin-top: var(--anchor-top);
     border-radius: var(--r);
-  }
-
-  /* The row anchor's offsets (`TableRows.svelte`): the header is 106 px from
-     640 px and 112 px below it. */
-  @media (max-width: 600px) {
-    .tsection {
-      scroll-margin-top: 132px;
-    }
   }
 
   .tsection.flash {

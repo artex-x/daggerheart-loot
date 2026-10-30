@@ -85,7 +85,7 @@ describe('rolling on a table', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'w вещь 7' })).toBeInTheDocument();
   });
 
-  it('rolls on its own table and not on a neighbour', async () => {
+  it('rolls on its own table and not on a neighbor', async () => {
     render(App, { env: at('#/roll/dread', { random: lands(3, 29) }) });
     await userEvent.click(screen.getByRole('button', { name: 'Случайно 1–29' }));
     expect(screen.getByRole('heading', { level: 2, name: 'd вещь 3' })).toBeInTheDocument();

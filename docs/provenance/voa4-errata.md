@@ -102,7 +102,7 @@ modifiers.
 
 ## Not stored
 
-Flavour text is not stored (Volumes 1-3 store none), so Issues 29 and
+Flavor text is not stored (Volumes 1-3 store none), so Issues 29 and
 44-46 have no row. The p. 5 typos (Issue 47) are not record text.
 
 ## The Rotted Zombie ref

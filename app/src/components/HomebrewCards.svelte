@@ -614,22 +614,15 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The address key scrolls its card under the sticky top bar: the row anchor's margins
-     (`TableRows.svelte`, `[data-row]`). */
+  /* The address key scrolls its card under the sticky top bar (`--anchor-top`). */
   .cards > li {
     padding: 8px 0;
     border-top: 1px solid var(--line);
-    scroll-margin-top: 118px;
+    scroll-margin-top: var(--anchor-top);
   }
 
   .cards > li:first-child {
     border-top: 0;
-  }
-
-  @media (max-width: 600px) {
-    .cards > li {
-      scroll-margin-top: 132px;
-    }
   }
 
   .head {

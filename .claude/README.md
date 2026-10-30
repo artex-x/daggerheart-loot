@@ -809,7 +809,7 @@ untyped ESLint half use their own caches.
   all-core load), 15.8 GB RAM with about 4.2 GB free, commit limit 31.6 GB
   with 7.7 GB free, one QLC NVMe SSD, the repository on an 80 GB ReFS Dev
   Drive (E:), power plan Balanced, Node v24.15.0, Windows 11. Skip work; do
-  not parallelise. Run two stages at once at most, never beside vitest, and
+  not parallelize. Run two stages at once at most, never beside vitest, and
   only after a measurement.
 - Prettier and the untyped ESLint half keep their own per-file caches under
   `node_modules/.cache/prettier/` and `node_modules/.cache/eslint/`. `npm ci`

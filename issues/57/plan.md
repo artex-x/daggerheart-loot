@@ -1042,7 +1042,7 @@ S4. `ModeRow.svelte`: `<nav class="modes" aria-label={t.modesLabel}>` with
    its `a11y.test.ts` entry. `modeRow.test.ts`: the three controls on each of
    the nine sections, the lit one and its text equal to the page's H1 (the
    chip matches the heading), the menu's seven links in order with the check
-   on the open one, the keys, `expectNoA11yViolations` closed and open.
+   on the open one, the keys, and the axe check with the menu closed and open.
 S5. `Shell.svelte`: the mark as an inline SVG (`viewBox="0 0 512 512"`, the
    mask id `brand-mark-cut`) in `.brand-ico`; the wordmark from a new `dict`
    key `brandWord` («Лут» / "Loot"), whose comment says the wordmark follows
@@ -1141,7 +1141,7 @@ S9. The mark.
       unchanged" goes).
 S10. The American-spelling sweep (owner, Q3 and B3).
    1. Word list (`git grep -n -i -I -E`):
-      `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell`.
+      `colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell|flavour|neighbour|centring|maths\b|parallelis(e|ed|es|ing)\b|rasteris` (the last six from the batch 2 review, N2).
       On `3e5f6301` it hits 1381 lines in 539 files outside `issues/` and
       `schema/`: 476 in 340 goldens (re-seeded in S11, never edited), 64 in 44
       decision files (kept), 273 in 81 `app/src` files, 222 in 15 other test

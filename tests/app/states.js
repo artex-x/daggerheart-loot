@@ -290,7 +290,7 @@ async function dialogSemantics() {
   await ctx.close();
 }
 
-/** 9. Copy text through the stubbed clipboard - both flavours. */
+/** 9. Copy text through the stubbed clipboard - both flavors. */
 async function copyTextThroughClipboard() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
@@ -488,7 +488,7 @@ async function noteTextareaHeight() {
   );
   ok(
     lnoteLines[1] === 3,
-    '13 (list notes): the neighbouring field grew along with it - ' + lnoteLines[1]
+    '13 (list notes): the neighboring field grew along with it - ' + lnoteLines[1]
   );
 
   await d.type(LIST_PH, Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));

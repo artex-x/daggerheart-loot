@@ -807,7 +807,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
       });
     },
 
-    /** What the clipboard was handed, both flavours. */
+    /** What the clipboard was handed, both flavors. */
     clipboard() {
       return page.evaluate(async () => {
         const m = window.__clip;
@@ -1035,7 +1035,7 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * description, the craft chain and the footer are all below the default
      * shot and were never being looked at.
      *
-     * A full-page capture rasterises the whole document in one go, most of it
+     * A full-page capture rasterizes the whole document in one go, most of it
      * never painted before this call - measured directly: the geometry stayed
      * byte-identical across readings while the pixels swung 0.00-7.31% on an
      * unchanged build, worse under load: a capture handed back before the

@@ -40,7 +40,7 @@ published source at once - Core Rulebook, Hope and Fear, Wondrous Environments,
 Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many
 Worlds Tavern, Community Magic Items, the alternate tables and the campaign
 frames - in Russian and in English. Complete bilingual coverage plus a list
-that the players open from one link is the combination a neighbouring
+that the players open from one link is the combination a neighboring
 generator cannot copy cheaply.
 
 ## Operating Context

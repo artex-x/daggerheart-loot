@@ -407,7 +407,9 @@ full-width element does not invent its own container or its own gutter.
 From 761px the brand, the three jobs, the language switch and the account
 control share one row, and the page head's pin and «Справка» show their labels;
 the sticky header is 63px. Up to 760px the jobs take a second row and the
-header is 111px at 360px in both languages (at most 112px). At 600px touch
+header is 111px at 360px in both languages (at most 112px). A linked section,
+row or card lands under the header by `--anchor-top`, set at the same two
+steps: 75px, 118px up to 760px and 132px up to 600px. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
 controls 40px tall. Every other media query in the code belongs to one
@@ -416,7 +418,7 @@ component and its own measured problem. Do not add another system breakpoint.
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at
 360px, the signed-out account control keeps «Войти» / "Sign in" at every width,
-and the pin and the help are labelled buttons («Открывать при запуске» /
+and the pin and the help are labeled buttons («Открывать при запуске» /
 "Open on start", «Справка» / "Help"). The one interim exception: up to 760px
 the pin and the help stay round buttons with the same names until their page's
 batch moves them into «Ещё» or «Настроить» (the tables, the roller, homebrew,

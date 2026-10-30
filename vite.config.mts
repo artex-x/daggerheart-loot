@@ -228,7 +228,7 @@ export default defineConfig(({ command, mode }) => {
          the file with it (`Axe is already running`) - was not a timeout value
          and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
          clears axe's `_running` flag before every run, so an abandoned run from
-         a timed-out neighbour can no longer block the next one. See
+         a timed-out neighbor can no longer block the next one. See
          app/src/test/a11y.test.ts for the regression test.
 
          Since 2026-10-07 a timing bound, and a case that passed 30s under host

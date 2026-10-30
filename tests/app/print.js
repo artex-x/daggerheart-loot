@@ -500,7 +500,7 @@ const { ok } = rep;
       bw,
       compact
     );
-    const where = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : ' standard');
+    const where = (isBw ? 'bw' : 'color') + (isCompact ? ' compact' : ' standard');
     const fit = await page.$eval('.pcard', (c) => {
       const box = c.querySelector('.pc-content').getBoundingClientRect();
       const bottom = c.querySelector('.pc-bottom');
@@ -670,7 +670,7 @@ const { ok } = rep;
     [false, true],
     [true, true]
   ]) {
-    const how = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '') + ': ';
+    const how = (isBw ? 'bw' : 'color') + (isCompact ? ' compact' : '') + ': ';
     await openPrint(d, 'mw47');
     if (isBw) await bw();
     if (isCompact) await compact();
@@ -1373,7 +1373,7 @@ const { ok } = rep;
           );
           ok(
             Math.abs(stripPt - 20) < 0.3,
-            'compact ' + (isBw ? 'bw' : 'colour') + ' q1: the strip is not 20pt: ' + stripPt
+            'compact ' + (isBw ? 'bw' : 'color') + ' q1: the strip is not 20pt: ' + stripPt
           );
         }
         const off = await page.evaluate(
@@ -1412,7 +1412,7 @@ const { ok } = rep;
         ok(
           !off.length,
           (isCompact ? 'compact ' : '') +
-            (isBw ? 'bw ' : 'colour ') +
+            (isBw ? 'bw ' : 'color ') +
             id +
             ' diverges from the design: ' +
             off.join('; ')
@@ -1658,7 +1658,7 @@ const { ok } = rep;
       '.selbarwrap .selacts > .btn',
       (e) => getComputedStyle(e).textDecorationLine
     )) === 'none',
-    'the print button is underlined, and its neighbours are not'
+    'the print button is underlined, and its neighbors are not'
   );
   await d.click(PRINT);
   await waitForSet();
@@ -1853,7 +1853,7 @@ const { ok } = rep;
           const tag =
             route.slice(8, 20) +
             (isCompact ? ' compact' : '') +
-            (isBw ? ' bw' : ' colour') +
+            (isBw ? ' bw' : ' color') +
             langTag +
             ': ';
           const bad = await page2.evaluate(
@@ -2820,7 +2820,7 @@ const { ok } = rep;
       [false, true],
       [true, true]
     ]) {
-      const layout = (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
+      const layout = (isBw ? 'bw' : 'color') + (isCompact ? ' compact' : '');
       await openAs(
         pv.d,
         VECTOR_SET,
@@ -2996,7 +2996,7 @@ const { ok } = rep;
         [false, true],
         [true, true]
       ]) {
-        const name = label + ', ' + (isBw ? 'bw' : 'colour') + (isCompact ? ' compact' : '');
+        const name = label + ', ' + (isBw ? 'bw' : 'color') + (isCompact ? ' compact' : '');
         await d.click(isBw ? 'Чёрно-белая' : 'Цветная');
         await d.click(isCompact ? 'Компактная' : 'Обычная');
         await new Promise((r) => setTimeout(r, 300));

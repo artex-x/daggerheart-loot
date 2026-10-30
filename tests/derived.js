@@ -1242,7 +1242,7 @@ VERSATILE.concat(SWAP_ALT.filter(Boolean)).forEach(function (x) {
 });
 
 /* An item's shape from Vault of Ages - "dagger", "scythe", "light" - sits in
-   the book for flavour, but in the app it was taking the place of weapon
+   the book for flavor, but in the app it was taking the place of weapon
    class: it could not be filtered by, and physical/magical did not work for
    these items. Class is now set on every weapon, and shape is set on
    nothing. */
@@ -2636,11 +2636,13 @@ console.log('American spelling');
    docs/decisions/2026-10-29-english-text-uses-american-spelling.md). The English UI
    strings and llms.txt keep none of the British forms. */
 const BRITISH =
-  /colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis(?!t)|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell/i;
+  /colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis(?!t)|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell|flavour|neighbour|centring|maths\b|parallelis(e|ed|es|ing)\b|rasteris/i;
 ok(
   BRITISH.test('a colour card') &&
     BRITISH.test('Labelled') &&
-    !BRITISH.test('an optimistic write'),
+    BRITISH.test('horror-flavoured') &&
+    !BRITISH.test('an optimistic write') &&
+    !BRITISH.test('fileParallelism'),
   'the British spelling pattern does not read its own examples'
 );
 {

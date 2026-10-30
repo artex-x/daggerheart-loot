@@ -418,7 +418,7 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
   head and in every static page's head are all `--bg` from `tokens.css`;
   `tests/derived.js` pins them to one value.
 - The icons are `app/public/icons/`: `icon.svg` is the source, and
-  `tools/artwork/icons.mjs` rasterises it into `icon-192.png`,
+  `tools/artwork/icons.mjs` rasterizes it into `icon-192.png`,
   `icon-512.png`, `maskable-512.png` and `apple-touch-icon.png` (180 px),
   committed like `card/*.svg` (`docs/artwork.md`, "Icons"). The drawing
   stays inside the maskable safe zone, a centered circle of radius 40% of

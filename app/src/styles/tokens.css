@@ -106,6 +106,22 @@
      a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
      either, chosen against `--gold` specifically. */
   --ink-on-gold: #1a1206;
+
+  /* Where a section, row or card anchor lands: about 12-20 px under the sticky
+     header, which is 63 px from 761 px and two rows below (111 px at 360). */
+  --anchor-top: 75px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --anchor-top: 118px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --anchor-top: 132px;
+  }
 }
 
 *,

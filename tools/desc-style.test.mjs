@@ -192,7 +192,7 @@ describe('the cost rules (S2, S3)', () => {
 });
 
 describe('the condition rule (S4)', () => {
-  it('italicisesACapitalisedConditionOnly', () => {
+  it('italicizesACapitalizedConditionOnly', () => {
     assert.equal(
       en('They become temporarily Vulnerable.'),
       'They become temporarily *Vulnerable*.'

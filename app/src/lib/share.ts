@@ -1,6 +1,6 @@
 /* What a record looks like when it leaves the app.
  *
- * Two flavours of the same message. `text/html` carries the name in bold and
+ * Two flavors of the same message. `text/html` carries the name in bold and
  * the record text's own bold and italics (`markupHtml`); `text/plain` carries
  * the same words with no markup at all (`markupText`) - deliberately not
  * Markdown, because an app that cannot take rich text should receive readable
@@ -148,7 +148,7 @@ export function imageFileName(it: Record_, lang: Lang): string {
 }
 
 /**
- * Both flavours of the message.
+ * Both flavors of the message.
  *
  * Equipment leads with its stat line, tight under the name: the numbers belong
  * to the heading rather than to the prose, and someone scanning a pasted message

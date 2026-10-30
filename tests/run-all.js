@@ -213,7 +213,7 @@ let next = 0,
 const t0 = Date.now();
 
 /* Printed strictly in list order: a suite that finished ahead of its
-   neighbour waits for it, otherwise two identical runs would print a
+   neighbor waits for it, otherwise two identical runs would print a
    different report and could not be compared. */
 let printed = 0;
 function flush() {

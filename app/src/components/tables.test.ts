@@ -598,7 +598,7 @@ describe('the selection bar', () => {
     expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['ci1', 'ci2']);
   });
 
-  it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
+  it('copies both flavors of every ticked record, joined with no OR, and toasts', async () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
     const boxes = rowCheckboxes();

@@ -252,14 +252,10 @@
      in style.css - the row anchor's own target, unused until now, wired up
      here for the first time. */
   :global([data-row]) {
-    scroll-margin-top: 118px;
+    scroll-margin-top: var(--anchor-top);
   }
 
   @media (max-width: 600px) {
-    :global([data-row]) {
-      scroll-margin-top: 132px;
-    }
-
     .selbox {
       width: 38px;
     }

@@ -84,7 +84,7 @@ describe('golden share fixtures', () => {
   }
 });
 
-describe('the two flavours say the same thing', () => {
+describe('the two flavors say the same thing', () => {
   it('carries no markup into the plain one', () => {
     /* Not Markdown on purpose: an app that cannot take rich text should get
        readable words rather than stray asterisks and underscores. */
@@ -476,7 +476,7 @@ describe('a list selection, with its taken counts and total', () => {
     );
   });
 
-  it('escapes the total line in the rich flavour', () => {
+  it('escapes the total line in the rich flavor', () => {
     const { html } = shareSelection(
       [rec('ci1')],
       index,

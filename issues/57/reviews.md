@@ -52,3 +52,12 @@
 | 1-N1..N5, N7 | nit | local | fixed 1-fix | See `reviews/1.md`, "Nits" |
 | 1-N6 | nit | deferred-scope | fixed 1b (`fce4a9f8`) | `PrintCard.svelte` literal `#0a0810` for the art block; `--art-well` names it |
 | 1b | - | - | approve, no finding | `reviews/1b.md`: no blocker, risk or nit; five deviations accepted (the `_none` removal record, the EN pictures counter, the light-well loop, the taller one-line well, the `DECISIONS.md` regeneration) |
+| 2-R1 | risk | deferred-scope | deferred (owner-AFK log; post-release Impeccable audit) | S12.1 ran a manual polish and harden pass, not the Impeccable skill |
+| 2-R2 | risk | local | fixed 2-fix | The handoff did not say how the batch 2 commit passed rule 2e after the last edits |
+| 2-R3 | risk | deferred-scope | deferred (batch 10 audit) | From 761 px the header's visual order differs from its DOM order (jobs last) |
+| 2-N1 | nit | local | fixed 2-fix | "labelled" in `FEATURES.md` "Chrome" and `DESIGN.md` "Layout" |
+| 2-N2 | nit | deferred-scope | fixed 2-fix | The spelling word list missed flavour, neighbour, centring, maths, parallelise, rasterise |
+| 2-N3 | nit | local | fixed 2-fix | British forms in a test title, the print suite's failure messages and the selftest scratch text |
+| 2-N4 | nit | local | fixed 2-fix | S12.2 (C34, A15) had no outcome in the handoff |
+| 2-N5 | nit | deferred-scope | deferred (batch 5) | `SECTION_LABEL['roll/alt']` reads «Альт. таблицы», not the page heading |
+| 2-N6 | nit | deferred-scope | deferred (batch 10) | "until their page's batch moves them" is task-plan wording in `DESIGN.md` and `FEATURES.md` |

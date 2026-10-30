@@ -1756,7 +1756,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   choice; its «?» explains it.
   «Линия улучшений», «Улучшается до», «Получается из», «Комплект» and
   «Карты правил» each carry a «?» whose hint says what the relation does
-  and how it differs from its neighbour (a line is rungs of one item; a
+  and how it differs from its neighbor (a line is rungs of one item; a
   craft link is another item made from this one). «Улучшается до» and «Получается из»
   hold up to 8 items each, catalog or own; the item itself is never offered.
   «Комплект» is a select of the catalog's sets and the own ones («<name>
@@ -2402,7 +2402,7 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 - The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
   the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
   with the check of the neutral pressed state (`Seg`), never a gold fill. From
-  761 px it is a labelled button; up to 760 px a round button with the same
+  761 px it is a labeled button; up to 760 px a round button with the same
   name until its page's batch moves it into «Ещё» or «Настроить».
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an

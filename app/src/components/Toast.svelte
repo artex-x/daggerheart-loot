@@ -194,10 +194,10 @@
 
 <style>
   /* off `.toast` in style.css, plus the popover resets a plain fixed element
-     does not need: `inset`/`margin` replace the UA default centring, `border`
+     does not need: `inset`/`margin` replace the UA default centering, `border`
      replaces the UA popover border and `overflow` undoes its scroll, and `color`/
      `background` are the browser's Canvas/CanvasText for a plain popover -
-     `.toast.err` still overrides them for the alert flavour below. */
+     `.toast.err` still overrides them for the alert flavor below. */
   .toast {
     position: fixed;
     inset: auto auto 26px 50%;

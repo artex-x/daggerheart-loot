@@ -125,10 +125,10 @@ wrong.
 | `source` | Count | What it is | Reach for it when |
 |---|---|---|---|
 | `Core` | 346 | The Daggerheart Core Set: the full tier 1–4 equipment ladders and the two baseline loot tables. | Always. This is the default unless there is a reason for something else — everything below is measured against it. |
-| `Hope & Fear` | 275 | The Hope & Fear expansion. More equipment on the same ladders, more loot in the same shape, deliberately on the same curve. | You want variety without changing the maths. Safe to shuffle together with Core. |
+| `Hope & Fear` | 275 | The Hope & Fear expansion. More equipment on the same ladders, more loot in the same shape, deliberately on the same curve. | You want variety without changing the math. Safe to shuffle together with Core. |
 | `Campaign Frames` | 94 | Equipment written for one campaign frame each (Beast Feast, Colossus, Dark Heart, Motherboard). Tied to that frame's premise and often to its special mechanics. | The table is running that frame. Outside it, the item is usually inert or unbalanced — the text assumes rules the party does not have. |
 | `Wondrous Loot` | 119 | Wondrous Environments, a third-party book of magical oddities, mostly items and consumables, with eleven pieces of equipment. | You want a memorable object. Several entries rewrite a scene rather than color it, so read the text before handing it over. |
-| `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavoured. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
+| `Dread GM Toolbox` | 29 | A third-party horror supplement. Cthulhu-mythos material: Mi-go equipment, cursed relics, things with a cost attached. | The campaign is horror-flavored. In heroic fantasy these read as tonal noise, and some carry a drawback that only makes sense in a horror game. |
 | `Vault of Ages` | 144 | Four third-party volumes by one author, sorted by tier: 30-34 per tier plus 9 artifacts and 5 cursed objects. Deliberately stronger than Core, which is why most entries carry a Recall Cost. | You want a reward that bends the story rather than the numbers. Read the tier off the record: unlike every other loot set, it has one. |
 | `The Dragon's Vault` | 145 | A third-party supplement: 77 loot entries and 68 pieces of equipment, including a Frostwyrd upgrade chain and the paired Ember/Spark weapons. | You want more of the same shape as Wondrous Environments plus named, feature-heavy equipment. |
 | `Arazo's Artifacts` | 78 | A third-party book of 27 magic items that grow with the bearer: 10 items and 68 pieces of equipment. Each of the 17 pieces of equipment is four records (base, Improved, Advanced, Legendary), rebalanced to the Core damage and threshold bands, so its numbers differ from the printed book. | You want a signature item a character keeps for the whole campaign. |
@@ -989,7 +989,7 @@ Good pairs:
 | The armor smells faintly of smoke. | Salvaged from the fire in Act 1. Recognizing it costs a Knowledge roll. |
 
 Avoid putting mechanics the players should discover in a player note, and avoid
-putting flavour they need right now in a GM note.
+putting flavor they need right now in a GM note.
 
 ## Money
 

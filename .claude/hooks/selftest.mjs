@@ -115,7 +115,7 @@ function setupScratch() {
   scratchRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-root-'));
   scratchState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-state-'));
 
-  writeFile('README.md', '# scratch\n\nLicence: MIT.\n');
+  writeFile('README.md', '# scratch\n\nLicense: MIT.\n');
   writeFile('README.ru.md', '# scratch ru\n');
   writeFile('data.js', 'window.LOOT = [];\n');
   writeFile('data.json', '[]\n');
