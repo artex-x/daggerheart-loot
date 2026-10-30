@@ -1,0 +1,76 @@
+[
+  {
+    "s": "search-empty",
+    "name": "search-empty"
+  },
+  {
+    "s": "search-results",
+    "name": "search-results"
+  },
+  {
+    "s": "search-kind",
+    "name": "search-kind"
+  },
+  {
+    "s": "search-own",
+    "name": "search-own"
+  },
+  {
+    "s": "search-own-kind",
+    "name": "search-own-kind"
+  },
+  {
+    "s": "search-selection",
+    "name": "search-selection"
+  },
+  {
+    "s": "search-selection",
+    "name": "search-selection-screen",
+    "screen": true
+  },
+  {
+    "s": "search-nothing",
+    "name": "search-nothing"
+  },
+  {
+    "s": "account-settings",
+    "name": "account-settings"
+  },
+  {
+    "s": "account-loading",
+    "name": "account-loading"
+  },
+  {
+    "s": "account-failed",
+    "name": "account-failed"
+  },
+  {
+    "s": "account-delete",
+    "name": "account-delete"
+  },
+  {
+    "s": "account-delete-keyboard",
+    "name": "account-delete-keyboard",
+    "widths": [360]
+  },
+  {
+    "s": "print-preview",
+    "name": "print-preview"
+  },
+  {
+    "s": "print-settings",
+    "name": "print-settings"
+  },
+  {
+    "s": "print-loading",
+    "name": "print-loading"
+  },
+  {
+    "s": "print-failed",
+    "name": "print-failed"
+  },
+  {
+    "s": "print-nope",
+    "name": "print-nope"
+  }
+]

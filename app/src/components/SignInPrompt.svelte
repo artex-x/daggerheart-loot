@@ -50,7 +50,7 @@
 
   .signin-lead {
     margin: 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--txt);
     max-width: 62ch;
     flex: 1 1 240px;
@@ -70,7 +70,7 @@
   }
 
   .signin.compact .signin-lead {
-    font-size: 13px;
+    font-size: var(--t-data);
     flex: none;
   }
 

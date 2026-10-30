@@ -2,7 +2,7 @@
 
 The register of decisions that outlive the task that made them, each with
 the alternatives rejected and the reason. Record a decision only when an
-alternative was rejected. Behaviour decisions live in `docs/specs/`; hook,
+alternative was rejected. Behavior decisions live in `docs/specs/`; hook,
 tooling and host decisions in `.claude/README.md`; everything else is one
 file under `docs/decisions/`, listed here newest first. This index is
 generated: add or edit a file there (template:
@@ -19,11 +19,15 @@ deleted.
 - 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)
 - 2026-10-29 - [A sender hears a decision while the page stays open](decisions/2026-10-29-a-sender-hears-a-decision-while-the-page-stays-open.md)
 - 2026-10-29 - [A sign-in return keeps the language of the address left](decisions/2026-10-29-a-sign-in-return-keeps-the-language-of-the-address-left.md)
+- 2026-10-29 - [English text uses American spelling](decisions/2026-10-29-english-text-uses-american-spelling.md)
+- 2026-10-29 - [Task 57 lands on main in three waves](decisions/2026-10-29-task-57-lands-on-main-in-three-waves.md)
+- 2026-10-29 - [The header has three jobs and a mode row](decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md)
 - 2026-10-29 - [The Items tab filter lives in the address](decisions/2026-10-29-the-items-tab-filter-lives-in-the-address.md)
 - 2026-10-29 - [The orchestrator reads the plan limits and winds work down before a cut](decisions/2026-10-29-the-orchestrator-reads-the-plan-limits-and-winds.md)
 - 2026-10-29 - [The Scary rule keeps one Russian body](decisions/2026-10-29-the-scary-rule-keeps-one-russian-body.md)
 - 2026-10-29 - [The set name before a set bonus is bold italic](decisions/2026-10-29-the-set-name-before-a-set-bonus-is-bold-italic.md)
 - 2026-10-29 - [The tables strip cap follows its measured layout](decisions/2026-10-29-the-tables-strip-cap-follows-its-measured-layout.md)
+- 2026-10-29 - [The UI font is Source Sans 3, self-hosted from the build's own origin](decisions/2026-10-29-the-ui-font-is-source-sans-3-self-hosted.md)
 - 2026-10-29 - [Usage guards park work, never change a tier, and resume AFK work after a reset](decisions/2026-10-29-usage-guards-park-work-never-change-a-tier.md)
 - 2026-10-28 - [Addresses are paths, with the language prefix and `?v` in the bar](decisions/2026-10-28-addresses-are-paths-with-the-language-prefix-and.md)
 - 2026-10-28 - [Artwork, its thumbnails and rendered build inputs stay tracked in git](decisions/2026-10-28-artwork-its-thumbnails-and-rendered-build-inputs-stay.md)
@@ -60,7 +64,7 @@ deleted.
 - 2026-10-21 - [The homebrew export writes homebrew-v2 always](decisions/2026-10-21-the-homebrew-export-writes-homebrew-v2-always.md)
 - 2026-10-21 - [The print card recolours its exported vectors with CSS; the files stay published](decisions/2026-10-21-the-print-card-recolours-its-exported-vectors-with.md)
 - 2026-10-21 - [Unnumbered Many Worlds Tavern realms order by kind, then name](decisions/2026-10-21-unnumbered-many-worlds-tavern-realms-order-by-kind-then-name.md)
-- 2026-10-20 - [Supplement roll sections share one tab and a chip panel](decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md)
+- 2026-10-20 - [Supplement roll sections share one tab and a chip panel](decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md) - superseded
 - 2026-10-18 - [Many Worlds Tavern equipment keeps its printed stats](decisions/2026-10-18-many-worlds-tavern-equipment-keeps-its-printed-stats.md)
 - 2026-10-18 - [Many Worlds Tavern is source mwt, rolled inside one realm](decisions/2026-10-18-many-worlds-tavern-is-source-mwt-rolled-inside-one-realm.md)
 - 2026-10-18 - [Many Worlds Tavern ships no rarity and no flavor text](decisions/2026-10-18-many-worlds-tavern-ships-no-rarity-and-no-flavor-text.md)

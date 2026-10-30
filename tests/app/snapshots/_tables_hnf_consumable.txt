@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -114,6 +112,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Флакон Мягкого ПаденияВыпейте это зелье, чтобы в течение 10 мин... [namelen=115 namehash=78b5d0d8]
 8Слюна ХимерыСмажьте этой слюной физическое оружие, и до следующ... [namelen=122 namehash=197d5fb9]
 9Пакетик Космической ПылиВсё, что покрыто этой пылью, становится... [namelen=179 namehash=934712ed]
+?Справка
 Core
 EN
 Hope & Fear
@@ -121,6 +120,7 @@ RU
 daggerheart.com
 Альт. таблицы
 Безоар Виночерпия
+Бросок
 Бутыль Цисканского Тумана
 Бутыль с Духом
 Варево Берсерка
@@ -135,7 +135,6 @@ daggerheart.com
 Зелье Мохового Покрова
 Зелье Невидимости
 К содержимому
-Как это работает
 Какофоническая Микстура
 Квинтэссенциальный Разделитель
 Кол Запрета
@@ -154,11 +153,10 @@ daggerheart.com
 Настой Демиурга
 Настойка Змеиной Кожи
 Оберегающая Свеча
-Обычные правила
 Осколок Арктицита
 Осколок Фульгурита
 Осколок Эмберита
-Открывать этот раздел при запуске
+Открывать при запуске
 Ошибка Игрока
 Пакетик Космической Пыли
 Пастилка Лирохвоста
@@ -204,22 +202,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/hope_and_fear_consumable]
   link "Skip to content" [url=/en/tables/hope_and_fear_consumable#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -249,7 +245,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/hope_and_fear_
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10PipeweedWhen you choose the Clear Stress downtime move during ... [namelen=249 namehash=4004310f]
@@ -312,6 +308,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/hope_and_fear_
 7Vial of FeatherfallYou can drink this potion to ignore damage f... [namelen=121 namehash=d97cfd09]
 8Chimeric SalivaYou can apply this saliva to a weapon that deals... [namelen=158 namehash=833b7cd8]
 9Packet of Space DustThis dust causes anything it covers to beco... [namelen=213 namehash=379f2520]
+?Help
 Alt. tables
 Arcticite Shard
 Berserker's Brew
@@ -341,7 +338,6 @@ Gravity Bomb
 Green Ooze Oil
 Grid
 Hope & Fear
-How this works
 Install as an app
 Instant Camp
 Invisibility Potion
@@ -350,6 +346,7 @@ Items
 Link to this table
 Lionheart Tonic
 List
+LootDaggerheart
 Lyrebird Lozenge
 Magic-User's Malison
 Mask of the Echoed Self
@@ -361,7 +358,7 @@ Mossmantle Potion
 Necroprancer's Bell
 Night Hag's Dust
 Nightmare Mead
-Open this section on start
+Open on start
 Other
 Packet of Space Dust
 Phial of Deep Ink
@@ -372,6 +369,7 @@ Psychopomp's Shroud
 Quintessential Severant
 RU
 Red Ooze Oil
+Roll
 Salamander Salve
 Search
 Self-Sewing Thread
@@ -383,7 +381,6 @@ Snapthorn Seed
 Sprite Bottle
 Staff of Reversal
 Stake of Abjuration
-Standard rules
 Steelskin Salve
 Stonemason's Fortune
 Sunlight Orb
@@ -396,4 +393,3 @@ Vial of Featherfall
 Warding Candle
 Yakamel Milk
 daggerheart.com
-ЛутDaggerheart

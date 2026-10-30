@@ -243,7 +243,7 @@ function printEntries(spec) {
  * Opens a print sheet at its `#/p/<id>`: signs in as `as`, makes the set through the
  * fake (`spec` is the retired address's spelling or an array of entries), goes to it
  * and waits until the page leaves «Загружаем...». `gm2` by default: it has no print
- * layout of its own, so a sheet starts in colour on the standard sheet. A reload empties
+ * layout of its own, so a sheet starts in color on the standard sheet. A reload empties
  * the fake, so a case that reloads opens a seeded set (`PRINT_SETS`) instead.
  */
 async function openPrint(d, spec, { as = 'gm2' } = {}) {

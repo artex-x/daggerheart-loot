@@ -1,0 +1,96 @@
+{
+  "batch": 8,
+  "title": "Batch 8 - lists page, list cards, lists import, add-to-list menu",
+  "states": [
+    {
+      "id": "lists-index",
+      "addr": "/lists",
+      "ids": "D116, A16, D20, A37, first-screen rule",
+      "what": "Signed in, 3 lists: «Новый список» is the head primary (rule 8); the count line holds «Ещё» (at 360 «Выбрать» and the import, at 1180 the import, with «Выбрать» beside the count, as the catalog); no «Ваш аккаунт» heading (D116), no «Справка» (owner, 2026-10-29); cards with no red «Удалить» and no always-on tick; a card names waiting requests and changes. The account control is lit."
+    },
+    {
+      "id": "lists-new",
+      "addr": "/lists",
+      "ids": "D20, rule 8",
+      "what": "Open: «Новый список» opens the name field in place, with the visible label «Название списка» (rule 15a), «Создать» and «Отмена»; the primary has the plus icon at every width."
+    },
+    {
+      "id": "lists-more",
+      "addr": "/lists",
+      "ids": "first-screen rule",
+      "what": "Open at 360: the title row «Ещё» with «Импорт из файла» (at 1180 the import is a button in the head)."
+    },
+    {
+      "id": "lists-cardmenu",
+      "addr": "/lists",
+      "ids": "A16",
+      "what": "Open: a card's «Ещё» menu: open, download JSON, then delete, apart."
+    },
+    {
+      "id": "lists-selected",
+      "addr": "/lists",
+      "ids": "A16, A40",
+      "what": "Open: the selection mode, 2 cards ticked. The one selection bar (mock 3): «Все» (three states), «Выбрано: 2», «Скачать JSON (2)», «Удалить (2)», «Снять выделение» last. At 360 it is pinned to the bottom of the 640 px frame. The ticks and the selected cards are neutral."
+    },
+    {
+      "id": "lists-select-none",
+      "addr": "/lists",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick: the same bar, «Все» empty, «Выбрано: 0», «Скачать JSON (0)» and «Удалить (0)» off, «Снять выделение» on (it clears the ticks and ends the mode)."
+    },
+    {
+      "id": "lists-empty",
+      "addr": "/lists",
+      "ids": "theme 8",
+      "what": "Empty: no lists yet. The empty-state pattern (batch 3) with the kind glyph well names both ways to start."
+    },
+    {
+      "id": "lists-signedout",
+      "addr": "/lists",
+      "ids": "theme 8",
+      "what": "Signed out: one sentence on where lists live, «Войти» as the one primary."
+    },
+    {
+      "id": "lists-error",
+      "addr": "/lists",
+      "ids": "error scenarios",
+      "what": "Error: the read failed; the cause and «Повторить»."
+    },
+    {
+      "id": "lists-limit",
+      "addr": "/lists",
+      "ids": "scale",
+      "what": "At the limit: 50 of 50 lists. The count «50 списков из 50» in red at the head of the collection; «Новый список» stays on and says the limit when pressed; the first 24 cards, then «Показать ещё (26)» (FEATURES \"Lists\", 24 per page); a search from the eighth list."
+    },
+    {
+      "id": "lists-import",
+      "addr": "/lists",
+      "ids": "A14, D6",
+      "what": "Open: «Ещё» > «Импорт из файла» opens the panel under the head: one summary, the skipped lines on request, no raw ids."
+    },
+    {
+      "id": "lists-nope",
+      "addr": "/lists/<uuid>",
+      "ids": "A18",
+      "what": "Error page, signed out: a true cause after R10 (no browser lists) and «Войти»."
+    },
+    {
+      "id": "lists-nope-signedin",
+      "addr": "/lists/<uuid>",
+      "ids": "A18",
+      "what": "Error page, signed in: names the signed-in account and «Мои списки»."
+    },
+    {
+      "id": "item-listmenu",
+      "addr": "/i/ci1",
+      "ids": "C61, C35, C62",
+      "what": "Open: the add-to-list menu: heading «Списки», a check mark (not gold fill) on the lists that hold the item, counts in words («10 позиций»), «Новый список»; it stays open for a second list. At 360 the menu is its own sheet over the item that closes with «Закрыть» (rule 11)."
+    },
+    {
+      "id": "item-listmenu-signedout",
+      "addr": "/i/ci1",
+      "ids": "C61",
+      "what": "Open, signed out: the menu says where lists live and offers «Войти и создать список»."
+    }
+  ]
+}

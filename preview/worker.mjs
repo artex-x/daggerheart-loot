@@ -48,7 +48,7 @@ const READ_MS = 3000;
 const NAMES_MS = 2000;
 const NAMES_TTL_MS = 600000;
 const NAMES_MAX = 196608;
-/* Twice the answer size that tests/db/link-previews.test.mjs asserts: a defence in depth
+/* Twice the answer size that tests/db/link-previews.test.mjs asserts: a defense in depth
    behind the lean reads (.claude/README.md, "Preview host", "Quotas, recovery and failure"). */
 const ITEM_MAX = 65536;
 const LIST_MAX = 8192;
@@ -334,7 +334,12 @@ function homebrewLines(answer, names, lang) {
   return { craft, set };
 }
 
-function homebrewImage(env, img) {
+/**
+ * Returns the picture of a homebrew item's card: a catalog picture (its square `og/` card),
+ * an own picture (the bucket file), or, with neither, the site card of the language
+ * (1200x630) as a large card with no visible picture on the card page.
+ */
+function homebrewImage(env, img, lang) {
   if (typeof img === 'string' && CATALOG_ART.test(img))
     return {
       img: env.SITE + 'og/' + img.replace(/\.webp$/, '.jpg'),
@@ -347,7 +352,7 @@ function homebrewImage(env, img) {
       img;
     return { img: url, src: url };
   }
-  return { img: env.SITE + 'og/_none.jpg', src: env.SITE + 'img/_none.webp' };
+  return { img: sitePicture(env, lang), src: '', large: true };
 }
 
 /** Returns the card of a `get_item_preview` answer. */
@@ -356,7 +361,7 @@ function homebrewCtx(answer, lang, env, names, id) {
   const sub = homebrewSubtitle(it, lang);
   const raw = markupText(String(descOf(it, lang)));
   const lines = homebrewLines(answer, names, lang);
-  const pic = homebrewImage(env, has(answer, 'img') ? answer.img : null);
+  const pic = homebrewImage(env, has(answer, 'img') ? answer.img : null, lang);
   return {
     title: nameOf(it, lang),
     desc: sub + '. ' + flat(raw),
@@ -365,6 +370,7 @@ function homebrewCtx(answer, lang, env, names, id) {
     set: lines.set,
     img: pic.img,
     imgSrc: pic.src,
+    large: pic.large,
     url: hostUrl(env, lang, '/h/' + id),
     app: appUrl(env, lang, 'h/' + id),
     subtitle: sub,

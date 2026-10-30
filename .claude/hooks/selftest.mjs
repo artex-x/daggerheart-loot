@@ -115,7 +115,7 @@ function setupScratch() {
   scratchRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-root-'));
   scratchState = fs.mkdtempSync(path.join(os.tmpdir(), 'loot-hooks-state-'));
 
-  writeFile('README.md', '# scratch\n\nLicence: MIT.\n');
+  writeFile('README.md', '# scratch\n\nLicense: MIT.\n');
   writeFile('README.ru.md', '# scratch ru\n');
   writeFile('data.js', 'window.LOOT = [];\n');
   writeFile('data.json', '[]\n');
@@ -314,7 +314,7 @@ function testBashDenyCases() {
     ['#11 git restore', 'git restore app/src/lib/x.ts', null],
     ['#12 git stash drop', 'git stash drop', null],
     ['#13 rm -rf app', 'rm -rf app', null],
-    // Regression guards for the four reviewer blockers and the sanitiser
+    // Regression guards for the four reviewer blockers and the sanitizer
     // gaps found with them. Each of these was probed as ALLOWED before.
     ['#13a rm -rf . (repo root)', 'rm -rf .', 'rm -r'],
     ['#13b rm -rf ./ (repo root)', 'rm -rf ./', 'rm -r'],
@@ -2132,7 +2132,7 @@ function testEditGuard() {
       check(`${label}: reason`, denyReason(result).includes(fragment), denyReason(result));
   }
 
-  // #36 - Windows normalisation: backslashes and an upper-case drive letter
+  // #36 - Windows normalization: backslashes and an upper-case drive letter
   // only mean anything as path separators on win32. On POSIX a backslash is
   // just another filename character, so the very same string can never
   // resolve to data.json there - path.isAbsolute() is false for it, and it
@@ -2146,7 +2146,7 @@ function testEditGuard() {
   const windowsPath = `${upperDrive}\\data.json`;
   if (process.platform === 'win32') {
     const result = runHook('edit-guard.mjs', editPayload(windowsPath));
-    check('#36 Windows-normalised path: denies', isDeny(result));
+    check('#36 Windows-normalized path: denies', isDeny(result));
   } else {
     const result = runHook('edit-guard.mjs', editPayload(windowsPath));
     check(
@@ -2779,7 +2779,7 @@ async function testCheckObserver() {
     ],
     ['#49c stdout redirected away', 'npm run check > o.txt', passingResponse, false],
     [
-      '#49d unrecognised numeric failure field',
+      '#49d unrecognized numeric failure field',
       'npm run check',
       { status: 1, stdout: COVERAGE_SUMMARY, stderr: '', interrupted: false },
       false
@@ -3159,8 +3159,8 @@ async function testSessionStop() {
 
   // #52 / #60 - a wrote entry that is still dirty -> systemMessage names the
   // path. Driven through edit-followup.mjs, not recordWrite(), and with a
-  // MIXED-CASE path: recording and matching are two different normalisations
-  // on win32, and a pre-normalised literal certified the bug instead of
+  // MIXED-CASE path: recording and matching are two different normalizations
+  // on win32, and a pre-normalized literal certified the bug instead of
   // catching it. PageHead.svelte stands in for every Svelte component,
   // CLAUDE.md and both READMEs - the files most likely left uncommitted.
   const stopSession = 's-stop-dirty';
@@ -6356,7 +6356,7 @@ async function testMigrationPush() {
       'cd sub && git push origin task-y~1:refs/heads/x',
       'cd sub && git push origin task-y:HEAD',
       'git push origin "$(git rev-parse HEAD)":claude/x',
-      // A refspec that the sanitiser erases, or that a substitution or
+      // A refspec that the sanitizer erases, or that a substitution or
       // xargs supplies, beside a named one.
       'git push origin other-x "$(git branch --show-current)"',
       'git push origin other-x $(git branch --show-current)',

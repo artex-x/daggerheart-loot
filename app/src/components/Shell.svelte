@@ -1,7 +1,9 @@
 <script lang="ts">
-  /* The frame every route sits in: brand, tabs and language. */
+  /* The frame every route sits in: the brand, the three jobs, the language and the
+     account control, then the mode row on the roll sections. */
   import AccountMenu from './AccountMenu.svelte';
   import Icon from './Icon.svelte';
+  import ModeRow from './ModeRow.svelte';
   import Seg from './Seg.svelte';
   import SelBar from './SelBar.svelte';
   import TabBar from './TabBar.svelte';
@@ -9,6 +11,7 @@
   import { sectionLabel } from '../lib/dict.js';
   import { ACCOUNT_HASH } from '../lib/hash.js';
   import { nameOf } from '../lib/i18n.js';
+  import { modeOf } from '../lib/nav.js';
   import type { Snippet } from 'svelte';
   import type { AppState } from '../state/app.svelte.js';
   import type { Lang } from '../lib/types.js';
@@ -29,6 +32,18 @@
      reader never sees «Войти» flash; a build with no sign-in draws none. */
   const accountShown = $derived(app.env.cloud !== null && app.user !== undefined);
   const onAccount = $derived(app.route.kind === 'account');
+  /* The account pages light the control's ring: the account, the lists and «Мои
+     предметы» with its editor (docs/specs/FEATURES.md, "Chrome"). */
+  const acctPage = $derived.by(() => {
+    const k = app.route.kind;
+    return (
+      k === 'account' ||
+      k === 'storedList' ||
+      k === 'homebrew' ||
+      k === 'homebrewItem' ||
+      (k === 'section' && app.section === 'lists')
+    );
+  });
   const userId = $derived(app.user?.userId ?? null);
 
   /* The account menu forgets itself on a navigation and on a user change. */
@@ -141,18 +156,43 @@
 <header class="topbar">
   <div class="topbar-in">
     <a class="brand" href={app.href('#/roll/std')}>
-      <svg class="brand-ico" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z" />
+      <!-- The vault die (docs/artwork.md, "Icons"): the same drawing as
+           app/public/icons/icon.svg and favicon.svg and tools/artwork/lib.mjs `MARK`
+           (tools/artwork/lib.test.mjs holds the four copies to one drawing). -->
+      <svg class="brand-ico" viewBox="0 0 512 512" aria-hidden="true">
+        <defs>
+          <mask
+            id="brand-mark-cut"
+            maskUnits="userSpaceOnUse"
+            x="0"
+            y="0"
+            width="512"
+            height="512"
+          >
+            <rect width="512" height="512" fill="#fff" />
+            <g fill="none" stroke="#000" stroke-width="18" stroke-linejoin="round">
+              <path d="M256 134 L372 218.3 L327.7 354.7 L184.3 354.7 L140 218.3 Z" />
+              <path
+                d="M256 134 V40 M372 218.3 L462 189 M327.7 354.7 L383 431 M184.3 354.7 L129 431 M140 218.3 L50 189"
+              />
+            </g>
+            <circle cx="256" cy="232" r="27" fill="#000" />
+            <path d="M242 244 L232 302 H280 L270 244 Z" fill="#000" />
+          </mask>
+        </defs>
+        <g mask="url(#brand-mark-cut)">
+          <path
+            fill="#d8ab5e"
+            d="M256 58 L372.4 95.8 L444.3 194.8 L444.3 317.2 L372.4 416.2 L256 454 L139.6 416.2 L67.7 317.2 L67.7 194.8 L139.6 95.8 Z"
+          />
+          <path fill="#f0d091" d="M256 134 L372 218.3 L327.7 354.7 L184.3 354.7 L140 218.3 Z" />
+        </g>
       </svg>
-      <!-- The wordmark, not a translated string. It is written into
-           index.html once in the live app and stays "Лут Daggerheart" in
-           English too, the way a logo does; the rewrite had it in the
-           dictionary and was quietly turning it into "Loot Daggerheart" on
-           every English page. -->
-      <span class="brand-txt"><b>Лут</b><i>Daggerheart</i></span>
+      <span class="brand-txt"><b>{app.t.brandWord}</b><i>Daggerheart</i></span>
     </a>
     <div class="topbar-right">
       <Seg
+        neutral
         options={LANG_OPTIONS}
         value={app.lang}
         label={app.t.langLabel}
@@ -166,7 +206,7 @@
             <button
               type="button"
               class="acct in"
-              class:on={onAccount}
+              class:on={acctPage}
               bind:this={acctButton}
               aria-label={`${app.t.account}: ${app.user.email}`}
               aria-haspopup="menu"
@@ -176,9 +216,11 @@
               onclick={() => {
                 menuOpen = !menuOpen;
               }}
-              >{#if app.user.email}{app.user.email.charAt(0)}{:else}<Icon
-                  name="user"
-                />{/if}</button
+              ><span class="ini"
+                >{#if app.user.email}{app.user.email.charAt(0)}{:else}<Icon
+                    name="user"
+                  />{/if}</span
+              ><Icon name="chevron" /></button
             >
             {#if menuOpen && acctButton}
               <AccountMenu
@@ -194,18 +236,22 @@
         {:else}
           <a
             class="acct"
-            class:on={onAccount}
+            class:on={acctPage}
             bind:this={signInLink}
             href={app.href(ACCOUNT_HASH)}
             aria-current={onAccount ? 'page' : undefined}
-            ><Icon name="user" /><span class="t">{app.t.signIn}</span></a
+            ><Icon name="user" /><span>{app.t.signIn}</span></a
           >
         {/if}
       {/if}
     </div>
+    <TabBar {app} />
   </div>
-  <TabBar t={app.t} current={app.section} label={app.t.sectionsLabel} lang={app.lang} />
 </header>
+
+{#if modeOf(app.section)}
+  <ModeRow {app} />
+{/if}
 
 <!-- `data-lists`, `data-homebrew` and `data-requests` are what the browser suites wait on
      before a capture (docs/specs/COVERAGE.md, "Test layers"): `pending` while the session
@@ -226,7 +272,7 @@
      `position: sticky`, not fixed, and z-index (SelBar.svelte's own
      `.selbarwrap`, 45) is what paints it over the footer whenever it is
      open, so a keyboard user tabbing forward used to reach the footer's
-     licence link before the bar's own buttons, the reverse of what is on
+     license link before the bar's own buttons, the reverse of what is on
      top of what on screen. A sticky box also has a flow position, unlike a
      fixed one: with a selection open the footer is pushed down by exactly
      the bar's own height (measured at 1180: 5885px page height with no
@@ -236,7 +282,7 @@
      375). -->
 <SelBar {app} />
 
-<!-- The licence notice is on every page on purpose: the terms ask for it, and
+<!-- The license notice is on every page on purpose: the terms ask for it, and
      a page that can be linked to directly has to carry it. It sits folded in
      a native <details> under a one-line summary: DPCGL clause 4.1 asks for
      the notice in the shared material and names no visibility rule
@@ -266,7 +312,7 @@
 <style>
   /* off `.skip`/`.skip:focus` in style.css - a focused skip
      link is a gold plate pinned over the page's top-left corner, out of
-     flow, the same as the live app - not a grey chip that pushes the header
+     flow, the same as the live app - not a gray chip that pushes the header
      down while it is focused. */
   .skip {
     position: absolute;
@@ -295,14 +341,38 @@
     border-bottom: 1px solid var(--line);
   }
 
+  /* From 761 px one row: the brand, the jobs, then the language and the account
+     control. The jobs come last in the source, so `order` keeps the narrow tab order. */
   .topbar-in {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 16px;
-    padding: 11px 0;
+    min-height: 62px;
     width: var(--wrap);
     margin-inline: auto;
+  }
+
+  .topbar-in > :global(.tabs) {
+    order: 1;
+    align-self: stretch;
+    margin-right: auto;
+  }
+
+  /* Up to 760 px the jobs take their own row under the brand (DESIGN.md, "The Two
+     Breakpoints Rule"). */
+  @media (max-width: 760px) {
+    .topbar-in {
+      flex-wrap: wrap;
+      row-gap: 11px;
+      min-height: 0;
+      padding-top: 11px;
+    }
+
+    .topbar-in > :global(.tabs) {
+      order: 3;
+      flex-basis: 100%;
+      margin-right: 0;
+    }
   }
 
   .brand {
@@ -328,13 +398,13 @@
   }
 
   .brand-txt b {
-    font-size: 16px;
+    font-size: var(--t-body);
     letter-spacing: 0.2px;
   }
 
   .brand-txt i {
     font-style: normal;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -343,6 +413,8 @@
   /* The group after the brand: the language switch, then the account
      control 8px after it. */
   .topbar-right {
+    order: 2;
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -361,7 +433,7 @@
     background: var(--surface);
     border: 1px solid var(--line);
     color: var(--muted);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     font-weight: 650;
     letter-spacing: 0.05em;
     font-family: inherit;
@@ -380,20 +452,29 @@
     border-color: var(--gold);
   }
 
-  /* Signed in: a circle with the email's first letter. */
+  /* Signed in: the email's first letter in a circle, then the chevron of a menu. */
   .acct.in {
-    padding: 0;
-    width: 38px;
-    background: var(--surface2);
-    border-color: rgb(216 171 94 / 45%);
-    color: var(--gold-soft);
-    font-size: 14px;
+    gap: 4px;
+    padding: 0 8px 0 5px;
     letter-spacing: 0;
+  }
+
+  .ini {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid rgb(216 171 94 / 45%);
+    color: var(--gold-soft);
+    font-size: var(--t-label);
     text-transform: uppercase;
   }
 
-  /* On `#/account`, and while the menu is open: the gold ring instead of a
-     lit tab. */
+  /* On the account pages, and while the menu is open: the gold ring instead of a
+     lit job. */
   .acct.on,
   .acct[aria-expanded='true'] {
     border-color: var(--gold);
@@ -406,27 +487,32 @@
       min-width: 44px;
     }
 
-    .acct.in {
-      width: 44px;
-    }
-  }
-
-  /* Below 420px the English label crowds the brand (measured at 390), so the
-     label is hidden from sight and stays the control's name. */
-  @media (max-width: 419px) {
-    .acct:not(.in) {
-      padding: 0;
-      width: 44px;
+    /* The brand row holds the brand, the language switch and «Войти» / "Sign in" on
+       one line at 360 px with a classic scrollbar (313 px of row), measured 2026-10-30:
+       the gaps, the switch's side padding and the brand line's tracking give way. */
+    .topbar-in {
+      column-gap: 8px;
     }
 
-    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
-    .acct .t {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
+    .topbar-right {
+      gap: 6px;
+    }
+
+    .brand {
+      gap: 6px;
+    }
+
+    .brand-txt i {
+      letter-spacing: 0.08em;
+    }
+
+    .topbar .topbar-right :global(.seg button) {
+      padding-inline: 9px;
+    }
+
+    .acct {
+      gap: 5px;
+      padding: 0 9px 0 8px;
     }
   }
 
@@ -437,7 +523,7 @@
     margin-top: 20px;
     padding: 22px 0 40px;
     color: var(--muted2);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     border-top: 1px solid var(--line);
   }
 
@@ -450,8 +536,14 @@
     width: fit-content;
   }
 
-  /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap; the link
-     colour is the global `a` rule, the same one the licence link uses. */
+  /* Footer links are muted and underlined: they are not the page's action
+     (DESIGN.md, "The Seal Rule"). */
+  .foot a {
+    color: var(--muted);
+    text-decoration: underline;
+  }
+
+  /* The gap is `.topbar-in`'s, the bottom margin `.brand`'s gap. */
   .foot-nav {
     display: flex;
     flex-wrap: wrap;
@@ -477,7 +569,7 @@
      own share: the chrome it owns and `main`'s frame. `.tabs` (`TabBar`),
      `.printbar`, `.psheet`, `.pcard` and the two `.noprint` siblings
      (`SelBar`, `Toast`) each carry their own share of the same block; the page
-     colours are in `styles/tokens.css`, which owns `html`/`body` and, being
+     colors are in `styles/tokens.css`, which owns `html`/`body` and, being
      emitted after the components, is the only place the override wins. */
   @media print {
     .skip,
@@ -498,7 +590,7 @@
 
   /* The sheet owns its own margins (`.psheet`'s padding is the live layout's
      own measurement); a browser page margin on top of that pushes the grid
-     off centre and the third column onto a second page. */
+     off center and the third column onto a second page. */
   @page {
     size: A4 portrait;
     margin: 0;

@@ -14,15 +14,17 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "Дополнения" [expanded=false haspopup=menu]
   main ""
     heading "Обычные правила" [level=1]
-    button "Открывается при запуске" [description=Открывается при запуске pressed=true]
-    button "Как это работает" [expanded=false]
+    button "Открывается при запуске" [pressed=true]
+    button "Справка" [expanded=false]
     StaticText "Бросок по таблицам корника и дополнения Hope & Fear."
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–60)"
     button "На единицу меньше" [disabled=true]
@@ -84,19 +86,20 @@ RootWebArea "Обычные правила - Генератор лута Daggerh
 3d12 Необычная / Редкая
 4d12 Редкая / Легендарная
 5d12 Легендарная
+?Справка
 Core
 EN
 Hope & Fear
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
+Альтернативные таблицы
 Большое Зелье Быстрого Шага
 Бросить 1d12 Обычная
+Бросок
 Дополнения
 Зелье Быстрого Шага
 К содержимому
-Как это работает
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
@@ -125,22 +128,24 @@ daggerheart.com
 RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=gm1]
   link "Skip to content" [url=/en/roll/std?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "Supplements" [expanded=false haspopup=menu]
   main ""
     heading "Standard rules" [level=1]
-    button "Opens on start" [description=Opens on start pressed=true]
-    button "How this works" [expanded=false]
+    button "Opens on start" [pressed=true]
+    button "Help" [expanded=false]
     StaticText "A roll over the core book and the Hope & Fear tables."
     StaticText "ROLL RESULT (1–60)"
     button "One lower" [disabled=true]
@@ -195,15 +200,16 @@ RootWebArea "Standard rules - Daggerheart Loot Generator" [url=/en/roll/std?as=g
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 2d12 Common / Uncommon
 3d12 Uncommon / Rare
 4d12 Rare / Legendary
 5d12 Legendary
+?Help
 Account: gm1@example.test
-Alt. tables
+Alternate tables
 Caltrops
 Consumables
 Copy every option
@@ -214,9 +220,9 @@ Copy text
 Core
 EN
 Hope & Fear
-How this works
 Install as an app
 Items
+LootDaggerheart
 Major Stride Potion
 One higher
 One lower
@@ -225,6 +231,7 @@ Page
 Premium Bedroll
 Privacy
 RU
+Roll
 Roll 1d12 Common
 Roll result
 Search
@@ -237,4 +244,3 @@ Tables
 Terms of use
 Warding Candle
 daggerheart.com
-ЛутDaggerheart

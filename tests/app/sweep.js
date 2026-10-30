@@ -292,7 +292,7 @@ const PAGES = [
       '#/homebrew',
       'мои предметы: подсказка раздела',
       'gm1',
-      (d) => either(d, 'click', 'Как это работает', 'How this works')
+      (d) => either(d, 'click', 'Справка', 'Help')
     ],
     /* Rule 16 at 360 on the homebrew pages: an 80-character source and an unbroken set
        name. */
@@ -339,14 +339,14 @@ const FOCUS_WALK = [
  *  Three indicators, any one is enough - the app uses all three, not just
  *  the first two this check started with: most controls draw the browser's
  *  own outline; the text fields' `:focus` rule (style.css) replaces it with
- *  a border colour change plus a gold `box-shadow` ring; `NumberField.svelte`
+ *  a border color change plus a gold `box-shadow` ring; `NumberField.svelte`
  *  (`.numbox input[type=text]:focus{outline:none;box-shadow:none}`, matching
  *  style.css byte-for-byte) suppresses both on the input itself and
  *  raises the ring on the wrapper via `.numbox:focus-within` instead
  *  (also style.css); and `ListPage.svelte`'s qty/gold fields
  *  (`.lrow-meta input:focus{outline:none;border-color:var(--gold)}`, matching
  *  style.css) show neither outline nor box-shadow at all, only a border
- *  colour swap to the app's one accent token. An element-only outline/
+ *  color swap to the app's one accent token. An element-only outline/
  *  box-shadow read misses the second and third shapes and reports a real,
  *  visible ring as absent - measured directly against `dist/` on
  *  `#/roll/std`'s custom-modifier field and `#/lists/a`'s qty/gold fields.
@@ -371,8 +371,8 @@ async function focusWalk(page, where) {
         'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
       ).length + 2
   );
-  /* The app's one accent colour, read off the token rather than hard-coded,
-     so a border-colour-only focus style compares against what --gold
+  /* The app's one accent color, read off the token rather than hard-coded,
+     so a border-color-only focus style compares against what --gold
      actually resolves to in this browser. */
   const gold = await page.evaluate(() => {
     const probe = document.createElement('div');
@@ -701,16 +701,16 @@ function stripCap(width) {
             at.header
         );
       }
-      /* Three supplement chips show a short form under 640 px and the full name from
-         641 px; the accessible name is the full name at every width
-         (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). */
+      /* Three supplement chips of the tables book row show a short form under 640 px and
+         the full name from 641 px; the accessible name is the full name at every width
+         (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). The roll
+         pages draw no chip panel since the mode row (FEATURES.md, "Rolling"). */
       const SHORT = [
         ['Wondrous Environments', 'Wondrous'],
         ['Dread GM Toolbox', 'Dread'],
         ["The Dragon's Vault", "Dragon's Vault"]
       ];
       for (const [hash, rows] of [
-        ['#/roll/wondrous_environments', 'a.chip[aria-label]'],
         ['#/tables/wondrous_environments', '.tablenav a.chip[aria-label]']
       ]) {
         const where = 'короткие чипы ' + hash + ' @' + width + ' ' + lang;

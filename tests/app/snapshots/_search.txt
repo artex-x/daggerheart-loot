@@ -13,14 +13,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [focused=true]
     StaticText "ТИП"
@@ -39,14 +37,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
-Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Предметы
 Расходники
@@ -59,21 +55,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [focused=true]
     StaticText "TYPE"
@@ -86,24 +80,22 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
 Consumables
 EN
 Equipment
 Install as an app
 Items
-Open this section on start
+LootDaggerheart
+Open on start
 Privacy
 RU
+Roll
 Search
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

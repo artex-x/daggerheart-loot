@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* A labelled row inside a panel, off `.field` and `.lbl` in style.css.
+  /* A labeled row inside a panel, off `.field` and `.lbl` in style.css.
 
      Extracted because four places want it: the number row on every roll page,
      and the section, source, kind and rarity rows of the four modes. The label
@@ -14,7 +14,7 @@
      *  panel's own field carries one (14px with a result shown, 0 without),
      *  which is how it beats `.lroll>:last-child{margin-bottom:13px}`. */
     after?: number;
-    /** The caption heads its panel as an `<h2>` rather than labelling a
+    /** The caption heads its panel as an `<h2>` rather than labeling a
      *  row - the account page's sections. */
     heading?: boolean;
     children: Snippet;
@@ -43,7 +43,7 @@
 
   .lbl {
     display: block;
-    font-size: 11.5px;
+    font-size: var(--t-label);
     font-weight: 650;
     letter-spacing: 0.1em;
     text-transform: uppercase;

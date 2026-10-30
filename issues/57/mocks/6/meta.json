@@ -1,0 +1,151 @@
+{
+  "batch": 6,
+  "title": "Batch 6 - homebrew editor, homebrew pages and imports",
+  "states": [
+    {
+      "id": "homebrew-items",
+      "addr": "/homebrew",
+      "ids": "A28, A40, A10, D5, A27, first-screen rule",
+      "what": "Items tab with 9 items, in the catalog's head pattern. 1180: the title, the pin, the four tabs with counts, «+ Новый предмет» on one row; the search row (search, counter «9 предметов из 100», «Импорт из файла», «Выбрать» last) beside the filter column. 360: the h1 «Мои предметы» is visually hidden and the tab picker «Предметы ▾» (a button named «Мои предметы: Предметы») sits beside «+ Новый предмет» and «··· Ещё» (import, pin); one row holds the search, «Фильтры» and «Выбрать» last. The counter shows in the picker sheet at 360 (departure: the first screen has no room for a count line; at the limit it turns red under the search row: homebrew-limit). Rows have no checkbox column. No «Справка»."
+    },
+    {
+      "id": "homebrew-tabs",
+      "addr": "/homebrew",
+      "ids": "A28, first-screen rule",
+      "what": "Open at 360: the tab picker as a sheet with the four tabs and their counts. At 1180 the tabs are a row, so the page is as in homebrew-items."
+    },
+    {
+      "id": "homebrew-more",
+      "addr": "/homebrew",
+      "ids": "first-screen rule",
+      "what": "Open: «Ещё»: at 1180 «Импорт из файла» and the pin («Стартовый раздел», a check when on); at 360 «Выбрать» first, as the catalog."
+    },
+    {
+      "id": "homebrew-filtered",
+      "addr": "/homebrew/f_<filter>",
+      "ids": "C2 pattern, f74eae09",
+      "what": "A source picked (mock 3's filter-active state): the chip lit in gold, «Фильтры · 1» lit, «Показано 5 из 9» in the first group head at 360 and in the search row at 1180, no pill row; «Сбросить» and «Ссылка на фильтры» in the column head; the group heads drop the source name."
+    },
+    {
+      "id": "homebrew-filters",
+      "addr": "/homebrew/f_<filter>",
+      "ids": "C3 pattern",
+      "what": "Open: the filter sheet at 360, «Ссылка на фильтры» in its head and «Сбросить» with «Показать 5» in its foot; at 1180 the column is always open, shown with keyboard focus on the picked chip."
+    },
+    {
+      "id": "homebrew-select",
+      "addr": "/homebrew",
+      "ids": "A40",
+      "what": "Open: the selection mode, 2 ticked (review B6-1, R0-2, R6-1). One bar, sticky at the bottom of the list: «Все» (three states), «Выбрано: 2», «В список», «Печать», «Скопировать текст», «Переместить (2) ▾», «Скачать JSON (2)», «Удалить (2)», «Снять выделение» last. At 1180 all in one or two rows. At 360 the bar is pinned to the bottom of the 640 px frame: «Все» and the count on one row; «В список», «Печать» and «··· Ещё» (copy, move, download, delete) on the second; «Снять выделение» on the third. «Выбрать» is hidden."
+    },
+    {
+      "id": "homebrew-select-none",
+      "addr": "/homebrew",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick: the same bar with «Все» empty, «Выбрано: 0», every action off, and «Снять выделение» on. «Снять выделение» clears the ticks and ends the mode at any count; the ticks stay when «Выбрать» is pressed again only if the page is not left."
+    },
+    {
+      "id": "homebrew-select-more",
+      "addr": "/homebrew",
+      "ids": "B6-1, R6-1",
+      "what": "Open at 360: «Ещё» in the bar opens upward with «Скопировать текст», «Переместить (2)...», «Скачать JSON (2)» and, after a rule, «Удалить (2)» in the danger colour. At 1180 the bar has these actions inline, so the frame is as homebrew-select."
+    },
+    {
+      "id": "homebrew-select-move",
+      "addr": "/homebrew",
+      "ids": "R6-1",
+      "what": "Open: «Переместить (2)». At 360 a sheet over the page (source, section, the one-line consequence, «Отмена» and «Переместить 2 предмета»), so the sticky bar keeps its three short rows (about 150 px of 640, not 390). At 1180 a popover above the bar button holds the same form."
+    },
+    {
+      "id": "homebrew-limit",
+      "addr": "/homebrew",
+      "ids": "scale (at the limit), N6-2",
+      "what": "At the limit: the counter «100 предметов из 100» in red under the search row at 360 and in the search row at 1180; «Новый предмет» stays on (owner, 2026-10-29: the lists limit rule). The first 9 of 100 rows are drawn."
+    },
+    {
+      "id": "homebrew-empty",
+      "addr": "/homebrew",
+      "ids": "A38, theme 8",
+      "what": "Empty: a new author. The empty-state pattern names what an own item does (the fact the help panel held) and one next step."
+    },
+    {
+      "id": "homebrew-error",
+      "addr": "/homebrew",
+      "ids": "theme 8",
+      "what": "Error: the read failed. The cause and «Повторить»; no tabs and no import while nothing is read, as today."
+    },
+    {
+      "id": "homebrew-sources",
+      "addr": "/homebrew/sources",
+      "ids": "A28, A29",
+      "what": "Sources tab: limits in words, two controls per row («Разделы», «Ещё»), the source «Ещё» menu open; «Хоумбрю» says what goes there."
+    },
+    {
+      "id": "homebrew-sections",
+      "addr": "/homebrew/sources",
+      "ids": "A29",
+      "what": "Open: «Разделы» of one source: its sections with counts, rename and delete, a new-section field, the 30 limit."
+    },
+    {
+      "id": "homebrew-sets",
+      "addr": "/homebrew/sets",
+      "ids": "A28, clarity",
+      "what": "Sets tab: the set row shows its bonus and members, so a set needs no definition; the shared card limit is named."
+    },
+    {
+      "id": "homebrew-sets-empty",
+      "addr": "/homebrew/sets",
+      "ids": "A27 panel (removed), theme 8",
+      "what": "Empty: the Sets tab says what a set is in its empty state - one of the facts the removed help panel held."
+    },
+    {
+      "id": "homebrew-rules",
+      "addr": "/homebrew/rules",
+      "ids": "A28, clarity",
+      "what": "Rule cards tab: the rule text on the row and how many items refer to it."
+    },
+    {
+      "id": "homebrew-import",
+      "addr": "/homebrew",
+      "ids": "A13, D16",
+      "what": "Open: «Ещё» > «Импорт из файла» opens the panel under the head: one line on what files fit and a «Формат файла» link, one summary, a target per source, «Если уже есть:» with its consequence, one primary."
+    },
+    {
+      "id": "editor",
+      "addr": "/homebrew/<id>",
+      "ids": "A6, A8, A12, D15, A11 (artefact), first-screen rule",
+      "what": "The editor: the back link and the title share one row (a breadcrumb), the title on one line at 360 (the Name field holds it in full), no «Хоумбрю» badge (every item here is the author's own); short choices two to a row, optional fields marked, full words, no field «?» (owner, 2026-10-29); the preview beside the form (360: «Предпросмотр» in the fixed bar opens a sheet), «В списках: 1» as a link, «Связи · 3» folded. «Урон» labels its two inputs, «Кость урона» and «Бонус к урону» (rule 15b)."
+    },
+    {
+      "id": "editor-relations",
+      "addr": "/homebrew/<id>",
+      "ids": "editor clarity rows (removed «?»)",
+      "what": "Open: «Связи» with no «?»: «Вне линии / Ступень линии / Начать линию» and one caption, «Улучшается до» and «Получается из» as on the item page, the set bonus under the set, «Карты правил, до 3»."
+    },
+    {
+      "id": "editor-errors",
+      "q": "state=errors",
+      "addr": "/homebrew/<id>",
+      "ids": "A7",
+      "what": "Error and focus: a failed save. The summary takes the focus (gold ring) and links each field; each field says its own message."
+    },
+    {
+      "id": "editor-longname",
+      "addr": "/homebrew/<id>",
+      "ids": "plan review R2 (longest name)",
+      "what": "Longest name: a 120-character item name; the title takes one line at 360 and three at 1180, the Name field holds it in full."
+    },
+    {
+      "id": "editor-crop",
+      "addr": "/homebrew/<id>",
+      "ids": "A9 (verify)",
+      "what": "Open: the crop dialog with corner handles, a thirds grid and a 24 px zoom thumb; the keyboard text stays for assistive tech only."
+    },
+    {
+      "id": "editor-conflict",
+      "addr": "/homebrew/<id>",
+      "ids": "A30",
+      "what": "Conflict: another device saved first. The primary shows the new version; replacing it is the danger choice; «Сохранить» is off."
+    }
+  ]
+}

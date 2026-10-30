@@ -118,7 +118,7 @@
     padding: 0 18px;
     height: 46px;
     border-radius: var(--r-sm);
-    font-size: 14px;
+    font-size: var(--t-control);
     font-weight: 600;
     transition: 0.15s;
     display: inline-flex;
@@ -132,7 +132,7 @@
   .btn.sm {
     height: 32px;
     padding: 0 11px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     border-radius: 8px;
     gap: 6px;
     white-space: nowrap;
@@ -215,7 +215,7 @@
     padding: 0;
     height: auto;
     color: var(--muted);
-    font-size: 13.5px;
+    font-size: var(--t-small);
     font-weight: 400;
   }
 

@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -188,6 +186,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 9Саван Проводника ДушНакройте этим саваном тело недавно умершего... [namelen=246 namehash=13e76894]
 9Тоник Львиного СердцаВыпейте этот тоник, чтобы получить +1 к Ма... [namelen=130 namehash=2fb59c06]
 9Цветок СплетенПосадите это семя в землю. Оно мгновенно вырастае... [namelen=216 namehash=a96ded46]
+?Справка
 Core
 EN
 Hope & Fear
@@ -204,6 +203,7 @@ daggerheart.com
 Большое Зелье Сосредоточенности
 Большое Зелье Усиления
 Большой Мистический Осколок
+Бросок
 Бутыль Цисканского Тумана
 Бутыль с Духом
 Варево Берсерка
@@ -234,7 +234,6 @@ daggerheart.com
 Зелье Усиления
 Зеркало Златоцвета
 К содержимому
-Как это работает
 Какофоническая Микстура
 Камень Знаний
 Квинтэссенциальный Разделитель
@@ -264,12 +263,11 @@ daggerheart.com
 Настойка Змеиной Кожи
 Нестабильный Мистический Осколок
 Оберегающая Свеча
-Обычные правила
 Осколок Арктицита
 Осколок Фульгурита
 Осколок Эмберита
 Ослепляющая Сфера
-Открывать этот раздел при запуске
+Открывать при запуске
 Ошибка Игрока
 Пакетик Космической Пыли
 Пастилка Лирохвоста
@@ -339,22 +337,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/alt_consumable]
   link "Skip to content" [url=/en/tables/alt_consumable#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -398,7 +394,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/alt_consumable
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Armor StitcherYou can use this stitcher to spend any number of... [namelen=116 namehash=61221ff1]
@@ -521,6 +517,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/alt_consumable
 9Psychopomp's ShroudYou can place this shroud over the corpse of... [namelen=287 namehash=dac93088]
 9Sprite BottleWhen you mark your last Hit Point, this bottle sha... [namelen=195 namehash=387cf153]
 9Stake of AbjurationYou can hammer this stake into the ground an... [namelen=281 namehash=1ea2e560]
+?Help
 Acidpaste
 Alt. tables
 Arcticite Shard
@@ -575,7 +572,6 @@ Health Potion
 Homet's Secret Potion
 Hope & Fear
 Hopehold Flare
-How this works
 Improved Arcane Shard
 Improved Grindletooth Venom
 Install as an app
@@ -589,6 +585,7 @@ Knowledge Stone
 Link to this table
 Lionheart Tonic
 List
+LootDaggerheart
 Lyrebird Lozenge
 Magic-User's Malison
 Major Arcane Shard
@@ -615,7 +612,7 @@ Necroprancer's Bell
 Night Hag's Dust
 Nightmare Mead
 Ogre Musk
-Open this section on start
+Open on start
 Other
 Packet of Space Dust
 Phial of Deep Ink
@@ -629,6 +626,7 @@ RU
 Red Ooze Oil
 Redthorn Saliva
 Replication Parchment
+Roll
 Salamander Salve
 Search
 Self-Sewing Thread
@@ -644,7 +642,6 @@ Sprite Bottle
 Staff of Reversal
 Stake of Abjuration
 Stamina Potion
-Standard rules
 Stardrop
 Steelskin Salve
 Stonemason's Fortune
@@ -666,4 +663,3 @@ Warding Candle
 Wingsprout
 Yakamel Milk
 daggerheart.com
-ЛутDaggerheart

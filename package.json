@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@fontsource-variable/source-sans-3": "5.3.1",
     "@orama/stemmers": "3.1.18",
     "@supabase/auth-js": "2.117.1",
     "@supabase/postgrest-js": "2.117.1",

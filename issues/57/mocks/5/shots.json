@@ -1,0 +1,58 @@
+[
+  {
+    "s": "roller",
+    "name": "roller"
+  },
+  {
+    "s": "roller-b",
+    "name": "roller-b"
+  },
+  {
+    "s": "roller-config",
+    "name": "roller-config"
+  },
+  {
+    "s": "roller-more",
+    "name": "roller-more"
+  },
+  {
+    "s": "roller-narrowed",
+    "name": "roller-narrowed"
+  },
+  {
+    "s": "roller-alt",
+    "name": "roller-alt"
+  },
+  {
+    "s": "roller-alt-crit",
+    "name": "roller-alt-crit"
+  },
+  {
+    "s": "roller-wond",
+    "name": "roller-wond"
+  },
+  {
+    "s": "roller-dread",
+    "name": "roller-dread"
+  },
+  {
+    "s": "roller-voa",
+    "name": "roller-voa"
+  },
+  {
+    "s": "roller-dv",
+    "name": "roller-dv"
+  },
+  {
+    "s": "roller-arazo",
+    "name": "roller-arazo"
+  },
+  {
+    "s": "roller-comm",
+    "name": "roller-comm"
+  },
+  {
+    "s": "roller-mwt",
+    "name": "roller-mwt"
+  }
+]

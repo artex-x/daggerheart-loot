@@ -25,7 +25,7 @@ across.
 - The source switch on Core rules cannot be emptied - unticking the last one is
   refused.
 - Rarity on Core rules only sets the dice count, so there is no rarity picker;
-  each button is labelled with the count and the rarities it covers. Core
+  each button is labeled with the count and the rarities it covers. Core
   rules spans four rarity bands (common, uncommon, rare, legendary); the
   alternate tables have a fifth, `very_rare`, that Core rolls never reach -
   intentional, per the Core book, not a gap.
@@ -49,27 +49,17 @@ across.
   seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
   1180 in Russian signed out, and 283 / 244 px at 360 signed in, Russian /
   English (measured 2026-10-21, with the source names and their short forms).
-- The seven supplement modes (Wondrous Environments to Many Worlds Tavern) share one header tab,
-  «Дополнения» / "Supplements"
-  (`docs/decisions/2026-10-20-supplement-roll-sections-share-one-tab-and-a-chip-panel.md`).
-  Each of their pages draws a panel under its heading with one chip per
-  supplement, in table order, each a link to its section; the open one is gold
-  and the current page. The chip reads the source's product name
-  (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`); under
-  640 px, the system breakpoint, the Wondrous Environments, Dread GM Toolbox and
-  The Dragon's Vault chips show "Wondrous", "Dread" and "Dragon's Vault", with
-  the full name as their `aria-label`, so the accessible name is the full name
-  at every width. The same three chips of the tables book row do the same.
-  Community items and Vault of Ages have no short form: a short word must be
-  part of the name. Core rules and the alternate tables draw no panel. With its
-  seven chips the panel measures 206 px at 360, 206 px in Russian and 162 px in
-  English at 390, 119 px at 768 and 75 px at 1180 (measured 2026-10-21 on a
-  static page with the app's chip CSS). On a 360x740 phone the top of the roll
-  button sits, in the built app (measured 2026-10-21, Russian / English), at
-  611 / 588 px on Wondrous Environments (all of it shows), 711 / 653 px on Many
-  Worlds Tavern (29 px show in Russian), 734 / 667 px on Vault of Ages (6 px show
-  in Russian, accepted by the owner, 2026-10-21) and 799 / 755 px on Community
-  items, below the fold (accepted by the owner, 2026-10-20).
+- The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
+  the mode row under the header ("Chrome";
+  `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
+  seven supplement modes (Wondrous Environments to Many Worlds Tavern) are the
+  items of its «Дополнения» / "Supplements" menu, in table order, each a link to
+  its section; the open one is checked and the current page, and the menu
+  button shows its name. The name is the source's product name
+  (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
+  roll pages draw no supplements panel. The tables book row keeps its three
+  short forms under 640 px ("Wondrous", "Dread", "Dragon's Vault", the full name
+  as the `aria-label`).
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -143,7 +133,7 @@ across.
 - Search folds case, `ё`/`е`, typographic apostrophes (U+2019, U+02BC), Latin
   diacritics (`ä`/`ö` etc., NFD-stripped - Cyrillic is excluded so `й` never
   merges into `и`) and the Unicode minus sign (U+2212 -> `-`) on both the
-  query and the catalogue, so `плетеная` finds "Плетёная", a query typed with
+  query and the catalog, so `плетеная` finds "Плетёная", a query typed with
   the typographic apostrophe autocorrect produces (`keeper’s staff` -> the
   now-ASCII "Keeper's Staff") still finds it, `zweihander` finds
   "Zweihänder" and `-1` finds a "−1" penalty. A query is words in any
@@ -184,7 +174,7 @@ across.
   filter labels with no count on a filter, and the site picture. A table card
   keeps its old count in a message until the link is sent again.
 - **The three equipment tables hold equipment from every source, not only the
-  two books**: 458 weapons, 135 secondary, 114 armour. The `src` facet is how you
+  two books**: 458 weapons, 135 secondary, 114 armor. The `src` facet is how you
   narrow to Core and Hope & Fear (239 / 73 / 69). Frame, Vault of Ages,
   The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern, Wondrous
   Environments and Dread GM Toolbox equipment appears there too.
@@ -218,7 +208,7 @@ across.
   of the chosen source is rewritten once to the chosen chip. A chip keeps `kind` and drops `sect`,
   keeps the ticks and does not open a folded filter panel. Facets: `kind` and
   `sect` of the shown source's items, by the offer rule below (a section
-  labelled by its name); no `src` row. Every facet write, «Сбросить все» included,
+  labeled by its name); no `src` row. Every facet write, «Сбросить все» included,
   keeps the chosen chip. The page hands out no link: no «Ссылка на таблицу», no
   «Ссылка на фильтры» and no section copy button (rule 17). What the chips drop with two or more sources (owner accepted
   2026-10-07, option A): one table of every own item (the bare address, its
@@ -238,7 +228,7 @@ across.
 - **The «Свои предметы» switch** / "Own items": on `#/search` (under the
   kind row, apart from the filter chips) and in the equipment tables' toolbar
   (after the view switch), drawn only while the account holds an item. It is
-  a labelled switch (`role="switch"`, Space toggles it, the gold focus ring).
+  a labeled switch (`role="switch"`, Space toggles it, the gold focus ring).
   It is on by default; off, it removes the own records and their `src` values
   from those pages for the visit. The kind row's «Нужен хотя бы один тип»
   applies to the three kinds only. A record dialog, a list, `#/i/<key>`,
@@ -552,11 +542,11 @@ address kept, and no add-to-list control is drawn.
   `#/account` any other way forgets it, and so does a navigation or a
   sign-out before the action finishes.
 - **The index**: the heading «Мои списки» / "My lists" (the menu item's
-  name; the tab bar has no Lists tab). Signed in, the create
+  name; the header has no Lists job). Signed in, the create
   panel, then the group «Ваш аккаунт» / "Your account" - the count «3 списка
   из 50» / "3 lists of 50" (the limit from `my_limit()`, an override's own
   number; «3 списка» when the limit read failed; with a known limit «0
-  списков из 50» too), which ends «· Не сохранено» in the danger colour and
+  списков из 50» too), which ends «· Не сохранено» in the danger color and
   «Повторить» while a write fails, announced with the save that ends it (the
   list page keeps its permanent status); the selection strip, then the
   account lists, newest
@@ -582,7 +572,7 @@ address kept, and no add-to-list control is drawn.
   `#/lists/<uuid>`, draws «Поделиться» / "Share" first in its actions, «Скачать JSON» / "Download JSON" after
   «Скопировать текст», and says its save status
   after the count: «Сохраняем...», «Сохранено», or
-  «Не сохранено» in the danger colour and «Повторить». Only the failure and
+  «Не сохранено» in the danger color and «Повторить». Only the failure and
   the save that ends it («Сохранено») are announced (a permanently mounted,
   visually hidden status region); the next save empties the region. Every
   edit shows at once and waits in one buffer; two seconds after the last
@@ -655,7 +645,7 @@ address kept, and no add-to-list control is drawn.
   `docs/decisions/2026-10-01-the-quick-item-opens-under-a-lists-entries.md`):
   on an account list, a row «Свой предмет» after the last entry (pressed
   and expanded while open, folded on another list; on a window of 600 px
-  and more it adds the grey hint «название и описание, остальное потом в
+  and more it adds the gray hint «название и описание, остальное потом в
   редакторе») opens «Свой предмет в этот список» under it: «Название» *
   (focused; at most 120 characters), «Описание» (at most 3000, with the
   counter «N / 3000» past 2500; a box of rule 18 with bold, italic, both
@@ -937,7 +927,7 @@ address kept, and no add-to-list control is drawn.
   (the change log below). Each request, newest first, names its link, its age and, once
   it is read, the time to expiry («По ссылке для игроков · 10 минут назад ·
   истечёт через 50 минут»), its lines («×3 из 5», the count over the stock now, in the danger
-  colour above the stock; «нет в списке» for an item the list no longer
+  color above the stock; «нет в списке» for an item the list no longer
   holds; the line sum at the price when it was sent, or «-») and the total.
   A request draws its first 5 lines, then a bare fold button «и ещё N
   позиций» / "and N more items", which draws the rest and reads «свернуть» /
@@ -1292,7 +1282,7 @@ address kept, and no add-to-list control is drawn.
   | S1 | A feature or property name at a line head, Recall Cost included; a rule card's adversary feature (`<Name> - Passive:`) and a beastform or transformation feature. Stat lines stay plain | `***Reliable:*** +1 ...`, `***Recall Cost:*** 2` | `***Надёжное:*** ...`, `***Стоимость Призыва:*** 2` |
   | S2 | A cost the user pays by choice for an effect: an option ("can"), a price ("to", "for", "by"), an order with its effect - bold from the verb to the resource, the number inside | `you can **spend a Hope** to`, `**Mark a Stress** and clear a HP` | `вы можете **потратить Надежду**, чтобы`, `**Отметьте Стресс** и` |
   | S3 | A consequence, a penalty, another payer's cost, or a reference to a cost | `the target must mark a Stress`, `When you would spend a Hope` | `цель должна отметить Стресс`, `Когда вы должны отметить Стресс` |
-  | S4 | A condition, core or defined by a feature, capitalised: the word only | `temporarily *Vulnerable*`, `*Restrain* the target` | `временно *Уязвимой*`, `*Обездвижить* цель` |
+  | S4 | A condition, core or defined by a feature, capitalized: the word only | `temporarily *Vulnerable*`, `*Restrain* the target` | `временно *Уязвимой*`, `*Обездвижить* цель` |
   | S5 | Dice and named rolls | `roll a d6`, `make a Spellcast Roll (15)` | `бросьте d6`, `Бросок Заклинания (15)` |
   | S6 | Ranges, damage types, numbers, difficulties | `within Very Close range`, `d8+2 phy` | `в пределах Близкой дистанции` |
 
@@ -1360,7 +1350,7 @@ address kept, and no add-to-list control is drawn.
   and the others opening that tier's record over whatever is on screen. A line
   of one is not a ladder and is not drawn. Each rung is named for the piece it
   leads to, because its own content is a bare digit.
-- A campaign-frame record with equipment metadata (a tier, thresholds, armour
+- A campaign-frame record with equipment metadata (a tier, thresholds, armor
   score) prints its tier word and its tier ladder exactly as an equivalent
   `eq` record does - `f33` "Quilted Clothing"
   and `q313` "Gambeson Armor" now agree, where the live app printed one and
@@ -1377,7 +1367,7 @@ address kept, and no add-to-list control is drawn.
 - A record that belongs to a set (`Record_.set`; two sets so far - Ember
   and Spark, The Dragon's Vault; Saint's Ensemble, three members, Vault of
   Ages Volume 4) draws a set line naming every member in
-  catalogue order, the record itself inert and the rest linked. A set's
+  catalog order, the record itself inert and the rest linked. A set's
   shared bonus (`LOOT.sets[key]`) is drawn under the set line on every
   member and travels into copied text (the set block's body), the print card
   (the last text line, `<name> (<Set>: <members>): <text>`), the share stub
@@ -1423,10 +1413,14 @@ address kept, and no add-to-list control is drawn.
   Supabase bucket (`META.md` section 3); a picture chosen from the catalog
   draws as the catalog's. A list row of another account's item draws the
   author's current picture.
-- A record with no artwork falls back to `_none.webp` at the size the site
-  draws, and hides the image button; so does a record whose picture or
+- A record with no artwork shows the glyph of its kind on the dark art well
+  on every screen surface (card, row, tile, list cover, editor thumbnail:
+  armor a shield, a weapon swords, a consumable a flask, any other item a
+  gem), and hides the image button; so does a record whose picture or
   thumbnail fails to load, and the app remembers that for the session, so a
-  failed thumbnail also shows the placeholder on the record's card.
+  failed thumbnail also shows the glyph on the record's card. While a
+  picture loads, the glyph shows under it. The color print card draws it
+  too, on a light well ("Print").
   Without a connection, a thumbnail the service worker never cached is
   answered with the cached 640 px picture when there is one, so
   the row draws that picture and nothing is remembered as failed
@@ -1691,7 +1685,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   consumables «Ранг» («Без ранга», 1-4), for equipment «Ранг» * (1-4, no
   default), for weapons «Класс», «Характеристика», «Дистанция», «Урон»,
   «Тип урона», «Хват», each *, and the disclosure «Второй набор
-  характеристик», for armour «Показатель брони» * and «Пороги урона» *.
+  характеристик», for armor «Показатель брони» * and «Пороги урона» *.
   «Характеристика» and the second set's offer the six traits, «Характеристика
   Заклинателя» and «Любая» / "Any" (`any`, the weapon takes any trait, as the
   catalog's mw47 does; owner, 2026-10-21).
@@ -1762,7 +1756,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   choice; its «?» explains it.
   «Линия улучшений», «Улучшается до», «Получается из», «Комплект» and
   «Карты правил» each carry a «?» whose hint says what the relation does
-  and how it differs from its neighbour (a line is rungs of one item; a
+  and how it differs from its neighbor (a line is rungs of one item; a
   craft link is another item made from this one). «Улучшается до» and «Получается из»
   hold up to 8 items each, catalog or own; the item itself is never offered.
   «Комплект» is a select of the catalog's sets and the own ones («<name>
@@ -1796,7 +1790,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   press on one focuses the field. Each field draws its line under it,
   `aria-invalid` and `aria-describedby` on a text field; the line goes on
   the field's next change. Damage is `d4`-`d20` with an optional `+1`..`+99`;
-  an armour score 0-12; thresholds two whole numbers 1-99, the second larger;
+  an armor score 0-12; thresholds two whole numbers 1-99, the second larger;
   the second set all four fields or none, and its lines name «Очистить второй
   набор»; a set emptied by any path takes its lines along. «В линии» with no
   line reads «Выберите предмет из линии или нажмите «Уникальный».», a line of
@@ -1820,7 +1814,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   «Картинка больше 8000 пикселей ...» under the field. The dialog shows a
   square frame over the picture; a drag, the arrow keys on the focused stage
   (2 % of the square, 10 % with Shift), + and - and the range «Масштаб» (from
-  the short side to 4x) move and zoom it; it opens centred at the smallest
+  the short side to 4x) move and zoom it; it opens centered at the smallest
   zoom. «Готово» renders the 640 px square and the 160 px square of the same
   part, WebP at qualities 0.85 to 0.55 until the 640 px file is at most
   200 KB, JPEG where the browser cannot encode WebP (Safari); none fits says
@@ -2125,8 +2119,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the same values as in a wide window, and print media draws the sheets at
   full size (owner, 2026-10-22;
   `docs/decisions/2026-10-22-the-print-sheet-scales-to-a-phone-screen-by-a.md`).
-- Colour and black-and-white are two different cards, not one with a switch.
-- The vectors whose colour and black-and-white files share one geometry - the
+- Color and black-and-white are two different cards, not one with a switch.
+- The vectors whose color and black-and-white files share one geometry - the
   tier banner, the threshold box, both ribbons and the six dice - are drawn
   inline from the exported files' paths (`lib/cardVectors.ts`) and painted by
   CSS per layout (`styles/card-vectors.css`, each value copied from its file);
@@ -2146,7 +2140,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
 - A card that still cuts off text after the last rung is counted: the bar
   draws «Текст не помещается на карточки при печати: N. Конец текста на них
   не напечатается.» in the warning box (rule 19) after the red deleted note
-  and before the grey note, hidden in print media with the bar; it blocks
+  and before the gray note, hidden in print media with the bar; it blocks
   nothing. The count reads the text box down and across, the name and the
   bottom line across and the content box down. The bar's status region says
   the box once when it appears (rule 19). A long homebrew source line
@@ -2183,7 +2177,7 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   the triangle is narrow). Measured 2026-09-23 on the Windows host (Segoe
   UI).
 - Weights: 900 for the name and the tier number only; 700 for the die
-  value, the modifier, the threshold numbers and the armour score; 600 for
+  value, the modifier, the threshold numbers and the armor score; 600 for
   the strip values; 500 for labels, captions and tags; 400 italic for the
   source line. Text on the white of a card is `#000`; the black-and-white
   kind tag is white on `#000`, and its threshold frame is `#000`.
@@ -2193,8 +2187,8 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   them; values print as the data writes them, and the one-word damage type
   starts with a capital (`Маг`, `Phy`). The die value has 0.12em after its `d`.
 - The strip keeps its ribbon and has five cells: the die; the modifier, with
-  no label, against the die and on its centre; then the damage type, trait
-  and range as label-over-value blocks centred in the band between the
+  no label, against the die and on its center; then the damage type, trait
+  and range as label-over-value blocks centered in the band between the
   ribbon's ornament lines, each inside the ribbon's dividers. The strip is
   `max(14cqw, 20pt)` tall - the design's 8.8 mm on the standard card,
   7.05 mm on the compact one - and a wrapped value raises it (11.3 mm on the
@@ -2203,21 +2197,21 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   strips of a two-strip weapon; the damage box names each strip's damage
   type (`docs/DECISIONS.md`, "The print card frame follows the weapon's
   class").
-- The die value, and the colour card's armour and burden labels over the
+- The die value, and the color card's armor and burden labels over the
   picture, carry their halo as a vector stroke (`-webkit-text-stroke` with
   `paint-order: stroke fill`): a blurred `text-shadow` printed as a raster
   patch. A compact black-and-white sheet holds no raster image.
 - The threshold diamonds are at least 1.3 mm tall and sit 0.6 mm clear of
   the frame; each caption fits its cell. Each arrow grows from its box's
   right notch, the same size on both sheets (tip 4.27 pt past the notch, at
-  least 1.3 mm wide): in colour a dark arrow in a gold rim that continues
+  least 1.3 mm wide): in color a dark arrow in a gold rim that continues
   the frame, in black and white a solid black arrow. CSS draws it at
   `card/arrow.svg`'s 7:12 proportion; the image stays in the markup,
   hidden. The burden label sits under its mark.
 - In black and white the rules text first grows, in 0.1cqw steps from its
   3.5cqw default to at most 5cqw (8.9 pt), while it still fits its box: the
-  space a colour card gives its picture is blank paper there (issue 61). Text
-  that does not fit at 3.5cqw takes the shrink ladder unchanged. Colour never
+  space a color card gives its picture is blank paper there (issue 61). Text
+  that does not fit at 3.5cqw takes the shrink ladder unchanged. Color never
   grows - the picture owns that space and the ladder gives it up last.
   Measured on the Windows host on 2026-09-23: a two-line card was 54-67% blank
   and reaches the cap; the longest texts land at 3.6-4.3cqw. A one-line card
@@ -2225,9 +2219,9 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   (44x63 mm) was measured as the same composition at 70% - the same blank
   share at 4.3 pt - and rejected as a replacement for the 3x3 sheet
   (`DECISIONS.md`).
-- Two independent switches: colour or black-and-white, standard or compact;
+- Two independent switches: color or black-and-white, standard or compact;
   every combination prints. The compact card is the same card at 70% - every
-  dimension is `cqw` - so the ladders run unchanged: compact colour text is
+  dimension is `cqw` - so the ladders run unchanged: compact color text is
   4.3 pt by default and 3.2 pt at the floor, and the compact black-and-white
   card reads at 6.2 pt where the grow rung reaches its cap. A size change
   fits every card again at its new size. Measured 2026-09-23
@@ -2252,17 +2246,17 @@ A signed-in GM makes items that are not in the books: «Мои предметы�
   While either switch differs from its default, a build with sign-in draws
   the same note as the tables toolbar under the bar, with its link to
   `#/account`; the bar never prints, so neither does the note.
-- An own homebrew item's picture prints on the colour card from its 640 px
+- An own homebrew item's picture prints on the color card from its 640 px
   file, as a catalog picture does; the black-and-white card draws no
   picture.
-- A colour card of a record with no picture draws the site's `img/_none.webp`
-  in the art block, as every page does, on the standard and the compact sheet;
-  black and white has no art block. A departure from Figma node `714-42387`,
-  whose drawn outline per kind it replaces (owner, 2026-10-15).
-- A missing picture (a partial deploy, a cold cache) falls back to the same
-  `img/_none.webp`, the same way `RecordCard` does - reached from a print
-  sheet opened directly at a `#/p/` address, where nothing has already caught
-  the failure.
+- A color card of a record with no picture, or with a picture that fails to
+  load (a partial deploy, a cold cache, a sheet opened directly at a `#/p/`
+  address), draws the glyph of its kind in dark ink (`#3a3350`) on a light
+  well (`#ebe7f0`) in the art block, on the standard and the compact sheet,
+  on the `/p/` sheet on screen and in the editor's print preview; the screen
+  keeps the dark well. Black and white has no art block. A departure from
+  Figma node `714-42387`, which leaves that area as blank paper (owner,
+  2026-10-29).
 - An open record dialog and an action toast both stay hidden under print
   media, the way the live app's `#modal`/`#toast` rules did unconditionally -
   neither had an equivalent rule in the rewrite.
@@ -2388,21 +2382,28 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
 
 ## Chrome
 
-- Language switch, tab bar, skip link, starting-section pin (eleven sections
+- Language switch, the three jobs, skip link, starting-section pin (eleven sections
   pin as their own hash; `#/tables` pins as whichever table is on screen;
   «Мои предметы» pins `#/homebrew` from any tab; never a record or a list).
 - Focusing the skip link moves focus straight to `#main` and never touches
   the address bar - the browser's own fragment jump would add `#main` to the
   address and a history entry. While
   focused it is a gold plate pinned over the page's top-left corner, matching
-  the live app rather than a grey chip that pushed the header down while
+  the live app rather than a gray chip that pushed the header down while
   focused.
 - Chips and segmented switches expose their on/off state as `aria-pressed` -
-  the money chips and the two view switches (tables list/grid, print colour/
+  the money chips and the two view switches (tables list/grid, print color/
   black-and-white) gained it in the rewrite, where the live app wrote
   nothing for the money chips and `aria-current="true"` for the menu chips.
-- Help panels under a `?` per section, folded by default, fold state remembered
-  for the session only.
+- Help panels behind «Справка» / "Help" per section, folded by default, fold
+  state remembered for the session only. From 761 px the button beside the H1
+  shows its label after a `?`; up to 760 px it is a round `?` button with the
+  same name until its page's batch moves it.
+- The pin beside the H1 reads «Открывать при запуске» / "Open on start" with
+  the home icon; pinned it reads «Открывается при запуске» / "Opens on start"
+  with the check of the neutral pressed state (`Seg`), never a gold fill. From
+  761 px it is a labeled button; up to 760 px a round button with the same
+  name until its page's batch moves it into «Ещё» or «Настроить».
 - A removal the app can write back (an entry, its notes, a reprice) toasts with
   an undo, «Вернуть»; a server delete that cannot be undone (an
   account list, an own item, a source, a section, a card) asks the browser's
@@ -2434,16 +2435,24 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   wait takes the waiting slot from it; it is then dropped (the title count
   keeps it). Pressed inside the record dialog, its button closes the
   dialog first. With its button gone and no control taking the focus, the
-  focus goes to the main landmark.
-- The footer carries the full DPCGL licence notice (`dict.ts`'s
+  focus goes to the main landmark. When a later toast replaces a link or a
+  move toast that held the focus, the focus returns to the element it came
+  from, else to the main landmark (inside the record dialog, its close
+  button).
+- The toast is a plate: `--surface` with a 1px `--muted2` border, `--txt`
+  text, the Float shadow and `--r` corners, at most the window's width less
+  16 px a side, 26 px off the bottom; its action button is `--surface2` with a
+  `--line2` border. The error toast takes the Alarm Red fill (`--danger`) with
+  dark ink (`--ink-on-gold`, about 5.6:1). No toast is gold.
+- The footer carries the full DPCGL license notice (`dict.ts`'s
   `footBefore`, `footLink`, `footAfter`, the text `tests/derived.js` pins)
   on every page, folded in a native `<details>`: its `<summary>` is one line,
   «Daggerheart © Darrington Press - DPCGL - Источники и лицензия» /
-  "Daggerheart © Darrington Press - DPCGL - Sources and licence"
+  "Daggerheart © Darrington Press - DPCGL - Sources and license"
   (`footSummary`). A click or Enter opens it; the summary takes the global
   focus ring. DPCGL clause 4.1 asks for the notice in the shared material
-  and sets no visibility rule (checked against the licence of 2025-07-30).
-- A footer nav row above the licence notice links the site's static pages
+  and sets no visibility rule (checked against the license of 2025-07-30).
+- A footer nav row above the license notice links the site's static pages
   (`META.md` section 9, "Static pages"), on every page, in this order:
   «Установить как приложение» / "Install as an app",
   «Конфиденциальность» / "Privacy" and «Условия использования» / "Terms of
@@ -2460,13 +2469,15 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   sign-in configured only, and only once the session is known (a signed-in
   reader never sees «Войти» flash), on `Seg`'s track. Signed out it is a
   link to `#/account`: the person icon and «Войти» / "Sign in", the label
-  visually hidden below 420px (it stays the name). Signed in it is a menu
-  button: a 38px circle (44px at 600px and below) with the email's first
-  letter (the icon when there is no email), named «Аккаунт: <email>» /
-  "Account: <email>", with `aria-haspopup="menu"` and `aria-expanded`. On
-  `#/account` either one carries `aria-current="page"` and the gold ring;
-  the button also carries the ring while its menu is open. A build with no
-  sign-in draws no control at all.
+  visible at every width. Signed in it is a menu button, 38px tall (44px at
+  600px and below): the email's first letter in a circle (the icon when there
+  is no email), then a chevron, named «Аккаунт: <email>» / "Account: <email>",
+  with `aria-haspopup="menu"` and `aria-expanded`. Either one carries the gold
+  ring on the account pages - `#/account`, `#/lists`, `#/lists/<uuid>`,
+  `#/homebrew` with its tabs and the editor - where no job is lit; only on
+  `#/account` it carries `aria-current="page"`. The button also carries the
+  ring while its menu is open. A build with no sign-in draws no control at
+  all.
 - The account menu «Меню аккаунта» / "Account menu" opens under the
   signed-in control, right-aligned, and holds, in this order, «Аккаунт» /
   "Account" (`#/account`), «Мои списки» / "My lists" (`#/lists`), «Мои
@@ -2479,18 +2490,38 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the menu and the control, focus moving elsewhere, a navigation or a
   change of user close it. A second press on the control closes it. An
   item is 44px tall at 600px and below.
-- The tab bar draws five tabs in every build: «Обычные правила», «Альт. таблицы»,
-  «Дополнения», then «Таблицы», «Поиск» ("Standard rules", "Alt.
-  tables", "Supplements", "Tables", "Search"). «Дополнения» links to
-  `#/roll/wondrous_environments` and is lit, with `aria-current="page"`, on each of the seven
-  supplement sections. `#/lists` is reached from the account menu (`ROUTES.md`,
-  "Sections"). At 768 and 1180 px the tabs hold one row in both languages
-  (measured with six tabs, before R10: 607 px in Russian, 510 in English), and the
-  header is 106 px. Under 640 px the row scrolls sideways and the header is
-  112 px.
-- No tab is lit on a record, a list page, a print sheet or the account page -
-  the live `renderTabs` compared against the raw route string, and none of
-  those route kinds was ever that string.
+- The brand is the vault-die mark and the wordmark «Лут» in Russian, «Loot» in
+  English, over «DAGGERHEART»; the wordmark follows the language in the header
+  only (the tab title, the manifest and `en/index.html` keep their names).
+- The header draws three jobs in every build, each a link with its icon before
+  its label: «Бросок» / "Roll" (the die), «Таблицы» / "Tables" (the table) and
+  «Поиск» / "Search" (the magnifier). «Бросок» opens the last roll section of
+  the tab, else the pinned start section when it is a roll section, else
+  `#/roll/std`. The lit job carries `aria-current="page"`, gold text and the
+  gold underline: «Бросок» on the nine roll sections, «Таблицы» on every table,
+  «Поиск» on search. No job is lit on a record, an item, a print sheet, a share
+  link, the lists, a list page, the account page or «Мои предметы».
+  `#/lists` is reached from the account menu (`ROUTES.md`, "Sections"). The
+  three jobs hold one row at 360 px in both languages; a label never gives way
+  to an icon.
+- From 761 px the brand, the jobs, the language switch and the account control
+  share one row and the sticky header is 63 px tall; up to 760 px the jobs take
+  a second row and the header is 111 px at 360 px in both languages (measured
+  2026-10-30 in the built app, 313 px of row with a classic scrollbar).
+- The nine roll sections draw the mode row under the sticky header; it
+  scrolls with the page. It holds three controls: «Обычные правила» /
+  "Standard rules", «Альтернативные таблицы» / "Alternate tables" (the page
+  headings' words) and the menu button «Дополнения ▾» / "Supplements ▾", which
+  on a supplement page shows that supplement's name. The lit control takes
+  the current place's gold fill and `aria-current="page"`; each carries
+  `data-section`, the section's canonical key. At 600 px and below the
+  controls share the row, 40 px tall, and a long name takes two lines: the
+  row is 53 px at 360 and 1180 px in both languages (measured 2026-10-30).
+- The supplements menu «Дополнения» / "Supplements" opens under its button
+  with a muted caption and the seven supplements, 44 px items, the open one
+  checked with `aria-current="page"`; it is 367 px tall. Its keys and its
+  closing are the account menu's (one `Menu.svelte`), and a navigation closes
+  it.
 - Under `prefers-reduced-motion: reduce` every transition and animation stops
   moving and waits out no delay - a blanket kill (`tokens.css`), not the live
   app's own two named exceptions - including the table page's scroll to a
@@ -2503,12 +2534,16 @@ column at 70ch, titled «Аккаунт» / "Account" (the tab reads `Аккау
   the live app's closed list of 18 selectors at an 8px radius, with
   everything outside that list falling back to the browser's own outline.
   Broader coverage was the owner's call.
-- Self-hosted fonts were considered and dropped: the app declares `Inter,
-  -apple-system, 'Segoe UI', Roboto, ...` with no `@font-face` (`tokens.
-  css`), so glyphs depend on the machine. The five weights in use (650, 680,
-  620, 560, 540) render as authored only with a variable font, and the print
-  card needs a real italic - both argue for self-hosting, but the owner
-  decided against it.
+- The UI face is self-hosted: Source Sans 3 from
+  `@fontsource-variable/source-sans-3` (variable, upright and italic, with
+  Cyrillic), imported in `main.ts` and served from the build's own
+  `/assets/`, so the app draws the same glyphs on a machine without the face
+  installed. The weights in use (540 to 680) render as authored on the
+  variable face. `font-display: swap` draws the system stack until a file
+  arrives; no font comes from another origin. The print card keeps its own
+  local stack (`--print-ui`, Inter first) until the print batch decides its
+  face (owner, 2026-10-23;
+  `docs/decisions/2026-10-29-the-ui-font-is-source-sans-3-self-hosted.md`).
 
 ### Consistency rules
 
@@ -2547,9 +2582,12 @@ Each rule keeps its number: a review cites it by number.
 - **4. One name**: the menu item, the page heading and the tab name a page
   the same way: `#/lists` is «Мои списки» / "My lists" in the menu, the heading,
   the tab title, the start-section option and the buttons to it.
-  Departure: the «Дополнения» / "Supplements" tab
-  names the seven supplement pages as one group; each page's own word is on its
-  chip in the supplements panel ("Rolling").
+  The lit control of the mode row reads its page's heading. Departures: the job
+  «Бросок» / "Roll" names a group of nine roll pages and has no heading of its
+  own; the menu button «Дополнения» / "Supplements" names the seven supplement
+  pages as one group and shows the open supplement's name; and on Arazo's
+  Artifacts the button and the menu read «Arazo's Artifacts», the heading the
+  book's full title.
 - **5. Toasts**: a create says «<Что> «%s» создан(а)» / "<What> "%s"
   created", an update «Сохранено: «%s»» / "Saved: "%s"", a delete «<Что>
   «%s» удалён(а)» / "<What> "%s" deleted"; a rename is silent. A bulk write

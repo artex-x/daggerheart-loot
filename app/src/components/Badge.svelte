@@ -29,7 +29,7 @@
 <style>
   /* off `.badge` in style.css */
   .badge {
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     font-weight: 650;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -52,7 +52,7 @@
     border-color: #9ec96a73;
   }
 
-  /* Gear names the kind of gear rather than "item"; the three colours are the
+  /* Gear names the kind of gear rather than "item"; the three colors are the
      ones the equipment tables and tiles already use. */
   .badge.eq-weapon {
     color: var(--eq-weapon);
@@ -69,10 +69,11 @@
     border-color: #5ec9c473;
   }
 
-  /* Dashed, because it is a property of the thing rather than a category. */
+  /* Dashed, because it is a property of the thing rather than a category;
+     neutral, because nobody chose it (DESIGN.md, "The Seal Rule"). */
   .badge.uniq {
-    color: var(--gold-soft);
-    border-color: rgb(var(--gold-rgb) / 45%);
+    color: var(--muted);
+    border-color: var(--line2);
     border-style: dashed;
   }
 
@@ -82,20 +83,20 @@
   }
 
   /* Neutral on purpose: --muted carries a violet tint that put this badge in
-     the same family as the armour one. */
+     the same family as the armor one. */
   .badge.src {
     color: #9a9aa6;
   }
 
+  /* The roll number in the UI face's tabular figures (DESIGN.md, "The Numerals Rule"). */
   .badge.num {
-    font-family: var(--mono);
-    font-size: 11px;
+    font-variant-numeric: tabular-nums;
     letter-spacing: 0;
-    color: var(--gold-soft);
-    border-color: rgb(var(--gold-rgb) / 50%);
+    color: var(--txt);
+    border-color: var(--line2);
   }
 
-  /* The two duality columns, in the colours the dice are named for - the
+  /* The two duality columns, in the colors the dice are named for - the
      alternate tables' own use, not one of the three duplicated copies this
      component was extracted to replace, but the same base rule either way. */
   .badge.hope {

@@ -56,7 +56,7 @@
 <style>
   .note {
     margin: 0 0 14px;
-    font-size: 14px;
+    font-size: var(--t-small);
     color: var(--muted);
   }
 

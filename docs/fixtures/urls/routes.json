@@ -4,7 +4,8 @@
     "why": "empty address opens the default section",
     "resolves": {
       "hash": "#/",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -19,7 +20,8 @@
     "why": "core rules",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -34,7 +36,8 @@
     "why": "alternate tables",
     "resolves": {
       "hash": "#/roll/alt",
-      "tab": "#/roll/alt",
+      "tab": "roll",
+      "mode": "#/roll/alt",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -45,7 +48,8 @@
     "why": "Wondrous",
     "resolves": {
       "hash": "#/roll/wondrous_environments",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -56,7 +60,8 @@
     "why": "Dread",
     "resolves": {
       "hash": "#/roll/dread_gm_toolbox",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/dread_gm_toolbox",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -67,7 +72,8 @@
     "why": "Vault of Ages",
     "resolves": {
       "hash": "#/roll/vault_of_ages",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/vault_of_ages",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -78,7 +84,8 @@
     "why": "Dragon's Vault",
     "resolves": {
       "hash": "#/roll/dragons_vault",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/dragons_vault",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -89,7 +96,8 @@
     "why": "Arazo's Artifacts",
     "resolves": {
       "hash": "#/roll/arazos_artifacts",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/arazos_artifacts",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -100,7 +108,8 @@
     "why": "communities",
     "resolves": {
       "hash": "#/roll/community_items",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/community_items",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -111,7 +120,8 @@
     "why": "Many Worlds Tavern, a supplement under the supplements tab",
     "resolves": {
       "hash": "#/roll/many_worlds_tavern",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/many_worlds_tavern",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -122,7 +132,8 @@
     "why": "legacy: folds into roll/std with only Core picked",
     "resolves": {
       "hash": "#/roll/core",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -137,7 +148,8 @@
     "why": "legacy: folds into roll/std with only Hope & Fear picked",
     "resolves": {
       "hash": "#/roll/hnf",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -152,7 +164,8 @@
     "why": "legacy: folds into roll/std with both picked",
     "resolves": {
       "hash": "#/roll/all",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -167,7 +180,8 @@
     "why": "tables index, default table",
     "resolves": {
       "hash": "#/tables",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": []
@@ -178,7 +192,8 @@
     "why": "one table by name",
     "resolves": {
       "hash": "#/tables/eq_weapon",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 458,
       "printCards": 0,
       "picked": [],
@@ -190,7 +205,8 @@
     "why": "a plain table by name, the tenth book chip",
     "resolves": {
       "hash": "#/tables/dragons_vault",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 145,
       "printCards": 0,
       "picked": [],
@@ -202,7 +218,8 @@
     "why": "a plain table by name, the book chip after Dragon's Vault",
     "resolves": {
       "hash": "#/tables/arazos_artifacts",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 78,
       "printCards": 0,
       "picked": [],
@@ -214,7 +231,8 @@
     "why": "a table sectioned by realm",
     "resolves": {
       "hash": "#/tables/many_worlds_tavern",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 109,
       "printCards": 0,
       "picked": [],
@@ -226,7 +244,8 @@
     "why": "a realm filter",
     "resolves": {
       "hash": "#/tables/many_worlds_tavern/f_realm-warrens",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 21,
       "printCards": 0,
       "picked": [
@@ -240,7 +259,8 @@
     "why": "the sixth realm, The Drome",
     "resolves": {
       "hash": "#/tables/many_worlds_tavern/f_realm-drome",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 17,
       "printCards": 0,
       "picked": [
@@ -254,7 +274,8 @@
     "why": "table plus an anchor",
     "resolves": {
       "hash": "#/tables/alt_item/rare",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 120,
       "printCards": 0,
       "picked": []
@@ -265,7 +286,8 @@
     "why": "table plus a community anchor",
     "resolves": {
       "hash": "#/tables/community_items/Seaborne",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 90,
       "printCards": 0,
       "picked": [],
@@ -277,7 +299,8 @@
     "why": "two filter groups, dot separated",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-2.cls-mag",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 45,
       "printCards": 0,
       "picked": [
@@ -292,7 +315,8 @@
     "why": "the range facet: the key is \"range\", not \"rg\"",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_range-melee",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 210,
       "printCards": 0,
       "picked": [
@@ -306,7 +330,8 @@
     "why": "the burden facet: the key is \"burden\", not \"bu\"",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_burden-2",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 248,
       "printCards": 0,
       "picked": [
@@ -320,7 +345,8 @@
     "why": "two values in one group, dash separated",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1-2",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 219,
       "printCards": 0,
       "picked": [
@@ -335,7 +361,8 @@
     "why": "the artifact value on the equipment tier facet",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-A",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 1,
       "printCards": 0,
       "picked": [
@@ -349,7 +376,8 @@
     "why": "a value containing an underscore, which is why groups are separated by a dot",
     "resolves": {
       "hash": "#/tables/other_frames/f_frame-beast_feast",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 36,
       "printCards": 0,
       "picked": [
@@ -363,7 +391,8 @@
     "why": "Other starting-inventory section anchor",
     "resolves": {
       "hash": "#/tables/other_starting",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 29,
       "printCards": 0,
       "picked": [],
@@ -375,7 +404,8 @@
     "why": "Other campaign-frame section anchor",
     "resolves": {
       "hash": "#/tables/other_frames/dark_heart",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 95,
       "printCards": 0,
       "picked": [],
@@ -387,7 +417,8 @@
     "why": "legacy alias of other_frames, read as that table without rewriting the pasted hash",
     "resolves": {
       "hash": "#/tables/frames",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 95,
       "printCards": 0,
       "picked": [],
@@ -399,7 +430,8 @@
     "why": "legacy underscore separator, still read",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_tier-1_cls-phy",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": [
@@ -414,7 +446,8 @@
     "why": "a facet this table does not offer is ignored, and the table stays whole",
     "resolves": {
       "hash": "#/tables/eq_weapon/f_nosuch-1",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 458,
       "printCards": 0,
       "picked": [],
@@ -426,7 +459,8 @@
     "why": "search",
     "resolves": {
       "hash": "#/search",
-      "tab": "#/search",
+      "tab": "search",
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -438,6 +472,7 @@
     "resolves": {
       "hash": "#/lists",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -449,6 +484,7 @@
     "resolves": {
       "hash": "#/i/ci15",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -460,6 +496,7 @@
     "resolves": {
       "hash": "#/print/ci1-cc1-q26",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -472,6 +509,7 @@
     "resolves": {
       "hash": "#/print/ci1*3-cc1-q26*150",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -484,6 +522,7 @@
     "resolves": {
       "hash": "#/p/set-twocards",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -497,6 +536,7 @@
     "resolves": {
       "hash": "#/p/set-twocards.",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -510,6 +550,7 @@
     "resolves": {
       "hash": "#/p/short",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -522,7 +563,8 @@
     "why": "an unreadable address is replaced by the home section",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -537,7 +579,8 @@
     "why": "a named table that resolves to nothing falls back home, like any other unreadable address (R9/Q3)",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -553,6 +596,7 @@
     "resolves": {
       "hash": "#/l/ABC.",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -564,6 +608,7 @@
     "resolves": {
       "hash": "#/l/~AAAA",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -575,6 +620,7 @@
     "resolves": {
       "hash": "#/l/0JvQsNCy0LrQsAozLnZvY3h-Y2kxKjIsY2MyMSo1KjUwLHEzMzcqMSoxMg",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -586,6 +632,7 @@
     "resolves": {
       "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -597,6 +644,7 @@
     "resolves": {
       "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM.",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -608,6 +656,7 @@
     "resolves": {
       "hash": "#/s/player-token-1/f_kind-weapon.tier-1",
       "tab": null,
+      "mode": null,
       "rows": 3,
       "printCards": 0,
       "picked": [
@@ -622,6 +671,7 @@
     "resolves": {
       "hash": "#/s/player-token-1/f_kind-weapon_tier-1",
       "tab": null,
+      "mode": null,
       "rows": 3,
       "printCards": 0,
       "picked": [
@@ -636,6 +686,7 @@
     "resolves": {
       "hash": "#/s/player-token-1/f_range-veryfar",
       "tab": null,
+      "mode": null,
       "rows": 10,
       "printCards": 0,
       "picked": []
@@ -647,6 +698,7 @@
     "resolves": {
       "hash": "#/s/player-token-1/f_rg-melee",
       "tab": null,
+      "mode": null,
       "rows": 10,
       "printCards": 0,
       "picked": []
@@ -658,6 +710,7 @@
     "resolves": {
       "hash": "#/s/player-token-1/f_kind-weapon.",
       "tab": null,
+      "mode": null,
       "rows": 5,
       "printCards": 0,
       "picked": [
@@ -671,6 +724,7 @@
     "resolves": {
       "hash": "#/s/Qm9vZ2xlLXBsYXllci10b2tlbi1leGFtcGxlLXgxMjM/f_kind-weapon",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -682,6 +736,7 @@
     "resolves": {
       "hash": "#/h/00000000-0000-4000-8000-000000000511",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -693,6 +748,7 @@
     "resolves": {
       "hash": "#/h/00000000-0000-4000-8000-000000000511.",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -704,6 +760,7 @@
     "resolves": {
       "hash": "#/h/not-a-uuid",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -715,6 +772,7 @@
     "resolves": {
       "hash": "#/account",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -726,6 +784,7 @@
     "resolves": {
       "hash": "#/homebrew",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -737,6 +796,7 @@
     "resolves": {
       "hash": "#/homebrew/f_kind-item.src-hb",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -748,6 +808,7 @@
     "resolves": {
       "hash": "#/homebrew/f_src-hb-hb_alderworkshopaaa.sect-hb_sectbladesaaaaaa",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -758,7 +819,8 @@
     "why": "anything after the Items tab filter is an unreadable address and is replaced by the home section",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -773,7 +835,8 @@
     "why": "the signed-in author's own items as a table; signed out the sign-in prompt, with no sign-in configured the not-found page, address kept",
     "resolves": {
       "hash": "#/tables/homebrew",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -784,7 +847,8 @@
     "why": "an own source's anchor: the source's items outside its sections; a source with none, or another account's key, scrolls to nothing, address kept",
     "resolves": {
       "hash": "#/tables/homebrew/hb_alderworkshopaaa",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -795,7 +859,8 @@
     "why": "an own source's chip: src on homebrew holds one value and picks the source chip; signed out the sign-in prompt, address kept",
     "resolves": {
       "hash": "#/tables/homebrew/f_src-hb_alderworkshopaaa",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -806,7 +871,8 @@
     "why": "two src values: kept signed out; signed in with two or more sources the first held value picks the chip and the address is rewritten to it",
     "resolves": {
       "hash": "#/tables/homebrew/f_src-hb-hb_alderworkshopaaa",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -818,6 +884,7 @@
     "resolves": {
       "hash": "#/homebrew/new",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -829,6 +896,7 @@
     "resolves": {
       "hash": "#/homebrew/hb_emberaxeaaaaaaaa",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -840,6 +908,7 @@
     "resolves": {
       "hash": "#/homebrew/sources",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -851,6 +920,7 @@
     "resolves": {
       "hash": "#/homebrew/sets",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -862,6 +932,7 @@
     "resolves": {
       "hash": "#/homebrew/sets/hb_aldersetaaaaaaaa",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -873,6 +944,7 @@
     "resolves": {
       "hash": "#/homebrew/rules/hb_aaaaaaaaaaaaaaaa",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -883,7 +955,8 @@
     "why": "the Sources tab takes no key: an unreadable address, replaced by the home section",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -898,7 +971,8 @@
     "why": "anything else under homebrew is an unreadable address and is replaced by the home section",
     "resolves": {
       "hash": "#/roll/std",
-      "tab": "#/roll/std",
+      "tab": "roll",
+      "mode": "#/roll/std",
       "rows": 0,
       "printCards": 0,
       "picked": [],
@@ -914,6 +988,7 @@
     "resolves": {
       "hash": "#/i/hb_emberaxeaaaaaaaa",
       "tab": null,
+      "mode": null,
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -924,7 +999,8 @@
     "why": "the old id of #/roll/wondrous_environments, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/wondrous",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/wondrous_environments",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -935,7 +1011,8 @@
     "why": "the old id of #/roll/dread_gm_toolbox, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/dread",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/dread_gm_toolbox",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -946,7 +1023,8 @@
     "why": "the old id of #/roll/vault_of_ages, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/voa",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/vault_of_ages",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -957,7 +1035,8 @@
     "why": "the old id of #/roll/dragons_vault, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/dv",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/dragons_vault",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -968,7 +1047,8 @@
     "why": "the old id of #/roll/arazos_artifacts, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/arazo",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/arazos_artifacts",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -979,7 +1059,8 @@
     "why": "the old id of #/roll/community_items, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/community",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/community_items",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -990,7 +1071,8 @@
     "why": "the old id of #/roll/many_worlds_tavern, read as it without rewriting the address",
     "resolves": {
       "hash": "#/roll/mwt",
-      "tab": "#/roll/wondrous_environments",
+      "tab": "roll",
+      "mode": "#/roll/many_worlds_tavern",
       "rows": 0,
       "printCards": 0,
       "picked": []
@@ -1001,7 +1083,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/hope_and_fear_item",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": [],
@@ -1013,7 +1096,8 @@
     "why": "the old id of #/tables/hope_and_fear_item, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/hnf_item",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": [],
@@ -1025,7 +1109,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/hope_and_fear_consumable",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": [],
@@ -1037,7 +1122,8 @@
     "why": "the old id of #/tables/hope_and_fear_consumable, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/hnf_consumable",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 60,
       "printCards": 0,
       "picked": [],
@@ -1049,7 +1135,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/wondrous_environments",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 119,
       "printCards": 0,
       "picked": [],
@@ -1061,7 +1148,8 @@
     "why": "the old id of #/tables/wondrous_environments, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/wondrous",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 119,
       "printCards": 0,
       "picked": [],
@@ -1073,7 +1161,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/dread_gm_toolbox",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 29,
       "printCards": 0,
       "picked": [],
@@ -1085,7 +1174,8 @@
     "why": "the old id of #/tables/dread_gm_toolbox, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/dread",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 29,
       "printCards": 0,
       "picked": [],
@@ -1097,7 +1187,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/vault_of_ages",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 144,
       "printCards": 0,
       "picked": [],
@@ -1109,7 +1200,8 @@
     "why": "the old id of #/tables/vault_of_ages, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/voa",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 144,
       "printCards": 0,
       "picked": [],
@@ -1121,7 +1213,8 @@
     "why": "the old id of #/tables/dragons_vault, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/dv",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 145,
       "printCards": 0,
       "picked": [],
@@ -1133,7 +1226,8 @@
     "why": "the old id of #/tables/arazos_artifacts, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/arazo",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 78,
       "printCards": 0,
       "picked": [],
@@ -1145,7 +1239,8 @@
     "why": "a plain table by its URL id",
     "resolves": {
       "hash": "#/tables/community_items",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 90,
       "printCards": 0,
       "picked": [],
@@ -1157,7 +1252,8 @@
     "why": "the old id of #/tables/community_items, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/community",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 90,
       "printCards": 0,
       "picked": [],
@@ -1169,7 +1265,8 @@
     "why": "the old id of #/tables/many_worlds_tavern, read as it without rewriting the address",
     "resolves": {
       "hash": "#/tables/mwt",
-      "tab": "#/tables",
+      "tab": "tables",
+      "mode": null,
       "rows": 109,
       "printCards": 0,
       "picked": [],

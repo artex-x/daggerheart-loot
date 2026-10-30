@@ -18,7 +18,7 @@
      * Which die this field is, where it is one of a named pair.
      *
      * The alternate tables roll Hope and Fear rather than a sum, and the live
-     * app colours each field's focus ring to match its label. Everywhere else
+     * app colors each field's focus ring to match its label. Everywhere else
      * the number has no name and the ring stays gold.
      */
     tone?: 'hope' | 'fear';
@@ -92,7 +92,7 @@
   }
 
   /* Focus is left where the browser put it - on the button that was pressed.
-     Moving it into the input looked helpful and was not the live behaviour:
+     Moving it into the input looked helpful and was not the live behavior:
      the ring ends up on a field whose outline is suppressed instead of on the
      stepper, so a keyboard user loses sight of where they are, and the parity
      diff charged the whole box for the glow. */
@@ -160,7 +160,7 @@
     background: transparent;
     color: var(--txt);
     text-align: center;
-    font: 650 20px/1 var(--mono);
+    font: 650 var(--t-num)/1 var(--mono);
   }
 
   input[type='text']:focus {
@@ -190,7 +190,7 @@
     color: var(--muted);
     width: 40px;
     height: 46px;
-    font-size: 19px;
+    font-size: var(--t-title);
     line-height: 1;
     transition: 0.14s;
   }
@@ -209,7 +209,7 @@
      dead: the base rule that sets 74px is written *after* the media block at
      the same specificity, so it wins at every width. The live field is 74px on
      a phone, this one has to be, and copying the intent instead of the
-     behaviour cost eighteen pixels on the parity diff. The button rule does
+     behavior cost eighteen pixels on the parity diff. The button rule does
      apply, because its base rule comes before the block. */
   @media (max-width: 430px) {
     button {

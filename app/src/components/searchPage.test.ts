@@ -1,6 +1,6 @@
 /* Search, `#/search` - reproduced from `renderSearch` in app.js.
  *
- * Held against a small fixture rather than the real catalogue, the same way
+ * Held against a small fixture rather than the real catalog, the same way
  * tables.test.ts is: what matters here is the shape (both languages at once,
  * the cap, the kind filter shared with the roll pages) rather than any
  * particular record. */
@@ -30,7 +30,7 @@ const row = (over: Partial<Record_>): Record_ => ({
 });
 
 /* `w1`'s description holds «зелье», which is `cc1`'s name, so a ranked
- * query has a description hit ahead of a name hit in catalogue order.
+ * query has a description hit ahead of a name hit in catalog order.
  * Two records share "Ветра" in Russian and "Wind" in English - one item, one
  * consumable, so the kind chips have something to narrow. `ci2` shares
  * nothing with either word, in either language, but carries a stat block
@@ -113,8 +113,8 @@ describe('arrival', () => {
     render(App, { env: at() });
     expect(screen.getByRole('heading', { name: 'Поиск' })).toBeInTheDocument();
     expect(screen.getByText(/Поиск сразу по 1459 позициям/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Открывать этот раздел/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Справка' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Открывать при запуске/ })).toBeInTheDocument();
 
     const box = screen.getByPlaceholderText('Поиск по названию или описанию...');
     expect(box).toHaveFocus();
@@ -138,7 +138,7 @@ describe('arrival', () => {
 });
 
 describe('a query narrows, best match first', () => {
-  it('ranks a name hit above a description hit that comes first in the catalogue', async () => {
+  it('ranks a name hit above a description hit that comes first in the catalog', async () => {
     render(App, { env: at() });
     await type('зелье');
     const rows = screen.getAllByRole('button', { name: /Зелье|Плащ Ветра/ });
@@ -159,7 +159,7 @@ describe('a query narrows, best match first', () => {
     render(App, { env: at() });
     await type('Ветра');
     const rows = screen.getAllByRole('button', { name: /Ветра/ });
-    /* An equal score keeps catalogue order */
+    /* An equal score keeps catalog order */
     expect(rows.map((r) => r.textContent)).toEqual([
       expect.stringContaining('Плащ Ветра'),
       expect.stringContaining('Сапоги Ветра')

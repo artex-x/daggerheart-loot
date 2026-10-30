@@ -1,4 +1,4 @@
-/* The labelled on/off switch: its role and name, its state, a click and Space. */
+/* The labeled on/off switch: its role and name, its state, a click and Space. */
 import { cleanup, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';

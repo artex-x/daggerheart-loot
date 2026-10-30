@@ -63,17 +63,27 @@
      is then on `body`), so the toast falls back to `#main`, or to the
      dialog's close button inside `RecordModal`, where `#main` is inert. */
   let back: HTMLElement | null = null;
+  /* Set while the toast's own link or move hides it: that action decides the focus. */
+  let own = false;
 
-  /* Keyed on `run`, not on the toast: a language switch draws a new toast
-     object and must not take focus again. */
+  /* Keyed on the action, not on the toast: a language switch draws a new toast
+     object with the same functions and must not take focus again. A link or a move
+     toast that a later toast replaces gives the focus back too (rule 20). */
   const run = $derived(toast?.action?.run);
+  const key = $derived(toast?.action?.run ?? toast?.action?.go ?? toast?.action?.href);
 
   $effect.pre(() => {
+    void key;
     const action = run;
     const box = el;
     if (!box) return;
     const focused = document.activeElement;
     const inside = box.contains(focused);
+    if (own) {
+      own = false;
+      back = null;
+      return;
+    }
     if (action) {
       if (!inside)
         back = focused instanceof HTMLElement && focused !== document.body ? focused : null;
@@ -104,6 +114,7 @@
     /* Inside the record dialog the page under it is inert: the dialog closes first, so
        the panel head or `#main` can take the focus. */
     const dialog = inDialog ? el?.closest('dialog') : null;
+    own = true;
     app.hideToast();
     dialog?.close();
     go();
@@ -144,8 +155,12 @@
   aria-live={toast ? (toast.mode === 'err' ? 'assertive' : 'polite') : undefined}
   onpointerenter={() => (hover = true)}
   onpointerleave={() => (hover = false)}
-  onfocusin={() => {
+  onfocusin={(e) => {
     if (!selfFocus) focused = true;
+    /* The origin of a focus a person moved into a link or a move toast. */
+    const from = e.relatedTarget;
+    if (from instanceof HTMLElement && from !== document.body && !el?.contains(from))
+      back = from;
   }}
   onfocusout={() => (focused = false)}
 >
@@ -158,6 +173,7 @@
         target="_blank"
         rel="noopener"
         onclick={() => {
+          own = true;
           app.hideToast();
         }}>{toast.action.label}</a
       >
@@ -178,36 +194,38 @@
 
 <style>
   /* off `.toast` in style.css, plus the popover resets a plain fixed element
-     does not need: `inset`/`margin` replace the UA default centring, `border`
-     and `overflow` undo the UA popover border and scroll, and `color`/
+     does not need: `inset`/`margin` replace the UA default centering, `border`
+     replaces the UA popover border and `overflow` undoes its scroll, and `color`/
      `background` are the browser's Canvas/CanvasText for a plain popover -
-     `.toast.err` still overrides them for the alert flavour below. */
+     `.toast.err` still overrides them for the alert flavor below. */
   .toast {
     position: fixed;
     inset: auto auto 26px 50%;
     margin: 0;
-    border: 0;
     overflow: visible;
     transform: translateX(-50%);
     /* Left at 50%, a shrink-to-fit box gets half the window: a long name then
        stacks the toast up over the controls (docs/specs/FEATURES.md, rule 16). */
     width: max-content;
     max-width: calc(100% - 32px);
-    background: var(--gold);
-    color: var(--ink-on-gold);
-    font-weight: 650;
-    font-size: 13.5px;
-    padding: 10px 18px;
-    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--muted2);
+    color: var(--txt);
+    font-weight: 600;
+    font-size: var(--t-small);
+    padding: 10px 16px;
+    border-radius: var(--r);
     box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
     z-index: 200;
     animation: toastIn 0.2s ease both;
     overflow-wrap: anywhere;
   }
 
+  /* The alarm fill with dark ink, about 5.6:1 (DESIGN.md, "Toast"). */
   .toast.err {
     background: var(--danger);
-    color: #fff;
+    border-color: var(--danger);
+    color: var(--ink-on-gold);
   }
 
   /* off `.toast.act` - a toast that asks something rather than reporting it */
@@ -219,13 +237,13 @@
   }
 
   .toast-act {
-    border: 0;
-    border-radius: 999px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
     padding: 5px 12px;
     font: inherit;
-    font-weight: 700;
-    font-size: 12.5px;
-    background: rgb(26 18 6 / 16%);
+    font-weight: 650;
+    font-size: var(--t-data);
+    background: var(--surface2);
     color: inherit;
     text-decoration: none;
     white-space: nowrap;
@@ -233,7 +251,7 @@
   }
 
   .toast-act:hover {
-    background: rgb(26 18 6 / 28%);
+    border-color: var(--gold);
   }
 
   @keyframes toastIn {

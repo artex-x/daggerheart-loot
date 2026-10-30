@@ -687,7 +687,7 @@ describe('the hand-test files', () => {
     });
   });
 
-  it('line-mixed.json: armour in a weapon line, refused at its eq.line', () => {
+  it('line-mixed.json: armor in a weapon line, refused at its eq.line', () => {
     const p = parseHomebrew(fixture('line-mixed.json'), CTX);
     expect(errorsOf(p)).toEqual([{ path: 'items[1].eq.line', rule: 'enum' }]);
     if (!p.ok && p.reason === 'errors')
@@ -930,8 +930,8 @@ describe('toHomebrewFile and homebrewText', () => {
 
 /* The blind round (docs/specs/COVERAGE.md): a fresh agent that read only llms.txt,
    catalog.csv and the two export.json files wrote this file for request R-A - a source
-   with two sections, two blades in their own line, an armour, a flask made from the
-   Premium Bedroll, a set card joining the flask and the armour, a rule card named by the
+   with two sections, two blades in their own line, an armor, a flask made from the
+   Premium Bedroll, a set card joining the flask and the armor, a rule card named by the
    first blade. */
 describe('from-llms.json, the blind round', () => {
   const p = okOf(parseHomebrew(fixture('from-llms.json'), CTX));

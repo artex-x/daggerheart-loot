@@ -65,7 +65,7 @@ export function browserEnv(): Env {
 /** Every port replaced by something that runs anywhere. */
 export function fakeEnv(over: Partial<Env> = {}): Env {
   return {
-    /* An empty catalogue by default: a test that needs records says which. */
+    /* An empty catalog by default: a test that needs records says which. */
     data: fakeData({ items: {} }),
     image: fakeImage(),
     media: fakeMedia(),

@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -185,6 +183,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 98Луковица ЯдолилииЭту луковицу можно разделить на 1d4 дольки, к... [namelen=211 namehash=6858a5c3]
 99Лепестки Цветка ТроицыЗаварите эти лепестки в чай, который мог... [namelen=236 namehash=c3977278]
 9Архивная ГнильНа время сцены вы получаете преимущество ко всем ... [namelen=203 namehash=afaa2150]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -201,6 +200,7 @@ daggerheart.com
 Арканная Набивка
 Арканный Скальпель
 Архивная Гниль
+Бросок
 Буря в Бутылке
 Варенье из Грохотягод
 Вино Бесед
@@ -227,7 +227,6 @@ daggerheart.com
 Искатель Духов
 Ихор Вянущего Корня
 К содержимому
-Как это работает
 Камень Возврата
 Камень Сирены
 Кандальные Болас
@@ -260,11 +259,10 @@ daggerheart.com
 Нектар Обетного Цветка
 Оберег Вянущего Корня
 Оберег Мореплавателя
-Обычные правила
 Опорная Паутина
 Осколок Сновидца
 Отвадитель Жуков
-Открывать этот раздел при запуске
+Открывать при запуске
 Охранный Оберег
 Паучье Жало
 Перо Памяти
@@ -342,22 +340,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_environments]
   link "Skip to content" [url=/en/tables/wondrous_environments#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -399,7 +395,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 100Trinity Flower SeedEating this seed grants the wisdom of the ... [namelen=166 namehash=cab879a3]
@@ -521,6 +517,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/wondrous_envir
 98Toxilily BulbThis bulb can be broken into 1d4 cloves, each of ... [namelen=211 namehash=a6c54b19]
 99Trinity Flower PetalsBrew these petals into a tea that can be ... [namelen=219 namehash=7c07a5c1]
 9Archivist's RotFor the scene, you have advantage on all Instinc... [namelen=184 namehash=06dbf807]
+?Help
 Abyssal Sap
 Aetherflower
 Aetherflower Tea
@@ -578,7 +575,6 @@ Henry's Sugar
 Hero's Powder
 Hitcher's Towel
 Hope & Fear
-How this works
 Ice Gloves
 Incantor's Chalk
 Install as an app
@@ -592,6 +588,7 @@ Life Wand
 Lightning Scarab
 Link to this table
 List
+LootDaggerheart
 Lovebugs
 Manacle Bolas
 Many Worlds Tavern
@@ -600,7 +597,7 @@ Mimicry Mask
 Mucin of Slipperiness
 Needle Key
 Nursewood Sap
-Open this section on start
+Open on start
 Other
 Pastries of Warmth
 Pathfinder's Ledger
@@ -617,6 +614,7 @@ Quill of Memory
 RU
 Radiant Shard
 Red Nose of Hope
+Roll
 Rootslicer Gauntlet
 Scaffold Web
 Search
@@ -633,7 +631,6 @@ Spider's Sting
 Spirit Seeker
 Sporemind Tonic
 Staff of the Whispering Archive
-Standard rules
 Stingshield Robes
 Storm in a Bottle
 Superior Alconite Crystal
@@ -672,4 +669,3 @@ Wraith Trap
 Yeti Coat
 Yifang Sands
 daggerheart.com
-ЛутDaggerheart

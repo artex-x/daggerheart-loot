@@ -1,0 +1,1287 @@
+/* Unit A's shared styles for the batch mocks 1-5 and 7, over direction R's
+   base.css and r.css. Values come from app/src/styles/tokens.css and the
+   batch 1 tokens of plan.md section 4. */
+
+/* filled glyphs (batch 1 icons.ts paths) */
+svg.fi {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: currentColor;
+  stroke: none;
+}
+.art .glyph svg.fi {
+  width: 42%;
+  height: 42%;
+}
+
+/* the neutral pressed state (batch 1): a check and a lit border, no gold */
+.btn.pressed,
+.seg.np button[aria-pressed='true'],
+.chip.np[aria-pressed='true'] {
+  background: var(--surface2);
+  border-color: var(--muted2);
+  color: var(--txt);
+}
+.seg.np button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 1px var(--muted2);
+}
+.seg.np button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn svg.fi,
+.seg svg.fi,
+.chip svg.fi {
+  width: 16px;
+  height: 16px;
+}
+.btn.ghost.open {
+  color: var(--txt);
+  background: var(--surface2);
+  border-color: var(--line2);
+}
+
+/* footer (batch 1, C28): links muted and underlined; the summary line */
+.foot a {
+  color: var(--muted);
+  text-decoration: underline;
+}
+.foot .dpcgl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.foot .dpcgl svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* mock-only: the address of a frame, beside the MOCK caption */
+.addr {
+  width: var(--wrap);
+  margin: 4px auto 6px;
+  font: 600 12px/1.3 var(--mono);
+  color: #8fa9c4;
+}
+.addr span {
+  opacity: 0.6;
+}
+
+/* mock-only: a browser tab strip that shows the document title */
+.tabstrip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 8px 12px 0;
+  background: #07060b;
+  border-bottom: 1px solid var(--line);
+}
+.tabstrip .tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 340px;
+  padding: 8px 14px;
+  border-radius: 8px 8px 0 0;
+  background: #1c1828;
+  color: var(--txt);
+  font:
+    400 13px/1.2 system-ui,
+    sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tabstrip .tab.off {
+  background: transparent;
+  color: var(--muted2);
+}
+.tabstrip .tab svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--gold);
+  stroke: none;
+}
+
+/* the toast (batch 2, C34, A15): a plate that floats, never gold; the error
+   flavour takes the alarm fill with dark ink, as .danger-fill does */
+.toast3 {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: var(--r);
+  background: var(--surface2);
+  border: 1px solid var(--line2);
+  box-shadow: 0 12px 30px -10px rgb(0 0 0 / 70%);
+  font-size: 15px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+}
+.toast3.err {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #1b0606;
+  font-weight: 600;
+}
+.toast3 .btn {
+  flex: none;
+}
+@media (max-width: 760px) {
+  .toast3 {
+    left: 16px;
+    right: 16px;
+    transform: none;
+    width: auto;
+  }
+}
+
+/* an open help panel under the page head (batches 3 and 5) */
+.helpp {
+  max-width: 760px;
+  padding: 14px 16px;
+  margin: -6px 0 16px;
+  display: grid;
+  gap: 8px;
+}
+.helpp p {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--muted);
+  max-width: 70ch;
+}
+.helpp p b {
+  color: var(--txt);
+}
+.helpp .more {
+  font-size: var(--t-data);
+  color: var(--muted2);
+}
+
+/* the item page at 360 (batch 4): art on top, the actions after the text */
+@media (max-width: 760px) {
+  .dossier {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .dossier > .art {
+    aspect-ratio: 4 / 3;
+  }
+  .dossier .acts .btn.primary {
+    flex: 1 0 100%;
+  }
+}
+
+/* the specimen pages of batch 1 */
+.spec {
+  display: grid;
+  gap: 14px;
+}
+.spec .srow2 {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.spec .srow2 .k {
+  font: 600 12px/1.4 var(--mono);
+  color: var(--muted2);
+}
+.spec .srow2 .k b {
+  display: block;
+  color: var(--txt);
+  font-family: var(--ui);
+  font-size: 13px;
+}
+.spec h2 {
+  font-size: 20px;
+  margin: 10px 0 0;
+}
+.spec .grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 14px;
+}
+.spec .box {
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.spec .box h3 {
+  margin: 0;
+  font-size: var(--t-title);
+}
+.spec .box .note {
+  font-size: var(--t-data);
+  color: var(--muted2);
+}
+.spec .line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+@media (max-width: 760px) {
+  .spec .srow2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* mock-only: no scrollbar, so a 360 px render is 360 px of page */
+html {
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+.foot .dpcgl {
+  display: inline;
+}
+.foot .dpcgl svg {
+  vertical-align: -2px;
+  margin-left: 4px;
+}
+/* mock-only: a drawn keyboard focus (a screenshot cannot hold :focus-visible) */
+.fv {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+.gcard .stat {
+  display: flex;
+  flex-wrap: wrap;
+}
+.spec .box > * {
+  min-width: 0;
+}
+@media (min-width: 761px) {
+  .spec .box.wide {
+    grid-column: span 2;
+  }
+}
+/* the language switch with its check keeps «Войти» on one line at 360 */
+.acct {
+  white-space: nowrap;
+}
+@media (max-width: 400px) {
+  .seg.lang button {
+    padding: 5px 9px;
+    gap: 4px;
+  }
+  .seg.lang svg.fi {
+    width: 14px;
+    height: 14px;
+  }
+}
+/* the account control: the gold ring on its own pages and while its menu is
+   open (FEATURES.md "Chrome") */
+.acct.here,
+.acct.open {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+/* batch 2: the supplement chip takes more of the row at 360, so the longest
+   name (Many Worlds Tavern, Community items) holds two lines, as the owner
+   allowed (2026-10-23) */
+@media (max-width: 760px) {
+  .modes.r3 {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
+  }
+}
+/* batch 3 (C4): at 360 the count shares its line with «Выбрать» */
+@media (max-width: 760px) {
+  .frow .count {
+    width: auto;
+    flex: 1 1 auto;
+  }
+}
+/* batch 4 (C44): the sheet's fixed bar holds the primary on its own line,
+   so «Поделиться» and «Ещё» keep their labels at 360 */
+.sheet .dock {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.sheet .dock > :first-child {
+  grid-column: 1 / -1;
+}
+/* the page ground (owner, 2026-10-29): one linear ground replaces the two
+   radial washes of tokens.css body */
+body {
+  background: linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px) var(--bg);
+}
+/* batch 1 print specimen: a card capture with a drawn art block over it */
+.pfig figcaption {
+  font-size: var(--t-data);
+  color: var(--muted2);
+  margin-bottom: 4px;
+}
+.pcm {
+  position: relative;
+  width: 237px;
+  max-width: 100%;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 50%),
+    0 14px 40px rgb(0 0 0 / 45%);
+}
+.pcm img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* the colour card's art block is the top 68% of the card, fading to paper */
+.pcm-art {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 68%;
+  background: linear-gradient(180deg, #0e0c15 0, #0e0c15 78%, #fff 100%);
+  display: grid;
+  place-items: center;
+}
+.pcm-art span {
+  width: 34%;
+  color: #3f3758;
+  margin-top: -6%;
+}
+.pcm-art svg.fi {
+  width: 100%;
+  height: auto;
+}
+
+/* ---------- batch 3: the first-screen layout of /tables (plan section 14) ---------- */
+.n360 {
+  display: none !important;
+}
+main.fs {
+  padding-top: 16px;
+}
+.fs .headrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin-bottom: 8px;
+}
+.fs .headrow .ph,
+.fs .headrow .groups {
+  margin: 0;
+}
+.fs .sub {
+  margin-bottom: 10px;
+}
+.fs .fsbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.fs .fsbar .field {
+  flex: 1 1 180px;
+  min-width: 0;
+  min-height: 40px;
+}
+.fs .fsbar .count {
+  white-space: nowrap;
+  font-size: var(--t-small);
+  color: var(--muted);
+  margin-left: 4px;
+}
+.fs .secth .count {
+  font-size: var(--t-small);
+  color: var(--muted);
+}
+.fs .pickrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.fs .picker {
+  margin: 0 auto 0 0;
+  display: grid;
+  line-height: 1.15;
+}
+.fs .pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: var(--t-page);
+  font-weight: 700;
+  color: var(--txt);
+}
+.fs .pick svg.chev {
+  width: 18px;
+  height: 18px;
+}
+.fs .picker small {
+  font-size: var(--t-small);
+  font-weight: 400;
+  color: var(--muted);
+}
+.pop .mview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+}
+@media (max-width: 760px) {
+  .n360 {
+    display: revert !important;
+  }
+  .fs .pickrow.n360,
+  .fs .frow.n360 {
+    display: flex !important;
+  }
+  .w1180 {
+    display: none !important;
+  }
+  main.fs {
+    padding-top: 12px;
+  }
+  .fs .cline {
+    margin: 0 0 8px;
+    font-size: var(--t-small);
+    color: var(--muted);
+  }
+  .fs .secth {
+    flex-wrap: wrap;
+    gap: 2px 10px;
+  }
+  .fs .secth .count {
+    order: 3;
+    flex-basis: 100%;
+  }
+}
+.fs .fsbar .fbtn {
+  flex: none;
+}
+.fs .headrow {
+  margin-bottom: 4px;
+}
+.fs .sub {
+  margin-bottom: 8px;
+}
+.fs .fsbar {
+  margin-bottom: 6px;
+}
+.fs .secth {
+  margin: 0;
+}
+.fs .ct th {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+@media (max-width: 760px) {
+  main.fs {
+    padding-top: 8px;
+  }
+  .fs .pickrow {
+    margin-bottom: 8px;
+  }
+  .fs .fsbar {
+    margin-bottom: 4px;
+  }
+}
+
+/* ---------- batch 5: the first-screen roller (plan section 14) ---------- */
+.rfs .cfgw {
+  display: grid;
+  gap: 14px;
+}
+@media (max-width: 760px) {
+  main.rfs {
+    padding-top: 10px;
+  }
+  .rfs .ph {
+    margin: 0;
+  }
+  .rfs .ph > :not(h1) {
+    display: none;
+  }
+  .rfs .ph h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .rfs .ctrl {
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  .rfs .dice {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .rfs .dice .die:last-child {
+    grid-column: auto;
+  }
+  .rfs .die {
+    min-height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+  .rfs .die .d {
+    min-width: 0;
+    font-size: 15px;
+  }
+  .rfs .die .d svg,
+  .rfs .die .r {
+    display: none;
+  }
+  .rfs .two {
+    gap: 12px;
+  }
+  .rfs .reshead {
+    margin-bottom: 8px;
+  }
+  .rfs .reshead h2 {
+    font-size: var(--t-title);
+  }
+  .cfg360 {
+    margin-top: 14px;
+    display: grid !important;
+    gap: 10px;
+  }
+  .cfg360 .cfgbtn {
+    justify-content: flex-start;
+  }
+  .cfg360 .cfgbtn svg.chev {
+    margin-left: auto;
+  }
+  .cfg360 .cfgbody {
+    padding: 14px;
+    display: grid;
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  main.rfs {
+    padding-top: 6px;
+  }
+  .rfs .two {
+    gap: 8px;
+  }
+  .rfs .reshead {
+    margin-bottom: 4px;
+  }
+  .rfs .reshead h2 {
+    font-size: var(--t-control);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--muted);
+  }
+  .rfs .die .d {
+    width: 100%;
+    justify-content: center;
+  }
+}
+/* batch 2's mode row at 360 takes 8 px above and below, not 10, so the
+   first roll result meets the first-screen rule (batch 5, plan section 14) */
+@media (max-width: 760px) {
+  .modes.r3 {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+
+/* ---------- batch 7: search and print first screens (plan section 14) ---------- */
+.sfs .ph {
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.sfs .sbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  max-width: 720px;
+}
+.sfs .sbar .field {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pfs .phead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+.pfs .phead .back {
+  font-size: var(--t-small);
+}
+.pop.psets {
+  min-width: 290px;
+}
+@media (max-width: 760px) {
+  main.sfs,
+  main.pfs {
+    padding-top: 14px;
+  }
+  .sfs .sbar {
+    margin-bottom: 12px;
+  }
+  .pfs .phead {
+    margin-bottom: 10px;
+  }
+  .pfs .prow {
+    margin-bottom: 12px;
+  }
+  .pfs .prow .btn.primary {
+    flex: 1 1 auto;
+  }
+  .pfs .punder {
+    display: grid !important;
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .pfs .punder .lead2 {
+    margin: 0;
+  }
+}
+
+/* ---------- batch 1b: the light print well, the sheets, the link card ---------- */
+.pcm-art.dark {
+  background: linear-gradient(180deg, #0e0c15 0, #0e0c15 78%, #fff 100%);
+}
+/* the print well: a paper-side tone, the glyph in dark ink */
+.pcm-art.light {
+  background: linear-gradient(180deg, #ebe7f0 0, #ebe7f0 78%, #fff 100%);
+}
+.pcm-art.light span {
+  color: #3a3350;
+}
+.lwell {
+  width: 72px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: #ebe7f0;
+  display: grid;
+  place-items: center;
+  color: #3a3350;
+}
+.lwell svg.fi {
+  width: 42%;
+  height: 42%;
+}
+.a4 {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 210 / 297;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 50%),
+    0 14px 40px rgb(0 0 0 / 45%);
+}
+.a4 .cell {
+  position: absolute;
+}
+.a4 .pcm {
+  width: 100%;
+  box-shadow: none;
+}
+.chat {
+  background: #0f1720;
+  border-radius: 12px;
+  padding: 14px;
+}
+.chat .bubble {
+  max-width: 420px;
+  background: #182533;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font:
+    14px/1.4 system-ui,
+    sans-serif;
+  color: #e7edf3;
+}
+.chat .bubble a {
+  color: #6ab3f3;
+  word-break: break-all;
+}
+.chat .lp {
+  margin-top: 8px;
+  padding-left: 10px;
+  border-left: 2px solid #6ab3f3;
+  display: grid;
+  gap: 2px;
+}
+.chat .lp .site {
+  color: #6ab3f3;
+}
+.chat .lp p {
+  margin: 0 0 6px;
+}
+.chat .lp img {
+  width: 100%;
+  border-radius: 8px;
+}
+.stub {
+  background: #fff;
+  color: #1a1626;
+  border-radius: 8px;
+  padding: 16px;
+  font:
+    15px/1.5 system-ui,
+    sans-serif;
+}
+.stub h2 {
+  margin: 0 0 2px;
+  font-size: 20px;
+}
+.stub .ssub {
+  margin: 0 0 8px;
+  color: #5a5470;
+}
+.stub a {
+  color: #3a55b0;
+}
+.lwell span {
+  display: block;
+  width: 42%;
+}
+.lwell span svg.fi {
+  width: 100%;
+  height: auto;
+}
+
+/* batch 3, plan review plan-1-3 R3: one list head; the 240 / 270 design target */
+.fs .fsbar .selbtn {
+  flex: none;
+}
+.fs .fsbar .fbtn svg {
+  display: none;
+}
+main.fs {
+  padding-top: 8px;
+}
+.fs .sub a {
+  padding-top: 7px;
+  padding-bottom: 8px;
+}
+@media (max-width: 760px) {
+  main.fs {
+    padding-top: 6px;
+  }
+  .fs .pickrow {
+    margin-bottom: 6px;
+  }
+  .fs .pickrow .seg button {
+    padding: 4px 10px;
+    min-height: 30px;
+  }
+  .fs .fsbar .field input::placeholder {
+    font-size: var(--t-small);
+  }
+  .fs .secth {
+    flex-wrap: nowrap;
+  }
+  .fs .secth .count {
+    order: 0;
+    flex-basis: auto;
+    white-space: nowrap;
+  }
+  .fs .secth .btn {
+    padding: 0 6px;
+    margin-left: auto;
+  }
+}
+@media (max-width: 760px) {
+  .fs .fsbar .field {
+    flex: 1 1 0;
+  }
+  .fs .fsbar .field input {
+    min-width: 0;
+    width: 100%;
+  }
+  .fs .pick {
+    font-size: var(--t-section);
+  }
+  .fs .pickrow .seg button {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  .fs .pickrow .seg svg.fi {
+    width: 14px;
+    height: 14px;
+  }
+  .fs .pickrow .anchor .btn svg.chev {
+    display: none;
+  }
+  .fs .pickrow .anchor .btn {
+    padding: 0 10px;
+  }
+}
+/* the 240 px design target at 360 (plan review plan-1-3 R2): the mode chips
+   (batch 2) and the dice (batch 5) are 40 px tall at 360, above the 24 px
+   target size of WCAG 2.5.8 */
+@media (max-width: 760px) {
+  .modes.r3 .chip {
+    min-height: 40px;
+  }
+  .rfs .die {
+    min-height: 40px;
+  }
+}
+@media (max-width: 760px) {
+  .modes.r3 {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  main.rfs {
+    padding-top: 6px;
+  }
+  .rfs .two {
+    gap: 6px;
+  }
+}
+@media (max-width: 760px) {
+  .rfs .reshead {
+    margin-bottom: 2px;
+  }
+  .rfs .reshead h2 {
+    line-height: 1.2;
+  }
+}
+/* the node's no-picture design before 2026-10-15 (mock 1b comparison) */
+.pcm-art.node {
+  background: #0a0810;
+}
+.pcm-art.node span {
+  width: 34%;
+}
+.pcm-art.node svg,
+.nwell svg {
+  width: 100%;
+  height: auto;
+  fill: #e6e3ec;
+  display: block;
+}
+.nwell {
+  width: 64px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: #0a0810;
+  display: grid;
+  place-items: center;
+}
+.nwell span {
+  display: block;
+  width: 40%;
+}
+
+/* ---------- batch 3: the list head pattern, final (mocks-1 review M3-*) ---------- */
+/* a ticked row: a lit ground and the check, no side stripe (M3-6) */
+.rl.sel {
+  box-shadow: none;
+  background: rgb(255 255 255 / 5%);
+}
+/* the selection bar sits at the bottom; the list keeps room under its last
+   row so the bar never covers it (M3-5, C12) */
+.selon {
+  padding-bottom: 64px;
+}
+.selbar {
+  bottom: 12px;
+}
+/* «Фильтры · N» is lit while a filter holds a value (DESIGN.md "Toggle") */
+.fsbar .fbtn.on {
+  border-color: rgb(var(--gold-rgb) / 45%);
+  color: var(--gold-soft);
+}
+.fside .fh .wb {
+  gap: 2px;
+}
+.fside .fh .wb .btn {
+  padding: 0 6px;
+}
+@media (max-width: 760px) {
+  .fs .fsbar .fbtn,
+  .fs .fsbar .selbtn {
+    padding: 0 9px;
+  }
+  .fs .frow.n360 {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+/* ---------- batch 5: one layout for the nine roll modes (mocks-1 M5-*) ---------- */
+.rfs .reshead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rfs .reshead h2 {
+  margin-right: auto;
+}
+.rfs .hand2.one {
+  grid-template-columns: minmax(0, 380px);
+}
+.rfs .rrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rfs .pickb {
+  justify-content: space-between;
+}
+.rfs .pickb .pk {
+  color: var(--muted);
+  font-weight: 400;
+}
+.rfs .cfgbtn.on {
+  border-color: rgb(var(--gold-rgb) / 45%);
+  color: var(--gold-soft);
+}
+.rfs .rarseg button {
+  padding: 6px 10px;
+}
+@media (max-width: 760px) {
+  .rfs .dice.two3 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .rfs .dice.two3 .die {
+    grid-column: span 2;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    min-height: 50px;
+    padding: 4px 2px;
+  }
+  .rfs .dice.two3 .die:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+  .rfs .dice.two3 .die .r {
+    display: block;
+    font-size: var(--t-label);
+    line-height: 1.2;
+    text-align: center;
+  }
+  .rfs .dice.two3 .die .d {
+    font-size: 15px;
+  }
+  .rfs .reshead {
+    margin: 2px 0 8px;
+  }
+  .rfs .reshead h2 {
+    font-size: var(--t-title);
+    font-weight: 700;
+    color: var(--txt);
+    line-height: 1.2;
+  }
+  .rfs .rrow > * {
+    flex: 1 1 auto;
+  }
+  .rfs .cfgbody {
+    display: grid !important;
+    gap: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .rfs .rarseg {
+    border-radius: var(--r);
+  }
+  .rfs .ctrl > .btn.primary {
+    width: 100%;
+  }
+}
+/* the compact result card under 600 px: a 96 px art beside the text (M5-7) */
+@media (max-width: 600px) {
+  .rfs .scard {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 0 12px;
+    padding: 10px;
+    align-items: start;
+  }
+  .rfs .scard .art,
+  .rfs .dealt .scard .art {
+    width: 96px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .rfs .scard .body {
+    margin-top: 0;
+    padding: 0;
+    gap: 4px;
+  }
+  .rfs .scard .rno {
+    display: none;
+  }
+  .rfs .scard .nm {
+    font-size: var(--t-control);
+  }
+  .rfs .cardacts {
+    margin-top: 6px;
+  }
+  .rfs .hand2 {
+    gap: 10px;
+  }
+}
+/* the pickers of the roll pages: the name over the value, one 40 px control */
+.rfs .pickb {
+  min-height: 40px;
+  padding: 2px 10px 2px 12px;
+  text-align: left;
+}
+.rfs .pkv {
+  display: grid;
+  line-height: 1.15;
+}
+.rfs .pickb .pk {
+  font-size: var(--t-label);
+  color: var(--muted2);
+  font-weight: 600;
+}
+.rfs .pickb .pv {
+  font-size: var(--t-control);
+}
+@media (max-width: 760px) {
+  main.rfs {
+    padding-top: 0;
+  }
+  .rfs .two {
+    gap: 0;
+  }
+  .rfs .ctrl {
+    margin-top: 6px;
+  }
+  .rfs .reshead {
+    margin: 6px 0 6px;
+    min-height: 30px;
+  }
+  .rfs .reshead .cfgbtn {
+    min-height: 30px;
+    padding: 0 8px;
+  }
+  .rfs .rrow.n360 {
+    display: flex !important;
+    flex-wrap: nowrap;
+  }
+  .rfs .rrow .pickb {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .rfs .rrow .btn.primary {
+    flex: none;
+  }
+}
+@media (max-width: 760px) {
+  .rfs .ctrl {
+    margin-top: 4px;
+  }
+  .rfs .reshead {
+    margin: 4px 0;
+    min-height: 28px;
+  }
+  .rfs .reshead .cfgbtn {
+    min-height: 28px;
+  }
+}
+/* the filter head (column at 1180, sheet at 360): the title on its line, the
+   reset and the filter link under it */
+.fside .fh {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.fside .fh b,
+.sheet .sh b {
+  white-space: nowrap;
+}
+.fside .fh .wb {
+  flex-basis: 100%;
+  margin-left: -6px;
+}
+.sheet .sh {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+.sheet .sh .wb {
+  gap: 2px;
+}
+
+/* ---------- batch 4: «Ещё», «Сохранить себе», record states (mocks-1 M4-*) ---------- */
+.mi .mit {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+.mi .mit small {
+  font-size: var(--t-data);
+  color: var(--muted);
+  line-height: 1.35;
+  max-width: 34ch;
+}
+.pop .mi {
+  align-items: flex-start;
+}
+.pop .mi svg {
+  margin-top: 2px;
+}
+.msheet {
+  padding: 0 8px 14px;
+  display: grid;
+}
+.msheet .mi {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--txt);
+  font-size: var(--t-body);
+  text-align: left;
+}
+.msheet .mi svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+.msheet hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 4px 0;
+  width: 100%;
+}
+/* «Сохранить себе» and its second line: one group on a line of its own
+   under the other actions (FEATURES.md "Records") */
+.acts .savegrp {
+  order: 9;
+  flex-basis: 100%;
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+.savegrp small {
+  font-size: var(--t-data);
+  color: var(--muted);
+  line-height: 1.35;
+  max-width: 52ch;
+}
+.art.skel {
+  background: linear-gradient(90deg, var(--surface), var(--surface2), var(--surface));
+}
+
+/* ---------- batch 7 (mocks-1 M7-1, M7-4) ---------- */
+/* «Назад» is a 44 px target */
+.pfs .back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+/* the print preview under 760 px, screen only: the cards one per row at their
+   real 63 mm width, «Весь лист» shows the scaled sheet */
+@media (max-width: 760px) {
+  .pfs .pcards {
+    display: grid !important;
+    justify-items: center;
+    gap: 12px;
+  }
+  .pfs .pcards .btn {
+    justify-self: end;
+  }
+  .pfs .pcards img {
+    width: 238px;
+    height: auto;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 50%),
+      0 14px 40px rgb(0 0 0 / 45%);
+  }
+}
+
+/* ---------- batch 1b (mocks-1 M1b-2, M1b-4) ---------- */
+.pcm .pcm-art {
+  height: 69.5%;
+  background-image: none;
+}
+.pcm.en .pcm-art {
+  height: 77%;
+}
+.pcm .pcm-art.light {
+  background: linear-gradient(180deg, #ebe7f0 0, #ebe7f0 86%, #fff 100%);
+}
+.pcm .pcm-art.dark {
+  background: linear-gradient(180deg, #0e0c15 0, #0e0c15 86%, #fff 100%);
+}
+.pcm .pcm-art.blank {
+  background: #fff;
+}
+/* the editor preview: an own item's text drawn over the capture's text */
+.pcm-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 69.5%;
+  background: #fff;
+  color: #000;
+  padding: 3% 7% 4%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--ui);
+}
+.pcm.en .pcm-text {
+  top: 77%;
+}
+.pcm-text .pb {
+  align-self: flex-start;
+  font-size: 7px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #f0d091;
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+.pcm-text b {
+  font-size: 15px;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+.pcm-text p {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.3;
+}
+.pcm-text .pf {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7px;
+}
+.pcenter {
+  display: grid;
+  justify-items: center;
+}
+
+/* ---------- batch 2: one pin rule (mocks-1 M2-2) ---------- */
+/* the pin and the help button sit by the H1 from 760 px; at 360 they are in
+   «Ещё» on list pages and in «Настроить» on roll pages */
+@media (max-width: 760px) {
+  .ph .pinb,
+  .ph .helpb {
+    display: none;
+  }
+}

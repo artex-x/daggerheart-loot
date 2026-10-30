@@ -14,14 +14,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=111 namehash=09cf3b8f]
     searchbox "Поиск по названию или описанию..." [value=топор focused=true]
     StaticText "ТИП"
@@ -62,10 +60,9 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
+Бросок
 Возвращающийся Топор
 Возвращающийся ТопорРанг 2 · Физическое · Проворность · Средне ·... [namelen=225 namehash=200c9c41]
-Дополнения
 К содержимому
 Конфиденциальность
 Легендарный Священный Топор
@@ -75,8 +72,7 @@ daggerheart.com
 Мясницкий Топор
 Мясницкий ТопорРанг 1 · Физическое · Сила · Вплотную · d12+3 физ... [namelen=134 namehash=9c5c02de]
 Неугомонное Возмездие
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Предметы
 Продвинутый Священный Топор
@@ -106,21 +102,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
   link "Skip to content" [url=/en/search?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=115 namehash=a1849572]
     searchbox "Search by name or description..." [value=топор focused=true]
     StaticText "TYPE"
@@ -145,7 +139,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Felling Axe-SawThis massive hybrid tool cuts through wood, roo... [namelen=230 namehash=a621d03c]
@@ -161,7 +155,6 @@ Account: gm1@example.test
 Advanced Axe of the Dawn
 Advanced Hallowed Axe
 Advanced Hallowed AxeTier 3 · Magic · Strength · Melee · d8+7 ma... [namelen=96 namehash=6fa84112]
-Alt. tables
 Axe of the Dawn
 Black Corruption Axe
 Butcher's Axe
@@ -184,7 +177,8 @@ Labrys AxeTier 3 · Physical · Strength · Melee · d10+7 phy · Two... [namele
 Legendary Axe of the Dawn
 Legendary Hallowed Axe
 Legendary Hallowed AxeTier 4 · Magic · Strength · Melee · d8+10 ... [namelen=98 namehash=82afb9d3]
-Open this section on start
+LootDaggerheart
+Open on start
 Privacy
 RU
 Restless Vengeance
@@ -192,11 +186,9 @@ Returning Axe
 Returning AxeTier 2 · Physical · Agility · Close · d6+4 phy · On... [namelen=207 namehash=cadf0742]
 Ricochet Axes
 Ricochet AxesTier 4 · Physical · Agility · Far · d6+11 phy · Two... [namelen=175 namehash=538d14ab]
+Roll
 Search
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

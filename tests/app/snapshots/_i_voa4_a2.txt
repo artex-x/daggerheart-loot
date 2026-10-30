@@ -13,9 +13,7 @@ RootWebArea "Контракт Нарвиков - Генератор лута Dag
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -46,14 +44,12 @@ RootWebArea "Контракт Нарвиков - Генератор лута Dag
 EN
 RU
 daggerheart.com
-Альт. таблицы
+Бросок
 Войти
 Добавить в список
-Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
 Отправить
 Печать
 Поиск
@@ -72,16 +68,14 @@ daggerheart.com
 RootWebArea "Narvik Contract - Daggerheart Loot Generator" [url=/i/en/voa4_a2?v=<v>]
   link "Skip to content" [url=/i/en/voa4_a2?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -106,30 +100,28 @@ RootWebArea "Narvik Contract - Daggerheart Loot Generator" [url=/i/en/voa4_a2?v=
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Add to list
-Alt. tables
 Copy image
 Copy link
 Copy name
 Copy text
 EN
 Install as an app
+LootDaggerheart
 Page
 Print
 Privacy
 RU
+Roll
 Save to my items
 Search
 Share
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
 show in the table
-ЛутDaggerheart

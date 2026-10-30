@@ -1,6 +1,6 @@
 /* The record page, driven through fake ports.
  *
- * A small catalogue rather than the real one: five records shaped to cover what
+ * A small catalog rather than the real one: five records shaped to cover what
  * the card branches on - a plain item, a consumable, equipment with a stat line,
  * both ends of an upgrade chain, a referenced rulebook card, and a record with
  * no picture. The format the copy buttons produce is held to the live app in
@@ -36,6 +36,7 @@ import { listOf, seedWith } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Index, type Loot } from '../lib/data.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
+import { ICONS } from '../lib/icons.js';
 import { readLoot } from '../test/loot.js';
 
 afterEach(cleanup);
@@ -451,21 +452,29 @@ describe('a record on its own page', () => {
     );
   });
 
-  it('shows the placeholder for a record with no art', () => {
-    render(App, { env: at('ci2') });
-    expect(screen.getByRole('presentation')).toHaveAttribute('src', '/img/_none.webp');
+  it('shows the kind glyph and no picture for a record with no art', () => {
+    const { container } = render(App, { env: at('ci2') });
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg path')).toHaveAttribute(
+      'd',
+      ICONS.kindItem.d
+    );
   });
 
-  it('falls back to the placeholder when the file fails to load', async () => {
+  it('falls back to the kind glyph when the file fails to load', async () => {
     /* A picture can go missing between a deploy and a cache. The layout must
-       not shift, so the failure lands on the same placeholder. */
+       not shift, so the failure lands on the same well with the kind glyph. */
     const { container } = render(App, { env: at('ci1') });
     const img = container.querySelector('img');
     expect(img).toHaveAttribute('src', '/img/ci1.webp');
 
     img?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg path')).toHaveAttribute(
+      'd',
+      ICONS.kindItem.d
+    );
   });
 
   it('offers no copy-image button for a record with no art at all', () => {
@@ -501,13 +510,14 @@ describe('a record on its own page', () => {
     const { container } = render(App, { env });
     container.querySelector('img')?.dispatchEvent(new Event('error'));
     await Promise.resolve();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
 
     env.router.navigate('#/i/cc1', 'ru');
     await tick();
     env.router.navigate('#/i/ci1', 'ru');
     await tick();
-    expect(container.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(container.querySelector('.card-media img')).toBeNull();
+    expect(container.querySelector('.card-media svg')).not.toBeNull();
   });
 });
 
@@ -608,7 +618,7 @@ describe('taking a record somewhere else', () => {
     expect(clip.last.text).toBe('Зелье выносливости (расходник)');
   });
 
-  it('copies the text in both flavours', async () => {
+  it('copies the text in both flavors', async () => {
     const { env, clip } = withClip();
     render(App, { env });
     await userEvent.click(screen.getByRole('button', { name: 'Скопировать текст' }));
@@ -907,7 +917,7 @@ describe('the tier ladder', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(toggle).toHaveFocus();
     /* Only the menu closed - a second, unclaimed Escape is what closes the
-       modal, the native <dialog> behaviour this must not fight. */
+       modal, the native <dialog> behavior this must not fight. */
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });
@@ -1254,9 +1264,7 @@ describe('an own homebrew item', () => {
     const broken = render(RecordCard, {
       props: { ...props, artBroken: true, onartfail: failed }
     });
-    expect(broken.container.querySelector('.card-media img')?.getAttribute('src')).toBe(
-      '/img/_none.webp'
-    );
+    expect(broken.container.querySelector('.card-media img')).toBeNull();
   });
 
   it('marks a text written in the other language only, on both card variants', async () => {

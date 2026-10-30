@@ -15,9 +15,10 @@ const THUMBS = 'dhloot-thumb-v1';
 const THUMB_CAP = 1500;
 /* Hashed names never change their bytes, so a hit is never revalidated. A
    deploy adds new names and nothing asks for the old ones again: the cap
-   drops the oldest, which holds several deploys of today's two files. */
+   drops the oldest. A page takes the bundle, its stylesheet, a few lazy
+   chunks and up to four font files, so 60 holds several deploys. */
 const ASSETS = 'dhloot-assets-v1';
-const ASSET_CAP = 30;
+const ASSET_CAP = 60;
 const KEEP = [IMAGES, THUMBS, ASSETS];
 
 self.addEventListener('install', () => {

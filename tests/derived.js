@@ -86,7 +86,7 @@ ok(
   'catalog header is wrong: ' + rows[0].slice(0, 60)
 );
 
-/* Is the catalog enough to stock a blacksmith: tier 1-2 armour, tier 1-2
+/* Is the catalog enough to stock a blacksmith: tier 1-2 armor, tier 1-2
    physical primary weapons. If so, an agent needs only this one file. */
 const idx = {};
 head.forEach((h, i) => {
@@ -294,7 +294,7 @@ try {
 const BG = (/--bg:\s*(#[0-9a-f]{3,8})\s*;/i.exec(
   fs.readFileSync(path.join(ROOT, 'app', 'src', 'styles', 'tokens.css'), 'utf8')
 ) || [])[1];
-ok(!!BG, 'tokens.css has no --bg colour to compare against');
+ok(!!BG, 'tokens.css has no --bg color to compare against');
 /* One copy per language (docs/specs/META.md section 9): the Russian page keeps
    pages/<id>.html, the English one is pages/en/<id>.html, and the template owns
    the link to the other copy and the link back to the app, one folder deeper
@@ -494,14 +494,40 @@ HEAD_META.forEach(function (key) {
 });
 ok('<title>' in shareFacts, 'app/index.html head is missing <title>');
 /* The icon is part of the head too, but it is a <link>, not a <meta>. */
-const ICON = /<link\s+rel="icon"\s+href="([^"]*)"/i;
+const ICON = /<link\s+rel="icon"\s+type="image\/svg\+xml"\s+href="([^"]*)"/i;
 const icon = (ICON.exec(fs.readFileSync(path.join(ROOT, 'app', 'index.html'), 'utf8')) ||
   [])[1];
 ok(!!icon, 'the tab icon is missing on app/index.html');
+/* One mark (docs/artwork.md, "Icons"): the tab icon is the vault die's file, and no
+   tracked document keeps the old emoji key favicon. */
+ok(icon === '/icons/favicon.svg', 'the tab icon of app/index.html is ' + icon);
+ok(
+  fs.existsSync(path.join(APP_PUBLIC, 'icons', 'favicon.svg')),
+  'app/public/icons/favicon.svg is missing'
+);
+{
+  /* Built from two halves, so this file does not hold the key itself. */
+  const EMOJI_KEY = '%F0%9F' + '%97%9D';
+  const docs = [
+    'app/index.html',
+    '404.html',
+    'old-host/index.html',
+    'tools/build-pages.js',
+    'tools/build-share-pages.js',
+    'en/index.html',
+    'pages/privacy.html',
+    'pages/en/privacy.html',
+    'i/ci1.html'
+  ];
+  const kept = docs.filter((f) =>
+    fs.readFileSync(path.join(ROOT, f), 'utf8').includes(EMOJI_KEY)
+  );
+  ok(kept.length === 0, 'these files keep the emoji key favicon: ' + kept.join(', '));
+}
 
 console.log('the installable app agrees with itself');
-/* docs/specs/META.md section 9. One colour in every place: the app head's
-   theme-color, the manifest's two colours, tokens.css's --bg, and each site
+/* docs/specs/META.md section 9. One color in every place: the app head's
+   theme-color, the manifest's two colors, tokens.css's --bg, and each site
    page's theme-color (checked in the page loop). */
 if (manifest) {
   ok(
@@ -531,7 +557,7 @@ if (manifest) {
     manifest.theme_color === BG &&
       manifest.background_color === BG &&
       shareFacts['theme-color'] === BG,
-    'theme colours disagree with --bg ' +
+    'theme colors disagree with --bg ' +
       BG +
       ': manifest theme_color ' +
       manifest.theme_color +
@@ -886,11 +912,11 @@ console.log('the card version map is current');
   }
 }
 
-/* Every stub (i/<id>.html) is a square-art "summary" card, never the site's
-   own "summary_large_image" - one record with art, one built with its art
-   field stripped, so both branches of the img fallback are pinned, not only
-   that a stub matches its own generator (the check above this file already
-   proves that). Every real record carries art today, so the no-art branch
+/* A stub (i/<id>.html) with art is a square-art "summary" card; one built without
+   art takes the site card of its language as a "summary_large_image" card - one
+   record with art, one built with its art field stripped, so both branches are
+   pinned, not only that a stub matches its own generator (the check above this file
+   already proves that). Every real record carries art today, so the no-art branch
    has no record of its own to read off - built rather than found. */
 const artless = Object.assign(
   {},
@@ -901,16 +927,26 @@ delete artless.img;
   ['ru', 'en'].forEach(function (lang) {
     const html = page(x, lang);
     const twCard = /<meta name="twitter:card" content="([^"]*)">/.exec(html);
+    const wantCard = x.img ? 'summary' : 'summary_large_image';
     ok(
-      twCard && twCard[1] === 'summary',
-      lang + ' stub ' + x.id + ': twitter:card is not summary'
+      twCard && twCard[1] === wantCard,
+      lang + ' stub ' + x.id + ': twitter:card is not ' + wantCard
     );
     const ogImg = /<meta property="og:image" content="([^"]*)">/.exec(html);
-    const wantImg = SITE + 'og/' + (x.img ? x.img.replace(/\.webp$/, '.jpg') : '_none.jpg');
+    const wantImg = x.img
+      ? SITE + 'og/' + x.img.replace(/\.webp$/, '.jpg')
+      : SITE + (lang === 'ru' ? 'og/_share.jpg' : 'og/_share_en.jpg');
     ok(
       ogImg && ogImg[1] === wantImg,
       lang + ' stub ' + x.id + ': og:image is not ' + wantImg + ', but ' + (ogImg && ogImg[1])
     );
+    const ogW = /<meta property="og:image:width" content="([^"]*)">/.exec(html);
+    const wantW = x.img ? '640' : '1200';
+    ok(
+      ogW && ogW[1] === wantW,
+      lang + ' stub ' + x.id + ': og:image:width is not ' + wantW + ', but ' + (ogW && ogW[1])
+    );
+    if (!x.img) ok(!html.includes('<img src='), lang + ' stub ' + x.id + ': draws a picture');
   });
 });
 
@@ -968,7 +1004,7 @@ ok(
 );
 
 console.log('equipment as a whole');
-/* The weapon and armour tables only drew from `LOOT.eq` - the two base
+/* The weapon and armor tables only drew from `LOOT.eq` - the two base
    books - and a quarter of all equipment never appeared there at all:
    findable by neither search nor filter. This checks the rule itself: as
    much equipment as exists in the data, that much must sort into the three
@@ -1206,7 +1242,7 @@ VERSATILE.concat(SWAP_ALT.filter(Boolean)).forEach(function (x) {
 });
 
 /* An item's shape from Vault of Ages - "dagger", "scythe", "light" - sits in
-   the book for flavour, but in the app it was taking the place of weapon
+   the book for flavor, but in the app it was taking the place of weapon
    class: it could not be filtered by, and physical/magical did not work for
    these items. Class is now set on every weapon, and shape is set on
    nothing. */
@@ -1304,7 +1340,7 @@ const N = {
   eq: L.eq.length,
   all: ALL.length,
   wondrous: L.items.wondrous.length,
-  // the README describes the folder, and it also holds the _none.webp stub
+  // the README describes the folder
   art: fs.readdirSync(path.join(ROOT, 'img')).filter((f) => f.endsWith('.webp')).length
 };
 /* The word "позиции" (entries) is honestly shared between two counters at
@@ -1316,6 +1352,7 @@ const COUNTERS = [
   [/(\d{3,})\s+запис/g, [N.all], 'записей'],
   [/(\d{3,})\s+страниц/g, [N.all], 'страниц-заглушек'],
   [/(\d{3,})\s+картин/g, [N.art], 'картинок'],
+  [/(\d{3,})\s+pictures/g, [N.art], 'pictures'],
   [/(\d{3,})\s+records/g, [N.all], 'records'],
   [/(\d{3,})\s+позици/g, [N.all, N.wondrous], 'позиций'],
   [/(\d{3,})\s+entries/g, [N.all, N.wondrous], 'entries']
@@ -1384,9 +1421,9 @@ const diceTs = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dice.ts'), 
 
 /* The print card's folded vectors (`app/src/lib/cardVectors.ts`, drawn inline by
    `CardVector.svelte`) are the exported files' own geometry: per shape, the viewBox and,
-   path by path, `d`, `stroke-width`, `stroke-linecap` and `stroke-linejoin` equal the colour
+   path by path, `d`, `stroke-width`, `stroke-linecap` and `stroke-linejoin` equal the color
    file's, the black-and-white file's and a die's magic file's; each gradient line equals
-   the colour (or magic) file's. The pairs whose two files differ in shape are named
+   the color (or magic) file's. The pairs whose two files differ in shape are named
    unfolded and must still differ (docs/specs/FEATURES.md, "Print"). Read as text: the
    module imports `dice.ts`, whose paths the dice check above already pins. */
 console.log('folded print vectors');
@@ -1488,7 +1525,7 @@ console.log('folded print vectors');
       );
     }
   });
-  /* The dice: the paths are dice.ts's (pinned above to the -bw file, and here each colour
+  /* The dice: the paths are dice.ts's (pinned above to the -bw file, and here each color
      file's to the -bw file's); the stroke and the lines here. */
   [4, 6, 8, 10, 12, 20].forEach(function (n) {
     const m = new RegExp('\\n  ' + n + ': \\{([\\s\\S]*?)\\n  \\}').exec(
@@ -1560,7 +1597,7 @@ console.log('folded print vectors');
   }
 }
 
-/* The source citation is not decoration, it is a licence condition (DPCGL
+/* The source citation is not decoration, it is a license condition (DPCGL
    2.0, clause 4.1): without it there is no right to use the text. The
    wording is fixed verbatim, and it has to stand everywhere the site
    "shares" material: in the footer in both languages, in the README, and in
@@ -1569,7 +1606,7 @@ console.log('folded print vectors');
    of four, and there was nothing to notice it.
 
    This also checks that Hope & Fear is no longer listed as outside the
-   licence: on 25 August 2026 DPCGL 2.0 added it to the list of covered
+   license: on 25 August 2026 DPCGL 2.0 added it to the list of covered
    games, and the old caveat became wrong. */
 console.log('source citation');
 const CITE =
@@ -1597,7 +1634,7 @@ feet.forEach(function (f, i) {
     'the ' + (i ? 'English' : 'Russian') + ' footer has no source citation'
   );
 });
-/* The old caveat listed Hope & Fear among what the licence does not cover.
+/* The old caveat listed Hope & Fear among what the license does not cover.
    The supplements that remain there are checked too: they must not be
    dropped from the list either. */
 const OUTSIDE = [
@@ -1609,20 +1646,20 @@ const OUTSIDE = [
   'Alternate Loot & Consumable Tables'
 ];
 [
-  ['README.md', /^.*fall\s+outside that licence[\s\S]*?\n\n/m],
+  ['README.md', /^.*fall\s+outside that license[\s\S]*?\n\n/m],
   ['README.ru.md', /^.*под эту лицензию не подпадают[\s\S]*?\n\n/m]
 ].forEach(function (pair) {
   const file = pair[0];
   const text = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\n {2}/g, ' ');
   const clause = (pair[1].exec(text) || [''])[0];
-  ok(clause, file + ': the caveat about what falls outside the licence went missing');
+  ok(clause, file + ': the caveat about what falls outside the license went missing');
   ok(
     clause.indexOf('Hope & Fear') < 0,
     file +
-      ': Hope & Fear is still listed as outside the licence, though DPCGL 2.0 now includes it'
+      ': Hope & Fear is still listed as outside the license, though DPCGL 2.0 now includes it'
   );
   OUTSIDE.forEach(function (name) {
-    ok(clause.indexOf(name) >= 0, file + ': ' + name + ' fell out of the outside-licence list');
+    ok(clause.indexOf(name) >= 0, file + ': ' + name + ' fell out of the outside-license list');
   });
 });
 
@@ -2594,6 +2631,41 @@ Object.entries(VOA4_REFS).forEach(([key, id]) => {
   );
 });
 
+console.log('American spelling');
+/* English text uses American spelling (docs/specs/I18N.md, "Rules"; the kept forms are
+   docs/decisions/2026-10-29-english-text-uses-american-spelling.md). The English UI
+   strings and llms.txt keep none of the British forms. */
+const BRITISH =
+  /colour|armour|licence|behaviour|catalogue|artefact|favour|honour|centre|\bgrey|recognis|organis|summaris|normalis|initialis|serialis|customis|prioritis|minimis|optimis(?!t)|sanitis|tokenis|capitalis|italicis|millimetre|defence|analys(e|ed|ing)\b|judgement|travell|modell|labell|flavour|neighbour|centring|maths\b|parallelis(e|ed|es|ing)\b|rasteris/i;
+ok(
+  BRITISH.test('a colour card') &&
+    BRITISH.test('Labelled') &&
+    BRITISH.test('horror-flavoured') &&
+    !BRITISH.test('an optimistic write') &&
+    !BRITISH.test('fileParallelism'),
+  'the British spelling pattern does not read its own examples'
+);
+{
+  const dictSrc = fs.readFileSync(path.join(ROOT, 'app', 'src', 'lib', 'dict.ts'), 'utf8');
+  const enStart = dictSrc.indexOf('const en: Dict = {');
+  const enBlock = dictSrc.slice(enStart, dictSrc.indexOf('\n};', enStart));
+  ok(
+    enStart > 0 && enBlock.length > 1000,
+    'the English dictionary block of dict.ts is not found'
+  );
+  const values = [...enBlock.matchAll(/^\s+\w+:\s*(['"`])((?:\.|(?!\1).)*)\1/gm)].map(
+    (m) => m[2]
+  );
+  ok(values.length > 300, 'only ' + values.length + ' English strings read from dict.ts');
+  const british = values.filter((v) => BRITISH.test(v));
+  ok(british.length === 0, 'English UI strings keep British spelling: ' + british.join(' | '));
+  const llms = fs
+    .readFileSync(path.join(ROOT, 'llms.txt'), 'utf8')
+    .split('\n')
+    .filter((l) => BRITISH.test(l));
+  ok(llms.length === 0, 'llms.txt keeps British spelling: ' + llms.join(' | '));
+}
+
 console.log('Russian record text');
 /* Distances are rounded metric in Russian text (docs/specs/I18N.md, "Rules"). */
 const IMPERIAL =
@@ -2631,9 +2703,9 @@ const capitalTerms = [...ALL, ...SETS].filter(
 );
 ok(
   capitalTerms.length === 0,
-  'capitalised mid-sentence term in rud: ' + capitalTerms.map((x) => x.id).join()
+  'capitalized mid-sentence term in rud: ' + capitalTerms.map((x) => x.id).join()
 );
-/* A named roll capitalises both words, and a plural roll counts spells in
+/* A named roll capitalizes both words, and a plural roll counts spells in
    the plural: «Броски Силы», «Броску Урона», «Броскам Заклинаний»
    (docs/specs/I18N.md, "Rules"). */
 const ROLL_NAME =
@@ -2652,7 +2724,7 @@ ok(
     !LOWER_ROLL.test('броски для') &&
     !LOWER_ROLL.test('Бросок со Сложностью') &&
     !LOWER_ROLL.test('Броски атакующих'),
-  'LOWER_ROLL misses a lowercase roll word or matches a capitalised roll'
+  'LOWER_ROLL misses a lowercase roll word or matches a capitalized roll'
 );
 ok(
   PLURAL_ROLL_SPELL.test('к Броскам Заклинания') &&

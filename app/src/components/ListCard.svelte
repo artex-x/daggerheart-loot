@@ -6,7 +6,9 @@
      a pick box in its corner, outside the link (docs/specs/FEATURES.md,
      "Lists"). */
   import type { Snippet } from 'svelte';
+  import ArtWell from './ArtWell.svelte';
   import { artSrc } from '../lib/desc.js';
+  import { kindGlyph } from '../lib/label.js';
   import type { StoredList } from '../lib/lists.js';
   import { plural } from '../lib/plural.js';
   import type { Record_ } from '../lib/types.js';
@@ -74,15 +76,19 @@
     aria-label={label}
   ><div class="listcard-top"><b>{list.name}</b></div
   ><p class="listcard-meta">{meta}</p>{#if requests}<p class="listcard-req">{requests}</p>{/if}{#if items.length}<div class="listcard-thumbs"
-      >{#each items.slice(0, 6) as it (it.id)}<img
-          src={artSrc(it.img, app.artBroken(it.id), 'thumb')}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onerror={() => {
-            app.markArtBroken(it.id);
-          }}
-        />{/each}</div
+      >{#each items.slice(0, 6) as it (it.id)}<span class="thumb"
+          ><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
+            >{#if it.img && !app.artBroken(it.id)}<img
+                src={artSrc(it.img, false, 'thumb')}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                onerror={() => {
+                  app.markArtBroken(it.id);
+                }}
+              />{/if}</ArtWell
+          ></span
+        >{/each}</div
     >{:else}<p class="listcard-empty">{t.listEmpty}</p>{/if}</a
 >
   <div class="listcard-acts">
@@ -166,7 +172,7 @@
   }
 
   .listcard-top b {
-    font-size: var(--step-0);
+    font-size: var(--t-body);
     font-weight: 650;
     line-height: 1.3;
     overflow-wrap: anywhere;
@@ -179,14 +185,14 @@
   /* The count, and an account list's last edit, under the name. */
   .listcard-meta {
     margin: -6px 0 10px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
   /* The account list's pending purchase requests, under the meta line. */
   .listcard-req {
     margin: -6px 0 10px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--gold-soft);
     font-weight: 600;
   }
@@ -197,17 +203,16 @@
     flex-wrap: wrap;
   }
 
-  .listcard-thumbs img {
+  .listcard-thumbs .thumb {
     width: 40px;
     height: 40px;
     border-radius: 7px;
-    object-fit: cover;
-    background: #0a0810;
+    overflow: hidden;
   }
 
   .listcard-empty {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 

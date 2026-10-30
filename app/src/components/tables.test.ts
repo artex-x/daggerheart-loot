@@ -1,7 +1,7 @@
 /* The plain table: chip nav, the toolbar, rows and tiles, selection, and a row
  * opening the record modal.
  *
- * Held against a small fixture rather than the real catalogue: what matters
+ * Held against a small fixture rather than the real catalog: what matters
  * here is the shape (search narrows, the empty state has no button of its
  * own, a hash change drops the selection) rather than any particular record. */
 
@@ -33,6 +33,7 @@ import { readList } from '../test/accountList.js';
 import { DAY, listOf, seedWith, TWO_LISTS } from '../test/seed.js';
 import { ART_BASE } from '../lib/art.js';
 import { buildIndex, type Loot } from '../lib/data.js';
+import { ICONS } from '../lib/icons.js';
 import { dict } from '../lib/dict.js';
 import type { FacetRow } from '../lib/facets.js';
 import { recordOf, withRecords } from '../lib/homebrew.js';
@@ -68,7 +69,7 @@ const LOOT: Loot = {
       row({ id: 'ci2', roll: 2, ru: 'Плащ Теней', craft: ['ci3'] }),
       row({ id: 'ci3', roll: 3, ru: 'Плащ Бездны' }),
       /* No roll: it is equipment, so it carries a stat line instead - and its
-         description is two blocks, a labelled line then a labelled list item,
+         description is two blocks, a labeled line then a labeled list item,
          to reach both shapes a row draws. */
       row({
         id: 'ci4',
@@ -118,7 +119,7 @@ const LOOT: Loot = {
     starting: [
       row({ id: 's1', src: 'core', kind: 'item', starting: true, ru: 'Стартовый предмет' })
     ],
-    /* One more frame-sourced record, an armour, so the equipment `src` facet
+    /* One more frame-sourced record, an armor, so the equipment `src` facet
        row has a frame to offer alongside the books - f1 and f2 stay as they
        were for the plain sectioned-body tests above. */
     frames: [
@@ -147,7 +148,7 @@ const LOOT: Loot = {
     ]
   },
   /* Weapons of all four tiers with both burdens and both classes, a
-     secondary weapon, and an armour - enough to exercise every facet row the
+     secondary weapon, and an armor - enough to exercise every facet row the
      equipment tables offer and every one of their four tier sections. */
   eq: [
     row({
@@ -262,7 +263,7 @@ describe('the index', () => {
     ).toBeNull();
   });
 
-  it('splits a labelled line and a labelled list item into a name and a body', () => {
+  it('splits a labeled line and a labeled list item into a name and a body', () => {
     render(App, { env: at() });
     expect(screen.getByText('Свойство:')).toBeInTheDocument();
     expect(screen.getByText('Хват:')).toBeInTheDocument();
@@ -365,13 +366,15 @@ describe('the view switch', () => {
     expect(tile?.querySelector('.tile-k')).toHaveClass('cons');
   });
 
-  it('draws the thumbnail in a row and the full picture on a tile', async () => {
+  it('draws the kind glyph and no picture in a row and on a tile of a record with no art', async () => {
     const { container } = render(App, { env: at() });
     const rowEl = screen.getByText('Кольцо Тишины').closest('[data-row]');
-    expect(rowEl?.querySelector('img')).toHaveAttribute('src', '/img/thumb/_none.webp');
+    expect(rowEl?.querySelector('img')).toBeNull();
+    expect(rowEl?.querySelector('.ra svg path')).toHaveAttribute('d', ICONS.kindItem.d);
     await userEvent.click(screen.getByRole('button', { name: 'Сеткой' }));
     const tile = screen.getByText('Кольцо Тишины').closest('.tilewrap');
-    expect(tile?.querySelector('img')).toHaveAttribute('src', '/img/_none.webp');
+    expect(tile?.querySelector('img')).toBeNull();
+    expect(tile?.querySelector('.tile-img svg path')).toHaveAttribute('d', ICONS.kindItem.d);
     await expectNoA11yViolations(container);
   });
 
@@ -595,7 +598,7 @@ describe('the selection bar', () => {
     expect((await readList(cloud, page, uuid(811)))?.ids).toEqual(['ci1', 'ci2']);
   });
 
-  it('copies both flavours of every ticked record, joined with no OR, and toasts', async () => {
+  it('copies both flavors of every ticked record, joined with no OR, and toasts', async () => {
     const clip = fakeClipboard();
     render(App, { env: at({ clipboard: clip }) });
     const boxes = rowCheckboxes();
@@ -989,7 +992,7 @@ describe('the equipment tables', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('drops a tier with no rows - armour has none in tier 3 or 4', () => {
+  it('drops a tier with no rows - armor has none in tier 3 or 4', () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_armor'), data: fakeData(LOOT) })
     });
@@ -1003,13 +1006,13 @@ describe('the equipment tables', () => {
     const { container } = render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
-    /* The pool is every weapon in the catalogue, not only `eq`: `ci4` under
+    /* The pool is every weapon in the catalog, not only `eq`: `ci4` under
        `core_item` carries a weapon stat block too, so the count is one more
        than `eq`'s own four weapon rows. */
     expect(container.querySelector('.fcount')).toHaveTextContent('5');
   });
 
-  it('draws only the fields the rows can narrow: six on weapons, two on armour, none on one secondary', async () => {
+  it('draws only the fields the rows can narrow: six on weapons, two on armor, none on one secondary', async () => {
     render(App, {
       env: fakeEnv({ router: memoryRouter('#/tables/eq_weapon'), data: fakeData(LOOT) })
     });
@@ -1162,7 +1165,7 @@ describe('the equipment tables', () => {
     expect(screen.getByRole('button', { name: /Фильтры \(1\)/ })).toBeInTheDocument();
   });
 
-  it('a group the table does not offer leaves it whole - burden on armour', () => {
+  it('a group the table does not offer leaves it whole - burden on armor', () => {
     render(App, {
       env: fakeEnv({
         router: memoryRouter('#/tables/eq_armor/f_burden-2'),
@@ -1681,7 +1684,7 @@ describe('a dataset that did not load', () => {
 describe('the help', () => {
   it('explains the two things that stand apart from the books', async () => {
     render(App, { env: at() });
-    await userEvent.click(screen.getByRole('button', { name: 'Как это работает' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Справка' }));
     expect(screen.getByText(/срезы через все книги сразу/)).toBeInTheDocument();
   });
 });
@@ -1770,9 +1773,8 @@ describe("a row with the author's own relations", () => {
     );
     drawn.unmount();
     const broken = render(RowMain, { props: { ...props, artBroken: () => true } });
-    expect(broken.container.querySelector('img')?.getAttribute('src')).toBe(
-      '/img/thumb/_none.webp'
-    );
+    expect(broken.container.querySelector('img')).toBeNull();
+    expect(broken.container.querySelector('.ra svg')).not.toBeNull();
   });
 
   it('names a GM-only entry for a screen reader after the name and dims its art, with no visible text', async () => {
@@ -1791,7 +1793,7 @@ describe("a row with the author's own relations", () => {
     const marked = render(RowMain, { props: { ...props, gmOnly: true } });
     const button = marked.container.querySelector('.row-main');
     expect(button?.textContent).toContain(`${it.ru}, Только для мастера`);
-    expect(marked.container.querySelector('img')?.classList.contains('gm')).toBe(true);
+    expect(marked.container.querySelector('.ra')?.classList.contains('gm')).toBe(true);
     /* The words sit only in the visually hidden span (its rule is RowMain.svelte's
        `.gmstate`; tests/app/states.js case 69 proves its box is at most 1x1 px). */
     const holders = [...marked.container.querySelectorAll('*')].filter(
@@ -1805,7 +1807,7 @@ describe("a row with the author's own relations", () => {
     expect(plain.container.querySelector('.row-main')?.textContent).not.toContain(
       'Только для мастера'
     );
-    expect(plain.container.querySelector('img')?.classList.contains('gm')).toBe(false);
+    expect(plain.container.querySelector('.ra')?.classList.contains('gm')).toBe(false);
     await expectNoA11yViolations(plain.container);
   });
 });

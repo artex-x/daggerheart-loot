@@ -14,9 +14,7 @@ RootWebArea "Whispering Cap - Генератор лута Daggerheart" [url=/hom
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -87,12 +85,11 @@ RU
 RU - пусто
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
 Без ранга
+Бросок
 Выбрать из предметов
 Выбрать файл
 Добавить в список
-Дополнения
 Жирный
 К моим предметам
 К содержимому
@@ -105,7 +102,6 @@ daggerheart.com
 НетПылающие близнецыУбранство СвятогоКомплект Ольхи (HB)+ Новый ... [namelen=75 namehash=aca7e35f]
 Новая карта правил
 Нумерованный список
-Обычные правила
 Подсказка: Источник
 Подсказка: Карты правил
 Подсказка: Комплект
@@ -131,16 +127,14 @@ daggerheart.com
 RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_whispercapaaaaaa?as=gm1]
   link "Skip to content" [url=/en/homebrew/hb_whispercapaaaaaa?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -198,7 +192,7 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_w
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
@@ -207,7 +201,6 @@ RootWebArea "Whispering Cap - Daggerheart Loot Generator" [url=/en/homebrew/hb_w
 4
 Account: gm1@example.test
 Add to list
-Alt. tables
 Bold
 Bulleted list
 Choose a file
@@ -227,6 +220,7 @@ In print
 Install as an app
 Italic
 Item
+LootDaggerheart
 Made from
 New rule card
 No tier
@@ -237,16 +231,14 @@ Page
 Privacy
 RU
 RU - empty
+Roll
 Rule cards
 Save
 Search
 Skip to content
-Standard rules
-Supplements
 Table
 Tables
 Terms of use
 To my items
 Upgrades to
 daggerheart.com
-ЛутDaggerheart

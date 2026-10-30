@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Candidate E, the refined key: today's home-screen key as one solid
+       shape, turned 45 degrees so it uses the diagonal of the square. The bow
+       edge is 184 and the bit tip 187 from the centre (safe zone 204.8). -->
+  <defs>
+    <mask id="cuts" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <circle cx="158" cy="256" r="38" fill="#000" transform="rotate(45 256 256)"/>
+    </mask>
+  </defs>
+  <g mask="url(#cuts)">
+    <g fill="#d8ab5e" transform="rotate(45 256 256)">
+      <circle cx="158" cy="256" r="86"/>
+      <rect x="230" y="234" width="210" height="44" rx="10"/>
+      <rect x="248" y="218" width="26" height="76" rx="8"/>
+      <rect x="360" y="262" width="30" height="70" rx="6"/>
+      <rect x="404" y="262" width="30" height="52" rx="6"/>
+    </g>
+  </g>
+</svg>

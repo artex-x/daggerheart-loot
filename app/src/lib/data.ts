@@ -110,7 +110,7 @@ export function buildIndex(loot: Loot): Index {
       byId.set(it.id, it);
     }
   }
-  /* Weapons and armour are not loot rolled off a table: they have stats, so
+  /* Weapons and armor are not loot rolled off a table: they have stats, so
      they are stored apart and carry an `eq` block instead of a roll number. */
   const eq = loot.eq ?? [];
   for (const it of eq) byId.set(it.id, it);
@@ -123,7 +123,7 @@ export function buildIndex(loot: Loot): Index {
      rather than a copy in each.
 
      `eq` comes first, so `core_item`'s weapons open every equipment table,
-     ahead of the campaign frames' own; armour has no `roll` to sort by, so
+     ahead of the campaign frames' own; armor has no `roll` to sort by, so
      the table's whole order comes from this concat. */
   const allEquip = [...eq, ...all].filter((it) => it.eq);
 

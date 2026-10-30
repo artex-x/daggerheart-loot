@@ -1,4 +1,4 @@
-/* Against the real catalogue, because the point of search is that it finds
+/* Against the real catalog, because the point of search is that it finds
    things in it. */
 import { describe, expect, it } from 'vitest';
 import { buildIndex } from './data.js';
@@ -75,7 +75,7 @@ describe('what it looks at', () => {
 });
 
 describe('an empty query', () => {
-  it('returns nothing rather than the whole catalogue', () => {
+  it('returns nothing rather than the whole catalog', () => {
     /* The search page with nothing typed is an invitation, not a dump */
     for (const q of ['', '   ', '\n']) expect(find(q)).toEqual([]);
   });
@@ -159,7 +159,7 @@ describe('folding: ё, apostrophes, diacritics, minus sign, case', () => {
   });
 
   it('finds a record typed with the typographic apostrophe autocorrect produces', () => {
-    /* Every record's own apostrophe is normalised to ASCII, so "Keeper's
+    /* Every record's own apostrophe is normalized to ASCII, so "Keeper's
        Staff" (q80) is now stored plain. The fold still has to run - iOS/macOS
        autocorrect turns a typed ' into U+2019 on the QUERY, not the record -
        so this case types the typographic form against the now-ASCII name.
@@ -267,7 +267,7 @@ describe('the stat line the pages search with', () => {
   it('keeps the tier word for a frame record', () => {
     /* This test used to match the live app, which dropped the tier word for
        frame equipment (`if (e.tier && !isFrameRecord(it))`) - tracked as a
-       defect, not a rule: an identical piece of armour printed its tier when
+       defect, not a rule: an identical piece of armor printed its tier when
        it sat in `eq` and hid it when it sat in a frame table, with nothing a
        reader could see to explain the difference. The owner settled on
        printing it like any other equipment (`docs/specs/FEATURES.md`,
@@ -447,7 +447,7 @@ describe('word forms by Snowball stem', () => {
   });
 
   it('checks the stem on both sides: «бронза» does not answer "броня"', () => {
-    /* The catalogue has no loot record that holds «бронз-» without a form of «броня» */
+    /* The catalog has no loot record that holds «бронз-» without a form of «броня» */
     const bronze = own('hb_bronzeaaaaaaaaaa', 'Бронзовый колокол');
     const armour = own('hb_armouraaaaaaaaaa', 'Лёгкая броня');
     expect(search([bronze, armour], 'броня')).toEqual([armour]);
@@ -552,7 +552,7 @@ describe('ranking', () => {
     expect(rankHits([b, a, c], parseQuery('меч'))).toEqual([c, b, a]);
   });
 
-  it('ranks 300 own items with the catalogue, the catalogue first on a tie', () => {
+  it('ranks 300 own items with the catalog, the catalog first on a tie', () => {
     /* 3x the own item limit of 100 */
     const mine: Record_[] = Array.from({ length: 300 }, (_, i) =>
       i === 0
@@ -561,15 +561,15 @@ describe('ranking', () => {
     );
     const hits = rank('меч', [...index.searchable, ...mine]);
     const swordAt = hits.indexOf(mine[0] as Record_);
-    /* an own name at a word start ranks above every catalogue description hit... */
+    /* an own name at a word start ranks above every catalog description hit... */
     const catalogueDesc = hits.filter((r) => r.src !== 'homebrew' && !nameStart(r, 'меч'));
     expect(swordAt).toBeLessThan(hits.indexOf(catalogueDesc[0] as Record_));
-    /* ...after the catalogue's names that score the same... */
+    /* ...after the catalog's names that score the same... */
     const catalogueSword = index.searchable.find(
       (r) => r.ru === 'Меч Адского Пламени'
     ) as Record_;
     expect(hits.indexOf(catalogueSword)).toBeLessThan(swordAt);
-    /* ...and an own description hit follows the catalogue's equal ones */
+    /* ...and an own description hit follows the catalog's equal ones */
     const equalDesc = catalogueDesc.filter(
       (r) =>
         ![r.ru, r.en].some((f) => foldQuery(f).includes('меч')) &&

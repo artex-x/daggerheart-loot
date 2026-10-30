@@ -14,14 +14,11 @@ export interface IconDef {
   size: number;
   /** The live app dims two of these; a different opacity is a different pixel. */
   opacity?: number;
+  /** A path drawn on another grid than `0 0 24 24`, as its source publishes it. */
+  viewBox?: string;
 }
 
 export const ICONS = {
-  /* The brand star. Bigger than the rest and gold, so it carries its own size. */
-  star: {
-    d: 'M12 2l2.6 5.6L20 9.2l-4 4.2.9 5.9L12 16.7 7.1 19.3 8 13.4l-4-4.2 5.4-1.6z',
-    size: 26
-  },
   copy: {
     d: 'M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z',
     size: 15
@@ -130,6 +127,42 @@ export const ICONS = {
   user: {
     d: 'M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0 2.1c-3.4 0-8.4 1.7-8.4 5v1.3h16.8v-1.3c0-3.3-5-5-8.4-5z',
     size: 15
+  },
+  /* Not in app.js: the search job (owner, 2026-10-23) and the menu buttons' chevron,
+     Material Icons search and expand_more (Apache 2.0). */
+  search: {
+    d: 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+    size: 18
+  },
+  chevron: {
+    d: 'M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z',
+    size: 16
+  },
+  /* Not in app.js: the neutral pressed state's mark (DESIGN.md, "Segmented
+     control"), Material Icons check (Apache 2.0). */
+  check: {
+    d: 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
+    size: 16
+  },
+  /* Not in app.js: the kind glyphs of the art well (DESIGN.md, "Cards"), filled,
+     Apache 2.0. Material Icons shield, science and diamond; the weapon is
+     Material Symbols swords (fill 1), on that family's own grid. */
+  kindArmor: {
+    d: 'M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',
+    size: 24
+  },
+  kindConsumable: {
+    d: 'M19.8 18.4 14 10.67V6.5l1.35-1.69c.26-.33.03-.81-.39-.81H9.04c-.42 0-.65.48-.39.81L10 6.5v4.17L4.2 18.4c-.49.66-.02 1.6.8 1.6h14c.82 0 1.29-.94.8-1.6z',
+    size: 24
+  },
+  kindItem: {
+    d: 'M19 3H5L2 9l10 12L22 9l-3-6zM9.62 8l1.5-3h1.76l1.5 3H9.62zM11 10v6.68L5.44 10H11zm2 0h5.56L13 16.68V10zm6.26-2h-2.65l-1.5-3h2.65l1.5 3zM6.24 5h2.65l-1.5 3H4.74l1.5-3z',
+    size: 24
+  },
+  kindWeapon: {
+    d: 'M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM278-526 80-724v-160h160l198 198-160 160Z',
+    size: 24,
+    viewBox: '0 -960 960 960'
   }
 } as const satisfies Record<string, IconDef>;
 

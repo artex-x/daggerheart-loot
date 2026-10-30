@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Rasterises app/public/icons/icon.svg into the PNG sizes the web app
+  Rasterizes app/public/icons/icon.svg into the PNG sizes the web app
   manifest and iOS ask for (docs/specs/META.md section 9). The PNGs are
   committed build inputs, like card/*.svg: root `npm ci` installs no encoder,
   so this runs by hand from the sibling project that carries `sharp`

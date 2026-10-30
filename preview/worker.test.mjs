@@ -252,9 +252,11 @@ describe('/h/: a found homebrew item', () => {
       'Хоумбрю · Мастерская · Оружие. Описание. Вторая строка.'
     );
     assert.equal(meta(body, 'og:url'), HOST + '/h/' + ID);
-    assert.equal(meta(body, 'og:image'), SITE + 'og/_none.jpg');
+    assert.equal(meta(body, 'og:image'), SITE + 'og/_share.jpg');
+    assert.equal(meta(body, 'og:image:width'), '1200');
+    assert.equal(meta(body, 'og:image:height'), '630');
     assert.equal(meta(body, 'og:locale'), 'ru_RU');
-    assert.equal(meta(body, 'twitter:card'), 'summary');
+    assert.equal(meta(body, 'twitter:card'), 'summary_large_image');
     assertRedirect(body, SITE + '#/h/' + ID);
     assert.ok(body.length < 65536);
   });
@@ -269,6 +271,10 @@ describe('/h/: a found homebrew item', () => {
     );
     assert.equal(meta(body, 'og:url'), HOST + '/en/h/' + ID);
     assert.equal(meta(body, 'og:locale'), 'en_US');
+    assert.equal(meta(body, 'og:image'), SITE + 'og/_share_en.jpg');
+    assert.equal(meta(body, 'og:image:width'), '1200');
+    assert.equal(meta(body, 'og:image:height'), '630');
+    assert.equal(meta(body, 'twitter:card'), 'summary_large_image');
     assertRedirect(body, SITE + 'en/#/h/' + ID);
     assert.ok(!body.includes('localStorage'), 'the en/ entry document seeds the language');
   });
@@ -305,30 +311,57 @@ describe('/h/: a found homebrew item', () => {
 });
 
 describe('/h/: the picture', () => {
+  const own = SUPA + '/storage/v1/object/public/homebrew-art/p/' + 'a'.repeat(32) + '.webp';
+  /* [name, answer extra, path, og:image, visible picture, width, twitter:card] */
   const cases = [
-    ['a catalog basename', { img: 'q1.webp' }, SITE + 'og/q1.jpg', SITE + 'img/q1.webp'],
+    [
+      'a catalog basename',
+      { img: 'q1.webp' },
+      '/h/',
+      SITE + 'og/q1.jpg',
+      SITE + 'img/q1.webp',
+      '640',
+      'summary'
+    ],
     [
       'an own picture',
       { img: 'p/' + 'a'.repeat(32) + '.webp' },
-      SUPA + '/storage/v1/object/public/homebrew-art/p/' + 'a'.repeat(32) + '.webp',
-      SUPA + '/storage/v1/object/public/homebrew-art/p/' + 'a'.repeat(32) + '.webp'
+      '/h/',
+      own,
+      own,
+      '640',
+      'summary'
     ],
     [
       'a value of another shape',
       { img: 't/' + 'a'.repeat(32) + '.webp' },
-      SITE + 'og/_none.jpg',
-      SITE + 'img/_none.webp'
+      '/h/',
+      SITE + 'og/_share.jpg',
+      '',
+      '1200',
+      'summary_large_image'
     ],
-    ['no img key', {}, SITE + 'og/_none.jpg', SITE + 'img/_none.webp']
+    ['no img key', {}, '/h/', SITE + 'og/_share.jpg', '', '1200', 'summary_large_image'],
+    [
+      'no img key in English',
+      {},
+      '/en/h/',
+      SITE + 'og/_share_en.jpg',
+      '',
+      '1200',
+      'summary_large_image'
+    ]
   ];
-  for (const [name, extra, og, src] of cases) {
+  for (const [name, extra, path, og, src, width, twitter] of cases) {
     it(`takes ${name}`, async () => {
       serve({ item: json(itemAnswer({}, extra)) });
-      const { body } = await get('/h/' + ID);
+      const { body } = await get(path + ID);
       assert.equal(meta(body, 'og:image'), og);
       assert.equal(meta(body, 'twitter:image'), og);
-      assert.equal(meta(body, 'og:image:width'), '640');
-      assert.ok(body.includes(`<img src="${src}"`), body);
+      assert.equal(meta(body, 'og:image:width'), width);
+      assert.equal(meta(body, 'twitter:card'), twitter);
+      if (src) assert.ok(body.includes(`<img src="${src}"`), body);
+      else assert.ok(!body.includes('<img src='), body);
     });
   }
 });
@@ -1648,7 +1681,7 @@ describe('/tables/: a catalog table', () => {
     assertRedirect(realm.body, SITE + '#/tables/mwt/f_kind-equip.realm-sporopolis-godsvale');
   });
 
-  it('draws the open line for a filter with no labelled group, and the plain card for an unlabelled anchor', async () => {
+  it('draws the open line for a filter with no labeled group, and the plain card for an unlabeled anchor', async () => {
     const f = await card('/tables/eq_weapon/f_tier-1');
     assert.equal(meta(f.body, 'og:description'), 'Открыть в генераторе лута');
     assertRedirect(f.body, SITE + '#/tables/eq_weapon/f_tier-1');

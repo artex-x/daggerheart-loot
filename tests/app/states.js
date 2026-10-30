@@ -17,7 +17,7 @@ const path = require('path');
 const { PNG } = require('pngjs');
 const { axe, baseUrl, fresh, sharedPage, reporter, closeBrowser } = require('./lib.js');
 const { TARGETS, ready } = require('./driver.js');
-const { HB_FILE, hbImportOpen } = require('./inventory.js');
+const { HB_FILE, STATES, hbImportOpen } = require('./inventory.js');
 
 /** The fake seed's `gm1` list «Лавка кузнеца», `uuid(101)`, and the first id
  *  the fake hands a new list, `uuid(5000)`. */
@@ -290,7 +290,7 @@ async function dialogSemantics() {
   await ctx.close();
 }
 
-/** 9. Copy text through the stubbed clipboard - both flavours. */
+/** 9. Copy text through the stubbed clipboard - both flavors. */
 async function copyTextThroughClipboard() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/i/ci1');
@@ -353,10 +353,13 @@ async function brokenArtPath() {
   };
   page.on('request', onReq);
   await d.open('#/i/w3');
-  const src = await page.evaluate(() =>
-    document.querySelector('.card-media img')?.getAttribute('src')
+  const glyphOnly = (sel) =>
+    !document.querySelector(sel + ' img') && !!document.querySelector(sel + ' svg path');
+  await page.waitForFunction(glyphOnly, { timeout: 5000 }, '.card-media').catch(() => {});
+  ok(
+    await page.evaluate(glyphOnly, '.card-media'),
+    '11 (no picture): the card well does not show the kind glyph alone'
   );
-  ok(/_none\.webp$/.test(src || ''), '11 (no picture): instead of the placeholder — ' + src);
   ok(
     await d.has('Скопировать текст'),
     '11 (no picture): the text button disappeared along with the picture'
@@ -372,8 +375,8 @@ async function brokenArtPath() {
   await ctx.close();
 
   /* A table row asks for its 160 px thumbnail, never the full picture, and a
-   * failed thumbnail falls back to the thumbnail placeholder
-   * (docs/specs/FEATURES.md, "Records"). */
+   * failed thumbnail falls back to the kind glyph (docs/specs/FEATURES.md,
+   * "Records"). */
   const row = await fresh({ width: 1180, height: 900 });
   const asked = [];
   await row.page.setBypassServiceWorker(true);
@@ -385,13 +388,7 @@ async function brokenArtPath() {
   });
   await row.d.open('#/tables/wondrous/w3');
   await row.page
-    .waitForFunction(
-      () =>
-        /\/_none\.webp$/.test(
-          document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src') || ''
-        ),
-      { timeout: 5000 }
-    )
+    .waitForFunction(glyphOnly, { timeout: 5000 }, '[data-row="w3"] .row-main')
     .catch(() => {});
   ok(
     asked.some((u) => /\/img\/thumb\/w3\.webp$/.test(u)),
@@ -401,12 +398,9 @@ async function brokenArtPath() {
     !asked.some((u) => /\/img\/w3\.webp$/.test(u)),
     '11 (row thumbnail): the row downloaded the full picture'
   );
-  const rowSrc = await row.page.evaluate(() =>
-    document.querySelector('[data-row="w3"] .row-main img')?.getAttribute('src')
-  );
   ok(
-    rowSrc === '/img/thumb/_none.webp',
-    '11 (row thumbnail): instead of the thumbnail placeholder - ' + rowSrc
+    await row.page.evaluate(glyphOnly, '[data-row="w3"] .row-main'),
+    '11 (row thumbnail): the row well does not show the kind glyph alone'
   );
   await row.ctx.close();
 }
@@ -494,7 +488,7 @@ async function noteTextareaHeight() {
   );
   ok(
     lnoteLines[1] === 3,
-    '13 (list notes): the neighbouring field grew along with it - ' + lnoteLines[1]
+    '13 (list notes): the neighboring field grew along with it - ' + lnoteLines[1]
   );
 
   await d.type(LIST_PH, Array.from({ length: 80 }, (_, i) => 'строка ' + i).join('\n'));
@@ -1114,7 +1108,7 @@ async function buttonFocusSurvivesRerender() {
 }
 
 /** 22. The money help box measured against its container, and the pressed
- *  add-to-list button's own colour, ported from the legacy `lists2.js`. */
+ *  add-to-list button's own color, ported from the legacy `lists2.js`. */
 async function moneyHelpAndPressedPicker() {
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
   await openAccountList(
@@ -1122,7 +1116,7 @@ async function moneyHelpAndPressedPicker() {
     { n: 1, name: 'Клад', ids: ['ci1'], meta: { ci1: { gold: 70 } } },
     '22 (help and list pick)'
   );
-  await d.press('Как это работает');
+  await d.press('Справка');
   const helpBox = await page.evaluate(() => {
     const h = document.querySelector('.money-help');
     /* The rewrite has no global `.wrap` container (SelBar.svelte's own
@@ -1174,7 +1168,7 @@ async function moneyHelpAndPressedPicker() {
  *  card's entrance and the section outline's fade `RecordCard.svelte`/
  *  `TablesPage.svelte` killed by name. Explicit here even though `prepare()`
  *  already emulates the same media feature for every other case
- *  (`driver.js`'s own comment: the blanket kill is the app's shipped behaviour for a
+ *  (`driver.js`'s own comment: the blanket kill is the app's shipped behavior for a
  *  visitor who asked for less motion, and this is what makes every suite
  *  exercise that branch, not a timing convenience) - this is the one case
  *  whose whole point is proving the policy itself, not relying on it as a
@@ -1301,7 +1295,7 @@ async function listMenuKeepsItsControlsInView() {
     await d.settle();
 
     const m = await page.evaluate(() => {
-      /* `shown`: what a press at the centre reaches - a clipping ancestor
+      /* `shown`: what a press at the center reaches - a clipping ancestor
          can hide a box that still reads inside the menu and the window. */
       const box = (el) => {
         if (!el) return null;
@@ -1408,7 +1402,7 @@ async function minimalWorker() {
         'the footer does not link the install guide and the two policy pages - ' +
         JSON.stringify(footer)
     );
-    /* The folded licence notice opens from the keyboard, with the focus ring
+    /* The folded license notice opens from the keyboard, with the focus ring
        drawn on its summary (FEATURES.md, "Chrome"). */
     await page.focus('footer details > summary');
     await page.keyboard.press('Enter');
@@ -1423,7 +1417,7 @@ async function minimalWorker() {
     ok(
       licence.open && licence.ring,
       at +
-        'the licence notice does not open from the keyboard with a focus ring - ' +
+        'the license notice does not open from the keyboard with a focus ring - ' +
         JSON.stringify(licence)
     );
     for (const href of footer) {
@@ -1708,8 +1702,8 @@ async function guideBackLink() {
 }
 
 /** 30. The note clear button's 44px target yields to the formatting toolbar under
- *  it: a point just inside the toolbar's top edge, under the button's centre, hits a
- *  toolbar button; the button's own centre hits the button. */
+ *  it: a point just inside the toolbar's top edge, under the button's center, hits a
+ *  toolbar button; the button's own center hits the button. */
 async function noteClearTargetYieldsToTheToolbar() {
   const at = '30 (note clear target): ';
   const { ctx, page, d } = await fresh({ width: 1180, height: 900 });
@@ -1740,7 +1734,7 @@ async function noteClearTargetYieldsToTheToolbar() {
   if (hits) {
     ok(hits.overlap > 3, at + 'no overlap left to test - ' + hits.overlap);
     ok(hits.edgeIsTool, at + 'the toolbar edge under the button does not hit a toolbar button');
-    ok(hits.centreIsButton, at + 'the button centre does not hit the button');
+    ok(hits.centreIsButton, at + 'the button center does not hit the button');
     ok(hits.target === '44px', at + 'the target is not 44px - ' + hits.target);
   }
 
@@ -1749,12 +1743,12 @@ async function noteClearTargetYieldsToTheToolbar() {
 
 /** 31. The card image's focus ring is drawn, not clipped by the card, at
  *  both card sizes: a pixel read of a 3px band inside each edge of the
- *  focused `.card-media`, against the ring's own colour. At 600 px the full
- *  card scrolls the page, and the case asserts it, so the clip's scroll
- *  offset stays tested. */
+ *  focused `.card-media`, against the ring's own color. At 520 px the full
+ *  card scrolls the page under the 63 px header, and the case asserts it, so
+ *  the clip's scroll offset stays tested. */
 async function cardMediaRingVisible() {
   async function ringAt(route, selector, label, mustScroll) {
-    const { ctx, page, d } = await fresh({ width: 1180, height: 600 });
+    const { ctx, page, d } = await fresh({ width: 1180, height: 520 });
     await d.open(route);
     let reached = false;
     for (let i = 0; i < 80 && !reached; i++) {
@@ -1766,8 +1760,8 @@ async function cardMediaRingVisible() {
     }
     ok(reached, '31 (card image focus ring, ' + label + '): Tab never reached ' + selector);
     if (reached) {
-      /* `end`, not `center`: a 420 px card centred in 600 px starts under the
-         sticky top bar (about 106 px), which hides the ring's top edge. */
+      /* `end`, not `center`: a 420 px card centered in 520 px starts under the
+         sticky top bar (63 px), which hides the ring's top edge. */
       await page.evaluate(
         (sel) => document.querySelector(sel).scrollIntoView({ block: 'end' }),
         selector
@@ -1796,7 +1790,7 @@ async function cardMediaRingVisible() {
             '): the page did not scroll, so the clip offset is not tested'
         );
       }
-      ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline colour to match');
+      ok(!!box.rgb, '31 (card image focus ring, ' + label + '): no outline color to match');
       if (!box.rgb) {
         await ctx.close();
         return;
@@ -1889,7 +1883,7 @@ async function undoToastInRecordDialog() {
     at + 'the shown toast is not the one inside the open dialog - ' + JSON.stringify(where)
   );
   ok(where.focused, at + '«Вернуть» is not focused');
-  ok(where.hit, at + '«Вернуть» is not what a point at its centre hits');
+  ok(where.hit, at + '«Вернуть» is not what a point at its center hits');
 
   const cdp = await page.createCDPSession();
   const { nodes } = await cdp.send('Accessibility.getFullAXTree');
@@ -2180,9 +2174,7 @@ async function accountPreferences() {
   seen = await sheet(c.page);
   ok(
     !seen.bw && seen.note === null,
-    at +
-      'c: a reload did not draw the colour default without the note - ' +
-      JSON.stringify(seen)
+    at + 'c: a reload did not draw the color default without the note - ' + JSON.stringify(seen)
   );
   await c.ctx.close();
 }
@@ -3828,7 +3820,7 @@ async function longListName() {
 }
 
 /** 67. The editor's field help and the threshold labels at 360x640 as `gm1`: the «?» of
- *  «Комплект» opens its hint under its label inside 0..360; an armour's two threshold
+ *  «Комплект» opens its hint under its label inside 0..360; an armor's two threshold
  *  labels and boxes lie inside 0..360; nothing scrolls sideways (docs/specs/FEATURES.md,
  *  "Consistency rules", rule 15). */
 async function fieldHelpAt360() {
@@ -3877,7 +3869,7 @@ async function fieldHelpAt360() {
   await d.click('Броня');
   ok(
     await waitIn(page, () => !!document.querySelector('#hb-th1')),
-    at + 'the armour fields did not draw'
+    at + 'the armor fields did not draw'
   );
   const boxes = await page.evaluate(() =>
     ['label[for="hb-th0"]', '#hb-th0', 'label[for="hb-th1"]', '#hb-th1'].map((sel) => {
@@ -3891,7 +3883,7 @@ async function fieldHelpAt360() {
       at + b.sel + ' lies outside 0..360 - ' + JSON.stringify(b)
     );
   }
-  ok(!(await sideways()), at + 'the armour form scrolls sideways');
+  ok(!(await sideways()), at + 'the armor form scrolls sideways');
   await ctx.close();
 }
 
@@ -4378,8 +4370,8 @@ async function keepsTheCardDescriptionLook() {
     {
       padding: '7px 9px 5px',
       color: 'rgb(155, 147, 179)',
-      'font-size': '12.5px',
-      'line-height': '18.75px'
+      'font-size': '13px',
+      'line-height': '19.5px'
     },
     "w1's rule card text"
   );
@@ -4389,7 +4381,7 @@ async function keepsTheCardDescriptionLook() {
   await d.settle();
   expect(
     await style('.craft .set-bonus p', ['font-size', 'line-height', 'margin']),
-    { 'font-size': '12.5px', 'line-height': '18.125px', margin: '0px' },
+    { 'font-size': '13px', 'line-height': '18.85px', margin: '0px' },
     'the set bonus'
   );
 
@@ -5000,6 +4992,93 @@ async function homebrewItemsFilterAddress() {
   }
 }
 
+/** The route families of DESIGN.md, "The First-Screen Rule": the inventory state that
+ *  opens each. A row whose surface is not yet under the rule is measured and logged,
+ *  not asserted (`shipped: false`). A roll page draws its result for the number
+ *  field's first value, so no roll is made and the offset is deterministic. */
+const FIRST_SCREEN = [
+  { state: '#/roll/std', shipped: false },
+  { state: '#/tables/eq_weapon', shipped: false },
+  { state: '#/i/ci1', shipped: false },
+  { state: '#/search ~ searched', shipped: false },
+  { state: '#/account as gm1', shipped: false },
+  { state: '#/p/set-emberaxe as gm2', shipped: false },
+  { state: '#/homebrew as gm3', shipped: false },
+  { state: '#/homebrew/sets ~ long name as gm4', shipped: false },
+  { state: '#/homebrew/new as gm1', shipped: false },
+  { state: '#/lists as gm1', shipped: false },
+  { state: '#/lists/00000000-0000-4000-8000-000000008001 as gm4', shipped: false },
+  { state: '#/s/player-token-1', shipped: false }
+];
+
+/** Returns the top of the first `[data-primary]` with a nonzero height, at scroll 0
+ *  after the fonts and two frames, or null when the page marks none. */
+async function primaryTop(page) {
+  return page.evaluate(async () => {
+    await document.fonts.ready;
+    scrollTo(0, 0);
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const el = [...document.querySelectorAll('[data-primary]')].find(
+      (e) => e.getBoundingClientRect().height > 0
+    );
+    return el ? { top: el.getBoundingClientRect().top, vh: innerHeight } : null;
+  });
+}
+
+/** 83. The primary content of each route family starts within 40% of the viewport
+ *  height at 360x640 and 1180x720, in Russian and in English (DESIGN.md, "The
+ *  First-Screen Rule"). */
+async function primaryContentInFirstScreen() {
+  const states = new Map(STATES.map((s) => [s.id, s]));
+  for (const row of FIRST_SCREEN) {
+    const state = states.get(row.state);
+    ok(!!state, '83 (first screen): no inventory state ' + row.state);
+    if (!state) continue;
+    for (const [width, height] of [
+      [360, 640],
+      [1180, 720]
+    ]) {
+      for (const lang of ['ru', 'en']) {
+        const { ctx, page, d } = await fresh({ width, height, storage: state.storage });
+        try {
+          await d.open(state.route, {
+            as: state.as,
+            items: state.items,
+            sections: state.sections,
+            sources: state.sources,
+            hold: state.hold
+          });
+          if (state.enter) await state.enter(d);
+          await d.settled(state.id);
+          if (lang === 'en') await d.click('EN');
+          await d.addressSettled();
+          const got = await primaryTop(page);
+          const where = row.state + ' ' + width + 'x' + height + ' ' + lang;
+          ok(!!got, '83 (first screen): ' + where + ' marks no [data-primary] with a height');
+          if (!got) continue;
+          const limit = 0.4 * got.vh;
+          const pass = got.top <= limit;
+          fs.writeSync(
+            1,
+            '  first screen: ' +
+              where +
+              ' top ' +
+              got.top.toFixed(0) +
+              ' / ' +
+              limit.toFixed(0) +
+              (pass ? ' pass' : ' over') +
+              (row.shipped ? '' : ' (logged)') +
+              '\n'
+          );
+          if (row.shipped) ok(pass, '83 (first screen): ' + where + ' starts at ' + got.top);
+        } finally {
+          await ctx.close();
+        }
+      }
+    }
+  }
+}
+
 const CASES = [
   ['1 (new list from the card)', newListFromCard],
   ['2 (selection bar)', newListFromBar],
@@ -5075,7 +5154,8 @@ const CASES = [
   ['79 (a picker list stays above the on-screen keyboard)', pickerAboveKeyboard],
   ['80 (the homebrew refusals take the error look)', homebrewRefusalLook],
   ['81 (the address bar)', addressBarPathForm],
-  ['82 (the Items tab filter address)', homebrewItemsFilterAddress]
+  ['82 (the Items tab filter address)', homebrewItemsFilterAddress],
+  ['83 (primary content starts in the first screen)', primaryContentInFirstScreen]
 ];
 
 (async () => {

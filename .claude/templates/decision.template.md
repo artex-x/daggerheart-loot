@@ -1,6 +1,6 @@
 # <YYYY-MM-DD> - <title: the decision in one sentence, 80 characters or less; it is the citation key and never changes>
 
-<!-- Record a decision only when an alternative was rejected. Behaviour
+<!-- Record a decision only when an alternative was rejected. Behavior
 goes to docs/specs/; hooks, tooling and host facts to .claude/README.md;
 a defect kept on purpose to docs/specs/DEBT.md. File:
 docs/decisions/<YYYY-MM-DD>-<slug>.md; then run `node tools/decisions.js`

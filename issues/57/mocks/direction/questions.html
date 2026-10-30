@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task 57 questions</title>
+    <style>
+      :root {
+        --bg: #14111c;
+        --panel: #1e1a29;
+        --line: #332d44;
+        --text: #ece6f5;
+        --muted: #a79fbb;
+        --gold: #e2b75e;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.55 system-ui,
+          sans-serif;
+        padding: 16px;
+      }
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 18px;
+        margin: 0 0 8px;
+      }
+      p {
+        margin: 0 0 10px;
+        max-width: 80ch;
+      }
+      .lead {
+        color: var(--muted);
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .now {
+        color: var(--muted);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0 12px;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 8px;
+        border-top: 1px solid var(--line);
+      }
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .rec td:first-child {
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .shots {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Task 57: open questions</h1>
+      <p class="lead">
+        Four decisions before batch 1. Each one has a recommended option (gold) and the
+        trade-off it accepts. Answer them in the chat.
+      </p>
+
+      <section>
+        <h2>Q1. Mode labels on two lines at 360</h2>
+        <p class="now">
+          Now in R: at 360 a mode chip can show its label on two lines («Обычные / правила»).
+          The row itself never wraps.
+        </p>
+        <table>
+          <tr>
+            <th>Option</th>
+            <th>What you see</th>
+            <th>Trade-off</th>
+          </tr>
+          <tr class="rec">
+            <td>Allow two lines</td>
+            <td>The chip text matches the page heading.</td>
+            <td>The chips are taller at 360.</td>
+          </tr>
+          <tr>
+            <td>Shorter labels</td>
+            <td>One line per chip («Обычные», «Альт.»).</td>
+            <td>The chip text differs from the heading.</td>
+          </tr>
+        </table>
+        <div class="shots">
+          <figure>
+            <figcaption>R header, 360</figcaption>
+            <img src="R/header__360__ru.png" alt="R header at 360" />
+          </figure>
+          <figure>
+            <figcaption>R header, 1180</figcaption>
+            <img src="R/header__1180__ru.png" alt="R header at 1180" />
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Q2. Supplements in one «Дополнения ▾» menu</h2>
+        <p class="now">
+          Now in the app: a supplement page shows a panel of seven chips, which wraps over 4
+          lines at 360 (C48).
+        </p>
+        <table>
+          <tr>
+            <th>Option</th>
+            <th>What you see</th>
+            <th>Trade-off</th>
+          </tr>
+          <tr class="rec">
+            <td>Menu replaces the chip panel</td>
+            <td>
+              Three controls in one row. On a supplement page the chip shows its name, for
+              example «Vault of Ages ▾».
+            </td>
+            <td>Switching between supplements takes one more tap.</td>
+          </tr>
+          <tr>
+            <td>One row that scrolls</td>
+            <td>All nine modes in one row with an edge fade.</td>
+            <td>Some modes are off-screen until you scroll.</td>
+          </tr>
+          <tr>
+            <td>Keep the chip panel</td>
+            <td>Today's panel under the mode row.</td>
+            <td>C48 stays: a 4-line wrap at 360.</td>
+          </tr>
+        </table>
+        <div class="shots">
+          <figure>
+            <figcaption>Menu open, 360</figcaption>
+            <img src="R/roller-supmenu__360__ru.png" alt="Supplement menu at 360" />
+          </figure>
+          <figure>
+            <figcaption>Menu open, 1180</figcaption>
+            <img src="R/roller-supmenu__1180__ru.png" alt="Supplement menu at 1180" />
+          </figure>
+          <figure>
+            <figcaption>Scrolling row (alternative), 360</figcaption>
+            <img src="R/header__alt__360.png" alt="Scrolling row at 360" />
+          </figure>
+          <figure>
+            <figcaption>Scrolling row (alternative), 1180</figcaption>
+            <img src="R/header__alt__1180.png" alt="Scrolling row at 1180" />
+          </figure>
+        </div>
+      </section>
+
+      <section>
+        <h2>Q3. CI fails on the mock scripts</h2>
+        <p class="now">
+          Now: ESLint's typed lint cannot parse the 9 mock .js files under issues/57/mocks/, so
+          CI on claude/57 is red. Prettier already passes.
+        </p>
+        <table>
+          <tr>
+            <th>Option</th>
+            <th>What changes</th>
+            <th>Trade-off</th>
+          </tr>
+          <tr class="rec">
+            <td>Ignore task mocks in ESLint</td>
+            <td>
+              One line, 'issues/*/mocks/**', in eslint.config.mjs, next to the existing
+              'work/**' scratch entry.
+            </td>
+            <td>A config change that every later session runs under.</td>
+          </tr>
+          <tr>
+            <td>Move the scripts out</td>
+            <td>The mock scripts move outside the repository, next to the evidence.</td>
+            <td>The mock pages in the repository stop working; only the PNGs stay.</td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2>Q4. R after your review</h2>
+        <p class="now">
+          Now: R has 45 review states in index.html, grouped by screen. Batch 1 (font, tokens,
+          type scale, gold rules, art placeholder) is implement-ready.
+        </p>
+        <table>
+          <tr>
+            <th>Option</th>
+            <th>What happens</th>
+            <th>Trade-off</th>
+          </tr>
+          <tr class="rec">
+            <td>Approve R, notes later</td>
+            <td>
+              Batch 1 starts. Notes on a screen become acceptance lines in the batch that owns
+              that screen, and each batch shows its mock again before code.
+            </td>
+            <td>A note that changes the foundation (font, tokens) may reopen batch 1.</td>
+          </tr>
+          <tr>
+            <td>Review first</td>
+            <td>You send notes on the 45 states; the planner updates R; then batch 1.</td>
+            <td>One more round before any code.</td>
+          </tr>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>

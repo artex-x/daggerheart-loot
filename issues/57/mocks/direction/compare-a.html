@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polish in place: options</title>
+    <style>
+      :root {
+        --bg: #14111c;
+        --panel: #1e1a29;
+        --text: #ece6f5;
+        --muted: #a79fbb;
+        --gold: #e2b75e;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.5 system-ui,
+          sans-serif;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 32px 0 4px;
+        color: var(--gold);
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        max-width: 80ch;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+        align-items: start;
+      }
+      figure {
+        margin: 0;
+        background: var(--panel);
+        border-radius: 8px;
+        padding: 8px;
+      }
+      figcaption {
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      figcaption span {
+        display: block;
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Polish in place: A1, A2 and the roll card face</h1>
+    <p>
+      A1 and A2 differ only in where gold goes. In A1, gold marks one primary action and what
+      you chose. In A2, gold also stays on choices that are on by default. The card face is
+      option C's way of drawing a roll result; R shows it inside B's two-pane roller, so the
+      layout around it is not A's.
+    </p>
+
+    <h2>Catalog, 360</h2>
+    <div class="row">
+      <figure>
+        <figcaption>A1<span>Strict gold: default chips neutral</span></figcaption>
+        <img src="A/catalog__360__ru.png" alt="A1 catalog at 360" />
+      </figure>
+      <figure>
+        <figcaption>A2<span>Lenient gold: default-on chips stay gold</span></figcaption>
+        <img src="A/catalog__A2__360.png" alt="A2 catalog at 360" />
+      </figure>
+    </div>
+
+    <h2>Catalog, 1180</h2>
+    <div class="row">
+      <figure>
+        <figcaption>A1</figcaption>
+        <img src="A/catalog__1180__ru.png" alt="A1 catalog at 1180" />
+      </figure>
+      <figure>
+        <figcaption>A2</figcaption>
+        <img src="A/catalog__A2__1180.png" alt="A2 catalog at 1180" />
+      </figure>
+    </div>
+
+    <h2>Roller, 360</h2>
+    <div class="row">
+      <figure>
+        <figcaption>A1<span>Today's result card, polished</span></figcaption>
+        <img src="A/roller__360__ru.png" alt="A1 roller at 360" />
+      </figure>
+      <figure>
+        <figcaption>A2</figcaption>
+        <img src="A/roller__A2__360.png" alt="A2 roller at 360" />
+      </figure>
+      <figure>
+        <figcaption>
+          Card face (from R)<span
+            >Result drawn as the printed card; the page layout around it is B's</span
+          >
+        </figcaption>
+        <img src="R/roller__360__ru.png" alt="Card face roller at 360" />
+      </figure>
+    </div>
+
+    <h2>Roller, 1180</h2>
+    <div class="row">
+      <figure>
+        <figcaption>A1</figcaption>
+        <img src="A/roller__1180__ru.png" alt="A1 roller at 1180" />
+      </figure>
+      <figure>
+        <figcaption>A2</figcaption>
+        <img src="A/roller__A2__1180.png" alt="A2 roller at 1180" />
+      </figure>
+      <figure>
+        <figcaption>Card face (from R)</figcaption>
+        <img src="R/roller__1180__ru.png" alt="Card face roller at 1180" />
+      </figure>
+    </div>
+  </body>
+</html>

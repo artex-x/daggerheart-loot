@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-3/f_s
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -58,14 +56,13 @@ EN
 RU
 Wondrous Environments
 daggerheart.com
-Альт. таблицы
 Броня
+Бросок
 Влияние
 Войти
 Вплотную
 Далеко
 Двуручное
-Дополнения
 Искусность
 К содержимому
 Конфиденциальность
@@ -73,7 +70,6 @@ daggerheart.com
 Магическое
 Мастерская старого оружейника из долины туманов за перевалом у С... [namelen=80 namehash=9bd5cf26]
 Мастерская старого оружейника из долины туманов за перевалом у С... [namelen=81 namehash=f185497b]
-Обычные правила
 Одноручное
 Оружие
 Поиск
@@ -98,16 +94,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>]
   link "Skip to content" [url=/en/s/player-token-3/f_src-hb_longsourceaaaaaa?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -140,13 +134,12 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_long
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
 2
 Agility
-Alt. tables
 Armor
 Consumables
 Core
@@ -158,6 +151,7 @@ Finesse
 Homebrew
 Install as an app
 Items
+LootDaggerheart
 Magic
 Melee
 Mist Flask
@@ -168,12 +162,11 @@ Presence
 Privacy
 RU
 Reset all
+Roll
 Save to my lists
 Search
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 Two-Handed
@@ -184,4 +177,3 @@ Wondrous Environments
 Workshop of the old armourer from the valley of mists past the N... [namelen=80 namehash=a1da31ad]
 Workshop of the old armourer from the valley of mists past the N... [namelen=81 namehash=51235604]
 daggerheart.com
-ЛутDaggerheart

@@ -13,14 +13,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [value=лечения зелья focused=true]
     StaticText "ТИП"
@@ -55,18 +53,16 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
 EN
 RU
 daggerheart.com
-Альт. таблицы
 Большое Зелье Лечения
+Бросок
 Войти
-Дополнения
 Зелье Лечения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
 Малое Зелье Лечения
 Мешок Собирателя
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Предметы
 Расходники
@@ -81,21 +77,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [value=лечения зелья focused=true]
     StaticText "TYPE"
@@ -118,7 +112,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 14Harvesting SackGain the following downtime move.Gather Ingredi... [namelen=237 namehash=a4312098]
@@ -127,7 +121,6 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
 29Traveler's FlaskRecall Cost: 1This flask is always full of col... [namelen=213 namehash=9be572d2]
 43Major Health PotionClear 1d4+2 HP.Made from: Health PotionCons... [namelen=74 namehash=522c5e63]
 7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=111 namehash=a7eac893]
-Alt. tables
 Consumables
 EN
 Equipment
@@ -135,19 +128,18 @@ Harvesting Sack
 Health Potion
 Install as an app
 Items
+LootDaggerheart
 Major Health Potion
 Minor Health Potion
 Minor Health Potion Recipe
-Open this section on start
+Open on start
 Privacy
 RU
+Roll
 Search
 Sign in
 Skip to content
-Standard rules
-Supplements
 Tables
 Terms of use
 Traveler's Flask
 daggerheart.com
-ЛутDaggerheart

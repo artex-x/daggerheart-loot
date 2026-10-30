@@ -138,7 +138,7 @@
   .savenote {
     flex: 1 1 16em;
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 

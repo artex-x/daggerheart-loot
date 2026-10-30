@@ -13,9 +13,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -69,15 +67,14 @@ RU
 Vault of Ages
 Wondrous Environments
 daggerheart.com
-Альт. таблицы
 Броня
+Бросок
 Влияние
 Войти
 Вплотную
 Гарпун Левиафана
 Далеко
 Двуручное
-Дополнения
 Знание
 Инстинкт
 Искусность
@@ -88,7 +85,6 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Мастерская Ольхи
-Обычные правила
 Одноручное
 Оружие
 Оружие×
@@ -119,16 +115,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<v>]
   link "Skip to content" [url=/en/s/gm-token-1/f_kind-weapon?v=<v>#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -166,7 +160,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   status ""
     StaticText "Filter link copied - it is the GM's link: it carries the "GM onl..." [namelen=82 namehash=92bf45a1]
 
@@ -176,7 +170,6 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
 51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
 Agility
 Alder Workshop
-Alt. tables
 Armor
 Broadsword
 BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
@@ -199,6 +192,7 @@ Instinct
 Items
 Knowledge
 Leviathan Harpoon
+LootDaggerheart
 Magic
 Melee
 One-Handed
@@ -207,15 +201,14 @@ Presence
 Privacy
 RU
 Reset all
+Roll
 Save to my lists
 Scepter
 ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
 Search
 Sign in
 Skip to content
-Standard rules
 Strength
-Supplements
 Tables
 Terms of use
 Two-Handed
@@ -226,4 +219,3 @@ Weapons
 Weapons×
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

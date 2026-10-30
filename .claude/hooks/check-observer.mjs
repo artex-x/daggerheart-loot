@@ -67,7 +67,7 @@ const COVERAGE_SUMMARY_RE = /^=+ Coverage summary =+\s*$/m;
 const COVERAGE_LINES_RE = /^Lines\s*:\s*[\d.]+%/m;
 
 // 'status' and 'exitStatus' are not field names any host is known to use.
-// They are listed so an unrecognised *numeric failure* field cannot read as
+// They are listed so an unrecognized *numeric failure* field cannot read as
 // "field absent, assume a pass". `exit_code` is the documented one.
 const EXIT_CODE_FIELDS = [
   'exit_code',

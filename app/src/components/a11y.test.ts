@@ -181,12 +181,12 @@ const STATES: {
   {
     what: 'the help panel, unfolded',
     route: '#/roll/wondrous',
-    enter: () => press('Как это работает')
+    enter: () => press('Справка')
   },
   {
     what: 'the section pinned as the one to open on',
     route: '#/roll/wondrous',
-    enter: () => press('Открывать этот раздел при запуске')
+    enter: () => press('Открывать при запуске')
   },
   {
     what: 'a roll page in English',
@@ -201,7 +201,7 @@ const STATES: {
   {
     what: 'Core rules with the help panel unfolded',
     route: '#/roll/std',
-    enter: () => press('Как это работает')
+    enter: () => press('Справка')
   },
   {
     what: 'the alternate tables on a critical success, which raises the box',
@@ -212,7 +212,7 @@ const STATES: {
   {
     what: 'the alternate tables with the help panel unfolded',
     route: '#/roll/alt',
-    enter: () => press('Как это работает')
+    enter: () => press('Справка')
   },
   {
     what: 'a division of Vault of Ages that is not a tier',
@@ -603,6 +603,8 @@ const COVERED: Record<string, string> = {
     'batchBar.test.ts idle, some and all ticked; the lists index with two ticked above; listPage.test.ts',
   'ImportPanel.svelte':
     'importPanel.test.ts empty, previewed, refused and with errors; the preview and error reports above',
+  'ArtWell.svelte':
+    'artWell.test.ts with the glyph alone and under a picture, and its callers in record.test.ts, tables.test.ts, listsPage.test.ts and artField.test.ts',
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
   'Die.svelte': 'the roll button on every roll page',
@@ -666,14 +668,14 @@ const COVERED: Record<string, string> = {
     'sharedListPage.test.ts in both modes, and the shared list and both share links above',
   'SharePanel.svelte': 'sharePanel.test.ts open, with a deleted link, and with a failed read',
   'Markup.svelte': 'markup.test.ts: every block, a lead, and markup characters as text',
+  'Menu.svelte': 'accountMenu.test.ts and modeRow.test.ts with each menu open',
+  'ModeRow.svelte': 'modeRow.test.ts on the nine roll sections, the menu closed and open',
   'MarkupInline.svelte': 'markup.test.ts inside every block, and the record card above',
   'MarkupField.svelte':
     'markupField.test.ts with the toolbar, with «Просмотр» pressed and read-only; homebrewEditor.test.ts and listPage.test.ts with the hint open',
   'SignInPrompt.svelte':
     'signInPrompt.test.ts in its three forms, and inside the add-to-list menu (lists.test.ts)',
   'Shell.svelte': 'shell.test.ts',
-  'SupplementNav.svelte':
-    'supplementNav.test.ts on each supplement section, and Vault of Ages and communities (sections.test.ts)',
   'Switch.svelte':
     'switch.test.ts on and off, and «Свои предметы» on search and the equipment tables (homebrewCatalog.test.ts)',
   'SyncSaid.svelte':

@@ -1,6 +1,6 @@
 /* What a record looks like when it leaves the app.
  *
- * Two flavours of the same message. `text/html` carries the name in bold and
+ * Two flavors of the same message. `text/html` carries the name in bold and
  * the record text's own bold and italics (`markupHtml`); `text/plain` carries
  * the same words with no markup at all (`markupText`) - deliberately not
  * Markdown, because an app that cannot take rich text should receive readable
@@ -69,7 +69,7 @@ export function shareBlocks(
   const t = dict(lang);
   const out: ShareBlock[] = [];
 
-  /* Lines compare as they read, so a plain line and its labelled twin are one line;
+  /* Lines compare as they read, so a plain line and its labeled twin are one line;
      a table line always stays, or a shared separator would break the target's table. */
   const own = new Set(descOf(it, lang).split('\n').map(markupText));
   const targets = relOrder(upgradesTo(index, it), lang).filter((r) => !skip.has(r.id));
@@ -148,7 +148,7 @@ export function imageFileName(it: Record_, lang: Lang): string {
 }
 
 /**
- * Both flavours of the message.
+ * Both flavors of the message.
  *
  * Equipment leads with its stat line, tight under the name: the numbers belong
  * to the heading rather than to the prose, and someone scanning a pasted message

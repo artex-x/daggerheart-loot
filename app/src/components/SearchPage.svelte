@@ -127,6 +127,7 @@
           <p class="scount">{found.length} {t.outOf} {matched.length}</p>
         {/if}
         <TableRows
+          primary
           entries={found.map((it) => ({ it }))}
           view="list"
           {index}
@@ -158,10 +159,10 @@
   }
 
   /* Off `FilterBar.svelte`'s `.fcount`, the shown-of-total line the
-     table filter strip already had: same font, same muted colour. */
+     table filter strip already had: same font, same muted color. */
   .scount {
     margin: 0 0 10px;
-    font: 600 12px/1 var(--mono);
+    font: 600 var(--t-label)/1 var(--mono);
     color: var(--muted2);
   }
 </style>

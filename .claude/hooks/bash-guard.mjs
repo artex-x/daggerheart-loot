@@ -1,8 +1,8 @@
 // PreToolUse(Bash|PowerShell): the rule families evaluated in order, first
-// deny wins. A PowerShell command is normalised first (lib.mjs,
+// deny wins. A PowerShell command is normalized first (lib.mjs,
 // normalizeCommand) and then judged by the same families.
 // See .claude/README.md, "Hooks", for what each family blocks and for the
-// sanitiser's known limits. Never blocks anything not listed there.
+// sanitizer's known limits. Never blocks anything not listed there.
 // segmentInfo already skips READERS and unwraps env/command/nohup/time/xargs,
 // so `echo npm run check` never matches and `nohup npm run check` does.
 // 2s (the reviewer's read-only Bash) runs right after the blocklist; 2r (a
@@ -140,7 +140,7 @@ const MSG = {
     `Blocked: \`${shape}\` sends the output of a command that \`rtk\` filters into \`head\`/\`tail\`. \`rtk\` 0.48.0 never rewrites a pipe stage that is not the last one, so this command runs unfiltered. ${fix} A \`cd\`, \`&&\` or \`;\` prefix is fine; only the pipe stops the rewrite.`
 };
 
-// ---------- sanitiser + segmenter (plan section 4, 2a) ----------
+// ---------- sanitizer + segmenter (plan section 4, 2a) ----------
 //
 // sanitize/segments/tokensOf/unwrap now live in lib.mjs, because
 // check-observer.mjs has to segment a command the same way this file does.
@@ -516,7 +516,7 @@ function evaluateReviewerWrite(quotedSegs, agentType) {
 // target. A bare `issues/<id>` or `issues/<id>/` token is a directory
 // target, needled on the unslashed `issues/<id>`, boundary-tested on both
 // sides so a sibling id sharing a prefix does not match; any other path
-// under it keeps the old, exact-path behaviour. A bare `issues` or
+// under it keeps the old, exact-path behavior. A bare `issues` or
 // `issues/` token retires every task directory in one command, including
 // the live task's own and anyone else's in-flight work - denied outright,
 // the same class as `rm -rf` inside the repo, rather than routed through
@@ -1482,10 +1482,10 @@ function plainNode(t, cwd) {
 }
 
 /** Returns `{ s, t }` of a command that is one segment with no quote or
- * escape: the sanitised text without `2>&1`/`>&2`, and its tokens past
+ * escape: the sanitized text without `2>&1`/`>&2`, and its tokens past
  * `rtk` or `rtk proxy`. Else null. */
 function plainTokens(sanitized, raw) {
-  // A quote or a Bash escape inside a word splits it for the sanitiser but not
+  // A quote or a Bash escape inside a word splits it for the sanitizer but not
   // for the shell (`--work''dir=sub`). PowerShell's `\` is `/` by now.
   if (/['"\\]/.test(raw)) return null;
   const s = sanitized.replace(/(^|\s)(?:2>&1|>&2)(?=\s|$)/g, '$1');
@@ -1863,7 +1863,7 @@ function judgeUnpinnedPush(tokens, cwd, hidden) {
   return null;
 }
 
-/** True when the push in `segment` takes refspecs that the sanitised text
+/** True when the push in `segment` takes refspecs that the sanitized text
  * does not show: an erased quoted span after `push` (`quotedSegs` keeps it
  * as `QUOTED`), a `$(` or backtick in its statement, or `xargs`. */
 function pushHasHiddenArgs(segment, sanitized, quotedSegs) {
@@ -2533,7 +2533,7 @@ function evaluateBlindCheck(sanitized) {
 // pipe-final-stage or chain exemptions: once matched, it always denies.
 //
 // READERS (above) hides both programs from every other rule on purpose
-// (`echo git reset --hard` must stay silent), so this family tokenises
+// (`echo git reset --hard` must stay silent), so this family tokenizes
 // each stage itself and tests the program token only: `echo grep -n`,
 // `git grep -n` (closeout step 6) and `rtk grep -n` never match, at any
 // position. See .claude/README.md, "Hooks", row 43.

@@ -16,7 +16,7 @@
 <style>
   .itemtable {
     white-space: nowrap;
-    font-size: 13px;
+    font-size: var(--t-data);
     text-decoration: none;
     border-bottom: 1px solid transparent;
     color: var(--gold-soft);

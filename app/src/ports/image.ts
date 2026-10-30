@@ -42,7 +42,7 @@ export function browserImage(): ImagePort {
             reject(err instanceof Error ? err : new Error('the canvas is tainted'));
             return;
           }
-          /* Measured on this host, 2026-09-18 - the largest catalogue
+          /* Measured on this host, 2026-09-18 - the largest catalog
              art file (640x640 `img/f95.webp`, 98 KB, the same decode/encode
              path this function runs) took 1032-1074ms across five PNG
              `toBlob` encodes (a browser tab, http:// so the canvas is not

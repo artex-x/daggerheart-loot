@@ -315,7 +315,7 @@ describe('the money picker', () => {
 
   it('opens the help with five bold runs on its own "?"', async () => {
     await openA();
-    const help = screen.getByRole('button', { name: 'Как это работает' });
+    const help = screen.getByRole('button', { name: 'Справка' });
     expect(help).toHaveAttribute('aria-expanded', 'false');
     await userEvent.click(help);
     expect(help).toHaveAttribute('aria-expanded', 'true');

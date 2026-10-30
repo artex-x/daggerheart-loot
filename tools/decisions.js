@@ -42,7 +42,7 @@ const HEADER = `# Decisions
 
 The register of decisions that outlive the task that made them, each with
 the alternatives rejected and the reason. Record a decision only when an
-alternative was rejected. Behaviour decisions live in \`docs/specs/\`; hook,
+alternative was rejected. Behavior decisions live in \`docs/specs/\`; hook,
 tooling and host decisions in \`.claude/README.md\`; everything else is one
 file under \`docs/decisions/\`, listed here newest first. This index is
 generated: add or edit a file there (template:

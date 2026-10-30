@@ -228,7 +228,7 @@ export default defineConfig(({ command, mode }) => {
          the file with it (`Axe is already running`) - was not a timeout value
          and lives in app/src/test/a11y.ts instead: expectNoA11yViolations
          clears axe's `_running` flag before every run, so an abandoned run from
-         a timed-out neighbour can no longer block the next one. See
+         a timed-out neighbor can no longer block the next one. See
          app/src/test/a11y.test.ts for the regression test.
 
          Since 2026-10-07 a timing bound, and a case that passed 30s under host
@@ -309,7 +309,7 @@ export default defineConfig(({ command, mode }) => {
            pay for a component nobody tested. The bars differ because the
            obligations differ: lib is pure and has no excuse, ports wrap browser
            APIs whose happy paths jsdom cannot reach, everything else is drawn on
-           screen and is checked through behaviour. `perFile` is the part that
+           screen and is checked through behavior. `perFile` is the part that
            matters - it is what makes a file with no test at all fail, without
            demanding a test file per source file. */
         thresholds: {

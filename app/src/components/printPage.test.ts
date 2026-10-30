@@ -2,7 +2,7 @@
  * its helpers, `fitPrintCards` (`git show 23c00a6^:app.js`) and the four handlers
  * (`doPrint`/`printBack`/`printArt`/`printLink`, `git show 23c00a6^:app.js`).
  *
- * Held against a small fixture rather than the real catalogue, the same way
+ * Held against a small fixture rather than the real catalog, the same way
  * tables.test.ts and searchPage.test.ts are - what matters here is the
  * markup shape (both card layouts, both languages, the fit) rather than any
  * particular record. Equipment lives in `Loot.eq`, off the same records
@@ -16,6 +16,7 @@ import App from '../App.svelte';
 import PrintCard from './PrintCard.svelte';
 import type { Loot } from '../lib/data.js';
 import { dict } from '../lib/dict.js';
+import { ICONS } from '../lib/icons.js';
 import type { PrintSetEntry } from '../lib/printSet.js';
 import type { Record_ } from '../lib/types.js';
 import {
@@ -320,7 +321,7 @@ const withoutAnchors = (html: string): string =>
 const vec = (e: Element | null | undefined): string | null =>
   e ? `${e.getAttribute('data-vector') ?? ''}:${e.getAttribute('data-paint') ?? ''}` : null;
 
-describe('arrival, colour', () => {
+describe('arrival, color', () => {
   it('draws the bar, the controls in order, and one sheet with the two cards and seven blanks', async () => {
     render(App, { env: await atSet('ci1-q1') });
     await opened();
@@ -330,9 +331,9 @@ describe('arrival, colour', () => {
         'Карточек: 2. Листов A4: 1. Размер карты 63×88 мм - как у обычной игральной.'
       )
     ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Как это работает' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Справка' })).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /Открывать этот раздел/ })
+      screen.queryByRole('button', { name: /Открывать при запуске/ })
     ).not.toBeInTheDocument();
 
     const back = screen.getByRole('button', { name: 'Назад' });
@@ -388,33 +389,38 @@ describe('the loot card', () => {
 });
 
 describe('no art', () => {
-  /* The site's own picture for no picture, in place of Figma's outline (owner, 2026-10-15;
-     FEATURES.md, "Print"). */
-  const NONE = '/img/_none.webp';
+  /* The kind glyph on the light print well, a departure from Figma node 714-42387
+     (owner, 2026-10-29; FEATURES.md, "Print"). */
+  const glyphOf = (card: Element | null): string | null | undefined =>
+    card?.querySelector('.pc-art.none svg path')?.getAttribute('d');
 
-  it('draws the no-picture image for a record with no image, on both sheets', async () => {
-    render(App, { env: await atSet('ni1-ci1') });
+  it('draws the kind glyph for a record with no image, on both sheets', async () => {
+    const { container } = render(App, { env: await atSet('ni1-ci1') });
     await opened();
     const bare = (): Element | null => document.querySelector('.pcard[data-pid="ni1"]');
-    expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
-    expect(bare()?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
-    expect(bare()?.querySelector('svg')).toBeNull();
-    expect(document.querySelector('.pcard[data-pid="ci1"] .pc-img')).toHaveAttribute(
-      'src',
-      '/img/ci1.webp'
-    );
+    expect(bare()?.querySelector('.pc-img')).toBeNull();
+    expect(bare()?.querySelector('.pc-back')).toBeNull();
+    expect(glyphOf(bare())).toBe(ICONS.kindItem.d);
+    expect(bare()?.querySelector('.pc-art svg')).toHaveAttribute('aria-hidden', 'true');
+    const art = document.querySelector('.pcard[data-pid="ci1"] .pc-art');
+    expect(art).not.toHaveClass('none');
+    expect(art?.querySelector('.pc-img')).toHaveAttribute('src', '/img/ci1.webp');
+    expect(art?.querySelector('svg')).toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
     await waitFor(() => {
-      expect(bare()?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
+      expect(document.querySelector('.psheet.compact')).not.toBeNull();
     });
+    expect(bare()?.querySelector('.pc-img')).toBeNull();
+    expect(glyphOf(bare())).toBe(ICONS.kindItem.d);
+    await expectNoA11yViolations(container);
     await userEvent.click(screen.getByRole('button', { name: 'Чёрно-белая' }));
     await waitFor(() => {
       expect(bare()?.querySelector('.pc-art')).toBeNull();
     });
-    expect(bare()?.querySelector('img[src="' + NONE + '"]')).toBeNull();
+    expect(bare()?.querySelector('svg path[d="' + ICONS.kindItem.d + '"]')).toBeNull();
   });
 
-  it('swaps to the no-picture image once the picture 404s, reached directly at a set address', async () => {
+  it('swaps to the kind glyph once the picture 404s, reached directly at a set address', async () => {
     /* Unlike every other route, a handed-over #/p/ address may be the first (and only)
        page this session ever draws for this id - nothing else could already have caught
        the failure the way RecordCard's own onerror does elsewhere. */
@@ -427,14 +433,14 @@ describe('no art', () => {
     card?.querySelector('.pc-back')?.dispatchEvent(new Event('error'));
     card?.querySelector('.pc-img')?.dispatchEvent(new Event('error'));
     await tick();
-    expect(card?.querySelector('.pc-img')).toHaveAttribute('src', NONE);
-    expect(card?.querySelector('.pc-back')).toHaveAttribute('src', NONE);
-    expect(card?.querySelector('svg')).toBeNull();
+    expect(card?.querySelector('.pc-img')).toBeNull();
+    expect(card?.querySelector('.pc-back')).toBeNull();
+    expect(glyphOf(card)).toBe(ICONS.kindItem.d);
   });
 });
 
 describe('the weapon card', () => {
-  it('draws the tier, tags, burden, die, ribbon, cells and a labelled rule', async () => {
+  it('draws the tier, tags, burden, die, ribbon, cells and a labeled rule', async () => {
     render(App, { env: await atSet('q1') });
     await opened();
     const card = document.querySelector('.pcard[data-pid="q1"]');
@@ -518,7 +524,7 @@ function setLead(id: string): string | undefined {
 }
 
 describe('a set member', () => {
-  it("draws the set's shared bonus as the last text line, labelled with the members", async () => {
+  it("draws the set's shared bonus as the last text line, labeled with the members", async () => {
     const { container } = render(App, { env: await atSet('st1-st2') });
     await opened();
     for (const id of ['st1', 'st2']) {
@@ -563,7 +569,7 @@ describe('a damage bonus', () => {
   });
 });
 
-describe('the armour card', () => {
+describe('the armor card', () => {
   it('draws the shield, the threshold strip and one tag', async () => {
     render(App, { env: await atSet('a1') });
     await opened();
@@ -807,7 +813,7 @@ describe('compact', () => {
   const pressed = (name: string): string | null =>
     screen.getByRole('button', { name }).getAttribute('aria-pressed');
 
-  it('prints sixteen places to a sheet in either layout, independent of the colour switch', async () => {
+  it('prints sixteen places to a sheet in either layout, independent of the color switch', async () => {
     render(App, { env: await atSet('ci1-q1') });
     await opened();
     await userEvent.click(screen.getByRole('button', { name: 'Компактная' }));
@@ -1101,7 +1107,7 @@ describe('a count from a list', () => {
     ).toBeInTheDocument();
   };
 
-  it('follows the counted name and leaves an uncounted card bare, in colour', async () => {
+  it('follows the counted name and leaves an uncounted card bare, in color', async () => {
     const { container } = render(App, { env: await atSet('ci1*3-q1') });
     await opened();
     expectCounted();
@@ -1225,7 +1231,7 @@ describe('the fit is wired', () => {
     }
   });
 
-  it('grows short black-and-white text to the cap, and leaves colour alone', async () => {
+  it('grows short black-and-white text to the cap, and leaves color alone', async () => {
     const restore = fakeLayout(() => 50, 0);
     try {
       render(App, { env: await atSet('q1') });
@@ -1419,7 +1425,7 @@ describe('the clip warning', () => {
     }
   });
 
-  it('draws the red deleted note, then the warning, then the grey note', async () => {
+  it('draws the red deleted note, then the warning, then the gray note', async () => {
     const restore = tightOn('ci1');
     try {
       render(App, { env: at('#/p/set-missing1', { cloud: fakeCloud(SEED, 'gm2') }) });
@@ -1502,7 +1508,7 @@ describe('English', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Back' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send to printer' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Colour' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Color' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Black and white' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Standard' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Compact' })).toBeInTheDocument();

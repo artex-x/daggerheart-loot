@@ -10,6 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from '../App.svelte';
 import Toast from './Toast.svelte';
 import { expectNoA11yViolations } from '../test/a11y.js';
+import { ICONS } from '../lib/icons.js';
+import { dict } from '../lib/dict.js';
 import {
   brokenStorage,
   fakeData,
@@ -175,7 +177,7 @@ describe('the footer nav', () => {
     );
   });
 
-  it('folds the full licence notice under a one-line summary that toggles it', async () => {
+  it('folds the full license notice under a one-line summary that toggles it', async () => {
     const { container } = render(App, { env: at('#/roll/std') });
     const details = container.querySelector('footer details');
     expect(details).not.toBeNull();
@@ -192,13 +194,13 @@ describe('the footer nav', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('names the licence summary in English and puts it in the tab order', async () => {
+  it('names the license summary in English and puts it in the tab order', async () => {
     /* jsdom has no native summary activation; the keyboard toggle and its
        focus ring are tests/app/states.js case 28, in Chrome. */
     render(App, { env: at('#/roll/std') });
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
     const summary = screen.getByText(
-      'Daggerheart © Darrington Press - DPCGL - Sources and licence'
+      'Daggerheart © Darrington Press - DPCGL - Sources and license'
     );
     summary.focus();
     expect(summary).toHaveFocus();
@@ -221,17 +223,37 @@ describe('the language', () => {
     expect(screen.getByRole('link', { name: 'Standard rules' })).toBeInTheDocument();
   });
 
-  it('leaves the wordmark alone', async () => {
-    /* It is a logo, not a string: the live app writes "Лут Daggerheart" into
-       index.html once and never translates it. The rewrite had it in the
-       dictionary and was turning it into "Loot Daggerheart" on every English
-       page, which no test and no route-level screenshot could see. */
+  it('follows the language in the header wordmark, and keeps the tab title', async () => {
+    /* The wordmark is the header's only (owner, 2026-10-23; DESIGN.md, "Navigation"). */
     render(App, { env: at('#/roll/std') });
+    const brand = screen.getByRole('link', { name: 'ЛутDaggerheart' });
+    expect(brand).toHaveAttribute('href', '/roll/std');
+    expect(brand.querySelector('svg mask#brand-mark-cut')).not.toBeNull();
     await userEvent.click(screen.getByRole('button', { name: 'EN' }));
-    expect(screen.getByRole('link', { name: 'ЛутDaggerheart' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'LootDaggerheart' })).toHaveAttribute(
       'href',
       '/en/roll/std'
     );
+    expect(document.title).toBe('Standard rules - Daggerheart Loot Generator');
+  });
+
+  it('draws the pressed language as a neutral toggle: a check and no gold', async () => {
+    const { container } = render(App, { env: at('#/roll/std') });
+    const group = screen.getByRole('group', { name: dict('ru').langLabel });
+    expect(group).toHaveClass('seg', 'neutral');
+    const ru = within(group).getByRole('button', { name: 'RU' });
+    const en = within(group).getByRole('button', { name: 'EN' });
+    expect(ru).toHaveAttribute('aria-pressed', 'true');
+    expect(ru.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(en.querySelector('svg')).toBeNull();
+    await userEvent.click(en);
+    const pressed = within(screen.getByRole('group', { name: dict('en').langLabel })).getByRole(
+      'button',
+      { name: 'EN' }
+    );
+    expect(pressed).toHaveAttribute('aria-pressed', 'true');
+    expect(pressed.querySelector('svg path')).toHaveAttribute('d', ICONS.check.d);
+    await expectNoA11yViolations(container);
   });
 
   it('is remembered', async () => {
@@ -258,21 +280,34 @@ describe('the language', () => {
   });
 });
 
-describe('which tab is lit', () => {
-  it('marks the section the address names', () => {
+describe('which job is lit', () => {
+  const jobs = (): HTMLElement => screen.getByRole('navigation', { name: 'Разделы' });
+
+  it('lights «Бросок» and the mode on a roll section', () => {
     render(App, { env: at('#/roll/alt') });
-    const tabs = screen.getByRole('navigation', { name: 'Разделы' });
-    expect(within(tabs).getByRole('link', { name: 'Альт. таблицы' })).toHaveAttribute(
+    expect(within(jobs()).getByRole('link', { name: 'Бросок' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    const modes = screen.getByRole('navigation', { name: 'Режим броска' });
+    expect(within(modes).getByRole('link', { name: 'Альтернативные таблицы' })).toHaveAttribute(
       'aria-current',
       'page'
     );
   });
 
-  it('marks the supplements tab for every supplement section', () => {
-    for (const hash of ['#/roll/voa', '#/roll/dv']) {
+  it('lights «Бросок» and the supplements button with its name on a supplement', () => {
+    for (const [hash, name] of [
+      ['#/roll/voa', 'Vault of Ages'],
+      ['#/roll/dv', "The Dragon's Vault"]
+    ] as const) {
       render(App, { env: at(hash) });
-      const tabs = screen.getByRole('navigation', { name: 'Разделы' });
-      expect(within(tabs).getByRole('link', { name: 'Дополнения' }), hash).toHaveAttribute(
+      expect(within(jobs()).getByRole('link', { name: 'Бросок' }), hash).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+      const modes = screen.getByRole('navigation', { name: 'Режим броска' });
+      expect(within(modes).getByRole('button', { name }), hash).toHaveAttribute(
         'aria-current',
         'page'
       );
@@ -281,15 +316,12 @@ describe('which tab is lit', () => {
   });
 
   it('lights Tables for a table, and nothing for a list', () => {
-    /* The live `renderTabs` (`git show 23c00a6^:app.js`) compares against the raw route
-       string, and a list route - `l/…` or `lists/…` - is never that string,
-       so Lists stays unlit on its own pages, same as a record or a print
-       sheet. */
     render(App, { env: at('#/tables/eq_weapon') });
     expect(screen.getByRole('link', { name: 'Таблицы' })).toHaveAttribute(
       'aria-current',
       'page'
     );
+    expect(screen.queryByRole('navigation', { name: 'Режим броска' })).toBeNull();
     cleanup();
 
     render(App, { env: at('#/lists/abc') });
@@ -355,7 +387,7 @@ describe('the address on the way in', () => {
 describe('an unreadable address', () => {
   it('draws the home section and rewrites the bar', () => {
     /* Every route kind lib/hash.ts can parse draws a real page; a genuinely
-       unparseable one normalises to the pinned home before App.svelte ever
+       unparseable one normalizes to the pinned home before App.svelte ever
        sees it, so no fallback heading is reachable any more - see
        docs/specs/ROUTES.md, "Fallback". */
     const router = memoryRouter('#/nowhere');
@@ -386,7 +418,7 @@ describe('pinning the tables page', () => {
     router.navigate('#/tables');
     await tick();
 
-    const pin = screen.getByRole('button', { name: 'Открывать этот раздел при запуске' });
+    const pin = screen.getByRole('button', { name: 'Открывать при запуске' });
     await userEvent.click(pin);
 
     expect(storage.get('dhloot.home.v1')).toBe('#/tables/eq_weapon');
@@ -403,9 +435,7 @@ describe('the toast, through what a real page raises it with', () => {
        pressed. Wondrous is not the default, so this is the pin, not the
        unpin, and it is the exact state #/roll/wondrous ~ pinned exercises. */
     render(App, { env: at('#/roll/wondrous') });
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Открывать этот раздел при запуске' })
-    );
+    await userEvent.click(screen.getByRole('button', { name: 'Открывать при запуске' }));
     expect(screen.getByRole('status')).toHaveTextContent(
       'Приложение будет открываться на этом разделе'
     );
@@ -637,6 +667,44 @@ describe('the toast component, directly', () => {
     await tick();
     expect(from).toHaveFocus();
   });
+
+  it.each([
+    [
+      'a link',
+      { label: (t: ReturnType<typeof dict>) => t.edit, href: '#/homebrew/hb_flask' },
+      'link'
+    ],
+    ['a move', { label: (t: ReturnType<typeof dict>) => t.arrivalOpen, go: vi.fn() }, 'button']
+  ] as const)(
+    'gives the focus back to its origin when an error replaces %s toast that held it',
+    async (_, action, role) => {
+      const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
+      const { container } = render(Toast, { app });
+      const main = add(document.createElement('main'));
+      main.id = 'main';
+      main.tabIndex = -1;
+      const from = add(document.createElement('button'), 'Добавить');
+      from.focus();
+      app.say(() => 'Предмет «Фляга» добавлен в список', { action });
+      const act = await screen.findByRole(role, { name: /Изменить|Открыть/ });
+      act.focus();
+      expect(act).toHaveFocus();
+      app.say(() => 'Не получилось', { error: true });
+      await waitFor(() => {
+        expect(from).toHaveFocus();
+      });
+
+      app.say(() => 'Предмет «Фляга» добавлен в список', { action });
+      const again = await screen.findByRole(role, { name: /Изменить|Открыть/ });
+      again.focus();
+      from.remove();
+      app.say(() => 'Не получилось', { error: true });
+      await waitFor(() => {
+        expect(main).toHaveFocus();
+      });
+      await expectNoA11yViolations(container);
+    }
+  );
 
   it('hides the toast when its link is pressed', async () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/i/ci1') }));
@@ -907,6 +975,7 @@ describe('the account control', () => {
     });
     const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
     expect(button).toHaveTextContent(/^g$/);
+    expect(button.querySelector('.ini + svg path')).toHaveAttribute('d', ICONS.chevron.d);
     expect(button).toHaveAttribute('aria-haspopup', 'menu');
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(button).not.toHaveAttribute('aria-controls');
@@ -955,7 +1024,7 @@ describe('the account control', () => {
     cloud.auth.session = () => new Promise(() => undefined);
     render(App, { env: at('#/roll/std', { cloud }) });
     expect(document.querySelector('a[href="/account"]')).toBeNull();
-    expect(document.querySelector('[aria-haspopup]')).toBeNull();
+    expect(document.querySelector('.topbar [aria-haspopup]')).toBeNull();
   });
 
   it('marks the account page as current, lights no tab and titles the tab', async () => {
@@ -996,6 +1065,42 @@ describe('the account control', () => {
     expect(document.title).toBe('Генератор лута Daggerheart');
   });
 
+  it.each([
+    '#/account',
+    '#/lists',
+    '#/lists/' + uuid(101),
+    '#/homebrew',
+    '#/homebrew/sets',
+    '#/homebrew/new',
+    '#/homebrew/hb_emberaxeaaaaaaaa'
+  ])('rings the control on the account page %s and lights no job', async (hash) => {
+    render(App, { env: at(hash, { cloud: fakeCloud(SEED, 'gm1') }) });
+    const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    expect(button).toHaveClass('on');
+    expect(
+      screen.getByRole('navigation', { name: 'Разделы' }).querySelector('[aria-current]')
+    ).toBeNull();
+  });
+
+  it.each(['#/i/ci1', '#/roll/std'])('leaves the ring off on %s', async (hash) => {
+    render(App, { env: at(hash, { cloud: fakeCloud(SEED, 'gm1'), data: fakeData(LOOT) }) });
+    const button = await screen.findByRole('button', { name: 'Аккаунт: gm1@example.test' });
+    expect(button).not.toHaveClass('on');
+  });
+
+  it('rings the signed-out control on the lists page', async () => {
+    render(App, { env: at('#/lists', { cloud: fakeCloud(SEED) }) });
+    expect(await screen.findByRole('link', { name: 'Войти' })).toHaveClass('on');
+  });
+
+  it('keeps «Войти» as visible text, not a hidden name', async () => {
+    render(App, { env: at('#/roll/std', { cloud: fakeCloud(SEED) }) });
+    const link = await screen.findByRole('link', { name: 'Войти' });
+    const label = link.querySelector('span');
+    expect(label?.textContent).toBe('Войти');
+    expect(label?.className ?? '').not.toMatch(/\b(t|vh)\b/);
+  });
+
   it('marks the signed-out control as current on #/account too', async () => {
     render(App, { env: at('#/account', { cloud: fakeCloud(SEED) }) });
     expect(await screen.findByRole('link', { name: 'Войти' })).toHaveAttribute(
@@ -1012,19 +1117,18 @@ describe('the account control', () => {
   });
 });
 
-describe('the five tabs and the lists in every build', () => {
+describe('the three jobs and the lists in every build', () => {
   const tabLinks = (): string[] =>
     [...screen.getByRole('navigation', { name: 'Разделы' }).querySelectorAll('a')].map(
       (a) => a.getAttribute('href') ?? ''
     );
 
-  it('draws five tabs and no Lists tab signed out, signed in and with no sign-in', async () => {
+  it('draws three jobs and no Lists job signed out, signed in and with no sign-in', async () => {
     for (const cloud of [fakeCloud(SEED), fakeCloud(SEED, 'gm1'), null]) {
       render(App, { env: at('#/roll/std', { cloud }) });
       await waitFor(() => {
-        expect(tabLinks()).toHaveLength(5);
+        expect(tabLinks()).toEqual(['/roll/std', '/tables', '/search']);
       });
-      expect(tabLinks()).not.toContain('#/lists');
       cleanup();
     }
   });

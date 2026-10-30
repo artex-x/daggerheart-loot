@@ -1237,10 +1237,10 @@ describe('the dataset', () => {
     expect(browserData(() => loot).load()).toBe(loot);
   });
 
-  it('reports nothing rather than a broken catalogue', () => {
+  it('reports nothing rather than a broken catalog', () => {
     /* A deploy that serves data.js as HTML, or a folder missing the file: the
        app has to be able to say so, and a half-parsed object would instead show
-       an empty catalogue as though that were the truth. */
+       an empty catalog as though that were the truth. */
     const junk: unknown[] = [
       undefined,
       null,
@@ -1260,11 +1260,11 @@ describe('the dataset', () => {
     expect(browserData(() => ({ items: { core_item: 'nope' } })).load()).toBe(null);
   });
 
-  it('hands a test its own catalogue', () => {
+  it('hands a test its own catalog', () => {
     expect(fakeData(loot).load()).toBe(loot);
   });
 
-  it('tells an empty catalogue apart from one that did not load', () => {
+  it('tells an empty catalog apart from one that did not load', () => {
     /* An empty book is a book. A missing data.js is a page that has to say so. */
     expect(fakeData({ items: {} }).load()).toEqual({ items: {} });
     expect(noData().load()).toBe(null);
@@ -1307,7 +1307,7 @@ describe("the record links' card versions", () => {
     }
   });
 
-  it('hands a test its own versions, and none without a catalogue', () => {
+  it('hands a test its own versions, and none without a catalog', () => {
     expect(fakeData({ items: {} }, { w1: 'k3x9a1' }).cardVersion('w1')).toBe('k3x9a1');
     expect(fakeData({ items: {} }).cardVersion('w1')).toBeUndefined();
     expect(noData().cardVersion('w1')).toBeUndefined();

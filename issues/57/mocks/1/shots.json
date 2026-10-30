@@ -1,0 +1,34 @@
+[
+  {
+    "page": "share.html",
+    "q": {
+      "v": "rec"
+    },
+    "name": "share-rec",
+    "size": [1200, 630]
+  },
+  {
+    "page": "share.html",
+    "q": {
+      "v": "text"
+    },
+    "name": "share-text",
+    "size": [1200, 630]
+  },
+  {
+    "s": "type",
+    "name": "type"
+  },
+  {
+    "s": "pressed",
+    "name": "pressed"
+  },
+  {
+    "s": "glyph",
+    "name": "glyph"
+  },
+  {
+    "s": "print",
+    "name": "print"
+  }
+]

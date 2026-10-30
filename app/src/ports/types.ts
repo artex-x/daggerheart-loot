@@ -10,7 +10,7 @@
  *   share sheet is dismissed by the person using it. Each port says so in its
  *   type, so a caller cannot forget the case;
  * - none of them can be exercised in a unit test as a global. As an argument
- *   they can, which is the difference between testing the behaviour and testing
+ *   they can, which is the difference between testing the behavior and testing
  *   that a browser exists.
  *
  * `app/src/lib` may not import this file: pure logic stays pure, and a port is
@@ -217,7 +217,7 @@ export interface DragPort {
  * from the bundle and needs no async bootstrap - CONTRACTS.md section 4. That
  * makes reading it a browser fact rather than an import, and `null` a real
  * answer: if the script failed to load the app has to say so rather than render
- * an empty catalogue as though it were the truth.
+ * an empty catalog as though it were the truth.
  */
 export interface DataPort {
   load(): Loot | null;

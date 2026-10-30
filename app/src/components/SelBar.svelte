@@ -135,7 +135,7 @@
 </script>
 
 {#if n || shared}
-  <!-- A labelled region: the bar sits after the footer, outside every other landmark. -->
+  <!-- A labeled region: the bar sits after the footer, outside every other landmark. -->
   <section class="selbarwrap" class:idle={!n} class:vh={!n} aria-label={t.selRegion}>
     <div class="selbar" bind:this={bar}>
       <span class="selsumm" aria-live={shared ? 'polite' : undefined}
@@ -262,7 +262,7 @@
     align-items: center;
     column-gap: 12px;
     row-gap: 6px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.3;
     color: var(--gold-soft);
   }
@@ -288,7 +288,7 @@
     border: 1px solid rgb(216 171 94 / 35%);
     background: transparent;
     color: var(--gold-soft);
-    font-size: 17px;
+    font-size: var(--t-title);
     line-height: 1;
     cursor: pointer;
     display: inline-flex;
@@ -331,7 +331,7 @@
   .sentline {
     flex: 1 1 100%;
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted);
     overflow-wrap: anywhere;
   }
@@ -348,7 +348,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px 12px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--txt);
   }
 

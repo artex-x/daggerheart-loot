@@ -1,6 +1,8 @@
 <script lang="ts">
-  /* The heading of a roll page: its name, the two round buttons beside it, the
-     line under it, and the explanation those buttons fold open.
+  /* The heading of a page: its name, the pin and the help beside it, the line under
+     it, and the explanation the help folds open. From 761 px the two buttons carry
+     their labels; up to 760 px they stay round with the same names until their page's
+     batch moves them (DESIGN.md, "The Same Label Rule").
 
      Extracted on the second use rather than designed: the roll panel and the
      Core rules panel had the same thirty lines and the same two hundred of
@@ -46,14 +48,13 @@
      needs. -->
 <div class="page-head">
   <h1 class="page-h">{title}</h1>
-  <!-- 26px of paint, 44px of target: it sits in the heading row and a mis-tap
-       silently changes where the app opens. -->
+  <!-- Round below 761 px: 26px of paint, 44px of target. It sits in the heading row
+       and a mis-tap silently changes where the app opens. The pressed pin is the
+       neutral pressed state (DESIGN.md, "Segmented control"), not gold. -->
   <button
     type="button"
     class="homebtn"
     class:on
-    title={on ? t.homeOn : t.homeHint}
-    aria-label={on ? t.homeOn : t.homeHint}
     aria-pressed={on}
     onclick={() => {
       const wasHome = on;
@@ -61,11 +62,12 @@
       else app.say(wasHome ? (t) => t.homeReset : (t) => t.homeSet);
     }}
   >
-    <Icon name="home" />
+    <Icon name={on ? 'check' : 'home'} /><span class="txt">{on ? t.homeOn : t.homeHint}</span>
   </button>
   {#if help}
     <HelpButton
       lang={app.lang}
+      labeled
       open={helpOpen}
       onclick={() => {
         helpOpen = !helpOpen;
@@ -92,7 +94,7 @@
 
   .page-h {
     margin: 0;
-    font-size: var(--h-page-size);
+    font-size: var(--t-page);
     font-weight: var(--h-page-weight);
     letter-spacing: var(--h-page-spacing);
   }
@@ -117,13 +119,44 @@
 
   .homebtn:hover {
     border-color: var(--gold);
-    color: var(--gold-soft);
+    color: var(--txt);
   }
 
   .homebtn.on {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: var(--ink-on-gold);
+    background: var(--surface2);
+    border-color: var(--muted2);
+    color: var(--txt);
+  }
+
+  /* The `.vh` rule of `styles/tokens.css` up to 760 px, where the label stays the name. */
+  .txt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 761px) {
+    .homebtn {
+      width: auto;
+      height: 32px;
+      gap: 6px;
+      padding: 0 12px 0 10px;
+      border-radius: var(--r-sm);
+      font: inherit;
+      font-size: var(--t-data);
+      font-weight: 600;
+    }
+
+    .txt {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+    }
   }
 
   .homebtn :global(svg) {
@@ -145,7 +178,7 @@
   .page-sub {
     margin: 0 0 18px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: var(--t-small);
     max-width: 70ch;
   }
 
@@ -153,7 +186,7 @@
     .homebtn {
       width: 34px;
       height: 34px;
-      font-size: 16px;
+      font-size: var(--t-body);
     }
 
     .homebtn :global(svg) {

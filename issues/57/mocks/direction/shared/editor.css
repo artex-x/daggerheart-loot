@@ -1,0 +1,320 @@
+/* The homebrew editor mock, shared by the directions. */
+.back {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: var(--t-small);
+  color: var(--muted);
+  text-decoration: none;
+}
+.ed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 22px;
+  align-items: start;
+}
+.edC {
+  grid-template-columns: 440px minmax(0, 1fr);
+}
+.eform {
+  padding: 6px 20px 0;
+}
+.es {
+  padding: 14px 0 6px;
+  border-bottom: 1px solid var(--line);
+}
+.es h2 {
+  font-size: var(--t-title);
+  margin: 0 0 10px;
+}
+.es:last-of-type {
+  border-bottom: 0;
+}
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+}
+.g2 .ef.wide {
+  grid-column: 1 / -1;
+}
+.ef {
+  margin-bottom: 14px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.ef .field {
+  width: 100%;
+}
+.el {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: var(--txt);
+}
+.opt {
+  font-weight: 400;
+  color: var(--muted2);
+  font-size: var(--t-data);
+}
+.ef .seg {
+  flex-wrap: wrap;
+  border-radius: var(--r);
+}
+.ef .seg.wrapseg button {
+  min-height: 32px;
+}
+.ef .seg button {
+  font-size: 14px;
+}
+.langs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.langs .lh {
+  font-size: var(--t-data);
+  color: var(--muted2);
+  order: -1;
+}
+.lang2 button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fill {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--muted2);
+  display: inline-block;
+}
+.fill.on {
+  background: var(--muted);
+  border-color: var(--muted);
+}
+.ta {
+  width: 100%;
+  border: 1px solid var(--line2);
+  border-radius: var(--r-sm);
+  background: var(--bg2);
+}
+.ta .tb {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.ta .tb button {
+  width: 32px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line2);
+  background: var(--surface);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.ta .tx {
+  padding: 10px 12px;
+  min-height: 70px;
+  font-size: 15px;
+}
+.pic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dmg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.field.sel {
+  justify-content: space-between;
+  min-width: 120px;
+  cursor: pointer;
+}
+.field.sel svg {
+  width: 14px;
+  height: 14px;
+}
+.field.num2 {
+  width: 80px;
+}
+.field.num2 input {
+  font: 650 16px/1 var(--mono);
+  text-align: center;
+}
+.addalt {
+  margin: 0 0 10px -8px;
+}
+.ebar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 20px 16px;
+  margin: 0 -20px;
+  background: var(--surface);
+  border-top: 1px solid var(--line2);
+  border-radius: 0 0 var(--r) var(--r);
+}
+.ebar .inl {
+  font-size: var(--t-small);
+}
+.ebar .danger2 {
+  margin-left: auto;
+}
+.prevbtn {
+  display: none;
+}
+.prev {
+  position: sticky;
+  top: 76px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.prev .pt {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+.prev .pt .seg button {
+  padding: 5px 9px;
+  font-size: 12px;
+}
+.pcard {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 0;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 50%),
+    0 14px 40px rgb(0 0 0 / 45%);
+}
+.prev.big .pcard {
+  max-width: 440px;
+}
+.ef.bad > .field,
+.ef.bad > .seg,
+.ef.bad .dmg .field.sel {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 1px rgb(224 104 95 / 40%);
+}
+.ferr {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--t-small);
+  color: var(--danger-text);
+}
+.ferr svg {
+  width: 14px;
+  height: 14px;
+}
+.esum {
+  margin: 14px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  border: 1px solid rgb(224 104 95 / 45%);
+  background: rgb(224 104 95 / 9%);
+}
+.esum b {
+  display: block;
+  color: var(--danger-text);
+  margin-bottom: 4px;
+}
+.esum ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 22px;
+}
+.esum a {
+  color: var(--txt);
+}
+
+.psheet {
+  display: none;
+}
+@media (max-width: 760px) {
+  .psheet {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    background: var(--surface2);
+    border-radius: var(--r) var(--r) 0 0;
+    border-top: 1px solid var(--line2);
+    padding: 6px 12px 18px;
+    margin: 0 -16px;
+  }
+  .psheet .grab {
+    width: 42px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--line2);
+    margin: 2px auto 0;
+  }
+  .psheet .sh {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .psheet .pt {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+  .psheet .pt .seg button {
+    padding: 5px 9px;
+    font-size: 12px;
+  }
+  .ed,
+  .edC {
+    grid-template-columns: 1fr;
+  }
+  .prev {
+    display: none;
+  }
+  .eform {
+    padding: 2px 14px 0;
+  }
+  .g2 {
+    grid-template-columns: 1fr;
+  }
+  .prevbtn {
+    display: inline-flex;
+  }
+  .ebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 8;
+    padding: 10px 16px 12px;
+    background: rgb(26 22 38 / 96%);
+    border-top: 1px solid var(--line2);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    margin: 0;
+    border-radius: 0;
+  }
+  .ebar .inl {
+    display: none;
+  }
+  .ebar .danger2 {
+    margin-left: 0;
+  }
+  main {
+    padding-bottom: 90px;
+  }
+}

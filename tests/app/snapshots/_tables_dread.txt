@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -90,6 +88,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Молниевая Пушка ЙитианцевРанг 4 · Магическое · Знание · Очень д... [namelen=496 namehash=7f3cef6c]
 8Амулет ЗариПосле успешной атаки против нежити или цели, поражён... [namelen=206 namehash=41551375]
 9Амулет ЖизнестойкостиВы получаете преимущество на Броски Реакци... [namelen=122 namehash=46f06a3a]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -105,13 +104,13 @@ daggerheart.com
 Амулет Жизнестойкости
 Амулет Зари
 Банка Зелёной Слизи
+Бросок
 Брошюра по Истории Искусства
 Войти
 Длинный Лук Фира
 Дополнения
 Зеркало Фей
 К содержимому
-Как это работает
 Клинок Живущих
 Колчан Фей
 Конфиденциальность
@@ -122,9 +121,8 @@ daggerheart.com
 Масло Зелёной Слизи
 Мистическая Смола
 Молниевая Пушка Йитианцев
-Обычные правила
 Одеяния Дьявола
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Посох Тайного Пламени
 Предметы сообществ
@@ -155,22 +153,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolbox]
   link "Skip to content" [url=/en/tables/dread_gm_toolbox#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -207,7 +203,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Arcane ResinA tiny jar of bowstring wax that changes the damag... [namelen=259 namehash=f5ce4005]
@@ -239,6 +235,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
 7Yithian Lightning GunTier 4 · Magic · Knowledge · Very Far · d1... [namelen=473 namehash=0ea59c9f]
 8Amulet of the DawnAfter a successful attack against an undead o... [namelen=200 namehash=5c0ed4bd]
 9Amulet of VitalityYou gain advantage on Strength Reaction rolls... [namelen=111 namehash=c66fbbbe]
+?Help
 Aether Rifle
 Alt. tables
 Amulet of Vitality
@@ -264,30 +261,30 @@ Glass from Leng
 Green Ooze Oil
 Grid
 Hope & Fear
-How this works
 Install as an app
 Jar of Green Ooze Slime
 Lazarus Protocol Serum
 Link to this table
 List
 Longbow of Fyr
+LootDaggerheart
 Many Worlds Tavern
 Mi-Go Brain Cylinder
 Mi-Go Mist Projector
 Moon Scarf
-Open this section on start
+Open on start
 Other
 Pen of Pals
 Privacy
 Purple Aim
 RU
+Roll
 Search
 Shield of the Sun
 Sign in
 Silver Key
 Skip to content
 Staff of the Secret Flame
-Standard rules
 Supplements
 Tables
 Terms of use
@@ -298,4 +295,3 @@ Vial of Holy Water
 Wondrous Environments
 Yithian Lightning Gun
 daggerheart.com
-ЛутDaggerheart

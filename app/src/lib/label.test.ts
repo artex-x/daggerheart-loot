@@ -1,7 +1,7 @@
 /* The words a badge and the line under a heading carry.
  *
  * Held against the real data rather than invented records where it can be:
- * every source in the catalogue has to produce a label, and every record has to
+ * every source in the catalog has to produce a label, and every record has to
  * land in a table, because a record that lands nowhere loses its "show in the
  * table" link and nobody notices until somebody looks for it. */
 
@@ -12,6 +12,7 @@ import {
   FOLD_OWN,
   badgeKind,
   foldOwn,
+  kindGlyph,
   printSrc,
   relName,
   relOrder,
@@ -39,7 +40,7 @@ const rec = (over: Partial<Record_>): Record_ => ({
   ...over
 });
 
-describe('which colour the chip takes', () => {
+describe('which color the chip takes', () => {
   it('is one of two, and equipment counts as a thing you have', () => {
     expect(badgeKind(rec({ kind: 'item' }))).toBe('item');
     expect(badgeKind(rec({ kind: 'consumable' }))).toBe('cons');
@@ -421,5 +422,25 @@ describe('a relation of a catalog record to homebrew records', () => {
     expect(foldOwn(list, FOLD_OWN, undefined, setFolds('saints-ensemble')).more).toBe(0);
     expect(foldOwn(list, FOLD_OWN, undefined, setFolds(undefined)).more).toBe(0);
     expect(relText(list, 'ru', 1, undefined, () => true)).toBe(`${cat('q1').ru} и ещё 4`);
+  });
+});
+
+describe('kindGlyph', () => {
+  it('draws the shield for armor, whatever the kind', () => {
+    expect(kindGlyph('equip', 'armor')).toBe('kindArmor');
+  });
+
+  it('draws the swords for a primary and a secondary weapon', () => {
+    expect(kindGlyph('equip', 'weapon')).toBe('kindWeapon');
+    expect(kindGlyph('equip', 'secondary')).toBe('kindWeapon');
+  });
+
+  it('draws the flask for a consumable with no stat block', () => {
+    expect(kindGlyph('consumable', undefined)).toBe('kindConsumable');
+  });
+
+  it('draws the gem for any other item', () => {
+    expect(kindGlyph('item', undefined)).toBe('kindItem');
+    expect(kindGlyph('equip', undefined)).toBe('kindItem');
   });
 });

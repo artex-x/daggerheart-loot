@@ -21,7 +21,7 @@ SEO.
 rather than on a build: `npm run check` does not build, so a check that read
 `dist/index.html` would be reading whatever was built last. The same suite
 reads that document's `<head>` (`headFacts`) and asserts it carries every field
-the preview card needs - title, description, robots, colour scheme, viewport,
+the preview card needs - title, description, robots, color scheme, viewport,
 every `og:*` and `twitter:*`, and the icon. Before R0c (issue 47) this compared
 `app/index.html`'s head against the now-deleted root `index.html`'s; that
 second document is gone, so the check is a single-document read now. The
@@ -54,9 +54,9 @@ The preview host's cards (`CONTRACTS.md` section 5), probed by the owner on
 
 | Link | Card | Picture |
 |---|---|---|
-| `/h/` rich item, Russian and English | the title, the full subtitle and text; the English card in English | `og/_none.jpg` |
+| `/h/` rich item, Russian and English | the title, the full subtitle and text; the English card in English | the site picture of its language, large (since 2026-10-29; probed with `og/_none.jpg` on 2026-10-14) |
 | `/h/` item with its own WebP picture | the same | its WebP picture |
-| `/h/` item with 1000 related items | drawn, the set line folded | `og/_none.jpg` |
+| `/h/` item with 1000 related items | drawn, the set line folded | the site picture of its language, large (since 2026-10-29; probed with `og/_none.jpg` on 2026-10-14) |
 | `/s/` players' link | the list name, «5 позиций.» and the players' note | the site picture |
 | `/s/` GM link | the same and « · Ссылка для мастера» | the site picture |
 | `/p/` | «Печать карточек», «Войдите, чтобы печатать карточки.» | the site picture |
@@ -418,13 +418,16 @@ use was retired on 2026-09-24 (`docs/DECISIONS.md`).
   head and in every static page's head are all `--bg` from `tokens.css`;
   `tests/derived.js` pins them to one value.
 - The icons are `app/public/icons/`: `icon.svg` is the source, and
-  `tools/artwork/icons.mjs` rasterises it into `icon-192.png`,
+  `tools/artwork/icons.mjs` rasterizes it into `icon-192.png`,
   `icon-512.png`, `maskable-512.png` and `apple-touch-icon.png` (180 px),
   committed like `card/*.svg` (`docs/artwork.md`, "Icons"). The drawing
-  stays inside the maskable safe zone, a centred circle of radius 40% of
+  stays inside the maskable safe zone, a centered circle of radius 40% of
   the side, so the maskable icon is the same drawing. iOS reads the
   `apple-touch-icon` link in `app/index.html`, not the manifest, for the
-  home-screen icon. The tab favicon is unchanged.
+  home-screen icon. The tab favicon is `icons/favicon.svg`, the same mark on
+  a rounded dark tile, linked by every document that has an icon (the app,
+  the site pages, the record pages, `404.html` and the old host); the header
+  and both site share cards draw the same mark (`docs/artwork.md`, "Icons").
 - `app/index.html` also carries a static
   `<meta name="apple-mobile-web-app-title" content="Лут DH">`: iOS takes the
   home-screen label from it; whether iOS Safari reads the manifest's
@@ -464,9 +467,9 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
 
 | Request (path relative to the scope) | Policy |
 |---|---|
-| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit as `img/`; a miss without a connection is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects and the app's `onerror` swaps in `img/thumb/_none.webp` |
+| `img/thumb/` | Cache first in `dhloot-thumb-v1`, capped at 1500 entries, above the whole thumbnail set; the same revalidation on every hit as `img/`; a miss without a connection is answered with the cached `img/<x>.webp` from `dhloot-img-v1` when there is one, else it rejects and the app's `onerror` marks the picture broken and draws the kind glyph |
 | `img/` except `img/thumb/` | Cache first in `dhloot-img-v1`, capped at 300 entries (the oldest goes first); a hit is answered from the cache at once and revalidated in the background: an ok answer with the cached `ETag` writes nothing, a different or absent `ETag` replaces the entry, a failed fetch keeps it; a miss is answered as soon as the network answers, and stored and trimmed in the background |
-| `assets/` (the hashed build files) | Cache first in `dhloot-assets-v1`, never revalidated: a hashed name never changes its bytes. Capped at 30 entries by insertion order, so the files of old deploys, which nothing asks for again, leave as new ones arrive |
+| `assets/` (the hashed build files) | Cache first in `dhloot-assets-v1`, never revalidated: a hashed name never changes its bytes. Capped at 60 entries by insertion order, so the files of old deploys, which nothing asks for again, leave as new ones arrive |
 | Everything else: every navigation (the document, `en/`, `pages/`, `i/`), `data.js`, `sw.js`, the manifest, `icons/`, `card/`, `og/`, the other root files, another origin (Supabase, now and later), a URL whose query holds `auth-callback`, a path outside the scope, any method but `GET` | Not answered: the worker calls no `respondWith`, and the browser's own network answers |
 
 - There is no offline shell, no document cache and no navigation preload.
@@ -507,8 +510,10 @@ pictures and hashed build files. It holds no offline shell (2026-09-24,
   holds more files than the cap. The full-picture cache still keeps 300 by
   insertion order, so a tile view of a table longer than 300 evicts its own
   first tiles; they refetch.
-- The asset cap of 30 holds several deploys of today's two files (one
-  module, one stylesheet). A build that splits into more files than the cap
+- The asset cap of 60 holds several deploys of what one visit takes: the
+  module, the stylesheet, a few lazy chunks and up to four files of the
+  self-hosted UI face (the Latin and Cyrillic subsets, upright and italic).
+  A build that splits into more files than the cap
   evicts its own oldest file, which is then fetched again; raise the cap
   with the split.
 - The URL `sw.js` is stable: a registered worker keeps polling its own URL,
@@ -601,7 +606,7 @@ JavaScript and without a hash route (the route grammar is frozen,
   serves both copies too.
 - `.claude/hooks/edit-guard.mjs` blocks a direct write to `pages/*.html`
   and `pages/en/*.html`; `tests/derived.js` compares each output with a
-  fresh render and checks its language, head, the theme colour, the manifest
+  fresh render and checks its language, head, the theme color, the manifest
   link and the two iOS tags, sibling link, both back links and the script;
   `tools/check-site.mjs` probes all six outputs; `tests/app/states.js`
   case 28 asks Chrome whether both guides are installable; case 29 follows the install guide's top back link

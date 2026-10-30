@@ -111,7 +111,7 @@
   }
 
   .lbl {
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 650;
     color: var(--gold-soft);
   }
@@ -139,7 +139,7 @@
     border: 0;
     background: transparent;
     color: var(--txt);
-    font: 600 13px/1 var(--mono);
+    font: 600 var(--t-data)/1 var(--mono);
     text-align: center;
   }
 
@@ -154,7 +154,7 @@
     color: var(--muted);
     min-width: 34px;
     padding: 0 8px;
-    font: 600 12.5px/1 var(--ui);
+    font: 600 var(--t-data)/1 var(--ui);
     cursor: pointer;
     transition: 0.14s;
   }
@@ -183,12 +183,12 @@
   }
 
   .of {
-    font: 600 13px/1 var(--mono);
+    font: 600 var(--t-data)/1 var(--mono);
     color: var(--muted);
   }
 
   .sum {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 

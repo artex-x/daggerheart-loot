@@ -1,5 +1,6 @@
 # 2026-10-21 - A task branch pushes every batch; a green CI run of the same tree gates main
 
+- Amended by "Task 57 lands on main in three waves" (2026-10-29): for task 57, three squashes.
 - Task: `worktree-supabase` (owner, 2026-10-21: CI on a push of task branches, `check:fast` as the local floor, a local `check:db` for schema batches, any `ci.yml` accepted, CI golden text allowed; mechanism by the planner).
 - Decision: `ci.yml` runs on a push of `claude/**`. A batch runs `rtk npm run check:fast`, whose exit arms `.check-fast-pass.json` (rule 2e accepts it on a task branch only), commits a new commit and pushes. `.claude/hooks/ci-credit.mjs` arms `.check-cache.json` and `.check-db-cache.json` (`by: "ci"`) only when GitHub reports a push or dispatch run of `ci.yml` in this repository, completed and green in every required job, whose sha's tree equals the working tree (`.claude/README.md`, "CI credit").
 - Decision (main): rule 2x denies a push that updates `main` unless `.check-cache.json` holds the source commit's key; closeout merges `origin/main` into the branch when `main` moved, credits the tip, squash-merges it onto `main` and pushes. Schema batches keep a local `check:db`, because a pushed migration is locked. `npm run check` is the one full check; its two halves are gone.

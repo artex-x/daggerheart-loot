@@ -14,6 +14,7 @@
      The image review page draws this card's head too: docs/artwork.md, "The
      card follows the site's card". */
   import Actions from './Actions.svelte';
+  import ArtWell from './ArtWell.svelte';
   import Badge from './Badge.svelte';
   import FoldButton from './FoldButton.svelte';
   import Icon from './Icon.svelte';
@@ -26,6 +27,7 @@
     FOLD_OWN,
     cardBadges,
     foldOwn,
+    kindGlyph,
     relName,
     relOrder,
     setFolds,
@@ -70,7 +72,7 @@
      * which face found it, not where it sits in Core.
      */
     rollLabel?: number;
-    /** Which duality column found it, badged in that column's colour. */
+    /** Which duality column found it, badged in that column's color. */
     col?: AltCol;
     onartfail: (id: string) => void;
     /**
@@ -82,7 +84,7 @@
     onopen?: ((r: Record_) => void) | undefined;
     /** The two icon buttons beside the name: copy the name, copy the link. */
     nameActions?: Snippet;
-    /** The labelled row under the description: send, picture, text. */
+    /** The labeled row under the description: send, picture, text. */
     actions?: Snippet;
     /** The add-to-list control and the print link, off `listPicker` in app.js -
      *  only the full card draws it, the same as `actions`. */
@@ -128,7 +130,7 @@
     const l = textLangOf(it);
     return l && l !== lang ? l : undefined;
   });
-  const art = $derived(artSrc(it.img, artBroken));
+  const art = $derived(it.img && !artBroken ? artSrc(it.img) : null);
   const badges = $derived(cardBadges(it, lang, t));
   /* The same as `textLang` for a homebrew set bonus or rule card text, whose language the
      stored card decides, not the record. */
@@ -228,15 +230,19 @@
   <!-- A button rather than a figure: on a table row it opens the record, and
        the full card keeps the element so the two stay one component. -->
   <button type="button" class="card-media" aria-label={t.openPage} onclick={() => onopen?.(it)}>
-    <img
-      src={art}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      onerror={() => {
-        onartfail(it.id);
-      }}
-    />
+    <ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}>
+      {#if art}
+        <img
+          src={art}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onerror={() => {
+            onartfail(it.id);
+          }}
+        />
+      {/if}
+    </ArtWell>
   </button>
 
   <div class="card-body">
@@ -347,7 +353,7 @@
           </p>
         {/if}
         {#if setMembers.length}
-          <!-- Every catalogue member in its order, then the own ones by name,
+          <!-- Every catalog member in its order, then the own ones by name,
                the record itself inert: the tier ladder's own rule for the rung you are on
                (`.step.on[aria-current]` above), reused here for the piece
                of the set you are looking at. One flex item holding the
@@ -487,7 +493,7 @@
 
   .card-media {
     position: relative;
-    background: #0a0810;
+    background: var(--art-well);
     overflow: hidden;
     flex: none;
     border: 0;
@@ -560,7 +566,7 @@
   }
 
   .steps-l {
-    font: 650 10.5px/1 var(--mono);
+    font: 650 var(--t-badge)/1 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted2);
@@ -574,7 +580,7 @@
     border: 1px solid var(--line2);
     background: var(--surface);
     color: var(--muted);
-    font: 650 12.5px/1 var(--ui);
+    font: 650 var(--t-data)/1 var(--ui);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -595,7 +601,7 @@
 
   .card-name {
     margin: 0;
-    font-size: 17px;
+    font-size: var(--t-title);
     font-weight: 680;
     letter-spacing: -0.01em;
     line-height: 1.28;
@@ -607,7 +613,7 @@
   /* Without this the card cannot shrink below its longest word, which pushed
      the results grid past a 320px screen. */
   .card.full .card-name {
-    font-size: 19px;
+    font-size: var(--t-section);
   }
 
   .card-name > span,
@@ -653,7 +659,8 @@
   }
 
   .eqstats span {
-    font: 600 11.5px/1 var(--mono);
+    font: 600 var(--t-data)/1 var(--ui);
+    font-variant-numeric: tabular-nums;
     color: var(--muted);
     background: rgb(255 255 255 / 3.5%);
     border: 1px solid var(--line2);
@@ -665,7 +672,7 @@
   .card-desc {
     margin: 0;
     color: #cfc8e0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.55;
     overflow-wrap: anywhere;
   }
@@ -673,12 +680,12 @@
   /* The body's 8px gap less 2px: the line belongs to the text under it. */
   .text-lang {
     margin: 0 0 -2px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 
   .card.full .card-desc {
-    font-size: 14px;
+    font-size: var(--t-small);
     line-height: 1.62;
   }
 
@@ -697,7 +704,7 @@
     gap: 2px 5px;
     margin: 0;
     overflow-wrap: anywhere;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.45;
     min-width: 0;
   }
@@ -719,7 +726,7 @@
 
   /* The bonus is a block of its own, not a flex row: its first paragraph holds the name. */
   .set-bonus {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.45;
     min-width: 0;
   }
@@ -733,7 +740,7 @@
     color: var(--muted2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     white-space: nowrap;
   }
 
@@ -750,7 +757,7 @@
   /* The fold button reads at the line's own size; this outranks Button's `.btn.bare`. */
   .craft p :global(.btn.bare),
   .steps :global(.btn.bare) {
-    font-size: 12.5px;
+    font-size: var(--t-data);
   }
 
   /* `.card-acts` moved to `Actions.svelte`; its two 600px descendant
@@ -818,7 +825,7 @@
     padding: 5px 8px;
     cursor: pointer;
     list-style: none;
-    font-size: 12px;
+    font-size: var(--t-label);
     line-height: 1.35;
     flex-wrap: wrap;
   }
@@ -845,7 +852,7 @@
   .ref-s {
     font-style: normal;
     color: var(--muted2);
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -857,14 +864,14 @@
   .ref-text {
     padding: 7px 9px 5px;
     color: var(--muted);
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.5;
   }
 
   .refs details > a {
     display: inline-block;
     padding: 0 9px 8px;
-    font-size: 11px;
+    font-size: var(--t-data);
     color: var(--gold-soft);
   }
 
@@ -881,7 +888,7 @@
     }
 
     .card-name {
-      font-size: 15.5px;
+      font-size: var(--t-control);
       /* The icon buttons grow to a hittable size here and the name was
          aligned on its baseline, so on a one-line name the text and the
          icons drifted apart vertically. */
@@ -889,7 +896,7 @@
     }
 
     .card-desc {
-      font-size: 13px;
+      font-size: var(--t-data);
     }
 
     .card-name-acts {

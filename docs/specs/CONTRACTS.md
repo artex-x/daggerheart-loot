@@ -37,7 +37,8 @@ answers `/en/i/<id>` with a 301 to `/i/en/<id>`. Pages routes `/tables/*` to the
 worker for the bare `/tables` too, so `_routes.json` excludes `/tables` and
 `/en/tables`, and their slash forms `/tables/` and `/en/tables/`, which the
 rewrite answers. `tests/contracts.js` checks that each
-route of `routes.json` is covered and that the worker takes no rewritten path. In particular:
+route of `routes.json` is covered and that the worker takes no rewritten path.
+`routes.json` pins each route's resolved address, its lit job and its lit mode. In particular:
 
 - the twelve section names, and the three legacy ones that fold into `roll/std`
 - the URL ids of the source products (owner, 2026-10-21): the sections `roll/wondrous_environments`, `roll/dread_gm_toolbox`, `roll/vault_of_ages`, `roll/dragons_vault`, `roll/arazos_artifacts`, `roll/community_items` and `roll/many_worlds_tavern`, and the tables `hope_and_fear_item`, `hope_and_fear_consumable`, `wondrous_environments`, `dread_gm_toolbox`, `vault_of_ages`, `dragons_vault`, `arazos_artifacts`, `community_items` and `many_worlds_tavern`; the app writes these. An old id still opens the same page (`roll/dread`, `#/tables/dv`, `hnf_item` and the rest, which are the internal ids); the address is not rewritten
@@ -339,7 +340,7 @@ style of `FEATURES.md`, "Records", "Catalog style" (`***Name:***` names, bold
 costs, italic conditions); its plain text did not change, so `catalog.csv` and
 the stubs did not change. The app no longer finds labels by a colon.
 
-| Artefact | Field | Carries |
+| Artifact | Field | Carries |
 |---|---|---|
 | `data.js`, `data.json` | `ende`, `rud` of records, `sets` and `refs` | Markdown subset source |
 | `names.json` | `sets[k].ende`, `sets[k].rud` | Markdown subset source, as `data.js` |
@@ -416,11 +417,17 @@ Google OAuth console. `tools/build-pages.js` generates them from
 outside links to it (`docs/specs/META.md` section 9, "Static pages").
 
 `img/thumb/<id>.webp` is a 160x160 derivative of `img/<id>.webp`, one per
-picture including `_none.webp`, committed and published with `img/`;
+picture, committed and published with `img/`;
 `tools/artwork/` writes it (`docs/artwork.md`, "Thumbnails"). It is internal:
 the app draws it in rows, and nothing outside links to it, so
 `docs/fixtures/`, `tests/contracts.js` and `llms.txt` do not name it - on the
 same footing as the `tools/artwork/` paragraph below.
+
+A record with no picture has no `img/` or `og/` file; its link card names the
+site card of its language, `og/_share.jpg` or `og/_share_en.jpg`, as a large
+card. The placeholder `img/_none.webp`, its thumbnail and `og/_none.jpg` were
+removed on 2026-10-29 (owner); a messenger that cached a card before then keeps
+a dead picture until it fetches the page again.
 
 `<id>` in `img/<id>.webp` and `og/<id>.jpg` is the **asset id**, not
 necessarily the record id: it is the basename of a record's `img` field, and
@@ -433,7 +440,7 @@ that joins an existing asset gets no `img/` or `og/` file of its own.
 `tools/artwork/` (see `.claude/README.md`, "Artwork tooling") enforces this
 same rule at write time rather than only documenting it, so its shipment
 was deliberately not treated as a new contract: `docs/fixtures/`,
-`tests/contracts.js` and `llms.txt` state behaviour the code already
+`tests/contracts.js` and `llms.txt` state behavior the code already
 enforced, not a new promise the code just started keeping.
 
 **The site's host.** The origin `https://daggerheart-loot.pages.dev` (the

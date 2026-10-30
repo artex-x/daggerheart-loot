@@ -75,6 +75,7 @@ import {
 import { fewNames, nameOf } from '../lib/i18n.js';
 import { plural } from '../lib/plural.js';
 import { LIST_PAGE } from '../lib/lists.js';
+import { isRoll } from '../lib/nav.js';
 import type { Subset } from '../lib/homebrewFile.js';
 import type { PendingAction, SignInAfter } from '../lib/pending.js';
 import { readPrefs, type NotifyGm, type Prefs } from '../lib/prefs.js';
@@ -191,7 +192,7 @@ function pinOf(v: string): string | null {
      `homeAllows` (`git show 23c00a6^:app.js`) keeps that shape, for a pin written
      before this fix as much as one typed by hand - but a name outside
      TABLE_IDS is not, because there is nothing specific behind it to reopen.
-     `parseHash` cannot tell "no name" from "a name it did not recognise"
+     `parseHash` cannot tell "no name" from "a name it did not recognize"
      (both come back `table: null`), so the bare case is read off the string
      itself rather than off the route. «Мои предметы» is pinned by `#/homebrew` alone, one
      pin for every tab; like `#/tables/homebrew`, a build with no sign-in draws it as not
@@ -217,7 +218,7 @@ export class AppState {
   readonly env: Env;
 
   /**
-   * The catalogue, or null if `data.js` did not load.
+   * The catalog, or null if `data.js` did not load.
    *
    * Built once: it is a few thousand records and nothing about it changes while
    * the page is open. Null is a state the interface has to render, not a crash -
@@ -229,9 +230,9 @@ export class AppState {
   /** The signed-in author's homebrew; null with no sign-in configured. */
   readonly homebrew: Homebrew | null;
 
-  /** The catalogue with the signed-in author's own items and own cards, which also apply
+  /** The catalog with the signed-in author's own items and own cards, which also apply
    *  to the catalog records they name in `items`: what every page that draws records
-   *  reads. The catalogue object itself while the account holds neither. */
+   *  reads. The catalog object itself while the account holds neither. */
   index: Index | null = $derived.by(() => {
     const own = this.homebrew?.records ?? [];
     const cards = this.homebrew?.cardRefs ?? [];
@@ -264,7 +265,28 @@ export class AppState {
    * was, rewritten, or a step behind - see `#fallback`, the constructor, and
    * `docs/specs/ROUTES.md`, "Fallback".
    */
-  hash = $state('');
+  get hash(): string {
+    return this.#hash;
+  }
+  set hash(h: string) {
+    /* The canonical section, never the raw address: a legacy `#/roll/hnf` reads as
+       `roll/std`, so the roll job never replays a source switch. */
+    const r = parseHash(h);
+    if (r.kind === 'section' && isRoll(r.section)) this.#lastRoll = r.section;
+    this.#hash = h;
+  }
+  #hash = $state('');
+  /** The last roll section this tab showed; memory only (`STATE.md`). */
+  #lastRoll = $state<Section | null>(null);
+
+  /** The address of the roll job: the last roll section of this tab, else the pinned
+   *  start section when it is a roll section, else the Core rules (owner, R7). */
+  get rollHash(): string {
+    if (this.#lastRoll) return sectionHash(this.#lastRoll);
+    const pin = parseHash(this.#home);
+    if (pin.kind === 'section' && isRoll(pin.section)) return sectionHash(pin.section);
+    return DEFAULT_HOME;
+  }
   /** Which sources the Core roll draws from. An old section name sets it. */
   source = $state<{ core: boolean; hnf: boolean }>({ core: true, hnf: true });
 
@@ -456,7 +478,7 @@ export class AppState {
    *  the account and stored in `dhloot.prefs.v1` (`STATE.md`, "Account
    *  preferences"). */
   #tablesView = $state<'list' | 'grid'>('list');
-  /** The default print layout, colour or black-and-white and standard or
+  /** The default print layout, color or black-and-white and standard or
    *  compact, set by the Display section and the account and stored beside
    *  the tables view (docs/specs/FEATURES.md, "Print"). */
   #printBW = $state(false);
@@ -1061,7 +1083,7 @@ export class AppState {
     return undefined;
   }
 
-  /** Returns the record `id` names: the catalogue's or an own item, else another account's
+  /** Returns the record `id` names: the catalog's or an own item, else another account's
    *  linked one. */
   recordFor(id: string): Record_ | undefined {
     return this.index?.byId.get(id) ?? this.linkedRecord(id);
@@ -1071,7 +1093,7 @@ export class AppState {
    *  the share's, on an account list's page that list's linked record, else `recordFor`. A
    *  print press resolves by it, so an own item of a clashing key wins only where the page
    *  draws it (docs/specs/FEATURES.md, "Print"). Only a homebrew key can clash, so a
-   *  catalogue id skips the share's snapshot. */
+   *  catalog id skips the share's snapshot. */
   pageRecordFor(id: string): Record_ | undefined {
     if (isHomebrewKey(id)) {
       const r = this.route;
@@ -2096,7 +2118,7 @@ export class AppState {
     if (hash !== this.env.router.hash()) this.#expectHash = hash;
     this.env.router.navigate(hash, this.lang, this.#barVersion(hash));
     /* `go()`'s callers all build a hash from this file's own writers,
-       so this is defence rather than a reachable bug - but the router's own
+       so this is defense rather than a reachable bug - but the router's own
        `onChange` handler already resolves a bad hash through `#fallback`
        (below), and this method deserved the same guarantee for the same
        reason: a route kind `App.svelte` cannot yet draw must not be the

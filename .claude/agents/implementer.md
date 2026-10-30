@@ -3,7 +3,7 @@ name: implementer
 description: >
   Execute the next implement-ready batch from issues/<id>/handoff.md.
   Do not replan or redesign. Do not choose a role's model.
-  Default: Sonnet; the orchestrator dispatches a batch that needs judgement
+  Default: Sonnet; the orchestrator dispatches a batch that needs judgment
   on Opus.
   Only one implementer should run on this branch at a time.
 model: sonnet

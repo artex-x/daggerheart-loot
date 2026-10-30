@@ -4,6 +4,10 @@ import { browserEnv, queryClock, TEST_NOW } from './ports/index.js';
 import type { Env } from './ports/index.js';
 import { lazyCloud } from './ports/lazy-cloud.js';
 import { takeRedirect } from './ports/redirect.js';
+/* The UI face, upright and italic, served from the build's own `/assets/`
+   (DESIGN.md, "The Local Font Rule"). */
+import '@fontsource-variable/source-sans-3/wght.css';
+import '@fontsource-variable/source-sans-3/wght-italic.css';
 import './styles/tokens.css';
 
 const target = document.getElementById('app');

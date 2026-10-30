@@ -1,15 +1,15 @@
 /* One accessibility assertion, so that every slice inherits it.
  *
  * The rule this file exists to enforce: a component test is not finished when
- * the behaviour passes. The old app collected eight accessibility defects from
+ * the behavior passes. The old app collected eight accessibility defects from
  * an external report - live regions, labels, focus rings, headings - and every
  * one of them was found by a person reading the page, months after the code was
  * written. axe finds that class of defect while the component is still open in
  * the editor.
  *
- * Colour contrast is switched off here and stays covered by the browser suites:
+ * Color contrast is switched off here and stays covered by the browser suites:
  * jsdom does not lay anything out or resolve a cascade, so axe can only see
- * declared colours and would report whatever it happened to find. `qa` and
+ * declared colors and would report whatever it happened to find. `qa` and
  * `typo` check contrast on a real page, where it is a real measurement. */
 
 import axe from 'axe-core';

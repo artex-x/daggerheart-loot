@@ -289,7 +289,7 @@
   }
 
   .nm small {
-    font-size: 12px;
+    font-size: var(--t-label);
     color: var(--muted2);
   }
 
@@ -301,7 +301,7 @@
     border-radius: var(--r-sm);
     background: none;
     color: var(--muted);
-    font-size: 18px;
+    font-size: var(--t-title);
     cursor: pointer;
   }
 
@@ -379,7 +379,7 @@
 
   .pickmsg {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 

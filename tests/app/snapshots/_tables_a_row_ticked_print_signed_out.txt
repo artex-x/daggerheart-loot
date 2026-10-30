@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -121,6 +119,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Мистический ПлащСущество с Характеристикой Заклинателя, носящее... [namelen=148 namehash=b4e130c4]
 8Плетёная СетьВы можете совершить Бросок Искусности, используя э... [namelen=187 namehash=548690a6]
 9Банка с ОгнёмВы можете вылить странную жидкость из этой банки, ... [namelen=165 namehash=8235d08d]
+?Справка
 Core
 EN
 Hope & Fear
@@ -132,6 +131,7 @@ daggerheart.com
 Банка с Огнём
 Бездонная Сумка
 Ботинки Хождения по Воде
+Бросок
 Войти
 Глиняный Спутник
 Двойная Фляга
@@ -139,7 +139,6 @@ daggerheart.com
 Заряжающий Колчан
 Исправляющий Дух
 К содержимому
-Как это работает
 Камень Доблести
 Камень Облика
 Кольцо Несокрушимой Решимости
@@ -156,9 +155,8 @@ daggerheart.com
 Мешочек Своенравного Песка
 Мистический Плащ
 Наручники
-Обычные правила
 Осколок Памяти
-Открывать этот раздел при запуске
+Открывать при запуске
 Отмена
 Парашют
 Первоклассный Спальный Мешок
@@ -213,22 +211,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
   link "Skip to content" [url=/en/tables#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -265,7 +261,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Suspended RodThis flat rod is inscribed with runes. When you a... [namelen=232 namehash=4f5a3fd9]
@@ -328,6 +324,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables]
 7Arcane CloakA creature with a Spellcast trait wearing this cloa... [namelen=122 namehash=12599eee]
 8Woven NetYou can make a Finesse Roll using this net to trap a s... [namelen=154 namehash=33eb11a6]
 9Fire JarYou can pour out the strange liquid contents of this ja... [namelen=151 namehash=0841cf34]
+?Help
 Airblade Charm
 Alistair's Torch
 Alt. tables
@@ -373,19 +370,19 @@ Homing Compasses
 Honing Relic
 Hope & Fear
 Hopekeeper Locket
-How this works
 Infinite Bag
 Install as an app
 Items
 Lakestrider Boots
 Link to this table
 List
+LootDaggerheart
 Lorekeeper
 Manacles
 Minor Health Potion Recipe
 Minor Stamina Potion Recipe
 Mythic Dust Recipe
-Open this section on start
+Open on start
 Other
 Paragon's Chain
 Phoenix Feather
@@ -398,13 +395,13 @@ RU
 Ring of Resistance
 Ring of Silence
 Ring of Unbreakable Resolve
+Roll
 Search
 Shard of Memory
 Sign in
 Skeleton Key
 Skip to content
 Speaking Orbs
-Standard rules
 Stride Relic
 Supplements
 Suspended Rod
@@ -414,4 +411,3 @@ Valorstone
 Vial of Darksmoke Recipe
 Woven Net
 daggerheart.com
-ЛутDaggerheart

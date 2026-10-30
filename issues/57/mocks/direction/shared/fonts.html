@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Font specimen</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      main {
+        width: var(--wrap);
+        margin: 0 auto;
+        padding: 20px 0 30px;
+        display: grid;
+        gap: 14px;
+      }
+      .spec {
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        gap: 18px;
+        padding: 16px 18px;
+      }
+      .spec .who b {
+        display: block;
+        font: 700 16px/1.3 var(--mono);
+        color: var(--txt);
+      }
+      .spec .who span {
+        font: 13px/1.5 var(--mono);
+        color: var(--muted);
+      }
+      .spec .who .pick {
+        color: var(--gold-soft);
+      }
+      .s {
+        display: grid;
+        gap: 6px;
+        min-width: 0;
+      }
+      .s h1 {
+        font-size: 23px;
+      }
+      .s .t {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .s .b {
+        font-size: 16px;
+      }
+      .s .d {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .s .d .dot {
+        color: var(--line2);
+        padding: 0 5px;
+      }
+      .s .l {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted2);
+      }
+      .s .n {
+        font-size: 14px;
+        display: flex;
+        gap: 18px;
+      }
+      .s .n span {
+        display: inline-block;
+        min-width: 58px;
+        text-align: right;
+        border-bottom: 1px solid var(--line);
+      }
+      .s .en {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      @media (max-width: 640px) {
+        .spec {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="m"></main>
+    <script>
+      const F = [
+        [
+          'Source Sans 3',
+          'OFL · Cyrillic · tabular figures by default · Adobe',
+          "'Source Sans 3', sans-serif",
+          true
+        ],
+        [
+          'PT Sans',
+          'OFL · Cyrillic-first (ParaType) · proportional figures only',
+          "'PT Sans', sans-serif",
+          false
+        ],
+        [
+          'Segoe UI (today)',
+          'what Windows shows now: Inter is not installed · not self-hostable',
+          "'Segoe UI', sans-serif",
+          false
+        ]
+      ];
+      document.getElementById('m').innerHTML = F.map(
+        ([n, note, stack, pick]) => `<section class="panel spec" style="--ui:${stack}">
+    <div class="who"><b class="${pick ? 'pick' : ''}">${n}${pick ? ' - chosen' : ''}</b><span>${note}</span></div>
+    <div class="s" style="font-family:${stack}">
+      <h1>Первоклассный Спальный Мешок</h1>
+      <div class="t">Возвращающийся клинок · Топор Тлеющих Углей</div>
+      <div class="b">Когда это оружие брошено в пределах дистанции, оно появляется в вашей руке сразу после атаки.</div>
+      <div class="d">Магическое<span class="dot">·</span>Искусность<span class="dot">·</span>Средне<span class="dot">·</span>d8 маг<span class="dot">·</span>Одноручное</div>
+      <div class="l">Характеристика · Дистанция · Хват</div>
+      <div class="n"><span>1</span><span>11</span><span>150</span><span>99999</span><span>d10+3</span></div>
+      <div class="en">Returning Blade · Physical · Agility · Very far · d10+3 phy · Two-handed · 1/11/150</div>
+    </div></section>`
+      ).join('');
+    </script>
+  </body>
+</html>

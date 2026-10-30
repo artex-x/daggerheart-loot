@@ -29,7 +29,7 @@ describe("the trait cell's word", () => {
 });
 
 describe('a vector file name', () => {
-  it('is plain in colour', () => {
+  it('is plain in color', () => {
     expect(cardArt('shield', false)).toBe('/card/shield.svg');
   });
 

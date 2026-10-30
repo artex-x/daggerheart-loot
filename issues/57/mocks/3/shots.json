@@ -1,0 +1,98 @@
+[
+  {
+    "s": "catalog",
+    "name": "catalog"
+  },
+  {
+    "s": "catalog-picker",
+    "name": "catalog-picker"
+  },
+  {
+    "s": "catalog-more",
+    "name": "catalog-more"
+  },
+  {
+    "s": "catalog-filtered",
+    "name": "catalog-filtered"
+  },
+  {
+    "s": "catalog-filters",
+    "name": "catalog-filters"
+  },
+  {
+    "s": "catalog-filters-set",
+    "name": "catalog-filters-set"
+  },
+  {
+    "s": "catalog-own",
+    "name": "catalog-own"
+  },
+  {
+    "s": "catalog-own-filters",
+    "name": "catalog-own-filters"
+  },
+  {
+    "s": "catalog-grid",
+    "name": "catalog-grid"
+  },
+  {
+    "s": "catalog-nothing",
+    "name": "catalog-nothing"
+  },
+  {
+    "s": "catalog-searched",
+    "name": "catalog-searched"
+  },
+  {
+    "s": "catalog-selection",
+    "name": "catalog-selection"
+  },
+  {
+    "s": "catalog-selection",
+    "name": "catalog-selection-screen",
+    "screen": true
+  },
+  {
+    "s": "catalog-selection-zero",
+    "name": "catalog-selection-zero"
+  },
+  {
+    "s": "catalog-selection-zero",
+    "name": "catalog-selection-zero-screen",
+    "screen": true
+  },
+  {
+    "s": "pattern-empty",
+    "name": "pattern-empty"
+  },
+  {
+    "s": "help-rec",
+    "name": "help-rec"
+  },
+  {
+    "s": "help-remove",
+    "name": "help-remove"
+  },
+  {
+    "s": "help-today",
+    "name": "help-today",
+    "langs": ["ru"]
+  },
+  {
+    "s": "view-rec",
+    "name": "view-rec"
+  },
+  {
+    "s": "view-save",
+    "name": "view-save"
+  },
+  {
+    "s": "view-button",
+    "name": "view-button"
+  },
+  {
+    "s": "view-today",
+    "name": "view-today",
+    "langs": ["ru"]
+  }
+]

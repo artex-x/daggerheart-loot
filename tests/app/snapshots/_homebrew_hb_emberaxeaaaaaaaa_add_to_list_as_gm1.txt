@@ -14,9 +14,7 @@ RootWebArea "Топор Тлеющих Углей - Генератор лута 
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -133,10 +131,10 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
 Без разделаПистолиХолодное оружие+ Новый раздел...
 Близко
 Броня
+Бросок
 В линии
 Влияние
 Вплотную
@@ -145,7 +143,6 @@ daggerheart.com
 Далеко
 Двуручное
 Добавить в список
-Дополнения
 Жирный
 Заменить
 Знание
@@ -167,7 +164,6 @@ daggerheart.com
 Новая карта правил
 Новая линия
 Нумерованный список
-Обычные правила
 Одноручное
 Одноручное/двуручное
 Основное оружие
@@ -212,16 +208,14 @@ daggerheart.com
 RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_emberaxeaaaaaaaa?as=gm1]
   link "Skip to content" [url=/en/homebrew/hb_emberaxeaaaaaaaa?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -322,7 +316,7 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
@@ -332,7 +326,6 @@ RootWebArea "Ember Axe - Daggerheart Loot Generator" [url=/en/homebrew/hb_embera
 Account: gm1@example.test
 Add to list
 Agility
-Alt. tables
 Any
 Armor
 Bold
@@ -361,6 +354,7 @@ Instinct
 Italic
 Item
 Knowledge
+LootDaggerheart
 Made from
 Magic
 Melee
@@ -379,6 +373,7 @@ Privacy
 RU
 Remove the picture
 Replace
+Roll
 Rule cards
 Save
 Search
@@ -386,9 +381,7 @@ Second stat set
 Secondary weapon
 Skip to content
 Spellcast
-Standard rules
 Strength
-Supplements
 Table
 Tables
 Terms of use
@@ -402,5 +395,4 @@ daggerheart.com
 mag
 phy
 phy/mag
-ЛутDaggerheart
 Страница

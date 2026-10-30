@@ -1,0 +1,199 @@
+{
+  "batch": 9,
+  "title": "Batch 9 - account list page and shared list page",
+  "widths768": ["list", "list-prices"],
+  "states": [
+    {
+      "id": "list",
+      "addr": "/lists/<uuid>",
+      "ids": "A1, A2, A3, A5, A41, first-screen rule",
+      "what": "The list. 1180: controls in the side column («Поделиться», «Печать», «Бросить по списку», «Ещё»), «Цены:» with an example and both list notes there, «Выбрать» over the rows. 360: the side column becomes a head - the name as the h1 input (rules 15, 16) with «Ещё» («Выбрать», «Цены» as two choices with an example, copy, JSON, delete), the meta line with «Заметки ▾», then «Поделиться», «Печать» and «Бросить по списку». Rows: the position field and the grip, labelled quantity and price, «Заметка» and «Ещё». At 768 the side column moves on top (A1, P0)."
+    },
+    {
+      "id": "list-longname",
+      "addr": "/lists/<uuid>",
+      "ids": "plan review R2 (longest name)",
+      "what": "Longest name: a 200-character list name in the h1 input, one line that scrolls in the field (rules 15, 16)."
+    },
+    {
+      "id": "list-notes",
+      "addr": "/lists/<uuid>",
+      "ids": "M9-2",
+      "what": "Open at 360: «Заметки ▾» on the meta line opens both list notes in place, so they are reached without scrolling past the entries. At 1180 the notes are in the side column."
+    },
+    {
+      "id": "list-note",
+      "addr": "/lists/<uuid>",
+      "ids": "A2, A5",
+      "what": "Open and focus: one note area per row with a «Для игроков» / «Только для мастера» switch (a dot marks a filled note); the field has the focus ring."
+    },
+    {
+      "id": "list-note-gm",
+      "addr": "/lists/<uuid>",
+      "ids": "A2, A22",
+      "what": "Open: the switch on «Только для мастера»: the field takes the dashed GM style, the caption says players do not see it."
+    },
+    {
+      "id": "list-more",
+      "addr": "/lists/<uuid>",
+      "ids": "A3",
+      "what": "Open: the list «Ещё» menu: at 360 «Цены» (book units or coins, each with its example), then copy text, download JSON, delete apart. The rename is the h1 input (rules 15, 16); «Выбрать» is on the title row at 360."
+    },
+    {
+      "id": "list-rowmore",
+      "addr": "/lists/<uuid>",
+      "ids": "A2",
+      "what": "Open: a row's «Ещё» menu: show to or hide from players, open the card, then remove. The hidden row carries the «Только для мастера» badge."
+    },
+    {
+      "id": "list-drag",
+      "addr": "/lists/<uuid>",
+      "ids": "plan review B2, E2",
+      "what": "Drag: the dragged row dims; the drop mark is one horizontal gold rule drawn on both rows beside the gap (FEATURES.md, \"Lists\"), not a side stripe. The grip shows only where a pointer can hover; at 360 the position field reorders."
+    },
+    {
+      "id": "list-share",
+      "addr": "/lists/<uuid>",
+      "ids": "A3, A4",
+      "what": "Open: the share panel: two labelled link rows with path addresses (/s/<token>), «Скопировать» neutral (not gold), one danger action."
+    },
+    {
+      "id": "list-prices",
+      "addr": "/lists/<uuid>",
+      "ids": "price toggle",
+      "what": "«Цены: Как в книге»: every price on the page reads in bags and handfuls, the example under the switch too."
+    },
+    {
+      "id": "list-prices-panel",
+      "addr": "/lists/<uuid>",
+      "ids": "price toggle",
+      "what": "Open: one entry selected, the prices panel (markup, the book price for its rarity)."
+    },
+    {
+      "id": "list-prices-none",
+      "addr": "/lists/<uuid>",
+      "ids": "price toggle",
+      "what": "Empty: no prices yet; the panel offers the book price for the rarity."
+    },
+    {
+      "id": "list-picked",
+      "addr": "/lists/<uuid>",
+      "ids": "A19 pattern",
+      "what": "Selected with a part quantity: «Взять 1 из 2 = 7 мешков 5 горстей», the bar total follows."
+    },
+    {
+      "id": "list-selected",
+      "addr": "/lists/<uuid>",
+      "ids": "A40",
+      "what": "Open: two entries ticked. The one selection bar: «Все» (a dash while some are ticked), «Выбрано: 2 · 7 шт. · Итого: 400 зол.», «Цены», «Скопировать текст», «Удалить (2)», «Снять выделение» last. At 360 pinned to the bottom of the 640 px frame."
+    },
+    {
+      "id": "list-select-none",
+      "addr": "/lists/<uuid>",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick: «Все» empty, «Выбрано: 0», «Цены», «Скопировать текст» and «Удалить (0)» off, «Снять выделение» on."
+    },
+    {
+      "id": "list-sold",
+      "addr": "/lists/<uuid>",
+      "ids": "toast (batch 2)",
+      "what": "The undo toast after a sale; the toast pattern is batch 2's (unit A)."
+    },
+    {
+      "id": "list-roll",
+      "addr": "/lists/<uuid>",
+      "ids": "A42",
+      "what": "Open: «Бросить по списку» with a result. At 360 the compact card (96 px art beside the text); from 600 px the full card face. The rolled entry, the notes and «Показать в списке» under it."
+    },
+    {
+      "id": "list-requests",
+      "addr": "/lists/<uuid>",
+      "ids": "requests, notices",
+      "what": "Requests waiting. At 360 the panel is folded to its head, «Новое в списке (3)» and «Открыть» (owner, 2026-10-29), so the first entry stays in the first screen; at 1180 it is open above the entries. «Принять» is gold on the first request only."
+    },
+    {
+      "id": "list-requests-open",
+      "addr": "/lists/<uuid>",
+      "ids": "R9-1",
+      "what": "Open: «Открыть» pressed at 360. The panel takes the head row with «Свернуть»; the entries start below it. At 1180 the panel is always open, as list-requests."
+    },
+    {
+      "id": "list-empty",
+      "addr": "/lists/<uuid>",
+      "ids": "theme 8",
+      "what": "Empty: the empty-state pattern (batch 3) with the cause and one next step."
+    },
+    {
+      "id": "list-limit",
+      "addr": "/lists/<uuid>",
+      "ids": "scale",
+      "what": "At the limit: 100 of 100; «Добавить свой предмет» is off and the line says why and what to do."
+    },
+    {
+      "id": "list-error",
+      "addr": "/lists/<uuid>",
+      "ids": "error scenarios",
+      "what": "Error: a write failed; the meta line says «не сохранено», the alert names the cause and «Повторить»."
+    },
+    {
+      "id": "shared-player",
+      "addr": "/s/<token>",
+      "ids": "A19, A21, P6, first-screen rule",
+      "what": "The players' link: the count and «Заметка ▾» on the lead line, one action row with «Сохранить себе» as the one primary and «Выбрать» («Печать» joins it at 1180; at 360 it is in the selection bar), labelled quantity and price, no checkboxes until «Выбрать»."
+    },
+    {
+      "id": "shared-longname",
+      "addr": "/s/<token>",
+      "ids": "plan review R2 (longest name)",
+      "what": "Longest name: a 200-character list name; one line with an ellipsis at 360 (two lines measured 260-282 px, past the limit), three lines at 1180."
+    },
+    {
+      "id": "shared-note",
+      "addr": "/s/<token>",
+      "ids": "first-screen rule",
+      "what": "Open: «Заметка ▾» opens the list note in place under the lead line."
+    },
+    {
+      "id": "shared-gm",
+      "addr": "/s/<token>",
+      "ids": "A22",
+      "what": "The GM's link: «Заметка мастера ▾» on the lead line beside the players' note link; the GM-only entry and its note show in the same dashed style as the owner's editor (A22)."
+    },
+    {
+      "id": "shared-gm-note",
+      "addr": "/s/<token>",
+      "ids": "A22",
+      "what": "Open: «Заметка мастера ▾» opens the GM's list note in place, dashed as in the owner's editor."
+    },
+    {
+      "id": "shared-own",
+      "addr": "/s/<token>",
+      "ids": "ownList",
+      "what": "The owner opens their own link: one line says what this link hides and links to the editor."
+    },
+    {
+      "id": "shared-select",
+      "addr": "/s/<token>",
+      "ids": "A19, A40",
+      "what": "Open: two entries ticked. The one selection bar: «Все», «Выбрано: 2 · 2 шт.», «В список», «Печать», «Скопировать текст», «Снять выделение» last; «Сообщить владельцу» on its own line under it, not gold."
+    },
+    {
+      "id": "shared-select-none",
+      "addr": "/s/<token>",
+      "ids": "R0-2",
+      "what": "The selection mode with no tick on the shared page: «Все» empty, «Выбрано: 0», the actions and «Сообщить владельцу» off, «Снять выделение» on."
+    },
+    {
+      "id": "shared-filters",
+      "addr": "/s/<token>/f_<filter>",
+      "ids": "A20",
+      "what": "The filter sheet at 360 with one source picked: «Фильтры · 1» lit, the count «Показано 8 из 12» on the lead line, «Ссылка на фильтры» in the sheet head, «Сбросить» and «Показать 8» in its foot; at 1180 the column head carries «Сбросить» and the link."
+    },
+    {
+      "id": "shared-gone",
+      "addr": "/s/<token>",
+      "ids": "C32, A21",
+      "what": "Error page: the link is off or the list is gone; the error-page pattern (batch 4) with a true cause and one next step."
+    }
+  ]
+}

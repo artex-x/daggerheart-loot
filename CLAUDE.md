@@ -8,7 +8,7 @@ and `docs/decisions/` (the index `docs/DECISIONS.md` lists it) when the change t
 
 Use the task id supplied by the human; there is no default task. Reuse
 `context.md`; re-fetch only missing, stale, or superseded facts.
-If issue evidence, specs, live behaviour, and the plan conflict, stop and surface it.
+If issue evidence, specs, live behavior, and the plan conflict, stop and surface it.
 
 ## Project shape
 
@@ -24,7 +24,7 @@ If issue evidence, specs, live behaviour, and the plan conflict, stop and surfac
 ## Engineering posture and campsite
 
 - Prefer the smallest change that fixes the defect. Public contracts default to
-  no change; behaviour is judged against `docs/specs/`, not the previous build.
+  no change; behavior is judged against `docs/specs/`, not the previous build.
 - Reuse existing modules, ports, patterns, tokens, and naming. Do not invent
   abstractions ahead of demonstrated need.
 - Add no module, export, component, or variant before something uses it.
@@ -48,7 +48,7 @@ Task state lives under `issues/<id>/` only while the task is open:
 batches, status), `handoff.md` (recovery state, checks, blockers, next batch).
 It is scratch: nothing outside the directory may cite it, and closeout
 deletes it. Durable knowledge is written to its permanent home in the batch
-that establishes it - behaviour to `docs/specs/`, tooling and host facts to
+that establishes it - behavior to `docs/specs/`, tooling and host facts to
 `.claude/README.md`, decisions and their rejected alternatives to
 a file under `docs/decisions/`, a defect kept on purpose to `docs/specs/DEBT.md` - never
 parked in a task document. Each has a
@@ -76,7 +76,7 @@ durable list, moving what qualifies, deleting the directory in a closeout
 commit, and pushing. No directory is exempt; a task that is planned
 but not started keeps its directory until it ships.
 
-## Specs are the behaviour source of truth
+## Specs are the behavior source of truth
 
 Read the files the change touches:
 
@@ -85,26 +85,26 @@ Read the files the change touches:
 | `docs/specs/CONTRACTS.md` | frozen routes, ids, links, generated data, asset paths |
 | `docs/specs/ROUTES.md` | route and filter grammar |
 | `docs/specs/STATE.md` | URL, memory, localStorage, and two-tab merge |
-| `docs/specs/FEATURES.md` | product behaviour and required state |
+| `docs/specs/FEATURES.md` | product behavior and required state |
 | `docs/specs/COVERAGE.md` | suite ownership, thresholds, and known gaps |
-| `docs/specs/I18N.md` | bilingual behaviour |
+| `docs/specs/I18N.md` | bilingual behavior |
 | `docs/specs/META.md` | `noindex`, crawling, lists and the backend, HTTP-only build, tiers, PWA |
 | `docs/specs/DEBT.md` | defects kept on purpose, grouped under the larger task that owes each |
 
 Public contracts default to no change. An unavoidable change updates
 `docs/fixtures/`, `tests/contracts.js`, `docs/specs/CONTRACTS.md`, and `llms.txt`
-in the same commit. Behaviour changes update their specs in the same commit.
+in the same commit. Behavior changes update their specs in the same commit.
 
 ## Architecture boundaries
 
 - `app/src/lib/` is pure logic: no DOM, storage, Svelte, or network.
 - Browser APIs belong behind `app/src/ports/` adapters.
 - Shared UI belongs in `app/src/components/`; expose only differences real callers need.
-- `app/src/styles/tokens.css` owns global colours, spacing, radii, and type steps. `DESIGN.md` records the visual system those tokens express; the code wins any conflict with it.
+- `app/src/styles/tokens.css` owns global colors, spacing, radii, and type steps. `DESIGN.md` records the visual system those tokens express; the code wins any conflict with it.
   Components compose tokens; they do not invent near-duplicate values.
 - Keep URLs root-absolute (`/`; the app runs at a host root, owner 2026-10-28) and the classic-script `data.js` adapter (cached apart from the bundle, no async bootstrap); do not use runtime `fetch()` for local data.
 
-## Data and published artefacts
+## Data and published artifacts
 
 After changing `data.js`, run `node tools/build.js`; the hooks block writes to
 its generated outputs. When counts or source lists change, update the files
@@ -117,7 +117,7 @@ Before a task-branch commit: `rtk npm run check:fast` (Bash timeout 600000). Pus
 A change under `supabase/` or `tests/db/` also runs `npm run check:db` locally (on Windows through the PowerShell tool), which the commit gate requires.
 Focused: `npm run test`, `node tests/run-all.js contracts,dataint`, `npm run check:built`; the built app in a real browser (after `npm run build:test`): `node tests/run-all.js app/print,app/contracts,app/states,app/typo,app/hues,stub`.
 
-Definition of done: checks pass, fixed defects and changed behaviour have meaningful coverage, specs and fixtures match,
+Definition of done: checks pass, fixed defects and changed behavior have meaningful coverage, specs and fixtures match,
 and the handoff records exact commands/results. If a required check cannot run, report why before committing.
 Answer four standing checks in every plan and review, unasked - scale, error scenarios, consistency, RU/EN parity (`.claude/prompts/plan.prompt.md`, `review.prompt.md`).
 
@@ -132,8 +132,8 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
 - The Supabase backend is the only server that stores data; one stateless preview Worker renders link cards and stores nothing. Add no other backend, upload endpoint or paste service.
 - Keep `noindex` while allowing crawling; crawler blocks hide `noindex` and break previews.
 - Never infer equipment tier from stats; use the source book data.
-- Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Colour and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.
-- Print design: Figma `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (colour) and
+- Printing is nine 63x88 mm cards per A4 sheet, or sixteen 44x63 mm cards on the opt-in compact sheet. Color and black-and-white are distinct layouts on either sheet; preserve browser-measured fitting. See `FEATURES.md`.
+- Print design: Figma `88Hhc89oY9Orcbvd2ok1Hx`, nodes `714-42387` (color) and
   `3773-90792` (black-and-white). Export vectors; do not redraw them. The
   compact sheet has no node: it is each layout's card at 70%.
 
@@ -162,7 +162,7 @@ Deterministic guards run as Claude Code hooks (`.claude/hooks/`; the table is in
   or handoff section, an `issues/<id>/` path, or a line number.
 - One to three lines; a longer reason belongs in a spec, `docs/decisions/`
   or `.claude/README.md`, cited from the comment. The rule binds test and
-  suite titles and commit messages too: a title names the behaviour and, if
+  suite titles and commit messages too: a title names the behavior and, if
   it must, the coupling it guards, never a batch id, a finding id, or a line
   number.
 
@@ -185,6 +185,6 @@ Feature work uses roles (see `.claude/`):
 - **refresh-artwork** -> audited replacement-art reconciliation, conversion, verification, and optional local cache refresh
 - a single-file visual bug pinned to a width skips planner and review: `/small-fix` (`.claude/skills/small-fix/SKILL.md`)
 
-Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models by the usage profile in `orchestrate.prompt.md`, "Model selection": Sonnet implements and takes routine plan refreshes and reviews, Opus plans and reviews judgement work, Haiku runs read-only helpers, Fable only on Max and the human's yes. Each role pins its effort from `low` to `high`; `xhigh` and `max` are the human's exception. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
+Prompts: `.claude/prompts/`. Agents: `.claude/agents/`. Kickoff: `/orchestrate`. Pass `TASK: <id>` at runtime. Orchestrator selects models by the usage profile in `orchestrate.prompt.md`, "Model selection": Sonnet implements and takes routine plan refreshes and reviews, Opus plans and reviews judgment work, Haiku runs read-only helpers, Fable only on Max and the human's yes. Each role pins its effort from `low` to `high`; `xhigh` and `max` are the human's exception. It maintains `issues/<id>/context.md` so workers do not re-fetch the same issue.
 Hosts without agent tools run the prompt files sequentially with `issues/<id>/` as the handoff bus; closeout and cleanup are the orchestrate prompt's.
 <!-- setup-claude-agents:end -->

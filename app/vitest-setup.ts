@@ -15,7 +15,7 @@ configure({ asyncUtilTimeout: 5000 });
    here rather than avoided there.
 
    What this shim gives is presence and open/closed, which is what a component
-   test can honestly assert. The behaviour it does not reproduce - focus moving
+   test can honestly assert. The behavior it does not reproduce - focus moving
    into the dialog, the page behind going inert, Escape - belongs to the browser
    and is checked in a browser: `tests/app/states.js`'s case 6
    (`dialogSemantics`), against `dist/`. See docs/specs/COVERAGE.md, "Known

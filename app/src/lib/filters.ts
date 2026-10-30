@@ -23,7 +23,7 @@ export const EQ_GROUPS: Record<EquipKind, readonly string[]> = {
   weapon: [...EQ_COMMON, 'cls', 'trait', 'range', 'burden', ...EQ_LINE],
   /* Every secondary weapon in both books is one-handed - nothing to sort by */
   secondary: [...EQ_COMMON, 'cls', 'trait', 'range', ...EQ_LINE],
-  /* Armour has no class, trait, range or burden */
+  /* Armor has no class, trait, range or burden */
   armor: [...EQ_COMMON, ...EQ_LINE]
 };
 

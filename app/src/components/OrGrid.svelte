@@ -111,7 +111,7 @@
 
   .ordiv i {
     font-style: normal;
-    font: 700 12px/1 var(--mono);
+    font: 700 var(--t-label)/1 var(--mono);
     letter-spacing: 0.18em;
     color: var(--gold);
     border: 1px solid var(--gold);

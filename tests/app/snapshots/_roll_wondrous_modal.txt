@@ -23,32 +23,26 @@ RootWebArea "Wondrous Environments - Генератор лута Daggerheart" [u
     StaticText "Копия попадёт в «Хоумбрю» и больше не будет меняться вместе с ор..." [namelen=73 namehash=76f4ba3e]
 
 ## ru :: controls
-Arazo's Artifacts
-Dread GM Toolbox
+?Справка
 EN
-Many Worlds Tavern
 RU
-The Dragon's Vault
-Vault of Ages
 Wondrous Environments
 daggerheart.com
-Альт. таблицы
+Альтернативные таблицы
+Бросок
 Войти
 Добавить в список
-Дополнения
 Закрыть
 К содержимому
-Как это работает
 Конфиденциальность
 ЛутDaggerheart
 На единицу больше
 На единицу меньше
 Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Отправить
 Печать
 Поиск
-Предметы сообществ
 Результат броска
 Скопировать изображение
 Скопировать название
@@ -83,29 +77,27 @@ RootWebArea "Wondrous Environments - Daggerheart Loot Generator" [url=/en/roll/w
     StaticText "The copy goes to "Homebrew" and no longer changes with the origi..." [namelen=68 namehash=82c4f1ca]
 
 ## en :: controls
+?Help
 Abyssal Sap
 Add to list
-Alt. tables
-Arazo's Artifacts
+Alternate tables
 Close
-Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dread GM Toolbox
 EN
-How this works
 Install as an app
-Many Worlds Tavern
+LootDaggerheart
 One higher
 One lower
-Open this section on start
+Open on start
 Page
 Print
 Privacy
 RU
 Random 1–119
+Roll
 Roll result
 Save to my items
 Search
@@ -113,11 +105,7 @@ Share
 Sign in
 Skip to content
 Standard rules
-Supplements
 Tables
 Terms of use
-The Dragon's Vault
-Vault of Ages
 Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

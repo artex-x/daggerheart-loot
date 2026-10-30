@@ -21,7 +21,7 @@ Before reviewing:
 4. Compare handoff against `.claude/templates/handoff.template.md` - missing sections are findings
 5. Read mocks under `<TASK_DIR>/mocks/` if referenced
 6. Inspect `git status` and the working tree; for the batch's own diff use `git diff <previous sha> HEAD` (the previous sha comes from the handoff's `Completed` section; each batch is its own commit on the task branch)
-7. Read relevant `docs/specs/` for touched behaviour (CONTRACTS, FEATURES, ROUTES, I18N, COVERAGE as needed)
+7. Read relevant `docs/specs/` for touched behavior (CONTRACTS, FEATURES, ROUTES, I18N, COVERAGE as needed)
 8. Scope = batch described in handoff as completed, or orchestrator-specified scope
 9. Search with `rtk grep` or `git grep` - see `.claude/README.md`,
    "Code navigation". A renamed symbol or a changed signature with a missed call site
@@ -40,7 +40,7 @@ If plan/handoff is missing, stop and say review cannot proceed.
 ### B. Public contracts (high severity if broken)
 - Stable record ids (no renumbering shipped ids)
 - Routes / hash grammar / filter keys
-- List-link behaviour and generated artefacts (`data.json`, `catalog.csv`, `i/*.html`)
+- List-link behavior and generated artifacts (`data.json`, `catalog.csv`, `i/*.html`)
 - Contract changes include fixtures, CONTRACTS.md, tests, llms.txt in the same change when required
 
 ### C. Data integrity (if data touched)
@@ -51,7 +51,7 @@ If plan/handoff is missing, stop and say review cannot proceed.
 - Counts in README / llms.txt / tests not stale
 
 ### D. Product / UI
-- Roll/table/filter behaviour matches plan
+- Roll/table/filter behavior matches plan
 - RU/EN parity: section I, check 4
 - Visual parity rules respected unless plan changes look
 - No unrelated chrome redesign
@@ -59,7 +59,7 @@ If plan/handoff is missing, stop and say review cannot proceed.
 ### E. Tests and gates
 - Commands claimed in handoff were the right ones
 - `npm run check` / `npm run check:built` / data tests as applicable
-- Missing tests for new behaviour
+- Missing tests for new behavior
 
 ### F. Handoff quality
 - Template sections present

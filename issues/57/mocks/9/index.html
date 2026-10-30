@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 9 mock</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .idx {
+        width: min(1180px, 100% - 32px);
+        margin: 0 auto;
+        padding: 26px 0 60px;
+      }
+      .idx h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+      }
+      .idx h2 {
+        font-size: 23px;
+        margin: 30px 0 10px;
+      }
+      .idx p,
+      .idx li {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 90ch;
+      }
+      .idx code {
+        font: 13px var(--mono);
+        color: var(--txt);
+      }
+      .back2 {
+        display: inline-block;
+        margin: 0 0 14px;
+        font-size: 14px;
+      }
+      .ans {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--line2);
+        border-radius: 14px;
+        background: var(--surface);
+        margin: 0 0 10px;
+      }
+      .ans img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        object-position: top;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .ans b {
+        color: var(--txt);
+      }
+      .chosen {
+        color: var(--ink-on-gold);
+        background: var(--gold);
+        border-radius: 6px;
+        padding: 1px 7px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+      }
+      table.fs {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      table.fs th,
+      table.fs td {
+        border-bottom: 1px solid var(--line);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      table.fs th {
+        color: var(--muted2);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      table.fs td.n {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .ok {
+        color: #9ec96a;
+      }
+      .lim {
+        color: var(--gold-soft);
+      }
+      .bad {
+        color: var(--danger-text);
+      }
+      .st {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 14px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+      .st img {
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+      }
+      .st b {
+        color: var(--txt);
+        font-size: 16px;
+      }
+      .lk a {
+        margin-right: 10px;
+        font-size: 14px;
+      }
+      .meta3 {
+        font-size: 13px;
+        color: var(--muted2);
+      }
+      .tw {
+        overflow-x: auto;
+      }
+      @media (max-width: 760px) {
+        .st {
+          grid-template-columns: 90px 1fr;
+        }
+        .ans {
+          grid-template-columns: 80px 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="idx">
+      <a class="back2" href="../index.html">Back to all mocks</a>
+      <h1>Batch 9 - account list page and shared list page</h1>
+      <p>
+        This page shows the batch 9 mock (the account list page
+        <code>/lists/&lt;uuid&gt;</code> and the shared list page <code>/s/&lt;token&gt;</code>)
+        for the owner to confirm before the implementer starts. Round 3 applies the owner's
+        answers, the first-screen rule (plan.md section 14) and plan review plan-1-3.
+      </p>
+      <p>
+        Open a state at <code>state.html?s=&lt;state&gt;&amp;lang=en</code>. Renders:
+        <code>&lt;state&gt;__&lt;width&gt;__&lt;lang&gt;.png</code>, 132 PNGs at 360 and 1180 px
+        (and 768 for the rows that A1 names), RU and EN. Shared code in
+        <code>../direction/</code> is read-only; <code>u.js</code>, <code>u.css</code> and the
+        copies <code>base.css</code>, <code>r.css</code> are this unit's.
+      </p>
+      <h2>Owner answers</h2>
+      <div class="ans">
+        <a href="list-note__360__ru.png"
+          ><img src="list-note__360__ru.png" alt="list-note at 360"
+        /></a>
+        <div>
+          <b>Question 9.1: The «?» buttons on the list page</b
+          ><span class="chosen">option A chosen</span>
+          <p>
+            Removed (option A, owner, 2026-10-29): «Цены:» with an example, one note area with a
+            switch and the dashed GM style.
+          </p>
+          <div class="lk">
+            <a href="list-note__360__ru.png">360 RU</a
+            ><a href="list-note__360__en.png">360 EN</a
+            ><a href="list-note__1180__ru.png">1180 RU</a
+            ><a href="list-note__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-note">live RU</a
+            ><a href="state.html?s=list-note&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <h2>First screen</h2>
+      <p>
+        The top of the primary content below the top of the header, at scroll 0, at 360x640 and
+        1180x720 (<code>../measure.mjs</code>'s method; this unit's copy also measures the extra
+        states). Design target 240 / 270 px; the assert stays at 40%: 256 / 288 px (plan.md
+        section 14, plan review plan-1-3 R2). Green: at the target; gold: inside the limit, past
+        the target; red: past the limit.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>Primary content (EN / RU)</th>
+              <th>Controls above it (RU / EN)</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>1180 RU</th>
+              <th>1180 EN</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>list</code></td>
+              <td>first list entry / «первая позиция»</td>
+              <td>
+                the name input, «Ещё» / "More", «Заметки ▾» / "Notes ▾", «Поделиться» / "Share",
+                «Печать» / "Print", «Бросить по списку» / "Roll on this list"
+              </td>
+              <td class="n lim">248</td>
+              <td class="n lim">248</td>
+              <td class="n ok">159</td>
+              <td class="n ok">159</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>list-prices</code></td>
+              <td>first list entry / «первая позиция»</td>
+              <td>as list</td>
+              <td class="n lim">248</td>
+              <td class="n lim">248</td>
+              <td class="n ok">159</td>
+              <td class="n ok">159</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>list-longname</code></td>
+              <td>first list entry, 200-character name / «первая позиция, имя 200 знаков»</td>
+              <td>as list, a 200-character name</td>
+              <td class="n lim">248</td>
+              <td class="n lim">248</td>
+              <td class="n ok">159</td>
+              <td class="n ok">159</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>list-requests</code></td>
+              <td>
+                first list entry with the requests panel folded / «первая позиция, панель
+                запросов свёрнута»
+              </td>
+              <td>as list</td>
+              <td class="n bad">292</td>
+              <td class="n bad">292</td>
+              <td class="n ok">203</td>
+              <td class="n ok">203</td>
+              <td><span class="bad">fail</span></td>
+            </tr>
+            <tr>
+              <td><code>list-requests-open</code></td>
+              <td>requests panel head / «заголовок панели «Новое в списке»»</td>
+              <td>as list, the requests panel open</td>
+              <td class="n lim">247</td>
+              <td class="n lim">247</td>
+              <td class="n ok">85</td>
+              <td class="n ok">85</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>list-roll</code></td>
+              <td>the roll result card / «карточка результата броска»</td>
+              <td></td>
+              <td class="n bad">426</td>
+              <td class="n bad">396</td>
+              <td class="n ok">192</td>
+              <td class="n ok">192</td>
+              <td><span class="bad">fail</span></td>
+            </tr>
+            <tr>
+              <td><code>shared-player</code></td>
+              <td>first list entry / «первая позиция»</td>
+              <td>
+                «Заметка ▾» / "Note ▾", «Сохранить себе» / "Save to my lists", «Выбрать» /
+                "Select"
+              </td>
+              <td class="n ok">233</td>
+              <td class="n ok">233</td>
+              <td class="n ok">206</td>
+              <td class="n ok">206</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+            <tr>
+              <td><code>shared-gm</code></td>
+              <td>first list entry / «первая позиция»</td>
+              <td>as shared-player, «Заметка мастера ▾» / "GM's note ▾"</td>
+              <td class="n lim">254</td>
+              <td class="n ok">233</td>
+              <td class="n ok">206</td>
+              <td class="n ok">206</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+            <tr>
+              <td><code>shared-longname</code></td>
+              <td>first list entry, 200-character name / «первая позиция, имя 200 знаков»</td>
+              <td>as shared-player, a 200-character name</td>
+              <td class="n ok">233</td>
+              <td class="n ok">233</td>
+              <td class="n ok">234</td>
+              <td class="n ok">234</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 6 (reviews/mocks-2.md)</h2>
+      <ul>
+        <li>
+          B9-1: the list roll's result at 360 is the compact card (96 px art beside the text);
+          from 600 px the full face (<code>list-roll</code>).
+        </li>
+        <li>
+          R9-1 (owner): at 360 the requests panel is folded to its head, «Новое в списке (3)»
+          and «Открыть»; <code>list-requests-open</code> draws it open with «Свернуть». Owner
+          (2026-10-29, round 6): it folds at 1180 too, so the first entry starts at 203 px
+          there.
+        </li>
+        <li>
+          N9-2 (owner): «Цены» is in «Ещё» at 360 and «Заметки ▾» sits on the meta line
+          (unchanged since round 4).
+        </li>
+        <li>
+          R0-1: every list row has «··· Ещё» with its label (the accessible name adds the entry:
+          «Ещё: Палаш»); at 360 the row's «Заметка» and «Ещё» are two equal buttons on the line
+          under the quantity and the price.
+        </li>
+        <li>
+          R0-2: the one selection bar on the list page and on <code>/s/</code>: «Все», «Выбрано:
+          N» with the page's facts (pieces, total), the page's actions, «Снять выделение» last;
+          on <code>/s/</code> «Сообщить владельцу» takes its own line under it.
+          <code>list-select-none</code> and <code>shared-select-none</code> draw the no-tick
+          state.
+        </li>
+        <li>
+          N9-1: the shared page counts «6 позиций» / "6 entries" with no filter, and «Показано 8
+          из 12» under one. N9-3: the filter sheet of <code>/s/</code> has «Ссылка на фильтры»
+          in its head, as mock 3 (<code>shared-filters</code> now has one source picked). N3-3:
+          a meta separator stays with the value before it. N0-3: no grab handle on any sheet.
+        </li>
+        <li>
+          Named exception (owner, round 6): with requests waiting the first entry starts at 292
+          px at 360 (46% of the screen, past the 256 px limit; the folded panel is a 40 px strip
+          and the entry is inside the first screen). At 1180 the panel is folded too and the
+          first entry starts at 203 px. The opened roll panel puts its result card at 426 / 396
+          px at 360; the user opens it, so it is no first-screen state. The 360 selection bar on
+          /s/ is 213 px (33%) in RU and 171 px (27%) in EN: five rows, because «Сообщить
+          владельцу» keeps its own line (FEATURES) and «Печать» stays in the bar (owner); the
+          other bars are 129 px (20%).
+        </li>
+        <li>
+          FEATURES change to name (owner, round 6): FEATURES "Lists" says the select-all box
+          drops its visible label while anything is ticked; the owner kept «Все» visible while
+          ticked, so batch 9 (and 6 and 8) writes that line as «Все» visible at every tick
+          count, mixed state while some are ticked, accessible name «Выбрать все».
+        </li>
+      </ul>
+      <h2>The selection bar at 360x640</h2>
+      <p>
+        The sticky bar, measured on the render (<code>measure-bar.mjs</code>): its height and
+        its share of the 640 px screen. The shape is the pattern of mock 3: «Все», «Выбрано: N»
+        with the facts of the page, the actions of the page, «Снять выделение» last; at 360 the
+        head takes its own row and the bar pins to the bottom of the frame.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>Share (RU)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>list-selected</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>list-select-none</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>shared-select</code></td>
+              <td class="n">213 px</td>
+              <td class="n">171 px</td>
+              <td class="n lim">33%</td>
+            </tr>
+            <tr>
+              <td><code>shared-select-none</code></td>
+              <td class="n">213 px</td>
+              <td class="n">171 px</td>
+              <td class="n lim">33%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 5 (mock 3's list head pattern)</h2>
+      <ul>
+        <li>
+          Mock 3's final list head pattern on /lists/&lt;uuid&gt;: no search row below eight
+          entries, so «Выбрать» sits on the title row before «Ещё» at 360 and ends its own row
+          over the entries at 1180; no icon (M3-2, M3-3).
+        </li>
+        <li>
+          On /s/ «Выбрать» ends the action row; with eight entries or more the search row is
+          «Поиск», «Фильтры» and «Выбрать» last.
+        </li>
+        <li>
+          One selection bar, sticky at the bottom of the list, «Снять выделение» last on its
+          row; on /s/ «Сообщить владельцу» takes its own line under it (FEATURES "Purchase
+          requests: the send"), not gold (M3-5).
+        </li>
+      </ul>
+      <h2>Changes in round 4 (reviews/mocks-1.md)</h2>
+      <ul>
+        <li>
+          Review mocks-1 (round 4): on /lists/&lt;uuid&gt; «Печать» stays on the action row at
+          360, and the rename is the h1 input (M9-1, rules 15 and 16).
+        </li>
+        <li>
+          At 360 the list notes open from «Заметки ▾» on the meta line, and «Цены» (book units
+          or coins, with an example) is in «Ещё»: both are reached without scrolling past the
+          entries (M9-2).
+        </li>
+        <li>
+          <code>list-requests</code> is measured (its primary content is the panel head);
+          «Принять» is gold on the first request only; the heading is the spec's «Новое в списке
+          (3)» (M9-3, M9-5).
+        </li>
+        <li>
+          On /s/ the primary reads «Сохранить себе» / "Save to my lists" (M4-2); in the
+          selection bar «Сообщить владельцу» comes last, on its own line at 600 px or less, and
+          is not gold (M3-5, FEATURES "Purchase requests: the send"); the bar keeps «Снять
+          выделение» (M9-4).
+        </li>
+        <li>
+          «Добавить свой предмет» replaces the rule 8 departure «Свой предмет» (A41): batch 9
+          names it in FEATURES "Lists" (M9-5).
+        </li>
+      </ul>
+      <h2>Changes in round 3</h2>
+      <ul>
+        <li>
+          At 360 the side column becomes a head: the name, «Ещё», the meta line and the action
+          row (round 4 replaces the rest of this line: see above).
+        </li>
+        <li>
+          The shared page: the count and «Заметка ▾» on the lead line («Заметка мастера ▾»
+          beside it on the GM link), one action row («Сохранить себе», «Выбрать»; «Печать» joins
+          it at 1180). «Список мастера» leaves the lead line.
+        </li>
+        <li>
+          Long names (R2): the title takes one line with an ellipsis at 360 and up to three at
+          1180 (<code>list-longname</code>, <code>shared-longname</code>).
+        </li>
+        <li>
+          States removed: the question options; added: <code>list-longname</code>,
+          <code>shared-longname</code>, <code>shared-note</code>, <code>shared-gm-note</code>.
+        </li>
+      </ul>
+      <h2>Differences from plan.md and from R</h2>
+      <ul>
+        <li>
+          The position field and the drag grip stay (R dropped both): the position field is the
+          non-drag reorder control (WCAG 2.5.7) and the only one on a touch screen.
+        </li>
+        <li>
+          <code>list-drag</code>: the drop mark is one horizontal gold rule on both rows beside
+          the gap (FEATURES.md, "Lists"), not a side stripe.
+        </li>
+        <li>
+          Between 761 and 1000 px the side column moves on top (A1, P0). <code>list</code> and
+          <code>list-prices</code> have a 768 px render.
+        </li>
+        <li>
+          At 360 on <code>/s/</code> «Печать» for the whole list is in the selection bar
+          («Выбрать», «Все», «Печать»): the action row holds two controls. One more step; it
+          needs the owner's yes.
+        </li>
+        <li>
+          At 360 a long list name is cut to one line: two lines measured 260-282 px on
+          <code>/s/</code>, past the limit. The full name is in the page title and, for the
+          owner, in «Переименовать».
+        </li>
+        <li>
+          A ticked row is neutral (lit ground and a check); FEATURES.md "Lists" says "A ticked
+          row takes the gold selected style": batch 9 changes that line (theme 1).
+        </li>
+        <li>
+          On <code>/s/</code> the filters draw only the groups that narrow this list (A20); the
+          threshold (from the eighth entry) stays.
+        </li>
+      </ul>
+      <h2>Shared patterns and their owners</h2>
+      <ul>
+        <li>
+          The empty-state pattern is batch 3 (<code>mocks/3/</code>), the error-page pattern
+          batch 4 (<code>mocks/4/</code>), the toast, the header and the account control batch 2
+          (<code>mocks/2/</code>), the type, the chips and the pressed default batch 1
+          (<code>mocks/1/</code>), all unit A. The list-page head pattern (the picker title, the
+          search with «Фильтры», «Выбрать» in «Ещё» at 360 and in the search row at 1180) is the
+          catalog's (<code>mocks/3/</code>). A state that uses one is re-rendered after its
+          owner mock is confirmed.
+        </li>
+        <li>
+          Ground: the linear page ground
+          <code>linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)</code> (owner,
+          2026-10-29). The no-picture well is the kind glyph; the "?" pedestal is gone (owner,
+          2026-10-29).
+        </li>
+      </ul>
+      <h2>Impeccable critique</h2>
+      <ul>
+        <li>
+          P2: at 360 the GM link's lead line takes two lines in RU (two note links): its first
+          entry starts at 254, inside the limit, past the target.
+        </li>
+        <li>
+          P2: at 360 a row has one line of labelled controls under its text (position, quantity,
+          price, «Заметка», «Ещё»), each 34 px or more.
+        </li>
+        <li>
+          P2, gold budget: gold on «Сохранить себе», the first «Принять», «Бросить d7»,
+          «Проставить эту цену», the drop mark, the note links and the lit account control.
+        </li>
+        <li>
+          Detector (<code>impeccable detect</code>, this folder): 0 slop warnings; 4
+          <code>design-system-font</code> warnings (Source Sans 3, batch 1) and advisories from
+          R's copied CSS.
+        </li>
+      </ul>
+      <h2>States</h2>
+      <div class="st">
+        <a href="list__360__ru.png"
+          ><img src="list__360__ru.png" alt="list at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list</b>
+          <span class="meta3"
+            ><code>/lists/&lt;uuid&gt;</code> · A1, A2, A3, A5, A41, first-screen rule</span
+          >
+          <p>
+            The list. 1180: controls in the side column («Поделиться», «Печать», «Бросить по
+            списку», «Ещё»), «Цены:» with an example and both list notes there, «Выбрать» over
+            the rows. 360: the side column becomes a head - the name as the h1 input (rules 15,
+            16) with «Ещё» («Выбрать», «Цены» as two choices with an example, copy, JSON,
+            delete), the meta line with «Заметки ▾», then «Поделиться», «Печать» and «Бросить по
+            списку». Rows: the position field and the grip, labelled quantity and price,
+            «Заметка» and «Ещё». At 768 the side column moves on top (A1, P0).
+          </p>
+          <div class="lk">
+            <a href="list__360__ru.png">360 RU</a><a href="list__360__en.png">360 EN</a
+            ><a href="list__1180__ru.png">1180 RU</a><a href="list__1180__en.png">1180 EN</a
+            ><a href="list__768__ru.png">768 RU</a><a href="list__768__en.png">768 EN</a
+            ><a href="state.html?s=list">live RU</a
+            ><a href="state.html?s=list&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-longname__360__ru.png"
+          ><img src="list-longname__360__ru.png" alt="list-longname at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-longname</b>
+          <span class="meta3"
+            ><code>/lists/&lt;uuid&gt;</code> · plan review R2 (longest name)</span
+          >
+          <p>
+            Longest name: a 200-character list name in the h1 input, one line that scrolls in
+            the field (rules 15, 16).
+          </p>
+          <div class="lk">
+            <a href="list-longname__360__ru.png">360 RU</a
+            ><a href="list-longname__360__en.png">360 EN</a
+            ><a href="list-longname__1180__ru.png">1180 RU</a
+            ><a href="list-longname__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-longname">live RU</a
+            ><a href="state.html?s=list-longname&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-notes__360__ru.png"
+          ><img src="list-notes__360__ru.png" alt="list-notes at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-notes</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · M9-2</span>
+          <p>
+            Open at 360: «Заметки ▾» on the meta line opens both list notes in place, so they
+            are reached without scrolling past the entries. At 1180 the notes are in the side
+            column.
+          </p>
+          <div class="lk">
+            <a href="list-notes__360__ru.png">360 RU</a
+            ><a href="list-notes__360__en.png">360 EN</a
+            ><a href="list-notes__1180__ru.png">1180 RU</a
+            ><a href="list-notes__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-notes">live RU</a
+            ><a href="state.html?s=list-notes&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-note__360__ru.png"
+          ><img src="list-note__360__ru.png" alt="list-note at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-note</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A2, A5</span>
+          <p>
+            Open and focus: one note area per row with a «Для игроков» / «Только для мастера»
+            switch (a dot marks a filled note); the field has the focus ring.
+          </p>
+          <div class="lk">
+            <a href="list-note__360__ru.png">360 RU</a
+            ><a href="list-note__360__en.png">360 EN</a
+            ><a href="list-note__1180__ru.png">1180 RU</a
+            ><a href="list-note__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-note">live RU</a
+            ><a href="state.html?s=list-note&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-note-gm__360__ru.png"
+          ><img src="list-note-gm__360__ru.png" alt="list-note-gm at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-note-gm</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A2, A22</span>
+          <p>
+            Open: the switch on «Только для мастера»: the field takes the dashed GM style, the
+            caption says players do not see it.
+          </p>
+          <div class="lk">
+            <a href="list-note-gm__360__ru.png">360 RU</a
+            ><a href="list-note-gm__360__en.png">360 EN</a
+            ><a href="list-note-gm__1180__ru.png">1180 RU</a
+            ><a href="list-note-gm__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-note-gm">live RU</a
+            ><a href="state.html?s=list-note-gm&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-more__360__ru.png"
+          ><img src="list-more__360__ru.png" alt="list-more at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-more</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A3</span>
+          <p>
+            Open: the list «Ещё» menu: at 360 «Цены» (book units or coins, each with its
+            example), then copy text, download JSON, delete apart. The rename is the h1 input
+            (rules 15, 16); «Выбрать» is on the title row at 360.
+          </p>
+          <div class="lk">
+            <a href="list-more__360__ru.png">360 RU</a
+            ><a href="list-more__360__en.png">360 EN</a
+            ><a href="list-more__1180__ru.png">1180 RU</a
+            ><a href="list-more__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-more">live RU</a
+            ><a href="state.html?s=list-more&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-rowmore__360__ru.png"
+          ><img src="list-rowmore__360__ru.png" alt="list-rowmore at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-rowmore</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A2</span>
+          <p>
+            Open: a row's «Ещё» menu: show to or hide from players, open the card, then remove.
+            The hidden row carries the «Только для мастера» badge.
+          </p>
+          <div class="lk">
+            <a href="list-rowmore__360__ru.png">360 RU</a
+            ><a href="list-rowmore__360__en.png">360 EN</a
+            ><a href="list-rowmore__1180__ru.png">1180 RU</a
+            ><a href="list-rowmore__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-rowmore">live RU</a
+            ><a href="state.html?s=list-rowmore&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-drag__360__ru.png"
+          ><img src="list-drag__360__ru.png" alt="list-drag at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-drag</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · plan review B2, E2</span>
+          <p>
+            Drag: the dragged row dims; the drop mark is one horizontal gold rule drawn on both
+            rows beside the gap (FEATURES.md, "Lists"), not a side stripe. The grip shows only
+            where a pointer can hover; at 360 the position field reorders.
+          </p>
+          <div class="lk">
+            <a href="list-drag__360__ru.png">360 RU</a
+            ><a href="list-drag__360__en.png">360 EN</a
+            ><a href="list-drag__1180__ru.png">1180 RU</a
+            ><a href="list-drag__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-drag">live RU</a
+            ><a href="state.html?s=list-drag&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-share__360__ru.png"
+          ><img src="list-share__360__ru.png" alt="list-share at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-share</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A3, A4</span>
+          <p>
+            Open: the share panel: two labelled link rows with path addresses
+            (/s/&lt;token&gt;), «Скопировать» neutral (not gold), one danger action.
+          </p>
+          <div class="lk">
+            <a href="list-share__360__ru.png">360 RU</a
+            ><a href="list-share__360__en.png">360 EN</a
+            ><a href="list-share__1180__ru.png">1180 RU</a
+            ><a href="list-share__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-share">live RU</a
+            ><a href="state.html?s=list-share&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-prices__360__ru.png"
+          ><img src="list-prices__360__ru.png" alt="list-prices at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-prices</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · price toggle</span>
+          <p>
+            «Цены: Как в книге»: every price on the page reads in bags and handfuls, the example
+            under the switch too.
+          </p>
+          <div class="lk">
+            <a href="list-prices__360__ru.png">360 RU</a
+            ><a href="list-prices__360__en.png">360 EN</a
+            ><a href="list-prices__1180__ru.png">1180 RU</a
+            ><a href="list-prices__1180__en.png">1180 EN</a
+            ><a href="list-prices__768__ru.png">768 RU</a
+            ><a href="list-prices__768__en.png">768 EN</a
+            ><a href="state.html?s=list-prices">live RU</a
+            ><a href="state.html?s=list-prices&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-prices-panel__360__ru.png"
+          ><img
+            src="list-prices-panel__360__ru.png"
+            alt="list-prices-panel at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>list-prices-panel</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · price toggle</span>
+          <p>
+            Open: one entry selected, the prices panel (markup, the book price for its rarity).
+          </p>
+          <div class="lk">
+            <a href="list-prices-panel__360__ru.png">360 RU</a
+            ><a href="list-prices-panel__360__en.png">360 EN</a
+            ><a href="list-prices-panel__1180__ru.png">1180 RU</a
+            ><a href="list-prices-panel__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-prices-panel">live RU</a
+            ><a href="state.html?s=list-prices-panel&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-prices-none__360__ru.png"
+          ><img
+            src="list-prices-none__360__ru.png"
+            alt="list-prices-none at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>list-prices-none</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · price toggle</span>
+          <p>Empty: no prices yet; the panel offers the book price for the rarity.</p>
+          <div class="lk">
+            <a href="list-prices-none__360__ru.png">360 RU</a
+            ><a href="list-prices-none__360__en.png">360 EN</a
+            ><a href="list-prices-none__1180__ru.png">1180 RU</a
+            ><a href="list-prices-none__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-prices-none">live RU</a
+            ><a href="state.html?s=list-prices-none&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-picked__360__ru.png"
+          ><img src="list-picked__360__ru.png" alt="list-picked at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-picked</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A19 pattern</span>
+          <p>
+            Selected with a part quantity: «Взять 1 из 2 = 7 мешков 5 горстей», the bar total
+            follows.
+          </p>
+          <div class="lk">
+            <a href="list-picked__360__ru.png">360 RU</a
+            ><a href="list-picked__360__en.png">360 EN</a
+            ><a href="list-picked__1180__ru.png">1180 RU</a
+            ><a href="list-picked__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-picked">live RU</a
+            ><a href="state.html?s=list-picked&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-selected__360__ru.png"
+          ><img src="list-selected__360__ru.png" alt="list-selected at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-selected</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A40</span>
+          <p>
+            Open: two entries ticked. The one selection bar: «Все» (a dash while some are
+            ticked), «Выбрано: 2 · 7 шт. · Итого: 400 зол.», «Цены», «Скопировать текст»,
+            «Удалить (2)», «Снять выделение» last. At 360 pinned to the bottom of the 640 px
+            frame.
+          </p>
+          <div class="lk">
+            <a href="list-selected__360__ru.png">360 RU</a
+            ><a href="list-selected__360__en.png">360 EN</a
+            ><a href="list-selected__1180__ru.png">1180 RU</a
+            ><a href="list-selected__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-selected">live RU</a
+            ><a href="state.html?s=list-selected&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-select-none__360__ru.png"
+          ><img
+            src="list-select-none__360__ru.png"
+            alt="list-select-none at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>list-select-none</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · R0-2</span>
+          <p>
+            The selection mode with no tick: «Все» empty, «Выбрано: 0», «Цены», «Скопировать
+            текст» and «Удалить (0)» off, «Снять выделение» on.
+          </p>
+          <div class="lk">
+            <a href="list-select-none__360__ru.png">360 RU</a
+            ><a href="list-select-none__360__en.png">360 EN</a
+            ><a href="list-select-none__1180__ru.png">1180 RU</a
+            ><a href="list-select-none__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-select-none">live RU</a
+            ><a href="state.html?s=list-select-none&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-sold__360__ru.png"
+          ><img src="list-sold__360__ru.png" alt="list-sold at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-sold</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · toast (batch 2)</span>
+          <p>The undo toast after a sale; the toast pattern is batch 2's (unit A).</p>
+          <div class="lk">
+            <a href="list-sold__360__ru.png">360 RU</a
+            ><a href="list-sold__360__en.png">360 EN</a
+            ><a href="list-sold__1180__ru.png">1180 RU</a
+            ><a href="list-sold__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-sold">live RU</a
+            ><a href="state.html?s=list-sold&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-roll__360__ru.png"
+          ><img src="list-roll__360__ru.png" alt="list-roll at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-roll</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A42</span>
+          <p>
+            Open: «Бросить по списку» with a result. At 360 the compact card (96 px art beside
+            the text); from 600 px the full card face. The rolled entry, the notes and «Показать
+            в списке» under it.
+          </p>
+          <div class="lk">
+            <a href="list-roll__360__ru.png">360 RU</a
+            ><a href="list-roll__360__en.png">360 EN</a
+            ><a href="list-roll__1180__ru.png">1180 RU</a
+            ><a href="list-roll__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-roll">live RU</a
+            ><a href="state.html?s=list-roll&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-requests__360__ru.png"
+          ><img src="list-requests__360__ru.png" alt="list-requests at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-requests</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · requests, notices</span>
+          <p>
+            Requests waiting. At 360 the panel is folded to its head, «Новое в списке (3)» and
+            «Открыть» (owner, 2026-10-29), so the first entry stays in the first screen; at 1180
+            it is open above the entries. «Принять» is gold on the first request only.
+          </p>
+          <div class="lk">
+            <a href="list-requests__360__ru.png">360 RU</a
+            ><a href="list-requests__360__en.png">360 EN</a
+            ><a href="list-requests__1180__ru.png">1180 RU</a
+            ><a href="list-requests__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-requests">live RU</a
+            ><a href="state.html?s=list-requests&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-requests-open__360__ru.png"
+          ><img
+            src="list-requests-open__360__ru.png"
+            alt="list-requests-open at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>list-requests-open</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · R9-1</span>
+          <p>
+            Open: «Открыть» pressed at 360. The panel takes the head row with «Свернуть»; the
+            entries start below it. At 1180 the panel is always open, as list-requests.
+          </p>
+          <div class="lk">
+            <a href="list-requests-open__360__ru.png">360 RU</a
+            ><a href="list-requests-open__360__en.png">360 EN</a
+            ><a href="list-requests-open__1180__ru.png">1180 RU</a
+            ><a href="list-requests-open__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-requests-open">live RU</a
+            ><a href="state.html?s=list-requests-open&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-empty__360__ru.png"
+          ><img src="list-empty__360__ru.png" alt="list-empty at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-empty</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · theme 8</span>
+          <p>Empty: the empty-state pattern (batch 3) with the cause and one next step.</p>
+          <div class="lk">
+            <a href="list-empty__360__ru.png">360 RU</a
+            ><a href="list-empty__360__en.png">360 EN</a
+            ><a href="list-empty__1180__ru.png">1180 RU</a
+            ><a href="list-empty__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-empty">live RU</a
+            ><a href="state.html?s=list-empty&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-limit__360__ru.png"
+          ><img src="list-limit__360__ru.png" alt="list-limit at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-limit</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · scale</span>
+          <p>
+            At the limit: 100 of 100; «Добавить свой предмет» is off and the line says why and
+            what to do.
+          </p>
+          <div class="lk">
+            <a href="list-limit__360__ru.png">360 RU</a
+            ><a href="list-limit__360__en.png">360 EN</a
+            ><a href="list-limit__1180__ru.png">1180 RU</a
+            ><a href="list-limit__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-limit">live RU</a
+            ><a href="state.html?s=list-limit&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="list-error__360__ru.png"
+          ><img src="list-error__360__ru.png" alt="list-error at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>list-error</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · error scenarios</span>
+          <p>
+            Error: a write failed; the meta line says «не сохранено», the alert names the cause
+            and «Повторить».
+          </p>
+          <div class="lk">
+            <a href="list-error__360__ru.png">360 RU</a
+            ><a href="list-error__360__en.png">360 EN</a
+            ><a href="list-error__1180__ru.png">1180 RU</a
+            ><a href="list-error__1180__en.png">1180 EN</a
+            ><a href="state.html?s=list-error">live RU</a
+            ><a href="state.html?s=list-error&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-player__360__ru.png"
+          ><img src="shared-player__360__ru.png" alt="shared-player at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-player</b>
+          <span class="meta3"
+            ><code>/s/&lt;token&gt;</code> · A19, A21, P6, first-screen rule</span
+          >
+          <p>
+            The players' link: the count and «Заметка ▾» on the lead line, one action row with
+            «Сохранить себе» as the one primary and «Выбрать» («Печать» joins it at 1180; at 360
+            it is in the selection bar), labelled quantity and price, no checkboxes until
+            «Выбрать».
+          </p>
+          <div class="lk">
+            <a href="shared-player__360__ru.png">360 RU</a
+            ><a href="shared-player__360__en.png">360 EN</a
+            ><a href="shared-player__1180__ru.png">1180 RU</a
+            ><a href="shared-player__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-player">live RU</a
+            ><a href="state.html?s=shared-player&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-longname__360__ru.png"
+          ><img src="shared-longname__360__ru.png" alt="shared-longname at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-longname</b>
+          <span class="meta3"
+            ><code>/s/&lt;token&gt;</code> · plan review R2 (longest name)</span
+          >
+          <p>
+            Longest name: a 200-character list name; one line with an ellipsis at 360 (two lines
+            measured 260-282 px, past the limit), three lines at 1180.
+          </p>
+          <div class="lk">
+            <a href="shared-longname__360__ru.png">360 RU</a
+            ><a href="shared-longname__360__en.png">360 EN</a
+            ><a href="shared-longname__1180__ru.png">1180 RU</a
+            ><a href="shared-longname__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-longname">live RU</a
+            ><a href="state.html?s=shared-longname&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-note__360__ru.png"
+          ><img src="shared-note__360__ru.png" alt="shared-note at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-note</b>
+          <span class="meta3"><code>/s/&lt;token&gt;</code> · first-screen rule</span>
+          <p>Open: «Заметка ▾» opens the list note in place under the lead line.</p>
+          <div class="lk">
+            <a href="shared-note__360__ru.png">360 RU</a
+            ><a href="shared-note__360__en.png">360 EN</a
+            ><a href="shared-note__1180__ru.png">1180 RU</a
+            ><a href="shared-note__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-note">live RU</a
+            ><a href="state.html?s=shared-note&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-gm__360__ru.png"
+          ><img src="shared-gm__360__ru.png" alt="shared-gm at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-gm</b> <span class="meta3"><code>/s/&lt;token&gt;</code> · A22</span>
+          <p>
+            The GM's link: «Заметка мастера ▾» on the lead line beside the players' note link;
+            the GM-only entry and its note show in the same dashed style as the owner's editor
+            (A22).
+          </p>
+          <div class="lk">
+            <a href="shared-gm__360__ru.png">360 RU</a
+            ><a href="shared-gm__360__en.png">360 EN</a
+            ><a href="shared-gm__1180__ru.png">1180 RU</a
+            ><a href="shared-gm__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-gm">live RU</a
+            ><a href="state.html?s=shared-gm&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-gm-note__360__ru.png"
+          ><img src="shared-gm-note__360__ru.png" alt="shared-gm-note at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-gm-note</b> <span class="meta3"><code>/s/&lt;token&gt;</code> · A22</span>
+          <p>
+            Open: «Заметка мастера ▾» opens the GM's list note in place, dashed as in the
+            owner's editor.
+          </p>
+          <div class="lk">
+            <a href="shared-gm-note__360__ru.png">360 RU</a
+            ><a href="shared-gm-note__360__en.png">360 EN</a
+            ><a href="shared-gm-note__1180__ru.png">1180 RU</a
+            ><a href="shared-gm-note__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-gm-note">live RU</a
+            ><a href="state.html?s=shared-gm-note&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-own__360__ru.png"
+          ><img src="shared-own__360__ru.png" alt="shared-own at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-own</b> <span class="meta3"><code>/s/&lt;token&gt;</code> · ownList</span>
+          <p>
+            The owner opens their own link: one line says what this link hides and links to the
+            editor.
+          </p>
+          <div class="lk">
+            <a href="shared-own__360__ru.png">360 RU</a
+            ><a href="shared-own__360__en.png">360 EN</a
+            ><a href="shared-own__1180__ru.png">1180 RU</a
+            ><a href="shared-own__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-own">live RU</a
+            ><a href="state.html?s=shared-own&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-select__360__ru.png"
+          ><img src="shared-select__360__ru.png" alt="shared-select at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-select</b>
+          <span class="meta3"><code>/s/&lt;token&gt;</code> · A19, A40</span>
+          <p>
+            Open: two entries ticked. The one selection bar: «Все», «Выбрано: 2 · 2 шт.», «В
+            список», «Печать», «Скопировать текст», «Снять выделение» last; «Сообщить владельцу»
+            on its own line under it, not gold.
+          </p>
+          <div class="lk">
+            <a href="shared-select__360__ru.png">360 RU</a
+            ><a href="shared-select__360__en.png">360 EN</a
+            ><a href="shared-select__1180__ru.png">1180 RU</a
+            ><a href="shared-select__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-select">live RU</a
+            ><a href="state.html?s=shared-select&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-select-none__360__ru.png"
+          ><img
+            src="shared-select-none__360__ru.png"
+            alt="shared-select-none at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>shared-select-none</b>
+          <span class="meta3"><code>/s/&lt;token&gt;</code> · R0-2</span>
+          <p>
+            The selection mode with no tick on the shared page: «Все» empty, «Выбрано: 0», the
+            actions and «Сообщить владельцу» off, «Снять выделение» on.
+          </p>
+          <div class="lk">
+            <a href="shared-select-none__360__ru.png">360 RU</a
+            ><a href="shared-select-none__360__en.png">360 EN</a
+            ><a href="shared-select-none__1180__ru.png">1180 RU</a
+            ><a href="shared-select-none__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-select-none">live RU</a
+            ><a href="state.html?s=shared-select-none&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-filters__360__ru.png"
+          ><img src="shared-filters__360__ru.png" alt="shared-filters at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-filters</b>
+          <span class="meta3"><code>/s/&lt;token&gt;/f_&lt;filter&gt;</code> · A20</span>
+          <p>
+            The filter sheet at 360 with one source picked: «Фильтры · 1» lit, the count
+            «Показано 8 из 12» on the lead line, «Ссылка на фильтры» in the sheet head,
+            «Сбросить» and «Показать 8» in its foot; at 1180 the column head carries «Сбросить»
+            and the link.
+          </p>
+          <div class="lk">
+            <a href="shared-filters__360__ru.png">360 RU</a
+            ><a href="shared-filters__360__en.png">360 EN</a
+            ><a href="shared-filters__1180__ru.png">1180 RU</a
+            ><a href="shared-filters__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-filters">live RU</a
+            ><a href="state.html?s=shared-filters&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="shared-gone__360__ru.png"
+          ><img src="shared-gone__360__ru.png" alt="shared-gone at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>shared-gone</b> <span class="meta3"><code>/s/&lt;token&gt;</code> · C32, A21</span>
+          <p>
+            Error page: the link is off or the list is gone; the error-page pattern (batch 4)
+            with a true cause and one next step.
+          </p>
+          <div class="lk">
+            <a href="shared-gone__360__ru.png">360 RU</a
+            ><a href="shared-gone__360__en.png">360 EN</a
+            ><a href="shared-gone__1180__ru.png">1180 RU</a
+            ><a href="shared-gone__1180__en.png">1180 EN</a
+            ><a href="state.html?s=shared-gone">live RU</a
+            ><a href="state.html?s=shared-gone&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

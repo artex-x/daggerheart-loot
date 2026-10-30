@@ -1,5 +1,5 @@
 /*
-  node:test over golden.js's pure half - the normalisation, rule A (same-shape
+  node:test over golden.js's pure half - the normalization, rule A (same-shape
   sibling elision), rule B (name cap) and comparison logic that `npm run check`
   can exercise without a build or puppeteer.
 

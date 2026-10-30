@@ -80,13 +80,16 @@ old address: `roll/wondrous`, `roll/dread`, `roll/voa`, `roll/dv`,
 An old id still opens the same page, with its anchor or filter tail; the
 address is not rewritten. Filter values (`f_src-dread`) keep the internal keys.
 
-The tab bar draws five tabs over them in every build: Core rules, the alternate
-tables, one «Дополнения» / "Supplements" tab for the seven supplement sections
-(`roll/wondrous_environments` to `roll/many_worlds_tavern`, `app/src/lib/nav.ts`),
-Tables and Search. The supplements tab links to
-`#/roll/wondrous_environments`; every supplement address stays its
-own section (`FEATURES.md`, "Chrome"). `#/lists` has no tab: it stays a section
-route, reached from the account menu's «Мои списки», a bookmark or a pin. A build
+The header draws three jobs over them in every build: «Бросок» / "Roll" for the
+nine roll sections, «Таблицы» / "Tables" and «Поиск» / "Search"
+(`app/src/lib/nav.ts`). «Бросок» opens the last roll section of the tab, else the
+pinned start section when it is a roll section, else `#/roll/std`. The nine roll
+sections draw a mode row under the header: Core rules, the alternate tables and
+one «Дополнения» / "Supplements" menu of the seven supplement sections
+(`roll/wondrous_environments` to `roll/many_worlds_tavern`); every supplement
+address stays its own section (`FEATURES.md`, "Chrome"). `#/lists` has no job: it
+stays a section route, reached from the account menu's «Мои списки», a bookmark or
+a pin. A build
 with no sign-in configured draws the not-found page for it, the address kept.
 
 ## Legacy section names

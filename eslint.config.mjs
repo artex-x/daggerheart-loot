@@ -18,11 +18,13 @@ export default ts.config(
       'coverage/**',
       'node_modules/**',
       /* Generated data, not authored - reformatting or linting a
-         machine-written file is noise for no behaviour change. */
+         machine-written file is noise for no behavior change. */
       'data.js',
       'i/**',
       /* Untracked artwork scratch, gitignored for the same reason (.gitignore). */
       'work/**',
+      /* A task's throwaway mock pages; the task's closeout deletes them. */
+      'issues/*/mocks/**',
       /* wrangler's local state of the preview host. */
       'preview/.wrangler/**',
       /* Everything under .claude/ except the hooks themselves: agent

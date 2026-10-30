@@ -5,6 +5,8 @@
    * an honest `aria-pressed` on every use - the live language segment writes
    * it (`git show 23c00a6^:app.js`), the live view and print segments do not, and the fix
    * is to add it everywhere rather than lose it from the pair that had it. */
+  import Icon from './Icon.svelte';
+
   interface Option<T> {
     value: T;
     label: string;
@@ -17,6 +19,9 @@
     label: string;
     /** `.seg.small` - the print bar's and the tables view switch's own size. */
     small?: boolean;
+    /** A mode toggle: the pressed option takes a check and a lit border, not the
+     *  gold of a choice that narrows the view (DESIGN.md, "Segmented control"). */
+    neutral?: boolean;
     /** A form field's id: a problem's link focuses the group. */
     id?: string;
     /** The id of the error line under the group. `aria-invalid` is not allowed on a
@@ -33,6 +38,7 @@
     value,
     label,
     small = false,
+    neutral = false,
     id,
     describedby,
     none,
@@ -46,6 +52,7 @@
 <div
   class="seg"
   class:small
+  class:neutral
   role="group"
   aria-label={label}
   {id}
@@ -59,7 +66,8 @@
       aria-pressed={o.value === value}
       onclick={() => {
         onchange(o.value === value && none !== undefined ? none : o.value);
-      }}>{o.label}</button
+      }}
+      >{#if neutral && o.value === value}<Icon name="check" />{/if}{o.label}</button
     >
   {/each}
 </div>
@@ -80,7 +88,7 @@
     color: var(--muted);
     padding: 5px 13px;
     border-radius: 999px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     font-weight: 650;
     letter-spacing: 0.05em;
     transition: 0.16s;
@@ -93,12 +101,25 @@
 
   .seg.small button {
     padding: 4px 12px;
-    font-size: 12px;
+    font-size: var(--t-label);
   }
 
   .seg button.on {
     background: var(--gold);
     color: var(--ink-on-gold);
+  }
+
+  /* The icon and the label share one center (DESIGN.md, "Buttons"). */
+  .seg.neutral button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .seg.neutral button.on {
+    background: var(--surface2);
+    color: var(--txt);
+    box-shadow: inset 0 0 0 1px var(--muted2);
   }
 
   .seg button:not(.on):hover {

@@ -76,7 +76,7 @@ and `og/` to "try it out" (Risks, below).
   *creates* art for a record a source ingest just added; it never replaces.
   See "The ingest path" below for what it does and the command sequence.
 - **`thumbs`** - (re)generates the whole thumbnail set: one
-  `img/thumb/<asset>.webp` for every `img/*.webp`, `_none.webp` included.
+  `img/thumb/<asset>.webp` for every `img/*.webp`.
   It reads the committed 640 px files, not `data.js` and not an upload, and
   writes only `img/thumb/`. A thumbnail whose picture is gone is refused
   (`refused: orphan thumbnail ...`, nothing written); remove it with
@@ -125,7 +125,7 @@ The thumbnail is made from the 640 px WebP, never from the upload, so
 `thumbs` reproduces from the committed file the exact bytes `install` and
 `ingest` wrote (on the same encoder build), and `verify` checks it against
 the WebP it re-encodes. The cost is two lossy passes; at a 4x downscale the
-first pass's artefacts do not survive.
+first pass's artifacts do not survive.
 
 ## Determinism is per-run, not byte-identical with what is committed
 
@@ -180,7 +180,7 @@ same existence check as `install`'s, with the sense flipped.
   line (legal only inside one `eq.line` - `tests/dataint.js` enforces that
   separately). A `shares` entry carries no filenames at all.
 - **`unarted`** - a record with `img: ''`. Legal (`record.test.ts` pins the
-  `_none.webp` render path); reported so the ingest report is honest about
+  kind glyph it draws); reported so the ingest report is honest about
   which records still need art.
 
 **The blocker an ingest most often hits: `unsourced`.** An asset that is
@@ -204,7 +204,7 @@ delivered. Use `--map`'s `assign` only for a name that `plan` still lists
 as unmatched.
 
 **`unarted` is a normal outcome.** Name each unarted record in the
-handoff; the record ships with `img: ''` and renders `_none.webp` until its
+handoff; the record ships with `img: ''` and draws the kind glyph until its
 art arrives.
 
 **Ordering.** A record's `img` value must already be in `data.js` before or
@@ -245,10 +245,20 @@ orphan or non-160x160 thumbnail.
 ## Icons
 
 The installable app's icons (`docs/specs/META.md` section 9) are not item
-art, but they use the same encoder. `app/public/icons/icon.svg` is the
-source (a flat key, which the owner chose over an artwork-style render on
-2026-09-23); the four PNGs beside it are committed build inputs, like
-`card/*.svg`. After an edit to the SVG, run the one-time setup above, then:
+art, but they use the same encoder. The app has one mark, the vault die
+(owner, 2026-10-29): a d12 decagon in `--gold` (`#d8ab5e`) with a lighter
+pentagon face in `--gold-soft` (`#f0d091`), the edges and a keyhole through
+the face cut as a mask. It replaced the flat key of the home-screen icons,
+the emoji key of the tab favicon and the gold star of the header and the
+share cards. Four copies draw it from the same path data:
+`app/public/icons/icon.svg` (on the `--bg` square), `app/public/icons/favicon.svg`
+(on a `--bg` tile with a 96-unit corner radius), the header's inline SVG in
+`app/src/components/Shell.svelte`, and `MARK` in `tools/artwork/lib.mjs` for
+the share cards; `tools/artwork/lib.test.mjs` holds them to one drawing.
+Below 32 px the keyhole reads as a dark dot; the decagon and the lit face
+still read on a dark and a light tab strip. The four PNGs beside `icon.svg`
+are committed build inputs, like `card/*.svg`. After an edit to the SVG, run
+the one-time setup above, then:
 
 ```text
 node tools/artwork/icons.mjs
@@ -257,8 +267,8 @@ node tools/artwork/icons.mjs
 Expected result: one line per file - `icon-192.png`, `icon-512.png`,
 `maskable-512.png` and `apple-touch-icon.png` (180x180) with its byte size.
 The SVG renders at 384 dpi and each size is a Lanczos downsample to PNG. The
-drawing must stay inside the maskable safe zone, a centred circle of radius
-40% of the side (204.8 units of the 512 viewBox), because the maskable icon
+drawing must stay inside the maskable safe zone, a centered circle of radius
+40% of the side (204.8 units of the 512 viewBox; the decagon reaches 198), because the maskable icon
 is the same drawing. Commit the SVG and the four PNGs
 together.
 
@@ -272,17 +282,26 @@ first, the English entry document `en/index.html` the second
 language is the `CARD_TEXT` table beside it. The JPEGs are committed build
 inputs, like the icons: the deploy job never renders them.
 
-The text is set in Inter, the first family of the app's own stack
-(`app/src/styles/tokens.css`, `--ui`). `tools/artwork/fonts/` ships the two
-static faces the template uses and the licence (SIL Open Font License 1.1),
-taken from the Inter 4.1 release archive (`Inter-4.1.zip`,
-`github.com/rsms/inter/releases/tag/v4.1`, `extras/ttf/`):
+The text is set in Source Sans 3, the app's UI family (`--ui` in
+`app/src/styles/tokens.css`), as static faces: the app loads the variable
+face from `@fontsource-variable/source-sans-3`, and fontconfig renders TTF.
+`tools/artwork/fonts/` ships the two faces the template uses and the license
+(SIL Open Font License 1.1), taken from the Adobe release 3.052R
+(`github.com/adobe-fonts/source-sans`, tag `3.052R`, `TTF/` and the root
+`LICENSE.md`):
 
 | File | sha256 |
 |---|---|
-| `Inter-Regular.ttf` | `40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82` |
-| `Inter-SemiBold.ttf` | `78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3` |
-| `LICENSE.txt` | `262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a` |
+| `SourceSans3-Regular.ttf` | `4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f` |
+| `SourceSans3-Semibold.ttf` | `a3f4f8dcf343a8f24dc61951de93f3ba1558b15cd250ba24af8a40e957081b7d` |
+| `LICENSE.md` | `89ad2c4f66dd29127527493e729c31e731f111cf10faf5774c3db9275ed0c22c` |
+
+The card stands on the app's page ground: a vertical gradient from `--bg2`
+(`#14111d`) at the top to `--bg` (`#0e0c15`) at 520 px. The title is
+`--txt`, «DAGGERHEART» is the header's muted brand line (`--muted2`, letter
+spacing 2), and the subtitle is `--muted`. The mark ("Icons" above) stands
+in an 84 px box at (50, 258) before the title. Gold is on the mark only, as
+in the header (DESIGN.md, "The Seal Rule").
 
 `tools/artwork/cards.mjs` writes a `fonts.conf` that lists only that
 directory, and runs itself again with `FONTCONFIG_PATH` and
@@ -290,7 +309,7 @@ directory, and runs itself again with `FONTCONFIG_PATH` and
 second process is necessary: fontconfig reads the variables through the C
 runtime, which never sees a `process.env` write made after start-up, and
 the render then silently used a host face (measured 2026-09-23). So no host
-font can stand in for Inter: with the fonts directory empty the render has
+font can stand in for Source Sans 3: with the fonts directory empty the render has
 no glyphs, and the script fails.
 
 To change the text or the layout, edit `CARD_TEXT` or `shareCardSvg`, run
@@ -307,7 +326,7 @@ cards in memory and compares them with the files in `og/`: it fails when more
 than 0.5% of the pixels differ by more than 32 in a channel, or when a card
 has no text. Bytes are not compared, because encoder builds differ
 ("Determinism is per-run", above). The script also checks where each title
-ends, so a host face that stands in for Inter fails in both modes, and write
+ends, so a host face that stands in for Source Sans 3 fails in both modes, and write
 mode writes neither card when one fails. Open both files and look at them, then
 commit both.
 
@@ -477,4 +496,4 @@ Guards in `tools/artwork/lib.test.mjs`:
   buffer, and `verify` re-encodes from that same original; the originals
   live in untracked drop directories, so neither folder is recoverable from
   the other or from the repository - why both stay tracked whatever the
-  generated-artefact policy elsewhere says.
+  generated-artifact policy elsewhere says.

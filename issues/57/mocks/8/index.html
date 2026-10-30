@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 8 mock</title>
+    <link rel="stylesheet" href="base.css" />
+    <style>
+      .idx {
+        width: min(1180px, 100% - 32px);
+        margin: 0 auto;
+        padding: 26px 0 60px;
+      }
+      .idx h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+      }
+      .idx h2 {
+        font-size: 23px;
+        margin: 30px 0 10px;
+      }
+      .idx p,
+      .idx li {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 90ch;
+      }
+      .idx code {
+        font: 13px var(--mono);
+        color: var(--txt);
+      }
+      .back2 {
+        display: inline-block;
+        margin: 0 0 14px;
+        font-size: 14px;
+      }
+      .ans {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--line2);
+        border-radius: 14px;
+        background: var(--surface);
+        margin: 0 0 10px;
+      }
+      .ans img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        object-position: top;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+      }
+      .ans b {
+        color: var(--txt);
+      }
+      .chosen {
+        color: var(--ink-on-gold);
+        background: var(--gold);
+        border-radius: 6px;
+        padding: 1px 7px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+      }
+      table.fs {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      table.fs th,
+      table.fs td {
+        border-bottom: 1px solid var(--line);
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      table.fs th {
+        color: var(--muted2);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      table.fs td.n {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .ok {
+        color: #9ec96a;
+      }
+      .lim {
+        color: var(--gold-soft);
+      }
+      .bad {
+        color: var(--danger-text);
+      }
+      .st {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 14px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+      .st img {
+        width: 100%;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+      }
+      .st b {
+        color: var(--txt);
+        font-size: 16px;
+      }
+      .lk a {
+        margin-right: 10px;
+        font-size: 14px;
+      }
+      .meta3 {
+        font-size: 13px;
+        color: var(--muted2);
+      }
+      .tw {
+        overflow-x: auto;
+      }
+      @media (max-width: 760px) {
+        .st {
+          grid-template-columns: 90px 1fr;
+        }
+        .ans {
+          grid-template-columns: 80px 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="idx">
+      <a class="back2" href="../index.html">Back to all mocks</a>
+      <h1>Batch 8 - lists page, list cards, lists import, add-to-list menu</h1>
+      <p>
+        This page shows the batch 8 mock (the lists page <code>/lists</code>, its cards, the
+        lists import, the list-not-found page and the add-to-list menu) for the owner to confirm
+        before the implementer starts. Round 3 applies the owner's answers, the first-screen
+        rule (plan.md section 14) and plan review plan-1-3.
+      </p>
+      <p>
+        Open a state at <code>state.html?s=&lt;state&gt;&amp;lang=en</code>. Renders:
+        <code>&lt;state&gt;__&lt;width&gt;__&lt;lang&gt;.png</code>, 60 PNGs at 360 and 1180 px,
+        RU and EN. Shared code in <code>../direction/</code> is read-only; <code>u.js</code>,
+        <code>u.css</code> and the copies <code>base.css</code>, <code>r.css</code> are this
+        unit's.
+      </p>
+      <h2>Owner answers</h2>
+      <div class="ans">
+        <a href="lists-index__360__ru.png"
+          ><img src="lists-index__360__ru.png" alt="lists-index at 360"
+        /></a>
+        <div>
+          <b>Question 8.1: The /lists «Справка» panel</b
+          ><span class="chosen">option A chosen</span>
+          <p>Removed (option A, owner, 2026-10-29).</p>
+          <div class="lk">
+            <a href="lists-index__360__ru.png">360 RU</a
+            ><a href="lists-index__360__en.png">360 EN</a
+            ><a href="lists-index__1180__ru.png">1180 RU</a
+            ><a href="lists-index__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-index">live RU</a
+            ><a href="state.html?s=lists-index&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <h2>First screen</h2>
+      <p>
+        The top of the primary content below the top of the header, at scroll 0, at 360x640 and
+        1180x720 (<code>../measure.mjs</code>'s method; this unit's copy also measures the extra
+        states). Design target 240 / 270 px; the assert stays at 40%: 256 / 288 px (plan.md
+        section 14, plan review plan-1-3 R2). Green: at the target; gold: inside the limit, past
+        the target; red: past the limit.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>Primary content (EN / RU)</th>
+              <th>Controls above it (RU / EN)</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>1180 RU</th>
+              <th>1180 EN</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>lists-index</code></td>
+              <td>first list card / «первая карточка списка»</td>
+              <td>«Мои списки» / "My lists", «Новый список» / "New list", «Ещё» / "More"</td>
+              <td class="n ok">231</td>
+              <td class="n ok">231</td>
+              <td class="n ok">189</td>
+              <td class="n ok">189</td>
+              <td><span class="ok">target</span></td>
+            </tr>
+            <tr>
+              <td><code>lists-limit</code></td>
+              <td>first list card / «первая карточка списка»</td>
+              <td>as lists-index, «Найти список» / "Find a list", «50 из 50» / "50 of 50"</td>
+              <td class="n lim">253</td>
+              <td class="n lim">253</td>
+              <td class="n ok">191</td>
+              <td class="n ok">191</td>
+              <td><span class="lim">limit only</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 6 (reviews/mocks-2.md)</h2>
+      <ul>
+        <li>
+          R0-2: the one selection bar (see its table): «Все», «Выбрано: N», «Скачать JSON (N)»,
+          «Удалить (N)», «Снять выделение» last; <code>lists-select-none</code> draws the
+          no-tick state. At 360 the bar pins to the bottom of a 640 px frame.
+        </li>
+        <li>
+          N8-1: the «Новое в списке (3)» chip is neutral (Chalk text,
+          <code>--muted2</code> border); gold is for the primary only. N8-2:
+          <code>lists-limit</code> draws the first 24 cards and «Показать ещё (26)» as FEATURES
+          "Lists" says (24 per page, 24 more per press). <code>reviews/mocks-1.md</code> M8-1
+          asked for the rule 12 fold «и ещё N списков» in an earlier mock; the spec wins here,
+          and the owner can ask for the fold wording instead.
+        </li>
+        <li>
+          N8-3: the new-list field has the visible label «Название списка» (rule 15a). N6-1: «+
+          Новый список» has the plus icon at every width; the 360 head spacing is tightened so
+          «Мои списки», «+ Новый список» and «··· Ещё» stay on one row in RU. N0-3: no grab
+          handle on any sheet.
+        </li>
+        <li>
+          Not fixed here, deferred-scope (N0-2): <code>lists-nope</code> and
+          <code>lists-signedout</code> keep the error-page pattern of mock 4 (icon in a circle);
+          the pattern belongs to unit A.
+        </li>
+        <li>
+          FEATURES change to name (owner, round 6): FEATURES "Lists" says the select-all box
+          drops its visible label while anything is ticked; the owner kept «Все» visible while
+          ticked, so batch 9 (and 6 and 8) writes that line as «Все» visible at every tick
+          count, mixed state while some are ticked, accessible name «Выбрать все».
+        </li>
+      </ul>
+      <h2>The selection bar at 360x640</h2>
+      <p>
+        The sticky bar, measured on the render (<code>measure-bar.mjs</code>): its height and
+        its share of the 640 px screen. The shape is the pattern of mock 3: «Все», «Выбрано: N»
+        with the facts of the page, the actions of the page, «Снять выделение» last; at 360 the
+        head takes its own row and the bar pins to the bottom of the frame.
+      </p>
+      <div class="tw">
+        <table class="fs">
+          <thead>
+            <tr>
+              <th>State</th>
+              <th>360 RU</th>
+              <th>360 EN</th>
+              <th>Share (RU)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>lists-selected</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+            <tr>
+              <td><code>lists-select-none</code></td>
+              <td class="n">129 px</td>
+              <td class="n">129 px</td>
+              <td class="n ok">20%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Changes in round 5 (mock 3's list head pattern)</h2>
+      <ul>
+        <li>
+          Mock 3's final list head pattern: the title row holds «Мои списки», «Новый список» and
+          «Ещё» (the import) at 360, «Импорт из файла» and «Новый список» at 1180; from the
+          eighth list the search row is «Поиск» and «Выбрать» last; under eight lists the
+          counter line ends with «Выбрать».
+        </li>
+        <li>
+          At the limit the counter «50 списков из 50» stands at the head of the collection,
+          under the search row at 360 and in it at 1180 (M8-1, FEATURES rule 1).
+        </li>
+        <li>
+          One selection bar, sticky at the bottom of the list, «Снять выделение» last (M3-5).
+        </li>
+      </ul>
+      <h2>Changes in round 4 (reviews/mocks-1.md)</h2>
+      <ul>
+        <li>
+          Review mocks-1 (round 4): the add-to-list sheet closes with «Закрыть» and counts in
+          words («10 позиций») (M8-2).
+        </li>
+        <li>The fold reads «и ещё 38 списков» (M8-1, rule 12).</li>
+        <li>A card links «Новое в списке (3)» to the list's panel (M8-3).</li>
+        <li>
+          The language switch shows its check and the footer keeps the DPCGL fold (X-3); the
+          selection bar keeps «Снять выделение».
+        </li>
+      </ul>
+      <h2>Changes in round 3</h2>
+      <ul>
+        <li>
+          «Новый список» is the head primary and opens the name field in place (rule 8,
+          <code>lists-new</code>); the new-list panel is gone.
+        </li>
+        <li>
+          «Импорт из файла» moves into «Ещё» on the count line; at 360 «Ещё» also holds
+          «Выбрать», at 1180 «Выбрать» sits beside the count, as the catalog (R3).
+        </li>
+        <li>
+          At the limit the count turns red and «Новый список» stays on: its press says the limit
+          and the next step, as today's toast does. From the eighth list the search takes the
+          count line.
+        </li>
+        <li>The empty states draw the kind glyph well (a list glyph), not the "?" pedestal.</li>
+        <li>
+          States removed: the question options; added: <code>lists-new</code>,
+          <code>lists-more</code>.
+        </li>
+      </ul>
+      <h2>Differences from plan.md and from R</h2>
+      <ul>
+        <li>
+          R's <code>lists-index</code> drew the selection always on; here the cards have no tick
+          until «Выбрать», so the mock splits it into <code>lists-index</code> and
+          <code>lists-selected</code>.
+        </li>
+        <li>A card's red «Удалить» moves into a labelled «Ещё» menu (A16).</li>
+        <li>
+          At 360 the add-to-list menu is its own sheet over the item sheet (C62). The item
+          sheet's bar at 360 is batch 4's (unit A <code>mocks/4/</code>).
+        </li>
+        <li>
+          Question 8.1 was not in the plan: the plan placed help panels only in batches 3, 5 and
+          6.
+        </li>
+      </ul>
+      <h2>Shared patterns and their owners</h2>
+      <ul>
+        <li>
+          The empty-state pattern is batch 3 (<code>mocks/3/</code>), the error-page pattern
+          batch 4 (<code>mocks/4/</code>), the toast, the header and the account control batch 2
+          (<code>mocks/2/</code>), the type, the chips and the pressed default batch 1
+          (<code>mocks/1/</code>), all unit A. The list-page head pattern (the picker title, the
+          search with «Фильтры», «Выбрать» in «Ещё» at 360 and in the search row at 1180) is the
+          catalog's (<code>mocks/3/</code>). A state that uses one is re-rendered after its
+          owner mock is confirmed.
+        </li>
+        <li>
+          Ground: the linear page ground
+          <code>linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px)</code> (owner,
+          2026-10-29). The no-picture well is the kind glyph; the "?" pedestal is gone (owner,
+          2026-10-29).
+        </li>
+      </ul>
+      <h2>Impeccable critique</h2>
+      <ul>
+        <li>
+          P2: «Новый список» toasts the limit at 50 of 50 instead of being off; a disabled
+          control would need its reason beside it, which costs a line in the first screen.
+        </li>
+        <li>
+          P2, gold budget: gold on «Новый список», «Войти» and the lit account control only; the
+          ticks and the selected cards are neutral (theme 1).
+        </li>
+        <li>
+          Detector (<code>impeccable detect</code>, this folder): 0 slop warnings; 4
+          <code>design-system-font</code> warnings (Source Sans 3, batch 1) and advisories from
+          R's copied CSS.
+        </li>
+      </ul>
+      <h2>States</h2>
+      <div class="st">
+        <a href="lists-index__360__ru.png"
+          ><img src="lists-index__360__ru.png" alt="lists-index at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-index</b>
+          <span class="meta3"
+            ><code>/lists</code> · D116, A16, D20, A37, first-screen rule</span
+          >
+          <p>
+            Signed in, 3 lists: «Новый список» is the head primary (rule 8); the count line
+            holds «Ещё» (at 360 «Выбрать» and the import, at 1180 the import, with «Выбрать»
+            beside the count, as the catalog); no «Ваш аккаунт» heading (D116), no «Справка»
+            (owner, 2026-10-29); cards with no red «Удалить» and no always-on tick; a card names
+            waiting requests and changes. The account control is lit.
+          </p>
+          <div class="lk">
+            <a href="lists-index__360__ru.png">360 RU</a
+            ><a href="lists-index__360__en.png">360 EN</a
+            ><a href="lists-index__1180__ru.png">1180 RU</a
+            ><a href="lists-index__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-index">live RU</a
+            ><a href="state.html?s=lists-index&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-new__360__ru.png"
+          ><img src="lists-new__360__ru.png" alt="lists-new at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-new</b> <span class="meta3"><code>/lists</code> · D20, rule 8</span>
+          <p>
+            Open: «Новый список» opens the name field in place, with the visible label «Название
+            списка» (rule 15a), «Создать» and «Отмена»; the primary has the plus icon at every
+            width.
+          </p>
+          <div class="lk">
+            <a href="lists-new__360__ru.png">360 RU</a
+            ><a href="lists-new__360__en.png">360 EN</a
+            ><a href="lists-new__1180__ru.png">1180 RU</a
+            ><a href="lists-new__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-new">live RU</a
+            ><a href="state.html?s=lists-new&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-more__360__ru.png"
+          ><img src="lists-more__360__ru.png" alt="lists-more at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-more</b> <span class="meta3"><code>/lists</code> · first-screen rule</span>
+          <p>
+            Open at 360: the title row «Ещё» with «Импорт из файла» (at 1180 the import is a
+            button in the head).
+          </p>
+          <div class="lk">
+            <a href="lists-more__360__ru.png">360 RU</a
+            ><a href="lists-more__360__en.png">360 EN</a
+            ><a href="lists-more__1180__ru.png">1180 RU</a
+            ><a href="lists-more__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-more">live RU</a
+            ><a href="state.html?s=lists-more&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-cardmenu__360__ru.png"
+          ><img src="lists-cardmenu__360__ru.png" alt="lists-cardmenu at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-cardmenu</b> <span class="meta3"><code>/lists</code> · A16</span>
+          <p>Open: a card's «Ещё» menu: open, download JSON, then delete, apart.</p>
+          <div class="lk">
+            <a href="lists-cardmenu__360__ru.png">360 RU</a
+            ><a href="lists-cardmenu__360__en.png">360 EN</a
+            ><a href="lists-cardmenu__1180__ru.png">1180 RU</a
+            ><a href="lists-cardmenu__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-cardmenu">live RU</a
+            ><a href="state.html?s=lists-cardmenu&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-selected__360__ru.png"
+          ><img src="lists-selected__360__ru.png" alt="lists-selected at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-selected</b> <span class="meta3"><code>/lists</code> · A16, A40</span>
+          <p>
+            Open: the selection mode, 2 cards ticked. The one selection bar (mock 3): «Все»
+            (three states), «Выбрано: 2», «Скачать JSON (2)», «Удалить (2)», «Снять выделение»
+            last. At 360 it is pinned to the bottom of the 640 px frame. The ticks and the
+            selected cards are neutral.
+          </p>
+          <div class="lk">
+            <a href="lists-selected__360__ru.png">360 RU</a
+            ><a href="lists-selected__360__en.png">360 EN</a
+            ><a href="lists-selected__1180__ru.png">1180 RU</a
+            ><a href="lists-selected__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-selected">live RU</a
+            ><a href="state.html?s=lists-selected&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-select-none__360__ru.png"
+          ><img
+            src="lists-select-none__360__ru.png"
+            alt="lists-select-none at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>lists-select-none</b> <span class="meta3"><code>/lists</code> · R0-2</span>
+          <p>
+            The selection mode with no tick: the same bar, «Все» empty, «Выбрано: 0», «Скачать
+            JSON (0)» and «Удалить (0)» off, «Снять выделение» on (it clears the ticks and ends
+            the mode).
+          </p>
+          <div class="lk">
+            <a href="lists-select-none__360__ru.png">360 RU</a
+            ><a href="lists-select-none__360__en.png">360 EN</a
+            ><a href="lists-select-none__1180__ru.png">1180 RU</a
+            ><a href="lists-select-none__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-select-none">live RU</a
+            ><a href="state.html?s=lists-select-none&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-empty__360__ru.png"
+          ><img src="lists-empty__360__ru.png" alt="lists-empty at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-empty</b> <span class="meta3"><code>/lists</code> · theme 8</span>
+          <p>
+            Empty: no lists yet. The empty-state pattern (batch 3) with the kind glyph well
+            names both ways to start.
+          </p>
+          <div class="lk">
+            <a href="lists-empty__360__ru.png">360 RU</a
+            ><a href="lists-empty__360__en.png">360 EN</a
+            ><a href="lists-empty__1180__ru.png">1180 RU</a
+            ><a href="lists-empty__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-empty">live RU</a
+            ><a href="state.html?s=lists-empty&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-signedout__360__ru.png"
+          ><img src="lists-signedout__360__ru.png" alt="lists-signedout at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-signedout</b> <span class="meta3"><code>/lists</code> · theme 8</span>
+          <p>Signed out: one sentence on where lists live, «Войти» as the one primary.</p>
+          <div class="lk">
+            <a href="lists-signedout__360__ru.png">360 RU</a
+            ><a href="lists-signedout__360__en.png">360 EN</a
+            ><a href="lists-signedout__1180__ru.png">1180 RU</a
+            ><a href="lists-signedout__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-signedout">live RU</a
+            ><a href="state.html?s=lists-signedout&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-error__360__ru.png"
+          ><img src="lists-error__360__ru.png" alt="lists-error at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-error</b> <span class="meta3"><code>/lists</code> · error scenarios</span>
+          <p>Error: the read failed; the cause and «Повторить».</p>
+          <div class="lk">
+            <a href="lists-error__360__ru.png">360 RU</a
+            ><a href="lists-error__360__en.png">360 EN</a
+            ><a href="lists-error__1180__ru.png">1180 RU</a
+            ><a href="lists-error__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-error">live RU</a
+            ><a href="state.html?s=lists-error&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-limit__360__ru.png"
+          ><img src="lists-limit__360__ru.png" alt="lists-limit at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-limit</b> <span class="meta3"><code>/lists</code> · scale</span>
+          <p>
+            At the limit: 50 of 50 lists. The count «50 списков из 50» in red at the head of the
+            collection; «Новый список» stays on and says the limit when pressed; the first 24
+            cards, then «Показать ещё (26)» (FEATURES "Lists", 24 per page); a search from the
+            eighth list.
+          </p>
+          <div class="lk">
+            <a href="lists-limit__360__ru.png">360 RU</a
+            ><a href="lists-limit__360__en.png">360 EN</a
+            ><a href="lists-limit__1180__ru.png">1180 RU</a
+            ><a href="lists-limit__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-limit">live RU</a
+            ><a href="state.html?s=lists-limit&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-import__360__ru.png"
+          ><img src="lists-import__360__ru.png" alt="lists-import at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-import</b> <span class="meta3"><code>/lists</code> · A14, D6</span>
+          <p>
+            Open: «Ещё» &gt; «Импорт из файла» opens the panel under the head: one summary, the
+            skipped lines on request, no raw ids.
+          </p>
+          <div class="lk">
+            <a href="lists-import__360__ru.png">360 RU</a
+            ><a href="lists-import__360__en.png">360 EN</a
+            ><a href="lists-import__1180__ru.png">1180 RU</a
+            ><a href="lists-import__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-import">live RU</a
+            ><a href="state.html?s=lists-import&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-nope__360__ru.png"
+          ><img src="lists-nope__360__ru.png" alt="lists-nope at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>lists-nope</b> <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A18</span>
+          <p>Error page, signed out: a true cause after R10 (no browser lists) and «Войти».</p>
+          <div class="lk">
+            <a href="lists-nope__360__ru.png">360 RU</a
+            ><a href="lists-nope__360__en.png">360 EN</a
+            ><a href="lists-nope__1180__ru.png">1180 RU</a
+            ><a href="lists-nope__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-nope">live RU</a
+            ><a href="state.html?s=lists-nope&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="lists-nope-signedin__360__ru.png"
+          ><img
+            src="lists-nope-signedin__360__ru.png"
+            alt="lists-nope-signedin at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>lists-nope-signedin</b>
+          <span class="meta3"><code>/lists/&lt;uuid&gt;</code> · A18</span>
+          <p>Error page, signed in: names the signed-in account and «Мои списки».</p>
+          <div class="lk">
+            <a href="lists-nope-signedin__360__ru.png">360 RU</a
+            ><a href="lists-nope-signedin__360__en.png">360 EN</a
+            ><a href="lists-nope-signedin__1180__ru.png">1180 RU</a
+            ><a href="lists-nope-signedin__1180__en.png">1180 EN</a
+            ><a href="state.html?s=lists-nope-signedin">live RU</a
+            ><a href="state.html?s=lists-nope-signedin&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="item-listmenu__360__ru.png"
+          ><img src="item-listmenu__360__ru.png" alt="item-listmenu at 360" loading="lazy"
+        /></a>
+        <div>
+          <b>item-listmenu</b> <span class="meta3"><code>/i/ci1</code> · C61, C35, C62</span>
+          <p>
+            Open: the add-to-list menu: heading «Списки», a check mark (not gold fill) on the
+            lists that hold the item, counts in words («10 позиций»), «Новый список»; it stays
+            open for a second list. At 360 the menu is its own sheet over the item that closes
+            with «Закрыть» (rule 11).
+          </p>
+          <div class="lk">
+            <a href="item-listmenu__360__ru.png">360 RU</a
+            ><a href="item-listmenu__360__en.png">360 EN</a
+            ><a href="item-listmenu__1180__ru.png">1180 RU</a
+            ><a href="item-listmenu__1180__en.png">1180 EN</a
+            ><a href="state.html?s=item-listmenu">live RU</a
+            ><a href="state.html?s=item-listmenu&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+      <div class="st">
+        <a href="item-listmenu-signedout__360__ru.png"
+          ><img
+            src="item-listmenu-signedout__360__ru.png"
+            alt="item-listmenu-signedout at 360"
+            loading="lazy"
+        /></a>
+        <div>
+          <b>item-listmenu-signedout</b> <span class="meta3"><code>/i/ci1</code> · C61</span>
+          <p>
+            Open, signed out: the menu says where lists live and offers «Войти и создать
+            список».
+          </p>
+          <div class="lk">
+            <a href="item-listmenu-signedout__360__ru.png">360 RU</a
+            ><a href="item-listmenu-signedout__360__en.png">360 EN</a
+            ><a href="item-listmenu-signedout__1180__ru.png">1180 RU</a
+            ><a href="item-listmenu-signedout__1180__en.png">1180 EN</a
+            ><a href="state.html?s=item-listmenu-signedout">live RU</a
+            ><a href="state.html?s=item-listmenu-signedout&lang=en">live EN</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

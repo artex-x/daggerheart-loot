@@ -308,7 +308,7 @@
                 >
               {/snippet}
             </BatchBar>
-            <div class="listgrid" bind:this={accountGrid}>
+            <div class="listgrid" data-primary bind:this={accountGrid}>
               {#each drawnAccount as l, i (l.id)}
                 <ListCard
                   {app}
@@ -371,7 +371,7 @@
 
   .grouptext {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 

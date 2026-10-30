@@ -87,7 +87,7 @@ function hygiene(x) {
     );
     ok(!/�/.test(v), x.id + '.' + k + ': broken character');
     /* The source book ships typographic apostrophes (U+2019, and U+02BC for
-       good measure) in both languages; the catalogue was normalised to ASCII
+       good measure) in both languages; the catalog was normalized to ASCII
        but that added no guard, so the next ingest could silently reintroduce
        them. This covers the whole class rather than only en/ende. */
     ok(!/[‘’ʼ“”]/.test(v), x.id + '.' + k + ': typographic apostrophe or quotation mark');
@@ -374,12 +374,12 @@ EQUIP.forEach((x) => {
   if (e.t === 'armor') {
     ok(
       e.as > 0 && Array.isArray(e.th) && e.th.length === 2,
-      x.id + ': armour is missing thresholds or a score'
+      x.id + ': armor is missing thresholds or a score'
     );
     ok(e.th[0] < e.th[1], x.id + ': thresholds are not ascending');
     ok(
       e.tr === null && e.rg === null && e.bu === null,
-      x.id + ': armour has weapon fields filled in'
+      x.id + ': armor has weapon fields filled in'
     );
   } else {
     ok(TRAITS.indexOf(e.tr) >= 0, x.id + ': trait ' + e.tr);
@@ -388,7 +388,7 @@ EQUIP.forEach((x) => {
     ok(['phy', 'mag', 'any'].indexOf(e.dt) >= 0, x.id + ': damage type ' + e.dt);
     ok(['phy', 'mag'].indexOf(e.cls) >= 0, x.id + ': class ' + e.cls);
     ok(e.bu === 1 || e.bu === 2 || e.bu === 'any', x.id + ': burden ' + e.bu);
-    ok(e.as === null && e.th === null, x.id + ': weapon has armour fields filled in');
+    ok(e.as === null && e.th === null, x.id + ': weapon has armor fields filled in');
   }
   if (e.line) {
     ok(!!byId[e.line], x.id + ': upgrade line points at a nonexistent ' + e.line);
@@ -446,7 +446,7 @@ ALL.forEach((x) => {
    same picture as its base, and four copies of the same bytes helped nobody. */
 const used = new Set(ALL.filter((x) => x.img).map((x) => x.img));
 fs.readdirSync(path.join(ROOT, 'img')).forEach((f) => {
-  if (f === '_none.webp' || !f.endsWith('.webp')) return;
+  if (!f.endsWith('.webp')) return;
   ok(used.has(f), 'picture img/' + f + ' belongs to nobody');
 });
 /* Same trap, ingest side: a stray og/<id>.jpg with no claiming record passes
@@ -454,8 +454,7 @@ fs.readdirSync(path.join(ROOT, 'img')).forEach((f) => {
    record id, so this is the same `used` set, just re-suffixed. */
 const usedJpg = new Set(Array.from(used).map((f) => f.replace(/\.webp$/, '.jpg')));
 fs.readdirSync(path.join(ROOT, 'og')).forEach((f) => {
-  if (f === '_none.jpg' || f === '_share.jpg' || f === '_share_en.jpg' || !f.endsWith('.jpg'))
-    return;
+  if (f === '_share.jpg' || f === '_share_en.jpg' || !f.endsWith('.jpg')) return;
   ok(usedJpg.has(f), 'picture og/' + f + ' belongs to nobody');
 });
 // One stub per record per language: i/ Russian, i/en/ English.
@@ -573,18 +572,18 @@ ALL.forEach((x) => {
     );
 });
 
-/* the tier 4 armour that was missing from Hope & Fear entirely */
+/* the tier 4 armor that was missing from Hope & Fear entirely */
 ['Hallowed Heroplate', 'Resonant Harness'].forEach((n) =>
   ok(
     EQ.some((x) => x.en === n),
-    'missing armour ' + n
+    'missing armor ' + n
   )
 );
 const t4 = EQ.filter((x) => x.src === 'hnf' && x.eq.t === 'armor' && x.eq.tier === 4);
-ok(t4.length === 10, 'tier 4 armour from H&F is not 10, but ' + t4.length);
+ok(t4.length === 10, 'tier 4 armor from H&F is not 10, but ' + t4.length);
 
 /* A table-header word once slipped into a name straight out of the book's
-   tables: «Брони Ускользающее Лезвие» (Armour[-header-word] Elusive Blade).
+   tables: «Брони Ускользающее Лезвие» (Armor[-header-word] Elusive Blade).
    A header word has nowhere else to come from at the start of a name. */
 console.log('names carry no header words');
 const HEADWORDS = [

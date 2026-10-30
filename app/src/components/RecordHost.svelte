@@ -8,7 +8,7 @@
      `onopen` the `openRecord` this snippet parameter gives it, instead of
      writing its own local `open`.
 
-     The close-on-navigation effect is not new behaviour invented here - it
+     The close-on-navigation effect is not new behavior invented here - it
      is `SearchPage`/`TablesPage`'s own effect, generalised to every caller
      because the host owns `open` for all of them now. The other six pages
      had no such effect before this batch; verified by the golden shards

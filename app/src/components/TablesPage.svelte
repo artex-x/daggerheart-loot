@@ -18,7 +18,7 @@
      into sections and offer `tier`, `frame` or `comm` on top of `kind`. The
      three equipment tables (`eq_weapon`, `eq_secondary`, `eq_armor`) are a
      second shape entirely: their pool is every piece of gear in the
-     catalogue rather than one book's rows, split into four tier sections of
+     catalog rather than one book's rows, split into four tier sections of
      their own, with up to seven facet rows - `eqKind`, `eqFacetRows` and
      `equipOfKind`/`equipFacets` are what tell that shape apart from the
      plain one below. */
@@ -505,13 +505,12 @@
      still *starts* immediately, same as the live app's own synchronous
      `render()` call - it is a decorative outline and does not depend on
      layout. The *scroll* waits, and the reason is not the one this comment
-     used to give. It said the wait was for a font face to swap in. Measured:
-     that face does not exist. Neither app declares an `@font-face` or links a
-     font service - `--ui` and `--mono` are lists of locally installed
-     families - so `document.fonts.size` is 0 and `document.fonts.status` is
-     already `loaded` before the first paint.
+     used to give. It said the wait was for a font face to swap in. Measured
+     before the UI font was self-hosted: no face existed, so `fonts.ready`
+     settled before the first paint and the row still landed low. The face
+     now loads from `/assets/`, and the wait covers it as well.
 
-     The wait is still load-bearing, for a different reason: this component's
+     The wait is load-bearing for a layout reason: this component's
      first layout is not its final one. Scrolling synchronously here lands the
      row 8px low - `[data-row="ci1"]`'s absolute top reads 493.97 at effect
      time against 485.97 once the page settles, and `scrollHeight` 5909
@@ -700,6 +699,7 @@
         {/if}
         <Seg
           small
+          neutral
           options={VIEWS}
           value={view}
           label={t.view}
@@ -753,6 +753,7 @@
               {#each s.cols as col (col.key)}
                 <h3 class="altcol {col.key}">{col.label}</h3>
                 <TableRows
+                  primary
                   entries={col.entries}
                   {view}
                   {index}
@@ -797,6 +798,7 @@
                 : undefined}
             />
             <TableRows
+              primary
               entries={s.entries}
               {view}
               {index}
@@ -819,6 +821,7 @@
         {/each}
       {:else}
         <TableRows
+          primary
           entries={filtered.map((it) => ({ it }))}
           {view}
           {index}
@@ -905,16 +908,8 @@
      row/tile anchor's outline (`.row.flash`, `.tilewrap.flash`) is
      `TableRows.svelte`'s. This is only the section anchor's. */
   .tsection {
-    scroll-margin-top: 118px;
+    scroll-margin-top: var(--anchor-top);
     border-radius: var(--r);
-  }
-
-  /* The row anchor's offsets (`TableRows.svelte`): the header is 106 px from
-     640 px and 112 px below it. */
-  @media (max-width: 600px) {
-    .tsection {
-      scroll-margin-top: 132px;
-    }
   }
 
   .tsection.flash {
@@ -947,7 +942,7 @@
   /* off `.altcol` */
   .altcol {
     margin: 16px 0 8px;
-    font: 650 11px/1 var(--mono);
+    font: 650 var(--t-label)/1 var(--mono);
     letter-spacing: 0.09em;
     text-transform: uppercase;
   }

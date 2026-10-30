@@ -70,7 +70,7 @@ const stored = memoryStorage;
 /** `memoryRouter`'s own `navigate()` announces unconditionally (its doc
  *  comment says why: it exists to catch `AppState.navigations` gaps, not to
  *  model this quirk). A real browser fires no `hashchange` at all for
- *  `location.hash = <the value it already holds>` - the one behaviour this
+ *  `location.hash = <the value it already holds>` - the one behavior this
  *  double exists for, so `navigate()` here only announces on an actual
  *  change, and `fire()` stands in for a hashchange the browser dispatches on
  *  its own (a Back/Forward landing on an address, whether or not it happens
@@ -345,7 +345,7 @@ describe('the default tables view', () => {
     expect(app.tablesView).toBe('grid');
   });
 
-  it('falls back to list for a value that is not a recognised view', () => {
+  it('falls back to list for a value that is not a recognized view', () => {
     for (const bad of ['{not json', '{"view":"tiles"}', 'null', '[]']) {
       const app = new AppState(at('#/tables', { storage: stored({ [PREFS_KEY]: bad }) }));
       expect(app.tablesView, bad).toBe('list');
@@ -385,7 +385,7 @@ describe('the default print layout', () => {
     expect([app.tablesView, app.printBW, app.printCompact]).toEqual(['grid', true, true]);
   });
 
-  it("reads live's old { view } shape as colour on the standard sheet", () => {
+  it("reads live's old { view } shape as color on the standard sheet", () => {
     const app = new AppState(
       at('#/roll/std', { storage: stored({ [PREFS_KEY]: '{"view":"grid"}' }) })
     );
@@ -623,6 +623,42 @@ describe('which tab is lit', () => {
     expect(new AppState(at('#/p/set-twocards')).section).toBe(null);
     expect(new AppState(at('#/lists/abc')).section).toBe(null);
     expect(new AppState(at('#/l/eyJ')).section).toBe(null);
+  });
+});
+
+describe('the roll job', () => {
+  it('opens the pinned start section when it is a roll section and no roll was shown', () => {
+    const app = new AppState(
+      at('#/tables/eq_weapon', { storage: stored({ [HOME_KEY]: '#/roll/vault_of_ages' }) })
+    );
+    expect(app.rollHash).toBe('#/roll/vault_of_ages');
+  });
+
+  it('opens the last roll section of this tab', () => {
+    const router = memoryRouter('#/roll/std');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    router.navigate('#/roll/dread');
+    router.navigate('#/tables');
+    expect(app.rollHash).toBe('#/roll/dread_gm_toolbox');
+    app.stop();
+  });
+
+  it('remembers the canonical section of a legacy name, not its address', () => {
+    const router = memoryRouter('#/tables');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    router.navigate('#/roll/hnf');
+    router.navigate('#/search');
+    expect(app.rollHash).toBe('#/roll/std');
+    app.stop();
+  });
+
+  it('opens the Core rules when the pin is not a roll section and no roll was shown', () => {
+    const app = new AppState(
+      at('#/search', { storage: stored({ [HOME_KEY]: '#/tables/eq_weapon' }) })
+    );
+    expect(app.rollHash).toBe('#/roll/std');
   });
 });
 
@@ -1122,11 +1158,11 @@ describe('the kind filter', () => {
     });
   });
 
-  it('over LOOT_KINDS the judgement ignores equip', () => {
+  it('over LOOT_KINDS the judgment ignores equip', () => {
     const app = new AppState(fakeEnv({ router: memoryRouter('#/tables') }));
     app.toggleKind('consumable', KINDS);
     /* `equip` is still on, but the roll pages never offer it as a chip - the
-       judgement has to look only at the row it is asked about. */
+       judgment has to look only at the row it is asked about. */
     app.toggleKind('item', LOOT_KINDS);
     expect(app.kinds.item).toBe(true);
     expect(app.toast?.msg).toBe('Нужен хотя бы один тип');

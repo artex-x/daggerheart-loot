@@ -1,5 +1,5 @@
 <script lang="ts">
-  /* A labelled on/off switch: a native checkbox with `role="switch"` inside its label, so
+  /* A labeled on/off switch: a native checkbox with `role="switch"` inside its label, so
      Space, the checked state and the name come with the control. The input is visually
      hidden; the track and knob after it draw the state
      (docs/decisions/2026-10-08-the-own-items-filter-is-a-labelled-switch.md). */
@@ -33,7 +33,7 @@
     align-items: center;
     gap: var(--gap-sm);
     min-height: 32px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     color: var(--muted);
     cursor: pointer;
     overflow-wrap: anywhere;

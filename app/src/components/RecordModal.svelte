@@ -200,7 +200,7 @@
     border: 1px solid var(--line2);
     background: rgb(10 8 16 / 80%);
     color: var(--txt);
-    font-size: 22px;
+    font-size: var(--t-section);
     line-height: 1;
     backdrop-filter: blur(6px);
   }

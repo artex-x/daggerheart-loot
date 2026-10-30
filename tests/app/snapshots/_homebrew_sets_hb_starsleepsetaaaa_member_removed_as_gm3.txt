@@ -14,15 +14,13 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "EN" [pressed=false]
     button "Аккаунт: gm3@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -53,26 +51,24 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "Вернуть"
 
 ## ru :: controls
+?Справка
 EN
 RU
 daggerheart.com
 Аккаунт: gm3@example.test
-Альт. таблицы
+Бросок
 Вернуть
 Добавить предмет
-Дополнения
 Изменить
 Импорт из файла
 Источники
 К содержимому
-Как это работает
 Карты правил
 Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Новый комплект
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Поиск
 Походный плед
 Предметы
@@ -89,22 +85,20 @@ daggerheart.com
 RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_starsleepsetaaaa?as=gm3]
   link "Skip to content" [url=/en/homebrew/sets/hb_starsleepsetaaaa?as=gm3#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm3@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -129,40 +123,38 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/sets/hb_st
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
   status ""
     StaticText "Saved: "Подушка из мха""
     button "Undo"
 
 ## en :: controls
+?Help
 Account: gm3@example.test
 Add an item
-Alt. tables
 Camp Blanket
 Delete
 EN
 Edit
-How this works
 Import from file
 Install as an app
 Items
+LootDaggerheart
 New set
-Open this section on start
+Open on start
 Privacy
 RU
 Ranger's Roll
 Remove: Camp Blanket
 Remove: Ranger's Roll
+Roll
 Rule cards
 Search
 Sets
 Skip to content
 Sleep Under the Stars
 Sources
-Standard rules
-Supplements
 Tables
 Terms of use
 Undo
 daggerheart.com
-ЛутDaggerheart

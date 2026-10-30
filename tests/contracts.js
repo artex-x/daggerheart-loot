@@ -184,7 +184,7 @@ const FIX = path.join(__dirname, '..', 'docs', 'fixtures');
   );
   ok(
     contractsText.includes('### Formatted text') &&
-      contractsText.includes('| Artefact | Field | Carries |') &&
+      contractsText.includes('| Artifact | Field | Carries |') &&
       contractsText.includes('| `homebrew-v1`, `homebrew-v2` files |') &&
       contractsText.includes('`list_entries.player_note`') &&
       contractsText.includes('"Catalog style"'),

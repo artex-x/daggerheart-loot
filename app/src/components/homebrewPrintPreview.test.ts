@@ -278,7 +278,7 @@ describe('the drafts a print card draws', () => {
     await expectNoA11yViolations(container);
   });
 
-  it('draws a chosen picture that is not saved on the colour card', async () => {
+  it('draws a chosen picture that is not saved on the color card', async () => {
     await editor(null);
     await cropFile();
     await printView();

@@ -5,10 +5,10 @@
  * record page in `dist/`, press each copy button by its accessible name
  * (`dict.ts`'s `copyName`/`copyText`, hardcoded here in both languages the
  * way `tests/app/inventory.js`'s own `NAME` dictionary is - neither file
- * imports the other), and read both flavours back.
+ * imports the other), and read both flavors back.
  *
  * The records below are chosen to cover the shape of the format rather than the
- * catalogue: a plain item, a consumable (which gains a suffix outside the app),
+ * catalog: a plain item, a consumable (which gains a suffix outside the app),
  * equipment (whose stat line is part of the heading), an upgrade chain (which
  * travels forward only), and a record with referenced Core cards.
  *

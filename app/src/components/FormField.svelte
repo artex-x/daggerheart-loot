@@ -84,7 +84,7 @@
   }
 
   .flabel {
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 600;
     color: var(--muted);
   }
@@ -98,7 +98,7 @@
   /* A hint of several sentences keeps its line breaks (`mdHelp`). */
   .fhelp {
     margin: 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     white-space: pre-line;
   }
@@ -110,7 +110,7 @@
 
   .ferr {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 </style>

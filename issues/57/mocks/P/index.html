@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch P mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+    <style>
+      .pair {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+      }
+      .trio {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        align-items: start;
+      }
+      .real img {
+        width: 63.5mm;
+        max-width: 100%;
+        border-radius: 0;
+      }
+      .real.compact img {
+        width: 44mm;
+      }
+      @media (max-width: 700px) {
+        .pair,
+        .trio {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch P mock: the print cards and the print page</h1>
+      <p class="lead">
+        This page shows the batch P mock for the owner to confirm: today's print cards beside
+        the proposed ones as real print output, the choice of print face with its fit results
+        over the whole catalog, and the print page at 360 and 1180 px. Every sheet image is a
+        300 dpi raster of Chrome's own PDF of the page under print media; print one sheet of
+        each at 100% scale to judge it at real size (the PDFs are in
+        <code>C:\Users\Ignat\.dhloot\notes\57\print-evidence\mockp\</code>).
+      </p>
+      <p class="lead">
+        Source: the pre-batch-1 build of <code>13ffd5e4</code>, served from its own worktree
+        outside the checkout. The proposals are injected into the built page (the card size, the
+        face, the text base, the tier word floor, the list marker, a port of the fit that starts
+        at the new base); no app code changed. Not drawn yet: the light no-picture well (it
+        follows mock 1b, so the ninth card still shows today's "?" placeholder). The /p/ page
+        frames below are not taken from that build: round 5 draws them on mock 7's shell.
+      </p>
+
+      <h2>Owner answers already in the plan</h2>
+      <ul>
+        <li>
+          QP.2: the standard card is 63.5 x 88.9 mm (2.5 x 3.5 in); nine fit on A4 with 7.75 mm
+          side and 13.15 mm top and bottom margins.
+        </li>
+        <li>QP.3: the compact card stays 44 x 63 mm.</li>
+        <li>
+          QP.4: the rules text starts at 4.0cqw on the standard card (7.1 pt) and at 4.6cqw on
+          the compact card (5.7 pt), with today's ladder below.
+        </li>
+        <li>QP.5: the Figma node's left-aligned name and pill tags stay.</li>
+      </ul>
+      <p>
+        Sleeves (checked 2026-10-29, not measured by hand): 63.5 x 88.9 mm is the standard card
+        size that standard sleeves (about 66 x 91 mm) are made for, and today's 63 x 88 fits
+        them too. 44 x 63 mm is 3 mm wider than a Mini American card (41 x 63 mm), so it does
+        not fit Mini American sleeves (about 43-44 x 65 mm); it fits Mini European sleeves
+        (about 45-46 x 68-71 mm, made for 44 x 68 mm cards) with about 5 mm spare in length.
+        Sources: the BoardGameGeek "Card Sleeves" wiki and the Mayday and Gamegenic size
+        listings.
+      </p>
+
+      <section class="q">
+        <h2>QP.1 - Which face prints the cards?</h2>
+        <p>
+          The owner asked which face Daggerheart cards use. The Core Set PDF's card pages (PDF
+          page 27, printed page 26, the one card figure; PDF page 330, printed page 329, the
+          domain card reference) embed three faces (<code>pdffonts</code>): Questa Sans Light
+          and Questa Sans Bold for the feature text and the bold terms, Questa Sans Light
+          Italic, and Eveleth Clean Regular for the card name and the type banner. Overpass,
+          Questa Slab and Capitana are in other parts of the book, not on these pages.
+        </p>
+        <table>
+          <tr>
+            <th>Face</th>
+            <th>On the card pages</th>
+            <th>Licence for a self-hosted web font</th>
+            <th>Cyrillic</th>
+            <th>In the mock</th>
+          </tr>
+          <tr>
+            <td>Questa Sans (The Questa Project)</td>
+            <td>yes, the feature text (Light, Bold)</td>
+            <td>
+              commercial: only the Regular cut is free; Adobe Fonts says serving the files from
+              your own server needs a licence bought from The Questa Project
+            </td>
+            <td>not confirmed by any official listing (MyFonts lists the script as Latin)</td>
+            <td>no: the licence and the Cyrillic both fail</td>
+          </tr>
+          <tr>
+            <td>Eveleth Clean (Yellow Design Studio)</td>
+            <td>yes, the name and the banner</td>
+            <td>commercial, per-licence terms</td>
+            <td>not listed</td>
+            <td>no: both fail</td>
+          </tr>
+          <tr>
+            <td>Overpass (Delve Withrington, Red Hat)</td>
+            <td>no</td>
+            <td>SIL OFL 1.1 (also LGPL 2.1): self-hosting allowed</td>
+            <td>yes (Google Fonts lists cyrillic and cyrillic-ext, since the 2021 release)</td>
+            <td>
+              waiting: its files are not on this host, and downloading them needs the owner's
+              yes (<code>Overpass[wght].ttf</code>, <code>Overpass-Italic[wght].ttf</code> from
+              github.com/google/fonts, <code>ofl/overpass/</code>)
+            </td>
+          </tr>
+          <tr>
+            <td>Source Sans 3 (Adobe)</td>
+            <td>no</td>
+            <td>SIL OFL 1.1; batch 1 self-hosts it for the UI</td>
+            <td>yes, upright and italic</td>
+            <td>yes</td>
+          </tr>
+          <tr>
+            <td>
+              Today's stack (<code>--ui</code>: Inter where installed, else SF, Segoe UI or
+              Roboto)
+            </td>
+            <td>no</td>
+            <td>the reader's own fonts</td>
+            <td>yes on these systems</td>
+            <td>yes (Segoe UI on this host)</td>
+          </tr>
+        </table>
+        <p>
+          Feel: Questa Sans is a humanist sans with open, calm letters. Source Sans 3 is also a
+          humanist sans and is the closest free match among the candidates; Overpass is a
+          grotesque drawn from the US highway signs, narrower and more mechanical. Eveleth Clean
+          is a rough display face; the Figma node sets the name in the text face's heaviest
+          weight, and QP.5 keeps that.
+        </p>
+        <h3>The fit over the whole catalog (1459 records), at the proposed sizes</h3>
+        <p>
+          "Below the base": cards whose text had to shrink under 4.0cqw (standard) or 4.6cqw
+          (compact). "Art gone": colour cards whose text took the whole card, so the picture is
+          hidden. No catalog card clips in any column.
+        </p>
+        <table id="fit">
+          <tr>
+            <th>Layout</th>
+            <th>Today (Segoe UI, 3.5cqw, 63 x 88)</th>
+            <th>Proposed, today's stack</th>
+            <th>Proposed, Source Sans 3</th>
+          </tr>
+          <tr>
+            <td>RU, colour, 63 x 88 (proposed 63.5 x 88.9)</td>
+            <td>
+              text 6.2 pt (min 5.8); below the base 4; art median 66%, art gone 2; names on 3
+              lines 11; smallest 4.5 pt
+            </td>
+            <td>
+              text 7.1 pt (min 5.9); below the base 11; art median 63%, art gone 10; names on 3
+              lines 11; smallest 4.5 pt
+            </td>
+            <td>
+              text 7.1 pt (min 6.1); below the base 10; art median 66%, art gone 10; names on 3
+              lines 4; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>EN, colour, standard</td>
+            <td>
+              text 6.2 pt (min 6.2); below the base 0; art median 69%, art gone 0; names on 3
+              lines 0; smallest 4.5 pt
+            </td>
+            <td>
+              text 7.1 pt (min 6.2); below the base 3; art median 67%, art gone 3; names on 3
+              lines 0; smallest 4.5 pt
+            </td>
+            <td>
+              text 7.1 pt (min 6.8); below the base 3; art median 68%, art gone 1; names on 3
+              lines 0; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>RU, colour, 44 x 63</td>
+            <td>
+              text 4.3 pt (min 4.1); below the base 4; art median 64%, art gone 3; names on 3
+              lines 11; smallest 4.0 pt
+            </td>
+            <td>
+              text 5.7 pt (min 4.1); below the base 34; art median 58%, art gone 22; names on 3
+              lines 11; smallest 4.1 pt
+            </td>
+            <td>
+              text 5.7 pt (min 4.7); below the base 29; art median 60%, art gone 20; names on 3
+              lines 4; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>EN, colour, compact</td>
+            <td>
+              text 4.3 pt (min 4.3); below the base 0; art median 68%, art gone 0; names on 3
+              lines 0; smallest 3.2 pt
+            </td>
+            <td>
+              text 5.7 pt (min 4.3); below the base 17; art median 62%, art gone 9; names on 3
+              lines 0; smallest 3.2 pt
+            </td>
+            <td>
+              text 5.7 pt (min 4.7); below the base 11; art median 63%, art gone 8; names on 3
+              lines 0; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>RU, black and white, standard</td>
+            <td>
+              text 8.9 pt (min 6.4); below the base 0; names on 3 lines 11; smallest 4.0 pt
+            </td>
+            <td>
+              text 8.9 pt (min 6.4); below the base 9; names on 3 lines 11; smallest 4.5 pt
+            </td>
+            <td>
+              text 8.9 pt (min 6.4); below the base 5; names on 3 lines 4; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>EN, black and white, standard</td>
+            <td>
+              text 8.9 pt (min 6.7); below the base 0; names on 3 lines 0; smallest 4.0 pt
+            </td>
+            <td>
+              text 8.9 pt (min 6.8); below the base 2; names on 3 lines 0; smallest 4.5 pt
+            </td>
+            <td>
+              text 8.9 pt (min 7.1); below the base 0; names on 3 lines 0; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>RU, black and white, compact</td>
+            <td>
+              text 6.2 pt (min 4.4); below the base 0; names on 3 lines 11; smallest 4.0 pt
+            </td>
+            <td>
+              text 6.2 pt (min 4.4); below the base 28; names on 3 lines 11; smallest 4.4 pt
+            </td>
+            <td>
+              text 6.2 pt (min 4.6); below the base 25; names on 3 lines 4; smallest 4.5 pt
+            </td>
+          </tr>
+          <tr>
+            <td>EN, black and white, compact</td>
+            <td>
+              text 6.2 pt (min 4.7); below the base 0; names on 3 lines 0; smallest 3.2 pt
+            </td>
+            <td>
+              text 6.2 pt (min 4.7); below the base 15; names on 3 lines 0; smallest 3.2 pt
+            </td>
+            <td>
+              text 6.2 pt (min 4.9); below the base 11; names on 3 lines 0; smallest 4.5 pt
+            </td>
+          </tr>
+        </table>
+        <h3>The paper floor on the compact card (RP-2)</h3>
+        <p>
+          Before round 5 the smallest compact text was 3.9 pt (EN) and 4.2 pt (RU), under
+          DESIGN.md's paper floor of 4.5 pt for labels. Two elements went under it, found in the
+          catalog run (1459 records): (1) the damage label in the strip, on the 70 EN compact
+          cards that carry a modifier beside the label (for example Dread GM Toolbox weapons):
+          the ribbon fit shrank that one label to 2.2cqw (3.9 pt) and ignored the floor; (2) the
+          rules text of three RU colour compact cards with a long text (<code>voa2_a1</code>,
+          <code>voa4_a3</code>, <code>dv14</code>), which the ladder took down to 3.4cqw
+          (4.2-4.4 pt). The fix drawn in the compact rows above: the label shrink stops at 4.5
+          pt (3.7cqw on the 44 mm card), and the compact ladder's floor rises from 2.6cqw to
+          3.7cqw (4.55 pt); the standard card's floor stays 2.6cqw (4.7 pt on 63.5 mm).
+          Measured: the smallest text of every compact layout is now 4.5 pt; the smallest rules
+          text is 4.7 pt RU colour, 4.6 pt RU black and white, 4.7 pt EN colour, 4.9 pt EN black
+          and white; no catalog card clips. The cost: 3 more RU colour compact cards lose their
+          picture (20, from 17); the EN counts do not change. Open for batch P: at 4.5 pt the
+          word "DAMAGE" (21.6 px) is 2.6 px wider than its box, so it touches the modifier and
+          the ribbon notch on those 70 EN cards; the strip needs 3 px more room for that label
+          (a narrower modifier badge), or the batch names a shorter label. No Figma node draws
+          this case.
+        </p>
+        <h3>The same cards at real size</h3>
+        <p>
+          Each card is a 300 dpi crop of the printed PDF, shown at its printed width on a screen
+          that reports its size correctly. Left: today. Middle: the proposal in today's stack.
+          Right: the proposal in Source Sans 3.
+        </p>
+        <h4>RU, colour, standard, the longest text</h4>
+        <div class="trio">
+          <figure class="real">
+            <figcaption>Today</figcaption>
+            <a href="current-today-std9-colour-ru__card-long__300dpi.jpg"
+              ><img src="current-today-std9-colour-ru__card-long__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-std9-colour-ru__card-long__300dpi.jpg"
+              ><img
+                src="proposed-today-std9-colour-ru__card-long__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-std9-colour-ru__card-long__300dpi.jpg"
+              ><img
+                src="proposed-ss3-std9-colour-ru__card-long__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>RU, colour, standard, a weapon</h4>
+        <div class="trio">
+          <figure class="real">
+            <figcaption>Today</figcaption>
+            <a href="current-today-std9-colour-ru__card-weapon__300dpi.jpg"
+              ><img src="current-today-std9-colour-ru__card-weapon__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-std9-colour-ru__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-today-std9-colour-ru__card-weapon__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-std9-colour-ru__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-ss3-std9-colour-ru__card-weapon__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>EN, colour, standard, the longest text</h4>
+        <div class="trio">
+          <figure class="real">
+            <figcaption>Today</figcaption>
+            <a href="current-today-std9-colour-en__card-long__300dpi.jpg"
+              ><img src="current-today-std9-colour-en__card-long__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-std9-colour-en__card-long__300dpi.jpg"
+              ><img
+                src="proposed-today-std9-colour-en__card-long__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-std9-colour-en__card-long__300dpi.jpg"
+              ><img
+                src="proposed-ss3-std9-colour-en__card-long__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>EN, colour, standard, a weapon</h4>
+        <div class="trio">
+          <figure class="real">
+            <figcaption>Today</figcaption>
+            <a href="current-today-std9-colour-en__card-weapon__300dpi.jpg"
+              ><img src="current-today-std9-colour-en__card-weapon__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-std9-colour-en__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-today-std9-colour-en__card-weapon__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-std9-colour-en__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-ss3-std9-colour-en__card-weapon__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>RU, colour, 44 x 63, the longest text</h4>
+        <div class="trio">
+          <figure class="real compact">
+            <figcaption>Today</figcaption>
+            <a href="current-today-compact16-colour-ru__card-long__300dpi.jpg"
+              ><img src="current-today-compact16-colour-ru__card-long__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-compact16-colour-ru__card-long__300dpi.jpg"
+              ><img
+                src="proposed-today-compact16-colour-ru__card-long__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-compact16-colour-ru__card-long__300dpi.jpg"
+              ><img
+                src="proposed-ss3-compact16-colour-ru__card-long__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>RU, colour, 44 x 63, a weapon</h4>
+        <div class="trio">
+          <figure class="real compact">
+            <figcaption>Today</figcaption>
+            <a href="current-today-compact16-colour-ru__card-weapon__300dpi.jpg"
+              ><img
+                src="current-today-compact16-colour-ru__card-weapon__300dpi.jpg"
+                alt="Today"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-compact16-colour-ru__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-today-compact16-colour-ru__card-weapon__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-compact16-colour-ru__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-ss3-compact16-colour-ru__card-weapon__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>EN, black and white, 44 x 63, the longest text</h4>
+        <div class="trio">
+          <figure class="real compact">
+            <figcaption>Today</figcaption>
+            <a href="current-today-compact16-bw-en__card-long__300dpi.jpg"
+              ><img src="current-today-compact16-bw-en__card-long__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-compact16-bw-en__card-long__300dpi.jpg"
+              ><img
+                src="proposed-today-compact16-bw-en__card-long__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-compact16-bw-en__card-long__300dpi.jpg"
+              ><img
+                src="proposed-ss3-compact16-bw-en__card-long__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+        <h4>EN, black and white, 44 x 63, a weapon</h4>
+        <div class="trio">
+          <figure class="real compact">
+            <figcaption>Today</figcaption>
+            <a href="current-today-compact16-bw-en__card-weapon__300dpi.jpg"
+              ><img src="current-today-compact16-bw-en__card-weapon__300dpi.jpg" alt="Today"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, today's stack</figcaption>
+            <a href="proposed-today-compact16-bw-en__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-today-compact16-bw-en__card-weapon__300dpi.jpg"
+                alt="Proposed, today's stack"
+            /></a>
+          </figure>
+          <figure class="real compact">
+            <figcaption>Proposed, Source Sans 3</figcaption>
+            <a href="proposed-ss3-compact16-bw-en__card-weapon__300dpi.jpg"
+              ><img
+                src="proposed-ss3-compact16-bw-en__card-weapon__300dpi.jpg"
+                alt="Proposed, Source Sans 3"
+            /></a>
+          </figure>
+        </div>
+
+        <div class="opts">
+          <div class="opt rec">
+            <h4>Source Sans 3</h4>
+            <p>
+              The same face as the UI and the share cards, served by the app, so a sheet
+              measures and prints the same on every machine; the closest free match to the
+              cards' humanist text face; narrower than Segoe UI, so fewer cards shrink and fewer
+              names take three lines. Trade-off: the sheet fits again once the face has loaded,
+              and the print button waits for that; an offline tab with no cached face prints in
+              the fallback.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Overpass</h4>
+            <p>
+              Free and Cyrillic, but a grotesque that the cards do not use, and a second face to
+              load beside the UI face. Shown here once its files are on the host.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Today's stack</h4>
+            <p>
+              Keeps every measured figure on this host, but the print differs by machine (Inter,
+              SF, Segoe UI or Roboto), so a sheet can fit on one computer and clip on another.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="q">
+        <h2>QP.8 - Cards whose picture gives way</h2>
+        <p>
+          With the larger text, the longest colour texts take the whole card and the picture is
+          hidden: 10 RU and 1 EN standard cards, 20 RU and 8 EN compact cards in Source Sans 3.
+          Today the same happens to 2 RU standard cards and 3 RU compact cards, and those cards
+          keep a blank band of paper at the top, where the art padding was (about a quarter of
+          the card). The Core Set cards always keep about half the card for the art.
+        </p>
+        <h3>The options</h3>
+        <div class="opts">
+          <div class="opt rec">
+            <h4>Keep the ladder order, drop the blank band (drawn)</h4>
+            <p>
+              The text shrinks only as far as the card needs, and the picture gives way on the
+              few longest cards: the players read the text at the table. A card that loses its
+              picture also loses the blank band and fits its text again from the base in the
+              whole card, so it prints larger text than today. The renders on this page use this
+              rule.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>An art floor</h4>
+            <p>
+              The picture keeps at least a quarter of the card; those cards then print their
+              text smaller (towards the 2.6cqw floor, about 4.6 pt).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <h2>The sheets: today beside the proposal (Source Sans 3)</h2>
+      <p>
+        Each image opens the 300 dpi raster. The nine-card sheet holds short and long text, a
+        physical, a magic and a two-strip weapon, light and long armour, loot, a consumable and
+        a homebrew item with no picture; the sixteen-card sheet adds a long name, an artifact
+        weapon, more loot and the long-text homebrew item that clips on purpose.
+      </p>
+      <h3>Nine, colour, RU</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-std9-colour-ru__300dpi.jpg"
+            ><img
+              src="current-today-std9-colour-ru__300dpi.jpg"
+              alt="Nine, colour, RU, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-std9-colour-ru__300dpi.jpg"
+            ><img
+              src="proposed-ss3-std9-colour-ru__300dpi.jpg"
+              alt="Nine, colour, RU, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Nine, colour, EN</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-std9-colour-en__300dpi.jpg"
+            ><img
+              src="current-today-std9-colour-en__300dpi.jpg"
+              alt="Nine, colour, EN, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-std9-colour-en__300dpi.jpg"
+            ><img
+              src="proposed-ss3-std9-colour-en__300dpi.jpg"
+              alt="Nine, colour, EN, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Nine, black and white, RU</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-std9-bw-ru__300dpi.jpg"
+            ><img
+              src="current-today-std9-bw-ru__300dpi.jpg"
+              alt="Nine, black and white, RU, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-std9-bw-ru__300dpi.jpg"
+            ><img
+              src="proposed-ss3-std9-bw-ru__300dpi.jpg"
+              alt="Nine, black and white, RU, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Nine, black and white, EN</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-std9-bw-en__300dpi.jpg"
+            ><img
+              src="current-today-std9-bw-en__300dpi.jpg"
+              alt="Nine, black and white, EN, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-std9-bw-en__300dpi.jpg"
+            ><img
+              src="proposed-ss3-std9-bw-en__300dpi.jpg"
+              alt="Nine, black and white, EN, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Sixteen, colour, RU</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-compact16-colour-ru__300dpi.jpg"
+            ><img
+              src="current-today-compact16-colour-ru__300dpi.jpg"
+              alt="Sixteen, colour, RU, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-compact16-colour-ru__300dpi.jpg"
+            ><img
+              src="proposed-ss3-compact16-colour-ru__300dpi.jpg"
+              alt="Sixteen, colour, RU, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Sixteen, colour, EN</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-compact16-colour-en__300dpi.jpg"
+            ><img
+              src="current-today-compact16-colour-en__300dpi.jpg"
+              alt="Sixteen, colour, EN, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-compact16-colour-en__300dpi.jpg"
+            ><img
+              src="proposed-ss3-compact16-colour-en__300dpi.jpg"
+              alt="Sixteen, colour, EN, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Sixteen, black and white, RU</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-compact16-bw-ru__300dpi.jpg"
+            ><img
+              src="current-today-compact16-bw-ru__300dpi.jpg"
+              alt="Sixteen, black and white, RU, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-compact16-bw-ru__300dpi.jpg"
+            ><img
+              src="proposed-ss3-compact16-bw-ru__300dpi.jpg"
+              alt="Sixteen, black and white, RU, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3>Sixteen, black and white, EN</h3>
+      <div class="pair">
+        <figure>
+          <figcaption>Today</figcaption>
+          <a href="current-today-compact16-bw-en__300dpi.jpg"
+            ><img
+              src="current-today-compact16-bw-en__300dpi.jpg"
+              alt="Sixteen, black and white, EN, today"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>Proposed (Source Sans 3)</figcaption>
+          <a href="proposed-ss3-compact16-bw-en__300dpi.jpg"
+            ><img
+              src="proposed-ss3-compact16-bw-en__300dpi.jpg"
+              alt="Sixteen, black and white, EN, proposed"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+
+      <section class="q">
+        <h2>The print page (<code>/p/</code>)</h2>
+        <p>
+          One design of <code>/p/</code>, drawn once in mock 7 and used here (RP-1): the new
+          shell (three jobs, the «Loot» wordmark on EN), the neutral switches «Цвет» / «Ч/б» and
+          «63×88» / «44×63» (EN "Color" / "B&amp;W"), «Напечатать» / "Print" as the one primary
+          label (the owner's answer RP-1), «Настройки листа» with the sheet settings at 360, one
+          card per row at the column width at 360 (QP.6). The cards are this mock's proposed
+          cards (63.5 x 88.9 mm, Source Sans 3). The sentence about A4, orientation and margins
+          is gone, because the page sets them. «Today» is the pre-batch-1 build, kept for the
+          numbers only: five tabs, «Лут» on EN, gold switches, the radial ground.
+        </p>
+        <table>
+          <tr>
+            <th>Viewport</th>
+            <th>Today: top of the first sheet</th>
+            <th>Proposed (mock 7's page)</th>
+            <th>Limit (40%)</th>
+            <th>Target</th>
+          </tr>
+          <tr>
+            <td>360 x 640, RU and EN</td>
+            <td>fail: 529 px; cards 94 px wide</td>
+            <td>pass: the first card at 239 px, 328 px wide</td>
+            <td>256</td>
+            <td>240 (met)</td>
+          </tr>
+          <tr>
+            <td>1180 x 720, RU and EN</td>
+            <td>fail: 350 px</td>
+            <td>pass: the sheet at 244 px</td>
+            <td>288</td>
+            <td>270 (met)</td>
+          </tr>
+        </table>
+        <div class="shots">
+          <figure>
+            <figcaption>360, RU, today</figcaption>
+            <img src="page-current__360x640__ru.png" alt="Print page at 360 px today, RU" />
+          </figure>
+          <figure>
+            <figcaption>360, RU, proposed</figcaption>
+            <img src="page-proposed__360__ru.png" alt="Print page at 360 px proposed, RU" />
+          </figure>
+          <figure>
+            <figcaption>1180, RU, today</figcaption>
+            <img src="page-current__1180x720__ru.png" alt="Print page at 1180 px today, RU" />
+          </figure>
+          <figure>
+            <figcaption>1180, RU, proposed</figcaption>
+            <img src="page-proposed__1180__ru.png" alt="Print page at 1180 px proposed, RU" />
+          </figure>
+          <figure>
+            <figcaption>360, EN, today</figcaption>
+            <img src="page-current__360x640__en.png" alt="Print page at 360 px today, EN" />
+          </figure>
+          <figure>
+            <figcaption>360, EN, proposed</figcaption>
+            <img src="page-proposed__360__en.png" alt="Print page at 360 px proposed, EN" />
+          </figure>
+          <figure>
+            <figcaption>1180, EN, today</figcaption>
+            <img src="page-current__1180x720__en.png" alt="Print page at 1180 px today, EN" />
+          </figure>
+          <figure>
+            <figcaption>1180, EN, proposed</figcaption>
+            <img src="page-proposed__1180__en.png" alt="Print page at 1180 px proposed, EN" />
+          </figure>
+        </div>
+        <h3>QP.6 - The preview at 360</h3>
+        <div class="opts">
+          <div class="opt rec">
+            <h4>One card per row</h4>
+            <p>
+              Below 600 px the screen draws one card per row at the column width (328 px); print
+              output does not change. Trade-off: a phone no longer shows the 3 x 3 arrangement;
+              the GM checks it on a laptop.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Today's scaled sheet</h4>
+            <p>The whole sheet at 313 px: the arrangement shows, the cards cannot be read.</p>
+          </div>
+        </div>
+        <h3>QP.7 - Short switch labels</h3>
+        <div class="opts">
+          <div class="opt rec">
+            <h4>«Цвет» / «Ч/б» and «63×88» / «44×63»</h4>
+            <p>
+              Both switches fit one row at 360, and the size switch names the size it prints.
+              EN: "Color" / "B&amp;W", "63×88" / "44×63". The account page's defaults and the
+              editor's print view take the same labels (one name, rule 4).
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Today's labels</h4>
+            <p>
+              «Цветная» / «Чёрно-белая» and «Обычная» / «Компактная» take two rows at 360, so
+              the first card starts about 44 px lower (past the 256 px limit).
+            </p>
+          </div>
+        </div>
+        <p>
+          At 360 the print action and «Ещё» sit in a fixed bottom bar, as the item sheet's
+          (batch 4), so the controls above the cards are two rows.
+        </p>
+      </section>
+
+      <h2>Departures from the Figma nodes (for the owner's yes)</h2>
+      <ul>
+        <li>The standard card is 63.5 x 88.9 mm, not 63 x 88 (QP.2, answered).</li>
+        <li>
+          The rules text starts at 4.0cqw on the standard card and 4.6cqw on the compact card,
+          not 3.5cqw; the compact card is no longer the standard card at 70% (QP.4, answered).
+        </li>
+        <li>The print face (QP.1): the nodes' face is not one of the candidates.</li>
+        <li>The tier word («Ранг» / "Tier") takes the 4.5 pt label floor, not 4 pt.</li>
+        <li>
+          The compact card's text floor is 3.7cqw (4.5 pt), not 2.6cqw, and the damage label
+          stops at 4.5 pt (RP-2, measured above).
+        </li>
+        <li>
+          List items take an en dash in black instead of the default disc (the nodes have no
+          list).
+        </li>
+      </ul>
+
+      <h2>Against the Core Set cards (style only, nothing copied)</h2>
+      <p>
+        Reference: PDF page 27 (printed page 26) and PDF page 330 (printed page 329). The
+        reference card prints its feature text at about 7 pt, gives the art about 49% of the
+        card and centres the name over the text. The proposal brings the standard text to 7.1 pt
+        (from 6.2) and the compact text to 5.7 pt (from 4.3), so the text block reads at the
+        reference's density; the art keeps a median of about two thirds of the card (more than
+        the reference), and gives way only on the longest texts (QP.8). The hierarchy stays the
+        node's: tags, then a heavy capital name, then the stat ribbon, then the text, on one
+        left axis (QP.5).
+      </p>
+
+      <h2>Impeccable critique, with the Clarity Rule</h2>
+      <ul>
+        <li>
+          Hierarchy: the name, the stat ribbon and the text read in that order on every kind;
+          the larger text does not compete with the name (10.2 pt against 7.1 pt).
+        </li>
+        <li>
+          Clarity: the print bar loses the A4 sentence and the note under the switches; the size
+          switch says the size («63×88»), so no control needs a sentence.
+        </li>
+        <li>
+          Consistency: the fixed bottom bar at 360 is the item sheet's pattern; the switches
+          stay where the choice is made (Q3.2).
+        </li>
+        <li>
+          Open: the light no-picture well (mock 1b) and the neutral pressed switches (batch 1)
+          are not in these renders.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

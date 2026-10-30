@@ -1,6 +1,6 @@
 # #/p/set-markup01 as gm4
 # route: #/p/set-markup01
-# why: the formatted item on print: bold, italic, both lists as lists and the table inside the text block, on the standard colour sheet
+# why: the formatted item on print: bold, italic, both lists as lists and the table inside the text block, on the standard color sheet
 # as: gm4
 
 ## ru :: tree
@@ -14,9 +14,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/p/set-markup01?as=gm
     button "EN" [pressed=false]
     button "Аккаунт: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -47,15 +45,13 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm4@example.test
-Альт. таблицы
-Дополнения
+Бросок
 К содержимому
 Компактная
 Конфиденциальность
 ЛутDaggerheart
 Назад
 Обычная
-Обычные правила
 Отправить на печать
 Поиск
 Ссылка на набор
@@ -69,16 +65,14 @@ daggerheart.com
 RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-markup01?as=gm4]
   link "Skip to content" [url=/en/p/set-markup01?as=gm4#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm4@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -86,7 +80,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-markup01?as=gm4]
     StaticText "Cards: 1. A4 sheets: 1. Card size 63×88 mm - the size of a playi..." [namelen=72 namehash=8d8c7d0b]
     button "Back"
     button "Send to printer"
-    button "Colour" [pressed=true]
+    button "Color" [pressed=true]
     button "Black and white" [pressed=false]
     button "Standard" [pressed=true]
     button "Compact" [pressed=false]
@@ -102,27 +96,25 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/p/set-markup01?as=gm4]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Account: gm4@example.test
-Alt. tables
 Back
 Black and white
-Colour
+Color
 Compact
 EN
 Install as an app
 Link to this set
+LootDaggerheart
 Privacy
 RU
+Roll
 Search
 Send to printer
 Skip to content
 Standard
-Standard rules
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

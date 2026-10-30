@@ -1,157 +1,80 @@
-/* The tab bar's own scroll-into-view, off P11 - jsdom has no layout, so the
- * geometry `TabBar.svelte`'s effect reads is defined by hand here, and
- * `scrollIntoView` is left unstubbed on purpose: calling it would throw,
- * which is the proof the fix reads `offsetLeft` arithmetic instead. */
-import { cleanup, render } from '@testing-library/svelte';
+/* The three jobs of the header: their links, icons and the lit job
+ * (docs/specs/FEATURES.md, "Chrome"). */
+import { cleanup, render, within } from '@testing-library/svelte';
 import { afterEach, describe, expect, it } from 'vitest';
-import { dict } from '../lib/dict.js';
-import { SUPPLEMENTS } from '../lib/nav.js';
+import { fakeEnv, memoryRouter, memoryStorage } from '../ports/index.js';
+import { AppState } from '../state/app.svelte.js';
 import { expectNoA11yViolations } from '../test/a11y.js';
 import TabBar from './TabBar.svelte';
 
 afterEach(cleanup);
 
-const throwOnScrollIntoView = (el: HTMLElement): void => {
-  el.scrollIntoView = () => {
-    throw new Error('must not call scrollIntoView');
-  };
-};
+const HOME_KEY = 'dhloot.home.v1';
 
-describe('keeping the lit tab in view', () => {
-  it('centers the newly active tab in the nav via scrollLeft arithmetic', async () => {
-    const { container, rerender } = render(TabBar, {
-      t: dict('ru'),
-      current: 'roll/std',
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    const nav = container.querySelector('nav.tabs') as HTMLElement;
-    const tablesTab = [...nav.querySelectorAll('a')].find(
-      (a) => a.getAttribute('href') === '/tables'
-    ) as HTMLAnchorElement;
+function bar(hash: string, lang: 'ru' | 'en' = 'ru', stored: Record<string, string> = {}) {
+  const app = new AppState(
+    fakeEnv({
+      router: memoryRouter(hash),
+      storage: memoryStorage({ 'dhloot.lang.v1': lang, ...stored })
+    })
+  );
+  const view = render(TabBar, { app });
+  const nav = view.container.querySelector('nav.tabs') as HTMLElement;
+  return { app, view, nav, links: [...nav.querySelectorAll('a')] };
+}
 
-    Object.defineProperty(nav, 'clientWidth', { value: 300, configurable: true });
-    Object.defineProperty(tablesTab, 'offsetLeft', { value: 500, configurable: true });
-    Object.defineProperty(tablesTab, 'offsetWidth', { value: 60, configurable: true });
-    throwOnScrollIntoView(tablesTab);
-
-    await rerender({ t: dict('ru'), current: 'tables', label: 'Разделы', lang: 'ru' });
-    // target = offsetLeft - (clientWidth - offsetWidth) / 2 = 500 - 120 = 380
-    expect(nav.scrollLeft).toBe(380);
-  });
-
-  it('does not scroll past the left edge for a tab near the start', async () => {
-    const { container, rerender } = render(TabBar, {
-      t: dict('ru'),
-      current: 'search',
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    const nav = container.querySelector('nav.tabs') as HTMLElement;
-    const stdTab = [...nav.querySelectorAll('a')].find(
-      (a) => a.getAttribute('href') === '/roll/std'
-    ) as HTMLAnchorElement;
-
-    Object.defineProperty(nav, 'clientWidth', { value: 300, configurable: true });
-    Object.defineProperty(stdTab, 'offsetLeft', { value: 10, configurable: true });
-    Object.defineProperty(stdTab, 'offsetWidth', { value: 60, configurable: true });
-    throwOnScrollIntoView(stdTab);
-
-    await rerender({ t: dict('ru'), current: 'roll/std', label: 'Разделы', lang: 'ru' });
-    expect(nav.scrollLeft).toBe(0);
-  });
-
-  it('does nothing when nothing is lit', () => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: null,
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    const nav = container.querySelector('nav.tabs') as HTMLElement;
-    expect(nav.scrollLeft).toBe(0);
-  });
-});
-
-describe('the five tabs', () => {
-  it('draws five links without #/lists, and Tables keeps its separator', () => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: null,
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    const links = [...container.querySelectorAll('nav.tabs a')];
-    expect(links).toHaveLength(5);
-    expect(links.map((a) => a.getAttribute('href'))).not.toContain('/lists');
-    expect(container.querySelector('a[href="/tables"]')).toHaveClass('sep');
-  });
-
-  it('lights no tab on #/lists', () => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: 'lists',
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    expect(container.querySelector('nav.tabs a[aria-current="page"]')).toBeNull();
-  });
-});
-
-describe('the supplements tab', () => {
-  const lit = (container: HTMLElement): (string | null)[] =>
-    [...container.querySelectorAll('nav.tabs a[aria-current="page"]')].map((a) =>
-      a.getAttribute('href')
-    );
-
-  it('draws Core rules, the alternate tables and one supplements tab before Tables', () => {
-    const { container } = render(TabBar, {
-      t: dict('en'),
-      current: null,
-      label: 'Sections',
-      lang: 'ru'
-    });
-    expect([...container.querySelectorAll('nav.tabs a')].map((a) => a.textContent)).toEqual([
-      'Standard rules',
-      'Alt. tables',
-      'Supplements',
-      'Tables',
-      'Search'
-    ]);
-  });
-
-  it.each(SUPPLEMENTS)('lights «Дополнения» with aria-current on %s', (s) => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: s,
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    expect(lit(container)).toEqual(['/roll/wondrous_environments']);
-    const tab = container.querySelector('a.on') as HTMLElement;
-    expect(tab.textContent).toBe('Дополнения');
-  });
-
-  it.each(['roll/std', 'roll/alt', 'tables'] as const)(
-    'lights its own tab and not «Дополнения» on %s',
-    (s) => {
-      const { container } = render(TabBar, {
-        t: dict('ru'),
-        current: s,
-        label: 'Разделы',
-        lang: 'ru'
-      });
-      expect(lit(container)).toEqual([`/${s}`]);
+describe('the job row', () => {
+  it.each([
+    ['ru', ['Бросок', 'Таблицы', 'Поиск'], 'Разделы', ['/roll/std', '/tables', '/search']],
+    [
+      'en',
+      ['Roll', 'Tables', 'Search'],
+      'Sections',
+      ['/en/roll/std', '/en/tables', '/en/search']
+    ]
+  ] as const)(
+    'draws three labeled links with their icons in %s',
+    async (lang, names, label, hrefs) => {
+      const { view, nav, links } = bar('#/roll/std', lang);
+      expect(nav).toHaveAttribute('aria-label', label);
+      expect(links.map((a) => a.textContent)).toEqual(names);
+      expect(links.map((a) => a.getAttribute('href'))).toEqual(hrefs);
+      expect(links.map((a) => a.dataset['job'])).toEqual(['roll', 'tables', 'search']);
+      for (const a of links) expect(a.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      await expectNoA11yViolations(view.container);
     }
   );
 
-  it('has no axe violations with the supplements tab lit', async () => {
-    const { container } = render(TabBar, {
-      t: dict('ru'),
-      current: 'roll/voa',
-      label: 'Разделы',
-      lang: 'ru'
-    });
-    await expectNoA11yViolations(container);
+  it.each([
+    ['#/roll/std', 'roll'],
+    ['#/roll/vault_of_ages', 'roll'],
+    ['#/roll/hnf', 'roll'],
+    ['#/tables/eq_weapon', 'tables'],
+    ['#/tables', 'tables'],
+    ['#/search', 'search']
+  ])('lights one job with aria-current on %s', (hash, job) => {
+    const { links } = bar(hash);
+    const lit = links.filter((a) => a.getAttribute('aria-current') === 'page');
+    expect(lit.map((a) => a.dataset['job'])).toEqual([job]);
+    expect(lit[0]).toHaveClass('on');
+  });
+
+  it.each(['#/lists', '#/lists/abc', '#/i/ci1', '#/p/set-emberaxe', '#/account', '#/homebrew'])(
+    'lights no job on %s',
+    (hash) => {
+      const { nav } = bar(hash);
+      expect(within(nav).queryAllByRole('link', { current: 'page' })).toHaveLength(0);
+      expect(nav.querySelector('a.on')).toBeNull();
+    }
+  );
+
+  it('links «Бросок» to the last roll section of this tab', () => {
+    const { links } = bar('#/roll/dread_gm_toolbox');
+    expect(links[0]).toHaveAttribute('href', '/roll/dread_gm_toolbox');
+  });
+
+  it('links «Бросок» to a pinned roll section when this tab showed no roll', () => {
+    const { links } = bar('#/tables', 'ru', { [HOME_KEY]: '#/roll/vault_of_ages' });
+    expect(links[0]).toHaveAttribute('href', '/roll/vault_of_ages');
   });
 });

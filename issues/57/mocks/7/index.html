@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 7 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 7 mock: search, account, print preview, empty and error states</h1>
+      <p class="lead">
+        This page shows the batch 7 mock for the owner to confirm: the search page in its empty,
+        results and nothing-found states, the account settings and the delete confirm, the print
+        preview, and the print error page. It applies the empty state of batch 3, the error page
+        of batch 4 and the recommended C57 answer.
+      </p>
+
+      <h2>First-screen rule (plan section 14)</h2>
+      <p class="lead">
+        The top of the primary content below the top of the header, at scroll 0, in px, measured
+        on the rendered mock with the planner's <code>measure.mjs</code>. The assert is 40% of
+        the height (256 at 360x640, 288 at 1180x720); the design target is 240 and 270 (plan
+        review plan-1-3 R2), a margin for the Source Sans 3 line boxes. Measured at scroll 0.
+      </p>
+      <table>
+        <tr>
+          <th>State</th>
+          <th>Primary content</th>
+          <th>360x640 RU</th>
+          <th>360x640 EN</th>
+          <th>1180x720 RU</th>
+          <th>1180x720 EN</th>
+          <th>Assert (40%)</th>
+          <th>Target (240 / 270)</th>
+        </tr>
+        <tr>
+          <td><code>search-results</code></td>
+          <td>first result</td>
+          <td>217 / 256</td>
+          <td>217 / 256</td>
+          <td>223 / 288</td>
+          <td>223 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+        <tr>
+          <td><code>account-settings</code></td>
+          <td>first settings panel</td>
+          <td>177 / 256</td>
+          <td>177 / 256</td>
+          <td>129 / 288</td>
+          <td>129 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+        <tr>
+          <td><code>print-preview</code></td>
+          <td>the first card at 360 (one card per row), the sheet at 1180</td>
+          <td>239 / 256</td>
+          <td>239 / 256</td>
+          <td>258 / 288</td>
+          <td>258 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+      </table>
+      <p>
+        Before the fix: search 343 / 343 at 360; print preview 455 / 409 at 360. No page of this
+        batch has a user-named H1, so the longest-name row (R2) does not apply here.
+      </p>
+      <p>
+        Round 5: «Весь лист» moved from the row above the cards into the «Настройки листа» menu,
+        so the first card (not the button row above it) starts at 239 at 360. Search with the
+        «Свои предметы» switch: 217 at 360, 229 at 1180.
+      </p>
+      <h3>New labels, RU and EN</h3>
+      <table>
+        <tr>
+          <th>RU</th>
+          <th>EN</th>
+          <th>Where</th>
+        </tr>
+        <tr>
+          <td>«Вид: все ▾»</td>
+          <td>"Kind: all ▾"</td>
+          <td>/search at 360</td>
+        </tr>
+        <tr>
+          <td>«Настройки листа ▾»</td>
+          <td>"Sheet settings ▾"</td>
+          <td>/p/ at 360</td>
+        </tr>
+        <tr>
+          <td>«Цвет» / «Ч/б» and «63×88» / «44×63»</td>
+          <td>"Color" / "B&amp;W" and "63×88" / "44×63"</td>
+          <td>/p/ and the account's print default (QP.7, B7-1, N7-2)</td>
+        </tr>
+        <tr>
+          <td>«Выбрать», «Все», «Выбрано: 1», «Снять выделение»</td>
+          <td>"Select", "All", "1 selected", "Clear the selection"</td>
+          <td>/search, the list head and the one selection bar (B7-2)</td>
+        </tr>
+        <tr>
+          <td>«Свои предметы»</td>
+          <td>"Own items"</td>
+          <td>
+            /search: the switch ends the kind row at 1180, sits in the «Вид» menu at 360 (R3-3)
+          </td>
+        </tr>
+        <tr>
+          <td>«Показать весь лист»</td>
+          <td>"Show the whole sheet"</td>
+          <td>/p/ at 360, in «Настройки листа»</td>
+        </tr>
+        <tr>
+          <td>«Напечатать»</td>
+          <td>"Print"</td>
+          <td>/p/, the primary, every width (was «Отправить на печать»)</td>
+        </tr>
+      </table>
+      <p>No question for the owner in this batch.</p>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="search-empty">
+        Search, nothing typed · <a href="state.html?s=search-empty">ru</a> ·
+        <a href="state.html?s=search-empty&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-empty__360__ru.png"
+            ><img src="search-empty__360__ru.png" alt="search-empty, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-empty__360__en.png"
+            ><img src="search-empty__360__en.png" alt="search-empty, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-empty__1180__ru.png"
+            ><img
+              src="search-empty__1180__ru.png"
+              alt="search-empty, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-empty__1180__en.png"
+            ><img
+              src="search-empty__1180__en.png"
+              alt="search-empty, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-results">
+        Search results · <a href="state.html?s=search-results">ru</a> ·
+        <a href="state.html?s=search-results&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-results__360__ru.png"
+            ><img
+              src="search-results__360__ru.png"
+              alt="search-results, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-results__360__en.png"
+            ><img
+              src="search-results__360__en.png"
+              alt="search-results, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-results__1180__ru.png"
+            ><img
+              src="search-results__1180__ru.png"
+              alt="search-results, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-results__1180__en.png"
+            ><img
+              src="search-results__1180__en.png"
+              alt="search-results, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-kind">
+        «Вид: все» open (360) · <a href="state.html?s=search-kind">ru</a> ·
+        <a href="state.html?s=search-kind&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-kind__360__ru.png"
+            ><img src="search-kind__360__ru.png" alt="search-kind, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-kind__360__en.png"
+            ><img src="search-kind__360__en.png" alt="search-kind, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-kind__1180__ru.png"
+            ><img src="search-kind__1180__ru.png" alt="search-kind, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-kind__1180__en.png"
+            ><img src="search-kind__1180__en.png" alt="search-kind, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-own">
+        Signed in with own items · <a href="state.html?s=search-own">ru</a> ·
+        <a href="state.html?s=search-own&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The «Свои предметы» switch (R3-3): in the kind row at 1180, apart from the chips; at 360
+        it is in the «Вид» menu (next state).
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-own__360__ru.png"
+            ><img src="search-own__360__ru.png" alt="search-own, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-own__360__en.png"
+            ><img src="search-own__360__en.png" alt="search-own, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-own__1180__ru.png"
+            ><img src="search-own__1180__ru.png" alt="search-own, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-own__1180__en.png"
+            ><img src="search-own__1180__en.png" alt="search-own, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-own-kind">
+        The kind menu with the own-items switch (360) ·
+        <a href="state.html?s=search-own-kind">ru</a> ·
+        <a href="state.html?s=search-own-kind&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-own-kind__360__ru.png"
+            ><img
+              src="search-own-kind__360__ru.png"
+              alt="search-own-kind, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-own-kind__360__en.png"
+            ><img
+              src="search-own-kind__360__en.png"
+              alt="search-own-kind, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-own-kind__1180__ru.png"
+            ><img
+              src="search-own-kind__1180__ru.png"
+              alt="search-own-kind, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-own-kind__1180__en.png"
+            ><img
+              src="search-own-kind__1180__en.png"
+              alt="search-own-kind, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-selection">
+        The selection mode (B7-2) · <a href="state.html?s=search-selection">ru</a> ·
+        <a href="state.html?s=search-selection&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        /search has the list head of mock 3: «Выбрать» is the last control of the search row,
+        and in the mode the one selection bar shows «Все» (dash), «Выбрано: 1», «В список»,
+        «Печать», «Скопировать текст», «Снять выделение» (FEATURES "Print" names the search bar
+        as a print control). The first-screen PNGs show the bar as a person sees it.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-selection__360__ru.png"
+            ><img
+              src="search-selection__360__ru.png"
+              alt="search-selection, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-selection__360__en.png"
+            ><img
+              src="search-selection__360__en.png"
+              alt="search-selection, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-selection__1180__ru.png"
+            ><img
+              src="search-selection__1180__ru.png"
+              alt="search-selection, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-selection__1180__en.png"
+            ><img
+              src="search-selection__1180__en.png"
+              alt="search-selection, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-selection-screen">
+        The selection mode, first screen only · <a href="state.html?s=search-selection">ru</a> ·
+        <a href="state.html?s=search-selection&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-selection-screen__360__ru.png"
+            ><img
+              src="search-selection-screen__360__ru.png"
+              alt="search-selection-screen, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-selection-screen__360__en.png"
+            ><img
+              src="search-selection-screen__360__en.png"
+              alt="search-selection-screen, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-selection-screen__1180__ru.png"
+            ><img
+              src="search-selection-screen__1180__ru.png"
+              alt="search-selection-screen, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-selection-screen__1180__en.png"
+            ><img
+              src="search-selection-screen__1180__en.png"
+              alt="search-selection-screen, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="search-nothing">
+        Search, nothing found · <a href="state.html?s=search-nothing">ru</a> ·
+        <a href="state.html?s=search-nothing&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="search-nothing__360__ru.png"
+            ><img
+              src="search-nothing__360__ru.png"
+              alt="search-nothing, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="search-nothing__360__en.png"
+            ><img
+              src="search-nothing__360__en.png"
+              alt="search-nothing, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="search-nothing__1180__ru.png"
+            ><img
+              src="search-nothing__1180__ru.png"
+              alt="search-nothing, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="search-nothing__1180__en.png"
+            ><img
+              src="search-nothing__1180__en.png"
+              alt="search-nothing, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="account-settings">
+        Account settings · <a href="state.html?s=account-settings">ru</a> ·
+        <a href="state.html?s=account-settings&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="account-settings__360__ru.png"
+            ><img
+              src="account-settings__360__ru.png"
+              alt="account-settings, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="account-settings__360__en.png"
+            ><img
+              src="account-settings__360__en.png"
+              alt="account-settings, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="account-settings__1180__ru.png"
+            ><img
+              src="account-settings__1180__ru.png"
+              alt="account-settings, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="account-settings__1180__en.png"
+            ><img
+              src="account-settings__1180__en.png"
+              alt="account-settings, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="account-loading">
+        Loading (N7-3) · <a href="state.html?s=account-loading">ru</a> ·
+        <a href="state.html?s=account-loading&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="account-loading__360__ru.png"
+            ><img
+              src="account-loading__360__ru.png"
+              alt="account-loading, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="account-loading__360__en.png"
+            ><img
+              src="account-loading__360__en.png"
+              alt="account-loading, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="account-loading__1180__ru.png"
+            ><img
+              src="account-loading__1180__ru.png"
+              alt="account-loading, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="account-loading__1180__en.png"
+            ><img
+              src="account-loading__1180__en.png"
+              alt="account-loading, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="account-failed">
+        A failed read (N7-3) · <a href="state.html?s=account-failed">ru</a> ·
+        <a href="state.html?s=account-failed&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="account-failed__360__ru.png"
+            ><img
+              src="account-failed__360__ru.png"
+              alt="account-failed, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="account-failed__360__en.png"
+            ><img
+              src="account-failed__360__en.png"
+              alt="account-failed, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="account-failed__1180__ru.png"
+            ><img
+              src="account-failed__1180__ru.png"
+              alt="account-failed, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="account-failed__1180__en.png"
+            ><img
+              src="account-failed__1180__en.png"
+              alt="account-failed, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="account-delete">
+        Delete the account · <a href="state.html?s=account-delete">ru</a> ·
+        <a href="state.html?s=account-delete&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="account-delete__360__ru.png"
+            ><img
+              src="account-delete__360__ru.png"
+              alt="account-delete, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="account-delete__360__en.png"
+            ><img
+              src="account-delete__360__en.png"
+              alt="account-delete, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="account-delete__1180__ru.png"
+            ><img
+              src="account-delete__1180__ru.png"
+              alt="account-delete, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="account-delete__1180__en.png"
+            ><img
+              src="account-delete__1180__en.png"
+              alt="account-delete, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="account-delete-keyboard">
+        The delete confirm with the keyboard open (360, R7-1) ·
+        <a href="state.html?s=account-delete-keyboard">ru</a> ·
+        <a href="state.html?s=account-delete-keyboard&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 360 the confirm is a sheet whose field and buttons sit at its foot; with the
+        on-screen keyboard open (drawn, about 270 px) the sheet rises above it, so the field,
+        «Удалить навсегда» and «Отмена» stay visible and the «Будут удалены» list scrolls. The
+        pattern for any 360 sheet with a text field (mock 8's «Новый список»). At 1180 there is
+        no keyboard: the dialog of <code>account-delete</code>.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="account-delete-keyboard__360__ru.png"
+            ><img
+              src="account-delete-keyboard__360__ru.png"
+              alt="account-delete-keyboard, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="account-delete-keyboard__360__en.png"
+            ><img
+              src="account-delete-keyboard__360__en.png"
+              alt="account-delete-keyboard, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="print-preview">
+        Print preview · <a href="state.html?s=print-preview">ru</a> ·
+        <a href="state.html?s=print-preview&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print-preview__360__ru.png"
+            ><img
+              src="print-preview__360__ru.png"
+              alt="print-preview, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print-preview__360__en.png"
+            ><img
+              src="print-preview__360__en.png"
+              alt="print-preview, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print-preview__1180__ru.png"
+            ><img
+              src="print-preview__1180__ru.png"
+              alt="print-preview, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print-preview__1180__en.png"
+            ><img
+              src="print-preview__1180__en.png"
+              alt="print-preview, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="print-settings">
+        «Настройки листа» open (360) · <a href="state.html?s=print-settings">ru</a> ·
+        <a href="state.html?s=print-settings&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print-settings__360__ru.png"
+            ><img
+              src="print-settings__360__ru.png"
+              alt="print-settings, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print-settings__360__en.png"
+            ><img
+              src="print-settings__360__en.png"
+              alt="print-settings, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print-settings__1180__ru.png"
+            ><img
+              src="print-settings__1180__ru.png"
+              alt="print-settings, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print-settings__1180__en.png"
+            ><img
+              src="print-settings__1180__en.png"
+              alt="print-settings, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="print-loading">
+        /p/ loading (N7-3) · <a href="state.html?s=print-loading">ru</a> ·
+        <a href="state.html?s=print-loading&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print-loading__360__ru.png"
+            ><img
+              src="print-loading__360__ru.png"
+              alt="print-loading, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print-loading__360__en.png"
+            ><img
+              src="print-loading__360__en.png"
+              alt="print-loading, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print-loading__1180__ru.png"
+            ><img
+              src="print-loading__1180__ru.png"
+              alt="print-loading, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print-loading__1180__en.png"
+            ><img
+              src="print-loading__1180__en.png"
+              alt="print-loading, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="print-failed">
+        /p/ failed read (N7-3) · <a href="state.html?s=print-failed">ru</a> ·
+        <a href="state.html?s=print-failed&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print-failed__360__ru.png"
+            ><img src="print-failed__360__ru.png" alt="print-failed, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print-failed__360__en.png"
+            ><img src="print-failed__360__en.png" alt="print-failed, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print-failed__1180__ru.png"
+            ><img
+              src="print-failed__1180__ru.png"
+              alt="print-failed, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print-failed__1180__en.png"
+            ><img
+              src="print-failed__1180__en.png"
+              alt="print-failed, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="print-nope">
+        Print: no set at this address · <a href="state.html?s=print-nope">ru</a> ·
+        <a href="state.html?s=print-nope&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="print-nope__360__ru.png"
+            ><img src="print-nope__360__ru.png" alt="print-nope, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="print-nope__360__en.png"
+            ><img src="print-nope__360__en.png" alt="print-nope, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="print-nope__1180__ru.png"
+            ><img src="print-nope__1180__ru.png" alt="print-nope, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="print-nope__1180__en.png"
+            ><img src="print-nope__1180__en.png" alt="print-nope, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 7 (<code>mocks/7/</code>): the print page, drawn once (mock P takes it as
+          <code>window.PP.printPage</code>) and the 360 sheet with a text field that docks above
+          the on-screen keyboard (R7-1). It applies the empty state and the list head of 3, the
+          error page and the loading skeleton of 4 and the C57 answer of 3.
+        </li>
+      </ul>
+      <h2>Round 5 (review mocks-2): findings fixed</h2>
+      <ul>
+        <li>
+          B7-1: the /p/ switches read «Цвет» / «Ч/б» and «63×88» / «44×63» (EN "Color" /
+          "B&amp;W"); N7-2: the account's print default takes the same two segments, not the
+          «Компактный лист» checkbox. B7-2: <code>/search</code> keeps its selection mode: the
+          list head of mock 3 («Выбрать» last) and the one bar with add to a list, print and
+          copy. R3-3: the own-items switch. R7-1: the 360 delete confirm docks above the
+          keyboard (state <code>account-delete-keyboard</code>). N7-1: the placeholder is
+          «Поиск» / "Search" and the example chip reads "No. 12" on EN. N7-3: loading and
+          failed-read states for /p/ and /account. N0-3: a sheet has no grab handle. R0-1: «···
+          Ещё» is one labelled form. «Назад» takes a chevron. RP-1: this page is the one /p/
+          design; mock P draws it with its proposed cards. The 360 cards are one per row at the
+          column width, as the owner approved on mock P (QP.6).
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          First-screen layout (plan section 14). Search: the H1 and the count share one line at
+          every width; at 360 the five type chips become one «Вид: все ▾» / "Kind: all" control
+          beside the field. Print preview: «Назад» and the H1 share one row; at 360 the primary
+          and one «Настройки листа ▾» (the color, the sheet size, the link) share the next, and
+          the lead and the background-graphics hint go under the sheet; at 1180 the row keeps
+          its switches.
+        </li>
+        <li>
+          Label change: the print primary reads «Напечатать», not «Отправить на печать», because
+          «Отправить на печать» and «Настройки листа» did not fit one row at 360 (RU 274 px, a
+          fail). EN keeps "Print".
+        </li>
+        <li>
+          Account clarity rows (plan review N11): the scope sentence becomes the heading
+          «Отображение на всех устройствах» / "Display on all your devices"; the notify question
+          becomes the row «Когда беру из чужого списка» with a three-way switch whose options
+          say what happens («Спрашивать», «Сообщать владельцу», «Не сообщать»); «Выйти на всех
+          устройствах» needs no note; the ZIP manual is one line.
+        </li>
+        <li>The /p/ compact-sheet note goes, as the recommended C57 answer says (C31).</li>
+        <li>EN "Color" (owner, Q3).</li>
+        <li>
+          The print sheet picture is R's RU capture in both languages: the print card layouts
+          are product law and this batch does not change them.
+        </li>
+        <li>
+          Review mocks-1: M7-1 - under 760 px the print preview draws the cards one per row at
+          the column width (round 5, QP.6), with «Показать весь лист» in «Настройки листа» for
+          the scaled sheet; screen only, print output does not change. M7-2 - «Найдено: 3» goes:
+          search says nothing under its 300 cap (FEATURES.md "Tables and search"). M7-3 -
+          «Скачать мои данные (ZIP)» takes the download icon. M7-4 - «Назад» is a 44 px target.
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          The delete confirm lists what goes and makes the danger action the strongest control
+          (A34); «Отмена» and «Сначала скачать данные» are plain.
+        </li>
+        <li>
+          Clarity Rule: the search hint lives in the placeholder and the example chips (C14);
+          the account has no explaining sentence left.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

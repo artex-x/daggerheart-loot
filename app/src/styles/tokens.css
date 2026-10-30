@@ -2,7 +2,7 @@
  *
  * The only global stylesheet. Everything else is scoped to a component, so a
  * value that more than one component needs has to be named here first - which
- * is the point: it makes "these two are the same colour on purpose" visible,
+ * is the point: it makes "these two are the same color on purpose" visible,
  * and it makes changing them one edit.
  *
  * The palette is the live site's, carried across unchanged. The contrast
@@ -38,7 +38,7 @@
   /* One hue per kind, used by the badge only; the stat line stays plain
      secondary text. The five sit roughly evenly around the wheel with at least
      49 degrees between any two, so no badge reads as a paler version of
-     another - lightness alone was not enough to tell steel armour from an
+     another - lightness alone was not enough to tell steel armor from an
      ordinary item. */
   --item: #7a8ee0;
   --cons: #9ec96a;
@@ -47,10 +47,10 @@
   --eq-armor: #5ec9c4;
 
   --danger: #e0685f;
-  /* The danger colour as text on the dark ground: a destructive button's
+  /* The danger color as text on the dark ground: a destructive button's
      label, an error line, an account list's failed save. */
   --danger-text: #f0a49d;
-  /* The warning box (`NoticeBox`): the danger colour at low tints. */
+  /* The warning box (`NoticeBox`): the danger color at low tints. */
   --warn-bg: rgb(224 104 95 / 9%);
   --warn-line: rgb(224 104 95 / 30%);
   --warn-text: #e0b6b1;
@@ -63,34 +63,65 @@
   --r-sm: 9px;
   --shadow: 0 10px 34px -14px rgb(0 0 0 / 85%);
 
+  /* The UI face is self-hosted from the build's own origin
+     (`@fontsource-variable/source-sans-3`, imported in `main.ts`); the system
+     stack after it draws while the face loads (`font-display: swap`). */
   --ui:
+    'Source Sans 3 Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* The print card keeps the stack it was fitted with, apart from `--ui`:
+     a face change there needs its own print batch (DESIGN.md, "The Local Font Rule"). */
+  --print-ui:
     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* The one size actually drawn from here. The rest of the scale that used to
-     sit beside it had no `var()` reader anywhere in `app/src` and was deleted
-     rather than kept as an unused reservation. */
-  --step-0: 15.5px;
+  /* The ten type steps (DESIGN.md, "The Ten Steps Rule"); `tests/app/typo.js`
+     holds the same list. Data text never goes below `--t-data`. */
+  --t-page: 23px;
+  --t-section: 20px;
+  --t-title: 18px;
+  --t-body: 16px;
+  --t-control: 15px;
+  --t-small: 14px;
+  --t-data: 13px;
+  --t-label: 12px;
+  --t-badge: 11.5px;
+  /* The numeral step, mono: the number field's value. */
+  --t-num: 19px;
+
+  /* The dark square every screen picture and kind glyph sits on (`ArtWell`). */
+  --art-well: #0a0810;
 
   /* The page container, off `.wrap`: one width for the header and the content,
-     centred, keeping clear of a display cutout. */
+     centered, keeping clear of a display cutout. */
   --wrap: min(1180px, 100% - 32px);
 
-  /* The page heading, taken off the live app's `.page-h` rather than invented:
-     23px at weight 680 with a hair of negative tracking. `tests/app/typo.js`
-     measures the rendered sizes against its own scale list; a new step here
-     has to be added there too. */
-  --h-page-size: 23px;
+  /* The page heading's weight and tracking; its size is `--t-page`. */
   --h-page-weight: 680;
   --h-page-spacing: -0.01em;
 
   --gap-sm: 6px;
 
-  /* The colour every gold-filled control prints its own text in - a button,
+  /* The color every gold-filled control prints its own text in - a button,
      a chip, the home pin, a toast action. Not `--bg`/`--surface`: darker than
      either, chosen against `--gold` specifically. */
   --ink-on-gold: #1a1206;
+
+  /* Where a section, row or card anchor lands: about 12-20 px under the sticky
+     header, which is 63 px from 761 px and two rows below (111 px at 360). */
+  --anchor-top: 75px;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --anchor-top: 118px;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --anchor-top: 132px;
+  }
 }
 
 *,
@@ -112,12 +143,10 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(1200px 700px at 12% -8%, #251c3d 0%, transparent 62%),
-    radial-gradient(900px 600px at 100% 0%, #1b2b3d 0%, transparent 55%), var(--bg);
-  background-attachment: fixed;
+  /* The one page ground (DESIGN.md, "Overview"): it scrolls with the page. */
+  background: linear-gradient(180deg, var(--bg2) 0, var(--bg) 520px) var(--bg);
   color: var(--txt);
-  font: var(--step-0) / 1.6 var(--ui);
+  font: var(--t-body) / 1.6 var(--ui);
   min-height: 100vh;
 }
 

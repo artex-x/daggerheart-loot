@@ -505,6 +505,7 @@
               <h2 class="hbgroup">{g.label} <span class="n">{g.items.length}</span></h2>
               {#if app.index}
                 <TableRows
+                  primary
                   entries={g.items.map((it) => ({ it }))}
                   view="list"
                   index={app.index}
@@ -533,7 +534,7 @@
 <style>
   .note {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: var(--t-small);
     color: var(--muted);
   }
 
@@ -573,7 +574,7 @@
 
   .move-note {
     margin: 8px 0 0;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     line-height: 1.45;
     color: var(--muted2);
   }
@@ -588,13 +589,13 @@
 
   .hbgroup {
     margin: 22px 0 10px;
-    font-size: 16px;
+    font-size: var(--t-body);
     font-weight: 650;
     overflow-wrap: anywhere;
   }
 
   .hbgroup .n {
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 500;
     color: var(--muted2);
   }

@@ -9,7 +9,7 @@
     node tools/artwork/cards.mjs --check  # re-renders in memory, compares with og/
 
   Fontconfig is pointed at tools/artwork/fonts/ and nothing else before
-  sharp loads, so a host font can never stand in for Inter: a missing font
+  sharp loads, so a host font can never stand in for Source Sans 3: a missing font
   renders no glyphs, and --check fails on that. Both modes also check where
   each title ends, so a host face that stands in fails, and write mode
   writes neither card when one fails.
@@ -35,20 +35,20 @@ const OUTPUTS = [
 const CHANNEL_TOLERANCE = 32;
 const MAX_DIFF_SHARE = 0.005;
 // A pixel this far from the top-left background counts as ink. Measured
-// 2026-09-23: about 11500 ink pixels without text (the star and the rule),
-// about 23500 with it; below MIN_INK the render found no font.
+// 2026-10-29 in Source Sans 3: about 4200 ink pixels without text (the star),
+// about 13500-14100 with it; below MIN_INK the render found no font.
 const INK_DISTANCE = 96;
-const MIN_INK = 17000;
+const MIN_INK = 9000;
 // The title's rows: its baseline is y 321 at 64 px, the brand line's caps
 // start near y 346 (shareCardSvg). A pixel whose three channels all exceed
-// TITLE_BRIGHT is title ink (#ece8f6); the gold brand and the grey subtitle
-// are darker in at least one channel.
+// TITLE_BRIGHT is title ink (#ece8f6); the muted brand line and the gray
+// subtitle are darker in at least one channel.
 const TITLE_BAND = [260, 340];
 const TITLE_BRIGHT = 180;
-// Each title's measured right edge +-12 px, measured 2026-09-24 on this
-// host: ru 637, en 611 in Inter; the host face ends them at ru 673, en 672,
-// and the pre-2026-09-23 face ended the Russian title near x 708.
-const TITLE_END = { ru: [625, 649], en: [599, 623] };
+// Each title's measured right edge +-12 px, measured 2026-10-29 on this
+// host: ru 583, en 561 in Source Sans 3; Inter ended them at ru 637, en 611,
+// and a host face at ru 673, en 672.
+const TITLE_END = { ru: [571, 595], en: [549, 573] };
 
 function xmlPath(p) {
   return p.replace(/\\/g, '/').replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -177,7 +177,7 @@ for (const [lang, name] of OUTPUTS) {
       name +
         ': rendered no text (' +
         ink +
-        ' ink pixels). Check tools/artwork/fonts/ holds Inter'
+        ' ink pixels). Check tools/artwork/fonts/ holds Source Sans 3'
     );
     failed = true;
     continue;
@@ -193,7 +193,7 @@ for (const [lang, name] of OUTPUTS) {
         lo +
         '-' +
         hi +
-        ' for Inter; a host face stood in - see docs/artwork.md, "The site share cards"'
+        ' for Source Sans 3; a host face stood in - see docs/artwork.md, "The site share cards"'
     );
     failed = true;
     continue;

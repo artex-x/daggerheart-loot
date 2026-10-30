@@ -243,7 +243,7 @@
       <PageTitle title={t.account} sub="" />
     {:else if app.user === null}
       <PageTitle title={t.account} sub={t.signInLead} />
-      <Panel style={PANEL}>
+      <Panel style={PANEL} primary>
         <Field label={t.signIn} heading>
           <div class="row-btns">
             {#each PROVIDERS as p (p)}
@@ -270,7 +270,7 @@
       {@const session = app.user}
       <PageTitle title={t.account} sub={t.accountSub} />
 
-      <Panel style={PANEL}>
+      <Panel style={PANEL} primary>
         <Field label={t.displayHead} heading>
           <p class="hint lead">{t.displayLead}</p>
           <div class="set">
@@ -503,7 +503,7 @@
 
   .hint {
     margin: 10px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -532,7 +532,7 @@
   }
 
   .who b {
-    font-size: var(--step-0);
+    font-size: var(--t-body);
     font-weight: 650;
   }
 
@@ -540,7 +540,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -574,7 +574,7 @@
 
   .setname {
     flex: 1 1 180px;
-    font-size: 14px;
+    font-size: var(--t-small);
   }
 
   /* TextInput.svelte's box at a button's height. */
@@ -600,7 +600,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    font-size: 13.5px;
+    font-size: var(--t-small);
   }
 
   /* TableRows.svelte's row checkbox. */
@@ -641,7 +641,7 @@
 
   /* A long address wraps; it is never cut short. */
   .pv small {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
@@ -649,7 +649,7 @@
   .err {
     flex-basis: 100%;
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 
@@ -660,7 +660,7 @@
   }
 
   .confirm label {
-    font-size: 14px;
+    font-size: var(--t-small);
   }
 
   .grow {

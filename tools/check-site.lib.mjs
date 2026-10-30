@@ -294,8 +294,8 @@ export function fileChecks({ install = true, documents = false } = {}) {
      * build makes, and a broken link is served as a 404 rather than as an
      * error. The row thumbnails ride the img/ link. */
     ...[
-      'img/_none.webp',
-      'img/thumb/_none.webp',
+      'img/ci1.webp',
+      'img/thumb/ci1.webp',
       'og/_share.jpg',
       'og/_share_en.jpg',
       'card/die-d12-bw.svg'
@@ -583,7 +583,7 @@ export function fetchReader(root, timeoutMs = 15_000) {
  *  (the `--dir` steps of ci.yml's `deploy` and `deploy-replay`). Emulates
  *  only the one Pages rule this file's checks depend on: a path that is not
  *  on disk is served as 404.html's content with a 404 status - not GitHub
- *  Pages' missing-path behaviour in
+ *  Pages' missing-path behavior in
  *  general, which measurably diverges from this locally (an extensionless
  *  path is 200 live but 404 here; a directory path throws `EISDIR`; a
  *  case-insensitive filesystem 200s where Pages 404s). None of that matters

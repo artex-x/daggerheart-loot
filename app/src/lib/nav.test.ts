@@ -1,36 +1,49 @@
 import { describe, expect, it } from 'vitest';
-import { SUPPLEMENTS, isSupplement, tabOf } from './nav.js';
+import { SUPPLEMENTS, isRoll, isSupplement, jobOf, modeOf } from './nav.js';
 import { navGroupOf } from './tables.js';
 import { SECTIONS } from './types.js';
 
-const OWN_TAB = ['roll/std', 'roll/alt', 'tables', 'lists', 'search'] as const;
+const ROLL_OWN = ['roll/std', 'roll/alt'] as const;
 
-describe('the supplements tab', () => {
-  it('lists every section exactly once between the supplements and the own tabs', () => {
-    expect([...SUPPLEMENTS, ...OWN_TAB].sort()).toEqual([...SECTIONS].sort());
+describe('the jobs and the mode row', () => {
+  it('lists every roll section exactly once between the supplements and the own modes', () => {
+    expect([...SUPPLEMENTS, ...ROLL_OWN].sort()).toEqual(
+      SECTIONS.filter((s) => s.startsWith('roll/')).sort()
+    );
   });
 
-  it('counts each supplement as a supplement and lights the supplements tab for it', () => {
-    for (const s of SUPPLEMENTS) {
-      expect(isSupplement(s), s).toBe(true);
-      expect(tabOf(s), s).toBe('roll/wondrous');
+  it('lights the roll job and the section itself as the mode on each roll section', () => {
+    for (const s of [...ROLL_OWN, ...SUPPLEMENTS]) {
+      expect(isRoll(s), s).toBe(true);
+      expect(jobOf(s), s).toBe('roll');
+      expect(modeOf(s), s).toBe(s);
     }
   });
 
-  it('lights its own tab for every other section', () => {
-    for (const s of OWN_TAB) {
+  it('counts only the seven supplements as supplements', () => {
+    for (const s of SUPPLEMENTS) expect(isSupplement(s), s).toBe(true);
+    for (const s of [...ROLL_OWN, 'tables', 'lists', 'search'] as const) {
       expect(isSupplement(s), s).toBe(false);
-      expect(tabOf(s), s).toBe(s);
     }
+  });
+
+  it('lights the tables and search jobs with no mode', () => {
+    expect([jobOf('tables'), modeOf('tables')]).toEqual(['tables', null]);
+    expect([jobOf('search'), modeOf('search')]).toEqual(['search', null]);
+  });
+
+  it('lights no job and no mode on the lists section or with no section open', () => {
+    expect([jobOf('lists'), modeOf('lists')]).toEqual([null, null]);
+    expect([jobOf(null), modeOf(null), isSupplement(null), isRoll(null)]).toEqual([
+      null,
+      null,
+      false,
+      false
+    ]);
   });
 
   it('lists the supplement books in the order of the tables page row', () => {
     expect(SUPPLEMENTS.map((s) => s.slice(5))).toEqual(navGroupOf('wondrous').subs);
     expect(SUPPLEMENTS.at(-1)).toBe('roll/mwt');
-  });
-
-  it('lights nothing when no section is open', () => {
-    expect(isSupplement(null)).toBe(false);
-    expect(tabOf(null)).toBeNull();
   });
 });

@@ -41,7 +41,7 @@
     border-left: 2px solid var(--gold);
     border-radius: 9px;
     background: rgb(216 171 94 / 6%);
-    font-size: 13px;
+    font-size: var(--t-data);
     line-height: 1.5;
     color: var(--txt);
   }
@@ -56,7 +56,7 @@
      reads 4.48:1, under axe's 4.5 (tests/app/sweep.js at 360, measured 2026-10-21). */
   .hitnote b {
     display: block;
-    font-size: 10.5px;
+    font-size: var(--t-badge);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);

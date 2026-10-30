@@ -14,15 +14,13 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Мои предметы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Предметы, которых нет в книгах: они ищутся вместе с каталогом, п..." [namelen=105 namehash=051956f3]
     button "Импорт из файла" [expanded=false]
     navigation "Мои предметы"
@@ -68,20 +66,19 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
 
 ## ru :: controls
 + Новый список
+?Справка
 EN
 RU
 Whispering Cap
 Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
+Бросок
 Выбрать все
 Добавить в список
-Дополнения
 Импорт из файла
 Источники
 К содержимому
-Как это работает
 Карты правил
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
@@ -92,8 +89,7 @@ daggerheart.com
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
 Новый предмет
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Переместить (1)
 Печать
 Поиск
@@ -114,22 +110,20 @@ daggerheart.com
 RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
   link "Skip to content" [url=/en/homebrew?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "My items" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Items that are not in the books: search finds them with the cata..." [namelen=113 namehash=f0ed3dba]
     button "Import from file" [expanded=false]
     navigation "My items"
@@ -166,12 +160,12 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
+?Help
 Account: gm1@example.test
 Add to list
-Alt. tables
 Clear selection
 Copy
 Delete (1)
@@ -179,24 +173,23 @@ Download JSON (1)
 EN
 Ember Axe
 Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
-How this works
 Import from file
 Install as an app
 Items
+LootDaggerheart
 Move (1)
 New item
-Open this section on start
+Open on start
 Print
 Privacy
 RU
+Roll
 Rule cards
 Search
 Select all
 Sets
 Skip to content
 Sources
-Standard rules
-Supplements
 Tables
 Terms of use
 Whispering Cap
@@ -204,6 +197,5 @@ Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 
 daggerheart.com
 Кольцо с гравировкой
 Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
-ЛутDaggerheart
 Настой кузнеца
 Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]

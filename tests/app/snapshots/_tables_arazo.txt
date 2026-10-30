@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -139,6 +137,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 7Продвинутый Топор РассветаРанг 3 · Физическое · Сила · Вплотную... [namelen=321 namehash=9a94ce7a]
 8Легендарный Топор РассветаРанг 4 · Физическое · Сила · Вплотную... [namelen=321 namehash=672e07b4]
 9Наручи Солнца и ЛуныНаруч Луны: Один раз за продолжительный отд... [namelen=276 namehash=8ea4922a]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -153,6 +152,7 @@ daggerheart.com
 Алебарда Урзо
 Альт. таблицы
 Боевой Молот База
+Бросок
 Войти
 Волшебное Зеркало
 Дополнения
@@ -161,7 +161,6 @@ daggerheart.com
 Жезл Сопротивления
 Змеиный Моток
 К содержимому
-Как это работает
 Каменная Рука Эзригана
 Кнут из Хвоста Виверны
 Кольчуга из Змиевой Чешуи
@@ -192,8 +191,7 @@ daggerheart.com
 Моргенштерн Тариана
 Наручи Солнца и Луны
 Нестареющее Око Зверя
-Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Перчатка Скорпиона
 Поиск
 Посох Запредельной Пустоты
@@ -253,22 +251,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/arazos_artifacts]
   link "Skip to content" [url=/en/tables/arazos_artifacts#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -305,7 +301,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/arazos_artifac
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 10Chalice of CommitmentOnce per long rest, you gain an additiona... [namelen=334 namehash=3ecabb12]
@@ -386,6 +382,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/arazos_artifac
 7Advanced Axe of the DawnTier 3 · Physical · Strength · Melee · ... [namelen=275 namehash=0f3a6a16]
 8Legendary Axe of the DawnTier 4 · Physical · Strength · Melee ·... [namelen=276 namehash=82237262]
 9Bracers of the Sun and MoonBracer of the Moon: Once per long re... [namelen=249 namehash=971f3d0e]
+?Help
 Advanced Ageless Eye of the Beast
 Advanced Axe of the Dawn
 Advanced Dirk of the Dead
@@ -419,7 +416,6 @@ Equipment
 Filters
 Grid
 Hope & Fear
-How this works
 Improved Ageless Eye of the Beast
 Improved Axe of the Dawn
 Improved Dirk of the Dead
@@ -457,9 +453,10 @@ Legendary Wyrmscale Hauberk
 Legendary Wyverntail Whip
 Link to this table
 List
+LootDaggerheart
 Many Worlds Tavern
 Ogre-teeth Club
-Open this section on start
+Open on start
 Orb of Foresight
 Other
 Phoenix Sling
@@ -467,6 +464,7 @@ Plate of the Prince
 Privacy
 RU
 Rod of Resistance
+Roll
 Scorpion Gauntlet
 Search
 Serpent's Coil
@@ -474,7 +472,6 @@ Shield of Arcturus
 Sign in
 Skip to content
 Staff of the Void Beyond
-Standard rules
 Stone Arm of Ezrigan
 Supplements
 Tables
@@ -494,4 +491,3 @@ Wyrmscale Hauberk
 Wyverntail Whip
 Zeran's Coffer
 daggerheart.com
-ЛутDaggerheart

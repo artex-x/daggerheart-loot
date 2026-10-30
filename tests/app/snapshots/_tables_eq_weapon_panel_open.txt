@@ -13,15 +13,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Таблицы" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
@@ -40,8 +38,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     button "Фильтры" [expanded=true]
     StaticText "458"
     ... StaticText x22 of 26 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x31 of 35 same-shape siblings elided
     button "Улучшаемые" [pressed=false]
     button "Уникальные" [pressed=false]
     button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
@@ -242,6 +239,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 96УголёкРанг 3 · Магическое · Проворность · Вплотную · d8+5 маг ... [namelen=236 namehash=4f61f156]
 98Булава СкверныРанг 3 · Физическое · Сила · Вплотную · d8+6 физ... [namelen=408 namehash=048be5d4]
 9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
+?Справка
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -286,6 +284,7 @@ daggerheart.com
 Большой Лук
 Большой ЛукРанг 2 · Физическое · Сила · Далеко · d6+6 физ · Двур... [namelen=205 namehash=c6fff4ed]
 Броня
+Бросок
 Булава
 Булава Скверны
 БулаваРанг 1 · Физическое · Сила · Вплотную · d8+1 физ · Одноруч... [namelen=86 namehash=4daa288f]
@@ -404,7 +403,6 @@ daggerheart.com
 Искатель Врагов
 Искусность
 К содержимому
-Как это работает
 Кастет
 КастетРанг 1 · Физическое · Сила · Вплотную · d8+1 физ · Одноруч... [namelen=93 namehash=616bc024]
 Кастеты с лезвиями
@@ -641,11 +639,10 @@ daggerheart.com
 Нимойрас
 Обоюдоострый Меч
 Обоюдоострый МечРанг 4 · Физическое · Проворность · Вплотную · d... [namelen=235 namehash=bf5328f9]
-Обычные правила
 Одноручное
 Одолженная Лапа
 Оружие
-Открывать этот раздел при запуске
+Открывать при запуске
 Очень далеко
 Падение Природы
 Палаш
@@ -1048,22 +1045,20 @@ daggerheart.com
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
   link "Skip to content" [url=/en/tables/eq_weapon#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Tables" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
@@ -1082,8 +1077,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
     button "Filters" [expanded=true]
     StaticText "458"
     ... StaticText x22 of 26 same-shape siblings elided
-    button "1" [pressed=false]
-    ... button x30 of 34 same-shape siblings elided
+    ... button x31 of 35 same-shape siblings elided
     button "Upgradable" [pressed=false]
     button "Unique" [pressed=false]
     button "Copy a link to this section" [description=Copy a link to this section]
@@ -1107,7 +1101,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 1
@@ -1284,6 +1278,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon]
 96EmberTier 3 · Magic · Agility · Melee · d8+5 mag · One-HandedF... [namelen=214 namehash=27283586]
 98Filth MaceTier 3 · Physical · Strength · Melee · d8+6 phy · On... [namelen=397 namehash=e742dbeb]
 9Oath of BalanceArtifact · Magic · Instinct · Far · d12+12 mag ·... [namelen=752 namehash=9a8afa74]
+?Help
 Aantari Bow
 Aantari BowTier 4 · Physical · Finesse · Far · d6+11 phy · Two-H... [namelen=121 namehash=6cf96e60]
 Acid Edge
@@ -1619,7 +1614,6 @@ Hollowstone Staff
 Holy Shotgun
 Holy ShotgunTier 1 · Magic · Agility · Very Close · d6+2 mag · T... [namelen=198 namehash=0e96bb1a]
 Hope & Fear
-How this works
 Hydra Blade
 Ilmari's Rifle
 Ilmari's RifleTier 3 · Magic · Finesse · Very Far · d6+6 mag · O... [namelen=237 namehash=08b5899b]
@@ -1858,6 +1852,7 @@ Longbow of Fyr
 LongbowTier 1 · Physical · Agility · Very Far · d8+3 phy · Two-H... [namelen=112 namehash=b76b8588]
 Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]
+LootDaggerheart
 Mace
 MaceTier 1 · Physical · Strength · Melee · d8+1 phy · One-Handed... [namelen=82 namehash=26796c48]
 Mage Orb
@@ -1883,7 +1878,7 @@ Nimoiras
 Oath of Balance
 Ogre-teeth Club
 One-Handed
-Open this section on start
+Open on start
 Other
 Phoenix Sling
 Physical
@@ -1919,6 +1914,7 @@ Rocket Maul
 Rocket MaulTier 3 · Magic · Strength · Melee · d10+7 mag · Two-H... [namelen=195 namehash=71b48d78]
 Rod of Flaming Skulls
 Rod of Resistance
+Roll
 Rolling Pin
 Rolling PinTier 1 · Physical · Presence · Melee · d8+1 phy · One... [namelen=102 namehash=edf0740a]
 Rope Dart
@@ -1999,7 +1995,6 @@ Staff of the Secret Flame
 Staff of the Void Beyond
 Staff of the Whispering Archive
 Standard Issue Slicer
-Standard rules
 Star Lance
 Starmetal Blade
 Starmetal BladeTier 4 · Magic · Agility · Melee · d8+10 mag · On... [namelen=174 namehash=e0aac150]
@@ -2084,4 +2079,3 @@ Yutari Bloodbow
 Yutari BloodbowTier 2 · Magic · Finesse · Far · d6+4 mag · Two-H... [namelen=180 namehash=2637421b]
 Zanthak's Rage
 daggerheart.com
-ЛутDaggerheart

@@ -1,0 +1,50 @@
+[
+  {
+    "s": "item",
+    "name": "item"
+  },
+  {
+    "s": "item-more",
+    "name": "item-more"
+  },
+  {
+    "s": "item-save-signedout",
+    "name": "item-save-signedout"
+  },
+  {
+    "s": "item-dialog",
+    "name": "item-dialog"
+  },
+  {
+    "s": "item-nope",
+    "name": "item-nope"
+  },
+  {
+    "s": "own-item",
+    "name": "own-item"
+  },
+  {
+    "s": "own-item-failed",
+    "name": "own-item-failed"
+  },
+  {
+    "s": "h-item",
+    "name": "h-item"
+  },
+  {
+    "s": "h-item-signedout",
+    "name": "h-item-signedout"
+  },
+  {
+    "s": "h-item-loading",
+    "name": "h-item-loading"
+  },
+  {
+    "s": "h-item-failed",
+    "name": "h-item-failed"
+  },
+  {
+    "s": "pattern-error",
+    "name": "pattern-error"
+  }
+]

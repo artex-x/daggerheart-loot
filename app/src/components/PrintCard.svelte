@@ -1,6 +1,6 @@
 <script lang="ts">
   /* One print card, both layouts - off `printCardHTML`, `dmgStripHTML`, `dieHTML`,
-   * `thStripHTML` and `fitPrintCards` (`git show 23c00a6^:app.js`). The colour and the
+   * `thStripHTML` and `fitPrintCards` (`git show 23c00a6^:app.js`). The color and the
    * black-and-white layout are drawn from the same markup below, branching
    * exactly where the live code does - `class:bw` and the `{#if bw}`
    * branches, not two components: they share every helper and the fit.
@@ -9,6 +9,7 @@
    * `RecordCard`'s `<p>`s, and has no whitespace of any kind between the tags
    * in that block (docs/specs/COVERAGE.md, "Whitespace text nodes are content"). */
   import { untrack } from 'svelte';
+  import ArtWell from './ArtWell.svelte';
   import CardVector from './CardVector.svelte';
   import MarkupInline from './MarkupInline.svelte';
   import '../styles/card-vectors.css';
@@ -16,7 +17,7 @@
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
   import { EQ_CLS, EQ_DT, EQ_RANGE, EQ_TYPE, eqWord, nameOf } from '../lib/i18n.js';
-  import { printSrc } from '../lib/label.js';
+  import { kindGlyph, printSrc } from '../lib/label.js';
   import { afterLead, parseMarkup, type MarkupBlock } from '../lib/markup.js';
   import { qtySuffix } from '../lib/share.js';
   import { cardArt, CARD_DIR, dmgParts, printTrait } from '../lib/print.js';
@@ -117,10 +118,11 @@
     }
   );
   const src = $derived(printSrc(it, lang));
-  /* A colour card with no picture, or a broken one, draws the site's `img/_none.webp`, as
-     every page does: the owner's departure from Figma node 714-42387 (FEATURES.md, "Print"). */
+  /* A color card with no picture, or a broken one, draws the kind glyph on the light
+     print well; the screen keeps the dark well (FEATURES.md, "Print"). */
   const artUrl = $derived(artSrc(it.img, artBroken));
-  /* The folded vectors' paint: one geometry, the layout's colours (card-vectors.css). */
+  const glyph = $derived(kindGlyph(it.kind, it.eq?.t));
+  /* The folded vectors' paint: one geometry, the layout's colors (card-vectors.css). */
   const paint = $derived(bw ? 'bw' : 'colour');
   const pkClass = $derived(
     eq ? `pk-${eq.t}` : `pk-${it.kind === 'consumable' ? 'cons' : 'item'}`
@@ -270,7 +272,7 @@
 
     let pct = 3.5;
     /* Black and white only: the picture's space is blank paper there, so short
-       text grows until it would spill, under the name's 5.8cqw. Colour never
+       text grows until it would spill, under the name's 5.8cqw. Color never
        grows: the picture owns that space - FEATURES.md, "Print" (issue 61). */
     if (bw && !tight()) {
       while (!tight() && pct < GROW_CAP - 0.05) {
@@ -416,8 +418,8 @@
      docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
 <!-- prettier-ignore -->
 <article class="pcard {pkClass}" class:bw data-pid={it.id} style:--pc-scale={scale === 1 ? undefined : scale} bind:this={card}
-  >{#if !bw}<div class="pc-art"
-      ><img
+  >{#if !bw}<div class="pc-art" class:none={!artUrl}
+      >{#if artUrl}<img
           class="pc-back"
           src={artUrl}
           alt=""
@@ -428,7 +430,7 @@
           src={artUrl}
           alt=""
           onerror={() => onartfail(it.id)}
-        /></div
+        />{:else}<ArtWell {glyph} />{/if}</div
     >{@render band()}{@render mark()}{/if}<div class="pc-content"
     >{#if bw}<div class="pc-head" class:withtier={!!tier}
         >{@render band()}{@render tags()}{@render mark()}</div
@@ -472,7 +474,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    font-family: var(--ui);
+    font-family: var(--print-ui);
     /* The paper floor for small text (docs/DECISIONS.md, "Print card small
        text keeps the ribbon and gets one paper floor in every view"). */
     --pc-min-label: calc(4.5pt * var(--pc-scale, 1));
@@ -490,7 +492,14 @@
     align-items: flex-start;
     justify-content: center;
     overflow: hidden;
-    background: #0a0810;
+    background: var(--art-well);
+  }
+
+  /* The owner's light print well: less toner and a clear mark, a departure from Figma
+     node 714-42387 (FEATURES.md, "Print"). */
+  .pcard:not(.bw) .pc-art.none {
+    --art-well: #ebe7f0;
+    --line2: #3a3350;
   }
 
   .pc-img {
@@ -542,7 +551,7 @@
     left: 0;
     top: 2.6cqw;
     width: 100%;
-    font: 900 6.4cqw/1 var(--ui);
+    font: 900 6.4cqw/1 var(--print-ui);
   }
 
   .pc-tier i {
@@ -550,7 +559,7 @@
     left: 0;
     top: 9.6cqw;
     width: 100%;
-    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--ui);
+    font: 500 max(2.6cqw, calc(4pt * var(--pc-scale, 1))) / 1 var(--print-ui);
     font-style: normal;
     letter-spacing: 0;
     text-transform: uppercase;
@@ -577,7 +586,7 @@
     top: 100%;
     margin-top: 0.3cqw;
     text-align: center;
-    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--ui);
+    font: 500 max(2.4cqw, var(--pc-min-label)) / 1 var(--print-ui);
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: #fff;
@@ -615,7 +624,7 @@
     padding: 0.6cqw 2.3cqw;
     border-radius: 9cqw;
     white-space: nowrap;
-    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--ui);
+    font: 500 max(2.9cqw, var(--pc-min-label)) / 1.2 var(--print-ui);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: #000;
@@ -633,7 +642,7 @@
 
   .pc-name {
     margin: 0;
-    font: 900 5.8cqw/1.1 var(--ui);
+    font: 900 5.8cqw/1.1 var(--print-ui);
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
@@ -706,7 +715,7 @@
 
   .pc-th-lab small {
     display: block;
-    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--ui);
+    font: 500 max(1.9cqw, var(--pc-min-label)) / 1.1 var(--print-ui);
     letter-spacing: -0.01em;
     text-transform: uppercase;
     color: #000;
@@ -776,7 +785,7 @@
   .pc-th-box b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.4cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #fff;
   }
 
@@ -811,7 +820,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(4cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #fff;
   }
 
@@ -820,7 +829,7 @@
     left: -2cqw;
     right: -2cqw;
     top: 109%;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1 var(--print-ui);
     font-style: normal;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -940,7 +949,7 @@
 
   /* The cells sit on the ribbon SVG's own geometry (275.5x47.9): its top
      ornament lines end at y 10.4 (22%), and the band is symmetric about the
-     die's centre, so it ends at 78% - above the lower lines (y 38.9, 81.2%)
+     die's center, so it ends at 78% - above the lower lines (y 38.9, 81.2%)
      and the diagonal at x 53.75-58.25 (y 36.9, 77%). The brackets span
      x 83.25-85.25 and 175.25-177.25, so the cells stop short of 30.2% and
      63.6%. `fit()` reads the 56% band. */
@@ -1015,7 +1024,7 @@
   .pc-die b {
     position: relative;
     z-index: 2;
-    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.6cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #000;
   }
 
@@ -1071,7 +1080,7 @@
 
   .pc-bonus {
     flex: none;
-    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 700 max(3.2cqw, var(--pc-min-value)) / 1 var(--print-ui);
     color: #000;
   }
 
@@ -1088,7 +1097,7 @@
   .pc-box small {
     display: block;
     margin-bottom: 0.25em;
-    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--ui);
+    font: 500 max(2.2cqw, var(--pc-min-label)) / 1.05 var(--print-ui);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #000;
@@ -1103,7 +1112,7 @@
      keeps one line or wraps to two, and `fit()` shrinks it. */
   .pc-box b {
     display: block;
-    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--ui);
+    font: 600 max(3cqw, var(--pc-min-value)) / 1 var(--print-ui);
     text-transform: none;
     color: #000;
   }
@@ -1171,7 +1180,7 @@
     justify-content: space-between;
     gap: 2cqw;
     padding-top: 1.4cqw;
-    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--ui);
+    font: italic 400 max(2.9cqw, var(--pc-min-label)) / 1.4 var(--print-ui);
     color: #000;
   }
 

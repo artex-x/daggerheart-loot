@@ -34,7 +34,7 @@ export const STRUCK = new Set([]);
 
 /** Lines whose head is a label that the length rule misses, `id:lang:line`. */
 export const LABELS = new Set([
-  /* "Curse - Feed the Blade" has five words; the Russian line is labelled. */
+  /* "Curse - Feed the Blade" has five words; the Russian line is labeled. */
   'dve38:en:2'
 ]);
 
@@ -53,7 +53,7 @@ const STAT_BLOCK_FEATURE = {
 /**
  * The conditions a feature defines (S4): the English terms, their Russian
  * forms, and where the catalog applies each one ("become temporarily X", "While X").
- * The SRD 2.0 PDF pages are where it italicises the same condition.
+ * The SRD 2.0 PDF pages are where it italicizes the same condition.
  */
 export const FEATURE_CONDITIONS = [
   {
@@ -119,7 +119,7 @@ export const FEATURE_CONDITIONS = [
   { en: ['Wracked'], ru: ['Измученной', 'Измученное'], src: 'dv21' }
 ];
 
-/** Conditions in a rules sense (S4), capitalised forms only: the core ones (SRD p. 52),
+/** Conditions in a rules sense (S4), capitalized forms only: the core ones (SRD p. 52),
  *  then the feature-defined ones. */
 export const CONDITIONS = {
   en: [
@@ -240,7 +240,7 @@ export const OVERRIDES = [
     text: 'hidden',
     n,
     as: 'italic',
-    why: 'the Hidden condition, which the RU text capitalises («Скрыты», «Скрытым»)'
+    why: 'the Hidden condition, which the RU text capitalizes («Скрыты», «Скрытым»)'
   })),
   ...['en', 'ru'].map((lang) => ({
     id: 'w30',
@@ -442,7 +442,7 @@ export function labelOf(line, inList) {
   return ok ? head : '';
 }
 
-/** Returns the context the style of one text needs: `{ id, labelled, ref }`. */
+/** Returns the context the style of one text needs: `{ id, labeled, ref }`. */
 export function contextOf(kind, key, value) {
   if (kind === 'set') return { id: 'set ' + key, labelled: false, ref: '' };
   if (kind === 'ref') return { id: 'ref ' + key, labelled: false, ref: key };
@@ -808,7 +808,7 @@ const AMBIGUOUS = [
   '- "hidden" as an ordinary word (q88, q125, cm3, cm58, cm62, hi5, voa4_t2h; RU «скрыт-» in cm3, cm62, q125): plain. A lowercase form is never the condition (S4).',
   '- voa4_t4e, lowercase "hidden" in EN, «Скрыты», «Скрытым» in RU: italic in both. The RU text writes the condition, so EN takes it by override.',
   '- voa3_t4f, "locate hidden creatures" / «скрытых существ»: plain in both. An adjective in both languages.',
-  '- "restrain" as an ordinary verb (cm22 "A restrained target gains the Restrained condition", cm82): the lowercase uses plain, the capitalised condition italic.',
+  '- "restrain" as an ordinary verb (cm22 "A restrained target gains the Restrained condition", cm82): the lowercase uses plain, the capitalized condition italic.',
   '- w60, «Обездвиживания»: italic by override. It is the noun of EN "being *Restrained*".',
   '- Marked (voa2_t2e, voa3_t4d): italic. RU names the condition with the noun «Метка», which takes the italics by override where EN writes "Marked"; "Mark another creature" and "your Mark" stay plain.',
   '- Dominated: italic in dve7 (RU «Контролем», «Контролируемые» by override); plain in voa1_t3e and voa2_c4, where it names a countdown or a counter.',

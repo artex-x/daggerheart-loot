@@ -13,29 +13,22 @@ RootWebArea "Предметы сообществ - Генератор лута D
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/community_items]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "Предметы сообществ" [expanded=false haspopup=menu]
   main ""
     heading "Предметы сообществ" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
-    button "Как это работает" [expanded=false]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
     StaticText "Выберите происхождение и бросьте d10."
-    navigation "Дополнения"
-      link "Wondrous Environments" [url=/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=/roll/arazos_artifacts]
-      link "Предметы сообществ" [url=/roll/community_items]
-      link "Many Worlds Tavern" [url=/roll/many_worlds_tavern]
     StaticText "СООБЩЕСТВО"
     button "Великородное" [pressed=true]
     button "Научное" [pressed=false]
-    button "Догматичное" [pressed=false]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     button "Кочевое" [pressed=false]
     button "Лесное" [pressed=false]
     StaticText "РЕЗУЛЬТАТ БРОСКА (1–10)"
@@ -63,24 +56,18 @@ RootWebArea "Предметы сообществ - Генератор лута D
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-Arazo's Artifacts
-Dread GM Toolbox
+?Справка
 EN
-Many Worlds Tavern
 RU
-The Dragon's Vault
-Vault of Ages
-Wondrous Environments
 daggerheart.com
-Альт. таблицы
+Альтернативные таблицы
 Бросить d10
+Бросок
 Великородное
 Войти
 Горное
 Догматичное
-Дополнения
 К содержимому
-Как это работает
 Конфиденциальность
 Королевская Брошь
 Кочевое
@@ -92,7 +79,7 @@ daggerheart.com
 На единицу меньше
 Научное
 Обычные правила
-Открывать этот раздел при запуске
+Открывать при запуске
 Отправить
 Подземное
 Поиск
@@ -111,36 +98,29 @@ daggerheart.com
 RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/community_items]
   link "Skip to content" [url=/en/roll/community_items#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/community_items]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "Community items" [expanded=false haspopup=menu]
   main ""
     heading "Community items" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
-    button "How this works" [expanded=false]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
     StaticText "Pick an origin and roll d10."
-    navigation "Supplements"
-      link "Wondrous Environments" [url=/en/roll/wondrous_environments]
-      link "Dread GM Toolbox" [url=/en/roll/dread_gm_toolbox]
-      link "Vault of Ages" [url=/en/roll/vault_of_ages]
-      link "The Dragon's Vault" [url=/en/roll/dragons_vault]
-      link "Arazo's Artifacts" [url=/en/roll/arazos_artifacts]
-      link "Community items" [url=/en/roll/community_items]
-      link "Many Worlds Tavern" [url=/en/roll/many_worlds_tavern]
     StaticText "COMMUNITY"
     button "Highborne" [pressed=true]
     button "Loreborne" [pressed=false]
-    button "Orderborne" [pressed=false]
-    ... button x4 of 8 same-shape siblings elided
+    ... button x5 of 9 same-shape siblings elided
     button "Wanderborne" [pressed=false]
     button "Wildborne" [pressed=false]
     StaticText "ROLL RESULT (1–10)"
@@ -165,31 +145,30 @@ RootWebArea "Community items - Daggerheart Loot Generator" [url=/en/roll/communi
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-Alt. tables
-Arazo's Artifacts
+?Help
+Alternate tables
 Community items
 Copy image
 Copy link
 Copy name
 Copy text
-Dread GM Toolbox
 EN
 Highborne
-How this works
 Install as an app
+LootDaggerheart
 Loreborne
-Many Worlds Tavern
 One higher
 One lower
-Open this section on start
+Open on start
 Orderborne
 Page
 Privacy
 RU
 Ridgeborne
+Roll
 Roll d10
 Roll result
 Royal Brooch
@@ -200,14 +179,9 @@ Sign in
 Skip to content
 Slyborne
 Standard rules
-Supplements
 Tables
 Terms of use
-The Dragon's Vault
 Underborne
-Vault of Ages
 Wanderborne
 Wildborne
-Wondrous Environments
 daggerheart.com
-ЛутDaggerheart

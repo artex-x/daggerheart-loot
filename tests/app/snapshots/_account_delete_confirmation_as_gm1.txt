@@ -14,9 +14,7 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
     button "EN" [pressed=false]
     button "Аккаунт: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
@@ -68,14 +66,12 @@ EN
 RU
 daggerheart.com
 Аккаунт: gm1@example.test
-Альт. таблицы
+Бросок
 Выйти
 Выйти на всех устройствах
-Дополнения
 К содержимому
 Конфиденциальность
 ЛутDaggerheart
-Обычные правила
 Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=183 namehash=b3f24d5b]
 Отключить Discord
 Отключить Google
@@ -97,16 +93,14 @@ daggerheart.com
 RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
   link "Skip to content" [url=/en/account?as=gm1#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     button "Account: gm1@example.test" [expanded=false haspopup=menu]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
@@ -126,7 +120,7 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
       option "My items" [selected=false]
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Colour" [pressed=false]
+    button "Color" [pressed=false]
     button "Black and white" [pressed=true]
     checkbox "Compact sheet" [checked=true]
     combobox "Adding from someone else's list" [value=Ask description=When you add items from someone else's list to yours, notify its owner? expanded=false haspopup=menu]
@@ -152,15 +146,14 @@ RootWebArea "Account - Daggerheart Loot Generator" [url=/en/account?as=gm1]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 Account: gm1@example.test
-Alt. tables
 AskNotify the ownerDon't notify
 Black and white
 Cancel
-Colour
+Color
 Delete account...
 Delete for good
 Disconnect Discord
@@ -170,16 +163,15 @@ EN
 Grid
 Install as an app
 List
+LootDaggerheart
 Privacy
 RU
+Roll
 Search
 Sign out
 Sign out everywhere
 Skip to content
-Standard rules
 Standard rulesAlt. tablesWondrous EnvironmentsDread GM ToolboxVa... [namelen=171 namehash=01cdfeab]
-Supplements
 Tables
 Terms of use
 daggerheart.com
-ЛутDaggerheart

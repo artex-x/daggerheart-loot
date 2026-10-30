@@ -13,14 +13,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     button "EN" [pressed=false]
     link "Войти" [url=/account]
     navigation "Разделы"
-      link "Обычные правила" [url=/roll/std]
-      link "Альт. таблицы" [url=/roll/alt]
-      link "Дополнения" [url=/roll/wondrous_environments]
+      link "Бросок" [url=/roll/std]
       link "Таблицы" [url=/tables]
       link "Поиск" [url=/search]
   main ""
     heading "Поиск" [level=1]
-    button "Открывать этот раздел при запуске" [description=Открывать этот раздел при запуске pressed=false]
+    button "Открывать при запуске" [pressed=false]
     StaticText "Поиск сразу по 1459 позициям - добыча, расходники и снаряжение, ..." [namelen=91 namehash=d415684b]
     searchbox "Поиск по названию или описанию..." [value=меч focused=true]
     StaticText "ТИП"
@@ -149,7 +147,6 @@ EN
 RU
 daggerheart.com
 Агатовый Паук
-Альт. таблицы
 Амулет Вацитоса
 Амулет Горнила
 Амулет Кровавого Охотника
@@ -157,6 +154,7 @@ daggerheart.com
 Амулет из Пальца Дьявола
 Божественный Пластинчатый Доспех
 Божественный Пластинчатый ДоспехРанг 4 · Пороги 13/36 · Броня 6С... [namelen=150 namehash=ab790a62]
+Бросок
 Бутыль с Духом
 Взгляд Ваэт
 Войти
@@ -170,7 +168,6 @@ daggerheart.com
 Длинный Меч
 Длинный МечРанг 1 · Физическое · Проворность · Вплотную · d10+3 ... [namelen=98 namehash=adb86655]
 Добавить в список
-Дополнения
 Доспех Дуэлянта
 Доспех ДуэлянтаРанг 3 · Пороги 16/39 · Броня 6Физическое: Вы не ... [namelen=145 namehash=044d5d9e]
 Доспех Железного Дерева
@@ -252,9 +249,8 @@ daggerheart.com
 Ночной Покров
 Обоюдоострый Меч
 Обоюдоострый МечРанг 4 · Физическое · Проворность · Вплотную · d... [namelen=235 namehash=bf5328f9]
-Обычные правила
 Осколок Эмберита
-Открывать этот раздел при запуске
+Открывать при запуске
 Панцирь Тарана
 Перчатка Ползучего Короля
 Перчатка Скорпиона
@@ -358,21 +354,19 @@ daggerheart.com
 RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
   link "Skip to content" [url=/en/search#main]
   banner ""
-    link "Лут DAGGERHEART" [url=/en/roll/std]
-      StaticText "Лут"
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
       StaticText "DAGGERHEART"
     button "RU" [pressed=false]
     button "EN" [pressed=true]
     link "Sign in" [url=/en/account]
     navigation "Sections"
-      link "Standard rules" [url=/en/roll/std]
-      link "Alt. tables" [url=/en/roll/alt]
-      link "Supplements" [url=/en/roll/wondrous_environments]
+      link "Roll" [url=/en/roll/std]
       link "Tables" [url=/en/tables]
       link "Search" [url=/en/search]
   main ""
     heading "Search" [level=1]
-    button "Open this section on start" [description=Open this section on start pressed=false]
+    button "Open on start" [pressed=false]
     StaticText "Search all 1459 entries at once - loot, consumables and equipmen..." [namelen=90 namehash=c7b98fa7]
     searchbox "Search by name or description..." [value=меч focused=true]
     StaticText "TYPE"
@@ -402,7 +396,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
       link "Install as an app" [url=/pages/en/install.html]
       link "Privacy" [url=/pages/en/privacy.html]
       link "Terms of use" [url=/pages/en/terms.html]
-    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and licence" [expanded=false]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
 102Frostwyrd (Awakened)Tier 3 · Physical · Strength · Melee · d1... [namelen=548 namehash=99a4bf7d]
@@ -518,7 +512,6 @@ Advanced Wyrmscale Hauberk
 Advanced Wyverntail Whip
 Aether Rifle
 Agate Spider
-Alt. tables
 Amulet of Righteous Fury
 Amulet of the Bloody Hunter
 Anima Colligationem
@@ -643,13 +636,14 @@ Legendary Wyverntail Whip
 Little Forest Spirit
 Longsword
 LongswordTier 1 · Physical · Agility · Melee · d10+3 phy · Two-H... [namelen=87 namehash=178a0439]
+LootDaggerheart
 Mercurial Familiar
 Monett's Cloak
 Monett's CloakTier 3 · Thresholds 16/39 · Armor 6Magic: You can'... [namelen=126 namehash=f001f396]
 Murderer's Gauntlets
 Nightshroud
 Oath of Balance
-Open this section on start
+Open on start
 Phaibos Mask
 Pirate's Treasure Map
 Poison-Colored Paint
@@ -663,6 +657,7 @@ Rime Scepter
 Rime ScepterTier 3 · Magic · Knowledge · Close · d8+6 mag · One-... [namelen=216 namehash=b8d9388e]
 Ring of the Blood Matron
 Rings of Camaraderie
+Roll
 Runes of Fortification
 Runes of FortificationTier 3 · Thresholds 17/43 · Armor 6Painful... [namelen=138 namehash=438b299e]
 Scorpion Gauntlet
@@ -680,8 +675,6 @@ Singing SwordTier 3 · Physical · Presence · Very Close · d8+5 ph... [namelen
 Skip to content
 Sphere of Insanity
 Sprite Bottle
-Standard rules
-Supplements
 Sword of Angels
 Sword of Undeath
 Tables
@@ -704,4 +697,3 @@ Wyrmscale Hauberk
 Wyverntail Whip
 Zanthak's Rage
 daggerheart.com
-ЛутDaggerheart

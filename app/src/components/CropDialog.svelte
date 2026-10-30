@@ -122,7 +122,7 @@
     };
   });
 
-  /* The centre stays where the clamped square puts it, so a move past an edge is not kept. */
+  /* The center stays where the clamped square puts it, so a move past an edge is not kept. */
   function moveTo(x: number, y: number, z = zoom): void {
     if (!image) return;
     zoom = Math.min(ZOOM_MAX, Math.max(1, Math.round(z * 100) / 100));
@@ -308,12 +308,12 @@
 
   h2 {
     margin: 0 0 6px;
-    font-size: 18px;
+    font-size: var(--t-title);
   }
 
   .hint {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -366,7 +366,7 @@
   }
 
   .zoom label {
-    font-size: 13px;
+    font-size: var(--t-data);
     font-weight: 600;
     color: var(--muted);
   }

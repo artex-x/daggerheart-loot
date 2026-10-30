@@ -93,7 +93,7 @@
   }
 
   .lbl {
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 
@@ -112,7 +112,7 @@
 
   .err {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--danger-text);
   }
 </style>

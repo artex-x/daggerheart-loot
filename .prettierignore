@@ -1,6 +1,6 @@
 # Generated data, not authored: node tools/build.js writes these, and
 # reformatting a machine-written file produces an unreadable diff for no
-# behaviour change.
+# behavior change.
 data.js
 data.json
 catalog.csv
@@ -15,7 +15,7 @@ card/
 # hand-authored, flat, no indentation, HTML5-style void elements with no
 # trailing slash. Prettier's HTML formatter would indent every line and add
 # a self-closing `/>` to every `<meta>`/`<link>` - a ~60-line diff for no
-# behaviour change, same reasoning as the generated files above even though
+# behavior change, same reasoning as the generated files above even though
 # neither of these two is generated.
 app/index.html
 404.html
@@ -43,17 +43,12 @@ docs/fixtures/
 .claude/.check-2-pass.json
 .claude/.hook-state.json
 
-# Same class: the impeccable skill's hook and CLI rewrite these four during
-# a session, and Prettier does not read the .git/info/exclude entries that
-# ignore some of them locally today, so format:check trips on them same as
-# the entries above. config.json is the CLI's own store - `impeccable hooks
-# ignore-value` writes it unformatted, which reddens format:check the moment
-# a finding is suppressed. Listed individually, not as the whole
+# The impeccable CLI's own store: `impeccable hooks ignore-value` writes it
+# unformatted, which reddens format:check the moment a finding is suppressed.
+# The hook's other three files need no line here: the root .gitignore lists
+# them, and Prettier reads it. Listed individually, not as the whole
 # .impeccable/ directory: design.json also lives there, is tracked,
 # hand-authored project data, and has to stay checked.
-.impeccable/hook.cache.json
-.impeccable/hook.pending.json
-.impeccable/config.local.json
 .impeccable/config.json
 
 # Machine-written: the Supabase CLI owns the two gitignored scratch directories.
@@ -74,5 +69,5 @@ supabase/.branches/
 .claude/worktrees/
 
 # Markdown is wrapped by hand: in the READMEs and specs a line break carries
-# meaning, and the licence notice has to stay on one line (tests/derived.js pins it).
+# meaning, and the license notice has to stay on one line (tests/derived.js pins it).
 *.md

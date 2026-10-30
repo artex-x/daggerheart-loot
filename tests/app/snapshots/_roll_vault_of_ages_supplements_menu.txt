@@ -1,0 +1,196 @@
+# #/roll/vault_of_ages ~ supplements menu
+# route: #/roll/vault_of_ages
+# why: the supplements menu open on Vault of Ages: the caption, seven supplements in table order, Vault of Ages checked and current
+
+## ru :: tree
+RootWebArea "Vault of Ages - Генератор лута Daggerheart" [url=/roll/vault_of_ages]
+  link "К содержимому" [url=/roll/vault_of_ages#main]
+  banner ""
+    link "Лут DAGGERHEART" [url=/roll/std]
+      StaticText "Лут"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=true]
+    button "EN" [pressed=false]
+    link "Войти" [url=/account]
+    navigation "Разделы"
+      link "Бросок" [url=/roll/vault_of_ages]
+      link "Таблицы" [url=/tables]
+      link "Поиск" [url=/search]
+  navigation "Режим броска"
+    link "Обычные правила" [url=/roll/std]
+    link "Альтернативные таблицы" [url=/roll/alt]
+    button "Vault of Ages" [expanded=true haspopup=menu]
+    menu "Дополнения" [orientation=vertical]
+      menuitem "Wondrous Environments" [focused=true]
+      menuitem "Dread GM Toolbox"
+      menuitem "Vault of Ages"
+      ... menuitem x2 of 6 same-shape siblings elided
+      menuitem "Предметы сообществ"
+      menuitem "Many Worlds Tavern"
+  main ""
+    heading "Vault of Ages" [level=1]
+    button "Открывать при запуске" [pressed=false]
+    button "Справка" [expanded=false]
+    StaticText "Выберите раздел книги и бросьте кость по нему."
+    StaticText "РАЗДЕЛ КНИГИ"
+    button "Ранг 1" [pressed=true]
+    button "Ранг 2" [pressed=false]
+    ... button x2 of 6 same-shape siblings elided
+    button "Артефакты" [pressed=false]
+    button "Проклятые предметы" [pressed=false]
+    StaticText "РЕЗУЛЬТАТ БРОСКА (1–30)"
+    button "На единицу меньше" [disabled=true]
+    textbox "Результат броска" [value=1 multiline=false readonly=false required=false]
+    button "На единицу больше"
+    button "Случайно 1–30"
+    status ""
+      button "Страница"
+      StaticText "1"
+      StaticText "ОСНОВНОЕ ОРУЖИЕ"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Благословенный Нож Шеф-Повара" [description=Страница url=/i/voa1_t1a]
+      button "Скопировать название" [description=Скопировать название]
+      button "Скопировать ссылку" [description=Скопировать ссылку]
+      StaticText " 0"
+      StaticText "Еда, приготовленная этим ножом, всегда вкусна и готовится вдвое ..." [namelen=186 namehash=62309a64]
+      button "Отправить"
+      button "Скопировать изображение" [description=Скопировать изображение]
+      button "Скопировать текст" [description=Скопировать текст]
+  contentinfo ""
+    navigation "Страницы сайта"
+      link "Установить как приложение" [url=/pages/install.html]
+      link "Конфиденциальность" [url=/pages/privacy.html]
+      link "Условия использования" [url=/pages/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
+
+## ru :: controls
+?Справка
+Arazo's Artifacts
+Dread GM Toolbox
+EN
+Many Worlds Tavern
+RU
+The Dragon's Vault
+Vault of Ages
+Wondrous Environments
+daggerheart.com
+Альтернативные таблицы
+Артефакты
+Благословенный Нож Шеф-Повара
+Бросок
+Войти
+К содержимому
+Конфиденциальность
+ЛутDaggerheart
+На единицу больше
+На единицу меньше
+Обычные правила
+Открывать при запуске
+Отправить
+Поиск
+Предметы сообществ
+Проклятые предметы
+Ранг 1
+Ранг 2
+Ранг 3
+Ранг 4
+Результат броска
+Скопировать изображение
+Скопировать название
+Скопировать ссылку
+Скопировать текст
+Случайно 1–30
+Страница
+Таблицы
+Условия использования
+Установить как приложение
+
+## en :: tree
+RootWebArea "Vault of Ages - Daggerheart Loot Generator" [url=/en/roll/vault_of_ages]
+  link "Skip to content" [url=/en/roll/vault_of_ages#main]
+  banner ""
+    link "Loot DAGGERHEART" [url=/en/roll/std]
+      StaticText "Loot"
+      StaticText "DAGGERHEART"
+    button "RU" [pressed=false]
+    button "EN" [pressed=true]
+    link "Sign in" [url=/en/account]
+    navigation "Sections"
+      link "Roll" [url=/en/roll/vault_of_ages]
+      link "Tables" [url=/en/tables]
+      link "Search" [url=/en/search]
+  navigation "Roll mode"
+    link "Standard rules" [url=/en/roll/std]
+    link "Alternate tables" [url=/en/roll/alt]
+    button "Vault of Ages" [expanded=false haspopup=menu]
+  main ""
+    heading "Vault of Ages" [level=1]
+    button "Open on start" [pressed=false]
+    button "Help" [expanded=false]
+    StaticText "Pick a section of the book and roll within it."
+    StaticText "SECTION"
+    button "Tier 1" [pressed=true]
+    button "Tier 2" [pressed=false]
+    ... button x2 of 6 same-shape siblings elided
+    button "Artifacts" [pressed=false]
+    button "Cursed objects" [pressed=false]
+    StaticText "ROLL RESULT (1–30)"
+    button "One lower" [disabled=true]
+    textbox "Roll result" [value=1 multiline=false readonly=false required=false]
+    button "One higher"
+    button "Random 1–30"
+    status ""
+      button "Page"
+      StaticText "1"
+      StaticText "PRIMARY WEAPON"
+      ... StaticText x9 of 13 same-shape siblings elided
+      link "Blessed Chef's Knife" [description=Page url=/i/en/voa1_t1a]
+      button "Copy name" [description=Copy name]
+      button "Copy link" [description=Copy link]
+      StaticText " 0"
+      StaticText "Food prepared by this knife is always delicious and prepared at ..." [namelen=178 namehash=fceb0968]
+      button "Share"
+      button "Copy image" [description=Copy image]
+      button "Copy text" [description=Copy text]
+  contentinfo ""
+    navigation "Site pages"
+      link "Install as an app" [url=/pages/en/install.html]
+      link "Privacy" [url=/pages/en/privacy.html]
+      link "Terms of use" [url=/pages/en/terms.html]
+    DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
+
+## en :: controls
+?Help
+Alternate tables
+Artifacts
+Blessed Chef's Knife
+Copy image
+Copy link
+Copy name
+Copy text
+Cursed objects
+EN
+Install as an app
+LootDaggerheart
+One higher
+One lower
+Open on start
+Page
+Privacy
+RU
+Random 1–30
+Roll
+Roll result
+Search
+Share
+Sign in
+Skip to content
+Standard rules
+Tables
+Terms of use
+Tier 1
+Tier 2
+Tier 3
+Tier 4
+Vault of Ages
+daggerheart.com

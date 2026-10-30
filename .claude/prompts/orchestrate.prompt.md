@@ -282,10 +282,10 @@ The agent frontmatter is the default:
 
 | Role | Model | Effort | Why this tier |
 |---|---|---|---|
-| planner | `opus` | `high` | design is judgement-heavy and small next to the implementation it saves |
+| planner | `opus` | `high` | design is judgment-heavy and small next to the implementation it saves |
 | reviewer | `opus` | `high` | a missed contract or RLS defect costs more than the review |
 | implementer | `sonnet` | `medium` | Sonnet 5.5 is strongest on multistep coding in a real repository, at half the Opus price |
-| add-source | `opus` | `medium` | record and mechanic design is judgement, not transcription |
+| add-source | `opus` | `medium` | record and mechanic design is judgment, not transcription |
 | refresh-artwork | `sonnet` | `low` | hash-proven, mechanical conversion whose prompt names every check |
 
 Effort runs from `low` to `high`. `medium` is the official starting level for
@@ -328,7 +328,7 @@ A dispatch whose tier equals the frontmatter names no `model`. Name the row
 and the test in chat with each dispatch that names one. Unsure is the higher
 tier.
 
-### Writer tier: `sonnet` by default, `opus` for a batch that needs judgement
+### Writer tier: `sonnet` by default, `opus` for a batch that needs judgment
 
 Sonnet 5.5 finishes agentic coding in fewer requests than Sonnet 5 and scores
 higher at `medium` than Sonnet 5 did at `high`; the early stops recorded at
@@ -341,7 +341,7 @@ any test below is dispatched with `model: opus`:
 2. The batch changes a public contract, a route, stored state, a product
    law, a migration, an RLS policy, a SECURITY DEFINER function, a hook, or
    configuration every later session runs under.
-3. An acceptance line rests on visual judgement: print fitting, a golden
+3. An acceptance line rests on visual judgment: print fitting, a golden
    re-seed, or visual parity with a design node.
 4. It is the remediation of a batch that ran on `sonnet` and then stopped
    early, reported a deviation, or failed review. A resume keeps the tier
@@ -386,7 +386,7 @@ implementer, reviewer, add-source or helper dispatch. Announce the routing in ch
 
 ## When to run reviewer (do not skip these)
 Run reviewer after implement or add-source when ANY of:
-- public contracts, routes, list links, or generated artefacts changed
+- public contracts, routes, list links, or generated artifacts changed
 - visual parity / new or changed UI
 - large data ingest or new source mechanics
 - a large artwork refresh changed many catalog assets or required crop/pad/regeneration exceptions

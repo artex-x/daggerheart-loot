@@ -19,7 +19,7 @@
 <style>
   .updated {
     margin: -14px 0 18px;
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--muted2);
   }
 </style>

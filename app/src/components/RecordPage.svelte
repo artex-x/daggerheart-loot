@@ -88,7 +88,7 @@
       {/snippet}
       <PageTitle title={nameOf(it, app.lang)} {sub} />
 
-      <div class="itempage">
+      <div class="itempage" data-primary>
         <RecordCard
           {it}
           {index}

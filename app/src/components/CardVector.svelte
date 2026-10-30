@@ -1,7 +1,7 @@
 <script lang="ts">
   /* One folded print vector, drawn inline from its exported geometry
-     (`lib/cardVectors.ts`) and coloured by `styles/card-vectors.css`: each paint slot is a
-     gradient whose two stops read the slot's custom properties, so the colour and the
+     (`lib/cardVectors.ts`) and colored by `styles/card-vectors.css`: each paint slot is a
+     gradient whose two stops read the slot's custom properties, so the color and the
      black-and-white card draw one shape with their own paints (docs/specs/FEATURES.md,
      "Print"). The gradient ids come from `$props.id()`: unique per card on a 180-card
      sheet. `data-vector` and `data-paint` name what is drawn for the browser suites. */
@@ -13,7 +13,7 @@
   } from '../lib/cardVectors.js';
 
   interface Props {
-    /** The shape, by the file name its colour layout exports (`banner`, `die-d8`). */
+    /** The shape, by the file name its color layout exports (`banner`, `die-d8`). */
     shape: VectorName;
     paint: VectorPaint;
     class?: string | undefined;

@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Batch 3 mock</title>
+    <link rel="stylesheet" href="../1/index.css" />
+  </head>
+  <body>
+    <main>
+      <p class="back"><a href="../index.html">Back to all mocks</a></p>
+      <h1>Batch 3 mock: catalog tables and filters</h1>
+      <p class="lead">
+        This page shows the batch 3 mock for the owner to confirm: the filter column at 1180 and
+        the filter sheet at 360, the rows, the neutral «Все» chips, the grid, the selection
+        mode, the empty state, the search highlight, and two owner questions: the tables help
+        panel (C1) and where the view choice lives (C57).
+      </p>
+      <h2>List head pattern (final, round 5)</h2>
+      <p>
+        One head for every list page: the catalog (<code>/tables/*</code>), the Items tab of
+        <code>/homebrew</code>, <code>/lists</code>, <code>/lists/&lt;uuid&gt;</code> and
+        <code>/s/&lt;token&gt;</code>. Mock 3 owns it; mocks 6, 8 and 9 take it. A page that
+        departs names the departure here and in FEATURES.md.
+      </p>
+      <table>
+        <tr>
+          <th>Part</th>
+          <th>Rule</th>
+          <th>RU / EN</th>
+        </tr>
+        <tr>
+          <td>Search</td>
+          <td>
+            The first control of the search row on every list page. At 360 it is at least 140 px
+            wide.
+          </td>
+          <td>placeholder «Поиск» / "Search"</td>
+        </tr>
+        <tr>
+          <td>Filters</td>
+          <td>
+            After the search at 360 on a page with a filter panel; at 1180 the filter column
+            takes its place. Plain at N = 0; lit while N &gt; 0 (the toggle: a gold label on a
+            45% gold border, no fill).
+          </td>
+          <td>«Фильтры» / "Filters", «Фильтры · 2» / "Filters · 2"</td>
+        </tr>
+        <tr>
+          <td>Select</td>
+          <td>
+            The last control of the search row at every width. No icon: a check with a label is
+            the neutral pressed state, so a check would read as "on". Hidden while the selection
+            mode is on.
+          </td>
+          <td>«Выбрать» / "Select"</td>
+        </tr>
+        <tr>
+          <td>View switch</td>
+          <td>
+            Its own control, never inside «Ещё» (C57): beside the page title at 360, in the
+            search row at 1180, on a page that has a view.
+          </td>
+          <td>«Список» / «Сетка», "List" / "Grid"</td>
+        </tr>
+        <tr>
+          <td>More</td>
+          <td>
+            On the title row at 360; it holds the page's rare actions (the table link, the pin,
+            the data panel). At 1180 they show in the head and the search row. The pin is always
+            «Открывать при запуске» / «Открывается при запуске». One form on every page and
+            every card (R0-1): the three-dot icon and the word, no chevron, never the icon
+            alone.
+          </td>
+          <td>«··· Ещё» / "··· More"</td>
+        </tr>
+        <tr>
+          <td>Count</td>
+          <td>
+            Once, and only while the view is narrowed: on its own line under the search row at
+            360, in the search row at 1180 (as search says nothing under its cap). At 360 the
+            line names the chosen values in text, cut to one line, and the count is never cut
+            (R3-1, N3-1).
+          </td>
+          <td>«Ранг 1, Вплотную · Показано 4 из 458» / "Tier 1, Melee · 4 of 458 shown"</td>
+        </tr>
+        <tr>
+          <td>Filter-active state</td>
+          <td>
+            One state on every list page: «Фильтры · N» lit and the count «Показано 4 из 458».
+            The reset and the filter link (rule 17) sit where the filters are set: the filter
+            column head at 1180, the filter sheet head at 360 (the sheet foot keeps «Сбросить»).
+            No pill row at 360 (as on <code>/homebrew</code>; owner, round 2 review R3-1): the
+            count line names the chosen values in text instead. With a pill row the first row of
+            a filtered table started at 325 px at 360, past the 256 px limit.
+          </td>
+          <td>«Сбросить» / "Reset", «Ссылка на фильтры» / "Link to these filters"</td>
+        </tr>
+        <tr>
+          <td>Selection bar</td>
+          <td>
+            One bar on every list page (owner-accepted shape, round 6): «Все» (a tri-state box:
+            empty, dash, check; the label stays visible while rows are ticked), «Выбрано: N»
+            plus the page's facts, the page's actions, «Снять выделение» last. At 360 the head
+            (box, summary, clear) takes its own row and the bar is pinned to the bottom of the
+            screen; a page with more than three actions folds the rare ones into «··· Ещё». The
+            list keeps a bottom padding equal to the bar height. A ticked row shows a lit ground
+            and the check, with no side stripe. Zero ticks: «Выбрано: 0», the actions off,
+            «Снять выделение» on; it leaves the mode and brings «Выбрать» back. Tables, search
+            and «Мои предметы» draw «В список», «Печать», «Скопировать текст» (FEATURES "Print":
+            «Печать» is one of the three print controls).
+          </td>
+          <td>
+            «Все» / "All", «Выбрано: 1» / "1 selected", «Снять выделение» / "Clear the
+            selection"
+          </td>
+        </tr>
+        <tr>
+          <td>Page name</td>
+          <td>
+            The page name is the h1 at every width (R0-3): «Таблицы» / "Tables". At 360 it is
+            read and not drawn, and the picker is a button named «Таблица: Оружие» / "Table:
+            Weapons". The same on <code>/homebrew</code> («Мои предметы»).
+          </td>
+          <td>«Таблица: Оружие» / "Table: Weapons"</td>
+        </tr>
+        <tr>
+          <td>Own items</td>
+          <td>
+            Signed in with own items (FEATURES "Tables and search"): the switch «Свои предметы»
+            / "Own items" after the view switch in the search row at 1180, first in the filter
+            sheet at 360 (R3-3). On <code>/search</code> see mock 7.
+          </td>
+          <td>«Свои предметы» / "Own items"</td>
+        </tr>
+      </table>
+      <p>
+        Spec change to name in FEATURES.md "Tables and search" (batch 3): no pill row at 360 on
+        any list page; at 1180 the filter column shows the picks. A table in another group takes
+        three taps at 360 (the picker, the group, the table) against two today: the trade-off of
+        C7, which puts the two chip levels into one labelled sheet.
+      </p>
+      <h2>First-screen rule (plan section 14)</h2>
+      <p class="lead">
+        The top of the primary content below the top of the header, at scroll 0, in px, measured
+        on the rendered mock with the planner's <code>measure.mjs</code>. The assert is 40% of
+        the height (256 at 360x640, 288 at 1180x720); the design target is 240 and 270 (plan
+        review plan-1-3 R2), a margin for the Source Sans 3 line boxes. Measured at scroll 0.
+      </p>
+      <table>
+        <tr>
+          <th>State</th>
+          <th>Primary content</th>
+          <th>360x640 RU</th>
+          <th>360x640 EN</th>
+          <th>1180x720 RU</th>
+          <th>1180x720 EN</th>
+          <th>Assert (40%)</th>
+          <th>Target (240 / 270)</th>
+        </tr>
+        <tr>
+          <td><code>catalog</code></td>
+          <td>first table row</td>
+          <td>233 / 256</td>
+          <td>233 / 256</td>
+          <td>269 / 288</td>
+          <td>269 / 288</td>
+          <td>pass</td>
+          <td>met</td>
+        </tr>
+        <tr>
+          <td><code>catalog-filtered</code></td>
+          <td>first table row</td>
+          <td>249 / 256</td>
+          <td>249 / 256</td>
+          <td>269 / 288</td>
+          <td>269 / 288</td>
+          <td>pass</td>
+          <td>
+            360: 9 over the target, inside the limit (the count line adds one line); 1180 met
+          </td>
+        </tr>
+      </table>
+      <p>
+        Before: 632 / 586 at 360 and 399 / 399 at 1180; the first fix of this round gave 248 and
+        281 (assert passed, target missed). Round 5: the unfiltered table starts at 233 at 360
+        (the section link is a 28 px target); the filtered table adds the count line. No page of
+        this batch has a user-named H1, so the longest-name row (R2) does not apply here.
+      </p>
+      <h3>New labels, RU and EN</h3>
+      <table>
+        <tr>
+          <th>RU</th>
+          <th>EN</th>
+          <th>Where</th>
+        </tr>
+        <tr>
+          <td>
+            «Оружие ▾» (кнопка выбора таблицы «Таблица: Оружие»; h1 «Таблицы» не рисуется)
+          </td>
+          <td>
+            "Weapons ▾" (the table picker button, "Table: Weapons"; the h1 "Tables" is not
+            drawn)
+          </td>
+          <td>360</td>
+        </tr>
+        <tr>
+          <td>«Список» / «Сетка»</td>
+          <td>"List" / "Grid"</td>
+          <td>the view switch, every width; it replaces «Списком» / «Сеткой»</td>
+        </tr>
+        <tr>
+          <td>«··· Ещё»: «Ссылка на таблицу», «Открывать при запуске», «Об этих данных»</td>
+          <td>"··· More": "Link to this table", "Open on start", "About this data"</td>
+          <td>360</td>
+        </tr>
+      </table>
+      <h2>Owner answers applied (round 2 review)</h2>
+      <ul>
+        <li>
+          R3-1: no pill row at 360 on the catalog either; the count line names the chosen values
+          in text (drawn in <code>catalog-filtered</code>).
+        </li>
+        <li>R3-2: three taps at 360 to a table in another group, accepted.</li>
+      </ul>
+      <h2>Owner questions</h2>
+      <section class="q">
+        <h2>The tables help panel (C1) - chosen: «Об этих данных» (owner, 2026-10-29)</h2>
+        <p class="lead">
+          Today «Справка» opens about ten paragraphs. Most of them explain the controls, which
+          this batch makes self-explaining (the «Все» chips, the labelled link, «Улучшения и
+          уникальные» for «Линейка»). Three are facts about the data that no control can carry.
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>«Об этих данных» with three notes</h4>
+            <p>
+              The button names what it opens and opens three short notes: the sources and the
+              translation credit, the tier in Wondrous Environments, class against damage.
+            </p>
+            <p>
+              <b>Trade-off:</b> One labelled button by the H1 stays, and three notes to keep
+              true.
+            </p>
+            <p>
+              <b>Why:</b> The data facts and the credit stay one press from the table;
+              everything that explained a control goes, because the control now says it.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Remove the panel</h4>
+            <p>No button. The three data notes move to the footer's «Источники и лицензия».</p>
+            <p>
+              <b>Trade-off:</b> The notes move away from the table. A removed panel needs the
+              owner's yes.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>Keep today's panel</h4>
+            <p>Today's ten paragraphs behind «Справка».</p>
+            <p>
+              <b>Trade-off:</b> C1 stays: the panel pushes the table about 2000 px down at 360.
+            </p>
+          </div>
+        </div>
+        <h3>Recommended: «Об этих данных», open</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="help-rec__360__ru.png"
+              ><img src="help-rec__360__ru.png" alt="help-rec, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="help-rec__360__en.png"
+              ><img src="help-rec__360__en.png" alt="help-rec, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="help-rec__1180__ru.png"
+              ><img src="help-rec__1180__ru.png" alt="help-rec, 1180 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="help-rec__1180__en.png"
+              ><img src="help-rec__1180__en.png" alt="help-rec, 1180 px, EN" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>Remove the panel</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="help-remove__360__ru.png"
+              ><img src="help-remove__360__ru.png" alt="help-remove, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="help-remove__360__en.png"
+              ><img src="help-remove__360__en.png" alt="help-remove, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="help-remove__1180__ru.png"
+              ><img
+                src="help-remove__1180__ru.png"
+                alt="help-remove, 1180 px, RU"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="help-remove__1180__en.png"
+              ><img
+                src="help-remove__1180__en.png"
+                alt="help-remove, 1180 px, EN"
+                loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>Today's panel (RU only, for reference)</h3>
+        <div class="shots two">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="help-today__360__ru.png"
+              ><img src="help-today__360__ru.png" alt="help-today, 360 px" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="help-today__1180__ru.png"
+              ><img src="help-today__1180__ru.png" alt="help-today, 1180 px" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+      </section>
+      <section class="q">
+        <h2>Where the view choice lives (C57, also C31 on /p/) - chosen (owner, 2026-10-29)</h2>
+        <p class="lead">
+          Today the list/grid switch changes the view until a reload; the default lives in the
+          account's Display section, and a note «Только до перезагрузки. Чтобы сохранить,
+          измените в настройках аккаунта.» explains it.
+        </p>
+        <div class="opts">
+          <div class="opt rec chosen">
+            <h4>A temporary choice, no note</h4>
+            <p>
+              The switch changes the view where it is made, as today; the note goes; the account
+              heading says the default applies on all devices (batch 7).
+            </p>
+            <p>
+              <b>Trade-off:</b> A reader who expects the switch to stick finds the default view
+              after a reload.
+            </p>
+            <p>
+              <b>Why:</b> Theme 8 as the owner approved it in R: a temporary choice lives where
+              it is made, with no note. Nothing stored changes.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>The switch saves</h4>
+            <p>A press writes the account default and says so in a toast.</p>
+            <p>
+              <b>Trade-off:</b> A behaviour change: a quick look at the grid changes the default
+              on every device.
+            </p>
+          </div>
+          <div class="opt">
+            <h4>A save button in place of the note</h4>
+            <p>
+              While the view differs from the default, «Открывать таблицы сеткой» writes it.
+            </p>
+            <p><b>Trade-off:</b> One more control on the toolbar while it shows.</p>
+          </div>
+        </div>
+        <h3>Recommended: no note</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="view-rec__360__ru.png"
+              ><img src="view-rec__360__ru.png" alt="view-rec, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="view-rec__360__en.png"
+              ><img src="view-rec__360__en.png" alt="view-rec, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="view-rec__1180__ru.png"
+              ><img src="view-rec__1180__ru.png" alt="view-rec, 1180 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="view-rec__1180__en.png"
+              ><img src="view-rec__1180__en.png" alt="view-rec, 1180 px, EN" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>The switch saves</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="view-save__360__ru.png"
+              ><img src="view-save__360__ru.png" alt="view-save, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="view-save__360__en.png"
+              ><img src="view-save__360__en.png" alt="view-save, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="view-save__1180__ru.png"
+              ><img src="view-save__1180__ru.png" alt="view-save, 1180 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="view-save__1180__en.png"
+              ><img src="view-save__1180__en.png" alt="view-save, 1180 px, EN" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>A save button</h3>
+        <div class="shots">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="view-button__360__ru.png"
+              ><img src="view-button__360__ru.png" alt="view-button, 360 px, RU" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>360 px · EN</figcaption>
+            <a href="view-button__360__en.png"
+              ><img src="view-button__360__en.png" alt="view-button, 360 px, EN" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="view-button__1180__ru.png"
+              ><img
+                src="view-button__1180__ru.png"
+                alt="view-button, 1180 px, RU"
+                loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · EN</figcaption>
+            <a href="view-button__1180__en.png"
+              ><img
+                src="view-button__1180__en.png"
+                alt="view-button, 1180 px, EN"
+                loading="lazy"
+            /></a>
+          </figure>
+        </div>
+        <h3>Today's note (RU only, for reference)</h3>
+        <div class="shots two">
+          <figure>
+            <figcaption>360 px · RU</figcaption>
+            <a href="view-today__360__ru.png"
+              ><img src="view-today__360__ru.png" alt="view-today, 360 px" loading="lazy"
+            /></a>
+          </figure>
+          <figure>
+            <figcaption>1180 px · RU</figcaption>
+            <a href="view-today__1180__ru.png"
+              ><img src="view-today__1180__ru.png" alt="view-today, 1180 px" loading="lazy"
+            /></a>
+          </figure>
+        </div>
+      </section>
+      <h2>States</h2>
+      <p class="lead">
+        Each state at 360 and 1180 px in RU and EN. Click a picture for the full PNG; the ru/en
+        links open the live mock (<code>state.html?s=&lt;state&gt;</code>).
+      </p>
+      <h3 id="catalog">
+        The table · <a href="state.html?s=catalog">ru</a> ·
+        <a href="state.html?s=catalog&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog__360__ru.png"
+            ><img src="catalog__360__ru.png" alt="catalog, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog__360__en.png"
+            ><img src="catalog__360__en.png" alt="catalog, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog__1180__ru.png"
+            ><img src="catalog__1180__ru.png" alt="catalog, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog__1180__en.png"
+            ><img src="catalog__1180__en.png" alt="catalog, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-picker">
+        The table picker open (360) · <a href="state.html?s=catalog-picker">ru</a> ·
+        <a href="state.html?s=catalog-picker&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The heading «Оружие ▾» opens a sheet with the groups and the tables of the group (C7).
+        At 1180 the 1180 render shows the page.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-picker__360__ru.png"
+            ><img
+              src="catalog-picker__360__ru.png"
+              alt="catalog-picker, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-picker__360__en.png"
+            ><img
+              src="catalog-picker__360__en.png"
+              alt="catalog-picker, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-picker__1180__ru.png"
+            ><img
+              src="catalog-picker__1180__ru.png"
+              alt="catalog-picker, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-picker__1180__en.png"
+            ><img
+              src="catalog-picker__1180__en.png"
+              alt="catalog-picker, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-more">
+        «Ещё» open (360) · <a href="state.html?s=catalog-more">ru</a> ·
+        <a href="state.html?s=catalog-more&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The table link, the view switch, «Выбрать», the pin and «Об этих данных». At 1180 they
+        all show in the search row and the head.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-more__360__ru.png"
+            ><img src="catalog-more__360__ru.png" alt="catalog-more, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-more__360__en.png"
+            ><img src="catalog-more__360__en.png" alt="catalog-more, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-more__1180__ru.png"
+            ><img
+              src="catalog-more__1180__ru.png"
+              alt="catalog-more, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-more__1180__en.png"
+            ><img
+              src="catalog-more__1180__en.png"
+              alt="catalog-more, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-filtered">
+        Two filters set · <a href="state.html?s=catalog-filtered">ru</a> ·
+        <a href="state.html?s=catalog-filtered&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-filtered__360__ru.png"
+            ><img
+              src="catalog-filtered__360__ru.png"
+              alt="catalog-filtered, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-filtered__360__en.png"
+            ><img
+              src="catalog-filtered__360__en.png"
+              alt="catalog-filtered, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-filtered__1180__ru.png"
+            ><img
+              src="catalog-filtered__1180__ru.png"
+              alt="catalog-filtered, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-filtered__1180__en.png"
+            ><img
+              src="catalog-filtered__1180__en.png"
+              alt="catalog-filtered, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-filters">
+        The filter sheet at 360 · <a href="state.html?s=catalog-filters">ru</a> ·
+        <a href="state.html?s=catalog-filters&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 1180 the filters are the left column, so the 1180 render shows the page.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-filters__360__ru.png"
+            ><img
+              src="catalog-filters__360__ru.png"
+              alt="catalog-filters, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-filters__360__en.png"
+            ><img
+              src="catalog-filters__360__en.png"
+              alt="catalog-filters, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-filters__1180__ru.png"
+            ><img
+              src="catalog-filters__1180__ru.png"
+              alt="catalog-filters, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-filters__1180__en.png"
+            ><img
+              src="catalog-filters__1180__en.png"
+              alt="catalog-filters, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-filters-set">
+        The filter sheet with a filter set (360) ·
+        <a href="state.html?s=catalog-filters-set">ru</a> ·
+        <a href="state.html?s=catalog-filters-set&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The sheet head holds «Фильтры · 2», «Ссылка на фильтры» and «Закрыть»; the foot holds
+        «Сбросить» and «Показать 23». At 1180 the 1180 render shows the page with the same parts
+        in the column head.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-filters-set__360__ru.png"
+            ><img
+              src="catalog-filters-set__360__ru.png"
+              alt="catalog-filters-set, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-filters-set__360__en.png"
+            ><img
+              src="catalog-filters-set__360__en.png"
+              alt="catalog-filters-set, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-filters-set__1180__ru.png"
+            ><img
+              src="catalog-filters-set__1180__ru.png"
+              alt="catalog-filters-set, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-filters-set__1180__en.png"
+            ><img
+              src="catalog-filters-set__1180__en.png"
+              alt="catalog-filters-set, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-own">
+        Signed in with own items · <a href="state.html?s=catalog-own">ru</a> ·
+        <a href="state.html?s=catalog-own&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        The «Свои предметы» switch (R3-3): after the view switch in the search row at 1180; at
+        360 in the filter sheet (next state). An own item carries «Хоумбрю».
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-own__360__ru.png"
+            ><img src="catalog-own__360__ru.png" alt="catalog-own, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-own__360__en.png"
+            ><img src="catalog-own__360__en.png" alt="catalog-own, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-own__1180__ru.png"
+            ><img src="catalog-own__1180__ru.png" alt="catalog-own, 1180 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-own__1180__en.png"
+            ><img src="catalog-own__1180__en.png" alt="catalog-own, 1180 px, EN" loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-own-filters">
+        The filter sheet with the own-items switch (360) ·
+        <a href="state.html?s=catalog-own-filters">ru</a> ·
+        <a href="state.html?s=catalog-own-filters&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        At 1180 the switch is in the search row, so the 1180 render shows the page.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-own-filters__360__ru.png"
+            ><img
+              src="catalog-own-filters__360__ru.png"
+              alt="catalog-own-filters, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-own-filters__360__en.png"
+            ><img
+              src="catalog-own-filters__360__en.png"
+              alt="catalog-own-filters, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-own-filters__1180__ru.png"
+            ><img
+              src="catalog-own-filters__1180__ru.png"
+              alt="catalog-own-filters, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-own-filters__1180__en.png"
+            ><img
+              src="catalog-own-filters__1180__en.png"
+              alt="catalog-own-filters, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-grid">
+        The grid · <a href="state.html?s=catalog-grid">ru</a> ·
+        <a href="state.html?s=catalog-grid&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-grid__360__ru.png"
+            ><img src="catalog-grid__360__ru.png" alt="catalog-grid, 360 px, RU" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-grid__360__en.png"
+            ><img src="catalog-grid__360__en.png" alt="catalog-grid, 360 px, EN" loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-grid__1180__ru.png"
+            ><img
+              src="catalog-grid__1180__ru.png"
+              alt="catalog-grid, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-grid__1180__en.png"
+            ><img
+              src="catalog-grid__1180__en.png"
+              alt="catalog-grid, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-nothing">
+        Nothing found · <a href="state.html?s=catalog-nothing">ru</a> ·
+        <a href="state.html?s=catalog-nothing&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-nothing__360__ru.png"
+            ><img
+              src="catalog-nothing__360__ru.png"
+              alt="catalog-nothing, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-nothing__360__en.png"
+            ><img
+              src="catalog-nothing__360__en.png"
+              alt="catalog-nothing, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-nothing__1180__ru.png"
+            ><img
+              src="catalog-nothing__1180__ru.png"
+              alt="catalog-nothing, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-nothing__1180__en.png"
+            ><img
+              src="catalog-nothing__1180__en.png"
+              alt="catalog-nothing, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-searched">
+        The search highlight (C59) · <a href="state.html?s=catalog-searched">ru</a> ·
+        <a href="state.html?s=catalog-searched&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-searched__360__ru.png"
+            ><img
+              src="catalog-searched__360__ru.png"
+              alt="catalog-searched, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-searched__360__en.png"
+            ><img
+              src="catalog-searched__360__en.png"
+              alt="catalog-searched, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-searched__1180__ru.png"
+            ><img
+              src="catalog-searched__1180__ru.png"
+              alt="catalog-searched, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-searched__1180__en.png"
+            ><img
+              src="catalog-searched__1180__en.png"
+              alt="catalog-searched, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-selection">
+        The selection mode · <a href="state.html?s=catalog-selection">ru</a> ·
+        <a href="state.html?s=catalog-selection&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        One row ticked: «Все» (dash), «Выбрано: 1», «В список», «Печать», «Скопировать текст»,
+        «Снять выделение» last (B3-1, R0-2). The full-page PNGs show the sticky bar where it
+        stands at the bottom of a 900 px window; the first-screen PNGs below show it as a person
+        sees it at 360x640 and 1180x720.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection__360__ru.png"
+            ><img
+              src="catalog-selection__360__ru.png"
+              alt="catalog-selection, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection__360__en.png"
+            ><img
+              src="catalog-selection__360__en.png"
+              alt="catalog-selection, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection__1180__ru.png"
+            ><img
+              src="catalog-selection__1180__ru.png"
+              alt="catalog-selection, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection__1180__en.png"
+            ><img
+              src="catalog-selection__1180__en.png"
+              alt="catalog-selection, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-selection-screen">
+        The selection mode, first screen only ·
+        <a href="state.html?s=catalog-selection">ru</a> ·
+        <a href="state.html?s=catalog-selection&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection-screen__360__ru.png"
+            ><img
+              src="catalog-selection-screen__360__ru.png"
+              alt="catalog-selection-screen, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection-screen__360__en.png"
+            ><img
+              src="catalog-selection-screen__360__en.png"
+              alt="catalog-selection-screen, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection-screen__1180__ru.png"
+            ><img
+              src="catalog-selection-screen__1180__ru.png"
+              alt="catalog-selection-screen, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection-screen__1180__en.png"
+            ><img
+              src="catalog-selection-screen__1180__en.png"
+              alt="catalog-selection-screen, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-selection-zero">
+        The selection mode, no tick · <a href="state.html?s=catalog-selection-zero">ru</a> ·
+        <a href="state.html?s=catalog-selection-zero&lang=en">en</a>
+      </h3>
+      <p class="lead">
+        Zero ticks (R0-2): «Выбрано: 0», the three actions off, «Снять выделение» on; it leaves
+        the mode and brings «Выбрать» back.
+      </p>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection-zero__360__ru.png"
+            ><img
+              src="catalog-selection-zero__360__ru.png"
+              alt="catalog-selection-zero, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection-zero__360__en.png"
+            ><img
+              src="catalog-selection-zero__360__en.png"
+              alt="catalog-selection-zero, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection-zero__1180__ru.png"
+            ><img
+              src="catalog-selection-zero__1180__ru.png"
+              alt="catalog-selection-zero, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection-zero__1180__en.png"
+            ><img
+              src="catalog-selection-zero__1180__en.png"
+              alt="catalog-selection-zero, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="catalog-selection-zero-screen">
+        The selection mode, no tick, first screen only ·
+        <a href="state.html?s=catalog-selection-zero">ru</a> ·
+        <a href="state.html?s=catalog-selection-zero&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="catalog-selection-zero-screen__360__ru.png"
+            ><img
+              src="catalog-selection-zero-screen__360__ru.png"
+              alt="catalog-selection-zero-screen, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="catalog-selection-zero-screen__360__en.png"
+            ><img
+              src="catalog-selection-zero-screen__360__en.png"
+              alt="catalog-selection-zero-screen, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="catalog-selection-zero-screen__1180__ru.png"
+            ><img
+              src="catalog-selection-zero-screen__1180__ru.png"
+              alt="catalog-selection-zero-screen, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="catalog-selection-zero-screen__1180__en.png"
+            ><img
+              src="catalog-selection-zero-screen__1180__en.png"
+              alt="catalog-selection-zero-screen, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h3 id="pattern-empty">
+        The empty-state pattern · <a href="state.html?s=pattern-empty">ru</a> ·
+        <a href="state.html?s=pattern-empty&lang=en">en</a>
+      </h3>
+      <div class="shots">
+        <figure>
+          <figcaption>360 px · RU</figcaption>
+          <a href="pattern-empty__360__ru.png"
+            ><img
+              src="pattern-empty__360__ru.png"
+              alt="pattern-empty, 360 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>360 px · EN</figcaption>
+          <a href="pattern-empty__360__en.png"
+            ><img
+              src="pattern-empty__360__en.png"
+              alt="pattern-empty, 360 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · RU</figcaption>
+          <a href="pattern-empty__1180__ru.png"
+            ><img
+              src="pattern-empty__1180__ru.png"
+              alt="pattern-empty, 1180 px, RU"
+              loading="lazy"
+          /></a>
+        </figure>
+        <figure>
+          <figcaption>1180 px · EN</figcaption>
+          <a href="pattern-empty__1180__en.png"
+            ><img
+              src="pattern-empty__1180__en.png"
+              alt="pattern-empty, 1180 px, EN"
+              loading="lazy"
+          /></a>
+        </figure>
+      </div>
+      <h2>Shared patterns and their owner folder</h2>
+      <ul>
+        <li>
+          Batch 3 (<code>mocks/3/</code>): the row anatomy, the filter column and sheet, the
+          neutral «Все» chip (<code>Chip</code>), the selection mode and bar, the search
+          highlight, the empty-state pattern.
+        </li>
+        <li>
+          The empty-state pattern draws the art well with a kind glyph: the "?" pedestal and the
+          <code>_none</code> files are deleted (owner, 2026-10-29).
+        </li>
+      </ul>
+      <h2>Round 5 (review mocks-2): findings fixed</h2>
+      <ul>
+        <li>
+          B3-1: the selection bar has «Печать» (and the state with no tick, R0-2). R0-2: one bar
+          shape, the owner-accepted one (see the pattern table). R0-3: the h1 «Таблицы» at every
+          width, the picker named «Таблица: Оружие». R3-1 (owner): the count line names the
+          chosen values at 360. R3-3: the own-items switch (states <code>catalog-own</code>,
+          <code>catalog-own-filters</code>). N3-1: the count reads «Показано 4 из 458» on its
+          own line (the mock now draws the 4 rows it counts). N3-2: the grid keeps the section
+          head and its link. N3-3: a meta separator stays with the value before it. N0-3: a
+          sheet has no grab handle (it closes with «Закрыть», the scrim or Escape). R0-1: «···
+          Ещё» is one labelled form.
+        </li>
+      </ul>
+      <h2>Changes from direction R and from plan.md</h2>
+      <ul>
+        <li>
+          Review mocks-1 (M3-1 to M3-9): the filter link is back at both widths (in the filter
+          column head and the filter sheet head); «Выбрать» has no icon; the placeholder is
+          «Поиск» and the field is 161 px (RU) at 360; one sticky selection bar with «Снять
+          выделение» and a padded list; no side stripe on a ticked row; the default
+          <code>catalog</code> is unfiltered (no count, «Фильтры» plain, «Все» on the tier row)
+          and «Фильтры · N» is lit while N &gt; 0; the addresses use the filter grammar
+          (<code>/tables/eq_weapon/f_tier-1.range-melee</code>); the
+          <code>catalog-more</code> caption matches its render.
+        </li>
+        <li>
+          One list head (plan review plan-1-3 R3), the pattern for every list page (catalog,
+          /homebrew, /lists, /lists/&lt;uuid&gt;, /s/): the search row starts with the search
+          and ends with «Выбрать» at every width; «Фильтры · N» sits between them at 360. The
+          view switch is its own control: beside the table picker at 360, in the search row at
+          1180 - never inside «Ещё» (C57). The count appears once: in the section head at 360,
+          in the search row at 1180. Unit B's list pages take this head when the orchestrator
+          re-renders them.
+        </li>
+        <li>
+          First-screen layout (plan section 14). 360: row 1 holds the table picker «Оружие ▾»,
+          the view switch and «Ещё» (the table link, the pin, «Об этих данных»); row 2 the
+          search, «Фильтры · N» and «Выбрать»; the section head «Ранг 1 · 91 из 458» with
+          «Ссылка на раздел». The group name is in the picker sheet, not under the heading.
+          1180: row 1 the H1, the pin, «Об этих данных» and the group chips; row 2 the
+          sub-tables; row 3 the search, the count, the view switch, the table link and «Выбрать»
+          beside the filter column.
+        </li>
+        <li>
+          «Линейка» is «Улучшения и уникальные» with «Есть улучшение» and «Уникальные» (clarity
+          inventory, plan review N11), as R drew it.
+        </li>
+        <li>
+          The section link reads «Ссылка на раздел» / "Link to this section": R's bare «Ссылка»
+          sat beside the toolbar's «Ссылка на таблицу» and did not say which link it gives.
+        </li>
+        <li>
+          Rows on a one-kind table hide the kind tag (C10); a row from another book keeps its
+          book name.
+        </li>
+        <li>At 360 the count shares its line with «Выбрать».</li>
+        <li>
+          The neutral «Все» uses the <code>Chip</code> variant that plan review R4 moves to this
+          batch.
+        </li>
+      </ul>
+      <h2>Impeccable critique (Clarity Rule)</h2>
+      <ul>
+        <li>
+          At 360 the first row starts at 233 px (target 240; 249 when filtered). The search
+          field is narrow (about 110 px), so its placeholder is cut; the typed query stays
+          readable. The picker hides the sub-tables behind one press; its sheet shows both chip
+          levels with labels.
+        </li>
+        <li>
+          Clarity Rule: the filter rows need no «любое»: «Все» is pressed. The help question
+          above removes the remaining explanation.
+        </li>
+        <li>
+          The selection bar is sticky at the bottom; the live check of C12 (it covers the row
+          under it) stays a <code>verify</code> row for the batch.
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

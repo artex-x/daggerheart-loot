@@ -58,7 +58,7 @@ export function deny(hookEventName, reason) {
 
 /** Allow, but say something to both the human (systemMessage) and Claude
  * (additionalContext). Never emits permissionDecision: "allow" - that
- * bypasses the permission prompt, a behaviour change nobody asked for. */
+ * bypasses the permission prompt, a behavior change nobody asked for. */
 export function speak(hookEventName, text) {
   return {
     systemMessage: text,
@@ -121,7 +121,7 @@ export function stateDir(cwd) {
  * as "outside" let it straight through. `root` defaults to repoRoot(). */
 export function relPath(filePath, cwd, root = repoRoot()) {
   if (!filePath) return null;
-  // A drive-letter path (a PowerShell command, normalised) names another
+  // A drive-letter path (a PowerShell command, normalized) names another
   // file system everywhere but win32, never a path inside this repository.
   if (process.platform !== 'win32' && /^[A-Za-z]:[\\/]/.test(filePath)) return null;
   try {
@@ -176,7 +176,7 @@ export function isExempt(p) {
   return false;
 }
 
-// ---------- shell sanitiser + segmenter ----------
+// ---------- shell sanitizer + segmenter ----------
 //
 // Shared by bash-guard.mjs (which rule family sees which segment) and
 // check-observer.mjs (is the FIRST segment really the check invocation).

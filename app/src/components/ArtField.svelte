@@ -5,6 +5,7 @@
      lazy chunk on the first choice. Nothing uploads before «Сохранить»
      (docs/specs/FEATURES.md, "Homebrew"). */
   import { tick } from 'svelte';
+  import ArtWell from './ArtWell.svelte';
   import Button from './Button.svelte';
   import FormField from './FormField.svelte';
   import ItemPicker from './ItemPicker.svelte';
@@ -12,6 +13,7 @@
   import type CropDialog from './CropDialog.svelte';
   import { ART_SOURCE_MAX, shownArt, type ArtValue, type CropRefusal } from '../lib/art.js';
   import { artSrc } from '../lib/desc.js';
+  import type { IconName } from '../lib/icons.js';
   import { isHomebrewRecord } from '../lib/homebrew.js';
   import { recordOption, type PickOption } from '../lib/homebrewForm.js';
   import { hayFor, parseQuery, rankHits, statLineFor } from '../lib/search.js';
@@ -28,6 +30,8 @@
     value?: ArtValue;
     /** The save's refusal for the picture (`hbArtGone`). */
     line?: string | null;
+    /** The kind glyph the empty square draws (`kindGlyph`). */
+    glyph: IconName;
   }
 
   let {
@@ -36,7 +40,8 @@
     selfKey,
     saved,
     value = $bindable({ kind: 'keep' }),
-    line = null
+    line = null,
+    glyph
   }: Props = $props();
 
   const t = $derived(app.t);
@@ -181,13 +186,17 @@
 <FormField label={t.hbArt}>
   <div class="artfield" role="group" aria-label={t.hbArt}>
     <span class="th">
-      <img
-        src={artSrc(shown ?? undefined, broken, 'thumb')}
-        alt=""
-        onerror={() => {
-          broken = true;
-        }}
-      />
+      <ArtWell {glyph}>
+        {#if shown && !broken}
+          <img
+            src={artSrc(shown, false, 'thumb')}
+            alt=""
+            onerror={() => {
+              broken = true;
+            }}
+          />
+        {/if}
+      </ArtWell>
     </span>
     <div class="side">
       <div class="acts">
@@ -279,14 +288,6 @@
     overflow: hidden;
     border: 1px solid var(--line2);
     border-radius: var(--r-sm);
-    background: var(--bg);
-  }
-
-  .th img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 
   .side {
@@ -306,7 +307,7 @@
   .hint,
   .err {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 

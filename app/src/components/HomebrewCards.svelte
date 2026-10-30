@@ -458,7 +458,7 @@
   {:else if !shown.length}
     <Empty>{t.nothing}</Empty>
   {:else}
-    <ul class="cards">
+    <ul class="cards" data-primary>
       {#each shown as c (c.id)}
         {@const members = membersOf(c)}
         {@const source = sourceOf(c)}
@@ -601,7 +601,7 @@
 
   .note {
     margin: 0 0 10px;
-    font-size: 14px;
+    font-size: var(--t-small);
     color: var(--muted);
   }
 
@@ -614,22 +614,15 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* The address key scrolls its card under the sticky top bar: the row anchor's margins
-     (`TableRows.svelte`, `[data-row]`). */
+  /* The address key scrolls its card under the sticky top bar (`--anchor-top`). */
   .cards > li {
     padding: 8px 0;
     border-top: 1px solid var(--line);
-    scroll-margin-top: 118px;
+    scroll-margin-top: var(--anchor-top);
   }
 
   .cards > li:first-child {
     border-top: 0;
-  }
-
-  @media (max-width: 600px) {
-    .cards > li {
-      scroll-margin-top: 132px;
-    }
   }
 
   .head {
@@ -658,7 +651,7 @@
   .count,
   .src {
     min-width: 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
@@ -681,14 +674,14 @@
   .sub,
   .text {
     margin: 0;
-    font-size: 13.5px;
+    font-size: var(--t-small);
     line-height: 1.5;
     color: var(--muted);
     overflow-wrap: anywhere;
   }
 
   .url {
-    font-size: 12.5px;
+    font-size: var(--t-data);
     color: var(--gold-soft);
     overflow-wrap: anywhere;
   }

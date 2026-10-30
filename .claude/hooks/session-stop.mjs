@@ -27,7 +27,7 @@ function isTaskDocument(key) {
 }
 
 /** docs/ is durable knowledge being written, never scratch - closeout step 6
- * sends behaviour there - so a new untracked file under it is out of scope
+ * sends behavior there - so a new untracked file under it is out of scope
  * for this rule entirely, the same as a task document. */
 function isExcluded(key) {
   return key.startsWith('docs/') || isTaskDocument(key);
@@ -106,7 +106,7 @@ guard(() => {
   // its own sentence below, never as "uncommitted work". A path this session
   // wrote, still untracked, but excluded (docs/, a task document): named
   // nowhere by this hook - it is durable-knowledge-in-progress or a
-  // planner's own artefact, not a candidate for either sentence.
+  // planner's own artifact, not a candidate for either sentence.
   const untrackedWritten = writtenPaths
     .map((p) => untracked.get(pathKey(p)))
     .filter((raw) => raw !== undefined);

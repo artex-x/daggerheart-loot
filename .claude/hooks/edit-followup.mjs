@@ -1,6 +1,6 @@
 // PostToolUse(Edit|MultiEdit|Write|NotebookEdit): record the write (so the
 // Stop hook can tell what this session actually touched), then remind at
-// most once per session per group about derived artefacts and contracts.
+// most once per session per group about derived artifacts and contracts.
 // Never blocks. See .claude/README.md, "Hooks".
 
 import { readInput, guard, speak, relPath, pathKey, recordWrite, once } from './lib.mjs';

@@ -218,20 +218,20 @@
 
   .who b {
     display: block;
-    font-size: 14px;
+    font-size: var(--t-small);
   }
 
   .sharelink,
   .stopped {
     display: block;
-    font: 12px/1.4 var(--mono);
+    font: var(--t-data)/1.4 var(--mono);
     color: var(--muted2);
     overflow-wrap: anywhere;
   }
 
   .hint {
     margin: 10px 0 0;
-    font-size: 13px;
+    font-size: var(--t-data);
     color: var(--muted);
   }
 </style>

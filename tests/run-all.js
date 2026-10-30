@@ -65,7 +65,7 @@ const SUITES = [
   ['app/golden', 'dist-test/: structural snapshots 4/4', 156, ['--shard=4/4']],
   ['app/golden', 'dist-test/: structural snapshots 2/4', 151.5, ['--shard=2/4']],
   ['app/typo', 'dist-test/: fonts and scale', 89.6],
-  ['app/hues', 'dist-test/: label colours', 77],
+  ['app/hues', 'dist-test/: label colors', 77],
   ['stub', 'stub pages i/', 4],
   ['derived', 'derived files and catalog', 1.8],
   ['dataint', 'data.js invariants', 0.4],
@@ -213,7 +213,7 @@ let next = 0,
 const t0 = Date.now();
 
 /* Printed strictly in list order: a suite that finished ahead of its
-   neighbour waits for it, otherwise two identical runs would print a
+   neighbor waits for it, otherwise two identical runs would print a
    different report and could not be compared. */
 let printed = 0;
 function flush() {
