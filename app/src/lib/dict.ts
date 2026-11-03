@@ -32,8 +32,7 @@ const ru = {
   /* The first job of the header: a group of nine roll pages with no heading of its own. */
   jobRoll: 'Бросок',
 
-  /* The sections, in `SECTIONS` order. `wondrous`, `dread` and `dv` are also the short
-     form of their book chip under 640 px (`tables.ts` `CHIP_SHORT`). */
+  /* The sections, in `SECTIONS` order. */
   alt: 'Альт. таблицы',
   wondrous: 'Wondrous',
   dread: 'Dread',
@@ -213,7 +212,7 @@ const ru = {
   eqTrait: 'Характеристика',
   eqRange: 'Дистанция',
   eqBurden: 'Хват',
-  eqLineF: 'Линейка',
+  eqLineF: 'Улучшения и уникальные',
 
   /* The print card's own stat-strip labels: shorter than the interface's,
      because 63mm has no room for "Характеристика" - the layout says "Черта". */
@@ -240,8 +239,6 @@ const ru = {
   subSecondary: 'Вторичное',
   subArmor: 'Броня',
 
-  subTables:
-    'Все таблицы целиком, включая оружие и броню, - можно листать, фильтровать и открывать карточки.',
   subLists: 'Соберите добычу в список и отправьте игрокам одной ссылкой.',
   /* "по всем N позициям" needs "всем" to agree with the numeral, so the
      sentence leaves it out and reads for any count. */
@@ -250,11 +247,21 @@ const ru = {
   subSearchOwn: 'И %n ваш предмет.|И %n ваших предмета.|И %n ваших предметов.',
 
   searchPh: 'Поиск по названию или описанию...',
+  /* The visible placeholder of a list head's search; `searchPh` stays its name. */
+  searchShort: 'Поиск',
+  /* The catalog's list head: the table picker below 761 px and the two levels of the
+     navigation, named for assistive technology. */
+  tablePick: 'Таблица: %s',
+  groupLabel: 'Группа',
+  sourceLabel: 'Источник',
+  /* The three-dot menu of a page's rare actions (the icon and the word). */
+  moreMenu: 'Ещё',
+  aboutData: 'Об этих данных',
   tableLink: 'Ссылка на таблицу',
   tableLinkCopied: 'Ссылка на таблицу скопирована',
   view: 'Вид',
-  viewList: 'Списком',
-  viewGrid: 'Сеткой',
+  viewList: 'Список',
+  viewGrid: 'Сетка',
   nothing: 'Ничего не найдено',
   startTyping:
     'Начните вводить запрос. Несколько слов ищутся в любом порядке, «фраза в кавычках» - дословно.',
@@ -267,6 +274,10 @@ const ru = {
   /* `%s` is a counted plural, `%m` the account's limit. */
   ofLimit: '%s из %m',
   clearSel: 'Снять выделение',
+  /* The selection mode: «Выбрать» opens it; the bar's tri-state box reads «Все». */
+  selectMode: 'Выбрать',
+  allShort: 'Все',
+  selCount: 'Выбрано: %n',
   selRegion: 'Выбранные записи',
   copySel: 'Скопировать',
   selCopied: 'Выбранное скопировано',
@@ -274,6 +285,17 @@ const ru = {
   /* The table filter: the strip, the panel it folds open, and the link that
      hands the picked state to somebody else. */
   filters: 'Фильтры',
+  filtersN: 'Фильтры · %n',
+  /* The count line of a narrowed list: the total is a number, so no plural form. */
+  shownOf: 'Показано %n из %m',
+  showN: 'Показать %n',
+  reset: 'Сбросить',
+  resetFilters: 'Сбросить фильтры',
+  /* The empty state's cause: `%q` is the query, `%v` the chosen values. No table noun,
+     which would need a genitive plural per table. */
+  emptyBoth: 'Нет совпадений с «%q» среди фильтров: %v.',
+  emptyQuery: 'Нет совпадений с «%q» в названиях и описаниях этой таблицы.',
+  emptyFilters: 'Ничего не подходит под фильтры: %v.',
   kindF: 'Тип',
   frameF: 'Сеттинг',
   commF: 'Сообщество',
@@ -290,7 +312,7 @@ const ru = {
 
   /* A section heading's own link, off `sectionHead` in app.js - the table
      link button's sibling, one level down. */
-  copySection: 'Скопировать ссылку на этот раздел',
+  copySection: 'Ссылка на раздел',
   sectionLinkCopied: 'Ссылка на раздел скопирована',
 
   /* The add-to-list row every full card draws, and the toast it and the pin
@@ -1265,7 +1287,7 @@ const en: Dict = {
   eqTrait: 'Trait',
   eqRange: 'Range',
   eqBurden: 'Burden',
-  eqLineF: 'Line',
+  eqLineF: 'Upgrades and uniques',
 
   pcDmg: 'Damage',
   pcTrait: 'Trait',
@@ -1284,13 +1306,18 @@ const en: Dict = {
   subSecondary: 'Secondary',
   subArmor: 'Armor',
 
-  subTables: 'Every table in full, weapons and armor included - browse, filter and open cards.',
   subLists: 'Collect loot into a list and send it to your players as a single link.',
   subSearch:
     'Search all 1459 entries at once - loot, consumables and equipment, in Russian and English.',
   subSearchOwn: 'And %n item of your own.|And %n items of your own.',
 
   searchPh: 'Search by name or description...',
+  searchShort: 'Search',
+  tablePick: 'Table: %s',
+  groupLabel: 'Group',
+  sourceLabel: 'Source',
+  moreMenu: 'More',
+  aboutData: 'About this data',
   tableLink: 'Link to this table',
   tableLinkCopied: 'Table link copied',
   view: 'View',
@@ -1306,11 +1333,22 @@ const en: Dict = {
   listsN: '%n list|%n lists',
   ofLimit: '%s of %m',
   clearSel: 'Clear selection',
+  selectMode: 'Select',
+  allShort: 'All',
+  selCount: '%n selected',
   selRegion: 'Selected records',
   copySel: 'Copy',
   selCopied: 'Selection copied',
 
   filters: 'Filters',
+  filtersN: 'Filters · %n',
+  shownOf: '%n of %m shown',
+  showN: 'Show %n',
+  reset: 'Reset',
+  resetFilters: 'Reset the filters',
+  emptyBoth: 'No match for "%q" with these filters: %v.',
+  emptyQuery: 'No match for "%q" in the names and text of this table.',
+  emptyFilters: 'Nothing fits these filters: %v.',
   kindF: 'Type',
   frameF: 'Frame',
   commF: 'Community',
@@ -1324,7 +1362,7 @@ const en: Dict = {
   gmFilterLinkCopied:
     'Filter link copied - it is the GM\'s link: it carries the "GM only" notes and items',
 
-  copySection: 'Copy a link to this section',
+  copySection: 'Link to this section',
   sectionLinkCopied: 'Section link copied',
 
   addToList: 'Add to list',

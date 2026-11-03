@@ -33,19 +33,20 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1/f_k
     button "Оружие" [pressed=true]
     ... button x21 of 25 same-shape siblings elided
     button "1" [pressed=true]
-    button "Улучшаемые" [pressed=false]
+    button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     checkbox "Выбрать все (3)" [checked=false]
     checkbox "Палаш" [checked=false]
-    button "Палаш Ранг 1 · Физическое · Проворность · Вплотную · d8 физ · Од..." [namelen=122 namehash=a6db75ac]
+    button "Палаш ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Физическое · Проворность · В..." [namelen=122 namehash=96f30456]
     StaticText "ДЛЯ ИГРОКОВ"
     StaticText "Последний в наличии."
     checkbox "Скипетр" [checked=false]
-    button "Скипетр Ранг 1 · Магическое · Влияние · Далеко · d6 маг · Двуруч..." [namelen=194 namehash=5790d5c3]
+    button "Скипетр ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Магическое · Влияние · Дал..." [namelen=194 namehash=38903faa]
     checkbox "Колдующий Кинжал" [checked=false]
-    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
+    button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     status ""
   region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -70,14 +71,16 @@ daggerheart.com
 Влияние
 Войти
 Вплотную
+Выбрать все
 Далеко
 Двуручное
+Есть улучшение
 Знание
 Инстинкт
 Искусность
 К содержимому
 Колдующий Кинжал
-Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Конфиденциальность
 ЛутDaggerheart
 Магическое
@@ -86,7 +89,7 @@ daggerheart.com
 Оружие
 Оружие×
 Палаш
-ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Поиск
 Предметы
 Проворность
@@ -95,12 +98,11 @@ daggerheart.com
 Сбросить всё
 Сила
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Сохранить себе
 Средне
 Ссылка на фильтры
 Таблицы
-Улучшаемые
 Уникальные
 Условия использования
 Установить как приложение
@@ -142,15 +144,16 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1/f_kind-weapon
     button "Unique" [pressed=false]
     checkbox "Select all (3)" [checked=false]
     checkbox "Broadsword" [checked=false]
-    button "Broadsword Tier 1 · Physical · Agility · Melee · d8 phy · One-Ha..." [namelen=117 namehash=ebbe60cf]
+    button "Broadsword PRIMARY WEAPON CORE Tier 1 · Physical · Agility · Mel..." [namelen=117 namehash=4d6f47fc]
     StaticText "FOR PLAYERS"
     StaticText "Последний в наличии."
     checkbox "Scepter" [checked=false]
-    button "Scepter Tier 1 · Magic · Presence · Far · d6 mag · Two-Handed Ve..." [namelen=164 namehash=04ac40ab]
+    button "Scepter PRIMARY WEAPON CORE Tier 1 · Magic · Presence · Far · d6..." [namelen=164 namehash=e817f492]
     checkbox "Casting Dagger" [checked=false]
-    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
+    button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     status ""
   region "Selected records"
+    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -166,9 +169,9 @@ Agility
 Alder Workshop
 Armor
 Broadsword
-BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
 Casting Dagger
-Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 Close
 Consumables
 Core
@@ -195,8 +198,9 @@ Reset all
 Roll
 Save to my lists
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
+Select all
 Sign in
 Skip to content
 Strength

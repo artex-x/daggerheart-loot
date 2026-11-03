@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -32,25 +31,35 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Вторичное" [url=/tables/eq_secondary]
       link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    button "Фильтры (1)" [expanded=true]
-    button "Артефакты" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "1 из 458"
-    ... StaticText x13 of 17 same-shape siblings elided
-    ... button x30 of 34 same-shape siblings elided
-    button "Артефакты" [pressed=true]
-    button "Улучшаемые" [pressed=false]
-    button "Уникальные" [pressed=false]
-    StaticText "АРТЕФАКТЫ"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Клятва Равновесия" [checked=false]
-    button "9 Клятва Равновесия Артефакт · Магическое · Инстинкт · Далеко · ..." [namelen=847 namehash=70e32327]
+    StaticText "Артефакты"
+    StaticText " ·"
+    StaticText "Показано 1 из 458"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры · 1" [level=2]
+      button "Сбросить"
+      button "Ссылка на фильтры"
+      StaticText "РАНГ"
+      button "Все" [pressed=false]
+      button "1" [pressed=false]
+      ... button x29 of 33 same-shape siblings elided
+      button "Артефакты" [pressed=true]
+      StaticText "ИСТОЧНИК"
+      button "Все" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "ХВАТ"
+      button "Все" [pressed=true]
+      StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+      button "Все" [pressed=true]
+      button "Есть улучшение" [pressed=false]
+      button "Уникальные" [pressed=false]
+    heading "Артефакты" [level=2]
+    button "Ссылка на раздел"
+    button "9 Клятва Равновесия УНИКАЛЬНОЕ VAULT OF AGES Магическое · Инстин..." [namelen=811 namehash=dfa7b807]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -63,8 +72,8 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 3
 4
-9Клятва РавновесияАртефакт · Магическое · Инстинкт · Далеко · d1... [namelen=837 namehash=9d97f73b]
-?Справка
+9Клятва РавновесияУникальноеVault of AgesМагическое · Инстинкт ·... [namelen=803 namehash=3c144f1a]
+?Об этих данных
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -78,22 +87,23 @@ Wondrous Environments
 daggerheart.com
 Альт. таблицы
 Артефакты
-Артефакты×
 Близко
 Броня
 Бросок
 Влияние
 Войти
 Вплотную
+Все
 Вторичное
+Выбрать
 Далеко
 Двуручное
 Дополнения
+Есть улучшение
 Знание
 Инстинкт
 Искусность
 К содержимому
-Клятва Равновесия
 Колоссы Сухоземья
 Конфиденциальность
 ЛутDaggerheart
@@ -104,25 +114,24 @@ daggerheart.com
 Очень далеко
 Пир зверей
 Поиск
+Поиск по названию или описанию...
 Проворность
 Прочее
-Сбросить всё
-Сеткой
+Сбросить
+Сетка
 Сила
-Скопировать ссылку на этот раздел
 Снаряжение
-Списком
+Список
 Средне
+Ссылка на раздел
 Ссылка на таблицу
 Ссылка на фильтры
 Таблицы
 Тёмное сердце Андалурии
-Улучшаемые
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
-Фильтры (1)
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_tier-A]
@@ -141,8 +150,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -154,25 +162,35 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
       link "Secondary" [url=/en/tables/eq_secondary]
       link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    button "Filters (1)" [expanded=true]
-    button "Artifacts" [description=Remove from the filter]
-    button "Reset all"
-    button "Filter link" [description=Filter link]
-    StaticText "1 of 458"
-    ... StaticText x13 of 17 same-shape siblings elided
-    ... button x30 of 34 same-shape siblings elided
-    button "Artifacts" [pressed=true]
-    button "Upgradable" [pressed=false]
-    button "Unique" [pressed=false]
-    StaticText "ARTIFACTS"
-    button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Oath of Balance" [checked=false]
-    button "9 Oath of Balance Artifact · Magic · Instinct · Far · d12+12 mag..." [namelen=762 namehash=4e67f12e]
+    button "Link to this table"
+    StaticText "Artifacts"
+    StaticText " ·"
+    StaticText "1 of 458 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters · 1" [level=2]
+      button "Reset"
+      button "Filter link"
+      StaticText "TIER"
+      button "All" [pressed=false]
+      button "1" [pressed=false]
+      ... button x29 of 33 same-shape siblings elided
+      button "Artifacts" [pressed=true]
+      StaticText "SOURCE"
+      button "All" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "BURDEN"
+      button "All" [pressed=true]
+      StaticText "UPGRADES AND UNIQUES"
+      button "All" [pressed=true]
+      button "Upgradable" [pressed=false]
+      button "Unique" [pressed=false]
+    heading "Artifacts" [level=2]
+    button "Link to this section"
+    button "9 Oath of Balance UNIQUE VAULT OF AGES Magic · Instinct · Far · ..." [namelen=727 namehash=a2f3e5fd]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -185,18 +203,17 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_ti
 2
 3
 4
-9Oath of BalanceArtifact · Magic · Instinct · Far · d12+12 mag ·... [namelen=752 namehash=9a8afa74]
-?Help
+9Oath of BalanceUniqueVault of AgesMagic · Instinct · Far · d12+... [namelen=719 namehash=7d9f9879]
+?About this data
 Agility
+All
 Alt. tables
 Arazo's Artifacts
 Armor
 Artifacts
-Artifacts×
 Beast Feast
 Close
 Colossus of the Drylands
-Copy a link to this section
 Core
 Dark Heart of Andaluria
 Dread GM Toolbox
@@ -204,20 +221,19 @@ EN
 Equipment
 Far
 Filter link
-Filters (1)
 Finesse
 Grid
 Hope & Fear
 Install as an app
 Instinct
 Knowledge
+Link to this section
 Link to this table
 List
 LootDaggerheart
 Magic
 Many Worlds Tavern
 Melee
-Oath of Balance
 One-Handed
 Open on start
 Other
@@ -225,10 +241,12 @@ Physical
 Presence
 Privacy
 RU
-Reset all
+Reset
 Roll
 Search
+Search by name or description...
 Secondary
+Select
 Sign in
 Skip to content
 Strength

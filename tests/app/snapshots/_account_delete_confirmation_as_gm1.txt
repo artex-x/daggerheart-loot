@@ -32,8 +32,8 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       ... option x8 of 12 same-shape siblings elided
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
     button "Цветная" [pressed=false]
     button "Чёрно-белая" [pressed=true]
     checkbox "Компактный лист" [checked=true]
@@ -77,9 +77,9 @@ daggerheart.com
 Отключить Google
 Отмена
 Поиск
-Сеткой
+Сетка
 Скачать мои данные (ZIP)
-Списком
+Список
 СпрашиватьСообщать владельцуНе сообщать
 Таблицы
 Удалить аккаунт...

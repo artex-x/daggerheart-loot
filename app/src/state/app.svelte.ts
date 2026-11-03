@@ -89,6 +89,7 @@ import { isLastOn, type Chosen } from '../lib/std.js';
 import type { Kind, Lang, Record_, Section } from '../lib/types.js';
 import type {
   AuthResult,
+  Band,
   Env,
   ListWrite,
   PrintSetMade,
@@ -396,8 +397,26 @@ export class AppState {
   #clearTicks(): void {
     this.sel.clear();
     this.picked.clear();
+    this.selecting = false;
     this.requestSender?.dismiss();
   }
+
+  /**
+   * The selection mode of the catalog: the ticks show after «Выбрать» and
+   * leave with «Снять выделение». Memory only (docs/specs/STATE.md).
+   */
+  selecting = $state(false);
+
+  /** The ids the open list page draws: the selection bar's «Все» ticks these. */
+  selectable = $state.raw<readonly string[]>([]);
+
+  /** Sets the ids the open list page draws; the page clears them when it leaves. */
+  setSelectable(ids: readonly string[]): void {
+    this.selectable = ids;
+  }
+
+  /** The layout band: DESIGN.md, "The Two Breakpoints Rule". */
+  band = $state<Band>('wide');
 
   /* The «Мои предметы» tabs and the source chips keep the ticks (`keepsTicks`). */
   #clearTicksOnLeave(from: Route): void {
@@ -514,6 +533,7 @@ export class AppState {
   #stopAuth: (() => void) | null = null;
   #stopHidden: (() => void) | null = null;
   #stopSettings: (() => void) | null = null;
+  #stopBand: (() => void) | null = null;
   /* The account sync (docs/specs/STATE.md, "Account preferences"): whether
      `#watchAccount` is listening, the user whose row was last pulled, how
      many local edits there have been (a pull that sees it move drops its
@@ -545,6 +565,7 @@ export class AppState {
       env.storage.set(LANG_KEY, 'en');
     } else this.lang = readLang(env);
     this.#home = homeOf(env.storage.get(HOME_KEY));
+    this.band = env.viewport.band();
     const local = readLocalPrefs(env);
     this.#tablesView = local.view;
     this.#printBW = local.printBw;
@@ -710,6 +731,9 @@ export class AppState {
     });
     this.#stopLinks = this.env.router.onLink((h) => {
       this.go(h);
+    });
+    this.#stopBand = this.env.viewport.onchange((b) => {
+      this.band = b;
     });
     this.#stopSettings = this.env.storage.onExternalChange((key) => {
       if (key === null || SETTINGS_KEYS.includes(key)) this.#followSettings();
@@ -1732,6 +1756,8 @@ export class AppState {
     this.#stopRouter = null;
     this.#stopLinks?.();
     this.#stopLinks = null;
+    this.#stopBand?.();
+    this.#stopBand = null;
     if (this.#listPoll !== null) clearInterval(this.#listPoll);
     this.#listPoll = null;
     this.#stopAuth?.();
@@ -2072,10 +2098,6 @@ export class AppState {
     return this.#printCompactNow ?? this.#printCompact;
   }
 
-  get tablesViewChanged(): boolean {
-    return this.shownTablesView !== this.#tablesView;
-  }
-
   get printChanged(): boolean {
     return this.shownPrintBW !== this.#printBW || this.shownPrintCompact !== this.#printCompact;
   }
@@ -2221,6 +2243,13 @@ export class AppState {
    * can). `PageHead` passes it through from there, and from `HomebrewPage`, whose
    * tabs share the pin `#/homebrew`; every other caller pins `this.hash`.
    */
+  /** Toggles the pin and says what happened: the pin button and the catalog's «Ещё» item. */
+  pinHome(hash?: string): void {
+    const wasHome = this.home === canonicalHash(hash ?? this.hash);
+    if (!this.toggleHome(hash)) this.say((t) => t.saveFailed, { error: true });
+    else this.say(wasHome ? (t) => t.homeReset : (t) => t.homeSet);
+  }
+
   toggleHome(hash?: string): boolean {
     const current = canonicalHash(hash ?? this.hash);
     const next = this.#home === current ? '' : current;

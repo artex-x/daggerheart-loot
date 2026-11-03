@@ -32,14 +32,15 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-3/f_s
     ... button x16 of 20 same-shape siblings elided
     button "Мастерская старого оружейника из долины туманов за перевалом у С..." [pressed=true namelen=80 namehash=9bd5cf26]
     StaticText "любое"
-    button "Улучшаемые" [pressed=false]
+    button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     checkbox "Выбрать все (1)" [checked=false]
     StaticText "Выбрать все (1)"
     checkbox "Фляга туманов" [checked=false]
-    button "Фляга туманов Туман из фляги скрывает вас до конца сцены. ПРЕДМЕ..." [namelen=151 namehash=a3e66376]
+    button "Фляга туманов ПРЕДМЕТ МАСТЕРСКАЯ СТАРОГО ОРУЖЕЙНИКА ИЗ ДОЛИНЫ ТУ..." [namelen=151 namehash=cc1c5d71]
     status ""
   region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -61,8 +62,10 @@ daggerheart.com
 Влияние
 Войти
 Вплотную
+Выбрать все
 Далеко
 Двуручное
+Есть улучшение
 Искусность
 К содержимому
 Конфиденциальность
@@ -80,14 +83,13 @@ daggerheart.com
 Сохранить себе
 Ссылка на фильтры
 Таблицы
-Улучшаемые
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
 Фильтры (1)
 Фляга туманов
-Фляга тумановТуман из фляги скрывает вас до конца сцены.ПредметМ... [namelen=148 namehash=2d9c9d8e]
+Фляга тумановПредметМастерская старого оружейника из долины тума... [namelen=148 namehash=a71ef2d5]
 Хоумбрю
 
 ## en :: tree
@@ -125,9 +127,10 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-3/f_src-hb_long
     checkbox "Select all (1)" [checked=false]
     StaticText "Select all (1)"
     checkbox "Mist Flask" [checked=false]
-    button "Mist Flask The mist from the flask hides you until the end of th..." [namelen=163 namehash=fc84989c]
+    button "Mist Flask ITEM WORKSHOP OF THE OLD ARMOURER FROM THE VALLEY OF ..." [namelen=163 namehash=a23f8606]
     status ""
   region "Selected records"
+    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -155,7 +158,7 @@ LootDaggerheart
 Magic
 Melee
 Mist Flask
-Mist FlaskThe mist from the flask hides you until the end of the... [namelen=160 namehash=13557f64]
+Mist FlaskItemWorkshop of the old armourer from the valley of mi... [namelen=160 namehash=7d9a0a66]
 One-Handed
 Physical
 Presence
@@ -165,6 +168,7 @@ Reset all
 Roll
 Save to my lists
 Search
+Select all
 Sign in
 Skip to content
 Tables

@@ -37,11 +37,11 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     generic ""
     heading "Хоумбрю 3" [level=2]
     checkbox "Скатка путника" [checked=false]
-    button "Скатка путника Свёрнутая постель для ночёвки в пути. Улучшается ..." [namelen=105 namehash=17f38813]
+    button "Скатка путника ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в п..." [namelen=105 namehash=fc739192]
     checkbox "Скатка следопыта" [checked=false]
-    button "Скатка следопыта Свёрнутая постель для ночёвки в пути. Получаетс..." [namelen=141 namehash=15bc21f6]
+    button "Скатка следопыта ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в..." [namelen=141 namehash=a863d273]
     checkbox "Скатка стража" [checked=false]
-    button "Скатка стража Свёрнутая постель для ночёвки в пути. Получается и..." [namelen=104 namehash=0718f527]
+    button "Скатка стража ПРЕДМЕТ ХОУМБРЮ Свёрнутая постель для ночёвки в пу..." [namelen=104 namehash=5c789478]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -69,11 +69,11 @@ daggerheart.com
 Поиск
 Предметы
 Скатка путника
-Скатка путникаСвёрнутая постель для ночёвки в пути.Улучшается до... [namelen=101 namehash=70b252c4]
+Скатка путникаПредметХоумбрюСвёрнутая постель для ночёвки в пути... [namelen=101 namehash=0ff83eb5]
 Скатка следопыта
-Скатка следопытаСвёрнутая постель для ночёвки в пути.Получается ... [namelen=135 namehash=aa613df0]
+Скатка следопытаПредметХоумбрюСвёрнутая постель для ночёвки в пу... [namelen=135 namehash=606f0f6e]
 Скатка стража
-Скатка стражаСвёрнутая постель для ночёвки в пути.Получается из:... [namelen=100 namehash=30ac9f69]
+Скатка стражаПредметХоумбрюСвёрнутая постель для ночёвки в пути.... [namelen=100 namehash=45f333c3]
 Таблицы
 Условия использования
 Установить как приложение
@@ -112,11 +112,11 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm3]
     generic ""
     heading "Homebrew 3" [level=2]
     checkbox "Ranger's Roll" [checked=false]
-    button "Ranger's Roll A rolled bed for a night on the road. Made from: T..." [namelen=132 namehash=dd37b2b6]
+    button "Ranger's Roll ITEM HOMEBREW A rolled bed for a night on the road..." [namelen=132 namehash=4c70ee2d]
     checkbox "Sentry's Roll" [checked=false]
-    button "Sentry's Roll A rolled bed for a night on the road. Made from: R..." [namelen=95 namehash=ca08b67a]
+    button "Sentry's Roll ITEM HOMEBREW A rolled bed for a night on the road..." [namelen=95 namehash=bcc0e37f]
     checkbox "Traveller's Roll" [checked=false]
-    button "Traveller's Roll A rolled bed for a night on the road. Upgrades ..." [namelen=100 namehash=54a8d673]
+    button "Traveller's Roll ITEM HOMEBREW A rolled bed for a night on the r..." [namelen=100 namehash=33eafba7]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -137,18 +137,18 @@ Open on start
 Privacy
 RU
 Ranger's Roll
-Ranger's RollA rolled bed for a night on the road.Made from: Tra... [namelen=126 namehash=41fe55b3]
+Ranger's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=126 namehash=676858e7]
 Roll
 Rule cards
 Search
 Select all
 Sentry's Roll
-Sentry's RollA rolled bed for a night on the road.Made from: Ran... [namelen=91 namehash=72ff6fa8]
+Sentry's RollItemHomebrewA rolled bed for a night on the road.Ma... [namelen=91 namehash=f6c0744e]
 Sets
 Skip to content
 Sources
 Tables
 Terms of use
 Traveller's Roll
-Traveller's RollA rolled bed for a night on the road.Upgrades to... [namelen=96 namehash=6071985a]
+Traveller's RollItemHomebrewA rolled bed for a night on the road... [namelen=96 namehash=dd0f7fef]
 daggerheart.com

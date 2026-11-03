@@ -20,8 +20,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -33,19 +32,20 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Мастерская Ольхи" [url=/tables/homebrew/f_src-hb_alderworkshopaaa]
       link "Хоумбрю" [url=/tables/homebrew/f_src-hb]
     searchbox "Поиск по названию или описанию..."
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
-    button "Фильтры (1)" [expanded=true]
-    button "Холодное оружие" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    StaticText "1 из 1"
-    StaticText "РАЗДЕЛ"
-    button "Холодное оружие" [pressed=true]
-    StaticText "ХОЛОДНОЕ ОРУЖИЕ"
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Ранг 2 Топор Тлеющих Углей Ember Axe"
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
+    StaticText "Холодное оружие"
+    StaticText " ·"
+    StaticText "Показано 1 из 1"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры · 1" [level=2]
+      button "Сбросить"
+      StaticText "РАЗДЕЛ"
+      button "Все" [pressed=false]
+      button "Холодное оружие" [pressed=true]
+    heading "Холодное оружие" [level=2]
+    button "Ранг 2 ОСНОВНОЕ ОРУЖИЕ Топор Тлеющих Углей Магическое · Характер..." [namelen=117 namehash=329e954b]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -54,7 +54,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-?Справка
+?Об этих данных
 Core
 EN
 Hope & Fear
@@ -63,6 +63,8 @@ daggerheart.com
 Аккаунт: gm1@example.test
 Альт. таблицы
 Бросок
+Все
+Выбрать
 Дополнения
 К содержимому
 Конфиденциальность
@@ -70,19 +72,17 @@ daggerheart.com
 Мастерская Ольхи
 Открывать при запуске
 Поиск
+Поиск по названию или описанию...
 Прочее
-Ранг 2Топор Тлеющих УглейEmber Axe
-Сбросить всё
-Сеткой
+Ранг 2Основное оружиеТопор Тлеющих УглейМагическое · Характерист... [namelen=114 namehash=622526a3]
+Сбросить
+Сетка
 Снаряжение
-Списком
+Список
 Таблицы
-Топор Тлеющих Углей
 Условия использования
 Установить как приложение
-Фильтры (1)
 Холодное оружие
-Холодное оружие×
 Хоумбрю
 
 ## en :: tree
@@ -102,8 +102,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_sec
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -117,17 +116,18 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_sec
     searchbox "Search by name or description..."
     button "List" [pressed=false]
     button "Grid" [pressed=true]
-    button "Filters (1)" [expanded=true]
-    button "Blades" [description=Remove from the filter]
-    button "Reset all"
-    StaticText "1 of 1"
-    StaticText "SECTION"
-    button "Blades" [pressed=true]
-    StaticText "BLADES"
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Ember Axe" [checked=false]
-    button "Tier 2 Ember Axe Топор Тлеющих Углей"
+    StaticText "Blades"
+    StaticText " ·"
+    StaticText "1 of 1 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters · 1" [level=2]
+      button "Reset"
+      StaticText "SECTION"
+      button "All" [pressed=false]
+      button "Blades" [pressed=true]
+    heading "Blades" [level=2]
+    button "Tier 2 PRIMARY WEAPON Ember Axe Magic · Spellcast · Melee · d10+..." [namelen=82 namehash=5db4d188]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -136,17 +136,15 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/homebrew/f_sec
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
+?About this data
 Account: gm1@example.test
 Alder Workshop
+All
 Alt. tables
 Blades
-Blades×
 Core
 EN
-Ember Axe
 Equipment
-Filters (1)
 Grid
 Homebrew
 Hope & Fear
@@ -157,12 +155,14 @@ Open on start
 Other
 Privacy
 RU
-Reset all
+Reset
 Roll
 Search
+Search by name or description...
+Select
 Skip to content
 Supplements
 Tables
 Terms of use
-Tier 2Ember AxeТопор Тлеющих Углей
+Tier 2Primary weaponEmber AxeMagic · Spellcast · Melee · d10+2 m... [namelen=79 namehash=d8837485]
 daggerheart.com

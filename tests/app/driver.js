@@ -406,6 +406,14 @@ function makeDriver(page, target, url = TARGETS[target], { waitUntil = 'networki
      * whatever else on the row shares its name.
      */
     async tick(name, nth = 0) {
+      /* The catalog draws its ticks in the selection mode only: «Выбрать» opens it. */
+      const opened = await page.evaluate(() => {
+        const mode = document.querySelector('button.selmode');
+        if (!mode) return false;
+        mode.click();
+        return true;
+      });
+      if (opened) await settle(page);
       const ok = await page.evaluate(
         (n, idx, nameSrc) => {
           const nameOf = eval(nameSrc);

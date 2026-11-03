@@ -32,8 +32,8 @@ RootWebArea "Аккаунт - Генератор лута Daggerheart" [url=/acc
       option "Таблицы" [selected=true]
       option "Поиск" [selected=false]
       option "Мои предметы" [selected=false]
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Цветная" [pressed=true]
     button "Чёрно-белая" [pressed=false]
     checkbox "Компактный лист" [checked=false]
@@ -73,9 +73,9 @@ daggerheart.com
 Обычные правилаАльт. таблицыWondrous EnvironmentsDread GM Toolbo... [namelen=183 namehash=b3f24d5b]
 Подключить Discord
 Поиск
-Сеткой
+Сетка
 Скачать мои данные (ZIP)
-Списком
+Список
 СпрашиватьСообщать владельцуНе сообщать
 Таблицы
 Удалить аккаунт...

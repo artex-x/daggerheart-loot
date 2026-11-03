@@ -237,28 +237,17 @@ const STATES: {
   {
     what: 'the grid view of a table',
     route: '#/tables',
-    enter: () => press('Сеткой')
+    enter: () => press('Сетка')
   },
   {
-    what: 'the table filter panel, open with a value picked',
+    what: 'the table filter column with a value picked',
     route: '#/tables/wondrous',
-    enter: async () => {
-      await press('Фильтры');
-      await press('Предметы');
-    }
+    enter: () => press('Предметы')
   },
   {
-    what: 'a sectioned table with its filter panel open - two fields, not one',
-    route: '#/tables/voa',
-    enter: () => press('Фильтры')
-  },
-  {
-    what: 'the equipment table with its widest panel open and a bare-number value pressed',
+    what: 'the equipment table with its widest column and a bare-number value pressed',
     route: '#/tables/eq_weapon',
-    enter: async () => {
-      await press('Фильтры');
-      await press('1');
-    }
+    enter: () => press('1')
   },
   {
     what: 'the selection bar with its menu open',
@@ -270,6 +259,7 @@ const STATES: {
        "Выбрать все (N)" by its wrapping `<label>`). */
     enter: async () => {
       await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
+      await press('Выбрать');
       await userEvent.click(
         screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'))[0] as HTMLElement
       );
@@ -608,11 +598,19 @@ const COVERED: Record<string, string> = {
   'Badge.svelte': 'badge.test.ts, record.test.ts, tables.test.ts, and the lists index above',
   'ChipRow.svelte': 'the same two pickers',
   'Die.svelte': 'the roll button on every roll page',
-  'Empty.svelte': "tables.test.ts's nothing-found states, and the lists index above",
+  'Empty.svelte':
+    "tables.test.ts's nothing-found plates with the glyph, and the lists index above",
+  'FilterPanel.svelte':
+    'filterPanel.test.ts as the column and as the sheet, and the filter column states above',
+  'SelectionBar.svelte':
+    'selectionBar.test.ts with none, some and all ticked, and the selection bar state above',
+  'Sheet.svelte':
+    'sheet.test.ts open with its head and foot, and the filter and picker sheets in tables.test.ts',
+  'TableNav.svelte':
+    'tableNav.test.ts in the three bands with the picker sheet open, and tables.test.ts',
   'Field.svelte': 'the number row on every roll page, and both pickers',
   'Icon.svelte': 'the card actions and the pin toggle',
-  'KeepNote.svelte':
-    'the note under the print bar in printPage.test.ts, and under the toolbar in tables.test.ts',
+  'KeepNote.svelte': 'the note under the print bar in printPage.test.ts',
   'ListsPage.svelte': 'listsPage.test.ts, and the state above',
   'LoadState.svelte':
     'the loading and failed account reads above; homebrewCatalog.test.ts failed, with axe; homebrewPage.test.ts, homebrewEditor.test.ts and record.test.ts loading and failed',

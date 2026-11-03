@@ -8,6 +8,7 @@ import { browserClock, fixedClock, queryClock, TEST_NOW } from './clock.js';
 import { browserDialog, fakeDialog } from './dialog.js';
 import { edgeSpeed, nativeDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserViewport, fakeViewport } from './viewport.js';
 import { browserPage, fakePage } from './page.js';
 import { memoryRouter, pathRouter } from './router.js';
 import { browserShare } from './share.js';
@@ -1603,5 +1604,55 @@ describe('the clock', () => {
     expect(queryClock('?as=gm1&toasts=held', 2).now()).toBe(2);
     expect(queryClock('?toasts=yes', 2).holdsToasts?.()).toBeUndefined();
     expect('holdsToasts' in browserClock()).toBe(false);
+  });
+});
+
+describe('the viewport port', () => {
+  it('reads the band from two media queries and follows their changes', () => {
+    const state = { narrow: true, wide: false };
+    const listeners: (() => void)[] = [];
+    try {
+      vi.stubGlobal('matchMedia', (q: string) => ({
+        get matches() {
+          return q === '(max-width: 760px)' ? state.narrow : state.wide;
+        },
+        addEventListener: (_: string, cb: () => void) => listeners.push(cb),
+        removeEventListener: (_: string, cb: () => void) =>
+          listeners.splice(listeners.indexOf(cb), 1)
+      }));
+      const port = browserViewport();
+      expect(port.band()).toBe('narrow');
+      const seen: string[] = [];
+      const stop = port.onchange((b) => seen.push(b));
+      state.narrow = false;
+      listeners[0]?.();
+      state.wide = true;
+      listeners[1]?.();
+      expect(seen).toEqual(['mid', 'wide']);
+      stop();
+      expect(listeners).toHaveLength(0);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('answers wide without matchMedia', () => {
+    try {
+      vi.stubGlobal('matchMedia', undefined);
+      expect(browserViewport().band()).toBe('wide');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('has a fake that moves when told and tells its listeners', () => {
+    const port = fakeViewport('narrow');
+    const seen: string[] = [];
+    const stop = port.onchange((b) => seen.push(b));
+    port.set('mid');
+    stop();
+    port.set('wide');
+    expect(port.band()).toBe('wide');
+    expect(seen).toEqual(['mid']);
   });
 });

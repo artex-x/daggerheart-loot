@@ -28,14 +28,14 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     checkbox "Выбрать все (6)" [checked=false]
     StaticText "Выбрать все (6)"
     checkbox "Рецепт Малого Зелья Лечения" [checked=false]
-    button "19 Рецепт Малого Зелья Лечения В качестве Хода Отдыха вы можете ..." [namelen=175 namehash=4e8dc348]
+    button "19 Рецепт Малого Зелья Лечения ПРЕДМЕТ CORE В качестве Хода Отды..." [namelen=175 namehash=6ca66679]
     ... checkbox x3 of 7 same-shape siblings elided
-    button "7 Малое Зелье Лечения Излечите 1d4 Ран. Получается из: Рецепт Ма..." [namelen=128 namehash=02726f7c]
+    button "7 Малое Зелье Лечения РАСХОДНИК CORE Излечите 1d4 Ран. Получаетс..." [namelen=128 namehash=5fdea9da]
     ... button x2 of 6 same-shape siblings elided
     checkbox "Фляга Путника" [checked=false]
-    button "29 Фляга Путника Стоимость Призыва: 1 Эта фляга всегда полна хол..." [namelen=241 namehash=497a1b97]
+    button "29 Фляга Путника ПРЕДМЕТ VAULT OF AGES Стоимость Призыва: 1 Эта ..." [namelen=241 namehash=db15e9d2]
     checkbox "Мешок Собирателя" [checked=false]
-    button "14 Мешок Собирателя Вы получаете следующий Ход Отдыха. Сбор Ингр..." [namelen=266 namehash=8c366643]
+    button "14 Мешок Собирателя ПРЕДМЕТ ВОЮЮЩИЕ НОРЫ Вы получаете следующий ..." [namelen=266 namehash=466b011e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -44,12 +44,12 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-14Мешок СобирателяВы получаете следующий Ход Отдыха.Сбор Ингреди... [namelen=261 namehash=35c05bb9]
-19Зелье ЛеченияИзлечите 1d4+1 Ран.Получается из: Малое Зелье Леч... [namelen=118 namehash=c1a74b10]
-19Рецепт Малого Зелья ЛеченияВ качестве Хода Отдыха вы можете ис... [namelen=170 namehash=963ee2dd]
-29Фляга ПутникаСтоимость Призыва: 1Эта фляга всегда полна холодн... [namelen=236 namehash=9a994db9]
-43Большое Зелье ЛеченияИзлечите 1d4+2 Ран.Получается из: Зелье Л... [namelen=83 namehash=da1f102c]
-7Малое Зелье ЛеченияИзлечите 1d4 Ран.Получается из: Рецепт Малог... [namelen=121 namehash=323f2852]
+14Мешок СобирателяПредметВоюющие НорыВы получаете следующий Ход ... [namelen=261 namehash=bab57b99]
+19Зелье ЛеченияРасходникCoreИзлечите 1d4+1 Ран.Получается из: Ма... [namelen=118 namehash=b2b54ebb]
+19Рецепт Малого Зелья ЛеченияПредметCoreВ качестве Хода Отдыха в... [namelen=170 namehash=3a541543]
+29Фляга ПутникаПредметVault of AgesСтоимость Призыва: 1Эта фляга... [namelen=236 namehash=7caba02a]
+43Большое Зелье ЛеченияРасходникCoreИзлечите 1d4+2 Ран.Получаетс... [namelen=83 namehash=46e6ae0e]
+7Малое Зелье ЛеченияРасходникCoreИзлечите 1d4 Ран.Получается из:... [namelen=121 namehash=80d8e372]
 EN
 RU
 daggerheart.com
@@ -99,14 +99,14 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     checkbox "Select all (6)" [checked=false]
     StaticText "Select all (6)"
     checkbox "Minor Health Potion Recipe" [checked=false]
-    button "19 Minor Health Potion Recipe As a downtime move, you can use a ..." [namelen=152 namehash=ac148939]
+    button "19 Minor Health Potion Recipe ITEM CORE As a downtime move, you ..." [namelen=152 namehash=3f81b0d6]
     ... checkbox x3 of 7 same-shape siblings elided
-    button "7 Minor Health Potion Clear 1d4 HP. Made from: Minor Health Poti..." [namelen=118 namehash=d9955d5b]
+    button "7 Minor Health Potion CONSUMABLE CORE Clear 1d4 HP. Made from: M..." [namelen=118 namehash=cda35c1f]
     ... button x2 of 6 same-shape siblings elided
     checkbox "Traveler's Flask" [checked=false]
-    button "29 Traveler's Flask Recall Cost: 1 This flask is always full of ..." [namelen=218 namehash=56284955]
+    button "29 Traveler's Flask ITEM VAULT OF AGES Recall Cost: 1 This flask..." [namelen=218 namehash=e7aff954]
     checkbox "Harvesting Sack" [checked=false]
-    button "14 Harvesting Sack Gain the following downtime move. Gather Ingr..." [namelen=242 namehash=b776814e]
+    button "14 Harvesting Sack ITEM WARRIN' WARRENS Gain the following downt..." [namelen=242 namehash=0a59c9f1]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -115,12 +115,12 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-14Harvesting SackGain the following downtime move.Gather Ingredi... [namelen=237 namehash=a4312098]
-19Health PotionClear 1d4+1 HP.Made from: Minor Health Potion·Upg... [namelen=107 namehash=c27d0002]
-19Minor Health Potion RecipeAs a downtime move, you can use a vi... [namelen=147 namehash=ae04911f]
-29Traveler's FlaskRecall Cost: 1This flask is always full of col... [namelen=213 namehash=9be572d2]
-43Major Health PotionClear 1d4+2 HP.Made from: Health PotionCons... [namelen=74 namehash=522c5e63]
-7Minor Health PotionClear 1d4 HP.Made from: Minor Health Potion ... [namelen=111 namehash=a7eac893]
+14Harvesting SackItemWarrin' WarrensGain the following downtime ... [namelen=237 namehash=e03e21da]
+19Health PotionConsumableCoreClear 1d4+1 HP.Made from: Minor Hea... [namelen=107 namehash=cfcd6ad4]
+19Minor Health Potion RecipeItemCoreAs a downtime move, you can ... [namelen=147 namehash=25db84a5]
+29Traveler's FlaskItemVault of AgesRecall Cost: 1This flask is a... [namelen=213 namehash=14f9cded]
+43Major Health PotionConsumableCoreClear 1d4+2 HP.Made from: Hea... [namelen=74 namehash=cab526c9]
+7Minor Health PotionConsumableCoreClear 1d4 HP.Made from: Minor ... [namelen=111 namehash=c0b6d327]
 Consumables
 EN
 Equipment

@@ -14,10 +14,12 @@
   import MarkupInline from './MarkupInline.svelte';
   import { artSrc, descBlocks } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
-  import { descOf, eqLine, nameOf } from '../lib/i18n.js';
+  import { descOf, eqParts, nameOf } from '../lib/i18n.js';
   import { cardBadges, kindGlyph, relText, srcLabel } from '../lib/label.js';
   import { madeFrom, upgradesTo } from '../lib/data.js';
   import type { Index } from '../lib/data.js';
+  import type { HiddenTags } from '../lib/rowTags.js';
+  import { highlightRanges, type Term } from '../lib/search.js';
   import type { Equip, Lang, Record_ } from '../lib/types.js';
 
   interface Props {
@@ -36,9 +38,25 @@
     /** An entry marked «Только для мастера»: the art at 45% and the state for a
      *  screen reader after the name. */
     gmOnly?: boolean | undefined;
+    /** The tags the catalog's page already says (`rowTags.ts`); none hidden elsewhere. */
+    hide?: HiddenTags | undefined;
+    /** The search terms whose matches the name marks. */
+    terms?: readonly Term[] | undefined;
   }
 
-  const { it, index, lang, artBroken, onartfail, onopen, num, tail, gmOnly }: Props = $props();
+  const {
+    it,
+    index,
+    lang,
+    artBroken,
+    onartfail,
+    onopen,
+    num,
+    tail,
+    gmOnly,
+    hide,
+    terms
+  }: Props = $props();
 
   const t = $derived(dict(lang));
 
@@ -46,6 +64,46 @@
 
   const into = $derived(upgradesTo(index, it));
   const from = $derived(madeFrom(index, it));
+
+  /* The tags after the name: the kind tag first, the unique and tier tags, then the
+     source. A tag the page already says is left out (`hide`). */
+  const tags = $derived.by(() => {
+    const out = cardBadges(it, lang, t).filter(
+      (b, i) => !(i === 0 && hide?.kind) && !(b.cls === 'tier' && hide?.tier)
+    );
+    const src = srcLabel(it, lang);
+    const core = it.src === 'core' && !it.frame && !it.realm;
+    if (!hide?.src && !(hide?.core && core)) out.push({ cls: 'src', text: src });
+    return out;
+  });
+
+  /* A separator is part of the value before it: a no-break space keeps «·» off the
+     start of a line. */
+  const stats = $derived(
+    it.eq
+      ? eqParts(
+          it,
+          lang,
+          { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore, artifact: t.voaArtifact1 },
+          { noType: true, noTier: !!hide?.tier }
+        ).join('\u00a0· ')
+      : ''
+  );
+
+  /* The name in runs, a matched run marked (the search highlight). */
+  const nameRuns = $derived.by(() => {
+    const name = nameOf(it, lang);
+    const ranges = terms?.length ? highlightRanges(name, terms) : [];
+    const out: { text: string; mark: boolean }[] = [];
+    let at = 0;
+    for (const [a, b] of ranges) {
+      if (a > at) out.push({ text: name.slice(at, a), mark: false });
+      out.push({ text: name.slice(a, b), mark: true });
+      at = b;
+    }
+    if (at < name.length) out.push({ text: name.slice(at), mark: false });
+    return out;
+  });
 </script>
 
 <!-- No aria-label: the live app left this button's name to its content, so
@@ -73,17 +131,15 @@
     ></span
   >
   <span class="rt"
-    ><b
-      >{#if num}<span class="rnum">{num}</span>{/if}{nameOf(it, lang)}{#if gmOnly}<span
-          class="gmstate vh">{', ' + t.noteHid}</span
-        >{/if}{#if tail}<i class="rtail">{tail}</i>{/if}</b
-    >{#if it.eq}<span class="rstats {eqClass(it.eq)}"
-        >{eqLine(
-          it,
-          lang,
-          { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore, artifact: t.voaArtifact1 },
-          { noType: true }
-        )}</span
+    ><span class="rh"
+      ><b
+        >{#if num}<span class="rnum">{num}</span
+          >{/if}{#each nameRuns as r, i (i)}{#if r.mark}<mark>{r.text}</mark
+            >{:else}{r.text}{/if}{/each}{#if gmOnly}<span class="gmstate vh"
+            >{', ' + t.noteHid}</span
+          >{/if}{#if tail}<i class="rtail">{tail}</i>{/if}</b
+      >{#each tags as b, i (i)}<Badge cls={b.cls} title={b.title}>{b.text}</Badge>{/each}</span
+    >{#if it.eq && stats}<span class="rstats {eqClass(it.eq)}">{stats}</span
       >{/if}{#if descOf(it, lang)}{@const blocks = descBlocks(it, lang)}<span
         >{#each blocks as b, i (i)}{#if i > 0}<br />{/if}{#if b.t === 'p'}<MarkupInline
               c={b.c}
@@ -106,10 +162,6 @@
             1
           )}{/if}</span
       >{/if}</span
-  ><span class="rm"
-    >{#each cardBadges(it, lang, t) as b, i (i)}<Badge cls={b.cls} title={b.title}
-        >{b.text}</Badge
-      >{/each}<Badge cls="src">{srcLabel(it, lang)}</Badge></span
   >
 </button>
 
@@ -145,9 +197,19 @@
     opacity: 0.45;
   }
 
+  /* The line length holds at 70 characters. */
   .row-main .rt {
     flex: 1;
     min-width: 0;
+    max-width: 70ch;
+  }
+
+  /* The name line: the name, then its tags after it, wrapping as a whole. */
+  .row-main .rt .rh {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
   }
 
   .row-main .rt b {
@@ -158,17 +220,25 @@
     font-weight: 620;
   }
 
+  /* The search highlight: a lit ground and an underline, not color alone (WCAG 1.4.1). */
+  .row-main mark {
+    background: var(--surface2);
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .row-main .rt .rnum {
     font: 650 var(--t-badge)/1 var(--ui);
     font-variant-numeric: tabular-nums;
     color: var(--txt);
     flex: none;
     border: 1px solid var(--line2);
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 3px 5px;
   }
 
-  .row-main .rt span {
+  .row-main .rt > span:where(:not(.rh)) {
     display: block;
     font-size: var(--t-data);
     color: var(--muted2);
@@ -198,15 +268,9 @@
     fill: var(--muted2);
   }
 
-  /* Its own flex item, so the row gap spaces both sides of the dot; it undoes
-     the description-span rule above. */
+  /* Its own flex item, so the row gap spaces both sides of the dot. */
   .row-main .rt .rcraft .rsep {
     display: block;
-    margin-top: 0;
-    font-size: inherit;
-    color: inherit;
-    line-height: inherit;
-    overflow: visible;
   }
 
   .row-main .rt .rstats {
@@ -219,13 +283,6 @@
     color: var(--muted);
   }
 
-  .row-main .rm {
-    flex: none;
-    display: flex;
-    gap: 5px;
-    align-items: center;
-  }
-
   /* off the `.rtail` rule (`git show 23c00a6^:style.css`) - the shared page's decoration. */
   .rtail {
     font-style: normal;
@@ -236,24 +293,7 @@
   }
 
   @media (max-width: 600px) {
-    .row-main {
-      flex-wrap: wrap;
-    }
-
-    .row-main .rm {
-      flex-basis: 100%;
-      padding-left: 72px;
-      margin-top: 2px;
-      flex-wrap: wrap;
-    }
-
-    @media (max-width: 400px) {
-      .row-main .rm {
-        padding-left: 0;
-      }
-    }
-
-    .row-main .rt span {
+    .row-main .rt > span:where(:not(.rh)) {
       -webkit-line-clamp: 3;
       line-clamp: 3;
     }

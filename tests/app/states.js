@@ -196,7 +196,6 @@ async function addToListMenuStaysInModal() {
 async function twoFramesPicked() {
   const { ctx, d } = await fresh({ width: 1180, height: 900 });
   await d.open('#/tables/other_frames');
-  await d.press('Фильтры');
   await d.press('Пир зверей');
   await d.press('Колоссы Сухоземья');
   const hash1 = await d.hash();
@@ -206,27 +205,16 @@ async function twoFramesPicked() {
   );
   const rows1 = await d.count('.rows .row[data-row]');
   ok(rows1 === 57, '4 (two frames): ' + rows1 + ' rows instead of 57');
-  const pills1 = await d.count('.fpill');
-  ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pills instead of 2');
+  const pills1 = await d.count('[data-fval][aria-pressed="true"]');
+  ok(pills1 === 2, '4 (two frames): ' + pills1 + ' pressed chips instead of 2');
   await ctx.close();
 
-  const { ctx: ctx2, page: page2, d: d2 } = await fresh({ width: 1180, height: 900 });
+  const { ctx: ctx2, d: d2 } = await fresh({ width: 1180, height: 900 });
   await d2.open('#/tables/other_frames/f_frame-beast_feast-colossus');
   const rows2 = await d2.count('.rows .row[data-row]');
   ok(rows2 === 57, '5 (link arriving fresh): ' + rows2 + ' rows instead of 57');
-  const pills2 = await d2.count('.fpill');
-  ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pills instead of 2');
-  /* A one-line pill keeps the strip's 32px, beside «Сбросить всё»; only a long
-     name wraps it taller (docs/specs/FEATURES.md, rule 16). */
-  const heights = await page2.evaluate(() =>
-    [...document.querySelectorAll('.fpill, .fclear')].map(
-      (e) => e.getBoundingClientRect().height
-    )
-  );
-  ok(
-    heights.length === 3 && heights.every((h) => h === 32),
-    '5 (link arriving fresh): pill and reset heights ' + heights.join(', ') + ', expected 32'
-  );
+  const pills2 = await d2.count('[data-fval][aria-pressed="true"]');
+  ok(pills2 === 2, '5 (link arriving fresh): ' + pills2 + ' pressed chips instead of 2');
   await ctx2.close();
 }
 
@@ -415,7 +403,7 @@ async function focusSurvivesKeystroke() {
     (ph) =>
       document.activeElement instanceof HTMLInputElement &&
       document.activeElement.placeholder === ph,
-    'Поиск по названию или описанию...'
+    'Поиск'
   );
   ok(stillFocused, '12 (focus survives input): focus left the search box after the redraw');
   await ctx.close();
@@ -572,7 +560,7 @@ async function historyBackForward() {
   await page.goBack();
   await d.settle();
   const chip = await page.evaluate(
-    () => document.querySelector('.subchips .chip.on')?.textContent
+    () => document.querySelector('.tablenav .tabs [aria-current="page"]')?.textContent
   );
   ok(chip === 'Броня', '15 (navigation): back returned the wrong table - ' + chip);
   await page.goForward();
@@ -1054,7 +1042,9 @@ async function tileGeometryNoArt() {
   await page.goto('about:blank');
   await page.goto(TARGETS.next + '#/tables/eq_weapon', { waitUntil: 'domcontentloaded' });
   await ready(page);
-  await d.press('Сеткой');
+  await d.press('Сетка');
+  /* The tile's box shows in the selection mode only. */
+  await d.press('Выбрать');
   await new Promise((r) => setTimeout(r, 700));
   const widths = await page.$$eval('.tilewrap .tile', (e) => [
     ...new Set(e.map((x) => Math.round(x.getBoundingClientRect().width)))
@@ -2262,12 +2252,12 @@ async function printAfterSignIn() {
   const text = () => page.evaluate(() => document.body.innerText);
   ok(
     (await text()).includes('Войдите, чтобы печатать карточки.') &&
-      !(await page.$('.selbarwrap .selacts')),
+      !(await page.$('.selbarwrap .selacts .seldrop')),
     at + "the prompt did not take the bar's action row"
   );
   await d.press('Отмена');
   ok(
-    !!(await page.$('.selbarwrap .selacts')),
+    !!(await page.$('.selbarwrap .selacts .seldrop')),
     at + '«Отмена» did not bring the action row back'
   );
   await d.press('Печать');
@@ -4998,7 +4988,8 @@ async function homebrewItemsFilterAddress() {
  *  field's first value, so no roll is made and the offset is deterministic. */
 const FIRST_SCREEN = [
   { state: '#/roll/std', shipped: false },
-  { state: '#/tables/eq_weapon', shipped: false },
+  { state: '#/tables/eq_weapon', shipped: true },
+  { state: '#/tables/eq_weapon ~ two filters', shipped: true },
   { state: '#/i/ci1', shipped: false },
   { state: '#/search ~ searched', shipped: false },
   { state: '#/account as gm1', shipped: false },

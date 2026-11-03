@@ -283,6 +283,17 @@
     app.shared = null;
   });
 
+  /* The selection bar's «Все» ticks the rows drawn here. */
+  $effect(() => {
+    const ids = entries.map((e) => e.it.id);
+    untrack(() => {
+      app.setSelectable(ids);
+    });
+  });
+  onDestroy(() => {
+    app.setSelectable([]);
+  });
+
   /* Signed out, «Сохранить себе» opens the sign-in prompt under it; the
      sign-in comes back here and saves into the account by itself. */
   let prompting = $state(false);

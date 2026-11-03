@@ -2,11 +2,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { helpFor, isBold, isBreak, isLink, moneyHelpFor } from './help.js';
-import { SECTION_LABEL, dict } from './dict.js';
-import { SUPPLEMENTS } from './nav.js';
 import type { Help, HelpLink, HelpPart } from './help.js';
 import type { Lang } from './types.js';
-import { readLoot } from '../test/loot.js';
 
 const LANGS: Lang[] = ['ru', 'en'];
 const SECTIONS = ['std', 'alt', 'wondrous', 'dread', 'voa', 'dv', 'arazo', 'community', 'mwt'];
@@ -246,75 +243,18 @@ describe('the help for a section', () => {
   });
 });
 
-describe('the tables help against the data', () => {
-  /* Every book whose equipment also rolls on its own table is named where the
-     help says so; Vault of Ages was once left out of that list. */
-  const LOOT = readLoot();
-  const BOOK: Record<string, string> = {
-    wondrous: 'Wondrous Environments',
-    dread: 'Dread GM Toolbox',
-    voa: 'Vault of Ages',
-    dv: "The Dragon's Vault",
-    arazo: "Arazo's Artifacts",
-    mwt: 'Many Worlds Tavern'
-  };
-  const rolled = [
-    ...new Set(
-      Object.values(LOOT.items)
-        .flat()
-        .filter((it) => it.eq && it.roll != null)
-        .map((it) => it.src)
-    )
-  ].sort();
-
-  it('knows every book with rolled equipment', () => {
-    expect(rolled).toEqual(Object.keys(BOOK).sort());
+describe('the tables help, «Об этих данных»', () => {
+  it.each(LANGS)('holds three data notes, each with a bold lead, in %s', (lang) => {
+    const help = helpFor('tables', lang);
+    expect(help?.paragraphs).toHaveLength(3);
+    expect(help?.paragraphs.every((para) => !!para.lead)).toBe(true);
+    expect(help?.button).toBe(lang === 'ru' ? 'Об этих данных' : 'About this data');
+    expect(linksOf(help).map((l) => l.label)).toEqual(['daggerheart.su']);
   });
 
-  it.each([
-    ['ru', /номер/],
-    ['en', /roll number/]
-  ] as const)('names each of them wherever %s mentions a roll number', (lang, mark) => {
-    const help = helpFor('tables', lang);
-    const paras = (help?.paragraphs ?? [])
-      .map((_, i) => textOf(help, i))
-      .filter((text) => mark.test(text) && text.includes('Wondrous Environments'));
-    expect(paras.length).toBe(2);
-    for (const text of paras) {
-      for (const src of rolled) expect(text, src).toContain(BOOK[src]);
+  it('is the only help that names its own button', () => {
+    for (const section of [...SECTIONS, 'lists', 'homebrew']) {
+      for (const lang of LANGS) expect(helpFor(section, lang)?.button, section).toBeUndefined();
     }
-  });
-});
-
-describe('the tables help for a signed-in author', () => {
-  it('names the «Хоумбрю» group, its source chip and its two filters in both languages', () => {
-    const ru = helpFor('tables', 'ru');
-    const en = helpFor('tables', 'en');
-    expect(textOf(ru, 0)).toContain('группа «Хоумбрю» - ваши собственные предметы');
-    expect(textOf(ru, 7)).toContain(
-      'у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей.'
-    );
-    expect(textOf(en, 0)).toContain('one more group, "Homebrew": your own items');
-    expect(textOf(en, 7)).toContain(
-      'and type and section for Homebrew, where the row above the table picks the source.'
-    );
-  });
-});
-
-describe('the tables help on the supplements group', () => {
-  it.each(LANGS)('names the seven books in panel order and the realm filter in %s', (lang) => {
-    const help = helpFor('tables', lang);
-    const first = textOf(help, 0);
-    const t = dict(lang);
-    /* The panel chips' own words, in lowercase where the sentence runs on. */
-    const names: Record<string, string> = {
-      'roll/community': lang === 'ru' ? 'предметы сообществ' : 'community items'
-    };
-    const at = SUPPLEMENTS.map((s) => first.indexOf(names[s] ?? t[SECTION_LABEL[s]]));
-    expect(at.every((i) => i >= 0)).toBe(true);
-    expect([...at].sort((a, b) => a - b)).toEqual(at);
-    expect(textOf(help, 7)).toContain(
-      lang === 'ru' ? 'у Many Worlds Tavern вид и мир' : 'kind and realm for Many Worlds Tavern'
-    );
   });
 });

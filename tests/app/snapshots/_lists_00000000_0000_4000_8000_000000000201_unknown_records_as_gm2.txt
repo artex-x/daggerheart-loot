@@ -45,7 +45,7 @@ RootWebArea "Список второго ГМа - Генератор лута Da
     generic ""
     checkbox "Скипетр" [checked=false]
     spinbutton "Позиция в списке" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Скипетр Ранг 1 · Магическое · Влияние · Далеко · d6 маг · Двуруч..." [namelen=194 namehash=5790d5c3]
+    button "Скипетр ОСНОВНОЕ ОРУЖИЕ CORE Ранг 1 · Магическое · Влияние · Дал..." [namelen=194 namehash=38903faa]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -100,7 +100,7 @@ hb_emberaxeaaaaaaaa
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Скопировать текст
 Скрыть изменение «Спальный мешок долгой дороги через перевал, бо... [namelen=139 namehash=028772a7]
 Скрыть изменение «Топор Тлеющих Углей»
@@ -157,7 +157,7 @@ RootWebArea "Список второго ГМа - Daggerheart Loot Generator" [u
     generic ""
     checkbox "Scepter" [checked=false]
     spinbutton "Position in the list" [value=1 valuetext=1 required=false valuemin=1 valuemax=2]
-    button "Scepter Tier 1 · Magic · Presence · Far · d6 mag · Two-Handed Ve..." [namelen=164 namehash=04ac40ab]
+    button "Scepter PRIMARY WEAPON CORE Tier 1 · Magic · Presence · Far · d6..." [namelen=164 namehash=e817f492]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -218,7 +218,7 @@ Remove from the list
 Roll
 Roll result
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
 Select all
 Share

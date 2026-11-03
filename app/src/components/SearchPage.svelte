@@ -5,6 +5,7 @@
      hint, up to 300 rows ranked best first, or "nothing found". A signed-in
      author's own items rank with the catalog's, the catalog's record first
      on a tie, and the «Свои предметы» switch under the kind chips hides them for the visit. */
+  import { onDestroy, untrack } from 'svelte';
   import Empty from './Empty.svelte';
   import Field from './Field.svelte';
   import ChipRow from './ChipRow.svelte';
@@ -65,6 +66,17 @@
         )
   );
   const found = $derived(matched.slice(0, 300));
+
+  /* The selection bar's «Все» ticks the rows drawn here. */
+  $effect(() => {
+    const ids = found.map((it) => it.id);
+    untrack(() => {
+      app.setSelectable(ids);
+    });
+  });
+  onDestroy(() => {
+    app.setSelectable([]);
+  });
 
   const KIND_LABEL: Record<Kind, keyof Dict> = {
     item: 'fItems',

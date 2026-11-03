@@ -40,15 +40,13 @@ across.
   descriptive wording measured 293 px on a 360 px viewport against the
   subchip's 260 px cap. Shrinking type, reducing spacing, wrapping,
   truncating, horizontal scroll and any other layout change were rejected -
-  the short wording is the fix. The tables strip has a cap of 300 px under
-  500 px wide, 210 px from 500 to 767 px, 150 px from 768 to 999 px and 130 px
-  from 1000 px (`tests/app/sweep.js`; the 210 px band follows the layout
-  measured 2026-10-28: 201 px at 500 px, 162 px to about 700 px and 118 px from
-  767 px on a seven-book row, Russian, as gm2; owner, 2026-10-28).
-  Six group chips (seven signed in, with Homebrew) and the second row of
-  seven supplement books measure 283 px at 360, 118 px at 768 and 79 px at
-  1180 in Russian signed out, and 283 / 244 px at 360 signed in, Russian /
-  English (measured 2026-10-21, with the source names and their short forms).
+  the short wording is the fix. The catalog head is measured, not the old
+  strip: below 761 px the picker row is at most 64 px tall; from 761 px the
+  group chips and the tabs together are at most 140 px below 1000 px (the seven
+  supplement tabs take two lines: 130 px at 768, 2026-10-30) and 110 px from
+  1000 px (`tests/app/sweep.js`,
+  at 500, 600, 700, 768 and the run widths, as gm2, the seventh group chip
+  drawn).
 - The nine roll sections share the header's roll job «Бросок» / "Roll" and draw
   the mode row under the header ("Chrome";
   `docs/decisions/2026-10-29-the-header-has-three-jobs-and-a-mode-row.md`). The
@@ -57,9 +55,9 @@ across.
   its section; the open one is checked and the current page, and the menu
   button shows its name. The name is the source's product name
   (`docs/decisions/2026-10-21-source-names-follow-the-source-product.md`). The
-  roll pages draw no supplements panel. The tables book row keeps its three
-  short forms under 640 px ("Wondrous", "Dread", "Dragon's Vault", the full name
-  as the `aria-label`).
+  roll pages draw no supplements panel. The catalog's tabs draw each book by
+  its full name at every width; below 761 px the books are in the picker's
+  sheet.
 - The consumable/item kind filter is one toggle shared by Core rules, the
   alternate tables and search (`AppState.kinds`, memory only) - switching
   consumables off on one switches them off everywhere, not per page.
@@ -108,17 +106,72 @@ across.
 
 - 19 tables (`TABLE_IDS`), each with its own search box and a list/grid switch;
   the nineteenth, `homebrew`, has its group chip signed in only.
-- The group chips are Core, Hope & Fear, the alternate tables, «Дополнения» /
-  "Supplements", Equipment, Other and, signed in, Homebrew (`TABLE_NAV`).
-  «Дополнения» opens Wondrous Environments and is lit on each supplement table; its
-  second row holds the seven books by their own names, in `SUPPLEMENTS` order. A record's path
+- The navigation has two levels. The group chips are Core, Hope & Fear, the
+  alternate tables, «Дополнения» / "Supplements", Equipment, Other and, signed
+  in, Homebrew (`TABLE_NAV`), a group labeled «Группа» / "Group" for
+  assistive technology. Under them the book or section of the group are
+  underlined tabs, a group labeled by the group's name; the current tab is
+  gold text on a gold underline (`aria-current="page"`). «Дополнения» opens
+  Wondrous Environments and is lit on each supplement table; its tabs are the
+  seven books by their own names, in `SUPPLEMENTS` order. A record's path
   (`whereFrom`, the stubs under `i/`) keeps the book and never says
-  «Дополнения».
-  The switch changes the view until the page reloads; the default is the
-  Display section's «Таблицы» row ("Account"). While the view differs from
-  the default, a build with sign-in draws the note «Только до перезагрузки.
-  Чтобы сохранить, измените в настройках аккаунта.» under the toolbar, its
-  last words a link to `#/account`.
+  «Дополнения». Below 761 px both levels are the table picker's bottom sheet:
+  the picker button, named «Таблица: <name>» / "Table: <name>", reads the
+  tab's caption, or «<Book> · Предметы» / «<Book> · Расходники» where the
+  caption names no book (`pickerLabel`); the sheet holds the group chips and
+  the chosen group's tables, three taps to another group's table.
+  The view switch («Список» / «Сетка», "List" / "Grid") changes the view
+  until the page reloads; the default is the Display section's «Таблицы» row
+  ("Account"), and the switch carries no note (owner, Q3.2).
+- The list head (`docs/decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`).
+  The page name «Таблицы» is the `h1` at every width; below 761 px it is read,
+  not drawn, and the head is the picker row: the picker, the view switch and
+  «··· Ещё» / "··· More" (the three-dot icon and the word), whose menu holds
+  «Ссылка на таблицу» (not on `homebrew`), the pin and «Об этих данных». From
+  761 px the head is the `h1`, the labeled pin, «Об этих данных» and the two
+  navigation levels. The search row follows: the search first (placeholder
+  «Поиск» / "Search", named by the long `searchPh`, at least 140 px at 360),
+  «Фильтры» below 1000 px (plain at no pick, «Фильтры · N» lit while a value
+  is picked: a gold label on a 45% gold border), from 761 px the view switch,
+  the «Свои предметы» switch and «Ссылка на таблицу», then «Выбрать» last.
+- The count line, «<chosen values> · Показано N из M» / "<chosen values> · N of
+  M shown", draws only while a filter or a query narrows the view: under the
+  search row below 761 px, in the row from 761 px. The values are the chosen
+  values in text, joined with a comma («Ранг 1, Вплотную»), cut to one line
+  with an ellipsis; the count is never cut (owner, R3-1). A query alone draws
+  the count alone.
+- «Об этих данных» / "About this data" (owner, Q3.1) opens three data notes:
+  the sources and the translation credit, the tier in Wondrous Environments,
+  and class against damage. Its button carries the panel's name.
+- The selection mode (`AppState.selecting`, memory only): the catalog draws no
+  tick column until «Выбрать» / "Select" is pressed. Then the ticks and the
+  selection bar show, «Выбрать» hides and the focus moves to the bar's «Все».
+  The bar's «Все» is the one select-all control of the catalog; to tick one
+  section, pick its filter value, then «Все» (owner, Q3-S). Ticks that arrive
+  with the page (a sign-in that returns with them) open the mode. «Снять
+  выделение» clears the ticks, leaves the mode, also with zero ticks, and
+  returns the focus to «Выбрать» (rule 20). `/search` and the shared page keep
+  their ticks and their «Выбрать все (N)» strip until their batches.
+- A row reads its name, then its tags after it, then the stat line, then the
+  description; the text holds at 70 characters a line and a separator never
+  starts a line. A row hides the tags that repeat what the page already says
+  (`rowTags.ts`): the kind tag on a one-kind table or under one picked kind,
+  the tier in the stat line and the tier tag under a tier heading or one
+  picked tier, the source tag on a one-book table or under one picked book,
+  and the «Core» source tag on an equipment table (a row from another book
+  keeps its name). A ticked row or tile is lit and neutral: the `--surface2`
+  ground, the `--muted2` border and the checked box, never gold. A search
+  marks the matched words of a name with `<mark>`: a lit ground and an
+  underline, not color alone; a stem match is not marked.
+- The grid draws two columns up to 600 px. A tile is the art, the name and a
+  second line: the stat line for equipment, else the other-language name
+  (English first in English). Its roll number is a neutral badge; a table of
+  more than one kind labels the tile with a kind badge, and a one-kind table
+  draws none.
+- The empty state is a dashed plate with the kind glyph, «Ничего не найдено» /
+  "Nothing found", one cause sentence that names the query, the chosen values
+  or both («Нет совпадений с «%q» среди фильтров: %v.»), and the primary
+  «Сбросить фильтры» / "Reset the filters" while a filter is chosen.
 - Search covers all 1459 records: names, descriptions and stat lines, both
   languages at once; `#/search` shows the first 300 matches - the cap is that
   page's alone, a table's own box is not capped. Once a query exceeds 300
@@ -153,7 +206,8 @@ across.
   belong in the record description rather than in a new roll table. The
   accepted source-image hashes are
   recorded in `docs/provenance/starting-items-artwork.json`.
-- Every heading has a copy-link button; sections are addressable.
+- Every section heading is an `h2` with «Ссылка на раздел» / "Link to this
+  section", a labeled button 28 px tall; sections are addressable.
 - A row or section link (`#/tables/<table>/<key>` - what a record's "show in
   table" link produces; a section's copy-link button copies the same address
   as its preview link, below) scrolls to its target
@@ -161,8 +215,8 @@ across.
   language switch. A search keystroke, a tick or a view switch does not
   re-play them - the live app re-rendered and re-scrolled on each, a defect
   not reproduced.
-- The three copy buttons of a catalog table - the toolbar's table link, the
-  filter link and a block's link - copy its preview link
+- The three copy buttons of a catalog table - the table link, the filter link
+  and a block's link - copy its preview link
   `https://daggerheart-loot.pages.dev[/en]/tables/<table>[/<tail>]`, with no
   `v` (`<site>[en/]#/tables/...` in a build with no preview host);
   `homebrew` draws none of the three: its address opens only the reader's own
@@ -195,7 +249,7 @@ across.
   sections under the source name, the items with no source under «Хоумбрю»
   last), the rows by name. With items in two or more sources, one source chip
   per source as the table nav's second row (sources by creation, «Хоумбрю»
-  last, no count; past 12 chips the row draws the first 10, the chosen one
+  last, no count, labeled «Источник» / "Source"; past 12 chips the row draws the first 10, the chosen one
   and «и ещё N» / «свернуть», closed when the page mounts, page memory; rule
   12), one always on, and the table shows that source only: its
   sections in order under their own names, then «Без раздела» for its items
@@ -206,9 +260,9 @@ across.
   picks its source's chip and is kept; an address with a second `src` value,
   a value that names no held source or a `sect` value that is not a section
   of the chosen source is rewritten once to the chosen chip. A chip keeps `kind` and drops `sect`,
-  keeps the ticks and does not open a folded filter panel. Facets: `kind` and
+  keeps the ticks and the selection mode. Facets: `kind` and
   `sect` of the shown source's items, by the offer rule below (a section
-  labeled by its name); no `src` row. Every facet write, «Сбросить все» included,
+  labeled by its name); no `src` row. Every facet write, «Сбросить» included,
   keeps the chosen chip. The page hands out no link: no «Ссылка на таблицу», no
   «Ссылка на фильтры» and no section copy button (rule 17). What the chips drop with two or more sources (owner accepted
   2026-10-07, option A): one table of every own item (the bare address, its
@@ -226,32 +280,44 @@ across.
   own item, «Своих предметов пока нет.» and «Новый предмет»; a build with no sign-in
   configured, the not-found page with the address kept. A pin may hold it.
 - **The «Свои предметы» switch** / "Own items": on `#/search` (under the
-  kind row, apart from the filter chips) and in the equipment tables' toolbar
-  (after the view switch), drawn only while the account holds an item. It is
+  kind row, apart from the filter chips) and on the equipment tables (in the
+  search row after the view switch from 761 px, the first row of the filter
+  sheet below it), drawn only while the account holds an item. It is
   a labeled switch (`role="switch"`, Space toggles it, the gold focus ring).
   It is on by default; off, it removes the own records and their `src` values
   from those pages for the visit. The kind row's «Нужен хотя бы один тип»
   applies to the three kinds only. A record dialog, a list, `#/i/<key>`,
   `#/tables/homebrew` and the relation lines of a catalog card or row still
   draw them. It is memory only (`STATE.md`).
-- The filter panel is one component across all tables and the shared list page
-  ("Lists"); where a table has nothing to filter by, there is no panel. A row offers only values
-  the drawn rows answer and shows only when it can narrow; a picked value stays offered as a pill
-  (owner, 2026-10-08). On `#/tables/homebrew` the drawn rows are the chosen source's. Nothing is selected by default and an empty
-  row means "any". Chosen values show as pills outside the panel, with a reset
-  and a copy-link button where the address carries the filter, so they are
-  reachable while the panel is folded.
-  Values in a row combine with *or*; a link naming two frames opens both.
+- The catalog's filters (`FilterPanel`) are a column beside the rows from
+  1000 px, sticky under the header and scrolling inside itself, and a bottom
+  sheet below it; the shared list page and the Items tab keep the strip and
+  its pills ("Lists", "Homebrew") until their batches. Where a table has
+  nothing to filter by, there is neither. A row offers only values the drawn
+  rows answer and shows only when it can narrow; a picked value stays offered
+  (owner, 2026-10-08). On `#/tables/homebrew` the drawn rows are the chosen
+  source's. Each row starts with «Все» / "All", the neutral pressed default
+  while the row has no pick; a press on it clears the row. A picked value is
+  gold. The head reads «Фильтры · N» («Фильтры» at no pick), then «Сбросить»
+  and, where the address carries the filter, «Ссылка на фильтры» once a value
+  is picked. The sheet adds «Закрыть» to its head and a foot with «Сбросить»
+  and «Показать N» (the shown count); Escape, «Закрыть» and a press on the
+  scrim close it, and it has no grab handle. A filter link that arrives opens
+  no sheet: the count line states the picks.
+  Values in a row combine with *or*; a link naming two frames presses both.
 - A row of more than 12 values (a source of many sections on `#/tables/homebrew`,
   the equipment `src` row of an author with many sources, the Items tab's rows)
   draws its first 10 values, then every picked value after them, then the fold
   «и ещё N» / "and N more" (N the values not drawn), which opens to every value
   and «свернуть» / "show less" (rule 12, one button both ways, `aria-expanded`).
-  The open rows are page memory of the strip, closed when it mounts. A row of 12
+  The open rows are page memory of the column or strip, closed when it mounts. A row of 12
   values or fewer draws whole; no catalog row has more than 11 (2026-10-20).
-- Dropping a pill moves focus to the pill now in its place, else the one before
-  it, else «Фильтры», else `#main` when the strip left; «Сбросить всё», in the
-  strip or in the empty state, moves it to «Фильтры» (rule 20).
+- In the catalog, «Сбросить» moves the focus to the first row's «Все» in the
+  column, or to the sheet's «Закрыть»; the empty state's «Сбросить фильтры»
+  moves it to the first «Все», or to «Фильтры» below 1000 px, else `#main`
+  (rule 20). On the shared page and the Items tab, dropping a pill moves the
+  focus to the pill now in its place, else the one before it, else «Фильтры»,
+  else `#main` when the strip left; «Сбросить всё» moves it to «Фильтры».
 - Filter state lives in the address (`STATE.md`), written with `replaceState` on
   every change, and read back only when the segment actually changed; on a
   share link too.
@@ -481,8 +547,17 @@ across.
   region is mounted while nothing is ticked, so the first tick is announced
   too. A table
   or search selection has no taken count and no total, and its bar reads
-  "Выбрано N". The bar is a region named «Выбранные записи» / "Selected
-  records": it sits after the footer, outside every other landmark.
+  «Выбрано: N» / "N selected". The bar is a region named «Выбранные записи» /
+  "Selected records": it sits after the footer, outside every other
+  landmark, pinned to the bottom of the screen. It is one shape on the
+  catalog, `/search` and the shared page (`SelectionBar`): «Все» (a tri-state
+  box named «Выбрать все», its label always visible, ticking every row the
+  page draws, all sections), the summary, the actions («Добавить в список»,
+  «Печать», «Скопировать текст», the shared page's send line), then «Снять
+  выделение» last. Below 761 px the box, the summary and the clear are one
+  row and the actions the next. With zero ticks in the catalog's selection
+  mode it reads «Выбрано: 0», the actions are off and «Снять выделение» stays
+  on. A neutral look: no gold.
 - A typed quantity is held to 99, and a negative one to none; the field then shows the held value.
 - A list has its own roll button, folded by default and opened on its
   summary; the row numbers match it. An empty roll field means no roll has
@@ -724,7 +799,7 @@ address kept, and no add-to-list control is drawn.
   it changed, with «Вернуть», which puts back only those. «Скопировать
   текст» is the players' text: it leaves GM-only entries out as it leaves out
   the GM notes, and a shown entry still names a GM-only record it upgrades
-  into. The selection's «Скопировать», «Печать», the list roll, its numbers
+  into. The selection's «Скопировать текст», «Печать», the list roll, its numbers
   and the counts keep every entry.
 - **The shared page `#/s/<token>`** draws the list as the link's audience sees
   it, read-only for everyone, the owner included: the name, today's
@@ -735,7 +810,7 @@ address kept, and no add-to-list control is drawn.
   new or an existing list is the bar's add-to-list control, which carries the
   taken count as the quantity (none for a count of 1), the price and a row's
   players' note, never the GM's note; the bar shows the selection summary and
-  the total, its «Скопировать» carries each taken count and unit price and
+  the total, its «Скопировать текст» carries each taken count and unit price and
   ends with the total line, and its «Печать» stores each taken count. An
   entry the data no longer knows is dropped and counted in one toast
   («Пропущено позиций, которых больше нет в данных: 2»); a list whose every
@@ -2695,7 +2770,9 @@ Each rule keeps its number: a review cites it by number.
   so a long one stays a few lines high at the bottom of the window.
   Departure: an account list's name is an `<input>` inside its `h1` (rule 15),
   one line that scrolls inside its box (owner, 2026-10-22); the `h1` also
-  holds the name as visually hidden text.
+  holds the name as visually hidden text. Departure: the catalog's count line
+  and its table picker cut to one line with an ellipsis, the full text still
+  read (owner, R3-1, 2026-10-30); a source tab wraps inside its box.
 - **17. Handed-out links** (owner, 2026-10-14), on every page: a control
   that copies or sends a link hands out the preview host's link with its own
   card - an item, a shared list, a print set, a catalog table; a catalog
@@ -2744,6 +2821,9 @@ Each rule keeps its number: a review cites it by number.
   «Войти», or the account button when the sign-out is refused; a filter pill -
   the pill now at its place, the one before it, «Фильтры», `#main` when the
   strip left; «Сбросить всё», in the strip or in an empty state - «Фильтры»;
+  the catalog's «Сбросить» - the first «Все» of the column, or the sheet's
+  «Закрыть»; its empty state's «Сбросить фильтры» - the first «Все», else
+  «Фильтры», else `#main`; «Снять выделение» - «Выбрать», else `#main`;
   «Удалить (N)» on `#/lists` - «Выбрать все», or «Новый список» with no card
   left; a card's own «Удалить» - the next card's, the previous card's, «Новый
   список»; the homebrew «Удалить (N)» and a move that folds its panel -

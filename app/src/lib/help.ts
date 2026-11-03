@@ -40,6 +40,8 @@ export interface HelpPara {
 }
 
 export interface Help {
+  /** The name of the help's button, where it is not «Справка» (the Same Label Rule). */
+  button?: string;
   paragraphs: HelpPara[];
 }
 
@@ -554,105 +556,59 @@ const DAGGERHEART_SU: HelpLink = {
 };
 
 /**
- * The tables screen's help. Two paragraphs carry a bold word at the very
- * start - the `lead` shape - and one carries two bold words mid-sentence,
- * which is why a paragraph is a run of parts rather than a lead plus plain
- * text: "Улучшаемые" and "Уникальные" both sit inside the same sentence as
- * plain prose, not at its head.
+ * The tables screen's data notes, «Об этих данных» (owner, Q3.1): where the data
+ * comes from and the two facts a filter cannot show. How the page works is said
+ * by its own controls, so no paragraph describes them.
  */
 const TABLES: Record<Lang, Help> = {
   ru: {
+    button: 'Об этих данных',
     paragraphs: [
-      p(
-        "Здесь лежат все таблицы целиком. В верхнем ряду - корник, Hope & Fear, «Альт. таблицы», «Дополнения», «Снаряжение» и «Прочее», а ряд под ним выбирает книгу или раздел группы, если внутри есть из чего выбирать. В «Дополнениях» семь книг: Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, предметы сообществ и Many Worlds Tavern. В «Прочем» сначала стартовый инвентарь, по которому не бросают, потом фреймы. Отдельно стоят «Снаряжение» и «Альт. таблицы»: это не книги, а срезы через все книги сразу. После входа в аккаунт последней в ряду появляется группа «Хоумбрю» - ваши собственные предметы: ряд под ней выбирает источник, если их несколько, а внутри предметы лежат по разделам; своё снаряжение лежит ещё и в «Снаряжении», после книжного."
-      ),
       {
-        lead: 'Снаряжение',
+        lead: 'Источники.',
         parts: [
-          " собрано из всех источников, а не только из корника и Hope & Fear: оружие и броня есть ещё в Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts, Many Worlds Tavern и фреймах. Отобрать нужную книгу можно фильтром «Источник»."
-        ]
-      },
-      p(
-        "Снаряжение устроено иначе, чем добыча: вне Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern у него нет номера в таблице, зато есть характеристика, дистанция, урон, хват или пороги с Показателем Брони. Всё это видно в строке и уезжает вместе с предметом при копировании."
-      ),
-      p(
-        'Порядок и разбивка взяты из книг: внутри каждого ранга сначала физическое оружие корника, потом магическое, затем то же для Hope & Fear.'
-      ),
-      p(
-        'Ранг есть у всего снаряжения, включая Wondrous Environments. Рядом с вещью он там не напечатан, но книга привязывает добычу к локации таблицей «Loot items by environment», а у локации ранг указан: Посох Шепчущего Архива найден в Могиле Смотрителя, у неё ранг 2 - значит, и у посоха ранг 2. Это не оценка по характеристикам, а то же самое место в книге, просто на страницу раньше.'
-      ),
-      {
-        lead: 'Класс',
-        parts: [
-          ' - это раздел книги, а не тип урона. Магическому оружию нужна Характеристика Заклинателя, даже если урон оно наносит физический: Призрачный Клинок магический, а урон у него «физ/маг». Поэтому класс и урон показаны отдельно, а оружие с уроном «физ/маг» попадает в оба фильтра сразу.'
-        ]
-      },
-      {
-        parts: [
-          'Фильтр «Линейка» делит снаряжение надвое. ',
-          { b: 'Улучшаемые' },
-          ' - вещи, у которых есть версии повыше: Улучшенная, Продвинутая и Легендарная Катана - это одна и та же катана на четырёх рангах. ',
-          { b: 'Уникальные' },
-          ' - то, что существует в единственном виде и не улучшается.'
-        ]
-      },
-      p(
-        'Панель фильтров одна на все таблицы и стоит под поиском: у снаряжения в ней семь строк, у Vault of Ages вид и ранг, у фреймов вид и фрейм, у сообществ - сообщество, у Many Worlds Tavern вид и мир, у «Хоумбрю» тип и раздел, а источник выбирается в ряду над таблицей. Где отбирать нечего, панели нет вовсе. В фильтрах ничего не выбрано по умолчанию - строка без выбора значит «любое». Клик выбирает значение, поэтому «только ранг 2» - это один клик, а не выключение трёх остальных. Внутри строки значения складываются по «или», строки сужают друг друга. Выбранное показано плашками рядом с кнопкой: крестик снимает одно значение, «Сбросить всё» - сразу все, а кнопка со звеном отдаёт ссылку на текущий набор. Всё это остаётся под рукой и со свёрнутой панелью. Адрес страницы едет за фильтром, так что ссылкой можно поделиться и прямо из строки браузера.'
-      ),
-      p(
-        "Оружие и броня из Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts и Many Worlds Tavern лежат в двух местах: в таблице своей книги, с номером броска, и здесь."
-      ),
-      {
-        parts: [
-          'Источники: Daggerheart Core Set и Hope & Fear. Русские названия и формулировки - перевод ',
+          ' Daggerheart Core Set и Hope & Fear, с учётом эрраты. Русские названия - перевод ',
           DAGGERHEART_SU,
-          ', для Hope & Fear - таблица сообщества. Значения даны с учётом эрраты.'
+          ', для Hope & Fear - таблица сообщества.'
+        ]
+      },
+      {
+        lead: 'Ранг в Wondrous Environments.',
+        parts: [
+          ' Книга не печатает ранг рядом с вещью: он взят у локации из таблицы «Loot items by environment».'
+        ]
+      },
+      {
+        lead: 'Класс и урон.',
+        parts: [
+          ' Класс - раздел книги, а не тип урона: оружие с уроном «физ/маг» есть в обоих фильтрах.'
         ]
       }
     ]
   },
   en: {
+    button: 'About this data',
     paragraphs: [
-      p(
-        'Every table in full. The top row holds the core set, Hope & Fear, "Alt. tables", "Supplements", "Equipment" and "Other", and the row under it picks a book or a section of that group, when there is more than one. "Supplements" holds seven books: Wondrous Environments, the Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, community items and Many Worlds Tavern. Other starts with non-rollable starting inventory, then campaign frames. "Equipment" and "Alt. tables" stand apart: they are cuts across every book rather than books of their own. Signed in, the row ends with one more group, "Homebrew": your own items, where the row under it picks a source when there are several, and the items sit by section; your own equipment also sits in "Equipment", after the books\'.'
-      ),
       {
-        lead: 'Equipment',
+        lead: 'Sources.',
         parts: [
-          ' is gathered from every source, not only the core set and Hope & Fear: there are weapons and armor in Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon\'s Vault, Arazo\'s Artifacts, Many Worlds Tavern and the campaign frames too. Narrow it to one book with the "Source" filter.'
-        ]
-      },
-      p(
-        "Equipment works differently from loot: outside Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern it has no roll number, but it does have a trait, a range, damage and burden - or thresholds and an Armor Score. All of it shows in the row and travels with the entry when you copy it."
-      ),
-      p(
-        'The order follows the books: inside each tier, Core physical weapons first, then Core magic, then the same for Hope & Fear.'
-      ),
-      p(
-        'Every piece of equipment has a tier, Wondrous Environments included. The book does not print it next to the item, but it binds each piece of loot to a location in the "Loot items by environment" table, and every location has a tier: the Staff of the Whispering Archive comes from The Watcher\'s Grave, which is tier 2, so the staff is tier 2. This is not an estimate from the stats - it is the same book, one page earlier.'
-      ),
-      {
-        lead: 'Class',
-        parts: [
-          ' is the table the book prints the weapon in, not the damage it deals. A magic weapon needs a Spellcast trait even when its damage is physical: the Ghostblade is a magic weapon dealing "phy or mag". So class and damage are shown apart, and a weapon that can deal either belongs to both filters.'
+          ' The Daggerheart Core Set and Hope & Fear, with the errata applied. Russian names: the ',
+          DAGGERHEART_SU,
+          ' translation, and the community table for Hope & Fear.'
         ]
       },
       {
+        lead: 'Tier in Wondrous Environments.',
         parts: [
-          'The "Line" filter splits equipment in two. ',
-          { b: 'Upgradable' },
-          ' means the piece has higher versions: Improved, Advanced and Legendary Katana are the same katana across four tiers. ',
-          { b: 'Unique' },
-          ' means it exists in one form only.'
+          ' The book does not print the tier next to the item: it comes from the location in the "Loot items by environment" table.'
         ]
       },
-      p(
-        'One filter panel serves every table and sits under the search box: seven rows for equipment, kind and tier for Vault of Ages, kind and frame for Other, community for the community items, kind and realm for Many Worlds Tavern, and type and section for Homebrew, where the row above the table picks the source. Where there is nothing to narrow, there is no panel. Nothing is picked to begin with, and a row with no pick means "any". Clicking picks a value, so "tier 2 only" is one click rather than switching three others off. Values in a row combine with "or", rows narrow each other. What is picked shows as chips beside the button: the cross drops one value, "Reset all" drops the lot, and the link button hands out the current set. All of it stays reachable with the panel folded. The address follows the filter too, so the link in the address bar is the one to share.'
-      ),
-      p(
-        "The weapons and armor of Wondrous Environments, Dread GM Toolbox, Vault of Ages, The Dragon's Vault, Arazo's Artifacts and Many Worlds Tavern sit in two places: in their book's table, with a roll number, and here."
-      ),
-      p('Sources: the Daggerheart Core Set and Hope & Fear, with the errata applied.')
+      {
+        lead: 'Class and damage.',
+        parts: [
+          ' Class is the table the book prints the weapon in, not its damage: a weapon that deals "phy or mag" is in both filters.'
+        ]
+      }
     ]
   }
 };
@@ -660,8 +616,7 @@ const TABLES: Record<Lang, Help> = {
 /**
  * The lists index's help. Paragraph 3 carries two bold words and
  * paragraph 4 one, mid-sentence rather than a `lead` - each sits inside
- * running prose, not at the paragraph's head, so each is a run of parts like
- * `TABLES`'s "Линейка" one.
+ * running prose, not at the paragraph's head, so each is a run of parts.
  */
 const LISTS: Record<Lang, Help> = {
   ru: {

@@ -39,17 +39,17 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     generic ""
     heading "Мастерская Ольхи · Пистоли 3" [level=2]
     checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=8fc50b8d]
+    button "Предмет 002 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=5b89cda4]
     ... checkbox x9 of 13 same-shape siblings elided
-    button "Предмет 005 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=10aa17ba]
+    button "Предмет 005 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=fdd42ed1]
     ... button x8 of 12 same-shape siblings elided
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     heading "Мастерская Ольхи 3" [level=2]
     heading "Хоумбрю 5" [level=2]
     checkbox "Предмет 006" [checked=false]
-    button "Предмет 006 Сгенерированный предмет для замера. ПРЕДМЕТ ХОУМБРЮ"
+    button "Предмет 006 ПРЕДМЕТ ХОУМБРЮ Сгенерированный предмет для замера."
     checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
+    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -62,7 +62,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
 EN
 RU
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
+Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
@@ -72,35 +72,35 @@ daggerheart.com
 К содержимому
 Карты правил
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
+Кольцо с гравировкойПредметХоумбрюНадпись на неизвестном языке. ... [namelen=80 namehash=dc20935e]
 Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
 Новый предмет
 Открывать при запуске
 Поиск
 Предмет 001
-Предмет 001Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=65422234]
+Предмет 001ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8cef21]
 Предмет 002
-Предмет 002Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=103e1d90]
+Предмет 002ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b26f620e]
 Предмет 003
-Предмет 003Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 003ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 004
-Предмет 004Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=256f5370]
+Предмет 004ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=4d0a407f]
 Предмет 005
-Предмет 005Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=3b3560f0]
+Предмет 005ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=183706e3]
 Предмет 006
-Предмет 006Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 006ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 007
-Предмет 007Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=22e409ae]
+Предмет 007ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=506b2799]
 Предмет 008
-Предмет 008Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=2952e258]
+Предмет 008ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=2b654a14]
 Предметы
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Условия использования
 Установить как приложение
 Фильтры
@@ -141,17 +141,17 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&ite
     generic ""
     heading "Alder Workshop · Pistols 3" [level=2]
     checkbox "Item 002" [checked=false]
-    button "Item 002 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=42eb53b1]
+    button "Item 002 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c7fd2bb4]
     ... checkbox x9 of 13 same-shape siblings elided
-    button "Item 005 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=78bb69ca]
+    button "Item 005 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c736683e]
     ... button x8 of 12 same-shape siblings elided
     heading "Alder Workshop · Blades 1" [level=2]
     heading "Alder Workshop 3" [level=2]
     heading "Homebrew 5" [level=2]
     checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
+    button "Кольцо с гравировкой ITEM HOMEBREW Надпись на неизвестном языке...." [namelen=81 namehash=4b6e3934]
     checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
+    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -164,26 +164,26 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&ite
 Account: gm1@example.test
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 Filters
 Import from file
 Install as an app
 Item 001
-Item 001A generated item for the measure.ItemAlder Workshop (HB)
+Item 001ItemAlder Workshop (HB)A generated item for the measure.
 Item 002
-Item 002A generated item for the measure.ItemAlder Workshop (HB)
+Item 002ItemAlder Workshop (HB)A generated item for the measure.
 Item 003
-Item 003A generated item for the measure.ItemHomebrew
+Item 003ItemHomebrewA generated item for the measure.
 Item 004
-Item 004A generated item for the measure.ItemAlder Workshop (HB)
+Item 004ItemAlder Workshop (HB)A generated item for the measure.
 Item 005
-Item 005A generated item for the measure.ItemAlder Workshop (HB)
+Item 005ItemAlder Workshop (HB)A generated item for the measure.
 Item 006
-Item 006A generated item for the measure.ItemHomebrew
+Item 006ItemHomebrewA generated item for the measure.
 Item 007
-Item 007A generated item for the measure.ItemAlder Workshop (HB)
+Item 007ItemAlder Workshop (HB)A generated item for the measure.
 Item 008
-Item 008A generated item for the measure.ItemAlder Workshop (HB)
+Item 008ItemAlder Workshop (HB)A generated item for the measure.
 Items
 LootDaggerheart
 New item
@@ -200,9 +200,9 @@ Sources
 Tables
 Terms of use
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
+Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
 daggerheart.com
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
+Кольцо с гравировкойItemHomebrewНадпись на неизвестном языке. Тё... [namelen=78 namehash=34674d0b]
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]
+Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]

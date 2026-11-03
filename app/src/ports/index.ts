@@ -12,6 +12,7 @@ import { browserImage, fakeImage } from './image.js';
 import { browserMedia, fakeMedia } from './media.js';
 import { nativeDrag, noDrag } from './drag.js';
 import { browserMotion, fakeMotion } from './motion.js';
+import { browserViewport, fakeViewport } from './viewport.js';
 import { browserPage, fakePage } from './page.js';
 import { browserPwa, fakePwa } from './pwa.js';
 import { memoryRouter, pathRouter } from './router.js';
@@ -29,6 +30,8 @@ export { browserMedia, fakeMedia, fakePicture } from './media.js';
 export type { FakeMedia } from './media.js';
 export { fakeDrag, nativeDrag, noDrag } from './drag.js';
 export { browserMotion, fakeMotion } from './motion.js';
+export { browserViewport, fakeViewport } from './viewport.js';
+export type { FakeViewport } from './viewport.js';
 export { browserPage, fakePage } from './page.js';
 export { browserPwa, fakePwa, registerWith } from './pwa.js';
 export { memoryRouter, pathRouter } from './router.js';
@@ -55,6 +58,7 @@ export function browserEnv(): Env {
     dialog: browserDialog(),
     pwa: browserPwa(),
     motion: browserMotion(),
+    viewport: browserViewport(),
     page: browserPage(),
     clock: browserClock(),
     cloud: null,
@@ -80,6 +84,7 @@ export function fakeEnv(over: Partial<Env> = {}): Env {
     dialog: fakeDialog(),
     pwa: fakePwa(),
     motion: fakeMotion(),
+    viewport: fakeViewport(),
     page: fakePage(),
     /* Before the cutoff, as the test build: a test after it says so. */
     clock: fixedClock(TEST_NOW),

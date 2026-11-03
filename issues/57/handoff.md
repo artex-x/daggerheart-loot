@@ -2,15 +2,15 @@
 <!-- Status is a snapshot: replace it, never append. Budget and compaction: .claude/skills/handoff/SKILL.md -->
 
 ## Status
-- Task status: in_progress (wave 1 is on `main`; batch 3 is implement-ready)
-- Last agent: planner (the batch 3 dispatch refresh, 2026-10-30)
-- NEEDS_HUMAN_CONFIRMATION: no (the owner is away; Q3-S and Q3-T of `plan.md`
-  section 13 take their defaults)
+- Task status: in_progress (wave 1 is on `main`; batch 3 is committed on `claude/57`,
+  waiting for the orchestrator's `polish` and `harden` and the batch review)
+- Last agent: implementer (batch 3, resumed 2026-11-03)
+- NEEDS_HUMAN_CONFIRMATION: no (Q3-S answered: the strip goes; Q3-T takes its default)
 - Branch: `claude/57` (worktree `.claude/worktrees/57`)
-- Base / starting commit: `65829261` (batch 2 fix pass), merged with `origin/main`
-  `d83384b4` (the wave 1 squash) by `51370bf8` (`-s ours`: the trees were equal)
-- Pushed: yes, the merge `51370bf8`; the refresh commit `docs(57): refresh the
-  plan for batch 3` is pushed with it.
+- Base / starting commit: `f150d7fd` (the batch 3 plan refresh, on top of the merge
+  `51370bf8` of `origin/main` `d83384b4`)
+- Pushed: yes, the batch 3 commit, with this handoff; its sha is in the implementer's
+  report (`git log -1 --grep="Task: 57"`).
 
 ## Completed
 - Batch 1 - foundation: `9a31aede`, review fix `80872b35` (`reviews/1.md`).
@@ -25,27 +25,70 @@
   post-release review.
 - Wave 1 - batches 1, 1b, 2 squashed onto `main` as `d83384b4` (2026-10-30);
   `claude/57` merged it back as `51370bf8`.
-- Previous sha (batch diff base): the head of the refresh commit
-  `docs(57): refresh the plan for batch 3`; a reviewer reads `git diff <it> HEAD`.
-- Review: not applicable to this planning pass. Batch 3 will need one (trigger:
-  new or changed UI; `tests/app/` and a public contract reader changed).
+- Batch 3 - catalog tables and filters: the list head, the filter column and
+  sheet, the neutral «Все», the selection mode and the one bar, two-level
+  navigation, «Об этих данных», the two-column grid, the search highlight and
+  the empty-state plate. New: `viewport` port, `Sheet`, `SelectionBar`,
+  `FilterPanel`, `TableNav`, `rowTags.ts`, the decision file
+  `2026-10-30-list-pages-share-one-head-and-one-selection-bar.md`.
+- Previous sha (batch diff base): `f150d7fd`; a reviewer reads `git diff f150d7fd HEAD`.
+- Acceptance lines of `plan.md` section 10:
+
+  | Line | Outcome |
+  |---|---|
+  | List head at 360 and from 761 px, filter column from 1000 px, `h1` always | Done: `tables.test.ts`, goldens, `sweep.js 360` |
+  | «Выбрать» opens the mode, «Снять выделение» leaves it, focus both ways | Done: `tables.test.ts`, `selectionBar.test.ts` |
+  | The bar: «Все», summary, actions, clear last, zero ticks | Done, with deviation 2 below. C12 closed: `--selbar-h` scroll padding, 0 covered focus stops at 360 and 1180 |
+  | Filter row «Все» neutral, picked value gold, no `любое` | Done: `filterPanel.test.ts`, `chip.test.ts` (axe) |
+  | Count line | Done: goldens `~ two filters`, `app/states` |
+  | Filter sheet | Done: `filterPanel.test.ts`, `sheet.test.ts`, three sheet goldens |
+  | Labeled table, filter and section links; none on `homebrew` | Done: `tables.test.ts` |
+  | Navigation labeled at both levels; three taps through the picker | Done: `tableNav.test.ts`, `tables.test.ts` |
+  | «Об этих данных», three notes | Done: `help.test.ts` |
+  | View switch «Список» / «Сетка», no note | Done; `KeepNote` draws only on `/p/` |
+  | Rows, `rowTags`, highlight (P1, A40, C59) | Done: `rowTags.test.ts`, `search.test.ts`, goldens |
+  | Grid (C56, C58, P15, D11) | Done: `tables.test.ts`, evidence `catalog-grid` |
+  | Empty state (D12) | Done: `tables.test.ts`, evidence `catalog-nothing` |
+  | Correct at 360, 390, 768, 1180 | 360 re-run on the final tree; 768 clean on 2026-10-30, 390 and 1180 are CI's |
+  | `routes.json` unchanged, `app/contracts` passes | Done |
+  | Each new state has an entry, a golden and an axe case | Done: nine new goldens, four retired |
+  | Inherited: N1 and N3 hold; 2-R1; 2-N5 and 2-N6 | N1, N3 hold (no "labelled" in `DESIGN.md`, `FEATURES.md`); 2-R1 answered by the orchestrator's run; 2-N5, 2-N6 stay deferred to batches 5 and 10 |
+  | `FIRST_SCREEN` rows `shipped: true`; DESIGN rules; detector; spelling; screenshots | Done, see Verification |
+  | `polish` and `harden` outcome | Not run: the orchestrator's, after this commit |
+  | Gates pass and CI green on the tip | Local gates pass; CI is the orchestrator's wait |
+
+- Q3-S (owner, `context.md`): the catalog's per-section «Выбрать все (N)» strip is
+  removed; the bar's «Все» is the one select-all control there. `/search` and
+  `/s/` keep their strip until batches 7 and 9 (`ontoggleall`).
+- Deviations and rationale:
+  1. `data-primary` sits on the table column, section heads included, not on each
+     `TableRows`: the first section head is where the table starts.
+  2. The bar keeps «Добавить в список»: batch 4 owns «В список».
+  3. `hiddenTags` returns a fourth flag, `core`.
+  4. The bar draws no «Все» on a page that registers no rows (`/homebrew`, lists).
+  5. The mid-band head cap in `sweep.js` is 140 px, not 110: measured 130 px.
+     `FEATURES.md` says the same.
+  6. Added at S15: the evidence showed the picker cut to «О...» at 360 RU. The
+     picker is `--t-section`, the picker row's view switch has 6 px side padding
+     and «Ещё» 10 px, so «Оружие» reads whole, as in the mock.
+- Review: required (trigger: new or changed UI; `tests/app/` and a public contract
+  reader changed), report `issues/57/reviews/3.md`, after `polish` and `harden`.
 - Plan review: not required for batch 3 (`plan.md` Status, no trigger fired).
 
 ## Verification
-- Batch 2 and its fix pass (condensed, exact lines in `git show 65829261:issues/57/handoff.md`):
-  `rtk npm run check:fast` PASS on the final tree; `npm run check:db` PASS (third
-  run); `npm run check:built` pass, 249.8 of 253 kB; `node tests/app/sweep.js 360`,
-  `768` and `1180` clean (RU, EN); hook selftest 1865 passed; detector 71
-  findings (74 allowed), none new in a touched file; CI run 40986280172 of
-  `30de6bf5` found the anchor offsets (fixed by `65829261`).
-- First-screen offsets after batch 2 (case 83, RU, EN; logged, not asserted).
-  Baseline for batch 3 (its rows are `/tables/eq_weapon`, 748 / 681 at 360 and
-  526 / 504 at 1180):
+- Batch 2 and its fix pass: exact lines in `git show 65829261:issues/57/handoff.md`.
+- First-screen offsets after batch 3 (case 83, RU, EN; these two rows are asserted):
+
+  | Route | 360x640 | 1180x720 | Limit |
+  |---|---|---|---|
+  | `/tables/eq_weapon` | 234, 234 | 250, 250 | 256 / 288 |
+  | `/tables/eq_weapon` two filters | 252, 252 | 250, 250 | 256 / 288 |
+
+  The other routes, measured after batch 2 and logged only (360 RU, EN; 1180 RU, EN):
 
   | Route | 360x640 | 1180x720 | Batch |
   |---|---|---|---|
   | `/roll/std` | 843, 769 | 561, 561 | 5 |
-  | `/tables/eq_weapon` | 748, 681 | 526, 504 | 3 |
   | `/i/ci1` | 255, 218 | 170, 170 | 4 |
   | `/search` searched | 533, 467 | 419, 419 | 7 |
   | `/account` gm1 | 241, 218 | 170, 170 | 7 |
@@ -57,43 +100,42 @@
   | `LIST_A` gm4 | 464, 464 | 377, 377 | 9 |
   | `/s/player-token-1` | 529, 529 | 481, 481 | 9 |
 
-- Evidence: `issues/57/mocks/2/built/`; mock 3 and its renders: `issues/57/mocks/3/`.
-- This pass ran no gate (no app code). `git merge -s ours origin/main` was run
-  after `git fetch` and an empty `git diff --stat 65829261 origin/main`.
+- Evidence: `issues/57/mocks/3/built/`, 36 PNG files, 360, 768 and 1180, RU and EN
+  (`node issues/57/mocks/3/built/shoot.js`): no sideways overflow in any state;
+  the selection bar is 149 px at 360 and 69 px at 1180.
+- Commands on the final tree (2026-11-03):
+  - `npx vitest run app/src`: 4451 passed, 0 failed (no coverage: the per-file coverage step of `check:fast` has not run).
+  - `npm run lint:typed`, `npm run lint:untyped`: exit 0.
+  - `npm run check:built`: exit 0, 252.4 of 253 kB.
+  - `npm run build:test`, then `rtk node tests/run-all.js app/contracts,app/states`:
+    all suites passed in 603 s.
+  - `rtk node tests/app/sweep.js 360`: clean (RU, EN).
+  - `node tools/decisions.js`: 299 decisions.
+  - `node tools/check/run.mjs --only=typecheck,test:golden`: 0 errors, 0 warnings.
+  - `rtk npm run check:fast`: exit 0, run last on this tree. Two earlier runs stopped
+    at Prettier on the mock F files, which the orchestrator then formatted.
+- Goldens were not compared again after the picker CSS: a golden is accessibility-tree
+  text, and that change is CSS only (`--t-section`, side padding), so it moves no golden.
+- Before the strip removal (2026-10-30, not re-run, not touched by it):
+  `node tests/run-all.js contracts,dataint,derived`, `app/typo`, `app/hues`,
+  `app/print`, `stub`, `node tests/app/sweep.js 768`, `node tools/decisions.js`:
+  all pass.
+- `node tests/app/golden.js --update --shard=n/4`, n = 1 to 4: exit 0, 89, 89, 89,
+  88 states. `git diff --stat tests/app/snapshots` read: 154 modified, 4 deleted, 9
+  new; only `tables`, `search`, `s`, `lists`, `homebrew`, `account`. The `lists`,
+  `homebrew` and `s` lines are the row's tags after the name and the bar.
+- Detector, `impeccable detect --json --no-inline-ignores app/src`: 69 findings (72
+  on 2026-10-30); in touched files only `design-system-*` advisories (`AddToList`,
+  `FilterBar`, `TableRows`, `tokens.css`), which batch 10 records.
+  `git grep -n impeccable-disable -- app/src`: nothing.
+- Spelling scan over added lines and new files: only `aria-labelledby`.
 
 ## Next batch (implement-ready)
-- Name: Batch 3 - catalog tables and filters (first batch of wave 2). The full
-  brief is `plan.md` section 10: objective, decisions D1-D13, in and out of scope,
-  files per step, constraints from the mock, steps S1-S15, the Impeccable step,
-  acceptance, first-screen rows, goldens and new states, DESIGN.md rules,
-  verification, risks, the four standing checks and the gate cost.
-- Objective: the catalog in direction R - list head, filter column and sheet,
-  neutral «Все», selection mode and the one selection bar, two-level navigation,
-  «Об этих данных», two-column grid, search highlight, the empty-state plate.
-- Steps (titles; detail in section 10): S1 viewport port; S2 strings, icons,
-  help; S3 pure logic (`chosenLabels`, `rowTags`, `highlightRanges`,
-  `pickerLabel`); S4 `Chip` neutral; S5 `Sheet`; S6 selection mode, `SelectionBar`,
-  `SelBar`, `TableRows` ticks; S7 `FilterPanel`; S8 `TableNav`; S9 `TablesPage`,
-  `PageHead`, `Empty`, `SectionHead`; S10 rows, tiles, highlight; S11 browser
-  suites and goldens; S12 specs and the decision file; S13 Impeccable; S14
-  gates; S15 screenshots and handoff.
-- Dispatch: merge `origin/main` first; the tier follows the writer tests of
-  section 8 (test 3 holds). Steps S1-S15 let a fresh implementer resume from
-  the progress line below.
-- Verification commands: `plan.md` section 10, "Verification" (vitest while
-  editing, both lints, `rtk npm run check:fast`, `node tools/build.js`,
-  `node tools/decisions.js`, `npm run check:built`, `npm run build:test` then
-  `node tests/run-all.js app/contracts,app/states,app/typo,app/hues,app/print,contracts,dataint,derived,stub`,
-  `node tests/app/sweep.js 360` and `768`, the four golden `--update` shards,
-  the detector, the spelling grep).
-- Risks / do-nots: no `routes.json` value or address changes; `FilterBar` and
-  `BatchBar` stay for batches 6, 8 and 9; no gold selection, no one-side accent;
-  no third breakpoint (only 760 and 1000); no column table, no per-section
-  select (D5, D6); a golden is re-seeded, never edited.
-- Fallback (Impeccable `polish` and `harden`): the orchestrator runs them after
-  the implementer's commit; if it cannot, the implementer does a manual pass
-  with the skill's reference files (`plan.md` section 10, "Impeccable") and
-  records it as a deviation.
+- Name: not an implementer batch yet. The orchestrator runs `polish` and `harden`
+  on the changed surfaces (`plan.md` section 10, "Impeccable"), then the batch 3
+  review; batch 4 needs its planner refresh after that.
+- Risks / do-nots: `FilterBar` and `BatchBar` stay for batches 6, 8 and 9; a golden
+  is re-seeded, never edited.
 
 ## Blockers
 - None.
@@ -134,33 +176,17 @@
   `.money-l`), HelpButton, `.steps-l` (RecordCard).
 
 ## Notes
-- Mocks path: `issues/57/mocks/<N>/`; batch 3's evidence goes to
-  `issues/57/mocks/3/built/` (360, 1180, RU and EN, plus 768 for the mid band).
-- Planner defaults taken with the owner away (for the orchestrator's owner-AFK
-  decisions log, `plan.md` section 10): D1 a `viewport` port with 760 and 1000
-  px bands (the filter column from 1000, the sheet below); D2 a new
-  `FilterPanel`, `FilterBar` stays for batches 6 and 9; D3 `SelBar` draws
-  through a new `SelectionBar` for tables, search and the shared page, `BatchBar`
-  stays for 6, 8, 9; D4 the selection mode is `app.selecting`, only the catalog
-  hides the ticks; D5 «Все» ticks every drawn row, the per-section strip goes
-  (Q3-S); D6 no equipment column table (Q3-T); D7 a native-`<dialog>` `Sheet`;
-  D8 «Ещё» is a `Menu` popover; D9 a filter link that arrives does not open the
-  sheet; D10 the picker reads «<Book> · Предметы» where the sub-label alone is
-  ambiguous; D11 the tile's kind dot becomes a kind badge on mixed tables only;
-  D12 `Empty` draws the plate for every caller (CSS only) and the glyph tile on
-  request; D13 `CHIP_SHORT` and `Chip`'s `short` prop go. Also: the empty-state
-  cause names no table noun (a Russian genitive per table), so it departs from
-  the mock's wording with the same facts.
-- Mock 3 re-check (2026-10-30): the mock stands; its page names the count line
-  twice (own line at 360, and "shares its line with «Выбрать»"); the first
-  reading is final (`plan.md` section 10, "Constraints").
+- Mocks path: `issues/57/mocks/<N>/`; batch 3's evidence is `issues/57/mocks/3/built/`.
+- Planner defaults D1-D13 of batch 3: `plan.md` section 10, "Decisions of this refresh".
+- The owner answered the feedback (`context.md`, "Feedback answers", "Header batch"). Next
+  steps: the orchestrator's `polish` and `harden`, the batch 3 review, then the batch 3b
+  refresh.
 - Cleanup performed / retained artifacts: `plan.md` Status collapsed the two
   "findings applied" sub-bullet lists and the earlier-refresh bullets (the file
   was at the 150 KB line); the last pre-collapse commit is `65829261`
   (`git log --oneline -3 -- issues/57/`: `65829261`, `30de6bf5`, `da7a3354`).
   `issues/57/mocks/measure.mjs` stays until closeout. Print evidence and the
   mock P worktree stay at `C:\Users\Ignat\.dhloot\notes\57\`.
-- Session end partial progress (if any): none.
-- Durable items written to their homes this pass: none (a planning pass writes
-  no durable file; batch 3's S12 writes `FEATURES.md`, `ROUTES.md`, `COVERAGE.md`,
-  `STATE.md`, `DESIGN.md` and a decision file).
+- Session end partial progress (if any): none
+- Durable items written to their homes this batch: `FEATURES.md`, `ROUTES.md`,
+  `COVERAGE.md`, `STATE.md`, `DESIGN.md`, the decision file named under Completed.

@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -31,19 +30,13 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Стартовые" [url=/tables/other_starting]
       link "Сеттинги" [url=/tables/other_frames]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    checkbox "Выбрать все (29)" [checked=false]
-    StaticText "Выбрать все (29)"
-    checkbox "Факел" [checked=false]
-    button "Факел Стартовый предмет базовой книги. Полезен для освещения тём..." [namelen=89 namehash=491616f5]
-    ... checkbox x26 of 30 same-shape siblings elided
-    ... button x26 of 30 same-shape siblings elided
-    checkbox "Маленький безобидный питомец" [checked=false]
-    button "Маленький безобидный питомец Стартовый предмет Ведьмы. При созда..." [namelen=147 namehash=4263c629]
-    checkbox "Камень для прорицания" [checked=false]
-    button "Камень для прорицания Стартовый предмет Ведьмы. При создании пер..." [namelen=140 namehash=692224b5]
+    button "Выбрать"
+    ... button x27 of 31 same-shape siblings elided
+    button "Маленький безобидный питомец HOPE & FEAR Стартовый предмет Ведьм..." [namelen=139 namehash=dec11ce8]
+    button "Камень для прорицания HOPE & FEAR Стартовый предмет Ведьмы. При ..." [namelen=132 namehash=0cf7708c]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -52,89 +45,62 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-15 метров верёвки
-15 метров верёвкиСтартовый предмет базовой книги. Полезны, чтобы... [namelen=120 namehash=a6556e8c]
-?Справка
+15 метров верёвкиCoreСтартовый предмет базовой книги. Полезны, ч... [namelen=113 namehash=0d425b5e]
+?Об этих данных
 Core
 EN
 Hope & Fear
 RU
 daggerheart.com
 Альт. таблицы
-Базовые припасы
-Базовые припасыСтартовый предмет базовой книги. Палатка, спальны... [namelen=130 namehash=510c9b6d]
-Бинты для рук от наставника
-Бинты для рук от наставникаСтартовый предмет Бойца. При создании... [namelen=142 namehash=6e6a0f0c]
+Базовые припасыCoreСтартовый предмет базовой книги. Палатка, спа... [namelen=123 namehash=c5d9d768]
+Бинты для рук от наставникаHope & FearСтартовый предмет Бойца. П... [namelen=135 namehash=093d6794]
 Бросок
 Войти
-Вырезанный символ вашего покровителя
-Вырезанный символ вашего покровителяСтартовый предмет Колдуна. П... [namelen=153 namehash=27c6b58e]
+Выбрать
+Вырезанный символ вашего покровителяHope & FearСтартовый предмет... [namelen=146 namehash=129d87ab]
 Дополнения
 К содержимому
-Камень для прорицания
-Камень для прорицанияСтартовый предмет Ведьмы. При создании перс... [namelen=137 namehash=5b102320]
-Книга о вашем тайном увлечении
-Книга о вашем тайном увлеченииСтартовый предмет Бойца. При созда... [namelen=145 namehash=721401c1]
-Книга, которую вы пытаетесь перевести
-Книга, которую вы пытаетесь перевестиСтартовый предмет Волшебник... [namelen=150 namehash=128fd579]
-Кольцо, которое нельзя снять
-Кольцо, которое нельзя снятьСтартовый предмет Колдуна. При созда... [namelen=145 namehash=a5f4f62e]
+Камень для прорицанияHope & FearСтартовый предмет Ведьмы. При со... [namelen=130 namehash=3b885798]
+Книга о вашем тайном увлеченииHope & FearСтартовый предмет Бойца... [namelen=138 namehash=5ee5bb63]
+Книга, которую вы пытаетесь перевестиCoreСтартовый предмет Волше... [namelen=143 namehash=dd5ce5d4]
+Кольцо, которое нельзя снятьHope & FearСтартовый предмет Колдуна... [namelen=138 namehash=51f17589]
 Конфиденциальность
-Крошечный безобидный элементаль-питомец
-Крошечный безобидный элементаль-питомецСтартовый предмет Волшебн... [namelen=152 namehash=9f618978]
-Крюк-кошка
-Крюк-кошкаСтартовый предмет Плута. При создании персонажа выбери... [namelen=118 namehash=21361080]
+Крошечный безобидный элементаль-питомецCoreСтартовый предмет Вол... [namelen=145 namehash=82d7d4cf]
+Крюк-кошкаCoreСтартовый предмет Плута. При создании персонажа вы... [namelen=111 namehash=9a0e52a1]
 ЛутDaggerheart
-Любовный роман
-Любовный романСтартовый предмет Барда. При создании персонажа вы... [namelen=122 namehash=726a04ef]
-Маленький безобидный питомец
-Маленький безобидный питомецСтартовый предмет Ведьмы. При создан... [namelen=144 namehash=12e8d3d5]
-Маленький мешочек камней и костей
-Маленький мешочек камней и костейСтартовый предмет Друида. При с... [namelen=142 namehash=075435b0]
-На вид сломанный компас
-На вид сломанный компасСтартовый предмет Следопыта. При создании... [namelen=135 namehash=0ad9f330]
-Набор инструментов для подделки
-Набор инструментов для подделкиСтартовый предмет Плута. При созд... [namelen=139 namehash=69dd5f25]
-Неоткрытое письмо
-Неоткрытое письмоСтартовый предмет Барда. При создании персонажа... [namelen=125 namehash=d61015b0]
+Любовный романCoreСтартовый предмет Барда. При создании персонаж... [namelen=115 namehash=1a5e8056]
+Маленький безобидный питомецHope & FearСтартовый предмет Ведьмы.... [namelen=137 namehash=2f5cb7e2]
+Маленький мешочек камней и костейCoreСтартовый предмет Друида. П... [namelen=135 namehash=29e76ece]
+На вид сломанный компасCoreСтартовый предмет Следопыта. При созд... [namelen=128 namehash=07d68df0]
+Набор инструментов для подделкиCoreСтартовый предмет Плута. При ... [namelen=132 namehash=6b45108f]
+Неоткрытое письмоCoreСтартовый предмет Барда. При создании персо... [namelen=118 namehash=ce80a157]
 Открывать при запуске
 Поиск
+Поиск по названию или описанию...
 Прочее
-Ржавый клинок с выгравированным знаком
-Ржавый клинок с выгравированным знакомСтартовый предмет Ассасина... [namelen=156 namehash=2bb5ea56]
-Рисунок возлюбленного
-Рисунок возлюбленногоСтартовый предмет Воина. При создании персо... [namelen=129 namehash=94960188]
-Связка подношений
-Связка подношенийСтартовый предмет Серафима. При создании персон... [namelen=128 namehash=4c061137]
-Семейная реликвия
-Семейная реликвияСтартовый предмет Чародея. При создании персона... [namelen=127 namehash=ccdec8c7]
-Сеткой
+Ржавый клинок с выгравированным знакомHope & FearСтартовый предм... [namelen=149 namehash=f98089f6]
+Рисунок возлюбленногоCoreСтартовый предмет Воина. При создании п... [namelen=122 namehash=1d5e6164]
+Связка подношенийCoreСтартовый предмет Серафима. При создании пе... [namelen=121 namehash=287fb3dc]
+Семейная реликвияCoreСтартовый предмет Чародея. При создании пер... [namelen=120 namehash=8e2cb5c7]
+Сетка
 Сеттинги
-Символ вашего бога
-Символ вашего богаСтартовый предмет Серафима. При создании персо... [namelen=129 namehash=f5a0e4d8]
+Символ вашего богаCoreСтартовый предмет Серафима. При создании п... [namelen=122 namehash=bdd07371]
 Снаряжение
-Списком
-Список имён с несколькими вычеркнутыми
-Список имён с несколькими вычеркнутымиСтартовый предмет Ассасина... [namelen=156 namehash=401c4d8c]
+Список
+Список имён с несколькими вычеркнутымиHope & FearСтартовый предм... [namelen=149 namehash=ebd091d7]
 Ссылка на таблицу
 Стартовые
-Странный кулон, найденный в земле
-Странный кулон, найденный в землеСтартовый предмет Друида. При с... [namelen=142 namehash=5f786607]
+Странный кулон, найденный в землеCoreСтартовый предмет Друида. П... [namelen=135 namehash=db59ddc4]
 Таблицы
-Тайный ключ
-Тайный ключСтартовый предмет Стража. При создании персонажа выбе... [namelen=120 namehash=59f56562]
-Тотем от наставника
-Тотем от наставникаСтартовый предмет Стража. При создании персон... [namelen=128 namehash=e6e3f2b2]
-Точильный камень
-Точильный каменьСтартовый предмет Воина. При создании персонажа ... [namelen=124 namehash=f9e8584c]
-Трофей вашего первого убийства
-Трофей вашего первого убийстваСтартовый предмет Следопыта. При с... [namelen=142 namehash=b88aec74]
+Тайный ключCoreСтартовый предмет Стража. При создании персонажа ... [namelen=113 namehash=19734700]
+Тотем от наставникаCoreСтартовый предмет Стража. При создании пе... [namelen=121 namehash=9f04f568]
+Точильный каменьCoreСтартовый предмет Воина. При создании персон... [namelen=117 namehash=21789196]
+Трофей вашего первого убийстваCoreСтартовый предмет Следопыта. П... [namelen=135 namehash=9b4bc79f]
 Условия использования
 Установить как приложение
-Факел
-ФакелСтартовый предмет базовой книги. Полезен для освещения тёмн... [namelen=86 namehash=d22d488a]
-Шепчущая сфера
-Шепчущая сфераСтартовый предмет Чародея. При создании персонажа ... [namelen=124 namehash=48b4975e]
+ФакелCoreСтартовый предмет базовой книги. Полезен для освещения ... [namelen=79 namehash=76ef5c5c]
+Шепчущая сфераCoreСтартовый предмет Чародея. При создании персон... [namelen=117 namehash=2bdc72c9]
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_starting]
@@ -153,8 +119,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_starting
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -165,19 +130,13 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_starting
       link "Starting" [url=/en/tables/other_starting]
       link "Frames" [url=/en/tables/other_frames]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    checkbox "Select all (29)" [checked=false]
-    StaticText "Select all (29)"
-    checkbox "Torch" [checked=false]
-    button "Torch Core starting item. Useful for illuminating a dark room. I..." [namelen=72 namehash=8a837199]
-    ... checkbox x26 of 30 same-shape siblings elided
-    ... button x26 of 30 same-shape siblings elided
-    checkbox "A small, harmless pet" [checked=false]
-    button "A small, harmless pet Witch starting item. Choose this or A scry..." [namelen=117 namehash=ee3895b6]
-    checkbox "A scrying stone" [checked=false]
-    button "A scrying stone Witch starting item. Choose this or A small, har..." [namelen=117 namehash=5b850949]
+    button "Link to this table"
+    button "Select"
+    ... button x27 of 31 same-shape siblings elided
+    button "A small, harmless pet HOPE & FEAR Witch starting item. Choose th..." [namelen=112 namehash=29d64500]
+    button "A scrying stone HOPE & FEAR Witch starting item. Choose this or ..." [namelen=112 namehash=7855cd33]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -186,67 +145,40 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/other_starting
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-50 feet of rope
-50 feet of ropeCore starting item. Useful for climbing a wall or... [namelen=97 namehash=1f7f6d23]
-?Help
-A book about your secret hobby
-A book about your secret hobbyBrawler starting item. Choose this... [namelen=134 namehash=3bd72c2d]
-A book you are trying to translate
-A book you are trying to translateWizard starting item. Choose t... [namelen=136 namehash=ceef32bd]
-A bundle of offerings
-A bundle of offeringsSeraph starting item. Choose this or A sigi... [namelen=112 namehash=66f9dcb1]
-A carving that symbolizes your patron
-A carving that symbolizes your patronWarlock starting item. Choo... [namelen=141 namehash=5a3a107e]
-A family heirloom
-A family heirloomSorcerer starting item. Choose this or A whispe... [namelen=107 namehash=e8e95137]
-A grappling hook
-A grappling hookRogue starting item. Choose this or A set of for... [namelen=109 namehash=acc9831b]
-A letter never opened
-A letter never openedBard starting item. Choose this or A romanc... [namelen=106 namehash=9ae51c79]
-A list of names with several marked off
-A list of names with several marked offAssassin starting item. C... [namelen=161 namehash=a4ff14cf]
-A ring you cannot remove
-A ring you cannot removeWarlock starting item. Choose this or A ... [namelen=141 namehash=5a58851b]
-A romance novel
-A romance novelBard starting item. Choose this or A letter never... [namelen=106 namehash=d9a6ae2b]
-A rusted blade inscribed with an insignia
-A rusted blade inscribed with an insigniaAssassin starting item.... [namelen=161 namehash=741f7a7a]
-A scrying stone
-A scrying stoneWitch starting item. Choose this or A small, harm... [namelen=114 namehash=9aa76346]
-A secret key
-A secret keyGuardian starting item. Choose this or A totem from ... [namelen=110 namehash=8bfddbf2]
-A seemingly broken compass
-A seemingly broken compassRanger starting item. Choose this or A... [namelen=127 namehash=e867c1fe]
-A set of forgery tools
-A set of forgery toolsRogue starting item. Choose this or A grap... [namelen=109 namehash=969528c8]
-A sharpening stone
-A sharpening stoneWarrior starting item. Choose this or The draw... [namelen=113 namehash=acc5ba36]
-A sigil of your god
-A sigil of your godSeraph starting item. Choose this or A bundle... [namelen=112 namehash=984b3875]
-A small bag of rocks and bones
-A small bag of rocks and bonesDruid starting item. Choose this o... [namelen=136 namehash=09874825]
-A small, harmless pet
-A small, harmless petWitch starting item. Choose this or A scryi... [namelen=114 namehash=afac8326]
-A strange pendant found in the dirt
-A strange pendant found in the dirtDruid starting item. Choose t... [namelen=136 namehash=d58f8ad8]
-A tiny, harmless elemental pet
-A tiny, harmless elemental petWizard starting item. Choose this ... [namelen=136 namehash=f24fa64b]
-A totem from your mentor
-A totem from your mentorGuardian starting item. Choose this or A... [namelen=110 namehash=ab82ae99]
-A trophy from your first kill
-A trophy from your first killRanger starting item. Choose this o... [namelen=127 namehash=c2db0867]
-A whispering orb
-A whispering orbSorcerer starting item. Choose this or A family ... [namelen=107 namehash=21731800]
+50 feet of ropeCoreCore starting item. Useful for climbing a wal... [namelen=93 namehash=84ae13c0]
+?About this data
+A book about your secret hobbyHope & FearBrawler starting item. ... [namelen=130 namehash=46b0dfc9]
+A book you are trying to translateCoreWizard starting item. Choo... [namelen=132 namehash=d5351029]
+A bundle of offeringsCoreSeraph starting item. Choose this or A ... [namelen=108 namehash=9258948f]
+A carving that symbolizes your patronHope & FearWarlock starting... [namelen=137 namehash=add9316f]
+A family heirloomCoreSorcerer starting item. Choose this or A wh... [namelen=103 namehash=038de589]
+A grappling hookCoreRogue starting item. Choose this or A set of... [namelen=105 namehash=81c60522]
+A letter never openedCoreBard starting item. Choose this or A ro... [namelen=102 namehash=48d39b22]
+A list of names with several marked offHope & FearAssassin start... [namelen=157 namehash=efd12f13]
+A ring you cannot removeHope & FearWarlock starting item. Choose... [namelen=137 namehash=08b7dfb9]
+A romance novelCoreBard starting item. Choose this or A letter n... [namelen=102 namehash=f76bd4d4]
+A rusted blade inscribed with an insigniaHope & FearAssassin sta... [namelen=157 namehash=76242f40]
+A scrying stoneHope & FearWitch starting item. Choose this or A ... [namelen=110 namehash=2410b738]
+A secret keyCoreGuardian starting item. Choose this or A totem f... [namelen=106 namehash=f99db2a3]
+A seemingly broken compassCoreRanger starting item. Choose this ... [namelen=123 namehash=3d794514]
+A set of forgery toolsCoreRogue starting item. Choose this or A ... [namelen=105 namehash=efedbab1]
+A sharpening stoneCoreWarrior starting item. Choose this or The ... [namelen=109 namehash=84fa6ae5]
+A sigil of your godCoreSeraph starting item. Choose this or A bu... [namelen=108 namehash=7b9a6312]
+A small bag of rocks and bonesCoreDruid starting item. Choose th... [namelen=132 namehash=f7831877]
+A small, harmless petHope & FearWitch starting item. Choose this... [namelen=110 namehash=11db31a8]
+A strange pendant found in the dirtCoreDruid starting item. Choo... [namelen=132 namehash=722dec1a]
+A tiny, harmless elemental petCoreWizard starting item. Choose t... [namelen=132 namehash=9fee4aca]
+A totem from your mentorCoreGuardian starting item. Choose this ... [namelen=106 namehash=a0d19d74]
+A trophy from your first killCoreRanger starting item. Choose th... [namelen=123 namehash=b44609ee]
+A whispering orbCoreSorcerer starting item. Choose this or A fam... [namelen=103 namehash=087ad15f]
 Alt. tables
-Basic supplies
-Basic suppliesCore starting item. Tent, bedroll, tinderbox, rati... [namelen=101 namehash=773aff72]
+Basic suppliesCoreCore starting item. Tent, bedroll, tinderbox, ... [namelen=97 namehash=38cafc10]
 Core
 EN
 Equipment
 Frames
 Grid
-Hand wraps from a mentor
-Hand wraps from a mentorBrawler starting item. Choose this or A ... [namelen=134 namehash=eaa29372]
+Hand wraps from a mentorHope & FearBrawler starting item. Choose... [namelen=130 namehash=a49f7e14]
 Hope & Fear
 Install as an app
 Link to this table
@@ -258,14 +190,14 @@ Privacy
 RU
 Roll
 Search
+Search by name or description...
+Select
 Sign in
 Skip to content
 Starting
 Supplements
 Tables
 Terms of use
-The drawing of a lover
-The drawing of a loverWarrior starting item. Choose this or A sh... [namelen=113 namehash=4f1ebe53]
-Torch
-TorchCore starting item. Useful for illuminating a dark room.Ite... [namelen=69 namehash=85011fe8]
+The drawing of a loverCoreWarrior starting item. Choose this or ... [namelen=109 namehash=768650e9]
+TorchCoreCore starting item. Useful for illuminating a dark room... [namelen=65 namehash=f9b75bc2]
 daggerheart.com

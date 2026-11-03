@@ -37,9 +37,11 @@
     /** Drawn in the record dialog, which is not in the address: a sign-in returns to the
      *  record's own page. */
     inModal?: boolean;
+    /** The selection bar's control while nothing is ticked. */
+    disabled?: boolean;
   }
 
-  const { app, key, ids, primary, meta, inModal = false }: Props = $props();
+  const { app, key, ids, primary, meta, inModal = false, disabled = false }: Props = $props();
 
   const t = $derived(app.t);
   const open = $derived(app.menuFor === key);
@@ -378,6 +380,7 @@
       on={open}
       expanded={open}
       caret
+      {disabled}
       onclick={toggle}><Icon name="plus" />{t.addToList}</Button
     >
     {#if open}

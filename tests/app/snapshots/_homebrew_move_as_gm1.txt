@@ -52,15 +52,16 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     heading "Хоумбрю 3" [level=2]
     checkbox "Кольцо с гравировкой" [checked=true]
     checkbox "Настой кузнеца" [checked=true]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
+    button "Настой кузнеца РАСХОДНИК ХОУМБРЮ Выпейте перед работой у горна: ..." [namelen=110 namehash=6c5e1ada]
     checkbox "Whispering Cap" [checked=true]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
+    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
   region "Выбранные записи"
-    StaticText "Выбрано 3"
-    button "Снять выделение" [description=Снять выделение]
+    generic ""
+      StaticText "Выбрано: 3"
     button "Добавить в список" [expanded=false]
     button "Печать" [description=Собрать карточки для печати: девять на лист A4]
-    button "Скопировать"
+    button "Скопировать текст"
+    button "Снять выделение"
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -73,7 +74,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
 EN
 RU
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
+Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
 daggerheart.com
 Аккаунт: gm1@example.test
 Без разделаПистолиХолодное оружие
@@ -85,12 +86,12 @@ daggerheart.com
 К содержимому
 Карты правил
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
+Кольцо с гравировкойПредметХоумбрюНадпись на неизвестном языке. ... [namelen=80 namehash=dc20935e]
 Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
 Новый предмет
 Открывать при запуске
 Переместить
@@ -99,11 +100,11 @@ daggerheart.com
 Поиск
 Предметы
 Скачать JSON (3)
-Скопировать
+Скопировать текст
 Снять выделение
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Удалить (3)
 Условия использования
 Установить как приложение
@@ -158,15 +159,16 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     heading "Homebrew 3" [level=2]
     checkbox "Whispering Cap" [checked=true]
     checkbox "Кольцо с гравировкой" [checked=true]
-    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
+    button "Кольцо с гравировкой ITEM HOMEBREW Надпись на неизвестном языке...." [namelen=81 namehash=4b6e3934]
     checkbox "Настой кузнеца" [checked=true]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
+    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
   region "Selected records"
-    StaticText "Selected 3"
-    button "Clear selection" [description=Clear selection]
+    generic ""
+      StaticText "3 selected"
     button "Add to list" [expanded=false]
     button "Print" [description=Lay these out for printing: nine to an A4 sheet]
-    button "Copy"
+    button "Copy text"
+    button "Clear selection"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -179,12 +181,12 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
 Account: gm1@example.test
 Add to list
 Clear selection
-Copy
+Copy text
 Delete (3)
 Download JSON (3)
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 HomebrewAlder Workshop
 Import from file
 Install as an app
@@ -208,9 +210,9 @@ Sources
 Tables
 Terms of use
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
+Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
 daggerheart.com
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
+Кольцо с гравировкойItemHomebrewНадпись на неизвестном языке. Тё... [namelen=78 namehash=34674d0b]
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]
+Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]

@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -36,21 +35,20 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Предметы сообществ" [url=/tables/community_items]
       link "Many Worlds Tavern" [url=/tables/many_worlds_tavern]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    button "Фильтры" [expanded=false]
-    StaticText "29"
-    checkbox "Выбрать все (29)" [checked=false]
-    StaticText "Выбрать все (29)"
-    checkbox "Эфирная Винтовка" [checked=false]
-    button "1 Эфирная Винтовка Ранг 3 · Магическое · Инстинкт · Очень далеко..." [namelen=318 namehash=ef269df2]
-    ... checkbox x26 of 30 same-shape siblings elided
-    ... button x26 of 30 same-shape siblings elided
-    checkbox "Тиара Разговора" [checked=false]
-    button "28 Тиара Разговора Пока вы носите эту декоративную тиару, вы мож..." [namelen=315 namehash=062250e6]
-    checkbox "Склянка Святой Воды" [checked=false]
-    button "29 Склянка Святой Воды Обжигает демонов, дьяволов и нежить. Чтоб..." [namelen=423 namehash=1f60372a]
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "ТИП"
+      button "Все" [pressed=true]
+      button "Предметы" [pressed=false]
+      button "Расходники" [pressed=false]
+      button "Снаряжение" [pressed=false]
+    ... button x27 of 31 same-shape siblings elided
+    button "28 Тиара Разговора ПРЕДМЕТ Пока вы носите эту декоративную тиару..." [namelen=298 namehash=ec4d6e5e]
+    button "29 Склянка Святой Воды РАСХОДНИК Обжигает демонов, дьяволов и не..." [namelen=406 namehash=54724225]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -59,36 +57,36 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-10Мистическая СмолаМаленькая баночка воска для тетивы, которая м... [namelen=267 namehash=acb1c715]
-11Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная бро... [namelen=623 namehash=42418dff]
-12Проклятая БрошюраЭта бесплатная брошюра, «Моральный призыв сод... [namelen=554 namehash=96db784e]
-13Одеяния ДьяволаАметистовые одеяния, которые делают владельца н... [namelen=289 namehash=9aa0f5f1]
-14Эспайрская ШестерёнкаВы начинаете каждую сессию с +1 Надеждой,... [namelen=124 namehash=23a3e6f0]
-15Зеркало ФейРаскрывает истинные облики и делает невидимое видим... [namelen=219 namehash=bf95dfbb]
-16Колчан ФейПри находке содержит 1d6 стрел, отмеченных магией фе... [namelen=382 namehash=a9dbf99a]
-17Ледяная ГранатаПри броске взрывается, нанося 3d8 магического л... [namelen=147 namehash=55a39333]
-18Ледяное МаслоПокрывает предмет размером не больше двуручного м... [namelen=205 namehash=b88edc63]
-19Стекло из ЛенгаБольшое круглое окно из мутного стекла. Тот, кт... [namelen=338 namehash=de1948c1]
-1Эфирная ВинтовкаРанг 3 · Магическое · Инстинкт · Очень далеко ·... [namelen=312 namehash=8c408106]
-20Масло Зелёной СлизиПокрывает предмет размером не больше двуруч... [namelen=301 namehash=b152969f]
-21Банка Зелёной СлизиХрупкая банка размером с кулак, наполненная... [namelen=227 namehash=2b9efe21]
-22Сыворотка Протокола ЛазаряПосле инъекции получите 5 Жетонов Сы... [namelen=597 namehash=e03615a0]
-23Цилиндр для Мозга Ми-ГоСпособен поддерживать жизнь мозга. В ко... [namelen=257 namehash=bb470690]
-24Лунный ШарфШарф из лунного света, приносящий покой. Один раз з... [namelen=115 namehash=2576caa8]
-25Ручка ДрузейКогда вы используете эту ручку, чтобы написать чел... [namelen=151 namehash=7eaa71c2]
-26Пурпурный ПрицелПрикрепите эту аметистовую линзу к дистанционн... [namelen=172 namehash=901dde4c]
-27Серебряный КлючОгромный ключ из потускневшего серебра, покрыты... [namelen=223 namehash=f2f4a71e]
-28Тиара РазговораПока вы носите эту декоративную тиару, вы может... [namelen=311 namehash=95c729fb]
-29Склянка Святой ВодыОбжигает демонов, дьяволов и нежить. Чтобы ... [namelen=419 namehash=12d55cd5]
-2Клинок ЖивущихРанг 3 · Магическое · Сила · Вплотную · d10+11 ма... [namelen=227 namehash=bad5647b]
-3Длинный Лук ФираРанг 3 · Магическое · Проворность · Далеко · d6... [namelen=198 namehash=d957c245]
-4Туманный Проектор Ми-ГоРанг 3 · Магическое · Знание · Средне · ... [namelen=416 namehash=72902281]
-5Посох Тайного ПламениРанг 3 · Магическое · Инстинкт · Далеко · ... [namelen=255 namehash=1d100bf7]
-6Щит СолнцаРанг 3 · Магическое · Сила · Вплотную · d4+4 маг · Од... [namelen=214 namehash=65e9fac5]
-7Молниевая Пушка ЙитианцевРанг 4 · Магическое · Знание · Очень д... [namelen=496 namehash=7f3cef6c]
-8Амулет ЗариПосле успешной атаки против нежити или цели, поражён... [namelen=206 namehash=41551375]
-9Амулет ЖизнестойкостиВы получаете преимущество на Броски Реакци... [namelen=122 namehash=46f06a3a]
-?Справка
+10Мистическая СмолаРасходникМаленькая баночка воска для тетивы, ... [namelen=251 namehash=494466ac]
+11Брошюра по Истории ИскусстваПредметЭто прекрасно иллюстрирован... [namelen=607 namehash=5210245a]
+12Проклятая БрошюраПредметЭта бесплатная брошюра, «Моральный при... [namelen=538 namehash=736272c0]
+13Одеяния ДьяволаПредметАметистовые одеяния, которые делают влад... [namelen=273 namehash=2d2fd4c0]
+14Эспайрская ШестерёнкаПредметВы начинаете каждую сессию с +1 На... [namelen=108 namehash=dc47b13d]
+15Зеркало ФейПредметРаскрывает истинные облики и делает невидимо... [namelen=203 namehash=5795f8da]
+16Колчан ФейПредметПри находке содержит 1d6 стрел, отмеченных ма... [namelen=366 namehash=64d3e749]
+17Ледяная ГранатаРасходникПри броске взрывается, нанося 3d8 маги... [namelen=131 namehash=6e9d524c]
+18Ледяное МаслоРасходникПокрывает предмет размером не больше дву... [namelen=189 namehash=71cd7bc6]
+19Стекло из ЛенгаПредметБольшое круглое окно из мутного стекла. ... [namelen=322 namehash=ed5e826d]
+1Эфирная ВинтовкаОсновное оружиеУникальноеРанг 3 · Магическое · ... [namelen=296 namehash=1fec496a]
+20Масло Зелёной СлизиРасходникПокрывает предмет размером не боль... [namelen=285 namehash=796c9e8a]
+21Банка Зелёной СлизиРасходникХрупкая банка размером с кулак, на... [namelen=211 namehash=8f6e3ba1]
+22Сыворотка Протокола ЛазаряРасходникПосле инъекции получите 5 Ж... [namelen=581 namehash=268e7019]
+23Цилиндр для Мозга Ми-ГоПредметСпособен поддерживать жизнь мозг... [namelen=241 namehash=7185612d]
+24Лунный ШарфПредметШарф из лунного света, приносящий покой. Оди... [namelen=99 namehash=7c23c78e]
+25Ручка ДрузейПредметКогда вы используете эту ручку, чтобы напис... [namelen=135 namehash=af8666a4]
+26Пурпурный ПрицелПредметПрикрепите эту аметистовую линзу к дист... [namelen=156 namehash=9c5aa6f0]
+27Серебряный КлючПредметОгромный ключ из потускневшего серебра, ... [namelen=207 namehash=3931eeeb]
+28Тиара РазговораПредметПока вы носите эту декоративную тиару, в... [namelen=295 namehash=ad8ba77c]
+29Склянка Святой ВодыРасходникОбжигает демонов, дьяволов и нежит... [namelen=403 namehash=b1d33aad]
+2Клинок ЖивущихОсновное оружиеУникальноеРанг 3 · Магическое · Си... [namelen=211 namehash=182c87c8]
+3Длинный Лук ФираОсновное оружиеУникальноеРанг 3 · Магическое · ... [namelen=182 namehash=7efe2c36]
+4Туманный Проектор Ми-ГоОсновное оружиеУникальноеРанг 3 · Магиче... [namelen=400 namehash=90430ebe]
+5Посох Тайного ПламениОсновное оружиеУникальноеРанг 3 · Магическ... [namelen=239 namehash=c8408fb4]
+6Щит СолнцаВторичное оружиеУникальноеРанг 3 · Магическое · Сила ... [namelen=198 namehash=aadfaae8]
+7Молниевая Пушка ЙитианцевОсновное оружиеУникальноеРанг 4 · Маги... [namelen=480 namehash=782410b6]
+8Амулет ЗариПредметПосле успешной атаки против нежити или цели, ... [namelen=190 namehash=a23b869c]
+9Амулет ЖизнестойкостиПредметВы получаете преимущество на Броски... [namelen=106 namehash=8c24ba85]
+?Об этих данных
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -101,53 +99,28 @@ Vault of Ages
 Wondrous Environments
 daggerheart.com
 Альт. таблицы
-Амулет Жизнестойкости
-Амулет Зари
-Банка Зелёной Слизи
 Бросок
-Брошюра по Истории Искусства
 Войти
-Длинный Лук Фира
+Все
+Выбрать
 Дополнения
-Зеркало Фей
 К содержимому
-Клинок Живущих
-Колчан Фей
 Конфиденциальность
-Ледяная Граната
-Ледяное Масло
-Лунный Шарф
 ЛутDaggerheart
-Масло Зелёной Слизи
-Мистическая Смола
-Молниевая Пушка Йитианцев
-Одеяния Дьявола
 Открывать при запуске
 Поиск
-Посох Тайного Пламени
+Поиск по названию или описанию...
+Предметы
 Предметы сообществ
-Проклятая Брошюра
 Прочее
-Пурпурный Прицел
-Ручка Друзей
-Серебряный Ключ
-Сеткой
-Склянка Святой Воды
+Расходники
+Сетка
 Снаряжение
-Списком
+Список
 Ссылка на таблицу
-Стекло из Ленга
-Сыворотка Протокола Лазаря
 Таблицы
-Тиара Разговора
-Туманный Проектор Ми-Го
 Условия использования
 Установить как приложение
-Фильтры
-Цилиндр для Мозга Ми-Го
-Щит Солнца
-Эспайрская Шестерёнка
-Эфирная Винтовка
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolbox]
@@ -166,8 +139,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -183,21 +155,20 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
       link "Community items" [url=/en/tables/community_items]
       link "Many Worlds Tavern" [url=/en/tables/many_worlds_tavern]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    button "Filters" [expanded=false]
-    StaticText "29"
-    checkbox "Select all (29)" [checked=false]
-    StaticText "Select all (29)"
-    checkbox "Aether Rifle" [checked=false]
-    button "1 Aether Rifle Tier 3 · Magic · Instinct · Very Far · d8+8 mag ·..." [namelen=287 namehash=3d01621d]
-    ... checkbox x26 of 30 same-shape siblings elided
-    ... button x26 of 30 same-shape siblings elided
-    checkbox "Tiara of Talking" [checked=false]
-    button "28 Tiara of Talking While wearing this decorative tiara, you can..." [namelen=300 namehash=2120ea3d]
-    checkbox "Vial of Holy Water" [checked=false]
-    button "29 Vial of Holy Water Burns demons, devils, and undead. To use i..." [namelen=373 namehash=b6ac3306]
+    button "Link to this table"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TYPE"
+      button "All" [pressed=true]
+      button "Items" [pressed=false]
+      button "Consumables" [pressed=false]
+      button "Equipment" [pressed=false]
+    ... button x27 of 31 same-shape siblings elided
+    button "28 Tiara of Talking ITEM While wearing this decorative tiara, yo..." [namelen=283 namehash=cb2d5e19]
+    button "29 Vial of Holy Water CONSUMABLE Burns demons, devils, and undea..." [namelen=356 namehash=a58320f5]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -206,92 +177,67 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/dread_gm_toolb
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-10Arcane ResinA tiny jar of bowstring wax that changes the damag... [namelen=259 namehash=f5ce4005]
-11Art History BookletThis is a finely illustrated booklet (donat... [namelen=545 namehash=eadfaf74]
-12Cursed BookletThis free booklet, 'The Moral Call to Promote Th... [namelen=494 namehash=0151edfd]
-13Devil's VestmentsAmethyst robes which make the wearer invisibl... [namelen=233 namehash=fe588894]
-14Espairian CogYou start each session with +1 Hope while you hav... [namelen=110 namehash=75badd73]
-15Fey MirrorReveals true forms and makes the invisible visible. ... [namelen=182 namehash=e6cb09d0]
-16Fey QuiverContains 1d6 fey-touched arrows when found. You can ... [namelen=306 namehash=3a9ca1f4]
-17Frost GrenadeIf thrown, explodes for 3d8 magical frost damage ... [namelen=131 namehash=6fc34339]
-18Frost OilCoats an item no bigger than a greatsword and turns i... [namelen=176 namehash=3cd88fe2]
-19Glass from LengA great round window of clouded glass. Anyone p... [namelen=323 namehash=7a8db901]
-1Aether RifleTier 3 · Magic · Instinct · Very Far · d8+8 mag · T... [namelen=281 namehash=0816f9e1]
-20Green Ooze OilCoats an item no bigger than a greatsword with G... [namelen=259 namehash=9d178671]
-21Jar of Green Ooze SlimeA fist-sized breakable jar of green sli... [namelen=189 namehash=06b56ec8]
-22Lazarus Protocol SerumAfter injection, gain 5 Serum Tokens. Sp... [namelen=547 namehash=a4825327]
-23Mi-Go Brain CylinderCapable of keeping a brain alive. Comes wi... [namelen=210 namehash=df39800c]
-24Moon ScarfA scarf made of moonlight, bringing calm. Recover 1d... [namelen=107 namehash=8189ddc3]
-25Pen of PalsWhen you use this pen to write to a person you beli... [namelen=129 namehash=d4bba8bd]
-26Purple AimAttach this amethyst lens to a ranged weapon as a do... [namelen=156 namehash=a2915f35]
-27Silver KeyA huge key of tarnished silver covered with strange ... [namelen=204 namehash=ebfbd249]
-28Tiara of TalkingWhile wearing this decorative tiara, you can m... [namelen=296 namehash=118702fe]
-29Vial of Holy WaterBurns demons, devils, and undead. To use in ... [namelen=369 namehash=44b58602]
-2Blade of the LivingTier 3 · Magic · Strength · Melee · d10+11 m... [namelen=234 namehash=524f0c66]
-3Longbow of FyrTier 3 · Magic · Agility · Far · d6+10 mag · Two-... [namelen=182 namehash=61099836]
-4Mi-Go Mist ProjectorTier 3 · Magic · Knowledge · Close · d8+10 ... [namelen=379 namehash=f93ea508]
-5Staff of the Secret FlameTier 3 · Magic · Instinct · Far · d6+7... [namelen=251 namehash=8a035f6e]
-6Shield of the SunTier 3 · Magic · Strength · Melee · d4+4 mag ·... [namelen=204 namehash=30a51296]
-7Yithian Lightning GunTier 4 · Magic · Knowledge · Very Far · d1... [namelen=473 namehash=0ea59c9f]
-8Amulet of the DawnAfter a successful attack against an undead o... [namelen=200 namehash=5c0ed4bd]
-9Amulet of VitalityYou gain advantage on Strength Reaction rolls... [namelen=111 namehash=c66fbbbe]
-?Help
-Aether Rifle
+10Arcane ResinConsumableA tiny jar of bowstring wax that changes... [namelen=243 namehash=6532c52b]
+11Art History BookletItemThis is a finely illustrated booklet (d... [namelen=529 namehash=a35657bc]
+12Cursed BookletItemThis free booklet, 'The Moral Call to Promot... [namelen=478 namehash=5e7b45c8]
+13Devil's VestmentsItemAmethyst robes which make the wearer invi... [namelen=217 namehash=39793295]
+14Espairian CogItemYou start each session with +1 Hope while you... [namelen=94 namehash=ae331433]
+15Fey MirrorItemReveals true forms and makes the invisible visib... [namelen=166 namehash=67d83c3e]
+16Fey QuiverItemContains 1d6 fey-touched arrows when found. You ... [namelen=290 namehash=632c58a6]
+17Frost GrenadeConsumableIf thrown, explodes for 3d8 magical fro... [namelen=115 namehash=54c647c2]
+18Frost OilConsumableCoats an item no bigger than a greatsword a... [namelen=160 namehash=6c029520]
+19Glass from LengItemA great round window of clouded glass. Anyo... [namelen=307 namehash=dd504c45]
+1Aether RiflePrimary weaponUniqueTier 3 · Magic · Instinct · Ver... [namelen=265 namehash=bd94faa0]
+20Green Ooze OilConsumableCoats an item no bigger than a greatsw... [namelen=243 namehash=1931e1aa]
+21Jar of Green Ooze SlimeConsumableA fist-sized breakable jar of... [namelen=173 namehash=ec470170]
+22Lazarus Protocol SerumConsumableAfter injection, gain 5 Serum ... [namelen=531 namehash=28260f16]
+23Mi-Go Brain CylinderItemCapable of keeping a brain alive. Come... [namelen=194 namehash=02d59f1e]
+24Moon ScarfItemA scarf made of moonlight, bringing calm. Recove... [namelen=91 namehash=df309505]
+25Pen of PalsItemWhen you use this pen to write to a person you ... [namelen=113 namehash=c7a85a9f]
+26Purple AimItemAttach this amethyst lens to a ranged weapon as ... [namelen=140 namehash=fe1af4a7]
+27Silver KeyItemA huge key of tarnished silver covered with stra... [namelen=188 namehash=d6a5718b]
+28Tiara of TalkingItemWhile wearing this decorative tiara, you c... [namelen=280 namehash=f4cc2002]
+29Vial of Holy WaterConsumableBurns demons, devils, and undead. ... [namelen=353 namehash=226be193]
+2Blade of the LivingPrimary weaponUniqueTier 3 · Magic · Strengt... [namelen=218 namehash=d01535e9]
+3Longbow of FyrPrimary weaponUniqueTier 3 · Magic · Agility · Fa... [namelen=166 namehash=d7b7913a]
+4Mi-Go Mist ProjectorPrimary weaponUniqueTier 3 · Magic · Knowle... [namelen=363 namehash=5d0bede3]
+5Staff of the Secret FlamePrimary weaponUniqueTier 3 · Magic · I... [namelen=235 namehash=86d66c56]
+6Shield of the SunSecondary weaponUniqueTier 3 · Magic · Strengt... [namelen=188 namehash=7ae474de]
+7Yithian Lightning GunPrimary weaponUniqueTier 4 · Magic · Knowl... [namelen=457 namehash=502f82c4]
+8Amulet of the DawnItemAfter a successful attack against an unde... [namelen=184 namehash=f921e07f]
+9Amulet of VitalityItemYou gain advantage on Strength Reaction r... [namelen=95 namehash=7eba83b1]
+?About this data
+All
 Alt. tables
-Amulet of Vitality
-Amulet of the Dawn
 Arazo's Artifacts
-Arcane Resin
-Art History Booklet
-Blade of the Living
 Community items
+Consumables
 Core
-Cursed Booklet
-Devil's Vestments
 Dread GM Toolbox
 EN
 Equipment
-Espairian Cog
-Fey Mirror
-Fey Quiver
-Filters
-Frost Grenade
-Frost Oil
-Glass from Leng
-Green Ooze Oil
 Grid
 Hope & Fear
 Install as an app
-Jar of Green Ooze Slime
-Lazarus Protocol Serum
+Items
 Link to this table
 List
-Longbow of Fyr
 LootDaggerheart
 Many Worlds Tavern
-Mi-Go Brain Cylinder
-Mi-Go Mist Projector
-Moon Scarf
 Open on start
 Other
-Pen of Pals
 Privacy
-Purple Aim
 RU
 Roll
 Search
-Shield of the Sun
+Search by name or description...
+Select
 Sign in
-Silver Key
 Skip to content
-Staff of the Secret Flame
 Supplements
 Tables
 Terms of use
 The Dragon's Vault
-Tiara of Talking
 Vault of Ages
-Vial of Holy Water
 Wondrous Environments
-Yithian Lightning Gun
 daggerheart.com

@@ -1608,6 +1608,7 @@ const { ok } = rep;
      nowhere to return to except browser history. */
   console.log('the way back');
   await d.open('#/tables/core_item', { as: 'gm2' });
+  await d.click('Выбрать');
   await page.click('.rows .row .selbox input');
   await d.settle();
   await d.click(PRINT);
@@ -1643,6 +1644,7 @@ const { ok } = rep;
   );
 
   await d.open('#/tables/core_item', { as: 'gm2' });
+  await d.click('Выбрать');
   await page.click('.rows .row .selbox input');
   await d.settle();
   const acts = await page.$$eval('.selbarwrap .selacts > *', (e) =>

@@ -9,6 +9,7 @@
  * Pure module: no DOM, no data. Which values a facet can take is the caller's
  * business - only the group names and their order live here. */
 
+import type { FacetRow } from './facets.js';
 import type { EquipKind, TableId } from './types.js';
 
 /** What is picked: group -> values. An empty group means "any". */
@@ -156,4 +157,28 @@ export function passes(
 /** How many values are actually picked - for the button label and for "reset". */
 export function chosenCount(state: FilterState, groups: readonly string[]): number {
   return groups.reduce((n, g) => n + (state[g]?.length ?? 0), 0);
+}
+
+/** One picked value, named as the reader sees it. */
+export interface Chosen {
+  group: string;
+  value: string;
+  label: string;
+}
+
+/**
+ * Returns everything picked, in the order the rows are drawn - `fChosen` in app.js.
+ * A bare number takes its row's name («Ранг 1»). The test is on the value's label,
+ * not the value: the burden row's values are `1` and `2`, but its labels are words.
+ */
+export function chosenLabels(rows: readonly FacetRow[], picked: FilterState): Chosen[] {
+  return rows.flatMap((row) =>
+    row.values
+      .filter((v) => picked[row.group]?.includes(v.value))
+      .map((v) => ({
+        group: row.group,
+        value: v.value,
+        label: /^\d+$/.test(v.label) ? row.label + ' ' + v.label : v.label
+      }))
+  );
 }

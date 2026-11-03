@@ -48,6 +48,13 @@ const SWITCHES = [
     route: '#/p/set-emberaxe',
     as: 'gm1',
     group: { ru: 'Размер карты', en: 'Card size' }
+  },
+  /* The pressed «Все» of a filter row (`Chip neutral`): the column at 1180, the sheet
+     at 360. */
+  {
+    route: '#/tables/eq_weapon',
+    group: { ru: 'Ранг', en: 'Tier' },
+    sheet: { ru: 'Фильтры', en: 'Filters' }
   }
 ];
 
@@ -93,10 +100,8 @@ const SPECS = [
 );
 
 /* Which of the five grips each page actually offers - read off the
- * components, not assumed: `FilterBar.svelte` draws nothing at all where a
- * table has no facets (`core_item`, `alt_item`), so 'filters' is only for
- * the three with some (`eq_weapon`'s equipment facets, `community`'s `comm`, `mwt`'s
- * `kind` and `realm`);
+ * components, not assumed: the catalog draws no «Фильтры» button from 1000 px
+ * (its filters are a column), so no table here offers 'filters';
  * `AddToList.svelte`'s trigger sits on `RecordPage` alone among these pages,
  * not on a roll/tables card, which only opens it inside a modal `typo.js`
  * never presses; `.lnote`/the per-row note toggle are `ListPage.svelte`
@@ -113,10 +118,10 @@ const EXPECTED = {
   '#/roll/community_items': ['help'],
   '#/roll/many_worlds_tavern': ['help'],
   '#/tables/core_item': ['help'],
-  '#/tables/eq_weapon': ['filters', 'help'],
+  '#/tables/eq_weapon': ['help'],
   '#/tables/alt_item': ['help'],
-  '#/tables/community_items': ['filters', 'help'],
-  '#/tables/many_worlds_tavern': ['filters', 'help'],
+  '#/tables/community_items': ['help'],
+  '#/tables/many_worlds_tavern': ['help'],
   '#/lists': ['help'],
   [LIST]: ['note', 'listNote'],
   '#/i/w1': ['addToList'],
@@ -174,9 +179,10 @@ async function softClick(d, name) {
  *  each button with an icon in the group of that accessible name. */
 async function iconCentres(page, groupName) {
   return page.evaluate((name) => {
-    const g = [...document.querySelectorAll('[role="group"]')].find(
-      (e) => e.getAttribute('aria-label') === name
-    );
+    const nameOf = (e) =>
+      e.getAttribute('aria-label') ??
+      document.getElementById(e.getAttribute('aria-labelledby') ?? '')?.textContent.trim();
+    const g = [...document.querySelectorAll('[role="group"]')].find((e) => nameOf(e) === name);
     if (!g) return null;
     return [...g.querySelectorAll('button')]
       .filter((b) => b.querySelector('svg'))
@@ -317,6 +323,7 @@ async function iconCentres(page, groupName) {
           await d.addressSettled();
         }
         const where = s.route + ' ' + lang + ' ' + width;
+        if (s.sheet && width < 1000) await d.click(s.sheet[lang]);
         const got = await iconCentres(page, s.group[lang]);
         ok(
           !!got && got.length === 1,

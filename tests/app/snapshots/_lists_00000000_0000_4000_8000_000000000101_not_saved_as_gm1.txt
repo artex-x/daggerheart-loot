@@ -105,7 +105,7 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     checkbox "Брошюра по Истории Искусства" [checked=false]
     spinbutton "Позиция в списке" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
-    button "Брошюра по Истории Искусства Это прекрасно иллюстрированная брош..." [namelen=624 namehash=793612a8]
+    button "Брошюра по Истории Искусства ПРЕДМЕТ DREAD GM TOOLBOX Это прекра..." [namelen=624 namehash=a6262641]
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "ЦЕНА" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Заметка" [description=Заметка]
@@ -113,7 +113,7 @@ RootWebArea "Лавка кузнеца - Генератор лута Daggerheart
     button "Убрать из списка" [description=Убрать из списка]
     checkbox "Топор Тлеющих Углей" [checked=false]
     spinbutton "Позиция в списке" [value=10 valuetext=10 required=false valuemin=1 valuemax=10]
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
     StaticText "КОЛ-ВО"
     spinbutton "КОЛ-ВО" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "ЦЕНА"
@@ -140,20 +140,20 @@ daggerheart.com
 Бросить d10
 Бросок
 Брошюра по Истории Искусства
-Брошюра по Истории ИскусстваЭто прекрасно иллюстрированная брошю... [namelen=621 namehash=8e34be84]
+Брошюра по Истории ИскусстваПредметDread GM ToolboxЭто прекрасно... [namelen=621 namehash=989c4e8f]
 Выбрать все
 Гарпун Левиафана
-Гарпун ЛевиафанаРанг 2 · Физическое · Искусность · Далеко · d8+3... [namelen=372 namehash=18076c75]
+Гарпун ЛевиафанаОсновное оружиеУникальноеWondrous EnvironmentsРа... [namelen=372 namehash=9449b47c]
 Жирный
 Заметка
 Зелье Быстрого Шага
-Зелье Быстрого ШагаВы получаете бонус +1 к следующему Броску Про... [namelen=128 namehash=a50f77f6]
+Зелье Быстрого ШагаРасходникCoreВы получаете бонус +1 к следующе... [namelen=128 namehash=ebb978f9]
 К содержимому
 Как в книге
 Колдующий Кинжал
-Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Колода Сумерек
-Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы си... [namelen=847 namehash=c740b19a]
+Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Эт... [namelen=847 namehash=17978cc1]
 Конфиденциальность
 Курсив
 ЛутDaggerheart
@@ -164,9 +164,9 @@ daggerheart.com
 Нумерованный список
 Очистить заметку
 Палаш
-ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Первоклассный Спальный Мешок
-Первоклассный Спальный МешокВо время отдыха вы автоматически очи... [namelen=88 namehash=8149dafd]
+Первоклассный Спальный МешокПредметCoreВо время отдыха вы автома... [namelen=88 namehash=9d8413c2]
 Печать
 Повторить
 Поделиться
@@ -179,12 +179,12 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Скопировать текст
 Список
 Справка
 Стеганый Доспех
-Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
+Стеганый ДоспехБроняCoreРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1... [namelen=76 namehash=f3c5334f]
 Таблицы
 Только для мастера: Брошюра по Истории Искусства
 Только для мастера: Гарпун Левиафана
@@ -197,7 +197,7 @@ daggerheart.com
 Только для мастера: Стеганый Доспех
 Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
 Удалить
 Условия использования
@@ -306,7 +306,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     checkbox "Art History Booklet" [checked=false]
     spinbutton "Position in the list" [value=9 valuetext=9 required=false valuemin=1 valuemax=10]
-    button "Art History Booklet This is a finely illustrated booklet (donati..." [namelen=546 namehash=fd813d99]
+    button "Art History Booklet ITEM DREAD GM TOOLBOX This is a finely illus..." [namelen=546 namehash=fc869a05]
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     spinbutton "PRICE" [valuetext= required=false valuemin=0 valuemax=99999]
     button "Note" [description=Note]
@@ -314,7 +314,7 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
     button "Remove from the list" [description=Remove from the list]
     checkbox "Ember Axe" [checked=false]
     spinbutton "Position in the list" [value=10 valuetext=10 required=false valuemin=1 valuemax=10]
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
     StaticText "QTY"
     spinbutton "QTY" [valuetext= required=false valuemin=1 valuemax=99]
     StaticText "PRICE"
@@ -336,21 +336,21 @@ RootWebArea "Лавка кузнеца - Daggerheart Loot Generator" [url=/en/li
 ## en :: controls
 Account: gm1@example.test
 Art History Booklet
-Art History BookletThis is a finely illustrated booklet (donatio... [namelen=543 namehash=25f277dc]
+Art History BookletItemDread GM ToolboxThis is a finely illustra... [namelen=543 namehash=efabc114]
 As in the book
 Bold
 Broadsword
-BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
 Bulleted list
 Casting Dagger
-Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 Clear the note
 Copy text
 Delete
 Download JSON
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 GM only: Art History Booklet
 GM only: Broadsword
 GM only: Casting Dagger
@@ -362,7 +362,7 @@ GM only: Scepter
 GM only: Stride Potion
 GM only: Twilight Deck
 Gambeson Armor
-Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Gambeson ArmorArmorCoreTier 1 · Thresholds 5/11 · Armor 3Flexibl... [namelen=80 namehash=460b51ea]
 Help
 Help: For players
 Help: GM only
@@ -370,7 +370,7 @@ In coins
 Install as an app
 Italic
 Leviathan Harpoon
-Leviathan HarpoonTier 2 · Physical · Finesse · Far · d8+3 phy · ... [namelen=354 namehash=5d62421d]
+Leviathan HarpoonPrimary weaponUniqueWondrous EnvironmentsTier 2... [namelen=354 namehash=8183bf12]
 List name
 LootDaggerheart
 Note
@@ -380,7 +380,7 @@ One lower
 Own item
 Position in the list
 Premium Bedroll
-Premium BedrollDuring downtime, you automatically clear a Stress... [namelen=73 namehash=385f1196]
+Premium BedrollItemCoreDuring downtime, you automatically clear ... [namelen=73 namehash=3b2ba4b6]
 Preview
 Price
 Print
@@ -392,15 +392,15 @@ Roll
 Roll d10
 Roll result
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
 Select all
 Share
 Skip to content
 Stride Potion
-Stride PotionYou gain a +1 bonus to your next Agility Roll.Upgra... [namelen=105 namehash=01e4c083]
+Stride PotionConsumableCoreYou gain a +1 bonus to your next Agil... [namelen=105 namehash=05b316cd]
 Tables
 Terms of use
 Twilight Deck
-Twilight DeckRecall Cost: 2This deck enhances fortunes with the ... [namelen=870 namehash=3e42d83e]
+Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck en... [namelen=870 namehash=d2092ac1]
 daggerheart.com

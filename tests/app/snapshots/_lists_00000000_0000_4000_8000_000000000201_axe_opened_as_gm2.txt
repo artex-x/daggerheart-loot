@@ -54,7 +54,7 @@ daggerheart.com
 Свой предмет
 Скачать JSON
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Скопировать изображение
 Скопировать название
 Скопировать ссылку
@@ -70,7 +70,7 @@ daggerheart.com
 Только для мастера: Скипетр
 Только для мастера: Топор Тлеющих Углей
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Убрать из списка
 Удалить
 Условия использования
@@ -110,7 +110,7 @@ Delete
 Download JSON
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 GM only: Ember Axe
 GM only: Scepter
 Help: For players
@@ -141,7 +141,7 @@ Roll
 Roll result
 Save to my items
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
 Select all
 Share

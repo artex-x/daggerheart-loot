@@ -36,12 +36,12 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     generic ""
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
     heading "Хоумбрю 2" [level=2]
     checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=110 namehash=fe1ee452]
+    button "Настой кузнеца РАСХОДНИК ХОУМБРЮ Выпейте перед работой у горна: ..." [namelen=110 namehash=6c5e1ada]
     checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
+    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -56,7 +56,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
 EN
 RU
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
+Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
@@ -69,14 +69,14 @@ daggerheart.com
 Конфиденциальность
 ЛутDaggerheart
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
 Новый предмет
 Открывать при запуске
 Поиск
 Предметы
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Условия использования
 Установить как приложение
 
@@ -113,12 +113,12 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
     generic ""
     heading "Alder Workshop · Blades 1" [level=2]
     checkbox "Ember Axe" [checked=false]
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
     heading "Homebrew 2" [level=2]
     checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=86 namehash=49ff78d8]
+    button "Whispering Cap ITEM HOMEBREW Once per rest, hear one sentence sp..." [namelen=86 namehash=e69fe8fd]
     checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
+    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -133,7 +133,7 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1]
 Account: gm1@example.test
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 Import from file
 Install as an app
 Items
@@ -152,7 +152,7 @@ Sources
 Tables
 Terms of use
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
+Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
 daggerheart.com
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]
+Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]

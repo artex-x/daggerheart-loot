@@ -45,18 +45,18 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     generic ""
     heading "Мастерская Ольхи · Пистоли 1" [level=2]
     checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=8fc50b8d]
+    button "Предмет 002 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=5b89cda4]
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     ... checkbox x63 of 67 same-shape siblings elided
-    button "Топор Тлеющих Углей Ранг 2 · Магическое · Характеристика Заклина..." [namelen=189 namehash=3ef50bde]
+    button "Топор Тлеющих Углей ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСКАЯ ОЛЬХИ ..." [namelen=189 namehash=ae240a3a]
     ... heading x20 of 24 same-shape siblings elided
     ... button x62 of 66 same-shape siblings elided
     heading "Мастерская Ольхи 21" [level=2]
     heading "Хоумбрю 23" [level=2]
     checkbox "Предмет 060" [checked=false]
-    button "Предмет 060 Сгенерированный предмет для замера. ПРЕДМЕТ ХОУМБРЮ"
+    button "Предмет 060 ПРЕДМЕТ ХОУМБРЮ Сгенерированный предмет для замера."
     checkbox "Whispering Cap" [checked=false]
-    button "Whispering Cap Once per rest, hear one sentence spoken within Fa..." [namelen=88 namehash=4553c982]
+    button "Whispering Cap ПРЕДМЕТ ХОУМБРЮ Once per rest, hear one sentence ..." [namelen=88 namehash=46575622]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -69,7 +69,7 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
 EN
 RU
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=85 namehash=a5156865]
+Whispering CapПредметХоумбрюOnce per rest, hear one sentence spo... [namelen=85 namehash=dabe6adf]
 daggerheart.com
 Аккаунт: gm1@example.test
 Бросок
@@ -79,141 +79,141 @@ daggerheart.com
 К содержимому
 Карты правил
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=80 namehash=8401f492]
+Кольцо с гравировкойПредметХоумбрюНадпись на неизвестном языке. ... [namelen=80 namehash=dc20935e]
 Комплекты
 Конфиденциальность
 ЛутDaggerheart
 Мастерская Ольхи
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=107 namehash=0d337734]
+Настой кузнецаРасходникХоумбрюВыпейте перед работой у горна: до ... [namelen=107 namehash=4dddfcea]
 Новый предмет
 Открывать при запуске
 Пистоли
 Поиск
 Предмет 001
-Предмет 001Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=65422234]
+Предмет 001ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8cef21]
 Предмет 002
-Предмет 002Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=103e1d90]
+Предмет 002ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b26f620e]
 Предмет 003
-Предмет 003Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 003ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 004
-Предмет 004Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=256f5370]
+Предмет 004ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=4d0a407f]
 Предмет 005
-Предмет 005Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=3b3560f0]
+Предмет 005ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=183706e3]
 Предмет 006
-Предмет 006Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 006ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 007
-Предмет 007Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=22e409ae]
+Предмет 007ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=506b2799]
 Предмет 008
-Предмет 008Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=2952e258]
+Предмет 008ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=2b654a14]
 Предмет 009
-Предмет 009Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 009ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 010
-Предмет 010Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6e51a9a0]
+Предмет 010ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=db2c64e3]
 Предмет 011
-Предмет 011Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=fa7b5430]
+Предмет 011ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=dd993383]
 Предмет 012
-Предмет 012Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 012ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 013
-Предмет 013Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6c8f4622]
+Предмет 013ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=40f8d313]
 Предмет 014
-Предмет 014Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=40c72b37]
+Предмет 014ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=bac112a7]
 Предмет 015
-Предмет 015Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 015ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 016
-Предмет 016Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=f206c53e]
+Предмет 016ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=3cea6273]
 Предмет 017
-Предмет 017Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=acdf8f60]
+Предмет 017ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=84e1b07d]
 Предмет 018
-Предмет 018Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 018ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 019
-Предмет 019Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=54d19dae]
+Предмет 019ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=5d04c84f]
 Предмет 020
-Предмет 020Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=af7c496b]
+Предмет 020ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=33109392]
 Предмет 021
-Предмет 021Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 021ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 022
-Предмет 022Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6b6b8fdc]
+Предмет 022ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=a7d13382]
 Предмет 023
-Предмет 023Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=18d4545a]
+Предмет 023ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=50bcabd5]
 Предмет 024
-Предмет 024Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 024ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 025
-Предмет 025Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=f83f5ef4]
+Предмет 025ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=9e097e9a]
 Предмет 026
-Предмет 026Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=e1ac2c30]
+Предмет 026ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=9f4792a1]
 Предмет 027
-Предмет 027Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 027ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 028
-Предмет 028Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=4338d687]
+Предмет 028ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=f7323b31]
 Предмет 029
-Предмет 029Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=641ebc66]
+Предмет 029ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=ec2e0292]
 Предмет 030
-Предмет 030Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 030ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 031
-Предмет 031Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=1df5335e]
+Предмет 031ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=aacd47e0]
 Предмет 032
-Предмет 032Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=dfd7a2ff]
+Предмет 032ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=e6e16542]
 Предмет 033
-Предмет 033Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 033ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 034
-Предмет 034Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=7c5948cd]
+Предмет 034ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=812213ac]
 Предмет 035
-Предмет 035Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=a08a3c6d]
+Предмет 035ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=853a3944]
 Предмет 036
-Предмет 036Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 036ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 037
-Предмет 037Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=c392d927]
+Предмет 037ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b662c942]
 Предмет 038
-Предмет 038Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=d2a0dafc]
+Предмет 038ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=c068c4b0]
 Предмет 039
-Предмет 039Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 039ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 040
-Предмет 040Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=8b3ea003]
+Предмет 040ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=c1b727da]
 Предмет 041
-Предмет 041Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=f109adb8]
+Предмет 041ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=cbf366a0]
 Предмет 042
-Предмет 042Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 042ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 043
-Предмет 043Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6b0ff38c]
+Предмет 043ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8610b5]
 Предмет 044
-Предмет 044Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=4ace88eb]
+Предмет 044ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=d2592beb]
 Предмет 045
-Предмет 045Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 045ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 046
-Предмет 046Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=19f72306]
+Предмет 046ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=ae74bfd5]
 Предмет 047
-Предмет 047Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=aff41bc8]
+Предмет 047ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=c5ffc120]
 Предмет 048
-Предмет 048Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 048ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 049
-Предмет 049Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=9ff826ba]
+Предмет 049ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=65030bfb]
 Предмет 050
-Предмет 050Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=fdfd4e95]
+Предмет 050ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=1ec0955f]
 Предмет 051
-Предмет 051Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 051ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 052
-Предмет 052Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=8d36d7f7]
+Предмет 052ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b73499d9]
 Предмет 053
-Предмет 053Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=47110694]
+Предмет 053ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=8a95cc86]
 Предмет 054
-Предмет 054Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 054ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 055
-Предмет 055Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=647db880]
+Предмет 055ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=36c4a09a]
 Предмет 056
-Предмет 056Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6680e6dc]
+Предмет 056ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=3d8be53e]
 Предмет 057
-Предмет 057Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 057ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 058
-Предмет 058Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=6ef605ab]
+Предмет 058ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=65f6af92]
 Предмет 059
-Предмет 059Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=fd4ff137]
+Предмет 059ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=c56a3ec7]
 Предмет 060
-Предмет 060Сгенерированный предмет для замера.ПредметХоумбрю
+Предмет 060ПредметХоумбрюСгенерированный предмет для замера.
 Предмет 061
-Предмет 061Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=b2b1d253]
+Предмет 061ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=1ed7af03]
 Предмет 062
-Предмет 062Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=ffdbe204]
+Предмет 062ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=635e91de]
 Предметы
 Раздел 01
 Раздел 02
@@ -228,7 +228,7 @@ daggerheart.com
 Снаряжение
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Условия использования
 Установить как приложение
 Фильтры
@@ -277,18 +277,18 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew?as=gm1&ite
     generic ""
     heading "Alder Workshop · Pistols 1" [level=2]
     checkbox "Item 002" [checked=false]
-    button "Item 002 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=42eb53b1]
+    button "Item 002 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c7fd2bb4]
     heading "Alder Workshop · Blades 1" [level=2]
     ... checkbox x63 of 67 same-shape siblings elided
-    button "Ember Axe Tier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-H..." [namelen=164 namehash=0697f87b]
+    button "Ember Axe PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier 2 · Mag..." [namelen=164 namehash=412bbe09]
     ... heading x20 of 24 same-shape siblings elided
     ... button x62 of 66 same-shape siblings elided
     heading "Alder Workshop 21" [level=2]
     heading "Homebrew 23" [level=2]
     checkbox "Кольцо с гравировкой" [checked=false]
-    button "Кольцо с гравировкой Надпись на неизвестном языке. Тёплое на ощу..." [namelen=81 namehash=01a2fff3]
+    button "Кольцо с гравировкой ITEM HOMEBREW Надпись на неизвестном языке...." [namelen=81 namehash=4b6e3934]
     checkbox "Настой кузнеца" [checked=false]
-    button "Настой кузнеца Выпейте перед работой у горна: до конца сцены вы ..." [namelen=112 namehash=02806db1]
+    button "Настой кузнеца CONSUMABLE HOMEBREW Выпейте перед работой у горна..." [namelen=112 namehash=364d011e]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -304,136 +304,136 @@ Blades
 Consumables
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 Equipment
 Filters
 Homebrew
 Import from file
 Install as an app
 Item 001
-Item 001A generated item for the measure.ItemAlder Workshop (HB)
+Item 001ItemAlder Workshop (HB)A generated item for the measure.
 Item 002
-Item 002A generated item for the measure.ItemAlder Workshop (HB)
+Item 002ItemAlder Workshop (HB)A generated item for the measure.
 Item 003
-Item 003A generated item for the measure.ItemHomebrew
+Item 003ItemHomebrewA generated item for the measure.
 Item 004
-Item 004A generated item for the measure.ItemAlder Workshop (HB)
+Item 004ItemAlder Workshop (HB)A generated item for the measure.
 Item 005
-Item 005A generated item for the measure.ItemAlder Workshop (HB)
+Item 005ItemAlder Workshop (HB)A generated item for the measure.
 Item 006
-Item 006A generated item for the measure.ItemHomebrew
+Item 006ItemHomebrewA generated item for the measure.
 Item 007
-Item 007A generated item for the measure.ItemAlder Workshop (HB)
+Item 007ItemAlder Workshop (HB)A generated item for the measure.
 Item 008
-Item 008A generated item for the measure.ItemAlder Workshop (HB)
+Item 008ItemAlder Workshop (HB)A generated item for the measure.
 Item 009
-Item 009A generated item for the measure.ItemHomebrew
+Item 009ItemHomebrewA generated item for the measure.
 Item 010
-Item 010A generated item for the measure.ItemAlder Workshop (HB)
+Item 010ItemAlder Workshop (HB)A generated item for the measure.
 Item 011
-Item 011A generated item for the measure.ItemAlder Workshop (HB)
+Item 011ItemAlder Workshop (HB)A generated item for the measure.
 Item 012
-Item 012A generated item for the measure.ItemHomebrew
+Item 012ItemHomebrewA generated item for the measure.
 Item 013
-Item 013A generated item for the measure.ItemAlder Workshop (HB)
+Item 013ItemAlder Workshop (HB)A generated item for the measure.
 Item 014
-Item 014A generated item for the measure.ItemAlder Workshop (HB)
+Item 014ItemAlder Workshop (HB)A generated item for the measure.
 Item 015
-Item 015A generated item for the measure.ItemHomebrew
+Item 015ItemHomebrewA generated item for the measure.
 Item 016
-Item 016A generated item for the measure.ItemAlder Workshop (HB)
+Item 016ItemAlder Workshop (HB)A generated item for the measure.
 Item 017
-Item 017A generated item for the measure.ItemAlder Workshop (HB)
+Item 017ItemAlder Workshop (HB)A generated item for the measure.
 Item 018
-Item 018A generated item for the measure.ItemHomebrew
+Item 018ItemHomebrewA generated item for the measure.
 Item 019
-Item 019A generated item for the measure.ItemAlder Workshop (HB)
+Item 019ItemAlder Workshop (HB)A generated item for the measure.
 Item 020
-Item 020A generated item for the measure.ItemAlder Workshop (HB)
+Item 020ItemAlder Workshop (HB)A generated item for the measure.
 Item 021
-Item 021A generated item for the measure.ItemHomebrew
+Item 021ItemHomebrewA generated item for the measure.
 Item 022
-Item 022A generated item for the measure.ItemAlder Workshop (HB)
+Item 022ItemAlder Workshop (HB)A generated item for the measure.
 Item 023
-Item 023A generated item for the measure.ItemAlder Workshop (HB)
+Item 023ItemAlder Workshop (HB)A generated item for the measure.
 Item 024
-Item 024A generated item for the measure.ItemHomebrew
+Item 024ItemHomebrewA generated item for the measure.
 Item 025
-Item 025A generated item for the measure.ItemAlder Workshop (HB)
+Item 025ItemAlder Workshop (HB)A generated item for the measure.
 Item 026
-Item 026A generated item for the measure.ItemAlder Workshop (HB)
+Item 026ItemAlder Workshop (HB)A generated item for the measure.
 Item 027
-Item 027A generated item for the measure.ItemHomebrew
+Item 027ItemHomebrewA generated item for the measure.
 Item 028
-Item 028A generated item for the measure.ItemAlder Workshop (HB)
+Item 028ItemAlder Workshop (HB)A generated item for the measure.
 Item 029
-Item 029A generated item for the measure.ItemAlder Workshop (HB)
+Item 029ItemAlder Workshop (HB)A generated item for the measure.
 Item 030
-Item 030A generated item for the measure.ItemHomebrew
+Item 030ItemHomebrewA generated item for the measure.
 Item 031
-Item 031A generated item for the measure.ItemAlder Workshop (HB)
+Item 031ItemAlder Workshop (HB)A generated item for the measure.
 Item 032
-Item 032A generated item for the measure.ItemAlder Workshop (HB)
+Item 032ItemAlder Workshop (HB)A generated item for the measure.
 Item 033
-Item 033A generated item for the measure.ItemHomebrew
+Item 033ItemHomebrewA generated item for the measure.
 Item 034
-Item 034A generated item for the measure.ItemAlder Workshop (HB)
+Item 034ItemAlder Workshop (HB)A generated item for the measure.
 Item 035
-Item 035A generated item for the measure.ItemAlder Workshop (HB)
+Item 035ItemAlder Workshop (HB)A generated item for the measure.
 Item 036
-Item 036A generated item for the measure.ItemHomebrew
+Item 036ItemHomebrewA generated item for the measure.
 Item 037
-Item 037A generated item for the measure.ItemAlder Workshop (HB)
+Item 037ItemAlder Workshop (HB)A generated item for the measure.
 Item 038
-Item 038A generated item for the measure.ItemAlder Workshop (HB)
+Item 038ItemAlder Workshop (HB)A generated item for the measure.
 Item 039
-Item 039A generated item for the measure.ItemHomebrew
+Item 039ItemHomebrewA generated item for the measure.
 Item 040
-Item 040A generated item for the measure.ItemAlder Workshop (HB)
+Item 040ItemAlder Workshop (HB)A generated item for the measure.
 Item 041
-Item 041A generated item for the measure.ItemAlder Workshop (HB)
+Item 041ItemAlder Workshop (HB)A generated item for the measure.
 Item 042
-Item 042A generated item for the measure.ItemHomebrew
+Item 042ItemHomebrewA generated item for the measure.
 Item 043
-Item 043A generated item for the measure.ItemAlder Workshop (HB)
+Item 043ItemAlder Workshop (HB)A generated item for the measure.
 Item 044
-Item 044A generated item for the measure.ItemAlder Workshop (HB)
+Item 044ItemAlder Workshop (HB)A generated item for the measure.
 Item 045
-Item 045A generated item for the measure.ItemHomebrew
+Item 045ItemHomebrewA generated item for the measure.
 Item 046
-Item 046A generated item for the measure.ItemAlder Workshop (HB)
+Item 046ItemAlder Workshop (HB)A generated item for the measure.
 Item 047
-Item 047A generated item for the measure.ItemAlder Workshop (HB)
+Item 047ItemAlder Workshop (HB)A generated item for the measure.
 Item 048
-Item 048A generated item for the measure.ItemHomebrew
+Item 048ItemHomebrewA generated item for the measure.
 Item 049
-Item 049A generated item for the measure.ItemAlder Workshop (HB)
+Item 049ItemAlder Workshop (HB)A generated item for the measure.
 Item 050
-Item 050A generated item for the measure.ItemAlder Workshop (HB)
+Item 050ItemAlder Workshop (HB)A generated item for the measure.
 Item 051
-Item 051A generated item for the measure.ItemHomebrew
+Item 051ItemHomebrewA generated item for the measure.
 Item 052
-Item 052A generated item for the measure.ItemAlder Workshop (HB)
+Item 052ItemAlder Workshop (HB)A generated item for the measure.
 Item 053
-Item 053A generated item for the measure.ItemAlder Workshop (HB)
+Item 053ItemAlder Workshop (HB)A generated item for the measure.
 Item 054
-Item 054A generated item for the measure.ItemHomebrew
+Item 054ItemHomebrewA generated item for the measure.
 Item 055
-Item 055A generated item for the measure.ItemAlder Workshop (HB)
+Item 055ItemAlder Workshop (HB)A generated item for the measure.
 Item 056
-Item 056A generated item for the measure.ItemAlder Workshop (HB)
+Item 056ItemAlder Workshop (HB)A generated item for the measure.
 Item 057
-Item 057A generated item for the measure.ItemHomebrew
+Item 057ItemHomebrewA generated item for the measure.
 Item 058
-Item 058A generated item for the measure.ItemAlder Workshop (HB)
+Item 058ItemAlder Workshop (HB)A generated item for the measure.
 Item 059
-Item 059A generated item for the measure.ItemAlder Workshop (HB)
+Item 059ItemAlder Workshop (HB)A generated item for the measure.
 Item 060
-Item 060A generated item for the measure.ItemHomebrew
+Item 060ItemHomebrewA generated item for the measure.
 Item 061
-Item 061A generated item for the measure.ItemAlder Workshop (HB)
+Item 061ItemAlder Workshop (HB)A generated item for the measure.
 Item 062
-Item 062A generated item for the measure.ItemAlder Workshop (HB)
+Item 062ItemAlder Workshop (HB)A generated item for the measure.
 Items
 LootDaggerheart
 New item
@@ -459,10 +459,10 @@ Sources
 Tables
 Terms of use
 Whispering Cap
-Whispering CapOnce per rest, hear one sentence spoken within Far... [namelen=83 namehash=aa657f18]
+Whispering CapItemHomebrewOnce per rest, hear one sentence spoke... [namelen=83 namehash=5a97f492]
 and 12 more
 daggerheart.com
 Кольцо с гравировкой
-Кольцо с гравировкойНадпись на неизвестном языке. Тёплое на ощуп... [namelen=78 namehash=e26f914f]
+Кольцо с гравировкойItemHomebrewНадпись на неизвестном языке. Тё... [namelen=78 namehash=34674d0b]
 Настой кузнеца
-Настой кузнецаВыпейте перед работой у горна: до конца сцены вы н... [namelen=109 namehash=d549c2a7]
+Настой кузнецаConsumableHomebrewВыпейте перед работой у горна: д... [namelen=109 namehash=6e88a18f]

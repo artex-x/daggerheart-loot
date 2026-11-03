@@ -139,6 +139,9 @@ html {
   padding: 0;
   -webkit-text-size-adjust: 100%;
   scrollbar-gutter: stable;
+  /* A focused control scrolls clear of the sticky selection bar (`SelectionBar.svelte`
+     sets the height while it is mounted). */
+  scroll-padding-bottom: var(--selbar-h, 0px);
 }
 
 body {

@@ -8,6 +8,7 @@ import { isFrameRecord } from './label.js';
 import {
   foldQuery,
   hayFor,
+  highlightRanges,
   matches,
   parseQuery,
   rankHits,
@@ -580,5 +581,34 @@ describe('ranking', () => {
       hits.indexOf(mine[1] as Record_)
     );
     expect(hits).toHaveLength(contiguous('меч').length + 300);
+  });
+});
+
+describe('the search highlight', () => {
+  const marks = (name: string, q: string): [number, number][] =>
+    highlightRanges(name, parseQuery(q));
+
+  it('marks a word start in any case, and reads ё as е', () => {
+    expect(marks('Длинный Меч', 'меч')).toEqual([[8, 11]]);
+    expect(marks('Тёмный Плащ', 'темн')).toEqual([[0, 4]]);
+  });
+
+  it('marks a phrase and two terms, and merges an overlap', () => {
+    expect(marks('Ring of Fire', '"ring of"')).toEqual([[0, 7]]);
+    expect(marks('Ring of Fire', 'fire ring')).toEqual([
+      [0, 4],
+      [8, 12]
+    ]);
+    expect(marks('Ring of Fire', 'ring "ring of"')).toEqual([[0, 7]]);
+  });
+
+  it('marks nothing inside a word or without a match', () => {
+    expect(marks('Палаш', 'лаш')).toEqual([]);
+    expect(marks('Палаш', 'меч')).toEqual([]);
+  });
+
+  it('marks nothing where folding changes the length', () => {
+    /* A combining mark folds away, so the folded offsets would not be the name's. */
+    expect(marks('Zweihänder', 'zwei')).toEqual([]);
   });
 });

@@ -72,7 +72,14 @@ const { ok } = rep;
               : [];
           })
         ),
-        picked: [...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
+        /* Two forms until batch 9 removes `FilterBar`: the shared page's pills and the
+           catalog's pressed chips (its column is open at this suite's width). */
+        picked: [
+          ...[...document.querySelectorAll('.fpill')].map((e) => e.dataset.val),
+          ...[...document.querySelectorAll('[data-fval][aria-pressed="true"]')].map(
+            (e) => e.dataset.fval
+          )
+        ],
         source: srcBtns.length
           ? srcBtns.map(
               (e) =>

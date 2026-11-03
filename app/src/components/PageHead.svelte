@@ -8,6 +8,7 @@
      Core rules panel had the same thirty lines and the same two hundred of
      style, and the alternate tables would have been a third copy. Both copies
      are gone; this is where the padding is decided now. */
+  import type { Snippet } from 'svelte';
   import HelpBox from './HelpBox.svelte';
   import HelpButton from './HelpButton.svelte';
   import Icon from './Icon.svelte';
@@ -18,6 +19,7 @@
   interface Props {
     app: AppState;
     title: string;
+    /** The line under the heading; none where it is empty. */
     sub: string;
     /** What this section explains about itself, where anything is written. */
     help: Help | null;
@@ -30,9 +32,11 @@
      * pins the bar itself.
      */
     home?: string;
+    /** More of the heading row after the help (the catalog's group chips). */
+    extra?: Snippet | undefined;
   }
 
-  const { app, title, sub, help, home }: Props = $props();
+  const { app, title, sub, help, home, extra }: Props = $props();
 
   const t = $derived(app.t);
   const pinned = $derived(canonicalHash(home ?? app.hash));
@@ -57,9 +61,7 @@
     class:on
     aria-pressed={on}
     onclick={() => {
-      const wasHome = on;
-      if (!app.toggleHome(home)) app.say((t) => t.saveFailed, { error: true });
-      else app.say(wasHome ? (t) => t.homeReset : (t) => t.homeSet);
+      app.pinHome(home);
     }}
   >
     <Icon name={on ? 'check' : 'home'} /><span class="txt">{on ? t.homeOn : t.homeHint}</span>
@@ -68,14 +70,16 @@
     <HelpButton
       lang={app.lang}
       labeled
+      label={help.button}
       open={helpOpen}
       onclick={() => {
         helpOpen = !helpOpen;
       }}
     />
   {/if}
+  {@render extra?.()}
 </div>
-<p class="page-sub">{sub}</p>
+{#if sub}<p class="page-sub">{sub}</p>{/if}
 
 {#if help && helpOpen}
   <HelpBox {help} />

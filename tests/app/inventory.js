@@ -783,38 +783,28 @@ const STATES = [
   {
     id: '#/tables/wondrous',
     route: '#/tables/wondrous_environments',
-    why: 'the first table with a filter: the strip folded, nothing picked'
-  },
-  {
-    id: '#/tables/wondrous ~ panel open',
-    route: '#/tables/wondrous_environments',
-    why: 'the filter panel, unfolded and empty',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
+    why: 'the first table with a filter: the column open, «Все» pressed, nothing picked'
   },
   {
     id: '#/tables/wondrous ~ filtered',
     route: '#/tables/wondrous_environments',
-    why: 'a value picked, which narrows the table and writes the address',
+    why: 'a value picked, which narrows the table, writes the address and draws the count line',
     enter: async (d) => {
-      await d.click('Фильтры');
       /* Not "Equipment" - that word is also the equipment nav chip's, and a
-         click by name finds the link before the panel's own chip. */
+         click by name finds the link before the column's own chip. */
       await d.click('Предметы');
     }
   },
   {
     id: '#/tables/wondrous ~ filter link',
     route: '#/tables/wondrous_environments/f_kind-item',
-    why: 'arriving at a filter link, which opens the panel with that value picked'
+    why: 'arriving at a filter link: the value pressed in the column and named in the count line'
   },
   {
     id: '#/tables/wondrous ~ nothing found',
     route: '#/tables/wondrous_environments',
-    why: "a filter and a query together leaving nothing, with the empty state's own reset",
+    why: 'a filter and a query together leaving nothing: the plate, the cause and the primary reset',
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('Предметы');
       await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
@@ -833,9 +823,9 @@ const STATES = [
   {
     id: '#/tables ~ grid',
     route: '#/tables',
-    why: 'the grid view, a different body entirely; the note under the toolbar',
+    why: 'the grid view, a different body entirely: two columns at 360, no kind badge on a one-kind table',
     enter: async (d) => {
-      await d.click('Сеткой');
+      await d.click('Сетка');
     }
   },
   {
@@ -940,23 +930,88 @@ const STATES = [
     why: 'what the app says after copying the selection',
     enter: async (d) => {
       await d.tick(ROW1_CI1);
-      await d.click('Скопировать');
+      await d.click('Скопировать текст');
     },
     /* a 1600ms toast; arrived at afresh per language - see this file's header */
     timed: true
   },
   {
-    id: '#/tables ~ help',
+    id: '#/tables ~ about this data',
     route: '#/tables',
-    why: 'the help panel, which uses a bold word mid-sentence twice over, and the «Хоумбрю» group with its three filters',
+    why: '«Об этих данных»: the three data notes, each with a bold lead, and the button named for them',
     enter: async (d) => {
-      await d.click('Справка');
+      await d.click('Об этих данных');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ selecting',
+    route: '#/tables/eq_weapon',
+    why: '«Выбрать» pressed: the ticks and the bar with zero ticks, its actions off',
+    enter: async (d) => {
+      await d.click('Выбрать');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ two filters',
+    route: '#/tables/eq_weapon/f_tier-1.range-melee',
+    why: 'a two-group filter link: both chips pressed in the column and the count line «Ранг 1, Вплотную · Показано N из M»; also the first-screen row'
+  },
+  {
+    id: '#/tables/eq_weapon ~ mid band',
+    route: '#/tables/eq_weapon',
+    width: 768,
+    why: 'the 761-999 px band: the wide head with the labeled pin and the tabs, the filters behind «Фильтры»'
+  },
+  {
+    id: '#/tables/eq_weapon ~ filter sheet',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: 'the filter sheet below 761 px: the head with «Закрыть», the rows with «Все» pressed, the foot',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ filter sheet, two filters',
+    route: '#/tables/eq_weapon/f_tier-1.range-melee',
+    width: 360,
+    why: 'the sheet with two picks: «Фильтры · 2», the filter link in its head, «Показать N»',
+    enter: async (d) => {
+      await d.click('Фильтры · 2');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ filter sheet as gm1',
+    route: '#/tables/eq_weapon',
+    as: 'gm1',
+    width: 360,
+    why: 'own items held: the «Свои предметы» switch is the first row of the sheet',
+    enter: async (d) => {
+      await d.click('Фильтры');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ table picker',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: 'the table picker sheet: the group chips and the tables of the group, «Оружие» current',
+    enter: async (d) => {
+      await d.click('Таблица: Оружие');
+    }
+  },
+  {
+    id: '#/tables/eq_weapon ~ more menu',
+    route: '#/tables/eq_weapon',
+    width: 360,
+    why: '«Ещё» open: the table link, the pin and «Об этих данных»',
+    enter: async (d) => {
+      await d.click('Ещё');
     }
   },
   {
     id: '#/tables/eq_weapon',
     route: '#/tables/eq_weapon',
-    why: 'the biggest table: four tier sections and the artifacts, the strip folded'
+    why: 'the biggest table: four tier sections and the artifacts, the column open'
   },
   {
     id: '#/tables/eq_weapon/f_tier-A',
@@ -974,19 +1029,10 @@ const STATES = [
     why: 'the third kind, three facet groups, the shortest'
   },
   {
-    id: '#/tables/eq_weapon ~ panel open',
-    route: '#/tables/eq_weapon',
-    why: 'seven rows, the widest panel the app has',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
-  },
-  {
     id: '#/tables/eq_weapon ~ filtered',
     route: '#/tables/eq_weapon',
-    why: 'both branches of the pill rule on one screen - "Ранг 1" and "Двуручное" - and a two-group address',
+    why: 'both branches of the chosen-value rule in the count line - "Ранг 1" and "Двуручное" - and a two-group address',
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('1');
       await d.click('Двуручное');
     }
@@ -994,7 +1040,7 @@ const STATES = [
   {
     id: '#/tables/eq_secondary ~ filter link',
     route: '#/tables/eq_secondary/f_cls-mag',
-    why: 'arriving opens the panel; the cls row reads "Класс", as on weapons'
+    why: 'arriving presses the chip in the column; the cls row reads "Класс", as on weapons'
   },
   {
     id: '#/tables/eq_secondary ~ searched',
@@ -1007,9 +1053,8 @@ const STATES = [
   {
     id: '#/tables/eq_armor ~ nothing found',
     route: '#/tables/eq_armor',
-    why: 'the three-row panel open, a pill, 0 из 100, the empty state with its own reset',
+    why: 'the three-row column, a pressed chip, the empty plate with the cause and its own reset',
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('Уникальные');
       await d.type('Поиск по названию или описанию...', 'zzzqqqxx123');
     }
@@ -1037,9 +1082,8 @@ const STATES = [
   {
     id: '#/tables/mwt ~ warrens picked',
     route: '#/tables/many_worlds_tavern',
-    why: "the filter panel open with its kind and realm rows, Warrin' Warrens picked: 21 rows",
+    why: "the filter column with its kind and realm rows, Warrin' Warrens picked: 21 rows",
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('Воюющие Норы');
     }
   },
@@ -1063,7 +1107,6 @@ const STATES = [
     route: '#/tables/other_frames',
     why: 'two frames picked in one row: values OR, and the second pick keeps the first',
     enter: async (d) => {
-      await d.click('Фильтры');
       await d.click('Пир зверей');
       await d.click('Колоссы Сухоземья');
     }
@@ -1082,14 +1125,6 @@ const STATES = [
     id: '#/tables/community',
     route: '#/tables/community_items',
     why: 'a sectioned body: communities'
-  },
-  {
-    id: '#/tables/community ~ panel open',
-    route: '#/tables/community_items',
-    why: 'the filter panel on a sectioned table - the screen the human reported the search-box and любое defects from',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
   },
   { id: '#/tables/alt_item', route: '#/tables/alt_item', why: 'the alternate items table' },
   {
@@ -2107,7 +2142,7 @@ const STATES = [
   {
     id: '#/s/player-token-1 ~ filters open',
     route: '#/s/player-token-1',
-    why: 'the search box and «Фильтры» pressed: the panel with Тип (4), Источник (6), Ранг (1, 2), Класс, Характеристика (6), Дистанция (3), Хват and Линейка, each «любое»',
+    why: 'the search box and «Фильтры» pressed: the panel with Тип (4), Источник (6), Ранг (1, 2), Класс, Характеристика (6), Дистанция (3), Хват and Улучшения и уникальные, each «любое»',
     enter: async (d) => {
       await d.click('Фильтры');
     }
@@ -2833,10 +2868,7 @@ const STATES = [
     as: 'gm1',
     items: 66,
     sections: 20,
-    why: 'the homebrew table on «Мастерская Ольхи» with its 22 sections: the panel open, «Раздел» folded after 10 with «и ещё 12»; no table, filter or section link',
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
+    why: 'the homebrew table on «Мастерская Ольхи» with its 22 sections: the column, «Раздел» folded after 10 with «и ещё 12»; no table, filter or section link'
   },
   {
     id: '#/homebrew/hb_longsrcaaaaaaaaa as gm4',
@@ -3315,10 +3347,7 @@ const STATES = [
     id: '#/tables/homebrew/f_src-hb ~ filters open as gm1',
     route: '#/tables/homebrew/f_src-hb',
     as: 'gm1',
-    why: "«Фильтры» pressed on the «Хоумбрю» chip: «Тип» with the chip's two kinds «Предметы» and «Расходники», no «Снаряжение», no «Раздел»",
-    enter: async (d) => {
-      await d.click('Фильтры');
-    }
+    why: "the column on the «Хоумбрю» tab: «Тип» with the tab's two kinds «Предметы» and «Расходники», no «Снаряжение», no «Раздел»"
   },
   {
     id: '#/tables/homebrew/f_src-hb_alderworkshopaaa.kind-item as gm1',

@@ -15,8 +15,10 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   (`9a31aede`, `80872b35`), 1b (`fce4a9f8`, `3e5f6301`; `reviews/1b.md`) and 2
   (`30de6bf5`, fix pass `65829261`; `reviews/2.md` approve) are done, and wave
   1 landed on `main` as `d83384b4`; `claude/57` merged it at the batch 3
-  refresh (2026-10-30). Batch 3 is implement-ready (section 10). Batches 4-10
-  and P are outlines; each one's refresh expands it.
+  refresh (2026-10-30). Batch 3 is implemented (section 10; `handoff.md` has
+  its commit, gates and deviations), waiting for the orchestrator's `polish`
+  and `harden` and its batch review. Batches 4-10 and P are outlines; each
+  one's refresh expands it.
 - Release (owner, 2026-10-29, `context.md` "Release in three waves" and its
   "Reviews" paragraph): three waves - 1, 1b, 2; then 3-7; then 8, 9, P, 10 -
   each squashed onto `main` after its last batch's review and green CI, with
@@ -57,8 +59,9 @@ shape of `main` at `c8243ba6`. Phase 1 findings and their re-check are in
   re-checked against `main` and stands. Thirteen planner defaults D1-D13 are
   logged there; two need the owner's later yes (section 13: Q3-S, Q3-T). The
   Impeccable fallback of `reviews/2.md` R1 is named in section 10, "Impeccable".
-- NEEDS_HUMAN_CONFIRMATION: no (the owner is away; Q3-S and Q3-T take their
-  defaults). Every other question of section 13 is answered; Q-W1 took the
+- NEEDS_HUMAN_CONFIRMATION: no. Q3-T takes its default (deferred). Q3-S is
+  answered (owner, 2026-10-30, `context.md`): the per-section «Выбрать все
+  (N)» strip goes. Every other question of section 13 is answered; Q-W1 took the
   owner's answer "Wave squash content" (`issues/57/` goes onto `main` with each
   squash).
 

@@ -412,17 +412,24 @@ row or card lands under the header by `--anchor-top`, set at the same two
 steps: 75px, 118px up to 760px and 132px up to 600px. At 600px touch
 targets grow: segment padding to 8px 14px, the section copy-link button from
 about 20px to a 36px hit area, row actions onto their own line, the mode row's
-controls 40px tall. Every other media query in the code belongs to one
-component and its own measured problem. Do not add another system breakpoint.
+controls 40px tall. The catalog adds one step, 1000px: from it the filter
+column sits beside the rows; from 761px it draws the wide head (the `h1`, the
+labeled pin, «Об этих данных», the group chips and the tabs) with the filters
+in the bottom sheet; below 761px the picker row, the sheet and «··· Ещё»
+replace them. The `viewport` port (`app/src/ports/viewport.ts`) is the one place
+that reads the width in code; CSS reads the same two numbers. Every other media
+query in the code belongs to one component and its own measured problem. Do
+not add another system breakpoint.
 
 **The Same Label Rule.** A label does not change with the width, and a control
 is never only an icon where its label fits: the three jobs keep their labels at
 360px, the signed-out account control keeps «Войти» / "Sign in" at every width,
 and the pin and the help are labeled buttons («Открывать при запуске» /
-"Open on start", «Справка» / "Help"). The one interim exception: up to 760px
-the pin and the help stay round buttons with the same names until their page's
-batch moves them into «Ещё» or «Настроить» (the tables, the roller, homebrew,
-search and the account, and the lists).
+"Open on start", «Справка» / "Help"; the catalog's help is named for its
+panel, «Об этих данных» / "About this data"). The one interim exception: up to
+760px the pin and the help stay round buttons with the same names until their
+page's batch moves them into «Ещё» or «Настроить» (the roller, homebrew, search
+and the account, and the lists); the catalog's are in «Ещё».
 
 **The First-Screen Rule.** At 360x640 and at 1180x720, in Russian and in
 English, at scroll 0, the primary content of a route starts no lower than 40%
@@ -480,8 +487,12 @@ icon button), 6px for a tag, and 999px for anything that is one choice in a row
 
 Borders are one pixel and a seam color, except where a border states something:
 a gold-tinted border marks a filter that has a value, a dashed border marks a
-property rather than a category (the unique tag), and a border at about 45 per
-cent alpha echoes its own tag's hue.
+property rather than a category (the unique tag) and the empty-state plate,
+and a border at about 45 per cent alpha echoes its own tag's hue.
+
+A ticked row or tile is lit and neutral: the Vault Wall Lit ground, the
+`--muted2` border and the checked box. Never gold, never a one-side stripe (The
+Seal Rule: nobody chose a value there, the reader picked a row).
 
 Artwork is square. A record image is `aspect-ratio: 1` with `object-fit: cover`:
 132px beside a compact card, full width and up to 420px on a full card, 60px in
@@ -537,6 +548,14 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Mode row:** the roll pages' three mode controls take the chip's look; at
   600px and below they share the row, 40px tall, and a long name takes two
   lines.
+- **Neutral pressed (`Chip neutral`):** the `check` icon before the label, the
+  Vault Wall Lit fill, a Chalk label at weight 600 and a lit `--muted2`
+  border, the icon and the label on one center. A filter row's «Все» is its
+  caller; a picked value chip stays gold.
+- **Two-level navigation:** the catalog's group chips (links), then the book
+  or section of the group as underlined tabs: Ash Violet text, the current tab
+  gold text on a 2px gold underline. Each level is a group named for
+  assistive technology («Группа», the group's name, «Источник»).
 
 ### Segmented control
 
@@ -559,6 +578,10 @@ means "a thing". Do not round a card to a pill or square a chip.
 - **Padding:** 13px 15px 14px, with 8px between rows of content.
 - **Layout:** `full` stacks the image above the body; `compact` puts a 132px
   square image beside it.
+- **Grid tile:** two columns up to 600px; the art, the name and a second line
+  (the stat line, else the other-language name). A table of more than one
+  kind labels the tile with its kind badge where the colored dot used to be;
+  hue lives on a labeled badge (The Tag Rule).
 - **Art well:** every screen picture (card, row, table tile, list cover, editor
   thumbnail) sits in `ArtWell`: the `--art-well` square with the glyph of the
   record's kind at 42% of the well in Seam Lit, hidden from assistive
@@ -618,12 +641,42 @@ means "a thing". Do not round a card to a pill or square a chip.
   (the account, the lists and «Мои предметы»), where no job is lit, and while
   its menu is open.
 
-### Filter pills
+### Filter chips and the count line
 
-- **Style:** 32px tall, 8px radius, a 12 per cent gold wash inside a 45 per cent
-  gold border, a Seal Gold Soft label at 13px weight 600, and a dismiss glyph.
-- Chosen values stay visible outside the folded panel, beside a text reset and a
-  32px copy-link button.
+- **Catalog:** the filters are a 250px column beside the rows from 1000px,
+  sticky under the header and scrolling inside itself, and a bottom sheet
+  below it. Each row is «Все» (the neutral pressed default) and the value
+  chips; a picked value is gold. No pill row at 360px or in the mid band: the
+  count line under the search row names the chosen values in text, cut to one
+  line, and the count, never cut.
+- **Pills (the shared page and the Items tab, until their batches):** 32px
+  tall, 8px radius, a 12 per cent gold wash inside a 45 per cent gold border,
+  a Seal Gold Soft label at 13px weight 600, and a dismiss glyph, beside a
+  text reset and a 32px copy-link button.
+
+### Bottom sheet
+
+- `Sheet`: a native `<dialog>` opened with `showModal()`, attached to the
+  bottom, `min(100%, 560px)` wide and centered, top corners at the plate
+  radius, at most `min(85dvh, 640px)` tall. Its head (the title, the caller's
+  controls, «Закрыть» with the close icon) and its foot stay; the body
+  scrolls. No grab handle: nothing drags it. The filter sheet and the table
+  picker are its callers.
+
+### Selection bar
+
+- `SelectionBar`: one shape on every list page, pinned to the bottom of the
+  screen, a Vault Wall ground under a `--muted2` top border and a blur; no
+  gold. «Все» is a tri-state box with its label always visible, then the
+  polite summary («Выбрано: N»), the page's actions and «Снять выделение»
+  last. Below 761px the box, the summary and the clear are one row and the
+  actions the next. Zero ticks: the actions off, the clear on.
+
+### Empty state
+
+- `Empty`: a dashed plate. The catalog adds the kind glyph in its art well (the
+  only picture), the heading «Ничего не найдено», one cause sentence and a
+  primary reset while a filter is chosen.
 
 ### Toast
 
@@ -699,7 +752,8 @@ a transform.
   gradient text, no colored drop shadow. The ground is violet, which makes this
   a short slide, and the palette's restraint is what keeps 1459 records legible.
 - **Don't** drift toward a SaaS dashboard: no generic blue accent, no oversized
-  rounded cards, no illustrated empty states, no marketing gradient. The density
+  rounded cards, no illustrated empty states (the only picture an empty state
+  draws is the kind glyph in its art well), no marketing gradient. The density
   these tables need is the opposite of that language.
 - **Don't** add a second shadow step, a third system breakpoint, or a sixth
   radius.
@@ -708,5 +762,7 @@ a transform.
 - **Don't** link a font service or load a font from another origin. The one
   UI face comes from the build's own `/assets/`.
 - **Don't** put a kind color on a row, a card border, or body text.
+- **Don't** translate a book name: «Core» and «Hope & Fear» stay Latin in
+  Russian, on chips, tabs and tags.
 - **Don't** set white text on a gold fill. Ink on Gold is the only text color
   there.

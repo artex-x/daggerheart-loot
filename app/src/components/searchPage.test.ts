@@ -243,7 +243,7 @@ describe('the cap', () => {
     expect(screen.getByText('Выбрать все (300)')).toBeInTheDocument();
     await fireEvent.click(container.querySelector('.selall input') as HTMLInputElement);
     await tick();
-    expect(screen.getByText('Выбрано 300')).toBeInTheDocument();
+    expect(screen.getByText('Выбрано: 300')).toBeInTheDocument();
     expect(container.querySelectorAll('[data-row].sel')).toHaveLength(300);
   });
 });
@@ -311,7 +311,7 @@ describe('selection', () => {
     const { container } = render(App, { env });
     await type('Ветра');
     await userEvent.click(rowCheckboxes()[0] as HTMLElement);
-    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано 1');
+    expect(container.querySelector('.selcount')).toHaveTextContent('Выбрано: 1');
     env.router.navigate('#/tables', 'ru');
     await tick();
     expect(container.querySelector('.selcount')).not.toBeInTheDocument();

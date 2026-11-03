@@ -1,6 +1,6 @@
 # #/tables/eq_secondary ~ filter link
 # route: #/tables/eq_secondary/f_cls-mag
-# why: arriving opens the panel; the cls row reads "Класс", as on weapons
+# why: arriving presses the chip in the column; the cls row reads "Класс", as on weapons
 
 ## ru :: tree
 RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tables/eq_secondary/f_cls-mag]
@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -32,33 +31,39 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Вторичное" [url=/tables/eq_secondary]
       link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    button "Фильтры (1)" [expanded=true]
-    button "Магическое" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    StaticText "26 из 135"
-    ... StaticText x17 of 21 same-shape siblings elided
-    ... button x27 of 31 same-shape siblings elided
-    button "Магическое" [pressed=true]
-    button "Улучшаемые" [pressed=false]
-    button "Уникальные" [pressed=false]
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (5)" [checked=false]
-    checkbox "Рунный Щит" [checked=false]
-    ... button x24 of 28 same-shape siblings elided
-    ... checkbox x26 of 30 same-shape siblings elided
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "РАНГ 4"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (6)"
-    checkbox "Щупальце Черной Крови" [checked=false]
-    button "Щупальце Черной Крови Ранг 4 · Магическое · Инстинкт · Средне · ..." [namelen=245 namehash=49faf861]
-    checkbox "Легендарный Священный Щит" [checked=false]
-    button "Легендарный Священный Щит Ранг 4 · Магическое · Инстинкт · Вплот..." [namelen=229 namehash=d4eac64c]
+    StaticText "Магическое"
+    StaticText " ·"
+    StaticText "Показано 26 из 135"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры · 1" [level=2]
+      button "Сбросить"
+      button "Ссылка на фильтры"
+      StaticText "РАНГ"
+      button "Все" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x26 of 30 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Все" [pressed=true]
+      ... StaticText x2 of 6 same-shape siblings elided
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "ДИСТАНЦИЯ"
+      button "Все" [pressed=true]
+      StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+      button "Все" [pressed=true]
+      button "Есть улучшение" [pressed=false]
+      button "Уникальные" [pressed=false]
+    heading "Ранг 1" [level=2]
+    ... button x28 of 32 same-shape siblings elided
+    heading "Ранг 2" [level=2]
+    heading "Ранг 3" [level=2]
+    heading "Ранг 4" [level=2]
+    button "Щупальце Черной Крови УНИКАЛЬНОЕ HOPE & FEAR Магическое · Инстин..." [namelen=219 namehash=9e5916ff]
+    button "Легендарный Священный Щит ТЁМНОЕ СЕРДЦЕ АНДАЛУРИИ Магическое · И..." [namelen=203 namehash=6e5410ac]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -68,18 +73,18 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 
 ## ru :: controls
 1
-120Кинжал СангромантииРанг 1 · Магическое · Влияние · Вплотную ·... [namelen=276 namehash=eb048488]
-1Порхающие БесыРанг 2 · Магическое · Инстинкт · Далеко · d4+2 ма... [namelen=197 namehash=84bdbfd1]
+120Кинжал СангромантииУникальноеThe Dragon's VaultМагическое · В... [namelen=251 namehash=424ea375]
+1Порхающие БесыУникальноеСпорополисМагическое · Инстинкт · Далек... [namelen=172 namehash=902e152b]
 2
-28Святой ЩитРанг 3 · Магическое · Инстинкт · Вплотную · d6+3 маг... [namelen=356 namehash=048ae74f]
+28Святой ЩитУникальноеVault of AgesМагическое · Инстинкт · Вплот... [namelen=331 namehash=a68f9d75]
 3
 4
-6Ритуальный Клинок СехметРанг 3 · Магическое · Искусность · Впло... [namelen=300 namehash=a127fa90]
-6Щит СолнцаРанг 3 · Магическое · Сила · Вплотную · d4+4 маг · Од... [namelen=214 namehash=65e9fac5]
-7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=210 namehash=c6b11936]
-87Пылающий БраслетРанг 1 · Магическое · Искусность · Далеко · d6... [namelen=267 namehash=0bd4aabe]
-97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=317 namehash=7badcb82]
-?Справка
+6Ритуальный Клинок СехметУникальноеVault of AgesМагическое · Иск... [namelen=275 namehash=0d422fab]
+6Щит СолнцаУникальноеDread GM ToolboxМагическое · Сила · Вплотну... [namelen=189 namehash=039083ba]
+7Арканный СкальпельУникальноеWondrous EnvironmentsМагическое · И... [namelen=185 namehash=f82c5087]
+87Пылающий БраслетУникальноеThe Dragon's VaultМагическое · Искус... [namelen=242 namehash=93cfcdd3]
+97ИскраУникальноеThe Dragon's VaultМагическое · Проворность · Вп... [namelen=292 namehash=2a3380c0]
+?Об этих данных
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -92,92 +97,67 @@ Vault of Ages
 Wondrous Environments
 daggerheart.com
 Альт. таблицы
-Арканный Скальпель
 Близко
 Броня
 Бросок
 Влияние
 Войти
 Вплотную
+Все
 Вторичное
+Выбрать
 Далеко
 Дополнения
-Жуткий Наруч
-Жуткий НаручРанг 2 · Магическое · Инстинкт · Вплотную · d8 маг ·... [namelen=253 namehash=94944c1e]
+Есть улучшение
+Жуткий НаручУникальноеHope & FearМагическое · Инстинкт · Вплотну... [namelen=228 namehash=4e457316]
 Знание
 Инстинкт
-Искра
 Искусность
 К содержимому
-Кинжал Сангромантии
-Клинок Эха
-Клинок ЭхаРанг 4 · Магическое · Влияние · Вплотную · d4+6 маг · ... [namelen=219 namehash=6ad1fa70]
+Клинок ЭхаУникальноеHope & FearМагическое · Влияние · Вплотную ·... [namelen=194 namehash=52b72adf]
 Колоссы Сухоземья
 Конфиденциальность
-Легендарные Руны Концентрации
-Легендарные Руны КонцентрацииРанг 4 · Магическое · Инстинкт · Бл... [namelen=201 namehash=3fefbe6b]
-Легендарный Рунный Щит
-Легендарный Рунный ЩитРанг 4 · Магическое · Знание · Вплотную · ... [namelen=143 namehash=5543fa7f]
-Легендарный Священный Щит
-Легендарный Священный ЩитРанг 4 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=74e995d3]
+Легендарные Руны КонцентрацииHope & FearМагическое · Инстинкт · ... [namelen=176 namehash=18a1970f]
+Легендарный Рунный ЩитHope & FearМагическое · Знание · Вплотную ... [namelen=118 namehash=32aca42c]
+Легендарный Священный ЩитТёмное сердце АндалурииМагическое · Инс... [namelen=200 namehash=be31ce01]
 ЛутDaggerheart
 Магическое
-Магическое×
 Оружие
-Осколок Ворпала
-Осколок ВорпалаРанг 3 · Магическое · Знание · Вплотную · d4 маг ... [namelen=220 namehash=1ea92790]
+Осколок ВорпалаУникальноеHope & FearМагическое · Знание · Вплотн... [namelen=195 namehash=22478e83]
 Открывать при запуске
 Очень далеко
 Пир зверей
-Плеть Душ
-Плеть ДушРанг 3 · Магическое · Влияние · Близко · d6+5 маг · Одн... [namelen=239 namehash=395488ee]
+Плеть ДушУникальноеHope & FearМагическое · Влияние · Близко · d6... [namelen=214 namehash=0adcf1ba]
 Поиск
-Порхающие Бесы
+Поиск по названию или описанию...
 Проворность
-Продвинутые Руны Концентрации
-Продвинутые Руны КонцентрацииРанг 3 · Магическое · Инстинкт · Бл... [namelen=201 namehash=374069b2]
-Продвинутый Рунный Щит
-Продвинутый Рунный ЩитРанг 3 · Магическое · Знание · Вплотную · ... [namelen=143 namehash=198aae2f]
-Продвинутый Священный Щит
-Продвинутый Священный ЩитРанг 3 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=64cf57d0]
+Продвинутые Руны КонцентрацииHope & FearМагическое · Инстинкт · ... [namelen=176 namehash=53df3b90]
+Продвинутый Рунный ЩитHope & FearМагическое · Знание · Вплотную ... [namelen=118 namehash=2a384404]
+Продвинутый Священный ЩитТёмное сердце АндалурииМагическое · Инс... [namelen=200 namehash=f482ad7f]
 Прочее
-Пылающий Браслет
-Ритуальный Клинок Сехмет
-Рунный Щит
-Рунный ЩитРанг 1 · Магическое · Знание · Вплотную · d4 маг · Одн... [namelen=129 namehash=7b72a181]
-Руны Концентрации
-Руны КонцентрацииРанг 1 · Магическое · Инстинкт · Близко · d6 ма... [namelen=187 namehash=98b69de1]
-Сбросить всё
-Святой Щит
-Священный Щит
-Священный ЩитРанг 1 · Магическое · Инстинкт · Вплотную · d4 маг ... [namelen=211 namehash=f116390b]
-Сеткой
+Рунный ЩитHope & FearМагическое · Знание · Вплотную · d4 маг · О... [namelen=104 namehash=da745f26]
+Руны КонцентрацииHope & FearМагическое · Инстинкт · Близко · d6 ... [namelen=162 namehash=f8162147]
+Сбросить
+Священный ЩитТёмное сердце АндалурииМагическое · Инстинкт · Впло... [namelen=186 namehash=a1ae208b]
+Сетка
 Сила
-Скопировать ссылку на этот раздел
 Снаряжение
-Списком
+Список
 Средне
+Ссылка на раздел
 Ссылка на таблицу
 Ссылка на фильтры
-Сфера Мёбиуса
-Сфера МёбиусаРанг 4 · Магическое · Знание · Вплотную · d8+6 маг ... [namelen=284 namehash=a160495f]
+Сфера МёбиусаУникальноеHope & FearМагическое · Знание · Вплотную... [namelen=259 namehash=a6918c59]
 Таблицы
 Тёмное сердце Андалурии
-Улучшаемые
-Улучшенные Руны Концентрации
-Улучшенные Руны КонцентрацииРанг 2 · Магическое · Инстинкт · Бли... [namelen=200 namehash=6eb099a6]
-Улучшенный Рунный Щит
-Улучшенный Рунный ЩитРанг 2 · Магическое · Знание · Вплотную · d... [namelen=142 namehash=39e76a01]
-Улучшенный Священный Щит
-Улучшенный Священный ЩитРанг 2 · Магическое · Инстинкт · Вплотну... [namelen=224 namehash=eb7cc6f2]
+Улучшенные Руны КонцентрацииHope & FearМагическое · Инстинкт · Б... [namelen=175 namehash=47c28a5e]
+Улучшенный Рунный ЩитHope & FearМагическое · Знание · Вплотную ·... [namelen=117 namehash=d31180a1]
+Улучшенный Священный ЩитТёмное сердце АндалурииМагическое · Инст... [namelen=199 namehash=60448fb5]
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
-Фильтры (1)
-Щит Солнца
-Щупальце Черной Крови
-Щупальце Черной КровиРанг 4 · Магическое · Инстинкт · Средне · d... [namelen=240 namehash=f3a9427d]
+Щупальце Черной КровиУникальноеHope & FearМагическое · Инстинкт ... [namelen=215 namehash=1c481bbc]
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f_cls-mag]
@@ -196,8 +176,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -209,33 +188,39 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
       link "Secondary" [url=/en/tables/eq_secondary]
       link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    button "Filters (1)" [expanded=true]
-    button "Magic" [description=Remove from the filter]
-    button "Reset all"
-    button "Filter link" [description=Filter link]
-    StaticText "26 of 135"
-    ... StaticText x17 of 21 same-shape siblings elided
-    ... button x27 of 31 same-shape siblings elided
-    button "Magic" [pressed=true]
-    button "Upgradable" [pressed=false]
-    button "Unique" [pressed=false]
-    button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (5)" [checked=false]
-    checkbox "Rune Shield" [checked=false]
-    ... button x24 of 28 same-shape siblings elided
-    ... checkbox x26 of 30 same-shape siblings elided
-    button "Copy a link to this section" [description=Copy a link to this section]
-    button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "TIER 4"
-    button "Copy a link to this section" [description=Copy a link to this section]
-    StaticText "Select all (6)"
-    checkbox "Blackblood Tendril" [checked=false]
-    button "Blackblood Tendril Tier 4 · Magic · Instinct · Close · d6+8 mag ..." [namelen=242 namehash=cb67f988]
-    checkbox "Legendary Hallowed Shield" [checked=false]
-    button "Legendary Hallowed Shield Tier 4 · Magic · Instinct · Melee · d4..." [namelen=219 namehash=f870b479]
+    button "Link to this table"
+    StaticText "Magic"
+    StaticText " ·"
+    StaticText "26 of 135 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters · 1" [level=2]
+      button "Reset"
+      button "Filter link"
+      StaticText "TIER"
+      button "All" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x26 of 30 same-shape siblings elided
+      StaticText "SOURCE"
+      button "All" [pressed=true]
+      ... StaticText x2 of 6 same-shape siblings elided
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "RANGE"
+      button "All" [pressed=true]
+      StaticText "UPGRADES AND UNIQUES"
+      button "All" [pressed=true]
+      button "Upgradable" [pressed=false]
+      button "Unique" [pressed=false]
+    heading "Tier 1" [level=2]
+    ... button x28 of 32 same-shape siblings elided
+    heading "Tier 2" [level=2]
+    heading "Tier 3" [level=2]
+    heading "Tier 4" [level=2]
+    button "Blackblood Tendril UNIQUE HOPE & FEAR Magic · Instinct · Close ·..." [namelen=216 namehash=5a932907]
+    button "Legendary Hallowed Shield DARK HEART OF ANDALURIA Magic · Instin..." [namelen=193 namehash=3d7680b2]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -245,101 +230,77 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary/f
 
 ## en :: controls
 1
-120Sangromancy DaggerTier 1 · Magic · Presence · Melee · d6 mag ... [namelen=230 namehash=230652c9]
-1FlutterfiendsTier 2 · Magic · Instinct · Far · d4+2 mag · One-H... [namelen=206 namehash=7e5475b4]
+120Sangromancy DaggerUniqueThe Dragon's VaultMagic · Presence · ... [namelen=205 namehash=882d3951]
+1FlutterfiendsUniqueSporopolisMagic · Instinct · Far · d4+2 mag ... [namelen=181 namehash=a0794f50]
 2
-28Saintly GuardTier 3 · Magic · Instinct · Melee · d6+3 mag · On... [namelen=323 namehash=a7f3ecbb]
+28Saintly GuardUniqueVault of AgesMagic · Instinct · Melee · d6+... [namelen=298 namehash=7b118434]
 3
 4
-6Ritual Blade of SekhmetTier 3 · Magic · Finesse · Melee · d8+4 ... [namelen=274 namehash=938b6ddd]
-6Shield of the SunTier 3 · Magic · Strength · Melee · d4+4 mag ·... [namelen=204 namehash=30a51296]
-7Arcane ScalpelTier 3 · Magic · Finesse · Far · d6+2 mag · One-H... [namelen=209 namehash=2b432800]
-87Burning BraceletTier 1 · Magic · Finesse · Far · d6 mag · One-... [namelen=229 namehash=26e514a5]
-97SparkTier 2 · Magic · Agility · Melee · d8+2 mag · One-HandedF... [namelen=303 namehash=3ffed9d7]
-?Help
-Advanced Focus Runes
-Advanced Focus RunesTier 3 · Magic · Instinct · Very Close · d6+... [namelen=180 namehash=0c28ce1b]
-Advanced Hallowed Shield
-Advanced Hallowed ShieldTier 3 · Magic · Instinct · Melee · d4+4... [namelen=214 namehash=5653a1cb]
-Advanced Rune Shield
-Advanced Rune ShieldTier 3 · Magic · Knowledge · Melee · d4+4 ma... [namelen=134 namehash=5f727880]
+6Ritual Blade of SekhmetUniqueVault of AgesMagic · Finesse · Mel... [namelen=249 namehash=2c492114]
+6Shield of the SunUniqueDread GM ToolboxMagic · Strength · Melee... [namelen=179 namehash=68f65c70]
+7Arcane ScalpelUniqueWondrous EnvironmentsMagic · Finesse · Far ... [namelen=184 namehash=02237986]
+87Burning BraceletUniqueThe Dragon's VaultMagic · Finesse · Far ... [namelen=204 namehash=61753b98]
+97SparkUniqueThe Dragon's VaultMagic · Agility · Melee · d8+2 ma... [namelen=278 namehash=7b0a7b53]
+?About this data
+Advanced Focus RunesHope & FearMagic · Instinct · Very Close · d... [namelen=155 namehash=ef12f658]
+Advanced Hallowed ShieldDark Heart of AndaluriaMagic · Instinct ... [namelen=189 namehash=64baff94]
+Advanced Rune ShieldHope & FearMagic · Knowledge · Melee · d4+4 ... [namelen=109 namehash=d29d9711]
 Agility
+All
 Alt. tables
 Arazo's Artifacts
-Arcane Scalpel
 Armor
 Beast Feast
-Blackblood Tendril
-Blackblood TendrilTier 4 · Magic · Instinct · Close · d6+8 mag ·... [namelen=237 namehash=9b079a6f]
-Burning Bracelet
+Blackblood TendrilUniqueHope & FearMagic · Instinct · Close · d6... [namelen=212 namehash=935a5e1f]
 Close
 Colossus of the Drylands
-Copy a link to this section
 Core
 Dark Heart of Andaluria
 Dread GM Toolbox
 EN
-Echo Blade
-Echo BladeTier 4 · Magic · Presence · Melee · d4+6 mag · One-Han... [namelen=225 namehash=ddb6e149]
-Eldritch Vambrace
-Eldritch VambraceTier 2 · Magic · Instinct · Melee · d8 mag · On... [namelen=244 namehash=41b16e16]
+Echo BladeUniqueHope & FearMagic · Presence · Melee · d4+6 mag ·... [namelen=200 namehash=58ccee32]
+Eldritch VambraceUniqueHope & FearMagic · Instinct · Melee · d8 ... [namelen=219 namehash=327bc845]
 Equipment
 Far
 Filter link
-Filters (1)
 Finesse
-Flutterfiends
-Focus Runes
-Focus RunesTier 1 · Magic · Instinct · Very Close · d6 mag · One... [namelen=169 namehash=72b77368]
+Focus RunesHope & FearMagic · Instinct · Very Close · d6 mag · O... [namelen=144 namehash=5fb97fa9]
 Grid
-Hallowed Shield
-Hallowed ShieldTier 1 · Magic · Instinct · Melee · d4 mag · One-... [namelen=203 namehash=232883cc]
+Hallowed ShieldDark Heart of AndaluriaMagic · Instinct · Melee ·... [namelen=178 namehash=6ab1859e]
 Hope & Fear
-Improved Focus Runes
-Improved Focus RunesTier 2 · Magic · Instinct · Very Close · d6+... [namelen=180 namehash=12867c2f]
-Improved Hallowed Shield
-Improved Hallowed ShieldTier 2 · Magic · Instinct · Melee · d4+2... [namelen=214 namehash=ac7312c1]
-Improved Rune Shield
-Improved Rune ShieldTier 2 · Magic · Knowledge · Melee · d4+2 ma... [namelen=134 namehash=5ead169e]
+Improved Focus RunesHope & FearMagic · Instinct · Very Close · d... [namelen=155 namehash=9b965227]
+Improved Hallowed ShieldDark Heart of AndaluriaMagic · Instinct ... [namelen=189 namehash=bb809baf]
+Improved Rune ShieldHope & FearMagic · Knowledge · Melee · d4+2 ... [namelen=109 namehash=bf50c0f4]
 Install as an app
 Instinct
 Knowledge
-Legendary Focus Runes
-Legendary Focus RunesTier 4 · Magic · Instinct · Very Close · d6... [namelen=181 namehash=c3ceae2e]
-Legendary Hallowed Shield
-Legendary Hallowed ShieldTier 4 · Magic · Instinct · Melee · d4+... [namelen=215 namehash=c555edbe]
-Legendary Rune Shield
-Legendary Rune ShieldTier 4 · Magic · Knowledge · Melee · d4+6 m... [namelen=135 namehash=0d39a21e]
+Legendary Focus RunesHope & FearMagic · Instinct · Very Close · ... [namelen=156 namehash=3817287a]
+Legendary Hallowed ShieldDark Heart of AndaluriaMagic · Instinct... [namelen=190 namehash=aca6951d]
+Legendary Rune ShieldHope & FearMagic · Knowledge · Melee · d4+6... [namelen=110 namehash=e055cb58]
+Link to this section
 Link to this table
 List
 LootDaggerheart
 Magic
-Magic×
 Many Worlds Tavern
 Melee
-Möbius Orb
-Möbius OrbTier 4 · Magic · Knowledge · Melee · d8+6 mag · One-Ha... [namelen=267 namehash=6e4115af]
+Möbius OrbUniqueHope & FearMagic · Knowledge · Melee · d8+6 mag ... [namelen=242 namehash=2551bc27]
 Open on start
 Other
 Physical
 Presence
 Privacy
 RU
-Reset all
-Ritual Blade of Sekhmet
+Reset
 Roll
-Rune Shield
-Rune ShieldTier 1 · Magic · Knowledge · Melee · d4 mag · One-Han... [namelen=123 namehash=c3344f29]
-Saintly Guard
-Sangromancy Dagger
+Rune ShieldHope & FearMagic · Knowledge · Melee · d4 mag · One-H... [namelen=98 namehash=080b5fda]
 Search
+Search by name or description...
 Secondary
-Shield of the Sun
+Select
 Sign in
 Skip to content
-Soul Chain
-Soul ChainTier 3 · Magic · Presence · Very Close · d6+5 mag · On... [namelen=229 namehash=f3db1255]
-Spark
+Soul ChainUniqueHope & FearMagic · Presence · Very Close · d6+5 ... [namelen=204 namehash=377ad9ef]
 Strength
 Supplements
 Tables
@@ -350,8 +311,7 @@ Upgradable
 Vault of Ages
 Very Close
 Very Far
-Vorpal Shard
-Vorpal ShardTier 3 · Magic · Knowledge · Melee · d4 mag · One-Ha... [namelen=201 namehash=0bdd2dce]
+Vorpal ShardUniqueHope & FearMagic · Knowledge · Melee · d4 mag ... [namelen=176 namehash=d14181ef]
 Weapons
 Wondrous Environments
 daggerheart.com

@@ -533,7 +533,7 @@ describe('the Display section', () => {
     const d = await section();
     /* gm1's row: grid, black and white, compact. */
     await waitFor(() => {
-      expect(pressed(d, 'Таблицы')).toBe('Сеткой');
+      expect(pressed(d, 'Таблицы')).toBe('Сетка');
     });
     expect(pressed(d, 'Язык')).toBe('RU');
     expect(pressed(d, 'Печать')).toBe('Чёрно-белая');
@@ -557,7 +557,7 @@ describe('the Display section', () => {
 
     await userEvent.selectOptions(select, 'Поиск');
     expect(storage.get(HOME_KEY)).toBe('#/search');
-    await userEvent.click(d.getByRole('button', { name: 'Списком' }));
+    await userEvent.click(d.getByRole('button', { name: 'Список' }));
     await userEvent.click(d.getByRole('button', { name: 'Цветная' }));
     await userEvent.click(d.getByRole('checkbox', { name: 'Компактный лист' }));
     expect(storage.get(PREFS_KEY)).toBe('{"view":"list","printBw":false,"printCompact":false}');

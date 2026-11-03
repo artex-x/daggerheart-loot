@@ -19,8 +19,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -32,27 +31,35 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Вторичное" [url=/tables/eq_secondary]
       link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..." [value=вторичное focused=true]
+    button "Список" [pressed=true]
+    button "Сетка" [pressed=false]
     button "Ссылка на таблицу"
-    button "Списком" [pressed=true]
-    button "Сеткой" [pressed=false]
-    button "Фильтры" [expanded=false]
-    StaticText "135"
-    ... StaticText x6 of 10 same-shape siblings elided
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (31)" [checked=false]
-    checkbox "Короткий Меч" [checked=false]
-    button "Короткий Меч Ранг 1 · Физическое · Проворность · Вплотную · d8 ф..." [namelen=162 namehash=bdf96fba]
-    ... checkbox x135 of 139 same-shape siblings elided
-    ... button x132 of 136 same-shape siblings elided
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "РАНГ 4"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    StaticText "Выбрать все (29)"
-    checkbox "Нож Единорога" [checked=false]
-    button "32 Нож Единорога Ранг 4 · Физическое · Искусность · Вплотную · d..." [namelen=346 namehash=240c1322]
-    checkbox "Легендарный Щит Арктура" [checked=false]
-    button "46 Легендарный Щит Арктура Ранг 4 · Физическое · Сила · Вплотную..." [namelen=297 namehash=0b8301ba]
+    StaticText "Показано 135 из 135"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры" [level=2]
+      StaticText "РАНГ"
+      button "Все" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x26 of 30 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Все" [pressed=true]
+      ... StaticText x2 of 6 same-shape siblings elided
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "ДИСТАНЦИЯ"
+      button "Все" [pressed=true]
+      StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+      button "Все" [pressed=true]
+      button "Есть улучшение" [pressed=false]
+      button "Уникальные" [pressed=false]
+    heading "Ранг 1" [level=2]
+    ... button x137 of 141 same-shape siblings elided
+    heading "Ранг 2" [level=2]
+    heading "Ранг 3" [level=2]
+    heading "Ранг 4" [level=2]
+    button "32 Нож Единорога УНИКАЛЬНОЕ VAULT OF AGES Физическое · Искусност..." [namelen=320 namehash=6603521f]
+    button "46 Легендарный Щит Арктура ARAZO'S ARTIFACTS Физическое · Сила ·..." [namelen=271 namehash=be3c1029]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -61,304 +68,199 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-106Духовая Трубка Скорбного ЕжаРанг 2 · Физическое · Искусность ... [namelen=257 namehash=90cd9d38]
-110Крючок, Леска и ГрузилоРанг 2 · Физическое · Проворность · Ср... [namelen=269 namehash=0563c70d]
-120Кинжал СангромантииРанг 1 · Магическое · Влияние · Вплотную ·... [namelen=276 namehash=eb048488]
-122Щит ПредвиденияРанг 2 · Физическое · Инстинкт · Вплотную · d4... [namelen=257 namehash=dba5fd4a]
-123Щит НебесРанг 2 · Физическое · Сила · Вплотную · d8+2 физ · О... [namelen=329 namehash=8e3047ad]
-128Защита Королевы ПауковРанг 1 · Физическое · Сила · Вплотную ·... [namelen=349 namehash=461a8e20]
-15Рассекатель ЗавесыРанг 4 · Физическое · Влияние · Вплотную · d... [namelen=394 namehash=b03b8049]
-1Боевая Летучая МышьРанг 2 · Физическое · Инстинкт · Очень далек... [namelen=269 namehash=6ec85e98]
-1Порхающие БесыРанг 2 · Магическое · Инстинкт · Далеко · d4+2 ма... [namelen=197 namehash=84bdbfd1]
-22Щит Охотника на ЖуковРанг 2 · Физическое · Сила · Вплотную · d... [namelen=256 namehash=2f4f76fe]
-23Голодный Кулачный КлинокРанг 4 · Физическое · Искусность · Впл... [namelen=424 namehash=e6e4f137]
-25Зуб Аку-ХаптлекаРанг 2 · Физическое · Проворность · Вплотную ·... [namelen=702 namehash=9559ae61]
-27Щит Стекла СудьбыРанг 2 · Физическое · Инстинкт · Вплотную · d... [namelen=504 namehash=f8dcbcde]
-28Святой ЩитРанг 3 · Магическое · Инстинкт · Вплотную · d6+3 маг... [namelen=356 namehash=048ae74f]
-2Взыскательный БаклерРанг 2 · Физическое · Искусность · Вплотную... [namelen=275 namehash=06d5fa1e]
-32Нож ЕдинорогаРанг 4 · Физическое · Искусность · Вплотную · d8+... [namelen=338 namehash=9927c62a]
-3Наручный КлинокРанг 2 · Физическое · Проворность · Вплотную · d... [namelen=168 namehash=1decdf2a]
-43Щит АрктураРанг 1 · Физическое · Сила · Вплотную · d8 физ · Од... [namelen=279 namehash=96d0881b]
-44Улучшенный Щит АрктураРанг 2 · Физическое · Сила · Вплотную · ... [namelen=290 namehash=8e01fe87]
-45Продвинутый Щит АрктураРанг 3 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=568ff587]
-46Легендарный Щит АрктураРанг 4 · Физическое · Сила · Вплотную ·... [namelen=291 namehash=aa9eb274]
-4Неприметный НожРанг 3 · Физическое · Искусность · Вплотную · d8... [namelen=264 namehash=0f5a8a68]
-4Щит СкарабеяРанг 3 · Физическое · Сила · Вплотную · d6+4 физ · ... [namelen=219 namehash=73993dde]
-57Кандальные БоласРанг 2 · Физическое · Искусность · Средне · d4... [namelen=289 namehash=08f66a4f]
-6Второй РезакРанг 3 · Физическое · Искусность · Вплотную · d6+8 ... [namelen=254 namehash=c8dfd68c]
-6Ритуальный Клинок СехметРанг 3 · Магическое · Искусность · Впло... [namelen=300 namehash=a127fa90]
-6Щит СолнцаРанг 3 · Магическое · Сила · Вплотную · d4+4 маг · Од... [namelen=214 namehash=65e9fac5]
-78Тысяча ПорезовРанг 3 · Физическое · Искусность · Вплотную · d8... [namelen=444 namehash=05601bcf]
-7Арканный СкальпельРанг 3 · Магическое · Искусность · Далеко · d... [namelen=210 namehash=c6b11936]
-7Клинок РезчикаРанг 2 · Физическое · Проворность · Вплотную · d6... [namelen=249 namehash=7796f57e]
-7Щит ОтталкиванияРанг 3 · Физическое · Сила · Вплотную · d4+4 фи... [namelen=365 namehash=33c9b865]
-87Пылающий БраслетРанг 1 · Магическое · Искусность · Далеко · d6... [namelen=267 namehash=0bd4aabe]
-90Клинок из Драконьей КостиРанг 1 · Физическое · Сила · Вплотную... [namelen=287 namehash=f6fa55e6]
-97ИскраРанг 2 · Магическое · Проворность · Вплотную · d8+2 маг ·... [namelen=317 namehash=7badcb82]
-99Ослепляющий ДротикРанг 1 · Физическое · Искусность · Далеко · ... [namelen=242 namehash=b7ee21ab]
-?Справка
+1
+106Духовая Трубка Скорбного ЕжаУникальноеThe Dragon's VaultФизич... [namelen=232 namehash=2c6d5673]
+110Крючок, Леска и ГрузилоУникальноеThe Dragon's VaultФизическое... [namelen=244 namehash=a1a6019c]
+120Кинжал СангромантииУникальноеThe Dragon's VaultМагическое · В... [namelen=251 namehash=424ea375]
+122Щит ПредвиденияУникальноеThe Dragon's VaultФизическое · Инсти... [namelen=232 namehash=4523369e]
+123Щит НебесУникальноеThe Dragon's VaultФизическое · Сила · Впло... [namelen=304 namehash=4cb228e4]
+128Защита Королевы ПауковУникальноеThe Dragon's VaultФизическое ... [namelen=324 namehash=8d4ab158]
+15Рассекатель ЗавесыУникальноеVault of AgesФизическое · Влияние ... [namelen=369 namehash=026ddff1]
+1Боевая Летучая МышьУникальноеВоюющие НорыФизическое · Инстинкт ... [namelen=244 namehash=c6f8a99a]
+1Порхающие БесыУникальноеСпорополисМагическое · Инстинкт · Далек... [namelen=172 namehash=902e152b]
+2
+22Щит Охотника на ЖуковУникальноеWondrous EnvironmentsФизическое... [namelen=231 namehash=d3b36315]
+23Голодный Кулачный КлинокУникальноеVault of AgesФизическое · Ис... [namelen=399 namehash=bfa05c40]
+25Зуб Аку-ХаптлекаУникальноеVault of AgesФизическое · Проворност... [namelen=677 namehash=ff2de90d]
+27Щит Стекла СудьбыУникальноеVault of AgesФизическое · Инстинкт ... [namelen=479 namehash=f4cc5605]
+28Святой ЩитУникальноеVault of AgesМагическое · Инстинкт · Вплот... [namelen=331 namehash=a68f9d75]
+2Взыскательный БаклерУникальноеВоюющие НорыФизическое · Искуснос... [namelen=250 namehash=a6fd4f87]
+3
+32Нож ЕдинорогаУникальноеVault of AgesФизическое · Искусность · ... [namelen=313 namehash=5c57c0aa]
+3Наручный КлинокУникальноеДромФизическое · Проворность · Вплотну... [namelen=143 namehash=000340b5]
+4
+43Щит АрктураArazo's ArtifactsФизическое · Сила · Вплотную · d8 ... [namelen=254 namehash=df106c24]
+44Улучшенный Щит АрктураArazo's ArtifactsФизическое · Сила · Впл... [namelen=265 namehash=7e05ca27]
+45Продвинутый Щит АрктураArazo's ArtifactsФизическое · Сила · Вп... [namelen=266 namehash=651b9222]
+46Легендарный Щит АрктураArazo's ArtifactsФизическое · Сила · Вп... [namelen=266 namehash=c0287a7a]
+4Неприметный НожУникальноеЛес ПариФизическое · Искусность · Впло... [namelen=239 namehash=e941b238]
+4Щит СкарабеяУникальноеОплот ШершнейФизическое · Сила · Вплотную... [namelen=194 namehash=2a37192a]
+57Кандальные БоласУникальноеWondrous EnvironmentsФизическое · Ис... [namelen=264 namehash=f3706d8a]
+6Второй РезакУникальноеВоюющие НорыФизическое · Искусность · Впл... [namelen=229 namehash=17d696ef]
+6Ритуальный Клинок СехметУникальноеVault of AgesМагическое · Иск... [namelen=275 namehash=0d422fab]
+6Щит СолнцаУникальноеDread GM ToolboxМагическое · Сила · Вплотну... [namelen=189 namehash=039083ba]
+78Тысяча ПорезовУникальноеThe Dragon's VaultФизическое · Искусно... [namelen=419 namehash=0179a781]
+7Арканный СкальпельУникальноеWondrous EnvironmentsМагическое · И... [namelen=185 namehash=f82c5087]
+7Клинок РезчикаУникальноеСпорополисФизическое · Проворность · Вп... [namelen=224 namehash=05c62ce8]
+7Щит ОтталкиванияУникальноеVault of AgesФизическое · Сила · Впло... [namelen=340 namehash=da036561]
+87Пылающий БраслетУникальноеThe Dragon's VaultМагическое · Искус... [namelen=242 namehash=93cfcdd3]
+90Клинок из Драконьей КостиУникальноеThe Dragon's VaultФизическо... [namelen=262 namehash=558e2688]
+97ИскраУникальноеThe Dragon's VaultМагическое · Проворность · Вп... [namelen=292 namehash=2a3380c0]
+99Ослепляющий ДротикУникальноеThe Dragon's VaultФизическое · Иск... [namelen=217 namehash=ff46a27f]
+?Об этих данных
+Arazo's Artifacts
 Core
+Dread GM Toolbox
 EN
 Hope & Fear
+Many Worlds Tavern
 RU
+The Dragon's Vault
+Vault of Ages
+Wondrous Environments
 daggerheart.com
 Альт. таблицы
-Арканный Скальпель
-Баклер
-БаклерРанг 3 · Физическое · Проворность · Вплотную · d4+4 физ · ... [namelen=256 namehash=2d896fcc]
-Башенный Щит
-Башенный ЩитРанг 1 · Физическое · Сила · Вплотную · d6 физ · Одн... [namelen=136 namehash=e4f29f59]
-Боевая Летучая Мышь
-Боевой Дротик
-Боевой ДротикРанг 3 · Физическое · Проворность · Далеко · d6+5 ф... [namelen=231 namehash=328732be]
-Боевой Плащ
-Боевой ПлащРанг 1 · Физическое · Влияние · Вплотную · d4 физ · О... [namelen=126 namehash=6b91da6f]
-Большая Вилка
-Большая ВилкаРанг 1 · Физическое · Проворность · Вплотную · d8 ф... [namelen=174 namehash=af9386ce]
+БаклерУникальноеФизическое · Проворность · Вплотную · d4+4 физ ·... [namelen=227 namehash=941ce1dc]
+Башенный ЩитФизическое · Сила · Вплотную · d6 физ · ОдноручноеБа... [namelen=107 namehash=6ade27fe]
+Близко
+Боевой ДротикУникальноеHope & FearФизическое · Проворность · Дал... [namelen=206 namehash=4756aa03]
+Боевой ПлащHope & FearФизическое · Влияние · Вплотную · d4 физ ·... [namelen=101 namehash=e6c28dbf]
+Большая ВилкаУникальноеПир зверейФизическое · Проворность · Впло... [namelen=149 namehash=c277d1ec]
 Броня
 Бросок
-Взыскательный Баклер
-Возвращающийся Топор
-Возвращающийся ТопорРанг 2 · Физическое · Проворность · Средне ·... [namelen=225 namehash=200c9c41]
+Влияние
+Возвращающийся ТопорУникальноеФизическое · Проворность · Средне ... [namelen=196 namehash=069b734c]
 Войти
+Вплотную
+Все
 Вторичное
-Вторичный Кастет
-Вторичный КастетРанг 1 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=161 namehash=7fe24833]
-Второй Резак
-Голодный Кулачный Клинок
-Деревянный Кол
-Деревянный КолРанг 1 · Физическое · Сила · Вплотную · d8 физ · О... [namelen=210 namehash=c756983a]
+Вторичный КастетHope & FearФизическое · Сила · Вплотную · d8 физ... [namelen=136 namehash=ea5231eb]
+Выбрать
+Далеко
+Деревянный КолТёмное сердце АндалурииФизическое · Сила · Вплотну... [namelen=185 namehash=f08a5664]
 Дополнения
-Духовая Трубка Скорбного Ежа
-Жуткий Наруч
-Жуткий НаручРанг 2 · Магическое · Инстинкт · Вплотную · d8 маг ·... [namelen=253 namehash=94944c1e]
-Защита Королевы Пауков
-Зуб Аку-Хаптлека
-Игла Пустоты
-Игла ПустотыРанг 4 · Физическое · Искусность · Вплотную · d4+6 ф... [namelen=195 namehash=e07d172d]
-Искра
+Есть улучшение
+Жуткий НаручУникальноеHope & FearМагическое · Инстинкт · Вплотну... [namelen=228 namehash=4e457316]
+Знание
+Игла ПустотыУникальноеHope & FearФизическое · Искусность · Вплот... [namelen=170 namehash=8878883c]
+Инстинкт
+Искусность
 К содержимому
-Кандальные Болас
-Кинжал Сангромантии
-Клинок Резчика
-Клинок Эха
-Клинок ЭхаРанг 4 · Магическое · Влияние · Вплотную · d4+6 маг · ... [namelen=219 namehash=6ad1fa70]
-Клинок из Драконьей Кости
-Колючая Проволока
-Колючая ПроволокаРанг 2 · Физическое · Искусность · Близко · d6+... [namelen=266 namehash=925f8b11]
+Клинок ЭхаУникальноеHope & FearМагическое · Влияние · Вплотную ·... [namelen=194 namehash=52b72adf]
+Колоссы Сухоземья
+Колючая ПроволокаУникальноеHope & FearФизическое · Искусность · ... [namelen=241 namehash=effa3fae]
 Конфиденциальность
-Короткий Меч
-Короткий МечРанг 1 · Физическое · Проворность · Вплотную · d8 фи... [namelen=158 namehash=2f28c030]
-Круглый Щит
-Круглый ЩитРанг 1 · Физическое · Сила · Вплотную · d4 физ · Одно... [namelen=121 namehash=94cb5e27]
-Крюк
-Крюк для Буксировки
-Крюк для БуксировкиРанг 1 · Физическое · Искусность · Средне · d... [namelen=189 namehash=813920df]
-КрюкРанг 1 · Физическое · Искусность · Средне · d6 физ · Одноруч... [namelen=157 namehash=1ba1e20a]
-Крючок, Леска и Грузило
-Лассо
-ЛассоРанг 1 · Физическое · Проворность · Близко · d4 физ · Однор... [namelen=406 namehash=a17092d0]
-Легендарное Лассо
-Легендарное ЛассоРанг 4 · Физическое · Проворность · Близко · d4... [namelen=420 namehash=58814816]
-Легендарные Метательные Ножи
-Легендарные Метательные НожиРанг 4 · Физическое · Искусность · В... [namelen=295 namehash=515bdc85]
-Легендарные Руны Концентрации
-Легендарные Руны КонцентрацииРанг 4 · Магическое · Инстинкт · Бл... [namelen=201 namehash=3fefbe6b]
-Легендарный Башенный Щит
-Легендарный Башенный ЩитРанг 4 · Физическое · Сила · Вплотную · ... [namelen=150 namehash=eb97293b]
-Легендарный Боевой Плащ
-Легендарный Боевой ПлащРанг 4 · Физическое · Влияние · Вплотную ... [namelen=140 namehash=21ac021f]
-Легендарный Вторичный Кастет
-Легендарный Вторичный КастетРанг 4 · Физическое · Сила · Вплотну... [namelen=175 namehash=73141122]
-Легендарный Деревянный Кол
-Легендарный Деревянный КолРанг 4 · Физическое · Сила · Вплотную ... [namelen=224 namehash=85ed8525]
-Легендарный Короткий Меч
-Легендарный Короткий МечРанг 4 · Физическое · Проворность · Впло... [namelen=171 namehash=062f3dcb]
-Легендарный Круглый Щит
-Легендарный Круглый ЩитРанг 4 · Физическое · Сила · Вплотную · d... [namelen=135 namehash=dd00dd9d]
-Легендарный Крюк
-Легендарный КрюкРанг 4 · Физическое · Искусность · Средне · d6+6... [namelen=171 namehash=b215ce15]
-Легендарный Малый Кинжал
-Легендарный Малый КинжалРанг 4 · Физическое · Искусность · Вплот... [namelen=170 namehash=9f6c7330]
-Легендарный Малый Револьвер
-Легендарный Малый РевольверРанг 4 · Физическое · Искусность · Да... [namelen=212 namehash=681157ad]
-Легендарный Рунный Щит
-Легендарный Рунный ЩитРанг 4 · Магическое · Знание · Вплотную · ... [namelen=143 namehash=5543fa7f]
-Легендарный Ручной Арбалет
-Легендарный Ручной АрбалетРанг 4 · Физическое · Искусность · Дал... [namelen=111 namehash=9e9d8bcb]
-Легендарный Священный Щит
-Легендарный Священный ЩитРанг 4 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=74e995d3]
-Легендарный Томагавк
-Легендарный ТомагавкРанг 4 · Физическое · Проворность · Вплотную... [namelen=246 namehash=b9f63ab6]
-Легендарный Хлыст
-Легендарный ХлыстРанг 4 · Физическое · Влияние · Близко · d6+6 ф... [namelen=239 namehash=e3a5b5ec]
-Легендарный Цепной Хлыст
-Легендарный Цепной ХлыстРанг 4 · Физическое · Влияние · Близко ·... [namelen=195 namehash=ba90213f]
-Легендарный Щит Арктура
+Короткий МечФизическое · Проворность · Вплотную · d8 физ · Однор... [namelen=129 namehash=93d14068]
+Круглый ЩитФизическое · Сила · Вплотную · d4 физ · ОдноручноеЗащ... [namelen=92 namehash=8eac0429]
+Крюк для БуксировкиУникальноеПир зверейФизическое · Искусность ·... [namelen=164 namehash=a2b81b81]
+КрюкФизическое · Искусность · Средне · d6 физ · ОдноручноеЦепляю... [namelen=128 namehash=434859e5]
+ЛассоКолоссы СухоземьяФизическое · Проворность · Близко · d4 физ... [namelen=381 namehash=91a795ee]
+Легендарное ЛассоКолоссы СухоземьяФизическое · Проворность · Бли... [namelen=395 namehash=2224be46]
+Легендарные Метательные НожиHope & FearФизическое · Искусность ·... [namelen=270 namehash=4c1e04ca]
+Легендарные Руны КонцентрацииHope & FearМагическое · Инстинкт · ... [namelen=176 namehash=18a1970f]
+Легендарный Башенный ЩитФизическое · Сила · Вплотную · d6+6 физ ... [namelen=121 namehash=bc5a8ed9]
+Легендарный Боевой ПлащHope & FearФизическое · Влияние · Вплотну... [namelen=115 namehash=644f80c3]
+Легендарный Вторичный КастетHope & FearФизическое · Сила · Вплот... [namelen=150 namehash=c89f0f97]
+Легендарный Деревянный КолТёмное сердце АндалурииФизическое · Си... [namelen=199 namehash=a3de3ead]
+Легендарный Короткий МечФизическое · Проворность · Вплотную · d8... [namelen=142 namehash=9fc7320f]
+Легендарный Круглый ЩитФизическое · Сила · Вплотную · d4+6 физ ·... [namelen=106 namehash=e5e16d4a]
+Легендарный КрюкФизическое · Искусность · Средне · d6+6 физ · Од... [namelen=142 namehash=1e979bf6]
+Легендарный Малый КинжалФизическое · Искусность · Вплотную · d8+... [namelen=141 namehash=5a483e71]
+Легендарный Малый РевольверКолоссы СухоземьяФизическое · Искусно... [namelen=187 namehash=6f1452fa]
+Легендарный Рунный ЩитHope & FearМагическое · Знание · Вплотную ... [namelen=118 namehash=32aca42c]
+Легендарный Ручной АрбалетФизическое · Искусность · Далеко · d6+... [namelen=82 namehash=4807b682]
+Легендарный Священный ЩитТёмное сердце АндалурииМагическое · Инс... [namelen=200 namehash=be31ce01]
+Легендарный ТомагавкHope & FearФизическое · Проворность · Вплотн... [namelen=221 namehash=1a7b6079]
+Легендарный ХлыстФизическое · Влияние · Близко · d6+6 физ · Одно... [namelen=210 namehash=15e417cd]
+Легендарный Цепной ХлыстТёмное сердце АндалурииФизическое · Влия... [namelen=170 namehash=c5936e17]
 ЛутDaggerheart
-Малый Кинжал
-Малый КинжалРанг 1 · Физическое · Искусность · Вплотную · d8 физ... [namelen=157 namehash=5f9248c3]
-Малый Револьвер
-Малый РевольверРанг 1 · Физическое · Искусность · Далеко · d6 фи... [namelen=198 namehash=69ba5d11]
-Метательные Ножи
-Метательные НожиРанг 1 · Физическое · Искусность · Вплотную · d8... [namelen=281 namehash=5c62b542]
-Молоток Мастера
-Молоток МастераРанг 3 · Физическое · Сила · Вплотную · d8+4 физ ... [namelen=163 namehash=4d46595d]
-Наручные Когти
-Наручные КогтиРанг 4 · Физическое · Сила · Вплотную · d6+8 физ ·... [namelen=216 namehash=f48e4bf1]
-Наручный Клинок
-Неприметный Нож
-Нож Единорога
-Нож для Овощей
-Нож для ОвощейРанг 1 · Физическое · Искусность · Вплотную · d8 ф... [namelen=174 namehash=b7579c9a]
+Магическое
+Малый КинжалФизическое · Искусность · Вплотную · d8 физ · Однору... [namelen=128 namehash=b4cfed1e]
+Малый РевольверКолоссы СухоземьяФизическое · Искусность · Далеко... [namelen=173 namehash=43a0154b]
+Метательные НожиHope & FearФизическое · Искусность · Вплотную · ... [namelen=256 namehash=4db46d02]
+Молоток МастераУникальноеHope & FearФизическое · Сила · Вплотную... [namelen=138 namehash=8995dece]
+Наручные КогтиУникальноеФизическое · Сила · Вплотную · d6+8 физ ... [namelen=187 namehash=21c0864f]
+Нож для ОвощейУникальноеПир зверейФизическое · Искусность · Впло... [namelen=149 namehash=df22c0c7]
 Оружие
-Осколок Ворпала
-Осколок ВорпалаРанг 3 · Магическое · Знание · Вплотную · d4 маг ... [namelen=220 namehash=1ea92790]
-Осколок Основания
-Осколок ОснованияРанг 4 · Физическое · Инстинкт · Близко · d4 фи... [namelen=241 namehash=78f9bae9]
-Ослепляющий Дротик
+Осколок ВорпалаУникальноеHope & FearМагическое · Знание · Вплотн... [namelen=195 namehash=22478e83]
+Осколок ОснованияУникальноеФизическое · Инстинкт · Близко · d4 ф... [namelen=212 namehash=cb2c2325]
 Открывать при запуске
-Парирующий Кинжал
-Парирующий КинжалРанг 2 · Физическое · Искусность · Вплотную · d... [namelen=367 namehash=86f547aa]
-Плеть Душ
-Плеть ДушРанг 3 · Магическое · Влияние · Близко · d6+5 маг · Одн... [namelen=239 namehash=395488ee]
+Очень далеко
+Парирующий КинжалУникальноеФизическое · Искусность · Вплотную · ... [namelen=338 namehash=79dc25ff]
+Пир зверей
+Плеть ДушУникальноеHope & FearМагическое · Влияние · Близко · d6... [namelen=214 namehash=0adcf1ba]
 Поиск
-Порхающие Бесы
-Продвинутое Лассо
-Продвинутое ЛассоРанг 3 · Физическое · Проворность · Близко · d4... [namelen=420 namehash=c2bcdb76]
-Продвинутые Метательные Ножи
-Продвинутые Метательные НожиРанг 3 · Физическое · Искусность · В... [namelen=295 namehash=7c61365c]
-Продвинутые Руны Концентрации
-Продвинутые Руны КонцентрацииРанг 3 · Магическое · Инстинкт · Бл... [namelen=201 namehash=374069b2]
-Продвинутый Башенный Щит
-Продвинутый Башенный ЩитРанг 3 · Физическое · Сила · Вплотную · ... [namelen=150 namehash=198d1ee4]
-Продвинутый Боевой Плащ
-Продвинутый Боевой ПлащРанг 3 · Физическое · Влияние · Вплотную ... [namelen=140 namehash=da8e2343]
-Продвинутый Вторичный Кастет
-Продвинутый Вторичный КастетРанг 3 · Физическое · Сила · Вплотну... [namelen=175 namehash=c2b4a2e4]
-Продвинутый Деревянный Кол
-Продвинутый Деревянный КолРанг 3 · Физическое · Сила · Вплотную ... [namelen=224 namehash=da8d44b4]
-Продвинутый Короткий Меч
-Продвинутый Короткий МечРанг 3 · Физическое · Проворность · Впло... [namelen=171 namehash=98310ec6]
-Продвинутый Круглый Щит
-Продвинутый Круглый ЩитРанг 3 · Физическое · Сила · Вплотную · d... [namelen=135 namehash=6d884f3e]
-Продвинутый Крюк
-Продвинутый КрюкРанг 3 · Физическое · Искусность · Средне · d6+4... [namelen=171 namehash=6ef6fd9f]
-Продвинутый Малый Кинжал
-Продвинутый Малый КинжалРанг 3 · Физическое · Искусность · Вплот... [namelen=170 namehash=b415ad1e]
-Продвинутый Малый Револьвер
-Продвинутый Малый РевольверРанг 3 · Физическое · Искусность · Да... [namelen=212 namehash=d9fd126c]
-Продвинутый Рунный Щит
-Продвинутый Рунный ЩитРанг 3 · Магическое · Знание · Вплотную · ... [namelen=143 namehash=198aae2f]
-Продвинутый Ручной Арбалет
-Продвинутый Ручной АрбалетРанг 3 · Физическое · Искусность · Дал... [namelen=111 namehash=ff577239]
-Продвинутый Священный Щит
-Продвинутый Священный ЩитРанг 3 · Магическое · Инстинкт · Вплотн... [namelen=225 namehash=64cf57d0]
-Продвинутый Томагавк
-Продвинутый ТомагавкРанг 3 · Физическое · Проворность · Вплотную... [namelen=246 namehash=66cedc60]
-Продвинутый Хлыст
-Продвинутый ХлыстРанг 3 · Физическое · Влияние · Близко · d6+4 ф... [namelen=239 namehash=90f07291]
-Продвинутый Цепной Хлыст
-Продвинутый Цепной ХлыстРанг 3 · Физическое · Влияние · Близко ·... [namelen=195 namehash=04d0fcc5]
-Продвинутый Щит Арктура
+Поиск по названию или описанию...
+Проворность
+Продвинутое ЛассоКолоссы СухоземьяФизическое · Проворность · Бли... [namelen=395 namehash=768e017e]
+Продвинутые Метательные НожиHope & FearФизическое · Искусность ·... [namelen=270 namehash=3d04e99b]
+Продвинутые Руны КонцентрацииHope & FearМагическое · Инстинкт · ... [namelen=176 namehash=53df3b90]
+Продвинутый Башенный ЩитФизическое · Сила · Вплотную · d6+4 физ ... [namelen=121 namehash=f3fa4cf2]
+Продвинутый Боевой ПлащHope & FearФизическое · Влияние · Вплотну... [namelen=115 namehash=cf614a1c]
+Продвинутый Вторичный КастетHope & FearФизическое · Сила · Вплот... [namelen=150 namehash=56b9c084]
+Продвинутый Деревянный КолТёмное сердце АндалурииФизическое · Си... [namelen=199 namehash=fb9093b0]
+Продвинутый Короткий МечФизическое · Проворность · Вплотную · d8... [namelen=142 namehash=8844e59e]
+Продвинутый Круглый ЩитФизическое · Сила · Вплотную · d4+4 физ ·... [namelen=106 namehash=09e6263d]
+Продвинутый КрюкФизическое · Искусность · Средне · d6+4 физ · Од... [namelen=142 namehash=bbd498f3]
+Продвинутый Малый КинжалФизическое · Искусность · Вплотную · d8+... [namelen=141 namehash=2c788720]
+Продвинутый Малый РевольверКолоссы СухоземьяФизическое · Искусно... [namelen=187 namehash=73ab5a6c]
+Продвинутый Рунный ЩитHope & FearМагическое · Знание · Вплотную ... [namelen=118 namehash=2a384404]
+Продвинутый Ручной АрбалетФизическое · Искусность · Далеко · d6+... [namelen=82 namehash=4351273d]
+Продвинутый Священный ЩитТёмное сердце АндалурииМагическое · Инс... [namelen=200 namehash=f482ad7f]
+Продвинутый ТомагавкHope & FearФизическое · Проворность · Вплотн... [namelen=221 namehash=2365c64f]
+Продвинутый ХлыстФизическое · Влияние · Близко · d6+4 физ · Одно... [namelen=210 namehash=9595466c]
+Продвинутый Цепной ХлыстТёмное сердце АндалурииФизическое · Влия... [namelen=170 namehash=c2754ed9]
 Прочее
-Пылающий Браслет
-Рассекатель Завесы
-Ритуальный Клинок Сехмет
-Рунный Щит
-Рунный ЩитРанг 1 · Магическое · Знание · Вплотную · d4 маг · Одн... [namelen=129 namehash=7b72a181]
-Руны Концентрации
-Руны КонцентрацииРанг 1 · Магическое · Инстинкт · Близко · d6 ма... [namelen=187 namehash=98b69de1]
-Ручная Праща
-Ручная ПращаРанг 3 · Физическое · Искусность · Очень далеко · d6... [namelen=221 namehash=f8deccc9]
-Ручной Арбалет
-Ручной АрбалетРанг 1 · Физическое · Искусность · Далеко · d6+1 ф... [namelen=99 namehash=ff06c696]
-Святой Щит
-Священный Щит
-Священный ЩитРанг 1 · Магическое · Инстинкт · Вплотную · d4 маг ... [namelen=211 namehash=f116390b]
-Сеткой
-Сигнальная Ракета
-Сигнальная РакетаРанг 1 · Физическое · Искусность · Далеко · d6+... [namelen=190 namehash=15b576e3]
-Складная Дубинка
-Складная ДубинкаРанг 2 · Физическое · Сила · Вплотную · d8 физ ·... [namelen=250 namehash=05df5e95]
-Скопировать ссылку на этот раздел
+Рунный ЩитHope & FearМагическое · Знание · Вплотную · d4 маг · О... [namelen=104 namehash=da745f26]
+Руны КонцентрацииHope & FearМагическое · Инстинкт · Близко · d6 ... [namelen=162 namehash=f8162147]
+Ручная ПращаУникальноеФизическое · Искусность · Очень далеко · d... [namelen=192 namehash=85c790a5]
+Ручной АрбалетФизическое · Искусность · Далеко · d6+1 физ · Одно... [namelen=70 namehash=9bc93628]
+Священный ЩитТёмное сердце АндалурииМагическое · Инстинкт · Впло... [namelen=186 namehash=a1ae208b]
+Сетка
+Сигнальная РакетаУникальноеПир зверейФизическое · Искусность · Д... [namelen=165 namehash=38cbca8d]
+Сила
+Складная ДубинкаУникальноеHope & FearФизическое · Сила · Вплотну... [namelen=225 namehash=d74f52a1]
 Снаряжение
-Списком
+Список
+Средне
+Ссылка на раздел
 Ссылка на таблицу
-Сфера Мёбиуса
-Сфера МёбиусаРанг 4 · Магическое · Знание · Вплотную · d8+6 маг ... [namelen=284 namehash=a160495f]
+Сфера МёбиусаУникальноеHope & FearМагическое · Знание · Вплотную... [namelen=259 namehash=a6918c59]
 Таблицы
-Томагавк
-ТомагавкРанг 1 · Физическое · Проворность · Вплотную · d8 физ · ... [namelen=232 namehash=8f54dbfb]
-Тройной Цепной Посох
-Тройной Цепной ПосохРанг 2 · Физическое · Проворность · Близко ·... [namelen=213 namehash=23925853]
-Тысяча Порезов
-Улучшенное Лассо
-Улучшенное ЛассоРанг 2 · Физическое · Проворность · Близко · d4+... [namelen=419 namehash=912865c4]
-Улучшенные Метательные Ножи
-Улучшенные Метательные НожиРанг 2 · Физическое · Искусность · Вп... [namelen=294 namehash=7e7a4fc4]
-Улучшенные Руны Концентрации
-Улучшенные Руны КонцентрацииРанг 2 · Магическое · Инстинкт · Бли... [namelen=200 namehash=6eb099a6]
-Улучшенный Башенный Щит
-Улучшенный Башенный ЩитРанг 2 · Физическое · Сила · Вплотную · d... [namelen=149 namehash=3f3c38e7]
-Улучшенный Боевой Плащ
-Улучшенный Боевой ПлащРанг 2 · Физическое · Влияние · Вплотную ·... [namelen=139 namehash=6274e6f4]
-Улучшенный Вторичный Кастет
-Улучшенный Вторичный КастетРанг 2 · Физическое · Сила · Вплотную... [namelen=174 namehash=dc9f02d9]
-Улучшенный Деревянный Кол
-Улучшенный Деревянный КолРанг 2 · Физическое · Сила · Вплотную ·... [namelen=223 namehash=c42f4d42]
-Улучшенный Короткий Меч
-Улучшенный Короткий МечРанг 2 · Физическое · Проворность · Вплот... [namelen=170 namehash=4923b656]
-Улучшенный Круглый Щит
-Улучшенный Круглый ЩитРанг 2 · Физическое · Сила · Вплотную · d4... [namelen=134 namehash=1358dfe8]
-Улучшенный Крюк
-Улучшенный КрюкРанг 2 · Физическое · Искусность · Средне · d6+2 ... [namelen=170 namehash=84e1884f]
-Улучшенный Малый Кинжал
-Улучшенный Малый КинжалРанг 2 · Физическое · Искусность · Вплотн... [namelen=169 namehash=2a9f3d65]
-Улучшенный Малый Револьвер
-Улучшенный Малый РевольверРанг 2 · Физическое · Искусность · Дал... [namelen=211 namehash=0c408778]
-Улучшенный Рунный Щит
-Улучшенный Рунный ЩитРанг 2 · Магическое · Знание · Вплотную · d... [namelen=142 namehash=39e76a01]
-Улучшенный Ручной Арбалет
-Улучшенный Ручной АрбалетРанг 2 · Физическое · Искусность · Дале... [namelen=110 namehash=00094336]
-Улучшенный Священный Щит
-Улучшенный Священный ЩитРанг 2 · Магическое · Инстинкт · Вплотну... [namelen=224 namehash=eb7cc6f2]
-Улучшенный Томагавк
-Улучшенный ТомагавкРанг 2 · Физическое · Проворность · Вплотную ... [namelen=245 namehash=88e00999]
-Улучшенный Хлыст
-Улучшенный ХлыстРанг 2 · Физическое · Влияние · Близко · d6+2 фи... [namelen=238 namehash=a6dcc85c]
-Улучшенный Цепной Хлыст
-Улучшенный Цепной ХлыстРанг 2 · Физическое · Влияние · Близко · ... [namelen=194 namehash=3cdcb3c2]
-Улучшенный Щит Арктура
-Усиленная Рукавица
-Усиленная РукавицаРанг 3 · Физическое · Знание · Средне · d6+4 ф... [namelen=202 namehash=05e487d1]
+ТомагавкHope & FearФизическое · Проворность · Вплотную · d8 физ ... [namelen=207 namehash=96d85ec2]
+Тройной Цепной ПосохУникальноеHope & FearФизическое · Проворност... [namelen=188 namehash=8aa9c19c]
+Тёмное сердце Андалурии
+Улучшенное ЛассоКолоссы СухоземьяФизическое · Проворность · Близ... [namelen=394 namehash=4e4639f5]
+Улучшенные Метательные НожиHope & FearФизическое · Искусность · ... [namelen=269 namehash=7a967fbe]
+Улучшенные Руны КонцентрацииHope & FearМагическое · Инстинкт · Б... [namelen=175 namehash=47c28a5e]
+Улучшенный Башенный ЩитФизическое · Сила · Вплотную · d6+2 физ ·... [namelen=120 namehash=3f9b20e6]
+Улучшенный Боевой ПлащHope & FearФизическое · Влияние · Вплотную... [namelen=114 namehash=8b73c8b9]
+Улучшенный Вторичный КастетHope & FearФизическое · Сила · Вплотн... [namelen=149 namehash=5f0ab6dd]
+Улучшенный Деревянный КолТёмное сердце АндалурииФизическое · Сил... [namelen=198 namehash=ce1f9685]
+Улучшенный Короткий МечФизическое · Проворность · Вплотную · d8+... [namelen=141 namehash=a804b2d5]
+Улучшенный Круглый ЩитФизическое · Сила · Вплотную · d4+2 физ · ... [namelen=105 namehash=99555569]
+Улучшенный КрюкФизическое · Искусность · Средне · d6+2 физ · Одн... [namelen=141 namehash=d4ad43a9]
+Улучшенный Малый КинжалФизическое · Искусность · Вплотную · d8+2... [namelen=140 namehash=6b366ee9]
+Улучшенный Малый РевольверКолоссы СухоземьяФизическое · Искуснос... [namelen=186 namehash=44d3848b]
+Улучшенный Рунный ЩитHope & FearМагическое · Знание · Вплотную ·... [namelen=117 namehash=d31180a1]
+Улучшенный Ручной АрбалетФизическое · Искусность · Далеко · d6+3... [namelen=81 namehash=c471285e]
+Улучшенный Священный ЩитТёмное сердце АндалурииМагическое · Инст... [namelen=199 namehash=60448fb5]
+Улучшенный ТомагавкHope & FearФизическое · Проворность · Вплотну... [namelen=220 namehash=8a196d6a]
+Улучшенный ХлыстФизическое · Влияние · Близко · d6+2 физ · Однор... [namelen=209 namehash=1f175fec]
+Улучшенный Цепной ХлыстТёмное сердце АндалурииФизическое · Влиян... [namelen=169 namehash=9c62aa4c]
+Уникальные
+Усиленная РукавицаУникальноеФизическое · Знание · Средне · d6+4 ... [namelen=173 namehash=dfa2976a]
 Условия использования
 Установить как приложение
-Фестивальный Кнут
-Фестивальный КнутРанг 1 · Физическое · Влияние · Близко · d6 физ... [namelen=253 namehash=ec6b33ae]
-Фильтры
-Хлыст
-ХлыстРанг 1 · Физическое · Влияние · Близко · d6 физ · Одноручно... [namelen=225 namehash=c98a04ed]
-Цепной Хлыст
-Цепной ХлыстРанг 1 · Физическое · Влияние · Близко · d6+1 физ · ... [namelen=183 namehash=7a5b5949]
-Шипастый Щит
-Шипастый ЩитРанг 2 · Физическое · Сила · Вплотную · d6+2 физ · О... [namelen=193 namehash=3a9602f3]
-Щит Арктура
-Щит Небес
-Щит Отталкивания
-Щит Охотника на Жуков
-Щит Предвидения
-Щит Скарабея
-Щит Солнца
-Щит Стекла Судьбы
-Щит Храбреца
-Щит ХрабрецаРанг 4 · Физическое · Проворность · Вплотную · d4+6 ... [namelen=246 namehash=0e2cc14e]
-Щит из Стола
-Щит из СтолаРанг 1 · Физическое · Сила · Вплотную · d6 физ · Одн... [namelen=152 namehash=64d5cbb6]
-Щиток Крышки Бочки
-Щиток Крышки БочкиРанг 1 · Физическое · Сила · Вплотную · d4 физ... [namelen=144 namehash=cec9105d]
-Щупальце Черной Крови
-Щупальце Черной КровиРанг 4 · Магическое · Инстинкт · Средне · d... [namelen=240 namehash=f3a9427d]
+Фестивальный КнутУникальноеПир зверейФизическое · Влияние · Близ... [namelen=228 namehash=54099f38]
+Физическое
+ХлыстФизическое · Влияние · Близко · d6 физ · ОдноручноеОшеломля... [namelen=196 namehash=d813cfc9]
+Цепной ХлыстТёмное сердце АндалурииФизическое · Влияние · Близко... [namelen=158 namehash=92748dfa]
+Шипастый ЩитУникальноеФизическое · Сила · Вплотную · d6+2 физ · ... [namelen=164 namehash=494aeafb]
+Щит ХрабрецаУникальноеФизическое · Проворность · Вплотную · d4+6... [namelen=217 namehash=e4ec74b4]
+Щит из СтолаУникальноеПир зверейФизическое · Сила · Вплотную · d... [namelen=127 namehash=ffda927f]
+Щиток Крышки БочкиУникальноеПир зверейФизическое · Сила · Вплотн... [namelen=119 namehash=41915bac]
+Щупальце Черной КровиУникальноеHope & FearМагическое · Инстинкт ... [namelen=215 namehash=1c481bbc]
 
 ## en :: tree
 RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
@@ -377,8 +279,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -390,27 +291,35 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
       link "Secondary" [url=/en/tables/eq_secondary]
       link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..." [value=вторичное focused=true]
-    button "Link to this table"
     button "List" [pressed=true]
     button "Grid" [pressed=false]
-    button "Filters" [expanded=false]
-    StaticText "135"
-    ... StaticText x6 of 10 same-shape siblings elided
-    button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    checkbox "Offhand Brass Knuckles" [checked=false]
-    button "Offhand Brass Knuckles Tier 1 · Physical · Strength · Melee · d8..." [namelen=176 namehash=ded8b6be]
-    button "Copy a link to this section" [description=Copy a link to this section]
-    ... checkbox x4 of 8 same-shape siblings elided
-    button "Improved Offhand Brass Knuckles Tier 2 · Physical · Strength · M..." [namelen=187 namehash=fc070216]
-    button "Copy a link to this section" [description=Copy a link to this section]
-    button "Advanced Offhand Brass Knuckles Tier 3 · Physical · Strength · M..." [namelen=187 namehash=c8583376]
-    StaticText "TIER 4"
-    button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Legendary Offhand Brass Knuckles" [checked=false]
-    button "Legendary Offhand Brass Knuckles Tier 4 · Physical · Strength · ..." [namelen=188 namehash=44ef8317]
+    button "Link to this table"
+    StaticText "4 of 135 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters" [level=2]
+      StaticText "TIER"
+      button "All" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x26 of 30 same-shape siblings elided
+      StaticText "SOURCE"
+      button "All" [pressed=true]
+      ... StaticText x2 of 6 same-shape siblings elided
+      ... button x2 of 6 same-shape siblings elided
+      StaticText "RANGE"
+      button "All" [pressed=true]
+      StaticText "UPGRADES AND UNIQUES"
+      button "All" [pressed=true]
+      button "Upgradable" [pressed=false]
+      button "Unique" [pressed=false]
+    heading "Tier 1" [level=2]
+    ... button x6 of 10 same-shape siblings elided
+    heading "Tier 2" [level=2]
+    heading "Tier 3" [level=2]
+    heading "Tier 4" [level=2]
+    button "Link to this section"
+    button "Legendary Offhand Brass Knuckles HOPE & FEAR Physical · Strength..." [namelen=162 namehash=283d5160]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -419,39 +328,65 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_secondary]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-?Help
-Advanced Offhand Brass Knuckles
-Advanced Offhand Brass KnucklesTier 3 · Physical · Strength · Me... [namelen=183 namehash=26c6b964]
+1
+2
+3
+4
+?About this data
+Advanced Offhand Brass KnucklesHope & FearPhysical · Strength · ... [namelen=158 namehash=8b87b655]
+Agility
+All
 Alt. tables
+Arazo's Artifacts
 Armor
-Copy a link to this section
+Beast Feast
+Close
+Colossus of the Drylands
 Core
+Dark Heart of Andaluria
+Dread GM Toolbox
 EN
 Equipment
-Filters
+Far
+Finesse
 Grid
 Hope & Fear
-Improved Offhand Brass Knuckles
-Improved Offhand Brass KnucklesTier 2 · Physical · Strength · Me... [namelen=183 namehash=740b51ad]
+Improved Offhand Brass KnucklesHope & FearPhysical · Strength · ... [namelen=158 namehash=fa118a63]
 Install as an app
-Legendary Offhand Brass Knuckles
-Legendary Offhand Brass KnucklesTier 4 · Physical · Strength · M... [namelen=184 namehash=c2d0af43]
+Instinct
+Knowledge
+Legendary Offhand Brass KnucklesHope & FearPhysical · Strength ·... [namelen=159 namehash=d42e8293]
+Link to this section
 Link to this table
 List
 LootDaggerheart
-Offhand Brass Knuckles
-Offhand Brass KnucklesTier 1 · Physical · Strength · Melee · d8 ... [namelen=172 namehash=04f3e20d]
+Magic
+Many Worlds Tavern
+Melee
+Offhand Brass KnucklesHope & FearPhysical · Strength · Melee · d... [namelen=147 namehash=be97e895]
 Open on start
 Other
+Physical
+Presence
 Privacy
 RU
 Roll
 Search
+Search by name or description...
 Secondary
+Select
 Sign in
 Skip to content
+Strength
 Supplements
 Tables
 Terms of use
+The Dragon's Vault
+Unique
+Upgradable
+Vault of Ages
+Very Close
+Very Far
 Weapons
+Wondrous Environments
 daggerheart.com

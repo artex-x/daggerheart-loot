@@ -28,9 +28,10 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/player-token-1?v=<
     checkbox "Выбрать все (1)" [checked=false]
     StaticText "Выбрать все (1)"
     checkbox "Колдующий Кинжал" [checked=false]
-    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
+    button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     status ""
   region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -45,9 +46,10 @@ RU
 daggerheart.com
 Бросок
 Войти
+Выбрать все
 К содержимому
 Колдующий Кинжал
-Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Конфиденциальность
 ЛутDaggerheart
 Поиск
@@ -83,9 +85,10 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
     checkbox "Select all (1)" [checked=false]
     StaticText "Select all (1)"
     checkbox "Casting Dagger" [checked=false]
-    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
+    button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     status ""
   region "Selected records"
+    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -96,7 +99,7 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/player-token-1?v=<v>]
 
 ## en :: controls
 Casting Dagger
-Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
 Filters
 Install as an app
@@ -106,6 +109,7 @@ RU
 Roll
 Save to my lists
 Search
+Select all
 Sign in
 Skip to content
 Tables

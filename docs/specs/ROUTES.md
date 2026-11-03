@@ -179,7 +179,8 @@ another account's key narrows to nothing, as any unknown value does.
 
 A filter panel offers only the values the drawn rows answer (`FEATURES.md`, "Tables and
 search"); the address is read as above: a picked value no drawn row answers still narrows a
-table to nothing, and draws its pill where the panel lists the value.
+table to nothing, and draws its chip pressed where the panel lists the value (a pill on the
+share link and the Items tab).
 
 On a share link (`#/s/<token>`, below) `kind` takes `item`, `consumable`,
 `weapon`, `secondary` and `armor` where a table takes `equip`: a list mixes the

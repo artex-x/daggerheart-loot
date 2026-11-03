@@ -31,7 +31,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
     button "Расходники" [pressed=false]
     button "Оружие" [pressed=true]
     ... button x22 of 26 same-shape siblings elided
-    button "Улучшаемые" [pressed=false]
+    button "Есть улучшение" [pressed=false]
     button "Уникальные" [pressed=false]
     checkbox "Выбрать все (5)" [checked=false]
     checkbox "Палаш" [checked=false]
@@ -40,11 +40,12 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
     StaticText "Последний в наличии."
     ... checkbox x2 of 6 same-shape siblings elided
     checkbox "Колдующий Кинжал" [checked=false]
-    button "Колдующий Кинжал Ранг 1 · Магическое · Инстинкт · Средне · d6 ма..." [namelen=217 namehash=4560dddc]
+    button "Колдующий Кинжал ОСНОВНОЕ ОРУЖИЕ HOPE & FEAR Ранг 1 · Магическое..." [namelen=217 namehash=26fb60d0]
     checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
+    button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
   region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -58,7 +59,7 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1/f_kind-
 ## ru :: controls
 1
 2
-51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=384 namehash=5fd42fa8]
+51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 Core
 Dread GM Toolbox
 EN
@@ -72,15 +73,17 @@ daggerheart.com
 Влияние
 Войти
 Вплотную
+Выбрать все
 Гарпун Левиафана
 Далеко
 Двуручное
+Есть улучшение
 Знание
 Инстинкт
 Искусность
 К содержимому
 Колдующий Кинжал
-Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Конфиденциальность
 ЛутDaggerheart
 Магическое
@@ -89,7 +92,7 @@ daggerheart.com
 Оружие
 Оружие×
 Палаш
-ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Поиск
 Предметы
 Проворность
@@ -97,14 +100,13 @@ daggerheart.com
 Сбросить всё
 Сила
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Сохранить себе
 Средне
 Ссылка на фильтры
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих Углей800 зол.Ранг 2 · Магическое · Характеристика ... [namelen=192 namehash=8354c34e]
-Улучшаемые
+Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
 Уникальные
 Условия использования
 Установить как приложение
@@ -149,11 +151,12 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
     StaticText "Последний в наличии."
     ... checkbox x2 of 6 same-shape siblings elided
     checkbox "Casting Dagger" [checked=false]
-    button "Casting Dagger Tier 1 · Magic · Instinct · Close · d6 mag · One-..." [namelen=180 namehash=33c9b4cf]
+    button "Casting Dagger PRIMARY WEAPON HOPE & FEAR Tier 1 · Magic · Insti..." [namelen=180 namehash=610850d0]
     checkbox "Ember Axe" [checked=false]
-    button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
+    button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
   region "Selected records"
+    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -167,21 +170,21 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1/f_kind-weapon?v=<
 ## en :: controls
 1
 2
-51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
+51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Agility
 Alder Workshop
 Armor
 Broadsword
-BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
 Casting Dagger
-Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 Close
 Consumables
 Core
 Dread GM Toolbox
 EN
 Ember Axe
-Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
+Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
 Far
 Filter link
 Filters (1)
@@ -204,8 +207,9 @@ Reset all
 Roll
 Save to my lists
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
+Select all
 Sign in
 Skip to content
 Strength

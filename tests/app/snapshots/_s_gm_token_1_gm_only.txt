@@ -26,18 +26,19 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
     button "Фильтры" [expanded=false]
     checkbox "Выбрать все (10)" [checked=false]
     checkbox "Первоклассный Спальный Мешок" [checked=false]
-    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. Во время отдыха вы ..." [namelen=107 namehash=a6fdba25]
+    button "1 Первоклассный Спальный Мешок ×2 · 150 зол. ПРЕДМЕТ CORE Во вре..." [namelen=107 namehash=917be5d4]
     ... checkbox x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     StaticText "ТОЛЬКО ДЛЯ МАСТЕРА"
     StaticText "Проклят."
     checkbox "Брошюра по Истории Искусства" [checked=false]
-    button "11 Брошюра по Истории Искусства , Только для мастера Это прекрас..." [namelen=648 namehash=b8d4e92d]
+    button "11 Брошюра по Истории Искусства , Только для мастера ПРЕДМЕТ DRE..." [namelen=648 namehash=1655ccee]
     checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Топор Тлеющих Углей 800 зол. Ранг 2 · Магическое · Характеристик..." [namelen=198 namehash=83860c79]
+    button "Топор Тлеющих Углей 800 зол. ОСНОВНОЕ ОРУЖИЕ УНИКАЛЬНОЕ МАСТЕРСК..." [namelen=198 namehash=61329d72]
     status ""
       StaticText "Список обновлён"
   region "Выбранные записи"
+    checkbox "Выбрать все" [checked=false]
     generic ""
   contentinfo ""
     navigation "Страницы сайта"
@@ -47,37 +48,38 @@ RootWebArea "Генератор лута Daggerheart" [url=/s/gm-token-1?v=<v>]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Источники и лицензия" [expanded=false]
 
 ## ru :: controls
-11Брошюра по Истории Искусства, Только для мастераЭто прекрасно ... [namelen=643 namehash=d10617cf]
-1Зелье Быстрого Шага×5 · 20 зол.Вы получаете бонус +1 к следующе... [namelen=141 namehash=88f7ef0b]
-1Первоклассный Спальный Мешок×2 · 150 зол.Во время отдыха вы авт... [namelen=102 namehash=f527509a]
-3Колода СумерекСтоимость Призыва: 2Эта колода усиливает судьбы с... [namelen=848 namehash=b0d486a3]
-51Гарпун Левиафана99999 зол.Ранг 2 · Физическое · Искусность · Д... [namelen=384 namehash=5fd42fa8]
+11Брошюра по Истории Искусства, Только для мастераПредметDread G... [namelen=643 namehash=60500944]
+1Зелье Быстрого Шага×5 · 20 зол.РасходникCoreВы получаете бонус ... [namelen=141 namehash=1384d718]
+1Первоклассный Спальный Мешок×2 · 150 зол.ПредметCoreВо время от... [namelen=102 namehash=99116bf3]
+3Колода СумерекПредметАртефактVault of AgesСтоимость Призыва: 2Э... [namelen=848 namehash=0d8f84be]
+51Гарпун Левиафана99999 зол.Основное оружиеУникальноеWondrous En... [namelen=384 namehash=f8da7a98]
 EN
 RU
 daggerheart.com
 Бросок
 Брошюра по Истории Искусства
 Войти
+Выбрать все
 Гарпун Левиафана
 Зелье Быстрого Шага
 К содержимому
 Колдующий Кинжал
-Колдующий КинжалРанг 1 · Магическое · Инстинкт · Средне · d6 маг... [namelen=213 namehash=420a4f88]
+Колдующий КинжалОсновное оружиеHope & FearРанг 1 · Магическое · ... [namelen=213 namehash=9cd182eb]
 Колода Сумерек
 Конфиденциальность
 ЛутDaggerheart
 Палаш
-ПалашРанг 1 · Физическое · Проворность · Вплотную · d8 физ · Одн... [namelen=118 namehash=b8b1e490]
+ПалашОсновное оружиеCoreРанг 1 · Физическое · Проворность · Впло... [namelen=118 namehash=5597138b]
 Первоклассный Спальный Мешок
 Поиск
 Скипетр
-СкипетрРанг 1 · Магическое · Влияние · Далеко · d6 маг · Двуручн... [namelen=190 namehash=ebb3ab94]
+СкипетрОсновное оружиеCoreРанг 1 · Магическое · Влияние · Далеко... [namelen=190 namehash=de098217]
 Сохранить себе
 Стеганый Доспех
-Стеганый ДоспехРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1 к Уклоне... [namelen=76 namehash=ee8a99ab]
+Стеганый ДоспехБроняCoreРанг 1 · Пороги 5/11 · Броня 3Гибкое: +1... [namelen=76 namehash=f3c5334f]
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих Углей800 зол.Ранг 2 · Магическое · Характеристика ... [namelen=192 namehash=8354c34e]
+Топор Тлеющих Углей800 зол.Основное оружиеУникальноеМастерская О... [namelen=192 namehash=b0fae9a0]
 Условия использования
 Установить как приложение
 Фильтры
@@ -106,18 +108,19 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
     button "Filters" [expanded=false]
     checkbox "Select all (10)" [checked=false]
     checkbox "Premium Bedroll" [checked=false]
-    button "1 Premium Bedroll ×2 · 150 gp During downtime, you automatically..." [namelen=90 namehash=a96c7377]
+    button "1 Premium Bedroll ×2 · 150 gp ITEM CORE During downtime, you aut..." [namelen=90 namehash=fbf74184]
     ... checkbox x7 of 11 same-shape siblings elided
     ... button x7 of 11 same-shape siblings elided
     StaticText "GM ONLY"
     StaticText "Проклят."
     checkbox "Art History Booklet" [checked=false]
-    button "11 Art History Booklet , GM only This is a finely illustrated bo..." [namelen=559 namehash=5cc67a95]
+    button "11 Art History Booklet , GM only ITEM DREAD GM TOOLBOX This is a..." [namelen=559 namehash=1239c16f]
     checkbox "Ember Axe" [checked=false]
-    button "Ember Axe 800 gp Tier 2 · Magic · Spellcast · Melee · d10+2 mag ..." [namelen=171 namehash=48f755cc]
+    button "Ember Axe 800 gp PRIMARY WEAPON UNIQUE ALDER WORKSHOP (HB) Tier ..." [namelen=171 namehash=8de947c8]
     status ""
       StaticText "The list was updated"
   region "Selected records"
+    checkbox "Select all" [checked=false]
     generic ""
   contentinfo ""
     navigation "Site pages"
@@ -127,22 +130,22 @@ RootWebArea "Daggerheart Loot Generator" [url=/en/s/gm-token-1?v=<v>]
     DisclosureTriangle "Daggerheart © Darrington Press - DPCGL - Sources and license" [expanded=false]
 
 ## en :: controls
-11Art History Booklet, GM onlyThis is a finely illustrated bookl... [namelen=554 namehash=2febc07f]
-1Premium Bedroll×2 · 150 gpDuring downtime, you automatically cl... [namelen=85 namehash=b9388206]
-1Stride Potion×5 · 20 gpYou gain a +1 bonus to your next Agility... [namelen=116 namehash=1d3add45]
-3Twilight DeckRecall Cost: 2This deck enhances fortunes with the... [namelen=871 namehash=62fc9683]
-51Leviathan Harpoon99999 gpTier 2 · Physical · Finesse · Far · d... [namelen=364 namehash=89d32163]
+11Art History Booklet, GM onlyItemDread GM ToolboxThis is a fine... [namelen=554 namehash=e054fc70]
+1Premium Bedroll×2 · 150 gpItemCoreDuring downtime, you automati... [namelen=85 namehash=bf5d51a3]
+1Stride Potion×5 · 20 gpConsumableCoreYou gain a +1 bonus to you... [namelen=116 namehash=9b1d71ae]
+3Twilight DeckItemArtifactVault of AgesRecall Cost: 2This deck e... [namelen=871 namehash=aad79704]
+51Leviathan Harpoon99999 gpPrimary weaponUniqueWondrous Environm... [namelen=364 namehash=9219003b]
 Art History Booklet
 Broadsword
-BroadswordTier 1 · Physical · Agility · Melee · d8 phy · One-Han... [namelen=113 namehash=553c5db2]
+BroadswordPrimary weaponCoreTier 1 · Physical · Agility · Melee ... [namelen=113 namehash=26515266]
 Casting Dagger
-Casting DaggerTier 1 · Magic · Instinct · Close · d6 mag · One-H... [namelen=176 namehash=4ca0158b]
+Casting DaggerPrimary weaponHope & FearTier 1 · Magic · Instinct... [namelen=176 namehash=08dad18c]
 EN
 Ember Axe
-Ember Axe800 gpTier 2 · Magic · Spellcast · Melee · d10+2 mag · ... [namelen=165 namehash=6299a52a]
+Ember Axe800 gpPrimary weaponUniqueAlder Workshop (HB)Tier 2 · M... [namelen=165 namehash=770926f6]
 Filters
 Gambeson Armor
-Gambeson ArmorTier 1 · Thresholds 5/11 · Armor 3Flexible: +1 to ... [namelen=80 namehash=4d510731]
+Gambeson ArmorArmorCoreTier 1 · Thresholds 5/11 · Armor 3Flexibl... [namelen=80 namehash=460b51ea]
 Install as an app
 Leviathan Harpoon
 LootDaggerheart
@@ -152,8 +155,9 @@ RU
 Roll
 Save to my lists
 Scepter
-ScepterTier 1 · Magic · Presence · Far · d6 mag · Two-HandedVers... [namelen=160 namehash=a32a0f66]
+ScepterPrimary weaponCoreTier 1 · Magic · Presence · Far · d6 ma... [namelen=160 namehash=9977457f]
 Search
+Select all
 Sign in
 Skip to content
 Stride Potion

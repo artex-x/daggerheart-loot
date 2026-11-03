@@ -467,6 +467,7 @@ describe("a remove that waits for the list's entries", () => {
     });
     await screen.findByRole('button', { name: 'Аккаунт: gm4@example.test' });
     const held = holdRows(cloud);
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
     const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     await userEvent.click(row as HTMLElement);
     await openMenuOn('Клад дракона');
@@ -567,6 +568,7 @@ describe('with sign-in configured', () => {
   it("returns to the table with the bar's rows ticked and its menu open", async () => {
     const { router } = withCloud(fakeCloud(SEED), '#/tables');
     await screen.findByRole('link', { name: 'Войти' });
+    await userEvent.click(screen.getByRole('button', { name: 'Выбрать' }));
     const [row] = screen.getAllByRole('checkbox').filter((cb) => !cb.closest('.selall'));
     await userEvent.click(row as HTMLElement);
     await openMenu();

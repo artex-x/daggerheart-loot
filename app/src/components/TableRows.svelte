@@ -13,19 +13,23 @@
      component, called the way every other one in this codebase already is,
      does not trip it.
 
-     `ontoggleall` is left `undefined` for the alternate tables' own columns:
-     the live app draws those straight from `rowHTML`/`tileHTML` with no
-     `selectAllHTML` wrapper, unlike every other body, which goes through
-     `renderList` and always gets one. */
+     `ontoggleall` draws the «Выбрать все (N)» strip for `/search` and the shared page. The
+     catalog passes none: its selection bar's «Все» is the one select-all control.
+
+     `ticks` false (the catalog outside its selection mode) draws no tick column and no
+     tile box. */
   import type { Snippet } from 'svelte';
   import ArtWell from './ArtWell.svelte';
+  import Badge from './Badge.svelte';
   import RowMain from './RowMain.svelte';
   import { artSrc } from '../lib/desc.js';
   import { dict } from '../lib/dict.js';
-  import { nameOf } from '../lib/i18n.js';
+  import { eqParts, nameOf } from '../lib/i18n.js';
   import { cardBadges, kindGlyph } from '../lib/label.js';
   import type { Index } from '../lib/data.js';
-  import type { Equip, Lang, Record_ } from '../lib/types.js';
+  import type { HiddenTags } from '../lib/rowTags.js';
+  import type { Term } from '../lib/search.js';
+  import type { Lang, Record_ } from '../lib/types.js';
 
   export interface TableEntry {
     it: Record_;
@@ -62,6 +66,13 @@
     flash?: string;
     /** Marks the rows as the page's primary content (DESIGN.md, "The First-Screen Rule"). */
     primary?: boolean;
+    /** The tick column and the tile box; the catalog draws them in its selection mode
+     *  only. */
+    ticks?: boolean;
+    /** The tags the page already says (`rowTags.ts`). */
+    hide?: HiddenTags | undefined;
+    /** The search terms the names mark. */
+    terms?: readonly Term[] | undefined;
   }
 
   const {
@@ -77,7 +88,10 @@
     ontoggleall,
     inside,
     flash,
-    primary = false
+    primary = false,
+    ticks = true,
+    hide,
+    terms
   }: Props = $props();
 
   const t = $derived(dict(lang));
@@ -92,10 +106,21 @@
     return '';
   }
 
-  const eqClass = (eq: Equip): string => `eq-${eq.t}`;
+  /** The tile's second line: the stat line for equipment, else the other-language name. */
+  function tileSub(it: Record_): string {
+    if (it.eq) {
+      return eqParts(
+        it,
+        lang,
+        { tier: t.tier, thresholds: t.eqTh, armorScore: t.eqScore, artifact: t.voaArtifact1 },
+        { noType: true, noTier: true }
+      ).join('\u00a0· ');
+    }
+    return (lang === 'ru' ? it.en : it.ru) || '';
+  }
 </script>
 
-{#if ontoggleall && entries.length}
+{#if ticks && ontoggleall && entries.length}
   {@const ids = entries.map((e) => e.it.id)}
   <label class="selall">
     <span class="selbox" data-on={allSelected ? '1' : undefined}>
@@ -118,21 +143,24 @@
     {#if view === 'list'}
       <div
         class="row"
-        class:sel={selected(it.id)}
+        class:sel={ticks && selected(it.id)}
+        class:noticks={!ticks}
         class:flash={flash === it.id}
         class:gm-only={entry.gmOnly === true}
         data-row={it.id}
       >
-        <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
-          <input
-            type="checkbox"
-            checked={selected(it.id)}
-            aria-label={nameOf(it, lang)}
-            onchange={() => {
-              ontoggle(it.id);
-            }}
-          />
-        </label>
+        {#if ticks}
+          <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
+            <input
+              type="checkbox"
+              checked={selected(it.id)}
+              aria-label={nameOf(it, lang)}
+              onchange={() => {
+                ontoggle(it.id);
+              }}
+            />
+          </label>
+        {/if}
         <RowMain
           {it}
           {index}
@@ -143,38 +171,42 @@
           num={rollNum}
           tail={entry.tail}
           gmOnly={entry.gmOnly}
+          {hide}
+          {terms}
         />
         {#if inside}{@render inside(it)}{/if}
       </div>
     {:else}
-      {@const sub = lang === 'ru' ? it.en : it.ru || ''}
-      {@const n = rollNum ? String(rollNum) : tileTier(it)}
+      {@const sub = tileSub(it)}
+      {@const n = rollNum ? String(rollNum) : hide?.tier ? '' : tileTier(it)}
+      {@const kind = cardBadges(it, lang, t)[0]}
       <div
         class="tilewrap"
-        class:sel={selected(it.id)}
+        class:sel={ticks && selected(it.id)}
         class:flash={flash === it.id}
         data-row={it.id}
       >
-        <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
-          <input
-            type="checkbox"
-            checked={selected(it.id)}
-            aria-label={nameOf(it, lang)}
-            onchange={() => {
-              ontoggle(it.id);
-            }}
-          />
-        </label>
+        {#if ticks}
+          <label class="selbox" data-on={selected(it.id) ? '1' : undefined}>
+            <input
+              type="checkbox"
+              checked={selected(it.id)}
+              aria-label={nameOf(it, lang)}
+              onchange={() => {
+                ontoggle(it.id);
+              }}
+            />
+          </label>
+        {/if}
         <!-- No aria-label, matching the row above: its name is its content. -->
         <!-- Whitespace below is content, covering the whole button - see
              docs/specs/COVERAGE.md, "Whitespace text nodes are content". -->
         <!-- prettier-ignore -->
         <button type="button" class="tile" onclick={() => { onopen(it); }}
           ><div class="tile-img"
-            >{#if n}<span class="tile-n">{n}</span>{/if}<span
-              class="tile-k {it.eq ? eqClass(it.eq) : it.kind === 'consumable' ? 'cons' : 'item'}"
-              title={it.eq ? cardBadges(it, lang, t)[0]?.text : it.kind === 'consumable' ? t.cons : t.item}
-            ></span><ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
+            >{#if n}<span class="tile-n">{n}</span>{/if}{#if kind && !hide?.kind}<span class="tile-k"
+                ><Badge cls={kind.cls}>{kind.text}</Badge></span
+              >{/if}<ArtWell glyph={kindGlyph(it.kind, it.eq?.t)}
               >{#if it.img && !artBroken(it.id)}<img
                 src={artSrc(it.img)}
                 alt=""
@@ -206,7 +238,7 @@
   }
 
   .selbox input {
-    accent-color: var(--gold);
+    accent-color: var(--txt);
     width: 17px;
     height: 17px;
     margin: 0;
@@ -311,16 +343,29 @@
     }
   }
 
-  .row.sel {
-    border-color: rgb(216 171 94 / 55%);
-    background: rgb(216 171 94 / 5%);
+  /* A row outside the selection mode: `RowMain` alone. */
+  .row.noticks {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  /* off `.tgrid` and the `.tile*` family */
+  /* A ticked row is lit and neutral (DESIGN.md, "The Seal Rule"): never gold, no stripe. */
+  .row.sel {
+    border-color: var(--muted2);
+    background: var(--surface2);
+  }
+
+  /* off `.tgrid` and the `.tile*` family: two columns up to 600 px. */
   .tgrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
     gap: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .tgrid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
   }
 
   .tilewrap {
@@ -340,12 +385,12 @@
   }
 
   .tilewrap.sel .selbox {
-    border-color: var(--gold);
+    border-color: var(--muted2);
   }
 
   .tilewrap.sel .tile {
-    border-color: var(--gold);
-    background: rgb(216 171 94 / 7%);
+    border-color: var(--muted2);
+    background: var(--surface2);
   }
 
   .tile {
@@ -375,46 +420,28 @@
     background: var(--art-well);
   }
 
+  /* The roll number: Chalk on a seam border, as the row's `.rnum`; never gold. */
   .tile-n {
     position: absolute;
     left: 7px;
     bottom: 7px;
-    font: 700 var(--t-badge)/1 var(--ui);
+    z-index: 1;
+    font: 650 var(--t-badge)/1 var(--ui);
     font-variant-numeric: tabular-nums;
-    color: var(--gold-soft);
+    color: var(--txt);
     background: rgb(10 8 16 / 80%);
     border-radius: 6px;
-    padding: 4px 6px;
-    border: 1px solid rgb(216 171 94 / 40%);
+    padding: 3px 5px;
+    border: 1px solid var(--line2);
   }
 
+  /* The kind on a table of more than one kind: a labeled badge, not a dot. */
   .tile-k {
     position: absolute;
     right: 7px;
     top: 7px;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-  }
-
-  .tile-k.item {
-    background: var(--item);
-  }
-
-  .tile-k.cons {
-    background: var(--cons);
-  }
-
-  .tile-k.eq-weapon {
-    background: var(--eq-weapon);
-  }
-
-  .tile-k.eq-secondary {
-    background: var(--eq-secondary);
-  }
-
-  .tile-k.eq-armor {
-    background: var(--eq-armor);
+    z-index: 1;
+    max-width: calc(100% - 44px);
   }
 
   .tile-b {

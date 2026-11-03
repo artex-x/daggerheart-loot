@@ -15,13 +15,16 @@ const { fresh, reporter, closeBrowser } = require('./lib.js');
 /* One route per badge class - the first row of each table carries it -
  * plus `.badge.src`, which every row on every table carries, so any of them
  * will do for that one. */
+/* A one-kind or one-book table hides the tag its page already says (`rowTags.ts`), so
+   the kinds are read on a table of all five and the source on the equipment table,
+   whose rows from other books keep theirs. */
 const ROUTES = {
-  item: '#/tables/core_item',
-  cons: '#/tables/core_consumable',
-  'eq-weapon': '#/tables/eq_weapon',
-  'eq-secondary': '#/tables/eq_secondary',
-  'eq-armor': '#/tables/eq_armor',
-  src: '#/tables/core_item'
+  item: '#/tables/dragons_vault',
+  cons: '#/tables/dragons_vault',
+  'eq-weapon': '#/tables/dragons_vault',
+  'eq-secondary': '#/tables/dragons_vault',
+  'eq-armor': '#/tables/dragons_vault',
+  src: '#/tables/eq_weapon'
 };
 
 const MIN_HUE = 40; // degrees between two colorful badges
@@ -175,7 +178,7 @@ const gap = (a, b) => {
    * app as it stands today. */
   console.log('selected tile fill');
   await d.open('#/tables/eq_weapon');
-  await d.press('Сеткой');
+  await d.press('Сетка');
   await d.tick('Палаш');
   const selFill = await page.evaluate(() => {
     const el = document.querySelector('.tilewrap.sel .tile');

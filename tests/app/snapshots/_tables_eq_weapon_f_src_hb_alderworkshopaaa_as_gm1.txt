@@ -20,8 +20,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
   main ""
     heading "Таблицы" [level=1]
     button "Открывать при запуске" [pressed=false]
-    button "Справка" [expanded=false]
-    StaticText "Все таблицы целиком, включая оружие и броню, - можно листать, фи..." [namelen=95 namehash=26503313]
+    button "Об этих данных" [expanded=false]
     navigation "Таблицы"
       link "Core" [url=/tables/core_item]
       link "Hope & Fear" [url=/tables/hope_and_fear_item]
@@ -34,26 +33,37 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
       link "Вторичное" [url=/tables/eq_secondary]
       link "Броня" [url=/tables/eq_armor]
     searchbox "Поиск по названию или описанию..."
-    button "Ссылка на таблицу"
-    button "Списком" [pressed=false]
-    button "Сеткой" [pressed=true]
+    button "Список" [pressed=false]
+    button "Сетка" [pressed=true]
     switch "Свои предметы" [checked=true]
     StaticText "Свои предметы"
-    button "Фильтры (1)" [expanded=true]
-    button "Мастерская Ольхи" [description=Убрать из фильтра]
-    button "Сбросить всё"
-    button "Ссылка на фильтры" [description=Ссылка на фильтры]
-    ... StaticText x14 of 18 same-shape siblings elided
-    ... button x31 of 35 same-shape siblings elided
-    button "Мастерская Ольхи" [pressed=true]
-    button "Улучшаемые" [pressed=false]
-    button "Уникальные" [pressed=false]
-    StaticText "РАНГ 2"
-    button "Скопировать ссылку на этот раздел" [description=Скопировать ссылку на этот раздел]
-    checkbox "Выбрать все (1)" [checked=false]
-    StaticText "Выбрать все (1)"
-    checkbox "Топор Тлеющих Углей" [checked=false]
-    button "Ранг 2 Топор Тлеющих Углей Ember Axe"
+    button "Ссылка на таблицу"
+    StaticText "Мастерская Ольхи"
+    StaticText " ·"
+    StaticText "Показано 1 из 459"
+    button "Выбрать"
+    complementary "Фильтры"
+      heading "Фильтры · 1" [level=2]
+      button "Сбросить"
+      button "Ссылка на фильтры"
+      StaticText "РАНГ"
+      button "Все" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x30 of 34 same-shape siblings elided
+      StaticText "ИСТОЧНИК"
+      button "Мастерская Ольхи" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "ХВАТ"
+      button "Все" [pressed=true]
+      StaticText "УЛУЧШЕНИЯ И УНИКАЛЬНЫЕ"
+      button "Все" [pressed=true]
+      button "Есть улучшение" [pressed=false]
+      button "Уникальные" [pressed=false]
+    heading "Ранг 2" [level=2]
+    button "Ссылка на раздел"
+    button "Топор Тлеющих Углей Магическое · Характеристика Заклинателя · Вп..." [namelen=94 namehash=dda1149e]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -66,7 +76,7 @@ RootWebArea "Таблицы - Генератор лута Daggerheart" [url=/tab
 2
 3
 4
-?Справка
+?Об этих данных
 Arazo's Artifacts
 Core
 Dread GM Toolbox
@@ -86,10 +96,13 @@ daggerheart.com
 Бросок
 Влияние
 Вплотную
+Все
 Вторичное
+Выбрать
 Далеко
 Двуручное
 Дополнения
+Есть улучшение
 Знание
 Инстинкт
 Искусность
@@ -99,34 +112,31 @@ daggerheart.com
 ЛутDaggerheart
 Магическое
 Мастерская Ольхи
-Мастерская Ольхи×
 Одноручное
 Оружие
 Открывать при запуске
 Очень далеко
 Пир зверей
 Поиск
+Поиск по названию или описанию...
 Проворность
 Прочее
-Ранг 2Топор Тлеющих УглейEmber Axe
-Сбросить всё
-Сеткой
+Сбросить
+Сетка
 Сила
-Скопировать ссылку на этот раздел
 Снаряжение
-Списком
+Список
 Средне
+Ссылка на раздел
 Ссылка на таблицу
 Ссылка на фильтры
 Таблицы
-Топор Тлеющих Углей
+Топор Тлеющих УглейМагическое · Характеристика Заклинателя · Впл... [namelen=93 namehash=8940453c]
 Тёмное сердце Андалурии
-Улучшаемые
 Уникальные
 Условия использования
 Установить как приложение
 Физическое
-Фильтры (1)
 Хоумбрю
 
 ## en :: tree
@@ -146,8 +156,7 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
   main ""
     heading "Tables" [level=1]
     button "Open on start" [pressed=false]
-    button "Help" [expanded=false]
-    StaticText "Every table in full, weapons and armor included - browse, filter..." [namelen=80 namehash=c34f24bf]
+    button "About this data" [expanded=false]
     navigation "Tables"
       link "Core" [url=/en/tables/core_item]
       link "Hope & Fear" [url=/en/tables/hope_and_fear_item]
@@ -160,26 +169,37 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
       link "Secondary" [url=/en/tables/eq_secondary]
       link "Armor" [url=/en/tables/eq_armor]
     searchbox "Search by name or description..."
-    button "Link to this table"
     button "List" [pressed=false]
     button "Grid" [pressed=true]
     switch "Own items" [checked=true]
     StaticText "Own items"
-    button "Filters (1)" [expanded=true]
-    button "Alder Workshop" [description=Remove from the filter]
-    button "Reset all"
-    button "Filter link" [description=Filter link]
-    ... StaticText x14 of 18 same-shape siblings elided
-    ... button x31 of 35 same-shape siblings elided
-    button "Alder Workshop" [pressed=true]
-    button "Upgradable" [pressed=false]
-    button "Unique" [pressed=false]
-    StaticText "TIER 2"
-    button "Copy a link to this section" [description=Copy a link to this section]
-    checkbox "Select all (1)" [checked=false]
-    StaticText "Select all (1)"
-    checkbox "Ember Axe" [checked=false]
-    button "Tier 2 Ember Axe Топор Тлеющих Углей"
+    button "Link to this table"
+    StaticText "Alder Workshop"
+    StaticText " ·"
+    StaticText "1 of 459 shown"
+    button "Select"
+    complementary "Filters"
+      heading "Filters · 1" [level=2]
+      button "Reset"
+      button "Filter link"
+      StaticText "TIER"
+      button "All" [pressed=true]
+      button "1" [pressed=false]
+      button "2" [pressed=false]
+      ... button x30 of 34 same-shape siblings elided
+      StaticText "SOURCE"
+      button "Alder Workshop" [pressed=true]
+      ... StaticText x3 of 7 same-shape siblings elided
+      ... button x3 of 7 same-shape siblings elided
+      StaticText "BURDEN"
+      button "All" [pressed=true]
+      StaticText "UPGRADES AND UNIQUES"
+      button "All" [pressed=true]
+      button "Upgradable" [pressed=false]
+      button "Unique" [pressed=false]
+    heading "Tier 2" [level=2]
+    button "Link to this section"
+    button "Ember Axe Magic · Spellcast · Melee · d10+2 mag · Two-Handed"
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -192,11 +212,11 @@ RootWebArea "Tables - Daggerheart Loot Generator" [url=/en/tables/eq_weapon/f_sr
 2
 3
 4
-?Help
+?About this data
 Account: gm1@example.test
 Agility
 Alder Workshop
-Alder Workshop×
+All
 Alt. tables
 Arazo's Artifacts
 Armor
@@ -204,16 +224,14 @@ Artifacts
 Beast Feast
 Close
 Colossus of the Drylands
-Copy a link to this section
 Core
 Dark Heart of Andaluria
 Dread GM Toolbox
 EN
-Ember Axe
+Ember AxeMagic · Spellcast · Melee · d10+2 mag · Two-Handed
 Equipment
 Far
 Filter link
-Filters (1)
 Finesse
 Grid
 Homebrew
@@ -221,6 +239,7 @@ Hope & Fear
 Install as an app
 Instinct
 Knowledge
+Link to this section
 Link to this table
 List
 LootDaggerheart
@@ -234,17 +253,18 @@ Physical
 Presence
 Privacy
 RU
-Reset all
+Reset
 Roll
 Search
+Search by name or description...
 Secondary
+Select
 Skip to content
 Strength
 Supplements
 Tables
 Terms of use
 The Dragon's Vault
-Tier 2Ember AxeТопор Тлеющих Углей
 Two-Handed
 Unique
 Upgradable

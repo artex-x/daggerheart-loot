@@ -253,6 +253,16 @@ export interface MotionPort {
   reduced(): boolean;
 }
 
+/** The layout band: `narrow` up to 760 px, `mid` 761-999 px, `wide` from 1000 px. */
+export type Band = 'narrow' | 'mid' | 'wide';
+
+export interface ViewportPort {
+  /** Returns the band the window is in now. */
+  band(): Band;
+  /** Calls `cb` with the new band on each change; returns the unsubscribe. */
+  onchange(cb: (band: Band) => void): () => void;
+}
+
 /**
  * The page going out of sight: the tab hidden, or the page closed or left.
  * The account's write buffer is sent at once then (docs/specs/FEATURES.md,
@@ -706,6 +716,7 @@ export interface Env {
   dialog: DialogPort;
   pwa: PwaPort;
   motion: MotionPort;
+  viewport: ViewportPort;
   page: PagePort;
   clock: ClockPort;
   /** null in an unconfigured build: no cloud control is drawn. */

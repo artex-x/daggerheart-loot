@@ -21,7 +21,7 @@
   import Icon from './Icon.svelte';
   import type { Dict } from '../lib/dict.js';
   import type { FacetRow } from '../lib/facets.js';
-  import { groupIsAny, type FilterState } from '../lib/filters.js';
+  import { chosenLabels, groupIsAny, type FilterState } from '../lib/filters.js';
   import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
 
   interface Props {
@@ -80,25 +80,7 @@
     focusAfter(-1);
   }
 
-  /* Everything picked, in the order the rows are drawn - `fChosen` in app.js.
-     A bare number takes its row's name rather than standing for itself - but
-     `fChosen` tests the value's *label*, not its value. They agree everywhere
-     a group offers a numeric value (`voa`'s tier prints "Ранг 2" either way,
-     because its label already is that string), and part on the equipment
-     tables' burden row: value `'1'`/`'2'`, label "Одноручное"/"Двуручное" -
-     testing the value would print "Хват 2" where the live app prints
-     "Двуручное". */
-  const chosen = $derived(
-    rows.flatMap((row) =>
-      row.values
-        .filter((v) => picked[row.group]?.includes(v.value))
-        .map((v) => ({
-          group: row.group,
-          value: v.value,
-          label: /^\d+$/.test(v.label) ? row.label + ' ' + v.label : v.label
-        }))
-    )
-  );
+  const chosen = $derived(chosenLabels(rows, picked));
 
   const toggleLabel = $derived(
     chosen.length ? `${t.filters} (${String(chosen.length)})` : t.filters

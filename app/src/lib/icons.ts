@@ -144,6 +144,16 @@ export const ICONS = {
     d: 'M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
     size: 16
   },
+  /* Not in app.js: the «··· Ещё» menu and a sheet's «Закрыть» (DESIGN.md, "Components"),
+     Material Icons more_horiz and close (Apache 2.0). */
+  more: {
+    d: 'M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z',
+    size: 18
+  },
+  close: {
+    d: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+    size: 18
+  },
   /* Not in app.js: the kind glyphs of the art well (DESIGN.md, "Cards"), filled,
      Apache 2.0. Material Icons shield, science and diamond; the weapon is
      Material Symbols swords (fill 1), on that family's own grid. */

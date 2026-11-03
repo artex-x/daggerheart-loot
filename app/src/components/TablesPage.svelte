@@ -22,16 +22,14 @@
      their own, with up to seven facet rows - `eqKind`, `eqFacetRows` and
      `equipOfKind`/`equipFacets` are what tell that shape apart from the
      plain one below. */
-  import { tick, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import Button from './Button.svelte';
-  import Chip from './Chip.svelte';
-  import ChipRow from './ChipRow.svelte';
   import Empty from './Empty.svelte';
-  import FilterBar from './FilterBar.svelte';
-  import FoldButton from './FoldButton.svelte';
+  import FilterPanel from './FilterPanel.svelte';
+  import HelpBox from './HelpBox.svelte';
   import Icon from './Icon.svelte';
-  import KeepNote from './KeepNote.svelte';
   import LoadState from './LoadState.svelte';
+  import Menu from './Menu.svelte';
   import NoData from './NoData.svelte';
   import PageHead from './PageHead.svelte';
   import RecordHost from './RecordHost.svelte';
@@ -40,6 +38,7 @@
   import Seg from './Seg.svelte';
   import SignInPrompt from './SignInPrompt.svelte';
   import Switch from './Switch.svelte';
+  import TableNav from './TableNav.svelte';
   import TableRows from './TableRows.svelte';
   import type { TableEntry } from './TableRows.svelte';
   import { RARITIES, rarityLabel } from '../lib/alt.js';
@@ -53,16 +52,15 @@
   import { facetRows, narrowRows } from '../lib/facets.js';
   import {
     chosenCount,
-    encodeFilter,
+    chosenLabels,
     EQ_TABLE,
     groupsFor,
     passes,
     type FilterState
   } from '../lib/filters.js';
-  import { CHIP_FOLD_AT, CHIP_FOLD_SHOWN, foldRows } from '../lib/folds.js';
   import { FRAME_ORDER, frameName } from '../lib/frames.js';
   import { REALM_ORDER, realmName } from '../lib/realms.js';
-  import { homebrewItemHash, tablesHash } from '../lib/hash.js';
+  import { canonicalHash, homebrewItemHash, tablesHash } from '../lib/hash.js';
   import { helpFor } from '../lib/help.js';
   import {
     groupsOf,
@@ -75,9 +73,10 @@
     sourceKeyOf,
     sourcesOf
   } from '../lib/homebrew.js';
+  import { kindGlyph } from '../lib/label.js';
+  import { hiddenTags } from '../lib/rowTags.js';
   import { hayFor, matches, parseQuery, statLineFor } from '../lib/search.js';
   import { communities, communityName, voaSectionName, VOA_SECTIONS } from '../lib/sections.js';
-  import { CHIP_SHORT, TABLE_NAV, navGroupOf, navSubLabel } from '../lib/tables.js';
   import type { AppState } from '../state/app.svelte.js';
   import { BARE_TABLE, type Record_, type TableId } from '../lib/types.js';
 
@@ -88,11 +87,7 @@
   const { app }: Props = $props();
 
   const t = $derived(app.t);
-  /* A book chip's short form under 640 px, where `CHIP_SHORT` gives one. */
-  const shortOf = (sub: TableId): string | undefined => {
-    const key = CHIP_SHORT[sub];
-    return key ? t[key] : undefined;
-  };
+  const band = $derived(app.band);
   const index = $derived(app.index);
   /* The row pool and the facets only: `RecordHost` and `TableRows` keep `index`, so the
      «Свои предметы» switch never hides an own record inside a dialog or a row. */
@@ -120,7 +115,6 @@
     app.route.kind === 'tables' ? (app.route.table ?? lastTable) : lastTable
   );
 
-  const group = $derived(navGroupOf(table));
   /* The equipment tables draw a second body shape - see the header comment. */
   const eqKind = $derived(EQ_TABLE[table]);
 
@@ -129,6 +123,7 @@
      address. The view switch changes this visit; the default is the Display
      section's (docs/specs/FEATURES.md, "Tables and search"). */
   let q = $state('');
+  const terms = $derived(parseQuery(q));
   const view = $derived(app.shownTablesView);
   const VIEWS = $derived([
     { value: 'list', label: t.viewList },
@@ -136,21 +131,20 @@
   ] as const);
 
   const help = $derived(helpFor('tables', app.lang));
+  /* «Об этих данных» below 761 px opens from «Ещё»; from 761 px `PageHead` holds its own. */
+  let helpOpen = $state(false);
 
   /* The filter is read from the address rather than mirrored - `app.route`
-     already is the picked state. `seenSeg` is the one mirror this needs: the
-     exact segment this component last wrote, so an effect can tell "the
-     address changed under us" (open the panel, the way a filter link does)
-     apart from "we just wrote it" (round-tripping is stable, so folding the
-     panel and then dropping a pill does not spring it open again). */
+     already is the picked state. A filter link that arrives opens no sheet: the count
+     line states the picks (docs/specs/FEATURES.md, "Tables and search"). */
   const facetGroups = $derived(groupsFor(table));
   const filterState = $derived<FilterState>(
     app.route.kind === 'tables' ? app.route.filter : {}
   );
 
-  /* The source chips of `#/tables/homebrew`: `hbSource` is the chosen one, null with fewer
-     than two sources. On this table `src` is the chip only: the facets, `passes` and the
-     panel's `seenSeg` leave it out, and every facet write carries it. */
+  /* The source tabs of `#/tables/homebrew`: `hbSource` is the chosen one, null with fewer
+     than two sources. On this table `src` is the tab only: the facets and `passes` leave
+     it out, and every facet write carries it. */
   const hbBooks = $derived(app.homebrew?.books ?? []);
   const hbOwn = $derived(
     table === 'homebrew' ? (browse?.rows.get('homebrew') ?? []).filter(isHomebrewRecord) : []
@@ -167,37 +161,22 @@
         )
       : null
   );
-  /* The source chips' fold: page memory, closed when the page mounts (rule 12). */
-  let srcOpen = $state(false);
-
-  /** Returns the segment the panel compares: the encoded filter, without `src` on `homebrew`. */
-  function segOf(filter: FilterState, tbl: TableId): string {
-    return encodeFilter(tbl === 'homebrew' ? { ...filter, src: [] } : filter, groupsFor(tbl));
-  }
-
+  /* The filter sheet below 1000 px: page memory, closed on another table. */
   let filterOpen = $state(false);
-  let seenSeg = $state('');
   let seenTable = $state<TableId | null>(null);
   $effect(() => {
-    const route = app.route;
     const tbl = table;
     untrack(() => {
       if (seenTable !== tbl) {
         seenTable = tbl;
-        seenSeg = '';
         filterOpen = false;
       }
-      const seg = route.kind === 'tables' ? segOf(route.filter, tbl) : '';
-      if (seg !== seenSeg) filterOpen = true;
-      seenSeg = seg;
     });
   });
 
-  /** Writes a filter through `replace()`, and marks it as our own edit so the
-   *  effect above does not treat it as a link arriving from elsewhere. */
+  /** Writes a filter through `replace()`. */
   function applyFilter(next: FilterState): void {
     const filter = hbSource === null ? next : { ...next, src: [hbSource] };
-    seenSeg = segOf(filter, table);
     app.replace(tablesHash(table, { filter }));
   }
 
@@ -224,17 +203,24 @@
     applyFilter({ ...filterState, [group]: next });
   }
 
+  function clearFacet(group: string): void {
+    applyFilter({ ...filterState, [group]: [] });
+  }
+
   function resetFacets(): void {
     applyFilter({});
   }
 
-  /* Rule 20: the empty state's «Сбросить всё» goes with the empty state; focus goes to
-     «Фильтры», else `#main`. */
+  /* Rule 20: the empty state's «Сбросить фильтры» goes with the empty state; the focus
+     goes to the first «Все» of the column, or to «Фильтры», else `#main`. */
   let filterToggle = $state<HTMLButtonElement | undefined>(undefined);
   async function resetFromEmpty(): Promise<void> {
     resetFacets();
     await tick();
-    (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))?.focus();
+    const first = document.querySelector<HTMLElement>('.fcol .frow .chip');
+    (
+      first ?? (filterToggle?.isConnected ? filterToggle : document.getElementById('main'))
+    )?.focus();
   }
 
   /* The homebrew table hands out no link: its address opens nothing for anyone else
@@ -306,10 +292,40 @@
   const hay = $derived(hayFor(statLine));
 
   const filtered = $derived.by(() => {
-    const terms = parseQuery(q);
     if (!terms.length) return facPassed;
     return facPassed.filter((it) => matches(it, terms, statLine, hay));
   });
+
+  /* The count line: the chosen values in text, then the shown count, while a filter or
+     a query narrows the view. */
+  const chosen = $derived(chosenLabels(facRows, facetState));
+  const narrowed = $derived(chosen.length > 0 || terms.length > 0);
+  const countText = $derived(
+    t.shownOf.replace('%n', String(filtered.length)).replace('%m', String(shownRows.length))
+  );
+  const values = $derived(chosen.map((c) => c.label).join(', '));
+
+  /* The empty state's cause names the query, the values, or both. */
+  const emptyCause = $derived(
+    chosen.length && terms.length
+      ? t.emptyBoth.replace('%q', q.trim()).replace('%v', values)
+      : chosen.length
+        ? t.emptyFilters.replace('%v', values)
+        : t.emptyQuery.replace('%q', q.trim())
+  );
+  const emptyGlyph = $derived(
+    eqKind === 'armor'
+      ? 'kindArmor'
+      : eqKind
+        ? 'kindWeapon'
+        : kindGlyph(table.endsWith('consumable') ? 'consumable' : 'item', undefined)
+  );
+
+  /* The tags a row hides: the ones the page already says (`rowTags.ts`). The tier and
+     equipment bodies head each section with its tier. */
+  const hide = $derived.by(() =>
+    hiddenTags(table, facetState, bodyKind === 'tier' || bodyKind === 'eq')
+  );
 
   async function copyTableLink(): Promise<void> {
     await app.copied(
@@ -321,6 +337,28 @@
         ),
       (t) => t.tableLinkCopied
     );
+  }
+
+  /* The «Ещё» menu below 761 px: the table link, the pin and «Об этих данных». */
+  let moreOpen = $state(false);
+  let moreButton = $state<HTMLButtonElement | undefined>(undefined);
+  const home = $derived(tablesHash(table));
+  const pinned = $derived(app.home === canonicalHash(home));
+
+  /* Ticks that arrive with the page (a sign-in that returns with them) open the mode. */
+  $effect(() => {
+    if (app.sel.size > 0 && !app.selecting) {
+      untrack(() => {
+        app.selecting = true;
+      });
+    }
+  });
+
+  /* «Выбрать» opens the selection mode; the focus moves to the bar's «Все». */
+  async function startSelecting(): Promise<void> {
+    app.selecting = true;
+    await tick();
+    document.querySelector<HTMLElement>('.selbarwrap .selall input')?.focus();
   }
 
   async function copySectionLink(key: string): Promise<void> {
@@ -467,7 +505,6 @@
 
   const altSections = $derived.by<AltSection[]>(() => {
     if (!altKind || !index) return [];
-    const terms = parseQuery(q);
     return RARITIES.map((r) => {
       const cols: AltCol[] = (['hope', 'fear'] as const)
         .map((col) => ({
@@ -590,73 +627,119 @@
   $effect(() => () => {
     clearTimeout(flashTimer);
   });
+
+  /* The selection bar's «Все» ticks every row drawn here, all sections. */
+  const drawnIds = $derived(
+    bodyKind === 'alt'
+      ? altSections.flatMap((s) =>
+          s.cols.flatMap((c) => c.entries.map((e: { it: Record_ }) => e.it.id))
+        )
+      : filtered.map((it) => it.id)
+  );
+  $effect(() => {
+    const ids = drawnIds;
+    untrack(() => {
+      app.setSelectable(ids);
+    });
+  });
+  onDestroy(() => {
+    app.setSelectable([]);
+  });
 </script>
 
-<PageHead {app} title={t.tables} sub={t.subTables} {help} home={tablesHash(table)} />
+<!-- eslint-disable @typescript-eslint/no-confusing-void-expression -- a `{@render}` tag of a
+     local snippet reads as a void expression to this rule. -->
+{#snippet viewSwitch()}
+  <Seg
+    small
+    neutral
+    options={VIEWS}
+    value={view}
+    label={t.view}
+    onchange={(v: 'list' | 'grid') => {
+      app.showTablesView(v);
+    }}
+  />
+{/snippet}
+
+{#snippet nav()}
+  <TableNav {app} {table} sources={hbSources} source={hbSource} filter={filterState} />
+{/snippet}
+
+<!-- The list head (docs/specs/FEATURES.md, "Tables and search"): below 761 px the page
+     name is read, not drawn, and the picker row holds the table, the view and «Ещё». -->
+{#if band === 'narrow'}
+  <h1 class="vh">{t.tables}</h1>
+  <div class="pickrow">
+    {@render nav()}
+    {@render viewSwitch()}
+    <div class="morewrap">
+      <button
+        type="button"
+        class="morebtn"
+        aria-haspopup="menu"
+        aria-expanded={moreOpen}
+        aria-controls={moreOpen ? 'tables-more' : undefined}
+        bind:this={moreButton}
+        onclick={() => {
+          moreOpen = !moreOpen;
+        }}><Icon name="more" /><span>{t.moreMenu}</span></button
+      >
+      {#if moreOpen && moreButton}
+        <Menu
+          control={moreButton}
+          label={t.moreMenu}
+          id="tables-more"
+          cls="moremenu"
+          onclose={() => {
+            moreOpen = false;
+          }}
+        >
+          {#if linkable}
+            <button
+              type="button"
+              role="menuitem"
+              tabindex="-1"
+              onclick={() => {
+                moreOpen = false;
+                void copyTableLink();
+              }}><Icon name="link" />{t.tableLink}</button
+            >
+          {/if}
+          <button
+            type="button"
+            role="menuitem"
+            tabindex="-1"
+            onclick={() => {
+              moreOpen = false;
+              app.pinHome(home);
+            }}><Icon name={pinned ? 'check' : 'home'} />{pinned ? t.homeOn : t.homeHint}</button
+          >
+          {#if help}
+            <button
+              type="button"
+              role="menuitem"
+              tabindex="-1"
+              aria-expanded={helpOpen}
+              onclick={() => {
+                moreOpen = false;
+                helpOpen = !helpOpen;
+              }}>{help.button ?? t.helpHint}</button
+            >
+          {/if}
+        </Menu>
+      {/if}
+    </div>
+  </div>
+  {#if help && helpOpen}
+    <HelpBox {help} />
+  {/if}
+{:else}
+  <PageHead {app} title={t.tables} sub="" {help} {home} extra={nav} />
+{/if}
 
 <RecordHost {app} {index}>
   {#snippet children(openRecord)}
-    <!-- `.tablenav` is a `Panel.svelte` variant: the base `.panel` rule plus
-         this screen's own margin-free nav row. Svelte scopes this
-         component's rule to its own elements, so a `class` prop on `Panel`
-         would have to be `:global()` here - kept inline. It is the page's navigation
-         landmark, named by its tab's word as the supplements panel is. -->
-    <nav class="panel tablenav" aria-label={t.tables}>
-      <ChipRow>
-        {#each TABLE_NAV.filter((g) => g.id !== 'hb' || !!app.user) as g (g.id)}
-          <Chip label={t[g.label]} on={g.id === group.id} href={app.href(tablesHash(g.top))} />
-        {/each}
-      </ChipRow>
-      {#if table === 'homebrew' && hbSources.length > 1}
-        {@const chips = foldRows(
-          hbSources,
-          srcOpen,
-          CHIP_FOLD_AT,
-          CHIP_FOLD_SHOWN,
-          (s) => s.key === hbSource
-        )}
-        <ChipRow sub>
-          {#each chips.rows as s (s.key)}
-            <Chip
-              size="sm"
-              label={s.label}
-              on={s.key === hbSource}
-              href={app.href(
-                tablesHash('homebrew', {
-                  filter: {
-                    ...(filterState['kind'] ? { kind: filterState['kind'] } : {}),
-                    src: [s.key]
-                  }
-                })
-              )}
-            />
-          {/each}
-          {#if hbSources.length > CHIP_FOLD_AT}
-            <FoldButton
-              open={srcOpen}
-              more={t.andMore.replace('%n', String(chips.more))}
-              {t}
-              ontoggle={() => {
-                srcOpen = !srcOpen;
-              }}
-            />
-          {/if}
-        </ChipRow>
-      {:else if group.subs.length > 1}
-        <ChipRow sub>
-          {#each group.subs as sub (sub)}
-            <Chip
-              size="sm"
-              label={t[navSubLabel(sub)]}
-              short={shortOf(sub)}
-              on={sub === table}
-              href={app.href(tablesHash(sub))}
-            />
-          {/each}
-        </ChipRow>
-      {/if}
-    </nav>
-
     {#if !index}
       <NoData>{t.noData}</NoData>
     {:else if table === 'homebrew' && app.user === null}
@@ -682,83 +765,163 @@
         <Button href={app.href(homebrewItemHash(null))} sameTab>{t.hbNewItem}</Button>
       </Empty>
     {:else}
-      <div class="toolbar">
+      {@const own = eqKind && (app.homebrew?.records.length ?? 0) > 0}
+      <div class="searchrow">
         <div class="grow">
           <SearchBox
             value={q}
-            placeholder={t.searchPh}
+            placeholder={t.searchShort}
+            label={t.searchPh}
             oninput={(v: string) => {
               q = v;
             }}
           />
         </div>
-        {#if linkable}
-          <Button title={t.tableLink} label={t.tableLink} onclick={() => void copyTableLink()}>
-            <Icon name="link" /><span class="btn-lbl">{t.tableLink}</span>
-          </Button>
+        {#if band !== 'wide' && facRows.length}
+          <Button
+            size="sm"
+            variant={chosen.length ? 'toggle' : 'plain'}
+            expanded={filterOpen}
+            bind:el={filterToggle}
+            onclick={() => {
+              filterOpen = true;
+            }}
+            >{chosen.length
+              ? t.filtersN.replace('%n', String(chosen.length))
+              : t.filters}</Button
+          >
         {/if}
-        <Seg
-          small
-          neutral
-          options={VIEWS}
-          value={view}
-          label={t.view}
-          onchange={(v: 'list' | 'grid') => {
-            app.showTablesView(v);
-          }}
-        />
-        {#if eqKind && (app.homebrew?.records.length ?? 0) > 0}
-          <Switch label={t.ownSwitch} on={app.homebrewShown} onchange={toggleOwn} />
+        {#if band !== 'narrow'}
+          {@render viewSwitch()}
+          {#if own}
+            <Switch label={t.ownSwitch} on={app.homebrewShown} onchange={toggleOwn} />
+          {/if}
+          {#if linkable}
+            <Button title={t.tableLink} onclick={() => void copyTableLink()}>
+              <Icon name="link" /><span>{t.tableLink}</span>
+            </Button>
+          {/if}
+          {#if narrowed}<span class="count"
+              ><span class="vals">{values}</span>{#if values}<span>&nbsp;·&#32;</span>{/if}<span
+                class="n">{countText}</span
+              ></span
+            >{/if}
+        {/if}
+        {#if !app.selecting}
+          <button
+            type="button"
+            class="selmode"
+            onclick={() => {
+              void startSelecting();
+            }}>{t.selectMode}</button
+          >
         {/if}
       </div>
-      {#if app.tablesViewChanged}<KeepNote {app} />{/if}
+      {#if band === 'narrow' && narrowed}
+        <p class="count line">
+          <span class="vals">{values}</span>{#if values}<span>&nbsp;·&#32;</span>{/if}<span
+            class="n">{countText}</span
+          >
+        </p>
+      {/if}
 
-      <FilterBar
-        rows={facRows}
-        picked={filterState}
-        shown={filtered.length}
-        total={shownRows.length}
-        open={filterOpen}
-        {t}
-        ontoggle={() => {
-          filterOpen = !filterOpen;
-        }}
-        onpick={pickFacet}
-        onreset={resetFacets}
-        oncopylink={linkable ? () => void copyFilterLink() : undefined}
-        bind:toggleEl={filterToggle}
-      />
-
-      {#if bodyKind === 'alt'}
-        {#if altSections.length === 0}
-          <Empty>{t.nothing}</Empty>
-        {:else}
-          {#each altSections as s (s.key)}
-            <div
-              class="tsection"
-              class:flash={flashKey === s.key}
-              id={'sec-' + s.key}
-              style="margin-top:20px"
-            >
-              <SectionHead
-                label={s.label}
-                title={t.copySection}
-                heading={2}
-                oncopy={linkable
-                  ? () => {
-                      void copySectionLink(s.key);
-                    }
-                  : undefined}
-              />
-              {#each s.cols as col (col.key)}
-                <h3 class="altcol {col.key}">{col.label}</h3>
+      <div class="body" class:withcol={band === 'wide' && facRows.length > 0}>
+        {#if facRows.length}
+          <FilterPanel
+            {app}
+            rows={facRows}
+            picked={filterState}
+            shown={filtered.length}
+            {band}
+            open={filterOpen}
+            onclose={() => {
+              filterOpen = false;
+              filterToggle?.focus();
+            }}
+            onpick={pickFacet}
+            onclear={clearFacet}
+            onreset={resetFacets}
+            oncopylink={linkable ? () => void copyFilterLink() : undefined}
+            own={own && band !== 'wide'
+              ? { on: app.homebrewShown, onchange: toggleOwn }
+              : undefined}
+          />
+        {/if}
+        <!-- The table, its section heads included, is the page's primary content (DESIGN.md,
+             "The First-Screen Rule"); the filter column beside it is not. -->
+        <div class="rowscol" data-primary>
+          {#if bodyKind === 'alt'}
+            {#if altSections.length === 0}
+              <Empty title={t.nothing} glyph={emptyGlyph}>
+                <p class="cause">{emptyCause}</p>
+              </Empty>
+            {:else}
+              {#each altSections as s (s.key)}
+                <div class="tsection" class:flash={flashKey === s.key} id={'sec-' + s.key}>
+                  <SectionHead
+                    label={s.label}
+                    title={t.copySection}
+                    oncopy={linkable
+                      ? () => {
+                          void copySectionLink(s.key);
+                        }
+                      : undefined}
+                  />
+                  {#each s.cols as col (col.key)}
+                    <h3 class="altcol {col.key}">{col.label}</h3>
+                    <TableRows
+                      entries={col.entries}
+                      {view}
+                      {index}
+                      lang={app.lang}
+                      flash={flashKey}
+                      ticks={app.selecting}
+                      {hide}
+                      {terms}
+                      selected={(id: string) => app.sel.has(id)}
+                      artBroken={(id: string) => app.artBroken(id)}
+                      ontoggle={(id: string) => {
+                        app.toggleSel(id);
+                      }}
+                      onartfail={(id: string) => {
+                        app.markArtBroken(id);
+                      }}
+                      onopen={openRecord}
+                    />
+                  {/each}
+                </div>
+              {/each}
+            {/if}
+          {:else if filtered.length === 0}
+            <Empty title={t.nothing} glyph={emptyGlyph}>
+              <p class="cause">{emptyCause}</p>
+              {#if chosenCount(facetState, facetGroups) > 0}
+                <Button variant="primary" onclick={() => void resetFromEmpty()}
+                  >{t.resetFilters}</Button
+                >
+              {/if}
+            </Empty>
+          {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'realm' || bodyKind === 'eq' || bodyKind === 'hb'}
+            {#each activeSections as s (s.key)}
+              <div class="tsection" class:flash={flashKey === s.key} id={'sec-' + s.key}>
+                <SectionHead
+                  label={s.label}
+                  title={t.copySection}
+                  oncopy={linkable
+                    ? () => {
+                        void copySectionLink(s.key);
+                      }
+                    : undefined}
+                />
                 <TableRows
-                  primary
-                  entries={col.entries}
+                  entries={s.entries}
                   {view}
                   {index}
                   lang={app.lang}
                   flash={flashKey}
+                  ticks={app.selecting}
+                  {hide}
+                  {terms}
                   selected={(id: string) => app.sel.has(id)}
                   artBroken={(id: string) => app.artBroken(id)}
                   ontoggle={(id: string) => {
@@ -769,41 +932,18 @@
                   }}
                   onopen={openRecord}
                 />
-              {/each}
-            </div>
-          {/each}
-        {/if}
-      {:else if filtered.length === 0}
-        <Empty>
-          {t.nothing}
-          {#if chosenCount(facetState, facetGroups) > 0}
-            <Button size="sm" onclick={() => void resetFromEmpty()}>{t.resetAll}</Button>
-          {/if}
-        </Empty>
-      {:else if bodyKind === 'tier' || bodyKind === 'other' || bodyKind === 'comm' || bodyKind === 'realm' || bodyKind === 'eq' || bodyKind === 'hb'}
-        {#each activeSections as s (s.key)}
-          <div
-            class="tsection"
-            class:flash={flashKey === s.key}
-            id={'sec-' + s.key}
-            style="margin-top:22px"
-          >
-            <SectionHead
-              label={s.label}
-              title={t.copySection}
-              oncopy={linkable
-                ? () => {
-                    void copySectionLink(s.key);
-                  }
-                : undefined}
-            />
+              </div>
+            {/each}
+          {:else}
             <TableRows
-              primary
-              entries={s.entries}
+              entries={filtered.map((it) => ({ it }))}
               {view}
               {index}
               lang={app.lang}
               flash={flashKey}
+              ticks={app.selecting}
+              {hide}
+              {terms}
               selected={(id: string) => app.sel.has(id)}
               artBroken={(id: string) => app.artBroken(id)}
               ontoggle={(id: string) => {
@@ -813,34 +953,10 @@
                 app.markArtBroken(id);
               }}
               onopen={openRecord}
-              ontoggleall={(ids: string[]) => {
-                app.toggleAllIn(ids);
-              }}
             />
-          </div>
-        {/each}
-      {:else}
-        <TableRows
-          primary
-          entries={filtered.map((it) => ({ it }))}
-          {view}
-          {index}
-          lang={app.lang}
-          flash={flashKey}
-          selected={(id: string) => app.sel.has(id)}
-          artBroken={(id: string) => app.artBroken(id)}
-          ontoggle={(id: string) => {
-            app.toggleSel(id);
-          }}
-          onartfail={(id: string) => {
-            app.markArtBroken(id);
-          }}
-          onopen={openRecord}
-          ontoggleall={(ids: string[]) => {
-            app.toggleAllIn(ids);
-          }}
-        />
-      {/if}
+          {/if}
+        </div>
+      </div>
     {/if}
   {/snippet}
 </RecordHost>
@@ -850,57 +966,141 @@
      follows is the tables screen's own furniture. `.miss` moved to
      `NoData.svelte`. */
 
-  /* off `.panel` in style.css */
-  .tablenav {
-    background: linear-gradient(180deg, var(--surface2), var(--surface));
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 18px;
-    box-shadow: var(--shadow);
-  }
-
-  /* The homebrew table's states before its rows: the toolbar's top margin. */
+  /* The homebrew table's states before its rows: the search row's top margin. */
   .hbstate {
     margin-top: 16px;
   }
 
-  /* off `.toolbar` */
-  .toolbar {
+  /* Below 761 px: the picker, the view switch and «Ещё» on one row. */
+  .pickrow {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  /* The picker is the page's only visible name here: the switch gives it the width. */
+  .pickrow :global(.seg.small button) {
+    padding-inline: 6px;
+  }
+
+  .morewrap {
+    position: relative;
+    flex: none;
+  }
+
+  .morebtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 10px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--ui);
+  }
+
+  .morebtn:hover {
+    border-color: var(--muted2);
+  }
+
+  /* The search row: the search first, «Выбрать» last. */
+  .searchrow {
+    display: flex;
+    gap: 8px 10px;
     flex-wrap: wrap;
     align-items: center;
-    /* off `.toolbar` in style.css - the 18px margin-bottom, plus the 16px
-       margin-top that the live app writes inline on this specific toolbar.
-       The body below it also opens with a 6px margin-top, which collapses
-       against this one and never wins: adjacent margins take the larger. */
-    margin: 16px 0 18px;
+    margin: 16px 0 12px;
   }
 
-  /* The note belongs to the toolbar: 8 px under it, its own margin. */
-  .toolbar:has(+ :global(.keepnote)) {
-    margin-bottom: 0;
+  .searchrow .grow {
+    flex: 1 1 140px;
+    min-width: 140px;
   }
 
-  .toolbar .grow {
+  .selmode {
+    height: 32px;
+    padding: 0 11px;
+    border: 1px solid var(--line2);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--txt);
+    font: 600 var(--t-data) / 1 var(--ui);
+  }
+
+  .selmode:hover {
+    border-color: var(--muted2);
+  }
+
+  /* The count line: the chosen values cut to one line, the count never cut. */
+  .count {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    max-width: 100%;
+    font-size: var(--t-data);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .count .vals {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .count .n {
+    flex: none;
+    margin-left: auto;
+    padding-left: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .count.line {
+    margin: -4px 0 6px;
+    line-height: 16px;
+  }
+
+  /* Below 761 px the search row is one 40 px line: the search, «Фильтры», «Выбрать». */
+  @media (max-width: 760px) {
+    .searchrow {
+      margin: 0 0 8px;
+      gap: 5px;
+    }
+
+    .searchrow :global(input[type='search']),
+    .searchrow :global(.btn.sm),
+    .selmode {
+      height: 40px;
+      padding: 0 9px;
+    }
+  }
+
+  .searchrow .count {
+    flex: 0 1 auto;
+  }
+
+  /* From 1000 px the filter column sits beside the rows. */
+  .body.withcol {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .rowscol {
     flex: 1;
-    min-width: 220px;
+    min-width: 0;
   }
 
-  @media (max-width: 900px) {
-    /* The `.vh` rule of `styles/tokens.css`, under a media query a class cannot carry. */
-    .toolbar :global(.btn-lbl) {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
+  .tsection + .tsection {
+    margin-top: 22px;
+  }
 
-    .toolbar :global(.btn) {
-      padding: 0 13px;
-    }
+  .cause {
+    margin: 0;
+    max-width: 60ch;
   }
 
   /* off `.tsection` and its flash keyframes - `git show 23c00a6^:style.css`. The heading

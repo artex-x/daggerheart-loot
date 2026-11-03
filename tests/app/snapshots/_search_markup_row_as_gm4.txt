@@ -31,7 +31,7 @@ RootWebArea "Поиск - Генератор лута Daggerheart" [url=/search?
     checkbox "Выбрать все (1)" [checked=false]
     StaticText "Выбрать все (1)"
     checkbox "Свиток Узоролиста" [checked=false]
-    button "Свиток Узоролиста Раз за отдых: разверните свиток, и узор ответи..." [namelen=202 namehash=94a247ca]
+    button "Свиток Узоролиста РАСХОДНИК ХОУМБРЮ Раз за отдых: разверните сви..." [namelen=202 namehash=a4fd3903]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -53,7 +53,7 @@ daggerheart.com
 Предметы
 Расходники
 Свиток Узоролиста
-Свиток УзоролистаРаз за отдых: разверните свиток, и узор ответит... [namelen=192 namehash=d7a67899]
+Свиток УзоролистаРасходникХоумбрюРаз за отдых: разверните свиток... [namelen=192 namehash=6a3beded]
 Снаряжение
 Таблицы
 Условия использования
@@ -87,7 +87,7 @@ RootWebArea "Search - Daggerheart Loot Generator" [url=/en/search?as=gm4]
     checkbox "Select all (1)" [checked=false]
     StaticText "Select all (1)"
     checkbox "Patternleaf Scroll" [checked=false]
-    button "Patternleaf Scroll Once per rest: unroll the scroll, and the pat..." [namelen=228 namehash=8da1d6a3]
+    button "Patternleaf Scroll CONSUMABLE HOMEBREW Once per rest: unroll the..." [namelen=228 namehash=3dd26ad7]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -105,7 +105,7 @@ Items
 LootDaggerheart
 Open on start
 Patternleaf Scroll
-Patternleaf ScrollOnce per rest: unroll the scroll, and the patt... [namelen=218 namehash=257bc437]
+Patternleaf ScrollConsumableHomebrewOnce per rest: unroll the sc... [namelen=218 namehash=33b12bea]
 Privacy
 RU
 Roll

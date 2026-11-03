@@ -47,6 +47,7 @@ import {
   fakePage,
   fakeImage,
   fakePwa,
+  fakeViewport,
   fixedClock,
   memoryRouter,
   memoryStorage
@@ -429,7 +430,7 @@ describe('a page switch lasts the visit', () => {
       'grid'
     ]);
     expect([app.printBW, app.printCompact, app.tablesView]).toEqual([false, false, 'list']);
-    expect([app.printChanged, app.tablesViewChanged]).toEqual([true, true]);
+    expect(app.printChanged).toBe(true);
     expect(env.storage.get(PREFS_KEY)).toBeNull();
   });
 
@@ -443,7 +444,7 @@ describe('a page switch lasts the visit', () => {
     expect(app.printChanged).toBe(false);
     app.showTablesView('grid');
     app.showTablesView('list');
-    expect(app.tablesViewChanged).toBe(false);
+    expect(app.shownTablesView).toBe(app.tablesView);
   });
 
   it("drops a page's pick when the Display section sets the default", () => {
@@ -459,7 +460,7 @@ describe('a page switch lasts the visit', () => {
       'list',
       false
     ]);
-    expect([app.printChanged, app.tablesViewChanged]).toEqual([false, false]);
+    expect(app.printChanged).toBe(false);
   });
 
   it('starts a new visit from the default over the same storage', () => {
@@ -994,7 +995,36 @@ describe('the add-to-list menu', () => {
   });
 });
 
+describe('the layout band', () => {
+  it('starts from the viewport port and follows it until stop', () => {
+    const viewport = fakeViewport('narrow');
+    const app = new AppState(fakeEnv({ viewport }));
+    expect(app.band).toBe('narrow');
+    app.start();
+    viewport.set('mid');
+    expect(app.band).toBe('mid');
+    app.stop();
+    viewport.set('wide');
+    expect(app.band).toBe('mid');
+  });
+});
+
 describe('the selection', () => {
+  it('leaves the selection mode with the ticks, and keeps the drawn ids apart', () => {
+    const router = memoryRouter('#/tables/core_item');
+    const app = new AppState(fakeEnv({ router }));
+    app.start();
+    app.selecting = true;
+    app.setSelectable(['ci1', 'ci2']);
+    app.sel.add('ci1');
+    app.clearSel();
+    expect([app.selecting, app.sel.size, app.selectable]).toEqual([false, 0, ['ci1', 'ci2']]);
+    app.selecting = true;
+    app.go('#/tables/eq_weapon');
+    expect(app.selecting).toBe(false);
+    app.stop();
+  });
+
   it('clears on go(), and on a navigation the router announces', () => {
     const router = memoryRouter('#/tables');
     const app = new AppState(fakeEnv({ router }));

@@ -14,6 +14,7 @@ deleted.
 
 ## Index
 
+- 2026-10-30 - [List pages share one head and one selection bar](decisions/2026-10-30-list-pages-share-one-head-and-one-selection-bar.md)
 - 2026-10-29 - [A new purchase request toasts on every page](decisions/2026-10-29-a-new-purchase-request-toasts-on-every-page.md)
 - 2026-10-29 - [A resume past the prompt-cache lifetime is replaced by a fresh dispatch](decisions/2026-10-29-a-resume-past-the-prompt-cache-lifetime-is-replaced-by-a-fresh-dispatch.md)
 - 2026-10-29 - [A run outside main replays the deploy's steps before its first secret](decisions/2026-10-29-a-run-outside-main-replays-the-deploys-steps.md)

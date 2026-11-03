@@ -122,16 +122,17 @@ export function navGroupOf(table: TableId): TableGroup {
   return TABLE_NAV.find((g) => g.subs.includes(table)) ?? CORE_GROUP;
 }
 
-/** A chip's short form under 640 px; the full name stays its accessible name
- *  (docs/decisions/2026-10-21-source-names-follow-the-source-product.md). Community
- *  items and Vault of Ages have none: a short word must be part of the full name. */
-export const CHIP_SHORT: Partial<Record<TableId, keyof Dict>> = {
-  wondrous: 'wondrous',
-  dread: 'dread',
-  dv: 'dv'
-};
-
 /** Returns a second-row chip's caption: the `SUB_LABEL` word, or else the book's own name. */
 export function navSubLabel(table: TableId): keyof Dict {
   return SUB_LABEL[table] ?? groupOf(table).label;
+}
+
+/**
+ * Returns the table picker's text below 761 px: the second-row caption, or «<Book> ·
+ * <caption>» where the caption alone names no book («Предметы», «Расходники»).
+ */
+export function pickerLabel(table: TableId, t: Dict): string {
+  const sub = SUB_LABEL[table];
+  if (sub === 'fItems' || sub === 'fCons') return `${t[groupOf(table).label]} · ${t[sub]}`;
+  return t[navSubLabel(table)];
 }

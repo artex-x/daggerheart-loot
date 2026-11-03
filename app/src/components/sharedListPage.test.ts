@@ -591,7 +591,7 @@ describe('the taken count and the total', () => {
     });
     await userEvent.click(print);
     expect(within(bar).getByText('Войдите, чтобы печатать карточки.')).toBeInTheDocument();
-    expect(container.querySelector('.selacts')).toBeNull();
+    expect(container.querySelector('.selacts .seldrop')).toBeNull();
     await expectNoA11yViolations(container);
     await userEvent.click(within(bar).getByRole('button', { name: 'Войти' }));
     expect(router.hash()).toBe('#/account');
@@ -643,7 +643,7 @@ describe('the taken count and the total', () => {
     await tickAllAndTakeTwo();
 
     const bar = document.querySelector('.selbarwrap') as HTMLElement;
-    await userEvent.click(within(bar).getByRole('button', { name: 'Скопировать' }));
+    await userEvent.click(within(bar).getByRole('button', { name: 'Скопировать текст' }));
 
     const index = buildIndex(LOOT);
     const rec = (id: string) => index.byId.get(id)!;

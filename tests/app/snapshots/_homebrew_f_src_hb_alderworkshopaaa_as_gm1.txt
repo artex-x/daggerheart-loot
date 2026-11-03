@@ -47,15 +47,15 @@ RootWebArea "Мои предметы - Генератор лута Daggerheart" 
     generic ""
     heading "Мастерская Ольхи · Пистоли 3" [level=2]
     checkbox "Предмет 002" [checked=false]
-    button "Предмет 002 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=8fc50b8d]
+    button "Предмет 002 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=5b89cda4]
     ... checkbox x4 of 8 same-shape siblings elided
     ... button x4 of 8 same-shape siblings elided
     heading "Мастерская Ольхи · Холодное оружие 1" [level=2]
     heading "Мастерская Ольхи 3" [level=2]
     checkbox "Предмет 004" [checked=false]
-    button "Предмет 004 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=8c5f6449]
+    button "Предмет 004 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=d907c939]
     checkbox "Предмет 007" [checked=false]
-    button "Предмет 007 Сгенерированный предмет для замера. ПРЕДМЕТ МАСТЕРСК..." [namelen=77 namehash=ddeac935]
+    button "Предмет 007 ПРЕДМЕТ МАСТЕРСКАЯ ОЛЬХИ (HB) Сгенерированный предме..." [namelen=77 namehash=0785ffa3]
   contentinfo ""
     navigation "Страницы сайта"
       link "Установить как приложение" [url=/pages/install.html]
@@ -85,24 +85,24 @@ daggerheart.com
 Пистоли
 Поиск
 Предмет 001
-Предмет 001Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=65422234]
+Предмет 001ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=af8cef21]
 Предмет 002
-Предмет 002Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=103e1d90]
+Предмет 002ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=b26f620e]
 Предмет 004
-Предмет 004Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=256f5370]
+Предмет 004ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=4d0a407f]
 Предмет 005
-Предмет 005Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=3b3560f0]
+Предмет 005ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=183706e3]
 Предмет 007
-Предмет 007Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=22e409ae]
+Предмет 007ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=506b2799]
 Предмет 008
-Предмет 008Сгенерированный предмет для замера.ПредметМастерская ... [namelen=74 namehash=2952e258]
+Предмет 008ПредметМастерская Ольхи (HB)Сгенерированный предмет д... [namelen=74 namehash=2b654a14]
 Предметы
 Расходники
 Сбросить всё
 Снаряжение
 Таблицы
 Топор Тлеющих Углей
-Топор Тлеющих УглейРанг 2 · Магическое · Характеристика Заклинат... [namelen=184 namehash=b8cdac53]
+Топор Тлеющих УглейОсновное оружиеУникальноеМастерская Ольхи (HB... [namelen=184 namehash=e7c9f22c]
 Условия использования
 Установить как приложение
 Фильтры (1)
@@ -153,15 +153,15 @@ RootWebArea "My items - Daggerheart Loot Generator" [url=/en/homebrew/f_src-hb_a
     generic ""
     heading "Alder Workshop · Pistols 3" [level=2]
     checkbox "Item 002" [checked=false]
-    button "Item 002 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=42eb53b1]
+    button "Item 002 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=c7fd2bb4]
     ... checkbox x4 of 8 same-shape siblings elided
     ... button x4 of 8 same-shape siblings elided
     heading "Alder Workshop · Blades 1" [level=2]
     heading "Alder Workshop 3" [level=2]
     checkbox "Item 004" [checked=false]
-    button "Item 004 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=3da46271]
+    button "Item 004 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=a67d73e6]
     checkbox "Item 007" [checked=false]
-    button "Item 007 A generated item for the measure. ITEM ALDER WORKSHOP (..." [namelen=67 namehash=c49f6776]
+    button "Item 007 ITEM ALDER WORKSHOP (HB) A generated item for the measu..." [namelen=67 namehash=84fc7334]
   contentinfo ""
     navigation "Site pages"
       link "Install as an app" [url=/pages/en/install.html]
@@ -178,24 +178,24 @@ Blades
 Consumables
 EN
 Ember Axe
-Ember AxeTier 2 · Magic · Spellcast · Melee · d10+2 mag · Two-Ha... [namelen=159 namehash=68dd762d]
+Ember AxePrimary weaponUniqueAlder Workshop (HB)Tier 2 · Magic ·... [namelen=159 namehash=ea056220]
 Equipment
 Filters (1)
 Homebrew
 Import from file
 Install as an app
 Item 001
-Item 001A generated item for the measure.ItemAlder Workshop (HB)
+Item 001ItemAlder Workshop (HB)A generated item for the measure.
 Item 002
-Item 002A generated item for the measure.ItemAlder Workshop (HB)
+Item 002ItemAlder Workshop (HB)A generated item for the measure.
 Item 004
-Item 004A generated item for the measure.ItemAlder Workshop (HB)
+Item 004ItemAlder Workshop (HB)A generated item for the measure.
 Item 005
-Item 005A generated item for the measure.ItemAlder Workshop (HB)
+Item 005ItemAlder Workshop (HB)A generated item for the measure.
 Item 007
-Item 007A generated item for the measure.ItemAlder Workshop (HB)
+Item 007ItemAlder Workshop (HB)A generated item for the measure.
 Item 008
-Item 008A generated item for the measure.ItemAlder Workshop (HB)
+Item 008ItemAlder Workshop (HB)A generated item for the measure.
 Items
 LootDaggerheart
 New item

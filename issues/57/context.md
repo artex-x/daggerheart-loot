@@ -410,6 +410,75 @@
     follows the writer); do not lower a tier to save usage. If the weekly
     limit runs out, the work stops at a committed boundary and resumes
     after the reset.
+  - End-user feedback (owner, 2026-11-03, chat, two phone screenshots):
+    - F1, `/roll/alt` at phone width: the H1 «Альтернативные таблицы» fills
+      its line, the pin stays beside it and the «?» wraps alone to the next
+      line. Users ask that the title wrap instead, with both buttons staying
+      on the first line («Alternate v ? / tables», not «Alternate tables v /
+      ?»).
+    - F2, `/lists/<uuid>` used as a player's inventory in author mode: too
+      few items are visible. Live phone screenshot: about 280 px per row,
+      about 2.5 rows per screen. Owner's ideas: a header that hides on scroll
+      down and shows on scroll up; smaller tabular or list data; an
+      alternative display mode for lists used as shop or inventory; search
+      and filter on the owner's list page (today only `/s/` has them, so
+      people share a link to themselves to use them), perhaps in shop mode
+      too.
+    - Process (owner, same message): plan it, run leftover work in parallel
+      where possible, review design and mocks, show the mocks and decisions
+      to the owner to confirm. After that confirmation the owner is AFK:
+      release the whole task - wave 2, wave 3, the post-delivery review.
+      Log defaults in `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.
+  - Feedback answers (owner, 2026-11-03, interactive; `feedback.md`,
+    `mocks/F/`): Q1 A1, batch 5 hides the H1 up to 760 px and moves the pin
+    and the panel button (plan section 7 reads "up to 760 px", not "at
+    360"). Q2 B2, NOT the recommended B1: the whole header hides on scroll
+    down and returns on scroll up, up to 760 px; the batch 9 refresh designs
+    it from `feedback.md` section B's B2 column (scope, port, guards), with
+    the `--sticky-h` / `--anchor-gap` focus fix sized for the worst case. Q3
+    C1b: a 77 px compact row with one clamped effect line, on `/lists/<uuid>`
+    and `/s/` up to 760 px; a press unfolds the full row. Q4 D-head 1:
+    «Поделиться», «Печать», «Бросить по списку» move into «Ещё» up to 760
+    px (this reverses M9-1); `/s/` with a search row is a named first-screen
+    exception at 286 px. Defaults kept: D1 filter in page memory, a hidden
+    tick leaves the selection, the grip goes while narrowed. Homes: the
+    batch 5 and 9 refreshes; DESIGN.md, FEATURES.md, STATE.md and one
+    decision file, written by batch 9.
+  - Header batch (owner, 2026-11-03, chat): the hide-and-show header (Q2 B2)
+    is its own batch, 3b, right after batch 3 and in wave 2 ("the earlier we
+    implement it the better"); this replaces "batch 9" for it above. Batch 3b
+    also takes the `--sticky-h` / `--anchor-gap` focus fix (WCAG 2.4.11), so
+    batch 9 keeps C1b, D1 and D-head 1 only. Run order: 3, 3b, 4-7.
+  - Batch 9 split (owner, 2026-11-03, chat: "makes sense"): 9a (wave 2,
+    after batch 7): the C1b row, search and filter on the owner's page, the
+    actions into «Ещё», the list «Ещё» menu, the selection bar on both pages.
+    9b (wave 3, after batch 8): the note switch, side column, share, roll and
+    requests panels, the price switch, A1 at 640-900 px, E2, E4, the «?»
+    removal. Criterion: the owner's wish to ship the F2 fix in wave 2.
+    Accepted: about 45-60 min more, the list goldens re-seeded twice, an
+    interim mix between waves. Run order: wave 2 = 3, 3b, 4, 5, 6, 7, 9a;
+    wave 3 = 8, 9b, P, 10.
+  - Owner AFK from 2026-11-03 (chat): release the whole task - wave 2, wave
+    3, the post-delivery review - with the recommended option at each
+    choice, logged in `C:\Users\Ignat\.dhloot\notes\owner-afk-2026-11-03\decisions.md`.
+  - Q3-S (owner, 2026-10-30, chat: "I agree"): drop the per-section
+    «Выбрать все (N)» strip on the catalog. The selection bar's «Все» is
+    the one select-all control on every list page; one section is ticked
+    by picking its filter chip, then «Все». Batch 3 removes the strip in
+    its own commit (it is uncommitted at the weekly wrap-up), with its
+    goldens and the FEATURES "Tables and search" line. Accepted
+    trade-off: ticking exactly one section takes two taps instead of one.
+  - Owner-reported bug (2026-10-30, chat, screenshot of `/homebrew/<new>`):
+    in the homebrew editor, choosing «Вид» = «Снаряжение» leaves the
+    preview card as an item (badge «ПРЕДМЕТ», the item glyph) until the
+    tier is chosen - the owner confirmed the tier is the trigger (other
+    equipment fields, such as «Тип снаряжения», do not change it); choosing «Расходник» changes
+    the preview at once. Expected: the preview follows «Вид» immediately.
+    Not investigated yet; a likely cause (unverified) is that the preview
+    builds the equipment record only once its `eq` fields exist and falls
+    back to the item kind. Home: batch 6 (homebrew editor) - reproduce,
+    fix, add a component test; if batch 6 is far off, fix it as a small
+    task first. The next session decides.
   - Post-release review (owner, 2026-10-29, chat): after the squash onto
     `main` and a green deploy, a fresh blind reviewer checks production
     only: Source Sans 3 loads from the site (no fallback face); the

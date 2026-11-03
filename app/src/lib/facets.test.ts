@@ -324,9 +324,9 @@ describe('the equipment tables', () => {
     const lineRow = facetRows(index, 'eq_armor', t, 'ru').find((r) => r.group === 'line');
     expect(lineRow).toEqual({
       group: 'line',
-      label: 'Линейка',
+      label: 'Улучшения и уникальные',
       values: [
-        { value: 'line', label: 'Улучшаемые' },
+        { value: 'line', label: 'Есть улучшение' },
         { value: 'uniq', label: 'Уникальные' }
       ]
     });
@@ -594,7 +594,7 @@ describe("a share link's facet rows", () => {
       ],
       ['range', 'Дистанция', ['Вплотную', 'Средне', 'Далеко']],
       ['burden', 'Хват', ['Одноручное', 'Двуручное']],
-      ['line', 'Линейка', ['Улучшаемые', 'Уникальные']]
+      ['line', 'Улучшения и уникальные', ['Есть улучшение', 'Уникальные']]
     ]);
   });
 
@@ -722,7 +722,7 @@ describe("a share link's facet rows", () => {
         'Источник',
         ['Core', 'Hope & Fear', 'Wondrous Environments', 'Dread GM Toolbox', 'Vault of Ages']
       ],
-      ['line', 'Линейка', ['Улучшаемые', 'Уникальные']]
+      ['line', 'Улучшения и уникальные', ['Есть улучшение', 'Уникальные']]
     ]);
   });
 

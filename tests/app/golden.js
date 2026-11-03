@@ -427,7 +427,7 @@ if (require.main === module) {
   const captureState = async (state) => {
     if (!state.timed) {
       const { ctx, page, d } = await fresh({
-        width: WIDTH,
+        width: state.width ?? WIDTH,
         height: HEIGHT,
         storage: state.storage
       });
@@ -456,7 +456,7 @@ if (require.main === module) {
 
     const oneLang = async (lang) => {
       const { ctx, page, d } = await fresh({
-        width: WIDTH,
+        width: state.width ?? WIDTH,
         height: HEIGHT,
         storage: state.storage
       });

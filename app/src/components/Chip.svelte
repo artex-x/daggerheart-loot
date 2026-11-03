@@ -10,6 +10,8 @@
      open-in-new-tab work on them for free - the same reason the tab bar is
      real links rather than buttons with a click handler. */
 
+  import Icon from './Icon.svelte';
+
   interface Base {
     label: string;
     /** Whether this is the one currently chosen. */
@@ -44,17 +46,21 @@
       | {
           href: string;
           onclick?: never;
-          /** The chip's text under 640 px; the label stays its accessible name. */
-          short?: string | undefined;
           busy?: never;
+          neutral?: never;
+          filter?: never;
         }
       | {
           href?: never;
           onclick: () => void;
-          short?: never;
           /** A choice whose read runs: dimmed, announced busy, and a press does nothing; the
            *  focus stays on it. */
           busy?: boolean | undefined;
+          /** The neutral pressed default (DESIGN.md, "Chips"): a check and a lit ground,
+           *  never gold. A filter row's «Все» is its caller. */
+          neutral?: boolean | undefined;
+          /** A filter value, `<group>:<value>`, as `data-fval` for the browser suites. */
+          filter?: string | undefined;
         }
     );
 
@@ -68,7 +74,8 @@
     onclick,
     value,
     busy,
-    short
+    neutral,
+    filter
   }: Props = $props();
 </script>
 
@@ -79,12 +86,9 @@
     class:sm={size === 'sm'}
     aria-current={on ? 'page' : undefined}
     data-val={value}
-    aria-label={short ? label : undefined}
     {title}
     {href}
-    >{#if short}<span class="full">{label}</span><span class="short" aria-hidden="true"
-        >{short}</span
-      >{:else}{label}{/if}{#if sub}<small>{sub}</small>{/if}</a
+    >{label}{#if sub}<small>{sub}</small>{/if}</a
   >
 {:else}
   <button
@@ -92,15 +96,18 @@
     class="chip"
     class:on
     class:sm={size === 'sm'}
+    class:neutral
     aria-pressed={on}
     data-val={value}
+    data-fval={filter}
     aria-busy={busy ? 'true' : undefined}
     aria-disabled={busy ? 'true' : undefined}
     {title}
     onclick={() => {
       if (!busy) onclick?.();
     }}
-    >{label}{#if sub}<small>{sub}</small>{/if}</button
+    >{#if neutral && on}<Icon name="check" />{/if}{label}{#if sub}<small>{sub}</small
+      >{/if}</button
   >
 {/if}
 
@@ -147,20 +154,15 @@
     font-weight: 650;
   }
 
-  /* A short form is part of its full name (WCAG 2.5.3); 640 px is the system
-     breakpoint (DESIGN.md), and a media query cannot read a token. */
-  .short {
-    display: none;
-  }
-
-  @media (max-width: 640px) {
-    .full {
-      display: none;
-    }
-
-    .short {
-      display: inline;
-    }
+  /* The neutral pressed default: the check and the label share one center. */
+  .chip.neutral.on {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border-color: var(--muted2);
+    color: var(--txt);
+    font-weight: 600;
   }
 
   /* off `.chip.sm` in style.css */
